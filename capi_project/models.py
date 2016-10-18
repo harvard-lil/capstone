@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 
 class Case(models.Model):
@@ -22,6 +23,9 @@ class Case(models.Model):
 
     @classmethod
     def create_from_row(self, row):
+        d = int(row['decisiondate'])
+        decisiondate = datetime.fromordinal(d)
+
         case = self(
             caseid=row['caseid'],
             firstpage=row['firstpage'],
@@ -29,7 +33,7 @@ class Case(models.Model):
             jurisdiction=row['jurisdiction'],
             citation=row['citation'],
             docketnumber=row['docketnumber'],
-            decisiondate=row['decisiondate'],
+            decisiondate=decisiondate,
             decisiondate_original=row['decisiondate_original'],
             court=row['court'],
             name=row['name'],
