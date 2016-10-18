@@ -6,3 +6,11 @@ Markdown==2.6.7
 psycopg2==2.6.2
 six==1.10.0
 uWSGI==2.0.14
+Django==1.10.2
+django-extensions==1.7.4
+django-filter==0.15.0
+djangorestframework==3.4.7
+Markdown==2.6.7
+psycopg2==2.6.2
+six==1.10.0
+uWSGI==2.0.14
