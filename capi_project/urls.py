@@ -14,10 +14,5 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^cases/(?P<jurisdiction__iexact>[\w ]+)/?$', views.CaseViewSet.as_view({'get':'list'})),
     url(r'^cases/(?P<jurisdiction__iexact>[\w ]+)/(?P<court__icontains>[\w ]+)/?$', views.CaseViewSet.as_view({'get':'list'})),
-    url(r'^cases/(?P<jurisdiction__iexact>[\w ]+)/(?P<court__icontains>[\w ]+)/(?P<decisiondate__year>\d+)/?$', views.CaseViewSet.as_view({'get':'list'})),
-    url(r'^cases/(?P<jurisdiction__iexact>[\w ]+)/(?P<court__icontains>[\w ]+)/(?P<decisiondate__year>\d+)/(?P<decisiondate__month>\d+)/?$', views.CaseViewSet.as_view({'get':'list'})),
-    url(r'^cases/(?P<jurisdiction__iexact>[\w ]+)/(?P<court__icontains>[\w ]+)/(?P<decisiondate__year>\d+)/(?P<decisiondate__month>\d+)/(?P<decisiondate__day>\d+)/?$', views.CaseViewSet.as_view({'get':'list'})),
-    # possibly terrible design
     url(r'^cases/(?P<jurisdiction__iexact>[\w ]+)/(?P<court__icontains>[\w ]+)/(?P<name__icontains>[\w ]+)?$', views.CaseViewSet.as_view({'get':'list'})),
-
 ]
