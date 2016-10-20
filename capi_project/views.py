@@ -10,7 +10,8 @@ from capi_project.url_helpers import *
 
 def format_date_queries(params, args_dict):
     if not len(params):
-        return {}
+        return args_dict
+        
     if 'year' in params:
         args_dict['decisiondate__year'] = params['year']
 
