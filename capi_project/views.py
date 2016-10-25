@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view, detail_route, list_route
 from rest_framework.response import Response
 
 from capi_project.models import Case
-from capi_project.url_helpers import *
+from capi_project.view_helpers import *
 
 def format_date_queries(params, args_dict):
     if not len(params):
