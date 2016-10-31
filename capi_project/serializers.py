@@ -20,9 +20,8 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance', 'key_expires')
 
     email = serializers.EmailField(
-        max_length=100,
         style={'input_type':'email', 'placeholder':'Email'},
-        validators=[UniqueValidator(queryset=CaseUser.objects.all())],
+        max_length=100,
     )
 
     password = serializers.CharField(

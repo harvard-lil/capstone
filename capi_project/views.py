@@ -10,7 +10,7 @@ from django.http import HttpResponseRedirect
 from rest_framework import routers, viewsets, views, mixins, permissions
 from rest_framework.response import Response
 
-from rest_framework.decorators import api_view, detail_route, list_route, permission_classes
+from rest_framework.decorators import api_view, detail_route, list_route, permission_classes, renderer_classes
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Case
@@ -70,8 +70,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if serializer.is_valid():
             user = serializer.create({'email':request.data.get('email'),'password':request.data.get('password')})
-            if request.accepted_renderer.format == 'html':
-                Response({'data':'SUCCESS'}, status=status.HTTP_201_CREATED, template_name='sign-up.html')
+            if request.accepted_renderer.format != 'json':
+                return Response({'user':user}, status=status.HTTP_201_CREATED, template_name='sign-up-success.html')
             else:
                 return JSONResponse({'data':'SUCCESS'}, status=status.HTTP_201_CREATED)
         else:
@@ -84,15 +84,15 @@ class LoginView(views.APIView):
 
         return Response({'data':'login'}, template_name='log-in.html')
 
-
+@renderer_classes(renderers.TemplateHTMLRenderer)
 @api_view(http_method_names=['GET'])
 def sign_up(request):
     """
     Return signup form
     """
-    user = get_object_or_404(CaseUser, pk=17)
-    serializer = UserSerializer(user)
-    return Response({'serializer': serializer, 'user':user}, template_name='sign-up.html')
+
+    serializer = UserSerializer()
+    return Response({'user':serializer.instance, 'serializer':serializer}, template_name='sign-up.html')
 
 @api_view()
 def verify_user(request, user_id, activation_nonce):
@@ -102,9 +102,9 @@ def verify_user(request, user_id, activation_nonce):
         if user.is_validated:
             api_key = user.get_api_key()
             data = {'email':user.email,'api_key':api_key}
-            if request.accepted_renderer.format == 'html':
+            if request.accepted_renderer.format == 'html' or request.accepted_renderer.format == 'api':
                 return Response(data, template_name='verified.html')
             else:
-                return JSONRenderer(data)
+                return JSONResponse(data)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
