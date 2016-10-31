@@ -1,34 +1,22 @@
-from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework import renderers
 
-from rest_framework import routers, serializers, viewsets
-from rest_framework import mixins
-from rest_framework.decorators import api_view, detail_route, list_route
+from django.db.models import Q
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
+
+from rest_framework import routers, viewsets, views, mixins, permissions
 from rest_framework.response import Response
 
-from capi_project.models import Case
-from capi_project.url_helpers import *
+from rest_framework.decorators import api_view, detail_route, list_route, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
-def format_date_queries(params, args_dict):
-    if not len(params):
-        return args_dict
-        
-    if 'year' in params:
-        args_dict['decisiondate__year'] = params['year']
-
-    if 'month' in params:
-        args_dict['decisiondate__month'] = params['month']
-
-    if 'day' in params:
-        args_dict['decisiondate__day'] = params['day']
-    return args_dict
-
-class CaseSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        many = kwargs.pop('many', True)
-        super(CaseSerializer, self).__init__(many=many, *args, **kwargs)
-    class Meta:
-        model = Case
-        fields = '__all__'
+from .models import Case
+from .view_helpers import *
+from .serializers import *
+from .permissions import *
+from .forms import SignUpForm
 
 class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     http_method_names = ['get']
@@ -47,3 +35,31 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
             query = merge_filters(query, 'AND')
 
         return self.queryset.filter(query)
+    def post(self, request):
+        """
+        Sign up
+        """
+        email = request.data.get('email')
+        if not email:
+            return Response({'data': 'Email address is required'}, status=status.HTTP_404_NOT_FOUND)
+        user = self.serializer.create({'email':email,'password':request.data.get('password')})
+        return Response({'data':'SUCCESS'}, status=status.HTTP_201_CREATED)
+
+class LoginView(views.APIView):
+    serializer = LoginSerializer
+    renderer_classes = [renderers.TemplateHTMLRenderer]
+
+@api_view()
+def verify_user(request, user_id, activation_nonce):
+    serializer = SignupSerializer()
+    if request.method == 'GET':
+        user = serializer.verify(user_id, activation_nonce)
+        if user.is_validated:
+            api_key = user.get_api_key()
+            data = {'email':user.email,'api_key':api_key}
+            if request.accepted_renderer.format == 'html':
+                return Response(data, template_name='verified.html')
+            else:
+                return Response(data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
