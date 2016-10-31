@@ -1,6 +1,7 @@
 from .models import *
 from rest_framework import serializers
 from django.core.mail import send_mail
+from rest_framework.validators import UniqueValidator
 
 
 class CaseSerializer(serializers.ModelSerializer):
@@ -18,22 +19,17 @@ class UserSerializer(serializers.ModelSerializer):
         write_only_fields = ('password')
         read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance', 'key_expires')
 
-
-class SignupSerializer(serializers.ModelSerializer):
-
     email = serializers.EmailField(
         max_length=100,
         style={'input_type':'email', 'placeholder':'Email'},
+        validators=[UniqueValidator(queryset=CaseUser.objects.all())],
     )
+
     password = serializers.CharField(
         style={'input_type': 'password', 'placeholder': 'Password'},
         write_only=True,
         max_length=100,
     )
-
-    class Meta:
-        model = CaseUser
-        fields = ('email', 'password', CaseUser.first_name, CaseUser.last_name,)
 
     def create(self, validated_data):
         user = self.Meta.model.objects.create_user(**validated_data)

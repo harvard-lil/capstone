@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework import renderers
+from django.http import HttpResponse
 
 from django.db.models import Q
 from django.shortcuts import render
@@ -18,12 +19,22 @@ from .serializers import *
 from .permissions import *
 from .forms import SignUpForm
 
+
+class JSONResponse(HttpResponse):
+    """
+    An HttpResponse that renders its content into JSON.
+    """
+    def __init__(self, data, **kwargs):
+        content = renderers.JSONRenderer().render(data)
+        kwargs['content_type'] = 'application/json'
+        super(JSONResponse, self).__init__(content, **kwargs)
+
 class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     http_method_names = ['get']
     queryset = Case.objects.all()
     serializer_class = CaseSerializer
     lookup_field='jurisdiction'
-
+    renferer_classes = (renderers.JSONRenderer, renderers.TemplateHTMLRenderer)
     def get_queryset(self):
         query = Q()
         kwargs = self.kwargs
@@ -35,23 +46,57 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
             query = merge_filters(query, 'AND')
 
         return self.queryset.filter(query)
-    def post(self, request):
+
+class UserViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+    renderer_classes = (renderers.JSONRenderer, renderers.TemplateHTMLRenderer)
+    queryset = CaseUser.objects.all()
+    def list(self, request, *args, **kwargs):
+        response = super(UserViewSet, self).list(request, *args, **kwargs)
+        if request.accepted_renderer.format == 'html':
+            return Response({'users': response.data['results']}, template_name='user-list.html')
+        else:
+            return JSONResponse({'users': response.data['results']})
+
+    @detail_route(methods=['get'])
+    def set_password(self, request, pk=None):
+        return Response({'data':'ok'}, template_name='user.html')
+
+    def create(self, request, *args, **kwargs):
         """
-        Sign up
+        Create user
         """
-        email = request.data.get('email')
-        if not email:
-            return Response({'data': 'Email address is required'}, status=status.HTTP_404_NOT_FOUND)
-        user = self.serializer.create({'email':email,'password':request.data.get('password')})
-        return Response({'data':'SUCCESS'}, status=status.HTTP_201_CREATED)
+        serializer = UserSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = serializer.create({'email':request.data.get('email'),'password':request.data.get('password')})
+            if request.accepted_renderer.format == 'html':
+                Response({'data':'SUCCESS'}, status=status.HTTP_201_CREATED, template_name='sign-up.html')
+            else:
+                return JSONResponse({'data':'SUCCESS'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(views.APIView):
-    serializer = LoginSerializer
-    renderer_classes = [renderers.TemplateHTMLRenderer]
+    serializer = LoginSerializer()
+    def get(self, request):
+        http_method_names=['GET']
+
+        return Response({'data':'login'}, template_name='log-in.html')
+
+
+@api_view(http_method_names=['GET'])
+def sign_up(request):
+    """
+    Return signup form
+    """
+    user = get_object_or_404(CaseUser, pk=17)
+    serializer = UserSerializer(user)
+    return Response({'serializer': serializer, 'user':user}, template_name='sign-up.html')
 
 @api_view()
 def verify_user(request, user_id, activation_nonce):
-    serializer = SignupSerializer()
+    serializer = UserSerializer()
     if request.method == 'GET':
         user = serializer.verify(user_id, activation_nonce)
         if user.is_validated:
@@ -60,6 +105,6 @@ def verify_user(request, user_id, activation_nonce):
             if request.accepted_renderer.format == 'html':
                 return Response(data, template_name='verified.html')
             else:
-                return Response(data)
+                return JSONRenderer(data)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
