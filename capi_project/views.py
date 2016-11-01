@@ -10,13 +10,14 @@ from rest_framework.response import Response
 
 from rest_framework.decorators import api_view, detail_route, list_route, permission_classes, renderer_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import JSONParser, FormParser
-
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
+from django_filters.rest_framework import DjangoFilterBackend
+from django.conf import settings
 from .models import Case
 from .view_helpers import *
 from .serializers import *
-from .permissions import *
-
+from .permissions import IsCaseUser
+from .filters import *
 
 class JSONResponse(HttpResponse):
     """
@@ -28,6 +29,9 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
+    if settings.AUTHENTICATE_FOR_METADATA:
+        permission_classes = (IsCaseUser,)
+
     serializer_class = CaseSerializer
     http_method_names = ['get']
     queryset = Case.objects.all()
