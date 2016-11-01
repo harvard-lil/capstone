@@ -15,7 +15,7 @@ class CaseSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CaseUser
-        fields = ('password', 'first_name', 'last_name', 'pk', 'email')
+        fields = ('first_name', 'last_name', 'email', 'password')
         write_only_fields = ('password')
         read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance', 'key_expires')
 
