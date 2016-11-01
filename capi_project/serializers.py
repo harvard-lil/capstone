@@ -1,6 +1,7 @@
 from .models import *
 from rest_framework import serializers
 from django.core.mail import send_mail
+from rest_framework.validators import UniqueValidator
 
 
 class CaseSerializer(serializers.ModelSerializer):
@@ -14,26 +15,20 @@ class CaseSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CaseUser
-        fields = ('password', 'first_name', 'last_name', 'pk', 'email')
+        fields = ('first_name', 'last_name', 'email', 'password')
         write_only_fields = ('password')
         read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance', 'key_expires')
 
-
-class SignupSerializer(serializers.ModelSerializer):
-
     email = serializers.EmailField(
-        max_length=100,
         style={'input_type':'email', 'placeholder':'Email'},
+        max_length=100,
     )
+
     password = serializers.CharField(
         style={'input_type': 'password', 'placeholder': 'Password'},
         write_only=True,
         max_length=100,
     )
-
-    class Meta:
-        model = CaseUser
-        fields = ('email', 'password', CaseUser.first_name, CaseUser.last_name,)
 
     def create(self, validated_data):
         user = self.Meta.model.objects.create_user(**validated_data)
@@ -50,18 +45,24 @@ class SignupSerializer(serializers.ModelSerializer):
 
         return user
 
-    def verify(self, user_id, activation_nonce):
+    def verify_with_nonce(self, user_id, activation_nonce):
         user = CaseUser.objects.get(pk=user_id)
         user.authenticate_user(activation_nonce=activation_nonce)
         return user
 
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField(
-        max_length=100,
-        style={'placeholder': 'Email'}
-    )
-    password = serializers.CharField(
-        max_length=100,
-        style={'input_type': 'password', 'placeholder': 'Password'}
-    )
-    remember_me = serializers.BooleanField()
+class LoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(max_length=100,style={'input_type': 'password', 'placeholder': 'Password'})
+
+    class Meta:
+        model = CaseUser
+        fields = ('email', 'password')
+        write_only_fields = ('password')
+        lookup_field = 'email'
+
+    def verify_with_password(self, email, password):
+        user = CaseUser.objects.get(email=email)
+        correct_password = user.check_password(password)
+        if not correct_password:
+            raise ValidationError('Invalid password')
+        return user

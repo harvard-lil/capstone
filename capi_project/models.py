@@ -4,7 +4,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 
-from datetime import timedelta
+from datetime import datetime,timedelta
 import uuid
 
 from rest_framework.authtoken.models import Token
@@ -65,7 +65,10 @@ class CaseUser(AbstractBaseUser):
         return nonce.hex
 
     def get_api_key(self):
-        return Token.objects.get(user=self).key
+        try:
+            return Token.objects.get(user=self).key
+        except Exception as e:
+            return False
 
 class Case(models.Model):
     caseid = models.CharField(primary_key=True, max_length=255)
