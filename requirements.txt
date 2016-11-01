@@ -3,7 +3,7 @@ backports.shutil-get-terminal-size==1.0.0
 decorator==4.0.10
 Django==1.10.2
 django-extensions==1.7.4
-django-filter==0.15.0
+django-filter==0.15.3
 djangorestframework==3.5.1
 enum34==1.1.6
 ipdb==0.10.1

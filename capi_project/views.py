@@ -28,22 +28,13 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
+    serializer_class = CaseSerializer
     http_method_names = ['get']
     queryset = Case.objects.all()
-    serializer_class = CaseSerializer
-    lookup_field='jurisdiction'
-    renferer_classes = (renderers.JSONRenderer, renderers.TemplateHTMLRenderer)
-    def get_queryset(self):
-        query = Q()
-        kwargs = self.kwargs
-        if len(self.request.query_params.items()):
-            kwargs = format_date_queries(self.request.query_params, kwargs)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_class = CaseFilter
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
-        if len(kwargs.items()):
-            query = map(make_query, kwargs.items())
-            query = merge_filters(query, 'AND')
-
-        return self.queryset.filter(query)
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
