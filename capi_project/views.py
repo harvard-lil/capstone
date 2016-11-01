@@ -89,7 +89,10 @@ def sign_up(request):
     Return signup form
     """
     serializer = UserSerializer()
-    return Response({'serializer':serializer}, template_name='sign-up.html')
+    if request.accepted_renderer.format != 'json':
+        return Response({'serializer':serializer}, template_name='sign-up.html')
+    else:
+        return JSONResponse(serializer.data)
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
