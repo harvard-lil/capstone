@@ -103,7 +103,7 @@ def verify_user(request, user_id, activation_nonce):
     Verify email and assign api token
     """
     serializer = UserSerializer()
-    user = serializer.verify(user_id, activation_nonce)
+    user = serializer.verify_with_nonce(user_id, activation_nonce)
     if user.is_validated:
         api_key = user.get_api_key()
         data = {'email':user.email,'api_key':api_key}

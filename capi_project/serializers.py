@@ -45,18 +45,24 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
-    def verify(self, user_id, activation_nonce):
+    def verify_with_nonce(self, user_id, activation_nonce):
         user = CaseUser.objects.get(pk=user_id)
         user.authenticate_user(activation_nonce=activation_nonce)
         return user
 
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField(
-        max_length=100,
-        style={'placeholder': 'Email'}
-    )
-    password = serializers.CharField(
-        max_length=100,
-        style={'input_type': 'password', 'placeholder': 'Password'}
-    )
-    remember_me = serializers.BooleanField()
+class LoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(max_length=100,style={'input_type': 'password', 'placeholder': 'Password'})
+
+    class Meta:
+        model = CaseUser
+        fields = ('email', 'password')
+        write_only_fields = ('password')
+        lookup_field = 'email'
+
+    def verify_with_password(self, email, password):
+        user = CaseUser.objects.get(email=email)
+        correct_password = user.check_password(password)
+        if not correct_password:
+            raise ValidationError('Invalid password')
+        return user
