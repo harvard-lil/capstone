@@ -115,3 +115,29 @@ def verify_user(request, user_id, activation_nonce):
             return JSONResponse(data)
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(http_method_names=['GET','POST'])
+@parser_classes((FormParser, MultiPartParser, JSONParser,))
+@renderer_classes((renderers.BrowsableAPIRenderer, renderers.TemplateHTMLRenderer, renderers.JSONRenderer, ))
+def get_token(request):
+    serializer = LoginSerializer()
+    if request.method == 'GET':
+        if request.accepted_renderer.format != 'json':
+            return Response({'serializer':serializer}, template_name='get-token.html')
+        else:
+            return JSONResponse(serializer.data)
+    elif request.method == 'POST':
+        try:
+            email = request.data.get('email')
+            password = request.data.get('password')
+            user = serializer.verify_with_password(email, password)
+            if user.is_validated:
+                api_key = user.get_api_key()
+                data = {'email':user.email,'api_key':api_key}
+                if request.accepted_renderer.format != 'json' :
+                    return Response(data, template_name='token.html')
+                else:
+                    return JSONResponse(data)
+        except Exception as e:
+            data = {'status':'Failed.','message':'Please check that your entered credentials are correct.'}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
