@@ -3,6 +3,7 @@ import paramiko
 from capi_project.models import Case
 from paramiko import SSHClient
 from scp import SCPClient
+from capi_project import settings
 
 def create_metadata_from_csv(csv_doc):
     with open(csv_doc, 'rb') as f:
