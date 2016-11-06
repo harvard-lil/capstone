@@ -18,6 +18,9 @@ from .view_helpers import *
 from .serializers import *
 from .permissions import IsCaseUser
 from .filters import *
+from .forms import SignupForm
+
+from .case_views import *
 
 class JSONResponse(HttpResponse):
     """
@@ -28,24 +31,13 @@ class JSONResponse(HttpResponse):
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
 
-class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
-    if settings.AUTHENTICATE_FOR_METADATA:
-        permission_classes = (IsCaseUser,)
-
-    serializer_class = CaseSerializer
-    http_method_names = ['get']
-    queryset = Case.objects.all()
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    filter_class = CaseFilter
-    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
-
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     queryset = CaseUser.objects.all()
     parser_classes = (JSONParser, FormParser,)
-
+    lookup_field = 'email'
     def list(self, request, *args, **kwargs):
         response = super(UserViewSet, self).list(request, *args, **kwargs)
         if request.accepted_renderer.format != 'json':
@@ -57,21 +49,29 @@ class UserViewSet(viewsets.ModelViewSet):
     def set_password(self, request, pk=None):
         return Response({'data':'ok'}, template_name='user.html')
 
+    def view_single_case(methods=['get']):
+        return Response()
+
     def create(self, request, *args, **kwargs):
         """
         Create user
         """
+        request.data['password'] = request.data.get('password1')
         serializer = UserSerializer(data=request.data)
-
         if serializer.is_valid():
-            user = serializer.create({'email':request.data.get('email'),'password':request.data.get('password')})
-            if request.accepted_renderer.format != 'html':
+            try:
+                user = serializer.create({'email':request.data.get('email'),'password':request.data.get('password')})
                 content = {
-                    'status':'Success!',
-                    'message':'Thank you. Please check your email %s for a verification link.' % user.email}
-                return Response(content)
-            else:
-                Response(content, template_name='sign-up-success.html')
+                'status':'Success!',
+                'message':'Thank you. Please check your email %s for a verification link.' % user.email}
+                if request.accepted_renderer.format == 'api':
+                    return Response(content)
+                elif request.accepted_renderer.format == 'json':
+                    return JSONResponse(content)
+                else:
+                    return Response(content, template_name='sign-up-success.html')
+            except IntegrityError:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -83,16 +83,13 @@ class LoginView(views.APIView):
 
 @api_view(http_method_names=['GET'])
 @parser_classes((FormParser,))
-@renderer_classes((renderers.BrowsableAPIRenderer,renderers.TemplateHTMLRenderer,))
+@renderer_classes((renderers.TemplateHTMLRenderer, ))
 def sign_up(request):
     """
     Return signup form
     """
-    serializer = UserSerializer()
-    if request.accepted_renderer.format != 'json':
-        return Response({'serializer':serializer}, template_name='sign-up.html')
-    else:
-        return JSONResponse(serializer.data)
+    data = {'message':'','email':'', 'password':'', 'first_name':'', 'last_name':''}
+    return render(request, 'sign-up.html', {'form': SignupForm})
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))

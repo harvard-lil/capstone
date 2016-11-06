@@ -44,7 +44,6 @@ class Migration(migrations.Migration):
                 ('date_joined', models.DateTimeField(auto_now_add=True)),
                 ('is_admin', models.BooleanField(default=False)),
                 ('key_expires', models.DateTimeField(blank=True, null=True)),
-                ('api_key', models.CharField(max_length=255, null=True))
             ],
 
             options={

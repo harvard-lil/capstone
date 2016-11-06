@@ -84,6 +84,7 @@ class Case(models.Model):
     court_abbreviation = models.CharField(max_length=255, blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
     volume = models.CharField(max_length=45, blank=True)
+    reporter = models.CharField(max_length=255, blank=True)
 
     @classmethod
     def create(self, caseid):
@@ -109,5 +110,8 @@ class Case(models.Model):
             court_abbreviation=row['court_abbreviation'],
             name_abbreviation=row['name_abbreviation'],
             volume=row['volume'],
-        )
+            reporter=row['reporter'],
+            )
+
+        case.create_uri()
         return case

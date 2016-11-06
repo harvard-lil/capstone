@@ -8,27 +8,29 @@ class CaseSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         many = kwargs.pop('many', True)
         super(CaseSerializer, self).__init__(many=many, *args, **kwargs)
+
     class Meta:
         model = Case
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CaseUser
-        fields = ('first_name', 'last_name', 'email', 'password')
-        write_only_fields = ('password')
-        read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance', 'key_expires')
-
     email = serializers.EmailField(
         style={'input_type':'email', 'placeholder':'Email'},
         max_length=100,
+        allow_blank=False
     )
 
     password = serializers.CharField(
         style={'input_type': 'password', 'placeholder': 'Password'},
         write_only=True,
-        max_length=100,
-    )
+        max_length=100,)
+
+    class Meta:
+        model = CaseUser
+        fields = ('first_name', 'last_name', 'email', 'password')
+        write_only_fields = ('password')
+        read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance', 'key_expires')
+        lookup_field = 'email'
 
     def create(self, validated_data):
         user = self.Meta.model.objects.create_user(**validated_data)
