@@ -1,0 +1,10 @@
+{% extends "rest_framework/login_base.html" %}
+<!-- {% load rest_framework %} -->
+{% block branding %}
+    <h3 style="margin: 0 0 20px;">My Site Name</h3>
+{% endblock %}
+<form action="{% url 'login' %}" method="post" novalidate>
+    {% csrf_token %}
+    {% render_form serializer template_pack='rest_framework/vertical' %}
+    <button type="submit" class="btn btn-default">Sign in</button>
+</form>
