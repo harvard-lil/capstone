@@ -1,3 +1,4 @@
+import os
 import csv
 import paramiko
 from capi_project.models import Case
@@ -5,18 +6,17 @@ from paramiko import SSHClient
 from scp import SCPClient
 from capi_project import settings
 
-def create_metadata_from_csv(csv_doc):
-    with open(csv_doc, 'rb') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            case = Case.create_from_row(row)
+def create_metadata_from_csv():
+    csv_doc = settings.METADATA_FILE_PATH
+    if os.path.exists(csv_doc):
+        with open(csv_doc, 'rb') as f:
+            reader = csv.DictReader(f)
             try:
-                case.save()
+                map(Case.create_from_row, reader)
             except Exception as e:
-                # import ipdb; ipdb.set_trace()
-                print row
+                print "Error on metadata row creation:", e
                 pass
-
+        os.remove(csv_doc)
 
 def format_filename(case_id):
     cdir, cpgnumber = case_id.split('_')
@@ -31,7 +31,6 @@ def scp_get(requester_id, list_of_files):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         private_key = paramiko.RSAKey.from_private_key_file(settings.PRIVATE_KEY_FILENAME)
         ssh.connect(settings.CAP_SERVER_TO_CONNECT_TO, port=22, pkey=private_key, username='capuser')
-        # SCPCLient takes a paramiko transport as its only argument
         stdin, stdout, stderr = ssh.exec_command("sleep 5; echo working!!!")
         print(stdout.read())
         string_list = str(list_of_files)
@@ -47,3 +46,5 @@ def scp_get(requester_id, list_of_files):
     except Exception as e:
         return e
 
+if __name__ == '__main___':
+    create_metadata_from_csv()

@@ -113,5 +113,5 @@ class Case(models.Model):
             reporter=row['reporter'],
             )
 
-        case.create_uri()
+        case.save()
         return case
