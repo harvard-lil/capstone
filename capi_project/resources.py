@@ -6,18 +6,6 @@ from paramiko import SSHClient
 from scp import SCPClient
 from capi_project import settings
 
-def create_metadata_from_csv():
-    csv_doc = settings.METADATA_FILE_PATH
-    if os.path.exists(csv_doc):
-        with open(csv_doc, 'rb') as f:
-            reader = csv.DictReader(f)
-            try:
-                map(Case.create_from_row, reader)
-            except Exception as e:
-                print "Error on metadata row creation:", e
-                pass
-        os.remove(csv_doc)
-
 def format_filename(case_id):
     cdir, cpgnumber = case_id.split('_')
     cdirname = cdir + '_redacted'
