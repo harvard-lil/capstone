@@ -118,7 +118,10 @@ class Case(models.Model):
             self.lastpage=row['lastpage']
         self.jurisdiction=row['jurisdiction']
         self.citation=row['citation']
-        self.docketnumber=row['docketnumber']
+        try:
+            self.docketnumber=row['docketnumber']
+        except Exception as e:
+            pass
         self.decisiondate=decisiondate
         self.decisiondate_original=row['decisiondate_original']
         self.court=row['court']
