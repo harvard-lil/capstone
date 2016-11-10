@@ -103,8 +103,8 @@ class Case(models.Model):
         except Case.DoesNotExist:
             case = Case.objects.create(caseid=row['caseid'])
             case.write_case_fields(row)
-
-        case.save()
+        finally:
+            case.save()
         return case
 
     def write_case_fields(self, row):
@@ -118,10 +118,9 @@ class Case(models.Model):
             self.lastpage=row['lastpage']
         self.jurisdiction=row['jurisdiction']
         self.citation=row['citation']
-        try:
+        if not len(row['docketnumber']) > 255:
+            print 'Docket number error', self.caseid
             self.docketnumber=row['docketnumber']
-        except Exception as e:
-            pass
         self.decisiondate=decisiondate
         self.decisiondate_original=row['decisiondate_original']
         self.court=row['court']
