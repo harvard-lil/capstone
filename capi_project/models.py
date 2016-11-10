@@ -85,6 +85,7 @@ class Case(models.Model):
     name_abbreviation = models.CharField(max_length=255, blank=True)
     volume = models.CharField(max_length=45, blank=True)
     reporter = models.CharField(max_length=255, blank=True)
+    date_added = models.DateField(null=True, blank=True)
 
     @classmethod
     def create(self, caseid):
@@ -95,23 +96,35 @@ class Case(models.Model):
     def create_from_row(self, row):
         d = int(row['decisiondate'])
         decisiondate = datetime.fromordinal(d)
+        try:
+            case = Case.objects.get(row['caseid'])
+            new_timestamp = get_date_added(row['timestamp'])
+            if not case.date_added or new_timestamp > case.date_added:
+                case.write_case_fields(row)
 
-        case = self(
-            caseid=row['caseid'],
-            firstpage=row['firstpage'],
-            lastpage=row['lastpage'],
-            jurisdiction=row['jurisdiction'],
-            citation=row['citation'],
-            docketnumber=row['docketnumber'],
-            decisiondate=decisiondate,
-            decisiondate_original=row['decisiondate_original'],
-            court=row['court'],
-            name=row['name'],
-            court_abbreviation=row['court_abbreviation'],
-            name_abbreviation=row['name_abbreviation'],
-            volume=row['volume'],
-            reporter=row['reporter'],
-            )
+        except Case.DoesNotExist:
+            case = Case.objects.create(caseid=row['caseid'])
+            case.write_case_fields(row)
 
         case.save()
         return case
+
+    def write_case_fields(self, row):
+        self.caseid=row['caseid']
+        self.firstpage=row['firstpage']
+        self.lastpage=row['lastpage']
+        self.jurisdiction=row['jurisdiction']
+        self.citation=row['citation']
+        self.docketnumber=row['docketnumber']
+        self.decisiondate=decisiondate
+        self.decisiondate_original=row['decisiondate_original']
+        self.court=row['court']
+        self.name=row['name']
+        self.court_abbreviation=row['court_abbreviation']
+        self.name_abbreviation=row['name_abbreviation']
+        self.volume=row['volume']
+        self.reporter=row['reporter']
+
+def get_date_added(self, unformatted_timestamp):
+    if unformatted_timestamp:
+        return datetime.strptime(unformatted_timestamp, "_%Y_%m_%d_%H.%M.%S")
