@@ -94,8 +94,6 @@ class Case(models.Model):
 
     @classmethod
     def create_from_row(self, row):
-        d = int(row['decisiondate'])
-        decisiondate = datetime.fromordinal(d)
         try:
             case = Case.objects.get(caseid=row['caseid'])
             new_timestamp = get_date_added(row['timestamp'])
@@ -110,6 +108,9 @@ class Case(models.Model):
         return case
 
     def write_case_fields(self, row):
+        d = int(row['decisiondate'])
+        decisiondate = datetime.fromordinal(d)
+
         self.caseid=row['caseid']
         self.firstpage=row['firstpage']
         self.lastpage=row['lastpage']
