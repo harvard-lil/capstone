@@ -98,7 +98,7 @@ class Case(models.Model):
         decisiondate = datetime.fromordinal(d)
         try:
             case = Case.objects.get(caseid=row['caseid'])
-            new_timestamp = case.get_date_added(row['timestamp'])
+            new_timestamp = get_date_added(row['timestamp'])
             if not case.date_added or new_timestamp > case.date_added:
                 case.write_case_fields(row)
 
@@ -125,6 +125,6 @@ class Case(models.Model):
         self.volume=row['volume']
         self.reporter=row['reporter']
 
-def get_date_added(self, unformatted_timestamp):
+def get_date_added(unformatted_timestamp):
     if unformatted_timestamp:
         return datetime.strptime(unformatted_timestamp, "_%Y_%m_%d_%H.%M.%S")
