@@ -119,8 +119,9 @@ class Case(models.Model):
         self.jurisdiction=row['jurisdiction']
         self.citation=row['citation']
         if not len(row['docketnumber']) > 255:
-            print 'Docket number error', self.caseid
             self.docketnumber=row['docketnumber']
+        else:
+            print 'Docket number error', self.caseid
         self.decisiondate=decisiondate
         self.decisiondate_original=row['decisiondate_original']
         self.court=row['court']
