@@ -17,7 +17,7 @@ class Command(BaseCommand):
                     try:
                         map(models.Case.create_from_row, reader)
                     except Exception as e:
-                        raise CommandError('Something went wrong',os.path.join(root, filename))
+                        raise CommandError('Something went wrong',e,os.path.join(root, filename))
                         pass
 
                 self.stdout.write(self.style.SUCCESS('Success'))
