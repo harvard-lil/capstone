@@ -14,10 +14,12 @@ class Command(BaseCommand):
             for filename in files:
                 with open(os.path.join(root, filename), 'rb') as f:
                     reader = csv.DictReader(f)
-                    try:
-                        map(models.Case.create_from_row, reader)
-                    except Exception as e:
-                        raise CommandError('Something went wrong',e,os.path.join(root, filename))
-                        pass
+                    for i,row in enumerate(reader):
+                        try:
+                            models.Case.create_from_row(row)
+
+                        except Exception as e:
+                            raise CommandError('Something went wrong',e,i,row,os.path.join(root, filename))
+                            pass
 
                 self.stdout.write(self.style.SUCCESS('Success'))
