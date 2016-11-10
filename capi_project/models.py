@@ -112,8 +112,10 @@ class Case(models.Model):
         decisiondate = datetime.fromordinal(d)
 
         self.caseid=row['caseid']
-        self.firstpage=row['firstpage']
-        self.lastpage=row['lastpage']
+        if row['firstpage']:
+            self.firstpage=row['firstpage']
+        if row['lastpage']:
+            self.lastpage=row['lastpage']
         self.jurisdiction=row['jurisdiction']
         self.citation=row['citation']
         self.docketnumber=row['docketnumber']
