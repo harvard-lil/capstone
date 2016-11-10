@@ -97,7 +97,7 @@ class Case(models.Model):
         d = int(row['decisiondate'])
         decisiondate = datetime.fromordinal(d)
         try:
-            case = Case.objects.get(row['caseid'])
+            case = Case.objects.get(caseid=row['caseid'])
             new_timestamp = get_date_added(row['timestamp'])
             if not case.date_added or new_timestamp > case.date_added:
                 case.write_case_fields(row)
