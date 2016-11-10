@@ -10,7 +10,7 @@ class Command(BaseCommand):
         from django.conf import settings
         from capi_project import models
 
-        for root, dirs, files in os.walk(settings.METADATA_FILE_PATH):
+        for root, dirs, files in os.walk(settings.METADATA_DIR_PATH):
             for filename in files:
                 with open(os.path.join(root, filename), 'rb') as f:
                     reader = csv.DictReader(f)
