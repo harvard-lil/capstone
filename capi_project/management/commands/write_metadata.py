@@ -12,6 +12,7 @@ class Command(BaseCommand):
 
         for root, dirs, files in os.walk(settings.METADATA_DIR_PATH):
             for filename in files:
+                error_raised = False
                 with open(os.path.join(root, filename), 'rb') as f:
                     reader = csv.DictReader(f)
                     for i,row in enumerate(reader):
@@ -20,6 +21,8 @@ class Command(BaseCommand):
 
                         except Exception as e:
                             raise CommandError('Something went wrong',e,i,row,os.path.join(root, filename))
+                            error_raised = True
                             pass
-                os.remove(os.path.join(root, filename))
+                if not error_raised:
+                    os.remove(os.path.join(root, filename))
                 self.stdout.write(self.style.SUCCESS('Success'))
