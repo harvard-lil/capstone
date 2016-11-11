@@ -96,17 +96,13 @@ class Case(models.Model):
     @classmethod
     def create_from_row(self, row):
         try:
-            case = Case.objects.get(caseid=row['caseid'])
+            case = Case.objects.get_or_create(caseid=row['caseid'])
             new_timestamp = get_date_added(row['timestamp'])
             if not case.date_added or new_timestamp > case.date_added:
                 case.write_case_fields(row)
-
-        except Case.DoesNotExist:
-            case = Case.objects.create(caseid=row['caseid'])
-            case.write_case_fields(row)
-        finally:
-            case.save()
-        return case
+            return case
+        except:
+            pass
 
     def write_case_fields(self, row):
         for prop,val in row.items():
