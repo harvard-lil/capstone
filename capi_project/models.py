@@ -108,28 +108,39 @@ class Case(models.Model):
         return case
 
     def write_case_fields(self, row):
+        date_added = get_date_added(row['timestamp'])
+        self.safe_set('date_added',date_added)
+
+        for prop,val in row.items():
+            if prop != 'timestamp' and prop != 'decisiondate':
+                self.safe_set(prop,val)
+
         d = int(row['decisiondate'])
         decisiondate = datetime.fromordinal(d)
-
-        self.caseid=row['caseid']
-        if row['firstpage']:
-            self.firstpage=row['firstpage']
-        if row['lastpage']:
-            self.lastpage=row['lastpage']
-        self.jurisdiction=row['jurisdiction']
-        self.citation=row['citation']
-        if not len(row['docketnumber']) > 255:
-            self.docketnumber=row['docketnumber']
-        else:
-            print 'Docket number error', self.caseid
-        self.decisiondate=decisiondate
+        self.safe_set('decisiondate', decisiondate)
         self.decisiondate_original=row['decisiondate_original']
-        self.court=row['court']
-        self.name=row['name']
-        self.court_abbreviation=row['court_abbreviation']
-        self.name_abbreviation=row['name_abbreviation']
-        self.volume=row['volume']
-        self.reporter=row['reporter']
+
+    def safe_set(self, prop, value):
+        try:
+            setattr(self, prop, value)
+            self.save()
+        except Exception as e:
+            case_error = CaseError.create(caseid=self.caseid)
+            case_error.message = e
+            case_error.field = prop
+            case_error.value = value
+            if self.date_added:
+                case_error.date_added = self.date_added
+
+            case_error.save()
+            pass
+
+class CaseError(models.Model):
+    field = models.CharField(max_length=45, null=False, blank=False)
+    value = models.TextField(null=True, blank=True)
+    caseid = models.CharField(max_length=255, null=False, blank=False)
+    date_added = models.DateField(null=True, blank=True)
+    message = models.TextField(null=True, blank=True)
 
 def get_date_added(unformatted_timestamp):
     if unformatted_timestamp:
