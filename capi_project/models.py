@@ -96,11 +96,10 @@ class Case(models.Model):
     @classmethod
     def create_from_row(self, row):
         try:
-            case = Case.objects.get_or_create(caseid=row['caseid'])
+            case, created = Case.objects.get_or_create(caseid=row['caseid'])
             new_timestamp = get_date_added(row['timestamp'])
             if not case.date_added or new_timestamp > case.date_added:
                 case.write_case_fields(row)
-            return case
         except:
             pass
 
