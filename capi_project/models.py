@@ -86,7 +86,7 @@ class Case(models.Model):
     name_abbreviation = models.CharField(max_length=255, blank=True)
     volume = models.CharField(max_length=45, blank=True)
     reporter = models.CharField(max_length=255, blank=True)
-    date_added = models.DateField(null=True, blank=True)
+    date_added = models.DateTimeField(null=True, blank=True )
 
     @classmethod
     def create(self, caseid):
