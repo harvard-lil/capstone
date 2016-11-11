@@ -1,3 +1,4 @@
+import sys
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import PermissionDenied
 from django.db import models
@@ -124,9 +125,9 @@ class Case(models.Model):
         try:
             setattr(self, prop, value)
             self.save()
-        except Exception as e:
+        except:
             case_error = CaseError.create(caseid=self.caseid)
-            case_error.message = e
+            case_error.message = sys.exc_info()[0]
             case_error.field = prop
             case_error.value = value
             if self.date_added:
