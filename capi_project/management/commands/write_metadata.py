@@ -21,5 +21,5 @@ class Command(BaseCommand):
                         except Exception as e:
                             raise CommandError('Something went wrong',e,i,row,os.path.join(root, filename))
                             pass
-
+                os.remove(os.path.join(root, filename))
                 self.stdout.write(self.style.SUCCESS('Success'))
