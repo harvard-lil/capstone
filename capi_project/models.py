@@ -109,20 +109,19 @@ class Case(models.Model):
         return case
 
     def write_case_fields(self, row):
-        date_added = get_date_added(row['timestamp'])
-        self.safe_set('date_added',date_added)
-
         for prop,val in row.items():
-            if prop != 'timestamp' and prop != 'decisiondate':
-                self.safe_set(prop,val)
+            self.safe_set(prop,val)
 
-        d = int(row['decisiondate'])
-        decisiondate = datetime.fromordinal(d)
-        self.safe_set('decisiondate', decisiondate)
         self.decisiondate_original=row['decisiondate_original']
 
     def safe_set(self, prop, value):
         try:
+            if prop == 'decisiondate':
+                value = datetime.fromordinal(int(value))
+            elif prop == 'timestamp':
+                value = get_date_added(value)
+                prop = 'date_added'
+
             setattr(self, prop, value)
             self.save()
         except:
@@ -142,6 +141,11 @@ class CaseError(models.Model):
     caseid = models.CharField(max_length=255, null=False, blank=False)
     date_added = models.DateField(null=True, blank=True)
     message = models.TextField(null=True, blank=True)
+
+    @classmethod
+    def create(self, caseid):
+        case = self(caseid=caseid)
+        return case
 
 def get_date_added(unformatted_timestamp):
     if unformatted_timestamp:
