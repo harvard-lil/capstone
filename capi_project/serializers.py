@@ -21,32 +21,11 @@ class UserSerializer(serializers.ModelSerializer):
         allow_blank=False
     )
 
-    password = serializers.CharField(
-        style={'input_type': 'password', 'placeholder': 'Password'},
-        write_only=True,
-        max_length=100,)
-
     class Meta:
         model = CaseUser
-        fields = ('first_name', 'last_name', 'email', 'password')
-        write_only_fields = ('password')
+        fields = ('first_name', 'last_name', 'email')
         read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance', 'key_expires')
         lookup_field = 'email'
-
-    def create(self, validated_data):
-        user = self.Meta.model.objects.create_user(**validated_data)
-        token_url= "%s/verify-user/%s/%s" % (settings.BASE_URL, user.id, user.activation_nonce)
-        send_mail(
-            'CaseLaw Access Project: Verify your email address',
-            """
-                Please click here to verify your email address: %s
-            """ % token_url,
-            settings.NOREPLY_EMAIL_ADDRESS,
-            [user.email],
-            fail_silently=False,
-        )
-
-        return user
 
     def verify_with_nonce(self, user_id, activation_nonce):
         user = CaseUser.objects.get(pk=user_id)
