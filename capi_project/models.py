@@ -1,5 +1,5 @@
 import sys
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.conf import settings
@@ -25,7 +25,7 @@ class CaseUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-class CaseUser(AbstractBaseUser):
+class CaseUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=254, unique=True, db_index=True,
         error_messages={'unique': u"A user with that email address already exists."})
     first_name = models.CharField(max_length=30, blank=True)
@@ -34,6 +34,9 @@ class CaseUser(AbstractBaseUser):
     case_allowance = models.IntegerField(null=False, blank=False, default=settings.CASE_DAILY_ALLOWANCE)
     is_researcher = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
     activation_nonce = models.CharField(max_length=40, null=True, blank=True)
     key_expires = models.DateTimeField(null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -71,6 +74,9 @@ class CaseUser(AbstractBaseUser):
             return Token.objects.get(user=self).key
         except Exception as e:
             return False
+
+    def get_short_name(self):
+        return self.email.split('@')[0]
 
 class Case(models.Model):
     caseid = models.CharField(primary_key=True, max_length=255)
