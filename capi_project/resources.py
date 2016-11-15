@@ -4,7 +4,7 @@ import paramiko
 from capi_project.models import Case
 from paramiko import SSHClient
 from scp import SCPClient
-from capi_project import settings
+from django.conf import settings
 
 def format_filename(case_id):
     cdir, cpgnumber = case_id.split('_')
