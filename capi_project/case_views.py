@@ -17,6 +17,8 @@ from .serializers import *
 from .permissions import IsCaseUser
 from .filters import *
 
+from resources import scp_get
+
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
@@ -66,7 +68,7 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     def download_cases(self, cases):
         case_ids = cases.values_list('caseid', flat=True)
         try:
-            resources.scp_get(self.requester.user.id, case_ids)
+            scp_get(self.request.user.id, case_ids)
             self.request.user.case_allowance -= len(cases)
             self.request.user.save()
         except Exception as e:
@@ -75,6 +77,7 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
+@parser_classes((FormParser, MultiPartParser, JSONParser,))
 def list_jurisdictions(request):
     """
     GET a list of all jurisdictions available
