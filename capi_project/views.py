@@ -7,6 +7,7 @@ from django.db.models import Q
 
 from rest_framework import routers, viewsets, views, mixins, permissions
 from rest_framework.response import Response
+from django.db import IntegrityError
 
 from rest_framework.decorators import api_view, detail_route, list_route, permission_classes, renderer_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
@@ -16,9 +17,8 @@ from django.conf import settings
 from .models import Case
 from .view_helpers import *
 from .serializers import *
-from .permissions import IsCaseUser
+from .permissions import IsCaseUser, IsAdmin
 from .filters import *
-from .forms import SignupForm
 
 from .case_views import *
 
@@ -38,12 +38,6 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = CaseUser.objects.all()
     parser_classes = (JSONParser, FormParser,)
     lookup_field = 'email'
-    def list(self, request, *args, **kwargs):
-        response = super(UserViewSet, self).list(request, *args, **kwargs)
-        if request.accepted_renderer.format != 'json':
-            return Response({'users': response.data['results']}, template_name='user-list.html')
-        else:
-            return JSONResponse({'users': response.data['results']})
 
     @detail_route(methods=['get'])
     def set_password(self, request, pk=None):
@@ -52,44 +46,39 @@ class UserViewSet(viewsets.ModelViewSet):
     def view_single_case(methods=['get']):
         return Response()
 
-    def create(self, request, *args, **kwargs):
-        """
-        Create user
-        """
-        request.data['password'] = request.data.get('password1')
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                user = serializer.create({'email':request.data.get('email'),'password':request.data.get('password')})
-                content = {
-                'status':'Success!',
-                'message':'Thank you. Please check your email %s for a verification link.' % user.email}
-                if request.accepted_renderer.format == 'api':
-                    return Response(content)
-                elif request.accepted_renderer.format == 'json':
-                    return JSONResponse(content)
-                else:
-                    return Response(content, template_name='sign-up-success.html')
-            except IntegrityError:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class LoginView(views.APIView):
     serializer = LoginSerializer()
     def get(self, request):
         http_method_names=['GET']
         return Response({'data':'login'}, template_name='log-in.html')
 
-@api_view(http_method_names=['GET'])
-@parser_classes((FormParser,))
-@renderer_classes((renderers.TemplateHTMLRenderer, ))
-def sign_up(request):
-    """
-    Return signup form
-    """
-    data = {'message':'','email':'', 'password':'', 'first_name':'', 'last_name':''}
-    return render(request, 'sign-up.html', {'form': SignupForm})
+class RegisterView(views.APIView):
+    renderer_classes = [renderers.TemplateHTMLRenderer]
+    template_name = 'sign-up.html'
+    parser_classes = (JSONParser, FormParser,)
+
+    def get(self, request):
+        serializer = RegisterUserSerializer()
+        return Response({'serializer':serializer})
+
+    def post(self, request):
+        serializer = RegisterUserSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = serializer.create({
+                    'email':request.data.get('email'),
+                    'password':request.data.get('password')
+                    })
+                content = {
+                'status':'Success!',
+                'message':'Thank you. Please check your email %s for a verification link.' % user.email}
+
+                return Response(content, template_name='sign-up-success.html')
+
+            except IntegrityError:
+                return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'serializer':serializer, 'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
