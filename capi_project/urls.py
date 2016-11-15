@@ -21,7 +21,7 @@ urlpatterns = [
     url(r'^login/$', views.LoginView.as_view()),
     url(r'^login/get-token/$', views.LoginView.as_view()),
     url(r'^admin', include(admin.site.urls)),
-    url(r'^signup/', views.sign_up),
+    url(r'^register/', views.RegisterView.as_view()),
     url(r'^get-token/', views.get_token),
     url(r'^verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
 

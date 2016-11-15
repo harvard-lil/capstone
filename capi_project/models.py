@@ -11,7 +11,9 @@ import uuid
 from rest_framework.authtoken.models import Token
 
 class CaseUserManager(BaseUserManager):
-    def create_user(self, email, password=None):
+    def create_user(self, *args, **kwargs):
+        email = kwargs.get('email')
+        password = kwargs.get('password')
         if not email:
             raise ValueError('Email address is required')
 
@@ -22,7 +24,6 @@ class CaseUserManager(BaseUserManager):
         user.create_nonce()
         user.save(using=self._db)
         return user
-
 
 class CaseUser(AbstractBaseUser):
     email = models.EmailField(max_length=254, unique=True, db_index=True,
