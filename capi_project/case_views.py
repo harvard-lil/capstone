@@ -1,9 +1,5 @@
-from django.http import HttpResponse
-from django.views.generic import ListView
-
 from django.shortcuts import get_object_or_404
-from rest_framework import status
-from rest_framework import renderers
+from rest_framework import renderers, status
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.db.models import Q
@@ -12,7 +8,6 @@ from rest_framework import routers, viewsets, views, mixins, permissions
 from rest_framework.response import Response
 
 from rest_framework.decorators import api_view, detail_route, list_route, permission_classes, renderer_classes, parser_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
@@ -21,7 +16,8 @@ from .view_helpers import make_query, format_date_queries, merge_filters
 from .serializers import *
 from .permissions import IsCaseUser
 from .filters import *
-from .forms import SignupForm
+
+from resources import scp_get
 
 class JSONResponse(HttpResponse):
     """
@@ -72,7 +68,7 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     def download_cases(self, cases):
         case_ids = cases.values_list('caseid', flat=True)
         try:
-            resources.scp_get(self.requester.user.id, case_ids)
+            scp_get(self.request.user.id, case_ids)
             self.request.user.case_allowance -= len(cases)
             self.request.user.save()
         except Exception as e:
@@ -81,6 +77,7 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
+@parser_classes((FormParser, MultiPartParser, JSONParser,))
 def list_jurisdictions(request):
     """
     GET a list of all jurisdictions available
