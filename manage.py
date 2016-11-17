@@ -2,8 +2,6 @@
 import os
 import sys
 from django.conf import settings
-if settings.ROOT_DIR not in sys.path:
-    sys.path.append(path)
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "capi_project.settings")
