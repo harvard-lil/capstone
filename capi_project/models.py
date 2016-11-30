@@ -134,6 +134,9 @@ class Case(models.Model):
                 value = datetime.fromordinal(int(value))
             elif prop == 'timestamp':
                 value = get_date_added(value)
+                utc = pytz.utc
+                if value:
+                    value = utc.localize(value)
                 prop = 'date_added'
 
             setattr(self, prop, value)
