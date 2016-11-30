@@ -11,18 +11,14 @@ router.register(r'cases', views.CaseViewSet)
 router.register(r'account', views.UserViewSet)
 from rest_framework_swagger.views import get_swagger_view
 
-schema_view = get_swagger_view(title='Pastebin API')
+schema_view = get_swagger_view(title='CAP API')
 
 urlpatterns = [
 
     url(r'^$', schema_view),
     url(r'^', include(router.urls)),
 
-    url(r'^login/$', views.LoginView.as_view()),
-    url(r'^login/get-token/$', views.LoginView.as_view()),
     url(r'^admin', include(admin.site.urls)),
-    url(r'^register/', views.RegisterView.as_view()),
-    url(r'^get-token/', views.get_token),
     url(r'^verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
 
     url(r'^cases/jurisdictions/?$', views.list_jurisdictions, name='list-jurisdictions'),

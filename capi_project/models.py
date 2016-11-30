@@ -53,10 +53,13 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     def authenticate_user(self, *args, **kwargs):
         nonce = kwargs.get('activation_nonce')
         if self.activation_nonce == nonce and self.key_expires + timedelta(hours=24) > timezone.now():
-            token = Token.objects.create(user=self)
-            self.activation_nonce = ''
-            self.is_validated = True
-            self.save()
+            try:
+                token = Token.objects.create(user=self)
+                self.activation_nonce = ''
+                self.is_validated = True
+                self.save()
+            except IntegrityError as e:
+                pass
         else:
             raise PermissionDenied
 

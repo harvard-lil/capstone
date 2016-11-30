@@ -15,34 +15,50 @@ class CaseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
-        style={'input_type':'email', 'placeholder':'Email'},
-        max_length=100,
-        allow_blank=False
-    )
-
     class Meta:
         model = CaseUser
-        fields = ('first_name', 'last_name', 'email')
+        fields = '__all__'
         read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance', 'key_expires')
         lookup_field = 'email'
 
     def verify_with_nonce(self, user_id, activation_nonce):
-        user = CaseUser.objects.get(pk=user_id)
-        user.authenticate_user(activation_nonce=activation_nonce)
-        return user
+        found_user = CaseUser.objects.get(pk=user_id)
+        if not found_user.is_authenticated():
+            found_user.authenticate_user(activation_nonce=activation_nonce)
+        return found_user
 
+class RegisterUserSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    password = serializers.CharField()
+    confirm_password = serializers.CharField(style={'input_type': 'password'})
 
-class RegisterUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CaseUser
-        fields = ('email', 'first_name', 'last_name',  'password')
-        write_only_fields = ('password')
-        lookup_field = 'email'
+        # write_only_fields = ('password', 'confirm_password')
+        fields = '__all__'
+
+    def validate_email(self, email):
+        existing = CaseUser.objects.filter(email=email).first()
+        if existing:
+            raise serializers.ValidationError("Someone with that email "
+                "address has already registered. Was it you?")
+
+        return email
+
+    def validate(self, data):
+        if not data.get('password') or not data.get('confirm_password'):
+            raise serializers.ValidationError("Please enter a password and "
+                "confirm it.")
+
+        if data.get('password') != data.get('confirm_password'):
+            raise serializers.ValidationError("Those passwords don't match.")
+
+        return data
 
     def create(self, validated_data):
 
-        user = get_user_model().objects.create_user(**validated_data)
+        user = CaseUser.objects.create_user(**validated_data)
 
         token_url= "%s/verify-user/%s/%s" % (settings.BASE_URL, user.id, user.activation_nonce)
         send_mail(
@@ -57,21 +73,6 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
         return user
 
-    def validate(self, validated_data):
-        password = validated_data.get('password')
-        password_confirm = validated_data.get('password_confirm')
-
-        errors = dict()
-        try:
-            password_validation.validate_password(password=password, user=CaseUser)
-
-        except exceptions.ValidationError as e:
-            errors['password'] = list(e.messages)
-
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        return super(RegisterUserSerializer, self).validate(validated_data)
 
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
@@ -87,5 +88,5 @@ class LoginSerializer(serializers.ModelSerializer):
         user = CaseUser.objects.get(email=email)
         correct_password = user.check_password(password)
         if not correct_password:
-            raise ValidationError('Invalid password')
+            raise serializers.ValidationError('Invalid password')
         return user

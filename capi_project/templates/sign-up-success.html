@@ -1,6 +1,10 @@
 {% load rest_framework %}
 
 <div>
+  {% if errors %}
+      {{ errors }}
+  {% endif %}
+
   <h1>{{status}}</h1>
   {{ message }}
 </div>
