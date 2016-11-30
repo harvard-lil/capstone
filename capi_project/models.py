@@ -106,11 +106,18 @@ class Case(models.Model):
     def create_from_row(self, row):
         try:
             case, created = Case.objects.get_or_create(caseid=row['caseid'])
-            utc = pytz.utc
-            naive_timestamp = get_date_added(row['timestamp'])
-            new_timestamp = utc.localize(naive_timestamp)
-            if not case.date_added or new_timestamp > case.date_added:
+            if not created:
                 case.write_case_fields(row)
+            else:
+                utc = pytz.utc
+                naive_timestamp = get_date_added(row['timestamp'])
+                if naive_timestamp:
+                    new_timestamp = utc.localize(naive_timestamp)
+                # overwrite case only if:
+                # date_added (old timestamp) did not exist and new_timestamp exists
+                # timestamp is greater than previous date_added timestamp
+                if (new_timestamp and not case.date_added) or (new_timestamp > case.date_added):
+                    case.write_case_fields(row)
         except Exception as e:
             print "Exception caught on case creation: %s" % e
             pass
