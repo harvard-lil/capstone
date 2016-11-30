@@ -24,4 +24,4 @@ class Command(BaseCommand):
                             error_raised = True
                             pass
                 if not error_raised:
-                    self.stdout.write(self.style.SUCCESS('Success', os.path.join(root, filename)))
+                    self.stdout.write(self.style.SUCCESS("Success %s" % os.path.join(root, filename)))
