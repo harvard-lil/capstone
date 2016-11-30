@@ -1,6 +1,6 @@
 {% load rest_framework %}
 
-<form class="form-inline" action="/register/" method="POST">
+<form class="form-inline" action="/account/register_user/" method="POST">
     {% csrf_token %}
     {% render_form serializer template_pack='rest_framework/inline' %}
     <!-- <label>Confirm password</label>

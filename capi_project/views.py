@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from django.db import IntegrityError
 
 from rest_framework.decorators import api_view, detail_route, list_route, permission_classes, renderer_classes, parser_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
@@ -34,35 +34,20 @@ class JSONResponse(HttpResponse):
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
-    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+    renderer_classes = [renderers.TemplateHTMLRenderer]
     queryset = CaseUser.objects.all()
     parser_classes = (JSONParser, FormParser,)
     lookup_field = 'email'
 
-    @detail_route(methods=['get'])
-    def set_password(self, request, pk=None):
-        return Response({'data':'ok'}, template_name='user.html')
-
-    def view_single_case(methods=['get']):
-        return Response()
-
-class LoginView(views.APIView):
-    serializer = LoginSerializer()
-    def get(self, request):
-        http_method_names=['GET']
-        return Response({'data':'login'}, template_name='log-in.html')
-
-class RegisterView(views.APIView):
-    renderer_classes = [renderers.TemplateHTMLRenderer]
-    template_name = 'sign-up.html'
-    parser_classes = (JSONParser, FormParser,)
-
-    def get(self, request):
+    @list_route(methods=['get'], permission_classes=[AllowAny])
+    def register(self, request):
         serializer = RegisterUserSerializer()
-        return Response({'serializer':serializer})
+        return Response({'serializer':serializer}, template_name='sign-up.html')
 
-    def post(self, request):
+    @list_route(methods=['post'], permission_classes=[AllowAny])
+    def register_user(self, request):
         serializer = RegisterUserSerializer(data=request.data)
+        import ipdb; ipdb.set_trace()
         if serializer.is_valid():
             try:
                 user = serializer.create({
@@ -76,9 +61,27 @@ class RegisterView(views.APIView):
                 return Response(content, template_name='sign-up-success.html')
 
             except IntegrityError:
-                return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'errors':serializer.errors}, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'serializer':serializer, 'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            import ipdb; ipdb.set_trace()
+            return Response({'serializer':serializer, 'errors':serializer.errors}, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
+
+    @list_route(methods=['get', 'post'], permission_classes=[AllowAny])
+    def login(self, request):
+        if request.method == 'GET':
+            serializer = LoginSerializer()
+            return Response({'serializer':serializer}, template_name='log-in.html')
+        else:
+            serializer = LoginSerializer(data=request.data)
+            if serializer.is_valid():
+                try:
+                    user = serializer.verify_with_password(email=request.data.get('email'), password=request.data.get('password'))
+                    return Response({'email':user.email, 'api_key':user.get_api_key}, template_name='token.html',)
+                except Exception as e:
+                    print e
+                    return Response({'errors':e}, template_name='token.html', status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
@@ -89,8 +92,7 @@ def verify_user(request, user_id, activation_nonce):
     serializer = UserSerializer()
     user = serializer.verify_with_nonce(user_id, activation_nonce)
     if user.is_validated:
-        api_key = user.get_api_key()
-        data = {'email':user.email,'api_key':api_key}
+        data = {'status':'Success!','message':'Thank you for verifying your email address. We will be in touch with you shortly.'}
         if request.accepted_renderer.format == 'html' :
             return Response(data, template_name='verified.html')
         elif request.accepted_renderer.format == 'api' :
@@ -106,10 +108,7 @@ def verify_user(request, user_id, activation_nonce):
 def get_token(request):
     serializer = LoginSerializer()
     if request.method == 'GET':
-        if request.accepted_renderer.format != 'json':
-            return Response({'serializer':serializer}, template_name='get-token.html')
-        else:
-            return JSONResponse(serializer.data)
+        return Response({'serializer':serializer}, template_name='get-token.html')
     elif request.method == 'POST':
         try:
             email = request.data.get('email')

@@ -1,2 +1,8 @@
+{% if errors %}
+  {% for key,value in errors.items %}
+    {{ key }} : {{ value }}
+  {% endfor %}
+{% endif %}
+
 <label>email:</label>{{email}}
 <label>api_key:</label>{{api_key}}
