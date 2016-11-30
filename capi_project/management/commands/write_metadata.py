@@ -20,7 +20,7 @@ class Command(BaseCommand):
                                 models.Case.create_from_row(row)
 
                             except Exception as e:
-                                self.stdout.write("Error in row %s: %s %s %s" % (os.path.join(root, filename), e,i,row)))
+                                self.stdout.write("Error in row %s: %s %s %s" % (os.path.join(root, filename)), e,i,row)
                                 pass
                     self.stdout.write(self.style.SUCCESS("Success %s" % os.path.join(root, filename)))
                     # move file to archive directory
