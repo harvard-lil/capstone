@@ -1,7 +1,7 @@
 import os
 import csv
 from django.core.management.base import BaseCommand, CommandError
-
+from django.db import models
 
 class Command(BaseCommand):
     can_import_settings = True
@@ -27,3 +27,4 @@ class Command(BaseCommand):
                     os.rename(os.path.join(root, filename), os.path.join(settings.METADATA_ARCHIVE_DIR_PATH, filename))
                 except Exception as e:
                     self.stdout.write("Error in file: %s" % os.path.join(root, filename))
+                    pass

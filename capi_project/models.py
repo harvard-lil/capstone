@@ -4,6 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.db import IntegrityError
 
 from datetime import datetime,timedelta
 import uuid
@@ -107,7 +108,8 @@ class Case(models.Model):
             new_timestamp = get_date_added(row['timestamp'])
             if not case.date_added or new_timestamp > case.date_added:
                 case.write_case_fields(row)
-        except:
+        except Exception as e:
+            print "Exception caught on case creation: %s" % e
             pass
 
     def write_case_fields(self, row):
