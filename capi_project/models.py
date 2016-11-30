@@ -106,9 +106,9 @@ class Case(models.Model):
     def create_from_row(self, row):
         try:
             case, created = Case.objects.get_or_create(caseid=row['caseid'])
+            utc = pytz.utc
             naive_timestamp = get_date_added(row['timestamp'])
-            tz = pytz.timezone(pytz.timezone('UTC'))
-            new_timestamp = tz.localize(naive_timestamp, is_dst=None)
+            new_timestamp = utc.localize(naive_timestamp)
             if not case.date_added or new_timestamp > case.date_added:
                 case.write_case_fields(row)
         except Exception as e:
