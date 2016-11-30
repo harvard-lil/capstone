@@ -26,5 +26,5 @@ class Command(BaseCommand):
                     # move file to archive directory
                     os.rename(os.path.join(root, filename), os.path.join(settings.METADATA_ARCHIVE_DIR_PATH, filename))
                 except Exception as e:
-                    self.stdout.write("Error in file %s:" % (os.path.join(root, filename), e))
+                    self.stdout.write("Error in file %s:%s" % (os.path.join(root, filename), e))
                     pass
