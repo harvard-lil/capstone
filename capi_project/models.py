@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.db import IntegrityError
 
 from datetime import datetime,timedelta
+import pytz
 import uuid
 
 from rest_framework.authtoken.models import Token
@@ -105,7 +106,9 @@ class Case(models.Model):
     def create_from_row(self, row):
         try:
             case, created = Case.objects.get_or_create(caseid=row['caseid'])
-            new_timestamp = get_date_added(row['timestamp'])
+            naive_timestamp = get_date_added(row['timestamp'])
+            tz = pytz.timezone(pytz.timezone('UTC'))
+            new_timestamp = tz.localize(naive_timestamp, is_dst=None)
             if not case.date_added or new_timestamp > case.date_added:
                 case.write_case_fields(row)
         except Exception as e:
