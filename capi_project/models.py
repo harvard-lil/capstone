@@ -116,11 +116,16 @@ class Case(models.Model):
                 naive_timestamp = get_date_added(row['timestamp'])
                 if naive_timestamp:
                     new_timestamp = utc.localize(naive_timestamp)
-                # overwrite case only if:
-                # date_added (old timestamp) did not exist and new_timestamp exists
-                # timestamp is greater than previous date_added timestamp
-                if (new_timestamp and not case.date_added) or (new_timestamp > case.date_added):
-                    case.write_case_fields(row)
+                    # overwrite case only if:
+                    # date_added (old timestamp) did not exist and new_timestamp exists
+                    # timestamp is greater than previous date_added timestamp
+                    if (new_timestamp and not case.date_added) or (new_timestamp > case.date_added):
+                        case.write_case_fields(row)
+                else:
+                    # case has already been created and we are iterating
+                    # over the same row again (without date_added)
+                    pass
+                    
         except Exception as e:
             print "Exception caught on case creation: %s" % e
             pass

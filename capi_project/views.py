@@ -47,7 +47,6 @@ class UserViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'], permission_classes=[AllowAny])
     def register_user(self, request):
         serializer = RegisterUserSerializer(data=request.data)
-        import ipdb; ipdb.set_trace()
         if serializer.is_valid():
             try:
                 user = serializer.create({
@@ -63,7 +62,6 @@ class UserViewSet(viewsets.ModelViewSet):
             except IntegrityError:
                 return Response({'errors':serializer.errors}, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
         else:
-            import ipdb; ipdb.set_trace()
             return Response({'serializer':serializer, 'errors':serializer.errors}, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
 
     @list_route(methods=['get', 'post'], permission_classes=[AllowAny])
