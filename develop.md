@@ -1,4 +1,4 @@
-# CAP - developer notes
+# CAP API - developer notes
 ## Instructions to start up Postgres
 
 Make sure postgres is installed.
@@ -6,28 +6,28 @@ Please see [Postgresql docs] (https://www.postgresql.org/download/) for details.
 
 In terminal:
 ```
-  >  createdb cap
-  >  psql
-  >  CREATE ROLE capuser WITH LOGIN PASSWORD 'cap';
-  >  GRANT ALL PRIVILEGES ON DATABASE cap TO cap;
-  >  ALTER USER capuser WITH PASSWORD 'cap';
-  >  ALTER USER capuser CREATEDB;
-  >  ALTER ROLE capuser SET client_encoding TO 'utf8';
-  >  ALTER ROLE capuser SET timezone TO 'UTC';
-  >  \q
+  createdb cap
+  psql
+  CREATE ROLE capuser WITH LOGIN PASSWORD 'cap';
+  GRANT ALL PRIVILEGES ON DATABASE cap TO cap;
+  ALTER USER capuser WITH PASSWORD 'cap';
+  ALTER USER capuser CREATEDB;
+  ALTER ROLE capuser SET client_encoding TO 'utf8';
+  ALTER ROLE capuser SET timezone TO 'UTC';
+  \q
 ```
 
 After quitting out of psql, log in again as `capuser`:
 
 ```
-  > psql -d cap -U capuser
+  psql -d cap -U capuser
 ```
 
 If you are seeing this error:
 `FATAL: Peer authentication failed for user "postgres"`
 
 ```
-  >  SHOW hba_file;
+  SHOW hba_file;
 ```
 Find hba_file and edit the following line (could be multiple lines!):
 ```
