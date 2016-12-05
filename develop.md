@@ -9,7 +9,7 @@ In terminal:
   createdb cap
   psql
   CREATE ROLE capuser WITH LOGIN PASSWORD 'cap';
-  GRANT ALL PRIVILEGES ON DATABASE cap TO cap;
+  GRANT ALL PRIVILEGES ON DATABASE cap TO capuser;
   ALTER USER capuser WITH PASSWORD 'cap';
   ALTER USER capuser CREATEDB;
   ALTER ROLE capuser SET client_encoding TO 'utf8';
@@ -40,3 +40,16 @@ local   all             postgres                                md5
 See [here] (https://stackoverflow.com/questions/18664074/getting-error-peer-authentication-failed-for-user-postgres-when-trying-to-ge) for an explanation.
 
 You should be all set!
+
+
+For testing:
+```
+  psql
+  GRANT ALL PRIVILEGES ON DATABASE test_cap TO capuser;
+  ALTER DATABASE test_cap OWNER TO capuser;
+  \q
+```
+
+```
+python manage.py test capi_project.tests
+```
