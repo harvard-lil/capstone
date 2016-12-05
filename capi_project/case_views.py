@@ -91,14 +91,14 @@ def list_volumes(request):
     """
     GET a list of all volumes in the specified jurisdiction
     """
-    volume = Case.objects.filter(jurisdiction=jurisdiction).values_list('volume', flat=True).distinct()
+    volume = Case.objects.filter(jurisdiction=jurisdiction).values_list('volume', flat=True).distinct().order_by('volume')
     return Response(volume)
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
 def list_reporters(request, *args, **kwargs):
     """
-    GET a list of all volumes in the specified jurisdiction
+    GET a list of all reporters in the specified jurisdiction
     """
     jurisdiction = kwargs.get('jurisdiction')
     reporters = Case.objects.filter(jurisdiction__iexact=jurisdiction).values_list('reporter', flat=True).distinct().order_by('reporter')
