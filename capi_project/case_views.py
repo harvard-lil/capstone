@@ -82,7 +82,7 @@ def list_jurisdictions(request):
     """
     GET a list of all jurisdictions available
     """
-    jurisdictions = Case.objects.values_list('jurisdiction', flat=True).distinct()
+    jurisdictions = Case.objects.values_list('jurisdiction', flat=True).distinct().order_by('jurisdiction')
     return Response(jurisdictions)
 
 @api_view(http_method_names=['GET'])
@@ -101,8 +101,7 @@ def list_reporters(request, *args, **kwargs):
     GET a list of all volumes in the specified jurisdiction
     """
     jurisdiction = kwargs.get('jurisdiction')
-    reporters = Case.objects.filter(jurisdiction__iexact=jurisdiction).values_list('reporter', flat=True).distinct()
-
+    reporters = Case.objects.filter(jurisdiction__iexact=jurisdiction).values_list('reporter', flat=True).distinct().order_by('reporter')
     return Response(reporters)
 
 @api_view(http_method_names=['GET'])
