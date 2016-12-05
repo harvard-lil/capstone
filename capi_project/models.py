@@ -101,8 +101,9 @@ class Case(models.Model):
     date_added = models.DateTimeField(null=True, blank=True )
 
     @classmethod
-    def create(self, caseid):
-        case = self(caseid=caseid)
+    def create(self, caseid, **kwargs):
+        case = self(caseid=caseid, **kwargs)
+        case.save()
         return case
 
     @classmethod
