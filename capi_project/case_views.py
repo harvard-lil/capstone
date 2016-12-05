@@ -87,12 +87,14 @@ def list_jurisdictions(request):
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
-def list_volumes(request):
+def list_volumes(request, *args, **kwargs):
     """
     GET a list of all volumes in the specified jurisdiction
     """
-    volume = Case.objects.filter(jurisdiction=jurisdiction).values_list('volume', flat=True).distinct().order_by('volume')
-    return Response(volume)
+    jurisdiction = kwargs.get('jurisdiction')
+    reporter = kwargs.get('reporter')
+    volumes = Case.objects.filter(jurisdiction=jurisdiction, reporter=reporter).values_list('volume', flat=True).distinct().order_by('volume')
+    return Response(volumes)
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
