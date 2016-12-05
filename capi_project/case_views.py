@@ -76,6 +76,7 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
         return cases
 
 @api_view(http_method_names=['GET'])
+@permission_classes((IsCaseUser,))
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
 @parser_classes((FormParser, MultiPartParser, JSONParser,))
 def list_jurisdictions(request):
@@ -86,6 +87,7 @@ def list_jurisdictions(request):
     return Response(jurisdictions)
 
 @api_view(http_method_names=['GET'])
+@permission_classes((IsCaseUser,))
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
 def list_volumes(request, *args, **kwargs):
     """
@@ -93,10 +95,11 @@ def list_volumes(request, *args, **kwargs):
     """
     jurisdiction = kwargs.get('jurisdiction')
     reporter = kwargs.get('reporter')
-    volumes = Case.objects.filter(jurisdiction=jurisdiction, reporter=reporter).values_list('volume', flat=True).distinct().order_by('volume')
+    volumes = Case.objects.filter(jurisdiction__iexact=jurisdiction, reporter__iexact=reporter).values_list('volume', flat=True).distinct().order_by('volume')
     return Response(volumes)
 
 @api_view(http_method_names=['GET'])
+@permission_classes((IsCaseUser,))
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
 def list_reporters(request, *args, **kwargs):
     """
@@ -107,15 +110,17 @@ def list_reporters(request, *args, **kwargs):
     return Response(reporters)
 
 @api_view(http_method_names=['GET'])
+@permission_classes((IsCaseUser,))
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
-def list_all_in_vol(request):
-    """
-    GET a list of all cases in volume
-
-    """
-    pass
-
-@api_view(http_method_names=['GET'])
-@renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
-def get_case(request):
-    pass
+def get_case(request, *args, **kwargs):
+    jurisdiction = kwargs.get('jurisdiction')
+    reporter = kwargs.get('reporter')
+    firstpage = kwargs.get('firstpage')
+    name_abbreviation = kwargs.get('name_abbreviation')
+    case = Case.objects.filter(
+            jurisdiction__iexact=jurisdiction,
+            reporter__iexact=reporter,
+            firstpage=firstpage,
+            name_abbreviation__icontains=name_abbreviation,
+        )
+    return Response(case)
