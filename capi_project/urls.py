@@ -29,10 +29,10 @@ urlpatterns = [
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/?$', views.CaseViewSet.as_view({'get':'list'})),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/volumes/?$', views.list_volumes),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/?$', views.CaseViewSet.as_view({'get':'list'})),
-    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<first_page>[\d+]+)/?$', views.CaseViewSet.as_view({'get':'list'})),
-    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<first_page>[\d+]+)/(?P<shortname>[\w\s+]+)?$', views.get_case),
-    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<shortname>[\w\s+]+)?$', views.get_case),
+    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/?$', views.CaseViewSet.as_view({'get':'list'})),
+    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$',views.CaseViewSet.as_view({'get':'list'})),
+    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$', views.CaseViewSet.as_view({'get':'list'})),
 
-    url(r'^case/(?P<shortname>[\w\s+]+)?$', views.get_case),
+    url(r'^citation/(?P<citation>[\w.\d.\s+]+)?$', views.CaseViewSet.as_view({'get':'list'})),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -7,7 +7,11 @@ def merge_filters(q_list, operation):
 
 def make_query((key,val)):
     qwarg={}
-    key = key + '__iexact'
+
+    if key == 'name_abbreviation':
+        key = key + '__icontains'
+    else:
+        key = key + '__iexact'
     qwarg[key]=val
     return Q(**qwarg)
 
