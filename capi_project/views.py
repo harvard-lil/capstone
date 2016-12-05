@@ -64,22 +64,23 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return Response({'serializer':serializer, 'errors':serializer.errors}, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
 
-    @list_route(methods=['get', 'post'], permission_classes=[AllowAny])
+    @list_route(methods=['get'], permission_classes=[AllowAny])
     def login(self, request):
-        if request.method == 'GET':
-            serializer = LoginSerializer()
-            return Response({'serializer':serializer}, template_name='log-in.html')
+        serializer = LoginSerializer()
+        return Response({'serializer':serializer}, template_name='log-in.html')
+
+    @list_route(methods=['post'], permission_classes=[AllowAny])
+    def view_details(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = serializer.verify_with_password(email=request.data.get('email'), password=request.data.get('password'))
+                return Response({'email':user.email, 'api_key':user.get_api_key}, template_name='token.html',)
+            except Exception as e:
+                print e
+                return Response({'errors':e}, template_name='token.html', status=status.HTTP_400_BAD_REQUEST)
         else:
-            serializer = LoginSerializer(data=request.data)
-            if serializer.is_valid():
-                try:
-                    user = serializer.verify_with_password(email=request.data.get('email'), password=request.data.get('password'))
-                    return Response({'email':user.email, 'api_key':user.get_api_key}, template_name='token.html',)
-                except Exception as e:
-                    print e
-                    return Response({'errors':e}, template_name='token.html', status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
@@ -114,9 +115,9 @@ def get_token(request):
             user = serializer.verify_with_password(email, password)
             if user.is_validated:
                 api_key = user.get_api_key()
-                data = {'email':user.email,'api_key':api_key}
+                data = {'email':user.email,'api_key':api_key, 'case_allowance':user.case_allowance}
                 if request.accepted_renderer.format != 'json' :
-                    return Response(data, template_name='token.html')
+                    return Response(data, template_name='user-account.html')
                 else:
                     return JSONResponse(data)
         except Exception as e:

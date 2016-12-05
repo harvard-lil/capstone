@@ -82,27 +82,28 @@ def list_jurisdictions(request):
     """
     GET a list of all jurisdictions available
     """
-    jurisdictions = Case.objects.values_list('jurisdiction', flat=True).distinct()
+    jurisdictions = Case.objects.values_list('jurisdiction', flat=True).distinct().order_by('jurisdiction')
     return Response(jurisdictions)
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
-def list_volumes(request):
+def list_volumes(request, *args, **kwargs):
     """
     GET a list of all volumes in the specified jurisdiction
     """
-    volume = Case.objects.filter(jurisdiction=jurisdiction).values_list('volume', flat=True).distinct()
-    return Response(volume)
+    jurisdiction = kwargs.get('jurisdiction')
+    reporter = kwargs.get('reporter')
+    volumes = Case.objects.filter(jurisdiction=jurisdiction, reporter=reporter).values_list('volume', flat=True).distinct().order_by('volume')
+    return Response(volumes)
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
 def list_reporters(request, *args, **kwargs):
     """
-    GET a list of all volumes in the specified jurisdiction
+    GET a list of all reporters in the specified jurisdiction
     """
     jurisdiction = kwargs.get('jurisdiction')
-    reporters = Case.objects.filter(jurisdiction__iexact=jurisdiction).values_list('reporter', flat=True).distinct()
-
+    reporters = Case.objects.filter(jurisdiction__iexact=jurisdiction).values_list('reporter', flat=True).distinct().order_by('reporter')
     return Response(reporters)
 
 @api_view(http_method_names=['GET'])
