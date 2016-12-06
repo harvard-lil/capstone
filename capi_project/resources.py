@@ -31,6 +31,8 @@ def scp_get(requester_id, list_of_files):
         scp_client.get("%s" % zip_file_name)
 
         scp_client.close()
+        return zip_file_name
+
     except Exception as e:
         return e
 

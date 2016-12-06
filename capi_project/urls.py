@@ -24,14 +24,14 @@ urlpatterns = [
     url(r'^verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
 
     url(r'^cases/jurisdictions/?$', views.list_jurisdictions, name='list-jurisdictions'),
-    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/$', views.CaseViewSet.as_view({'get':'list'}), name='list-for-jurisdiction'),
+    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/$', views.CaseViewSet.as_view({'get':'case_list'}), name='list-for-jurisdiction'),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/reporters/?$', views.list_reporters, name='list-reporters'),
-    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/?$', views.CaseViewSet.as_view({'get':'list'})),
+    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/?$', views.CaseViewSet.as_view({'get':'case_list'})),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/volumes/?$', views.list_volumes),
-    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/?$', views.CaseViewSet.as_view({'get':'list'})),
-    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/?$', views.CaseViewSet.as_view({'get':'list'})),
-    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$',views.CaseViewSet.as_view({'get':'list'})),
-    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$', views.CaseViewSet.as_view({'get':'list'})),
+    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/?$', views.CaseViewSet.as_view({'get':'case_list'})),
+    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/?$', views.CaseViewSet.as_view({'get':'case_list'})),
+    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$',views.CaseViewSet.as_view({'get':'case_list'})),
+    url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$', views.CaseViewSet.as_view({'get':'case_list'})),
 
     url(r'^citation/(?P<citation>[\w.\d.\s+]+)?$', views.CaseViewSet.as_view({'get':'list'})),
 

@@ -1,9 +1,12 @@
+import os
+import mimetypes
+import json
 from django.shortcuts import get_object_or_404
 from rest_framework import renderers, status
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
 from django.db.models import Q
-
+from django.core import serializers as django_serializers
 from rest_framework import routers, viewsets, views, mixins, permissions
 from rest_framework.response import Response
 
@@ -11,6 +14,9 @@ from rest_framework.decorators import api_view, detail_route, list_route, permis
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
+from wsgiref.util import FileWrapper
+
+
 from .models import Case
 from .view_helpers import make_query, format_date_queries, merge_filters
 from .serializers import *
@@ -29,7 +35,7 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 
-class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
+class CaseViewSet(viewsets.GenericViewSet):
     """
     # Browse all cases
     """
@@ -42,7 +48,8 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field='jurisdiction'
 
-    def get_queryset(self):
+    @list_route(methods=['get'])
+    def case_list(self, *args, **kwargs):
         query = Q()
         kwargs = self.kwargs
 
@@ -52,15 +59,28 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
         if len(kwargs.items()):
             query = map(make_query, kwargs.items())
             query = merge_filters(query, 'AND')
-        cases = self.queryset.filter(query)
-        if not self.request.query_params.get('type') == 'download':
-            return cases
-        else:
-            has_permissions = self.check_case_permissions(cases)
-            if has_permissions:
-                self.download_cases(cases)
+
+        cases =  self.queryset.filter(query)
+        page = self.paginate_queryset(cases)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            if not self.request.query_params.get('type') == 'download':
+                return self.get_paginated_response(serializer.data)
+                return Response({'cases':cases})
             else:
-                raise Exception("You have reached your limit of allowed cases")
+                has_permissions = self.check_case_permissions(cases)
+                if has_permissions:
+                    try:
+                        zip_file_name = self.download_cases(cases)
+                        response = StreamingHttpResponse(FileWrapper(open(zip_file_name, 'rb')), content_type='application/zip')
+                        response['Content-Length'] = os.path.getsize(zip_file_name)
+                        response['Content-Disposition'] = 'attachment; filename="%s"' % zip_file_name
+                        return response
+                    except Exception as e:
+                        Exception("Download file error: %s" % e)
+                else:
+                    raise Exception("You have reached your limit of allowed cases")
 
     def check_case_permissions(self, cases):
         return self.request.user.case_allowance >= len(cases)
@@ -68,14 +88,14 @@ class CaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     def download_cases(self, cases):
         case_ids = cases.values_list('caseid', flat=True)
         try:
-            scp_get(self.request.user.id, case_ids)
-            self.request.user.case_allowance -= len(cases)
+            cases = scp_get(self.request.user.id, case_ids)
+            self.request.user.case_allowance -= len(case_ids)
             self.request.user.save()
+            return cases
         except Exception as e:
-            return "Error!", e
-        return cases
+            raise Exception("Download cases error %s" % e)
 
-@api_view(http_method_names=['GET'])
+
 @permission_classes((IsCaseUser,))
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
 @parser_classes((FormParser, MultiPartParser, JSONParser,))
