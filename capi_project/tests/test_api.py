@@ -35,12 +35,13 @@ class CaseTestCase(TestCase):
         assert len(jurisdictions) == 2
         assert "New York" in jurisdictions
 
-
     def test_case(self):
         c = Client()
         response = c.get('/cases/Illinois/Ill%2E%202d?format=json')
         assert response.status_code == 200
         assert response.accepted_renderer.format == 'json'
-        jurisdictions = json.loads(response.content)
-        assert len(jurisdictions) == 2
-        assert "New York" in jurisdictions
+        content = json.loads(response.content)
+        case = content.get('results')[0]
+        assert case.get('name_abbreviation') == 'Trans States Airlines v. Pratt & Whitney Canada, Inc.'
+
+    

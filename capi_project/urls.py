@@ -33,6 +33,6 @@ urlpatterns = [
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$',views.CaseViewSet.as_view({'get':'case_list'})),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$', views.CaseViewSet.as_view({'get':'case_list'})),
 
-    url(r'^citation/(?P<citation>[\w.\d.\s+]+)?$', views.CaseViewSet.as_view({'get':'list'})),
+    url(r'^citation/(?P<citation>[\w.\d.\s+]+)?$', views.get_case_by_citation, name='get-case-by-citation'),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

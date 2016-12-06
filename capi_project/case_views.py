@@ -1,7 +1,7 @@
 import os
 from django.shortcuts import get_object_or_404
 from rest_framework import renderers, status
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.db.models import Q
 from rest_framework import routers, viewsets, views, mixins, permissions
@@ -14,7 +14,7 @@ from django.conf import settings
 from wsgiref.util import FileWrapper
 
 from .models import Case
-from .view_helpers import make_query, format_date_queries, merge_filters
+from .view_helpers import *
 from .serializers import *
 from .permissions import IsCaseUser
 from .filters import *
@@ -55,7 +55,7 @@ class CaseViewSet(viewsets.GenericViewSet):
             query = map(make_query, kwargs.items())
             query = merge_filters(query, 'AND')
 
-        cases =  self.queryset.filter(query)
+        cases = self.queryset.filter(query)
         page = self.paginate_queryset(cases)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -77,7 +77,9 @@ class CaseViewSet(viewsets.GenericViewSet):
                     raise Exception("You have reached your limit of allowed cases")
 
     def check_case_permissions(self, cases):
-        return self.request.user.case_allowance >= len(cases)
+        self.request.user.update_case_allowance()
+        user = CaseUser.objects.get(email=user.email)
+        return user.case_allowance >= len(cases)
 
     def download_cases(self, cases):
         case_ids = cases.values_list('caseid', flat=True)
@@ -136,4 +138,18 @@ def get_case(request, *args, **kwargs):
             firstpage=firstpage,
             name_abbreviation__icontains=name_abbreviation,
         )
-    return Response(case)
+
+    serializer = CaseSerializer(case)
+    return Response(serializer.data)
+
+@api_view(http_method_names=['GET'])
+@permission_classes((IsCaseUser,))
+@renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
+def get_case_by_citation(request, *args, **kwargs):
+    """
+    GET a single case using its canonical citation
+    """
+    citation = kwargs.get('citation')
+    case = Case.objects.get(citation__iexact=citation,)
+    redirect_url = "%s/cases/%s" % (settings.BASE_URL, format_url_from_case(case))
+    return HttpResponseRedirect(redirect_url)
