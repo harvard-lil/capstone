@@ -77,7 +77,9 @@ class CaseViewSet(viewsets.GenericViewSet):
                     raise Exception("You have reached your limit of allowed cases")
 
     def check_case_permissions(self, cases):
-        return self.request.user.case_allowance >= len(cases)
+        self.request.user.update_case_allowance()
+        user = CaseUser.objects.get(email=user.email)
+        return user.case_allowance >= len(cases)
 
     def download_cases(self, cases):
         case_ids = cases.values_list('caseid', flat=True)
