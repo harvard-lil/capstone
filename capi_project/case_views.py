@@ -44,7 +44,6 @@ class CaseViewSet(viewsets.GenericViewSet):
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field='jurisdiction'
 
-    @list_route(methods=['get'])
     def case_list(self, *args, **kwargs):
         query = Q()
         kwargs = self.kwargs
@@ -63,7 +62,6 @@ class CaseViewSet(viewsets.GenericViewSet):
 
             if not self.request.query_params.get('type') == 'download':
                 return self.get_paginated_response(serializer.data)
-                return Response({'cases':cases})
             else:
                 has_permissions = self.check_case_permissions(cases)
                 if has_permissions:
@@ -91,10 +89,9 @@ class CaseViewSet(viewsets.GenericViewSet):
         except Exception as e:
             raise Exception("Download cases error %s" % e)
 
-
+@api_view(http_method_names=['GET'])
 @permission_classes((IsCaseUser,))
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
-@parser_classes((FormParser, MultiPartParser, JSONParser,))
 def list_jurisdictions(request):
     """
     GET a list of all jurisdictions available

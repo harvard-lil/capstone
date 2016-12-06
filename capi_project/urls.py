@@ -22,7 +22,7 @@ urlpatterns = [
 
     url(r'^admin', include(admin.site.urls)),
     url(r'^verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
-
+    url(r'^cases/$', views.CaseViewSet.as_view({'get':'case_list'}), name='list-all-cases'),
     url(r'^cases/jurisdictions/?$', views.list_jurisdictions, name='list-jurisdictions'),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/$', views.CaseViewSet.as_view({'get':'case_list'}), name='list-for-jurisdiction'),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/reporters/?$', views.list_reporters, name='list-reporters'),
