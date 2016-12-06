@@ -1,12 +1,9 @@
 import os
-import mimetypes
-import json
 from django.shortcuts import get_object_or_404
 from rest_framework import renderers, status
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
 from django.db.models import Q
-from django.core import serializers as django_serializers
 from rest_framework import routers, viewsets, views, mixins, permissions
 from rest_framework.response import Response
 
@@ -15,7 +12,6 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
 from wsgiref.util import FileWrapper
-
 
 from .models import Case
 from .view_helpers import make_query, format_date_queries, merge_filters
