@@ -44,7 +44,6 @@ class CaseViewSet(viewsets.GenericViewSet):
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field='jurisdiction'
 
-    @list_route(methods=['get'])
     def case_list(self, *args, **kwargs):
         query = Q()
         kwargs = self.kwargs
