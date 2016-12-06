@@ -28,3 +28,6 @@ def format_date_queries(params, args_dict):
     if 'day' in params:
         args_dict['decisiondate__day'] = params['day']
     return args_dict
+
+def format_url_from_case(case):
+    return "%s/%s/%s/%s/%s" % (case.jurisdiction, case.reporter, case.volume, case.firstpage, case.name_abbreviation)

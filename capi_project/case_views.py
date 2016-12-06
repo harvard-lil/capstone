@@ -1,7 +1,7 @@
 import os
 from django.shortcuts import get_object_or_404
 from rest_framework import renderers, status
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.db.models import Q
 from rest_framework import routers, viewsets, views, mixins, permissions
@@ -14,7 +14,7 @@ from django.conf import settings
 from wsgiref.util import FileWrapper
 
 from .models import Case
-from .view_helpers import make_query, format_date_queries, merge_filters
+from .view_helpers import *
 from .serializers import *
 from .permissions import IsCaseUser
 from .filters import *
@@ -149,5 +149,5 @@ def get_case_by_citation(request, *args, **kwargs):
     """
     citation = kwargs.get('citation')
     case = Case.objects.get(citation__iexact=citation,)
-    serializer = CaseSerializer(case)
-    return Response(serializer.data)
+    redirect_url = "%s/cases/%s" % (settings.BASE_URL, format_url_from_case(case))
+    return HttpResponseRedirect(redirect_url)
