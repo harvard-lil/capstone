@@ -7,7 +7,11 @@ def merge_filters(q_list, operation):
 
 def make_query((key,val)):
     qwarg={}
-    key = key + '__iexact'
+
+    if key == 'name_abbreviation':
+        key = key + '__icontains'
+    else:
+        key = key + '__iexact'
     qwarg[key]=val
     return Q(**qwarg)
 
@@ -24,3 +28,6 @@ def format_date_queries(params, args_dict):
     if 'day' in params:
         args_dict['decisiondate__day'] = params['day']
     return args_dict
+
+def format_url_from_case(case):
+    return "%s/%s/%s/%s/%s" % (case.jurisdiction, case.reporter, case.volume, case.firstpage, case.name_abbreviation)

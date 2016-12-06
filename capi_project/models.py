@@ -34,6 +34,7 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=30, blank=True)
     is_validated = models.BooleanField(default=False)
     case_allowance = models.IntegerField(null=False, blank=False, default=settings.CASE_DAILY_ALLOWANCE)
+    case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
     is_researcher = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
@@ -50,6 +51,12 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'User'
 
+    def update_case_allowance(self, *args, **kwargs):
+        if self.case_allowance_last_updated + timedelta(hours=settings.CASE_EXPIRE_HOURS) < timezone.now():
+            self.case_allowance = settings.CASE_DAILY_ALLOWANCE
+            self.case_allowance_last_updated = timezone.now()
+            self.save()
+
     def authenticate_user(self, *args, **kwargs):
         nonce = kwargs.get('activation_nonce')
         if self.activation_nonce == nonce and self.key_expires + timedelta(hours=24) > timezone.now():
@@ -57,6 +64,7 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
                 token = Token.objects.create(user=self)
                 self.activation_nonce = ''
                 self.is_validated = True
+                self.is_active = True
                 self.save()
             except IntegrityError as e:
                 pass
@@ -101,8 +109,9 @@ class Case(models.Model):
     date_added = models.DateTimeField(null=True, blank=True )
 
     @classmethod
-    def create(self, caseid):
-        case = self(caseid=caseid)
+    def create(self, caseid, **kwargs):
+        case = self(caseid=caseid, **kwargs)
+        case.save()
         return case
 
     @classmethod
@@ -125,7 +134,7 @@ class Case(models.Model):
                     # case has already been created and we are iterating
                     # over the same row again (without date_added)
                     pass
-                    
+
         except Exception as e:
             print "Exception caught on case creation: %s" % e
             pass

@@ -78,9 +78,7 @@ WSGI_APPLICATION = 'capi_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cap',
-        'USER': 'cap',
-        'PASSWORD': 'cap',
+        'NAME': 'cap_db',
         'HOST': '',
         'PORT': '',
     }

@@ -1,0 +1,32 @@
+language: python
+python:
+  - "2.7"
+services:
+  - postgresql
+
+before_install:
+  - cp capi_project/settings_travis.py capi_project/settings.py
+
+install:
+  - pip install -U pip wheel
+
+  # python reqs
+  - pip install -r requirements.txt
+  # - pip install coveralls
+
+before_script:
+  - psql -c "DROP DATABASE IF EXISTS cap_db;" -U postgres;
+  - psql -c "create database cap_db;" -U postgres;
+  - python manage.py migrate
+
+  - date
+
+script:
+  - python manage.py test
+
+after_failure:
+  - date
+# after_success:
+#   - date
+#   - coverage report
+#   - coveralls
