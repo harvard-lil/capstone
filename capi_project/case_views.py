@@ -55,7 +55,7 @@ class CaseViewSet(viewsets.GenericViewSet):
             query = map(make_query, kwargs.items())
             query = merge_filters(query, 'AND')
 
-        cases =  self.queryset.filter(query)
+        cases = self.queryset.filter(query)
         page = self.paginate_queryset(cases)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -136,4 +136,18 @@ def get_case(request, *args, **kwargs):
             firstpage=firstpage,
             name_abbreviation__icontains=name_abbreviation,
         )
-    return Response(case)
+
+    serializer = CaseSerializer(case)
+    return Response(serializer.data)
+
+@api_view(http_method_names=['GET'])
+@permission_classes((IsCaseUser,))
+@renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))
+def get_case_by_citation(request, *args, **kwargs):
+    """
+    GET a single case using its canonical citation
+    """
+    citation = kwargs.get('citation')
+    case = Case.objects.get(citation__iexact=citation,)
+    serializer = CaseSerializer(case)
+    return Response(serializer.data)
