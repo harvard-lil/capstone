@@ -4,6 +4,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_URL = 'http://localhost:8000'
 DEBUG = True
+SECRET_KEY = 'secret'
 
 ALLOWED_HOSTS = []
 TOKEN_EXPIRE_HOURS = 24
