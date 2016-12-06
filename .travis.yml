@@ -16,13 +16,9 @@ install:
   # - pip install coveralls
 
 before_script:
-  - psql -c "create database cap;" -U postgres
-  - psql -c "CREATE ROLE capuser;"
-  - psql -c "GRANT ALL PRIVILEGES ON DATABASE cap TO capuser;"
-  - psql -c "ALTER USER capuser WITH PASSWORD 'test'";
-  - psql -c "ALTER USER capuser CREATEDB;"
-  - psql -c "ALTER ROLE capuser SET client_encoding TO 'utf8';"
-  - psql -c "ALTER ROLE capuser SET timezone TO 'UTC';"
+  - psql -c "DROP DATABASE IF EXISTS cap_db;" -U postgres;
+  - psql -c "create database cap_db;" -U postgres;
+  - python manage.py migrate
 
   - date
 
