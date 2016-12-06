@@ -1,0 +1,37 @@
+language: python
+python:
+  - "2.7"
+services:
+  - postgresql
+
+before_install:
+  - cp capi_project/settings_travis.py perma_web/settings.py
+  - cd perma_web
+
+install:
+  - pip install -U pip wheel
+
+  # python reqs
+  - pip install -r requirements.txt
+  # - pip install coveralls
+
+before_script:
+  - psql -c "create database cap;" -U postgres
+  - psql -c "CREATE ROLE capuser;"
+  - psql -c "GRANT ALL PRIVILEGES ON DATABASE cap TO capuser;"
+  - psql -c "ALTER USER capuser WITH PASSWORD 'test'";
+  - psql -c "ALTER USER capuser CREATEDB;"
+  - psql -c "ALTER ROLE capuser SET client_encoding TO 'utf8';"
+  - psql -c "ALTER ROLE capuser SET timezone TO 'UTC';"
+
+  - date
+
+script:
+  - python manage.py test
+
+after_failure:
+  - date
+# after_success:
+#   - date
+#   - coverage report
+#   - coveralls

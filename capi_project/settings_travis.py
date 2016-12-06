@@ -78,8 +78,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'cap',
-        'USER': 'cap',
-        'PASSWORD': 'cap',
+        'USER': 'capuser',
+        'PASSWORD': 'test',
         'HOST': '',
         'PORT': '',
     }
