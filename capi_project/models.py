@@ -108,6 +108,9 @@ class Case(models.Model):
     reporter = models.CharField(max_length=255, blank=True)
     date_added = models.DateTimeField(null=True, blank=True )
 
+    def __unicode__(self):
+        return self.caseid
+
     @classmethod
     def create(self, caseid, **kwargs):
         case = self(caseid=caseid, **kwargs)
