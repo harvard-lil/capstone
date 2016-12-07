@@ -1,22 +1,28 @@
 {% load static %}
+{% load compress %}
+
 
 
 <html>
     <head>
         <title>Caselaw Access Project</title>
+        <link rel="stylesheet" type="text/x-scss" href="{% static "css/_normalize.css" %}" />
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
         <link href='//fonts.googleapis.com/css?family=Rajdhani:400,300,500,700' rel='stylesheet' type='text/css'>
-
+        {% compress css %}
+            <link rel="stylesheet" type="text/x-scss" href="{% static "css/base.sass" %}" />
+            <link rel="stylesheet" type="text/x-scss" href="{% static "css/api-docs.sass" %}" />
+        {% endcompress %}
     </head>
     <body>
         <div>
-          <header class="ftl-header">
-            <div class="ftl-header-content">
+          <header class="header">
+            <div class="header-content">
               <a href="/">
-                <img class="ftl-logo" src="{% static "img/logo-small-blue.png" %}" alt="CAP Logo"></img>
+                <img class="header-logo" src="{% static "img/logo-small-blue.png" %}" alt="CAP Logo"></img>
               </a>
-              <span class="ftl-text"> CASELAW ACCESS PROJECT</span>
+              <span class="header-text"> CASELAW ACCESS PROJECT</span>
               <a href="http://librarylab.law.harvard.edu" target="_blank">
                 <img class="lil-logo" src="{% static "img/LIL-logo.png" %}" alt="Library Innovation Lab"></img>
               </a>
