@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %} | Developer Docs{% endblock %}
+
+{% block meta_description %}
+The Caselaw Access Project API guide
+{% endblock %}
+
+<!-- {% block bodyFlags %}{% endblock %} -->
+
+{% block content %}
+<div class="container cont-fixed header-margin"></div>
+<div class="page-header container cont-fixed">
+  <div class="row">
+    <div class="col-sm-12">
+      <h1 class="centered-text bold-text"><span class="blue-text">CAP</span> API</h1>
+      <h3 class="centered-text semibold-text">EXPLORE AMERICAN CASELAW</h3>
+      <h5 class="centered-text light-text">Read the documentation below to get started</h5>
+    </div>
+  </div>
+</div>
+<div class="separator"></div>
+<div class="container cont-reading cont-fixed" id="api-overview">
+  <div class="row">
+    <div class="col-sm-4 container api-doc-toc">
+      <ul>
+        <li class="reading-toc-section"><a href="#overview-section">Overview</a></li>
+        <li class="reading-toc-section"><a href="#api-key-section">API Key</a></li>
+        <li class="reading-toc-section"><a href="#api-endpoints-section">API Endpoints</a></li>
+      </ul>
+    </div>
+
+    <div class="col-sm-7 docs reading-body">
+
+      <h2 id="overview-section" class="section-title">API Overview</h2>
+      <p class="body-text">The CAP API lets you traverse through and download American caselaw from 1700 to present day.
+      You can browse unlimited metadata but if you want to download case xml, you must first register for an API key.</p>
+      <p class="body-text">The API can be browsed through the browser (see http://{{ request.get_host }}/)</p>
+      <p class="body-text">Or using the command line. </p>
+      <h3 id="api-key-section" class="section-title">API Key</h3>
+      <a href="http://{{ request.get_host }}/accounts/register"><button class="blue-button">REGISTER HERE</button></a>
+      <p class="body-text">Once you have your API key, you can begin to download cases.</p>
+      <p class="body-text blue-text note-text">A note about rate limiting:
+Currently we only allow users to download 500 cases a day. If you are a researcher or you need to have more access, please write to us here: <span class="black-text">info@capapi.org</span></p>
+
+      <h2 id="api-endpoints-section" class="section-title">API Endpoints</h2>
+      <p class="body-text">All case metadata is viewable in the browser, or through the command line.
+      <br/>
+      If you wish to use the command line you should add the <code>?format=json</code> flag to any request.
+      <br/>
+      For example:
+      <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?format=json</pre>
+      If you wish to download the full case text XML, you will have to use the command line and follow this structure:
+      </p>
+      <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?type=download -H  'Authorization: Token your-token-here' > your-zip-file-name.zip</pre>
+
+      <p class="body-text">All case metadata:</p>
+      <p class="body-text semibold-text"><a>https://{{ request.get_host }}/cases</a></p>
+      <p class="body-text">All case metadata in json:</p>
+      <pre>curl https://{{ request.get_host }}/cases?format=json</pre>
+
+      <p class="body-text">To get a list of jurisdictions</p>
+      <code>curl https://{{ request.get_host }}/cases?format=json</code>
+      <code>curl https://{{ request.get_host }}/cases?format=json</code>
+
+      <h3 id="pagination" class="body-bh">Pagination</h3>
+      <p class="body-text">The API will return 20 items per response. If you have more than 20 items returned, you can page through the items using the <i>offset</i> parameter. For example, if you want to start at the 101st result, set the offset value to 4 (we start counting at 0, of course).</p>
+
+
+      <!-- <p class="body-text">If you'd prefer to get a smaller result set, specify the number of returned items using the limit parameter. In this example, we'll see just one item returned.</p> -->
+      <!-- <pre>curl https://{{ request.get_host }}/cases?format=json&limit=1</pre> -->
+      <p class="body-text">This is the structure of the api</p>
+      <code>curl http://{{ request.get_host }}</code>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+{% endblock %}
