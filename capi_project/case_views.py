@@ -55,8 +55,9 @@ class CaseViewSet(viewsets.GenericViewSet):
             query = map(make_query, kwargs.items())
             query = merge_filters(query, 'AND')
 
-        cases = self.queryset.filter(query)
+        cases = list(self.queryset.filter(query))
         page = self.paginate_queryset(cases)
+
         if page is not None:
             serializer = self.get_serializer(page, many=True)
 
@@ -111,7 +112,7 @@ def list_volumes(request, *args, **kwargs):
     jurisdiction = kwargs.get('jurisdiction')
     reporter = kwargs.get('reporter')
     volumes = Case.objects.filter(jurisdiction__iexact=jurisdiction, reporter__iexact=reporter).values_list('volume', flat=True).distinct().order_by('volume')
-    return Response(volumes)
+    return Response(list(volumes))
 
 @api_view(http_method_names=['GET'])
 @permission_classes((IsCaseUser,))
@@ -122,7 +123,7 @@ def list_reporters(request, *args, **kwargs):
     """
     jurisdiction = kwargs.get('jurisdiction')
     reporters = Case.objects.filter(jurisdiction__iexact=jurisdiction).values_list('reporter', flat=True).distinct().order_by('reporter')
-    return Response(reporters)
+    return Response(list(reporters))
 
 @api_view(http_method_names=['GET'])
 @permission_classes((IsCaseUser,))
@@ -139,7 +140,7 @@ def get_case(request, *args, **kwargs):
             name_abbreviation__icontains=name_abbreviation,
         )
 
-    serializer = CaseSerializer(case)
+    serializer = CaseSerializer(list(case))
     return Response(serializer.data)
 
 @api_view(http_method_names=['GET'])
@@ -150,6 +151,12 @@ def get_case_by_citation(request, *args, **kwargs):
     GET a single case using its canonical citation
     """
     citation = kwargs.get('citation')
-    case = Case.objects.get(citation__iexact=citation,)
+    try:
+        case = Case.objects.get(citation__iexact=citation)
+    except:
+        cases = Case.objects.filter(citation__iexact=citation,)
+        case = list(cases)[0]
+        print "Exception: multiple cases found with citation: %s", citation
+
     redirect_url = "%s/cases/%s" % (settings.BASE_URL, format_url_from_case(case))
     return HttpResponseRedirect(redirect_url)
