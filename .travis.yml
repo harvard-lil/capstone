@@ -5,7 +5,7 @@ services:
   - postgresql
 
 before_install:
-  - cp capi_project/settings_travis.py capi_project/settings.py
+  - cp capi_project/settings_deployments/settings_travis.py capi_project/settings.py
 
 install:
   - pip install -U pip wheel
