@@ -51,3 +51,4 @@ traitlets==4.3.1
 uritemplate==3.0.0
 uWSGI==2.0.14
 wcwidth==0.1.7
+whitenoise==3.2.2
