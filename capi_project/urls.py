@@ -4,22 +4,17 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls import url, include
 from django.shortcuts import render
+from django.views.generic import TemplateView
 from rest_framework import routers
-
 from capi_project import views
 
 router = routers.DefaultRouter()
 router.register(r'cases', views.CaseViewSet)
 router.register(r'accounts', views.UserViewSet)
-from rest_framework_swagger.views import get_swagger_view
-
-schema_view = get_swagger_view(title='CAP API')
 
 urlpatterns = [
-
-    url(r'^$', schema_view),
+    url(r'^$', TemplateView.as_view(template_name='docs.html'), name='docs'),
     url(r'^', include(router.urls)),
-
     url(r'^admin', include(admin.site.urls)),
     url(r'^verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
     url(r'^cases/$', views.CaseViewSet.as_view({'get':'case_list'}), name='list-all-cases'),
@@ -33,6 +28,4 @@ urlpatterns = [
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/?$', views.CaseViewSet.as_view({'get':'case_list'})),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$',views.CaseViewSet.as_view({'get':'case_list'})),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$', views.CaseViewSet.as_view({'get':'case_list'})),
-
-
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
