@@ -1,4 +1,3 @@
-SECRET_KEY = 'secret'
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
