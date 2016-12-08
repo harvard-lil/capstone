@@ -48,6 +48,8 @@ class CaseViewSet(viewsets.GenericViewSet):
         query = Q()
         kwargs = self.kwargs
 
+        cases = self.queryset.all()
+        
         if len(self.request.query_params.items()):
             kwargs = format_date_queries(self.request.query_params, kwargs)
 
@@ -55,7 +57,7 @@ class CaseViewSet(viewsets.GenericViewSet):
             query = map(make_query, kwargs.items())
             query = merge_filters(query, 'AND')
 
-            cases = self.queryset.filter(query)
+            cases = cases.filter(query)
 
         params = self.request.query_params
         if 'fields' in self.request.query_params:
