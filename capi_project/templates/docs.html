@@ -26,7 +26,9 @@ The Caselaw Access Project API guide
       <ul>
         <li class="reading-toc-section"><a href="#overview-section">Overview</a></li>
         <li class="reading-toc-section"><a href="#api-key-section">API Key</a></li>
-        <li class="reading-toc-section"><a href="#api-endpoints-section">API Endpoints</a></li>
+        <li class="reading-toc-section"><a href="#api-endpoints-section">Endpoints Overview</a></li>
+        <li class="reading-toc-section"><a href="#api-endpoints-section">METADATA</a></li>
+        <li class="reading-toc-section"><a href="#api-endpoints-section">RAW CASETEXT</a></li>
       </ul>
     </div>
 
@@ -43,17 +45,35 @@ The Caselaw Access Project API guide
       <p class="body-text blue-text note-text">A note about rate limiting:
 Currently we only allow users to download 500 cases a day. If you are a researcher or you need to have more access, please write to us here: <span class="black-text">info@capapi.org</span></p>
 
-      <h2 id="api-endpoints-section" class="section-title">API Endpoints</h2>
+      <h2 id="api-endpoints-section" class="section-title">API Endpoints Overview</h2>
       <p class="body-text">All case metadata is viewable in the browser, or through the command line.
       <br/>
       If you wish to use the command line you should add the <code>?format=json</code> flag to any request.
       <br/>
       For example:
       <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?format=json</pre>
+
+      <!-- <p class="body-text bold-text">Here is a list of available endpoints:</p> -->
+      <p class="body-text">All cases:</p>
+      <pre>https://{{ request.get_host }}/cases/</pre>
+      <p class="body-text">A list of available jurisdictions:</p>
+      <pre>https://{{ request.get_host }}/cases/jurisdictions/</pre>
+      <p class="body-text">All cases in a specific jurisdiction:</p>
+      <pre>https://{{ request.get_host }}/cases/<span class="blue-text">{jurisdiction}</span>/</pre>
+      <p class="body-text">A list of available reporters in a jurisdiction:</p>
+      <pre>https://{{ request.get_host }}/cases/<span class="blue-text">{jurisdiction}</span>/reporters/</pre>
+      <p class="body-text">All cases in a specific reporter in your chosen jurisdiction:</p>
+      <pre>https://{{ request.get_host }}/cases/<span class="blue-text">{jurisdiction}</span>/<span class="blue-text">{reporter}</span>/</pre>
+      <p class="body-text">A list of available volumes in a reporter:</p>
+      <pre>https://{{ request.get_host }}/cases/<span class="blue-text">{jurisdiction}</span>/<span class="blue-text">{reporter}</span>/volumes/</pre>
+      <p class="body-text">All cases in a specific volume:</p>
+      <pre>https://{{ request.get_host }}/cases/<span class="blue-text">{jurisdiction}</span>/<span class="blue-text">{reporter}</span>/<span class="blue-text">{volume}</span>/</pre>
+
       If you wish to download the full case text XML, you will have to use the command line and follow this structure:
       </p>
       <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?type=download -H  'Authorization: Token your-token-here' > your-zip-file-name.zip</pre>
-
+      <p class="body-text">To show only specific fields, comma delineate the field names</p>
+      <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?fields=citation,name</pre>
       <p class="body-text">All case metadata:</p>
       <p class="body-text semibold-text"><a>https://{{ request.get_host }}/cases</a></p>
       <p class="body-text">All case metadata in json:</p>
@@ -63,7 +83,7 @@ Currently we only allow users to download 500 cases a day. If you are a research
       <code>curl https://{{ request.get_host }}/cases?format=json</code>
       <code>curl https://{{ request.get_host }}/cases?format=json</code>
 
-      <h3 id="pagination" class="body-bh">Pagination</h3>
+      <h3 id="pagination" class="section-title">Pagination</h3>
       <p class="body-text">The API will return 20 items per response. If you have more than 20 items returned, you can page through the items using the <i>offset</i> parameter. For example, if you want to start at the 101st result, set the offset value to 4 (we start counting at 0, of course).</p>
 
 
