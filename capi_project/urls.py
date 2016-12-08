@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls import url, include
 from django.shortcuts import render
+from django.views.generic import TemplateView
 from rest_framework import routers
 
 from capi_project import views
@@ -18,6 +19,7 @@ schema_view = get_swagger_view(title='CAP API')
 urlpatterns = [
 
     url(r'^$', schema_view),
+    url(r'^$', TemplateView.as_view(template_name='docs.html'), name='docs'),
     url(r'^', include(router.urls)),
 
     url(r'^admin', include(admin.site.urls)),
