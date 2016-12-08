@@ -9,10 +9,7 @@ before_install:
 
 install:
   - pip install -U pip wheel
-
-  # python reqs
   - pip install -r requirements.txt
-  # - pip install coveralls
 
 before_script:
   - psql -c "DROP DATABASE IF EXISTS cap_db;" -U postgres;
@@ -26,7 +23,6 @@ script:
 
 after_failure:
   - date
-# after_success:
-#   - date
-#   - coverage report
-#   - coveralls
+
+after_success:
+  - date
