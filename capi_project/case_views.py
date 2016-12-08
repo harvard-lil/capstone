@@ -55,8 +55,18 @@ class CaseViewSet(viewsets.GenericViewSet):
             query = map(make_query, kwargs.items())
             query = merge_filters(query, 'AND')
 
-        cases = list(self.queryset.filter(query))
-        page = self.paginate_queryset(cases)
+            cases = self.queryset.filter(query)
+
+        params = self.request.query_params
+        if 'fields' in self.request.query_params:
+            fields = params.get('fields').split(',')
+
+            if 'caseid' not in fields:
+                fields.append('caseid')
+
+            cases = cases.values(*fields)
+
+        page = self.paginate_queryset(list(cases))
 
         if page is not None:
             serializer = self.get_serializer(page, many=True)
