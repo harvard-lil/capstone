@@ -28,5 +28,4 @@ urlpatterns = [
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/?$', views.CaseViewSet.as_view({'get':'case_list'})),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<firstpage>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$',views.CaseViewSet.as_view({'get':'case_list'})),
     url(r'^cases/(?P<jurisdiction>[\w\s+]+)/(?P<reporter>[\d\s\w.]+)/(?P<volume>[\d+]+)/(?P<name_abbreviation>[\w.\s+]+)?$', views.CaseViewSet.as_view({'get':'case_list'})),
-
-
+]
