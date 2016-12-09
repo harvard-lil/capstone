@@ -41,6 +41,24 @@ pre
 .page-header
   border-bottom: 0px
 
+
+.row-centered
+    text-align:center
+
+.col-centered
+  margin: 0 auto
+  float: none
+
+.white-button
+  font           : 14px $font-name
+  font-weight    : $font-bold
+  color          : white
+  letter-spacing : 2px
+  background     : transparent
+  border         : 1px solid white
+  height         : 35px
+  padding        : 0px 14px
+
 .blue-button
   font: 14px $font-name
   font-weight: $font-bold
@@ -56,6 +74,8 @@ pre
     background-color: #D2E7FF
 
 body
+  height: 100%
+  display: block
   font-family: $font-name
   color: $black
   header.header
@@ -82,3 +102,63 @@ body
     letter-spacing: 1.5px
     position: relative
     top: -12px
+
+.inverse
+  background-color: $black
+  color: white
+.login-form
+  text-transform: uppercase
+  letter-spacing: 1px
+  width: 100% !important
+  display: block !important
+
+footer.footer
+  width: 100%
+  background-color: $blue
+  margin-bottom: 0px
+  hr.white-line
+    color: white
+  .credits
+    width: 100%
+    margin-bottom: 20px
+    p
+      text-align : center
+    .name
+      font-weight: $font-semibold
+
+  .footer-content
+    color      : white
+    width      : 100%
+    height     : 100%
+    padding    : 40px
+    text-align : center
+
+    .ftl-logo
+      width : 54px
+      height : 100px
+      margin : 0 auto
+      background : url(/img/logo-small-white.svg)
+      background-size: 54px 100px
+      display: block
+      text-indent: -9999px
+
+
+    .inline-link
+      border-color : white
+  a, a:hover, a:active
+    padding-bottom: 3px
+    border-bottom: 1px solid white
+    text-decoration: none
+    color : white
+
+
+  h4.subheader
+    margin-bottom: 40px
+  h3.project-title
+    margin-bottom: 30px
+  h3, h4, button
+    margin-top : 10px
+  h3
+    font-weight : $font-bold
+    font-size   : 21px
+    letter-spacing : 3px

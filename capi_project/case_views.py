@@ -91,7 +91,7 @@ class CaseViewSet(viewsets.GenericViewSet):
 
     def check_case_permissions(self, cases):
         self.request.user.update_case_allowance()
-        user = CaseUser.objects.get(email=user.email)
+        user = CaseUser.objects.get(email=self.request.user.email)
         return user.case_allowance >= len(cases)
 
     def download_cases(self, cases):

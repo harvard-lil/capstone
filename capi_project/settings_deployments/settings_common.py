@@ -62,6 +62,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.abspath(BASE_DIR + STATIC_URL)
 # print "STATIC_ROOT", STATIC_ROOT, BASE_DIR
 STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
 
