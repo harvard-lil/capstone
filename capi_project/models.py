@@ -22,6 +22,8 @@ class CaseUserManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
         )
+        user.first_name = kwargs.get('first_name')
+        user.last_name = kwargs.get('last_name')
         user.set_password(password)
         user.create_nonce()
         user.save(using=self._db)
@@ -32,7 +34,6 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
         error_messages={'unique': u"A user with that email address already exists."})
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
-    is_validated = models.BooleanField(default=False)
     case_allowance = models.IntegerField(null=False, blank=False, default=settings.CASE_DAILY_ALLOWANCE)
     case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
     is_researcher = models.BooleanField(default=False)
@@ -63,10 +64,10 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
             try:
                 token = Token.objects.create(user=self)
                 self.activation_nonce = ''
-                self.is_validated = True
                 self.is_active = True
                 self.save()
             except IntegrityError as e:
+                print "IntegrityError in authenticating user:",e,self.email
                 pass
         else:
             raise PermissionDenied

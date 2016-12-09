@@ -13,6 +13,7 @@ django-extensions==1.7.4
 django-filter==0.15.3
 django-libsass==0.7
 django-rest-swagger==2.1.0
+django-smtp-ssl==1.0
 djangorestframework==3.5.1
 docutils==0.12
 enum34==1.1.6

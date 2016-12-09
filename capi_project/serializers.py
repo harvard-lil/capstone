@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import password_validation, get_user_model
 from django.core import exceptions
-
+from resources import email
 class CaseSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         many = kwargs.pop('many', True)
@@ -57,20 +57,8 @@ class RegisterUserSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
-
         user = CaseUser.objects.create_user(**validated_data)
-
-        token_url= "%s/verify-user/%s/%s" % (settings.BASE_URL, user.id, user.activation_nonce)
-        send_mail(
-            'CaseLaw Access Project: Verify your email address',
-            """
-                Please click here to verify your email address: %s
-            """ % token_url,
-            settings.EMAIL_HOST_USER,
-            [user.email],
-            fail_silently=False,
-        )
-
+        email(reason='new_signup', user=user)
         return user
 
 

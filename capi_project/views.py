@@ -1,26 +1,23 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status
-from rest_framework import renderers
 from django.http import HttpResponse
-
 from django.db.models import Q
-
-from rest_framework import routers, viewsets, views, mixins, permissions
-from rest_framework.response import Response
 from django.db import IntegrityError
+from django.conf import settings
+from django_filters.rest_framework import DjangoFilterBackend
 
+from rest_framework import status, renderers, routers, viewsets, views, mixins, permissions
+from rest_framework.response import Response
 from rest_framework.decorators import api_view, detail_route, list_route, permission_classes, renderer_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from django_filters.rest_framework import DjangoFilterBackend
-from django.conf import settings
+
 from .models import Case
 from .view_helpers import *
 from .serializers import *
 from .permissions import IsCaseUser, IsAdmin
 from .filters import *
-
 from .case_views import *
+from .resources import email
 
 class JSONResponse(HttpResponse):
     """
@@ -51,17 +48,20 @@ class UserViewSet(viewsets.ModelViewSet):
             try:
                 user = serializer.create({
                     'email':request.data.get('email'),
-                    'password':request.data.get('password')
+                    'password':request.data.get('password'),
+                    'first_name':request.data.get('first_name'),
+                    'last_name':request.data.get('last_name')
                     })
                 content = {
                 'status':'Success!',
                 'message':'Thank you. Please check your email %s for a verification link.' % user.email}
-
                 return Response(content, template_name='sign-up-success.html')
 
-            except IntegrityError:
+            except IntegrityError as e:
+                print "IntegrityError", e
                 return Response({'errors':serializer.errors}, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
         else:
+            print serializer.errors
             return Response({'serializer':serializer, 'errors':serializer.errors}, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
 
     @list_route(methods=['get'], permission_classes=[AllowAny])
@@ -90,7 +90,8 @@ def verify_user(request, user_id, activation_nonce):
     """
     serializer = UserSerializer()
     user = serializer.verify_with_nonce(user_id, activation_nonce)
-    if user.is_validated:
+    if user.is_authenticated():
+        email(reason='new_registration', user=user)
         data = {'status':'Success!','message':'Thank you for verifying your email address. We will be in touch with you shortly.'}
         if request.accepted_renderer.format == 'html' :
             return Response(data, template_name='verified.html')
@@ -113,7 +114,7 @@ def get_token(request):
             email = request.data.get('email')
             password = request.data.get('password')
             user = serializer.verify_with_password(email, password)
-            if user.is_validated:
+            if user.is_authenticated():
                 api_key = user.get_api_key()
                 data = {'email':user.email,'api_key':api_key, 'case_allowance':user.case_allowance}
                 if request.accepted_renderer.format != 'json' :
