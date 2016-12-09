@@ -66,7 +66,7 @@ class RegisterUserSerializer(serializers.Serializer):
             """
                 Please click here to verify your email address: %s
             """ % token_url,
-            settings.NOREPLY_EMAIL_ADDRESS,
+            settings.EMAIL_HOST_USER,
             [user.email],
             fail_silently=False,
         )
