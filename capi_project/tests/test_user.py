@@ -29,7 +29,7 @@ class CaseTestCase(TestCase):
         user.key_expires = timedelta.now()
         user.save()
         user.authenticate_user()
-        assert user.is_validated
+        assert user.is_authenticated()
         assert user.is_active
         token = user.get_api_key()
         assert len(token) > 5

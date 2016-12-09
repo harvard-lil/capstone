@@ -87,7 +87,7 @@ def verify_user(request, user_id, activation_nonce):
     """
     serializer = UserSerializer()
     user = serializer.verify_with_nonce(user_id, activation_nonce)
-    if user.is_validated:
+    if user.is_authenticated():
         data = {'status':'Success!','message':'Thank you for verifying your email address. We will be in touch with you shortly.'}
         if request.accepted_renderer.format == 'html' :
             return Response(data, template_name='verified.html')
