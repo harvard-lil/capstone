@@ -1,26 +1,23 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status
-from rest_framework import renderers
 from django.http import HttpResponse
-
 from django.db.models import Q
-
-from rest_framework import routers, viewsets, views, mixins, permissions
-from rest_framework.response import Response
 from django.db import IntegrityError
+from django.conf import settings
+from django_filters.rest_framework import DjangoFilterBackend
 
+from rest_framework import status, renderers, routers, viewsets, views, mixins, permissions
+from rest_framework.response import Response
 from rest_framework.decorators import api_view, detail_route, list_route, permission_classes, renderer_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from django_filters.rest_framework import DjangoFilterBackend
-from django.conf import settings
+
 from .models import Case
 from .view_helpers import *
 from .serializers import *
 from .permissions import IsCaseUser, IsAdmin
 from .filters import *
-
 from .case_views import *
+from .resources import email
 
 class JSONResponse(HttpResponse):
     """
