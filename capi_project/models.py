@@ -22,6 +22,8 @@ class CaseUserManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
         )
+        user.first_name = kwargs.get('first_name')
+        user.last_name = kwargs.get('last_name')
         user.set_password(password)
         user.create_nonce()
         user.save(using=self._db)
@@ -65,6 +67,7 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
                 self.is_active = True
                 self.save()
             except IntegrityError as e:
+                print "IntegrityError in authenticating user:",e,self.email
                 pass
         else:
             raise PermissionDenied

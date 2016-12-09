@@ -24,9 +24,12 @@ METADATA_DIR_PATH = '/path/to/dir'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
-EMAIL_HOST_USER = 'your-email-here@email.com'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST_PASSWORD = '123'
+EMAIL_ADDRESS = 'main-email-address@gmail.com'
+ADMIN_EMAIL_ADDRESS = 'admin-email-address@gmail.com'
+EMAIL_HOST_USER = 'user-secret'
+EMAIL_HOST_PASSWORD = 'secret-secret'
 
 ROOT_URLCONF = 'capi_project.urls'
 

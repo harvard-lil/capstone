@@ -1,10 +1,12 @@
 import os
 import csv
 import paramiko
-from capi_project.models import Case
-from paramiko import SSHClient
-from scp import SCPClient
+
 from django.conf import settings
+from django.core.mail import send_mail
+
+from capi_project.models import Case
+from scp import SCPClient
 
 def format_filename(case_id):
     cdir, cpgnumber = case_id.split('_')
@@ -13,7 +15,7 @@ def format_filename(case_id):
 
 def scp_get(requester_id, list_of_files):
     try:
-        ssh = SSHClient()
+        ssh = paramiko.SSHClient()
         list_of_files = map(format_filename, list_of_files)
         ssh.load_system_host_keys()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -35,6 +37,26 @@ def scp_get(requester_id, list_of_files):
 
     except Exception as e:
         return e
+
+def email(reason, user):
+    title = 'CAP API: %s' % reason
+    if reason == 'new_registration':
+        message = "user %s %s at %s has requested API access." % (user.first_name, user.last_name, user.email)
+        send_mail(title, message, settings.ADMIN_EMAIL_ADDRESS, [settings.EMAIL_ADDRESS])
+        print "sent new_registration email for %s" % user.email
+
+    if reason == 'new_signup':
+        token_url= "%s/verify-user/%s/%s" % (settings.BASE_URL, user.id, user.activation_nonce)
+        send_mail(
+            'CaseLaw Access Project: Verify your email address',
+            """
+                Please click here to verify your email address: %s
+            """ % token_url,
+            settings.EMAIL_ADDRESS,
+            [user.email],
+            fail_silently=False,)
+        print "sent new_signup email for %s" % user.email
+
 
 if __name__ == '__main___':
     create_metadata_from_csv()
