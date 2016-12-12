@@ -22,8 +22,9 @@ The Caselaw Access Project API guide
         <li class="reading-toc-section"><a href="#overview-section">Overview</a></li>
         <li class="reading-toc-section"><a href="#api-key-section">API Key</a></li>
         <li class="reading-toc-section"><a href="#api-endpoints-section">Endpoints Overview</a></li>
-        <li class="reading-toc-section"><a href="#api-endpoints-section">cURL</a></li>
-        <li class="reading-toc-section"><a href="#api-endpoints-section">RAW CASETEXT</a></li>
+        <li class="reading-toc-section"><a href="#api-endpoints-extras-section">Endpoints extras</a></li>
+        <li class="reading-toc-section"><a href="#raw-casetext-section">RAW CASETEXT</a></li>
+        <li class="reading-toc-section"><a href="#pagination-sectionn">PAGINATION</a></li>
       </ul>
     </div>
 
@@ -34,17 +35,18 @@ The Caselaw Access Project API guide
       You can browse unlimited metadata but if you want to download case xml, you must first register for an API key.</p>
       <p class="body-text">The API can be browsed through the browser (see http://{{ request.get_host }}/)</p>
       <p class="body-text">Or using the command line. </p>
-      <h3 id="api-key-section" class="section-title">API Key</h3>
+      <div class="separator"></div>
+      <h3  id="api-key-section" class="section-title">API Key</h3>
       <a href="http://{{ request.get_host }}/accounts/register"><button class="blue-button">REGISTER HERE</button></a>
       <p class="body-text">Once you have your API key, you can begin to download cases.</p>
       <p class="body-text blue-text note-text">A note about rate limiting:
 Currently we only allow users to download 500 cases a day. If you are a researcher or you need to have more access, please write to us here: <span class="black-text">info@capapi.org</span></p>
-
+      <div class="separator"></div>
       <h2 id="api-endpoints-section" class="section-title">API Endpoints Overview</h2>
       <p class="body-text">All case metadata is viewable in the browser, or through the command line.
       <br/>
       <!-- <p class="body-text bold-text">Here is a list of available endpoints:</p> -->
-      <p class="body-text">All cases:</p>
+      <p class="body-text">All cases <span class="body-text blue-text note-text">(this can take a while to load in the browser)</span>:</p>
       <pre>https://{{ request.get_host }}/cases/</pre>
       <p class="body-text">A list of available jurisdictions:</p>
       <pre>https://{{ request.get_host }}/cases/jurisdictions/</pre>
@@ -58,45 +60,42 @@ Currently we only allow users to download 500 cases a day. If you are a research
       <pre>https://{{ request.get_host }}/cases/<span class="blue-text">{jurisdiction}</span>/<span class="blue-text">{reporter}</span>/volumes/</pre>
       <p class="body-text">All cases in a specific volume:</p>
       <pre>https://{{ request.get_host }}/cases/<span class="blue-text">{jurisdiction}</span>/<span class="blue-text">{reporter}</span>/<span class="blue-text">{volume}</span>/</pre>
+      <p class="body-text">All cases on a specific page:</p>
+      <pre>https://{{ request.get_host }}/cases/<span class="blue-text">{jurisdiction}</span>/<span class="blue-text">{reporter}</span>/<span class="blue-text">{volume}</span>/<span class="blue-text">{page}</span>/</pre>
 
-      If you wish to download the full case text XML, you will have to use the command line and follow this structure:
-      </p>
-      <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?type=download -H  'Authorization: Token your-token-here' > your-zip-file-name.zip</pre>
+      <p class="body-text bold-text">Get a specific case:</p>
+      <pre>https://{{ request.get_host }}/cases/citation/<span class="blue-text">{citation}</pre>
+      <p>or:</p>
+      <pre>https://{{ request.get_host }}/cases/<span class="blue-text">{jurisdiction}</span>/<span class="blue-text">{reporter}</span>/<span class="blue-text">{volume}</span>/<span class="blue-text">{page}</span>/<span class="blue-text">{name_abbreviation}/</pre>
+
+      <div class="separator"></div>
+      <h2 id="api-endpoints-extras-section" class="section-title">API Extras</h2>
+      <p class="body-text bold-text">Getting JSON responses</p>
+      <p class="body-text">Simply add a <code>format=json</code> flag. This is recommended especially for working in the command line (otherwise you will be getting html responses).</p>
+      <p class="body-text">For example, to get a list of jurisdictions in the browser:</p>
+      <a href="https://{{ request.get_host }}/cases/jurisdictions?format=json">https://{{ request.get_host }}/cases/jurisdictions?format=json</a>
+      <br/>
+      <p class="body-text">Or to get the first twenty cases' metadata for Illinois using the command line:</p>
+      <p class="body-text blue-text note-text">Please see the section on pagination for an explanation on response limiting</p>
+      <pre>curl https://{{ request.get_host }}/cases/Illinois?format=json</pre>
+      <br/>
+      <p class="body-text bold-text">Showing only specific fields in responses</p>
+
       <p class="body-text">To show only specific fields, comma delineate the field names</p>
       <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?fields=citation,name</pre>
-      <p class="body-text">All case metadata:</p>
-      <p class="body-text semibold-text"><a>https://{{ request.get_host }}/cases</a></p>
-      <p class="body-text">All case metadata in json:</p>
-      <pre>curl https://{{ request.get_host }}/cases?format=json</pre>
 
-      <p class="body-text">To get a list of jurisdictions</p>
-      <code>curl https://{{ request.get_host }}/cases?format=json</code>
-      <code>curl https://{{ request.get_host }}/cases?format=json</code>
+      <div class="separator"></div>
+      <h2 id="raw-casetext-section" class="section-title">Raw Casetext</h2>
 
-      <h2 id="curl-section" class="section-title">cURL Overview</h2>
-
-      If you wish to use the command line you should add the <code>?format=json</code> flag to any request.
-      <br/>
-      For example:
-      <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?format=json</pre>
-
-
-      <h3 id="pagination" class="section-title">Pagination</h3>
+      <p class="body-text">If you wish to download the full case text XML, you will have to use the command line and follow this structure:</p>
+      <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?type=download -H  'Authorization: Token your-token-here' > your-zip-file-name.zip</pre>
+      <p class="body-text">Your api key allows the download of 500 cases a day.
+      You can <a href="https://{{ request.get_host }}/accounts/login">log in</a> to view your case allowance for the day and to retrieve your api key.
+      </p>
+      <h2 id="pagination-section" class="section-title">Pagination</h2>
       <p class="body-text">The API will return 20 items per response. If you have more than 20 items returned, you can page through the items using the <i>offset</i> parameter. For example, if you want to start at the 101st result, set the offset value to 4 (we start counting at 0, of course).</p>
-
-
-      <!-- <p class="body-text">If you'd prefer to get a smaller result set, specify the number of returned items using the limit parameter. In this example, we'll see just one item returned.</p> -->
-      <!-- <pre>curl https://{{ request.get_host }}/cases?format=json&limit=1</pre> -->
-      <p class="body-text">This is the structure of the api</p>
-      <code>curl http://{{ request.get_host }}</code>
     </div>
   </div>
 </div>
-
-
-
-
-
-
 
 {% endblock %}
