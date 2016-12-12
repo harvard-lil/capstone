@@ -11,6 +11,8 @@ from rest_framework.decorators import api_view, detail_route, list_route, permis
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 
+import logging
+
 from .models import Case
 from .view_helpers import *
 from .serializers import *
@@ -57,7 +59,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 'message':'Thank you. Please check your email %s for a verification link.' % user.email}
                 return Response(content, template_name='sign-up-success.html')
             except IntegrityError as e:
-                print "IntegrityError", e
+                logger.error('IntegrityError %s %s %s' % (e, dir(e), request.data.get('email')))
                 content = {
                     'status':'Error',
                     'message':"IntegrityError",
