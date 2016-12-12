@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %} | Developer Docs{% endblock %}
+
+{% block meta_description %}
+The Caselaw Access Project API guide
+{% endblock %}
+{% block content %}
+  {% load rest_framework %}
+  <div class="container logged-in-page container-full header-margin">
+    <div class="row row-centered">
+
+    {% if errors %}
+    <div class="alert alert-warning">
+      <strong>Error!</strong>
+      <ul>
+        <li>{{ errors.messages }}</li>
+      </ul>
+    </div>
+    {% endif %}
+    <div class="col-sm-4 col-centered">
+      <h3>Profile details</h3>
+      <label>Email:</label> {{email}}
+      <br/>
+      <label>API Key:</label> {{api_key}}
+      <br/>
+      <label>Cases left to view or download today:</label> {{case_allowance}}
+    </div>
+  </div>
+  {% endblock content %}

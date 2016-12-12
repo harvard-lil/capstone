@@ -52,6 +52,12 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'User'
 
+    def get_activation_nonce(self, *args, **kwargs):
+        if self.key_expires + timedelta(hours=24) < timezone.now():
+            self.create_nonce()
+            self.save()
+        return self.activation_nonce
+
     def update_case_allowance(self, *args, **kwargs):
         if self.case_allowance_last_updated + timedelta(hours=settings.CASE_EXPIRE_HOURS) < timezone.now():
             self.case_allowance = settings.CASE_DAILY_ALLOWANCE

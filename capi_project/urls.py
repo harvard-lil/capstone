@@ -16,7 +16,7 @@ urlpatterns = [
     url(r'^$', TemplateView.as_view(template_name='docs.html'), name='docs'),
     url(r'^', include(router.urls)),
     url(r'^admin', include(admin.site.urls)),
-    url(r'^verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
+    url(r'^accounts/verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
     url(r'^cases/$', views.CaseViewSet.as_view({'get':'case_list'}), name='list-all-cases'),
     url(r'^cases/citation/(?P<citation>[\w.\d.\s+]+)?$', views.get_case_by_citation, name='get-case-by-citation'),
     url(r'^cases/jurisdictions/?$', views.list_jurisdictions, name='list-jurisdictions'),

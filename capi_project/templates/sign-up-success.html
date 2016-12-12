@@ -6,12 +6,20 @@
 The Caselaw Access Project API guide
 {% endblock %}
 {% block content %}
-<div>
-  {% if errors %}
-    {{ errors }}
-  {% endif %}
+<div class="container login-form container-full inverse header-margin">
+  <div class="row row-centered">
+    {% if errors %}
+    <div class="alert alert-warning">
+      <div class="col-sm-4 col-centered">
+        <strong>Error!</strong> See below for details
+      </div>
+    </div>
+    {% endif %}
+    <div class="col-sm-4 col-centered">
 
-  <h1>{{status}}</h1>
-  {{ message }}
+      <h3>{{status}}</h3>
+      {{ message }}
+    </div>
+  </div>
 </div>
 {% endblock content %}

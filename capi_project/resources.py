@@ -46,7 +46,7 @@ def email(reason, user):
         print "sent new_registration email for %s" % user.email
 
     if reason == 'new_signup':
-        token_url= "%s/verify-user/%s/%s" % (settings.BASE_URL, user.id, user.activation_nonce)
+        token_url= "%s/accounts/verify-user/%s/%s" % (settings.BASE_URL, user.id, user.get_activation_nonce())
         send_mail(
             'CaseLaw Access Project: Verify your email address',
             """
