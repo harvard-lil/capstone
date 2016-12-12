@@ -9,7 +9,7 @@ The Caselaw Access Project API guide
   {% load rest_framework %}
   <div class="container login-form container-full inverse header-margin">
     <div class="row row-centered">
-      {% if errors %}
+      {% if errors != None %}
       <div class="alert alert-warning">
         <div class="col-sm-4 col-centered">
           <strong>Error!</strong> See below for details
@@ -18,7 +18,7 @@ The Caselaw Access Project API guide
       {% endif %}
 
       <div class="col-sm-4 col-centered">
-        <h3 >Register</h3>
+        <h3>Register</h3>
 
         <form class="form" action="/accounts/register_user/" method="POST">
           {% csrf_token %}
