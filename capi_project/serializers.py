@@ -64,7 +64,7 @@ class RegisterUserSerializer(serializers.Serializer):
         try:
             user = CaseUser.objects.create_user(**validated_data)
         except Exception as e:
-            logger.error('ERROR in account creation %s %s %s' % (e, dir(e), user.email))
+            logger.error('ERROR in account creation %s %s' % (e, dir(e)))
 
         email(reason='new_signup', user=user)
         return user
