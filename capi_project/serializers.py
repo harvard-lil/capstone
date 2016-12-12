@@ -5,6 +5,10 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth import password_validation, get_user_model
 from django.core import exceptions
 from resources import email
+
+import logging
+logger = logging.getLogger(__name__)
+
 class CaseSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         many = kwargs.pop('many', True)
@@ -57,7 +61,11 @@ class RegisterUserSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
-        user = CaseUser.objects.create_user(**validated_data)
+        try:
+            user = CaseUser.objects.create_user(**validated_data)
+        except Exception as e:
+            logger.error('ERROR in account creation %s %s %s' % (e, dir(e), user.email))
+
         email(reason='new_signup', user=user)
         return user
 
