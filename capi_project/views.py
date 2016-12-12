@@ -56,10 +56,15 @@ class UserViewSet(viewsets.ModelViewSet):
                 'status':'Success!',
                 'message':'Thank you. Please check your email %s for a verification link.' % user.email}
                 return Response(content, template_name='sign-up-success.html')
-
             except IntegrityError as e:
                 print "IntegrityError", e
-                return Response({'errors':serializer.errors}, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
+                content = {
+                    'status':'Error',
+                    'message':"IntegrityError",
+                    'errors':e
+                }
+
+                return Response(content, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
         else:
             print serializer.errors
             return Response({'serializer':serializer, 'errors':serializer.errors}, template_name='sign-up.html', status=status.HTTP_400_BAD_REQUEST)

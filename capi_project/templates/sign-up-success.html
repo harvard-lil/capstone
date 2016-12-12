@@ -17,8 +17,8 @@ The Caselaw Access Project API guide
     {% endif %}
     <div class="col-sm-4 col-centered">
 
-      <h3>{{status}}</h3>
-      {{ message }}
+      <h3>{% if status %}{{status}}{% endif %}</h3>
+      {% if message %}{{ message }}{% endif %}
     </div>
   </div>
 </div>
