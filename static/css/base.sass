@@ -53,6 +53,10 @@ pre
   margin: 0 auto
   float: none
 
+.center-content
+  text-align: center
+
+
 .white-button
   font           : 14px $font-name
   color          : white
@@ -61,6 +65,7 @@ pre
   border         : 1px solid white
   height         : 35px
   padding        : 0px 14px
+  text-transform : uppercase
 
 .remove-padding-left
   margin-left: 0px
@@ -113,15 +118,21 @@ body
 .inverse
   background-color: $black
   color: white
+  button:hover, button:active, button:focus
+    background-color: $light-blue
+    color: $black
+    border: $black
+  a:focus, a:active, a:hover
+    color: $light-blue
 
 .login-form
-  text-transform: uppercase
   letter-spacing: 1px
   width: 100%
   min-height: 70%
   h3
     margin-left: -20px
-
+  form
+    text-transform: uppercase
 .logged-in-page
   padding: 20px 0px
   min-height: 70%

@@ -9,6 +9,14 @@ The Caselaw Access Project API guide
   {% load rest_framework %}
   <div class="container login-form container-full inverse header-margin">
     <div class="row row-centered">
+      {% if errors %}
+      <div class="alert alert-warning">
+        <div class="col-sm-4 col-centered">
+          <strong>Error!</strong> See below for details
+        </div>
+      </div>
+      {% endif %}
+
       <div class="col-sm-4 col-centered">
         <h3 >Register</h3>
 
