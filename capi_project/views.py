@@ -21,6 +21,8 @@ from .filters import *
 from .case_views import *
 from .resources import email
 
+logger = logging.getLogger(__name__)
+
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
