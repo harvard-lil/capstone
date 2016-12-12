@@ -75,12 +75,17 @@ class UserViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             try:
                 user = serializer.verify_with_password(email=request.data.get('email'), password=request.data.get('password'))
-                return Response({'email':user.email, 'api_key':user.get_api_key}, template_name='token.html',)
+
+                # update case allowance before sending back
+                user.update_case_allowance()
+                user = CaseUser.objects.get(email=user.email)
+
+                return Response({'email':user.email, 'api_key':user.get_api_key, 'case_allowance':user.case_allowance}, template_name='user-account.html',)
             except Exception as e:
-                print e
-                return Response({'errors':e}, template_name='token.html', status=status.HTTP_400_BAD_REQUEST)
+                content = {'errors':{'messages':'Invalid password or email address'}, 'serializer':serializer}
+                return Response(content, template_name='log-in.html', status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'errors':serializer.errors}, template_name='error.html', status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(http_method_names=['GET'])
 @renderer_classes((renderers.BrowsableAPIRenderer,renderers.JSONRenderer,))

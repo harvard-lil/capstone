@@ -7,7 +7,7 @@ The Caselaw Access Project API guide
 {% endblock %}
 
 {% block content %}
-<div class="container header-margin">
+<div class="header-margin">
   <div class="page-header cont-fixed">
     <div class="row">
         <h1 class="centered-text bold-text"><span class="blue-text">CAP</span> API</h1>
@@ -43,11 +43,6 @@ Currently we only allow users to download 500 cases a day. If you are a research
       <h2 id="api-endpoints-section" class="section-title">API Endpoints Overview</h2>
       <p class="body-text">All case metadata is viewable in the browser, or through the command line.
       <br/>
-      If you wish to use the command line you should add the <code>?format=json</code> flag to any request.
-      <br/>
-      For example:
-      <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?format=json</pre>
-
       <!-- <p class="body-text bold-text">Here is a list of available endpoints:</p> -->
       <p class="body-text">All cases:</p>
       <pre>https://{{ request.get_host }}/cases/</pre>
@@ -77,6 +72,14 @@ Currently we only allow users to download 500 cases a day. If you are a research
       <p class="body-text">To get a list of jurisdictions</p>
       <code>curl https://{{ request.get_host }}/cases?format=json</code>
       <code>curl https://{{ request.get_host }}/cases?format=json</code>
+
+      <h2 id="curl-section" class="section-title">cURL Overview</h2>
+
+      If you wish to use the command line you should add the <code>?format=json</code> flag to any request.
+      <br/>
+      For example:
+      <pre>curl https://{{ request.get_host}}/cases/massachusetts/mass./1?format=json</pre>
+
 
       <h3 id="pagination" class="section-title">Pagination</h3>
       <p class="body-text">The API will return 20 items per response. If you have more than 20 items returned, you can page through the items using the <i>offset</i> parameter. For example, if you want to start at the 101st result, set the offset value to 4 (we start counting at 0, of course).</p>

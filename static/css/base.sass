@@ -4,6 +4,10 @@ a
   cursor: pointer
   outline: none
   border-bottom: 0px
+  color: $blue
+  &:hover, :focus, :active
+    color: $black
+    border-bottom: 0px
 .blue-text
   color: $blue
 
@@ -51,7 +55,6 @@ pre
 
 .white-button
   font           : 14px $font-name
-  font-weight    : $font-bold
   color          : white
   letter-spacing : 2px
   background     : transparent
@@ -59,6 +62,10 @@ pre
   height         : 35px
   padding        : 0px 14px
 
+.remove-padding-left
+  margin-left: 0px
+  left: -15px
+  position: relative
 .blue-button
   font: 14px $font-name
   font-weight: $font-bold
@@ -102,16 +109,22 @@ body
     left: 10px
     letter-spacing: 1.5px
     position: relative
-    top: -12px
 
 .inverse
   background-color: $black
   color: white
+
 .login-form
   text-transform: uppercase
   letter-spacing: 1px
-  width: 100% !important
-  display: block !important
+  width: 100%
+  min-height: 70%
+  h3
+    margin-left: -20px
+
+.logged-in-page
+  padding: 20px 0px
+  min-height: 70%
 
 footer.footer
   width: 100%
@@ -160,3 +173,18 @@ footer.footer
     font-weight : $font-bold
     font-size   : 21px
     letter-spacing : 3px
+
+// errors
+.alert
+  background-color: $orange
+  border: 0px
+  background-image: none
+  color: $black
+  padding-left: 0px
+  padding-right: 0px
+  .col-sm-4
+    padding-left: 0px
+    padding-right: 0px
+
+  li
+    list-style: none
