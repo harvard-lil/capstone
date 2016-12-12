@@ -31,7 +31,7 @@ class RegisterUserSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
-    password = serializers.CharField(style={'input_type': 'password')
+    password = serializers.CharField(style={'input_type': 'password'})
     confirm_password = serializers.CharField(style={'input_type': 'password'})
 
     class Meta:
