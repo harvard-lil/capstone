@@ -64,7 +64,7 @@ class RegisterUserSerializer(serializers.Serializer):
 
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
-    password = serializers.CharField(max_length=100,style={'input_type': 'password', 'placeholder': 'Password'})
+    password = serializers.CharField(max_length=100,style={'input_type': 'password'})
 
     class Meta:
         model = CaseUser
