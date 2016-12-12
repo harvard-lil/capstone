@@ -66,10 +66,7 @@ class RegisterUserSerializer(serializers.Serializer):
             email(reason='new_signup', user=user)
             return user
         except Exception as e:
-            print >>sys.stderr,e
-            logger.error('ERROR in account creation %s %s' % (e, dir(e)))
-            return {'email':''}
-
+            raise Exception(e)
 
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
