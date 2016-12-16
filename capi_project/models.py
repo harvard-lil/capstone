@@ -98,6 +98,37 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.email.split('@')[0]
 
+class Reporter(models.Model):
+    name = models.CharField(max_length=255, null=True)
+    slug = models.SlugField(unique=True, max_length=100)
+    jurisdiction = models.SlugField(max_length=100, null=True)
+
+    def __unicode__(self):
+        return self.slug
+
+    @classmethod
+    def create_unique(self, name, jurisdiction):
+        special_cases =  {
+                'Ct. Cl.':  {
+                    'West Virginia':'wv-ct-cl', 'United States': 'us-ct-cl'},
+                'Smith': {
+                    'Indiana':'ind-smith', 'New Hampshire':'nh-smith'
+                }
+            }
+        if case.reporter in special_cases:
+            slug = special_cases[case.reporter][case.jurisdiction]
+        else:
+            slug = slugify(case.reporter)
+
+        reporter, created = Reporter.objects.get_or_create(name=case.reporter, slug=slug, jurisdiction=slugify(case.jurisdiction))
+
+        if not created:
+            reporter.save()
+        case.reporter_name = reporter
+        case.save()
+
+        return reporter
+
 class Case(models.Model):
     caseid = models.CharField(primary_key=True, max_length=255)
     firstpage = models.IntegerField(null=True, blank=True)
@@ -121,6 +152,9 @@ class Case(models.Model):
     @classmethod
     def create(self, caseid, **kwargs):
         case = self(caseid=caseid, **kwargs)
+        case.slug = slugify(case.name_abbreviation)
+        reporter = Reporter.create_unique(name=kwargs.get('reporter'), jurisdiction=kwargs.get('jurisdiction'))
+        case.reporter = reporter
         case.save()
         return case
 
