@@ -142,8 +142,9 @@ class Case(models.Model):
     name = models.TextField(blank=True)
     court_abbreviation = models.CharField(max_length=255, blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
-    volume = models.CharField(max_length=45, blank=True)
-    reporter = models.CharField(max_length=255, blank=True)
+    slug = models.SlugField(blank=True)
+    volume = models.IntegerField(blank=True)
+    reporter = models.ForeignKey('Reporter', null=True)
     date_added = models.DateTimeField(null=True, blank=True )
 
     def __unicode__(self):
