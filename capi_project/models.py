@@ -5,12 +5,17 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.db import IntegrityError
+from django.template.defaultfilters import slugify
 
 from datetime import datetime,timedelta
 import pytz
 import uuid
+import logging
+from random import randint
 
 from rest_framework.authtoken.models import Token
+
+logger = logging.getLogger(__name__)
 
 class CaseUserManager(BaseUserManager):
     def create_user(self, *args, **kwargs):
@@ -98,14 +103,81 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.email.split('@')[0]
 
+class Volume(models.Model):
+    barcode = models.IntegerField(unique=True)
+    number = models.IntegerField(blank=True)
+    nominative_number = models.IntegerField(blank=True, null=True)
+    date_added = models.DateTimeField()
+    reporter = models.ForeignKey('Reporter', blank=True, null=True)
+    publisher = models.CharField(max_length=255, blank=True)
+    publication_year = models.IntegerField(blank=True, null=True)
+    start_year = models.IntegerField(blank=True, null=True)
+    end_year = models.IntegerField(blank=True, null=True)
+    pages = models.IntegerField(blank=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+
+    @classmethod
+    def create_from_tt_row(self, row):
+        volume, created = Volume.objects.get_or_create(id=id)
+        updated_at = datetime.strptime(row['updated_at'], "%m/%d/%Y %I:%M:%S %p")
+
+        if not created and updated_at < volume.updated_at:
+            # return out of func if existing volume is newer
+            return volume
+        volume.barcode = row['bar_code']
+        volume.reporter = Reporter.objects.get(id=row['reporter_id'])
+        volume.publication_year = row['publicationyear']
+        volume.number = row['volume']
+        volume.nominative_number = row['series_volume']
+        volume.start_year = row['page_start_date'] if row['page_start_date'] else row['start_date']
+        volume.end_year = row['page_end_date'] if row['page_end_date'] else row['end_date']
+        volume.pages = row['pages']
+        volume.title = row['title']
+        volume.publisher = row['publisher']
+
+
+
 class Reporter(models.Model):
-    name = models.CharField(max_length=255, null=True)
-    slug = models.SlugField(unique=True, max_length=100)
+    id = models.IntegerField(primary_key=True)
     jurisdiction = models.SlugField(max_length=100, null=True)
+    jurisdiction_name = models.ForeignKey('Jurisdiction', blank=True, null=True)
+    name_abbreviation = models.CharField(max_length=255, blank=True, null=True)
+    start_date = models.IntegerField(blank=True, null=True)
+    end_date = models.IntegerField(blank=True, null=True)
+    volumes = models.IntegerField(blank=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    name = models.CharField(max_length=255, null=True)
+    slug = models.SlugField(unique=True, max_length=100, null=True)
 
     def __unicode__(self):
         return self.slug
 
+    @classmethod
+    def create_from_tt_row(self, row):
+        reporter, created = Reporter.objects.get_or_create(id=id)
+        updated_at = datetime.strptime(row['updated_at'], "%m/%d/%Y %I:%M:%S %p")
+
+        if not created and updated_at < reporter.updated_at:
+            # return out of func if existing reporter is newer
+            return reporter
+
+        import ipdb; ipdb.set_trace()
+        jurisdiction = Jurisdiction.objects.get_or_create(name_abbreviation=row['state'])
+        jurisdiction.slug = slugify(jurisdiction.name_abbreviation)
+        jurisdiction.save()
+        reporter.jurisdiction = jurisdiction
+        reporter.name = row['reporter']
+        reporter.name_abbreviation = row['short']
+        reporter.start_date = row['start_date']
+        reporter.end_date = row['end_date']
+        reporter.volumes = row['volumes']
+        reporter.updated_at = updated_at
+        reporter.slug = slugify(reporter.name_abbreviation)
+
+        reporter.save()
+
+        return reporter
+        # except Exception as e:
     @classmethod
     def create_unique(self, name, jurisdiction):
         special_cases =  {
@@ -120,25 +192,76 @@ class Reporter(models.Model):
         else:
             slug = slugify(case.reporter)
 
-        reporter, created = Reporter.objects.get_or_create(name=case.reporter, slug=slug, jurisdiction=slugify(case.jurisdiction))
+        reporter, created = Reporter.objects.get_or_create(name=case.reporter, slug=slug)
 
         if not created:
             reporter.save()
-        case.reporter_name = reporter
+        case.reporter = reporter
         case.save()
 
         return reporter
+
+class Jurisdiction(models.Model):
+    name = models.CharField(unique=True, max_length=100, blank=True)
+    slug = models.SlugField(unique=True)
+    name_abbreviation = models.CharField(max_length=200, blank=True, unique=True)
+
+    @classmethod
+    def create(self, name):
+        # import ipdb; ipdb.set_trace()
+        name = Jurisdiction.fix_common_error(name=name)
+        jurisdiction, created = Jurisdiction.objects.get_or_create(name=name)
+        if created:
+            jurisdiction.name_abbreviation = name_abbreviation
+            jurisdiction.slug = slugify(name_abbreviation)
+        jurisdiction.save()
+        return jurisdiction
+
+    @classmethod
+    def create_from_tt_row(self, row):
+        jurisdiction = Jurisdiction.create(name=row['name'],name_abbreviation=row['name_abbreviation'])
+        jurisdiction.save()
+        return jurisdiction
+
+    @classmethod
+    def fix_common_error(self, name):
+        common_errors = {
+                'Califonia':'California',
+                'United Statess': 'United States',
+                'N.Y.': 'New York',
+                '1': 'United States',
+                'Philadelphia':'Pennsylvania',
+            }
+
+        if common_errors.get('name'):
+            return common_errors[name]
+        else:
+            return name
+
+class Court(models.Model):
+    name = models.CharField(max_length=255)
+    name_abbreviation = models.CharField(max_length=100, blank=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True)
+    slug = models.SlugField()
+
+    @classmethod
+    def create(self, name, name_abbreviation, jurisdiction):
+        court = self(name=name, name_abbreviation=name_abbreviation, jurisdiction=jurisdiction)
+        court.slug = slugify(court.name_abbreviation)
+        court.save()
+        return court
 
 class Case(models.Model):
     caseid = models.CharField(primary_key=True, max_length=255)
     firstpage = models.IntegerField(null=True, blank=True)
     lastpage = models.IntegerField(null=True, blank=True)
-    jurisdiction = models.CharField(max_length=100, blank=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True)
     citation = models.CharField(max_length=255, blank=True)
     docketnumber = models.CharField(max_length=255, blank=True)
     decisiondate = models.DateField(null=True, blank=True)
     decisiondate_original = models.CharField(max_length=100, blank=True)
     court = models.TextField(blank=True)
+    court_name = models.ForeignKey('Court', null=True)
     name = models.TextField(blank=True)
     court_abbreviation = models.CharField(max_length=255, blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
@@ -153,11 +276,21 @@ class Case(models.Model):
     @classmethod
     def create(self, caseid, **kwargs):
         case = self(caseid=caseid, **kwargs)
-        case.slug = slugify(case.name_abbreviation)
+        case.slug = self.create_slug(case.name_abbreviation)
         reporter = Reporter.create_unique(name=kwargs.get('reporter'), jurisdiction=kwargs.get('jurisdiction'))
         case.reporter = reporter
         case.save()
         return case
+
+    def create_slug(name_abbr):
+        rand_num = randint(1000,10000)
+        slug = "%s-%s" % (slugify(name_abbr),rand_num)
+        # check for uniqueness
+        if Case.objects.get(slug=slug):
+            # if case exists, call again
+            self.create_slug(name_abbr)
+        else:
+            return slug
 
     @classmethod
     def create_from_row(self, row):
@@ -200,6 +333,8 @@ class Case(models.Model):
                 if value:
                     value = utc.localize(value)
                 prop = 'date_added'
+            elif prop == 'jurisdiction':
+                value = self.get_jurisdiction(val)
 
             setattr(self, prop, value)
             self.save()
@@ -213,6 +348,14 @@ class Case(models.Model):
 
             case_error.save()
             pass
+
+    def get_jurisdiction(self, jurisdiction):
+        jur = Jurisdiction.objects.filter(name__icontains=jurisdiction)
+        if len(jur):
+            return list(jur)[0]
+        else:
+            return Jurisdiction.objects.create(name=jurisdiction)
+
 
 class CaseError(models.Model):
     field = models.CharField(max_length=45, null=False, blank=False)
