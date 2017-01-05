@@ -18,6 +18,33 @@ class CaseSerializer(serializers.ModelSerializer):
         model = Case
         fields = '__all__'
 
+class JurisdictionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Jurisdiction
+        fields = '__all__'
+
+class ReporterSerializer(serializers.ModelSerializer):
+    jurisdiction = serializers.HyperlinkedRelatedField(
+        many=False,
+        read_only=True,
+        view_name='jurisdiction-detail',
+    )
+
+    class Meta:
+        model = Reporter
+        fields = '__all__'
+
+class CourtSerializer(serializers.ModelSerializer):
+    jurisdiction = serializers.HyperlinkedRelatedField(
+        many=False,
+        read_only=True,
+        view_name='jurisdiction-detail',
+    )
+
+    class Meta:
+        model = Court
+        fields = '__all__'
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CaseUser
