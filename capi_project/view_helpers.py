@@ -15,18 +15,19 @@ def make_query((key,val)):
     qwarg[key]=val
     return Q(**qwarg)
 
-def format_date_queries(params, args_dict):
+def format_kwargs(params, args_dict):
     if not len(params):
         return args_dict
-
-    if 'year' in params:
-        args_dict['decisiondate__year'] = params['year']
-
-    if 'month' in params:
-        args_dict['decisiondate__month'] = params['month']
-
-    if 'day' in params:
-        args_dict['decisiondate__day'] = params['day']
+    for key,val in params.items():
+        if key == 'year':
+            args_dict['decisiondate__year'] = val
+        elif key == 'month':
+            args_dict['decisiondate__month'] = val
+        elif key == 'day':
+            args_dict['decisiondate__day'] = val
+        else:
+            if key != 'page' and key != 'offset':
+                args_dict[key] = val
     return args_dict
 
 def format_url_from_case(case):

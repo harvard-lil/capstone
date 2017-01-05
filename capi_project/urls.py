@@ -10,6 +10,9 @@ from capi_project import views
 
 router = routers.DefaultRouter()
 router.register(r'cases', views.CaseViewSet)
+router.register(r'jurisdictions', views.JurisdictionViewSet)
+router.register(r'courts', views.CourtViewSet)
+router.register(r'reporters', views.ReporterViewSet)
 router.register(r'accounts', views.UserViewSet)
 
 urlpatterns = [
