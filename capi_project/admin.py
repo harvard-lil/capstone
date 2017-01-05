@@ -11,7 +11,37 @@ class CaseUserAdmin(admin.ModelAdmin):
 
 class CaseAdmin(admin.ModelAdmin):
     list_display = ('name_abbreviation', 'citation')
+    fields = (
+        'slug',
+        'name',
+        'name_abbreviation',
+        'firstpage',
+        'lastpage',
+        'docketnumber',
+        'decisiondate',
+        'decisiondate_original',
+        'jurisdiction',
+        'reporter',
+        'date_added',
+        'court',
+    )
 
+
+
+class ReporterAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name',)
+    fields = ('slug', 'name', 'name_abbreviation', 'start_date', 'end_date', 'volumes', 'updated_at', 'jurisdiction')
+
+class CourtAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name_abbreviation',)
+    fields = ('slug', 'name', 'name_abbreviation', 'jurisdiction')
+
+class JurisdictionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'slug', 'name')
+    fields = ('slug', 'name', 'name_abbreviation',)
 
 admin.site.register(Case, CaseAdmin)
 admin.site.register(CaseUser, CaseUserAdmin)
+admin.site.register(Reporter, ReporterAdmin)
+admin.site.register(Court, CourtAdmin)
+admin.site.register(Jurisdiction, JurisdictionAdmin)
