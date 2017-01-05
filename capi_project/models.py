@@ -139,8 +139,7 @@ class Volume(models.Model):
 
 class Reporter(models.Model):
     id = models.IntegerField(primary_key=True)
-    jurisdiction = models.SlugField(max_length=100, null=True)
-    jurisdiction_name = models.ForeignKey('Jurisdiction', blank=True, null=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', blank=True, null=True)
     name_abbreviation = models.CharField(max_length=255, blank=True, null=True)
     start_date = models.IntegerField(blank=True, null=True)
     end_date = models.IntegerField(blank=True, null=True)
@@ -161,7 +160,6 @@ class Reporter(models.Model):
             # return out of func if existing reporter is newer
             return reporter
 
-        import ipdb; ipdb.set_trace()
         jurisdiction = Jurisdiction.objects.get_or_create(name_abbreviation=row['state'])
         jurisdiction.slug = slugify(jurisdiction.name_abbreviation)
         jurisdiction.save()
@@ -177,7 +175,7 @@ class Reporter(models.Model):
         reporter.save()
 
         return reporter
-        # except Exception as e:
+
     @classmethod
     def create_unique(self, name, jurisdiction):
         special_cases =  {
@@ -212,8 +210,7 @@ class Jurisdiction(models.Model):
         name = Jurisdiction.fix_common_error(name=name)
         jurisdiction, created = Jurisdiction.objects.get_or_create(name=name)
         if created:
-            jurisdiction.name_abbreviation = name_abbreviation
-            jurisdiction.slug = slugify(name_abbreviation)
+            jurisdiction.slug = slugify(jurisdiction.name_abbreviation)
         jurisdiction.save()
         return jurisdiction
 
@@ -260,10 +257,8 @@ class Case(models.Model):
     docketnumber = models.CharField(max_length=255, blank=True)
     decisiondate = models.DateField(null=True, blank=True)
     decisiondate_original = models.CharField(max_length=100, blank=True)
-    court = models.TextField(blank=True)
-    court_name = models.ForeignKey('Court', null=True)
+    court = models.ForeignKey('Court', null=True)
     name = models.TextField(blank=True)
-    court_abbreviation = models.CharField(max_length=255, blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
     slug = models.SlugField(blank=True)
     volume = models.IntegerField(blank=True)
