@@ -263,7 +263,7 @@ class Case(models.Model):
     name = models.TextField(blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
     slug = models.SlugField(blank=True)
-    volume = models.IntegerField(blank=True)
+    volume = models.IntegerField(default=0)
     reporter = models.ForeignKey('Reporter', null=True, related_name='%(class)s_reporter', on_delete=models.SET_NULL)
     date_added = models.DateTimeField(null=True, blank=True )
 

@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='case',
             name='volume',
-            field=models.IntegerField(blank=True),
+            field=models.IntegerField(default=0),
         ),
         migrations.AddField(
             model_name='case',
