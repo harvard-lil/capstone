@@ -204,6 +204,9 @@ class Jurisdiction(models.Model):
     slug = models.SlugField(unique=True)
     name_abbreviation = models.CharField(max_length=200, blank=True, unique=True)
 
+    def __unicode__(self):
+        return u"%s: %s" % (self.id, self.name)
+
     @classmethod
     def create(self, name):
         # import ipdb; ipdb.set_trace()
@@ -240,6 +243,9 @@ class Court(models.Model):
     name_abbreviation = models.CharField(max_length=100, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
     slug = models.SlugField()
+
+    def __unicode__(self):
+        return u"%s: %s" % (self.id, self.name)
 
     @classmethod
     def create(self, name, name_abbreviation, jurisdiction):
