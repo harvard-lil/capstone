@@ -135,8 +135,6 @@ class Volume(models.Model):
         volume.title = row['title']
         volume.publisher = row['publisher']
 
-
-
 class Reporter(models.Model):
     id = models.IntegerField(primary_key=True)
     jurisdiction = models.ForeignKey('Jurisdiction', blank=True, null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
@@ -171,7 +169,6 @@ class Reporter(models.Model):
         reporter.volumes = row['volumes']
         reporter.updated_at = updated_at
         reporter.slug = slugify(reporter.name_abbreviation)
-
         reporter.save()
 
         return reporter
@@ -209,7 +206,6 @@ class Jurisdiction(models.Model):
 
     @classmethod
     def create(self, name):
-        # import ipdb; ipdb.set_trace()
         name = Jurisdiction.fix_common_error(name=name)
         jurisdiction, created = Jurisdiction.objects.get_or_create(name=name)
         if created:
