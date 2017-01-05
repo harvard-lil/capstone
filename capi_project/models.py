@@ -108,7 +108,7 @@ class Volume(models.Model):
     number = models.IntegerField(blank=True)
     nominative_number = models.IntegerField(blank=True, null=True)
     date_added = models.DateTimeField()
-    reporter = models.ForeignKey('Reporter', blank=True, null=True)
+    reporter = models.ForeignKey('Reporter', blank=True, null=True, related_name='%(class)s_reporter')
     publisher = models.CharField(max_length=255, blank=True)
     publication_year = models.IntegerField(blank=True, null=True)
     start_year = models.IntegerField(blank=True, null=True)
@@ -139,7 +139,7 @@ class Volume(models.Model):
 
 class Reporter(models.Model):
     id = models.IntegerField(primary_key=True)
-    jurisdiction = models.ForeignKey('Jurisdiction', blank=True, null=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', blank=True, null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
     name_abbreviation = models.CharField(max_length=255, blank=True, null=True)
     start_date = models.IntegerField(blank=True, null=True)
     end_date = models.IntegerField(blank=True, null=True)
@@ -153,7 +153,7 @@ class Reporter(models.Model):
 
     @classmethod
     def create_from_tt_row(self, row):
-        reporter, created = Reporter.objects.get_or_create(id=id)
+        reporter, created = Reporter.objects.get_or_create(id=row['id'])
         updated_at = datetime.strptime(row['updated_at'], "%m/%d/%Y %I:%M:%S %p")
 
         if not created and updated_at < reporter.updated_at:
@@ -238,7 +238,7 @@ class Jurisdiction(models.Model):
 class Court(models.Model):
     name = models.CharField(max_length=255)
     name_abbreviation = models.CharField(max_length=100, blank=True)
-    jurisdiction = models.ForeignKey('Jurisdiction', null=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
     slug = models.SlugField()
 
     @classmethod
@@ -252,17 +252,17 @@ class Case(models.Model):
     caseid = models.CharField(primary_key=True, max_length=255)
     firstpage = models.IntegerField(null=True, blank=True)
     lastpage = models.IntegerField(null=True, blank=True)
-    jurisdiction = models.ForeignKey('Jurisdiction', null=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
     citation = models.CharField(max_length=255, blank=True)
     docketnumber = models.CharField(max_length=255, blank=True)
     decisiondate = models.DateField(null=True, blank=True)
     decisiondate_original = models.CharField(max_length=100, blank=True)
-    court = models.ForeignKey('Court', null=True)
+    court = models.ForeignKey('Court', null=True, related_name='%(class)s_court', on_delete=models.SET_NULL)
     name = models.TextField(blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
     slug = models.SlugField(blank=True)
     volume = models.IntegerField(blank=True)
-    reporter = models.ForeignKey('Reporter', null=True)
+    reporter = models.ForeignKey('Reporter', null=True, related_name='%(class)s_reporter', on_delete=models.SET_NULL)
     date_added = models.DateTimeField(null=True, blank=True )
 
     def __unicode__(self):

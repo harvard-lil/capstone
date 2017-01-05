@@ -13,7 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
 from wsgiref.util import FileWrapper
 
-from .models import Case
+from .models import Case, Jurisdiction, Reporter, Court
 from .view_helpers import *
 from .serializers import *
 from .permissions import IsCaseUser
@@ -30,6 +30,23 @@ class JSONResponse(HttpResponse):
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
 
+class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = JurisdictionSerializer
+    http_method_names = ['get']
+    queryset = Jurisdiction.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
+class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = ReporterSerializer
+    http_method_names = ['get']
+    queryset = Reporter.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
+class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = CourtSerializer
+    http_method_names = ['get']
+    queryset = Court.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 class CaseViewSet(viewsets.GenericViewSet):
     """
