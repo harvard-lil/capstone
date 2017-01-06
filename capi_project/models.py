@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import IntegrityError
 from django.template.defaultfilters import slugify
-
+from utils import generate_unique_slug
 from datetime import datetime,timedelta
 import pytz
 import uuid
@@ -305,7 +305,7 @@ class Court(models.Model):
         return court
 
 class Case(models.Model):
-    slug = models.SlugField(primary_key=True, unique=True)
+    slug = models.SlugField(unique=True, max_length=255)
     caseid = models.CharField(unique=True, max_length=255)
     firstpage = models.IntegerField(null=True, blank=True)
     lastpage = models.IntegerField(null=True, blank=True)
@@ -327,33 +327,26 @@ class Case(models.Model):
     @classmethod
     def create(self, caseid, **kwargs):
         case = self(caseid=caseid, **kwargs)
-        case.slug = self.create_slug(case.name_abbreviation)
+        case.slug = generate_unique_slug(Case, case.name_abbreviation)
         reporter = Reporter.create_unique(name=kwargs.get('reporter'), jurisdiction=kwargs.get('jurisdiction'))
         case.reporter = reporter
         case.save()
         return case
 
-    def create_slug(self, name_abbr):
-        rand_num = randint(1000,10000)
-        slug = "%s-%s" % (slugify(name_abbr),rand_num)
-        # check for uniqueness
-        print slug
-        if Case.objects.get(slug=slug):
-            # if case exists, call again
-            self.create_slug(name_abbr=name_abbr)
-        else:
-            case.slug = slug
-            case.save()
-
     @classmethod
     def create_from_row(self, row):
         try:
-            case, created = Case.objects.get_or_create(caseid=row['caseid'])
+            try:
+                case = Case.objects.get(caseid=row['caseid'])
+            except Exception as e:
+                print e, row['caseid']
+                slug = generate_unique_slug(Case, row['name_abbreviation'])
+                case = Case(caseid=row['caseid'], slug=slug)
+                pass
+
             # if just created, write fields
             # if already created, check timestamp
-            if created:
-                case.write_case_fields(row)
-            else:
+            if case.date_added:
                 utc = pytz.utc
                 naive_timestamp = get_date_added(row['timestamp'])
                 if naive_timestamp:
@@ -361,21 +354,21 @@ class Case(models.Model):
                     # overwrite case only if:
                     # date_added (old timestamp) did not exist and new_timestamp exists
                     # timestamp is greater than previous date_added timestamp
-                    if (new_timestamp and not case.date_added) or (new_timestamp > case.date_added):
+                    if (new_timestamp and not case.date_added) or (new_timestamp >= case.date_added):
                         case.write_case_fields(row)
                 else:
                     # case has already been created and we are iterating
                     # over the same row again (without date_added)
                     pass
 
+            else:
+                case.write_case_fields(row)
+
         except Exception as e:
-            print "Exception caught on case creation: %s" % e
+            print "Exception caught on case creation: %s" % e, row['caseid']
             pass
 
     def write_case_fields(self, row):
-        slug = self.create_slug(row['name_abbreviation'])
-        self.safe_set('slug',slug)
-
         for prop,val in row.items():
             if prop != 'court' and prop != 'court_abbreviation' and prop != 'reporter':
                 self.safe_set(prop,val)
@@ -386,9 +379,16 @@ class Case(models.Model):
             jurisdiction_id = None
 
         court = Court.get_or_create_from_case(name=row['court'], name_abbreviation=row['court_abbreviation'], jurisdiction_id=jurisdiction_id)
-        self.safe_set('court', court)
+
+        if court:
+            self.court = court
+            self.save()
+
         reporter = Reporter.get_or_create_from_case(name_abbreviation=row['reporter'], jurisdiction_id=jurisdiction_id)
-        self.safe_set('reporter', reporter)
+
+        if reporter:
+            self.reporter = reporter
+            self.save()
 
         self.safe_set('decisiondate_original', row['decisiondate_original'])
 
@@ -397,7 +397,7 @@ class Case(models.Model):
             if prop == 'decisiondate':
                 value = datetime.fromordinal(int(value))
             elif prop == 'jurisdiction':
-                value = Jurisdiction.get_or_create_from_case(self, value)
+                value = Jurisdiction.get_or_create_from_case(value)
             elif prop == 'timestamp':
                 value = get_date_added(value)
                 utc = pytz.utc
