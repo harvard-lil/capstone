@@ -26,8 +26,6 @@ class CaseAdmin(admin.ModelAdmin):
         'court',
     )
 
-
-
 class ReporterAdmin(admin.ModelAdmin):
     list_display = ('id', 'name',)
     fields = ('slug', 'name', 'name_abbreviation', 'start_date', 'end_date', 'volumes', 'updated_at', 'jurisdiction')
