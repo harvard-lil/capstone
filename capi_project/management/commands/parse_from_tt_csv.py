@@ -21,6 +21,6 @@ class Command(BaseCommand):
                 if model == 'Reporter':
                     Reporter.create_from_tt_row(row)
                 elif model == 'Volume':
-                    Volume.create_from_tt_row(row)
+                    Volume.create_from_tt_row(i, row)
                 elif model == 'Jurisdiction':
                     Jurisdiction.create_from_tt_row(row)
