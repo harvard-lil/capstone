@@ -104,47 +104,82 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
         return self.email.split('@')[0]
 
 class Volume(models.Model):
-    barcode = models.IntegerField(unique=True)
-    number = models.IntegerField(blank=True)
-    nominative_number = models.IntegerField(blank=True, null=True)
-    date_added = models.DateTimeField()
+    id = models.IntegerField(primary_key=True)
+    barcode = models.CharField(blank=True, max_length=255)
+    number = models.IntegerField(null=True, blank=True, default=None)
+    nominative_number = models.IntegerField(null=True, blank=True, default=None)
+    date_added = models.DateTimeField(null=True)
     reporter = models.ForeignKey('Reporter', blank=True, null=True, related_name='%(class)s_reporter')
-    publisher = models.CharField(max_length=255, blank=True)
-    publication_year = models.IntegerField(blank=True, null=True)
-    start_year = models.IntegerField(blank=True, null=True)
-    end_year = models.IntegerField(blank=True, null=True)
-    pages = models.IntegerField(blank=True, null=True)
+    publisher = models.CharField(max_length=255, blank=True, null=True)
+    publication_year = models.IntegerField(null=True, blank=True, default=None)
+    start_year = models.IntegerField(null=True, blank=True, default=None)
+    end_year = models.IntegerField(null=True, blank=True, default=None)
+    pages = models.IntegerField(null=True, blank=True, default=None)
+    title = models.TextField(blank=True, null=True)
     updated_at = models.DateTimeField(null=True)
 
     @classmethod
-    def create_from_tt_row(self, row):
-        volume, created = Volume.objects.get_or_create(id=id)
-        updated_at = datetime.strptime(row['updated_at'], "%m/%d/%Y %I:%M:%S %p")
+    def create_from_tt_row(self, row_num, row):
+        # assuming each row is unique
+        volume = Volume(id=row_num)
+        for key in row.keys():
+            try:
+                if key == 'bar_code':
+                    volume.barcode = row[key]
+                elif key == 'volume':
+                    volume.number = int(row[key])
+                elif key == 'publicationyear':
+                    volume.publication_year = int(row[key])
+                elif key == 'series_volume':
+                    volume.nominative_number = int(row[key])
+                elif key == 'reporter_id':
+                    try:
+                        volume.reporter = Reporter.objects.get(id=row['reporter_id'])
+                    except Exception as e:
+                        print "reporter not found:",row['reporter_id'], volume.barcode
+                        pass
+                elif key == 'pages':
+                    volume.pages = int(row[key])
+                elif key == 'title':
+                    volume.title = row['title']
+                elif key == 'publisher':
+                    volume.publisher = row['publisher']
+                else:
+                    pass
+                volume.save()
+            except:
+                pass
 
-        if not created and updated_at < volume.updated_at:
-            # return out of func if existing volume is newer
-            return volume
-        volume.barcode = row['bar_code']
-        volume.reporter = Reporter.objects.get(id=row['reporter_id'])
-        volume.publication_year = row['publicationyear']
-        volume.number = row['volume']
-        volume.nominative_number = row['series_volume']
-        volume.start_year = row['page_start_date'] if row['page_start_date'] else row['start_date']
-        volume.end_year = row['page_end_date'] if row['page_end_date'] else row['end_date']
-        volume.pages = row['pages']
-        volume.title = row['title']
-        volume.publisher = row['publisher']
+        start_year = row['page_start_date'] if row['page_start_date'] else row['start_date']
+        end_year = row['page_end_date'] if row['page_end_date'] else row['end_date']
+
+        volume.updated_at = datetime.strptime(row['updated_at'], "%Y-%m-%d %H:%M:%S")
+        try:
+            volume.start_year = int(start_year)
+            volume.end_year = int(end_year)
+            volume.save()
+        except:
+            pass
+
+        volume.save()
+
+    def safe_set(self, prop, val):
+        try:
+            setattr(self, prop, value)
+            self.save()
+        except:
+            pass
 
 class Reporter(models.Model):
     id = models.IntegerField(primary_key=True)
     jurisdiction = models.ForeignKey('Jurisdiction', blank=True, null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
+    name = models.TextField(null=True)
     name_abbreviation = models.CharField(max_length=255, blank=True, null=True)
     start_date = models.IntegerField(blank=True, null=True)
     end_date = models.IntegerField(blank=True, null=True)
-    volumes = models.IntegerField(blank=True, null=True)
+    volumes = models.IntegerField(default=0)
     updated_at = models.DateTimeField(null=True)
-    name = models.CharField(max_length=255, null=True)
-    slug = models.SlugField(unique=True, max_length=100, null=True)
+    slug = models.SlugField(null=True)
 
     def __unicode__(self):
         return self.slug
@@ -152,13 +187,13 @@ class Reporter(models.Model):
     @classmethod
     def create_from_tt_row(self, row):
         reporter, created = Reporter.objects.get_or_create(id=row['id'])
-        updated_at = datetime.strptime(row['updated_at'], "%m/%d/%Y %I:%M:%S %p")
+        updated_at = datetime.strptime(row['updated_at'], "%Y-%m-%d %H:%M:%S")
 
-        if not created and updated_at < reporter.updated_at:
+        if created and reporter.updated_at and updated_at and updated_at < reporter.updated_at:
             # return out of func if existing reporter is newer
             return reporter
 
-        jurisdiction = Jurisdiction.objects.get_or_create(name_abbreviation=row['state'])
+        jurisdiction, created = Jurisdiction.objects.get_or_create(name_abbreviation=row['state'])
         jurisdiction.slug = slugify(jurisdiction.name_abbreviation)
         jurisdiction.save()
         reporter.jurisdiction = jurisdiction
@@ -188,18 +223,23 @@ class Reporter(models.Model):
             slug = slugify(case.reporter)
 
         reporter, created = Reporter.objects.get_or_create(name=case.reporter, slug=slug)
+        reporter.save()
 
-        if not created:
-            reporter.save()
         case.reporter = reporter
         case.save()
 
         return reporter
 
+    @classmethod
+    def get_or_create_from_case(self, name_abbreviation, jurisdiction_id):
+        reporter, created = Reporter.objects.get_or_create(name_abbreviation=name_abbreviation, jurisdiction_id=jurisdiction_id)
+        reporter.save()
+        return reporter
+
 class Jurisdiction(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True)
-    slug = models.SlugField(unique=True)
-    name_abbreviation = models.CharField(max_length=200, blank=True, unique=True)
+    name = models.CharField(max_length=100, blank=True)
+    slug = models.SlugField()
+    name_abbreviation = models.CharField(max_length=200, blank=True)
 
     def __unicode__(self):
         return u"%s: %s" % (self.id, self.name)
@@ -214,8 +254,16 @@ class Jurisdiction(models.Model):
         return jurisdiction
 
     @classmethod
+    def get_or_create_from_case(self, name):
+        jur, created = Jurisdiction.objects.get_or_create(name=name)
+        jur.save()
+        return jur
+
+    @classmethod
     def create_from_tt_row(self, row):
-        jurisdiction = Jurisdiction.create(name=row['name'],name_abbreviation=row['name_abbreviation'])
+        jurisdiction = Jurisdiction.create(name=row['name'])
+        jurisdiction.name_abbreviation = row['name_abbreviation']
+        jurisdiction.slug = slugify(jurisdiction.name_abbreviation)
         jurisdiction.save()
         return jurisdiction
 
@@ -250,8 +298,15 @@ class Court(models.Model):
         court.save()
         return court
 
+    @classmethod
+    def get_or_create_from_case(self, name, name_abbreviation, jurisdiction_id):
+        court, created = Court.objects.get_or_create(name=name, name_abbreviation=name_abbreviation, jurisdiction_id=jurisdiction_id)
+        court.save()
+        return court
+
 class Case(models.Model):
-    caseid = models.CharField(primary_key=True, max_length=255)
+    slug = models.SlugField(primary_key=True, unique=True)
+    caseid = models.CharField(unique=True, max_length=255)
     firstpage = models.IntegerField(null=True, blank=True)
     lastpage = models.IntegerField(null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
@@ -262,10 +317,9 @@ class Case(models.Model):
     court = models.ForeignKey('Court', null=True, related_name='%(class)s_court', on_delete=models.SET_NULL)
     name = models.TextField(blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
-    slug = models.SlugField(blank=True)
     volume = models.IntegerField(default=0)
     reporter = models.ForeignKey('Reporter', null=True, related_name='%(class)s_reporter', on_delete=models.SET_NULL)
-    date_added = models.DateTimeField(null=True, blank=True )
+    date_added = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
         return self.caseid
@@ -279,21 +333,25 @@ class Case(models.Model):
         case.save()
         return case
 
-    def create_slug(name_abbr):
+    def create_slug(self, name_abbr):
         rand_num = randint(1000,10000)
         slug = "%s-%s" % (slugify(name_abbr),rand_num)
         # check for uniqueness
+        print slug
         if Case.objects.get(slug=slug):
             # if case exists, call again
-            self.create_slug(name_abbr)
+            self.create_slug(name_abbr=name_abbr)
         else:
-            return slug
+            case.slug = slug
+            case.save()
 
     @classmethod
     def create_from_row(self, row):
         try:
             case, created = Case.objects.get_or_create(caseid=row['caseid'])
-            if not created:
+            # if just created, write fields
+            # if already created, check timestamp
+            if created:
                 case.write_case_fields(row)
             else:
                 utc = pytz.utc
@@ -315,23 +373,37 @@ class Case(models.Model):
             pass
 
     def write_case_fields(self, row):
-        for prop,val in row.items():
-            self.safe_set(prop,val)
+        slug = self.create_slug(row['name_abbreviation'])
+        self.safe_set('slug',slug)
 
-        self.decisiondate_original=row['decisiondate_original']
+        for prop,val in row.items():
+            if prop != 'court' and prop != 'court_abbreviation' and prop != 'reporter':
+                self.safe_set(prop,val)
+
+        try:
+            jurisdiction_id = self.jurisdiction.id
+        except:
+            jurisdiction_id = None
+
+        court = Court.get_or_create_from_case(name=row['court'], name_abbreviation=row['court_abbreviation'], jurisdiction_id=jurisdiction_id)
+        self.safe_set('court', court)
+        reporter = Reporter.get_or_create_from_case(name_abbreviation=row['reporter'], jurisdiction_id=jurisdiction_id)
+        self.safe_set('reporter', reporter)
+
+        self.safe_set('decisiondate_original', row['decisiondate_original'])
 
     def safe_set(self, prop, value):
         try:
             if prop == 'decisiondate':
                 value = datetime.fromordinal(int(value))
+            elif prop == 'jurisdiction':
+                value = Jurisdiction.get_or_create_from_case(self, value)
             elif prop == 'timestamp':
                 value = get_date_added(value)
                 utc = pytz.utc
                 if value:
                     value = utc.localize(value)
                 prop = 'date_added'
-            elif prop == 'jurisdiction':
-                value = self.get_jurisdiction(val)
 
             setattr(self, prop, value)
             self.save()
@@ -345,14 +417,6 @@ class Case(models.Model):
 
             case_error.save()
             pass
-
-    def get_jurisdiction(self, jurisdiction):
-        jur = Jurisdiction.objects.filter(name__icontains=jurisdiction)
-        if len(jur):
-            return list(jur)[0]
-        else:
-            return Jurisdiction.objects.create(name=jurisdiction)
-
 
 class CaseError(models.Model):
     field = models.CharField(max_length=45, null=False, blank=False)
