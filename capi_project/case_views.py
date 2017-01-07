@@ -36,6 +36,12 @@ class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mi
     queryset = Jurisdiction.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
+class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = VolumeSerializer
+    http_method_names = ['get']
+    queryset = Volume.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
 class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = ReporterSerializer
     http_method_names = ['get']

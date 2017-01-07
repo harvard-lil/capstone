@@ -23,6 +23,10 @@ class JurisdictionSerializer(serializers.ModelSerializer):
         model = Jurisdiction
         fields = '__all__'
 
+class VolumeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Volume
+        fields = '__all__'
 class ReporterSerializer(serializers.ModelSerializer):
     jurisdiction = serializers.HyperlinkedRelatedField(
         many=False,
