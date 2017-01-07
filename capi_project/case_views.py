@@ -54,7 +54,7 @@ class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
     queryset = Court.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
-class CaseViewSet(viewsets.GenericViewSet):
+class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     """
     # Browse all cases
     """
@@ -62,7 +62,7 @@ class CaseViewSet(viewsets.GenericViewSet):
     serializer_class = CaseSerializer
     http_method_names = ['get']
     queryset = Case.objects.all()
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)
     filter_class = CaseFilter
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field='jurisdiction'

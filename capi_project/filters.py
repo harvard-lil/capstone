@@ -11,6 +11,7 @@ class CaseFilter(django_filters.rest_framework.FilterSet):
     min_year = django_filters.NumberFilter(name="decisiondate", lookup_expr='gte')
     max_year = django_filters.NumberFilter(name="decisiondate", lookup_expr='lte')
     reporter = django_filters.CharFilter(name="reporter__name", lookup_expr='iexact')
+    slug = django_filters.CharFilter(name="slug", lookup_expr='icontains')
 
     class Meta:
         model = Case

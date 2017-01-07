@@ -11,49 +11,59 @@ import logging
 logger = logging.getLogger(__name__)
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
-    # date_added =
-    # jurisdiction = serializers.StringRelatedField(many=False)
     jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
-    # date_added = serializers.DateTimeField(format=settings.DATETIME_FORMAT)
+    jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
+    court_name = serializers.ReadOnlyField(source='court.name')
+    court_id = serializers.ReadOnlyField(source='court.id')
+    reporter_name = serializers.ReadOnlyField(source='reporter.name')
+    reporter_id = serializers.ReadOnlyField(source='reporter.id')
+
     class Meta:
         model = Case
         lookup_field = 'slug'
-        fields = ('slug', 'firstpage', 'lastpage', 'jurisdiction', 'jurisdiction_name', 'citation', 'url', 'docketnumber', 'decisiondate', 'court', 'name', 'name_abbreviation', 'volume', 'reporter')
+        fields = ('id', 'slug', 'url',
+                  'name', 'name_abbreviation',
+                  'citation',
+                  'firstpage', 'lastpage',
+                  'jurisdiction', 'jurisdiction_name', 'jurisdiction_id',
+                  'docketnumber',
+                  'decisiondate_original',
+                  'court', 'court_name', 'court_id',
+                  'reporter', 'reporter_name', 'reporter_id',
+                  'volume', 'reporter')
         extra_kwargs = {
             'url': {'lookup_field': 'slug'}
         }
 
-
 class JurisdictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Jurisdiction
-        fields = '__all__'
+        fields = ('id', 'slug', 'name', 'name_abbreviation', )
 
 class VolumeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Volume
         fields = '__all__'
-class ReporterSerializer(serializers.ModelSerializer):
-    jurisdiction = serializers.HyperlinkedRelatedField(
-        many=False,
-        read_only=True,
-        view_name='jurisdiction-detail',
-    )
 
+class ReporterSerializer(serializers.ModelSerializer):
+    jurisdiction = serializers.HyperlinkedRelatedField(view_name='jurisdiction-detail', read_only=True)
+    jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
+    jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
     class Meta:
         model = Reporter
         fields = '__all__'
 
 class CourtSerializer(serializers.ModelSerializer):
-    jurisdiction = serializers.HyperlinkedRelatedField(
-        many=False,
-        read_only=True,
-        view_name='jurisdiction-detail',
-    )
-
+    jurisdiction = serializers.HyperlinkedRelatedField(view_name='jurisdiction-detail', read_only=True)
+    jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
+    jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
     class Meta:
         model = Court
-        fields = '__all__'
+        lookup_field='id'
+        fields = ('id', 'name', 'name_abbreviation', 'jurisdiction', 'jurisdiction_id', 'jurisdiction_name')
+        extra_kwargs = {
+            'url': {'lookup_field': 'id'}
+        }
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
