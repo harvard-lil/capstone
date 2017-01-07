@@ -37,19 +37,35 @@ class CaseTestCase(TestCase):
 
     def test_jurisdictions(self):
         c = Client()
-        response = c.get('/jurisdictions/?format=json')
+        response = c.get("/jurisdictions/?format=json")
         assert response.status_code == 200
-        assert response.accepted_renderer.format == 'json'
+        assert response.accepted_renderer.format == "json"
         results = json.loads(response.content)
-        jurisdictions = results['results']
+        jurisdictions = results["results"]
         assert len(jurisdictions) == 2
-        assert jurisdictions[1]['name'] == 'New York'
+        assert jurisdictions[1]["name"] == "New York"
 
-    # def test_case(self):
-    #     c = Client()
-    #     response = c.get('/cases/Illinois/Ill%2E%202d?format=json')
-    #     assert response.status_code == 200
-    #     assert response.accepted_renderer.format == 'json'
-    #     content = json.loads(response.content)
-    #     case = content.get('results')[0]
-    #     assert case.get('name_abbreviation') == 'Trans States Airlines v. Pratt & Whitney Canada, Inc.'
+    def test_case(self):
+        c = Client()
+        case = Case.objects.get(caseid=1)
+        response = c.get("/cases/%s/?format=json" % case.slug)
+        assert response.status_code == 200
+        assert response.accepted_renderer.format == "json"
+        content = json.loads(response.content)
+        assert content.get("name_abbreviation") == case.name_abbreviation
+
+    def test_court(self):
+        c = Client()
+        response = c.get("/courts/?format=json")
+        assert response.status_code == 200
+        assert response.accepted_renderer.format == "json"
+        results = json.loads(response.content)
+        assert len(results["results"]) == 2
+
+    def test_reporter(self):
+        c = Client()
+        response = c.get("/reporters/?format=json")
+        assert response.status_code == 200
+        assert response.accepted_renderer.format == "json"
+        results = json.loads(response.content)
+        assert len(results["results"]) == 2
