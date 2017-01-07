@@ -5,45 +5,65 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth import password_validation, get_user_model
 from django.core import exceptions
 from resources import email
+from django.conf import settings
 
 import logging
 logger = logging.getLogger(__name__)
 
-class CaseSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        many = kwargs.pop('many', True)
-        super(CaseSerializer, self).__init__(many=many, *args, **kwargs)
+class CaseSerializer(serializers.HyperlinkedModelSerializer):
+    jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
+    jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
+    court_name = serializers.ReadOnlyField(source='court.name')
+    court_id = serializers.ReadOnlyField(source='court.id')
+    reporter_name = serializers.ReadOnlyField(source='reporter.name')
+    reporter_id = serializers.ReadOnlyField(source='reporter.id')
 
     class Meta:
         model = Case
-        fields = '__all__'
+        lookup_field = 'slug'
+        fields = ('id', 'slug', 'url',
+                  'name', 'name_abbreviation',
+                  'citation',
+                  'firstpage', 'lastpage',
+                  'jurisdiction', 'jurisdiction_name', 'jurisdiction_id',
+                  'docketnumber',
+                  'decisiondate_original',
+                  'court', 'court_name', 'court_id',
+                  'reporter', 'reporter_name', 'reporter_id',
+                  'volume', 'reporter')
+        extra_kwargs = {
+            'url': {'lookup_field': 'slug'}
+        }
 
 class JurisdictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Jurisdiction
+        fields = ('id', 'slug', 'name', 'name_abbreviation', )
+
+class VolumeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Volume
         fields = '__all__'
 
 class ReporterSerializer(serializers.ModelSerializer):
-    jurisdiction = serializers.HyperlinkedRelatedField(
-        many=False,
-        read_only=True,
-        view_name='jurisdiction-detail',
-    )
-
+    jurisdiction = serializers.HyperlinkedRelatedField(view_name='jurisdiction-detail', read_only=True)
+    jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
+    jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
     class Meta:
         model = Reporter
         fields = '__all__'
 
 class CourtSerializer(serializers.ModelSerializer):
-    jurisdiction = serializers.HyperlinkedRelatedField(
-        many=False,
-        read_only=True,
-        view_name='jurisdiction-detail',
-    )
-
+    jurisdiction = serializers.HyperlinkedRelatedField(view_name='jurisdiction-detail', read_only=True)
+    jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
+    jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
     class Meta:
         model = Court
-        fields = '__all__'
+        lookup_field='id'
+        fields = ('id', 'name', 'name_abbreviation', 'jurisdiction', 'jurisdiction_id', 'jurisdiction_name')
+        extra_kwargs = {
+            'url': {'lookup_field': 'id'}
+        }
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

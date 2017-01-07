@@ -1,5 +1,5 @@
 from capi_project.models import Case, Court, Jurisdiction, Reporter
-
+from capi_project.utils import generate_unique_slug
 def setup_jurisdiction(**kwargs):
     jur = Jurisdiction(**kwargs)
     jur.save()
@@ -17,5 +17,7 @@ def setup_court(**kwargs):
 
 def setup_case(**kwargs):
     case = Case(**kwargs)
+    slug = generate_unique_slug(Case, case.name_abbreviation)
+    case.slug = slug
     case.save()
     return case
