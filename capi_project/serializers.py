@@ -5,18 +5,24 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth import password_validation, get_user_model
 from django.core import exceptions
 from resources import email
+from django.conf import settings
 
 import logging
 logger = logging.getLogger(__name__)
 
-class CaseSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        many = kwargs.pop('many', True)
-        super(CaseSerializer, self).__init__(many=many, *args, **kwargs)
-
+class CaseSerializer(serializers.HyperlinkedModelSerializer):
+    # date_added =
+    # jurisdiction = serializers.StringRelatedField(many=False)
+    jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
+    # date_added = serializers.DateTimeField(format=settings.DATETIME_FORMAT)
     class Meta:
         model = Case
-        fields = '__all__'
+        lookup_field = 'slug'
+        fields = ('slug', 'firstpage', 'lastpage', 'jurisdiction', 'jurisdiction_name', 'citation', 'url', 'docketnumber', 'decisiondate', 'court', 'name', 'name_abbreviation', 'volume', 'reporter')
+        extra_kwargs = {
+            'url': {'lookup_field': 'slug'}
+        }
+
 
 class JurisdictionSerializer(serializers.ModelSerializer):
     class Meta:
