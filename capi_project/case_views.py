@@ -66,68 +66,62 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     filter_class = CaseFilter
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field = 'slug'
-    #
-    # def case_list(self, *args, **kwargs):
-    #     query = Q()
-    #     kwargs = self.kwargs
-    #
-    #     cases = self.queryset.all()
-    #
-    #     if len(self.request.query_params.items()):
-    #         kwargs = format_kwargs(self.request.query_params, kwargs)
-    #
-    #     max_num = kwargs.pop('max', None)
-    #     fields = kwargs.pop('fields', None)
-    #     offset = kwargs.pop('offset', 0)
-    #     response_format = kwargs.pop('format', None)
-    #
-    #     if fields:
-    #         fields = fields.split(',')
-    #         # caseid is required
-    #         if 'caseid' not in fields:
-    #             fields.append('caseid')
-    #
-    #
-    #     if len(kwargs.items()):
-    #         query = map(make_query, kwargs.items())
-    #         query = merge_filters(query, 'AND')
-    #
-    #         cases = cases.filter(query)
-    #
-    #     if fields:
-    #         cases = cases.values(*fields)
-    #
-    #     if not kwargs.get('type') == 'download':
-    #         cases = list(cases.order_by('caseid'))
-    #         page = self.paginate_queryset(cases)
-    #         serializer = self.get_serializer(cases, many=True)
-    #
-    #         return self.get_paginated_response(serializer.data)
-    #     else:
-    #         has_permissions = self.check_case_permissions(cases)
-    #         if has_permissions:
-    #             try:
-    #                 zip_file_name = self.download_cases(cases)
-    #                 response = StreamingHttpResponse(FileWrapper(open(zip_file_name, 'rb')), content_type='application/zip')
-    #                 response['Content-Length'] = os.path.getsize(zip_file_name)
-    #                 response['Content-Disposition'] = 'attachment; filename="%s"' % zip_file_name
-    #                 return response
-    #             except Exception as e:
-    #                 Exception("Download file error: %s" % e)
-    #         else:
-    #             raise Exception("You have reached your limit of allowed cases")
-    #
-    # def check_case_permissions(self, cases):
-    #     self.request.user.update_case_allowance()
-    #     user = CaseUser.objects.get(email=self.request.user.email)
-    #     return user.case_allowance >= len(cases)
-    #
-    # def download_cases(self, cases):
-    #     case_ids = cases.values_list('caseid', flat=True)
-    #     try:
-    #         cases = scp_get(self.request.user.id, case_ids)
-    #         self.request.user.case_allowance -= len(case_ids)
-    #         self.request.user.save()
-    #         return cases
-    #     except Exception as e:
-    #         raise Exception("Download cases error %s" % e)
+
+    def download(self, *args, **kwargs):
+        query = Q()
+        kwargs = self.kwargs
+        cases = self.queryset.all()
+
+        if len(self.request.query_params.items()):
+            kwargs = format_kwargs(self.request.query_params, kwargs)
+
+        max_num = kwargs.pop('max', None)
+        kwargs.pop('type')
+
+        fields = kwargs.pop('fields', '')
+        offset = kwargs.pop('offset', 0)
+
+        if len(kwargs.items()):
+            query = map(make_query, kwargs.items())
+            query = merge_filters(query, 'AND')
+
+            cases = cases.filter(query)
+
+        if max_num:
+            max_num = int(max_num)
+            import ipdb; ipdb.set_trace()
+            cases = cases[:max_num]
+
+        has_permissions = self.check_case_permissions(cases)
+        if has_permissions:
+            try:
+                zip_file_name = self.download_cases(cases)
+                response = StreamingHttpResponse(FileWrapper(open(zip_file_name, 'rb')), content_type='application/zip')
+                response['Content-Length'] = os.path.getsize(zip_file_name)
+                response['Content-Disposition'] = 'attachment; filename="%s"' % zip_file_name
+                return response
+            except Exception as e:
+                Exception("Download file error: %s" % e)
+        else:
+            raise Exception("You have reached your limit of allowed cases")
+
+    def check_case_permissions(self, cases):
+        self.request.user.update_case_allowance()
+        user = CaseUser.objects.get(email=self.request.user.email)
+        return user.case_allowance >= len(cases)
+
+    def list(self, *args, **kwargs):
+        if not self.request.query_params.get('type') == 'download':
+            return super(CaseViewSet, self).list(*args, **kwargs)
+        else:
+            return self.download(args, kwargs)
+
+    def download_cases(self, cases):
+        case_ids = cases.values_list('caseid', flat=True)
+        try:
+            cases = scp_get(self.request.user.id, case_ids)
+            self.request.user.case_allowance -= len(case_ids)
+            self.request.user.save()
+            return cases
+        except Exception as e:
+            raise Exception("Download cases error %s" % e)
