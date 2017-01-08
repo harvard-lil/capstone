@@ -77,8 +77,8 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         max_num = kwargs.pop('max', None)
         kwargs.pop('type')
 
-        min_year = kwargs.pop('min_year')
-        max_year = kwargs.pop('max_year')
+        min_year = kwargs.pop('min_year', None)
+        max_year = kwargs.pop('max_year', None)
 
         kwargs['reporter__name'] = kwargs.pop('reporter', '')
         kwargs['jurisdiction__name'] = kwargs.pop('jurisdiction', '')
