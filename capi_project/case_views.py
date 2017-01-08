@@ -71,15 +71,18 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         query = Q()
         kwargs = self.kwargs
         cases = self.queryset.all()
-
         if len(self.request.query_params.items()):
             kwargs = format_kwargs(self.request.query_params, kwargs)
 
         max_num = kwargs.pop('max', None)
         kwargs.pop('type')
 
-        fields = kwargs.pop('fields', '')
-        offset = kwargs.pop('offset', 0)
+        min_year = kwargs.pop('min_year')
+        max_year = kwargs.pop('max_year')
+
+        kwargs['reporter__name'] = kwargs.pop('reporter', '')
+        kwargs['jurisdiction__name'] = kwargs.pop('jurisdiction', '')
+        kwargs['court__name'] = kwargs.pop('court', '')
 
         if len(kwargs.items()):
             query = map(make_query, kwargs.items())
