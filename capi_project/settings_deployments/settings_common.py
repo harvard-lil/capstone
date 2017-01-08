@@ -20,7 +20,7 @@ CAP_DATA_DIR_VAR = '$CAP_DATA_DIR'
 PRIVATE_KEY_FILENAME = '/path/to/keys'
 METADATA_DIR_PATH = '/path/to/dir'
 
-
+APPEND_SLASH = True
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
