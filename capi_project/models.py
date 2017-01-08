@@ -242,7 +242,7 @@ class Jurisdiction(models.Model):
     name_abbreviation = models.CharField(max_length=200, blank=True)
 
     def __unicode__(self):
-        return u"%s: %s" % (self.id, self.name)
+        return u"%s" %  self.name
 
     @classmethod
     def create(self, name):

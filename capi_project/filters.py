@@ -13,6 +13,10 @@ class CaseFilter(django_filters.rest_framework.FilterSet):
     reporter = django_filters.CharFilter(name="reporter__name", lookup_expr='iexact')
     slug = django_filters.CharFilter(name="slug", lookup_expr='icontains')
 
+    jurisdiction = django_filters.ModelChoiceFilter(
+        name='jurisdiction', lookup_expr='isnull',
+        queryset=Jurisdiction.objects.all().order_by('name'),
+    )
     class Meta:
         model = Case
         fields = ['jurisdiction', 'court', 'name', 'citation']
