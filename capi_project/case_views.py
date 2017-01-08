@@ -89,7 +89,6 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         if max_num:
             max_num = int(max_num)
-            import ipdb; ipdb.set_trace()
             cases = cases[:max_num]
 
         has_permissions = self.check_case_permissions(cases)
