@@ -5,7 +5,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath('capi_project/setting
 BASE_URL = 'http://your-url:port'
 
 ALLOWED_HOSTS = []
-ADMINS = [('Anastasia', 'aaizman@law.harvard.edu')]
+ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
 # CAP API specific settings
 TOKEN_EXPIRE_HOURS = 24
 CASE_DAILY_ALLOWANCE = 500
