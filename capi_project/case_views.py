@@ -118,6 +118,12 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         else:
             return self.download(args, kwargs)
 
+    def retrieve(self, *args, **kwargs):
+        if not self.request.query_params.get('type') == 'download':
+            return super(CaseViewSet, self).retrieve(*args, **kwargs)
+        else:
+            return self.download(args, kwargs)
+
     def download_cases(self, cases):
         case_ids = cases.values_list('caseid', flat=True)
         try:
