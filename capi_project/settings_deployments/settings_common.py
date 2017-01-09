@@ -67,6 +67,37 @@ INSTALLED_APPS = [
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.abspath(BASE_DIR + STATIC_URL)
 
+PIPELINE = {
+    'CSS_COMPRESSOR':'pipeline.compressors.cssmin.CSSMinCompressor',
+    'CSSMIN_BINARY':'cssmin',
+    'COMPILERS' : (
+        'pipeline.compilers.sass.SASSCompiler',
+    ),
+
+    'STYLESHEETS': {
+        'base': {
+            'source_filenames': (
+              'css/raw/_normalize.css',
+              'css/raw/_variables.css/raw',
+              'css/raw/base.sass',
+            ),
+            'output_filename': 'css/base.css',
+        },
+        'docs': {
+            'source_filenames': (
+              'css/raw/docs.sass',
+            ),
+            'output_filename': 'css/docs.css',
+        },
+        'api': {
+            'source_filenames': (
+              'css/raw/api.sass',
+            ),
+            'output_filename': 'css/api.css',
+        },
+
+    },
+}
 
 
 STATICFILES_FINDERS = (
