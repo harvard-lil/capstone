@@ -3,7 +3,10 @@ SECRET_KEY = "secret"
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath('capi_project/settings.py')))
 BASE_URL = 'http://your-url:port'
+BASE_API_URL = '/api'
+API_VERSION = 'v1'
 
+FULL_API_URL = os.path.join(BASE_API_URL, API_VERSION)
 ALLOWED_HOSTS = []
 ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
 # CAP API specific settings
