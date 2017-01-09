@@ -4,7 +4,10 @@ from capi_project.models import Case, Jurisdiction
 from rest_framework.test import APIRequestFactory
 from django.test import Client
 import capi_project.tests.helpers as helpers
+from django.conf import settings
 import json
+
+FULL_API_URL = settings.FULL_API_URL
 
 class CaseTestCase(TestCase):
     def setUp(self):
@@ -22,22 +25,22 @@ class CaseTestCase(TestCase):
 
     def test_api_urls(self):
         c = Client()
-        response = c.get('/cases/')
+        response = c.get('%s/cases/' % settings.FULL_API_URL)
         assert response.status_code == 200
         assert response.accepted_renderer.format != 'json'
-        response = c.get('/cases/?format=json')
+        response = c.get('%s/cases/?format=json' % settings.FULL_API_URL)
         assert response.status_code == 200
         assert response.accepted_renderer.format == 'json'
-        response = c.get('/jurisdictions/')
+        response = c.get('%s/jurisdictions/' % settings.FULL_API_URL)
         assert response.accepted_renderer.format != 'json'
         assert response.status_code == 200
-        response = c.get('/jurisdictions/?format=json')
+        response = c.get('%s/jurisdictions/?format=json' % settings.FULL_API_URL)
         assert response.status_code == 200
         assert response.accepted_renderer.format == 'json'
 
     def test_jurisdictions(self):
         c = Client()
-        response = c.get("/jurisdictions/?format=json")
+        response = c.get("%s/jurisdictions/?format=json" % settings.FULL_API_URL)
         assert response.status_code == 200
         assert response.accepted_renderer.format == "json"
         results = json.loads(response.content)
@@ -48,7 +51,7 @@ class CaseTestCase(TestCase):
     def test_case(self):
         c = Client()
         case = Case.objects.get(caseid=1)
-        response = c.get("/cases/%s/?format=json" % case.slug)
+        response = c.get("%s/cases/%s/?format=json" % (settings.FULL_API_URL, case.slug))
         assert response.status_code == 200
         assert response.accepted_renderer.format == "json"
         content = json.loads(response.content)
@@ -56,7 +59,7 @@ class CaseTestCase(TestCase):
 
     def test_court(self):
         c = Client()
-        response = c.get("/courts/?format=json")
+        response = c.get("%s/courts/?format=json" % settings.FULL_API_URL)
         assert response.status_code == 200
         assert response.accepted_renderer.format == "json"
         results = json.loads(response.content)
@@ -64,7 +67,7 @@ class CaseTestCase(TestCase):
 
     def test_reporter(self):
         c = Client()
-        response = c.get("/reporters/?format=json")
+        response = c.get("%s/reporters/?format=json" % settings.FULL_API_URL)
         assert response.status_code == 200
         assert response.accepted_renderer.format == "json"
         results = json.loads(response.content)
