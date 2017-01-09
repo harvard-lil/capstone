@@ -1,9 +1,12 @@
 import os
 SECRET_KEY = "secret"
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath('capi_project/settings.py')))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath('capapi/settings.py')))
 BASE_URL = 'http://your-url:port'
+BASE_API_URL = '/api'
+API_VERSION = 'v1'
 
+FULL_API_URL = os.path.join(BASE_API_URL, API_VERSION)
 ALLOWED_HOSTS = []
 ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
 # CAP API specific settings
@@ -57,31 +60,60 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
+    'pipeline',
     'capi_project',
-    'compressor',
 ]
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.abspath(BASE_DIR + STATIC_URL)
-# print "STATIC_ROOT", STATIC_ROOT, BASE_DIR
+
+PIPELINE = {
+    'CSS_COMPRESSOR':'pipeline.compressors.cssmin.CSSMinCompressor',
+    'CSSMIN_BINARY':'cssmin',
+    'COMPILERS' : (
+        'pipeline.compilers.sass.SASSCompiler',
+    ),
+
+    'STYLESHEETS': {
+        'base': {
+            'source_filenames': (
+              'css/raw/_normalize.css',
+              'css/raw/_variables.css/raw',
+              'css/raw/base.sass',
+            ),
+            'output_filename': 'css/base.css',
+        },
+        'docs': {
+            'source_filenames': (
+              'css/raw/docs.sass',
+            ),
+            'output_filename': 'css/docs.css',
+        },
+        'api': {
+            'source_filenames': (
+              'css/raw/api.sass',
+            ),
+            'output_filename': 'css/api.css',
+        },
+
+    },
+}
+
+
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
+    'pipeline.finders.PipelineFinder',
+
 )
 
+STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-    ],
+    'PAGE_SIZE' : 20,
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.BrowsableAPIRenderer',
-        # 'rest_framework.renderers.TemplateHTMLRenderer',
-        # 'rest_framework.renderers.JSONRenderer',
     ],
-    'PAGE_SIZE': 20,
-
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
@@ -104,7 +136,7 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'capi_project', 'templates'), os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

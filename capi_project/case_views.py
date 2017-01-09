@@ -4,7 +4,7 @@ from rest_framework import renderers, status
 from django.http import HttpResponse, StreamingHttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.db.models import Q
-from rest_framework import routers, viewsets, views, mixins, permissions
+from rest_framework import routers, viewsets, views, mixins, permissions, filters
 from rest_framework.response import Response
 
 from rest_framework.decorators import api_view, detail_route, list_route, permission_classes, renderer_classes, parser_classes
@@ -62,10 +62,12 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     serializer_class = CaseSerializer
     http_method_names = ['get']
     queryset = Case.objects.all()
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend,)
+    search_fields = ('name', 'name_abbreviation', 'court__name', 'reporter__name', 'jurisdiction__name')
     filter_class = CaseFilter
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field = 'slug'
+    ordering = ('decisiondate')
 
     def download(self, *args, **kwargs):
         query = Q()
