@@ -100,7 +100,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             has_permissions = self.check_case_permissions(cases)
         except:
             return Response({'message': 'Error reading user permissions'}, status=403,)
-            
+
         if has_permissions:
             try:
                 zip_file_name = self.download_cases(cases)
@@ -138,9 +138,9 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     def download_cases(self, cases):
         case_ids = cases.values_list('caseid', flat=True)
         try:
-            cases = scp_get(self.request.user.id, case_ids)
+            zip_file_name = scp_get(self.request.user.id, case_ids)
             self.request.user.case_allowance -= len(case_ids)
             self.request.user.save()
-            return cases
+            return zip_file_name
         except Exception as e:
             raise Exception("Download cases error %s" % e)
