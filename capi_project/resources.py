@@ -8,9 +8,10 @@ from django.core.mail import send_mail
 from capi_project.models import Case
 from scp import SCPClient
 from datetime import datetime
+from django.template.defaultfilters import slugify
 
 def get_formatted_date():
-    return datetime.today().strftime("%Y-%m-%d")
+    return slugify(str(datetime.today()))
 
 def format_filename(case_id):
     cdir, cpgnumber = case_id.split('_')
@@ -18,6 +19,7 @@ def format_filename(case_id):
     return settings.CAP_DATA_DIR_VAR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
 
 def scp_get(requester_id, list_of_files):
+    rand_num = randint(1000,10000)
     try:
         ssh = paramiko.SSHClient()
         list_of_files = map(format_filename, list_of_files)
@@ -25,9 +27,8 @@ def scp_get(requester_id, list_of_files):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         private_key = paramiko.RSAKey.from_private_key_file(settings.PRIVATE_KEY_FILENAME)
         ssh.connect(settings.CAP_SERVER_TO_CONNECT_TO, port=22, pkey=private_key, username='capuser')
-        date = get_formatted_date()
         string_list = str(list_of_files)
-        zip_filename = "cases_%s.zip" % date
+        zip_filename = "cases_%s_%s.zip" % (requester_id, get_formatted_date())
         ssh.exec_command("touch %s" % zip_filename)
         print("creating %s" % zip_filename)
         stdin, stdout, stderr = ssh.exec_command('python cap_api_gzip_cases.py %s \"%s\"' % (zip_filename, string_list))
