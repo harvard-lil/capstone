@@ -7,6 +7,10 @@ from django.core.mail import send_mail
 
 from capi_project.models import Case
 from scp import SCPClient
+from datetime import datetime
+
+def get_formatted_date():
+    return datetime.today().strftime("%Y-%m-%d")
 
 def format_filename(case_id):
     cdir, cpgnumber = case_id.split('_')
@@ -23,14 +27,16 @@ def scp_get(requester_id, list_of_files):
         ssh.connect(settings.CAP_SERVER_TO_CONNECT_TO, port=22, pkey=private_key, username='capuser')
         stdin, stdout, stderr = ssh.exec_command("sleep 5; echo working!!!")
         print(stdout.read())
+        date = get_formatted_date()
         string_list = str(list_of_files)
-        zip_file_name = "%s_files.zip" % requester_id
+        zip_file_name = "%s/cases_%s.zip" % (settings.CASE_ZIP_DIR, date)
         ssh.exec_command("touch %s" % zip_file_name)
-        stdin, stdout, stderr = ssh.exec_command('python testing_gzip.py %s \"%s\"' % (zip_file_name, string_list))
+        stdin, stdout, stderr = ssh.exec_command('python cap_api_gzip_cases.py %s \"%s\"' % (zip_file_name, string_list))
         if stderr.read():
             raise Exception('Uh Oh! Something went wrong')
         scp_client = SCPClient(ssh.get_transport())
         scp_client.get("%s" % zip_file_name)
+        print('downloading %s' % zip_file_name)
 
         scp_client.close()
         return zip_file_name
