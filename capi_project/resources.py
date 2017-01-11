@@ -25,24 +25,27 @@ def scp_get(requester_id, list_of_files):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         private_key = paramiko.RSAKey.from_private_key_file(settings.PRIVATE_KEY_FILENAME)
         ssh.connect(settings.CAP_SERVER_TO_CONNECT_TO, port=22, pkey=private_key, username='capuser')
-        stdin, stdout, stderr = ssh.exec_command("sleep 5; echo working!!!")
-        print(stdout.read())
         date = get_formatted_date()
         string_list = str(list_of_files)
-        zip_file_name = "%s/cases_%s.zip" % (settings.CASE_ZIP_DIR, date)
-        ssh.exec_command("touch %s" % zip_file_name)
-        stdin, stdout, stderr = ssh.exec_command('python cap_api_gzip_cases.py %s \"%s\"' % (zip_file_name, string_list))
+        ssh.exec_command("touch %s" % zip_filename)
+        zip_filename = "cases_%s.zip" % date
+        print("creating %s" zip_filename)
+        stdin, stdout, stderr = ssh.exec_command('python cap_api_gzip_cases.py %s \"%s\"' % (zip_filename, string_list))
         if stderr.read():
             raise Exception('Uh Oh! Something went wrong')
         scp_client = SCPClient(ssh.get_transport())
-        scp_client.get("%s" % zip_file_name)
-        print('downloading %s' % zip_file_name)
-
+        scp_client.get("%s" % zip_filename)
+        print('downloading %s' % zip_filename)
         scp_client.close()
-        return zip_file_name
+        move_casezip(zip_filename)
+        return zip_filename
 
     except Exception as e:
-        return e
+        print("Error on case download: %s" % e)
+
+def move_casezip(filename):
+    new_dest = "%s/%s" % (settings.CASE_ZIP_DIR, filename)
+    os.rename(filename, new_dest)
 
 def email(reason, user):
     title = 'CAP API: %s' % reason
