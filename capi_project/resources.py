@@ -19,7 +19,6 @@ def format_filename(case_id):
     return settings.CAP_DATA_DIR_VAR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
 
 def scp_get(requester_id, list_of_files):
-    rand_num = randint(1000,10000)
     try:
         ssh = paramiko.SSHClient()
         list_of_files = map(format_filename, list_of_files)
