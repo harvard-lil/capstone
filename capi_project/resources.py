@@ -29,7 +29,7 @@ def scp_get(requester_id, list_of_files):
         string_list = str(list_of_files)
         ssh.exec_command("touch %s" % zip_filename)
         zip_filename = "cases_%s.zip" % date
-        print("creating %s" zip_filename)
+        print("creating %s" % zip_filename)
         stdin, stdout, stderr = ssh.exec_command('python cap_api_gzip_cases.py %s \"%s\"' % (zip_filename, string_list))
         if stderr.read():
             raise Exception('Uh Oh! Something went wrong')
