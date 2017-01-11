@@ -59,7 +59,11 @@ The Caselaw Access Project API guide
         <pre><a>https://{{ request.get_host }}/api/v1/cases/halling-v-united-states-7618</a></pre>
         <p class="body-text">Here is an example CURL request:</p>
         <pre>$ curl https://{{ request.get_host}}/cases/?jurisdiction=alabama&max=3&type=download \
-        <br/>  -H  'Authorization: Token your-token-here' -o alabama.zip</pre>
+        <br/> -H -O -J 'Authorization: Token your-token-here'</pre>
+        <p class="body-text">Or if you prefer wget:</p>
+        <pre>$ wget --content-disposition https://{{ request.get_host}}/cases/?name=Smith&max=3&type=download \
+        <br/> --header='Authorization: Token your-token-here'</pre>
+
         <p class="body-text">
           This request will download a zip file of three cases from the jurisdiction Alabama.
         </p>
