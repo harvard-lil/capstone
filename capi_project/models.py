@@ -11,7 +11,6 @@ from datetime import datetime,timedelta
 import pytz
 import uuid
 import logging
-from random import randint
 
 from rest_framework.authtoken.models import Token
 
