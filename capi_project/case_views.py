@@ -96,8 +96,10 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             max_num = int(max_num)
             cases = cases[:max_num]
 
+        requested_case_count = cases.count()
+
         try:
-            has_permissions = self.check_case_permissions(cases)
+            has_permissions = self.check_case_permissions(requested_case_count)
         except:
             return JSONResponse({'message': 'Error reading user permissions'}, status=403,)
 
@@ -112,17 +114,16 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             except Exception as e:
                 return JSONResponse({'message': 'Download file error: %s' % e}, status=403,)
         else:
-            requested_case_amount = len(cases)
             case_allowance = self.request.user.case_allowance
             time_remaining = self.request.user.get_case_allowance_update_time_remaining()
             message = 'You have reached your limit of allowed cases. Your limit will reset to default again in %s', time_remaining
-            details = "You attempted to download %s cases and your current remaining case limit is %s. Use the max flag to return a specific number of cases: &max=%s" % (requested_case_amount, case_allowance, case_allowance)
+            details = "You attempted to download %s cases and your current remaining case limit is %s. Use the max flag to return a specific number of cases: &max=%s" % (requested_case_count, case_allowance, case_allowance)
             return JSONResponse({'message':message, 'details':details}, status=403)
 
-    def check_case_permissions(self, cases):
+    def check_case_permissions(self, case_count):
         self.request.user.update_case_allowance()
         user = CaseUser.objects.get(email=self.request.user.email)
-        return user.case_allowance >= len(cases)
+        return user.case_allowance >= case_count
 
     def list(self, *args, **kwargs):
         if not self.request.query_params.get('type') == 'download':
