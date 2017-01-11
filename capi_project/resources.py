@@ -27,8 +27,8 @@ def scp_get(requester_id, list_of_files):
         ssh.connect(settings.CAP_SERVER_TO_CONNECT_TO, port=22, pkey=private_key, username='capuser')
         date = get_formatted_date()
         string_list = str(list_of_files)
-        ssh.exec_command("touch %s" % zip_filename)
         zip_filename = "cases_%s.zip" % date
+        ssh.exec_command("touch %s" % zip_filename)
         print("creating %s" % zip_filename)
         stdin, stdout, stderr = ssh.exec_command('python cap_api_gzip_cases.py %s \"%s\"' % (zip_filename, string_list))
         if stderr.read():
