@@ -103,10 +103,11 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         if has_permissions:
             try:
-                zip_file_name = self.download_cases(cases)
-                response = StreamingHttpResponse(FileWrapper(open(zip_file_name, 'rb')), content_type='application/zip')
-                response['Content-Length'] = os.path.getsize(zip_file_name)
-                response['Content-Disposition'] = 'attachment; filename="%s"' % zip_file_name
+                zip_filename = self.download_cases(cases)
+                zip_file = "%s/%s" % (settings.CASE_ZIP_DIR, zip_filename)
+                response = StreamingHttpResponse(FileWrapper(open(zip_file, 'rb')), content_type='application/zip')
+                response['Content-Length'] = os.path.getsize(zip_file)
+                response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
                 return response
             except Exception as e:
                 return Response({'message': 'Download file error: %s' % e}, status=403,)
@@ -138,9 +139,9 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     def download_cases(self, cases):
         case_ids = cases.values_list('caseid', flat=True)
         try:
-            zip_file_name = scp_get(self.request.user.id, case_ids)
+            zip_filename = scp_get(self.request.user.id, case_ids)
             self.request.user.case_allowance -= len(case_ids)
             self.request.user.save()
-            return zip_file_name
+            return zip_filename
         except Exception as e:
             raise Exception("Download cases error %s" % e)
