@@ -69,6 +69,10 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
             self.case_allowance_last_updated = timezone.now()
             self.save()
 
+    def get_case_allowance_update_time_remaining(self, *args, **kwargs):
+        td = self.case_allowance_last_updated + timedelta(hours=settings.CASE_EXPIRE_HOURS) - timezone.now()
+        return "%sh. %sm." % (td.seconds/3600, (td.seconds/60)%60)
+
     def authenticate_user(self, *args, **kwargs):
         nonce = kwargs.get('activation_nonce')
         if self.activation_nonce == nonce and self.key_expires + timedelta(hours=24) > timezone.now():

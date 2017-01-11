@@ -1,5 +1,8 @@
-from capi_project.models import Case, Court, Jurisdiction, Reporter
+from capi_project.models import Case, CaseUser, Court, Jurisdiction, Reporter
 from capi_project.utils import generate_unique_slug
+import pytz
+from datetime import datetime, timedelta
+
 def setup_jurisdiction(**kwargs):
     jur = Jurisdiction(**kwargs)
     jur.save()
@@ -21,3 +24,21 @@ def setup_case(**kwargs):
     case.slug = slug
     case.save()
     return case
+
+def setup_user(**kwargs):
+    password = kwargs.pop('password')
+    user = CaseUser(**kwargs)
+    user.set_password(password)
+    user.save()
+    return user
+
+def setup_authenticated_user(**kwargs):
+    password = kwargs.pop('password')
+    user = CaseUser(**kwargs)
+    user.set_password(password)
+    user.save()
+    user.activation_nonce = "123"
+    user.key_expires = datetime.now(pytz.utc)
+    user.authenticate_user(activation_nonce=user.activation_nonce)
+    user.save()
+    return user
