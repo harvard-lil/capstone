@@ -54,15 +54,15 @@ The Caselaw Access Project API guide
         <!-- <p class="body-text">All case metadata is viewable in the browser, or through the command line. -->
         <p class="body-text">The URI structure is simple. All cases are located at the /cases/ endpoint, and each case is accessible using its slug, which is made up of the case short name and four random numbers.</p>
         <p class="body-text">All cases endpoint:</p>
-        <pre><a>https://{{ request.get_host }}/api/v1/cases/</a></pre>
+        <pre><a href="https://{{ request.get_host }}/api/v1/cases/" target="_blank">https://{{ request.get_host }}/api/v1/cases/</a></pre>
         <p class="body-text">One specific case endpoint:</p>
-        <pre><a>https://{{ request.get_host }}/api/v1/cases/halling-v-united-states-7618</a></pre>
+        <pre><a href="https://{{ request.get_host }}/api/v1/cases/halling-v-united-states-7618" target="_blank">https://{{ request.get_host }}/api/v1/cases/halling-v-united-states-7618</a></pre>
         <p class="body-text">Here is an example CURL request:</p>
-        <pre>$ curl https://{{ request.get_host}}/cases/?jurisdiction=alabama&max=3&type=download \
-        <br/> -H -O -J 'Authorization: Token your-token-here'</pre>
+        <pre>$ curl https://{{ request.get_host}}/api/v1/cases/?jurisdiction=alabama&max=3&type=download \
+        <br/>  -O -J -H "Authorization: Token your-token-here"</pre>
         <p class="body-text">Or if you prefer wget:</p>
-        <pre>$ wget --content-disposition https://{{ request.get_host}}/cases/?name=Smith&max=3&type=download \
-        <br/> --header='Authorization: Token your-token-here'</pre>
+        <pre>$ wget --content-disposition https://{{ request.get_host}}/api/v1/cases/?name=Smith&max=3&type=download \
+        <br/> --header="Authorization: Token your-token-here"</pre>
 
         <p class="body-text">
           This request will download a zip file of three cases from the jurisdiction Alabama.
@@ -114,7 +114,7 @@ The Caselaw Access Project API guide
         <p class="body-text">Here are some examples of endpoints and their JSON responses.</p>
 
         <p class="body-text">A single case request (online):</p>
-        <pre><a>https://{{ request.get_host }}/api/v1/cases/bates-v-united-states-4330/</a></pre>
+        <pre><a href="https://{{ request.get_host }}/api/v1/cases/bates-v-united-states-4330/" target="_blank">https://{{ request.get_host }}/api/v1/cases/bates-v-united-states-4330/</a></pre>
         <p class="body-text">A single case CURL request:</p>
         <pre>$ curl https://{{ request.get_host }}/api/v1/cases/bates-v-united-states-4330/?type=json</pre>
         <pre>{
@@ -141,7 +141,7 @@ The Caselaw Access Project API guide
 }
         </pre>
         <p class="body-text">A single reporter request (online):</p>
-        <pre><a>https://{{ request.get_host }}/api/v1/reporters/385/</a></pre>
+        <pre><a href="https://{{ request.get_host }}/api/v1/reporters/385/" target="_blank">https://{{ request.get_host }}/api/v1/reporters/385/</a></pre>
         <p class="body-text">A single case CURL request:</p>
         <pre>$ curl https://{{ request.get_host }}/api/v1/cases/385/?type=json</pre>
         <pre>{
