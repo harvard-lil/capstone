@@ -111,7 +111,7 @@ STATICFILES_FINDERS = (
 STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 REST_FRAMEWORK = {
-    'PAGE_SIZE' : 20,
+    'PAGE_SIZE' : 100,
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
