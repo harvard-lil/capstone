@@ -20,9 +20,14 @@ CASE_FILE_TYPE = '.xml'
 
 CAP_SERVER_TO_CONNECT_TO = '123.45.6.7'
 CAP_DATA_DIR_VAR = '$CAP_DATA_DIR'
+# TODO: reformat for many states
+WHITELISTED_DATA_DIR = '/casemets/illinois'
 PRIVATE_KEY_FILENAME = '/path/to/keys'
 METADATA_DIR_PATH = '/path/to/dir'
 CASE_ZIP_DIR = 'zip_dir'
+
+WHITELISTED_STATES =  ['Illinois']
+DOWNLOAD_PAGINATION = 100
 
 APPEND_SLASH = True
 EMAIL_USE_TLS = True
@@ -111,7 +116,7 @@ STATICFILES_FINDERS = (
 STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 REST_FRAMEWORK = {
-    'PAGE_SIZE' : 20,
+    'PAGE_SIZE' : 100,
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],

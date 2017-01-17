@@ -6,10 +6,12 @@ def merge_filters(q_list, operation):
     return reduce(reducer_operation, q_list)
 
 def make_query((key,val)):
-    qwarg={}
-    key = key + '__icontains'
-    qwarg[key]=val
-    return Q(**qwarg)
+    if val:
+        qwarg={}
+        if '_id' not in key:
+            key = key + '__icontains'
+        qwarg[key]=val
+        return Q(**qwarg)
 
 def format_kwargs(params, args_dict):
     if not len(params):
