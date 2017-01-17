@@ -69,7 +69,6 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     filter_class = CaseFilter
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field = 'slug'
-    ordering = ('decisiondate')
 
     def download(self, *args, **kwargs):
         query = Q()
