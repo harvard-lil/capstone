@@ -33,6 +33,8 @@ class JSONResponse(HttpResponse):
 class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = JurisdictionSerializer
     http_method_names = ['get']
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = JurisdictionFilter
     queryset = Jurisdiction.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 

@@ -21,3 +21,8 @@ class CaseFilter(django_filters.rest_framework.FilterSet):
         'citation', 'jurisdiction', 'court_name', 'reporter_name',
         'min_year','max_year',
         ]
+
+class JurisdictionFilter(django_filters.rest_framework.FilterSet):
+    class Meta:
+        model = Jurisdiction
+        fields = '__all__'
