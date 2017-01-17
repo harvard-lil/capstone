@@ -13,12 +13,16 @@ from django.template.defaultfilters import slugify
 def get_formatted_date():
     return slugify(str(datetime.today()))
 
-def format_filename(case_id):
+def format_filename(case_id, blacklisted=True):
     cdir, cpgnumber = case_id.split('_')
     cdirname = cdir + '_redacted'
-    return settings.CAP_DATA_DIR_VAR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
+    if blacklisted:
+        return settings.CAP_DATA_DIR_VAR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
+    else:
+        # TODO: reformat for many states
+        return settings.WHITELISTED_DATA_DIR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
 
-def scp_get(requester_id, list_of_files):
+def download_blacklisted(requester_id, list_of_files):
     try:
         ssh = paramiko.SSHClient()
         list_of_files = map(format_filename, list_of_files)
@@ -42,6 +46,29 @@ def scp_get(requester_id, list_of_files):
 
     except Exception as e:
         print("Error on case download: %s" % e)
+
+def download_whitelisted(list_of_files):
+    list_of_files = map(format_filename, list_of_files, blacklisted=False)
+    zip_filename = "%s/cases_%s_%s.zip" % (settings.CASE_ZIP_DIR, requester_id, get_formatted_date())
+    # ssh.exec_command("touch %s" % zip_filename)
+    # print("creating %s" % zip_filename)
+    gzip_documents(zip_filename, list_of_files)
+    return zip_filename
+
+def gzip_documents(zipname, filenames):
+    import zipfile
+    try:
+        import zlib
+        compression = zipfile.zip_deflated
+    except:
+        compression = zipfile.ZIP_STORED
+
+    with ZipFile(zipname, 'w') as zapfile:
+        for f in filenames:
+            fname = f.split('/')[-1]
+            zapfile.write(f, fname, compress_type=zipfile.ZIP_DEFLATED)
+
+        return zapfile
 
 def move_casezip(filename):
     new_dest = "%s/%s" % (settings.CASE_ZIP_DIR, filename)

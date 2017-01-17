@@ -19,7 +19,7 @@ from .serializers import *
 from .permissions import IsCaseUser
 from .filters import *
 
-from resources import scp_get
+from resources import download_blacklisted, download_whitelisted
 
 class JSONResponse(HttpResponse):
     """
@@ -83,30 +83,44 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         min_year = kwargs.pop('min_year', None)
         max_year = kwargs.pop('max_year', None)
 
-        kwargs['reporter__name'] = kwargs.pop('reporter', '')
-        kwargs['jurisdiction__name'] = kwargs.pop('jurisdiction', '')
-        kwargs['court__name'] = kwargs.pop('court', '')
+        kwargs['court__name'] = kwargs.pop('court_name', None)
+        kwargs['court__id'] = kwargs.pop('court_id', None)
+        kwargs['reporter__id'] = kwargs.pop('reporter_id', None)
+        kwargs['reporter__name'] = kwargs.pop('reporter_name', None)
+        kwargs['jurisdiction__name'] = kwargs.pop('jurisdiction_name', None)
+        kwargs['jurisdiction__id'] = kwargs.pop('jurisdiction_id', None)
 
         if len(kwargs.items()):
             query = map(make_query, kwargs.items())
             query = merge_filters(query, 'AND')
-
             cases = cases.filter(query)
+
+        cases.order_by('decisiondate')
 
         if max_num:
             max_num = int(max_num)
             cases = cases[:max_num]
 
-        requested_case_count = cases.count()
+        blacklisted_cases = cases.exclude(jurisdiction__name='Illinois')
+        whitelisted_cases = cases.filter(jurisdiction__name='Illinois')
+        blacklisted_case_count = blacklisted_cases.count()
 
-        try:
-            has_permissions = self.check_case_permissions(requested_case_count)
-        except:
-            return JSONResponse({'message': 'Error reading user permissions'}, status=403,)
+        """
+        if getting a mixed request, serve through server1
+        if getting only whitelisted, serve through server2
+        """
 
-        if has_permissions:
+        if blacklisted_case_count > 0:
             try:
-                zip_filename = self.download_cases(cases)
+                has_case_permissions = self.check_case_permissions(blacklisted_case_count)
+            except:
+                return JSONResponse({'message': 'Error reading user permissions'}, status=403,)
+        else:
+            has_case_permissions = True
+
+        if has_case_permissions:
+            try:
+                zip_filename = self.download_cases(cases, blacklisted_case_count)
                 zip_file = "%s/%s" % (settings.CASE_ZIP_DIR, zip_filename)
                 response = StreamingHttpResponse(FileWrapper(open(zip_file, 'rb')), content_type='application/zip')
                 response['Content-Length'] = os.path.getsize(zip_file)
@@ -118,13 +132,12 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             case_allowance = self.request.user.case_allowance
             time_remaining = self.request.user.get_case_allowance_update_time_remaining()
             message = 'You have reached your limit of allowed cases. Your limit will reset to default again in %s', time_remaining
-            details = "You attempted to download %s cases and your current remaining case limit is %s. Use the max flag to return a specific number of cases: &max=%s" % (requested_case_count, case_allowance, case_allowance)
+            details = "You attempted to download %s cases and your current remaining case limit is %s. Use the max flag to return a specific number of cases: &max=%s" % (blacklisted_case_count, case_allowance, case_allowance)
             return JSONResponse({'message':message, 'details':details}, status=403)
 
     def check_case_permissions(self, case_count):
         self.request.user.update_case_allowance()
-        user = CaseUser.objects.get(email=self.request.user.email)
-        return user.case_allowance >= case_count
+        return self.request.user.case_allowance >= case_count
 
     def list(self, *args, **kwargs):
         if not self.request.query_params.get('type') == 'download':
@@ -138,12 +151,15 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         else:
             return self.download(args, kwargs)
 
-    def download_cases(self, cases):
+    def download_cases(self, cases, blacklisted_case_count):
         case_ids = cases.values_list('caseid', flat=True)
         try:
-            zip_filename = scp_get(self.request.user.id, case_ids)
-            self.request.user.case_allowance -= len(case_ids)
-            self.request.user.save()
+            if blacklisted_case_count > 0:
+                zip_filename = download_blacklisted(self.request.user.id, case_ids)
+                self.request.user.case_allowance -= len(case_ids)
+                self.request.user.save()
+            else:
+                zip_filename = download_whitelisted(case_ids)
             return zip_filename
         except Exception as e:
             raise Exception("Download cases error %s" % e)
