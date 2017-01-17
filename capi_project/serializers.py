@@ -27,7 +27,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
                   'firstpage', 'lastpage',
                   'jurisdiction', 'jurisdiction_name', 'jurisdiction_id',
                   'docketnumber',
-                  'decisiondate',
+                  'decisiondate_original',
                   'court', 'court_name', 'court_id',
                   'reporter', 'reporter_name', 'reporter_id',
                   'volume', 'reporter')

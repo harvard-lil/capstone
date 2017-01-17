@@ -69,6 +69,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     filter_class = CaseFilter
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field = 'slug'
+    ordering = ('decisiondate',)
 
     def download(self, *args, **kwargs):
         query = Q()
@@ -80,30 +81,30 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         max_num = kwargs.pop('max', None)
         kwargs.pop('type')
 
-        min_year = kwargs.pop('min_year', None)
-        max_year = kwargs.pop('max_year', None)
-
         kwargs['court__name'] = kwargs.pop('court_name', None)
         kwargs['court__id'] = kwargs.pop('court_id', None)
         kwargs['reporter__id'] = kwargs.pop('reporter_id', None)
         kwargs['reporter__name'] = kwargs.pop('reporter_name', None)
         kwargs['jurisdiction__name'] = kwargs.pop('jurisdiction_name', None)
         kwargs['jurisdiction__id'] = kwargs.pop('jurisdiction_id', None)
+        kwargs['decisiondate__gte'] = kwargs.pop('min_year', None)
+        kwargs['decisiondate__lte'] = kwargs.pop('max_year', None)
 
-        if len(kwargs.items()):
-            query = map(make_query, kwargs.items())
-            query = merge_filters(query, 'AND')
-            cases = cases.filter(query)
+        query = map(make_query, kwargs.items())
+        query = merge_filters(query, 'AND')
 
-        cases.order_by('decisiondate')
+        cases = cases.filter(query)
 
-        if max_num:
+        blacklisted_cases = list(cases.exclude(jurisdiction__name='Illinois').values_list('caseid', flat=True))
+        caseids_list = list(cases.order_by('decisiondate').values_list('caseid', flat=True))
+
+        try:
             max_num = int(max_num)
-            cases = cases[:max_num]
+            caseids_list = caseids_list[:max_num]
+        except:
+            pass
 
-        blacklisted_cases = cases.exclude(jurisdiction__name='Illinois')
-        whitelisted_cases = cases.filter(jurisdiction__name='Illinois')
-        blacklisted_case_count = blacklisted_cases.count()
+        blacklisted_case_count = reduce(lambda total, caseid: int(caseid in blacklisted_cases) + total, caseids_list, 0)
 
         """
         if getting a mixed request, serve through server1
@@ -120,7 +121,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         if has_case_permissions:
             try:
-                zip_filename = self.download_cases(cases, blacklisted_case_count)
+                zip_filename = self.download_cases(caseids_list, blacklisted_case_count)
                 zip_file = "%s/%s" % (settings.CASE_ZIP_DIR, zip_filename)
                 response = StreamingHttpResponse(FileWrapper(open(zip_file, 'rb')), content_type='application/zip')
                 response['Content-Length'] = os.path.getsize(zip_file)
@@ -151,15 +152,14 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         else:
             return self.download(args, kwargs)
 
-    def download_cases(self, cases, blacklisted_case_count):
-        case_ids = cases.values_list('caseid', flat=True)
+    def download_cases(self, caseids_list, blacklisted_case_count):
         try:
             if blacklisted_case_count > 0:
-                zip_filename = download_blacklisted(self.request.user.id, case_ids)
-                self.request.user.case_allowance -= len(case_ids)
+                zip_filename = download_blacklisted(self.request.user.id, caseids_list)
+                self.request.user.case_allowance -= len(caseids_list)
                 self.request.user.save()
             else:
-                zip_filename = download_whitelisted(case_ids)
+                zip_filename = download_whitelisted(caseids_list)
             return zip_filename
         except Exception as e:
             raise Exception("Download cases error %s" % e)
