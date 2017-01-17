@@ -11,7 +11,7 @@ class IsAdmin(permissions.BasePermission):
 class IsCaseUser(permissions.BasePermission):
     def has_permission(self, request, view):
         # give away metadata to everyone!
-        if not request.query_params.get('type') or request.query_params.get('type') == 'metadata':
+        if not request.query_params.get('type') or request.query_params.get('type') != 'download':
             return True
         else:
             # make sure user has auth token before proceeding if they want to download
