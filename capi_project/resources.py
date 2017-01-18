@@ -13,14 +13,15 @@ from django.template.defaultfilters import slugify
 def get_formatted_date():
     return slugify(str(datetime.today()))
 
-def format_filename(case_id, blacklisted=True):
+def format_filename(case_id):
     cdir, cpgnumber = case_id.split('_')
     cdirname = cdir + '_redacted'
-    if blacklisted:
-        return settings.CAP_DATA_DIR_VAR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
-    else:
-        # TODO: reformat for many states
-        return settings.WHITELISTED_DATA_DIR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
+    return settings.CAP_DATA_DIR_VAR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
+
+def format_filename_whitelisted(caseid):
+    cdir, cpgnumber = case_id.split('_')
+    cdirname = cdir + '_redacted'
+    return settings.WHITELISTED_DATA_DIR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
 
 def download_blacklisted(requester_id, list_of_files):
     try:
@@ -48,10 +49,8 @@ def download_blacklisted(requester_id, list_of_files):
         print("Error on case download: %s" % e)
 
 def download_whitelisted(requester_id, list_of_files):
-    list_of_files = map(format_filename, list_of_files)
+    list_of_files = map(format_filename_whitelisted, list_of_files)
     zip_filename = "%s/cases_%s_%s.zip" % (settings.CASE_ZIP_DIR, requester_id, get_formatted_date())
-    # ssh.exec_command("touch %s" % zip_filename)
-    # print("creating %s" % zip_filename)
     gzip_documents(zip_filename, list_of_files)
     return zip_filename
 
@@ -63,7 +62,7 @@ def gzip_documents(zipname, filenames):
     except:
         compression = zipfile.ZIP_STORED
 
-    with ZipFile(zipname, 'w') as zapfile:
+    with zipfile.ZipFile(zipname, 'w') as zapfile:
         for f in filenames:
             fname = f.split('/')[-1]
             zapfile.write(f, fname, compress_type=zipfile.ZIP_DEFLATED)
