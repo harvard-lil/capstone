@@ -159,7 +159,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
                 self.request.user.case_allowance -= len(caseids_list)
                 self.request.user.save()
             else:
-                zip_filename = download_whitelisted(self.request.user.id,, caseids_list)
+                zip_filename = download_whitelisted(self.request.user.id, caseids_list)
             return zip_filename
         except Exception as e:
             raise Exception("Download cases error %s" % e)
