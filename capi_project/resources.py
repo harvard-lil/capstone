@@ -47,8 +47,8 @@ def download_blacklisted(requester_id, list_of_files):
     except Exception as e:
         print("Error on case download: %s" % e)
 
-def download_whitelisted(list_of_files):
-    list_of_files = map(format_filename, list_of_files, blacklisted=False)
+def download_whitelisted(requester_id, list_of_files):
+    list_of_files = map(format_filename, list_of_files)
     zip_filename = "%s/cases_%s_%s.zip" % (settings.CASE_ZIP_DIR, requester_id, get_formatted_date())
     # ssh.exec_command("touch %s" % zip_filename)
     # print("creating %s" % zip_filename)
