@@ -79,17 +79,6 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             kwargs = format_kwargs(self.request.query_params, kwargs)
 
         max_num = kwargs.pop('max', None)
-        kwargs.pop('type')
-
-        kwargs['court__name'] = kwargs.pop('court_name', None)
-        kwargs['court__id'] = kwargs.pop('court_id', None)
-        kwargs['reporter__id'] = kwargs.pop('reporter_id', None)
-        kwargs['reporter__name'] = kwargs.pop('reporter_name', None)
-        kwargs['jurisdiction__name'] = kwargs.pop('jurisdiction_name', None)
-        kwargs['jurisdiction__id'] = kwargs.pop('jurisdiction_id', None)
-        kwargs['decisiondate__gte'] = kwargs.pop('min_year', None)
-        kwargs['decisiondate__lte'] = kwargs.pop('max_year', None)
-
         query = map(make_query, kwargs.items())
         query = merge_filters(query, 'AND')
 

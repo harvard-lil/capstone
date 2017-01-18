@@ -14,17 +14,21 @@ def make_query((key,val)):
         return Q(**qwarg)
 
 def format_kwargs(params, args_dict):
+    blacklisted_keys = ['type', 'page', 'offset']
     if not len(params):
         return args_dict
+
     for key,val in params.items():
-        if key == 'year':
-            args_dict['decisiondate__year'] = val
-        elif key == 'month':
-            args_dict['decisiondate__month'] = val
-        elif key == 'day':
-            args_dict['decisiondate__day'] = val
+        if key == 'min_year':
+            args_dict['decisiondate__gte'] = val
+        elif key == 'max_year':
+            args_dict['decisiondate__lte'] = val
+
+        elif '_' in key:
+            splitkey = key.split('_')
+            args_dict[splitkey[0] +  '__' + splitkey[1]] = val
         else:
-            if key != 'page' and key != 'offset':
+            if key not in blacklisted_keys:
                 args_dict[key] = val
     return args_dict
 
