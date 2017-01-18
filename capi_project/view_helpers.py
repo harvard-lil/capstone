@@ -8,7 +8,7 @@ def merge_filters(q_list, operation):
 def make_query((key,val)):
     if val:
         qwarg={}
-        if '_id' not in key:
+        if ('_id' not in key) and ('decisiondate' not in key):
             key = key + '__icontains'
         qwarg[key]=val
         return Q(**qwarg)
