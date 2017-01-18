@@ -93,7 +93,10 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         except:
             pass
 
-        blacklisted_case_count = reduce(lambda total, caseid: int(caseid in blacklisted_cases) + total, caseids_list, 0)
+        if len(blacklisted_cases) > 0:
+            blacklisted_case_count = reduce(lambda total, caseid: int(caseid in blacklisted_cases) + total, caseids_list, 0)
+        else:
+            blacklisted_case_count = 0
 
         """
         if getting a mixed request, serve through server1
