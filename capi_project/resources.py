@@ -18,7 +18,7 @@ def format_filename(case_id):
     cdirname = cdir + '_redacted'
     return settings.CAP_DATA_DIR_VAR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
 
-def format_filename_whitelisted(caseid):
+def format_filename_whitelisted(case_id):
     cdir, cpgnumber = case_id.split('_')
     cdirname = cdir + '_redacted'
     return settings.WHITELISTED_DATA_DIR + '/' + cdirname+'/casemets/' + cdirname + '_CASEMETS_' + cpgnumber + settings.CASE_FILE_TYPE
@@ -50,8 +50,9 @@ def download_blacklisted(requester_id, list_of_files):
 
 def download_whitelisted(requester_id, list_of_files):
     list_of_files = map(format_filename_whitelisted, list_of_files)
-    zip_filename = "%s/cases_%s_%s.zip" % (settings.CASE_ZIP_DIR, requester_id, get_formatted_date())
+    zip_filename = "cases_%s_%s.zip" % (requester_id, get_formatted_date())
     gzip_documents(zip_filename, list_of_files)
+    move_casezip(zip_filename)
     return zip_filename
 
 def gzip_documents(zipname, filenames):
