@@ -31,7 +31,7 @@ class ReporterAdmin(admin.ModelAdmin):
     fields = ('slug', 'name', 'name_abbreviation', 'start_date', 'end_date', 'volumes', 'updated_at', 'jurisdiction')
 
 class CourtAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name_abbreviation',)
+    list_display = ('id', 'jurisdiction', 'name_abbreviation',)
     fields = ('slug', 'name', 'name_abbreviation', 'jurisdiction')
 
 class JurisdictionAdmin(admin.ModelAdmin):
