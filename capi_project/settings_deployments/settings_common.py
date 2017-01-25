@@ -21,7 +21,7 @@ CASE_FILE_TYPE = '.xml'
 CAP_SERVER_TO_CONNECT_TO = '123.45.6.7'
 CAP_DATA_DIR_VAR = '$CAP_DATA_DIR'
 # TODO: reformat for many states
-WHITELISTED_DATA_DIR = '/casemets/illinois'
+WHITELISTED_DATA_DIR = 'casemets/illinois'
 PRIVATE_KEY_FILENAME = '/path/to/keys'
 METADATA_DIR_PATH = '/path/to/dir'
 CASE_ZIP_DIR = 'zip_dir'
@@ -146,9 +146,9 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
         },
