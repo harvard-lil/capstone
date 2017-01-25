@@ -79,6 +79,10 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             kwargs = format_kwargs(self.request.query_params, kwargs)
 
         max_num = kwargs.pop('max', None)
+        # TODO: throttle requests
+        if not max_num:
+            max_num = 500
+
         query = map(make_query, kwargs.items())
         query = merge_filters(query, 'AND')
 
