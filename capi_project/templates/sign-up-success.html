@@ -1,20 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %} | Log in{% endblock %}
+{% block title %} | Success{% endblock %}
 
 {% block meta_description %}
-The Caselaw Access Project API guide
+You have successfully registered to use the Caselaw Access Project API
 {% endblock %}
+
 {% block content %}
 <div class="container login-form container-full inverse header-margin">
   <div class="row row-centered">
-    {% if errors %}
-    <div class="alert alert-warning">
-      <div class="col-sm-4 col-centered">
-        <strong>Error!</strong> See below for details
-      </div>
-    </div>
-    {% endif %}
     <div class="col-sm-4 col-centered">
 
       <h3>{% if status %}{{status}}{% endif %}</h3>
