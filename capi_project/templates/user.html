@@ -5,9 +5,9 @@
 <h1>Profile - {{ profile.name }}</h1>
 
 <form action="{% url 'user-detail' pk=user.pk %}" method="POST">
-    {% csrf_token %}
-    {% render_form serializer %}
-    <input type="submit" value="Save">
+  {% csrf_token %}
+  {% render_form serializer %}
+  <input type="submit" value="Save">
 </form>
 
 </body></html>
