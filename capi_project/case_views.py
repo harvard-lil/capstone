@@ -1,14 +1,9 @@
 import os
-from django.shortcuts import get_object_or_404
-from rest_framework import renderers, status
-from django.http import HttpResponse, StreamingHttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from rest_framework import renderers
+from django.http import HttpResponse, StreamingHttpResponse
 from django.db.models import Q
-from rest_framework import routers, viewsets, views, mixins, permissions, filters
-from rest_framework.response import Response
+from rest_framework import viewsets, mixins, filters
 
-from rest_framework.decorators import api_view, detail_route, list_route, permission_classes, renderer_classes, parser_classes
-from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
 from wsgiref.util import FileWrapper
@@ -58,7 +53,7 @@ class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
 
 class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     """
-    # Browse all cases
+    Browse all cases
     """
     permission_classes = (IsCaseUser,)
     serializer_class = CaseSerializer
@@ -128,7 +123,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         else:
             case_allowance = self.request.user.case_allowance
             time_remaining = self.request.user.get_case_allowance_update_time_remaining()
-            message = 'You have reached your limit of allowed cases. Your limit will reset to default again in %s', time_remaining
+            message = "You have reached your limit of allowed cases. Your limit will reset to default again in %s", time_remaining
             details = "You attempted to download %s cases and your current remaining case limit is %s. Use the max flag to return a specific number of cases: &max=%s" % (blacklisted_case_count, case_allowance, case_allowance)
             return JSONResponse({'message':message, 'details':details}, status=403)
 
