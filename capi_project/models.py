@@ -6,8 +6,9 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import IntegrityError
 from django.template.defaultfilters import slugify
+
 from utils import generate_unique_slug
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 import pytz
 import uuid
 import logging
@@ -15,6 +16,7 @@ import logging
 from rest_framework.authtoken.models import Token
 
 logger = logging.getLogger(__name__)
+
 
 class CaseUserManager(BaseUserManager):
     def create_user(self, *args, **kwargs):
@@ -32,6 +34,7 @@ class CaseUserManager(BaseUserManager):
         user.create_nonce()
         user.save(using=self._db)
         return user
+
 
 class CaseUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=254, unique=True, db_index=True,
@@ -70,7 +73,7 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
 
     def get_case_allowance_update_time_remaining(self, *args, **kwargs):
         td = self.case_allowance_last_updated + timedelta(hours=settings.CASE_EXPIRE_HOURS) - timezone.now()
-        return "%sh. %sm." % (td.seconds/3600, (td.seconds/60)%60)
+        return "%sh. %sm." % (td.seconds / 3600, (td.seconds / 60) % 60)
 
     def authenticate_user(self, *args, **kwargs):
         nonce = kwargs.get('activation_nonce')
@@ -81,7 +84,7 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
                 self.is_active = True
                 self.save()
             except IntegrityError as e:
-                print "IntegrityError in authenticating user:",e,self.email
+                print "IntegrityError in authenticating user:", e, self.email
                 pass
         else:
             raise PermissionDenied
@@ -100,11 +103,12 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     def get_api_key(self):
         try:
             return Token.objects.get(user=self).key
-        except Exception as e:
+        except Exception:
             return False
 
     def get_short_name(self):
         return self.email.split('@')[0]
+
 
 class Volume(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -138,8 +142,8 @@ class Volume(models.Model):
                 elif key == 'reporter_id':
                     try:
                         volume.reporter = Reporter.objects.get(id=row['reporter_id'])
-                    except Exception as e:
-                        print "reporter not found:",row['reporter_id'], volume.barcode
+                    except Exception:
+                        print "reporter not found:", row['reporter_id'], volume.barcode
                         pass
                 elif key == 'pages':
                     volume.pages = int(row[key])
@@ -168,7 +172,7 @@ class Volume(models.Model):
 
     def safe_set(self, prop, val):
         try:
-            setattr(self, prop, value)
+            setattr(self, prop, val)
             self.save()
         except:
             pass
@@ -213,13 +217,16 @@ class Reporter(models.Model):
 
     @classmethod
     def create_unique(self, name, jurisdiction):
-        special_cases =  {
-                'Ct. Cl.':  {
-                    'West Virginia':'wv-ct-cl', 'United States': 'us-ct-cl'},
-                'Smith': {
-                    'Indiana':'ind-smith', 'New Hampshire':'nh-smith'
-                }
+        special_cases = {
+            'Ct. Cl.': {
+                'West Virginia': 'wv-ct-cl',
+                'United States': 'us-ct-cl'
+            },
+            'Smith': {
+                'Indiana': 'ind-smith',
+                'New Hampshire': 'nh-smith'
             }
+        }
         if case.reporter in special_cases:
             slug = special_cases[case.reporter][case.jurisdiction]
         else:
@@ -239,13 +246,14 @@ class Reporter(models.Model):
         reporter.save()
         return reporter
 
+
 class Jurisdiction(models.Model):
     name = models.CharField(max_length=100, blank=True)
     slug = models.SlugField()
     name_abbreviation = models.CharField(max_length=200, blank=True)
 
     def __unicode__(self):
-        return u"%s" %  self.name
+        return u"%s" % self.name
 
     @classmethod
     def create(self, name):
@@ -273,17 +281,18 @@ class Jurisdiction(models.Model):
     @classmethod
     def fix_common_error(self, name):
         common_errors = {
-                'Califonia':'California',
-                'United Statess': 'United States',
-                'N.Y.': 'New York',
-                '1': 'United States',
-                'Philadelphia':'Pennsylvania',
-            }
+            'Califonia': 'California',
+            'United Statess': 'United States',
+            'N.Y.': 'New York',
+            '1': 'United States',
+            'Philadelphia': 'Pennsylvania',
+        }
 
         if common_errors.get('name'):
             return common_errors[name]
         else:
             return name
+
 
 class Court(models.Model):
     name = models.CharField(max_length=255)
@@ -306,6 +315,7 @@ class Court(models.Model):
         court, created = Court.objects.get_or_create(name=name, name_abbreviation=name_abbreviation, jurisdiction_id=jurisdiction_id)
         court.save()
         return court
+
 
 class Case(models.Model):
     slug = models.SlugField(unique=True, max_length=255)
@@ -372,9 +382,9 @@ class Case(models.Model):
             pass
 
     def write_case_fields(self, row):
-        for prop,val in row.items():
+        for prop, val in row.items():
             if prop != 'court' and prop != 'court_abbreviation' and prop != 'reporter':
-                self.safe_set(prop,val)
+                self.safe_set(prop, val)
 
         try:
             jurisdiction_id = self.jurisdiction.id
@@ -421,6 +431,7 @@ class Case(models.Model):
             case_error.save()
             pass
 
+
 class CaseError(models.Model):
     field = models.CharField(max_length=45, null=False, blank=False)
     value = models.TextField(null=True, blank=True)
@@ -432,6 +443,7 @@ class CaseError(models.Model):
     def create(self, caseid):
         case = self(caseid=caseid)
         return case
+
 
 def get_date_added(unformatted_timestamp):
     if unformatted_timestamp:

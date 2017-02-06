@@ -1,7 +1,6 @@
 import django_filters
 from .models import Case, Jurisdiction
-from .serializers import CaseSerializer
-from rest_framework import generics
+
 
 class CaseFilter(django_filters.rest_framework.FilterSet):
     name = django_filters.CharFilter(name="name", lookup_expr='icontains')
@@ -13,12 +12,13 @@ class CaseFilter(django_filters.rest_framework.FilterSet):
     max_year = django_filters.DateTimeFilter(name="decisiondate", lookup_expr='lte')
     reporter_name = django_filters.CharFilter(name="reporter__name", lookup_expr='icontains')
     jurisdiction_name = django_filters.CharFilter(name="jurisdiction__name", lookup_expr='icontains')
+
     class Meta:
         model = Case
-        fields = ['name', 'name_abbreviation',
-        'citation', 'jurisdiction', 'court_name', 'reporter_name',
-        'min_year','max_year',
-        ]
+        fields = ['name', 'name_abbreviation', 'citation',
+                  'jurisdiction', 'court_name', 'reporter_name',
+                  'min_year', 'max_year']
+
 
 class JurisdictionFilter(django_filters.rest_framework.FilterSet):
     class Meta:
