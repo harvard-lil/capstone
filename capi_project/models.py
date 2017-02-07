@@ -177,6 +177,7 @@ class Volume(models.Model):
         except:
             pass
 
+
 class Reporter(models.Model):
     id = models.IntegerField(primary_key=True)
     jurisdiction = models.ForeignKey('Jurisdiction', blank=True, null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
