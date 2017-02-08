@@ -147,7 +147,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         try:
             if blacklisted_case_count > 0:
                 zip_filename = download_blacklisted(self.request.user.id, caseids_list)
-                self.request.user.case_allowance -= len(caseids_list)
+                self.request.user.case_allowance -= blacklisted_case_count
                 self.request.user.save()
             else:
                 zip_filename = download_whitelisted(self.request.user.id, caseids_list)
