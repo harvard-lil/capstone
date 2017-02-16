@@ -1,13 +1,10 @@
 import os
-from rest_framework import renderers
 from django.http import HttpResponse, StreamingHttpResponse
 from django.db.models import Q
-from rest_framework import viewsets, mixins, filters
-
-from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
+from rest_framework import renderers, viewsets, mixins, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from wsgiref.util import FileWrapper
-
 from .models import Case, Jurisdiction, Reporter, Court
 from .view_helpers import *
 from .serializers import *
@@ -15,6 +12,7 @@ from .permissions import IsCaseUser
 from .filters import *
 
 from resources import download_blacklisted, download_whitelisted
+
 
 class JSONResponse(HttpResponse):
     """
@@ -25,6 +23,7 @@ class JSONResponse(HttpResponse):
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
 
+
 class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = JurisdictionSerializer
     http_method_names = ['get']
@@ -33,11 +32,13 @@ class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mi
     queryset = Jurisdiction.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
+
 class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = VolumeSerializer
     http_method_names = ['get']
     queryset = Volume.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
 
 class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = ReporterSerializer
@@ -45,11 +46,13 @@ class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins
     queryset = Reporter.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
+
 class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = CourtSerializer
     http_method_names = ['get']
     queryset = Court.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
 
 class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     """
@@ -125,7 +128,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             time_remaining = self.request.user.get_case_allowance_update_time_remaining()
             message = "You have reached your limit of allowed cases. Your limit will reset to default again in %s", time_remaining
             details = "You attempted to download %s cases and your current remaining case limit is %s. Use the max flag to return a specific number of cases: &max=%s" % (blacklisted_case_count, case_allowance, case_allowance)
-            return JSONResponse({'message':message, 'details':details}, status=403)
+            return JSONResponse({'message': message, 'details': details}, status=403)
 
     def check_case_permissions(self, case_count):
         self.request.user.update_case_allowance()
