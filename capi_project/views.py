@@ -67,7 +67,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 }
                 return Response(content, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
         else:
-            print serializer.errors
             return Response({'serializer': serializer, 'errors': serializer.errors}, template_name='sign-up.html', status=status.HTTP_400_BAD_REQUEST)
 
     @list_route(methods=['get'], permission_classes=[AllowAny])
@@ -87,7 +86,6 @@ class UserViewSet(viewsets.ModelViewSet):
                     # update case allowance before sending back
                     user.update_case_allowance()
                     user = CaseUser.objects.get(email=user.email)
-                    print user.is_authenticated()
                     return Response({'email': user.email, 'api_key': user.get_api_key(), 'case_allowance': user.case_allowance}, template_name='user-account.html',)
                 else:
                     return Response({'user_id': user.id, 'user_email': user.email, 'info_email': settings.EMAIL_ADDRESS}, template_name='resend-nonce.html',)

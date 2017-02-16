@@ -2,11 +2,13 @@ import os
 import paramiko
 from scp import SCPClient
 from datetime import datetime
+import logging
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.defaultfilters import slugify
 
+logger = logging.getLogger(__name__)
 
 def get_formatted_date():
     return slugify(str(datetime.today()))
@@ -43,19 +45,19 @@ def download_blacklisted(requester_id, list_of_files):
         string_list = str(list_of_files)
         zip_filename = "cases_%s_%s.zip" % (requester_id, get_formatted_date())
         ssh.exec_command("touch %s" % zip_filename)
-        print("creating %s" % zip_filename)
+        logger.info("creating %s" % zip_filename)
         stdin, stdout, stderr = ssh.exec_command('python cap_api_gzip_cases.py %s \"%s\"' % (zip_filename, string_list))
         if stderr.read():
             raise Exception('Uh Oh! Something went wrong')
         scp_client = SCPClient(ssh.get_transport())
         scp_client.get("%s" % zip_filename)
-        print('downloading %s' % zip_filename)
+        logger.info("downloading %s" % zip_filename)
         scp_client.close()
         move_casezip(zip_filename)
         return zip_filename
 
     except Exception as e:
-        print("Error on case download: %s" % e)
+        logger.error("Error on case download: %s" % e)
 
 
 def download_whitelisted(requester_id, list_of_files):
@@ -81,18 +83,16 @@ def gzip_documents(zipname, filenames):
 
         return zapfile
 
-
 def move_casezip(filename):
     new_dest = "%s/%s" % (settings.CASE_ZIP_DIR, filename)
     os.rename(filename, new_dest)
-
 
 def email(reason, user):
     title = 'CAP API: %s' % reason
     if reason == 'new_registration':
         message = "user %s %s at %s has requested API access." % (user.first_name, user.last_name, user.email)
         send_mail(title, message, settings.ADMIN_EMAIL_ADDRESS, [settings.EMAIL_ADDRESS])
-        print "sent new_registration email for %s" % user.email
+        logger.info("sent new_registration email for %s" % user.email)
 
     if reason == 'new_signup':
         token_url = "%saccounts/verify-user/%s/%s" % (settings.BASE_URL, user.id, user.get_activation_nonce())
@@ -104,8 +104,4 @@ def email(reason, user):
             settings.EMAIL_ADDRESS,
             [user.email],
             fail_silently=False,)
-        print "sent new_signup email for %s" % user.email
-
-
-# if __name__ == '__main___':
-#     create_metadata_from_csv()
+        logger.info("sent new_signup email for %s" % user.email)

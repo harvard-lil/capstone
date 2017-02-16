@@ -84,7 +84,7 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
                 self.is_active = True
                 self.save()
             except IntegrityError as e:
-                print "IntegrityError in authenticating user:", e, self.email
+                logger.warn("IntegrityError in authenticating user: %s %s" % (e, self.email))
                 pass
         else:
             raise PermissionDenied
@@ -143,7 +143,7 @@ class Volume(models.Model):
                     try:
                         volume.reporter = Reporter.objects.get(id=row['reporter_id'])
                     except Exception:
-                        print "reporter not found:", row['reporter_id'], volume.barcode
+                        logger.warn("reporter not found: %s %s" % (row['reporter_id'], volume.barcode))
                         pass
                 elif key == 'pages':
                     volume.pages = int(row[key])
@@ -353,7 +353,7 @@ class Case(models.Model):
             try:
                 case = Case.objects.get(caseid=row['caseid'])
             except Exception as e:
-                print e, row['caseid']
+                logger.warn("Exception caught creating Case from row %s %s" % (e, row['caseid']))
                 slug = generate_unique_slug(Case, row['name_abbreviation'])
                 case = Case(caseid=row['caseid'], slug=slug)
                 pass
@@ -379,7 +379,7 @@ class Case(models.Model):
                 case.write_case_fields(row)
 
         except Exception as e:
-            print "Exception caught on case creation: %s" % e, row['caseid']
+            logger.warn("Exception caught on case creation: %s %s" % (e, row['caseid']))
             pass
 
     def write_case_fields(self, row):
