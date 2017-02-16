@@ -77,7 +77,7 @@ def gzip_documents(zipname, filenames):
     with zipfile.ZipFile(zipname, 'w') as zapfile:
         for f in filenames:
             fname = f.split('/')[-1]
-            zapfile.write(f, fname, compress_type=zipfile.ZIP_DEFLATED)
+            zapfile.write(f, fname, compress_type=compression)
 
         return zapfile
 
