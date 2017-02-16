@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 import json
 
-class CaseTestCase(TestCase):
+class UserTestCase(TestCase):
     def setUp(self):
         user = helpers.setup_user(id=1, email="boblawblaw@lawblog.com", first_name="Bob", last_name="Lawblaw", password="unique_password")
         authenticated_user = helpers.setup_authenticated_user(id=2, email="authentic_boblawblaw@lawblog.com", first_name="Authentic-Bob", last_name="Lawblaw", password="unique_authentic_password")

@@ -217,7 +217,7 @@ class Reporter(models.Model):
         return reporter
 
     @classmethod
-    def create_unique(self, name, jurisdiction):
+    def get_or_create_unique(self, name, jurisdiction):
         special_cases = {
             'Ct. Cl.': {
                 'West Virginia': 'wv-ct-cl',
@@ -228,16 +228,18 @@ class Reporter(models.Model):
                 'New Hampshire': 'nh-smith'
             }
         }
-        if case.reporter in special_cases:
-            slug = special_cases[case.reporter][case.jurisdiction]
+
+        if name in special_cases.keys():
+            slug = special_cases[name][jurisdiction]
         else:
-            slug = slugify(case.reporter)
+            slug = slugify(name)
 
-        reporter, created = Reporter.objects.get_or_create(name=case.reporter, slug=slug)
+        try:
+            reporter = Reporter.objects.get(name=name, slug=slug)
+        except:
+            reporter = Reporter(id=Reporter.objects.count(), name=name, slug=slug)
+
         reporter.save()
-
-        case.reporter = reporter
-        case.save()
 
         return reporter
 
@@ -342,7 +344,7 @@ class Case(models.Model):
     def create(self, caseid, **kwargs):
         case = self(caseid=caseid, **kwargs)
         case.slug = generate_unique_slug(Case, case.name_abbreviation)
-        reporter = Reporter.create_unique(name=kwargs.get('reporter'), jurisdiction=kwargs.get('jurisdiction'))
+        reporter = Reporter.get_or_create_unique(name=kwargs.get('reporter'), jurisdiction=kwargs.get('jurisdiction'))
         case.reporter = reporter
         case.save()
         return case
