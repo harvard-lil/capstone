@@ -1,9 +1,5 @@
-from django.conf.urls import url
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.conf import settings
 from django.conf.urls import url, include
-from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework import routers
 from capi_project import views

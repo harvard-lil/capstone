@@ -1,14 +1,10 @@
 from .models import *
 from rest_framework import serializers
-from django.core.mail import send_mail
-from rest_framework.validators import UniqueValidator
-from django.contrib.auth import password_validation, get_user_model
-from django.core import exceptions
 from resources import email
-from django.conf import settings
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
@@ -35,35 +31,42 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'url': {'lookup_field': 'slug'}
         }
 
+
 class JurisdictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Jurisdiction
         fields = ('id', 'slug', 'name', 'name_abbreviation', )
+
 
 class VolumeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Volume
         fields = '__all__'
 
+
 class ReporterSerializer(serializers.ModelSerializer):
     jurisdiction = serializers.HyperlinkedRelatedField(view_name='jurisdiction-detail', read_only=True)
     jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
     jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
+
     class Meta:
         model = Reporter
         fields = '__all__'
+
 
 class CourtSerializer(serializers.ModelSerializer):
     jurisdiction = serializers.HyperlinkedRelatedField(view_name='jurisdiction-detail', read_only=True)
     jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
     jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
+
     class Meta:
         model = Court
-        lookup_field='id'
+        lookup_field = 'id'
         fields = ('id', 'name', 'name_abbreviation', 'jurisdiction', 'jurisdiction_id', 'jurisdiction_name')
         extra_kwargs = {
             'url': {'lookup_field': 'id'}
         }
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -77,6 +80,7 @@ class UserSerializer(serializers.ModelSerializer):
         if not found_user.is_authenticated():
             found_user.authenticate_user(activation_nonce=activation_nonce)
         return found_user
+
 
 class RegisterUserSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
@@ -92,15 +96,15 @@ class RegisterUserSerializer(serializers.Serializer):
     def validate_email(self, email):
         existing = CaseUser.objects.filter(email=email).first()
         if existing:
-            raise serializers.ValidationError("Someone with that email "
-                "address has already registered. Was it you?")
+            msg = "Someone with that email address has already registered. Was it you?"
+            raise serializers.ValidationError(msg)
 
         return email
 
     def validate(self, data):
         if not data.get('password') or not data.get('confirm_password'):
-            raise serializers.ValidationError("Please enter a password and "
-                "confirm it.")
+            msg = "Please enter a password and confirm it."
+            raise serializers.ValidationError(msg)
 
         if data.get('password') != data.get('confirm_password'):
             raise serializers.ValidationError("Those passwords don't match.")
@@ -115,9 +119,10 @@ class RegisterUserSerializer(serializers.Serializer):
         except Exception as e:
             raise Exception(e)
 
+
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
-    password = serializers.CharField(max_length=100,style={'input_type': 'password'})
+    password = serializers.CharField(max_length=100, style={'input_type': 'password'})
 
     class Meta:
         model = CaseUser
