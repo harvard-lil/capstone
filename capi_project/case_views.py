@@ -88,14 +88,13 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         # TODO: throttle requests
 
         queries = map(make_query, query_dict.items())
-        logger.info("QUERY IS:", queries)
+        logger.info("query %s, max_num %s" % (queries, max_num))
 
         if len(queries) > 0:
             filters = merge_filters(queries, 'AND')
             cases = cases.filter(filters)
-
-        if not len(cases):
-            return JSONResponse({'message': 'Request did not return any results.'}, status=404,)
+            if cases.count() == 0:
+                return JSONResponse({'message': 'Request did not return any results.'}, status=404,)
 
         caseids_list = list(cases.order_by('decisiondate').values_list('caseid', flat=True))[:max_num]
         blacklisted_cases = list(cases.exclude(jurisdiction__name='Illinois').values_list('caseid', flat=True))
