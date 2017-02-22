@@ -6,7 +6,7 @@ from rest_framework import renderers, viewsets, mixins, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from wsgiref.util import FileWrapper
 from .models import Case, Jurisdiction, Reporter, Court
-from .view_helpers import *
+from .view_helpers import format_query, make_query, merge_filters
 from .serializers import *
 from .permissions import IsCaseUser
 from .filters import *
@@ -70,30 +70,35 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     ordering = ('decisiondate',)
 
     def download(self, *args, **kwargs):
-        query = Q()
-        kwargs = self.kwargs
         cases = self.queryset.all()
+
+        query_dict = {}
+        query = Q()
+
         if len(self.request.query_params.items()):
-            kwargs = format_kwargs(self.request.query_params, kwargs)
+            query = format_query(self.request.query_params, query_dict)
 
-        max_num = kwargs.pop('max', None)
+        try:
+            max_num = int(query_dict.pop('max', settings.CASE_DAILY_ALLOWANCE))
+        except ValueError:
+            max_num = settings.CASE_DAILY_ALLOWANCE
+            pass
+
         # TODO: throttle requests
-        if not max_num:
-            max_num = 500
 
-        query = map(make_query, kwargs.items())
-        query = merge_filters(query, 'AND')
+        query = map(make_query, query_dict.items())
 
-        cases = cases.filter(query)
+        if len(query):
+            query = merge_filters(query, 'AND')
+            cases = cases.filter(query)
+
+        if not len(cases):
+            return JSONResponse({'message': 'Request did not return any results.'}, status=404,)
 
         blacklisted_cases = list(cases.exclude(jurisdiction__name='Illinois').values_list('caseid', flat=True))
         caseids_list = list(cases.order_by('decisiondate').values_list('caseid', flat=True))
 
-        try:
-            max_num = int(max_num)
-            caseids_list = caseids_list[:max_num]
-        except:
-            pass
+        caseids_list = caseids_list[:max_num]
 
         if len(blacklisted_cases) > 0:
             blacklisted_case_count = reduce(lambda total, caseid: int(caseid in blacklisted_cases) + total, caseids_list, 0)
