@@ -89,7 +89,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         queries = map(make_query, query_dict.items())
         logger.info("QUERY IS:", queries)
-
+        
         if len(queries) > 0:
             filters = merge_filters(queries, 'AND')
             cases = cases.filter(filters)
@@ -103,7 +103,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         caseids_list = caseids_list[:max_num]
 
         if len(blacklisted_cases) > 0:
-            blacklisted_case_count = reduce(lambda total, caseid: int(caseid in blacklisted_cases) + total, caseids_list, 0)
+            blacklisted_case_count = len(set(caseids_list) & set(blacklisted_cases))
         else:
             blacklisted_case_count = 0
 
