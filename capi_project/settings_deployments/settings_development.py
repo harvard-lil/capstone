@@ -11,3 +11,5 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'capi_project',
 ]
+
+DEV_ENV = True
