@@ -1,6 +1,6 @@
 import sys
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -103,8 +103,8 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     def get_api_key(self):
         try:
             return Token.objects.get(user=self).key
-        except Exception:
-            return False
+        except ObjectDoesNotExist:
+            return None
 
     def get_short_name(self):
         return self.email.split('@')[0]

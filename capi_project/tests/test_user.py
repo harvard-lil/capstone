@@ -32,10 +32,14 @@ class UserTestCase(TestCase):
         user.key_expires = datetime.now(pytz.utc)
         user.save()
         user.authenticate_user(activation_nonce=user.activation_nonce)
-        assert user.is_authenticated()
         assert user.is_active
         token = user.get_api_key()
         assert len(token) > 5
+
+    def test_unauthenticated_user(self):
+        user = CaseUser(email="sketchy@gmail.com", first_name="Don't", last_name="Trust")
+        token = user.get_api_key()
+        assert token is None
 
     def test_case_allowance_time_update(self):
         user = CaseUser.objects.get(id=2)
