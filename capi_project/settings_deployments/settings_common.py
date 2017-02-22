@@ -85,7 +85,7 @@ LOGGING = {
      },
     'handlers': {
         'default': {
-            'level':'DEBUG',
+            'level':'INFO',
             'filters': ['require_debug_false'],
             'class':'logging.handlers.RotatingFileHandler',
             'filename': '/tmp/cap-api.log',
