@@ -89,7 +89,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         queries = map(make_query, query_dict.items())
         logger.info("QUERY IS:", queries)
-        
+
         if len(queries) > 0:
             filters = merge_filters(queries, 'AND')
             cases = cases.filter(filters)
@@ -97,20 +97,9 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         if not len(cases):
             return JSONResponse({'message': 'Request did not return any results.'}, status=404,)
 
+        caseids_list = list(cases.order_by('decisiondate').values_list('caseid', flat=True))[:max_num]
         blacklisted_cases = list(cases.exclude(jurisdiction__name='Illinois').values_list('caseid', flat=True))
-        caseids_list = list(cases.order_by('decisiondate').values_list('caseid', flat=True))
-
-        caseids_list = caseids_list[:max_num]
-
-        if len(blacklisted_cases) > 0:
-            blacklisted_case_count = len(set(caseids_list) & set(blacklisted_cases))
-        else:
-            blacklisted_case_count = 0
-
-        """
-        if getting a mixed request, serve through server1
-        if getting only whitelisted, serve through server2
-        """
+        blacklisted_case_count = len(set(caseids_list) & set(blacklisted_cases))
 
         if blacklisted_case_count > 0:
             try:
