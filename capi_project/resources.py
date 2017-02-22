@@ -14,59 +14,46 @@ def get_formatted_date():
     return slugify(str(datetime.today()))
 
 
-def format_filename(case_id):
+def format_filename(case_id, whitelisted=False):
     cdir, cpgnumber = case_id.split('_')
     cdirname = cdir + '_redacted'
-    return "{}/{}/casemets/{}_CASEMETS_{}{}".format(settings.CAP_DATA_DIR_VAR,
+    data_dir = settings.CAP_DATA_DIR_VAR
+    if whitelisted:
+        data_dir = settings.WHITELISTED_DATA_DIR
+
+    return "{}/{}/casemets/{}_CASEMETS_{}{}".format(data_dir,
                                                     cdirname,
                                                     cdirname,
                                                     cpgnumber,
                                                     settings.CASE_FILE_TYPE)
-
-
-def format_filename_whitelisted(case_id):
-    cdir, cpgnumber = case_id.split('_')
-    cdirname = cdir + '_redacted'
-    return "{}/{}/casemets/{}_CASEMETS_{}{}".format(settings.WHITELISTED_DATA_DIR,
-                                                    cdirname,
-                                                    cdirname,
-                                                    cpgnumber,
-                                                    settings.CASE_FILE_TYPE)
-
 
 def download_blacklisted(requester_id, list_of_files):
-    try:
-        ssh = paramiko.SSHClient()
-        list_of_files = map(format_filename, list_of_files)
-        ssh.load_system_host_keys()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        private_key = paramiko.RSAKey.from_private_key_file(settings.PRIVATE_KEY_FILENAME)
-        ssh.connect(settings.CAP_SERVER_TO_CONNECT_TO, port=22, pkey=private_key, username='capuser')
-        string_list = str(list_of_files)
-        zip_filename = "cases_%s_%s.zip" % (requester_id, get_formatted_date())
-        ssh.exec_command("touch %s" % zip_filename)
-        logger.info("creating %s" % zip_filename)
-        stdin, stdout, stderr = ssh.exec_command('python cap_api_gzip_cases.py %s \"%s\"' % (zip_filename, string_list))
-        if stderr.read():
-            raise Exception('Uh Oh! Something went wrong')
-        scp_client = SCPClient(ssh.get_transport())
-        scp_client.get("%s" % zip_filename)
-        logger.info("downloading %s" % zip_filename)
-        scp_client.close()
-        move_casezip(zip_filename)
-        return zip_filename
-
-    except Exception as e:
-        logger.error("Error on case download: %s" % e)
-
+    ssh = paramiko.SSHClient()
+    list_of_files = map(format_filename, list_of_files)
+    ssh.load_system_host_keys()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    private_key = paramiko.RSAKey.from_private_key_file(settings.PRIVATE_KEY_FILENAME)
+    ssh.connect(settings.CAP_SERVER_TO_CONNECT_TO, port=22, pkey=private_key, username='capuser')
+    string_list = str(list_of_files)
+    zip_filename = "cases_%s_%s.zip" % (requester_id, get_formatted_date())
+    ssh.exec_command("touch %s" % zip_filename)
+    logger.info("creating %s" % zip_filename)
+    stdin, stdout, stderr = ssh.exec_command('python cap_api_gzip_cases.py %s \"%s\"' % (zip_filename, string_list))
+    if stderr.read():
+        raise Exception('Uh Oh! Something went wrong: %s', stderr.read())
+    scp_client = SCPClient(ssh.get_transport())
+    scp_client.get("%s" % zip_filename)
+    logger.info("downloading %s" % zip_filename)
+    scp_client.close()
+    move_casezip(zip_filename)
+    return zip_filename
 
 def download_whitelisted(requester_id, list_of_files):
-    list_of_files = map(format_filename_whitelisted, list_of_files)
+    list_of_files = [format_filename_whitelisted(filename, whitelisted=True) for filename in list_of_files]
     zip_filename = "cases_%s_%s.zip" % (requester_id, get_formatted_date())
     gzip_documents(zip_filename, list_of_files)
     move_casezip(zip_filename)
     return zip_filename
-
 
 def gzip_documents(zipname, filenames):
     import zipfile
