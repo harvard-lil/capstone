@@ -32,7 +32,7 @@ def download_blacklisted(requester_id, list_of_files):
     string_list = str(list_of_files)
     zip_filename = "cases_%s_%s.zip" % (requester_id, get_formatted_date())
 
-    if not settings.DEV_ENV:
+    if not settings.DEBUG:
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
