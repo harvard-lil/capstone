@@ -49,7 +49,7 @@ def download_blacklisted(requester_id, list_of_files):
     return zip_filename
 
 def download_whitelisted(requester_id, list_of_files):
-    list_of_files = [format_filename_whitelisted(filename, whitelisted=True) for filename in list_of_files]
+    list_of_files = [format_filename(filename, whitelisted=True) for filename in list_of_files]
     zip_filename = "cases_%s_%s.zip" % (requester_id, get_formatted_date())
     gzip_documents(zip_filename, list_of_files)
     move_casezip(zip_filename)
