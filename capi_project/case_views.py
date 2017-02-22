@@ -10,9 +10,10 @@ from .view_helpers import format_query, make_query, merge_filters
 from .serializers import *
 from .permissions import IsCaseUser
 from .filters import *
+from .resources import download_blacklisted, download_whitelisted
+import logging
 
-from resources import download_blacklisted, download_whitelisted
-
+logger = logging.getLogger(__name__)
 
 class JSONResponse(HttpResponse):
     """
@@ -86,11 +87,12 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         # TODO: throttle requests
 
-        query = map(make_query, query_dict.items())
+        queries = map(make_query, query_dict.items())
+        logger.info("QUERY IS:", queries)
 
-        if len(query):
-            query = merge_filters(query, 'AND')
-            cases = cases.filter(query)
+        if len(queries) > 0:
+            filters = merge_filters(queries, 'AND')
+            cases = cases.filter(filters)
 
         if not len(cases):
             return JSONResponse({'message': 'Request did not return any results.'}, status=404,)

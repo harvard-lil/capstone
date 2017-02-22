@@ -73,20 +73,39 @@ INSTALLED_APPS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(filename)s %(lineno)d: %(message)s'
+        },
+    },
+    'filters': {
+         'require_debug_false': {
+             '()': 'django.utils.log.RequireDebugFalse'
+         }
+     },
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.abspath(BASE_DIR + "/debug.log"),
+        'default': {
+            'level':'DEBUG',
+            'filters': ['require_debug_false'],
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': '/tmp/cap-api.log',
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'standard',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['file'],
+        '': {
+            'handlers': ['default', 'mail_admins'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': True
         },
-    },
+    }
 }
 
 STATIC_URL = '/static/'
