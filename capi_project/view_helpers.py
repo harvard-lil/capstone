@@ -16,7 +16,7 @@ def make_query((key, val)):
         return Q(**qwarg)
 
 
-def format_kwargs(params, args_dict):
+def format_query(params, args_dict):
     blacklisted_keys = ['type', 'page', 'offset']
     if not len(params):
         return args_dict
