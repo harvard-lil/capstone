@@ -38,22 +38,19 @@
       <img class="cap-logo img-responsive" src="{% static "img/logo-small-white.svg" %}" alt="Library Innovation Lab"></img>
 
       <h3 class="project-title text-center">CASELAW ACCESS PROJECT</h3>
-      <!-- <h4 class="subheader">
-        CAP data from the amazing team at
-        <span class="inline-link">
-          <a href="http://lil.law.harvard.edu/projects/caselaw-access-project/" target="_blank">
-            Library Innovation Lab
-          </a>
-        </span> at Harvard University.
-      </h4> -->
-
       <p class="credits text-center">
         This is an experimental workspace.
-        <!-- The data is rough, the tools just prototypes. -->
-        If you have ideas, please send us feedback <a href="http://lil.law.harvard.edu/projects/caselaw-access-project/" target="_blank">here </a> or
+        <br/>
+        For more information on this project click <a href="http://lil.law.harvard.edu/projects/caselaw-access-project/" target="_blank"> here</a>.
+        If you have ideas, please send us feedback <a href="mailto:lil@law.harvard.edu?Subject=CAP%20API">here </a> or
         file an issue on github <a href="https://github.com/harvard-lil/cap-api" target="_blank"> here</a>.
       </p>
-      <button class="return-to-top white-button btn">RETURN TO TOP</button>
+      <button id="return" onclick="returnToTop()" class="return-to-top white-button btn">RETURN TO TOP</button>
     </div>
   </footer>
+  <script>
+    function returnToTop() {
+      window.scrollTo(0, 0);
+    }
+  </script>
 </html>
