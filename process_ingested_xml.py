@@ -1,3 +1,11 @@
+import click
+from sqlalchemy import func
+from sqlalchemy.orm import sessionmaker
+
+from helpers import pg_connect
+from models import Volume
+
+
 def build_case_page_join_table(session, volume_id=None):
     """
         Add entries to the join table between Cases and Pages.
@@ -19,9 +27,30 @@ def build_case_page_join_table(session, volume_id=None):
             FROM cap_case c, cap_volume v
             WHERE
                 v.id=c.volume_id
-                AND c.id NOT IN (SELECT case_id FROM cap_case_page)
+                AND NOT EXISTS (SELECT 1 FROM cap_case_page cp WHERE cp.case_id=c.id)
                 %s
             ) as subq
         WHERE subq.page_barcode=p.barcode;
     """ % ("AND v.id=:volume_id" if volume_id else "")
-    session.execute(sql, params)
+    return session.execute(sql, params)
+
+@click.group()
+def cli():
+    pass
+
+@click.command()
+def build_all_case_page_join_tables():
+    pg_con = pg_connect()
+    Session = sessionmaker(bind=pg_con)
+    session = Session()
+    max_id = session.query(func.max(Volume.id))[0][0]
+    for volume_id in range(1, max_id):
+        print("Indexing", volume_id)
+        result = build_case_page_join_table(session, volume_id)
+        if result.rowcount:
+            session.commit()
+
+cli.add_command(build_all_case_page_join_tables)
+
+if __name__ == '__main__':
+    cli()
