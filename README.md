@@ -28,6 +28,12 @@ Capstone is developed with Python 3.5. Requirements are installed with `pip`. Ex
     $ mkvirtualenv -p python3.5 capstone
     (capstone)$ pip install -r requirements.txt
 
+For local development, you should have postgres installed.
+
+Copy settings.example.py to settings.py and enter credentials to connect to postgres.
+
+Run `alembic upgrade head` to load initial tables.
+
 Scripts
 -------
 
@@ -39,13 +45,13 @@ Scripts
 * **make_viz.py**: Write a visualization of the database to a 
   [public dashboard](https://harvard-ftl-public.s3.amazonaws.com/capstone/capstone.html). 
   This is currently run once per hour.
-    
+* **set_up_postgres.py**: Scripts to set up the postgres environment.
+
 Environment
 -----------
 
 Capstone currently expects to run on `ftl-sandbox`, meaning it can:
 
-* find database config variables in `/ftldata/misc/pg.capstone.cnf`
 * find a copy of the CAP volume/casemets files in `/ftldata/harvard-ftl-shared`
 * view S3 mounts in `/mnt/`
 

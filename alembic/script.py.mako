@@ -9,6 +9,9 @@ from alembic import op
 import sqlalchemy as sa
 ${imports if imports else ""}
 
+import models
+from set_up_postgres import update_postgres_env
+
 # revision identifiers, used by Alembic.
 revision = ${repr(up_revision)}
 down_revision = ${repr(down_revision)}
@@ -18,6 +21,8 @@ depends_on = ${repr(depends_on)}
 
 def upgrade():
     ${upgrades if upgrades else "pass"}
+
+    update_postgres_env()
 
 
 def downgrade():

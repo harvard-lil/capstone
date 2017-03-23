@@ -7,7 +7,6 @@ import sys
 import os
 
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '..')))
-print(sys.path)
 from helpers import get_pg_url
 
 # this is the Alembic Config object, which provides

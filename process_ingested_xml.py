@@ -1,10 +1,8 @@
-import click
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 
 from helpers import pg_connect
 from models import Volume
-
 
 def build_case_page_join_table(session, volume_id=None):
     """
@@ -34,12 +32,9 @@ def build_case_page_join_table(session, volume_id=None):
     """ % ("AND v.id=:volume_id" if volume_id else "")
     return session.execute(sql, params)
 
-@click.group()
-def cli():
-    pass
 
-@click.command()
-def build_all_case_page_join_tables():
+def fill_case_page_join_table():
+    """ Call build_case_page_join_table for each volume ID. """
     pg_con = pg_connect()
     Session = sessionmaker(bind=pg_con)
     session = Session()
@@ -49,8 +44,3 @@ def build_all_case_page_join_tables():
         result = build_case_page_join_table(session, volume_id)
         if result.rowcount:
             session.commit()
-
-cli.add_command(build_all_case_page_join_tables)
-
-if __name__ == '__main__':
-    cli()

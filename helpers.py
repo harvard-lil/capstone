@@ -2,14 +2,13 @@ import configparser
 import sqlalchemy
 from sqlalchemy.pool import NullPool
 
+import settings
 
 def get_pg_config():
     """
         Load postgres config variables from an environment file.
     """
-    config = configparser.ConfigParser()
-    config.read('/ftldata/misc/pg.capstone.cnf')
-    return config['db']
+    return settings.DATABASE
 
 def get_pg_url():
     """
