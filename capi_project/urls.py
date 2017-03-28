@@ -16,6 +16,7 @@ user_router.register(r'accounts', views.UserViewSet)
 
 urlpatterns = [
     url(r'^$', TemplateView.as_view(template_name='docs.html'), name='docs'),
+    url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt'), name='robots'),
     url(r'^', include(user_router.urls)),
     url(r'^api/v1/', include(router.urls)),
     url(r'^admin', include(admin.site.urls)),
