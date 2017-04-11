@@ -200,5 +200,58 @@ def ingest_volumes():
     # for i in volume_paths:
     #     ingest_volume(i)
 
+def volume_files(s3_client, s3_bucket_name, bar_code):
+    """ This just gets all of the files in the volume directory, and puts them into
+        a dictionary with a 'volume' array which has the volume mets and md5 files,
+        'images' for the pics, 'alto' for the alto files, and 'casemets' for the 
+        case files
+    """
+    files = defaultdict(list)
+    
+    volume_path = 'from_vendor/' + bar_code
+
+    paginator = s3_client.get_paginator('list_objects')
+    pages = paginator.paginate(Bucket=s3_bucket_name, Prefix=volume_path)
+
+    for chunk in pages:
+        for item in chunk['Contents']:
+            
+            #this should tell us the name of the directory in the volume it's in. 
+            file_type = item['Key'].split('/')[2]
+
+            #if it's not one of these values, it's probably not in a directory
+            if file_type == 'alto' or file_type == 'images' or file_type == 'casemets':
+                files[file_type].append(item['Key'])
+            else:
+                files['volume'].append(item['Key'])
+
+    return files
+
+def all_volumes(s3_client, s3_bucket_name):
+    """Gets all of the volume "directories" in the specified bucket. For each entry with multiple
+        versions, it only gives the most recent version.
+    """
+    
+    vols =  defaultdict(list)
+    paginator = s3_client.get_paginator('list_objects')
+
+    # get all of the volumes listed in from_vendor in the bucket
+    for result in paginator.paginate(Bucket=s3_bucket_name, Prefix='from_vendor/', Delimiter='/'):
+        for prefix in result.get('CommonPrefixes', []):
+            dir = prefix.get('Prefix')
+            vols[dir.replace('from_vendor/', '').split('_')[0]].append(dir)
+
+    #this is slow, but I think it's totally worth being sure we're only getting the latest version
+    output = []
+    for index, vol in enumerate(vols):
+        print(index, vol)
+        if len(vols[vol]) > 1:
+            output.append(sorted(vols[vol], reverse = True)[0])
+        else:
+            output.append(vols[vol][0])
+
+    return output
+
+
 if __name__ == "__main__":
     ingest_volumes()
