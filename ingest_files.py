@@ -228,29 +228,29 @@ def volume_files(s3_client, s3_bucket_name, bar_code):
     return files
 
 def all_volumes(s3_client, s3_bucket_name):
-    """Gets all of the volume "directories" in the specified bucket. For each entry with multiple
+    """ Gets all of the volume "directories" in the specified bucket. For each entry with multiple
         versions, it only gives the most recent version.
     """
     
-    vols =  defaultdict(list)
+    unsifted_volumes =  defaultdict(list)
     paginator = s3_client.get_paginator('list_objects')
 
     # get all of the volumes listed in from_vendor in the bucket
     for result in paginator.paginate(Bucket=s3_bucket_name, Prefix='from_vendor/', Delimiter='/'):
         for prefix in result.get('CommonPrefixes', []):
             dir = prefix.get('Prefix')
-            vols[dir.replace('from_vendor/', '').split('_')[0]].append(dir)
+            unsifted_volumes[dir.replace('from_vendor/', '').split('_')[0]].append(dir)
 
     #this is slow, but I think it's totally worth being sure we're only getting the latest version
-    output = []
-    for index, vol in enumerate(vols):
-        print(index, vol)
-        if len(vols[vol]) > 1:
-            output.append(sorted(vols[vol], reverse = True)[0])
+    sifted_volumes = []
+    for index, volume in enumerate(unsifted_volumes):
+        print(index, volume)
+        if len(unsifted_volumes[volume]) > 1:
+            sifted_volumes.append(sorted(unsifted_volumes[volume], reverse = True)[0])
         else:
-            output.append(vols[vol][0])
+            sifted_volumes.append(unsifted_volumes[volume][0])
 
-    return output
+    return sifted_volumes
 
 
 if __name__ == "__main__":
