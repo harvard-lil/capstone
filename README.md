@@ -35,7 +35,9 @@ Alternatively, use the Vagrant development environment: install Vagrant (current
     $ vagrant plugin install vagrant-vbguest
 	$ vagrant up
 
-and ask your devops engineer to accept and provision the new dev box.
+and ask your devops engineer to accept and provision the new dev box before running
+
+    $ vagrant ssh
 
 Copy settings.example.py to settings.py and enter credentials to connect to postgres.
 
