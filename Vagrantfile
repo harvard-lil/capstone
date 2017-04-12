@@ -119,6 +119,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         rm -rf /etc/salt/pki/*
       fi
 
+      # update the salt master and restart the minion
+      sed -i 's/^#master: salt/master: saltmaster.lil.tools/' /etc/salt/minion
+      /etc/init.d/salt-minion restart
+
       # I've seen vagrant put down /etc/salt/minion as vagrant:vagrant
       chown -R root:root /etc/salt
     EOF
