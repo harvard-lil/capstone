@@ -127,12 +127,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     node.vm.provision :shell, :inline => "echo 'Etc/UTC' | sudo tee /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata"
 
     ## Saltstack configuration
-    node.vm.provision :salt do |salt|
-      if ENV['VAGRANT_DEBUG']
-        salt.verbose = true
-      end
-      salt.minion_config = "/etc/salt/minion"
-      salt.run_highstate = true
-    end
+    # node.vm.provision :salt do |salt|
+    #   if ENV['VAGRANT_DEBUG']
+    #     salt.verbose = true
+    #   end
+    #   salt.minion_config = "/etc/salt/minion"
+    #   salt.run_highstate = true
+    # end
   end
 end
