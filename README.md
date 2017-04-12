@@ -30,7 +30,7 @@ Capstone is developed with Python 3. Requirements are installed with `pip`. Exam
 
 For local development, you should have postgres installed.
 
-Alternatively, use the Vagrant development environment: install Vagrant (currently 1.9.3), run
+Alternatively, use the Vagrant development environment: install [Vagrant](https://www.vagrantup.com/downloads.html) (currently 1.9.3), run
 
     $ vagrant plugin install vagrant-vbguest
 	$ vagrant up
