@@ -23,12 +23,19 @@ it.
 Setup Requirements
 ------------------
 
-Capstone is developed with Python 3.5. Requirements are installed with `pip`. Example install:
+Capstone is developed with Python 3. Requirements are installed with `pip`. Example install:
 
-    $ mkvirtualenv -p python3.5 capstone
+    $ mkvirtualenv -p python3 capstone
     (capstone)$ pip install -r requirements.txt
 
 For local development, you should have postgres installed.
+
+Alternatively, use the Vagrant development environment: install Vagrant (currently 1.9.3), run
+
+    $ vagrant plugin install vagrant-vbguest
+	$ vagrant up
+
+and ask your devops engineer to accept and provision the new dev box.
 
 Copy settings.example.py to settings.py and enter credentials to connect to postgres.
 
