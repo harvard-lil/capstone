@@ -7,7 +7,6 @@ import re
 from sqlalchemy.sql import insert
 from sqlalchemy.orm import sessionmaker
 import os
-from glob import glob
 from tqdm import tqdm
 import boto3
 
@@ -40,7 +39,7 @@ def get_s3_key(s3_client, key):
         Get contents of an S3 object by key.
     """
     response = s3_client.get_object(Bucket=s3_bucket_name, Key=key)
-    return response['Body'].read()
+    return response['Body'].read().decode('utf8')
 
 def bm(times, label):
     """
@@ -88,13 +87,19 @@ def ingest_volume(volume_path):
     # set up S3 connection
     s3_client = boto3.client('s3')
 
+
     bm(times, "setup")
 
+    files = volume_files(s3_client, s3_bucket_name, vol_barcode)
+
+    bm(times, "files loaded")
+
     # save volume
-    volmets_path = os.path.join(volume_path, "%s_redacted_METS.xml" % vol_barcode)
+    volmets_path = files['volume']
     if not os.path.exists(volmets_path):
         print("WARNING: File %s not found. Skipping volume." % volmets_path)
         return
+
     volume = session.query(Volume).filter(Volume.barcode == vol_barcode).first()
     if volume:
         bm(times, "getting caseids")
@@ -105,7 +110,7 @@ def ingest_volume(volume_path):
     else:
         existing_case_ids = existing_page_ids = set()
         bm(times, "vol doesn't exist")
-        orig_xml = read_file(volmets_path)
+        orig_xml = get_s3_key(s3_client, volmets_path)
         bm(times, "read vol")
         volume = save_record(session, Volume, barcode=vol_barcode, orig_xml=orig_xml)
         session.flush()
@@ -114,11 +119,11 @@ def ingest_volume(volume_path):
 
 
     # save cases
-    for xml_path in glob(os.path.join(volume_path, "casemets/*.xml")):
+    for xml_path in files['casemets']:
         case_barcode = vol_barcode + "_" + xml_path.split('.xml', 1)[0].rsplit('_', 1)[-1]
         if case_barcode not in existing_case_ids:
             bm(times, "case doesn't exist")
-            orig_xml = read_file(xml_path)
+            orig_xml = get_s3_key(s3_client, xml_path)
             bm(times, "read case")
             case = save_record(session, Case, volume_id=volume_id, barcode=case_barcode, orig_xml=orig_xml)
             session.flush()
@@ -129,12 +134,12 @@ def ingest_volume(volume_path):
                 alto_barcode_to_case_map[vol_barcode + "_" + alto_barcode].append(case.id)
 
     # save altos
-    for xml_path in glob(os.path.join(volume_path, "alto/*.xml")):
+    for xml_path in files['alto']:
         alto_barcode = vol_barcode + "_" + xml_path.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
         if alto_barcode not in existing_page_ids:
             bm(times, "page doesn't exist")
             s3_key = xml_path.split(s3_bucket_name + '/', 1)[1]
-            orig_xml = get_s3_key(s3_client, s3_key).decode('utf8')
+            orig_xml = get_s3_key(s3_client, s3_key)
             bm(times, "read page")
             page = save_record(session, Page, volume_id=volume_id, barcode=alto_barcode, orig_xml=orig_xml)
             session.flush()
@@ -174,13 +179,15 @@ def ingest_volumes():
     with open('make_tables.py.stored') as in_file:
         already_read = set(in_file.read().split())
 
-    # find list of volumes to import from /ftldata/harvard-ftl-shared
+    # find list of volumes to import from s3
     # build this as a list so we can pass it to the process Pool
-    dirs = sorted(glob(os.path.join(source_dir, "from_vendor/*")))
+    dirs = all_volumes(s3_client, s3_bucket_name)
+
     volume_paths = []
     for i, volume_path in enumerate(tqdm(dirs)):
 
-        # skip dirs that are superseded by the following version
+
+        ## skip dirs that are superseded by the following version
         base_name = volume_path.split('_redacted',1)[0]
         if i < len(dirs)-1 and dirs[i+1].startswith(base_name):
             continue
@@ -192,6 +199,8 @@ def ingest_volumes():
 
         volume_paths.append(volume_path)
 
+
+
     # process volume directories in parallel processes
     pool = Pool(15, maxtasksperchild=1)
     pool.map(ingest_volume, volume_paths)
@@ -200,20 +209,24 @@ def ingest_volumes():
     # for i in volume_paths:
     #     ingest_volume(i)
 
-def volume_files(s3_client, s3_bucket_name, bar_code):
+def volume_files(s3_client, s3_bucket_name, barcode):
     """ This just gets all of the files in the volume directory, and puts them into
         a dictionary with a 'volume' array which has the volume mets and md5 files,
         'images' for the pics, 'alto' for the alto files, and 'casemets' for the 
-        case files
+        case files. I have one function to get all of the files rather than a generator
+        to step through the results directly because there's a small enough number of files
+        per volume to not be a 'huge' memory concern, and as far as wall clock time 
+        goes, the request is the biggest drag, so having a different request for alto,
+        casemets, and volume files would be much slower.
     """
     files = defaultdict(list)
     
-    volume_path = 'from_vendor/' + bar_code
+    volume_path = 'from_vendor/' + barcode
 
     paginator = s3_client.get_paginator('list_objects')
     pages = paginator.paginate(Bucket=s3_bucket_name, Prefix=volume_path)
 
-    for chunk in pages:
+    for chunk in tqdm(pages):
         for item in chunk['Contents']:
             
             #this should tell us the name of the directory in the volume it's in. 
@@ -222,8 +235,12 @@ def volume_files(s3_client, s3_bucket_name, bar_code):
             #if it's not one of these values, it's probably not in a directory
             if file_type == 'alto' or file_type == 'images' or file_type == 'casemets':
                 files[file_type].append(item['Key'])
+            elif item['Key'].endswith("xml"):
+                    files['volume'] = item['Key']
+            elif item['Key'].endswith("md5"):
+                    files['md5'] = item['Key']
             else:
-                files['volume'].append(item['Key'])
+                raise("Uncategorized Key: {}".format(item['Key']))
 
     return files
 
@@ -232,23 +249,15 @@ def all_volumes(s3_client, s3_bucket_name):
         versions, it only gives the most recent version.
     """
     
-    unsifted_volumes =  defaultdict(list)
+    volumes =  defaultdict(list)
     paginator = s3_client.get_paginator('list_objects')
 
     # get all of the volumes listed in from_vendor in the bucket
     for result in paginator.paginate(Bucket=s3_bucket_name, Prefix='from_vendor/', Delimiter='/'):
         for prefix in result.get('CommonPrefixes', []):
             dir = prefix.get('Prefix')
-            unsifted_volumes[dir.replace('from_vendor/', '').split('_')[0]].append(dir)
+            volumes[dir.replace('from_vendor/', '').split('_')[0]].append(dir)
 
-    #this is slow, but I think it's totally worth being sure we're only getting the latest version
-    sifted_volumes = []
-    for index, volume in enumerate(unsifted_volumes):
-        print(index, volume)
-        if len(unsifted_volumes[volume]) > 1:
-            sifted_volumes.append(sorted(unsifted_volumes[volume], reverse = True)[0])
-        else:
-            sifted_volumes.append(unsifted_volumes[volume][0])
 
     return sifted_volumes
 
