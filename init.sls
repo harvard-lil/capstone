@@ -41,8 +41,8 @@ capstone-venv:
   file.append:
     - text: |
         # activate virtualenv
-        export WORKON_HOME=/vagrant/.virtualenvs
+        export WORKON_HOME={{ repo }}/.virtualenvs
         source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
         workon capstone
 
-        cd /vagrant
+        cd {{ repo }}
