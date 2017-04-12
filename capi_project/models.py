@@ -352,37 +352,27 @@ class Case(models.Model):
     @classmethod
     def create_from_row(self, row):
         try:
-            try:
-                case = Case.objects.get(caseid=row['caseid'])
-            except Exception as e:
-                logger.warn("Exception caught creating Case from row %s %s" % (e, row['caseid']))
-                slug = generate_unique_slug(Case, row['name_abbreviation'])
-                case = Case(caseid=row['caseid'], slug=slug)
-                pass
+            case = Case.objects.get(caseid=row['caseid'])
+        except Case.DoesNotExist:
+            slug = generate_unique_slug(Case, row['name_abbreviation'])
+            case = Case(caseid=row['caseid'], slug=slug)
 
-            # if just created, write fields
-            # if already created, check timestamp
-            if case.date_added:
-                utc = pytz.utc
-                naive_timestamp = get_date_added(row['timestamp'])
-                if naive_timestamp:
-                    new_timestamp = utc.localize(naive_timestamp)
-                    # overwrite case only if:
-                    # date_added (old timestamp) did not exist and new_timestamp exists
-                    # timestamp is greater than previous date_added timestamp
-                    if (new_timestamp and not case.date_added) or (new_timestamp >= case.date_added):
-                        case.write_case_fields(row)
-                else:
-                    # case has already been created and we are iterating
-                    # over the same row again (without date_added)
-                    pass
+        # if just created, write fields
+        # if already created, check timestamp
+        if case.date_added:
+            utc = pytz.utc
+            naive_timestamp = get_date_added(row['timestamp'])
+            if naive_timestamp:
+                new_timestamp = utc.localize(naive_timestamp)
+                # overwrite case only if:
+                # date_added (old timestamp) did not exist and new_timestamp exists
+                # timestamp is greater than previous date_added timestamp
+                if (new_timestamp and not case.date_added) or (new_timestamp >= case.date_added):
+                    case.write_case_fields(row)
+        else:
+            case.write_case_fields(row)
 
-            else:
-                case.write_case_fields(row)
-
-        except Exception as e:
-            logger.warn("Exception caught on case creation: %s %s" % (e, row['caseid']))
-            pass
+        case.save()
 
     def write_case_fields(self, row):
         for prop, val in row.items():
