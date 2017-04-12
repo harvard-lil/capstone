@@ -111,7 +111,7 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
 
 
 class Volume(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     barcode = models.CharField(blank=True, max_length=255)
     number = models.IntegerField(null=True, blank=True, default=None)
     nominative_number = models.IntegerField(null=True, blank=True, default=None)
@@ -179,7 +179,7 @@ class Volume(models.Model):
 
 
 class Reporter(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     jurisdiction = models.ForeignKey('Jurisdiction', blank=True, null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
     name = models.TextField(null=True)
     name_abbreviation = models.CharField(max_length=255, blank=True, null=True)
