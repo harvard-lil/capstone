@@ -12,7 +12,19 @@ postgres-pkgs:
     - pkgs:
       - postgresql-9.6
       - libpq-dev
-      
+
+stretch:
+  pkgrepo.managed:
+    - name: deb http://ftp.debian.org/debian stretch main
+
+plv8-pkgs:
+  pkg.installed:
+    - fromrepo: stretch
+    - pkgs:
+      - postgresql-9.6-plv8
+    - require:
+      - pkg: postgres-pkgs
+
 capstone-pkgs:
   pkg.installed:
     - pkgs:
