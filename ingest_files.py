@@ -96,9 +96,6 @@ def ingest_volume(volume_path):
 
     # save volume
     volmets_path = files['volume']
-    if not os.path.exists(volmets_path):
-        print("WARNING: File %s not found. Skipping volume." % volmets_path)
-        return
 
     volume = session.query(Volume).filter(Volume.barcode == vol_barcode).first()
     if volume:
@@ -179,6 +176,9 @@ def ingest_volumes():
     with open('make_tables.py.stored') as in_file:
         already_read = set(in_file.read().split())
 
+    #set up s3 client
+    s3_client = boto3.client('s3')
+
     # find list of volumes to import from s3
     # build this as a list so we can pass it to the process Pool
     dirs = all_volumes(s3_client, s3_bucket_name)
@@ -240,7 +240,7 @@ def volume_files(s3_client, s3_bucket_name, barcode):
             elif item['Key'].endswith("md5"):
                     files['md5'] = item['Key']
             else:
-                raise("Uncategorized Key: {}".format(item['Key']))
+                print("Uncategorized Key: {}".format(item['Key']))
 
     return files
 
@@ -249,17 +249,17 @@ def all_volumes(s3_client, s3_bucket_name):
         versions, it only gives the most recent version.
     """
     
-    volumes =  defaultdict(list)
+    volumes = []
     paginator = s3_client.get_paginator('list_objects')
 
     # get all of the volumes listed in from_vendor in the bucket
     for result in paginator.paginate(Bucket=s3_bucket_name, Prefix='from_vendor/', Delimiter='/'):
         for prefix in result.get('CommonPrefixes', []):
             dir = prefix.get('Prefix')
-            volumes[dir.replace('from_vendor/', '').split('_')[0]].append(dir)
+            volumes.append(dir)
 
 
-    return sifted_volumes
+    return volumes
 
 
 if __name__ == "__main__":
