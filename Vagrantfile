@@ -27,7 +27,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # node.vm.network :forwarded_port, guest: 9000, host: 9000 # nginx server (not started by default)
 
     node.vm.network :private_network, type: :dhcp
-    node.vm.synced_folder ".", "/vagrant"
+    node.vm.synced_folder ".", "/vagrant", :nfs => true, :mount_options => ['actimeo=1']
     # configure CPU/RAM
     # https://stefanwrobel.com/how-to-make-vagrant-performance-not-suck
     host = RbConfig::CONFIG['host_os']
