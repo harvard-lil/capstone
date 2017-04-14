@@ -43,18 +43,26 @@ Copy settings.example.py to settings.py and enter credentials to connect to post
 
 Run `alembic upgrade head` to load initial tables.
 
+You'll likely need to create a postgres user and a capstone databse
+    $psql
+    you=# CREATE USER postgres SUPERUSER;
+    ^d
+    $psql postgres
+    postgres=# CREATE DATABASE capstone;
+
 Scripts
 -------
-
 * **models.py**: Sqlalchemy definitions of the database schema.
-* **create_tables.py**: Create tables from the models.py schema.
+
+* **set_up_postgres.py**: Write stored SQL functions to postgresql, and other functions for setting the postgres environment.
+* **make_tables.py**: Create tables from the models.py schema.
 * **ingest_files.py**: Ingest XML files from s3 and/or from the ftl-sandbox copy.
 * **process_ingested_xml.py**: Extract data from xml already loaded into DB.
-* **set_up_postgres.py**: Write stored SQL functions to postgresql, and other functions for setting the postgres environment.
 * **make_viz.py**: Write a visualization of the database to a 
   [public dashboard](https://harvard-ftl-public.s3.amazonaws.com/capstone/capstone.html). 
   This is currently run once per hour.
-* **set_up_postgres.py**: Scripts to set up the postgres environment.
+
+^Run the above scripts in order
 
 Environment
 -----------

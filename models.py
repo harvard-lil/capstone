@@ -76,5 +76,7 @@ class CasePage(Base):
     page = relationship("Page", backref="case_pages")
 
 class Changeset(Base):
+    __tablename__ = 'cap_changeset'
+    id = Column(Integer, primary_key=True)
     transaction_timestamp = Column(DateTime)
     message = Column(Text)
