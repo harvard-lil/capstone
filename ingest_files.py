@@ -10,7 +10,7 @@ import os
 from tqdm import tqdm
 import boto3
 
-from models import Volume, Page, Case, case_pages
+from models import Volume, Page, Case, CasePage
 from helpers import pg_connect
 
 s3_bucket_name = "harvard-ftl-shared"
@@ -135,8 +135,8 @@ def ingest_volume(volume_path):
         alto_barcode = vol_barcode + "_" + xml_path.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
         if alto_barcode not in existing_page_ids:
             bm(times, "page doesn't exist")
-            s3_key = xml_path.split(s3_bucket_name + '/', 1)[1]
-            orig_xml = get_s3_key(s3_client, s3_key)
+            #s3_key = xml_path.split(s3_bucket_name + '/', 1)[1]
+            orig_xml = get_s3_key(s3_client, xml_path)
             bm(times, "read page")
             page = save_record(session, Page, volume_id=volume_id, barcode=alto_barcode, orig_xml=orig_xml)
             session.flush()
@@ -144,7 +144,7 @@ def ingest_volume(volume_path):
 
             # write case-to-page matches
             if alto_barcode_to_case_map[alto_barcode]:
-                insert_op = insert(case_pages).values(
+                insert_op = insert(CasePage).values(
                     [{"case_id": case_id, "page_id": page.id} for case_id in alto_barcode_to_case_map[alto_barcode]]
                 )
                 session.execute(insert_op)
@@ -183,6 +183,7 @@ def ingest_volumes():
     # build this as a list so we can pass it to the process Pool
     dirs = all_volumes(s3_client, s3_bucket_name)
 
+
     volume_paths = []
     for i, volume_path in enumerate(tqdm(dirs)):
 
@@ -202,12 +203,12 @@ def ingest_volumes():
 
 
     # process volume directories in parallel processes
-    pool = Pool(15, maxtasksperchild=1)
-    pool.map(ingest_volume, volume_paths)
+    #pool = Pool(15, maxtasksperchild=1)
+    #pool.map(ingest_volume, volume_paths)
 
     # keep this around in case we want to debug without using the process pool:
-    # for i in volume_paths:
-    #     ingest_volume(i)
+    for i in volume_paths:
+        ingest_volume(i)
 
 def volume_files(s3_client, s3_bucket_name, barcode):
     """ This just gets all of the files in the volume directory, and puts them into
@@ -264,3 +265,4 @@ def all_volumes(s3_client, s3_bucket_name):
 
 if __name__ == "__main__":
     ingest_volumes()
+
