@@ -23,29 +23,46 @@ it.
 Setup Requirements
 ------------------
 
-Capstone is developed with Python 3.5. Requirements are installed with `pip`. Example install:
+Capstone is developed with Python 3. Requirements are installed with `pip`. Example install:
 
-    $ mkvirtualenv -p python3.5 capstone
+    $ mkvirtualenv -p python3 capstone
     (capstone)$ pip install -r requirements.txt
 
 For local development, you should have postgres installed.
+
+Alternatively, use the Vagrant development environment: install [Vagrant](https://www.vagrantup.com/downloads.html) (currently 1.9.3), run
+
+    $ vagrant plugin install vagrant-vbguest
+	$ vagrant up
+
+and ask your devops engineer to accept and provision the new dev box before running
+
+    $ vagrant ssh
 
 Copy settings.example.py to settings.py and enter credentials to connect to postgres.
 
 Run `alembic upgrade head` to load initial tables.
 
+You'll likely need to create a postgres user and a capstone databse
+    $psql
+    you=# CREATE USER postgres SUPERUSER;
+    ^d
+    $psql postgres
+    postgres=# CREATE DATABASE capstone;
+
 Scripts
 -------
-
 * **models.py**: Sqlalchemy definitions of the database schema.
-* **create_tables.py**: Create tables from the models.py schema.
+
+* **set_up_postgres.py**: Write stored SQL functions to postgresql, and other functions for setting the postgres environment.
+* **make_tables.py**: Create tables from the models.py schema.
 * **ingest_files.py**: Ingest XML files from s3 and/or from the ftl-sandbox copy.
 * **process_ingested_xml.py**: Extract data from xml already loaded into DB.
-* **set_up_postgres.py**: Write stored SQL functions to postgresql, and other functions for setting the postgres environment.
 * **make_viz.py**: Write a visualization of the database to a 
   [public dashboard](https://harvard-ftl-public.s3.amazonaws.com/capstone/capstone.html). 
   This is currently run once per hour.
-* **set_up_postgres.py**: Scripts to set up the postgres environment.
+
+^Run the above scripts in order
 
 Environment
 -----------
