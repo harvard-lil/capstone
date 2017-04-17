@@ -203,12 +203,12 @@ def ingest_volumes():
 
 
     # process volume directories in parallel processes
-    #pool = Pool(15, maxtasksperchild=1)
-    #pool.map(ingest_volume, volume_paths)
+    pool = Pool(15, maxtasksperchild=1)
+    pool.map(ingest_volume, volume_paths)
 
     # keep this around in case we want to debug without using the process pool:
-    for i in volume_paths:
-        ingest_volume(i)
+    #for i in volume_paths:
+    #    ingest_volume(i)
 
 def volume_files(s3_client, s3_bucket_name, barcode):
     """ This just gets all of the files in the volume directory, and puts them into
