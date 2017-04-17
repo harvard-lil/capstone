@@ -35,13 +35,13 @@ capstone-pkgs:
 
 venv-dir:
   file.directory:
-    - name: {{ repo }}/.virtualenvs
+    - name: {{ home }}/.virtualenvs
     - user: {{ user }}
     - group: {{ user }}
 
 capstone-venv:
   virtualenv.managed:
-    - name: {{ repo }}/.virtualenvs/capstone
+    - name: {{ home }}/.virtualenvs/capstone
     - python: /usr/bin/python3
     - requirements: {{ repo }}/requirements.txt
     - user: {{ user }}
@@ -53,8 +53,7 @@ capstone-venv:
   file.append:
     - text: |
         # activate virtualenv
-        export WORKON_HOME={{ repo }}/.virtualenvs
+        export WORKON_HOME={{ home }}/.virtualenvs
         source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
         workon capstone
-
         cd {{ repo }}
