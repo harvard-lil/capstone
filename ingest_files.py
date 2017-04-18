@@ -2,6 +2,8 @@ import time
 from collections import defaultdict
 from multiprocessing import Pool
 
+import argparse
+
 import re
 
 from sqlalchemy.sql import insert
@@ -13,8 +15,19 @@ import boto3
 from models import Volume, Page, Case, CasePage
 from helpers import pg_connect
 
-s3_bucket_name = "harvard-ftl-shared"
-source_dir = "/ftldata/harvard-ftl-shared"
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--devset", help="specify a certain number of development files to ingest")
+args = parser.parse_args()
+
+if args.devset:
+    s3_bucket_name = "harvard-cap-ill-xml"
+    set_size = int(args.devset)
+    s3_bucket_prefix = ""
+else:
+    s3_bucket_name = "harvard-ftl-shared"
+    set_size = 0
+    s3_bucket_prefix = "from_vendor/"
 
 
 ### helpers ###
@@ -172,6 +185,9 @@ def ingest_volume(volume_path):
 
 def ingest_volumes():
 
+
+
+
     # load list of volume IDs we've previously imported
     with open('make_tables.py.stored') as in_file:
         already_read = set(in_file.read().split())
@@ -180,9 +196,9 @@ def ingest_volumes():
     s3_client = boto3.client('s3')
 
     # find list of volumes to import from s3
-    # build this as a list so we can pass it to the process Pool
-    dirs = all_volumes(s3_client, s3_bucket_name)
+    # build this as a list so we can pass it to the process Poola
 
+    dirs = all_volumes(s3_client, s3_bucket_name)
 
     volume_paths = []
     for i, volume_path in enumerate(tqdm(dirs)):
@@ -222,16 +238,16 @@ def volume_files(s3_client, s3_bucket_name, barcode):
     """
     files = defaultdict(list)
     
-    volume_path = 'from_vendor/' + barcode
+    volume_path = s3_bucket_prefix + barcode
 
     paginator = s3_client.get_paginator('list_objects')
     pages = paginator.paginate(Bucket=s3_bucket_name, Prefix=volume_path)
 
     for chunk in tqdm(pages):
         for item in chunk['Contents']:
-            
+
             #this should tell us the name of the directory in the volume it's in. 
-            file_type = item['Key'].split('/')[2]
+            file_type = item['Key'].replace(s3_bucket_prefix, '').split('/')[1]
 
             #if it's not one of these values, it's probably not in a directory
             if file_type == 'alto' or file_type == 'images' or file_type == 'casemets':
@@ -249,18 +265,22 @@ def all_volumes(s3_client, s3_bucket_name):
     """ Gets all of the volume "directories" in the specified bucket. For each entry with multiple
         versions, it only gives the most recent version.
     """
-    
+
     volumes = []
     paginator = s3_client.get_paginator('list_objects')
 
     # get all of the volumes listed in from_vendor in the bucket
-    for result in paginator.paginate(Bucket=s3_bucket_name, Prefix='from_vendor/', Delimiter='/'):
+    for result in paginator.paginate(Bucket=s3_bucket_name, Prefix=s3_bucket_prefix, Delimiter='/'):
         for prefix in result.get('CommonPrefixes', []):
             dir = prefix.get('Prefix')
             volumes.append(dir)
-
+            if set_size > 0 and len(volumes) >= set_size:
+                return volumes
 
     return volumes
+
+
+
 
 
 if __name__ == "__main__":
