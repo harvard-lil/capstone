@@ -103,7 +103,7 @@ def ingest_volume(volume_path):
 
     bm(times, "setup")
 
-    files = volume_files(s3_client, s3_bucket_name, vol_barcode)
+    files = volume_files(s3_client, s3_bucket_name, volume_path)
 
     bm(times, "files loaded")
 
@@ -128,6 +128,7 @@ def ingest_volume(volume_path):
         volume_id = volume.id
 
 
+    print("Processing Cases for " + volume_path)
     # save cases
     for xml_path in files['casemets']:
         case_barcode = vol_barcode + "_" + xml_path.split('.xml', 1)[0].rsplit('_', 1)[-1]
@@ -143,6 +144,7 @@ def ingest_volume(volume_path):
             for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', orig_xml)):
                 alto_barcode_to_case_map[vol_barcode + "_" + alto_barcode].append(case.id)
 
+    print("Processing Altos for " + volume_path)
     # save altos
     for xml_path in files['alto']:
         alto_barcode = vol_barcode + "_" + xml_path.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
@@ -201,7 +203,7 @@ def ingest_volumes():
     dirs = all_volumes(s3_client, s3_bucket_name)
 
     volume_paths = []
-    for i, volume_path in enumerate(tqdm(dirs)):
+    for i, volume_path in enumerate(dirs):
 
 
         ## skip dirs that are superseded by the following version
@@ -226,7 +228,7 @@ def ingest_volumes():
     #for i in volume_paths:
     #    ingest_volume(i)
 
-def volume_files(s3_client, s3_bucket_name, barcode):
+def volume_files(s3_client, s3_bucket_name, volume_path):
     """ This just gets all of the files in the volume directory, and puts them into
         a dictionary with a 'volume' array which has the volume mets and md5 files,
         'images' for the pics, 'alto' for the alto files, and 'casemets' for the 
@@ -238,12 +240,11 @@ def volume_files(s3_client, s3_bucket_name, barcode):
     """
     files = defaultdict(list)
     
-    volume_path = s3_bucket_prefix + barcode
-
     paginator = s3_client.get_paginator('list_objects')
     pages = paginator.paginate(Bucket=s3_bucket_name, Prefix=volume_path)
 
-    for chunk in tqdm(pages):
+    print("Getting Volume Files for " + volume_path)
+    for chunk in pages:
         for item in chunk['Contents']:
 
             #this should tell us the name of the directory in the volume it's in. 
@@ -269,8 +270,10 @@ def all_volumes(s3_client, s3_bucket_name):
     volumes = []
     paginator = s3_client.get_paginator('list_objects')
 
+    set_size = 300;
+    print("Getting Volume List")
     # get all of the volumes listed in from_vendor in the bucket
-    for result in paginator.paginate(Bucket=s3_bucket_name, Prefix=s3_bucket_prefix, Delimiter='/'):
+    for result in tqdm(paginator.paginate(Bucket=s3_bucket_name, Prefix=s3_bucket_prefix, Delimiter='/')):
         for prefix in result.get('CommonPrefixes', []):
             dir = prefix.get('Prefix')
             volumes.append(dir)
