@@ -118,6 +118,7 @@ def ingest_volume(volume_path):
         bm(times, "getting pageids")
         existing_page_ids = set(barcode for barcode in session.query(Page.barcode).filter(Page.volume_id==volume.id))
         bm(times, "done getting pageids")
+        volume_id = volume.id
     else:
         existing_case_ids = existing_page_ids = set()
         bm(times, "vol doesn't exist")
