@@ -15,6 +15,7 @@ import boto3
 from models import Volume, Page, Case, CasePage
 from helpers import pg_connect
 
+already_read_file_path = 'make_tables.py.stored'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--devset", help="specify a certain number of development files to ingest")
@@ -174,7 +175,7 @@ def ingest_volume(volume_path):
     bm(times, "committed")
 
     # write completed volume ID to file so we won't try to import it again if this is re-run
-    with open('make_tables.py.stored', 'a') as out:
+    with open(already_read_file_path, 'a') as out:
         out.write(vol_barcode+"\n")
     bm(times, "wrote id file")
 
@@ -188,11 +189,12 @@ def ingest_volume(volume_path):
 def ingest_volumes():
 
 
-
-
     # load list of volume IDs we've previously imported
-    with open('make_tables.py.stored') as in_file:
-        already_read = set(in_file.read().split())
+    if os.path.isfile(already_read_file_path):
+        with open(already_read_file_path) as in_file:
+            already_read = set(in_file.read().split())
+    else:
+        already_read = []
 
     #set up s3 client
     s3_client = boto3.client('s3')
