@@ -41,7 +41,7 @@ and ask your devops engineer to accept and provision the new dev box before runn
 
 Copy settings.example.py to settings.py and enter credentials to connect to postgres.
 
-Run `alembic upgrade head` to load initial tables.
+Run `alembic upgrade head` to load initial tables. You may need to create the empty alembic/versions directory if this command chokes.
 
 You'll likely need to create a postgres user and a capstone databse
     $psql
