@@ -30,16 +30,23 @@ Capstone is developed with Python 3. Requirements are installed with `pip`. Exam
 
 For local development, you should have postgres installed.
 
-Alternatively, use the Vagrant development environment: install [Vagrant](https://www.vagrantup.com/downloads.html) (currently 1.9.3), run
+Alternatively, use the Vagrant development environment: install
+[Vagrant](https://www.vagrantup.com/downloads.html) (currently 1.9.3),
+run
 
     $ vagrant plugin install vagrant-vbguest
 	$ vagrant up
 
-and ask your devops engineer to accept and provision the new dev box before running
+and ask your devops engineer to accept and provision the new dev box
+before running
 
     $ vagrant ssh
 
-Copy settings.example.py to settings.py and enter credentials to connect to postgres.
+(You can provision or re-provision it yourself, once accepted, by
+running `sudo salt-call state.apply` inside the box.)
+
+Copy settings.example.py to settings.py and enter credentials to
+connect to postgres.
 
 Run `alembic upgrade head` to load initial tables.
 
