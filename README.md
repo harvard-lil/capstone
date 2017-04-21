@@ -48,7 +48,7 @@ running `sudo salt-call state.apply` inside the box.)
 Copy settings.example.py to settings.py and enter credentials to
 connect to postgres.
 
-Run `alembic upgrade head` to load initial tables.
+Run `alembic upgrade head` to load initial tables. You may need to create the empty alembic/versions directory if this command chokes.
 
 You'll likely need to create a postgres user and a capstone databse
     $psql
