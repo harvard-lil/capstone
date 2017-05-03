@@ -13,6 +13,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     court_id = serializers.ReadOnlyField(source='court.id')
     reporter_name = serializers.ReadOnlyField(source='reporter.name')
     reporter_id = serializers.ReadOnlyField(source='reporter.id')
+    reporter_abbreviation = serializers.ReadOnlyField(source='reporter.name_abbreviation')
 
     class Meta:
         model = Case
@@ -26,7 +27,8 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
                   'decisiondate_original',
                   'court', 'court_name', 'court_id',
                   'reporter', 'reporter_name', 'reporter_id',
-                  'volume', 'reporter')
+                  'reporter_abbreviation',
+                  'volume')
         extra_kwargs = {
             'url': {'lookup_field': 'slug'}
         }
