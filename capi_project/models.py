@@ -111,7 +111,7 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
 
 
 class Volume(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     barcode = models.CharField(blank=True, max_length=255)
     number = models.IntegerField(null=True, blank=True, default=None)
     nominative_number = models.IntegerField(null=True, blank=True, default=None)
@@ -179,7 +179,7 @@ class Volume(models.Model):
 
 
 class Reporter(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     jurisdiction = models.ForeignKey('Jurisdiction', blank=True, null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
     name = models.TextField(null=True)
     name_abbreviation = models.CharField(max_length=255, blank=True, null=True)
@@ -190,7 +190,7 @@ class Reporter(models.Model):
     slug = models.SlugField(null=True)
 
     def __unicode__(self):
-        return self.slug
+        return self.slug or ''
 
     @classmethod
     def create_from_tt_row(self, row):
@@ -256,7 +256,7 @@ class Jurisdiction(models.Model):
     name_abbreviation = models.CharField(max_length=200, blank=True)
 
     def __unicode__(self):
-        return u"%s" % self.name
+        return u"%s" % self.name or ''
 
     @classmethod
     def create(self, name):
@@ -304,7 +304,7 @@ class Court(models.Model):
     slug = models.SlugField()
 
     def __unicode__(self):
-        return u"%s: %s" % (self.id, self.name)
+        return u"%s: %s" % (self.id, self.name) or ''
 
     @classmethod
     def create(self, name, name_abbreviation, jurisdiction):
@@ -338,7 +338,7 @@ class Case(models.Model):
     date_added = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.caseid
+        return self.caseid or ''
 
     @classmethod
     def create(self, caseid, **kwargs):
