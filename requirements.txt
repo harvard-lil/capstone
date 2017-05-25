@@ -4,3 +4,5 @@ tqdm
 boto3
 alembic
 click
+lxml
+xmltodict

@@ -1,5 +1,6 @@
 
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, Table
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import DateTime
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql.type_api import UserDefinedType
@@ -80,3 +81,21 @@ class Changeset(Base):
     id = Column(Integer, primary_key=True)
     transaction_timestamp = Column(DateTime)
     message = Column(Text)
+
+class DataMigration(Base):
+    __tablename__ = 'cap_data_migration'
+    id = Column(Integer, primary_key=True)
+    data_migration_timestamp = Column(DateTime)
+    transaction_timestamp = Column(DateTime)
+    notes = Column(Text)
+    description = Column(Text)
+    status = Column(String)
+    warn_except = Column(Text)
+    author = Column(String)
+    initiator = Column(String)
+    alto_xml_changed = Column(JSONB)
+    volume_xml_changed = Column(JSONB)
+    case_xml_changed = Column(JSONB)
+    alto_xml_rollback = Column(JSONB)
+    volume_xml_rollback = Column(JSONB)
+    case_xml_rollback = Column(JSONB)
