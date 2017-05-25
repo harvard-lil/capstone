@@ -2,6 +2,10 @@ import configparser
 import sqlalchemy
 from sqlalchemy.pool import NullPool
 
+
+from sqlalchemy.orm import sessionmaker
+from contextlib import contextmanager
+
 import settings
 
 def get_pg_config():
@@ -35,6 +39,54 @@ def sql_debug():
     import logging
     logging.basicConfig()
     logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
+@contextmanager
+def session_scope():
+    """Provide a transactional scope around a series of operations.(h/t:
+    http://stackoverflow.com/questions/14799189/\
+    avoiding-boilerplate-session-handling-code-in-sqlalchemy-functions)"""
+    pg_con = pg_connect()
+    Session = sessionmaker(bind=pg_con)
+    session = Session()
+    try:
+        print("set up session")
+        yield session
+        print("commit")
+        session.commit()
+    except:
+        print("rollback")
+        session.rollback()
+        raise
+    finally:
+        print("done")
+        session.close()
+
+@contextmanager
+def migration_session_scope(migration_id):
+    """Provide a transactional scope around a series of operations.(h/t:
+    http://stackoverflow.com/questions/14799189/\
+    avoiding-boilerplate-session-handling-code-in-sqlalchemy-functions)"""
+    pg_con = pg_connect()
+    Session = sessionmaker(bind=pg_con)
+    session = Session()
+    try:
+        print("set up session")
+        yield session
+        print("commit")
+        session.commit()
+    except Exception as err:
+        session.rollback()
+
+        import sys, traceback
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        tb = traceback.format_exc(limit=2)
+
+
+        raise
+    finally:
+        print("done")
+        session.close()
+
 
 
 # This was an experiment in using the experimental asyncpg library supported in Python 3.5+.
