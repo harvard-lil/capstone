@@ -140,7 +140,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         if not self.request.query_params.get('type') == 'download':
             return super(CaseViewSet, self).list(*args, **kwargs)
         else:
-            return self.download(kwargs)
+            return self.download(**kwargs)
 
     def retrieve(self, *args, **kwargs):
         if not self.request.query_params.get('type') == 'download':
