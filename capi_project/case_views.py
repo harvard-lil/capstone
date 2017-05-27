@@ -71,12 +71,8 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     def download(self, **kwargs):
         cases = self.queryset.all()
         query_dict = {}
-        query = Q()
         for key in kwargs:
             query_dict[key] = kwargs.get('slug')
-
-        if len(self.request.query_params.items()):
-            query = format_query(self.request.query_params, query_dict)
 
         try:
             max_num = int(query_dict.pop('max', settings.CASE_DAILY_ALLOWANCE))
