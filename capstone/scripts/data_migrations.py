@@ -1,61 +1,38 @@
-from helpers import pg_connect
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import *
-from models import Volume, Page, Case, CasePage, DataMigration
-from pprint import pprint
-import json
-from lxml import etree
-from io import StringIO, BytesIO
-from contextlib import contextmanager
-import re 
-import xmltodict
-from collections import defaultdict
 import datetime
+import re
+import traceback
+from collections import defaultdict
+from contextlib import contextmanager
 
-nsmap={'mets': 'http://www.loc.gov/METS/', 'case': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case:v1', 'casebody': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1', 'info': 'info:lc/xmlns/premis-v2', 'alto': "http://www.loc.gov/standards/alto/ns-v3#" }
+import xmltodict
+from django.db import transaction
+from lxml import etree
+
+from cap.models import Volume, Page, Case, DataMigration
+from .helpers import nsmap
 
 def run_pending_migrations():
     """ 
         This will execute all pending data migrations in one transaction. 
         the session scope function comes from helpers, and uses contextmanager
     """
-    for migration in get_migrations('pen'):
-        with migration_session_scope(migration.id) as session:
+    for migration in DataMigration.objects.filter(status="pending"):
+        with migration_session_scope(migration):
             migration.transaction_timestamp=datetime.datetime.now()
-            migration.status="app"
+            migration.status = "applied"
             if migration.case_xml_changed is not None:
                 for case in migration.case_xml_changed:
-                    migration.case_xml_rollback = modify(session, case, 'case')
+                    migration.case_xml_rollback = modify(case, 'case')
             if migration.alto_xml_changed is not None:
                 for alto in migration.alto_xml_changed:
-                    migration.case_xml_rollback = modify(session, alto, 'alto')
+                    migration.case_xml_rollback = modify(alto, 'alto')
             if migration.volume_xml_changed is not None:
                 for volume in migration.volume_xml_changed:
-                    migration.case_xml_rollback = modify(session, volume, 'volume')
-
-def get_migrations(status=None):
-    """ 
-        Argument: status (str)
-        Yields: DB row
-
-        This generator will retrieve all data migrations, possibly filtered
-        by a specified status, which is its lone argument
-    """
-    pg_con = pg_connect()
-    Session = sessionmaker(bind=pg_con)
-    session = Session()
-
-    if status is not None:
-        dMigrations = session.query(DataMigration).filter_by(status=status)  
-    else:
-        dMigrations = session.query(DataMigration)  
-
-    for migration in dMigrations:
-        yield migration
+                    migration.case_xml_rollback = modify(volume, 'volume')
+            migration.save()
 
 
-def modify(session, changes, type):
-
+def modify(changes, type):
     """
         This function will take a set of changes to be applied to a document,
         apply the changes, and return a set of rollback instructions to be stored
@@ -138,11 +115,11 @@ def modify(session, changes, type):
         }]
     """
     if type == 'volume':
-        doc = session.query(Volume).filter_by(barcode=changes['barcode']).first()
+        doc = Volume.objects.get(barcode=changes['barcode'])
     elif type == 'case':
-        doc = session.query(Case).filter_by(barcode=changes['case_id']).first()
+        doc = Case.objects.get(barcode=changes['case_id'])
     elif type == 'alto':
-        doc = session.query(Page).filter_by(barcode=changes['alto_id']).first()
+        doc = Page.objects.get(barcode=changes['alto_id'])
 
     root = etree.fromstring(doc.orig_xml)
     tree = etree.ElementTree(root)
@@ -157,13 +134,13 @@ def modify(session, changes, type):
             elements = tree.xpath(change['xpath'], namespaces=nsmap)
 
         if len(elements) != 1:
+            # TODO: FIXME
             print("Provided xpath must select ONE element. {} elements selected with {} in {}".format(len(elements), xpath, case_changes['case_id']))
             return False
 
         element_list[index] = elements[0]
 
     rollback_list = defaultdict()
-    rollback = defaultdict()
     #This loops through the changes and makes an array of elements to modify
     for index, change in enumerate(changes['changes']):
         element = element_list[index]
@@ -242,6 +219,7 @@ def modify(session, changes, type):
             del rollback['complete_element']
     
     doc.orig_xml = etree.tostring(root, pretty_print=True).decode("utf-8")
+    doc.save()
 
     return rollback_list
 
@@ -251,43 +229,22 @@ def normalize_namespace(xpath):
     return xpath
 
 @contextmanager
-def migration_session_scope(migration_id):
+def migration_session_scope(migration):
     """Creates the transactional scope around the migration"""
-    pg_con = pg_connect()
-    Session = sessionmaker(bind=pg_con)
-    session = Session()
     try:
-        yield session
-        session.commit()
+        with transaction.atomic():
+            yield
     except Exception as err:
-        session.rollback()
-
-        import sys, traceback
-        exc_type, exc_value, exc_traceback = sys.exc_info()
         tb = traceback.format_exc(limit=2)
-        error_migration(migration_id, err, tb)
-
+        error_migration(migration, err, tb)
         raise
-    finally:
-        session.close()
 
-def error_migration(migration_id, err, tb):
+def error_migration(migration, err, tb):
     """
         This sets the status of a migration to "err" and captures the 
         traceback
     """
-    pg_con = pg_connect()
-    Session = sessionmaker(bind=pg_con)
-    session = Session()
-
-    migration = session.query(DataMigration).get(migration_id)
-    migration.status="err"
-    migration.warn_except="{}\n{}".format(err, tb)
-    migration.transaction_timestamp=datetime.datetime.now()
-
-    session.commit()
-    session.close()
-
-
-if __name__ == '__main__':
-    run_pending_migrations()
+    migration.status = "error"
+    migration.traceback = "{}\n{}".format(err, tb)
+    migration.transaction_timestamp = datetime.datetime.now()
+    migration.save()

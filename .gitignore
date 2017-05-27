@@ -3,3 +3,8 @@ settings.py
 __pycache__
 .vagrant/
 .virtualenvs/
+
+db.sqlite3
+
+# pytest
+.cache

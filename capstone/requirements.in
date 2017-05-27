@@ -1,0 +1,17 @@
+# After updating this file, run `pip-compile` to update requirements.txt.
+
+psycopg2                    # postgres connector
+tqdm
+lxml
+xmltodict
+
+# Django stuff
+Django==1.11.1
+django-storages==1.5.2      # abstract file access
+boto3                       # for django-storages to talk to s3
+
+# Admin stuff
+pip-tools==1.9.0            # freeze requirements.txt
+Fabric3==1.13.1.post1       # project automation
+pytest-django==3.1.2        # testing
+moto==1.0.0                 # mocking s3 access

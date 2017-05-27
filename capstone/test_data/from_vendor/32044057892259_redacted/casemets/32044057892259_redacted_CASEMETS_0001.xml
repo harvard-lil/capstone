@@ -1,0 +1,538 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mets xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.loc.gov/METS/">
+  <dmdSec ID="case">
+    <mdWrap MDTYPE="OTHER" OTHERMDTYPE="HLS-CASELAW-CASEXML">
+      <xmlData>
+        <case xmlns="http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case:v1" caseid="32044057892259_0001" publicationstatus="published">
+          <court abbreviation="Ill. App. Ct." jurisdiction="Illinois">Illinois Appellate Court</court>
+          <name abbreviation="Home Insurance Co. of New York v. Kirk">The Home Insurance Company of New York v. John Kirk, for use of William Kirk</name>
+          <docketnumber/>
+          <citation category="official" type="bluebook">23 Ill. App. 19</citation>
+          <decisiondate>1887-05-27</decisiondate>
+        </case>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  <amdSec ID="amd0001">
+    <digiprovMD ID="digi001">
+      <mdWrap MDTYPE="PREMIS">
+        <xmlData>
+          <event xmlns="info:lc/xmlns/premis-v2">
+            <eventIdentifier>
+              <eventIdentifierType>Local</eventIdentifierType>
+              <eventIdentifierValue>scn0001</eventIdentifierValue>
+            </eventIdentifier>
+            <eventType>capture</eventType>
+            <eventDateTime>1970-01-01T00:00:00Z</eventDateTime>
+            <eventDetail>Scan date noting when printed source volume was converted to digital images used as sources for transcription.</eventDetail>
+          </event>
+          <agent xmlns="info:lc/xmlns/premis-v2">
+            <agentIdentifier>
+              <agentIdentifierType>Local</agentIdentifierType>
+              <agentIdentifierValue>HLSL</agentIdentifierValue>
+            </agentIdentifier>
+            <agentName>Harvard Law School Library</agentName>
+            <agentType>organization</agentType>
+          </agent>
+        </xmlData>
+      </mdWrap>
+    </digiprovMD>
+    <digiprovMD ID="digi002">
+      <mdWrap MDTYPE="PREMIS">
+        <xmlData>
+          <event xmlns="info:lc/xmlns/premis-v2">
+            <eventIdentifier>
+              <eventIdentifierType>Local</eventIdentifierType>
+              <eventIdentifierValue>ocr0001</eventIdentifierValue>
+            </eventIdentifier>
+            <eventType>transcription</eventType>
+            <eventDateTime>2016-03-22T20:20:10Z</eventDateTime>
+            <eventDetail>Transcription event</eventDetail>
+          </event>
+          <agent xmlns="info:lc/xmlns/premis-v2">
+            <agentIdentifier>
+              <agentIdentifierType>Local</agentIdentifierType>
+              <agentIdentifierValue>dsrs</agentIdentifierValue>
+            </agentIdentifier>
+            <agentName>Innodata DSRS, ABBYY FineReader</agentName>
+            <agentType>software</agentType>
+            <agentNote>Version 10</agentNote>
+          </agent>
+        </xmlData>
+      </mdWrap>
+    </digiprovMD>
+    <digiprovMD ID="digi003">
+      <mdWrap MDTYPE="PREMIS">
+        <xmlData>
+          <event xmlns="info:lc/xmlns/premis-v2">
+            <eventIdentifier>
+              <eventIdentifierType>Local</eventIdentifierType>
+              <eventIdentifierValue>crt0001</eventIdentifierValue>
+            </eventIdentifier>
+            <eventType>METScreation</eventType>
+            <eventDateTime>2016-03-24T23:54:50Z</eventDateTime>
+            <eventDetail>Creation of digital artifact described by this METS file</eventDetail>
+          </event>
+          <agent xmlns="info:lc/xmlns/premis-v2">
+            <agentIdentifier>
+              <agentIdentifierType>Local</agentIdentifierType>
+              <agentIdentifierValue>redrli</agentIdentifierValue>
+            </agentIdentifier>
+            <agentName>Innodata R.E.D. Workbench/RLI tool</agentName>
+            <agentType>software</agentType>
+            <agentNote>Version 20160223-118</agentNote>
+          </agent>
+        </xmlData>
+      </mdWrap>
+    </digiprovMD>
+  </amdSec>
+  <fileSec>
+    <fileGrp USE="tiff">
+      <file ID="tiff_00008_0" MIMETYPE="image/tiff" CHECKSUM="2d3d052e02962771e4b03dccad3e5539" CHECKSUMTYPE="MD5" SIZE="31844">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00008_0.tif"/>
+      </file>
+      <file ID="tiff_00008_1" MIMETYPE="image/tiff" CHECKSUM="5fc08e5f980d8b9a9be13965ed8b2479" CHECKSUMTYPE="MD5" SIZE="48694">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00008_1.tif"/>
+      </file>
+      <file ID="tiff_00009_0" MIMETYPE="image/tiff" CHECKSUM="22a636ec603946d24d1b0aa141c3d9f5" CHECKSUMTYPE="MD5" SIZE="53574">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00009_0.tif"/>
+      </file>
+      <file ID="tiff_00009_1" MIMETYPE="image/tiff" CHECKSUM="67512f7574e977219e91bda833194651" CHECKSUMTYPE="MD5" SIZE="53650">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00009_1.tif"/>
+      </file>
+      <file ID="tiff_00010_0" MIMETYPE="image/tiff" CHECKSUM="1d71b3c44027925f9face5c5b6334c4c" CHECKSUMTYPE="MD5" SIZE="55912">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00010_0.tif"/>
+      </file>
+      <file ID="tiff_00010_1" MIMETYPE="image/tiff" CHECKSUM="439bb6b1df9755fc5c06c60e49defb5c" CHECKSUMTYPE="MD5" SIZE="39108">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00010_1.tif"/>
+      </file>
+    </fileGrp>
+    <fileGrp USE="jp2">
+      <file ID="jp2_00008_0" MIMETYPE="image/jp2" CHECKSUM="84dc759a110fed3d8f80ad360d3e9684" CHECKSUMTYPE="MD5" SIZE="2241750">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00008_0.jp2"/>
+      </file>
+      <file ID="jp2_00008_1" MIMETYPE="image/jp2" CHECKSUM="7bc2c63c3913fd6c8733962fb177dc41" CHECKSUMTYPE="MD5" SIZE="2302681">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00008_1.jp2"/>
+      </file>
+      <file ID="jp2_00009_0" MIMETYPE="image/jp2" CHECKSUM="27eedb543833a4bf033f9a6e19174663" CHECKSUMTYPE="MD5" SIZE="2389595">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00009_0.jp2"/>
+      </file>
+      <file ID="jp2_00009_1" MIMETYPE="image/jp2" CHECKSUM="1c32f76c330fe107b097da89d48628d2" CHECKSUMTYPE="MD5" SIZE="2319721">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00009_1.jp2"/>
+      </file>
+      <file ID="jp2_00010_0" MIMETYPE="image/jp2" CHECKSUM="071a98addf4b02a908546152c3be0ba6" CHECKSUMTYPE="MD5" SIZE="2402299">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00010_0.jp2"/>
+      </file>
+      <file ID="jp2_00010_1" MIMETYPE="image/jp2" CHECKSUM="82420fd9abea4071a93e6c798cfe9629" CHECKSUMTYPE="MD5" SIZE="2239182">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057892259_00010_1.jp2"/>
+      </file>
+    </fileGrp>
+    <fileGrp USE="alto">
+      <file ID="alto_00008_0" MIMETYPE="text/xml" CHECKSUM="8b1de65cd6f5d48eec6feb0ab2f5f1de" CHECKSUMTYPE="MD5" SIZE="52149">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/32044057892259_redacted_ALTO_00008_0.xml"/>
+      </file>
+      <file ID="alto_00008_1" MIMETYPE="text/xml" CHECKSUM="4def649c9252ae3b356c435badd00d77" CHECKSUMTYPE="MD5" SIZE="93817">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/32044057892259_redacted_ALTO_00008_1.xml"/>
+      </file>
+      <file ID="alto_00009_0" MIMETYPE="text/xml" CHECKSUM="0de3270f66acb77f5b897f5237523cd9" CHECKSUMTYPE="MD5" SIZE="93823">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/32044057892259_redacted_ALTO_00009_0.xml"/>
+      </file>
+      <file ID="alto_00009_1" MIMETYPE="text/xml" CHECKSUM="cf71ddc6184a644809b23338dff5a566" CHECKSUMTYPE="MD5" SIZE="98643">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/32044057892259_redacted_ALTO_00009_1.xml"/>
+      </file>
+      <file ID="alto_00010_0" MIMETYPE="text/xml" CHECKSUM="4b1bd027cd34ea936e00967ff239fb4f" CHECKSUMTYPE="MD5" SIZE="100162">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/32044057892259_redacted_ALTO_00010_0.xml"/>
+      </file>
+      <file ID="alto_00010_1" MIMETYPE="text/xml" CHECKSUM="262eb69d776896ea939506d78258e1c2" CHECKSUMTYPE="MD5" SIZE="72897">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/32044057892259_redacted_ALTO_00010_1.xml"/>
+      </file>
+    </fileGrp>
+    <fileGrp USE="casebody">
+      <file ID="casebody_0001" MIMETYPE="text/xml">
+        <FContent>
+          <xmlData>
+            <casebody xmlns="http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1" firstpage="19" lastpage="24">
+              <parties id="b15-4" pgmap="15">The Home Insurance Company of New York v. John Kirk, for use of William Kirk.</parties>
+              <decisiondate id="b15-12" pgmap="15">[Opinion filed May 27, 1887.]</decisiondate>
+              <attorneys id="b15-14" pgmap="15">Mr. Walter Bennett, for appellant.</attorneys>
+              <attorneys id="b16-5" pgmap="16">Messrs. J. A. Biely and Barnes &amp; Barnes, for appellee.</attorneys>
+              <summary id="b15-13" pgmap="15">Appeal from the Circuit Court of Woodford County; the lion. T. M. Shaw, Judge, presiding.</summary>
+              <history id="b15-11" pgmap="15">The case of Haines v. O'Conner, 5 Ill. App. 213, questioned.</history>
+              <headnotes id="b15-7" pgmap="15">Garnishment—Practice—Jurisdiction of Justice when the Indebtedness of the Garnishee Exceeds $200—Collateral Proceeding.</headnotes>
+              <headnotes id="b15-8" pgmap="15">1. • The jurisdiction of a Justice of the Peace .in garnishee proceedings can not be questioned by one not a party thereto in a collateral proceeding.</headnotes>
+              <headnotes id="b15-9" pgmap="15">2. Although the Supreme Court highly recommends the practice, the statute dues not require the suit and judgment in garnishee proceedings to be entered as in favor of the judgment debtor for use of the judgment creditor.</headnotes>
+              <headnotes id="b15-10" pgmap="15">8. It seems that a Justice’s jurisdiction, in garnishee proceedings, is gov­erned by the amount of the judgment in favor of the judgment creditor and not by the amount of the garnishee’s indebtedness, and that judgment may be entered in favor of the judgment creditor for only the amount due him.</headnotes>
+              <p id="b15-15" pgmap="15(21) 16(32)">The manner of entering the judgment in garnishment is a matter of form and practice and not of substance and jnris­diction. Hitchcock v. Watson, 18 Ill. 289; Farrell v. Pear­son, 26 Ill. 463; Cariker v. Anderson, 27 Ill. 358; Towner v. George, 53 Ill. 168; Stahl v. Webster, 11 Ill. 511.</p>
+              <p id="b16-4" pgmap="16">Justices of the Peace have jurisdiction in case of garnish­ment where the amount in the hands of the garnishee exceeds §200 or the limit of the Justice’s jurisdiction in other cases. Wilcus v. Kling, 87 Ill. 107; Phelps v. Reeder, 39 Ill. 172; Luton v. Hoehn, 72 Ill. 81; Andrews v. Powell, 27 Ind. 303; Gillett v. Richards, 46 Iowa, 652; Mills v. Thompson, 61 Mo. 415; Davis v. Staples, 45 Mo. 567; Hope v. Byers, 39 Iowa, 573; Benson v. Shoats, 9 La. Ann. 236; Briggs v. Beach, 18 Vt. 115.</p>
+              <p id="b16-6" pgmap="16">We contend that it was never intended by our statute to give Justices jurisdiction to harass a' debtor of a debtor by garnishee proceedings before Justices in the various counties of the State. And we equally contend that it was never intended to permit one solid sum, owing by a garnishee debt- or, greatly above the jurisdiction of a Justice, to be split up and used up and dissipated in petty suits and costs in every county of the State.</p>
+              <opinion type="majority">
+                <author id="b16-7" pgmap="16">Lacey, J.</author>
+                <p id="Ad5" pgmap="16(166) 17(134)">This cause is submitted on an agreed state of facts, as follows: Wm. Kirk being a judgment creditor of John Kirk, in the Circuit Court of Woodford County, in the sum of §1,055, after first having execution issued against the judg­ment debtor and returned by the Sheriff, no property found, caused- to be issued out of said court garnishee process against the appellant as garnishee of John Kirk. It is admitted that at the time of the service of said writ the appellant owed said John Kirk §1,450 for loss on a certain policy of insurance, unless reduced by certain credits claimed by the appellant, and not otherwise indebted. The credits claimed are for judgments paid by the appellant, recovered in certain cases in similar garnishee proceedings commenced against it for the debts of John Kirk, a portion in the Circuit Court of Cook County, and others by John Kirk’s creditors in Justiee courts in Cook and Peoria counties, which were commenced and served prior to^tlie service of process in this suit. The court below admitted the credit for the amount of the two garnishee judg­ments rendered in the Circuit Court of Cook County, and rejected the credits claimed on account of the payment by appellant of the said Justice of the Peace judgments, on the sole ground, as the agreed state of facts show, that the Justices in the respective cases had no jurisdiction of the subject-­matter in controversy, because the amount in the hands of the garnishee exceeded the sum of §200 at the time of the service of the writ of garnishment therein, and the court there­upon rendered judgment against appellant for the sum of §824.40, the balance remaining due after allowing the credits above stated; from which judgment this appeal is taken.</p>
+                <p id="b17-4" pgmap="17">It is further stipulated that if this court shall hold that the court below committed no error in such ruling then the judg­ment shall be affirmed; but, on the contrary, if this court shall be of the opinion that the court below improperly rejected as a credit in favor of the appellant, the amount paid on the several Justice’s judgments, then this court shall render a judgment in favor of the garnishceing creditor of John Kirk, a judg­ment for §407.11, instead of §824.40 as entered in the court below.</p>
+                <p id="b17-5" pgmap="17">And this is the only question in this case. We are of the opinion that the jurisdiction in cases of garnishment before a Justice of the Peace, where the garnishee proceeding, as in this case, is based on a judgment in favor of the garnishee­ing creditor against the judgment debtor, depends upon and is governed by the amount of such judgment interest and costs remaining due thereon, even if such amount, by reason of the accumulation of interests and costs, exceeds, when added to the original judgment, §200. This same question was decided by this court in the case of Nesbit v. Dickover, in which the opinion was filed December 11,1886. The same point involved in this case was involved in that.</p>
+                <p id="b17-6" pgmap="17(39) 18(45)">The argument in favor of the appellee rests wholly on the assumption that the judgment in the garnishee proceedings should be rendered in favor of the judgment debtor for the use of the judgment creditor, against the garnished party, for the whole amount due, and in case of failure to so render judgment for such amount and for a less amount than due, the balance over and above the amount of the judgment so rendered would be barred on the grounds of former recovery.</p>
+                <p id="b18-5" pgmap="18">The contention of the appellee is supported by certain cases in which the Supreme Court in this State holds that it is the proper practice to have the suit and judgment entered as* in favor of the judgment debtor for use of the judgment creditor against the garnishee; and the court in several cases highly recommend that such be the form as will be seen in the fol­lowing cases among others: Stahl v. Webster, 11 Ill. 511; Hitchcock v. Watson, 18 Ill. 289; Farrell v. Pearson, 26 Ill. 463; Cariker v. Anderson, 27 Ill. 358; Towner v. George, 53 Ill. 168. But we are unable to find any case holding that it is indispensably requisite-that in this class of cases the judg­ment should be in that form; on the contrary many judgments have been affirmed where the garnisheeing creditor was the plaintiff, and none, so far as we have been able to find, have been reversed solely for the reason such form was not followed. The statute itself does not require any such form and the Supreme Court only recommends its use.</p>
+                <p id="b18-6" pgmap="18(180) 19(415) 20(70)">The Justice’s judgments in these cases were under $200, and if the Justice’s jurisdiction as to the subject-matter is governed by the amount of the judgment rendered, then clearly the Jus­tice did not exceed its jurisdiction. The Justice of the Peace judgments were not void on their face and they are brought in here collaterally. How, it may be asked, can the appellee complain that the appellant failed to insist on dismissal, even if he had legal right to insist that the garnishee proceedings should have been dismissed by the Justice for want of juris­diction? Who were the parties to the s nit before the Justice? Manifestly no one but the applicant, the judgment debtor, as plaintiff, to whom the appellant owed the insurance money, and the judgment creditor, who was attempting to collect the judgment. Those three parties certainly could control the proceedings before the Justice. Wm. Kirk, appellee’s use in this case, was not a party, and cotild not then nor can he now be heard to complain if the parties in that case made no objection to the Justice rendering an amount of judgment within his jurisdiction. Suppose it had been an ordinary suit in favor of John Kirk against appellant brought on the in­surance policy, and on the hearing it appeared that there was due John Kirk the sum of $1,450; evidently if John Kirk insisted on this amount the Justice would have been compelled •to dismiss for the want of jurisdiction. John Kirk could have remitted all except $200 and taken a judgment for that amount in spite of the objection of the appellant; but this would have been a bar to any further recovery. Raymond v. Strobel, 24 Ill. 113; Carpenter v. Wells, 65 Ill. 451. If the taking a judgment before the Justice in the cases in ques­tion was a bar, then it would follow that the appellee’s use, Wm. Kirk, or appellee for his use, could not recover anything in this suit. Ko one appealed from those Justice judgments, and certainly appellant was not bound to appeal for the bene­fit of some possible garnisheeing creditor to follow, on penalty of again paying the several Justice judgments on appellee’s garnishee process. Appellant does not insist on any bar here against Wm. Kirk’s claim as to the balance owed on the insur­ance policy above the amounts it has paid on the various judg­ments in question. We are inclined to hold that such judg­ments may be entered up in favor of the garnisheeing creditor for the amount only due him and that it is no bar in favor of the garnishee against the creditor as to the balance due. In the nature of the ease, it should be so. The garnisheeing, creditor controls the suit and is not interested in protecting his debtor’s rights as against the garnishee, only so far as the amount of his claim is concerned, and "no further; and he is not bound to incur the trouble and expense of establishing his debtor’s entire claim which often would be heavy; again, he might not have the necessary information to do so. • The garnishee process is in the nature of process to obtain satis­faction of a judgment. Chanub et al. v. Martin, 25 Ill. 63; Cariker v. Anderson, 27 Ill. 358; Gillett v. Richards, 46 Iowa, 652. In the nature of the ease, the Legislature could never have intended that the entire merits of the entire case as between the original debtor and creditor should be litigated in the garnishee proceedings. See Drake on Attachments, See. 707; Freeman on Judgments, 167. The Supreme Court 'has affirmed judgments in cases similar to this; Wilcus v. Kling, 87 Ill. 107; Phelps v. Reeder, 39 Ill. 172; Luton v. Hoehn, 72 Ill. 81. In so far as the case of Haines v. O’Con­ner, 5 Ill. App. 213, conflicts with the views here expressed we do not approve of it.</p>
+                <p id="b20-8" pgmap="20">In accordance with the agreement herein and the law in such cases, the judgment of the court below is reversed and judgment is hereby rendered in this court in favor of appellee against appellant for the sum of $407.11 and costs of this court charged against appellee.</p>
+                <p id="b20-9" pgmap="20">Judgment reversed and judgment entered in this court.</p>
+              </opinion>
+            </casebody>
+          </xmlData>
+        </FContent>
+      </file>
+    </fileGrp>
+  </fileSec>
+  <structMap TYPE="physical">
+    <div TYPE="volume">
+      <div ORDER="15" ORDERLABEL="19" TYPE="page">
+        <fptr FILEID="tiff_00008_0"/>
+        <fptr FILEID="jp2_00008_0"/>
+        <fptr FILEID="alto_00008_0"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_15.12" BETYPE="IDREF" FILEID="alto_00008_0"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="16" ORDERLABEL="20" TYPE="page">
+        <fptr FILEID="tiff_00008_1"/>
+        <fptr FILEID="jp2_00008_1"/>
+        <fptr FILEID="alto_00008_1"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_16.2" BETYPE="IDREF" FILEID="alto_00008_1"/>
+            </seq>
+          </fptr>
+        </div>
+        <div TYPE="pagematter">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_16.3" BETYPE="IDREF" FILEID="alto_00008_1"/>
+              <area BEGIN="BL_16.4" BETYPE="IDREF" FILEID="alto_00008_1"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="17" ORDERLABEL="21" TYPE="page">
+        <fptr FILEID="tiff_00009_0"/>
+        <fptr FILEID="jp2_00009_0"/>
+        <fptr FILEID="alto_00009_0"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_17.2" BETYPE="IDREF" FILEID="alto_00009_0"/>
+            </seq>
+          </fptr>
+        </div>
+        <div TYPE="pagematter">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_17.3" BETYPE="IDREF" FILEID="alto_00009_0"/>
+              <area BEGIN="BL_17.4" BETYPE="IDREF" FILEID="alto_00009_0"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="18" ORDERLABEL="22" TYPE="page">
+        <fptr FILEID="tiff_00009_1"/>
+        <fptr FILEID="jp2_00009_1"/>
+        <fptr FILEID="alto_00009_1"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_18.2" BETYPE="IDREF" FILEID="alto_00009_1"/>
+            </seq>
+          </fptr>
+        </div>
+        <div TYPE="pagematter">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_18.3" BETYPE="IDREF" FILEID="alto_00009_1"/>
+              <area BEGIN="BL_18.4" BETYPE="IDREF" FILEID="alto_00009_1"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="19" ORDERLABEL="23" TYPE="page">
+        <fptr FILEID="tiff_00010_0"/>
+        <fptr FILEID="jp2_00010_0"/>
+        <fptr FILEID="alto_00010_0"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_19.3" BETYPE="IDREF" FILEID="alto_00010_0"/>
+            </seq>
+          </fptr>
+        </div>
+        <div TYPE="pagematter">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_19.2" BETYPE="IDREF" FILEID="alto_00010_0"/>
+              <area BEGIN="BL_19.4" BETYPE="IDREF" FILEID="alto_00010_0"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="20" ORDERLABEL="24" TYPE="page">
+        <fptr FILEID="tiff_00010_1"/>
+        <fptr FILEID="jp2_00010_1"/>
+        <fptr FILEID="alto_00010_1"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_20.2" BETYPE="IDREF" FILEID="alto_00010_1"/>
+            </seq>
+          </fptr>
+        </div>
+        <div TYPE="pagematter">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_20.3" BETYPE="IDREF" FILEID="alto_00010_1"/>
+              <area BEGIN="BL_20.4" BETYPE="IDREF" FILEID="alto_00010_1"/>
+            </seq>
+          </fptr>
+        </div>
+        <div TYPE="key">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_20.7" BETYPE="IDREF" FILEID="alto_00010_1"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+    </div>
+  </structMap>
+  <structMap TYPE="xref">
+    <div TYPE="blocks">
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-4" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.2" BETYPE="IDREF" FILEID="alto_00008_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b20-9" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_20.6" BETYPE="IDREF" FILEID="alto_00010_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b20-8" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_20.5" BETYPE="IDREF" FILEID="alto_00010_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b16-5" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_16.6" BETYPE="IDREF" FILEID="alto_00008_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-9" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.5" BETYPE="IDREF" FILEID="alto_00008_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-8" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.4" BETYPE="IDREF" FILEID="alto_00008_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-7" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.3" BETYPE="IDREF" FILEID="alto_00008_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b18-5" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_18.5" BETYPE="IDREF" FILEID="alto_00009_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="Ad5" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_16.9" BETYPE="IDREF" FILEID="alto_00008_1"/>
+            <area BEGIN="BL_16.10" BETYPE="IDREF" FILEID="alto_00008_1"/>
+            <area BEGIN="BL_17.1" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b16-4" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_16.5" BETYPE="IDREF" FILEID="alto_00008_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b18-6" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_18.6" BETYPE="IDREF" FILEID="alto_00009_1"/>
+            <area BEGIN="BL_19.1" BETYPE="IDREF" FILEID="alto_00010_0"/>
+            <area BEGIN="BL_20.1" BETYPE="IDREF" FILEID="alto_00010_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b16-6" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_16.7" BETYPE="IDREF" FILEID="alto_00008_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b16-7" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_16.8" BETYPE="IDREF" FILEID="alto_00008_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b17-5" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.6" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b17-4" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.5" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b17-6" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.7" BETYPE="IDREF" FILEID="alto_00009_0"/>
+            <area BEGIN="BL_18.1" BETYPE="IDREF" FILEID="alto_00009_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-15" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.11" BETYPE="IDREF" FILEID="alto_00008_0"/>
+            <area BEGIN="BL_16.1" BETYPE="IDREF" FILEID="alto_00008_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-14" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.10" BETYPE="IDREF" FILEID="alto_00008_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-13" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.9" BETYPE="IDREF" FILEID="alto_00008_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-12" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.8" BETYPE="IDREF" FILEID="alto_00008_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-11" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.7" BETYPE="IDREF" FILEID="alto_00008_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b15-10" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_15.6" BETYPE="IDREF" FILEID="alto_00008_0"/>
+          </seq>
+        </fptr>
+      </div>
+    </div>
+  </structMap>
+</mets>

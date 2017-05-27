@@ -69,31 +69,25 @@ Scripts
   [public dashboard](https://harvard-ftl-public.s3.amazonaws.com/capstone/capstone.html). 
   This is currently run once per hour.
 
-^Run the above scripts in order
-
-Environment
------------
-
-Capstone currently expects to run on `ftl-sandbox`, meaning it can:
-
-* find a copy of the CAP volume/casemets files in `/ftldata/harvard-ftl-shared`
-* view S3 mounts in `/mnt/`
-
 Applying model changes
 ----------------------
 
-Use `alembic` to apply migrations. After you change `models.py`:
+Use Django to apply migrations. After you change `models.py`:
 
-    (capstone)$ alembic revision --autogenerate -m "Description of changes"
+    (capstone)$ ./manage.py makemigrations
     
-This will write a migration script to `alembic/versions`. Review the script and make sure it is correct!
+This will write a migration script to `cap/migrations`. Then apply:
 
-Then apply:
-
-    (capstone)$ alembic upgrade head
+    (capstone)$ ./manage.py migrate
     
 Stored Postgres functions
 -------------------------
 
 Some Capstone features depend on stored functions that allow Postgres to deal with XML and JSON fields.
 See `set_up_postgres.py` for documentation.
+
+Running Command Line Scripts
+----------------------------
+
+Command line scripts are defined in `fabfile.py`. You can list all available commands using `fab -l`, and run a
+command with `fab command_name`.

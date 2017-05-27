@@ -1,8 +1,0 @@
-SQLAlchemy
-psycopg2
-tqdm
-boto3
-alembic
-click
-lxml
-xmltodict
