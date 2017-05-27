@@ -68,12 +68,12 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     lookup_field = 'slug'
     ordering = ('decisiondate',)
 
-    def download(self):
-        print "download"
-
+    def download(self, **kwargs):
         cases = self.queryset.all()
         query_dict = {}
         query = Q()
+        for key in kwargs:
+            query_dict[key] = kwargs.get('slug')
 
         if len(self.request.query_params.items()):
             query = format_query(self.request.query_params, query_dict)
@@ -81,6 +81,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         try:
             max_num = int(query_dict.pop('max', settings.CASE_DAILY_ALLOWANCE))
         except ValueError:
+            # if no max selected, set to daily max
             max_num = settings.CASE_DAILY_ALLOWANCE
             pass
 
@@ -121,7 +122,14 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             case_allowance = self.request.user.case_allowance
             time_remaining = self.request.user.get_case_allowance_update_time_remaining()
             message = "You have reached your limit of allowed cases. Your limit will reset to default again in %s", time_remaining
-            details = "You attempted to download %s cases and your current remaining case limit is %s. Use the max flag to return a specific number of cases: &max=%s" % (blacklisted_case_count, case_allowance, case_allowance)
+            details = """
+                      You attempted to download %s cases and your current remaining case limit is %s. 
+                      Use the max flag to return a specific number of cases: &max=%s
+                      """ % (
+                                blacklisted_case_count,
+                                case_allowance,
+                                case_allowance
+                            )
             return JSONResponse({'message': message, 'details': details}, status=403)
 
     def check_case_permissions(self, case_count):
@@ -129,18 +137,16 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         return self.request.user.case_allowance >= case_count
 
     def list(self, *args, **kwargs):
-        print "list"
         if not self.request.query_params.get('type') == 'download':
             return super(CaseViewSet, self).list(*args, **kwargs)
         else:
-            return self.download(args, kwargs)
+            return self.download(kwargs)
 
     def retrieve(self, *args, **kwargs):
-        print "retrieve"
         if not self.request.query_params.get('type') == 'download':
             return super(CaseViewSet, self).retrieve(*args, **kwargs)
         else:
-            return self.download(args, kwargs)
+            return self.download(**kwargs)
 
     def download_cases(self, caseids_list, blacklisted_case_count):
         try:
