@@ -1,19 +1,17 @@
 import os
-from django.http import HttpResponse, StreamingHttpResponse
-from django.db.models import Q
-from django.conf import settings
-from rest_framework import renderers, viewsets, mixins, filters
-from django_filters.rest_framework import DjangoFilterBackend
 from wsgiref.util import FileWrapper
-from .models import Case, Jurisdiction, Reporter, Court
-from .view_helpers import format_query, make_query, merge_filters
-from .serializers import *
-from .permissions import IsCaseUser
-from .filters import *
-from .resources import download_blacklisted, download_whitelisted
 import logging
 
+from django.db.models import Q
+from django.http import HttpResponse, StreamingHttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import renderers, viewsets, mixins, filters as rs_filters
+
+from . import permissions, resources, serializers, models, filters, settings
+from .view_helpers import format_query, make_query, merge_filters
+
 logger = logging.getLogger(__name__)
+
 
 class JSONResponse(HttpResponse):
     """
@@ -26,32 +24,32 @@ class JSONResponse(HttpResponse):
 
 
 class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
-    serializer_class = JurisdictionSerializer
+    serializer_class = serializers.JurisdictionSerializer
     http_method_names = ['get']
     filter_backends = (DjangoFilterBackend,)
-    filter_class = JurisdictionFilter
-    queryset = Jurisdiction.objects.all()
+    filter_class = filters.JurisdictionFilter
+    queryset = models.Jurisdiction.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
 class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
-    serializer_class = VolumeSerializer
+    serializer_class = serializers.VolumeSerializer
     http_method_names = ['get']
-    queryset = Volume.objects.all()
+    queryset = models.Volume.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
 class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
-    serializer_class = ReporterSerializer
+    serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
-    queryset = Reporter.objects.all()
+    queryset = models.Reporter.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
 class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
-    serializer_class = CourtSerializer
+    serializer_class = serializers.CourtSerializer
     http_method_names = ['get']
-    queryset = Court.objects.all()
+    queryset = models.Court.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
@@ -59,29 +57,27 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     """
     Browse all cases
     """
-    permission_classes = (IsCaseUser,)
-    serializer_class = CaseSerializer
+    permission_classes = (permissions.IsCaseUser,)
+    serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
-    queryset = Case.objects.all()
-    filter_backends = (filters.SearchFilter, DjangoFilterBackend,)
+    queryset = models.Case.objects.all()
+    filter_backends = (rs_filters.SearchFilter, DjangoFilterBackend,)
     search_fields = ('name', 'name_abbreviation', 'court__name', 'reporter__name', 'jurisdiction__name')
-    filter_class = CaseFilter
+    filter_class = filters.CaseFilter
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field = 'slug'
     ordering = ('decisiondate',)
 
-    def download(self, *args, **kwargs):
+    def download(self, **kwargs):
         cases = self.queryset.all()
-
         query_dict = {}
-        query = Q()
-
-        if len(self.request.query_params.items()):
-            query = format_query(self.request.query_params, query_dict)
+        for key in kwargs:
+            query_dict[key] = kwargs.get('slug')
 
         try:
             max_num = int(query_dict.pop('max', settings.CASE_DAILY_ALLOWANCE))
         except ValueError:
+            # if no max selected, set to daily max
             max_num = settings.CASE_DAILY_ALLOWANCE
             pass
 
@@ -122,7 +118,14 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             case_allowance = self.request.user.case_allowance
             time_remaining = self.request.user.get_case_allowance_update_time_remaining()
             message = "You have reached your limit of allowed cases. Your limit will reset to default again in %s", time_remaining
-            details = "You attempted to download %s cases and your current remaining case limit is %s. Use the max flag to return a specific number of cases: &max=%s" % (blacklisted_case_count, case_allowance, case_allowance)
+            details = """
+                      You attempted to download %s cases and your current remaining case limit is %s. 
+                      Use the max flag to return a specific number of cases: &max=%s
+                      """ % (
+                                blacklisted_case_count,
+                                case_allowance,
+                                case_allowance
+                            )
             return JSONResponse({'message': message, 'details': details}, status=403)
 
     def check_case_permissions(self, case_count):
@@ -133,22 +136,22 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         if not self.request.query_params.get('type') == 'download':
             return super(CaseViewSet, self).list(*args, **kwargs)
         else:
-            return self.download(args, kwargs)
+            return self.download(**kwargs)
 
     def retrieve(self, *args, **kwargs):
         if not self.request.query_params.get('type') == 'download':
             return super(CaseViewSet, self).retrieve(*args, **kwargs)
         else:
-            return self.download(args, kwargs)
+            return self.download(**kwargs)
 
     def download_cases(self, caseids_list, blacklisted_case_count):
         try:
             if blacklisted_case_count > 0:
-                zip_filename = download_blacklisted(self.request.user.id, caseids_list)
+                zip_filename = resources.download_blacklisted(self.request.user.id, caseids_list)
                 self.request.user.case_allowance -= blacklisted_case_count
                 self.request.user.save()
             else:
-                zip_filename = download_whitelisted(self.request.user.id, caseids_list)
+                zip_filename = resources.download_whitelisted(self.request.user.id, caseids_list)
             return zip_filename
         except Exception as e:
             raise Exception("Download cases error %s" % e)
