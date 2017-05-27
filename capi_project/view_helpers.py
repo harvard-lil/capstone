@@ -1,10 +1,12 @@
-from django.db.models import Q
 import operator
+
+from django.db.models import Q
 
 
 def merge_filters(q_list, operation):
     reducer_operation = operator.or_ if operation == 'OR' else operator.and_
     return reduce(reducer_operation, q_list)
+
 
 def make_query((key, val)):
     if val:
@@ -25,7 +27,6 @@ def format_query(params, args_dict):
             args_dict['decisiondate__gte'] = val
         elif key == 'max_year':
             args_dict['decisiondate__lte'] = val
-
         elif '_' in key:
             splitkey = key.split('_')
             args_dict[splitkey[0] + '__' + splitkey[1]] = val
@@ -36,4 +37,10 @@ def format_query(params, args_dict):
 
 
 def format_url_from_case(case):
-    return "%s/%s/%s/%s/%s" % (case.jurisdiction, case.reporter, case.volume, case.firstpage, case.name_abbreviation)
+    return "%s/%s/%s/%s/%s" % (
+        case.jurisdiction,
+        case.reporter,
+        case.volume,
+        case.firstpage,
+        case.name_abbreviation
+    )
