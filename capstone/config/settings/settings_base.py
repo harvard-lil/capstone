@@ -20,6 +20,7 @@ INSTALLED_APPS = [
 
     # ours
     'cap',
+    'tracking_tool',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
@@ -64,9 +65,23 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'tracking_tool': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ftl_tt',
+        'USER': 'ftl_readonly',  # GRANT select ON ftl_tt.* TO 'ftl_readonly'@'%' identified by 'password' REQUIRE SSL;
+        'PASSWORD': '',  # add to settings.py
+        'HOST': '',      # add to settings.py
+        'OPTIONS': {
+            'ssl': {
+                'ca': os.path.join(BASE_DIR, '../services/aws/rds-combined-ca-bundle.pem'),
+            }
+        }
     }
 }
 
+# make sure tracking_tool app uses tracking_tool DB:
+DATABASE_ROUTERS = ['tracking_tool.routers.TrackingToolDatabaseRouter']
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
