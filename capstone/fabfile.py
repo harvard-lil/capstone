@@ -37,6 +37,7 @@ def init_db():
         Set up new dev database.
     """
     local("python manage.py migrate")
-    # update_postgres_env()
     print("Creating DEV admin user:")
     User.objects.create_superuser('admin', 'admin@example.com', 'admin')
+
+    update_postgres_env()

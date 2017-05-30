@@ -84,9 +84,9 @@ def ingest_volume(volume_path):
     except IntegrityError as e:
         print("Integrity Error... {} probably already exists: {}".format(volmets_path, e))
 
-    # write completed volume ID to file so we won't try to import it again if this is re-run
-    with open(ALREADY_READ_FILE_PATH, 'a') as out:
-        out.write(vol_barcode+"\n")
+    # # write completed volume ID to file so we won't try to import it again if this is re-run
+    # with open(ALREADY_READ_FILE_PATH, 'a') as out:
+    #     out.write(vol_barcode+"\n")
 
     print("-- stored in %s: %s" % (time.time()-start_time, volume_path))
 
