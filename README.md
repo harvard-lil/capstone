@@ -12,9 +12,9 @@ in one location.
 It stores several kinds of data:
 
 * Original XML data
-* Normalized metadata extracted from the XML (TODO)
-* External metadata, such as the Reporter database (TODO)
-* Changelog data, tracking changes and corrections (TODO)
+* Normalized metadata extracted from the XML
+* External metadata, such as the Reporter database
+* Changelog data, tracking changes and corrections
 
 The general philosophy is *progressive enhancement*. We start with a simple document store where
 each table is just a long list of XML documents, and then build relational database features around
@@ -23,77 +23,91 @@ it.
 Setup Requirements
 ------------------
 
-Capstone is developed with Python 3. Requirements are installed with `pip`. Example install:
+Capstone is developed with Python 3. Requirements are installed with `pip`.
 
+Clone:
+
+    $ git clone https://github.com/harvard-lil/capstone.git
+    
+Set up Python virtualenv:
+    
+    $ cd capstone/capstone  # move to Django subdirectory
     $ mkvirtualenv -p python3 capstone
     (capstone)$ pip install -r requirements.txt
 
-For local development, you should have postgres installed.
+From here on, the prompt **(capstone)$** means you are running inside the `capstone/` subdir with
+the `capstone` virtualenv activated.
 
-Alternatively, use the Vagrant development environment: install
-[Vagrant](https://www.vagrantup.com/downloads.html) (currently 1.9.3),
-run
+[Download and install Postgres](https://www.postgresql.org/download/), if necessary.
 
-    $ vagrant plugin install vagrant-vbguest
-	$ vagrant up
+Set up a postgres database:
 
-and ask your devops engineer to accept and provision the new dev box
-before running
+    (capstone)$ psql -c "CREATE DATABASE capstone;"
+    (capstone)$ fab init_db  # one time -- set up database tables and development Django admin user
+    (capstone)$ fab ingest_volumes  # load in our test volume
+    
+Running Capstone Server
+-----------------------
+    
+    (capstone)$ fab run      # start up Django server
 
-    $ vagrant ssh
+Go to http://127.0.0.1:8000/ and log in as admin / admin
 
-(You can provision or re-provision it yourself, once accepted, by
-running `sudo salt-call state.apply` inside the box.)
-
-Copy settings.example.py to settings.py and enter credentials to
-connect to postgres.
-
-Run `alembic upgrade head` to load initial tables. You may need to create the empty alembic/versions directory if this command chokes.
-
-You'll likely need to create a postgres user and a capstone databse
-    $psql
-    you=# CREATE USER postgres SUPERUSER;
-    ^d
-    $psql postgres
-    postgres=# CREATE DATABASE capstone;
-
-Scripts
+Testing
 -------
-* **models.py**: Sqlalchemy definitions of the database schema.
 
-* **set_up_postgres.py**: Write stored SQL functions to postgresql, and other functions for setting the postgres environment.
-* **make_tables.py**: Create tables from the models.py schema.
-* **ingest_files.py**: Ingest XML files from s3 and/or from the ftl-sandbox copy.
-* **process_ingested_xml.py**: Extract data from xml already loaded into DB.
-* **make_viz.py**: Write a visualization of the database to a 
-  [public dashboard](https://harvard-ftl-public.s3.amazonaws.com/capstone/capstone.html). 
-  This is currently run once per hour.
+We use pytest for tests. Some notable flags:
 
-^Run the above scripts in order
+Run all tests:
 
-Environment
------------
+    (capstone)$ pytest
 
-Capstone currently expects to run on `ftl-sandbox`, meaning it can:
+Run one test:
 
-* find a copy of the CAP volume/casemets files in `/ftldata/harvard-ftl-shared`
-* view S3 mounts in `/mnt/`
+    (capstone)$ pytest -k test_name
+     
+Run tests without capturing stdout, to allow debugging with pdb:
+
+    (capstone)$ pytest -s
+    
+Run tests in parallel for speed:
+
+    (capstone)$ pytest -n <number of processes>
+
+Requirements
+------------
+
+Top-level requirements are stored in `requirements.in`. After updating that file, you should run
+
+    (capstone)$ pip-compile
+    
+to freeze all subdependencies into `requirements.txt`.
+
+To ensure that your environment matches `requirements.txt`, you can run
+
+    (capstone)$ pip-sync
+    
+This will add any missing packages and remove any extra ones.
 
 Applying model changes
 ----------------------
 
-Use `alembic` to apply migrations. After you change `models.py`:
+Use Django to apply migrations. After you change `models.py`:
 
-    (capstone)$ alembic revision --autogenerate -m "Description of changes"
+    (capstone)$ ./manage.py makemigrations
     
-This will write a migration script to `alembic/versions`. Review the script and make sure it is correct!
+This will write a migration script to `cap/migrations`. Then apply:
 
-Then apply:
-
-    (capstone)$ alembic upgrade head
+    (capstone)$ ./manage.py migrate
     
 Stored Postgres functions
 -------------------------
 
 Some Capstone features depend on stored functions that allow Postgres to deal with XML and JSON fields.
 See `set_up_postgres.py` for documentation.
+
+Running Command Line Scripts
+----------------------------
+
+Command line scripts are defined in `fabfile.py`. You can list all available commands using `fab -l`, and run a
+command with `fab command_name`.

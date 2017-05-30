@@ -1,0 +1,896 @@
+<?xml version='1.0' encoding='utf-8'?>
+<alto xmlns="http://www.loc.gov/standards/alto/ns-v3#">
+  <!--Created by Innodata R.E.D. RLI tool: 2016-03-25 07:53:55.889446-->
+  <Description>
+    <MeasurementUnit>pixel</MeasurementUnit>
+    <sourceImageInformation>
+      <fileName>32044057892259_00008_1.tif</fileName>
+    </sourceImageInformation>
+    <OCRProcessing ID="OP_1">
+      <ocrProcessingStep>
+        <processingStepDescription>Alto coordinates refer to the deskewed TIFF file. 
+		To convert point (x, y) to original image (TIFF or JP2) apply transformation matrix T=(m00, m01, m10, m11, b0, b1) using the rule:
+			T * (x,y) = (m00 * x + m01 * y + b0), (m10 * x + m11 * y + b1)</processingStepDescription>
+        <processingStepSettings>RED.transform=(0.9999395006100392, 0.010999778168008754, -0.010999778168008754, 0.9999395006100392, -28.904500000000013, -0.26050000000009277)</processingStepSettings>
+      </ocrProcessingStep>
+    </OCRProcessing>
+  </Description>
+  <Styles>
+    <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="9.00" FONTSTYLE="bold" FONTTYPE="serif" FONTWIDTH="proportional" ID="Style_1"/>
+    <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="9.00" FONTSTYLE="bold smallcaps" FONTTYPE="serif" FONTWIDTH="proportional" ID="Style_2"/>
+    <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="9.50" FONTSTYLE="smallcaps" FONTTYPE="serif" FONTWIDTH="proportional" ID="Style_3"/>
+    <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="9.50" FONTSTYLE="bold italics" FONTTYPE="serif" FONTWIDTH="proportional" ID="Style_4"/>
+    <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="10.50" FONTTYPE="serif" FONTWIDTH="proportional" ID="Style_5"/>
+    <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="10.50" FONTSTYLE="italics" FONTTYPE="serif" FONTWIDTH="proportional" ID="Style_6"/>
+    <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="11.00" FONTTYPE="serif" FONTWIDTH="proportional" ID="Style_7"/>
+    <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="11.00" FONTSTYLE="bold" FONTTYPE="serif" FONTWIDTH="proportional" ID="Style_8"/>
+  </Styles>
+  <Tags>
+    <StructureTag ID="b15-15" LABEL="note"/>
+    <StructureTag ID="b16-1" LABEL="pagelabel"/>
+    <StructureTag ID="b16-1-pl-split" LABEL="pagematter"/>
+    <StructureTag ID="b16-2" LABEL="pagematter"/>
+    <StructureTag ID="b16-4" LABEL="note"/>
+    <StructureTag ID="b16-5" LABEL="attorneys"/>
+    <StructureTag ID="b16-6" LABEL="note"/>
+    <StructureTag ID="b16-7" LABEL="author"/>
+    <StructureTag ID="Ad5" LABEL="p"/>
+  </Tags>
+  <Layout>
+    <Page HEIGHT="2637" ID="PG_16" PHYSICAL_IMG_NR="16" WIDTH="1618">
+      <PrintSpace HEIGHT="2637" HPOS="0" ID="PS_16" VPOS="0" WIDTH="1618">
+        <TextBlock HEIGHT="146.0" HPOS="294.0" ID="BL_16.1" TAGREFS="b15-15" VPOS="427.0" WIDTH="1139.0">
+          <TextLine HEIGHT="41" HPOS="294" ID="TL_16.1.1" VPOS="427" WIDTH="1137">
+            <String CONTENT="diction." HEIGHT="32" HPOS="294" ID="ST_16.1.1.1" STYLEREFS="Style_5" VPOS="428" WIDTH="133" WC="0.49" CC="00000000" TAGREFS=""/>
+            <SP HPOS="427" ID="SP_16.1.1.2" VPOS="428" WIDTH="46"/>
+            <String CONTENT="Hitchcock" HEIGHT="32" HPOS="473" ID="ST_16.1.1.3" STYLEREFS="Style_5" VPOS="428" WIDTH="185" WC="0.56" CC="000000000" TAGREFS=""/>
+            <SP HPOS="658" ID="SP_16.1.1.4" VPOS="439" WIDTH="14"/>
+            <String CONTENT="v." HEIGHT="21" HPOS="672" ID="ST_16.1.1.5" STYLEREFS="Style_5" VPOS="439" WIDTH="30" WC="0.62" CC="00" TAGREFS=""/>
+            <SP HPOS="702" ID="SP_16.1.1.6" VPOS="427" WIDTH="17"/>
+            <String CONTENT="Watson," HEIGHT="41" HPOS="719" ID="ST_16.1.1.7" STYLEREFS="Style_5" VPOS="427" WIDTH="149" WC="0.57" CC="9900000" TAGREFS=""/>
+            <SP HPOS="868" ID="SP_16.1.1.8" VPOS="429" WIDTH="29"/>
+            <String CONTENT="18" HEIGHT="31" HPOS="897" ID="ST_16.1.1.9" STYLEREFS="Style_5" VPOS="429" WIDTH="40" WC="0.64" CC="00" TAGREFS=""/>
+            <SP HPOS="937" ID="SP_16.1.1.10" VPOS="429" WIDTH="24"/>
+            <String CONTENT="Ill." HEIGHT="32" HPOS="961" ID="ST_16.1.1.11" STYLEREFS="Style_5" VPOS="429" WIDTH="50" WC="0.63" CC="9000" TAGREFS=""/>
+            <SP HPOS="1011" ID="SP_16.1.1.12" VPOS="430" WIDTH="27"/>
+            <String CONTENT="289;" HEIGHT="38" HPOS="1038" ID="ST_16.1.1.13" STYLEREFS="Style_5" VPOS="430" WIDTH="76" WC="0.61" CC="0099" TAGREFS=""/>
+            <SP HPOS="1114" ID="SP_16.1.1.14" VPOS="428" WIDTH="25"/>
+            <String CONTENT="Farrell" HEIGHT="33" HPOS="1139" ID="ST_16.1.1.15" STYLEREFS="Style_5" VPOS="428" WIDTH="125" WC="0.36" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1264" ID="SP_16.1.1.16" VPOS="440" WIDTH="18"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="1282" ID="ST_16.1.1.17" STYLEREFS="Style_5" VPOS="440" WIDTH="30" WC="0.61" CC="00" TAGREFS=""/>
+            <SP HPOS="1312" ID="SP_16.1.1.18" VPOS="428" WIDTH="18"/>
+            <String CONTENT="Pear­" HEIGHT="32" HPOS="1330" ID="ST_16.1.1.19" STYLEREFS="Style_5" VPOS="428" WIDTH="101" WC="1.0" CC="00000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="41" HPOS="294" ID="TL_16.1.2" VPOS="479" WIDTH="1139">
+            <String CONTENT="son," HEIGHT="30" HPOS="294" ID="ST_16.1.2.1" STYLEREFS="Style_5" VPOS="489" WIDTH="69" WC="1.0" CC="0000" TAGREFS=""/>
+            <SP HPOS="363" ID="SP_16.1.2.2" VPOS="481" WIDTH="18"/>
+            <String CONTENT="26" HEIGHT="30" HPOS="381" ID="ST_16.1.2.3" STYLEREFS="Style_5" VPOS="481" WIDTH="39" WC="0.57" CC="00" TAGREFS=""/>
+            <SP HPOS="420" ID="SP_16.1.2.4" VPOS="479" WIDTH="16"/>
+            <String CONTENT="Ill." HEIGHT="32" HPOS="436" ID="ST_16.1.2.5" STYLEREFS="Style_5" VPOS="479" WIDTH="51" WC="1.0" CC="0000" TAGREFS=""/>
+            <SP HPOS="487" ID="SP_16.1.2.6" VPOS="481" WIDTH="17"/>
+            <String CONTENT="463;" HEIGHT="39" HPOS="504" ID="ST_16.1.2.7" STYLEREFS="Style_5" VPOS="481" WIDTH="84" WC="0.34" CC="0099" TAGREFS=""/>
+            <SP HPOS="588" ID="SP_16.1.2.8" VPOS="479" WIDTH="25"/>
+            <String CONTENT="Cariker" HEIGHT="33" HPOS="613" ID="ST_16.1.2.9" STYLEREFS="Style_5" VPOS="479" WIDTH="137" WC="0.50" CC="0090009" TAGREFS=""/>
+            <SP HPOS="750" ID="SP_16.1.2.10" VPOS="491" WIDTH="17"/>
+            <String CONTENT="v." HEIGHT="21" HPOS="767" ID="ST_16.1.2.11" STYLEREFS="Style_5" VPOS="491" WIDTH="29" WC="0.60" CC="00" TAGREFS=""/>
+            <SP HPOS="796" ID="SP_16.1.2.12" VPOS="480" WIDTH="18"/>
+            <String CONTENT="Anderson," HEIGHT="40" HPOS="814" ID="ST_16.1.2.13" STYLEREFS="Style_5" VPOS="480" WIDTH="186" WC="0.47" CC="000000000" TAGREFS=""/>
+            <SP HPOS="1000" ID="SP_16.1.2.14" VPOS="480" WIDTH="19"/>
+            <String CONTENT="27" HEIGHT="32" HPOS="1019" ID="ST_16.1.2.15" STYLEREFS="Style_5" VPOS="480" WIDTH="41" WC="0.17" CC="00" TAGREFS=""/>
+            <SP HPOS="1060" ID="SP_16.1.2.16" VPOS="479" WIDTH="16"/>
+            <String CONTENT="Ill." HEIGHT="32" HPOS="1076" ID="ST_16.1.2.17" STYLEREFS="Style_5" VPOS="479" WIDTH="50" WC="0.61" CC="9000" TAGREFS=""/>
+            <SP HPOS="1126" ID="SP_16.1.2.18" VPOS="481" WIDTH="20"/>
+            <String CONTENT="358;" HEIGHT="38" HPOS="1146" ID="ST_16.1.2.19" STYLEREFS="Style_5" VPOS="481" WIDTH="73" WC="0.35" CC="0000" TAGREFS=""/>
+            <SP HPOS="1219" ID="SP_16.1.2.20" VPOS="480" WIDTH="26"/>
+            <String CONTENT="Towner" HEIGHT="33" HPOS="1245" ID="ST_16.1.2.21" STYLEREFS="Style_5" VPOS="480" WIDTH="140" WC="0.60" CC="000000" TAGREFS=""/>
+            <SP HPOS="1385" ID="SP_16.1.2.22" VPOS="491" WIDTH="17"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="1402" ID="ST_16.1.2.23" STYLEREFS="Style_5" VPOS="491" WIDTH="31" WC="0.65" CC="00" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="295" ID="TL_16.1.3" VPOS="530" WIDTH="934">
+            <String CONTENT="George," HEIGHT="43" HPOS="295" ID="ST_16.1.3.1" STYLEREFS="Style_5" VPOS="530" WIDTH="141" WC="0.57" CC="0000000" TAGREFS=""/>
+            <SP HPOS="436" ID="SP_16.1.3.2" VPOS="532" WIDTH="21"/>
+            <String CONTENT="53" HEIGHT="30" HPOS="457" ID="ST_16.1.3.3" STYLEREFS="Style_5" VPOS="532" WIDTH="40" WC="0.38" CC="00" TAGREFS=""/>
+            <SP HPOS="497" ID="SP_16.1.3.4" VPOS="531" WIDTH="17"/>
+            <String CONTENT="Ill." HEIGHT="32" HPOS="514" ID="ST_16.1.3.5" STYLEREFS="Style_5" VPOS="531" WIDTH="50" WC="1.0" CC="0000" TAGREFS=""/>
+            <SP HPOS="564" ID="SP_16.1.3.6" VPOS="532" WIDTH="18"/>
+            <String CONTENT="168;" HEIGHT="39" HPOS="582" ID="ST_16.1.3.7" STYLEREFS="Style_5" VPOS="532" WIDTH="82" WC="0.58" CC="0099" TAGREFS=""/>
+            <SP HPOS="664" ID="SP_16.1.3.8" VPOS="531" WIDTH="26"/>
+            <String CONTENT="Stahl" HEIGHT="32" HPOS="690" ID="ST_16.1.3.9" STYLEREFS="Style_5" VPOS="531" WIDTH="92" WC="0.23" CC="00000" TAGREFS=""/>
+            <SP HPOS="782" ID="SP_16.1.3.10" VPOS="543" WIDTH="18"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="800" ID="ST_16.1.3.11" STYLEREFS="Style_5" VPOS="543" WIDTH="30" WC="0.62" CC="00" TAGREFS=""/>
+            <SP HPOS="830" ID="SP_16.1.3.12" VPOS="531" WIDTH="17"/>
+            <String CONTENT="Webster," HEIGHT="40" HPOS="847" ID="ST_16.1.3.13" STYLEREFS="Style_5" VPOS="531" WIDTH="165" WC="0.37" CC="00000000" TAGREFS=""/>
+            <SP HPOS="1012" ID="SP_16.1.3.14" VPOS="533" WIDTH="19"/>
+            <String CONTENT="11" HEIGHT="30" HPOS="1031" ID="ST_16.1.3.15" STYLEREFS="Style_5" VPOS="533" WIDTH="40" WC="0.61" CC="00" TAGREFS=""/>
+            <SP HPOS="1071" ID="SP_16.1.3.16" VPOS="531" WIDTH="17"/>
+            <String CONTENT="Ill." HEIGHT="32" HPOS="1088" ID="ST_16.1.3.17" STYLEREFS="Style_5" VPOS="531" WIDTH="50" WC="0.59" CC="9000" TAGREFS=""/>
+            <SP HPOS="1138" ID="SP_16.1.3.18" VPOS="532" WIDTH="20"/>
+            <String CONTENT="511." HEIGHT="31" HPOS="1158" ID="ST_16.1.3.19" STYLEREFS="Style_5" VPOS="532" WIDTH="71" WC="0.56" CC="0000" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+        <TextBlock HEIGHT="36.0" HPOS="293.0" ID="BL_16.2" TAGREFS="b16-1" VPOS="255.0" WIDTH="49.0">
+          <TextLine HEIGHT="36" HPOS="293" ID="TL_16.2.1" VPOS="255" WIDTH="49">
+            <String CONTENT="20" HEIGHT="36" HPOS="293" ID="ST_16.2.1.1" STYLEREFS="Style_7" VPOS="255" WIDTH="49" WC="0.54" CC="00" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+        <TextBlock HEIGHT="39.0" HPOS="519.0" ID="BL_16.3" TAGREFS="b16-1-pl-split" VPOS="254.0" WIDTH="702.0">
+          <TextLine HEIGHT="39" HPOS="519" ID="TL_16.3.1" VPOS="254" WIDTH="702">
+            <String CONTENT="Appellate" HEIGHT="37" HPOS="519" ID="ST_16.3.1.1" STYLEREFS="Style_2" VPOS="254" WIDTH="242" WC="0.37" CC="000000000" TAGREFS=""/>
+            <SP HPOS="761" ID="SP_16.3.1.2" VPOS="255" WIDTH="28"/>
+            <String CONTENT="Courts" HEIGHT="37" HPOS="789" ID="ST_16.3.1.3" STYLEREFS="Style_2" VPOS="255" WIDTH="151" WC="0.38" CC="000000" TAGREFS=""/>
+            <SP HPOS="940" ID="SP_16.3.1.4" VPOS="267" WIDTH="28"/>
+            <String CONTENT="of" HEIGHT="24" HPOS="968" ID="ST_16.3.1.5" STYLEREFS="Style_2" VPOS="267" WIDTH="49" WC="0.65" CC="00" TAGREFS=""/>
+            <SP HPOS="1017" ID="SP_16.3.1.6" VPOS="255" WIDTH="18"/>
+            <String CONTENT="Illinois," HEIGHT="38" HPOS="1035" ID="ST_16.3.1.7" STYLEREFS="Style_2" VPOS="255" WIDTH="186" WC="0.48" CC="000090000" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+        <TextBlock HEIGHT="27.0" HPOS="618.0" ID="BL_16.4" TAGREFS="b16-2" VPOS="345.0" WIDTH="488.0">
+          <TextLine HEIGHT="27" HPOS="618" ID="TL_16.4.1" VPOS="345" WIDTH="488">
+            <String CONTENT="Home" HEIGHT="26" HPOS="618" ID="ST_16.4.1.1" STYLEREFS="Style_1" VPOS="346" WIDTH="87" WC="0.39" CC="0090" TAGREFS=""/>
+            <SP HPOS="705" ID="SP_16.4.1.2" VPOS="346" WIDTH="12"/>
+            <String CONTENT="Ins." HEIGHT="25" HPOS="717" ID="ST_16.4.1.3" STYLEREFS="Style_1" VPOS="346" WIDTH="53" WC="0.53" CC="0000" TAGREFS=""/>
+            <SP HPOS="770" ID="SP_16.4.1.4" VPOS="346" WIDTH="17"/>
+            <String CONTENT="Co." HEIGHT="26" HPOS="787" ID="ST_16.4.1.5" STYLEREFS="Style_1" VPOS="346" WIDTH="42" WC="0.70" CC="000" TAGREFS=""/>
+            <SP HPOS="829" ID="SP_16.4.1.6" VPOS="347" WIDTH="15"/>
+            <String CONTENT="of" HEIGHT="25" HPOS="844" ID="ST_16.4.1.7" STYLEREFS="Style_1" VPOS="347" WIDTH="28" WC="0.83" CC="00" TAGREFS=""/>
+            <SP HPOS="872" ID="SP_16.4.1.8" VPOS="346" WIDTH="17"/>
+            <String CONTENT="N." HEIGHT="26" HPOS="889" ID="ST_16.4.1.9" STYLEREFS="Style_1" VPOS="346" WIDTH="36" WC="0.57" CC="90" TAGREFS=""/>
+            <SP HPOS="925" ID="SP_16.4.1.10" VPOS="346" WIDTH="14"/>
+            <String CONTENT="T." HEIGHT="26" HPOS="939" ID="ST_16.4.1.11" STYLEREFS="Style_1" VPOS="346" WIDTH="33" WC="0.58" CC="00" TAGREFS=""/>
+            <SP HPOS="972" ID="SP_16.4.1.12" VPOS="355" WIDTH="14"/>
+            <String CONTENT="v." HEIGHT="17" HPOS="986" ID="ST_16.4.1.13" STYLEREFS="Style_1" VPOS="355" WIDTH="26" WC="0.66" CC="00" TAGREFS=""/>
+            <SP HPOS="1012" ID="SP_16.4.1.14" VPOS="345" WIDTH="15"/>
+            <String CONTENT="Kirk." HEIGHT="27" HPOS="1027" ID="ST_16.4.1.15" STYLEREFS="Style_1" VPOS="345" WIDTH="79" WC="0.64" CC="00000" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+        <TextBlock HEIGHT="439.0" HPOS="293.0" ID="BL_16.5" TAGREFS="b16-4" VPOS="582.0" WIDTH="1144.0">
+          <TextLine HEIGHT="44" HPOS="337" ID="TL_16.5.1" VPOS="582" WIDTH="1100">
+            <String CONTENT="Justices" HEIGHT="33" HPOS="337" ID="ST_16.5.1.1" STYLEREFS="Style_5" VPOS="582" WIDTH="142" WC="0.33" CC="00000000" TAGREFS=""/>
+            <SP HPOS="479" ID="SP_16.5.1.2" VPOS="583" WIDTH="16"/>
+            <String CONTENT="of" HEIGHT="32" HPOS="495" ID="ST_16.5.1.3" STYLEREFS="Style_5" VPOS="583" WIDTH="38" WC="0.28" CC="00" TAGREFS=""/>
+            <SP HPOS="533" ID="SP_16.5.1.4" VPOS="582" WIDTH="15"/>
+            <String CONTENT="the" HEIGHT="33" HPOS="548" ID="ST_16.5.1.5" STYLEREFS="Style_5" VPOS="582" WIDTH="57" WC="0.45" CC="000" TAGREFS=""/>
+            <SP HPOS="605" ID="SP_16.5.1.6" VPOS="582" WIDTH="15"/>
+            <String CONTENT="Peace" HEIGHT="33" HPOS="620" ID="ST_16.5.1.7" STYLEREFS="Style_5" VPOS="582" WIDTH="109" WC="0.50" CC="00000" TAGREFS=""/>
+            <SP HPOS="729" ID="SP_16.5.1.8" VPOS="582" WIDTH="22"/>
+            <String CONTENT="have" HEIGHT="32" HPOS="751" ID="ST_16.5.1.9" STYLEREFS="Style_5" VPOS="582" WIDTH="86" WC="0.38" CC="0000" TAGREFS=""/>
+            <SP HPOS="837" ID="SP_16.5.1.10" VPOS="583" WIDTH="22"/>
+            <String CONTENT="jurisdiction" HEIGHT="41" HPOS="859" ID="ST_16.5.1.11" STYLEREFS="Style_5" VPOS="583" WIDTH="209" WC="0.30" CC="000000000000" TAGREFS=""/>
+            <SP HPOS="1068" ID="SP_16.5.1.12" VPOS="583" WIDTH="25"/>
+            <String CONTENT="in" HEIGHT="31" HPOS="1093" ID="ST_16.5.1.13" STYLEREFS="Style_5" VPOS="583" WIDTH="33" WC="0.18" CC="00" TAGREFS=""/>
+            <SP HPOS="1126" ID="SP_16.5.1.14" VPOS="594" WIDTH="27"/>
+            <String CONTENT="case" HEIGHT="21" HPOS="1153" ID="ST_16.5.1.15" STYLEREFS="Style_5" VPOS="594" WIDTH="70" WC="0.35" CC="0000" TAGREFS=""/>
+            <SP HPOS="1223" ID="SP_16.5.1.16" VPOS="583" WIDTH="18"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="1241" ID="ST_16.5.1.17" STYLEREFS="Style_5" VPOS="583" WIDTH="36" WC="0.35" CC="00" TAGREFS=""/>
+            <SP HPOS="1277" ID="SP_16.5.1.18" VPOS="583" WIDTH="15"/>
+            <String CONTENT="garnish­" HEIGHT="43" HPOS="1292" ID="ST_16.5.1.19" STYLEREFS="Style_5" VPOS="583" WIDTH="145" WC="1.0" CC="00000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="44" HPOS="293" ID="TL_16.5.2" VPOS="634" WIDTH="1140">
+            <String CONTENT="ment" HEIGHT="27" HPOS="293" ID="ST_16.5.2.1" STYLEREFS="Style_5" VPOS="638" WIDTH="92" WC="0.53" CC="0000" TAGREFS=""/>
+            <SP HPOS="385" ID="SP_16.5.2.2" VPOS="634" WIDTH="15"/>
+            <String CONTENT="where" HEIGHT="33" HPOS="400" ID="ST_16.5.2.3" STYLEREFS="Style_5" VPOS="634" WIDTH="110" WC="0.40" CC="00000" TAGREFS=""/>
+            <SP HPOS="510" ID="SP_16.5.2.4" VPOS="634" WIDTH="15"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="525" ID="ST_16.5.2.5" STYLEREFS="Style_5" VPOS="634" WIDTH="58" WC="0.45" CC="000" TAGREFS=""/>
+            <SP HPOS="583" ID="SP_16.5.2.6" VPOS="638" WIDTH="16"/>
+            <String CONTENT="amount" HEIGHT="28" HPOS="599" ID="ST_16.5.2.7" STYLEREFS="Style_5" VPOS="638" WIDTH="136" WC="0.34" CC="000000" TAGREFS=""/>
+            <SP HPOS="735" ID="SP_16.5.2.8" VPOS="634" WIDTH="13"/>
+            <String CONTENT="in" HEIGHT="31" HPOS="748" ID="ST_16.5.2.9" STYLEREFS="Style_5" VPOS="634" WIDTH="35" WC="0.36" CC="00" TAGREFS=""/>
+            <SP HPOS="783" ID="SP_16.5.2.10" VPOS="634" WIDTH="15"/>
+            <String CONTENT="the" HEIGHT="31" HPOS="798" ID="ST_16.5.2.11" STYLEREFS="Style_5" VPOS="634" WIDTH="58" WC="0.52" CC="000" TAGREFS=""/>
+            <SP HPOS="856" ID="SP_16.5.2.12" VPOS="634" WIDTH="15"/>
+            <String CONTENT="hands" HEIGHT="32" HPOS="871" ID="ST_16.5.2.13" STYLEREFS="Style_5" VPOS="634" WIDTH="103" WC="0.31" CC="00000" TAGREFS=""/>
+            <SP HPOS="974" ID="SP_16.5.2.14" VPOS="634" WIDTH="17"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="991" ID="ST_16.5.2.15" STYLEREFS="Style_5" VPOS="634" WIDTH="36" WC="0.47" CC="00" TAGREFS=""/>
+            <SP HPOS="1027" ID="SP_16.5.2.16" VPOS="634" WIDTH="15"/>
+            <String CONTENT="the" HEIGHT="31" HPOS="1042" ID="ST_16.5.2.17" STYLEREFS="Style_5" VPOS="634" WIDTH="59" WC="0.46" CC="000" TAGREFS=""/>
+            <SP HPOS="1101" ID="SP_16.5.2.18" VPOS="634" WIDTH="11"/>
+            <String CONTENT="garnishee" HEIGHT="44" HPOS="1112" ID="ST_16.5.2.19" STYLEREFS="Style_5" VPOS="634" WIDTH="173" WC="0.32" CC="000000000" TAGREFS=""/>
+            <SP HPOS="1285" ID="SP_16.5.2.20" VPOS="634" WIDTH="11"/>
+            <String CONTENT="exceeds" HEIGHT="32" HPOS="1296" ID="ST_16.5.2.21" STYLEREFS="Style_5" VPOS="634" WIDTH="137" WC="0.66" CC="0000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="293" ID="TL_16.5.3" VPOS="684" WIDTH="1140">
+            <String CONTENT="§200" HEIGHT="37" HPOS="293" ID="ST_16.5.3.1" STYLEREFS="Style_5" VPOS="684" WIDTH="84" WC="0.76" CC="0000" TAGREFS=""/>
+            <SP HPOS="377" ID="SP_16.5.3.2" VPOS="695" WIDTH="17"/>
+            <String CONTENT="or" HEIGHT="22" HPOS="394" ID="ST_16.5.3.3" STYLEREFS="Style_5" VPOS="695" WIDTH="37" WC="0.64" CC="99" TAGREFS=""/>
+            <SP HPOS="431" ID="SP_16.5.3.4" VPOS="685" WIDTH="15"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="446" ID="ST_16.5.3.5" STYLEREFS="Style_5" VPOS="685" WIDTH="58" WC="0.46" CC="000" TAGREFS=""/>
+            <SP HPOS="504" ID="SP_16.5.3.6" VPOS="686" WIDTH="16"/>
+            <String CONTENT="limit" HEIGHT="31" HPOS="520" ID="ST_16.5.3.7" STYLEREFS="Style_5" VPOS="686" WIDTH="87" WC="0.28" CC="00000" TAGREFS=""/>
+            <SP HPOS="607" ID="SP_16.5.3.8" VPOS="685" WIDTH="15"/>
+            <String CONTENT="of" HEIGHT="32" HPOS="622" ID="ST_16.5.3.9" STYLEREFS="Style_5" VPOS="685" WIDTH="37" WC="0.70" CC="00" TAGREFS=""/>
+            <SP HPOS="659" ID="SP_16.5.3.10" VPOS="685" WIDTH="21"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="680" ID="ST_16.5.3.11" STYLEREFS="Style_5" VPOS="685" WIDTH="58" WC="0.46" CC="000" TAGREFS=""/>
+            <SP HPOS="738" ID="SP_16.5.3.12" VPOS="685" WIDTH="27"/>
+            <String CONTENT="Justice’s" HEIGHT="33" HPOS="765" ID="ST_16.5.3.13" STYLEREFS="Style_5" VPOS="685" WIDTH="153" WC="0.34" CC="000000090" TAGREFS=""/>
+            <SP HPOS="918" ID="SP_16.5.3.14" VPOS="684" WIDTH="20"/>
+            <String CONTENT="jurisdiction" HEIGHT="43" HPOS="938" ID="ST_16.5.3.15" STYLEREFS="Style_5" VPOS="684" WIDTH="210" WC="0.32" CC="990000000000" TAGREFS=""/>
+            <SP HPOS="1148" ID="SP_16.5.3.16" VPOS="686" WIDTH="27"/>
+            <String CONTENT="in" HEIGHT="30" HPOS="1175" ID="ST_16.5.3.17" STYLEREFS="Style_5" VPOS="686" WIDTH="35" WC="0.20" CC="00" TAGREFS=""/>
+            <SP HPOS="1210" ID="SP_16.5.3.18" VPOS="685" WIDTH="16"/>
+            <String CONTENT="other" HEIGHT="32" HPOS="1226" ID="ST_16.5.3.19" STYLEREFS="Style_5" VPOS="685" WIDTH="96" WC="0.52" CC="00000" TAGREFS=""/>
+            <SP HPOS="1322" ID="SP_16.5.3.20" VPOS="696" WIDTH="16"/>
+            <String CONTENT="cases." HEIGHT="21" HPOS="1338" ID="ST_16.5.3.21" STYLEREFS="Style_5" VPOS="696" WIDTH="95" WC="0.48" CC="000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="297" ID="TL_16.5.4" VPOS="735" WIDTH="1137">
+            <String CONTENT="Wilcus" HEIGHT="33" HPOS="297" ID="ST_16.5.4.1" STYLEREFS="Style_5" VPOS="735" WIDTH="124" WC="0.46" CC="000000" TAGREFS=""/>
+            <SP HPOS="421" ID="SP_16.5.4.2" VPOS="748" WIDTH="15"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="436" ID="ST_16.5.4.3" STYLEREFS="Style_5" VPOS="748" WIDTH="31" WC="0.61" CC="00" TAGREFS=""/>
+            <SP HPOS="467" ID="SP_16.5.4.4" VPOS="735" WIDTH="16"/>
+            <String CONTENT="Kling," HEIGHT="43" HPOS="483" ID="ST_16.5.4.5" STYLEREFS="Style_5" VPOS="735" WIDTH="115" WC="0.45" CC="999000" TAGREFS=""/>
+            <SP HPOS="598" ID="SP_16.5.4.6" VPOS="737" WIDTH="18"/>
+            <String CONTENT="87" HEIGHT="30" HPOS="616" ID="ST_16.5.4.7" STYLEREFS="Style_5" VPOS="737" WIDTH="40" WC="0.58" CC="00" TAGREFS=""/>
+            <SP HPOS="656" ID="SP_16.5.4.8" VPOS="736" WIDTH="17"/>
+            <String CONTENT="Ill." HEIGHT="32" HPOS="673" ID="ST_16.5.4.9" STYLEREFS="Style_5" VPOS="736" WIDTH="50" WC="0.57" CC="9000" TAGREFS=""/>
+            <SP HPOS="723" ID="SP_16.5.4.10" VPOS="736" WIDTH="31"/>
+            <String CONTENT="107;" HEIGHT="40" HPOS="754" ID="ST_16.5.4.11" STYLEREFS="Style_5" VPOS="736" WIDTH="74" WC="0.68" CC="0099" TAGREFS=""/>
+            <SP HPOS="828" ID="SP_16.5.4.12" VPOS="735" WIDTH="25"/>
+            <String CONTENT="Phelps" HEIGHT="42" HPOS="853" ID="ST_16.5.4.13" STYLEREFS="Style_5" VPOS="735" WIDTH="127" WC="0.36" CC="000000" TAGREFS=""/>
+            <SP HPOS="980" ID="SP_16.5.4.14" VPOS="747" WIDTH="29"/>
+            <String CONTENT="v." HEIGHT="21" HPOS="1009" ID="ST_16.5.4.15" STYLEREFS="Style_5" VPOS="747" WIDTH="30" WC="0.41" CC="00" TAGREFS=""/>
+            <SP HPOS="1039" ID="SP_16.5.4.16" VPOS="736" WIDTH="28"/>
+            <String CONTENT="Reeder," HEIGHT="39" HPOS="1067" ID="ST_16.5.4.17" STYLEREFS="Style_5" VPOS="736" WIDTH="141" WC="1.0" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1208" ID="SP_16.5.4.18" VPOS="738" WIDTH="28"/>
+            <String CONTENT="39" HEIGHT="29" HPOS="1236" ID="ST_16.5.4.19" STYLEREFS="Style_5" VPOS="738" WIDTH="39" WC="0.32" CC="00" TAGREFS=""/>
+            <SP HPOS="1275" ID="SP_16.5.4.20" VPOS="735" WIDTH="16"/>
+            <String CONTENT="Ill." HEIGHT="32" HPOS="1291" ID="ST_16.5.4.21" STYLEREFS="Style_5" VPOS="735" WIDTH="52" WC="0.74" CC="9099" TAGREFS=""/>
+            <SP HPOS="1343" ID="SP_16.5.4.22" VPOS="737" WIDTH="17"/>
+            <String CONTENT="172;" HEIGHT="38" HPOS="1360" ID="ST_16.5.4.23" STYLEREFS="Style_5" VPOS="737" WIDTH="74" WC="0.43" CC="0000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="41" HPOS="293" ID="TL_16.5.5" VPOS="785" WIDTH="1138">
+            <String CONTENT="Luton" HEIGHT="32" HPOS="293" ID="ST_16.5.5.1" STYLEREFS="Style_5" VPOS="786" WIDTH="110" WC="0.42" CC="00000" TAGREFS=""/>
+            <SP HPOS="403" ID="SP_16.5.5.2" VPOS="798" WIDTH="15"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="418" ID="ST_16.5.5.3" STYLEREFS="Style_5" VPOS="798" WIDTH="31" WC="0.80" CC="00" TAGREFS=""/>
+            <SP HPOS="449" ID="SP_16.5.5.4" VPOS="786" WIDTH="16"/>
+            <String CONTENT="Hoehn," HEIGHT="40" HPOS="465" ID="ST_16.5.5.5" STYLEREFS="Style_5" VPOS="786" WIDTH="133" WC="0.73" CC="099000" TAGREFS=""/>
+            <SP HPOS="598" ID="SP_16.5.5.6" VPOS="786" WIDTH="18"/>
+            <String CONTENT="72 Ill." HEIGHT="32" HPOS="616" ID="ST_16.5.5.7" STYLEREFS="Style_5" VPOS="786" WIDTH="108" WC="1.0" CC="0000000" TAGREFS=""/>
+            <SP HPOS="724" ID="SP_16.5.5.8" VPOS="787" WIDTH="19"/>
+            <String CONTENT="81;" HEIGHT="39" HPOS="743" ID="ST_16.5.5.9" STYLEREFS="Style_5" VPOS="787" WIDTH="51" WC="0.74" CC="000" TAGREFS=""/>
+            <SP HPOS="794" ID="SP_16.5.5.10" VPOS="786" WIDTH="25"/>
+            <String CONTENT="Andrews" HEIGHT="32" HPOS="819" ID="ST_16.5.5.11" STYLEREFS="Style_5" VPOS="786" WIDTH="164" WC="0.42" CC="0000000" TAGREFS=""/>
+            <SP HPOS="983" ID="SP_16.5.5.12" VPOS="797" WIDTH="22"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="1005" ID="ST_16.5.5.13" STYLEREFS="Style_5" VPOS="797" WIDTH="31" WC="0.62" CC="00" TAGREFS=""/>
+            <SP HPOS="1036" ID="SP_16.5.5.14" VPOS="786" WIDTH="17"/>
+            <String CONTENT="Powell," HEIGHT="39" HPOS="1053" ID="ST_16.5.5.15" STYLEREFS="Style_5" VPOS="786" WIDTH="139" WC="0.51" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1192" ID="SP_16.5.5.16" VPOS="787" WIDTH="18"/>
+            <String CONTENT="27" HEIGHT="30" HPOS="1210" ID="ST_16.5.5.17" STYLEREFS="Style_5" VPOS="787" WIDTH="41" WC="0.22" CC="00" TAGREFS=""/>
+            <SP HPOS="1251" ID="SP_16.5.5.18" VPOS="785" WIDTH="18"/>
+            <String CONTENT="Ind." HEIGHT="32" HPOS="1269" ID="ST_16.5.5.19" STYLEREFS="Style_5" VPOS="785" WIDTH="70" WC="0.49" CC="9000" TAGREFS=""/>
+            <SP HPOS="1339" ID="SP_16.5.5.20" VPOS="787" WIDTH="20"/>
+            <String CONTENT="303;" HEIGHT="38" HPOS="1359" ID="ST_16.5.5.21" STYLEREFS="Style_5" VPOS="787" WIDTH="72" WC="0.59" CC="0999" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="40" HPOS="296" ID="TL_16.5.6" VPOS="836" WIDTH="1137">
+            <String CONTENT="Gillett" HEIGHT="33" HPOS="296" ID="ST_16.5.6.1" STYLEREFS="Style_5" VPOS="836" WIDTH="119" WC="0.53" CC="0000000" TAGREFS=""/>
+            <SP HPOS="415" ID="SP_16.5.6.2" VPOS="848" WIDTH="14"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="429" ID="ST_16.5.6.3" STYLEREFS="Style_5" VPOS="848" WIDTH="31" WC="0.62" CC="00" TAGREFS=""/>
+            <SP HPOS="460" ID="SP_16.5.6.4" VPOS="836" WIDTH="18"/>
+            <String CONTENT="Richards," HEIGHT="40" HPOS="478" ID="ST_16.5.6.5" STYLEREFS="Style_5" VPOS="836" WIDTH="171" WC="1.0" CC="000000000" TAGREFS=""/>
+            <SP HPOS="649" ID="SP_16.5.6.6" VPOS="839" WIDTH="17"/>
+            <String CONTENT="46" HEIGHT="29" HPOS="666" ID="ST_16.5.6.7" STYLEREFS="Style_5" VPOS="839" WIDTH="41" WC="0.36" CC="00" TAGREFS=""/>
+            <SP HPOS="707" ID="SP_16.5.6.8" VPOS="836" WIDTH="17"/>
+            <String CONTENT="Iowa," HEIGHT="36" HPOS="724" ID="ST_16.5.6.9" STYLEREFS="Style_5" VPOS="836" WIDTH="98" WC="0.60" CC="00000" TAGREFS=""/>
+            <SP HPOS="822" ID="SP_16.5.6.10" VPOS="838" WIDTH="18"/>
+            <String CONTENT="652;" HEIGHT="38" HPOS="840" ID="ST_16.5.6.11" STYLEREFS="Style_5" VPOS="838" WIDTH="73" WC="0.20" CC="0000" TAGREFS=""/>
+            <SP HPOS="913" ID="SP_16.5.6.12" VPOS="836" WIDTH="25"/>
+            <String CONTENT="Mills" HEIGHT="32" HPOS="938" ID="ST_16.5.6.13" STYLEREFS="Style_5" VPOS="836" WIDTH="91" WC="0.40" CC="00000" TAGREFS=""/>
+            <SP HPOS="1029" ID="SP_16.5.6.14" VPOS="848" WIDTH="11"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="1040" ID="ST_16.5.6.15" STYLEREFS="Style_5" VPOS="848" WIDTH="31" WC="0.64" CC="00" TAGREFS=""/>
+            <SP HPOS="1071" ID="SP_16.5.6.16" VPOS="836" WIDTH="19"/>
+            <String CONTENT="Thompson," HEIGHT="40" HPOS="1090" ID="ST_16.5.6.17" STYLEREFS="Style_5" VPOS="836" WIDTH="200" WC="0.50" CC="000000000" TAGREFS=""/>
+            <SP HPOS="1290" ID="SP_16.5.6.18" VPOS="838" WIDTH="19"/>
+            <String CONTENT="61" HEIGHT="30" HPOS="1309" ID="ST_16.5.6.19" STYLEREFS="Style_5" VPOS="838" WIDTH="39" WC="0.89" CC="00" TAGREFS=""/>
+            <SP HPOS="1348" ID="SP_16.5.6.20" VPOS="836" WIDTH="17"/>
+            <String CONTENT="Mo." HEIGHT="32" HPOS="1365" ID="ST_16.5.6.21" STYLEREFS="Style_5" VPOS="836" WIDTH="68" WC="0.72" CC="000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="294" ID="TL_16.5.7" VPOS="886" WIDTH="1141">
+            <String CONTENT="415;" HEIGHT="40" HPOS="294" ID="ST_16.5.7.1" STYLEREFS="Style_5" VPOS="888" WIDTH="75" WC="0.23" CC="0000" TAGREFS=""/>
+            <SP HPOS="369" ID="SP_16.5.7.2" VPOS="887" WIDTH="24"/>
+            <String CONTENT="Davis" HEIGHT="32" HPOS="393" ID="ST_16.5.7.3" STYLEREFS="Style_5" VPOS="887" WIDTH="104" WC="0.33" CC="00000" TAGREFS=""/>
+            <SP HPOS="497" ID="SP_16.5.7.4" VPOS="899" WIDTH="15"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="512" ID="ST_16.5.7.5" STYLEREFS="Style_5" VPOS="899" WIDTH="31" WC="0.45" CC="00" TAGREFS=""/>
+            <SP HPOS="543" ID="SP_16.5.7.6" VPOS="886" WIDTH="29"/>
+            <String CONTENT="Staples," HEIGHT="42" HPOS="572" ID="ST_16.5.7.7" STYLEREFS="Style_5" VPOS="886" WIDTH="137" WC="0.48" CC="00000000" TAGREFS=""/>
+            <SP HPOS="709" ID="SP_16.5.7.8" VPOS="888" WIDTH="17"/>
+            <String CONTENT="45" HEIGHT="30" HPOS="726" ID="ST_16.5.7.9" STYLEREFS="Style_5" VPOS="888" WIDTH="41" WC="0.23" CC="00" TAGREFS=""/>
+            <SP HPOS="767" ID="SP_16.5.7.10" VPOS="886" WIDTH="18"/>
+            <String CONTENT="Mo." HEIGHT="32" HPOS="785" ID="ST_16.5.7.11" STYLEREFS="Style_5" VPOS="886" WIDTH="66" WC="0.71" CC="000" TAGREFS=""/>
+            <SP HPOS="851" ID="SP_16.5.7.12" VPOS="887" WIDTH="27"/>
+            <String CONTENT="567;" HEIGHT="40" HPOS="878" ID="ST_16.5.7.13" STYLEREFS="Style_5" VPOS="887" WIDTH="73" WC="0.67" CC="0099" TAGREFS=""/>
+            <SP HPOS="951" ID="SP_16.5.7.14" VPOS="886" WIDTH="25"/>
+            <String CONTENT="Hope" HEIGHT="43" HPOS="976" ID="ST_16.5.7.15" STYLEREFS="Style_5" VPOS="886" WIDTH="99" WC="0.61" CC="0000" TAGREFS=""/>
+            <SP HPOS="1075" ID="SP_16.5.7.16" VPOS="898" WIDTH="23"/>
+            <String CONTENT="v." HEIGHT="20" HPOS="1098" ID="ST_16.5.7.17" STYLEREFS="Style_5" VPOS="898" WIDTH="31" WC="0.61" CC="00" TAGREFS=""/>
+            <SP HPOS="1129" ID="SP_16.5.7.18" VPOS="887" WIDTH="16"/>
+            <String CONTENT="Byers," HEIGHT="41" HPOS="1145" ID="ST_16.5.7.19" STYLEREFS="Style_5" VPOS="887" WIDTH="115" WC="0.49" CC="000000" TAGREFS=""/>
+            <SP HPOS="1260" ID="SP_16.5.7.20" VPOS="888" WIDTH="21"/>
+            <String CONTENT="39" HEIGHT="30" HPOS="1281" ID="ST_16.5.7.21" STYLEREFS="Style_5" VPOS="888" WIDTH="38" WC="0.49" CC="00" TAGREFS=""/>
+            <SP HPOS="1319" ID="SP_16.5.7.22" VPOS="886" WIDTH="18"/>
+            <String CONTENT="Iowa," HEIGHT="33" HPOS="1337" ID="ST_16.5.7.23" STYLEREFS="Style_5" VPOS="886" WIDTH="98" WC="1.0" CC="00000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="295" ID="TL_16.5.8" VPOS="937" WIDTH="1141">
+            <String CONTENT="573;" HEIGHT="40" HPOS="295" ID="ST_16.5.8.1" STYLEREFS="Style_5" VPOS="939" WIDTH="74" WC="0.61" CC="0000" TAGREFS=""/>
+            <SP HPOS="369" ID="SP_16.5.8.2" VPOS="938" WIDTH="25"/>
+            <String CONTENT="Benson" HEIGHT="32" HPOS="394" ID="ST_16.5.8.3" STYLEREFS="Style_5" VPOS="938" WIDTH="131" WC="0.51" CC="000000" TAGREFS=""/>
+            <SP HPOS="525" ID="SP_16.5.8.4" VPOS="950" WIDTH="15"/>
+            <String CONTENT="v." HEIGHT="21" HPOS="540" ID="ST_16.5.8.5" STYLEREFS="Style_5" VPOS="950" WIDTH="32" WC="0.47" CC="00" TAGREFS=""/>
+            <SP HPOS="572" ID="SP_16.5.8.6" VPOS="938" WIDTH="18"/>
+            <String CONTENT="Shoats," HEIGHT="40" HPOS="590" ID="ST_16.5.8.7" STYLEREFS="Style_5" VPOS="938" WIDTH="127" WC="0.36" CC="0000000" TAGREFS=""/>
+            <SP HPOS="717" ID="SP_16.5.8.8" VPOS="939" WIDTH="20"/>
+            <String CONTENT="9" HEIGHT="30" HPOS="737" ID="ST_16.5.8.9" STYLEREFS="Style_5" VPOS="939" WIDTH="18" WC="0.41" CC="0" TAGREFS=""/>
+            <SP HPOS="755" ID="SP_16.5.8.10" VPOS="937" WIDTH="23"/>
+            <String CONTENT="La." HEIGHT="32" HPOS="778" ID="ST_16.5.8.11" STYLEREFS="Style_5" VPOS="937" WIDTH="55" WC="0.44" CC="000" TAGREFS=""/>
+            <SP HPOS="833" ID="SP_16.5.8.12" VPOS="938" WIDTH="25"/>
+            <String CONTENT="Ann." HEIGHT="31" HPOS="858" ID="ST_16.5.8.13" STYLEREFS="Style_5" VPOS="938" WIDTH="89" WC="0.27" CC="0000" TAGREFS=""/>
+            <SP HPOS="947" ID="SP_16.5.8.14" VPOS="939" WIDTH="26"/>
+            <String CONTENT="236;" HEIGHT="39" HPOS="973" ID="ST_16.5.8.15" STYLEREFS="Style_5" VPOS="939" WIDTH="80" WC="1.0" CC="0000" TAGREFS=""/>
+            <SP HPOS="1053" ID="SP_16.5.8.16" VPOS="937" WIDTH="18"/>
+            <String CONTENT="Briggs" HEIGHT="43" HPOS="1071" ID="ST_16.5.8.17" STYLEREFS="Style_5" VPOS="937" WIDTH="123" WC="0.32" CC="000000" TAGREFS=""/>
+            <SP HPOS="1194" ID="SP_16.5.8.18" VPOS="949" WIDTH="15"/>
+            <String CONTENT="v." HEIGHT="21" HPOS="1209" ID="ST_16.5.8.19" STYLEREFS="Style_5" VPOS="949" WIDTH="30" WC="0.60" CC="00" TAGREFS=""/>
+            <SP HPOS="1239" ID="SP_16.5.8.20" VPOS="937" WIDTH="17"/>
+            <String CONTENT="Beach," HEIGHT="39" HPOS="1256" ID="ST_16.5.8.21" STYLEREFS="Style_5" VPOS="937" WIDTH="119" WC="0.49" CC="000000" TAGREFS=""/>
+            <SP HPOS="1375" ID="SP_16.5.8.22" VPOS="939" WIDTH="21"/>
+            <String CONTENT="18" HEIGHT="30" HPOS="1396" ID="ST_16.5.8.23" STYLEREFS="Style_5" VPOS="939" WIDTH="40" WC="0.54" CC="00" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="32" HPOS="298" ID="TL_16.5.9" VPOS="989" WIDTH="145">
+            <String CONTENT="Vt." HEIGHT="32" HPOS="298" ID="ST_16.5.9.1" STYLEREFS="Style_5" VPOS="989" WIDTH="54" WC="0.45" CC="000" TAGREFS=""/>
+            <SP HPOS="352" ID="SP_16.5.9.2" VPOS="990" WIDTH="18"/>
+            <String CONTENT="115." HEIGHT="31" HPOS="370" ID="ST_16.5.9.3" STYLEREFS="Style_5" VPOS="990" WIDTH="73" WC="0.77" CC="0000" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+        <TextBlock HEIGHT="42.0" HPOS="337.0" ID="BL_16.6" TAGREFS="b16-5" VPOS="1073.0" WIDTH="1058.0">
+          <TextLine HEIGHT="42" HPOS="337" ID="TL_16.6.1" VPOS="1073" WIDTH="1058">
+            <String CONTENT="Messrs." HEIGHT="32" HPOS="337" ID="ST_16.6.1.1" STYLEREFS="Style_5" VPOS="1074" WIDTH="131" WC="0.62" CC="0000000" TAGREFS=""/>
+            <SP HPOS="468" ID="SP_16.6.1.2" VPOS="1074" WIDTH="17"/>
+            <String CONTENT="J." HEIGHT="32" HPOS="485" ID="ST_16.6.1.3" STYLEREFS="Style_5" VPOS="1074" WIDTH="32" WC="0.69" CC="00" TAGREFS=""/>
+            <SP HPOS="517" ID="SP_16.6.1.4" VPOS="1075" WIDTH="18"/>
+            <String CONTENT="A." HEIGHT="31" HPOS="535" ID="ST_16.6.1.5" STYLEREFS="Style_5" VPOS="1075" WIDTH="42" WC="0.58" CC="00" TAGREFS=""/>
+            <SP HPOS="577" ID="SP_16.6.1.6" VPOS="1074" WIDTH="18"/>
+            <String CONTENT="Biely" HEIGHT="32" HPOS="595" ID="ST_16.6.1.7" STYLEREFS="Style_3" VPOS="1074" WIDTH="112" WC="0.43" CC="90000" TAGREFS=""/>
+            <SP HPOS="707" ID="SP_16.6.1.8" VPOS="1075" WIDTH="15"/>
+            <String CONTENT="and" HEIGHT="31" HPOS="722" ID="ST_16.6.1.9" STYLEREFS="Style_5" VPOS="1075" WIDTH="62" WC="0.57" CC="000" TAGREFS=""/>
+            <SP HPOS="784" ID="SP_16.6.1.10" VPOS="1074" WIDTH="15"/>
+            <String CONTENT="Barnes" HEIGHT="32" HPOS="799" ID="ST_16.6.1.11" STYLEREFS="Style_3" VPOS="1074" WIDTH="141" WC="0.29" CC="000900" TAGREFS=""/>
+            <SP HPOS="940" ID="SP_16.6.1.12" VPOS="1073" WIDTH="17"/>
+            <String CONTENT="&amp;" HEIGHT="32" HPOS="957" ID="ST_16.6.1.13" STYLEREFS="Style_4" VPOS="1073" WIDTH="32" WC="0.62" CC="0" TAGREFS=""/>
+            <SP HPOS="989" ID="SP_16.6.1.14" VPOS="1074" WIDTH="15"/>
+            <String CONTENT="Barnes," HEIGHT="40" HPOS="1004" ID="ST_16.6.1.15" STYLEREFS="Style_3" VPOS="1074" WIDTH="149" WC="0.28" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1153" ID="SP_16.6.1.16" VPOS="1074" WIDTH="13"/>
+            <String CONTENT="for" HEIGHT="32" HPOS="1166" ID="ST_16.6.1.17" STYLEREFS="Style_5" VPOS="1074" WIDTH="56" WC="0.48" CC="000" TAGREFS=""/>
+            <SP HPOS="1222" ID="SP_16.6.1.18" VPOS="1075" WIDTH="16"/>
+            <String CONTENT="appellee." HEIGHT="40" HPOS="1238" ID="ST_16.6.1.19" STYLEREFS="Style_5" VPOS="1075" WIDTH="157" WC="0.74" CC="000000000" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+        <TextBlock HEIGHT="400.0" HPOS="293.0" ID="BL_16.7" TAGREFS="b16-6" VPOS="1124.0" WIDTH="1144.0">
+          <TextLine HEIGHT="43" HPOS="337" ID="TL_16.7.1" VPOS="1124" WIDTH="1098">
+            <String CONTENT="We" HEIGHT="31" HPOS="337" ID="ST_16.7.1.1" STYLEREFS="Style_5" VPOS="1125" WIDTH="64" WC="0.59" CC="00" TAGREFS=""/>
+            <SP HPOS="401" ID="SP_16.7.1.2" VPOS="1125" WIDTH="12"/>
+            <String CONTENT="contend" HEIGHT="32" HPOS="413" ID="ST_16.7.1.3" STYLEREFS="Style_5" VPOS="1125" WIDTH="141" WC="0.68" CC="0000000" TAGREFS=""/>
+            <SP HPOS="554" ID="SP_16.7.1.4" VPOS="1125" WIDTH="15"/>
+            <String CONTENT="that" HEIGHT="31" HPOS="569" ID="ST_16.7.1.5" STYLEREFS="Style_5" VPOS="1125" WIDTH="72" WC="0.32" CC="0000" TAGREFS=""/>
+            <SP HPOS="641" ID="SP_16.7.1.6" VPOS="1126" WIDTH="22"/>
+            <String CONTENT="it" HEIGHT="30" HPOS="663" ID="ST_16.7.1.7" STYLEREFS="Style_5" VPOS="1126" WIDTH="27" WC="0.35" CC="00" TAGREFS=""/>
+            <SP HPOS="690" ID="SP_16.7.1.8" VPOS="1136" WIDTH="22"/>
+            <String CONTENT="was" HEIGHT="21" HPOS="712" ID="ST_16.7.1.9" STYLEREFS="Style_5" VPOS="1136" WIDTH="64" WC="0.45" CC="000" TAGREFS=""/>
+            <SP HPOS="776" ID="SP_16.7.1.10" VPOS="1135" WIDTH="29"/>
+            <String CONTENT="never" HEIGHT="21" HPOS="805" ID="ST_16.7.1.11" STYLEREFS="Style_5" VPOS="1135" WIDTH="103" WC="0.59" CC="09900" TAGREFS=""/>
+            <SP HPOS="908" ID="SP_16.7.1.12" VPOS="1124" WIDTH="29"/>
+            <String CONTENT="intended" HEIGHT="32" HPOS="937" ID="ST_16.7.1.13" STYLEREFS="Style_5" VPOS="1124" WIDTH="155" WC="0.37" CC="00000000" TAGREFS=""/>
+            <SP HPOS="1092" ID="SP_16.7.1.14" VPOS="1126" WIDTH="31"/>
+            <String CONTENT="by" HEIGHT="41" HPOS="1123" ID="ST_16.7.1.15" STYLEREFS="Style_5" VPOS="1126" WIDTH="44" WC="0.16" CC="00" TAGREFS=""/>
+            <SP HPOS="1167" ID="SP_16.7.1.16" VPOS="1134" WIDTH="23"/>
+            <String CONTENT="our" HEIGHT="22" HPOS="1190" ID="ST_16.7.1.17" STYLEREFS="Style_5" VPOS="1134" WIDTH="60" WC="0.31" CC="000" TAGREFS=""/>
+            <SP HPOS="1250" ID="SP_16.7.1.18" VPOS="1128" WIDTH="15"/>
+            <String CONTENT="statute" HEIGHT="28" HPOS="1265" ID="ST_16.7.1.19" STYLEREFS="Style_5" VPOS="1128" WIDTH="120" WC="0.42" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1385" ID="SP_16.7.1.20" VPOS="1130" WIDTH="16"/>
+            <String CONTENT="to" HEIGHT="26" HPOS="1401" ID="ST_16.7.1.21" STYLEREFS="Style_6" VPOS="1130" WIDTH="34" WC="0.40" CC="00" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="294" ID="TL_16.7.2" VPOS="1175" WIDTH="1141">
+            <String CONTENT="give" HEIGHT="41" HPOS="294" ID="ST_16.7.2.1" STYLEREFS="Style_5" VPOS="1177" WIDTH="77" WC="0.66" CC="0000" TAGREFS=""/>
+            <SP HPOS="371" ID="SP_16.7.2.2" VPOS="1175" WIDTH="17"/>
+            <String CONTENT="Justices" HEIGHT="34" HPOS="388" ID="ST_16.7.2.3" STYLEREFS="Style_5" VPOS="1175" WIDTH="142" WC="0.56" CC="00000000" TAGREFS=""/>
+            <SP HPOS="530" ID="SP_16.7.2.4" VPOS="1177" WIDTH="25"/>
+            <String CONTENT="jurisdiction" HEIGHT="40" HPOS="555" ID="ST_16.7.2.5" STYLEREFS="Style_5" VPOS="1177" WIDTH="211" WC="0.32" CC="000000000000" TAGREFS=""/>
+            <SP HPOS="766" ID="SP_16.7.2.6" VPOS="1180" WIDTH="24"/>
+            <String CONTENT="to" HEIGHT="28" HPOS="790" ID="ST_16.7.2.7" STYLEREFS="Style_5" VPOS="1180" WIDTH="33" WC="0.49" CC="00" TAGREFS=""/>
+            <SP HPOS="823" ID="SP_16.7.2.8" VPOS="1177" WIDTH="31"/>
+            <String CONTENT="harass" HEIGHT="31" HPOS="854" ID="ST_16.7.2.9" STYLEREFS="Style_5" VPOS="1177" WIDTH="109" WC="0.36" CC="000000" TAGREFS=""/>
+            <SP HPOS="963" ID="SP_16.7.2.10" VPOS="1183" WIDTH="30"/>
+            <String CONTENT="a'" HEIGHT="23" HPOS="993" ID="ST_16.7.2.11" STYLEREFS="Style_5" VPOS="1183" WIDTH="28" WC="0.62" CC="09" TAGREFS=""/>
+            <SP HPOS="1021" ID="SP_16.7.2.12" VPOS="1176" WIDTH="12"/>
+            <String CONTENT="debtor" HEIGHT="32" HPOS="1033" ID="ST_16.7.2.13" STYLEREFS="Style_5" VPOS="1176" WIDTH="116" WC="0.39" CC="000000" TAGREFS=""/>
+            <SP HPOS="1149" ID="SP_16.7.2.14" VPOS="1176" WIDTH="17"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="1166" ID="ST_16.7.2.15" STYLEREFS="Style_5" VPOS="1176" WIDTH="36" WC="0.60" CC="00" TAGREFS=""/>
+            <SP HPOS="1202" ID="SP_16.7.2.16" VPOS="1187" WIDTH="16"/>
+            <String CONTENT="a" HEIGHT="20" HPOS="1218" ID="ST_16.7.2.17" STYLEREFS="Style_5" VPOS="1187" WIDTH="18" WC="0.36" CC="0" TAGREFS=""/>
+            <SP HPOS="1236" ID="SP_16.7.2.18" VPOS="1175" WIDTH="23"/>
+            <String CONTENT="debtor" HEIGHT="33" HPOS="1259" ID="ST_16.7.2.19" STYLEREFS="Style_5" VPOS="1175" WIDTH="117" WC="0.59" CC="000000" TAGREFS=""/>
+            <SP HPOS="1376" ID="SP_16.7.2.20" VPOS="1177" WIDTH="15"/>
+            <String CONTENT="by" HEIGHT="40" HPOS="1391" ID="ST_16.7.2.21" STYLEREFS="Style_5" VPOS="1177" WIDTH="44" WC="0.20" CC="00" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="293" ID="TL_16.7.3" VPOS="1226" WIDTH="1141">
+            <String CONTENT="garnishee" HEIGHT="43" HPOS="293" ID="ST_16.7.3.1" STYLEREFS="Style_5" VPOS="1226" WIDTH="173" WC="0.59" CC="000000000" TAGREFS=""/>
+            <SP HPOS="466" ID="SP_16.7.3.2" VPOS="1227" WIDTH="16"/>
+            <String CONTENT="proceedings" HEIGHT="42" HPOS="482" ID="ST_16.7.3.3" STYLEREFS="Style_5" VPOS="1227" WIDTH="215" WC="0.63" CC="00000000000" TAGREFS=""/>
+            <SP HPOS="697" ID="SP_16.7.3.4" VPOS="1227" WIDTH="16"/>
+            <String CONTENT="before" HEIGHT="32" HPOS="713" ID="ST_16.7.3.5" STYLEREFS="Style_5" VPOS="1227" WIDTH="116" WC="0.60" CC="000000" TAGREFS=""/>
+            <SP HPOS="829" ID="SP_16.7.3.6" VPOS="1226" WIDTH="17"/>
+            <String CONTENT="Justices" HEIGHT="33" HPOS="846" ID="ST_16.7.3.7" STYLEREFS="Style_5" VPOS="1226" WIDTH="142" WC="0.46" CC="00000000" TAGREFS=""/>
+            <SP HPOS="988" ID="SP_16.7.3.8" VPOS="1227" WIDTH="22"/>
+            <String CONTENT="in" HEIGHT="31" HPOS="1010" ID="ST_16.7.3.9" STYLEREFS="Style_5" VPOS="1227" WIDTH="34" WC="0.22" CC="00" TAGREFS=""/>
+            <SP HPOS="1044" ID="SP_16.7.3.10" VPOS="1226" WIDTH="23"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="1067" ID="ST_16.7.3.11" STYLEREFS="Style_5" VPOS="1226" WIDTH="57" WC="0.53" CC="000" TAGREFS=""/>
+            <SP HPOS="1124" ID="SP_16.7.3.12" VPOS="1227" WIDTH="17"/>
+            <String CONTENT="various" HEIGHT="31" HPOS="1141" ID="ST_16.7.3.13" STYLEREFS="Style_5" VPOS="1227" WIDTH="131" WC="0.39" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1272" ID="SP_16.7.3.14" VPOS="1227" WIDTH="16"/>
+            <String CONTENT="counties" HEIGHT="31" HPOS="1288" ID="ST_16.7.3.15" STYLEREFS="Style_5" VPOS="1227" WIDTH="146" WC="0.51" CC="00000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="42" HPOS="295" ID="TL_16.7.4" VPOS="1278" WIDTH="1139">
+            <String CONTENT="of" HEIGHT="31" HPOS="295" ID="ST_16.7.4.1" STYLEREFS="Style_5" VPOS="1279" WIDTH="36" WC="0.58" CC="00" TAGREFS=""/>
+            <SP HPOS="331" ID="SP_16.7.4.2" VPOS="1279" WIDTH="18"/>
+            <String CONTENT="the" HEIGHT="31" HPOS="349" ID="ST_16.7.4.3" STYLEREFS="Style_5" VPOS="1279" WIDTH="56" WC="0.76" CC="000" TAGREFS=""/>
+            <SP HPOS="405" ID="SP_16.7.4.4" VPOS="1278" WIDTH="16"/>
+            <String CONTENT="State." HEIGHT="33" HPOS="421" ID="ST_16.7.4.5" STYLEREFS="Style_5" VPOS="1278" WIDTH="100" WC="0.56" CC="000000" TAGREFS=""/>
+            <SP HPOS="521" ID="SP_16.7.4.6" VPOS="1278" WIDTH="46"/>
+            <String CONTENT="And" HEIGHT="32" HPOS="567" ID="ST_16.7.4.7" STYLEREFS="Style_5" VPOS="1278" WIDTH="80" WC="0.18" CC="000" TAGREFS=""/>
+            <SP HPOS="647" ID="SP_16.7.4.8" VPOS="1289" WIDTH="23"/>
+            <String CONTENT="we" HEIGHT="22" HPOS="670" ID="ST_16.7.4.9" STYLEREFS="Style_5" VPOS="1289" WIDTH="50" WC="0.68" CC="00" TAGREFS=""/>
+            <SP HPOS="720" ID="SP_16.7.4.10" VPOS="1278" WIDTH="32"/>
+            <String CONTENT="equally" HEIGHT="42" HPOS="752" ID="ST_16.7.4.11" STYLEREFS="Style_5" VPOS="1278" WIDTH="130" WC="0.59" CC="0000000" TAGREFS=""/>
+            <SP HPOS="882" ID="SP_16.7.4.12" VPOS="1278" WIDTH="31"/>
+            <String CONTENT="contend" HEIGHT="32" HPOS="913" ID="ST_16.7.4.13" STYLEREFS="Style_5" VPOS="1278" WIDTH="142" WC="0.68" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1055" ID="SP_16.7.4.14" VPOS="1278" WIDTH="29"/>
+            <String CONTENT="that" HEIGHT="31" HPOS="1084" ID="ST_16.7.4.15" STYLEREFS="Style_5" VPOS="1278" WIDTH="73" WC="0.37" CC="0000" TAGREFS=""/>
+            <SP HPOS="1157" ID="SP_16.7.4.16" VPOS="1278" WIDTH="28"/>
+            <String CONTENT="it" HEIGHT="31" HPOS="1185" ID="ST_16.7.4.17" STYLEREFS="Style_5" VPOS="1278" WIDTH="27" WC="0.42" CC="00" TAGREFS=""/>
+            <SP HPOS="1212" ID="SP_16.7.4.18" VPOS="1288" WIDTH="29"/>
+            <String CONTENT="was" HEIGHT="22" HPOS="1241" ID="ST_16.7.4.19" STYLEREFS="Style_5" VPOS="1288" WIDTH="65" WC="0.36" CC="000" TAGREFS=""/>
+            <SP HPOS="1306" ID="SP_16.7.4.20" VPOS="1289" WIDTH="25"/>
+            <String CONTENT="never" HEIGHT="20" HPOS="1331" ID="ST_16.7.4.21" STYLEREFS="Style_5" VPOS="1289" WIDTH="103" WC="0.45" CC="00000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="44" HPOS="293" ID="TL_16.7.5" VPOS="1328" WIDTH="1144">
+            <String CONTENT="intended" HEIGHT="32" HPOS="293" ID="ST_16.7.5.1" STYLEREFS="Style_5" VPOS="1330" WIDTH="158" WC="0.48" CC="00000000" TAGREFS=""/>
+            <SP HPOS="451" ID="SP_16.7.5.2" VPOS="1334" WIDTH="14"/>
+            <String CONTENT="to" HEIGHT="27" HPOS="465" ID="ST_16.7.5.3" STYLEREFS="Style_5" VPOS="1334" WIDTH="35" WC="0.69" CC="00" TAGREFS=""/>
+            <SP HPOS="500" ID="SP_16.7.5.4" VPOS="1331" WIDTH="17"/>
+            <String CONTENT="permit" HEIGHT="41" HPOS="517" ID="ST_16.7.5.5" STYLEREFS="Style_5" VPOS="1331" WIDTH="122" WC="0.60" CC="000000" TAGREFS=""/>
+            <SP HPOS="639" ID="SP_16.7.5.6" VPOS="1340" WIDTH="16"/>
+            <String CONTENT="one" HEIGHT="21" HPOS="655" ID="ST_16.7.5.7" STYLEREFS="Style_5" VPOS="1340" WIDTH="61" WC="0.77" CC="000" TAGREFS=""/>
+            <SP HPOS="716" ID="SP_16.7.5.8" VPOS="1329" WIDTH="24"/>
+            <String CONTENT="solid" HEIGHT="32" HPOS="740" ID="ST_16.7.5.9" STYLEREFS="Style_5" VPOS="1329" WIDTH="83" WC="0.56" CC="00000" TAGREFS=""/>
+            <SP HPOS="823" ID="SP_16.7.5.10" VPOS="1340" WIDTH="14"/>
+            <String CONTENT="sum," HEIGHT="28" HPOS="837" ID="ST_16.7.5.11" STYLEREFS="Style_5" VPOS="1340" WIDTH="82" WC="0.55" CC="0000" TAGREFS=""/>
+            <SP HPOS="919" ID="SP_16.7.5.12" VPOS="1330" WIDTH="19"/>
+            <String CONTENT="owing" HEIGHT="42" HPOS="938" ID="ST_16.7.5.13" STYLEREFS="Style_5" VPOS="1330" WIDTH="109" WC="0.46" CC="00000" TAGREFS=""/>
+            <SP HPOS="1047" ID="SP_16.7.5.14" VPOS="1330" WIDTH="21"/>
+            <String CONTENT="by" HEIGHT="40" HPOS="1068" ID="ST_16.7.5.15" STYLEREFS="Style_5" VPOS="1330" WIDTH="44" WC="0.28" CC="00" TAGREFS=""/>
+            <SP HPOS="1112" ID="SP_16.7.5.16" VPOS="1340" WIDTH="13"/>
+            <String CONTENT="a" HEIGHT="20" HPOS="1125" ID="ST_16.7.5.17" STYLEREFS="Style_5" VPOS="1340" WIDTH="18" WC="0.32" CC="0" TAGREFS=""/>
+            <SP HPOS="1143" ID="SP_16.7.5.18" VPOS="1328" WIDTH="15"/>
+            <String CONTENT="garnishee" HEIGHT="43" HPOS="1158" ID="ST_16.7.5.19" STYLEREFS="Style_5" VPOS="1328" WIDTH="173" WC="0.44" CC="000000000" TAGREFS=""/>
+            <SP HPOS="1331" ID="SP_16.7.5.20" VPOS="1328" WIDTH="16"/>
+            <String CONTENT="debt-" HEIGHT="33" HPOS="1347" ID="ST_16.7.5.21" STYLEREFS="Style_5" VPOS="1328" WIDTH="90" WC="0.61" CC="00000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="295" ID="TL_16.7.6" VPOS="1380" WIDTH="1141">
+            <String CONTENT="or," HEIGHT="28" HPOS="295" ID="ST_16.7.6.1" STYLEREFS="Style_5" VPOS="1392" WIDTH="45" WC="0.73" CC="000" TAGREFS=""/>
+            <SP HPOS="340" ID="SP_16.7.6.2" VPOS="1382" WIDTH="17"/>
+            <String CONTENT="greatly" HEIGHT="41" HPOS="357" ID="ST_16.7.6.3" STYLEREFS="Style_5" VPOS="1382" WIDTH="130" WC="0.27" CC="0000000" TAGREFS=""/>
+            <SP HPOS="487" ID="SP_16.7.6.4" VPOS="1382" WIDTH="14"/>
+            <String CONTENT="above" HEIGHT="31" HPOS="501" ID="ST_16.7.6.5" STYLEREFS="Style_5" VPOS="1382" WIDTH="105" WC="0.54" CC="00000" TAGREFS=""/>
+            <SP HPOS="606" ID="SP_16.7.6.6" VPOS="1381" WIDTH="15"/>
+            <String CONTENT="the" HEIGHT="31" HPOS="621" ID="ST_16.7.6.7" STYLEREFS="Style_5" VPOS="1381" WIDTH="58" WC="0.55" CC="000" TAGREFS=""/>
+            <SP HPOS="679" ID="SP_16.7.6.8" VPOS="1381" WIDTH="11"/>
+            <String CONTENT="jurisdiction" HEIGHT="41" HPOS="690" ID="ST_16.7.6.9" STYLEREFS="Style_5" VPOS="1381" WIDTH="210" WC="0.49" CC="000009900000" TAGREFS=""/>
+            <SP HPOS="900" ID="SP_16.7.6.10" VPOS="1381" WIDTH="23"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="923" ID="ST_16.7.6.11" STYLEREFS="Style_5" VPOS="1381" WIDTH="36" WC="0.18" CC="00" TAGREFS=""/>
+            <SP HPOS="959" ID="SP_16.7.6.12" VPOS="1391" WIDTH="26"/>
+            <String CONTENT="a" HEIGHT="20" HPOS="985" ID="ST_16.7.6.13" STYLEREFS="Style_5" VPOS="1391" WIDTH="18" WC="1.00" CC="0" TAGREFS=""/>
+            <SP HPOS="1003" ID="SP_16.7.6.14" VPOS="1380" WIDTH="30"/>
+            <String CONTENT="Justice," HEIGHT="36" HPOS="1033" ID="ST_16.7.6.15" STYLEREFS="Style_5" VPOS="1380" WIDTH="135" WC="0.71" CC="00000000" TAGREFS=""/>
+            <SP HPOS="1168" ID="SP_16.7.6.16" VPOS="1383" WIDTH="19"/>
+            <String CONTENT="to" HEIGHT="28" HPOS="1187" ID="ST_16.7.6.17" STYLEREFS="Style_5" VPOS="1383" WIDTH="33" WC="0.68" CC="00" TAGREFS=""/>
+            <SP HPOS="1220" ID="SP_16.7.6.18" VPOS="1382" WIDTH="18"/>
+            <String CONTENT="be" HEIGHT="30" HPOS="1238" ID="ST_16.7.6.19" STYLEREFS="Style_5" VPOS="1382" WIDTH="39" WC="0.65" CC="00" TAGREFS=""/>
+            <SP HPOS="1277" ID="SP_16.7.6.20" VPOS="1380" WIDTH="16"/>
+            <String CONTENT="split" HEIGHT="42" HPOS="1293" ID="ST_16.7.6.21" STYLEREFS="Style_5" VPOS="1380" WIDTH="83" WC="0.44" CC="00000" TAGREFS=""/>
+            <SP HPOS="1376" ID="SP_16.7.6.22" VPOS="1391" WIDTH="14"/>
+            <String CONTENT="up" HEIGHT="29" HPOS="1390" ID="ST_16.7.6.23" STYLEREFS="Style_5" VPOS="1391" WIDTH="46" WC="0.16" CC="00" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="294" ID="TL_16.7.7" VPOS="1431" WIDTH="1141">
+            <String CONTENT="and" HEIGHT="31" HPOS="294" ID="ST_16.7.7.1" STYLEREFS="Style_5" VPOS="1433" WIDTH="62" WC="0.53" CC="000" TAGREFS=""/>
+            <SP HPOS="356" ID="SP_16.7.7.2" VPOS="1433" WIDTH="16"/>
+            <String CONTENT="used" HEIGHT="31" HPOS="372" ID="ST_16.7.7.3" STYLEREFS="Style_5" VPOS="1433" WIDTH="80" WC="0.43" CC="0000" TAGREFS=""/>
+            <SP HPOS="452" ID="SP_16.7.7.4" VPOS="1443" WIDTH="17"/>
+            <String CONTENT="up" HEIGHT="31" HPOS="469" ID="ST_16.7.7.5" STYLEREFS="Style_5" VPOS="1443" WIDTH="44" WC="0.69" CC="00" TAGREFS=""/>
+            <SP HPOS="513" ID="SP_16.7.7.6" VPOS="1432" WIDTH="16"/>
+            <String CONTENT="and" HEIGHT="31" HPOS="529" ID="ST_16.7.7.7" STYLEREFS="Style_5" VPOS="1432" WIDTH="62" WC="0.60" CC="000" TAGREFS=""/>
+            <SP HPOS="591" ID="SP_16.7.7.8" VPOS="1432" WIDTH="17"/>
+            <String CONTENT="dissipated" HEIGHT="42" HPOS="608" ID="ST_16.7.7.9" STYLEREFS="Style_5" VPOS="1432" WIDTH="175" WC="0.36" CC="0000000000" TAGREFS=""/>
+            <SP HPOS="783" ID="SP_16.7.7.10" VPOS="1432" WIDTH="24"/>
+            <String CONTENT="in" HEIGHT="30" HPOS="807" ID="ST_16.7.7.11" STYLEREFS="Style_5" VPOS="1432" WIDTH="34" WC="0.78" CC="00" TAGREFS=""/>
+            <SP HPOS="841" ID="SP_16.7.7.12" VPOS="1434" WIDTH="30"/>
+            <String CONTENT="petty" HEIGHT="40" HPOS="871" ID="ST_16.7.7.13" STYLEREFS="Style_5" VPOS="1434" WIDTH="90" WC="0.44" CC="00000" TAGREFS=""/>
+            <SP HPOS="961" ID="SP_16.7.7.14" VPOS="1431" WIDTH="25"/>
+            <String CONTENT="suits" HEIGHT="32" HPOS="986" ID="ST_16.7.7.15" STYLEREFS="Style_5" VPOS="1431" WIDTH="81" WC="0.39" CC="00000" TAGREFS=""/>
+            <SP HPOS="1067" ID="SP_16.7.7.16" VPOS="1431" WIDTH="27"/>
+            <String CONTENT="and" HEIGHT="31" HPOS="1094" ID="ST_16.7.7.17" STYLEREFS="Style_5" VPOS="1431" WIDTH="63" WC="0.71" CC="000" TAGREFS=""/>
+            <SP HPOS="1157" ID="SP_16.7.7.18" VPOS="1435" WIDTH="25"/>
+            <String CONTENT="costs" HEIGHT="28" HPOS="1182" ID="ST_16.7.7.19" STYLEREFS="Style_5" VPOS="1435" WIDTH="85" WC="0.59" CC="00000" TAGREFS=""/>
+            <SP HPOS="1267" ID="SP_16.7.7.20" VPOS="1431" WIDTH="15"/>
+            <String CONTENT="in" HEIGHT="31" HPOS="1282" ID="ST_16.7.7.21" STYLEREFS="Style_5" VPOS="1431" WIDTH="35" WC="0.35" CC="00" TAGREFS=""/>
+            <SP HPOS="1317" ID="SP_16.7.7.22" VPOS="1441" WIDTH="16"/>
+            <String CONTENT="every" HEIGHT="32" HPOS="1333" ID="ST_16.7.7.23" STYLEREFS="Style_5" VPOS="1441" WIDTH="102" WC="0.56" CC="00000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="42" HPOS="293" ID="TL_16.7.8" VPOS="1482" WIDTH="367">
+            <String CONTENT="county" HEIGHT="37" HPOS="293" ID="ST_16.7.8.1" STYLEREFS="Style_5" VPOS="1487" WIDTH="121" WC="0.52" CC="000000" TAGREFS=""/>
+            <SP HPOS="414" ID="SP_16.7.8.2" VPOS="1483" WIDTH="17"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="431" ID="ST_16.7.8.3" STYLEREFS="Style_5" VPOS="1483" WIDTH="37" WC="0.29" CC="00" TAGREFS=""/>
+            <SP HPOS="468" ID="SP_16.7.8.4" VPOS="1483" WIDTH="14"/>
+            <String CONTENT="the" HEIGHT="31" HPOS="482" ID="ST_16.7.8.5" STYLEREFS="Style_5" VPOS="1483" WIDTH="59" WC="0.49" CC="000" TAGREFS=""/>
+            <SP HPOS="541" ID="SP_16.7.8.6" VPOS="1482" WIDTH="17"/>
+            <String CONTENT="State." HEIGHT="33" HPOS="558" ID="ST_16.7.8.7" STYLEREFS="Style_5" VPOS="1482" WIDTH="102" WC="0.62" CC="000000" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+        <TextBlock HEIGHT="38.0" HPOS="336.0" ID="BL_16.8" TAGREFS="b16-7" VPOS="1574.0" WIDTH="174.0">
+          <TextLine HEIGHT="38" HPOS="336" ID="TL_16.8.1" VPOS="1574" WIDTH="174">
+            <String CONTENT="Lacey," HEIGHT="37" HPOS="336" ID="ST_16.8.1.1" STYLEREFS="Style_3" VPOS="1575" WIDTH="125" WC="0.41" CC="000000" TAGREFS=""/>
+            <SP HPOS="461" ID="SP_16.8.1.2" VPOS="1574" WIDTH="17"/>
+            <String CONTENT="J." HEIGHT="32" HPOS="478" ID="ST_16.8.1.3" STYLEREFS="Style_5" VPOS="1574" WIDTH="32" WC="0.57" CC="00" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+        <TextBlock HEIGHT="40.0" HPOS="556.0" ID="BL_16.9" TAGREFS="Ad5" VPOS="1573.0" WIDTH="879.0">
+          <TextLine HEIGHT="40" HPOS="556" ID="TL_16.9.1" VPOS="1573" WIDTH="879">
+            <String CONTENT="This" HEIGHT="32" HPOS="556" ID="ST_16.9.1.1" STYLEREFS="Style_5" VPOS="1574" WIDTH="80" WC="0.31" CC="0000" TAGREFS=""/>
+            <SP HPOS="636" ID="SP_16.9.1.2" VPOS="1585" WIDTH="15"/>
+            <String CONTENT="cause" HEIGHT="21" HPOS="651" ID="ST_16.9.1.3" STYLEREFS="Style_5" VPOS="1585" WIDTH="94" WC="0.49" CC="00000" TAGREFS=""/>
+            <SP HPOS="745" ID="SP_16.9.1.4" VPOS="1574" WIDTH="22"/>
+            <String CONTENT="is" HEIGHT="32" HPOS="767" ID="ST_16.9.1.5" STYLEREFS="Style_5" VPOS="1574" WIDTH="28" WC="0.34" CC="00" TAGREFS=""/>
+            <SP HPOS="795" ID="SP_16.9.1.6" VPOS="1573" WIDTH="22"/>
+            <String CONTENT="submitted" HEIGHT="33" HPOS="817" ID="ST_16.9.1.7" STYLEREFS="Style_5" VPOS="1573" WIDTH="179" WC="0.33" CC="000000000" TAGREFS=""/>
+            <SP HPOS="996" ID="SP_16.9.1.8" VPOS="1584" WIDTH="27"/>
+            <String CONTENT="on" HEIGHT="21" HPOS="1023" ID="ST_16.9.1.9" STYLEREFS="Style_5" VPOS="1584" WIDTH="42" WC="0.32" CC="00" TAGREFS=""/>
+            <SP HPOS="1065" ID="SP_16.9.1.10" VPOS="1584" WIDTH="23"/>
+            <String CONTENT="an" HEIGHT="20" HPOS="1088" ID="ST_16.9.1.11" STYLEREFS="Style_5" VPOS="1584" WIDTH="40" WC="0.56" CC="00" TAGREFS=""/>
+            <SP HPOS="1128" ID="SP_16.9.1.12" VPOS="1573" WIDTH="16"/>
+            <String CONTENT="agreed" HEIGHT="40" HPOS="1144" ID="ST_16.9.1.13" STYLEREFS="Style_5" VPOS="1573" WIDTH="122" WC="0.48" CC="000000" TAGREFS=""/>
+            <SP HPOS="1266" ID="SP_16.9.1.14" VPOS="1576" WIDTH="23"/>
+            <String CONTENT="state" HEIGHT="32" HPOS="1289" ID="ST_16.9.1.15" STYLEREFS="Style_5" VPOS="1576" WIDTH="83" WC="0.23" CC="00009" TAGREFS=""/>
+            <SP HPOS="1372" ID="SP_16.9.1.16" VPOS="1574" WIDTH="26"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="1398" ID="ST_16.9.1.17" STYLEREFS="Style_5" VPOS="1574" WIDTH="37" WC="0.27" CC="00" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+        <TextBlock HEIGHT="755.0" HPOS="291.0" ID="BL_16.10" TAGREFS="Ad5" VPOS="1623.0" WIDTH="1144.0">
+          <TextLine HEIGHT="43" HPOS="292" ID="TL_16.10.1" VPOS="1623" WIDTH="1143">
+            <String CONTENT="facts," HEIGHT="39" HPOS="292" ID="ST_16.10.1.1" STYLEREFS="Style_5" VPOS="1626" WIDTH="93" WC="0.44" CC="000000" TAGREFS=""/>
+            <SP HPOS="385" ID="SP_16.10.1.2" VPOS="1637" WIDTH="10"/>
+            <String CONTENT="as" HEIGHT="21" HPOS="395" ID="ST_16.10.1.3" STYLEREFS="Style_5" VPOS="1637" WIDTH="33" WC="0.29" CC="00" TAGREFS=""/>
+            <SP HPOS="428" ID="SP_16.10.1.4" VPOS="1626" WIDTH="11"/>
+            <String CONTENT="follows:" HEIGHT="32" HPOS="439" ID="ST_16.10.1.5" STYLEREFS="Style_5" VPOS="1626" WIDTH="149" WC="0.68" CC="00000099" TAGREFS=""/>
+            <SP HPOS="588" ID="SP_16.10.1.6" VPOS="1624" WIDTH="25"/>
+            <String CONTENT="Wm." HEIGHT="32" HPOS="613" ID="ST_16.10.1.7" STYLEREFS="Style_5" VPOS="1624" WIDTH="87" WC="0.52" CC="990" TAGREFS=""/>
+            <SP HPOS="700" ID="SP_16.10.1.8" VPOS="1624" WIDTH="13"/>
+            <String CONTENT="Kirk" HEIGHT="32" HPOS="713" ID="ST_16.10.1.9" STYLEREFS="Style_5" VPOS="1624" WIDTH="88" WC="0.29" CC="0000" TAGREFS=""/>
+            <SP HPOS="801" ID="SP_16.10.1.10" VPOS="1625" WIDTH="10"/>
+            <String CONTENT="being" HEIGHT="41" HPOS="811" ID="ST_16.10.1.11" STYLEREFS="Style_5" VPOS="1625" WIDTH="99" WC="0.55" CC="00000" TAGREFS=""/>
+            <SP HPOS="910" ID="SP_16.10.1.12" VPOS="1635" WIDTH="12"/>
+            <String CONTENT="a" HEIGHT="20" HPOS="922" ID="ST_16.10.1.13" STYLEREFS="Style_5" VPOS="1635" WIDTH="17" WC="0.72" CC="0" TAGREFS=""/>
+            <SP HPOS="939" ID="SP_16.10.1.14" VPOS="1624" WIDTH="8"/>
+            <String CONTENT="judgment" HEIGHT="41" HPOS="947" ID="ST_16.10.1.15" STYLEREFS="Style_5" VPOS="1624" WIDTH="178" WC="0.65" CC="00000000" TAGREFS=""/>
+            <SP HPOS="1125" ID="SP_16.10.1.16" VPOS="1624" WIDTH="12"/>
+            <String CONTENT="creditor" HEIGHT="32" HPOS="1137" ID="ST_16.10.1.17" STYLEREFS="Style_5" VPOS="1624" WIDTH="142" WC="0.48" CC="00000000" TAGREFS=""/>
+            <SP HPOS="1279" ID="SP_16.10.1.18" VPOS="1624" WIDTH="13"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="1292" ID="ST_16.10.1.19" STYLEREFS="Style_5" VPOS="1624" WIDTH="36" WC="0.60" CC="00" TAGREFS=""/>
+            <SP HPOS="1328" ID="SP_16.10.1.20" VPOS="1623" WIDTH="16"/>
+            <String CONTENT="John" HEIGHT="32" HPOS="1344" ID="ST_16.10.1.21" STYLEREFS="Style_5" VPOS="1623" WIDTH="91" WC="0.66" CC="9900" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="291" ID="TL_16.10.2" VPOS="1674" WIDTH="1144">
+            <String CONTENT="Kirk," HEIGHT="37" HPOS="291" ID="ST_16.10.2.1" STYLEREFS="Style_5" VPOS="1677" WIDTH="98" WC="0.44" CC="00000" TAGREFS=""/>
+            <SP HPOS="389" ID="SP_16.10.2.2" VPOS="1678" WIDTH="12"/>
+            <String CONTENT="in" HEIGHT="30" HPOS="401" ID="ST_16.10.2.3" STYLEREFS="Style_5" VPOS="1678" WIDTH="34" WC="0.43" CC="00" TAGREFS=""/>
+            <SP HPOS="435" ID="SP_16.10.2.4" VPOS="1676" WIDTH="15"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="450" ID="ST_16.10.2.5" STYLEREFS="Style_5" VPOS="1676" WIDTH="58" WC="0.59" CC="000" TAGREFS=""/>
+            <SP HPOS="508" ID="SP_16.10.2.6" VPOS="1676" WIDTH="17"/>
+            <String CONTENT="Circuit" HEIGHT="32" HPOS="525" ID="ST_16.10.2.7" STYLEREFS="Style_5" VPOS="1676" WIDTH="126" WC="0.33" CC="0000000" TAGREFS=""/>
+            <SP HPOS="651" ID="SP_16.10.2.8" VPOS="1675" WIDTH="11"/>
+            <String CONTENT="Court" HEIGHT="33" HPOS="662" ID="ST_16.10.2.9" STYLEREFS="Style_5" VPOS="1675" WIDTH="104" WC="0.40" CC="00000" TAGREFS=""/>
+            <SP HPOS="766" ID="SP_16.10.2.10" VPOS="1675" WIDTH="16"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="782" ID="ST_16.10.2.11" STYLEREFS="Style_5" VPOS="1675" WIDTH="36" WC="0.64" CC="00" TAGREFS=""/>
+            <SP HPOS="818" ID="SP_16.10.2.12" VPOS="1674" WIDTH="15"/>
+            <String CONTENT="Woodford" HEIGHT="33" HPOS="833" ID="ST_16.10.2.13" STYLEREFS="Style_5" VPOS="1674" WIDTH="190" WC="0.42" CC="00000000" TAGREFS=""/>
+            <SP HPOS="1023" ID="SP_16.10.2.14" VPOS="1675" WIDTH="11"/>
+            <String CONTENT="County," HEIGHT="42" HPOS="1034" ID="ST_16.10.2.15" STYLEREFS="Style_5" VPOS="1675" WIDTH="142" WC="0.38" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1176" ID="SP_16.10.2.16" VPOS="1675" WIDTH="16"/>
+            <String CONTENT="in" HEIGHT="31" HPOS="1192" ID="ST_16.10.2.17" STYLEREFS="Style_5" VPOS="1675" WIDTH="35" WC="0.58" CC="90" TAGREFS=""/>
+            <SP HPOS="1227" ID="SP_16.10.2.18" VPOS="1674" WIDTH="10"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="1237" ID="ST_16.10.2.19" STYLEREFS="Style_5" VPOS="1674" WIDTH="56" WC="0.56" CC="000" TAGREFS=""/>
+            <SP HPOS="1293" ID="SP_16.10.2.20" VPOS="1686" WIDTH="17"/>
+            <String CONTENT="sum" HEIGHT="20" HPOS="1310" ID="ST_16.10.2.21" STYLEREFS="Style_5" VPOS="1686" WIDTH="72" WC="0.35" CC="000" TAGREFS=""/>
+            <SP HPOS="1382" ID="SP_16.10.2.22" VPOS="1676" WIDTH="16"/>
+            <String CONTENT="of" HEIGHT="30" HPOS="1398" ID="ST_16.10.2.23" STYLEREFS="Style_5" VPOS="1676" WIDTH="37" WC="0.63" CC="00" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="293" ID="TL_16.10.3" VPOS="1725" WIDTH="1141">
+            <String CONTENT="§1,055," HEIGHT="39" HPOS="293" ID="ST_16.10.3.1" STYLEREFS="Style_5" VPOS="1728" WIDTH="126" WC="0.47" CC="0000000" TAGREFS=""/>
+            <SP HPOS="419" ID="SP_16.10.3.2" VPOS="1728" WIDTH="18"/>
+            <String CONTENT="after" HEIGHT="31" HPOS="437" ID="ST_16.10.3.3" STYLEREFS="Style_5" VPOS="1728" WIDTH="86" WC="0.54" CC="00000" TAGREFS=""/>
+            <SP HPOS="523" ID="SP_16.10.3.4" VPOS="1727" WIDTH="15"/>
+            <String CONTENT="first" HEIGHT="31" HPOS="538" ID="ST_16.10.3.5" STYLEREFS="Style_5" VPOS="1727" WIDTH="72" WC="0.58" CC="00000" TAGREFS=""/>
+            <SP HPOS="610" ID="SP_16.10.3.6" VPOS="1727" WIDTH="23"/>
+            <String CONTENT="having" HEIGHT="40" HPOS="633" ID="ST_16.10.3.7" STYLEREFS="Style_5" VPOS="1727" WIDTH="125" WC="0.28" CC="000000" TAGREFS=""/>
+            <SP HPOS="758" ID="SP_16.10.3.8" VPOS="1726" WIDTH="16"/>
+            <String CONTENT="execution" HEIGHT="32" HPOS="774" ID="ST_16.10.3.9" STYLEREFS="Style_5" VPOS="1726" WIDTH="172" WC="0.40" CC="000000000" TAGREFS=""/>
+            <SP HPOS="946" ID="SP_16.10.3.10" VPOS="1726" WIDTH="22"/>
+            <String CONTENT="issued" HEIGHT="31" HPOS="968" ID="ST_16.10.3.11" STYLEREFS="Style_5" VPOS="1726" WIDTH="109" WC="0.40" CC="000000" TAGREFS=""/>
+            <SP HPOS="1077" ID="SP_16.10.3.12" VPOS="1726" WIDTH="30"/>
+            <String CONTENT="against" HEIGHT="42" HPOS="1107" ID="ST_16.10.3.13" STYLEREFS="Style_5" VPOS="1726" WIDTH="126" WC="0.39" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1233" ID="SP_16.10.3.14" VPOS="1725" WIDTH="23"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="1256" ID="ST_16.10.3.15" STYLEREFS="Style_5" VPOS="1725" WIDTH="56" WC="0.50" CC="000" TAGREFS=""/>
+            <SP HPOS="1312" ID="SP_16.10.3.16" VPOS="1725" WIDTH="24"/>
+            <String CONTENT="judg-" HEIGHT="43" HPOS="1336" ID="ST_16.10.3.17" STYLEREFS="Style_5" VPOS="1725" WIDTH="98" WC="0.48" CC="00000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="42" HPOS="292" ID="TL_16.10.4" VPOS="1776" WIDTH="1137">
+            <String CONTENT="ment" HEIGHT="28" HPOS="292" ID="ST_16.10.4.1" STYLEREFS="Style_5" VPOS="1783" WIDTH="92" WC="0.41" CC="0000" TAGREFS=""/>
+            <SP HPOS="384" ID="SP_16.10.4.2" VPOS="1779" WIDTH="16"/>
+            <String CONTENT="debtor" HEIGHT="31" HPOS="400" ID="ST_16.10.4.3" STYLEREFS="Style_5" VPOS="1779" WIDTH="115" WC="0.43" CC="000000" TAGREFS=""/>
+            <SP HPOS="515" ID="SP_16.10.4.4" VPOS="1777" WIDTH="15"/>
+            <String CONTENT="and" HEIGHT="32" HPOS="530" ID="ST_16.10.4.5" STYLEREFS="Style_5" VPOS="1777" WIDTH="63" WC="0.55" CC="000" TAGREFS=""/>
+            <SP HPOS="593" ID="SP_16.10.4.6" VPOS="1777" WIDTH="11"/>
+            <String CONTENT="returned" HEIGHT="32" HPOS="604" ID="ST_16.10.4.7" STYLEREFS="Style_5" VPOS="1777" WIDTH="158" WC="0.45" CC="00000000" TAGREFS=""/>
+            <SP HPOS="762" ID="SP_16.10.4.8" VPOS="1778" WIDTH="15"/>
+            <String CONTENT="by" HEIGHT="40" HPOS="777" ID="ST_16.10.4.9" STYLEREFS="Style_5" VPOS="1778" WIDTH="44" WC="0.23" CC="00" TAGREFS=""/>
+            <SP HPOS="821" ID="SP_16.10.4.10" VPOS="1778" WIDTH="15"/>
+            <String CONTENT="the" HEIGHT="30" HPOS="836" ID="ST_16.10.4.11" STYLEREFS="Style_5" VPOS="1778" WIDTH="58" WC="0.54" CC="000" TAGREFS=""/>
+            <SP HPOS="894" ID="SP_16.10.4.12" VPOS="1776" WIDTH="24"/>
+            <String CONTENT="Sheriff," HEIGHT="40" HPOS="918" ID="ST_16.10.4.13" STYLEREFS="Style_5" VPOS="1776" WIDTH="131" WC="0.36" CC="00000000" TAGREFS=""/>
+            <SP HPOS="1049" ID="SP_16.10.4.14" VPOS="1786" WIDTH="25"/>
+            <String CONTENT="no" HEIGHT="21" HPOS="1074" ID="ST_16.10.4.15" STYLEREFS="Style_5" VPOS="1786" WIDTH="42" WC="0.69" CC="00" TAGREFS=""/>
+            <SP HPOS="1116" ID="SP_16.10.4.16" VPOS="1781" WIDTH="26"/>
+            <String CONTENT="property" HEIGHT="37" HPOS="1142" ID="ST_16.10.4.17" STYLEREFS="Style_5" VPOS="1781" WIDTH="157" WC="0.40" CC="00000000" TAGREFS=""/>
+            <SP HPOS="1299" ID="SP_16.10.4.18" VPOS="1777" WIDTH="15"/>
+            <String CONTENT="found," HEIGHT="38" HPOS="1314" ID="ST_16.10.4.19" STYLEREFS="Style_5" VPOS="1777" WIDTH="115" WC="0.56" CC="000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="42" HPOS="293" ID="TL_16.10.5" VPOS="1827" WIDTH="1141">
+            <String CONTENT="caused-" HEIGHT="32" HPOS="293" ID="ST_16.10.5.1" STYLEREFS="Style_5" VPOS="1830" WIDTH="122" WC="0.42" CC="0000009" TAGREFS=""/>
+            <SP HPOS="415" ID="SP_16.10.5.2" VPOS="1833" WIDTH="11"/>
+            <String CONTENT="to" HEIGHT="28" HPOS="426" ID="ST_16.10.5.3" STYLEREFS="Style_5" VPOS="1833" WIDTH="35" WC="0.35" CC="00" TAGREFS=""/>
+            <SP HPOS="461" ID="SP_16.10.5.4" VPOS="1830" WIDTH="15"/>
+            <String CONTENT="be" HEIGHT="31" HPOS="476" ID="ST_16.10.5.5" STYLEREFS="Style_5" VPOS="1830" WIDTH="42" WC="0.58" CC="00" TAGREFS=""/>
+            <SP HPOS="518" ID="SP_16.10.5.6" VPOS="1828" WIDTH="15"/>
+            <String CONTENT="issued" HEIGHT="32" HPOS="533" ID="ST_16.10.5.7" STYLEREFS="Style_5" VPOS="1828" WIDTH="108" WC="0.38" CC="000000" TAGREFS=""/>
+            <SP HPOS="641" ID="SP_16.10.5.8" VPOS="1832" WIDTH="14"/>
+            <String CONTENT="out" HEIGHT="28" HPOS="655" ID="ST_16.10.5.9" STYLEREFS="Style_5" VPOS="1832" WIDTH="58" WC="0.21" CC="000" TAGREFS=""/>
+            <SP HPOS="713" ID="SP_16.10.5.10" VPOS="1828" WIDTH="15"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="728" ID="ST_16.10.5.11" STYLEREFS="Style_5" VPOS="1828" WIDTH="36" WC="0.22" CC="00" TAGREFS=""/>
+            <SP HPOS="764" ID="SP_16.10.5.12" VPOS="1828" WIDTH="22"/>
+            <String CONTENT="said" HEIGHT="31" HPOS="786" ID="ST_16.10.5.13" STYLEREFS="Style_5" VPOS="1828" WIDTH="68" WC="0.31" CC="0000" TAGREFS=""/>
+            <SP HPOS="854" ID="SP_16.10.5.14" VPOS="1831" WIDTH="16"/>
+            <String CONTENT="court" HEIGHT="28" HPOS="870" ID="ST_16.10.5.15" STYLEREFS="Style_5" VPOS="1831" WIDTH="94" WC="0.50" CC="00000" TAGREFS=""/>
+            <SP HPOS="964" ID="SP_16.10.5.16" VPOS="1827" WIDTH="14"/>
+            <String CONTENT="garnishee" HEIGHT="42" HPOS="978" ID="ST_16.10.5.17" STYLEREFS="Style_5" VPOS="1827" WIDTH="173" WC="0.36" CC="000000000" TAGREFS=""/>
+            <SP HPOS="1151" ID="SP_16.10.5.18" VPOS="1837" WIDTH="14"/>
+            <String CONTENT="process" HEIGHT="31" HPOS="1165" ID="ST_16.10.5.19" STYLEREFS="Style_5" VPOS="1837" WIDTH="129" WC="0.60" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1294" ID="SP_16.10.5.20" VPOS="1827" WIDTH="13"/>
+            <String CONTENT="against" HEIGHT="41" HPOS="1307" ID="ST_16.10.5.21" STYLEREFS="Style_5" VPOS="1827" WIDTH="127" WC="0.37" CC="0000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="45" HPOS="293" ID="TL_16.10.6" VPOS="1877" WIDTH="1141">
+            <String CONTENT="the" HEIGHT="32" HPOS="293" ID="ST_16.10.6.1" STYLEREFS="Style_5" VPOS="1881" WIDTH="57" WC="0.52" CC="000" TAGREFS=""/>
+            <SP HPOS="350" ID="SP_16.10.6.2" VPOS="1881" WIDTH="16"/>
+            <String CONTENT="appellant" HEIGHT="41" HPOS="366" ID="ST_16.10.6.3" STYLEREFS="Style_5" VPOS="1881" WIDTH="166" WC="0.33" CC="000000000" TAGREFS=""/>
+            <SP HPOS="532" ID="SP_16.10.6.4" VPOS="1890" WIDTH="22"/>
+            <String CONTENT="as" HEIGHT="21" HPOS="554" ID="ST_16.10.6.5" STYLEREFS="Style_5" VPOS="1890" WIDTH="35" WC="0.48" CC="00" TAGREFS=""/>
+            <SP HPOS="589" ID="SP_16.10.6.6" VPOS="1879" WIDTH="15"/>
+            <String CONTENT="garnishee" HEIGHT="42" HPOS="604" ID="ST_16.10.6.7" STYLEREFS="Style_5" VPOS="1879" WIDTH="171" WC="0.56" CC="000000000" TAGREFS=""/>
+            <SP HPOS="775" ID="SP_16.10.6.8" VPOS="1878" WIDTH="17"/>
+            <String CONTENT="of" HEIGHT="32" HPOS="792" ID="ST_16.10.6.9" STYLEREFS="Style_5" VPOS="1878" WIDTH="36" WC="0.42" CC="00" TAGREFS=""/>
+            <SP HPOS="828" ID="SP_16.10.6.10" VPOS="1878" WIDTH="23"/>
+            <String CONTENT="John" HEIGHT="32" HPOS="851" ID="ST_16.10.6.11" STYLEREFS="Style_5" VPOS="1878" WIDTH="91" WC="0.52" CC="9900" TAGREFS=""/>
+            <SP HPOS="942" ID="SP_16.10.6.12" VPOS="1878" WIDTH="11"/>
+            <String CONTENT="Kirk." HEIGHT="32" HPOS="953" ID="ST_16.10.6.13" STYLEREFS="Style_5" VPOS="1878" WIDTH="96" WC="0.47" CC="00000" TAGREFS=""/>
+            <SP HPOS="1049" ID="SP_16.10.6.14" VPOS="1877" WIDTH="46"/>
+            <String CONTENT="It" HEIGHT="32" HPOS="1095" ID="ST_16.10.6.15" STYLEREFS="Style_5" VPOS="1877" WIDTH="33" WC="0.49" CC="00" TAGREFS=""/>
+            <SP HPOS="1128" ID="SP_16.10.6.16" VPOS="1879" WIDTH="14"/>
+            <String CONTENT="is" HEIGHT="30" HPOS="1142" ID="ST_16.10.6.17" STYLEREFS="Style_5" VPOS="1879" WIDTH="28" WC="0.69" CC="00" TAGREFS=""/>
+            <SP HPOS="1170" ID="SP_16.10.6.18" VPOS="1878" WIDTH="15"/>
+            <String CONTENT="admitted" HEIGHT="32" HPOS="1185" ID="ST_16.10.6.19" STYLEREFS="Style_5" VPOS="1878" WIDTH="160" WC="0.47" CC="00000000" TAGREFS=""/>
+            <SP HPOS="1345" ID="SP_16.10.6.20" VPOS="1878" WIDTH="16"/>
+            <String CONTENT="that" HEIGHT="31" HPOS="1361" ID="ST_16.10.6.21" STYLEREFS="Style_5" VPOS="1878" WIDTH="73" WC="0.32" CC="0000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="42" HPOS="293" ID="TL_16.10.7" VPOS="1928" WIDTH="1139">
+            <String CONTENT="at" HEIGHT="28" HPOS="293" ID="ST_16.10.7.1" STYLEREFS="Style_5" VPOS="1936" WIDTH="34" WC="0.23" CC="00" TAGREFS=""/>
+            <SP HPOS="327" ID="SP_16.10.7.2" VPOS="1931" WIDTH="14"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="341" ID="ST_16.10.7.3" STYLEREFS="Style_5" VPOS="1931" WIDTH="58" WC="0.45" CC="000" TAGREFS=""/>
+            <SP HPOS="399" ID="SP_16.10.7.4" VPOS="1931" WIDTH="15"/>
+            <String CONTENT="time" HEIGHT="31" HPOS="414" ID="ST_16.10.7.5" STYLEREFS="Style_5" VPOS="1931" WIDTH="82" WC="0.43" CC="0000" TAGREFS=""/>
+            <SP HPOS="496" ID="SP_16.10.7.6" VPOS="1930" WIDTH="15"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="511" ID="ST_16.10.7.7" STYLEREFS="Style_5" VPOS="1930" WIDTH="37" WC="0.55" CC="00" TAGREFS=""/>
+            <SP HPOS="548" ID="SP_16.10.7.8" VPOS="1930" WIDTH="22"/>
+            <String CONTENT="the" HEIGHT="31" HPOS="570" ID="ST_16.10.7.9" STYLEREFS="Style_5" VPOS="1930" WIDTH="58" WC="0.54" CC="000" TAGREFS=""/>
+            <SP HPOS="628" ID="SP_16.10.7.10" VPOS="1930" WIDTH="16"/>
+            <String CONTENT="service" HEIGHT="32" HPOS="644" ID="ST_16.10.7.11" STYLEREFS="Style_5" VPOS="1930" WIDTH="124" WC="0.40" CC="0000000" TAGREFS=""/>
+            <SP HPOS="768" ID="SP_16.10.7.12" VPOS="1929" WIDTH="14"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="782" ID="ST_16.10.7.13" STYLEREFS="Style_5" VPOS="1929" WIDTH="37" WC="0.54" CC="00" TAGREFS=""/>
+            <SP HPOS="819" ID="SP_16.10.7.14" VPOS="1928" WIDTH="14"/>
+            <String CONTENT="said" HEIGHT="32" HPOS="833" ID="ST_16.10.7.15" STYLEREFS="Style_5" VPOS="1928" WIDTH="68" WC="0.43" CC="0000" TAGREFS=""/>
+            <SP HPOS="901" ID="SP_16.10.7.16" VPOS="1929" WIDTH="21"/>
+            <String CONTENT="writ" HEIGHT="32" HPOS="922" ID="ST_16.10.7.17" STYLEREFS="Style_5" VPOS="1929" WIDTH="75" WC="0.21" CC="0000" TAGREFS=""/>
+            <SP HPOS="997" ID="SP_16.10.7.18" VPOS="1928" WIDTH="12"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="1009" ID="ST_16.10.7.19" STYLEREFS="Style_5" VPOS="1928" WIDTH="56" WC="0.45" CC="000" TAGREFS=""/>
+            <SP HPOS="1065" ID="SP_16.10.7.20" VPOS="1929" WIDTH="11"/>
+            <String CONTENT="appellant" HEIGHT="41" HPOS="1076" ID="ST_16.10.7.21" STYLEREFS="Style_5" VPOS="1929" WIDTH="167" WC="0.39" CC="000000000" TAGREFS=""/>
+            <SP HPOS="1243" ID="SP_16.10.7.22" VPOS="1928" WIDTH="16"/>
+            <String CONTENT="owed" HEIGHT="33" HPOS="1259" ID="ST_16.10.7.23" STYLEREFS="Style_5" VPOS="1928" WIDTH="93" WC="0.61" CC="0000" TAGREFS=""/>
+            <SP HPOS="1352" ID="SP_16.10.7.24" VPOS="1928" WIDTH="13"/>
+            <String CONTENT="said" HEIGHT="32" HPOS="1365" ID="ST_16.10.7.25" STYLEREFS="Style_5" VPOS="1928" WIDTH="67" WC="0.47" CC="0000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="42" HPOS="293" ID="TL_16.10.8" VPOS="1980" WIDTH="1141">
+            <String CONTENT="John" HEIGHT="33" HPOS="293" ID="ST_16.10.8.1" STYLEREFS="Style_5" VPOS="1982" WIDTH="93" WC="0.74" CC="0000" TAGREFS=""/>
+            <SP HPOS="386" ID="SP_16.10.8.2" VPOS="1981" WIDTH="9"/>
+            <String CONTENT="Kirk" HEIGHT="33" HPOS="395" ID="ST_16.10.8.3" STYLEREFS="Style_5" VPOS="1981" WIDTH="88" WC="0.25" CC="0000" TAGREFS=""/>
+            <SP HPOS="483" ID="SP_16.10.8.4" VPOS="1981" WIDTH="9"/>
+            <String CONTENT="§1,450" HEIGHT="39" HPOS="492" ID="ST_16.10.8.5" STYLEREFS="Style_5" VPOS="1981" WIDTH="115" WC="0.40" CC="000000" TAGREFS=""/>
+            <SP HPOS="607" ID="SP_16.10.8.6" VPOS="1981" WIDTH="10"/>
+            <String CONTENT="for" HEIGHT="31" HPOS="617" ID="ST_16.10.8.7" STYLEREFS="Style_5" VPOS="1981" WIDTH="55" WC="0.23" CC="000" TAGREFS=""/>
+            <SP HPOS="672" ID="SP_16.10.8.8" VPOS="1982" WIDTH="9"/>
+            <String CONTENT="loss" HEIGHT="30" HPOS="681" ID="ST_16.10.8.9" STYLEREFS="Style_5" VPOS="1982" WIDTH="65" WC="0.48" CC="0000" TAGREFS=""/>
+            <SP HPOS="746" ID="SP_16.10.8.10" VPOS="1991" WIDTH="11"/>
+            <String CONTENT="on" HEIGHT="21" HPOS="757" ID="ST_16.10.8.11" STYLEREFS="Style_5" VPOS="1991" WIDTH="42" WC="0.62" CC="00" TAGREFS=""/>
+            <SP HPOS="799" ID="SP_16.10.8.12" VPOS="1991" WIDTH="12"/>
+            <String CONTENT="a" HEIGHT="20" HPOS="811" ID="ST_16.10.8.13" STYLEREFS="Style_5" VPOS="1991" WIDTH="17" WC="0.21" CC="0" TAGREFS=""/>
+            <SP HPOS="828" ID="SP_16.10.8.14" VPOS="1981" WIDTH="10"/>
+            <String CONTENT="certain" HEIGHT="31" HPOS="838" ID="ST_16.10.8.15" STYLEREFS="Style_5" VPOS="1981" WIDTH="122" WC="0.37" CC="0000000" TAGREFS=""/>
+            <SP HPOS="960" ID="SP_16.10.8.16" VPOS="1980" WIDTH="12"/>
+            <String CONTENT="policy" HEIGHT="42" HPOS="972" ID="ST_16.10.8.17" STYLEREFS="Style_5" VPOS="1980" WIDTH="108" WC="0.59" CC="000000" TAGREFS=""/>
+            <SP HPOS="1080" ID="SP_16.10.8.18" VPOS="1981" WIDTH="11"/>
+            <String CONTENT="of" HEIGHT="30" HPOS="1091" ID="ST_16.10.8.19" STYLEREFS="Style_5" VPOS="1981" WIDTH="35" WC="0.59" CC="00" TAGREFS=""/>
+            <SP HPOS="1126" ID="SP_16.10.8.20" VPOS="1980" WIDTH="11"/>
+            <String CONTENT="insurance," HEIGHT="40" HPOS="1137" ID="ST_16.10.8.21" STYLEREFS="Style_5" VPOS="1980" WIDTH="177" WC="0.49" CC="0000000000" TAGREFS=""/>
+            <SP HPOS="1314" ID="SP_16.10.8.22" VPOS="1980" WIDTH="11"/>
+            <String CONTENT="unless" HEIGHT="32" HPOS="1325" ID="ST_16.10.8.23" STYLEREFS="Style_5" VPOS="1980" WIDTH="109" WC="0.67" CC="000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="45" HPOS="292" ID="TL_16.10.9" VPOS="2030" WIDTH="1140">
+            <String CONTENT="reduced" HEIGHT="33" HPOS="292" ID="ST_16.10.9.1" STYLEREFS="Style_5" VPOS="2034" WIDTH="143" WC="0.47" CC="0000000" TAGREFS=""/>
+            <SP HPOS="435" ID="SP_16.10.9.2" VPOS="2034" WIDTH="14"/>
+            <String CONTENT="by" HEIGHT="41" HPOS="449" ID="ST_16.10.9.3" STYLEREFS="Style_5" VPOS="2034" WIDTH="44" WC="0.29" CC="00" TAGREFS=""/>
+            <SP HPOS="493" ID="SP_16.10.9.4" VPOS="2033" WIDTH="16"/>
+            <String CONTENT="certain" HEIGHT="32" HPOS="509" ID="ST_16.10.9.5" STYLEREFS="Style_5" VPOS="2033" WIDTH="122" WC="0.43" CC="0000000" TAGREFS=""/>
+            <SP HPOS="631" ID="SP_16.10.9.6" VPOS="2032" WIDTH="16"/>
+            <String CONTENT="credits" HEIGHT="32" HPOS="647" ID="ST_16.10.9.7" STYLEREFS="Style_5" VPOS="2032" WIDTH="119" WC="0.40" CC="0000000" TAGREFS=""/>
+            <SP HPOS="766" ID="SP_16.10.9.8" VPOS="2031" WIDTH="12"/>
+            <String CONTENT="claimed" HEIGHT="32" HPOS="778" ID="ST_16.10.9.9" STYLEREFS="Style_5" VPOS="2031" WIDTH="138" WC="0.48" CC="0000000" TAGREFS=""/>
+            <SP HPOS="916" ID="SP_16.10.9.10" VPOS="2031" WIDTH="13"/>
+            <String CONTENT="by" HEIGHT="42" HPOS="929" ID="ST_16.10.9.11" STYLEREFS="Style_5" VPOS="2031" WIDTH="45" WC="0.26" CC="00" TAGREFS=""/>
+            <SP HPOS="974" ID="SP_16.10.9.12" VPOS="2030" WIDTH="22"/>
+            <String CONTENT="the" HEIGHT="33" HPOS="996" ID="ST_16.10.9.13" STYLEREFS="Style_5" VPOS="2030" WIDTH="57" WC="0.47" CC="000" TAGREFS=""/>
+            <SP HPOS="1053" ID="SP_16.10.9.14" VPOS="2032" WIDTH="31"/>
+            <String CONTENT="appellant," HEIGHT="41" HPOS="1084" ID="ST_16.10.9.15" STYLEREFS="Style_5" VPOS="2032" WIDTH="174" WC="0.41" CC="0000000000" TAGREFS=""/>
+            <SP HPOS="1258" ID="SP_16.10.9.16" VPOS="2031" WIDTH="25"/>
+            <String CONTENT="and" HEIGHT="32" HPOS="1283" ID="ST_16.10.9.17" STYLEREFS="Style_5" VPOS="2031" WIDTH="64" WC="0.46" CC="000" TAGREFS=""/>
+            <SP HPOS="1347" ID="SP_16.10.9.18" VPOS="2035" WIDTH="25"/>
+            <String CONTENT="not" HEIGHT="27" HPOS="1372" ID="ST_16.10.9.19" STYLEREFS="Style_5" VPOS="2035" WIDTH="60" WC="0.48" CC="000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="43" HPOS="295" ID="TL_16.10.10" VPOS="2082" WIDTH="1139">
+            <String CONTENT="otherwise" HEIGHT="32" HPOS="295" ID="ST_16.10.10.1" STYLEREFS="Style_5" VPOS="2086" WIDTH="173" WC="0.57" CC="000000000" TAGREFS=""/>
+            <SP HPOS="468" ID="SP_16.10.10.2" VPOS="2083" WIDTH="15"/>
+            <String CONTENT="indebted." HEIGHT="33" HPOS="483" ID="ST_16.10.10.3" STYLEREFS="Style_5" VPOS="2083" WIDTH="163" WC="0.53" CC="000000000" TAGREFS=""/>
+            <SP HPOS="646" ID="SP_16.10.10.4" VPOS="2083" WIDTH="48"/>
+            <String CONTENT="The" HEIGHT="32" HPOS="694" ID="ST_16.10.10.5" STYLEREFS="Style_5" VPOS="2083" WIDTH="71" WC="0.62" CC="000" TAGREFS=""/>
+            <SP HPOS="765" ID="SP_16.10.10.6" VPOS="2082" WIDTH="15"/>
+            <String CONTENT="credits" HEIGHT="32" HPOS="780" ID="ST_16.10.10.7" STYLEREFS="Style_5" VPOS="2082" WIDTH="119" WC="0.58" CC="0000000" TAGREFS=""/>
+            <SP HPOS="899" ID="SP_16.10.10.8" VPOS="2082" WIDTH="16"/>
+            <String CONTENT="claimed" HEIGHT="32" HPOS="915" ID="ST_16.10.10.9" STYLEREFS="Style_5" VPOS="2082" WIDTH="137" WC="0.54" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1052" ID="SP_16.10.10.10" VPOS="2093" WIDTH="23"/>
+            <String CONTENT="are" HEIGHT="21" HPOS="1075" ID="ST_16.10.10.11" STYLEREFS="Style_5" VPOS="2093" WIDTH="54" WC="0.40" CC="000" TAGREFS=""/>
+            <SP HPOS="1129" ID="SP_16.10.10.12" VPOS="2082" WIDTH="30"/>
+            <String CONTENT="for" HEIGHT="31" HPOS="1159" ID="ST_16.10.10.13" STYLEREFS="Style_5" VPOS="2082" WIDTH="55" WC="0.40" CC="000" TAGREFS=""/>
+            <SP HPOS="1214" ID="SP_16.10.10.14" VPOS="2082" WIDTH="28"/>
+            <String CONTENT="judgments" HEIGHT="43" HPOS="1242" ID="ST_16.10.10.15" STYLEREFS="Style_5" VPOS="2082" WIDTH="192" WC="0.63" CC="000000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="45" HPOS="293" ID="TL_16.10.11" VPOS="2134" WIDTH="1137">
+            <String CONTENT="paid" HEIGHT="42" HPOS="293" ID="ST_16.10.11.1" STYLEREFS="Style_5" VPOS="2137" WIDTH="78" WC="0.33" CC="0000" TAGREFS=""/>
+            <SP HPOS="371" ID="SP_16.10.11.2" VPOS="2137" WIDTH="13"/>
+            <String CONTENT="by" HEIGHT="42" HPOS="384" ID="ST_16.10.11.3" STYLEREFS="Style_5" VPOS="2137" WIDTH="44" WC="0.20" CC="00" TAGREFS=""/>
+            <SP HPOS="428" ID="SP_16.10.11.4" VPOS="2136" WIDTH="16"/>
+            <String CONTENT="the" HEIGHT="31" HPOS="444" ID="ST_16.10.11.5" STYLEREFS="Style_5" VPOS="2136" WIDTH="56" WC="0.58" CC="000" TAGREFS=""/>
+            <SP HPOS="500" ID="SP_16.10.11.6" VPOS="2135" WIDTH="30"/>
+            <String CONTENT="appellant," HEIGHT="42" HPOS="530" ID="ST_16.10.11.7" STYLEREFS="Style_5" VPOS="2135" WIDTH="174" WC="0.39" CC="0000000000" TAGREFS=""/>
+            <SP HPOS="704" ID="SP_16.10.11.8" VPOS="2134" WIDTH="16"/>
+            <String CONTENT="recovered" HEIGHT="32" HPOS="720" ID="ST_16.10.11.9" STYLEREFS="Style_5" VPOS="2134" WIDTH="179" WC="0.55" CC="000000000" TAGREFS=""/>
+            <SP HPOS="899" ID="SP_16.10.11.10" VPOS="2134" WIDTH="26"/>
+            <String CONTENT="in" HEIGHT="31" HPOS="925" ID="ST_16.10.11.11" STYLEREFS="Style_5" VPOS="2134" WIDTH="35" WC="0.59" CC="00" TAGREFS=""/>
+            <SP HPOS="960" ID="SP_16.10.11.12" VPOS="2134" WIDTH="26"/>
+            <String CONTENT="certain" HEIGHT="31" HPOS="986" ID="ST_16.10.11.13" STYLEREFS="Style_5" VPOS="2134" WIDTH="123" WC="0.49" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1109" ID="SP_16.10.11.14" VPOS="2144" WIDTH="23"/>
+            <String CONTENT="cases" HEIGHT="21" HPOS="1132" ID="ST_16.10.11.15" STYLEREFS="Style_5" VPOS="2144" WIDTH="86" WC="0.42" CC="00000" TAGREFS=""/>
+            <SP HPOS="1218" ID="SP_16.10.11.16" VPOS="2134" WIDTH="30"/>
+            <String CONTENT="in" HEIGHT="30" HPOS="1248" ID="ST_16.10.11.17" STYLEREFS="Style_5" VPOS="2134" WIDTH="34" WC="0.49" CC="00" TAGREFS=""/>
+            <SP HPOS="1282" ID="SP_16.10.11.18" VPOS="2134" WIDTH="25"/>
+            <String CONTENT="similar" HEIGHT="31" HPOS="1307" ID="ST_16.10.11.19" STYLEREFS="Style_5" VPOS="2134" WIDTH="123" WC="0.40" CC="0000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="47" HPOS="293" ID="TL_16.10.12" VPOS="2184" WIDTH="1141">
+            <String CONTENT="garnishee" HEIGHT="43" HPOS="293" ID="ST_16.10.12.1" STYLEREFS="Style_5" VPOS="2188" WIDTH="174" WC="0.47" CC="000000000" TAGREFS=""/>
+            <SP HPOS="467" ID="SP_16.10.12.2" VPOS="2185" WIDTH="15"/>
+            <String CONTENT="proceedings" HEIGHT="44" HPOS="482" ID="ST_16.10.12.3" STYLEREFS="Style_5" VPOS="2185" WIDTH="217" WC="0.51" CC="00000000000" TAGREFS=""/>
+            <SP HPOS="699" ID="SP_16.10.12.4" VPOS="2185" WIDTH="16"/>
+            <String CONTENT="commenced" HEIGHT="32" HPOS="715" ID="ST_16.10.12.5" STYLEREFS="Style_5" VPOS="2185" WIDTH="208" WC="0.43" CC="000000000" TAGREFS=""/>
+            <SP HPOS="923" ID="SP_16.10.12.6" VPOS="2185" WIDTH="17"/>
+            <String CONTENT="against" HEIGHT="42" HPOS="940" ID="ST_16.10.12.7" STYLEREFS="Style_5" VPOS="2185" WIDTH="126" WC="0.45" CC="0000000" TAGREFS=""/>
+            <SP HPOS="1066" ID="SP_16.10.12.8" VPOS="2185" WIDTH="15"/>
+            <String CONTENT="it" HEIGHT="30" HPOS="1081" ID="ST_16.10.12.9" STYLEREFS="Style_5" VPOS="2185" WIDTH="27" WC="0.23" CC="00" TAGREFS=""/>
+            <SP HPOS="1108" ID="SP_16.10.12.10" VPOS="2185" WIDTH="11"/>
+            <String CONTENT="for" HEIGHT="30" HPOS="1119" ID="ST_16.10.12.11" STYLEREFS="Style_5" VPOS="2185" WIDTH="56" WC="0.54" CC="000" TAGREFS=""/>
+            <SP HPOS="1175" ID="SP_16.10.12.12" VPOS="2185" WIDTH="22"/>
+            <String CONTENT="the" HEIGHT="31" HPOS="1197" ID="ST_16.10.12.13" STYLEREFS="Style_5" VPOS="2185" WIDTH="59" WC="0.44" CC="000" TAGREFS=""/>
+            <SP HPOS="1256" ID="SP_16.10.12.14" VPOS="2184" WIDTH="23"/>
+            <String CONTENT="debts" HEIGHT="32" HPOS="1279" ID="ST_16.10.12.15" STYLEREFS="Style_5" VPOS="2184" WIDTH="94" WC="0.42" CC="00000" TAGREFS=""/>
+            <SP HPOS="1373" ID="SP_16.10.12.16" VPOS="2185" WIDTH="25"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="1398" ID="ST_16.10.12.17" STYLEREFS="Style_5" VPOS="2185" WIDTH="36" WC="0.60" CC="00" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="44" HPOS="293" ID="TL_16.10.13" VPOS="2234" WIDTH="1138">
+            <String CONTENT="John" HEIGHT="32" HPOS="293" ID="ST_16.10.13.1" STYLEREFS="Style_5" VPOS="2240" WIDTH="91" WC="0.74" CC="9900" TAGREFS=""/>
+            <SP HPOS="384" ID="SP_16.10.13.2" VPOS="2238" WIDTH="14"/>
+            <String CONTENT="Kirk," HEIGHT="39" HPOS="398" ID="ST_16.10.13.3" STYLEREFS="Style_5" VPOS="2238" WIDTH="97" WC="0.28" CC="00000" TAGREFS=""/>
+            <SP HPOS="495" ID="SP_16.10.13.4" VPOS="2249" WIDTH="18"/>
+            <String CONTENT="a" HEIGHT="20" HPOS="513" ID="ST_16.10.13.5" STYLEREFS="Style_5" VPOS="2249" WIDTH="18" WC="0.54" CC="0" TAGREFS=""/>
+            <SP HPOS="531" ID="SP_16.10.13.6" VPOS="2238" WIDTH="14"/>
+            <String CONTENT="portion" HEIGHT="40" HPOS="545" ID="ST_16.10.13.7" STYLEREFS="Style_5" VPOS="2238" WIDTH="135" WC="0.36" CC="0000000" TAGREFS=""/>
+            <SP HPOS="680" ID="SP_16.10.13.8" VPOS="2237" WIDTH="25"/>
+            <String CONTENT="in" HEIGHT="30" HPOS="705" ID="ST_16.10.13.9" STYLEREFS="Style_5" VPOS="2237" WIDTH="35" WC="0.28" CC="00" TAGREFS=""/>
+            <SP HPOS="740" ID="SP_16.10.13.10" VPOS="2236" WIDTH="25"/>
+            <String CONTENT="the" HEIGHT="32" HPOS="765" ID="ST_16.10.13.11" STYLEREFS="Style_5" VPOS="2236" WIDTH="58" WC="0.46" CC="000" TAGREFS=""/>
+            <SP HPOS="823" ID="SP_16.10.13.12" VPOS="2236" WIDTH="19"/>
+            <String CONTENT="Circuit" HEIGHT="32" HPOS="842" ID="ST_16.10.13.13" STYLEREFS="Style_5" VPOS="2236" WIDTH="127" WC="0.36" CC="0000000" TAGREFS=""/>
+            <SP HPOS="969" ID="SP_16.10.13.14" VPOS="2235" WIDTH="23"/>
+            <String CONTENT="Court" HEIGHT="32" HPOS="992" ID="ST_16.10.13.15" STYLEREFS="Style_5" VPOS="2235" WIDTH="105" WC="0.30" CC="00000" TAGREFS=""/>
+            <SP HPOS="1097" ID="SP_16.10.13.16" VPOS="2236" WIDTH="16"/>
+            <String CONTENT="of" HEIGHT="31" HPOS="1113" ID="ST_16.10.13.17" STYLEREFS="Style_5" VPOS="2236" WIDTH="36" WC="0.33" CC="00" TAGREFS=""/>
+            <SP HPOS="1149" ID="SP_16.10.13.18" VPOS="2234" WIDTH="24"/>
+            <String CONTENT="Cook" HEIGHT="33" HPOS="1173" ID="ST_16.10.13.19" STYLEREFS="Style_5" VPOS="2234" WIDTH="94" WC="0.69" CC="0000" TAGREFS=""/>
+            <SP HPOS="1267" ID="SP_16.10.13.20" VPOS="2235" WIDTH="23"/>
+            <String CONTENT="County," HEIGHT="42" HPOS="1290" ID="ST_16.10.13.21" STYLEREFS="Style_5" VPOS="2235" WIDTH="141" WC="0.44" CC="0000000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="45" HPOS="291" ID="TL_16.10.14" VPOS="2285" WIDTH="1142">
+            <String CONTENT="and" HEIGHT="31" HPOS="291" ID="ST_16.10.14.1" STYLEREFS="Style_5" VPOS="2291" WIDTH="65" WC="0.65" CC="000" TAGREFS=""/>
+            <SP HPOS="356" ID="SP_16.10.14.2" VPOS="2291" WIDTH="16"/>
+            <String CONTENT="others" HEIGHT="31" HPOS="372" ID="ST_16.10.14.3" STYLEREFS="Style_5" VPOS="2291" WIDTH="111" WC="0.54" CC="000000" TAGREFS=""/>
+            <SP HPOS="483" ID="SP_16.10.14.4" VPOS="2290" WIDTH="16"/>
+            <String CONTENT="by" HEIGHT="40" HPOS="499" ID="ST_16.10.14.5" STYLEREFS="Style_5" VPOS="2290" WIDTH="43" WC="0.23" CC="00" TAGREFS=""/>
+            <SP HPOS="542" ID="SP_16.10.14.6" VPOS="2287" WIDTH="16"/>
+            <String CONTENT="John" HEIGHT="33" HPOS="558" ID="ST_16.10.14.7" STYLEREFS="Style_5" VPOS="2287" WIDTH="90" WC="0.55" CC="0000" TAGREFS=""/>
+            <SP HPOS="648" ID="SP_16.10.14.8" VPOS="2286" WIDTH="15"/>
+            <String CONTENT="Kirk’s" HEIGHT="33" HPOS="663" ID="ST_16.10.14.9" STYLEREFS="Style_5" VPOS="2286" WIDTH="113" WC="0.40" CC="000000" TAGREFS=""/>
+            <SP HPOS="776" ID="SP_16.10.14.10" VPOS="2287" WIDTH="12"/>
+            <String CONTENT="creditors" HEIGHT="31" HPOS="788" ID="ST_16.10.14.11" STYLEREFS="Style_5" VPOS="2287" WIDTH="158" WC="0.46" CC="000000000" TAGREFS=""/>
+            <SP HPOS="946" ID="SP_16.10.14.12" VPOS="2287" WIDTH="17"/>
+            <String CONTENT="in" HEIGHT="30" HPOS="963" ID="ST_16.10.14.13" STYLEREFS="Style_5" VPOS="2287" WIDTH="34" WC="0.28" CC="00" TAGREFS=""/>
+            <SP HPOS="997" ID="SP_16.10.14.14" VPOS="2285" WIDTH="17"/>
+            <String CONTENT="Justiee" HEIGHT="33" HPOS="1014" ID="ST_16.10.14.15" STYLEREFS="Style_5" VPOS="2285" WIDTH="126" WC="0.39" CC="9900090" TAGREFS=""/>
+            <SP HPOS="1140" ID="SP_16.10.14.16" VPOS="2290" WIDTH="17"/>
+            <String CONTENT="courts" HEIGHT="28" HPOS="1157" ID="ST_16.10.14.17" STYLEREFS="Style_5" VPOS="2290" WIDTH="109" WC="0.37" CC="000000" TAGREFS=""/>
+            <SP HPOS="1266" ID="SP_16.10.14.18" VPOS="2286" WIDTH="16"/>
+            <String CONTENT="in" HEIGHT="31" HPOS="1282" ID="ST_16.10.14.19" STYLEREFS="Style_5" VPOS="2286" WIDTH="34" WC="0.23" CC="00" TAGREFS=""/>
+            <SP HPOS="1316" ID="SP_16.10.14.20" VPOS="2286" WIDTH="23"/>
+            <String CONTENT="Cook" HEIGHT="32" HPOS="1339" ID="ST_16.10.14.21" STYLEREFS="Style_5" VPOS="2286" WIDTH="94" WC="0.22" CC="0000" TAGREFS=""/>
+          </TextLine>
+          <TextLine HEIGHT="41" HPOS="291" ID="TL_16.10.15" VPOS="2337" WIDTH="1141">
+            <String CONTENT="and" HEIGHT="31" HPOS="291" ID="ST_16.10.15.1" STYLEREFS="Style_5" VPOS="2342" WIDTH="64" WC="0.26" CC="000" TAGREFS=""/>
+            <SP HPOS="355" ID="SP_16.10.15.2" VPOS="2340" WIDTH="11"/>
+            <String CONTENT="Peoria" HEIGHT="32" HPOS="366" ID="ST_16.10.15.3" STYLEREFS="Style_5" VPOS="2340" WIDTH="123" WC="0.33" CC="000000" TAGREFS=""/>
+            <SP HPOS="489" ID="SP_16.10.15.4" VPOS="2340" WIDTH="13"/>
+            <String CONTENT="counties," HEIGHT="36" HPOS="502" ID="ST_16.10.15.5" STYLEREFS="Style_5" VPOS="2340" WIDTH="154" WC="0.46" CC="000000000" TAGREFS=""/>
+            <SP HPOS="656" ID="SP_16.10.15.6" VPOS="2338" WIDTH="17"/>
+            <String CONTENT="which" HEIGHT="33" HPOS="673" ID="ST_16.10.15.7" STYLEREFS="Style_5" VPOS="2338" WIDTH="109" WC="0.33" CC="00000" TAGREFS=""/>
+            <SP HPOS="782" ID="SP_16.10.15.8" VPOS="2347" WIDTH="14"/>
+            <String CONTENT="were" HEIGHT="23" HPOS="796" ID="ST_16.10.15.9" STYLEREFS="Style_5" VPOS="2347" WIDTH="85" WC="0.59" CC="0000" TAGREFS=""/>
+            <SP HPOS="881" ID="SP_16.10.15.10" VPOS="2337" WIDTH="21"/>
+            <String CONTENT="commenced" HEIGHT="31" HPOS="902" ID="ST_16.10.15.11" STYLEREFS="Style_5" VPOS="2337" WIDTH="211" WC="0.57" CC="000000000" TAGREFS=""/>
+            <SP HPOS="1113" ID="SP_16.10.15.12" VPOS="2337" WIDTH="16"/>
+            <String CONTENT="and" HEIGHT="31" HPOS="1129" ID="ST_16.10.15.13" STYLEREFS="Style_5" VPOS="2337" WIDTH="64" WC="0.28" CC="000" TAGREFS=""/>
+            <SP HPOS="1193" ID="SP_16.10.15.14" VPOS="2337" WIDTH="19"/>
+            <String CONTENT="served" HEIGHT="32" HPOS="1212" ID="ST_16.10.15.15" STYLEREFS="Style_5" VPOS="2337" WIDTH="116" WC="0.38" CC="000000" TAGREFS=""/>
+            <SP HPOS="1328" ID="SP_16.10.15.16" VPOS="2338" WIDTH="13"/>
+            <String CONTENT="prior" HEIGHT="40" HPOS="1341" ID="ST_16.10.15.17" STYLEREFS="Style_5" VPOS="2338" WIDTH="91" WC="0.31" CC="00000" TAGREFS=""/>
+          </TextLine>
+        </TextBlock>
+      </PrintSpace>
+    </Page>
+  </Layout>
+</alto>
