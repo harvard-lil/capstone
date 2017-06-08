@@ -1,5 +1,6 @@
 import logging
 from random import randint
+
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ObjectDoesNotExist
 

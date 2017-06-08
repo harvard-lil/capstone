@@ -2,14 +2,15 @@ from django.contrib import admin
 from django.conf.urls import url, include
 from django.views.generic import TemplateView
 from rest_framework import routers
-from capi_project import views
+
+from . import views, case_views
 
 router = routers.DefaultRouter()
-router.register(r'cases', views.CaseViewSet)
-router.register(r'jurisdictions', views.JurisdictionViewSet)
-router.register(r'courts', views.CourtViewSet)
-router.register(r'volumes', views.VolumeViewSet)
-router.register(r'reporters', views.ReporterViewSet)
+router.register(r'cases', case_views.CaseViewSet)
+router.register(r'jurisdictions', case_views.JurisdictionViewSet)
+router.register(r'courts', case_views.CourtViewSet)
+router.register(r'volumes', case_views.VolumeViewSet)
+router.register(r'reporters', case_views.ReporterViewSet)
 
 user_router = routers.DefaultRouter()
 user_router.register(r'accounts', views.UserViewSet)

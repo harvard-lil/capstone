@@ -1,25 +1,24 @@
 import sys
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-from django.db import models
-from django.conf import settings
-from django.utils import timezone
-from django.db import IntegrityError
-from django.template.defaultfilters import slugify
-
-from utils import generate_unique_slug
 from datetime import datetime, timedelta
-import pytz
 import uuid
 import logging
+import pytz
 
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.db import models, IntegrityError
+from django.utils import timezone
+from django.template.defaultfilters import slugify
 from rest_framework.authtoken.models import Token
+
+from utils import generate_unique_slug
+from . import settings
 
 logger = logging.getLogger(__name__)
 
 
 class CaseUserManager(BaseUserManager):
-    def create_user(self, *args, **kwargs):
+    def create_user(self, **kwargs):
         email = kwargs.get('email')
         password = kwargs.get('password')
         if not email:
@@ -37,8 +36,12 @@ class CaseUserManager(BaseUserManager):
 
 
 class CaseUser(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(max_length=254, unique=True, db_index=True,
-        error_messages={'unique': u"A user with that email address already exists."})
+    email = models.EmailField(
+        max_length=254,
+        unique=True,
+        db_index=True,
+        error_messages={'unique': u"A user with that email address already exists."}
+    )
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
     case_allowance = models.IntegerField(null=False, blank=False, default=settings.CASE_DAILY_ALLOWANCE)
@@ -59,27 +62,27 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'User'
 
-    def get_activation_nonce(self, *args, **kwargs):
+    def get_activation_nonce(self):
         if self.key_expires + timedelta(hours=24) < timezone.now():
             self.create_nonce()
             self.save()
         return self.activation_nonce
 
-    def update_case_allowance(self, *args, **kwargs):
+    def update_case_allowance(self):
         if self.case_allowance_last_updated + timedelta(hours=settings.CASE_EXPIRE_HOURS) < timezone.now():
             self.case_allowance = settings.CASE_DAILY_ALLOWANCE
             self.case_allowance_last_updated = timezone.now()
             self.save()
 
-    def get_case_allowance_update_time_remaining(self, *args, **kwargs):
+    def get_case_allowance_update_time_remaining(self):
         td = self.case_allowance_last_updated + timedelta(hours=settings.CASE_EXPIRE_HOURS) - timezone.now()
         return "%sh. %sm." % (td.seconds / 3600, (td.seconds / 60) % 60)
 
-    def authenticate_user(self, *args, **kwargs):
+    def authenticate_user(self, **kwargs):
         nonce = kwargs.get('activation_nonce')
         if self.activation_nonce == nonce and self.key_expires + timedelta(hours=24) > timezone.now():
             try:
-                token = Token.objects.create(user=self)
+                Token.objects.create(user=self)
                 self.activation_nonce = ''
                 self.is_active = True
                 self.save()
@@ -315,7 +318,11 @@ class Court(models.Model):
 
     @classmethod
     def get_or_create_from_case(self, name, name_abbreviation, jurisdiction_id):
-        court, created = Court.objects.get_or_create(name=name, name_abbreviation=name_abbreviation, jurisdiction_id=jurisdiction_id)
+        court, created = Court.objects.get_or_create(
+                                    name=name,
+                                    name_abbreviation=name_abbreviation,
+                                    jurisdiction_id=jurisdiction_id
+                          )
         court.save()
         return court
 
@@ -344,7 +351,11 @@ class Case(models.Model):
     def create(self, caseid, **kwargs):
         case = self(caseid=caseid, **kwargs)
         case.slug = generate_unique_slug(Case, case.name_abbreviation)
-        reporter = Reporter.get_or_create_unique(name=kwargs.get('reporter'), jurisdiction=kwargs.get('jurisdiction'))
+        reporter = Reporter.get_or_create_unique(
+                        name=kwargs.get('reporter'),
+                        jurisdiction=kwargs.get('jurisdiction')
+                   )
+
         case.reporter = reporter
         case.save()
         return case
@@ -384,13 +395,20 @@ class Case(models.Model):
         except:
             jurisdiction_id = None
 
-        court = Court.get_or_create_from_case(name=row['court'], name_abbreviation=row['court_abbreviation'], jurisdiction_id=jurisdiction_id)
+        court = Court.get_or_create_from_case(
+                        name=row['court'],
+                        name_abbreviation=row['court_abbreviation'],
+                        jurisdiction_id=jurisdiction_id
+                )
 
         if court:
             self.court = court
             self.save()
 
-        reporter = Reporter.get_or_create_from_case(name_abbreviation=row['reporter'], jurisdiction_id=jurisdiction_id)
+        reporter = Reporter.get_or_create_from_case(
+                        name_abbreviation=row['reporter'],
+                        jurisdiction_id=jurisdiction_id
+                   )
 
         if reporter:
             self.reporter = reporter

@@ -1,3 +1,4 @@
+.idea
 *.pyc
 */settings.py
 *.todo
@@ -5,4 +6,3 @@ static/CACHE/*
 static/rest_framework/*
 static/admin/*
 static/django_extensions/*
-static/css/raw/*
