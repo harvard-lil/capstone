@@ -24,7 +24,6 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
             Yield each immediate subdirectory in path.  
         """
         paginator = self.connection.meta.client.get_paginator('list_objects')
-        path = path.rstrip('/')+'/'  # exactly one slash on right
         for result in paginator.paginate(Bucket=self.bucket_name, Prefix=self._fix_path(path), Delimiter='/'):
             for prefix in result.get('CommonPrefixes', []):
                 yield(self.relpath(prefix.get('Prefix').rstrip('/')))
