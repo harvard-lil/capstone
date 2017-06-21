@@ -526,7 +526,7 @@ class Projects(models.Model):
 
 
 class Pstep(models.Model):
-    step_id = models.CharField(unique=True, max_length=255)
+    step_id = models.CharField(unique=True, max_length=255, primary_key=True)
     type = models.CharField(max_length=1, blank=True, null=True)
     name = models.CharField(max_length=24, blank=True, null=True)
     prereq = models.CharField(max_length=1024, blank=True, null=True)
