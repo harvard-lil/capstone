@@ -1,0 +1,15 @@
+from .settings_dev import *
+
+DATABASES['tracking_tool']['PASSWORD'] = ''
+DATABASES['tracking_tool']['HOST'] = ''
+
+# for production access -- not needed for testing
+INGEST_STORAGE = {
+    'class': 'cap.storages.CapS3Storage',
+    'kwargs': {
+        'location': 'from_vendor',
+        'access_key': '',
+        'secret_key': '',
+        'bucket_name': '',
+    }
+}
