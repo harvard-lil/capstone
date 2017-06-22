@@ -9,7 +9,7 @@ from django.utils.module_loading import import_string
 from django.conf import settings
 from django.db import transaction, IntegrityError
 
-from cap.models import Volume, Page, Case
+from cap.models import VolumeXML, PageXML, CaseXML
 
 
 ### helpers ###
@@ -43,13 +43,13 @@ def ingest_volume(volume_path):
 
     try:
         with transaction.atomic():
-            volume = Volume.objects.filter(barcode=vol_barcode).first()
+            volume = VolumeXML.objects.filter(barcode=vol_barcode).first()
             if volume:
-                existing_case_ids = set(Case.objects.filter(volume=volume).values_list('barcode', flat=True))
-                existing_page_ids = set(Page.objects.filter(volume=volume).values_list('barcode', flat=True))
+                existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('barcode', flat=True))
+                existing_page_ids = set(PageXML.objects.filter(volume=volume).values_list('barcode', flat=True))
             else:
                 existing_case_ids = existing_page_ids = set()
-                volume = Volume(orig_xml=get_file_contents(volmets_path), barcode=vol_barcode)
+                volume = VolumeXML(orig_xml=get_file_contents(volmets_path), barcode=vol_barcode)
                 volume.save()
 
             print("Processing Cases for " + volume_path)
@@ -57,7 +57,7 @@ def ingest_volume(volume_path):
             for xml_path in files['casemets']:
                 case_barcode = vol_barcode + "_" + xml_path.split('.xml', 1)[0].rsplit('_', 1)[-1]
                 if case_barcode not in existing_case_ids:
-                    case = Case(orig_xml=get_file_contents(xml_path), volume=volume, barcode=case_barcode)
+                    case = CaseXML(orig_xml=get_file_contents(xml_path), volume=volume, barcode=case_barcode)
                     case.save()
 
                     # store case-to-page matches
@@ -69,7 +69,7 @@ def ingest_volume(volume_path):
             for xml_path in files['alto']:
                 alto_barcode = vol_barcode + "_" + xml_path.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
                 if alto_barcode not in existing_page_ids:
-                    page = Page(orig_xml=get_file_contents(xml_path), volume=volume, barcode=alto_barcode)
+                    page = PageXML(orig_xml=get_file_contents(xml_path), volume=volume, barcode=alto_barcode)
                     page.save()
 
                     # write case-to-page matches

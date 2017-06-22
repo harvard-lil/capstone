@@ -1,27 +1,43 @@
 from django.contrib import admin
 
-from .models import Volume, Case, Page
+from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Hollis, Reporter, ProcessStep, BookRequest, TrackingToolUser
 
 def new_class(name, *args, **kwargs):
     return type(name, args, kwargs)
 
-class VolumeAdmin(admin.ModelAdmin):
+class VolumeXMLAdmin(admin.ModelAdmin):
     pass
-admin.site.register(Volume, VolumeAdmin)
+admin.site.register(VolumeXML, VolumeXMLAdmin)
 
 class CasePageInline(admin.TabularInline):
-    model = Page.cases.through
+    model = PageXML.cases.through
     show_change_link = True
-    raw_id_fields = ['case', 'page']
+    raw_id_fields = ['casexml', 'pagexml']
 
-class PageAdmin(admin.ModelAdmin):
+class PageXMLAdmin(admin.ModelAdmin):
     inlines = [CasePageInline]
     exclude = ('cases',)
-admin.site.register(Page, PageAdmin)
+admin.site.register(PageXML, PageXMLAdmin)
 
-class CaseAdmin(admin.ModelAdmin):
+class CaseXMLAdmin(admin.ModelAdmin):
     inlines = [CasePageInline]
-admin.site.register(Case, CaseAdmin)
+admin.site.register(CaseXML, CaseXMLAdmin)
+
+class TrackingToolLogAdmin(admin.ModelAdmin):
+    raw_id_fields = ['volume']
+admin.site.register(TrackingToolLog, TrackingToolLogAdmin)
+
+class ReporterAdmin(admin.ModelAdmin):
+    pass
+    # to inline volumes:
+    # inlines = [new_class('VolumeInline', admin.TabularInline, model=VolumeMetadata)]
+admin.site.register(Reporter, ReporterAdmin)
+
+admin.site.register(VolumeMetadata)
+admin.site.register(Hollis)
+admin.site.register(ProcessStep)
+admin.site.register(BookRequest)
+admin.site.register(TrackingToolUser)
 
 # change Django defaults, because 'extra' isn't helpful anymore now you can add more with javascript
 admin.TabularInline.extra = 0

@@ -1,6 +1,6 @@
 from django.db import connection
 
-from cap.models import Volume
+from cap.models import VolumeXML
 
 
 def build_case_page_join_table(volume_id=None):
@@ -35,6 +35,6 @@ def build_case_page_join_table(volume_id=None):
 
 def fill_case_page_join_table():
     """ Call build_case_page_join_table for each volume ID. """
-    for volume in Volume.objects.all():
+    for volume in VolumeXML.objects.all():
         print("Indexing", volume)
         build_case_page_join_table(volume.id)

@@ -1,11 +1,12 @@
-from django.conf import settings
-from django.db import transaction, IntegrityError
+from django.core.exceptions import FieldDoesNotExist, ValidationError
+from django.db import IntegrityError
+from django.db.models import BooleanField
 
 from tqdm import tqdm
 
 from cap.models import Hollis as HollisDest
-from cap.models import VolumeMetadata, TrackingToolUsers, Reporter, ProcessStep, TrackingToolLog, Batch, BookRequest
-from tracking_tool.models import Batches, BookRequests, Eventloggers, Hollis, Pstep, Reporters, Users, Volumes
+from cap.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest
+from tracking_tool.models import BookRequests, Eventloggers, Hollis, Pstep, Reporters, Users, Volumes
 """
     Copies over 
 """
@@ -17,17 +18,21 @@ def ingest(dupcheck):
     copyModel(sourcemodel, destinationmodel, dupcheck)
     """
 
-    copyModel(Volumes, VolumeMetadata, dupcheck)
-    copyModel(Users, TrackingToolUsers, dupcheck)
+    copyModel(Users, TrackingToolUser, dupcheck)
+    copyModel(BookRequests, BookRequest, dupcheck)
+    copyModel(Pstep, ProcessStep, dupcheck, dupe_field='step_id')
     copyModel(Reporters, Reporter, dupcheck)
     copyModel(Hollis, HollisDest, dupcheck)
-    copyModel(Batches, Batch, dupcheck)
-    copyModel(BookRequests, BookRequest, dupcheck)
-    copyModel(Pstep, ProcessStep, dupcheck)
-    copyModel(Eventloggers, TrackingToolLog, dupcheck)
+    copyModel(Volumes, VolumeMetadata, dupcheck, {
+        'created_by': 'created_by_id',
+    }, dupe_field='bar_code')
+    copyModel(Eventloggers, TrackingToolLog, dupcheck, {
+        'bar_code': 'volume_id',
+        'created_by': 'created_by_id',
+    })
 
 
-def copyModel(source, destination, dupcheck):
+def copyModel(source, destination, dupcheck, name_lookup={}, dupe_field='id'):
     """
     This essentially just copies all records in one table to another 
     table with the same column names.
@@ -40,27 +45,52 @@ def copyModel(source, destination, dupcheck):
     where updated_at = '0000-00-00 00:00:00+00';
     """
     print("Copying {} to {}".format(source.__name__, destination.__name__))
-    
+
+    # build dictionary of source fields
+    source_fields = {field.name: field for field in source._meta.get_fields()}
+
+    # build dictionary of destination fields, if they exist
+    dest_fields = {}
+    for field_name in source_fields.keys():
+        dest_field_name = name_lookup.get(field_name, field_name)
+        try:
+            dest_fields[dest_field_name] = destination._meta.get_field(dest_field_name)
+        except FieldDoesNotExist:
+            pass
+
     source_collection=source.objects.all()
-    pbar = tqdm(total=source_collection.count())
-    for source_record in source_collection:
-        if dupcheck == True:
-            if hasattr(source_record, 'id'):
-                created = destination.objects.filter(id=source_record.id).exists()
-            elif hasattr(source_record, 'bar_code'):
-                created = destination.objects.filter(bar_code=source_record.bar_code).exists()
-            elif hasattr(source_record, 'step_id'):
-                created = destination.objects.filter(step_id=source_record.step_id).exists()
-            else:
-                raise("Unrecognized ID in existence check")
-            
-            if created:
-                pbar.update(1)
+    if dupcheck:
+        dupe_set = set(destination.objects.values_list(dupe_field, flat=True))
+    for source_record in tqdm(source_collection, total=source_collection.count()):
+        if dupcheck:
+            if getattr(source_record, dupe_field) in dupe_set:
                 continue
 
         destination_record = destination()
-        for field in source._meta.get_fields():
-            setattr(destination_record, field.name, getattr(source_record, field.name))
-        destination_record.save()
-        pbar.update(1)
-    pbar.close()
+        for field_name, source_field in source_fields.items():
+            # skip fields that don't exist on dest
+            dest_field_name = name_lookup.get(field_name, field_name)
+            dest_field = dest_fields.get(dest_field_name)
+            if not dest_field:
+                continue
+
+            value = getattr(source_record, field_name)
+
+            # special cases
+            # null value in boolean field should be False
+            if type(dest_field) == BooleanField:
+                if not value or value == 'N':
+                    value = False
+                elif value == 'Y':
+                    value = True
+
+            # skip broken request_id links -- sources don't exist
+            if field_name == 'request_id' and value in (53, 54, 55, 56):
+                continue
+
+            setattr(destination_record, dest_field_name, value)
+
+        try:
+            destination_record.save()
+        except IntegrityError as e:
+            print(e)
