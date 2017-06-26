@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from capi_project.tests import helpers
 from capi_project import models
 
-class AccountTestCase(TransactionTestCase):
+class AccountViewsTestCase(TransactionTestCase):
     def setUp(self):
         helpers.setup_authenticated_user(email="authentic_boblawblaw@lawblog.com", first_name="Authentic-Bob",
                                                 last_name="Lawblaw", password="unique_authentic_password")
@@ -21,7 +21,6 @@ class AccountTestCase(TransactionTestCase):
         assert "email" in input_names
         assert "password" in input_names
 
-
     def test_login_view(self):
         client = RequestsClient()
         response = client.get("http://testserver/accounts/login")
@@ -33,7 +32,6 @@ class AccountTestCase(TransactionTestCase):
         assert "csrfmiddlewaretoken" in input_names
         assert "email" in input_names
         assert "password" in input_names
-
 
     def test_login(self):
         client = RequestsClient()
@@ -57,7 +55,6 @@ class AccountTestCase(TransactionTestCase):
 
         case_allowance = soup.findAll("span", {"class": "user_case_allowance"})[0].text
         assert case_allowance == "500"
-
 
         """
         Testing invalid login 

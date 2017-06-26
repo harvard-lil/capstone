@@ -2,13 +2,12 @@ import os
 from wsgiref.util import FileWrapper
 import logging
 
-from django.db.models import Q
 from django.http import HttpResponse, StreamingHttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import renderers, viewsets, mixins, filters as rs_filters
 
 from . import permissions, resources, serializers, models, filters, settings
-from .view_helpers import format_query, make_query, merge_filters
+from .view_helpers import make_query, merge_filters
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +70,14 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     def download(self, **kwargs):
         cases = self.queryset.all()
         query_dict = {}
-        for key in kwargs:
-            query_dict[key] = kwargs.get('slug')
+        query_params = self.request.query_params
+
+        for key in query_params:
+            query_params[key] = query_params.get(key)
+
+        query_dict.pop('type')
+
+        query_dict['slug'] = kwargs.get('slug')
 
         try:
             max_num = int(query_dict.pop('max', settings.CASE_DAILY_ALLOWANCE))
