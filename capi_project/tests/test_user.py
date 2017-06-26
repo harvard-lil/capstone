@@ -14,8 +14,8 @@ import json
 
 class UserTestCase(TestCase):
     def setUp(self):
-        user = helpers.setup_user(id=1, email="boblawblaw@lawblog.com", first_name="Bob", last_name="Lawblaw", password="unique_password")
-        authenticated_user = helpers.setup_authenticated_user(id=2, email="authentic_boblawblaw@lawblog.com", first_name="Authentic-Bob", last_name="Lawblaw", password="unique_authentic_password")
+        helpers.setup_user(id=1, email="boblawblaw@lawblog.com", first_name="Bob", last_name="Lawblaw", password="unique_password")
+        helpers.setup_authenticated_user(id=2, email="authentic_boblawblaw@lawblog.com", first_name="Authentic-Bob", last_name="Lawblaw", password="unique_authentic_password")
 
     def test_case_permissions(self):
         user = CaseUser.objects.get(email="boblawblaw@lawblog.com")
@@ -36,10 +36,16 @@ class UserTestCase(TestCase):
         token = user.get_api_key()
         assert len(token) > 5
 
+    def test_authenticated_user(self):
+        user = CaseUser.objects.get(email="authentic_boblawblaw@lawblog.com")
+        assert user.is_active
+
+
     def test_unauthenticated_user(self):
         user = CaseUser(email="sketchy@gmail.com", first_name="Don't", last_name="Trust")
         token = user.get_api_key()
         assert token is None
+
 
     def test_case_allowance_time_update(self):
         user = CaseUser.objects.get(id=2)
