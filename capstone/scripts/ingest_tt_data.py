@@ -4,7 +4,6 @@ from django.db.models import BooleanField
 
 from tqdm import tqdm
 
-from cap.models import Hollis as HollisDest
 from cap.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest
 from tracking_tool.models import BookRequests, Eventloggers, Hollis, Pstep, Reporters, Users, Volumes
 """

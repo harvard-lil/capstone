@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Hollis, Reporter, ProcessStep, BookRequest, TrackingToolUser
+from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, TrackingToolUser
 
 def new_class(name, *args, **kwargs):
     return type(name, args, kwargs)
@@ -34,7 +34,6 @@ class ReporterAdmin(admin.ModelAdmin):
 admin.site.register(Reporter, ReporterAdmin)
 
 admin.site.register(VolumeMetadata)
-admin.site.register(Hollis)
 admin.site.register(ProcessStep)
 admin.site.register(BookRequest)
 admin.site.register(TrackingToolUser)
