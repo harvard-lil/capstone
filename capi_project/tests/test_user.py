@@ -1,16 +1,10 @@
 from django.test import TestCase
-from capi_project.models import Case, CaseUser
+from capi_project.models import CaseUser
 
-from rest_framework.test import APIRequestFactory
-from django.test import Client
 from django.conf import settings
-from datetime import timedelta
 import capi_project.tests.helpers as helpers
 import pytz
 from datetime import datetime, timedelta
-
-
-import json
 
 class UserTestCase(TestCase):
     def setUp(self):
@@ -21,7 +15,7 @@ class UserTestCase(TestCase):
         user = CaseUser.objects.get(email="boblawblaw@lawblog.com")
         assert user.case_allowance == settings.CASE_DAILY_ALLOWANCE
         user.case_allowance = 200
-        user.case_allowance_last_updated =  user.case_allowance_last_updated - timedelta(hours=settings.CASE_EXPIRE_HOURS)
+        user.case_allowance_last_updated = user.case_allowance_last_updated - timedelta(hours=settings.CASE_EXPIRE_HOURS)
         user.save()
         user.update_case_allowance()
         assert user.case_allowance == settings.CASE_DAILY_ALLOWANCE

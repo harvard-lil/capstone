@@ -2,13 +2,12 @@ import os
 from wsgiref.util import FileWrapper
 import logging
 
-from django.db.models import Q
 from django.http import HttpResponse, StreamingHttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import renderers, viewsets, mixins, filters as rs_filters
 
 from . import permissions, resources, serializers, models, filters, settings
-from .view_helpers import format_query, make_query, merge_filters
+from .view_helpers import make_query, merge_filters
 
 logger = logging.getLogger(__name__)
 
