@@ -32,7 +32,7 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'email'
 
     @list_route(methods=['get'], permission_classes=[AllowAny])
-    def register(self):
+    def register(self, request):
         serializer = serializers.RegisterUserSerializer()
         return Response({'serializer': serializer}, template_name='sign-up.html')
 
