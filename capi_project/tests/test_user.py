@@ -39,13 +39,12 @@ class UserTestCase(TestCase):
     def test_authenticated_user(self):
         user = CaseUser.objects.get(email="authentic_boblawblaw@lawblog.com")
         assert user.is_active
-
+        assert user.is_authenticated
 
     def test_unauthenticated_user(self):
         user = CaseUser(email="sketchy@gmail.com", first_name="Don't", last_name="Trust")
         token = user.get_api_key()
         assert token is None
-
 
     def test_case_allowance_time_update(self):
         user = CaseUser.objects.get(id=2)
