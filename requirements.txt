@@ -1,5 +1,6 @@
 appnope==0.1.0
 backports.shutil-get-terminal-size==1.0.0
+beautifulsoup4==4.6.0
 boto3==1.4.2
 botocore==1.4.84
 cffi==1.8.3
