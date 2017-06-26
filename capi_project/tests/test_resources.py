@@ -1,6 +1,4 @@
-from django.test import TestCase, Client
-from django.conf import settings
-import capi_project.tests.helpers as helpers
+from django.test import TestCase
 from capi_project.resources import *
 
 class ModelTestCase(TestCase):

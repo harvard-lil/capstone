@@ -1,7 +1,7 @@
 from capi_project.models import Case, CaseUser, Court, Jurisdiction, Reporter
 from capi_project.utils import generate_unique_slug
 import pytz
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def setup_jurisdiction(**kwargs):
     jur = Jurisdiction(**kwargs)
