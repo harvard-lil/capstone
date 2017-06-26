@@ -7,7 +7,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import renderers, viewsets, mixins, filters as rs_filters
 
 from . import permissions, resources, serializers, models, filters, settings
-from .view_helpers import make_query, merge_filters
+from .view_helpers import format_query, make_query, merge_filters
 
 logger = logging.getLogger(__name__)
 
@@ -69,14 +69,9 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
     def download(self, **kwargs):
         cases = self.queryset.all()
-        query_dict = {}
         query_params = self.request.query_params
 
-        for key in query_params:
-            query_params[key] = query_params.get(key)
-
-        query_dict.pop('type')
-
+        query_dict = format_query(query_params, dict())
         query_dict['slug'] = kwargs.get('slug')
 
         try:
