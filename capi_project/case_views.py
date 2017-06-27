@@ -68,6 +68,10 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     ordering = ('decisiondate',)
 
     def download_many(self):
+        """
+        This method handles general downloads.
+        See download_one method for specific slug-based downloads.
+        """
         cases = self.queryset.all()
 
         try:
@@ -99,6 +103,18 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         return response
 
     def download_one(self, **kwargs):
+        """
+        This method handles downloads by specific slug
+
+        :param kwargs: should only consist of slug field right now
+         for instance, request might be `/cases/people-v-tower/?type=download`
+         kwargs would be {'slug': 'people-v-tower' }
+         see serializers.py's CaseSerializer for the `lookup_field` overwrite
+         From http://www.django-rest-framework.org/api-guide/generic-views/
+         lookup_field - The model field that should be used to for performing object lookup of individual model instances.
+         Defaults to 'pk'.
+
+        """
         if not kwargs.get('slug'):
             return JSONResponse({'message': 'Download file error: %s' % e}, status=403,)
         case = models.Case.objects.get(slug=kwargs.get('slug'))
