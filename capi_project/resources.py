@@ -30,7 +30,7 @@ def format_filename(case_id, whitelisted=False):
 
 
 def download_blacklisted(requester_id, list_of_files):
-    list_of_files = map(format_filename, list_of_files)
+    list_of_files = list(map(format_filename, list_of_files))
     string_list = str(list_of_files)
     zip_filename = "cases_%s_%s.zip" % (requester_id, get_formatted_date())
 

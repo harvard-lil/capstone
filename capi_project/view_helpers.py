@@ -1,6 +1,7 @@
 import operator
 
 from django.db.models import Q
+from functools import reduce
 
 
 def merge_filters(q_list, operation):
@@ -8,7 +9,8 @@ def merge_filters(q_list, operation):
     return reduce(reducer_operation, q_list)
 
 
-def make_query((key, val)):
+def make_query(query_pair):
+    (key, val) = query_pair
     if val:
         qwarg = {}
         if ('_id' not in key) and ('decisiondate' not in key):
@@ -22,7 +24,7 @@ def format_query(params, args_dict):
     if not len(params):
         return args_dict
 
-    for key, val in params.items():
+    for key, val in list(params.items()):
         if key == 'min_year':
             args_dict['decisiondate__gte'] = val
         elif key == 'max_year':

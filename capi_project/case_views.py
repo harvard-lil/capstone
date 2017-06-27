@@ -81,7 +81,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         # TODO: throttle requests
 
-        queries = map(make_query, query_dict.items())
+        queries = list(map(make_query, list(query_dict.items())))
         logger.info("query %s, max_num %s" % (queries, max_num))
 
         if len(queries) > 0:
