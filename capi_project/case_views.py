@@ -8,7 +8,6 @@ from rest_framework import renderers, viewsets, mixins, filters as rs_filters
 
 from . import permissions, resources, serializers, models, filters, settings
 from .view_helpers import format_query, make_query, merge_filters
-import sys, traceback
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +108,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             blacklisted_case_count = 1
 
         has_case_permissions = self.check_case_permissions(blacklisted_case_count)
-        response = self.create_download_response([case.id], blacklisted_case_count, permitted=has_case_permissions)
+        response = self.create_download_response([case.caseid], blacklisted_case_count, permitted=has_case_permissions)
 
         return response
 
@@ -168,5 +167,4 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
                 zip_filename = resources.download_whitelisted(self.request.user.id, caseids_list)
             return zip_filename
         except Exception as e:
-            errors = traceback.print_exc()
-            raise Exception("Download cases error %s \n %s" % (e, errors))
+            raise Exception("Download cases error %s" % e)
