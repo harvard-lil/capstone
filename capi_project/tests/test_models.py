@@ -1,6 +1,6 @@
 from django.test import TestCase
 import capi_project.tests.helpers as helpers
-from capi_project.models import Reporter
+from capi_project.models import Reporter, CaseUser
 
 
 class ModelTestCase(TestCase):
@@ -35,3 +35,15 @@ class ModelTestCase(TestCase):
         assert reporter.slug == 'us-ct-cl'
         reporter = Reporter.get_or_create_unique(name='Smith', jurisdiction='New Hampshire')
         assert reporter.slug == 'nh-smith'
+
+
+class CaseUserTestCase(TestCase):
+    def setUp(self):
+        helpers.setup_authenticated_user(email="boblawblaw@lawblog.com", first_name="Bob", last_name="Lawblaw", password="unique_password")
+
+    def test_case_download_allowed(self):
+        user = CaseUser.objects.get(email="boblawblaw@lawblog.com")
+        assert user.case_allowance == 500
+        assert user.case_download_allowed(10)
+        assert not user.case_download_allowed(501)
+

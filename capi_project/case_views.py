@@ -98,8 +98,8 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         blacklisted_cases = list(cases.exclude(jurisdiction__name='Illinois').values_list('caseid', flat=True))
         blacklisted_case_count = len(set(caseids_list) & set(blacklisted_cases))
 
-        has_case_permissions = self.check_case_permissions(blacklisted_case_count)
-        response = self.create_download_response(caseids_list, blacklisted_case_count, permitted=has_case_permissions)
+        download_allowed = self.request.user.case_download_allowed(blacklisted_case_count)
+        response = self.create_download_response(caseids_list, blacklisted_case_count, allowed=download_allowed)
         return response
 
     def download_one(self, **kwargs):
@@ -123,13 +123,13 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         if case.jurisdiction.name != 'Illinois':
             blacklisted_case_count = 1
 
-        has_case_permissions = self.check_case_permissions(blacklisted_case_count)
-        response = self.create_download_response([case.caseid], blacklisted_case_count, permitted=has_case_permissions)
+        download_allowed = self.request.user.case_download_allowed(blacklisted_case_count)
+        response = self.create_download_response([case.caseid], blacklisted_case_count, allowed=download_allowed)
 
         return response
 
-    def create_download_response(self, case_list, blacklisted_case_count, permitted=False):
-        if permitted:
+    def create_download_response(self, case_list, blacklisted_case_count, allowed=False):
+        if allowed:
             try:
                 zip_filename = self.download_cases(case_list, blacklisted_case_count)
                 zip_file = "%s/%s" % (settings.CASE_ZIP_DIR, zip_filename)
@@ -153,13 +153,6 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
                             )
 
             return JSONResponse({'message': message, 'details': details}, status=403)
-
-    def check_case_permissions(self, case_count):
-        if case_count > 0:
-            self.request.user.update_case_allowance()
-            return self.request.user.case_allowance >= case_count
-        else:
-            return True
 
     def list(self, *args, **kwargs):
         if not self.request.query_params.get('type') == 'download':

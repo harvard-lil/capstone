@@ -112,6 +112,12 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.email.split('@')[0]
 
+    def case_download_allowed(self, case_count):
+        if case_count > 0:
+            self.update_case_allowance()
+            return self.case_allowance >= case_count
+        else:
+            return True
 
 class Volume(models.Model):
     id = models.AutoField(primary_key=True)
