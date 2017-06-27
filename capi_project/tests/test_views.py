@@ -1,9 +1,10 @@
 from django.test import TransactionTestCase
+from django.http.request import QueryDict, MultiValueDict
 from rest_framework.test import RequestsClient
 from bs4 import BeautifulSoup
 
 from capi_project.tests import helpers
-from capi_project import models
+from capi_project import models, view_helpers
 
 class AccountViewsTestCase(TransactionTestCase):
     def setUp(self):
@@ -63,3 +64,25 @@ class AccountViewsTestCase(TransactionTestCase):
                                json={'email': user.email, 'password': user_password + "1"},
                                headers={'X-CSRFToken': csrftoken})
         assert response.status_code == 400
+
+
+    def test_view_helpers(self):
+        dictionary = {u'max': [u'3'], u'type': [u'download'], u'jurisdiction_name': [u'alabama']}
+        query_params = QueryDict('', mutable=True)
+        query_params.update(MultiValueDict(dictionary))
+        formatted_params = view_helpers.format_query(query_params, dict())
+        """
+        assert type is removed
+        """
+        assert 'type' not in formatted_params
+        assert 'max' not in formatted_params
+
+        queries = map(view_helpers.make_query, formatted_params.items())
+        assert len(queries) == 1
+
+        first_q = queries[0]
+        assert first_q.children[0][0] == 'jurisdiction__name__icontains'
+
+
+
+

@@ -18,7 +18,7 @@ def make_query((key, val)):
 
 
 def format_query(params, args_dict):
-    blacklisted_keys = ['type', 'page', 'offset']
+    blacklisted_keys = ['type', 'page', 'offset', 'max']
     if not len(params):
         return args_dict
 
