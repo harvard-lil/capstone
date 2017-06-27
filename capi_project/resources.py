@@ -116,6 +116,7 @@ def email(reason, user):
             'CaseLaw Access Project: Verify your email address',
             """
                 Please click here to verify your email address: %s
+                If you believe you have received this message in error, please ignore it.
             """ % token_url,
             settings.EMAIL_ADDRESS,
             [user.email],
