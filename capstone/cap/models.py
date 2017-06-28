@@ -228,4 +228,3 @@ class DataMigration(models.Model):
     alto_xml_rollback = JSONField()
     volume_xml_rollback = JSONField()
     case_xml_rollback = JSONField()
-#, help_text=""
