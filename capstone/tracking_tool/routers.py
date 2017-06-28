@@ -18,12 +18,10 @@ class TrackingToolDatabaseRouter(object):
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
-        # Allow any relation between two models that are both in the Example app.
-        if obj1._meta.app_label == 'tracking_tool' and obj2._meta.app_label == 'tracking_tool':
+        # Allow any relation between two models that are both in the same app.
+        if obj1._meta.app_label == obj2._meta.app_label:
             return True
-        # Block relationship if one object is in the Example app and the other isn't.
-        elif 'tracking_tool' in [obj1._meta.app_label, obj2._meta.app_label]:
-            return False
+        
         return False
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):

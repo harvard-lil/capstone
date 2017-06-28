@@ -8,7 +8,7 @@ import xmltodict
 from django.db import transaction
 from lxml import etree
 
-from cap.models import Volume, Page, Case, DataMigration
+from cap.models import VolumeXML, PageXML, CaseXML, DataMigration
 from .helpers import nsmap
 
 def run_pending_migrations():
@@ -115,11 +115,11 @@ def modify(changes, type):
         }]
     """
     if type == 'volume':
-        doc = Volume.objects.get(barcode=changes['barcode'])
+        doc = VolumeXML.objects.get(barcode=changes['barcode'])
     elif type == 'case':
-        doc = Case.objects.get(barcode=changes['case_id'])
+        doc = CaseXML.objects.get(barcode=changes['case_id'])
     elif type == 'alto':
-        doc = Page.objects.get(barcode=changes['alto_id'])
+        doc = PageXML.objects.get(barcode=changes['alto_id'])
 
     root = etree.fromstring(doc.orig_xml)
     tree = etree.ElementTree(root)
