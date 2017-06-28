@@ -62,9 +62,7 @@ def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
         # with Reporter, make an array of hollis numbers
         if source.__name__ == 'Reporters':
             hollis_numbers = Hollis.objects.filter(id=source_record.id).values_list('hollis_no', flat=True)
-            #this is stupid, but I don't think you can get a list out of the orm directly
-            hollis_number_array = [hollis_number for hollis_number in hollis_numbers]
-            setattr(destination_record, 'hollis', hollis_number_array)
+            destination_record.hollis = list(hollis_numbers)
 
         for source_field_name, dest_field_name in field_map.items():
             value = getattr(source_record, source_field_name)
