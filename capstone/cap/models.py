@@ -50,6 +50,10 @@ class BookRequest(models.Model):
     subject = models.CharField(max_length=512, blank=True, null=True, help_text="Email subject")
     delivery_date = models.DateField(blank=True, null=True, help_text="Requested date of delivery")
 
+    def __str__(self):
+        return self.label
+
+
 class ProcessStep(models.Model):
     """
     For each step in the digitization process, there was an associated
@@ -102,7 +106,7 @@ class ProcessStep(models.Model):
     updated_at = models.DateTimeField()
 
     def __str__(self):
-        return "%s - %s" % (self.step_id, self.name)
+        return "%s - %s" % (self.step, self.label)
 
 class Reporter(models.Model):
     jurisdiction = models.CharField(max_length=64, blank=True, null=True)
@@ -117,7 +121,7 @@ class Reporter(models.Model):
     hollis = ArrayField(models.CharField(max_length=9), blank=True, help_text="This is going to replace the Hollis model")
 
     def __str__(self):
-        return "%s: %s %s-%s" % (self.short, self.reporter, self.start_date or '', self.end_date or '')
+        return "%s: %s %s-%s" % (self.short_name, self.full_name, self.start_year or '', self.end_year or '')
 
 class VolumeMetadata(models.Model):
     barcode = models.CharField(unique=True, max_length=64, primary_key=True)
@@ -129,8 +133,8 @@ class VolumeMetadata(models.Model):
     nominative_volume_number = models.CharField(max_length=1024, blank=True, null=True)
     nominative_name = models.CharField(max_length=1024, blank=True, null=True)
     series_volume_number = models.CharField(max_length=1024, blank=True, null=True)
-    spine_start_date = models.IntegerField(blank=True, null=True)
     spine_start_year = models.IntegerField(blank=True, null=True)
+    spine_end_year = models.IntegerField(blank=True, null=True)
     start_year = models.IntegerField(blank=True, null=True)
     end_year = models.IntegerField(blank=True, null=True)
     page_start_year = models.IntegerField(blank=True, null=True)
@@ -183,7 +187,7 @@ class TrackingToolLog(models.Model):
     version_string = models.CharField(max_length=32, blank=True, null=True, help_text="'YYYY_DD_MM_hh.mm.ss' Appended to s3 dir to distinguish versions")
 
     def __str__(self):
-        return self.type
+        return "%s %s" % (self.pstep, self.entry_text)
 
 class VolumeXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)  # models.OneToOneField(VolumeMetadata)
