@@ -18,7 +18,6 @@ class Batches(models.Model):
     updated_at = models.DateTimeField()
 
     class Meta:
-        managed = False
         db_table = 'batches'
 
 
@@ -37,7 +36,6 @@ class BookRequests(models.Model):
     delivery_date = models.DateField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'book_requests'
 
 
@@ -50,7 +48,6 @@ class Casepages(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'casepages'
 
 
@@ -69,7 +66,6 @@ class Cases(models.Model):
     redacted_mets_xml_md5 = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'cases'
 
 
@@ -89,7 +85,6 @@ class Eventloggers(models.Model):
     version_string = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'eventloggers'
 
 
@@ -105,7 +100,6 @@ class Holdingsbooks(models.Model):
     volume = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'holdingsbooks'
 
 
@@ -117,7 +111,6 @@ class Holdingstrays(models.Model):
     side = models.CharField(max_length=1)
 
     class Meta:
-        managed = False
         db_table = 'holdingstrays'
 
 
@@ -128,7 +121,6 @@ class Hollis(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'hollis'
 
 
@@ -148,7 +140,6 @@ class InnodataCaseImages(models.Model):
     created_at = models.DateTimeField()
 
     class Meta:
-        managed = False
         db_table = 'innodata_case_images'
 
 
@@ -168,7 +159,6 @@ class InnodataPrivateCaseImages(models.Model):
     created_at = models.DateTimeField()
 
     class Meta:
-        managed = False
         db_table = 'innodata_private_case_images'
 
 
@@ -217,7 +207,6 @@ class InnodataPrivateCases(models.Model):
     qanotes = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'innodata_private_cases'
 
 
@@ -239,7 +228,6 @@ class InnodataPrivateImages(models.Model):
     bucket = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'innodata_private_images'
 
 
@@ -258,7 +246,6 @@ class InnodataPrivateVolumes(models.Model):
     bucket = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'innodata_private_volumes'
 
 
@@ -278,7 +265,6 @@ class InnodataSharedCaseImages(models.Model):
     created_at = models.DateTimeField()
 
     class Meta:
-        managed = False
         db_table = 'innodata_shared_case_images'
 
 
@@ -327,7 +313,6 @@ class InnodataSharedCases(models.Model):
     qanotes = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'innodata_shared_cases'
 
 
@@ -349,7 +334,6 @@ class InnodataSharedImages(models.Model):
     bucket = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'innodata_shared_images'
 
 
@@ -368,7 +352,6 @@ class InnodataSharedVolumes(models.Model):
     bucket = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'innodata_shared_volumes'
 
 
@@ -377,7 +360,6 @@ class Migrations(models.Model):
     batch = models.IntegerField()
 
     class Meta:
-        managed = False
         db_table = 'migrations'
 
 
@@ -402,7 +384,6 @@ class Pages(models.Model):
     redacted_tiff_md5 = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'pages'
 
 
@@ -418,7 +399,6 @@ class Preferences(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'preferences'
 
 
@@ -459,7 +439,6 @@ class PrivateReporterTagStats(models.Model):
     qanotes = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'private_reporter_tag_stats'
 
 
@@ -503,7 +482,6 @@ class PrivateVolumeTagStats(models.Model):
     qanotes = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'private_volume_tag_stats'
 
 
@@ -512,7 +490,6 @@ class ProjectVolume(models.Model):
     project_id = models.CharField(max_length=24)
 
     class Meta:
-        managed = False
         db_table = 'project_volume'
 
 
@@ -521,7 +498,6 @@ class Projects(models.Model):
     notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'projects'
 
 
@@ -535,7 +511,6 @@ class Pstep(models.Model):
     updated_at = models.DateTimeField()
 
     class Meta:
-        managed = False
         db_table = 'pstep'
 
 
@@ -557,7 +532,6 @@ class Reporters(models.Model):
     observed_volumes = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'reporters'
 
 
@@ -570,7 +544,6 @@ class S3KeyErrors(models.Model):
     modified_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 's3_key_errors'
 
 
@@ -588,7 +561,6 @@ class S3ScannerOutput(models.Model):
     bucket = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 's3_scanner_output'
 
 
@@ -604,7 +576,6 @@ class ServerStats(models.Model):
     updated_at = models.DateTimeField()
 
     class Meta:
-        managed = False
         db_table = 'server_stats'
 
 
@@ -645,7 +616,6 @@ class SharedReporterTagStats(models.Model):
     qanotes = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'shared_reporter_tag_stats'
 
 
@@ -689,7 +659,6 @@ class SharedVolumeTagStats(models.Model):
     qanotes = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'shared_volume_tag_stats'
 
 
@@ -702,7 +671,6 @@ class Statcache(models.Model):
     json = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'statcache'
 
 
@@ -716,7 +684,6 @@ class Users(models.Model):
     remember_token = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'users'
 
 
@@ -772,7 +739,6 @@ class VolumeBackups(models.Model):
     meyer_pallet = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'volume_backups'
 
 
@@ -828,5 +794,4 @@ class Volumes(models.Model):
     meyer_pallet = models.CharField(max_length=32, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'volumes'

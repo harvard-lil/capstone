@@ -44,11 +44,8 @@ Set up a postgres database:
 
     (capstone)$ psql -c "CREATE DATABASE capstone;"
     (capstone)$ fab init_db  # one time -- set up database tables and development Django admin user
-    (capstone)$ fab ingest_volumes  # load in our test volume
+    (capstone)$ fab load_test_data  # load in our test data
 
-If you have set up access to a tracking tool database in your config, you can import tracking tool data into capstone:
-    (capstone)$ fab ingest_metadata  # load metadata from tracking tool
-    
 Running Capstone Server
 -----------------------
     

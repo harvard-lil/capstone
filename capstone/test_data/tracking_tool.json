@@ -1,0 +1,939 @@
+[
+{
+  "model": "tracking_tool.users",
+  "pk": 1,
+  "fields": {
+    "privlevel": "0",
+    "email": "example@example.com",
+    "password": "password",
+    "active": 1,
+    "created_at": "2013-07-27T00:17:24Z",
+    "updated_at": "2016-10-24T16:57:30Z",
+    "remember_token": ""
+  }
+},
+{
+  "model": "tracking_tool.users",
+  "pk": 3,
+  "fields": {
+    "privlevel": "15",
+    "email": "example@example.com",
+    "password": "password",
+    "active": 1,
+    "created_at": "2013-07-27T00:17:24Z",
+    "updated_at": "2015-09-16T01:52:04Z",
+    "remember_token": ""
+  }
+},
+{
+  "model": "tracking_tool.users",
+  "pk": 4,
+  "fields": {
+    "privlevel": "5",
+    "email": "example@example.com",
+    "password": "password",
+    "active": 1,
+    "created_at": "2013-07-27T00:17:24Z",
+    "updated_at": "2016-09-23T20:37:34Z",
+    "remember_token": ""
+  }
+},
+{
+  "model": "tracking_tool.users",
+  "pk": 7,
+  "fields": {
+    "privlevel": "10",
+    "email": "example@example.com",
+    "password": "password",
+    "active": 0,
+    "created_at": "2013-07-29T21:09:14Z",
+    "updated_at": "2017-01-13T16:43:39Z",
+    "remember_token": ""
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Dqac",
+  "fields": {
+    "type": null,
+    "name": "imaging QA completed",
+    "prereq": "",
+    "desc": "Results of QA of digital images (needs to be modeled)",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-08-21T04:03:51Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 914827,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Underground Vaults Code: L0000548486",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 1,
+    "created_at": "2016-07-20T00:00:00Z",
+    "updated_at": "2016-08-16T19:31:09Z",
+    "pstep_id": "Pugv",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Dx2v",
+  "fields": {
+    "type": null,
+    "name": "xfer to vendor",
+    "prereq": "",
+    "desc": "Transferred to the s3 bucket for retrieval by the processing vendor",
+    "created_at": "2014-04-14T22:09:47Z",
+    "updated_at": "2014-04-14T22:09:47Z"
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Dclr",
+  "fields": {
+    "type": null,
+    "name": "Cleared for Delivery",
+    "prereq": "",
+    "desc": "The scans have been accepted by Innodata, and the volumes are cleared to be shipped.",
+    "created_at": "2016-05-02T23:16:47Z",
+    "updated_at": "2016-05-03T01:25:42Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 242832,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Changed rare from '' to 'N.",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 3,
+    "created_at": "2015-08-24T19:03:47Z",
+    "updated_at": "2015-08-24T19:03:47Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 242833,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Changed HSC Review from '' to 'N.",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 3,
+    "created_at": "2015-08-24T19:03:47Z",
+    "updated_at": "2015-08-24T19:03:47Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 242834,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Changed Volume from '' to '23.",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 3,
+    "created_at": "2015-08-24T19:03:47Z",
+    "updated_at": "2015-08-24T19:03:47Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 242835,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Automatically defined as not rare (1851 or newer)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 3,
+    "created_at": "2015-08-24T19:03:49Z",
+    "updated_at": "2015-08-24T19:03:49Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 242836,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Automatically Excluded from HSC Review (1851 or newer)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 3,
+    "created_at": "2015-08-24T19:03:49Z",
+    "updated_at": "2015-08-24T19:03:49Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 242837,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "analyzed (streamlined tool)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 3,
+    "created_at": "2015-08-24T19:03:49Z",
+    "updated_at": "2015-08-24T19:03:49Z",
+    "pstep_id": "Pana",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 262930,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Scan New Batch",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T18:56:50Z",
+    "updated_at": "2015-09-03T18:58:27Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 263956,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Scan Open",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T23:52:13Z",
+    "updated_at": "2015-09-03T23:53:35Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 263957,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "QCC In Progress",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T23:52:13Z",
+    "updated_at": "2015-09-03T23:53:35Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 263958,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "QCC Complete",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T23:53:06Z",
+    "updated_at": "2015-09-03T23:53:35Z",
+    "pstep_id": "Dqac",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 819602,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 1,
+    "created_at": "2016-03-26T14:02:48Z",
+    "updated_at": "2016-03-26T14:02:48Z",
+    "pstep_id": "Drcs",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.users",
+  "pk": 18,
+  "fields": {
+    "privlevel": "5",
+    "email": "example@example.com",
+    "password": "password",
+    "active": 0,
+    "created_at": "2015-07-31T10:05:26Z",
+    "updated_at": "2017-02-08T20:58:32Z",
+    "remember_token": ""
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 210332,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Request Queued (Request ID: 44)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 4,
+    "created_at": "2015-07-28T16:08:54Z",
+    "updated_at": "2015-07-28T16:08:54Z",
+    "pstep_id": "Prqu",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.users",
+  "pk": 25,
+  "fields": {
+    "privlevel": "10",
+    "email": "example@example.com",
+    "password": "password",
+    "active": 0,
+    "created_at": "2015-08-26T21:15:57Z",
+    "updated_at": "2017-01-30T15:25:15Z",
+    "remember_token": ""
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Pss1",
+  "fields": {
+    "type": null,
+    "name": "stored, awaiting Meyer",
+    "prereq": "Psca",
+    "desc": "Vacuum seal QAskipped and QAcomplete vols, load book cart, move sealed vols to 3L stacks",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2015-08-01T19:15:36Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 262950,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "PostScan Ready",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T19:01:42Z",
+    "updated_at": "2015-09-03T19:04:02Z",
+    "pstep_id": "Psca",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 262951,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "PostScan Processing",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T19:01:46Z",
+    "updated_at": "2015-09-03T19:04:02Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 262952,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "PostScan Job Ready",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T19:02:16Z",
+    "updated_at": "2015-09-03T19:04:02Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 262953,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "PostScan Job Processing",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T19:02:16Z",
+    "updated_at": "2015-09-03T19:04:02Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 262954,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "QCC Eval Ready",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T19:02:20Z",
+    "updated_at": "2015-09-03T19:04:02Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 262955,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "QCC Eval In Progress",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T19:02:20Z",
+    "updated_at": "2015-09-03T19:04:02Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 262956,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "QCC Ready",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-03T19:02:24Z",
+    "updated_at": "2015-09-03T19:04:02Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 259503,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "prepped (streamlined tool)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2015-09-02T20:14:59Z",
+    "updated_at": "2015-09-02T20:14:59Z",
+    "pstep_id": "Ppre",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.bookrequests",
+  "pk": 49,
+  "fields": {
+    "updated_by": null,
+    "created_at": "2015-08-05T09:52:55Z",
+    "updated_at": "2015-08-05T09:54:26Z",
+    "recipients": "example@example.com",
+    "from_field": "example@example.com",
+    "mail_body": "Subject: Req. Supervisor Report for CreatedWedAug0520150952(Thu Aug, 06 2015) \nMessage:\nHollis\tVol count\tReporter Name\r\n005457931\t324\tIllinois Appellate Court Reports, Third Series\r\n000114226\t162\tIllinois Reports, Second Series\r\n008090850\t8\tIllinois Reports, Second Series\r\n005457833\t4\tIllinois Appellate Court Reports, Second Series\r\n005457653\t1\tIllinois Appellate Court Reports\r\n005457617\t62\tIllinois Appellate Court Reports\r\n002885513\t4\tIllinois Court of Claims Reports\r\n008084579\t48\tIllinois Reports, Second Series\r\n005821473\t413\tIllinois Reports\r\n005457762\t129\tIllinois Appellate Court Reports, Second Series\r\n005457606\t20\tIllinois Appellate Court Reports\r\n",
+    "note": "FTL Request:",
+    "send_date": "2015-08-06",
+    "label": "CreatedWedAug0520150952",
+    "sent_at": "2015-08-05T09:54:25Z",
+    "subject": "FTL Request",
+    "delivery_date": "2015-08-06"
+  }
+},
+{
+  "model": "tracking_tool.reporters",
+  "pk": 315,
+  "fields": {
+    "state": "Ill.",
+    "reporter": "Illinois Appellate Court Reports",
+    "short": "Ill. App.",
+    "start_date": 1877,
+    "end_date": 1887,
+    "volumes": 351,
+    "created_at": "2013-12-17T23:00:33Z",
+    "updated_at": "2016-09-12T20:03:18Z",
+    "notes": "",
+    "original_volumes": null,
+    "original_start_date": null,
+    "original_end_date": null,
+    "observed_start_date": 1877,
+    "observed_end_date": 1983,
+    "observed_volumes": 351
+  }
+},
+{
+  "model": "tracking_tool.hollis",
+  "pk": 190,
+  "fields": {
+    "hollis_no": "005457606",
+    "reporter_id": 315,
+    "created_at": "2014-07-23T23:48:14Z",
+    "updated_at": "2014-07-23T19:48:14Z"
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Prqu",
+  "fields": {
+    "type": null,
+    "name": "queued",
+    "prereq": "",
+    "desc": "Placed in a request queue",
+    "created_at": "2013-12-13T05:26:17Z",
+    "updated_at": "2013-12-13T05:26:17Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 285118,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "stored, awaiting Meyer (streamlined tool)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2015-09-17T19:09:55Z",
+    "updated_at": "2015-09-17T19:09:55Z",
+    "pstep_id": "Pss1",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 211531,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Request Queued (Request ID: 46)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 4,
+    "created_at": "2015-07-28T16:16:44Z",
+    "updated_at": "2015-07-28T16:16:44Z",
+    "pstep_id": "Prqu",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Prec",
+  "fields": {
+    "type": null,
+    "name": "received",
+    "prereq": "",
+    "desc": "Unpack HUMS delivered bins on 1L and distribute vols on shelves",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2015-04-17T14:19:34Z"
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Pana",
+  "fields": {
+    "type": null,
+    "name": "analyzed",
+    "prereq": "AND Prec, {{publicationyear}}, {{hollis_no}}, {{reporter_id}}, {{volume}}, !!analysislogic!!",
+    "desc": "Load book cart on 1L to move completed vol to Room 231",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-12-21T00:19:22Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 215631,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Book Requested",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 3,
+    "created_at": "2015-08-05T13:54:25Z",
+    "updated_at": "2015-08-05T13:54:25Z",
+    "pstep_id": "Preq",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 214737,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Request Queued (Request ID: 49)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 3,
+    "created_at": "2015-08-05T13:52:58Z",
+    "updated_at": "2015-08-05T13:52:58Z",
+    "pstep_id": "Prqu",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Ppre",
+  "fields": {
+    "type": null,
+    "name": "prepped",
+    "prereq": "Pana",
+    "desc": "Read barcodes on Stack Wagon before moving vols to scan room",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-08-21T04:03:51Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 264028,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Xferring to AWS-DONT CHANGE STATUS",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-04T00:10:02Z",
+    "updated_at": "2015-09-04T00:10:04Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Preq",
+  "fields": {
+    "type": null,
+    "name": "requested",
+    "prereq": "",
+    "desc": "Selector-provided barcodes recorded in TT and emailed to HD",
+    "created_at": "2013-09-26T18:13:11Z",
+    "updated_at": "2013-09-26T18:13:11Z"
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Psca",
+  "fields": {
+    "type": null,
+    "name": "scanned",
+    "prereq": "Pbat",
+    "desc": "First step in scanning: read barcode from cover sheet",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-08-21T04:03:51Z"
+  }
+},
+{
+  "model": "tracking_tool.hollis",
+  "pk": 872,
+  "fields": {
+    "hollis_no": "005457617",
+    "reporter_id": 315,
+    "created_at": "2014-12-11T05:13:47Z",
+    "updated_at": "2014-12-11T00:13:47Z"
+  }
+},
+{
+  "model": "tracking_tool.hollis",
+  "pk": 873,
+  "fields": {
+    "hollis_no": "005457653",
+    "reporter_id": 315,
+    "created_at": "2014-12-11T05:13:47Z",
+    "updated_at": "2014-12-11T00:13:47Z"
+  }
+},
+{
+  "model": "tracking_tool.hollis",
+  "pk": 874,
+  "fields": {
+    "hollis_no": "005457711",
+    "reporter_id": 315,
+    "created_at": "2014-12-11T05:13:47Z",
+    "updated_at": "2014-12-11T00:13:47Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 707689,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Innodata accepted the images generated by the scanner for this Illinois volume, delivered on 03/26/16.",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 1,
+    "created_at": "2016-05-03T01:27:34Z",
+    "updated_at": "2016-05-03T01:27:34Z",
+    "pstep_id": "Dclr",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Drcs",
+  "fields": {
+    "type": null,
+    "name": "Received Shared",
+    "prereq": "",
+    "desc": "Received 'shared' files from innodata",
+    "created_at": "2016-06-30T17:44:18Z",
+    "updated_at": "2016-06-30T17:44:18Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 264046,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "Transferred to Vendor Bucket, and Copied to Backup",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 7,
+    "created_at": "2015-09-04T00:10:02Z",
+    "updated_at": "2015-09-04T00:14:38Z",
+    "pstep_id": "Dx2v",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.volumes",
+  "pk": "32044057892259",
+  "fields": {
+    "hollis_no": "005457617",
+    "volume": "23",
+    "publicationdate": null,
+    "publisher": "Callaghan & Company",
+    "publicationyear": 1888,
+    "reporter_id": 315,
+    "publicationdategranularity": null,
+    "nom_volume": null,
+    "nominative_name": "E.B. Smith",
+    "series_volume": "",
+    "spine_start_date": 0,
+    "spine_end_date": 0,
+    "start_date": 1887,
+    "end_date": 1887,
+    "page_start_date": 0,
+    "page_end_date": 0,
+    "redaction_profile": "",
+    "contributing_library": "",
+    "rare": "N",
+    "hscrev": "N",
+    "hsc_accession": null,
+    "needs_repair": null,
+    "missing_text_pages": "",
+    "created_by": 3,
+    "bibrev": "N",
+    "pages": 699,
+    "dup": null,
+    "created_at": "2015-08-05T13:52:58Z",
+    "updated_at": "2016-08-16T19:31:09Z",
+    "replaced_pages": "",
+    "cases": null,
+    "marginalia": null,
+    "pop": "Chicago, IL",
+    "title": null,
+    "handfeed": null,
+    "imgct": 696,
+    "hold": null,
+    "request_id": 49,
+    "pub_del_pg": null,
+    "notes": "",
+    "pubdel_pages": null,
+    "original_barcode": null,
+    "scope_reason": null,
+    "out_of_scope": 0,
+    "meyer_box_barcode": "WBMBox538",
+    "uv_box_barcode": "L0000548486",
+    "meyer_ky_truck": "WBMKYTruck01",
+    "meyer_pallet": "WBMPallet12"
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Pugv",
+  "fields": {
+    "type": null,
+    "name": "Underground Vaults",
+    "prereq": "",
+    "desc": "Stored with Underground Vaults",
+    "created_at": "2016-08-16T19:21:12Z",
+    "updated_at": "2016-08-16T21:23:11Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 224498,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "received (streamlined tool)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 18,
+    "created_at": "2015-08-12T14:27:55Z",
+    "updated_at": "2015-08-12T14:27:55Z",
+    "pstep_id": "Prec",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 779384,
+  "fields": {
+    "bar_code": "32044057892259",
+    "type": "In box WBMBox538, on pallet WBMPallet12, on truck WBMKYTruck01",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 1,
+    "created_at": "2016-05-20T00:00:00Z",
+    "updated_at": "2016-06-07T12:14:19Z",
+    "pstep_id": "Pmey",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Pmey",
+  "fields": {
+    "type": null,
+    "name": "Meyer pickup",
+    "prereq": "Pss1",
+    "desc": "Volumes have been boxed and transferred from Langdell to the Meyer facilitiy in CT.  For each instance of PMeyer, a barcode must be entered in the Meyer Box Barcode field.",
+    "created_at": "2016-03-31T12:37:09Z",
+    "updated_at": "2016-03-31T12:37:09Z"
+  }
+}
+]

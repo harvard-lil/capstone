@@ -18,8 +18,9 @@ volume_field_map = { 'bar_code': 'barcode', 'hollis_no': 'hollis_number', 'volum
 eventloggers_field_map = { 'id': 'id', 'bar_code': 'volume', 'type': 'entry_text', 'notes': 'notes', 'created_by': 'created_by', 'created_at': 'created_at', 'updated_at': 'updated_at', 'pstep_id': 'pstep', 'exception': 'exception', 'warning': 'warning', 'version_string': 'version_string'}
 
 # I'm sure there's an elegant way to combine this with dup_field, but it wasn't imperative enough for me to figure out
-foreign_key_map = { 'created_by': { 'model': TrackingToolUser, 'query_field': 'id'}, 'pstep': { 'model': ProcessStep, 'query_field': 'step'}, 'volume': { 'model': VolumeMetadata, 'query_field': 'barcode'}, 'reporter': { 'model': Reporter, 'query_field': 'id'}, 'request': { 'model': BookRequest, 'query_field': 'id'} } def ingest(dupcheck):
+foreign_key_map = { 'created_by': { 'model': TrackingToolUser, 'query_field': 'id'}, 'pstep': { 'model': ProcessStep, 'query_field': 'step'}, 'volume': { 'model': VolumeMetadata, 'query_field': 'barcode'}, 'reporter': { 'model': Reporter, 'query_field': 'id'}, 'request': { 'model': BookRequest, 'query_field': 'id'} }
 
+def ingest(dupcheck):
     """
     If we decide to copy more tables over, just add a new entry:
     copyModel(sourcemodel, destinationmodel, dupcheck)

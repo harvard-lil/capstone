@@ -61,6 +61,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+USE_TEST_TRACKING_TOOL_DB = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -71,16 +72,8 @@ DATABASES = {
         'PORT': '',
     },
     'tracking_tool': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ftl_tt',
-        'USER': 'ftl_readonly',  # GRANT select ON ftl_tt.* TO 'ftl_readonly'@'%' identified by 'password' REQUIRE SSL;
-        'PASSWORD': '',  # add to settings.py
-        'HOST': '',      # add to settings.py
-        'OPTIONS': {
-            'ssl': {
-                'ca': os.path.join(BASE_DIR, '../services/aws/rds-combined-ca-bundle.pem'),
-            }
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'test_data/tracking_tool.sqlite'),
     }
 }
 
