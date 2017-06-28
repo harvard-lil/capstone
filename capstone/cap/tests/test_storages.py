@@ -37,4 +37,5 @@ def base_test_iter_files(storage):
     assert set(sub_dir) == set(storage.iter_files('d'))
 
     # list dirs
+    assert {'a', 'd'} == set(storage.iter_subdirs())
     assert {'d/e', 'd/g'} == set(storage.iter_subdirs('d'))
