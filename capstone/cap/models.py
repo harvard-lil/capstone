@@ -173,6 +173,11 @@ class VolumeMetadata(models.Model):
     def __str__(self):
         return self.barcode
 
+    @property
+    def volume_xml(self):
+        # TODO: Once OneToOneField is set up, this method can be deleted
+        return VolumeXML.objects.filter(barcode=self.barcode).first()
+
 
 class TrackingToolLog(models.Model):
     volume = models.ForeignKey(VolumeMetadata)
@@ -196,10 +201,15 @@ class VolumeXML(models.Model):
     def __str__(self):
         return self.barcode
 
+    @property
+    def volume_metadata(self):
+        # TODO: Once OneToOneField is set up, this method can be deleted
+        return VolumeMetadata.objects.filter(barcode=self.barcode).first()
+
 class CaseXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
     orig_xml = XMLField()
-    volume = models.ForeignKey(VolumeXML)
+    volume = models.ForeignKey(VolumeXML, related_name='case_xmls')
 
     def __str__(self):
         return self.barcode
@@ -207,7 +217,7 @@ class CaseXML(models.Model):
 class PageXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
     orig_xml = XMLField()
-    volume = models.ForeignKey(VolumeXML)
+    volume = models.ForeignKey(VolumeXML, related_name='page_xmls')
     cases = models.ManyToManyField(CaseXML, related_name='pages')
 
     def __str__(self):
