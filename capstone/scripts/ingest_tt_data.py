@@ -1,14 +1,10 @@
-from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db import IntegrityError
-from django.db.models import BooleanField
 
 from tqdm import tqdm
 
 from cap.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest
 from tracking_tool.models import BookRequests, Eventloggers, Hollis, Pstep, Reporters, Users, Volumes
-"""
-    Copies over 
-"""
+
 
 user_field_map = {'id': 'id', 'privlevel': 'privilege_level', 'email': 'email', 'created_at': 'created_at', 'updated_at': 'updated_at' }
 book_request_field_map = {'id': 'id', 'updated_by': 'updated_by', 'created_at': 'created_at', 'updated_at': 'updated_at', 'recipients': 'recipients', 'from_field': 'from_field', 'mail_body': 'mail_body', 'note': 'note', 'send_date': 'send_date', 'label': 'label', 'sent_at': 'sent_at', 'subject': 'subject', 'delivery_date': 'delivery_date'} 
@@ -28,9 +24,9 @@ def ingest(dupcheck):
 
     copyModel(Users, TrackingToolUser, user_field_map, dupcheck)
     copyModel(BookRequests, BookRequest, book_request_field_map, dupcheck)
-    copyModel(Pstep, ProcessStep, pstep_field_map, dupcheck, dupe_field='step')
+    copyModel(Pstep, ProcessStep, pstep_field_map, dupcheck, dupe_field='step_id')
     copyModel(Reporters, Reporter, reporter_field_map, dupcheck)
-    copyModel(Volumes, VolumeMetadata, volume_field_map, dupcheck, dupe_field='barcode')
+    copyModel(Volumes, VolumeMetadata, volume_field_map, dupcheck, dupe_field='bar_code')
     copyModel(Eventloggers, TrackingToolLog, eventloggers_field_map, dupcheck)
 
 
@@ -52,7 +48,7 @@ def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
 
     source_collection=source.objects.all()
     if dupcheck:
-        dupe_set = set(destination.objects.values_list(dupe_field, flat=True))
+        dupe_set = set(destination.objects.values_list(field_map[dupe_field], flat=True))
 
     for source_record in tqdm(source_collection, total=source_collection.count()):
         if dupcheck:
