@@ -1,1 +1,14 @@
-<a href="{% url 'admin:index' %}">Django Admin</a>
+<p>
+  <a href="{% url 'admin:index' %}">Django Admin</a>
+</p>
+
+<p><b>Counts:</b></p>
+
+<table>
+  {% for model_name, row_count in counts.items %}
+    <tr>
+      <td>{{ model_name }}</td>
+      <td>{{ row_count }}</td>
+    </tr>
+  {% endfor %}
+</table>
