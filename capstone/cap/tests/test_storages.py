@@ -1,6 +1,5 @@
 from io import BytesIO
 import pytest
-from django.conf import settings
 from moto import mock_s3
 
 from ..storages import CapS3Storage, CapFileStorage
