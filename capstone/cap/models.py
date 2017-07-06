@@ -217,6 +217,26 @@ class VolumeXML(models.Model):
         # TODO: Once OneToOneField is set up, this method can be deleted
         return VolumeMetadata.objects.filter(barcode=self.barcode).first()
 
+
+class Court(models.Model):
+    name = models.CharField(max_length=255)
+    name_abbreviation = models.CharField(max_length=100, blank=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
+    slug = models.SlugField(unique=True, max_length=255)
+
+    def __str__(self):
+        return self.slug
+
+
+class Jurisdiction(models.Model):
+    name = models.CharField(max_length=100, blank=True)
+    slug = models.SlugField(unique=True, max_length=255)
+    name_abbreviation = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return self.slug
+
+
 class CaseXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
     orig_xml = XMLField()
@@ -224,6 +244,28 @@ class CaseXML(models.Model):
 
     def __str__(self):
         return self.barcode
+
+
+class CaseMetadata(models.Model):
+    barcode = models.CharField(unique=True, max_length=64, primary_key=True)
+    slug = models.SlugField(unique=True, max_length=255)
+    first_page = models.IntegerField(null=True, blank=True)
+    last_page = models.IntegerField(null=True, blank=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
+    citation = models.CharField(max_length=255, blank=True)
+    docket_number = models.CharField(max_length=255, blank=True)
+    decision_date = models.DateField(null=True, blank=True)
+    decision_date_original = models.CharField(max_length=100, blank=True)
+    court = models.ForeignKey('Court', null=True, related_name='%(class)s_court', on_delete=models.SET_NULL)
+    name = models.TextField(blank=True)
+    name_abbreviation = models.CharField(max_length=255, blank=True)
+    volume = models.ForeignKey(VolumeMetadata)
+    reporter = models.ForeignKey('Reporter', null=True, related_name='%(class)s_reporter', on_delete=models.SET_NULL)
+    date_added = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.slug
+
 
 class PageXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
