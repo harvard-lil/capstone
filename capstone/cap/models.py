@@ -1,13 +1,17 @@
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 
+
 ### helpers ###
+
 
 def choices(*args):
     """ Simple helper to create choices=(('Foo','Foo'),('Bar','Bar'))"""
     return zip(args, args)
 
+
 ### custom column types ###
+
 
 class XMLField(models.TextField):
     """
@@ -16,18 +20,22 @@ class XMLField(models.TextField):
     def db_type(self, connection):
         return 'xml'
 
+
 ### models ###
+
 
 class TrackingToolUser(models.Model):
     """
-    These are tracking tool users– they are separate from Capstone users.
+    These are tracking tool users - they are separate from Capstone users.
     """
     privilege_level = models.CharField(max_length=3, choices=choices('0', '1', '5', '10', '15'), help_text="The lower the value, the higher the privilege level.")
     email = models.CharField(max_length=32)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
+
     def __str__(self):
         return self.email
+
 
 class BookRequest(models.Model):
     """
@@ -108,6 +116,7 @@ class ProcessStep(models.Model):
     def __str__(self):
         return "%s - %s" % (self.step, self.label)
 
+
 class Reporter(models.Model):
     jurisdiction = models.CharField(max_length=64, blank=True, null=True)
     full_name = models.CharField(max_length=1024)
@@ -123,9 +132,10 @@ class Reporter(models.Model):
     def __str__(self):
         return "%s: %s %s-%s" % (self.short_name, self.full_name, self.start_year or '', self.end_year or '')
 
+
 class VolumeMetadata(models.Model):
     barcode = models.CharField(unique=True, max_length=64, primary_key=True)
-    hollis_number = models.CharField(max_length=9, help_text="Identifier in the Harvard catalogging system, HOLLIS")
+    hollis_number = models.CharField(max_length=9, help_text="Identifier in the Harvard cataloging system, HOLLIS")
     volume_number = models.CharField(max_length=64, blank=True, null=True)
     publisher = models.CharField(max_length=255, blank=True, null=True)
     publication_year = models.IntegerField(blank=True, null=True)
@@ -187,12 +197,13 @@ class TrackingToolLog(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     pstep = models.ForeignKey(ProcessStep, blank=True, null=True, help_text="A significant event in production")
-    exception = models.BooleanField(help_text="Nothing to do with software exceptions– more like a UPS delivery 'exception'")
+    exception = models.BooleanField(help_text="Nothing to do with software exceptions - more like a UPS delivery 'exception'")
     warning = models.BooleanField(help_text="Something that's a bit off, but not necessarily indicative of a problem")
     version_string = models.CharField(max_length=32, blank=True, null=True, help_text="'YYYY_DD_MM_hh.mm.ss' Appended to s3 dir to distinguish versions")
 
     def __str__(self):
         return "%s %s" % (self.pstep, self.entry_text)
+
 
 class VolumeXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)  # models.OneToOneField(VolumeMetadata)
@@ -206,6 +217,26 @@ class VolumeXML(models.Model):
         # TODO: Once OneToOneField is set up, this method can be deleted
         return VolumeMetadata.objects.filter(barcode=self.barcode).first()
 
+
+class Court(models.Model):
+    name = models.CharField(max_length=255)
+    name_abbreviation = models.CharField(max_length=100, blank=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
+    slug = models.SlugField(unique=True, max_length=255)
+
+    def __str__(self):
+        return self.slug
+
+
+class Jurisdiction(models.Model):
+    name = models.CharField(max_length=100, blank=True)
+    slug = models.SlugField(unique=True, max_length=255)
+    name_abbreviation = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return self.slug
+
+
 class CaseXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
     orig_xml = XMLField()
@@ -213,6 +244,28 @@ class CaseXML(models.Model):
 
     def __str__(self):
         return self.barcode
+
+
+class CaseMetadata(models.Model):
+    barcode = models.CharField(unique=True, max_length=64, primary_key=True)
+    slug = models.SlugField(unique=True, max_length=255)
+    first_page = models.IntegerField(null=True, blank=True)
+    last_page = models.IntegerField(null=True, blank=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
+    citation = models.CharField(max_length=255, blank=True)
+    docket_number = models.CharField(max_length=255, blank=True)
+    decision_date = models.DateField(null=True, blank=True)
+    decision_date_original = models.CharField(max_length=100, blank=True)
+    court = models.ForeignKey('Court', null=True, related_name='%(class)s_court', on_delete=models.SET_NULL)
+    name = models.TextField(blank=True)
+    name_abbreviation = models.CharField(max_length=255, blank=True)
+    volume = models.ForeignKey(VolumeMetadata)
+    reporter = models.ForeignKey('Reporter', null=True, related_name='%(class)s_reporter', on_delete=models.SET_NULL)
+    date_added = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.slug
+
 
 class PageXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
@@ -223,12 +276,13 @@ class PageXML(models.Model):
     def __str__(self):
         return self.barcode
 
+
 class DataMigration(models.Model):
     data_migration_timestamp = models.DateTimeField(auto_now_add=True)
     transaction_timestamp = models.DateTimeField()
     notes = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=10, choices=(("applied","applied"),("pending","pending"),("error","error")))
+    status = models.CharField(max_length=10, choices=(("applied", "applied"), ("pending", "pending"), ("error", "error")))
     traceback = models.TextField(blank=True, null=True)
     author = models.CharField(max_length=255)
     initiator = models.CharField(max_length=255)
