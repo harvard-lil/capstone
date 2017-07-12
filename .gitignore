@@ -3,9 +3,15 @@ settings.py
 __pycache__
 .vagrant/
 .virtualenvs/
+*.pyc
 
 db.sqlite3
 
-# pytest
 .cache
 tracking_tool.sqlite
+capstone/capapi/settings.py
+capstone/capapi/.todo
+capstone/capapi/static/CACHE/*
+capstone/capapi/static/rest_framework/*
+capstone/capapi/static/admin/*
+capstone/capapi/static/django_extensions/*

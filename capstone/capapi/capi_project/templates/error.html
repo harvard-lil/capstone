@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %} | Error{% endblock %}
+
+{% block content %}
+  {% load rest_framework %}
+  <strong>SOMETHING WENT WRONG</strong>
+  {% if errors %}
+  <div class="alert alert-warning">
+    <strong>Error!</strong>
+    <ul>
+      {% for e in errors.messages %}
+        <li>{{ e }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+{% endblock content %}

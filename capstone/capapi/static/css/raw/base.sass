@@ -1,0 +1,203 @@
+@import _variables.sass
+fieldset
+  border: 0px
+  padding: 0px
+a
+  cursor: pointer
+  outline: none
+  border-bottom: 0px
+  color: $blue
+  &:hover, :focus, :active
+    color: $black
+    border-bottom: 0px
+.blue-text
+  color: $blue
+
+.header-margin
+  margin-top: 60px
+
+.centered-text
+  text-align: center
+
+.bold-text
+  font-weight: $font-bold
+
+.semibold-text
+  font-weight: $font-semibold
+
+.separator
+  border-bottom: 1px solid $gray
+  margin: 20px 0px
+
+h1
+  letter-spacing: 3px
+
+code
+  background-color: $light-blue
+  color: $blue
+
+pre
+  border: 0px
+
+.section-title
+  font-size: $section-subtitle-size
+  font-weight: $font-bold
+  text-transform: uppercase
+  letter-spacing: 0.8px
+
+.page-header
+  border-bottom: 0px
+
+.row-centered
+  text-align:center
+
+.col-centered
+  margin: 0 auto
+  float: none
+
+.center-content
+  text-align: center
+
+.white-button
+  font           : 14px $font-name
+  color          : white
+  letter-spacing : 2px
+  background     : transparent
+  border         : 1px solid white
+  height         : 35px
+  padding        : 0px 14px
+  text-transform : uppercase
+
+.remove-padding-left
+  margin-left: 0px
+  left: -15px
+  position: relative
+.blue-button
+  font: 14px $font-name
+  font-weight: $font-bold
+  color: $blue
+  letter-spacing: 2px
+  background: white
+  border: 1px solid $blue
+  height: 35px
+  padding: 0px 14px
+  border-radius: 5px
+  margin-bottom: 10px
+  &:hover
+    background-color: #D2E7FF
+
+body
+  width:100%
+  height:100%
+  margin:0
+  padding:0
+  font-family: $font-name
+  color: $black
+  header.header
+    padding: 20px 0px 0px 20px
+    position: fixed
+    z-index: 10
+    top: 0px
+    background-color: white
+    border-bottom: 1px solid $gray
+  .header-content
+    padding: 0px 20px 10px 20px
+
+  .header-logo, .lil-logo
+    height: 32px
+    width: 24px
+  .lil-logo
+    float: right
+
+  .header-text
+    font: $font-name, sans-serif
+    font-weight: $font-bold
+    font-size: 14px
+    left: 10px
+    letter-spacing: 1.5px
+    position: relative
+
+.inverse
+  background-color: $black
+  color: white
+  button:hover, button:active, button:focus
+    background-color: $light-blue
+    color: $black
+    border: $black
+  a:focus, a:active, a:hover
+    color: $light-blue
+
+.login-form
+  letter-spacing: 1px
+  width: 100%
+  min-height: 70%
+  h3
+    margin-left: -20px
+  form
+    text-transform: uppercase
+.logged-in-page
+  padding: 20px 0px
+  min-height: 70%
+
+footer.footer
+  min-width: 100%
+  background-color: $blue
+  margin-bottom: 0px
+  hr.white-line
+    color: white
+  .credits
+    width: 100%
+    margin-bottom: 20px
+    p
+      text-align : center
+    .name
+      font-weight: $font-semibold
+
+  .footer-content
+    color      : white
+    width      : 100%
+    padding    : 40px
+    text-align : center
+
+    .cap-logo
+      width : 54px
+      height : 100px
+      margin : 0 auto
+      background-size: 54px 100px
+      display: block
+      text-indent: -9999px
+
+    .inline-link
+      border-color : white
+  a, a:hover, a:active
+    padding-bottom: 3px
+    border-bottom: 1px solid white
+    text-decoration: none
+    color : white
+
+
+  h4.subheader
+    margin-bottom: 40px
+  h3.project-title
+    margin-bottom: 30px
+  h3, h4, button
+    margin-top : 10px
+  h3
+    font-weight : $font-bold
+    font-size   : 21px
+    letter-spacing : 3px
+
+// errors
+.alert
+  background-color: $orange
+  border: 0px
+  background-image: none
+  color: $black
+  padding-left: 0px
+  padding-right: 0px
+  .col-sm-4
+    padding-left: 0px
+    padding-right: 0px
+
+  li
+    list-style: none
