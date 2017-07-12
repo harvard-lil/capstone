@@ -2,7 +2,6 @@ import logging
 
 from django.http import HttpResponse
 from django.db import IntegrityError
-
 from rest_framework import status, renderers, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, list_route, renderer_classes
@@ -34,6 +33,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @list_route(methods=['get'], permission_classes=[AllowAny])
     def register(self, request):
         serializer = serializers.RegisterUserSerializer()
+
         return Response({'serializer': serializer}, template_name='sign-up.html')
 
     @list_route(methods=['post'], permission_classes=[AllowAny])

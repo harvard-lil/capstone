@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 import capi_project.tests.helpers as helpers
 from capi_project.models import Reporter, CaseUser
 

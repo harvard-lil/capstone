@@ -2,8 +2,8 @@ import sys
 from datetime import datetime, timedelta
 import uuid
 import logging
-import pytz
 
+import pytz
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models, IntegrityError

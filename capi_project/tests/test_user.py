@@ -1,10 +1,12 @@
-from django.test import TestCase
-from capi_project.models import CaseUser
-
-from django.conf import settings
-import capi_project.tests.helpers as helpers
-import pytz
 from datetime import datetime, timedelta
+
+from django.test import TestCase
+from django.conf import settings
+import pytz
+
+from capi_project.models import CaseUser
+import capi_project.tests.helpers as helpers
+
 
 class UserTestCase(TestCase):
     def setUp(self):
