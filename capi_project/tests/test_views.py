@@ -17,7 +17,7 @@ class AccountViewsTestCase(TransactionTestCase):
 
         soup = BeautifulSoup(response.content, 'html.parser')
         inputs = soup.select("input")
-        input_names = map(lambda x: x['name'], inputs)
+        input_names = [x['name'] for x in inputs]
         assert "csrfmiddlewaretoken" in input_names
         assert "email" in input_names
         assert "password" in input_names
@@ -29,7 +29,7 @@ class AccountViewsTestCase(TransactionTestCase):
 
         soup = BeautifulSoup(response.content, 'html.parser')
         inputs = soup.select("input")
-        input_names = map(lambda x: x['name'], inputs)
+        input_names = [x['name'] for x in inputs]
         assert "csrfmiddlewaretoken" in input_names
         assert "email" in input_names
         assert "password" in input_names
@@ -67,7 +67,7 @@ class AccountViewsTestCase(TransactionTestCase):
 
 
     def test_view_helpers(self):
-        dictionary = {u'max': [u'3'], u'type': [u'download'], u'jurisdiction_name': [u'alabama']}
+        dictionary = {'max': ['3'], 'type': ['download'], 'jurisdiction_name': ['alabama']}
         query_params = QueryDict('', mutable=True)
         query_params.update(MultiValueDict(dictionary))
         formatted_params = view_helpers.format_query(query_params, dict())
@@ -77,7 +77,7 @@ class AccountViewsTestCase(TransactionTestCase):
         assert 'type' not in formatted_params
         assert 'max' not in formatted_params
 
-        queries = map(view_helpers.make_query, formatted_params.items())
+        queries = list(map(view_helpers.make_query, list(formatted_params.items())))
         assert len(queries) == 1
 
         first_q = queries[0]

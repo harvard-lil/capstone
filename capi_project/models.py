@@ -2,8 +2,8 @@ import sys
 from datetime import datetime, timedelta
 import uuid
 import logging
-import pytz
 
+import pytz
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models, IntegrityError
@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.template.defaultfilters import slugify
 from rest_framework.authtoken.models import Token
 
-from utils import generate_unique_slug
+from .utils import generate_unique_slug
 from . import settings
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
         max_length=254,
         unique=True,
         db_index=True,
-        error_messages={'unique': u"A user with that email address already exists."}
+        error_messages={'unique': "A user with that email address already exists."}
     )
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
@@ -112,6 +112,12 @@ class CaseUser(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.email.split('@')[0]
 
+    def case_download_allowed(self, case_count):
+        if case_count > 0:
+            self.update_case_allowance()
+            return self.case_allowance >= case_count
+        else:
+            return True
 
 class Volume(models.Model):
     id = models.AutoField(primary_key=True)
@@ -132,7 +138,7 @@ class Volume(models.Model):
     def create_from_tt_row(self, row_num, row):
         # assuming each row is unique
         volume = Volume(id=row_num)
-        for key in row.keys():
+        for key in list(row.keys()):
             try:
                 if key == 'bar_code':
                     volume.barcode = row[key]
@@ -232,7 +238,7 @@ class Reporter(models.Model):
             }
         }
 
-        if name in special_cases.keys():
+        if name in list(special_cases.keys()):
             slug = special_cases[name][jurisdiction]
         else:
             slug = slugify(name)
@@ -259,7 +265,7 @@ class Jurisdiction(models.Model):
     name_abbreviation = models.CharField(max_length=200, blank=True)
 
     def __unicode__(self):
-        return u"%s" % self.name or ''
+        return "%s" % self.name or ''
 
     @classmethod
     def create(self, name):
@@ -307,7 +313,7 @@ class Court(models.Model):
     slug = models.SlugField()
 
     def __unicode__(self):
-        return u"%s: %s" % (self.id, self.name) or ''
+        return "%s: %s" % (self.id, self.name) or ''
 
     @classmethod
     def create(self, name, name_abbreviation, jurisdiction):
@@ -386,7 +392,7 @@ class Case(models.Model):
         case.save()
 
     def write_case_fields(self, row):
-        for prop, val in row.items():
+        for prop, val in list(row.items()):
             if prop != 'court' and prop != 'court_abbreviation' and prop != 'reporter':
                 self.safe_set(prop, val)
 

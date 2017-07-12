@@ -2,7 +2,6 @@ import logging
 
 from django.http import HttpResponse
 from django.db import IntegrityError
-
 from rest_framework import status, renderers, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, list_route, renderer_classes
@@ -34,6 +33,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @list_route(methods=['get'], permission_classes=[AllowAny])
     def register(self, request):
         serializer = serializers.RegisterUserSerializer()
+
         return Response({'serializer': serializer}, template_name='sign-up.html')
 
     @list_route(methods=['post'], permission_classes=[AllowAny])
@@ -93,18 +93,13 @@ class UserViewSet(viewsets.ModelViewSet):
     def resend_verification(self, request):
 
         user = models.CaseUser.objects.get(email=request.data.get('user_email'))
-        if str(user.id) == request.data.get('user_id'):
 
-            resources.email(reason='new_signup', user=user)
-            content = {
-                'status': 'Success!',
-                'message': 'Thank you. Please check your email %s for a verification link.' % user.email
-            }
-            return Response(content, template_name='sign-up-success.html')
-
-        else:
-            raise Exception("Attempted sending email with unmatched credentials %s %s" % (user.id, request.data.get('user_email')))
-            return Response({'errors': 'Uh oh. Something went wrong.'}, template_name='errors.html', status=status.HTTP_400_BAD_REQUEST)
+        resources.email(reason='new_signup', user=user)
+        content = {
+            'status': 'Success!',
+            'message': 'Thank you. Please check your email %s for a verification link.' % user.email
+        }
+        return Response(content, template_name='sign-up-success.html')
 
 
 @api_view(http_method_names=['GET'])

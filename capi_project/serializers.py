@@ -3,7 +3,7 @@ import logging
 from rest_framework import serializers
 
 from . import models
-from resources import email
+from .resources import email
 
 logger = logging.getLogger(__name__)
 

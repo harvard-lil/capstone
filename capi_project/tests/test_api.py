@@ -1,15 +1,15 @@
-from django.test import TestCase
-from capi_project.models import Case
-
-from django.test import Client
-import capi_project.tests.helpers as helpers
-from django.conf import settings
 import json
+
+from django.test import TestCase, Client
+from django.conf import settings
+
+from capi_project.models import Case
+from capi_project.tests import helpers
 
 FULL_API_URL = settings.FULL_API_URL
 
 
-class CaseTestCase(TestCase):
+class MetadataTestCase(TestCase):
     def setUp(self):
         jur_ill = helpers.setup_jurisdiction(id=2, name='Illinois', name_abbreviation='Ill.', slug='ill')
         jur_ny = helpers.setup_jurisdiction(id=1, name='New York', name_abbreviation='N.Y.', slug='ny')
