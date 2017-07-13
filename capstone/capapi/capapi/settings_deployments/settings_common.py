@@ -14,7 +14,7 @@ TOKEN_EXPIRE_HOURS = 24
 CASE_DAILY_ALLOWANCE = 500
 CASE_EXPIRE_HOURS = 24
 
-AUTH_USER_MODEL = 'capi_project.CaseUser'
+AUTH_USER_MODEL = 'capapi.CaseUser'
 AUTHENTICATE_FOR_METADATA = False
 CASE_FILE_TYPE = '.xml'
 
@@ -40,7 +40,7 @@ ADMIN_EMAIL_ADDRESS = 'admin-email-address@gmail.com'
 EMAIL_HOST_USER = 'user-secret'
 EMAIL_HOST_PASSWORD = 'secret-secret'
 
-ROOT_URLCONF = 'capi_project.urls'
+ROOT_URLCONF = 'capapi.urls'
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
@@ -68,7 +68,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'pipeline',
-    'capi_project',
+    'capapi',
 ]
 
 LOGGING = {
@@ -181,7 +181,7 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'capi_project', 'templates'), os.path.join(BASE_DIR, 'templates'), ],
+        'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates'), os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -194,7 +194,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'capi_project.wsgi.application'
+WSGI_APPLICATION = 'capapi.wsgi.application'
 
 
 # Password validation

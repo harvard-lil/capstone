@@ -99,7 +99,7 @@ class Migration(migrations.Migration):
                 ('volumes', models.IntegerField(default=0)),
                 ('updated_at', models.DateTimeField(null=True)),
                 ('slug', models.SlugField(null=True)),
-                ('jurisdiction', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='reporter_jurisdiction', to='capi_project.Jurisdiction')),
+                ('jurisdiction', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='reporter_jurisdiction', to='capapi.Jurisdiction')),
             ],
         ),
         migrations.CreateModel(
@@ -117,27 +117,27 @@ class Migration(migrations.Migration):
                 ('pages', models.IntegerField(blank=True, default=None, null=True)),
                 ('title', models.TextField(blank=True, null=True)),
                 ('updated_at', models.DateTimeField(null=True)),
-                ('reporter', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='volume_reporter', to='capi_project.Reporter')),
+                ('reporter', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='volume_reporter', to='capapi.Reporter')),
             ],
         ),
         migrations.AddField(
             model_name='court',
             name='jurisdiction',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='court_jurisdiction', to='capi_project.Jurisdiction'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='court_jurisdiction', to='capapi.Jurisdiction'),
         ),
         migrations.AddField(
             model_name='case',
             name='court',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='case_court', to='capi_project.Court'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='case_court', to='capapi.Court'),
         ),
         migrations.AddField(
             model_name='case',
             name='jurisdiction',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='case_jurisdiction', to='capi_project.Jurisdiction'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='case_jurisdiction', to='capapi.Jurisdiction'),
         ),
         migrations.AddField(
             model_name='case',
             name='reporter',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='case_reporter', to='capi_project.Reporter'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='case_reporter', to='capapi.Reporter'),
         ),
     ]

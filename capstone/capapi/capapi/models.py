@@ -17,6 +17,7 @@ from . import settings
 logger = logging.getLogger(__name__)
 
 
+
 class CaseUserManager(BaseUserManager):
     def create_user(self, **kwargs):
         email = kwargs.get('email')

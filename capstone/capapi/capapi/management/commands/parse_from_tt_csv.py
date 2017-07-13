@@ -12,7 +12,7 @@ class Command(BaseCommand):
         parser.add_argument('model', type=str)
 
     def handle(self, *args, **options):
-        from capi_project.models import Reporter, Volume, Jurisdiction
+        from capapi.models import Reporter, Volume, Jurisdiction
         filename = options['filename']
         model = options['model']
         with open(filename, 'rU') as f:

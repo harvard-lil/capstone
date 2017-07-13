@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('capi_project', '0001_initial'),
+        ('capapi', '0001_initial'),
     ]
 
     operations = [

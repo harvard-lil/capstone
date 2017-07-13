@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         from django.conf import settings
-        from capi_project import models
+        from capapi import models
 
         for root, dirs, files in os.walk(settings.METADATA_DIR_PATH):
             for filename in files:
