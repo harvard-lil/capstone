@@ -1,0 +1,7 @@
+{% load rest_framework %}
+
+<form action="/get-token/" method="post">
+  {% csrf_token %}
+  {% render_form serializer %}
+  <input type="submit" value="Submit" />
+</form>

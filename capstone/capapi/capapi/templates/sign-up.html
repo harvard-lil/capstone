@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %} | Register {% endblock %}
+
+{% block meta_description %}
+Register to use the Caselaw Access Project API
+{% endblock %}
+
+{% block content %}
+  {% load rest_framework %}
+  <div class="container login-form container-full inverse header-margin">
+    <div class="row row-centered">
+      {% if errors != None %}
+      <div class="alert alert-warning">
+        <div class="col-sm-4 col-centered">
+          <strong>Error!</strong> See below for details
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="col-sm-4 col-centered">
+        <h3>Register</h3>
+
+        <form class="form" action="/accounts/register_user/" method="POST">
+          {% csrf_token %}
+          {% render_form serializer %}
+          <button type="submit" class="btn btn-default white-button">REGISTER</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

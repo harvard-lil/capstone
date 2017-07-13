@@ -20,6 +20,7 @@ INSTALLED_APPS = [
 
     # ours
     'cap',
+    'capapi',
     'tracking_tool',
 
     # 3rd party

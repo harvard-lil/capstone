@@ -119,6 +119,9 @@ class ProcessStep(models.Model):
 
 class Reporter(models.Model):
     jurisdiction = models.CharField(max_length=64, blank=True, null=True)
+
+    # jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction',
+    #                                  on_delete=models.SET_NULL)
     full_name = models.CharField(max_length=1024)
     short_name = models.CharField(max_length=64)
     start_year = models.IntegerField(blank=True, null=True)
@@ -251,8 +254,9 @@ class CaseMetadata(models.Model):
     slug = models.SlugField(unique=True, max_length=255)
     first_page = models.IntegerField(null=True, blank=True)
     last_page = models.IntegerField(null=True, blank=True)
+    jurisdiction_xml = models.CharField(max_length=255, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
-    citation = models.CharField(max_length=255, blank=True)
+    citation = models.ForeignKey('Citation', related_name='%(class)s_citation')
     docket_number = models.CharField(max_length=255, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
@@ -266,6 +270,13 @@ class CaseMetadata(models.Model):
     def __str__(self):
         return self.slug
 
+class Citation(models.Model):
+    type = models.CharField(max_length=100)
+    cite = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(unique=True, max_length=255)
+
+    def __str__(self):
+        return self.slug
 
 class PageXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)

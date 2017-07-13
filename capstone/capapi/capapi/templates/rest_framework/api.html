@@ -1,0 +1,23 @@
+{% extends "rest_framework/base.html" %}
+{% load static %}
+
+{% block bootstrap_theme %}
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static "css/base.css" %}" />
+  <link rel="stylesheet" href="{% static "css/api.css" %}" />
+{% endblock %}
+{% block bootstrap_navbar_variant %}{% endblock %}
+{% block branding %}
+  <header class="header">
+    <div class="header-content">
+      <a href="/">
+        <img class="header-logo" src="{% static "img/logo-small-blue.png" %}" alt="CAP Logo"></img>
+      </a>
+      <span class="header-text"> CASELAW ACCESS PROJECT</span>
+      <a href="http://librarylab.law.harvard.edu" target="_blank">
+        <img class="lil-logo" src="{% static "img/LIL-logo.png" %}" alt="Library Innovation Lab"></img>
+      </a>
+    </div>
+    <div class="border-gray"></div>
+  </header>
+{% endblock %}
