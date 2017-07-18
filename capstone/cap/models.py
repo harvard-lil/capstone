@@ -251,17 +251,31 @@ class CaseMetadata(models.Model):
     slug = models.SlugField(unique=True, max_length=255)
     first_page = models.IntegerField(null=True, blank=True)
     last_page = models.IntegerField(null=True, blank=True)
-    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
-    citation = models.CharField(max_length=255, blank=True)
+    jurisdiction_value = models.CharField(max_length=255, blank=True)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction',
+                                     on_delete=models.SET_NULL)
+    citation = models.ForeignKey('Citation', related_name='%(class)s_citation')
     docket_number = models.CharField(max_length=255, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
     court = models.ForeignKey('Court', null=True, related_name='%(class)s_court', on_delete=models.SET_NULL)
     name = models.TextField(blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
-    volume = models.ForeignKey(VolumeMetadata)
-    reporter = models.ForeignKey('Reporter', null=True, related_name='%(class)s_reporter', on_delete=models.SET_NULL)
+    volume = models.ForeignKey('VolumeMetadata', null=True, related_name='%(class)s_volume',
+                                 on_delete=models.SET_NULL)
+    reporter = models.ForeignKey('Reporter', null=True, related_name='%(class)s_reporter',
+                                 on_delete=models.SET_NULL)
     date_added = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.slug
+
+
+class Citation(models.Model):
+    type = models.CharField(max_length=10,
+                            choices=(("official", "official"), ("parallel", "parallel")))
+    cite = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(unique=True, max_length=255)
 
     def __str__(self):
         return self.slug
