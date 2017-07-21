@@ -10,7 +10,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cap', '0001_initial'),
+        ('capdb', '0001_initial'),
     ]
 
     operations = [
@@ -124,9 +124,9 @@ class Migration(migrations.Migration):
                 ('uv_box_barcode', models.CharField(blank=True, help_text='The Underground Vaults box barcode', max_length=32, null=True)),
                 ('meyer_ky_truck', models.CharField(blank=True, help_text='The Meyer truck to Kentucky this book was shipped on', max_length=32, null=True)),
                 ('meyer_pallet', models.CharField(blank=True, help_text='The pallet Meyer stored the book on', max_length=32, null=True)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cap.TrackingToolUser')),
-                ('reporter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cap.Reporter')),
-                ('request', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='cap.BookRequest')),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='capdb.TrackingToolUser')),
+                ('reporter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='capdb.Reporter')),
+                ('request', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='capdb.BookRequest')),
             ],
             options={
                 'verbose_name_plural': 'Volumes',
@@ -147,16 +147,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='trackingtoollog',
             name='created_by',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cap.TrackingToolUser'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='capdb.TrackingToolUser'),
         ),
         migrations.AddField(
             model_name='trackingtoollog',
             name='pstep',
-            field=models.ForeignKey(blank=True, help_text='A significant event in production', null=True, on_delete=django.db.models.deletion.CASCADE, to='cap.ProcessStep'),
+            field=models.ForeignKey(blank=True, help_text='A significant event in production', null=True, on_delete=django.db.models.deletion.CASCADE, to='capdb.ProcessStep'),
         ),
         migrations.AddField(
             model_name='trackingtoollog',
             name='volume',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cap.VolumeMetadata'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='capdb.VolumeMetadata'),
         ),
     ]

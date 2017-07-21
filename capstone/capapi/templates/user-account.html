@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %} | Your Account{% endblock %}
+
+{% block content %}
+  {% load rest_framework %}
+  <div class="container logged-in-page container-full header-margin">
+    <div class="row row-centered">
+
+    {% if errors %}
+    <div class="alert alert-warning">
+      <strong>Error!</strong>
+      <ul>
+        <li>{{ errors.messages }}</li>
+      </ul>
+    </div>
+    {% endif %}
+    <div class="col-sm-4 col-centered">
+      <h3>Profile details</h3>
+      <b>Email:</b> <span class="user_email">{{email}}</span>
+      <br/>
+      <b>API Key:</b> <span class="user_api_key">{{api_key}}</span>
+      <br/>
+      <b>Cases left to view or download today:</b> <span class="user_case_allowance">{{case_allowance}}</span>
+    </div>
+  </div>
+{% endblock content %}

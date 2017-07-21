@@ -50,10 +50,23 @@ def init_db():
     local("python manage.py migrate")
     if settings.USE_TEST_TRACKING_TOOL_DB:
         local("python manage.py migrate --database=tracking_tool")
+
+    local("python manage.py migrate --database=capapi")
+
     print("Creating DEV admin user:")
     User.objects.create_superuser('admin', 'admin@example.com', 'admin')
 
     update_postgres_env()
+
+@task
+def migrate():
+    """
+        Migrate all dbs at once
+    """
+    local("python manage.py migrate --database=default")
+    local("python manage.py migrate --database=capapi")
+    if settings.USE_TEST_TRACKING_TOOL_DB:
+        local("python manage.py migrate --database=tracking_tool")
 
 @task
 def load_test_data():

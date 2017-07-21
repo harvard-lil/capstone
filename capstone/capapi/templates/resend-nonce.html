@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %} | Verify Your Email{% endblock %}
+
+{% block meta_description %}
+Verify your email address to use the Caselaw Access Project API
+{% endblock %}
+
+{% block content %}
+  <div class="container login-form center-content container-full inverse header-margin">
+    <div class="row row-centered">
+      <div class="alert alert-warning">
+        <div class="col-sm-4 col-centered">
+          <strong>Error!</strong> You need to verify your email address before continuing.
+        </div>
+      </div>
+      <div class="col-sm-4 col-centered">
+        <form action="/accounts/resend_verification/" method="POST">
+          <input type="hidden" name="user_id" value="{{user_id}}">
+          <input type="hidden" name="user_email" value="{{user_email}}">
+          <button type="submit" class="white-button">Click to resend a verification email</button></a>
+        </form>
+        <br/><br/>
+        <p>If you think you got this message in error, please contact us here: <a href="mailto:{{info_email}}">{{info_email}}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

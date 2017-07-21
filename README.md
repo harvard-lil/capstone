@@ -41,8 +41,9 @@ the `capstone` virtualenv activated.
 [Download and install Postgres](https://www.postgresql.org/download/), if necessary.
 
 Set up a postgres database:
-
+# UPDATE django_migrations SET app = 'capdb' WHERE app = 'cap';
     (capstone)$ psql -c "CREATE DATABASE capstone;"
+    (capstone)$ psql -c "CREATE DATABASE capapi;"
     (capstone)$ fab init_db  # one time -- set up database tables and development Django admin user
     (capstone)$ fab load_test_data  # load in our test data
 

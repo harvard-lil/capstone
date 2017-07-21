@@ -1,0 +1,193 @@
+fieldset {
+  border: 0px;
+  padding: 0px; }
+
+a {
+  cursor: pointer;
+  outline: none;
+  border-bottom: 0px;
+  color: #0075ff; }
+  a:hover, a :focus, a :active {
+    color: #2f2f2f;
+    border-bottom: 0px; }
+
+.blue-text {
+  color: #0075ff; }
+
+.header-margin {
+  margin-top: 60px; }
+
+.centered-text {
+  text-align: center; }
+
+.bold-text {
+  font-weight: 700; }
+
+.semibold-text {
+  font-weight: 500; }
+
+.separator {
+  border-bottom: 1px solid #d9d9d9;
+  margin: 20px 0px; }
+
+h1 {
+  letter-spacing: 3px; }
+
+code {
+  background-color: #d2e7ff;
+  color: #0075ff; }
+
+pre {
+  border: 0px; }
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px; }
+
+.page-header {
+  border-bottom: 0px; }
+
+.col-centered {
+  margin: 0 auto;
+  float: none; }
+
+.center-content {
+  text-align: center; }
+
+.white-button {
+  font: 14px "Rajdhani", "Helvetica", sans-serif;
+  color: white;
+  letter-spacing: 2px;
+  background: transparent;
+  border: 1px solid white;
+  height: 35px;
+  padding: 0px 14px;
+  text-transform: uppercase; }
+
+.remove-padding-left {
+  margin-left: 0px;
+  left: -15px;
+  position: relative; }
+
+.blue-button {
+  font: 14px "Rajdhani", "Helvetica", sans-serif;
+  font-weight: 700;
+  color: #0075ff;
+  letter-spacing: 2px;
+  background: white;
+  border: 1px solid #0075ff;
+  height: 35px;
+  padding: 0px 14px;
+  border-radius: 5px;
+  margin-bottom: 10px; }
+  .blue-button:hover {
+    background-color: #d2e7ff; }
+
+body {
+  height: 100%;
+  display: block;
+  font-family: "Rajdhani", "Helvetica", sans-serif;
+  color: #2f2f2f; }
+  body header.header {
+    width: 100%;
+    padding: 20px 0px 0px 20px;
+    position: fixed;
+    z-index: 10;
+    top: 0px;
+    background-color: white;
+    border-bottom: 1px solid #d9d9d9; }
+  body .header-content {
+    padding: 0px 20px 10px 20px; }
+  body .header-logo, body .lil-logo {
+    height: 32px;
+    width: 24px; }
+  body .lil-logo {
+    float: right; }
+  body .header-text {
+    font: "Rajdhani", "Helvetica", sans-serif, sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    left: 10px;
+    letter-spacing: 1.5px;
+    position: relative; }
+
+.inverse {
+  background-color: #2f2f2f;
+  color: white; }
+  .inverse button:hover, .inverse button:active, .inverse button:focus {
+    background-color: #d2e7ff;
+    color: #2f2f2f;
+    border: #2f2f2f; }
+  .inverse a:focus, .inverse a:active, .inverse a:hover {
+    color: #d2e7ff; }
+
+.login-form {
+  letter-spacing: 1px;
+  width: 100%;
+  min-height: 70%; }
+  .login-form h3 {
+    margin-left: -20px; }
+  .login-form form {
+    text-transform: uppercase; }
+
+.logged-in-page {
+  padding: 20px 0px;
+  min-height: 70%; }
+
+footer.footer {
+  width: 100%;
+  background-color: #0075ff;
+  margin-bottom: 0px; }
+  footer.footer hr.white-line {
+    color: white; }
+  footer.footer .credits {
+    width: 100%;
+    margin-bottom: 20px; }
+    footer.footer .credits p {
+      text-align: center; }
+    footer.footer .credits .name {
+      font-weight: 500; }
+  footer.footer .footer-content {
+    color: white;
+    width: 100%;
+    padding: 40px;
+    text-align: center; }
+    footer.footer .footer-content .cap-logo {
+      width: 54px;
+      height: 100px;
+      margin: 0 auto;
+      background-size: 54px 100px;
+      display: block;
+      text-indent: -9999px; }
+    footer.footer .footer-content .inline-link {
+      border-color: white; }
+  footer.footer a, footer.footer a:hover, footer.footer a:active {
+    padding-bottom: 3px;
+    border-bottom: 1px solid white;
+    text-decoration: none;
+    color: white; }
+  footer.footer h4.subheader {
+    margin-bottom: 40px; }
+  footer.footer h3.project-title {
+    margin-bottom: 30px; }
+  footer.footer h3, footer.footer h4, footer.footer button {
+    margin-top: 10px; }
+  footer.footer h3 {
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 3px; }
+
+.alert {
+  background-color: #eda633;
+  border: 0px;
+  background-image: none;
+  color: #2f2f2f;
+  padding-left: 0px;
+  padding-right: 0px; }
+  .alert .col-sm-4 {
+    padding-left: 0px;
+    padding-right: 0px; }
+  .alert li {
+    list-style: none; }

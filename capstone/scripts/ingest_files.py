@@ -9,7 +9,7 @@ from django.utils.module_loading import import_string
 from django.conf import settings
 from django.db import transaction, IntegrityError
 
-from cap.models import VolumeXML, PageXML, CaseXML
+from capdb.models import VolumeXML, PageXML, CaseXML
 
 
 ### helpers ###

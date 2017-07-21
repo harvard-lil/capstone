@@ -2,7 +2,7 @@ from django.db import IntegrityError
 
 from tqdm import tqdm
 
-from cap.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest
+from capdb.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest
 from tracking_tool.models import BookRequests, Eventloggers, Hollis, Pstep, Reporters, Users, Volumes
 
 

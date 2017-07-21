@@ -8,7 +8,7 @@ import xmltodict
 from django.db import transaction
 from lxml import etree
 
-from cap.models import VolumeXML, PageXML, CaseXML, DataMigration
+from capdb.models import VolumeXML, PageXML, CaseXML, DataMigration
 from .helpers import nsmap
 
 def run_pending_migrations():

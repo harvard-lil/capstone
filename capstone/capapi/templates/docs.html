@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %} | API guide{% endblock %}
+
+{% block meta_description %}
+The Caselaw Access Project API guide
+{% endblock %}
+
+{% block content %}
+<div class="header-margin">
+  <div class="page-header cont-fixed">
+    <div class="row">
+      <h1 class="centered-text bold-text"><span class="blue-text">CAP</span> API</h1>
+      <h3 class="centered-text semibold-text">EXPLORE AMERICAN CASELAW</h3>
+      <h5 class="centered-text light-text">Read the documentation below to get started</h5>
+    </div>
+  </div>
+  <div class="separator" style="margin:0px"></div>
+  <div class="row cont-reading" id="api-overview">
+    <div class="col-sm-4 container api-doc-toc">
+      <ul>
+        <li class="reading-toc-section"><a href="#overview-section">Overview</a></li>
+        <li class="reading-toc-section"><a href="#registration-section">Registration</a></li>
+        <li class="reading-toc-section"><a href="#downloading-casetext-section">Downloading Casetext</a></li>
+        <li class="reading-toc-section"><a href="#accessing-metadata-section">Accessing Metadata</a></li>
+        <li class="reading-toc-section"><a href="#terms-of-use-section">Terms of Use</a></li>
+      </ul>
+    </div>
+
+    <div class="col-sm-8 docs reading-body">
+      <section class="overview-section">
+        <h2 id="overview-section" class="section-title">API Overview</h2>
+        <p class="body-text">The CAP API lets you traverse through and download American caselaw from 1700 to present day.
+        You can browse unlimited metadata but if you want to download case xml, you must first register for an API key.</p>
+        <p class="body-text">The API can be browsed through the browser (see https://{{ request.get_host }}/api/v1/cases/)</p>
+        <p class="body-text">Or using the command line. </p>
+        <div class="separator"></div>
+      </section>
+      <section class="registration-section">
+        <h3  id="registration-section" class="section-title">Registration</h3>
+        <a href="/accounts/register"><button class="blue-button">REGISTER</button></a>
+        <p class="body-text">Once you have your API key, you can begin to download cases.</p>
+        <a href="/accounts/login"><button class="blue-button">LOGIN</button></a>
+        <p class="body-text">Log in to retrieve your API key and see your daily remaining case allowance.</p>
+
+        <p class="body-text blue-text note-text">A note about rate limiting:
+        <br/>
+        Currently we only allow users to download 500 cases a day. If you are a researcher
+        <br/> or you need to have more access, please write to us here:
+        <span class="black-text">info@capapi.org</span></p>
+      </section>
+      <div class="separator"></div>
+      <section class="api-endpoints-section">
+        <h2 id="downloading-casetext-section" class="section-title">Downloading casetext</h2>
+        <!-- <p class="body-text">All case metadata is viewable in the browser, or through the command line. -->
+        <p class="body-text">The URI structure is simple. All cases are located at the /cases/ endpoint, and each case is accessible using its slug, which is made up of the case short name and four random numbers.</p>
+        <p class="body-text">All cases endpoint:</p>
+        <pre><a href="/api/v1/cases/" target="_blank">https://{{ request.get_host }}/api/v1/cases/</a></pre>
+        <p class="body-text">One specific case endpoint:</p>
+        <pre><a href="/api/v1/cases/halling-v-united-states-7618" target="_blank">https://{{ request.get_host }}/api/v1/cases/halling-v-united-states-7618</a></pre>
+        <p class="body-text">Here is an example wget request:</p>
+        <pre>$ wget --content-disposition "https://{{ request.get_host}}/api/v1/cases/?jurisdiction_name=alabama&max=3&type=download" \
+        <br/> --header="Authorization: Token your-token-here"</pre>
+        <p class="body-text">Or if you prefer CURL:</p>
+        <pre>$ curl -O -J "https://{{ request.get_host}}/api/v1/cases/?jurisdiction_name=kansas&max=3&type=download" \
+        <br/> -H "Authorization: Token your-token-here"</pre>
+
+        <p class="body-text">
+          This request will download a zip file of three cases from the jurisdiction Alabama.
+        </p>
+        <p class="body-text bold-text">
+          To download cases, you must include:
+          <li>
+            The <code>type="download"</code> flag
+          </li>
+          <li>
+            Your API token. See the <a href="#registration-section">registration section</a>
+            for more information
+          </li>
+        </p>
+        <p>
+          Here are some optional query parameters:
+          <li>citation</li>
+          <li>jurisdiction_name</li>
+          <li>jurisdiction_id</li>
+          <li>reporter_name</li>
+          <li>reporter_id</li>
+          <li>court_name</li>
+          <li>court_id</li>
+          <li>max - number of maximum cases to return</li>
+        </p>
+      </section>
+
+      <div class="separator"></div>
+
+      <section class="accessing-metadata-section">
+        <h2 id="accessing-metadata-section" class="section-title">Accessing metadata</h2>
+        <p class="body-text">The metadata is viewable online as well as in the command line.</p>
+
+        <p class="body-text">
+          The main entrypoints are:
+          <br/>
+          <a href="/api/v1/cases">https://{{ request.get_host }}/api/v1/cases</a>
+          <br/>
+          <a href="/api/v1/jurisdictions">https://{{ request.get_host }}/api/v1/jurisdictions</a>
+          <br/>
+          <a href="/api/v1/reporters">https://{{ request.get_host }}/api/v1/reporters</a>
+          <br/>
+          <a href="/api/v1/courts">https://{{ request.get_host }}/api/v1/courts</a>
+          <br/>
+          <a href="/api/v1/volumes">https://{{ request.get_host }}/api/v1/volumes</a>
+        </p>
+        <p class="body-text bold-text">
+          A note on pagination:
+        </p>
+        <p class="body-text">The API will return 20 items per response. If you have more than 20 items returned, you can page through the items using the <i>offset</i> parameter. For example, if you want to start at the 101st result, set the offset value to 4 (we start counting at 0, of course).</p>
+
+        <p class="body-text">Here are some examples of endpoints and their JSON responses.</p>
+
+        <p class="body-text">A single case request (online):</p>
+        <pre><a href="/api/v1/cases/bates-v-united-states-4330/" target="_blank">https://{{ request.get_host }}/api/v1/cases/bates-v-united-states-4330/</a></pre>
+        <p class="body-text">A single case CURL request:</p>
+        <pre>$ curl "https://{{ request.get_host }}/api/v1/cases/bates-v-united-states-4330/?format=json"</pre>
+        <pre>{
+    "id": 393783,
+    "slug": "bates-v-united-states-4330",
+    "url": "https://capapi.org/cases/bates-v-united-states-4330/",
+    "name": "George W. BATES, Appellant, v. UNITED STATES of America, Appellee",
+    "name_abbreviation": "Bates v. United States",
+    "citation": "405 F.2d 1104",
+    "firstpage": 1104,
+    "lastpage": 1106,
+    "jurisdiction": "https://capapi.org/jurisdictions/1/",
+    "jurisdiction_name": "United States",
+    "jurisdiction_id": 1,
+    "docketnumber": "No. 21434",
+    "decisiondate_original": "1968-12-13",
+    "court": "https://capapi.org/courts/97/",
+    "court_name": "United States Court of Appeals for the District of Columbia Circuit",
+    "court_id": 97,
+    "reporter": "https://capapi.org/reporters/980/",
+    "reporter_name": "Federal Reporter 2d Series",
+    "reporter_id": 980,
+    "volume": 405
+}
+        </pre>
+        <p class="body-text">A single reporter request (online):</p>
+        <pre><a href="https://{{ request.get_host }}/api/v1/reporters/385/" target="_blank">https://{{ request.get_host }}/api/v1/reporters/385/</a></pre>
+        <p class="body-text">A single case CURL request:</p>
+        <pre>$ curl "https://{{ request.get_host }}/api/v1/cases/385/?format=json"</pre>
+        <pre>{
+    "id": 385,
+    "jurisdiction": "https://capapi.org/jurisdictions/21/",
+    "jurisdiction_id": 21,
+    "jurisdiction_name": "Pennsylvania",
+    "name": "Pennsylvania District and County Reports",
+    "name_abbreviation": "Pa. D. & C.",
+    "start_date": 1922,
+    "end_date": 1954,
+    "volumes": 89,
+    "updated_at": "2016-09-12T20:03:19Z",
+    "slug": "pa-d-c"
+}
+        </pre>
+
+
+      </section>
+     <section class="terms-of-use">
+      <h2 id="terms-of-use-section" class="section-title">Terms of Use</h2>
+      <p class="body-text">Your use of the CAP API is subject to your acceptance of our <a href="{% url 'terms' %}">Terms of Use</a>.</p>
+    </section>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

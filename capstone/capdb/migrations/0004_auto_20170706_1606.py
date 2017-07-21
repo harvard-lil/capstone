@@ -9,7 +9,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cap', '0003_auto_20170705_1717'),
+        ('capdb', '0003_auto_20170705_1717'),
     ]
 
     operations = [
@@ -55,26 +55,26 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='court',
             name='jurisdiction',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='court_jurisdiction', to='cap.Jurisdiction'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='court_jurisdiction', to='capdb.Jurisdiction'),
         ),
         migrations.AddField(
             model_name='casemetadata',
             name='court',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='casemetadata_court', to='cap.Court'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='casemetadata_court', to='capdb.Court'),
         ),
         migrations.AddField(
             model_name='casemetadata',
             name='jurisdiction',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='casemetadata_jurisdiction', to='cap.Jurisdiction'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='casemetadata_jurisdiction', to='capdb.Jurisdiction'),
         ),
         migrations.AddField(
             model_name='casemetadata',
             name='reporter',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='casemetadata_reporter', to='cap.Reporter'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='casemetadata_reporter', to='capdb.Reporter'),
         ),
         migrations.AddField(
             model_name='casemetadata',
             name='volume',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cap.VolumeMetadata'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='capdb.VolumeMetadata'),
         ),
     ]

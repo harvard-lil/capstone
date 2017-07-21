@@ -18,12 +18,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django_filters',
+    'django_extensions',
+    'rest_framework',
+    'rest_framework.authtoken',
+    # 'pipeline',
+
     # ours
-    'cap',
+    'capdb',
     'tracking_tool',
+    'capapi',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
+
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -31,10 +39,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'cap.middleware.login_required_middleware',
+    # 'capdb.middleware.login_required_middleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -71,6 +78,14 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     },
+    'capapi': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'capapi',
+        'USER': 'postgres',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '',
+    },
     'tracking_tool': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'test_data/tracking_tool.sqlite'),
@@ -78,7 +93,10 @@ DATABASES = {
 }
 
 # make sure tracking_tool app uses tracking_tool DB:
-DATABASE_ROUTERS = ['tracking_tool.routers.TrackingToolDatabaseRouter']
+DATABASE_ROUTERS = [
+
+    'capapi.routers.CAPAPIRouter' #'tracking_tool.routers.TrackingToolDatabaseRouter',
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -121,9 +139,19 @@ STATIC_URL = '/static/'
 
 # file ingest
 INGEST_STORAGE = {
-    'class': 'cap.storages.CapFileStorage',
+    'class': 'capdb.storages.CapFileStorage',
     'kwargs': {
         'location': os.path.join(BASE_DIR, 'test_data/from_vendor'),
     }
 }
 INGEST_VOLUME_COUNT = 0  # if greater than 0, limit volumes ingested; for debugging
+
+
+# CAP API settings
+
+TOKEN_EXPIRE_HOURS = 24
+CASE_DAILY_ALLOWANCE = 500
+CASE_EXPIRE_HOURS = 24
+
+
+# AUTH_USER_MODEL = 'capapi.APIUser'

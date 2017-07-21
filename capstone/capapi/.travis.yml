@@ -1,0 +1,28 @@
+language: python
+python:
+  - "2.7"
+services:
+  - postgresql
+
+before_install:
+  - cp capapi/settings_deployments/settings_travis.py capapi/settings.py
+
+install:
+  - pip install -U pip wheel
+  - pip install -r requirements.txt
+
+before_script:
+  - psql -c "DROP DATABASE IF EXISTS cap_db;" -U postgres;
+  - psql -c "create database cap_db;" -U postgres;
+  - python manage.py migrate
+
+  - date
+
+script:
+  - python manage.py test
+
+after_failure:
+  - date
+
+after_success:
+  - date

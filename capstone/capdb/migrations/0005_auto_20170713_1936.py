@@ -9,7 +9,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cap', '0004_auto_20170706_1606'),
+        ('capdb', '0004_auto_20170706_1606'),
     ]
 
     operations = [
@@ -30,12 +30,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='casemetadata',
             name='citation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='casemetadata_citation', to='cap.Citation'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='casemetadata_citation', to='capdb.Citation'),
         ),
         migrations.AlterField(
             model_name='casemetadata',
             name='volume',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='casemetadata_volume', to='cap.VolumeMetadata'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='casemetadata_volume', to='capdb.VolumeMetadata'),
         ),
         migrations.AlterField(
             model_name='trackingtoollog',
