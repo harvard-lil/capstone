@@ -66,13 +66,13 @@ class APIUser(AbstractBaseUser):
         return self.activation_nonce
 
     def update_case_allowance(self):
-        if self.case_allowance_last_updated + timedelta(hours=settings.CASE_EXPIRE_HOURS) < timezone.now():
+        if self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) < timezone.now():
             self.case_allowance = settings.API_CASE_DAILY_ALLOWANCE
             self.case_allowance_last_updated = timezone.now()
             self.save()
 
     def get_case_allowance_update_time_remaining(self):
-        td = self.case_allowance_last_updated + timedelta(hours=settings.CASE_EXPIRE_HOURS) - timezone.now()
+        td = self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) - timezone.now()
         return "%sh. %sm." % (td.seconds / 3600, (td.seconds / 60) % 60)
 
     def authenticate_user(self, **kwargs):

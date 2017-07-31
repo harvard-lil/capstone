@@ -147,11 +147,14 @@ INGEST_STORAGE = {
 INGEST_VOLUME_COUNT = 0  # if greater than 0, limit volumes ingested; for debugging
 
 
-# CAP API settings
+### CAP API settings ###
 
-TOKEN_EXPIRE_HOURS = 24
 API_CASE_DAILY_ALLOWANCE = 500
-CASE_EXPIRE_HOURS = 24
+API_CASE_EXPIRE_HOURS = 24
+API_BASE_URL = 'http://localhost:8000'
+API_BASE_URL_ROUTE = '/api'
+API_VERSION = 'v1'
 
-
-# AUTH_USER_MODEL = 'capapi.APIUser'
+API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
+ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
+API_CASE_FILE_TYPE = '.xml'

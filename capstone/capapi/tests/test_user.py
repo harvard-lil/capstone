@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.conf import settings
 import pytz
 
-from capapi.models import CaseUser
+from capapi.models import APIUser as CaseUser
 import capapi.tests.helpers as helpers
 
 
@@ -17,7 +17,7 @@ class UserTestCase(TestCase):
         user = CaseUser.objects.get(email="boblawblaw@lawblog.com")
         assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
         user.case_allowance = 200
-        user.case_allowance_last_updated = user.case_allowance_last_updated - timedelta(hours=settings.CASE_EXPIRE_HOURS)
+        user.case_allowance_last_updated = user.case_allowance_last_updated - timedelta(hours=settings.API_CASE_EXPIRE_HOURS)
         user.save()
         user.update_case_allowance()
         assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
@@ -48,12 +48,12 @@ class UserTestCase(TestCase):
         old_case_allowance_time = user.case_allowance_last_updated
         user.update_case_allowance()
         assert user.case_allowance_last_updated == old_case_allowance_time
-        user.case_allowance_last_updated -= timedelta(hours=settings.CASE_EXPIRE_HOURS)
+        user.case_allowance_last_updated -= timedelta(hours=settings.API_CASE_EXPIRE_HOURS)
         user.save()
         old_case_allowance_time = user.case_allowance_last_updated
         user.update_case_allowance()
         assert user.case_allowance_last_updated > old_case_allowance_time
         case_allowance_time_remaining = 5
-        user.case_allowance_last_updated -= timedelta(hours=settings.CASE_EXPIRE_HOURS - case_allowance_time_remaining)
+        user.case_allowance_last_updated -= timedelta(hours=settings.API_CASE_EXPIRE_HOURS - case_allowance_time_remaining)
         user.save()
         assert int(user.get_case_allowance_update_time_remaining()[0]) > 3

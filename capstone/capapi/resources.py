@@ -26,7 +26,7 @@ def format_filename(case_id, whitelisted=False):
                                                     cdirname,
                                                     cdirname,
                                                     cpgnumber,
-                                                    settings.CASE_FILE_TYPE)
+                                                    settings.API_CASE_FILE_TYPE)
 
 
 def download_blacklisted(requester_id, list_of_files):
@@ -110,7 +110,7 @@ def email(reason, user):
 
     if reason == 'new_signup':
         token_url = "%saccounts/verify-user/%s/%s" % (
-            settings.BASE_URL, user.id, user.get_activation_nonce()
+            settings.API_BASE_URL, user.id, user.get_activation_nonce()
         )
         send_mail(
             'CaseLaw Access Project: Verify your email address',

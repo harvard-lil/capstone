@@ -2,7 +2,7 @@ import pytest
 from django.core.management import call_command
 
 import fabfile
-from cap.models import VolumeXML
+from capdb.models import VolumeXML
 
 
 ### DATA INGEST FIXTURES ###

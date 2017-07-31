@@ -1,6 +1,10 @@
-from capapi.models import Case, CaseUser, Court, Jurisdiction, Reporter
-from capapi.utils import generate_unique_slug
+from capdb.models import CaseMetadata as Case
+from capdb.models import Court, Jurisdiction, Reporter
+from capapi.models import APIUser as CaseUser
+from capdb.utils import generate_unique_slug
+
 import pytz
+
 from datetime import datetime
 
 def setup_jurisdiction(**kwargs):

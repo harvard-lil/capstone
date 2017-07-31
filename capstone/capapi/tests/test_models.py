@@ -1,7 +1,8 @@
 from django.test import TestCase
 
 import capapi.tests.helpers as helpers
-from capapi.models import Reporter, CaseUser
+from capdb.models import Reporter
+from capapi.models import APIUser as CaseUser
 
 
 class ModelTestCase(TestCase):

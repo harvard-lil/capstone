@@ -1,7 +1,7 @@
 import pytest
 
 import fabfile
-from cap.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata
+from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata
 
 
 @pytest.mark.django_db
