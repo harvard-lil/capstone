@@ -120,8 +120,18 @@ class ProcessStep(models.Model):
         return "%s - %s" % (self.step, self.label)
 
 
+
+class Jurisdiction(models.Model):
+    name = models.CharField(max_length=100, blank=True)
+    slug = models.SlugField(unique=True, max_length=255)
+    name_abbreviation = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return self.slug
+
+
 class Reporter(models.Model):
-    jurisdiction = models.CharField(max_length=64, blank=True, null=True)
+    jurisdictions = models.ManyToManyField(Jurisdiction)
     full_name = models.CharField(max_length=1024)
     short_name = models.CharField(max_length=64)
     start_year = models.IntegerField(blank=True, null=True)
@@ -226,15 +236,6 @@ class Court(models.Model):
     name_abbreviation = models.CharField(max_length=100, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
     slug = models.SlugField(unique=True, max_length=255, blank=False)
-
-    def __str__(self):
-        return self.slug
-
-
-class Jurisdiction(models.Model):
-    name = models.CharField(max_length=100, blank=True)
-    slug = models.SlugField(unique=True, max_length=255)
-    name_abbreviation = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.slug
