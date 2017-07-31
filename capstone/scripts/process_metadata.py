@@ -1,6 +1,7 @@
 from datetime import datetime
 from pyquery import PyQuery as pq
 
+
 namespaces = {
     'METS': 'http://www.loc.gov/METS/',
     'case': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case:v1',
@@ -22,8 +23,8 @@ def get_case_metadata(case_xml):
     if not first_page:
         first_page = int(parsed('casebody|casebody').attr.firstpage)
 
-    original_decision_date = parsed('case|decisiondate').text()
-    decision_date = decision_datetime(original_decision_date)
+    decision_date_original = parsed('case|decisiondate').text()
+    decision_date = decision_datetime(decision_date_original)
 
     docket_number = parsed('case|docketnumber').text()
 
@@ -39,7 +40,7 @@ def get_case_metadata(case_xml):
         'reporter': reporter,
         'first_page': first_page,
         'last_page': last_page,
-        'original_decision_date': original_decision_date,
+        'decision_date_original': decision_date_original,
         'decision_date': decision_date,
         'court': court,
         'docket_number': docket_number,

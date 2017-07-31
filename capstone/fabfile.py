@@ -27,6 +27,10 @@ def ingest_volumes():
     ingest_files.ingest_volumes()
 
 @task
+def update_case_metadata():
+    ingest_files.update_case_metadata()
+
+@task
 def ingest_metadata():
     ingest_tt_data.ingest(False)
 
@@ -74,6 +78,7 @@ def load_test_data():
         local("python manage.py loaddata --database=tracking_tool test_data/tracking_tool.json")
     ingest_volumes()
     ingest_metadata()
+    update_case_metadata()
 
 @task
 def write_tracking_tool_fixtures(*barcodes):
