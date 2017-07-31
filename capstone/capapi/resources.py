@@ -103,8 +103,8 @@ def email(reason, user):
         send_mail(
             title,
             message,
-            settings.ADMIN_EMAIL_ADDRESS,
-            [settings.EMAIL_ADDRESS]
+            settings.API_ADMIN_EMAIL_ADDRESS,
+            [settings.API_EMAIL_ADDRESS]
         )
         logger.info("sent new_registration email for %s" % user.email)
 
@@ -118,7 +118,7 @@ def email(reason, user):
                 Please click here to verify your email address: %s
                 If you believe you have received this message in error, please ignore it.
             """ % token_url,
-            settings.EMAIL_ADDRESS,
+            settings.API_EMAIL_ADDRESS,
             [user.email],
             fail_silently=False, )
         logger.info("sent new_signup email for %s" % user.email)

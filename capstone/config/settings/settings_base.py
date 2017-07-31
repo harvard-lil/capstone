@@ -158,3 +158,17 @@ API_VERSION = 'v1'
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
 API_CASE_FILE_TYPE = '.xml'
+
+# CAP API EMAIL #
+
+API_ADMIN_EMAIL_ADDRESS = 'main-email-address@example.com'
+API_EMAIL_ADDRESS = 'admin-email-address@example.com'
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST_PASSWORD = '123'
+EMAIL_HOST_USER = 'user-secret'
+EMAIL_HOST_PASSWORD = 'secret-secret'
+
