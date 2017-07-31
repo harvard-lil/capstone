@@ -18,6 +18,7 @@ def load_tracking_tool_database():
 def load_parsed_metadata():
     call_command('loaddata', 'test_data/parsed_metadata.json')
 
+@pytest.fixture
 def ingest_metadata(load_tracking_tool_database):
     fabfile.ingest_metadata()
 

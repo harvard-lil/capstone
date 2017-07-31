@@ -18,6 +18,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     reporter_id = serializers.ReadOnlyField(source='reporter.id')
     reporter_abbreviation = serializers.ReadOnlyField(source='reporter.name_abbreviation')
     citation = serializers.ReadOnlyField(source='citation.cite')
+
     class Meta:
         model = models.CaseMetadata
         lookup_field = 'case_id'
