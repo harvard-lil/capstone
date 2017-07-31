@@ -17,23 +17,23 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     reporter_name = serializers.ReadOnlyField(source='reporter.name')
     reporter_id = serializers.ReadOnlyField(source='reporter.id')
     reporter_abbreviation = serializers.ReadOnlyField(source='reporter.name_abbreviation')
-
+    citation = serializers.ReadOnlyField(source='citation.cite')
     class Meta:
         model = models.CaseMetadata
-        lookup_field = 'slug'
-        fields = ('id', 'slug', 'url',
+        lookup_field = 'case_id'
+        fields = ('case_id', 'url',
                   'name', 'name_abbreviation',
                   'citation',
-                  'firstpage', 'lastpage',
+                  'first_page', 'last_page',
                   'jurisdiction', 'jurisdiction_name', 'jurisdiction_id',
-                  'docketnumber',
-                  'decisiondate_original',
+                  'docket_number',
+                  'decision_date_original',
                   'court', 'court_name', 'court_id',
                   'reporter', 'reporter_name', 'reporter_id',
                   'reporter_abbreviation',
                   'volume')
         extra_kwargs = {
-            'url': {'lookup_field': 'slug'}
+            'url': {'lookup_field': 'case_id'}
         }
 
 

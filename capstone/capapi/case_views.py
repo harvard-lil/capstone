@@ -66,7 +66,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     search_fields = ('name', 'name_abbreviation', 'court__name', 'reporter__name', 'jurisdiction__name')
     filter_class = filters.CaseFilter
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
-    lookup_field = 'slug'
+    lookup_field = 'case_id'
     ordering = ('decisiondate',)
 
     def download_many(self):

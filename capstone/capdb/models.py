@@ -1,6 +1,9 @@
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 
+from scripts.process_metadata import get_case_metadata
+from .utils import generate_unique_slug
 
 ### helpers ###
 
@@ -222,7 +225,7 @@ class Court(models.Model):
     name = models.CharField(max_length=255)
     name_abbreviation = models.CharField(max_length=100, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
-    slug = models.SlugField(unique=True, max_length=255)
+    slug = models.SlugField(unique=True, max_length=255, blank=False)
 
     def __str__(self):
         return self.slug
@@ -238,20 +241,73 @@ class Jurisdiction(models.Model):
 
 
 class CaseXML(models.Model):
-    barcode = models.CharField(max_length=255, unique=True, db_index=True)
+    case_id = models.CharField(max_length=255, unique=True, db_index=True)
     orig_xml = XMLField()
     volume = models.ForeignKey(VolumeXML, related_name='case_xmls')
 
     def __str__(self):
-        return self.barcode
+        return self.case_id
 
+    def update_case_metadata(self):
+        data = get_case_metadata(self.orig_xml)
+        citation, created = Citation.objects.get_or_create(cite=data["citation"],
+                                                           type=["citation_type"])
+        try:
+            case_metadata, created = CaseMetadata.objects.get_or_create(
+                case_id=self.case_id,
+                citation=citation,
+            )
+        except ObjectDoesNotExist:
+            pass
+
+        try:
+            volume_metadata = VolumeMetadata.objects.get(barcode=self.volume.barcode)
+            case_metadata.volume = volume_metadata
+        except ObjectDoesNotExist:
+            pass
+
+        case_metadata.first_page = data["first_page"]
+        case_metadata.last_page = data["last_page"]
+        case_metadata.decision_date_original = data["decision_date_original"]
+        case_metadata.decision_date = data["decision_date"]
+        case_metadata.docket_number = data["docket_number"]
+        case_metadata.jurisdiction_value = data["jurisdiction"]
+
+        # set foreign keys
+        try:
+            jurisdiction = Jurisdiction.objects.get(name=case_metadata.jurisdiction_value)
+            case_metadata.jurisdiction = jurisdiction
+        except ObjectDoesNotExist:
+            pass
+
+        try:
+            court = Court.objects.get(name=data["court"]["name"])
+            case_metadata.court = court
+        except ObjectDoesNotExist:
+            try:
+                court = Court.objects.get(name_abbreviation=data["court"]["name_abbreviation"])
+                case_metadata.court = court
+            except ObjectDoesNotExist:
+                pass
+            pass
+
+        try:
+            reporter = Reporter.objects.get(short_name=data["reporter"])
+            case_metadata.reporter = reporter
+            try:
+                volume = VolumeMetadata.objects.get(reporter=reporter, nominative_volume_number=data["reporter"])
+                case_metadata.volume = volume
+            except ObjectDoesNotExist:
+                pass
+        except ObjectDoesNotExist:
+            pass
+
+        case_metadata.save()
 
 class CaseMetadata(models.Model):
-    barcode = models.CharField(unique=True, max_length=64, primary_key=True)
-    slug = models.SlugField(unique=True, max_length=255)
+    case_id = models.CharField(max_length=64, null=True)
     first_page = models.IntegerField(null=True, blank=True)
     last_page = models.IntegerField(null=True, blank=True)
-    jurisdiction_value = models.CharField(max_length=255, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction',
                                      on_delete=models.SET_NULL)
     citation = models.ForeignKey('Citation', related_name='%(class)s_citation')
@@ -268,14 +324,20 @@ class CaseMetadata(models.Model):
     date_added = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return self.slug
+        return self.case_id
 
 
 class Citation(models.Model):
-    type = models.CharField(max_length=10,
+    type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
-    cite = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(unique=True, max_length=255)
+    cite = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
+
+    @classmethod
+    def create(cls, cite, citation_type):
+        citation = Citation(cite=cite, type=citation_type)
+        citation.slug = generate_unique_slug(Citation, 'slug', cite)
+        return citation
 
     def __str__(self):
         return self.slug
