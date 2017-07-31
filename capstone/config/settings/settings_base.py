@@ -94,8 +94,8 @@ DATABASES = {
 
 # make sure tracking_tool app uses tracking_tool DB:
 DATABASE_ROUTERS = [
-
-    'capapi.routers.CAPAPIRouter' #'tracking_tool.routers.TrackingToolDatabaseRouter',
+    'capapi.routers.CAPAPIRouter',
+    'tracking_tool.routers.TrackingToolDatabaseRouter',
 ]
 
 # Password validation
