@@ -77,10 +77,10 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         cases = self.queryset.all()
 
         try:
-            max_num = int(self.request.query_params.get('max', settings.CASE_DAILY_ALLOWANCE))
+            max_num = int(self.request.query_params.get('max', settings.API_CASE_DAILY_ALLOWANCE))
         except ValueError:
             # if no max selected, set to daily max
-            max_num = settings.CASE_DAILY_ALLOWANCE
+            max_num = settings.API_CASE_DAILY_ALLOWANCE
             pass
 
         query_dict = format_query(self.request.query_params, dict())

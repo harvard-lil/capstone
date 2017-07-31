@@ -150,7 +150,7 @@ INGEST_VOLUME_COUNT = 0  # if greater than 0, limit volumes ingested; for debugg
 # CAP API settings
 
 TOKEN_EXPIRE_HOURS = 24
-CASE_DAILY_ALLOWANCE = 500
+API_CASE_DAILY_ALLOWANCE = 500
 CASE_EXPIRE_HOURS = 24
 
 

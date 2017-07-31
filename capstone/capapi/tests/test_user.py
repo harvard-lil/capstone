@@ -15,12 +15,12 @@ class UserTestCase(TestCase):
 
     def test_case_permissions(self):
         user = CaseUser.objects.get(email="boblawblaw@lawblog.com")
-        assert user.case_allowance == settings.CASE_DAILY_ALLOWANCE
+        assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
         user.case_allowance = 200
         user.case_allowance_last_updated = user.case_allowance_last_updated - timedelta(hours=settings.CASE_EXPIRE_HOURS)
         user.save()
         user.update_case_allowance()
-        assert user.case_allowance == settings.CASE_DAILY_ALLOWANCE
+        assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
 
     def test_authenticate_user(self):
         user = CaseUser.objects.get(email="boblawblaw@lawblog.com")

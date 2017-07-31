@@ -43,7 +43,7 @@ class APIUser(AbstractBaseUser):
 
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
-    case_allowance = models.IntegerField(null=False, blank=False, default=settings.CASE_DAILY_ALLOWANCE)
+    case_allowance = models.IntegerField(null=False, blank=False, default=settings.API_CASE_DAILY_ALLOWANCE)
     case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
     is_researcher = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
@@ -67,7 +67,7 @@ class APIUser(AbstractBaseUser):
 
     def update_case_allowance(self):
         if self.case_allowance_last_updated + timedelta(hours=settings.CASE_EXPIRE_HOURS) < timezone.now():
-            self.case_allowance = settings.CASE_DAILY_ALLOWANCE
+            self.case_allowance = settings.API_CASE_DAILY_ALLOWANCE
             self.case_allowance_last_updated = timezone.now()
             self.save()
 
