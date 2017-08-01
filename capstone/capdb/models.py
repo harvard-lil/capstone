@@ -253,57 +253,45 @@ class CaseXML(models.Model):
         data = get_case_metadata(self.orig_xml)
         citation, created = Citation.objects.get_or_create(cite=data["citation"],
                                                            type=["citation_type"])
-        try:
-            case_metadata, created = CaseMetadata.objects.get_or_create(
-                case_id=self.case_id,
-                citation=citation,
-            )
-        except ObjectDoesNotExist:
-            pass
 
-        try:
-            volume_metadata = VolumeMetadata.objects.get(barcode=self.volume.barcode)
-            case_metadata.volume = volume_metadata
-        except ObjectDoesNotExist:
-            pass
+        case_metadata, created = CaseMetadata.objects.get_or_create(
+            case_id=self.case_id,
+            citation=citation,
+        )
+
+        case_metadata.volume = VolumeMetadata.objects.get(barcode=self.volume.barcode)
 
         case_metadata.first_page = data["first_page"]
         case_metadata.last_page = data["last_page"]
         case_metadata.decision_date_original = data["decision_date_original"]
         case_metadata.decision_date = data["decision_date"]
         case_metadata.docket_number = data["docket_number"]
-        case_metadata.jurisdiction_value = data["jurisdiction"]
 
-        # set foreign keys
         try:
-            jurisdiction = Jurisdiction.objects.get(name=case_metadata.jurisdiction_value)
-            case_metadata.jurisdiction = jurisdiction
+            case_metadata.jurisdiction = Jurisdiction.objects.get(name=data["jurisdiction"])
         except ObjectDoesNotExist:
             pass
 
-        try:
-            court = Court.objects.get(name=data["court"]["name"])
+        court_name = data["court"]["name"]
+        court_name_abbreviation = data["court"]["name_abbreviation"]
+
+        if court_name:
+            court, created = Court.objects.get_or_create(name=court_name)
+            if court_name_abbreviation:
+                court.name_abbreviation = court_name_abbreviation
             case_metadata.court = court
-        except ObjectDoesNotExist:
-            try:
-                court = Court.objects.get(name_abbreviation=data["court"]["name_abbreviation"])
-                case_metadata.court = court
-            except ObjectDoesNotExist:
-                pass
-            pass
+        elif court_name_abbreviation:
+            court, created = Court.objects.get_or_create(name_abbreviation=court_name_abbreviation)
+            case_metadata.court = court
 
         try:
             reporter = Reporter.objects.get(short_name=data["reporter"])
             case_metadata.reporter = reporter
-            try:
-                volume = VolumeMetadata.objects.get(reporter=reporter, nominative_volume_number=data["reporter"])
-                case_metadata.volume = volume
-            except ObjectDoesNotExist:
-                pass
         except ObjectDoesNotExist:
             pass
 
         case_metadata.save()
+
 
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True)
