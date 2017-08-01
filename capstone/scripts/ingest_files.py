@@ -8,7 +8,6 @@ from django.utils.module_loading import import_string
 
 from django.conf import settings
 from django.db import transaction, IntegrityError
-from django.core.exceptions import ObjectDoesNotExist
 from capdb.models import VolumeXML, PageXML, CaseXML, CaseMetadata
 
 
