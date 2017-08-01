@@ -21,6 +21,5 @@ urlpatterns = [
     url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt'), name='robots'),
     url(r'^', include(user_router.urls)),
     url(r'^api/v1/', include(router.urls)),
-    # url(r'^admin', include(admin.site.urls)),
     url(r'^accounts/verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
 ]
