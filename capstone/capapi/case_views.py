@@ -66,25 +66,8 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     ordering = ('decisiondate',)
 
     def list(self, *args, **kwargs):
-        if not self.request.query_params.get('type') == 'download':
-            return super(CaseViewSet, self).list(*args, **kwargs)
-        else:
-            return self.download_many()
+        return super(CaseViewSet, self).list(*args, **kwargs)
 
     def retrieve(self, *args, **kwargs):
-        if self.request.query_params.get('type') and self.request.query_params.get('type') == 'download':
-            return self.download_one(**kwargs)
-        else:
-            return super(CaseViewSet, self).retrieve(*args, **kwargs)
+        return super(CaseViewSet, self).retrieve(*args, **kwargs)
 
-    def download_cases(self, caseids_list, blacklisted_case_count):
-        try:
-            if blacklisted_case_count > 0:
-                zip_filename = resources.download_blacklisted(self.request.user.id, caseids_list)
-                self.request.user.case_allowance -= blacklisted_case_count
-                self.request.user.save()
-            else:
-                zip_filename = resources.download_whitelisted(self.request.user.id, caseids_list)
-            return zip_filename
-        except Exception as e:
-            raise Exception("Download cases error %s" % e)
