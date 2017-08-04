@@ -237,6 +237,14 @@ class Court(models.Model):
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
     slug = models.SlugField(unique=True, max_length=255, blank=False)
 
+    def save(self, *args, **kwargs):
+        if not self.id and not self.slug:
+            if self.name_abbreviation:
+                self.slug = generate_unique_slug(Court, 'slug', self.name_abbreviation)
+            else:
+                self.slug = generate_unique_slug(Court, 'slug', self.name)
+        super(Court, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.slug
 
@@ -257,8 +265,7 @@ class CaseXML(models.Model):
 
         case_metadata, created = CaseMetadata.objects.get_or_create(
             case_id=self.case_id,
-            citation=citation,
-        )
+            citation=citation)
 
         case_metadata.volume = VolumeMetadata.objects.get(barcode=self.volume.barcode)
 
@@ -276,14 +283,25 @@ class CaseXML(models.Model):
         court_name = data["court"]["name"]
         court_name_abbreviation = data["court"]["name_abbreviation"]
 
-        if court_name:
-            court, created = Court.objects.get_or_create(name=court_name)
-            if court_name_abbreviation:
-                court.name_abbreviation = court_name_abbreviation
+        if court_name and court_name_abbreviation:
+            court, created = Court.objects.get_or_create(
+                name=court_name,
+                name_abbreviation=court_name_abbreviation)
             case_metadata.court = court
+
         elif court_name_abbreviation:
-            court, created = Court.objects.get_or_create(name_abbreviation=court_name_abbreviation)
+            court, created = Court.objects.get_or_create(
+                name_abbreviation=court_name_abbreviation)
             case_metadata.court = court
+
+        elif court_name:
+            court, created = Court.objects.get_or_create(
+                name=court_name)
+            case_metadata.court = court
+
+        if case_metadata.court and case_metadata.jurisdiction:
+            court.jurisdiction = case_metadata.jurisdiction
+            court.save()
 
         try:
             reporter = Reporter.objects.get(short_name=data["reporter"])
