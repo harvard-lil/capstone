@@ -251,8 +251,9 @@ class CaseXML(models.Model):
 
     def update_case_metadata(self):
         data = get_case_metadata(self.orig_xml)
-        citation, created = Citation.objects.get_or_create(cite=data["citation"],
-                                                           type=["citation_type"])
+        citation, created = Citation.objects.get_or_create(
+            cite=data["citation"],
+            type=data["citation_type"])
 
         case_metadata, created = CaseMetadata.objects.get_or_create(
             case_id=self.case_id,
@@ -322,11 +323,10 @@ class Citation(models.Model):
     cite = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
 
-    @classmethod
-    def create(cls, cite, citation_type):
-        citation = Citation(cite=cite, type=citation_type)
-        citation.slug = generate_unique_slug(Citation, 'slug', cite)
-        return citation
+    def save(self, *args, **kwargs):
+        if not self.id and not self.slug:
+            self.slug = generate_unique_slug(Citation, 'slug', self.cite)
+        super(Citation, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.slug
