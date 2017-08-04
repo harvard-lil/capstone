@@ -1,23 +1,12 @@
 import logging
 
-from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import renderers, viewsets, mixins, filters as rs_filters
 
-from . import permissions, resources, serializers, filters
+from . import permissions, serializers, filters
 from capdb import models
 
 logger = logging.getLogger(__name__)
-
-
-class JSONResponse(HttpResponse):
-    """
-    An HttpResponse that renders its content into JSON.
-    """
-    def __init__(self, data, **kwargs):
-        content = renderers.JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
 
 
 class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):

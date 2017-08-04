@@ -1,6 +1,5 @@
 import logging
 
-from django.http import HttpResponse
 from django.db import IntegrityError
 from rest_framework import status, renderers, viewsets
 from rest_framework.response import Response
@@ -12,16 +11,6 @@ from . import models, serializers, resources, permissions
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
-
-
-class JSONResponse(HttpResponse):
-    """
-    An HttpResponse that renders its content into JSON.
-    """
-    def __init__(self, data, **kwargs):
-        content = renderers.JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
 
 
 class UserViewSet(viewsets.ModelViewSet):
