@@ -51,11 +51,7 @@ def init_db():
     """
         Set up new dev database.
     """
-    local("python manage.py migrate")
-    if settings.USE_TEST_TRACKING_TOOL_DB:
-        local("python manage.py migrate --database=tracking_tool")
-
-    local("python manage.py migrate --database=capapi")
+    migrate()
 
     print("Creating DEV admin user:")
     User.objects.create_superuser('admin', 'admin@example.com', 'admin')

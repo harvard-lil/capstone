@@ -1,3 +1,6 @@
+
+
+
 class CAPAPIRouter(object):
     """
     Determine how to route database calls for an app's models (in this case, for an app named capapi).
@@ -27,7 +30,7 @@ class CAPAPIRouter(object):
             return None
 
         # Block relationship if one object is in the capapi app and the other isn't.
-            return False
+        return False
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         """Ensure that the capapi app's models get created on the right database."""

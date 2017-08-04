@@ -6,6 +6,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 ALLOWED_HOSTS = []
 
+ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
+
 
 # Application definition
 
@@ -156,7 +158,6 @@ API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
 
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
-ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
 API_CASE_FILE_TYPE = '.xml'
 
 # CAP API EMAIL #

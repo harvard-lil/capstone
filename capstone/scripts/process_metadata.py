@@ -1,18 +1,10 @@
 from datetime import datetime
 from pyquery import PyQuery as pq
+from scripts.helpers import nsmap
 
-
-namespaces = {
-    'METS': 'http://www.loc.gov/METS/',
-    'case': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case:v1',
-    'casebody': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1',
-    'volume': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Volume:v1',
-    'xlink': 'http://www.w3.org/1999/xlink',
-    'alto': 'http://www.loc.gov/standards/alto/ns-v3#',
-}
 
 def get_case_metadata(case_xml):
-    parsed = pq(case_xml, namespaces=namespaces)
+    parsed = pq(case_xml, namespaces=nsmap)
     jurisdiction = parsed('case|court').attr('jurisdiction').strip()
     citation = parsed('case|citation').text().strip()
     citation_type = parsed('case|citation').attr.category
