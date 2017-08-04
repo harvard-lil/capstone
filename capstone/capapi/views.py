@@ -69,7 +69,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 if api_key:
                     # update case allowance before sending back
                     user.update_case_allowance()
-                    user = models.APIUser.objects.get(email=user.email)
+                    user.refresh_from_db()
+
                     return Response({'email': user.email, 'api_key': user.get_api_key(), 'case_allowance': user.case_allowance}, template_name='user-account.html',)
                 else:
                     return Response({'user_id': user.id, 'user_email': user.email, 'info_email': settings.EMAIL_ADDRESS}, template_name='resend-nonce.html', )
