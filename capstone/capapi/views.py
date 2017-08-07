@@ -30,26 +30,17 @@ class UserViewSet(viewsets.ModelViewSet):
     def register_user(self, request):
         serializer = serializers.RegisterUserSerializer(data=request.data)
         if serializer.is_valid():
-            try:
-                user = serializer.create({
-                    'email': request.data.get('email'),
-                    'password': request.data.get('password'),
-                    'first_name': request.data.get('first_name'),
-                    'last_name': request.data.get('last_name')
-                })
-                content = {
-                    'status': 'Success!',
-                    'message': 'Thank you. Please check your email %s for a verification link.' % user.email
-                }
-                return Response(content, template_name='sign-up-success.html')
-            except IntegrityError as e:
-                logger.error('IntegrityError %s %s %s' % (e, dir(e), request.data.get('email')))
-                content = {
-                    'status': 'Error',
-                    'message': "IntegrityError",
-                    'errors': e
-                }
-                return Response(content, template_name='sign-up-success.html', status=status.HTTP_400_BAD_REQUEST)
+            user = serializer.create({
+                'email': request.data.get('email'),
+                'password': request.data.get('password'),
+                'first_name': request.data.get('first_name'),
+                'last_name': request.data.get('last_name')
+            })
+            content = {
+                'status': 'Success!',
+                'message': 'Thank you. Please check your email %s for a verification link.' % user.email
+            }
+            return Response(content, template_name='sign-up-success.html')
         else:
             return Response({'serializer': serializer, 'errors': serializer.errors}, template_name='sign-up.html', status=status.HTTP_400_BAD_REQUEST)
 
