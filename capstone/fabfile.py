@@ -27,6 +27,10 @@ def ingest_volumes():
     ingest_files.ingest_volumes()
 
 @task
+def update_case_metadata():
+    ingest_files.update_case_metadata()
+
+@task
 def ingest_metadata():
     ingest_tt_data.ingest(False)
 
@@ -47,13 +51,22 @@ def init_db():
     """
         Set up new dev database.
     """
-    local("python manage.py migrate")
-    if settings.USE_TEST_TRACKING_TOOL_DB:
-        local("python manage.py migrate --database=tracking_tool")
+    migrate()
+
     print("Creating DEV admin user:")
     User.objects.create_superuser('admin', 'admin@example.com', 'admin')
 
     update_postgres_env()
+
+@task
+def migrate():
+    """
+        Migrate all dbs at once
+    """
+    local("python manage.py migrate --database=default")
+    local("python manage.py migrate --database=capapi")
+    if settings.USE_TEST_TRACKING_TOOL_DB:
+        local("python manage.py migrate --database=tracking_tool")
 
 @task
 def load_test_data():
@@ -61,6 +74,7 @@ def load_test_data():
         local("python manage.py loaddata --database=tracking_tool test_data/tracking_tool.json")
     ingest_volumes()
     ingest_metadata()
+    update_case_metadata()
 
 @task
 def write_tracking_tool_fixtures(*barcodes):

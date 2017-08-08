@@ -2,7 +2,7 @@ import pytest
 from django.core.management import call_command
 
 import fabfile
-from cap.models import VolumeXML
+from capdb.models import VolumeXML
 
 
 ### DATA INGEST FIXTURES ###
@@ -13,6 +13,10 @@ from cap.models import VolumeXML
 @pytest.fixture
 def load_tracking_tool_database():
     call_command('loaddata', 'test_data/tracking_tool.json', database='tracking_tool')
+
+@pytest.fixture
+def load_parsed_metadata():
+    call_command('loaddata', 'test_data/parsed_metadata.json')
 
 @pytest.fixture
 def ingest_metadata(load_tracking_tool_database):

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %} | Sign In{% endblock %}
+
+{% block meta_description %}
+Sign in to the Caselaw Access Project API
+{% endblock %}
+
+{% block content %}
+  {% load rest_framework %}
+  <div class="container login-form container-full inverse header-margin">
+    <div class="row row-centered">
+      {% if errors %}
+      <div class="alert alert-warning">
+        <div class="col-sm-4 col-centered">
+          <strong>Error!</strong> {{ errors.messages }}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="col-sm-4 col-centered">
+        <h3>Log in</h3>
+        <form class="form-horizontal" action="/accounts/view_details/" method="POST">
+          {% csrf_token %}
+          {% render_form serializer %}
+          <button type="submit" class="btn btn-default white-button remove-padding-left">SIGN IN</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

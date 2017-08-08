@@ -1,6 +1,9 @@
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 
+from scripts.process_metadata import get_case_metadata
+from .utils import generate_unique_slug
 
 ### helpers ###
 
@@ -117,8 +120,18 @@ class ProcessStep(models.Model):
         return "%s - %s" % (self.step, self.label)
 
 
+
+class Jurisdiction(models.Model):
+    name = models.CharField(max_length=100, blank=True)
+    slug = models.SlugField(unique=True, max_length=255)
+    name_abbreviation = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return self.slug
+
+
 class Reporter(models.Model):
-    jurisdiction = models.CharField(max_length=64, blank=True, null=True)
+    jurisdictions = models.ManyToManyField(Jurisdiction)
     full_name = models.CharField(max_length=1024)
     short_name = models.CharField(max_length=64)
     start_year = models.IntegerField(blank=True, null=True)
@@ -222,36 +235,87 @@ class Court(models.Model):
     name = models.CharField(max_length=255)
     name_abbreviation = models.CharField(max_length=100, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
-    slug = models.SlugField(unique=True, max_length=255)
+    slug = models.SlugField(unique=True, max_length=255, blank=False)
 
-    def __str__(self):
-        return self.slug
-
-
-class Jurisdiction(models.Model):
-    name = models.CharField(max_length=100, blank=True)
-    slug = models.SlugField(unique=True, max_length=255)
-    name_abbreviation = models.CharField(max_length=200, blank=True)
+    def save(self, *args, **kwargs):
+        if not self.id and not self.slug:
+            if self.name_abbreviation:
+                self.slug = generate_unique_slug(Court, 'slug', self.name_abbreviation)
+            else:
+                self.slug = generate_unique_slug(Court, 'slug', self.name)
+        super(Court, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.slug
 
 
 class CaseXML(models.Model):
-    barcode = models.CharField(max_length=255, unique=True, db_index=True)
+    case_id = models.CharField(max_length=255, unique=True, db_index=True)
     orig_xml = XMLField()
     volume = models.ForeignKey(VolumeXML, related_name='case_xmls')
 
     def __str__(self):
-        return self.barcode
+        return self.case_id
+
+    def update_case_metadata(self):
+        data = get_case_metadata(self.orig_xml)
+        citation, created = Citation.objects.get_or_create(
+            cite=data["citation"],
+            type=data["citation_type"])
+
+        case_metadata, created = CaseMetadata.objects.get_or_create(
+            case_id=self.case_id,
+            citation=citation)
+
+        case_metadata.volume = VolumeMetadata.objects.get(barcode=self.volume.barcode)
+
+        case_metadata.first_page = data["first_page"]
+        case_metadata.last_page = data["last_page"]
+        case_metadata.decision_date_original = data["decision_date_original"]
+        case_metadata.decision_date = data["decision_date"]
+        case_metadata.docket_number = data["docket_number"]
+
+        try:
+            case_metadata.jurisdiction = Jurisdiction.objects.get(name=data["jurisdiction"])
+        except ObjectDoesNotExist:
+            pass
+
+        court_name = data["court"]["name"]
+        court_name_abbreviation = data["court"]["name_abbreviation"]
+
+        if court_name and court_name_abbreviation:
+            court, created = Court.objects.get_or_create(
+                name=court_name,
+                name_abbreviation=court_name_abbreviation)
+            case_metadata.court = court
+
+        elif court_name_abbreviation:
+            court, created = Court.objects.get_or_create(
+                name_abbreviation=court_name_abbreviation)
+            case_metadata.court = court
+
+        elif court_name:
+            court, created = Court.objects.get_or_create(
+                name=court_name)
+            case_metadata.court = court
+
+        if case_metadata.court and case_metadata.jurisdiction:
+            court.jurisdiction = case_metadata.jurisdiction
+            court.save()
+
+        try:
+            reporter = Reporter.objects.get(short_name=data["reporter"])
+            case_metadata.reporter = reporter
+        except ObjectDoesNotExist:
+            pass
+
+        case_metadata.save()
 
 
 class CaseMetadata(models.Model):
-    barcode = models.CharField(unique=True, max_length=64, primary_key=True)
-    slug = models.SlugField(unique=True, max_length=255)
+    case_id = models.CharField(max_length=64, null=True)
     first_page = models.IntegerField(null=True, blank=True)
     last_page = models.IntegerField(null=True, blank=True)
-    jurisdiction_value = models.CharField(max_length=255, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction',
                                      on_delete=models.SET_NULL)
     citation = models.ForeignKey('Citation', related_name='%(class)s_citation')
@@ -268,14 +332,19 @@ class CaseMetadata(models.Model):
     date_added = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return self.slug
+        return self.case_id
 
 
 class Citation(models.Model):
-    type = models.CharField(max_length=10,
+    type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
-    cite = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(unique=True, max_length=255)
+    cite = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
+
+    def save(self, *args, **kwargs):
+        if not self.id and not self.slug:
+            self.slug = generate_unique_slug(Citation, 'slug', self.cite)
+        super(Citation, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.slug

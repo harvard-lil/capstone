@@ -6,6 +6,7 @@ tqdm==4.11.2                # script progress bars
 # xml
 lxml==3.7.3
 xmltodict==0.11.0
+pyquery==1.2.17
 
 # database
 psycopg2==2.7.1             # postgres connector
@@ -25,3 +26,11 @@ Fabric3==1.13.1.post1       # project automation
 pytest-django==3.1.2        # testing
 pytest-xdist==1.16.0        # run tests in parallel with pytest -n
 moto==1.0.0                 # mocking s3 access
+
+# API
+beautifulsoup4==4.6.0
+django-extensions==1.8.1
+django-filter==1.0.4
+django-libsass==0.7
+django-pipeline==1.6.13
+djangorestframework==3.6.3

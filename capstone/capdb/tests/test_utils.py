@@ -1,6 +1,6 @@
 import pytest
-from cap import utils
-from cap.models import Reporter
+from capdb import utils
+from capdb.models import Reporter
 
 
 @pytest.mark.django_db

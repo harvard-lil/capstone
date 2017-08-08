@@ -1,0 +1,108 @@
+[
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 1,
+    "fields": {
+      "name": "Illinois",
+      "name_abbreviation": "Ill.",
+      "slug": "ill"
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 2,
+    "fields": {
+      "name": "New York",
+      "name_abbreviation": "N.Y.",
+      "slug": "ny"
+    }
+  },
+
+  {
+  "model": "capdb.reporter",
+  "pk": 1,
+  "fields": {
+    "short_name": "Ill. 2d",
+    "created_at": "2013-07-27T00:17:24Z",
+    "updated_at": "2016-10-24T16:57:30Z",
+    "hollis":["005457617"],
+    "start_year":1883,
+    "end_year":1901
+    }
+  },
+  {
+  "model": "capdb.reporter",
+  "pk": 2,
+  "fields": {
+    "short_name": "NY. App. 4th",
+    "created_at": "2013-07-27T00:17:24Z",
+    "updated_at": "2016-10-24T16:57:30Z",
+    "hollis":["005457617"],
+    "start_year":1984,
+    "end_year":1999
+    }
+  },
+  {
+    "model": "capdb.court",
+    "pk": 1,
+    "fields": {
+      "name": "Illinois Supreme Court",
+      "name_abbreviation": "Ill.",
+      "slug": "ill"
+    }
+  },
+  {
+    "model": "capdb.court",
+    "pk": 2,
+    "fields": {
+      "name": "New York Supreme Court, Appellate Division",
+      "name_abbreviation": "N.Y. App. Div.",
+      "slug": "ny"
+    }
+  },
+  {
+    "model": "capdb.citation",
+    "pk": 1,
+    "fields": {
+      "type": "official",
+      "cite": "177 Ill. 2d 21",
+      "slug": "177-ill-2d-21"
+    }
+  },
+  {
+    "model": "capdb.citation",
+    "pk": 1,
+    "fields": {
+      "type": "official",
+      "cite": "229 A.D.2d 313",
+      "slug": "229-a-d-2d-313"
+    }
+  },
+  {
+    "model": "capdb.trackingtooluser",
+    "pk": 999,
+      "fields": {
+        "privilege_level": "0",
+        "email": "test@example.com",
+        "created_at": "2013-07-27T00:17:24Z",
+        "updated_at": "2016-10-24T16:57:30Z"
+      }
+  },
+  {
+    "model": "capdb.volumemetadata",
+    "pk": "32044057892259",
+    "fields": {
+      "barcode": "32044057892259",
+      "rare":false,
+      "duplicate":false,
+      "has_marginalia":false,
+      "hand_feed":false,
+      "publisher_deleted_pages":false,
+      "out_of_scope":false,
+      "created_at": "2013-07-27T00:17:24Z",
+      "updated_at": "2016-10-24T16:57:30Z",
+      "created_by": 999,
+      "reporter": 1
+    }
+  }
+]

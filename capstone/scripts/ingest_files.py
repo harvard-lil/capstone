@@ -8,8 +8,7 @@ from django.utils.module_loading import import_string
 
 from django.conf import settings
 from django.db import transaction, IntegrityError
-
-from cap.models import VolumeXML, PageXML, CaseXML
+from capdb.models import VolumeXML, PageXML, CaseXML, CaseMetadata
 
 
 ### helpers ###
@@ -18,12 +17,14 @@ from cap.models import VolumeXML, PageXML, CaseXML
 ingest_storage_class = import_string(settings.INGEST_STORAGE['class'])
 ingest_storage = ingest_storage_class(**settings.INGEST_STORAGE.get('kwargs', {}))
 
+
 def get_file_contents(path):
     print("Getting", path)
     with ingest_storage.open(path) as f:
         print("Got", f.read(100))
         f.seek(0)
         return f.read().decode('utf8')
+
 
 ### code ###
 
@@ -40,12 +41,11 @@ def ingest_volume(volume_path):
 
     # save volume
     volmets_path = files['volume']
-
     try:
         with transaction.atomic():
             volume = VolumeXML.objects.filter(barcode=vol_barcode).first()
             if volume:
-                existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('barcode', flat=True))
+                existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('case_id', flat=True))
                 existing_page_ids = set(PageXML.objects.filter(volume=volume).values_list('barcode', flat=True))
             else:
                 existing_case_ids = existing_page_ids = set()
@@ -57,7 +57,7 @@ def ingest_volume(volume_path):
             for xml_path in files['casemets']:
                 case_barcode = vol_barcode + "_" + xml_path.split('.xml', 1)[0].rsplit('_', 1)[-1]
                 if case_barcode not in existing_case_ids:
-                    case = CaseXML(orig_xml=get_file_contents(xml_path), volume=volume, barcode=case_barcode)
+                    case = CaseXML(orig_xml=get_file_contents(xml_path), volume=volume, case_id=case_barcode)
                     case.save()
 
                     # store case-to-page matches
@@ -89,6 +89,7 @@ def ingest_volume(volume_path):
     #     out.write(vol_barcode+"\n")
 
     print("-- stored in %s: %s" % (time.time()-start_time, volume_path))
+
 
 def ingest_volumes():
     """
@@ -130,6 +131,7 @@ def ingest_volumes():
     #for i in volume_paths:
     #    ingest_volume(i)
 
+
 def volume_files(volume_path):
     """ This just gets all of the files in the volume directory, and puts them into
         a dictionary with a 'volume' array which has the volume mets and md5 files,
@@ -166,6 +168,7 @@ def volume_files(volume_path):
 
     return files
 
+
 def all_volumes():
     """ 
         Gets all of the volume "directories" in settings.INGEST_VOLUMES_PATH.
@@ -177,3 +180,9 @@ def all_volumes():
         if settings.INGEST_VOLUME_COUNT > 0 and i >= settings.INGEST_VOLUME_COUNT-1:
             return volumes
     return volumes
+
+
+def update_case_metadata():
+    casexmls = CaseXML.objects.all()
+    for case in casexmls:
+        case.update_case_metadata()
