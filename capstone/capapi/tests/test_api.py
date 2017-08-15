@@ -30,7 +30,7 @@ def test_jurisdictions(load_parsed_metadata):
     response = c.get("%s/jurisdictions/?format=json" % settings.API_FULL_URL)
     assert response.status_code == 200
     assert response.accepted_renderer.format == "json"
-    jurisdictions = json.loads(response.content)
+    jurisdictions = json.loads(response.content)['results']
     assert len(jurisdictions) == 2
     assert jurisdictions[1]["name"] == "New York"
 
@@ -52,7 +52,7 @@ def test_court(load_parsed_metadata):
     response = c.get("%s/courts/?format=json" % settings.API_FULL_URL)
     assert response.status_code == 200
     assert response.accepted_renderer.format == "json"
-    results = json.loads(response.content)
+    results = json.loads(response.content)['results']
     assert len(results) == 2
 
 
@@ -62,5 +62,5 @@ def test_reporter(load_parsed_metadata):
     response = c.get("%s/reporters/?format=json" % settings.API_FULL_URL)
     assert response.status_code == 200
     assert response.accepted_renderer.format == "json"
-    results = json.loads(response.content)
+    results = json.loads(response.content)['results']
     assert len(results) == 2
