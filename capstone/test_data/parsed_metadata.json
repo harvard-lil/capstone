@@ -71,7 +71,7 @@
   },
   {
     "model": "capdb.citation",
-    "pk": 1,
+    "pk": 2,
     "fields": {
       "type": "official",
       "cite": "229 A.D.2d 313",
@@ -103,6 +103,18 @@
       "updated_at": "2016-10-24T16:57:30Z",
       "created_by": 999,
       "reporter": 1
+    }
+  },
+  {
+    "model": "capdb.casemetadata",
+    "pk": 1,
+    "fields": {
+      "case_id": "32044057892259_0001",
+      "first_page": 19,
+      "last_page": 24,
+      "jurisdiction": 1,
+      "citation": 1,
+      "volume": "32044057892259"
     }
   }
 ]
