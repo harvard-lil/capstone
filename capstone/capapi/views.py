@@ -1,14 +1,15 @@
 import logging
 
-from django.db import IntegrityError
 from rest_framework import status, renderers, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, list_route, renderer_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser, FormParser
 
-from . import models, serializers, resources, permissions
+from django.http import JsonResponse
 from django.conf import settings
+
+from . import models, serializers, resources, permissions
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ def verify_user(request, user_id, activation_nonce):
         resources.email(reason='new_registration', user=user)
         data = {'status': 'Success!', 'message': 'Thank you for verifying your email address. We will be in touch with you shortly.'}
         if request.accepted_renderer.format == 'json':
-            return JSONResponse(data)
+            return JsonResponse(data)
         return Response(data, template_name='verified.html')
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
