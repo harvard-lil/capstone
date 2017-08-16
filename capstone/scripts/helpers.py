@@ -1,10 +1,3 @@
-import os
-from contextlib import contextmanager
-from functools import lru_cache
-
-import boto3
-from django.conf import settings
-
 nsmap = {
     'mets': 'http://www.loc.gov/METS/',
     'case': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case:v1',
