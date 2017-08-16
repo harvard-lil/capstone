@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
+from django.http import JsonResponse
 
 from rest_framework import status
 from rest_framework import renderers, viewsets, mixins, filters as rs_filters
@@ -154,7 +155,7 @@ def verify_user(request, user_id, activation_nonce):
         resources.email(reason='new_registration', user=user)
         data = {'status': 'Success!', 'message': 'Thank you for verifying your email address. We will be in touch with you shortly.'}
         if request.accepted_renderer.format == 'json':
-            return JSONResponse(data)
+            return JsonResponse(data)
         return Response(data, template_name='verified.html')
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)

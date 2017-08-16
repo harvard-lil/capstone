@@ -135,7 +135,7 @@ def modify(changes, type):
 
         if len(elements) != 1:
             # TODO: FIXME
-            print("Provided xpath must select ONE element. {} elements selected with {} in {}".format(len(elements), xpath, case_changes['case_id']))
+            # print("Provided xpath must select ONE element. {} elements selected with {} in {}".format(len(elements), xpath, case_changes['case_id']))
             return False
 
         element_list[index] = elements[0]
@@ -153,7 +153,7 @@ def modify(changes, type):
             rollback_list_entry['type'] = change['type']
 
         if 'remove' in change['actions']:
-            if change['actions']['remove'] == True:
+            if change['actions']['remove'] is True:
                 rollback_list_entry['actions']['create'] = True
                 rollback_list_entry['parent_path'] = element.getparent()
                 rollback_list_entry['parent_index'] = element.getparent().index(element)
