@@ -31,7 +31,12 @@ def update_case_metadata():
     ingest_files.update_case_metadata()
 
 @task
+def ingest_jurisdiction():
+    ingest_tt_data.populate_jurisdiction()
+
+@task
 def ingest_metadata():
+    ingest_tt_data.populate_jurisdiction()
     ingest_tt_data.ingest(False)
 
 @task

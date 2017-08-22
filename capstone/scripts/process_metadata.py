@@ -1,16 +1,38 @@
 from datetime import datetime
 from pyquery import PyQuery as pq
 from scripts.helpers import nsmap
-
+import re
 
 def get_case_metadata(case_xml):
     parsed = pq(case_xml, namespaces=nsmap)
-    jurisdiction = parsed('case|court').attr('jurisdiction').strip()
+    if parsed('duplicative|casebody'):
+        first_page = int(parsed('duplicative|casebody').attr.firstpage)
+        last_page = int(parsed('duplicative|casebody').attr.lastpage)
+        volume_barcode = re.search('\/images\/([0-9a-zA-Z]+)_', case_xml)[1]
+        return {
+            'duplicative': True,
+            'first_page': first_page,
+            'last_page': last_page,
+            'volume_barcode': volume_barcode,
+        }   
+
     citation = parsed('case|citation').text().strip()
     citation_type = parsed('case|citation').attr.category
     cite_parts = citation.split(" ")
     volume, reporter, first_page = cite_parts[0], " ".join(cite_parts[1:-1]), cite_parts[-1]
-    last_page = int(parsed('casebody|casebody').attr.lastpage)
+    volume_barcode = parsed('case|case').attr('caseid').split("_")[0]
+
+    if parsed('case|court').attr('jurisdiction'):
+        jurisdiction = parsed('case|court').attr('jurisdiction').strip()
+    else:
+        print("Blank J!")
+        print(parsed('case|court').html())
+        jurisdiction = None
+
+    if parsed('casebody|casebody').attr.lastpage.isdigit():
+        last_page = int(parsed('casebody|casebody').attr.lastpage)
+    else:
+        last_page = None
 
     if not first_page:
         first_page = int(parsed('casebody|casebody').attr.firstpage)
@@ -37,6 +59,8 @@ def get_case_metadata(case_xml):
         'court': court,
         'docket_number': docket_number,
         'volume': volume,
+        'volume_barcode': volume_barcode,
+        'duplicative': False,
     }
 
 
