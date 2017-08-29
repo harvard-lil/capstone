@@ -1,10 +1,9 @@
 from datetime import datetime
-from pyquery import PyQuery as pq
-from scripts.helpers import nsmap
+from scripts.helpers import parse_xml
 import re
 
 def get_case_metadata(case_xml):
-    parsed = pq(case_xml, namespaces=nsmap)
+    parsed = parse_xml(case_xml)
     if parsed('duplicative|casebody'):
         first_page = int(parsed('duplicative|casebody').attr.firstpage)
         last_page = int(parsed('duplicative|casebody').attr.lastpage)
