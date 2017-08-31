@@ -260,8 +260,8 @@ class CaseXML(models.Model):
 
     def update_case_metadata(self):
         data = get_case_metadata(self.orig_xml)
-        volume_metadata = VolumeMetadata.objects.get(barcode=data["volume_barcode"])
-        reporter = Reporter.objects.get(id=volume_metadata.reporter_id)
+        volume_metadata = self.volume.volume_metadata
+        reporter = volume_metadata.reporter
 
         if data['duplicative'] == False:
             citation, created = Citation.objects.get_or_create(
@@ -279,7 +279,7 @@ class CaseXML(models.Model):
             if data['volume_barcode'] in special_jurisdiction_cases:
                 case_metadata.jurisdiction = Jurisdiction.objects.get(name=special_jurisdiction_cases[data["volume_barcode"]])
             else:
-                case_metadata.jurisdiction = Jurisdiction.objects.get(name=jurisdiction_tranlsation[data["jurisdiction"]])
+                case_metadata.jurisdiction = Jurisdiction.objects.get(name=jurisdiction_translation[data["jurisdiction"]])
             
             print(case_metadata.jurisdiction)
             court_name = data["court"]["name"]

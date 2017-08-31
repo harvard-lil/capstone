@@ -8,7 +8,7 @@ from django.utils.module_loading import import_string
 
 from django.conf import settings
 from django.db import transaction, IntegrityError
-from capdb.models import VolumeXML, PageXML, CaseXML, CaseMetadata
+from capdb.models import VolumeXML, PageXML, CaseXML
 
 
 ### helpers ###
@@ -31,7 +31,6 @@ def get_file_contents(path):
 def ingest_volume(volume_path):
     print("Storing volume", volume_path)
     start_time = time.time()
-    times = []
 
     # get volume ID
     vol_barcode = os.path.basename(volume_path.split('_redacted', 1)[0])

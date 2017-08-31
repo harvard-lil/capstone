@@ -1,4 +1,3 @@
-import re
 from capdb.utils import generate_unique_slug
 from django.db import IntegrityError
 
@@ -101,8 +100,9 @@ def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
 
 def populate_jurisdiction():
     """This populates the jurisdiction table based on what's in the tracking tool stub"""
-    reporters = Reporters.objects.order_by().values('state').distinct() 
+    reporters = Reporters.objects.values('state').distinct() 
     for jurisdiction in reporters:
+        # ensures no dupes if the command was already run. Small enough dataset to check every time
         if Jurisdiction.objects.filter(name=jurisdiction['state']).count() > 1:
             continue
         new_jurisdiction = Jurisdiction()
