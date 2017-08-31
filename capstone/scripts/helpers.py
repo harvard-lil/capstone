@@ -4,6 +4,7 @@ from functools import lru_cache
 
 import boto3
 from django.conf import settings
+from pyquery import PyQuery
 
 nsmap = {
     'duplicative': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body_Duplicative:v1',
@@ -110,3 +111,14 @@ def read_file(path):
     """
     with open(path) as in_file:
         return in_file.read()
+
+def parse_xml(xml):
+    """
+        Parse XML with PyQuery.
+    """
+
+    # lxml requires byte string
+    if type(xml) == str:
+        xml = xml.encode('utf8')
+        
+    return PyQuery(xml, parser='xml', namespaces=nsmap)
