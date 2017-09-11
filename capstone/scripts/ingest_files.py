@@ -38,6 +38,10 @@ def ingest_volume(volume_path):
 
     files = volume_files(volume_path)
 
+    if len(files['casemets']) == 0:
+        #skipping volumes without case files. We should probably log these
+        return False
+
     # save volume
     volmets_path = files['volume']
     try:
