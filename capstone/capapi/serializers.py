@@ -51,10 +51,6 @@ class VolumeSerializer(serializers.ModelSerializer):
 
 
 class ReporterSerializer(serializers.ModelSerializer):
-    jurisdiction = serializers.HyperlinkedRelatedField(view_name='jurisdiction-detail', read_only=True)
-    jurisdiction_id = serializers.ReadOnlyField(source='jurisdiction.id')
-    jurisdiction_name = serializers.ReadOnlyField(source='jurisdiction.name')
-
     class Meta:
         model = models.Reporter
         fields = '__all__'

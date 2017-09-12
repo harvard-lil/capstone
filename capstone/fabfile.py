@@ -11,7 +11,7 @@ except Exception as e:
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from fabric.api import run, local
+from fabric.api import local
 from fabric.decorators import task
 
 # from process_ingested_xml import fill_case_page_join_table

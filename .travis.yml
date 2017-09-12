@@ -25,6 +25,9 @@ install:
   - pip install -r requirements.txt
 
 script:
+  # linting
+  - flake8 .
+
   - pytest
 
 after_success:

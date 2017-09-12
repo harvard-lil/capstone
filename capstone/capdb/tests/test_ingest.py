@@ -7,7 +7,7 @@ from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, T
 @pytest.mark.django_db
 def test_volume_metadata(volume_xml):
     assert volume_xml.volume_metadata.hollis_number == "005457617"
-    assert volume_xml.volume_metadata.rare == False  # boolean conversion
+    assert volume_xml.volume_metadata.rare is False  # boolean conversion
 
 @pytest.mark.django_db
 def test_tracking_tool_relationship(volume_xml):

@@ -2,8 +2,6 @@ import os
 from datetime import datetime
 import logging
 
-import paramiko
-from scp import SCPClient
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.defaultfilters import slugify
