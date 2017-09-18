@@ -1,6 +1,5 @@
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
 
 from scripts.process_metadata import get_case_metadata
 from .utils import generate_unique_slug
@@ -270,7 +269,7 @@ class CaseXML(models.Model):
         case_metadata.last_page = data["last_page"]
         case_metadata.save()
 
-        if data['duplicative'] == False:
+        if data['duplicative'] is False:
             for citation in  data['citations']:
                 cite, created = Citation.objects.get_or_create(
                     cite=data['citations'][citation],
