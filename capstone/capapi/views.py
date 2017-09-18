@@ -1,22 +1,81 @@
 import logging
 
-from django.db import IntegrityError
-from rest_framework import status, renderers, viewsets
+from django.conf import settings
+from django_filters.rest_framework import DjangoFilterBackend
+from django.http import JsonResponse
+
+from rest_framework import status
+from rest_framework import renderers, viewsets, mixins, filters as rs_filters
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, list_route, renderer_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser, FormParser
 
-from . import models, serializers, resources, permissions
-from django.conf import settings
+from capapi import permissions, serializers, filters, resources, models as capapi_models
+from capdb import models
+
 
 logger = logging.getLogger(__name__)
 
 
+class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = serializers.JurisdictionSerializer
+    http_method_names = ['get']
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = filters.JurisdictionFilter
+    queryset = models.Jurisdiction.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
+
+class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = serializers.VolumeSerializer
+    http_method_names = ['get']
+    queryset = models.VolumeMetadata.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
+
+class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = serializers.ReporterSerializer
+    http_method_names = ['get']
+    queryset = models.Reporter.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
+
+class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = serializers.CourtSerializer
+    http_method_names = ['get']
+    queryset = models.Court.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
+
+class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    """
+    Browse all cases
+    """
+    permission_classes = (permissions.IsAPIUser,)
+    serializer_class = serializers.CaseSerializer
+    http_method_names = ['get']
+    queryset = models.CaseMetadata.objects.all()
+    filter_backends = (rs_filters.SearchFilter, DjangoFilterBackend,)
+    search_fields = ('name', 'name_abbreviation', 'court__name', 'reporter__name', 'jurisdiction__name')
+    filter_class = filters.CaseFilter
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+    lookup_field = 'case_id'
+    ordering = ('decisiondate',)
+
+    def list(self, *args, **kwargs):
+        return super(CaseViewSet, self).list(*args, **kwargs)
+
+    def retrieve(self, *args, **kwargs):
+        return super(CaseViewSet, self).retrieve(*args, **kwargs)
+
+
+### User specific views ###
+
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.UserSerializer
     renderer_classes = [renderers.TemplateHTMLRenderer]
-    queryset = models.APIUser.objects.all()
+    queryset = capapi_models.APIUser.objects.all()
     parser_classes = (JSONParser, FormParser,)
     lookup_field = 'email'
 
@@ -74,7 +133,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'], permission_classes=[permissions.IsAPIUser])
     def resend_verification(self, request):
 
-        user = models.APIUser.objects.get(email=request.data.get('user_email'))
+        user = capapi_models.APIUser.objects.get(email=request.data.get('user_email'))
 
         resources.email(reason='new_signup', user=user)
         content = {
@@ -96,7 +155,7 @@ def verify_user(request, user_id, activation_nonce):
         resources.email(reason='new_registration', user=user)
         data = {'status': 'Success!', 'message': 'Thank you for verifying your email address. We will be in touch with you shortly.'}
         if request.accepted_renderer.format == 'json':
-            return JSONResponse(data)
+            return JsonResponse(data)
         return Response(data, template_name='verified.html')
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)

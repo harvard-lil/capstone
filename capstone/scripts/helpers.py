@@ -1,5 +1,6 @@
 from pyquery import PyQuery
 
+
 nsmap = {
     'duplicative': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body_Duplicative:v1',
     'mets': 'http://www.loc.gov/METS/',

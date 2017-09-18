@@ -1,7 +1,6 @@
-from django.http import HttpResponse
 from django.shortcuts import render
 
-from .models import Reporter, VolumeMetadata, VolumeXML, CaseXML, PageXML
+from .models import Reporter, VolumeMetadata, VolumeXML, CaseXML, PageXML  # noqa
 
 
 def index(request):
