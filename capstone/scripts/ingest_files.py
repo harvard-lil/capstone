@@ -38,6 +38,10 @@ def ingest_volume(volume_path):
 
     files = volume_files(volume_path)
 
+    if len(files['casemets']) == 0:
+        #skipping volumes without case files. We should probably log these
+        return False
+
     # save volume
     volmets_path = files['volume']
     try:
@@ -58,6 +62,7 @@ def ingest_volume(volume_path):
                 if case_barcode not in existing_case_ids:
                     case = CaseXML(orig_xml=get_file_contents(xml_path), volume=volume, case_id=case_barcode)
                     case.save()
+                    case.update_case_metadata()
 
                     # store case-to-page matches
                     for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):
@@ -106,10 +111,8 @@ def ingest_volumes():
     # build this as a list so we can pass it to the process Pool
 
     dirs = all_volumes()
-
     volume_paths = []
     for i, volume_path in enumerate(dirs):
-
         # skip dirs that are superseded by the following version
         base_name = volume_path.split('_redacted', 1)[0]
         if i < len(dirs)-1 and dirs[i+1].startswith(base_name):

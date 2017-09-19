@@ -1,9 +1,9 @@
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
 
 from scripts.process_metadata import get_case_metadata
 from .utils import generate_unique_slug
+from scripts.helpers import *
 
 ### helpers ###
 
@@ -259,55 +259,67 @@ class CaseXML(models.Model):
 
     def update_case_metadata(self):
         data = get_case_metadata(self.orig_xml)
-        citation, created = Citation.objects.get_or_create(
-            cite=data["citation"],
-            type=data["citation_type"])
-
-        case_metadata, created = CaseMetadata.objects.get_or_create(
-            case_id=self.case_id,
-            citation=citation)
-
-        case_metadata.volume = VolumeMetadata.objects.get(barcode=self.volume.barcode)
-
+        volume_metadata = self.volume.volume_metadata
+        reporter = volume_metadata.reporter
+        case_metadata, created = CaseMetadata.objects.get_or_create(case_id=self.case_id)
+        case_metadata.reporter = reporter
+        case_metadata.volume = volume_metadata
+        case_metadata.duplicative = data["duplicative"]
         case_metadata.first_page = data["first_page"]
         case_metadata.last_page = data["last_page"]
-        case_metadata.decision_date_original = data["decision_date_original"]
-        case_metadata.decision_date = data["decision_date"]
-        case_metadata.docket_number = data["docket_number"]
+        case_metadata.save()
 
-        try:
-            case_metadata.jurisdiction = Jurisdiction.objects.get(name=data["jurisdiction"])
-        except ObjectDoesNotExist:
-            pass
+        if data['duplicative'] is False:
+            for citation in  data['citations']:
+                cite, created = Citation.objects.get_or_create(
+                    cite=data['citations'][citation],
+                    type=citation,
+                    duplicative=False)
+                print( "cite={}, type={}, duplicative={}".format(data['citations'][citation], citation, False))
 
-        court_name = data["court"]["name"]
-        court_name_abbreviation = data["court"]["name_abbreviation"]
+                print("GoC: '{}' '{}': {}".format(cite.cite, data['citations'][citation], cite))
+                case_metadata.citations.add(cite)
 
-        if court_name and court_name_abbreviation:
-            court, created = Court.objects.get_or_create(
-                name=court_name,
-                name_abbreviation=court_name_abbreviation)
-            case_metadata.court = court
 
-        elif court_name_abbreviation:
-            court, created = Court.objects.get_or_create(
-                name_abbreviation=court_name_abbreviation)
-            case_metadata.court = court
+            case_metadata.decision_date_original = data["decision_date_original"]
+            case_metadata.decision_date = data["decision_date"]
+            case_metadata.docket_number = data["docket_number"]
 
-        elif court_name:
-            court, created = Court.objects.get_or_create(
-                name=court_name)
-            case_metadata.court = court
+            if data['volume_barcode'] in special_jurisdiction_cases:
+                case_metadata.jurisdiction = Jurisdiction.objects.get(name=special_jurisdiction_cases[data["volume_barcode"]])
+            else:
+                case_metadata.jurisdiction = Jurisdiction.objects.get(name=jurisdiction_translation[data["jurisdiction"]])
+            
+            court_name = data["court"]["name"]
+            court_name_abbreviation = data["court"]["name_abbreviation"]
 
-        if case_metadata.court and case_metadata.jurisdiction:
-            court.jurisdiction = case_metadata.jurisdiction
-            court.save()
+            if court_name and court_name_abbreviation:
+                court, created = Court.objects.get_or_create(
+                    name=court_name,
+                    name_abbreviation=court_name_abbreviation)
+                case_metadata.court = court
 
-        try:
-            reporter = Reporter.objects.get(short_name=data["reporter"])
-            case_metadata.reporter = reporter
-        except ObjectDoesNotExist:
-            pass
+            elif court_name_abbreviation:
+                court, created = Court.objects.get_or_create(
+                    name_abbreviation=court_name_abbreviation)
+                case_metadata.court = court
+
+            elif court_name:
+                court, created = Court.objects.get_or_create(
+                    name=court_name)
+                case_metadata.court = court
+
+            if case_metadata.court and case_metadata.jurisdiction:
+                court.jurisdiction = case_metadata.jurisdiction
+                court.save()
+
+
+        else:
+            cite, created = Citation.objects.get_or_create(
+                cite="{} {} {}".format(volume_metadata.volume_number, reporter.short_name, data["first_page"]),
+                type="official", duplicative=True)
+            case_metadata.citations.add(cite)
+
 
         case_metadata.save()
 
@@ -318,7 +330,7 @@ class CaseMetadata(models.Model):
     last_page = models.IntegerField(null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction',
                                      on_delete=models.SET_NULL)
-    citation = models.ForeignKey('Citation', related_name='%(class)s_citation')
+    citations = models.ManyToManyField('Citation', related_name='%(class)s_citation')
     docket_number = models.CharField(max_length=255, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
@@ -330,6 +342,7 @@ class CaseMetadata(models.Model):
     reporter = models.ForeignKey('Reporter', null=True, related_name='%(class)s_reporter',
                                  on_delete=models.SET_NULL)
     date_added = models.DateTimeField(null=True, blank=True)
+    duplicative = models.BooleanField(default=False)
 
     def __str__(self):
         return self.case_id
@@ -339,12 +352,15 @@ class Citation(models.Model):
     type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
     cite = models.CharField(max_length=255)
+    duplicative = models.BooleanField(default=False)
     slug = models.SlugField(max_length=255, unique=True)
 
     def save(self, *args, **kwargs):
         if not self.id and not self.slug:
+            print("Boom")
             self.slug = generate_unique_slug(Citation, 'slug', self.cite)
         super(Citation, self).save(*args, **kwargs)
+
 
     def __str__(self):
         return self.slug

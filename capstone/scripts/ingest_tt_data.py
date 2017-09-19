@@ -1,10 +1,10 @@
+from capdb.utils import generate_unique_slug
 from django.db import IntegrityError
 
 from tqdm import tqdm
 
-from capdb.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest
+from capdb.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest, Jurisdiction
 from tracking_tool.models import BookRequests, Eventloggers, Hollis, Pstep, Reporters, Users, Volumes
-
 
 user_field_map = {'id': 'id', 'privlevel': 'privilege_level', 'email': 'email', 'created_at': 'created_at', 'updated_at': 'updated_at' }
 book_request_field_map = {'id': 'id', 'updated_by': 'updated_by', 'created_at': 'created_at', 'updated_at': 'updated_at', 'recipients': 'recipients', 'from_field': 'from_field', 'mail_body': 'mail_body', 'note': 'note', 'send_date': 'send_date', 'label': 'label', 'sent_at': 'sent_at', 'subject': 'subject', 'delivery_date': 'delivery_date'} 
@@ -28,7 +28,7 @@ def ingest(dupcheck):
     copyModel(Reporters, Reporter, reporter_field_map, dupcheck)
     copyModel(Volumes, VolumeMetadata, volume_field_map, dupcheck, dupe_field='bar_code')
     copyModel(Eventloggers, TrackingToolLog, eventloggers_field_map, dupcheck)
-
+    
 
 def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
 
@@ -91,5 +91,21 @@ def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
 
         try:
             destination_record.save()
+            if source.__name__ == 'Reporters':
+                destination_record.jurisdictions.add(Jurisdiction.objects.get(name=source_record.state))
+                destination_record.save()
+
         except IntegrityError as e:
             print(e)
+
+def populate_jurisdiction():
+    """This populates the jurisdiction table based on what's in the tracking tool stub"""
+    reporters = Reporters.objects.values('state').distinct() 
+    for jurisdiction in reporters:
+        # ensures no dupes if the command was already run. Small enough dataset to check every time
+        if Jurisdiction.objects.filter(name=jurisdiction['state']).count() > 0:
+            continue
+        new_jurisdiction = Jurisdiction()
+        new_jurisdiction.name = jurisdiction['state']
+        new_jurisdiction.slug = generate_unique_slug(Jurisdiction, 'slug', jurisdiction['state'])
+        new_jurisdiction.save()
