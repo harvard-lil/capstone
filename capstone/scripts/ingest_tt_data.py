@@ -103,7 +103,7 @@ def populate_jurisdiction():
     reporters = Reporters.objects.values('state').distinct() 
     for jurisdiction in reporters:
         # ensures no dupes if the command was already run. Small enough dataset to check every time
-        if Jurisdiction.objects.filter(name=jurisdiction['state']).count() > 1:
+        if Jurisdiction.objects.filter(name=jurisdiction['state']).count() > 0:
             continue
         new_jurisdiction = Jurisdiction()
         new_jurisdiction.name = jurisdiction['state']
