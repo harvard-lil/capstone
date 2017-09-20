@@ -221,6 +221,7 @@ class TrackingToolLog(models.Model):
 class VolumeXML(models.Model):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)  # models.OneToOneField(VolumeMetadata)
     orig_xml = XMLField()
+    s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     def __str__(self):
         return self.barcode
@@ -253,6 +254,7 @@ class CaseXML(models.Model):
     case_id = models.CharField(max_length=255, unique=True, db_index=True)
     orig_xml = XMLField()
     volume = models.ForeignKey(VolumeXML, related_name='case_xmls')
+    s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     def __str__(self):
         return self.case_id
@@ -373,6 +375,7 @@ class PageXML(models.Model):
     orig_xml = XMLField()
     volume = models.ForeignKey(VolumeXML, related_name='page_xmls')
     cases = models.ManyToManyField(CaseXML, related_name='pages')
+    s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     def __str__(self):
         return self.barcode
