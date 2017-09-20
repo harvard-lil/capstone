@@ -2,6 +2,7 @@ from datetime import datetime
 import re
 from scripts.helpers import parse_xml
 
+
 def get_case_metadata(case_xml):
     parsed = parse_xml(case_xml)
     volume_barcode = re.search(r'\/images\/([0-9a-zA-Z]+)_', case_xml)[1]
@@ -24,6 +25,9 @@ def get_case_metadata(case_xml):
     else:
         last_page = None
 
+    name = parsed('case|name').text()
+    name_abbreviation = parsed('case|name').attr('abbreviation')
+
     first_page = int(parsed('casebody|casebody').attr.firstpage)
 
     decision_date_original = parsed('case|decisiondate').text()
@@ -37,6 +41,8 @@ def get_case_metadata(case_xml):
     }
 
     return {
+        'name': name,
+        'name_abbreviation': name_abbreviation,
         'jurisdiction': jurisdiction,
         'citations': citations,
         'first_page': first_page,

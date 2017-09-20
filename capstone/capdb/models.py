@@ -267,6 +267,8 @@ class CaseXML(models.Model):
         case_metadata.duplicative = data["duplicative"]
         case_metadata.first_page = data["first_page"]
         case_metadata.last_page = data["last_page"]
+        case_metadata.name = data["name"]
+        case_metadata.name_abbreviation = data["name_abbreviation"]
         case_metadata.save()
 
         if data['duplicative'] is False:
