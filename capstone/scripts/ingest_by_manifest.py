@@ -24,26 +24,26 @@ SHARED_REPORT_DIRECTORY = 'PrimarySharedInventoryReport/'
 PRIVATE_REPORT_DIRECTORY = 'PrimaryPrivateInventoryReport'
 
 def run():
-    write_last_sync()
-
     inventory_build_pool()
     trim_old_versions()
     inventory_ingest_pool()
+    write_last_sync()
 
 def inventory_build_pool():
     manifest_texts = [json.loads(get_s3_file(INVENTORY_BUCKET_NAME, key))['files'] for key in get_fresh_manifests()]
-
-    print(len(manifest_texts))
-    
     pool = Pool(64)
     pool.map_async(process_recent_manifest_data, [file['key'] for file in itertools.chain(*manifest_texts)])
     pool.close()
     pool.join()
 
 def inventory_ingest_pool():
+    pool = Pool(64)
     r = redis.Redis( host='localhost', port=6379)
     while r.scard("new_volumes") > 0:
-        readqueue(r.spop("new_volumes"))
+        pool.map_async(readqueue, [ r.spop("new_volumes") ])
+    pool.close()
+    pool.join()
+
 
 def trim_old_versions():
     """Gets all of the versions in the unsorted volume queue, checks the version string, only passes on the highest version string"""
@@ -90,17 +90,11 @@ def process_volume(vol_entry, queues):
     try:
         with transaction.atomic():
             volume = VolumeXML.objects.filter(barcode=vol_entry['barcode']).first()
-            print('Does {} exist: '.format(vol_entry['barcode']), end='', flush=True)
             if volume:
-                print('yes', end='', flush=True)
                 if is_same_complete_volume(volume, vol_entry, bucket, queues, vol_entry['barcode']):
-                    print(' and it is the same', end='\n', flush=True)
                     return False
                 else:
-                    print('but it is outdated, so ', end='\n', flush=True)
                     volume.delete()
-            else:
-                print('No')
             volume = VolumeXML(orig_xml=get_s3_file(bucket, volmets_path), barcode=vol_entry['barcode'], s3_key=volmets_path)
             volume.save()
             
@@ -205,25 +199,20 @@ def is_same_complete_volume(volume, vol_entry, bucket, queues, barcode):
     elif not volume_has_multi_s3_versions(bucket, vol_entry['barcode']):
         existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('case_id', flat=True))
         existing_page_ids = set(PageXML.objects.filter(volume=volume).values_list('barcode', flat=True))
-        
         for alto_file in r.smembers(queues['alto']):
             alto_id = "{}_{}".format(barcode, re.search(r'ALTO_([0-9]+_[0-9])\.xml', alto_file.decode('utf-8'))[1])
             if alto_id not in existing_page_ids:
                 return False
             else:
                 existing_page_ids.remove(alto_id)
-
         for case_file in r.smembers(queues['casemets']):
             case_id = "{}_{}".format(barcode, re.search(r'CASEMETS_([0-9]+)\.xml', case_file.decode('utf-8'))[1])
             if case_id not in existing_case_ids:
                 return False
             else:
                 existing_case_ids.remove(case_id) 
-
-
         if len(existing_case_ids) + len(existing_page_ids) > 0:
             return False
-
     else:
         return False
 
@@ -253,7 +242,6 @@ def get_fresh_manifests():
         datetime.strptime(re.split('/', prefix['Prefix'])[2], '%Y-%m-%dT%H-%MZ') > check_last_sync()
     ]
 
-
 def tag_file(bucket, key, file_type, date_added, regional, reporter_id):
     s3 = boto3.client('s3')
     results = s3.put_object_tagging(
@@ -280,7 +268,6 @@ def tag_file(bucket, key, file_type, date_added, regional, reporter_id):
             ]
         }
     )
-
     # boto3 should return 'versionID': (version id) if successful, this will return True or False
     return 'VersionId' in results
 
@@ -293,11 +280,9 @@ def get_s3_file(bucket, key):
             print("The object does not exist.")
         else:
             raise
-
     return result['Body'].read().decode('utf-8', errors="ignore")
 
 def get_file_list(bucket, key):
-
     s3 = boto3.client('s3')
     try:
         result = s3.get_object(Bucket=bucket, Key=key)
