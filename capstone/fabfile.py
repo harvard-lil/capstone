@@ -15,12 +15,16 @@ from fabric.api import local
 from fabric.decorators import task
 
 # from process_ingested_xml import fill_case_page_join_table
-from scripts import set_up_postgres, ingest_tt_data, ingest_files, data_migrations
+from scripts import set_up_postgres, ingest_tt_data, ingest_files, data_migrations, ingest_by_manifest
 
 
 @task(alias='run')
 def run_django():
     local("python manage.py runserver")
+
+@task
+def manifest_ingest():
+    ingest_by_manifest.run()
 
 @task
 def ingest_volumes():

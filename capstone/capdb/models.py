@@ -279,9 +279,6 @@ class CaseXML(models.Model):
                     cite=data['citations'][citation],
                     type=citation,
                     duplicative=False)
-                print( "cite={}, type={}, duplicative={}".format(data['citations'][citation], citation, False))
-
-                print("GoC: '{}' '{}': {}".format(cite.cite, data['citations'][citation], cite))
                 case_metadata.citations.add(cite)
 
 
@@ -361,7 +358,6 @@ class Citation(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id and not self.slug:
-            print("Boom")
             self.slug = generate_unique_slug(Citation, 'slug', self.cite)
         super(Citation, self).save(*args, **kwargs)
 
