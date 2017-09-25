@@ -158,6 +158,10 @@ INGEST_STORAGE = {
 }
 INGEST_VOLUME_COUNT = 0  # if greater than 0, limit volumes ingested; for debugging
 
+INVENTORY = {
+        'inventory_bucket_name': 'harvard-cap-inventory',
+        'inventory_directory': 'PrimarySharedInventoryReport'
+}
 
 ### CAP API settings ###
 

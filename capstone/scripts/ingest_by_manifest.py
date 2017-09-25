@@ -19,9 +19,45 @@ from capdb.models import VolumeXML, PageXML, CaseXML
 
 
 SHARED_BUCKET_NAME = settings.INGEST_STORAGE['kwargs']['bucket_name']
-INVENTORY_BUCKET_NAME = 'harvard-cap-inventory'
-SHARED_REPORT_DIRECTORY = 'PrimarySharedInventoryReport/'
-PRIVATE_REPORT_DIRECTORY = 'PrimaryPrivateInventoryReport'
+INVENTORY_BUCKET_NAME = settings.INVENTORY['inventory_bucket_name']
+SHARED_REPORT_DIRECTORY = settings.INVENTORY['inventory_directory']
+last_sync = None
+
+"""
+This script updates the capstone inventory based on an inventory report from s3.
+
+The reports come in files of s3 keys that are chunked into 10k file chunks, and
+they're all dumped in the /data directory of the report. The manifest that says
+which files belong to which report are in dated directories in the base of the
+report directory.
+
+Since volumes are likely to be broken up between the inventory files, and we're
+not sure that all of the volumes will even be complete, because there are some
+which innodata obviously did not upload the whole thing at once, I'm using
+redis to make a database of keys to organize the inventory report data before
+it's actualy ingested. What's referred to as a queue is a redis unordered set.
+
+The overall flow of the script goes like this:
+
+1) inventory_build_pool()
+ - ingests the inventory data from the bucket and puts it in redis.
+ - new volumes are stored in the unsorted_new_volumes queue as they come in
+ - different file types are stored in their own queues. Each one has a queue
+   with files listed in METS, and one with files listed in the report
+
+2) trim_old_versions()
+ - makes sure we're only ingesting the most recent version listed in the report
+ - moves files from the unsorted_new_volumes queue into the new_volumes queue
+
+3) inventory_ingest_pool()
+ - this step ingests the volumes/cases in the inventory report
+ - uses new_volumes 
+ - updates old volume versions with new versions
+
+
+"""
+
+
 
 def run():
     inventory_build_pool()
@@ -63,6 +99,7 @@ def trim_old_versions():
                 r.sadd("superceded", version)
 
 def readqueue(vol_entry_bytestring):
+    """Ingests what's in the new_volumes queue"""
     r = redis.Redis( host='localhost', port=6379)
 
     vol_entry = json.loads(vol_entry_bytestring.decode("utf-8"))
@@ -83,6 +120,7 @@ def readqueue(vol_entry_bytestring):
     process_volume(vol_entry, queues)
     
 def process_volume(vol_entry, queues):
+    """This ingests the volume into the capstone database"""
     r = redis.Redis( host='localhost', port=6379)
     bucket, volmets_path = json.loads(r.spop(queues['vol']).decode("utf-8"))
     alto_barcode_to_case_map = defaultdict(list)
@@ -108,7 +146,7 @@ def process_volume(vol_entry, queues):
                 case_barcode = vol_entry['barcode'] + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
                 case = CaseXML(orig_xml=get_s3_file(case_bucket, case_s3_key), volume=volume, case_id=case_barcode)
                 case.save()
-                #case.update_case_metadata()
+                case.update_case_metadata()
 
                 # store case-to-page matches
                 for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):
@@ -134,6 +172,7 @@ def process_volume(vol_entry, queues):
 
 
 def process_recent_manifest_data(list_key):
+    """This goes through the files in the inventory report and processes them"""
     file_list = get_file_list(INVENTORY_BUCKET_NAME, list_key)
     r = redis.Redis( host='localhost', port=6379)
     for file_entry in file_list:
@@ -156,7 +195,7 @@ def process_recent_manifest_data(list_key):
         version_string = version_match[1] if version_match is not None else "0000_original"
 
         if len(file_key.split("/")) < 4:
-            mets_files = get_files(bucket, file_key)
+            mets_files = extract_file_dict(bucket, file_key)
             for queue_type in mets_files:
                 queue_name = "{}_{}_{}_mets".format(barcode, queue_type, version_string)
                 [r.sadd(queue_name, json.dumps([bucket, "{}/{}".format(os.path.dirname(file_key), f)])) for f in mets_files[queue_type]]
@@ -170,12 +209,14 @@ def process_recent_manifest_data(list_key):
         else:
             split_key = re.match(r'from_vendor/[A-Za-z0-9]+_redacted([0-9_\.]+)?/((images|alto|casemets)/[A-Za-z0-9_]+\.(jp2|xml|tif))', file_key)
             if split_key[4] == 'jp2' or split_key[4] == 'tif':
+                tag_file(bucket, file_key, split_key[4])
                 queue_name = "{}_{}_{}_inventory".format(barcode, split_key[4], version_string)
             else:
                 queue_name = "{}_{}_{}_inventory".format(barcode, split_key[3], version_string)
             r.sadd(queue_name, json.dumps([bucket, file_key]))
 
-def get_files(bucket, key):
+def extract_file_dict(bucket, key):
+    """Gets the files assocated with the volume from the mets"""
     volume_file=get_s3_file(bucket, key)
     files = re.findall(r'<FLocat LOCTYPE="URL" xlink:href="(([A-Za-z]+)/(([A-Za-z_0-9]+).(jp2|xml|tif)))"/>', volume_file)
     file_dict = defaultdict()
@@ -187,6 +228,7 @@ def get_files(bucket, key):
     return file_dict
 
 def is_same_complete_volume(volume, vol_entry, bucket, queues, barcode):
+    """This checks to see if the volume in the bucket is the same volume that's in the DB"""
     r = redis.Redis( host='localhost', port=6379)
     existing_case_keys = set(CaseXML.objects.filter(volume=volume).values_list('s3_key', flat=True))
     existing_page_keys = set(PageXML.objects.filter(volume=volume).values_list('s3_key', flat=True))
@@ -220,20 +262,31 @@ def is_same_complete_volume(volume, vol_entry, bucket, queues, barcode):
 
 
 def check_last_sync():
-    r = redis.Redis(host='localhost', port=6379)
-    return datetime.strptime(r.get("last_sync").decode(), '%Y-%m-%d %H:%M:%S.%f') - timedelta(days=6)
+    """ This function gets called a LOT. Stores value in a global and returns that if it's already been checked
+        if no last sync value is found in redis, it defaults to a value of one week.
+    """
+    global last_sync
+    if last_sync is None:
+        r = redis.Redis(host='localhost', port=6379)
+        if r.exists("last_sync"):
+            last_sync = datetime.strptime(r.get("last_sync").decode(), '%Y-%m-%d %H:%M:%S.%f')
+        else:
+            last_sync = datetime.now() - timedelta(days=7)
+    return last_sync
 
 def write_last_sync():
     r = redis.Redis( host='localhost', port=6379)
     r.set("last_sync", str(datetime.now()))
 
 def get_fresh_manifests():
+    """ gets the most recent inventory report manifest files"""
     s3 = boto3.client('s3')
     results = s3.list_objects_v2(
         Bucket=INVENTORY_BUCKET_NAME,
         Delimiter='/',
-        Prefix="{}/{}".format(SHARED_BUCKET_NAME, SHARED_REPORT_DIRECTORY)
+        Prefix="{}/{}/".format(SHARED_BUCKET_NAME, SHARED_REPORT_DIRECTORY)
     )
+
     # takes directories in results['CommonPrefixes'], filters out 'data/' & dirs older than the last sync, adds manifest.json filename
     return [
         "{}manifest.json".format(prefix['Prefix'])
@@ -242,7 +295,8 @@ def get_fresh_manifests():
         datetime.strptime(re.split('/', prefix['Prefix'])[2], '%Y-%m-%dT%H-%MZ') > check_last_sync()
     ]
 
-def tag_file(bucket, key, file_type, date_added, regional, reporter_id):
+def tag_file(bucket, key, file_type):
+    """ This tags image file with their file type, so we can send jp2s to IA"""
     s3 = boto3.client('s3')
     results = s3.put_object_tagging(
         Bucket=bucket,
@@ -252,18 +306,6 @@ def tag_file(bucket, key, file_type, date_added, regional, reporter_id):
                 {
                     'Key': 'file_type',
                     'Value': file_type
-                },
-                {
-                    'Key': 'date_added',
-                    'Value': date_added
-                },
-                {
-                    'Key': 'regional',
-                    'Value': regional
-                },
-                {
-                    'Key': 'reporter_id',
-                    'Value': reporter_id
                 }
             ]
         }
@@ -283,6 +325,7 @@ def get_s3_file(bucket, key):
     return result['Body'].read().decode('utf-8', errors="ignore")
 
 def get_file_list(bucket, key):
+    """Returns a list of inventory files listed in the inventory report manifest"""
     s3 = boto3.client('s3')
     try:
         result = s3.get_object(Bucket=bucket, Key=key)
@@ -294,6 +337,7 @@ def get_file_list(bucket, key):
     return list(csv.reader(gzip.decompress(result['Body'].read()).decode().split('\n'), delimiter=',', quotechar='"'))
 
 def volume_has_multi_s3_versions(bucket, barcode):
+    """Checks if there are multiple versions from innodata"""
     s3_client = boto3.client('s3')
     results = s3_client.list_objects_v2(
         Bucket=bucket,
