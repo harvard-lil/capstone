@@ -272,7 +272,7 @@ class CaseXML(models.Model):
         case_metadata.save()
 
         if data['duplicative'] is False:
-            for citation in  data['citations']:
+            for citation in data['citations']:
                 cite, created = Citation.objects.get_or_create(
                     cite=data['citations'][citation],
                     type=citation,
@@ -327,6 +327,7 @@ class CaseXML(models.Model):
 
 
 class CaseMetadata(models.Model):
+    slug = models.SlugField(max_length=255, unique=True)
     case_id = models.CharField(max_length=64, null=True)
     first_page = models.IntegerField(null=True, blank=True)
     last_page = models.IntegerField(null=True, blank=True)
@@ -348,6 +349,16 @@ class CaseMetadata(models.Model):
 
     def __str__(self):
         return self.case_id
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            try:
+                citation = self.citations.get(type="official").cite
+            except:
+                citation = self.citations.first().cite
+
+            self.slug = generate_unique_slug(CaseMetadata, 'slug', citation)
+        super(CaseMetadata, self).save(*args, **kwargs)
 
 
 class Citation(models.Model):
