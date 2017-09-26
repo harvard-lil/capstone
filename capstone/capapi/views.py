@@ -49,27 +49,22 @@ class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Li
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
+class CitationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+    serializer_class = serializers.CitationSerializer
+    http_method_names = ['get']
+    queryset = models.Citation.objects.all()
+    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+
+
 class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     """
     Browse all cases
     """
-    permission_classes = (permissions.IsAPIUser,)
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
     queryset = models.CaseMetadata.objects.all()
-    filter_backends = (rs_filters.SearchFilter, DjangoFilterBackend,)
-    search_fields = ('name', 'name_abbreviation', 'court__name', 'reporter__name', 'jurisdiction__name')
-    filter_class = filters.CaseFilter
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
-    lookup_field = 'case_id'
-    ordering = ('decisiondate',)
-
-    def list(self, *args, **kwargs):
-        return super(CaseViewSet, self).list(*args, **kwargs)
-
-    def retrieve(self, *args, **kwargs):
-        return super(CaseViewSet, self).retrieve(*args, **kwargs)
-
+    lookup_field = 'slug'
 
 ### User specific views ###
 
