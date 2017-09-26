@@ -62,6 +62,7 @@ python-dateutil==2.6.0    # via botocore, moto
 pytz==2017.2              # via django, moto
 pyyaml==3.12              # via pyaml
 rcssmin==1.0.6            # via django-compressor
+redis==2.10.6
 requests==2.16.4          # via moto
 rjsmin==1.0.12            # via django-compressor
 s3transfer==0.1.10        # via boto3
