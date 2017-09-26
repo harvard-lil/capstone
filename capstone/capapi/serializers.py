@@ -37,7 +37,7 @@ class CaseSerializer(serializers.ModelSerializer):
             'last_page',
             'citations',
             'jurisdiction',
-            # 'jurisdiction_url',
+            'slug',
             'court',
             'court_url',
             'reporter',
@@ -50,8 +50,7 @@ class CaseSerializer(serializers.ModelSerializer):
 class JurisdictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Jurisdiction
-        fields = ('slug', 'name', )
-        lookup_field = 'slug'
+        fields = ('id', 'slug', 'name', )
 
 
 class VolumeSerializer(serializers.ModelSerializer):
@@ -109,7 +108,6 @@ class CourtSerializer(serializers.ModelSerializer):
             'jurisdiction_url',
             'slug',
         )
-        lookup_field = 'slug'
 
 
 class UserSerializer(serializers.ModelSerializer):

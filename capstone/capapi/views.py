@@ -5,7 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.http import JsonResponse
 
 from rest_framework import status
-from rest_framework import renderers, viewsets, mixins, filters as rs_filters
+from rest_framework import renderers, viewsets, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, list_route, renderer_classes
 from rest_framework.permissions import AllowAny
@@ -25,7 +25,6 @@ class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mi
     filter_class = filters.JurisdictionFilter
     queryset = models.Jurisdiction.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
-    lookup_field = 'slug'
 
 
 class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
