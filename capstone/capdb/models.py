@@ -269,7 +269,6 @@ class CaseXML(models.Model):
         case_metadata.last_page = data["last_page"]
         case_metadata.name = data["name"]
         case_metadata.name_abbreviation = data["name_abbreviation"]
-        case_metadata.save()
 
         if data['duplicative'] is False:
             for citation in data['citations']:
