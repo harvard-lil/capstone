@@ -94,9 +94,8 @@ class ReporterSerializer(serializers.ModelSerializer):
 
 
 class CourtSerializer(serializers.ModelSerializer):
-    # jurisdiction_url = serializers.HyperlinkedRelatedField(
-    jurisdiction_url = serializers.HyperlinkedRelatedField(source='jurisdiction', view_name='jurisdiction-detail',
-                                                             read_only=True)
+    jurisdiction_url = serializers.HyperlinkedRelatedField(
+        source='jurisdiction', view_name='jurisdiction-detail', read_only=True)
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
 
     class Meta:

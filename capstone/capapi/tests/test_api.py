@@ -4,7 +4,7 @@ import pytest
 from django.test import Client
 from django.conf import settings
 
-from capdb.models import CaseMetadata
+from capdb.models import CaseMetadata, Jurisdiction
 
 
 @pytest.mark.django_db
@@ -31,8 +31,7 @@ def test_jurisdictions(load_parsed_metadata):
     assert response.status_code == 200
     assert response.accepted_renderer.format == "json"
     jurisdictions = json.loads(response.content)['results']
-    assert len(jurisdictions) == 2
-    assert jurisdictions[1]["name"] == "New York"
+    assert len(jurisdictions) == Jurisdiction.objects.all().count()
 
 
 @pytest.mark.django_db
