@@ -18,24 +18,36 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     reporter_id = serializers.ReadOnlyField(source='reporter.id')
     reporter_abbreviation = serializers.ReadOnlyField(source='reporter.name_abbreviation')
     citation = serializers.ReadOnlyField(source='citation.cite')
+class CaseSerializer(serializers.ModelSerializer):
+    jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
+    court = serializers.ReadOnlyField(source='court.name')
+    court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True)
+    reporter = serializers.ReadOnlyField(source='reporter.full_name')
+    reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
+    citations = CitationSerializer(many=True)
+    volume = serializers.ReadOnlyField(source='volume.title')
+    volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
 
     class Meta:
         model = models.CaseMetadata
         lookup_field = 'case_id'
-        fields = ('case_id', 'url',
-                  'name', 'name_abbreviation',
-                  'citation',
-                  'first_page', 'last_page',
-                  'jurisdiction', 'jurisdiction_name', 'jurisdiction_id',
-                  'docket_number',
-                  'decision_date_original',
-                  'court', 'court_name', 'court_id',
-                  'reporter', 'reporter_name', 'reporter_id',
-                  'reporter_abbreviation',
-                  'volume')
-        extra_kwargs = {
-            'url': {'lookup_field': 'case_id'}
-        }
+        fields = (
+            'name',
+            'name_abbreviation',
+            'decision_date',
+            'docket_number',
+            'first_page',
+            'last_page',
+            'citations',
+            'jurisdiction',
+            # 'jurisdiction_url',
+            'court',
+            'court_url',
+            'reporter',
+            'reporter_url',
+            'volume',
+            'volume_url',
+        )
 
 
 class JurisdictionSerializer(serializers.ModelSerializer):
