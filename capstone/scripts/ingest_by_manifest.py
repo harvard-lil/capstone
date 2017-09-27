@@ -24,18 +24,33 @@ SHARED_REPORT_DIRECTORY = settings.INVENTORY['inventory_directory']
 _last_sync = None
 
 """
-This script updates the capstone inventory based on an inventory report from s3.
+This script updates the capstone inventory based on an inventory report from s3
 
-The reports come in files of s3 keys that are chunked into 10k file chunks, and
-they're all dumped in the /data directory of the report. The manifest that says
-which files belong to which report are in dated directories in the base of the
-report directory.
+The reports consist of a json manifest file which is a map to 10k-key gzipped
+CSV files. The CSV files are not seemingly meaningfully named, and they're all
+dumped in the data directory of the report, so you really need the manifest to
+make sense of the report.
 
-Since volumes are likely to be broken up between the inventory files, and we're
+harvard-cap-inventory/harvard-ftl-shared/PrimarySharedInventoryReport:
+
+-- 2017-07-12T21-03Z
+---- manifest.checksum
+---- manifest.json
+--2017-07-13T18-03Z
+---- manifest.checksum
+---- manifest.json
+-- 2017-[etc.]
+-- data
+---- 0063018d-cc37-4f64-a00e-db4607a478aa.csv.gz
+---- 009c84a9-0d15-4858-8594-272a5b1606b6.csv.gz
+---- 00[etc.].csv.gz
+
+Since many volumes are broken up between two inventory files, and we're
 not sure that all of the volumes will even be complete, because there are some
 which innodata obviously did not upload the whole thing at once, I'm using
 redis to make a database of keys to organize the inventory report data before
-it's actualy ingested. What's referred to as a queue is a redis unordered set.
+it's actualy ingested. What I refer to as a queue in the code is a redis 
+unordered set.
 
 The overall flow of the script goes like this:
 
@@ -53,6 +68,13 @@ The overall flow of the script goes like this:
  - this step ingests the volumes/cases in the inventory report
  - uses new_volumes 
  - updates old volume versions with new versions
+ - compares files in the ALTO with files in the ingest report to make sure we
+ have everything
+
+I store the last DB sync in redis and use that to determine from which date 
+the sync should run. Alternately, you can just run the whole thing with 
+complete_data_sync. This could be a incur a non-negligable expense on our 
+AWS bill. 
 
 
 """
@@ -66,7 +88,7 @@ def sync_recent_data():
 def complete_data_sync():
     global _last_sync
     _last_sync = datetime(1970, 1, 1)
-    
+
     inventory_build_pool()
     trim_old_versions()
     inventory_ingest_pool()
@@ -94,8 +116,13 @@ def trim_old_versions():
     while r.scard("unsorted_new_volumes") > 0:
         unsorted_volume = r.spop("unsorted_new_volumes") 
         vol_dict = json.loads(unsorted_volume.decode("utf-8"))
-        all_versions = [ volume for volume in r.smembers("unsorted_new_volumes") if json.loads(volume.decode("utf-8"))['barcode'] == vol_dict['barcode'] ] + [unsorted_volume]
-        highest_version_string = max([json.loads(version)['version_string'] for version in all_versions if json.loads(version.decode("utf-8"))['barcode'] == vol_dict['barcode']])
+        
+        all_versions = [volume for volume in r.smembers("unsorted_new_volumes")
+            if json.loads(volume.decode("utf-8"))['barcode'] == vol_dict['barcode']] + [unsorted_volume]
+
+        highest_version_string = max([json.loads(version)['version_string'] for version in all_versions
+            if json.loads(version.decode("utf-8"))['barcode'] == vol_dict['barcode']])
+        
         for version in all_versions:
             version_dict = json.loads(version.decode("utf-8"))
             if unsorted_volume != version_dict:
@@ -179,7 +206,11 @@ def process_volume(vol_entry, queues):
 
 
 def process_recent_manifest_data(list_key):
-    """This goes through the files in the inventory report and processes them"""
+    """This goes through the files in the inventory report and puts them into
+       queues. It makes queues for the alto files entries, and the inventory
+       report key entries. They're organized by bar code, version string, and
+       file type
+    """
     file_list = get_file_list(INVENTORY_BUCKET_NAME, list_key)
     r = redis.Redis( host='localhost', port=6379)
     for file_entry in file_list:
@@ -196,11 +227,11 @@ def process_recent_manifest_data(list_key):
         barcode = file_entry[1].split("/")[1].split('_')[0]
         bucket = file_entry[0]
         file_key = file_entry[1]
-        #a length of less than 4 means it's a volume-level file
 
         version_match = re.match(r'from_vendor/[A-Za-z0-9]+_redacted_?([0-9_\.]+)/', file_key)
         version_string = version_match[1] if version_match is not None else "0000_original"
 
+        #a length of less than 4 means it's a volume-level file
         if len(file_key.split("/")) < 4:
             mets_files = extract_file_dict(bucket, file_key)
             for queue_type in mets_files:
