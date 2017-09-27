@@ -1,11 +1,10 @@
 from datetime import datetime
-import re
 from scripts.helpers import parse_xml
 
 
 def get_case_metadata(case_xml):
     parsed = parse_xml(case_xml)
-    volume_barcode = re.search(r'\/images\/([0-9a-zA-Z]+)_', case_xml)[1]
+    volume_barcode = parsed('case|case').attr.caseid.split('_')[0]
     if parsed('duplicative|casebody'):
         first_page = int(parsed('duplicative|casebody').attr.firstpage)
         last_page = int(parsed('duplicative|casebody').attr.lastpage)
