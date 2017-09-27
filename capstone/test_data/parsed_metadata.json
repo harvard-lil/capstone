@@ -110,10 +110,13 @@
     "pk": 1,
     "fields": {
       "case_id": "32044057892259_0001",
+      "slug": "1-case-1",
       "first_page": 19,
       "last_page": 24,
       "jurisdiction": 1,
-      "volume": "32044057892259"
+      "volume": "32044057892259",
+      "duplicative": false
     }
   }
 ]
+
