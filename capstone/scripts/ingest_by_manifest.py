@@ -65,8 +65,8 @@ def sync_recent_data():
 
 def complete_data_sync():
     global _last_sync
-    _last_sync = datetime.date(2012, 1, 1)
-
+    _last_sync = datetime(1970, 1, 1)
+    
     inventory_build_pool()
     trim_old_versions()
     inventory_ingest_pool()
