@@ -130,6 +130,9 @@ class Jurisdiction(models.Model):
     def __str__(self):
         return self.slug
 
+    class Meta:
+        ordering = ['name']
+
 
 class Reporter(models.Model):
     jurisdictions = models.ManyToManyField(Jurisdiction)
@@ -145,6 +148,9 @@ class Reporter(models.Model):
 
     def __str__(self):
         return "%s: %s %s-%s" % (self.short_name, self.full_name, self.start_year or '', self.end_year or '')
+
+    class Meta:
+        ordering = ['full_name']
 
 
 class VolumeMetadata(models.Model):
@@ -248,6 +254,9 @@ class Court(models.Model):
 
     def __str__(self):
         return self.slug
+
+    class Meta:
+        ordering = ['name']
 
 
 class CaseXML(models.Model):
@@ -363,6 +372,9 @@ class CaseMetadata(models.Model):
 
     def __str__(self):
         return self.slug
+
+    class Meta:
+        ordering = ['case_id']
 
     def save(self, *args, **kwargs):
         if not self.id and not self.slug:
