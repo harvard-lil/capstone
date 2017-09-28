@@ -1,9 +1,8 @@
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
 
 from scripts.process_metadata import get_case_metadata
-from .utils import generate_unique_slug, get_citation_to_slugify
+from .utils import generate_unique_slug
 from scripts.helpers import *
 
 ### helpers ###
@@ -246,10 +245,7 @@ class Court(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id and not self.slug:
-            if self.name_abbreviation:
-                self.slug = generate_unique_slug(Court, 'slug', self.name_abbreviation)
-            else:
-                self.slug = generate_unique_slug(Court, 'slug', self.name)
+            self.slug = generate_unique_slug(self, self.name_abbreviation or self.name)
         super(Court, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -278,13 +274,13 @@ class CaseXML(models.Model):
         citations = list()
 
         if not duplicative_case:
-            for citation in data['citations']:
+            for citation_type, citation_text in data['citations'].items():
                 cite, created = Citation.objects.get_or_create(
-                    cite=data['citations'][citation],
-                    type=citation,
+                    cite=citation_text,
+                    type=citation_type,
                     duplicative=False)
-                print( "cite={}, type={}, duplicative={}".format(data['citations'][citation], citation, False))
-                print("GoC: '{}' '{}': {}".format(cite.cite, data['citations'][citation], cite))
+                # print( "cite={}, type={}, duplicative={}".format(data['citations'][citation], citation, False))
+                # print("GoC: '{}' '{}': {}".format(cite.cite, data['citations'][citation], cite))
                 citations.append(cite)
         else:
             cite, created = Citation.objects.get_or_create(
@@ -292,12 +288,11 @@ class CaseXML(models.Model):
                 type="official", duplicative=True)
             citations.append(cite)
 
-        citation_to_slugify = get_citation_to_slugify(citations)
-        slugified_citation = generate_unique_slug(CaseMetadata, 'slug', citation_to_slugify)
-
-        case_metadata, created = CaseMetadata.objects.get_or_create(
-            case_id=self.case_id,
-            slug=slugified_citation)
+        # avoid get_or_create because that's tricky to use while generating a unique slug
+        try:
+            case_metadata = CaseMetadata.objects.get(case_id=self.case_id)
+        except CaseMetadata.DoesNotExist:
+            case_metadata = CaseMetadata(case_id=self.case_id)
 
         case_metadata.reporter = reporter
         case_metadata.volume = volume_metadata
@@ -307,11 +302,17 @@ class CaseXML(models.Model):
         case_metadata.name = data["name"]
         case_metadata.name_abbreviation = data["name_abbreviation"]
 
-        for citation in citations:
-            case_metadata.citations.add(citation)
+        # set slug to official citation, or first citation if there is no official
+        citation_to_slugify = next((c for c in citations if c.type == 'official'), citations[0])
+        case_metadata.slug = generate_unique_slug(case_metadata, citation_to_slugify.cite)
+
+        # save here so we can add citation relationships before possibly returning
+        case_metadata.save()
+
+        # TODO: this may create orphan citations that aren't linked to any case
+        case_metadata.citations.set(citations)
 
         if duplicative_case:
-            case_metadata.save()
             return
 
         case_metadata.decision_date_original = data["decision_date_original"]
@@ -377,16 +378,8 @@ class CaseMetadata(models.Model):
         ordering = ['case_id']
 
     def save(self, *args, **kwargs):
-        if not self.id and not self.slug:
-            print("not self.id, not self.slug")
-            try:
-                print("trying self.citations")
-                citation = self.citations.get(type="official").cite
-            except ObjectDoesNotExist:
-                citation = self.citations.first().cite
-
-            self.slug = generate_unique_slug(CaseMetadata, 'slug', citation)
-
+        # Ordinarily we would set slug here for new objects, but we can't because it's based on self.citations,
+        # which is a many-to-many that can't exist until the object is saved.
         super(CaseMetadata, self).save(*args, **kwargs)
 
 
@@ -399,8 +392,7 @@ class Citation(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id and not self.slug:
-            print("Boom")
-            self.slug = generate_unique_slug(Citation, 'slug', self.cite)
+            self.slug = generate_unique_slug(self, self.cite)
         super(Citation, self).save(*args, **kwargs)
 
     def __str__(self):

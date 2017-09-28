@@ -1,36 +1,30 @@
 from django.template.defaultfilters import slugify
 
 
-def generate_unique_slug(model, field, raw_string, count=None):
+def generate_unique_slug(instance, raw_string, field='slug', max_tries=1000):
     """
-    :param field: the field requiring unique slug
-    :param raw_string: basis for slug
-    :return:
-    Rejection sampling: generate unique slug, check for uniqueness
-    if found in model, resample
+        Get a unique slug for instance by sluggifying raw_string, checking database, and appending -1, -2 etc. if necessary.
+        When checking uniqueness, ignore this object itself if it already exists in the database.
+
+        Usage:
+            my_instance.slug = generate_unique_slug(my_instance, 'Obj Title')
     """
 
-    if count:
-        slug = "%s-%s" % (slugify(raw_string[:100]), str(count))
-    else:
-        slug = "%s" % slugify(raw_string[:100])
-        count = 0
+    slug_base = "%s" % slugify(raw_string[:100])
+    for count in range(max_tries):
+        slug = slug_base
+        if count:
+            slug = "%s-%s" % (slug, count)
 
-    kwargs = {field: slug}
-    found = model.objects.filter(**kwargs)
-    if found.count() == 0:
-        return slug
-    else:
-        count += 1
-        return generate_unique_slug(model, field, raw_string, count=count)
+        # ORM query for objects of the same model, with the same slug
+        found = type(instance).objects.filter(**{field: slug})
 
+        # Exclude this exact instance from the query
+        if instance.pk:
+            found = found.exclude(pk=instance.pk)
 
-def get_citation_to_slugify(citations):
-    if not len(citations):
-        raise Exception("No citations found")
+        if not found.exists():
+            return slug
 
-    official_citation = [citation for citation in citations if citation.type == 'official']
+    raise Exception("No unique slug found after %s tries." % max_tries)
 
-    # try to find official citation
-    # if not found fall back on any citation available
-    return official_citation[0].cite if len(official_citation) > 0 else citations[0].cite

@@ -29,3 +29,7 @@ def ingest_volumes(ingest_metadata):
 @pytest.fixture
 def volume_xml(ingest_volumes):
     return VolumeXML.objects.get(barcode='32044057892259')
+
+@pytest.fixture
+def case_xml(volume_xml):
+    return volume_xml.case_xmls.first()

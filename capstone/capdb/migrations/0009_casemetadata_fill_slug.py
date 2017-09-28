@@ -16,7 +16,7 @@ def fill_in_slug(apps, schema_editor):
         except ObjectDoesNotExist:
             citation = case.citations.first().cite
 
-        case.slug = generate_unique_slug(CaseMetadata, 'slug', citation)
+        case.slug = generate_unique_slug(case, citation)
         case.save(update_fields=['slug'])
 
 
