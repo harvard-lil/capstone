@@ -71,11 +71,23 @@ The overall flow of the script goes like this:
  - compares files in the ALTO with files in the ingest report to make sure we
  have everything
 
+4) tag_jp2s()
+ - tags all of the jp2 files for our process
+
+5) cleanup_and_report()
+ - deletes the queues that don't get popped
+ - TODO this should also delete the inventory report files from s3
+ - TODO this should email us a proper ingest report
+
+
+The redis stuff is pretty straightforward. 
+while r.scard("queue_name") > 0:
+    r.spop("queue_name") 
+
 I store the last DB sync in redis and use that to determine from which date 
 the sync should run. Alternately, you can just run the whole thing with 
 complete_data_sync. This could be a incur a non-negligable expense on our 
 AWS bill. 
-
 
 """
 
@@ -83,6 +95,8 @@ def sync_recent_data():
     inventory_build_pool()
     trim_old_versions()
     inventory_ingest_pool()
+    tag_jp2s()
+    cleanup_and_report()
     write_last_sync()
 
 def complete_data_sync():
@@ -92,6 +106,8 @@ def complete_data_sync():
     inventory_build_pool()
     trim_old_versions()
     inventory_ingest_pool()
+    tag_jp2s()
+    cleanup_and_report()
     write_last_sync()
 
 def inventory_build_pool():
@@ -105,10 +121,40 @@ def inventory_ingest_pool():
     pool = Pool(64)
     r = redis.Redis( host='localhost', port=6379)
     while r.scard("new_volumes") > 0:
-        pool.map_async(readqueue, [ r.spop("new_volumes") ])
+        pool.map_async(process_volume, [ r.spop("new_volumes") ])
     pool.close()
     pool.join()
 
+def cleanup_and_report():
+    r = redis.Redis( host='localhost', port=6379)
+    while r.scard("nonmatching_files") > 0: 
+        nonmatching_file = r.spop("nonmatching_files")
+        print(clean_queues(nonmatching_file))
+    while r.scard("integtriy_error") > 0: 
+        integtriy_error = r.spop("integtriy_error")
+        print(clean_queues(integtriy_error))
+
+def tag_jp2s():
+    r = redis.Redis( host='localhost', port=6379)
+    while r.scard("tag_these_queues") > 0: 
+        queue_to_tag = r.spop("tag_these_queues")
+        while r.scard(queue_to_tag) > 0:
+            tag_jp2(r.spop(queue_to_tag))
+
+def clean_queues(vol_entry_bytestring):
+    """This ingests the volume into the capstone database"""
+    queue_inventory = defaultdict(dict)
+    r = redis.Redis( host='localhost', port=6379)
+    queues = generate_queue_names(vol_entry_bytestring)
+    for queue_type in queues:
+        for file_type in queues[queue_type]:
+            #we want to hang onto the jp2 queue for tagging
+            if file_type == 'inventory' and queue_type == 'jp2':
+                continue
+            queue_inventory[queue_type][file_type] = "{} {}".format(queues[queue_type][file_type], r.scard(queues[queue_type][file_type]))
+            r.delete(queues[queue_type][file_type])
+
+    return queue_inventory
 
 def trim_old_versions():
     """Gets all of the versions in the unsorted volume queue, checks the version string, only passes on the highest version string"""
@@ -127,36 +173,26 @@ def trim_old_versions():
             version_dict = json.loads(version.decode("utf-8"))
             if unsorted_volume != version_dict:
                 r.srem("unsorted_new_volumes", version)
+
             if version_dict['version_string'] == highest_version_string:
                 r.sadd("new_volumes", version)
             else:
-                r.sadd("superceded", version)
+                clean_queues(version)
 
-def readqueue(vol_entry_bytestring):
-    """Ingests what's in the new_volumes queue"""
+def process_volume(vol_entry_bytestring):
+    """This ingests the volume into the capstone database"""
     r = redis.Redis( host='localhost', port=6379)
 
     vol_entry = json.loads(vol_entry_bytestring.decode("utf-8"))
-    file_types = ['casemets', 'jp2', 'tif', 'alto', 'vol']
-    queues = {}
+    queues = generate_queue_names(vol_entry_bytestring)
     
-    
-    for file_type in file_types:
-        queues[file_type] = "{}_{}_{}_inventory".format(vol_entry['barcode'], file_type, vol_entry['version_string'])
+    for file_type in queues['mets']:
         if file_type == 'vol':
             continue
-        mets_queue = "{}_{}_{}_mets".format(vol_entry['barcode'], file_type, vol_entry['version_string'])
-
-        if set(r.smembers(queues[file_type])) != set(r.smembers(mets_queue)):
-            r.sadd("wrong_number_of_files", vol_entry_bytestring)
+        if set(r.smembers(queues['inventory'][file_type])) != set(r.smembers(queues['mets'][file_type])):
+            r.sadd("nonmatching_files", vol_entry_bytestring)
             return False
-
-    process_volume(vol_entry, queues)
-    
-def process_volume(vol_entry, queues):
-    """This ingests the volume into the capstone database"""
-    r = redis.Redis( host='localhost', port=6379)
-    bucket, volmets_path = json.loads(r.spop(queues['vol']).decode("utf-8"))
+    bucket, volmets_path = json.loads(r.spop(queues['inventory']['vol']).decode("utf-8"))
     alto_barcode_to_case_map = defaultdict(list)
     
     try:
@@ -170,8 +206,8 @@ def process_volume(vol_entry, queues):
             volume = VolumeXML(orig_xml=get_s3_file(bucket, volmets_path), barcode=vol_entry['barcode'], s3_key=volmets_path)
             volume.save()
             
-            while r.scard(queues['casemets']) > 0:
-                case_entry = json.loads(r.spop(queues['casemets']))
+            while r.scard(queues['inventory']['casemets']) > 0:
+                case_entry = json.loads(r.spop(queues['inventory']['casemets']))
                 case_s3_key = case_entry[1]
                 case_bucket = case_entry[0]
                 
@@ -187,8 +223,8 @@ def process_volume(vol_entry, queues):
                     alto_barcode_to_case_map[vol_entry['barcode'] + "_" + alto_barcode].append(case.id)
 
             # save altos
-            while r.scard(queues['alto']) > 0:
-                page_entry = json.loads(r.spop(queues['alto']))
+            while r.scard(queues['inventory']['alto']) > 0:
+                page_entry = json.loads(r.spop(queues['inventory']['alto']))
                 page_s3_key = page_entry[1]
                 page_bucket = page_entry[0]
 
@@ -201,8 +237,8 @@ def process_volume(vol_entry, queues):
                     page.cases.set(alto_barcode_to_case_map[alto_barcode])
 
     except IntegrityError as e:
-        print("Integrity Error... {} probably already exists: {}".format(volmets_path, e))
-
+        print("Integrity Error- {} : {}".format(volmets_path, e))
+        r.sadd("integtriy_error", vol_entry_bytestring)
 
 
 def process_recent_manifest_data(list_key):
@@ -213,6 +249,9 @@ def process_recent_manifest_data(list_key):
     """
     file_list = get_file_list(INVENTORY_BUCKET_NAME, list_key)
     r = redis.Redis( host='localhost', port=6379)
+
+    version_regex = re.compile(r'from_vendor/[A-Za-z0-9]+_redacted_?([0-9_\.]+)/')
+    key_regex = re.compile(r'from_vendor/[A-Za-z0-9]+_redacted([0-9_\.]+)?/((images|alto|casemets)/[A-Za-z0-9_]+\.(jp2|xml|tif))')
     for file_entry in file_list:
         file_key = file_entry[1]
         if (
@@ -228,8 +267,8 @@ def process_recent_manifest_data(list_key):
         bucket = file_entry[0]
         file_key = file_entry[1]
 
-        version_match = re.match(r'from_vendor/[A-Za-z0-9]+_redacted_?([0-9_\.]+)/', file_key)
-        version_string = version_match[1] if version_match is not None else "0000_original"
+        version_match = version_regex.match(file_key)
+        version_string = version_match.group(1) if version_match is not None else "0000_original"
 
         #a length of less than 4 means it's a volume-level file
         if len(file_key.split("/")) < 4:
@@ -237,7 +276,6 @@ def process_recent_manifest_data(list_key):
             for queue_type in mets_files:
                 queue_name = "{}_{}_{}_mets".format(barcode, queue_type, version_string)
                 [r.sadd(queue_name, json.dumps([bucket, "{}/{}".format(os.path.dirname(file_key), f)])) for f in mets_files[queue_type]]
-            
             json_add = json.dumps({
                 "barcode": barcode, 
                 "timestamp": str(datetime.now(tz=None)), 
@@ -245,12 +283,14 @@ def process_recent_manifest_data(list_key):
             r.sadd("unsorted_new_volumes", json_add)
             r.sadd("{}_vol_{}_inventory".format(barcode, version_string), json.dumps([bucket, file_key]))
         else:
-            split_key = re.match(r'from_vendor/[A-Za-z0-9]+_redacted([0-9_\.]+)?/((images|alto|casemets)/[A-Za-z0-9_]+\.(jp2|xml|tif))', file_key)
-            if split_key[4] == 'jp2' or split_key[4] == 'tif':
-                tag_file(bucket, file_key, split_key[4])
-                queue_name = "{}_{}_{}_inventory".format(barcode, split_key[4], version_string)
+            split_key = key_regex.match(file_key)
+            if split_key.group(4) == 'jp2':
+                queue_name = "{}_jp2_{}_inventory".format(barcode, version_string)
+                r.sadd("tag_these_queues", queue_name)
+            elif split_key.group(4) == 'tif':
+                queue_name = "{}_tif_{}_inventory".format(barcode, version_string)
             else:
-                queue_name = "{}_{}_{}_inventory".format(barcode, split_key[3], version_string)
+                queue_name = "{}_{}_{}_inventory".format(barcode, split_key.group(3), version_string)
             r.sadd(queue_name, json.dumps([bucket, file_key]))
 
 def extract_file_dict(bucket, key):
@@ -271,22 +311,22 @@ def is_same_complete_volume(volume, vol_entry, bucket, queues, barcode):
     existing_case_keys = set(CaseXML.objects.filter(volume=volume).values_list('s3_key', flat=True))
     existing_page_keys = set(PageXML.objects.filter(volume=volume).values_list('s3_key', flat=True))
 
-    if ( existing_case_keys == set([entry[0] for entry in r.smembers(queues['casemets'])]) and
-            existing_page_keys == set([entry[0] for entry in r.smembers(queues['alto'])])
+    if ( existing_case_keys == set([entry[0] for entry in r.smembers(queues['inventory']['casemets'])]) and
+            existing_page_keys == set([entry[0] for entry in r.smembers(queues['inventory']['alto'])])
         ):
         return True
 
     elif not volume_has_multi_s3_versions(bucket, vol_entry['barcode']):
         existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('case_id', flat=True))
         existing_page_ids = set(PageXML.objects.filter(volume=volume).values_list('barcode', flat=True))
-        for alto_file in r.smembers(queues['alto']):
-            alto_id = "{}_{}".format(barcode, re.search(r'ALTO_([0-9]+_[0-9])\.xml', alto_file.decode('utf-8'))[1])
+        for alto_file in r.smembers(queues['inventory']['alto']):
+            alto_id = "{}_{}".format(barcode, re.search(r'ALTO_([0-9]+_[0-9])\.xml', alto_file.decode('utf-8')).group(1))
             if alto_id not in existing_page_ids:
                 return False
             else:
                 existing_page_ids.remove(alto_id)
-        for case_file in r.smembers(queues['casemets']):
-            case_id = "{}_{}".format(barcode, re.search(r'CASEMETS_([0-9]+)\.xml', case_file.decode('utf-8'))[1])
+        for case_file in r.smembers(queues['inventory']['casemets']):
+            case_id = "{}_{}".format(barcode, re.search(r'CASEMETS_([0-9]+)\.xml', case_file.decode('utf-8')).group(1))
             if case_id not in existing_case_ids:
                 return False
             else:
@@ -333,8 +373,13 @@ def get_fresh_manifests():
         datetime.strptime(re.split('/', prefix['Prefix'])[2], '%Y-%m-%dT%H-%MZ') > check_last_sync()
     ]
 
-def tag_file(bucket, key, file_type):
+def tag_jp2(file_entry):
     """ This tags image file with their file type, so we can send jp2s to IA"""
+    file_dict = json.loads(file_entry.decode("utf-8"))
+
+    key= file_dict[1]
+    bucket= file_dict[0]
+
     s3 = boto3.client('s3')
     results = s3.put_object_tagging(
         Bucket=bucket,
@@ -343,7 +388,7 @@ def tag_file(bucket, key, file_type):
             'TagSet': [
                 {
                     'Key': 'file_type',
-                    'Value': file_type
+                    'Value': 'jp2'
                 }
             ]
         }
@@ -384,4 +429,16 @@ def volume_has_multi_s3_versions(bucket, barcode):
     )
     return True if results['KeyCount'] > 1 else False
 
-
+def generate_queue_names(vol_entry_bytestring):
+    vol_entry = json.loads(vol_entry_bytestring.decode("utf-8"))
+    file_types = ['casemets', 'jp2', 'tif', 'alto', 'vol']
+    queues = {}
+    queues['inventory'] = {}
+    queues['mets'] = {}
+    
+    for file_type in file_types:
+        queues['inventory'][file_type] = "{}_{}_{}_inventory".format(vol_entry['barcode'], file_type, vol_entry['version_string'])
+        if file_type == 'vol':
+            continue
+        queues['mets'][file_type] = "{}_{}_{}_mets".format(vol_entry['barcode'], file_type, vol_entry['version_string'])
+    return queues
