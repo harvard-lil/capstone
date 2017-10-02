@@ -13,7 +13,7 @@ class CaseFilter(filters.FilterSet):
     name = filters.CharFilter(
         name="name",
         label="Name",
-        lookup_expr='icontains')
+        lookup_expr='iexact')
     name_abbreviation = filters.CharFilter(
         name="name_abbreviation",
         label="Name Abbreviation",

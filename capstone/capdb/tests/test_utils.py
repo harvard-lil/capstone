@@ -1,6 +1,6 @@
 import pytest
 from capdb import utils
-from capdb.models import Reporter
+from capdb.models import Reporter, Jurisdiction
 
 
 @pytest.mark.django_db
