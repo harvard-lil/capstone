@@ -107,5 +107,5 @@ def populate_jurisdiction():
             continue
         new_jurisdiction = Jurisdiction()
         new_jurisdiction.name = jurisdiction['state']
-        new_jurisdiction.slug = generate_unique_slug(Jurisdiction, 'slug', jurisdiction['state'])
+        new_jurisdiction.slug = generate_unique_slug(new_jurisdiction, jurisdiction['state'])
         new_jurisdiction.save()
