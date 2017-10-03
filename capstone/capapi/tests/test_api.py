@@ -43,6 +43,18 @@ def test_case(load_parsed_metadata):
 
 
 @pytest.mark.django_db
+def test_filter_case_by_citation(load_parsed_metadata):
+    c = Client()
+    case = CaseMetadata.objects.get(case_id="32044057892259_0001")
+    citation = case.citations.all().get(type="official").cite
+    response = c.get("%s/cases/?citation=%s&format=json" % (settings.API_FULL_URL, citation))
+    check_response(response)
+    content = response.json()['results']
+    assert len(content) == 1
+    assert content[0].get("slug") == case.slug
+
+
+@pytest.mark.django_db
 def test_court(load_parsed_metadata):
     c = Client()
     response = c.get("%s/courts/?format=json" % settings.API_FULL_URL)

@@ -34,4 +34,5 @@ django-extensions==1.8.1
 django-filter==1.0.4
 django-libsass==0.7
 django-pipeline==1.6.13
+djangorestframework-filters==0.10.1
 djangorestframework==3.6.3

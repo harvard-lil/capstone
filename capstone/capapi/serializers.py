@@ -29,6 +29,7 @@ class CaseSerializer(serializers.ModelSerializer):
         model = models.CaseMetadata
         lookup_field = 'case_id'
         fields = (
+            'slug',
             'name',
             'name_abbreviation',
             'decision_date',
@@ -37,7 +38,6 @@ class CaseSerializer(serializers.ModelSerializer):
             'last_page',
             'citations',
             'jurisdiction',
-            'slug',
             'court',
             'court_url',
             'reporter',
