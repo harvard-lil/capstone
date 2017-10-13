@@ -162,6 +162,7 @@ INGEST_VOLUME_COUNT = 0  # if greater than 0, limit volumes ingested; for debugg
 ### CAP API settings ###
 
 API_CASE_DAILY_ALLOWANCE = 500
+API_DOWNLOAD_LIMIT = 100
 API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL = 'http://localhost:8000'
 API_BASE_URL_ROUTE = '/api'
@@ -170,8 +171,9 @@ API_VERSION = 'v1'
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
 
-# CAP API EMAIL #
+API_ZIPFILE_DIR = '/tmp'
 
+# CAP API EMAIL #
 API_ADMIN_EMAIL_ADDRESS = 'main-email-address@example.com'
 API_EMAIL_ADDRESS = 'admin-email-address@example.com'
 

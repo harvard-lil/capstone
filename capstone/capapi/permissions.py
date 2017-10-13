@@ -13,6 +13,11 @@ class IsAdmin(permissions.BasePermission):
 
 class IsAPIUser(permissions.BasePermission):
     def has_permission(self, request, view):
+        if request.method not in permissions.SAFE_METHODS:
+            # we're a read-only operation here
+            # boot if user tries anything but `GET`, `OPTIONS`, or `HEAD`
+            return False
+
         # give away metadata to everyone!
         if not request.query_params.get('type') == 'download':
             return True

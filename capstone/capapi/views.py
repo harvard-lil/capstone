@@ -1,8 +1,11 @@
+import os
 import logging
+from wsgiref.util import FileWrapper
 
 from django.conf import settings
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django_filters.rest_framework import DjangoFilterBackend
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 
 from rest_framework import status
 from rest_framework import renderers, viewsets, mixins
@@ -11,8 +14,10 @@ from rest_framework.decorators import api_view, list_route, renderer_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser, FormParser
 
-from capapi import permissions, serializers, filters, resources, models as capapi_models
+from capapi import view_helpers, permissions, serializers, filters, resources, models as capapi_models
+from capapi.constants import OPEN_CASE_JURISDICTIONS
 from capdb import models
+
 
 
 logger = logging.getLogger(__name__)
@@ -56,19 +61,117 @@ class CitationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins
 
 
 class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
-    """
-    Browse all cases
-    """
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
+    lookup_field = 'slug'
     queryset = models.CaseMetadata.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
-    lookup_field = 'slug'
+    permission_classes = (permissions.IsAPIUser,)
     filter_class = filters.CaseFilter
 
+    def download_many(self):
+        all_cases = self.queryset.all()
+        # get max number of cases to download from query
+        # set max number to daily max if unspecified
+        max_num = int(self.request.query_params.get('max', settings.API_CASE_DAILY_ALLOWANCE))
 
-### User specific views ###
+        try:
+            to_filter = view_helpers.generate_filters_from_query_params(self.request.query_params)
+            cases = all_cases.filter(to_filter).order_by('decision_date')
+        except TypeError:
+            cases = all_cases.order_by('decision_date')
 
+        if cases.count() == 0:
+            return JsonResponse({
+                'message': 'Request did not return any results.'
+            }, status=404, )
+
+        # get page number for paginated requests
+        page_num = int(self.request.query_params.get('page', 1))
+
+        # pagination or max number
+        if max_num <= settings.API_DOWNLOAD_LIMIT:
+            cases = cases[:max_num]
+        else:
+            start_at = (page_num-1) * settings.API_DOWNLOAD_LIMIT
+            end_at = page_num * settings.API_DOWNLOAD_LIMIT
+            cases = cases[start_at:end_at]
+
+        # if request was already paginated
+        whitelisted_filters = view_helpers.get_whitelisted_case_filters()
+        blacklisted_case_count = len(set(cases) & set(all_cases.exclude(whitelisted_filters)))
+
+        case_allowance_sufficient = self.check_case_allowance(blacklisted_case_count)
+        return self.create_download_response(list(cases), blacklisted_case_count, permitted=case_allowance_sufficient)
+
+    def download_one(self, **kwargs):
+        """
+        If downloading a single case (using its lookup_field) explicitly
+        """
+        lookup_field = CaseViewSet.lookup_field
+        try:
+            case = models.CaseMetadata.objects.get(**{lookup_field: kwargs.get(lookup_field, None)})
+        except ObjectDoesNotExist:
+            return JsonResponse({'message': 'Unable to find case with matching slug: %s' % e}, status=404, )
+
+        blacklisted_case_count = 0 if case.jurisdiction.name in OPEN_CASE_JURISDICTIONS else 1
+        case_allowance_sufficient = self.check_case_allowance(blacklisted_case_count)
+
+        return self.create_download_response([case], blacklisted_case_count, permitted=case_allowance_sufficient)
+
+    def create_download_response(self, case_list, blacklisted_case_count, permitted=False):
+        if permitted:
+            try:
+                zip_filename = self.get_zip_filename(case_list)
+                self.request.user.case_allowance -= blacklisted_case_count
+                self.request.user.save()
+                response = StreamingHttpResponse(FileWrapper(open(zip_filename, 'rb')), content_type='application/zip')
+                response['Content-Length'] = os.path.getsize(zip_filename)
+                response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
+                return response
+            except Exception as e:
+                return JsonResponse({'message': 'Download file error: %s' % e}, status=403, )
+        else:
+            case_allowance = self.request.user.case_allowance
+            time_remaining = self.request.user.get_case_allowance_update_time_remaining()
+            message = "You have reached your limit of allowed cases. Your limit will reset to default again in %s", time_remaining
+            details = """
+                      You attempted to download %s cases and your current remaining case limit is %s. 
+                      Use the max flag to return a specific number of cases: &max=%s
+                      """ % (
+                blacklisted_case_count,
+                case_allowance,
+                case_allowance
+            )
+
+            return JsonResponse({'message': message, 'details': details}, status=403)
+
+    def check_case_allowance(self, case_count):
+        if case_count <= 0:
+            return True
+        self.request.user.update_case_allowance()
+        return self.request.user.case_allowance >= case_count
+
+    def list(self, *args, **kwargs):
+        if not self.request.query_params.get('type') == 'download':
+            return super(CaseViewSet, self).list(*args, **kwargs)
+        else:
+            return self.download_many()
+
+    def retrieve(self, *args, **kwargs):
+        if not self.request.query_params.get('type') == 'download':
+            return super(CaseViewSet, self).retrieve(*args, **kwargs)
+        else:
+            return self.download_one(**kwargs)
+
+    def get_zip_filename(self, caselist):
+        try:
+            return resources.write_and_zip(caselist)
+        except Exception as e:
+            raise Exception("Download cases error %s" % e)
+
+
+#   User specific views
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.UserSerializer
     renderer_classes = [renderers.TemplateHTMLRenderer]
