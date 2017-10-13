@@ -69,7 +69,7 @@ class APIUser(AbstractBaseUser):
         if self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) < timezone.now():
             self.case_allowance = settings.API_CASE_DAILY_ALLOWANCE
             self.case_allowance_last_updated = timezone.now()
-            self.save()
+            self.save(update_fields=['case_allowance', 'case_allowance_last_updated'])
 
     def get_case_allowance_update_time_remaining(self):
         td = self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) - timezone.now()
@@ -85,7 +85,6 @@ class APIUser(AbstractBaseUser):
                 self.save()
             except IntegrityError as e:
                 logger.warning("IntegrityError in authenticating user: %s %s" % (e, self.email))
-                pass
         else:
             raise PermissionDenied
 
@@ -134,7 +133,7 @@ class APIToken(models.Model):
             token = cls(user=user)
             token.save()
         else:
-            raise Exception("")
+            raise Exception("Something went wrong when creating token")
 
     def save(self, *args, **kwargs):
         if not self.key:
