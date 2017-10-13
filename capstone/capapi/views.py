@@ -3,7 +3,7 @@ import logging
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import JsonResponse, StreamingHttpResponse
 
