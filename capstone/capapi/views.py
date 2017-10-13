@@ -111,7 +111,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         lookup_field = CaseViewSet.lookup_field
         try:
             case = models.CaseMetadata.objects.get(**{lookup_field: kwargs.get(lookup_field, None)})
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist as e:
             return JsonResponse({'message': 'Unable to find case with matching slug: %s' % e}, status=404, )
 
         blacklisted_case_count = 0 if case.jurisdiction.name in OPEN_CASE_JURISDICTIONS else 1
