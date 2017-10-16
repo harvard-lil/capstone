@@ -42,11 +42,12 @@ def write_and_zip(case_list):
     case_xml_tuples = [(case.slug, get_matching_case_xml(case.case_id)) for case in case_list]
 
 
-    dirname = "{0}_{1}_{2}".format(
-        case_list[0].slug,
-        case_list[len(case_list)-1].slug,
-        slugify(datetime.now().timestamp())
-    )
+    dirname_partial = '{0}_{1}'.format(case_list[0].slug[:20], case_list[len(case_list)-1].slug[:20]) if len(case_list) > 1 else case_list[0].slug
+
+    dirname = "{0}_{1}".format(
+        dirname_partial,
+        slugify(datetime.now().timestamp()))
+
     dirpath = settings.API_ZIPFILE_DIR + "/" + dirname
 
     try:
@@ -62,7 +63,7 @@ def write_and_zip(case_list):
     # zip newly created directory
     zipped_dir = dirpath + ".zip"
     zipfile_handler = zipfile.ZipFile(zipped_dir, 'w', compression)
-    zipdir('tmp/', zipfile_handler)
+    zipdir(dirpath, zipfile_handler)
     zipfile_handler.close()
 
     return zipped_dir
