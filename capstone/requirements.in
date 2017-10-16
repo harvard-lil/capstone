@@ -27,6 +27,7 @@ pytest-django==3.1.2        # testing
 pytest-xdist==1.16.0        # run tests in parallel with pytest -n
 moto==1.0.0                 # mocking s3 access
 flake8==3.4.1               # linting
+factory-boy==2.9.2          # mocking
 
 # API
 beautifulsoup4==4.6.0

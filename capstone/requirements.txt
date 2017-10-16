@@ -32,6 +32,8 @@ djangorestframework==3.6.3
 docutils==0.13.1          # via botocore
 execnet==1.4.1            # via pytest-xdist
 fabric3==1.13.1.post1
+factory-boy==2.9.2
+faker==0.8.4              # via factory-boy
 first==2.0.1              # via pip-tools
 flake8==3.4.1
 futures==3.1.1            # via django-pipeline
@@ -59,14 +61,14 @@ pyquery==1.2.17
 pytest-django==3.1.2
 pytest-xdist==1.16.0
 pytest==3.1.0             # via pytest-django, pytest-xdist
-python-dateutil==2.6.0    # via botocore, moto
+python-dateutil==2.6.0    # via botocore, faker, moto
 pytz==2017.2              # via django, moto
 pyyaml==3.12              # via pyaml
 rcssmin==1.0.6            # via django-compressor
 requests==2.16.4          # via moto
 rjsmin==1.0.12            # via django-compressor
 s3transfer==0.1.10        # via boto3
-six==1.10.0               # via cryptography, django-extensions, fabric3, libsass, moto, packaging, pip-tools, python-dateutil
+six==1.10.0               # via cryptography, django-extensions, fabric3, faker, libsass, moto, packaging, pip-tools, python-dateutil
 tqdm==4.11.2
 urllib3==1.21.1           # via requests
 werkzeug==0.12.2          # via moto
