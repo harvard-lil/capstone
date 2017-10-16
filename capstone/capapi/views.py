@@ -102,15 +102,15 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         blacklisted_case_count = len(set(cases) & set(all_cases.exclude(whitelisted_filters)))
 
         case_allowance_sufficient = self.check_case_allowance(blacklisted_case_count)
+
         return self.create_download_response(list(cases), blacklisted_case_count, permitted=case_allowance_sufficient)
 
     def download_one(self, **kwargs):
         """
         If downloading a single case (using its lookup_field) explicitly
         """
-        lookup_field = CaseViewSet.lookup_field
         try:
-            case = models.CaseMetadata.objects.get(**{lookup_field: kwargs.get(lookup_field, None)})
+            case = models.CaseMetadata.objects.get(**kwargs)
         except ObjectDoesNotExist as e:
             return JsonResponse({'message': 'Unable to find case with matching slug: %s' % e}, status=404, )
 
@@ -123,8 +123,10 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         if permitted:
             try:
                 zip_filename = self.get_zip_filename(case_list)
-                self.request.user.case_allowance -= blacklisted_case_count
-                self.request.user.save()
+
+                # update case allowance
+                self.request.user.update_case_allowance(case_count=blacklisted_case_count)
+
                 response = StreamingHttpResponse(FileWrapper(open(zip_filename, 'rb')), content_type='application/zip')
                 response['Content-Length'] = os.path.getsize(zip_filename)
                 response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
@@ -226,9 +228,9 @@ class UserViewSet(viewsets.ModelViewSet):
                     return Response({'user_id': user.id, 'user_email': user.email, 'info_email': settings.EMAIL_ADDRESS}, template_name='resend-nonce.html', )
             except Exception:
                 content = {'errors': {'messages': 'Invalid password or email address'}, 'serializer': serializer}
-                return Response(content, template_name='log-in.html', status=status.HTTP_400_BAD_REQUEST)
+                return Response(content, template_name='log-in.html', status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response({'errors': serializer.errors, 'serializer': serializer}, template_name='log-in.html', status=status.HTTP_400_BAD_REQUEST)
+            return Response({'errors': serializer.errors, 'serializer': serializer}, template_name='log-in.html', status=status.HTTP_401_UNAUTHORIZED)
 
     @list_route(methods=['post'], permission_classes=[permissions.IsAPIUser])
     def resend_verification(self, request):

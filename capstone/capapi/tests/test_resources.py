@@ -27,9 +27,9 @@ def test_write_and_zip():
     assert settings.API_ZIPFILE_DIR in zipped_dirname
 
     # unzip everything, check if contents are available
-    zip_ref = zipfile.ZipFile(zipped_dirname, 'r')
-    zip_ref.extractall()
-    zip_ref.close()
+    zipfile_handler = zipfile.ZipFile(zipped_dirname, 'r')
+    zipfile_handler.extractall()
+    zipfile_handler.close()
 
     unzipped_dirname = zipped_dirname.replace('.zip', '/')
 

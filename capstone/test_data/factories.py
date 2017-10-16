@@ -1,6 +1,7 @@
 import os
 import binascii
 import random
+import pytz
 from datetime import datetime
 import factory
 
@@ -11,10 +12,10 @@ from django.template.defaultfilters import slugify
 
 xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w3.org/1999/xlink'></mets>"
 
-def setup_case():
+def setup_case(**kwargs):
     volume_xml = VolumeXMLFactory.create()
     casexml = CaseXMLFactory.create(volume=volume_xml)
-    case = CaseMetadataFactory.create(case_id=casexml.case_id)
+    case = CaseMetadataFactory.create(case_id=casexml.case_id, **kwargs)
     case.jurisdiction.save()
     case.save()
     return case
@@ -36,9 +37,10 @@ class APIUserFactory(factory.DjangoModelFactory):
 class APITokenFactory(factory.DjangoModelFactory):
     class Meta:
         model = APIToken
+
     user = factory.SubFactory(APIUserFactory)
     key = binascii.hexlify(os.urandom(20)).decode()
-    created = datetime.now()
+    created = datetime.now(pytz.UTC)
 
 
 class VolumeXMLFactory(factory.DjangoModelFactory):
@@ -60,6 +62,7 @@ class JurisdictionFactory(factory.DjangoModelFactory):
 class CaseMetadataFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseMetadata
+
     name = factory.Faker('sentence', nb_words=5)
     jurisdiction = factory.SubFactory(JurisdictionFactory)
     slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))

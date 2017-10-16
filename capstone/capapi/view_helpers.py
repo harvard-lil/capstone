@@ -24,7 +24,7 @@ def format_query(params, args_dict=dict()):
             args_dict['decision_date__gte'] = val
         elif key == 'max_year':
             args_dict['decision_date__lte'] = val
-        elif '_' in key:
+        elif '_' in key and key != 'docket_number':
             splitkey = key.split('_')
             args_dict[splitkey[0] + '__' + splitkey[1]] = val
         else:
