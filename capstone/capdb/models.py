@@ -240,7 +240,7 @@ class VolumeXML(models.Model):
 class Court(models.Model):
     name = models.CharField(max_length=255)
     name_abbreviation = models.CharField(max_length=100, blank=True)
-    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction', on_delete=models.SET_NULL)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='courts', on_delete=models.SET_NULL)
     slug = models.SlugField(unique=True, max_length=255, blank=False)
 
     def save(self, *args, **kwargs):
@@ -355,18 +355,18 @@ class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True)
     first_page = models.IntegerField(null=True, blank=True)
     last_page = models.IntegerField(null=True, blank=True)
-    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='%(class)s_jurisdiction',
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
-    citations = models.ManyToManyField('Citation', related_name='%(class)s_citation')
+    citations = models.ManyToManyField('Citation', related_name='case_metadatas')
     docket_number = models.CharField(max_length=255, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
-    court = models.ForeignKey('Court', null=True, related_name='%(class)s_court', on_delete=models.SET_NULL)
+    court = models.ForeignKey('Court', null=True, related_name='case_metadatas', on_delete=models.SET_NULL)
     name = models.TextField(blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
-    volume = models.ForeignKey('VolumeMetadata', null=True, related_name='%(class)s_volume',
+    volume = models.ForeignKey('VolumeMetadata', null=True, related_name='case_metadatas',
                                  on_delete=models.SET_NULL)
-    reporter = models.ForeignKey('Reporter', null=True, related_name='%(class)s_reporter',
+    reporter = models.ForeignKey('Reporter', null=True, related_name='case_metadatas',
                                  on_delete=models.SET_NULL)
     date_added = models.DateTimeField(null=True, blank=True)
     duplicative = models.BooleanField(default=False)
