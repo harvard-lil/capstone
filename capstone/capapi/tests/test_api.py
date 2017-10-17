@@ -9,8 +9,6 @@ from capdb.models import CaseMetadata, Jurisdiction
 
 from test_data.factories import *
 
-# settings.ALLOWED_HOSTS = ['testserver', 'localhost']
-
 
 def check_response(response, status_code=200, format='json'):
     assert response.status_code == status_code
@@ -58,9 +56,7 @@ def test_case(load_parsed_metadata):
 
 @pytest.mark.django_db(transaction=True)
 def test_single_case_download():
-    user = APIUserFactory.create()
-    token = APITokenFactory.build(user=user)
-    token.save()
+    user = setup_authenticated_user()
     client = RequestsClient()
 
     assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
@@ -81,9 +77,7 @@ def test_single_case_download():
 
 @pytest.mark.django_db(transaction=True)
 def test_many_case_download():
-    user = APIUserFactory.create()
-    token = APITokenFactory.build(user=user)
-    token.save()
+    user = setup_authenticated_user()
     client = RequestsClient()
 
     num_of_cases_to_create = 3
@@ -92,7 +86,7 @@ def test_many_case_download():
         setup_case(**{'docket_number': '123'})
 
     assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
-    url = "http://testserver%s/cases/?docket_number=123&type=download"  % settings.API_FULL_URL
+    url = "http://testserver%s/cases/?docket_number=123&type=download" % settings.API_FULL_URL
 
     response = client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(user.get_api_key())})
     check_response(response, format='')
@@ -121,6 +115,50 @@ def test_unauthorized_download():
     user.refresh_from_db()
     assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
 
+
+@pytest.mark.django_db(transaction=True)
+def test_open_jurisdiction():
+    """
+    cases downloaded from open jurisdictions should not be counted against the user
+    """
+    user = setup_authenticated_user()
+    client = RequestsClient()
+    jurisdiction = JurisdictionFactory(name='Illinois')
+    jurisdiction.save()
+    common_name = 'Terrible v. Terrible'
+    case = setup_case(**{'jurisdiction': jurisdiction,
+                         'name': common_name,
+                         'slug': slugify(common_name)})
+
+    assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+    url = "http://testserver%s/cases/%s/?type=download" % (settings.API_FULL_URL, case.slug)
+    response = client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(user.get_api_key())})
+    check_response(response, format='')
+
+    assert type(response.content) is bytes
+    assert response.headers['Content-Type'] == 'application/zip'
+
+    # make sure the user's case download number has remained the same
+    user.refresh_from_db()
+    assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+
+    # if user downloads a mixed case load, their case_allowance should only reflect the blacklisted cases
+    jurisdiction = JurisdictionFactory(name='Blocked')
+    case = setup_case(**{'jurisdiction': jurisdiction,
+                         'name': common_name,
+                         'slug': slugify(common_name) + '-1'})
+
+    url = "http://testserver%s/cases/?name=%s&type=download" % (settings.API_FULL_URL, case.name)
+    response = client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(user.get_api_key())})
+    check_response(response, format='')
+    print(response.headers)
+
+    assert type(response.content) is bytes
+    assert response.headers['Content-Type'] == 'application/zip'
+
+    # make sure the user's case download number has remained the same
+    user.refresh_from_db()
+    assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - 1
 
 @pytest.mark.django_db
 def test_filter_case_by_citation(load_parsed_metadata):
@@ -158,9 +196,7 @@ def test_view_details():
     """
     User is able to log in successfully and see an API Token
     """
-    user = APIUserFactory.create()
-    token = APITokenFactory.build(user=user)
-    token.save()
+    user = setup_authenticated_user()
     client = RequestsClient()
 
     url = "http://testserver/accounts/view_details/"

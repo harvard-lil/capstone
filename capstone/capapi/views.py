@@ -100,7 +100,6 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         # if request was already paginated
         whitelisted_filters = view_helpers.get_whitelisted_case_filters()
         blacklisted_case_count = len(set(cases) & set(all_cases.exclude(whitelisted_filters)))
-
         case_allowance_sufficient = self.check_case_allowance(blacklisted_case_count)
 
         return self.create_download_response(list(cases), blacklisted_case_count, permitted=case_allowance_sufficient)

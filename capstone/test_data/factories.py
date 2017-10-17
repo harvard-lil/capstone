@@ -12,6 +12,7 @@ from django.template.defaultfilters import slugify
 
 xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w3.org/1999/xlink'></mets>"
 
+
 def setup_case(**kwargs):
     volume_xml = VolumeXMLFactory.create()
     casexml = CaseXMLFactory.create(volume=volume_xml)
@@ -19,6 +20,13 @@ def setup_case(**kwargs):
     case.jurisdiction.save()
     case.save()
     return case
+
+
+def setup_authenticated_user(**kwargs):
+    user = APIUserFactory.create(**kwargs)
+    token = APITokenFactory.build(user=user)
+    token.save()
+    return user
 
 
 class APIUserFactory(factory.DjangoModelFactory):

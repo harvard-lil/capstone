@@ -64,12 +64,12 @@ def get_whitelisted_case_filters():
     """
     Get query filters for only whitelisted cases
     will look something like:
-    [<Q: (AND: ('jurisdiction__name__iexact', 'Illinois'))>, <Q: (AND: ('jurisdiction__name__iexact', 'Arkansas'))>]
+    [<Q: (OR: ('jurisdiction__name__iexact', 'Illinois'))>, <Q: (OR: ('jurisdiction__name__iexact', 'Arkansas'))>]
 
     We can use this to filter out for only whitelisted cases
     or exclude whitelisted entirely
     """
     whitelisted_tuples = map(lambda jurisdiction: ("jurisdiction__name", jurisdiction), constants.OPEN_CASE_JURISDICTIONS)
     whitelisted_queries = map(make_query, whitelisted_tuples)
-    return merge_filters(whitelisted_queries, 'AND')
+    return merge_filters(whitelisted_queries, 'OR')
 
