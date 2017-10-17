@@ -12,8 +12,9 @@ from django.template.defaultfilters import slugify
 
 xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w3.org/1999/xlink'></mets>"
 
-
+#   helpers for common patterns
 def setup_case(**kwargs):
+    # set up casemetadata instance
     volume_xml = VolumeXMLFactory.create()
     casexml = CaseXMLFactory.create(volume=volume_xml)
     case = CaseMetadataFactory.create(case_id=casexml.case_id, **kwargs)
@@ -28,7 +29,7 @@ def setup_authenticated_user(**kwargs):
     token.save()
     return user
 
-
+#   factories
 class APIUserFactory(factory.DjangoModelFactory):
     class Meta:
         model = APIUser

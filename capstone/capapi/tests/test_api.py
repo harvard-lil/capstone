@@ -81,7 +81,7 @@ def test_many_case_download():
     client = RequestsClient()
 
     num_of_cases_to_create = 3
-    # generate four cases with the same docket_number
+    # generate 3 cases with the same docket_number
     for case in range(0, num_of_cases_to_create):
         setup_case(**{'docket_number': '123'})
 

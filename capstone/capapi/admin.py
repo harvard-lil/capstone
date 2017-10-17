@@ -13,7 +13,6 @@ class APIUserAdmin(admin.ModelAdmin):
         'date_joined',
         'api_key',
         'is_researcher',
-        'is_staff'
     )
 
     def api_key(self, instance):
