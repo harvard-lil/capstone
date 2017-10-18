@@ -7,7 +7,7 @@ INGEST_STORAGE = {
     'class': 'capdb.storages.CapS3Storage',
     'kwargs': {
         'location': 'from_vendor',
-        'bucket_name': 'harvard-ftl-shared',
+        'bucket_name': SHARED_BUCKET_NAME,
     }
 }
 
