@@ -23,14 +23,16 @@ before_install:
 install:
   - pip install -U pip wheel
   - pip install -r requirements.txt
+  - pip install coveralls
 
 script:
   # linting
   - flake8 .
 
-  - pytest
+  - fab test
 
 after_success:
+  - coveralls
   - >
     if [ "$TRAVIS_PULL_REQUEST" == "false" -a "$TRAVIS_BRANCH" == "develop" ] ;
     then

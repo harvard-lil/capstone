@@ -23,6 +23,11 @@ def run_django():
     local("python manage.py runserver")
 
 @task
+def test():
+    """ Run tests with coverage report. """
+    local("pytest --fail-on-template-vars --cov --cov-report=")
+
+@task
 def recent_sync_with_s3():
     ingest_by_manifest.sync_recent_data()
 
