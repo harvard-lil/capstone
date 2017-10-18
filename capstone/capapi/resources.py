@@ -3,7 +3,6 @@ from datetime import datetime
 import logging
 import zipfile
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.defaultfilters import slugify
@@ -36,7 +35,7 @@ def write_and_zip(case_list):
         try:
             xml = CaseXML.objects.get(case_id=case_id)
             return xml.orig_xml
-        except ObjectDoesNotExist:
+        except CaseXML.DoesNotExist:
             logger.error("Case id mismatch", case_id)
 
     case_xml_tuples = [(case.slug, get_matching_case_xml(case.case_id)) for case in case_list]

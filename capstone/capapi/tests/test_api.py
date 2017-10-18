@@ -99,6 +99,31 @@ def test_many_case_download():
     user.refresh_from_db()
     assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - num_of_cases_to_create
 
+@pytest.mark.django_db(transaction=True)
+def test_max_number_case_download():
+    user = setup_authenticated_user()
+    client = RequestsClient()
+
+    # generate 3 cases with the same docket_number
+    for case in range(0, 3):
+        setup_case(**{'docket_number': '123'})
+
+    assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+
+    # request download 2 cases
+    url = "http://testserver%s/cases/?docket_number=123&max=2&type=download" % settings.API_FULL_URL
+
+    response = client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(user.get_api_key())})
+    check_response(response, format='')
+
+    # assert we've gotten something that looks like a zipped file
+    assert type(response.content) is bytes
+    assert response.headers['Content-Type'] == 'application/zip'
+
+    # make sure we've subtracted user's case download
+    user.refresh_from_db()
+    assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - 2
+
 
 @pytest.mark.django_db(transaction=True)
 def test_unauthorized_download():
@@ -123,7 +148,7 @@ def test_open_jurisdiction():
     """
     user = setup_authenticated_user()
     client = RequestsClient()
-    jurisdiction = JurisdictionFactory(name='Illinois')
+    jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
     jurisdiction.save()
     common_name = 'Terrible v. Terrible'
     case = setup_case(**{'jurisdiction': jurisdiction,
@@ -159,6 +184,7 @@ def test_open_jurisdiction():
     # make sure the user's case download number has remained the same
     user.refresh_from_db()
     assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - 1
+
 
 @pytest.mark.django_db
 def test_filter_case_by_citation(load_parsed_metadata):

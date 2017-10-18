@@ -14,10 +14,8 @@ from rest_framework.decorators import api_view, list_route, renderer_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser, FormParser
 
-from capapi import view_helpers, permissions, serializers, filters, resources, models as capapi_models
-from capapi.constants import OPEN_CASE_JURISDICTIONS
+from capapi import permissions, serializers, filters, resources, models as capapi_models
 from capdb import models
-
 
 
 logger = logging.getLogger(__name__)
@@ -70,36 +68,25 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     filter_class = filters.CaseFilter
 
     def download_many(self):
-        all_cases = self.queryset.all()
+        cases = self.queryset.all().order_by('decision_date')
+
+        for backend in list(self.filter_backends):
+            cases = backend().filter_queryset(self.request, cases, self)
+
         # get max number of cases to download from query
         # set max number to daily max if unspecified
-        max_num = int(self.request.query_params.get('max', settings.API_CASE_DAILY_ALLOWANCE))
-
-        try:
-            to_filter = view_helpers.generate_filters_from_query_params(self.request.query_params)
-            cases = all_cases.filter(to_filter).order_by('decision_date')
-        except TypeError:
-            cases = all_cases.order_by('decision_date')
-
+        cases = cases[:int(self.request.query_params.get('max', settings.API_CASE_DAILY_ALLOWANCE))]
+        cases.select_related('jurisdiction')
+        # user is requesting a zip but there is nothing to zip, so 404 is the right response.
+        # See https://stackoverflow.com/a/11760249/307769
         if cases.count() == 0:
             return JsonResponse({
                 'message': 'Request did not return any results.'
             }, status=404, )
 
-        # get page number for paginated requests
-        page_num = int(self.request.query_params.get('page', 1))
+        cases = self.paginate_queryset(cases)
 
-        # pagination or max number
-        if max_num <= settings.API_DOWNLOAD_LIMIT:
-            cases = cases[:max_num]
-        else:
-            start_at = (page_num-1) * settings.API_DOWNLOAD_LIMIT
-            end_at = page_num * settings.API_DOWNLOAD_LIMIT
-            cases = cases[start_at:end_at]
-
-        # if request was already paginated
-        whitelisted_filters = view_helpers.get_whitelisted_case_filters()
-        blacklisted_case_count = len(set(cases) & set(all_cases.exclude(whitelisted_filters)))
+        blacklisted_case_count = len(list((case for case in cases if not case.jurisdiction.whitelisted)))
         case_allowance_sufficient = self.check_case_allowance(blacklisted_case_count)
 
         return self.create_download_response(list(cases), blacklisted_case_count, permitted=case_allowance_sufficient)
@@ -113,7 +100,8 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         except ObjectDoesNotExist as e:
             return JsonResponse({'message': 'Unable to find case with matching slug: %s' % e}, status=404, )
 
-        blacklisted_case_count = 0 if case.jurisdiction.name in OPEN_CASE_JURISDICTIONS else 1
+        # if whitelisted, count 0, else count 1
+        blacklisted_case_count = int(not case.jurisdiction.whitelisted)
         case_allowance_sufficient = self.check_case_allowance(blacklisted_case_count)
 
         return self.create_download_response([case], blacklisted_case_count, permitted=case_allowance_sufficient)
