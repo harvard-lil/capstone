@@ -1,11 +1,9 @@
-import os
 import logging
-from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django_filters.rest_framework import DjangoFilterBackend
-from django.http import JsonResponse, StreamingHttpResponse
+from django.http import JsonResponse
 
 from rest_framework import status
 from rest_framework import renderers, viewsets, mixins
@@ -89,7 +87,9 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         blacklisted_case_count = len(list((case for case in cases if not case.jurisdiction.whitelisted)))
         case_allowance_sufficient = self.check_case_allowance(blacklisted_case_count)
 
-        return self.create_download_response(list(cases), blacklisted_case_count, permitted=case_allowance_sufficient)
+        response = self.create_download_response(list(cases), blacklisted_case_count, permitted=case_allowance_sufficient)
+
+        return response
 
     def download_one(self, **kwargs):
         """
@@ -104,20 +104,28 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         blacklisted_case_count = int(not case.jurisdiction.whitelisted)
         case_allowance_sufficient = self.check_case_allowance(blacklisted_case_count)
 
-        return self.create_download_response([case], blacklisted_case_count, permitted=case_allowance_sufficient)
+        response = self.create_download_response([case], blacklisted_case_count, permitted=case_allowance_sufficient)
+
+        return response
 
     def create_download_response(self, case_list, blacklisted_case_count, permitted=False):
         if permitted:
             try:
-                zip_filename = self.get_zip_filename(case_list)
+                from wsgiref.util import FileWrapper
+                from django.http import FileResponse
 
-                # update case allowance
-                self.request.user.update_case_allowance(case_count=blacklisted_case_count)
+                zip_filename = resources.create_zip_filename(case_list)
 
-                response = StreamingHttpResponse(FileWrapper(open(zip_filename, 'rb')), content_type='application/zip')
-                response['Content-Length'] = os.path.getsize(zip_filename)
+                streamed_file = resources.create_zip(case_list)
+                response = FileResponse(FileWrapper(streamed_file), content_type='application/zip')
+
+                # update case allowance if response ok
+                if response.status_code == 200:
+                    self.request.user.update_case_allowance(case_count=blacklisted_case_count)
+
                 response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
                 return response
+
             except Exception as e:
                 return JsonResponse({'message': 'Download file error: %s' % e}, status=403, )
         else:
@@ -152,13 +160,6 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             return super(CaseViewSet, self).retrieve(*args, **kwargs)
         else:
             return self.download_one(**kwargs)
-
-    def get_zip_filename(self, caselist):
-        try:
-            return resources.write_and_zip(caselist)
-        except Exception as e:
-            raise Exception("Download cases error %s" % e)
-
 
 #   User specific views
 class UserViewSet(viewsets.ModelViewSet):

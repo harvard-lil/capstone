@@ -1,7 +1,7 @@
-import os
 from datetime import datetime
 import logging
 import zipfile
+import tempfile
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -12,77 +12,34 @@ from capdb.models import CaseXML
 logger = logging.getLogger(__name__)
 
 
-def get_formatted_date():
-    return slugify(str(datetime.today()))
-
-
-def format_filename(case_id, whitelisted=False):
-    cdir, cpgnumber = case_id.split('_')
-    cdirname = cdir + '_redacted'
-    data_dir = settings.CAP_DATA_DIR_VAR
-    if whitelisted:
-        data_dir = settings.WHITELISTED_DATA_DIR
-
-    return "{}/{}/casemets/{}_CASEMETS_{}{}".format(data_dir,
-                                                    cdirname,
-                                                    cdirname,
-                                                    cpgnumber,
-                                                    settings.API_CASE_FILE_TYPE)
-
-
-def write_and_zip(case_list):
-    def get_matching_case_xml(case_id):
-        try:
-            xml = CaseXML.objects.get(case_id=case_id)
-            return xml.orig_xml
-        except CaseXML.DoesNotExist:
-            logger.error("Case id mismatch", case_id)
-
-    case_xml_tuples = [(case.slug, get_matching_case_xml(case.case_id)) for case in case_list]
-
-
-    dirname_partial = '{0}_{1}'.format(case_list[0].slug[:20], case_list[len(case_list)-1].slug[:20]) if len(case_list) > 1 else case_list[0].slug
-
-    dirname = "{0}_{1}".format(
-        dirname_partial,
-        slugify(datetime.now().timestamp()))
-
-    dirpath = settings.API_ZIPFILE_DIR + "/" + dirname
-
+def get_matching_case_xml(case_id):
     try:
-        compression = zipfile.zip_deflated
-    except AttributeError:
-        compression = zipfile.ZIP_STORED
-
-    os.makedirs(dirpath)
-
-    # write all files to dir
-    [write_to_file("%s/%s.xml" % (dirpath, case_tuple[0]), case_tuple[1]) for case_tuple in list(case_xml_tuples)]
-
-    # zip newly created directory
-    zipped_dir = dirpath + ".zip"
-    zipfile_handler = zipfile.ZipFile(zipped_dir, 'w', compression)
-    zipdir(dirpath, zipfile_handler)
-    zipfile_handler.close()
-
-    return zipped_dir
+        xml = CaseXML.objects.get(case_id=case_id)
+        return xml.orig_xml
+    except CaseXML.DoesNotExist:
+        logger.error("Case id mismatch", case_id)
 
 
-def zipdir(path, zipfile_handler):
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            zipfile_handler.write(os.path.join(root, file))
+def create_zip(case_list):
+    # tmp file backed by RAM up to 10MB, then stored to disk
+    tmp_file = tempfile.SpooledTemporaryFile(10 * 2 ** 20)
+    with zipfile.ZipFile(tmp_file, 'w', zipfile.ZIP_DEFLATED) as archive:
+        for case in case_list:
+            archive.writestr(case.slug + '.xml', get_matching_case_xml(case.case_id))
+
+    # Reset file pointer
+    tmp_file.seek(0)
+
+    # return open file handle
+    return tmp_file
 
 
-def write_to_file(filename, xml):
-    with open(filename, "w+") as f:
-        f.write(xml)
-    return filename
+def create_zip_filename(case_list):
+    ts = slugify(datetime.now().timestamp())
+    if len(case_list) == 1:
+        return case_list[0].slug + '-' + ts + '.zip'
 
-
-def move_casezip(filename):
-    new_dest = "%s/%s" % (settings.CASE_ZIP_DIR, filename)
-    os.rename(filename, new_dest)
+    return '{0}_{1}_{2}.zip'.format(case_list[0].slug[:20], case_list[len(case_list)-1].slug[:20], ts)
 
 
 def email(reason, user):
