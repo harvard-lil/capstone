@@ -64,6 +64,8 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     queryset = models.CaseMetadata.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field = 'slug'
+    filter_class = filters.CaseFilter
+
 
 ### User specific views ###
 
