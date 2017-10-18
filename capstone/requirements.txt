@@ -15,6 +15,7 @@ cffi==1.10.0              # via cryptography
 chardet==3.0.3            # via requests
 click==6.7                # via pip-tools
 cookies==2.2.1            # via moto
+coverage==4.4.1           # via pytest-cov
 cryptography==1.8.2       # via paramiko
 cssselect==1.0.1          # via pyquery
 dicttoxml==1.7.4          # via moto
@@ -58,10 +59,11 @@ pycparser==2.17           # via cffi
 pyflakes==1.5.0           # via flake8
 pyparsing==2.2.0          # via packaging
 pyquery==1.2.17
+pytest-cov==2.5.1
 pytest-django==3.1.2
 pytest-xdist==1.16.0
-pytest==3.1.0             # via pytest-django, pytest-xdist
-python-dateutil==2.6.0    # via botocore, faker, moto
+pytest==3.1.0             # via pytest-cov, pytest-django, pytest-xdist
+python-dateutil==2.6.0    # via botocore, moto
 pytz==2017.2              # via django, moto
 pyyaml==3.12              # via pyaml
 rcssmin==1.0.6            # via django-compressor
