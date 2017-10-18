@@ -1,7 +1,9 @@
-Capstone Scripts
-================
+Capstone
+========
 
-This repo collects scripts to build and interact with the Capstone caselaw database.
+[![Build Status](https://travis-ci.org/harvard-lil/capstone.svg?branch=develop)](https://travis-ci.org/harvard-lil/capstone) [![Coverage Status](https://coveralls.io/repos/github/harvard-lil/capstone/badge.svg?branch=develop)](https://coveralls.io/github/harvard-lil/capstone?branch=develop)
+
+The Capstone caselaw database.
 
 Design
 ------

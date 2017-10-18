@@ -9,3 +9,4 @@ db.sqlite3
 # pytest
 .cache
 tracking_tool.sqlite
+.coverage
