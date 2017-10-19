@@ -350,7 +350,6 @@ def check_last_sync():
     """
     global _last_sync
     if _last_sync is None:
-        r = redis.Redis(host='localhost', port=6379)
         if r.exists("last_sync"):
             _last_sync = datetime.strptime(r.get("last_sync").decode(), '%Y-%m-%d %H:%M:%S.%f')
         else:
@@ -376,7 +375,6 @@ def tag_jp2(file_entry):
     """ This tags image file with their file type, so we can send jp2s to IA"""
     file_dict = json.loads(file_entry.decode("utf-8"))
     key= file_dict[1]
-    bucket= file_dict[0]
     return ingest_storage.tag_file(key, 'file_type', 'jp2')
 
 def read_inventory_file(key):
