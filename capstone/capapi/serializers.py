@@ -118,7 +118,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def verify_with_nonce(self, user_id, activation_nonce):
         found_user = APIUser.objects.get(pk=user_id)
-        if not found_user.is_authenticated():
+        if not found_user.is_authenticated:
             found_user.authenticate_user(activation_nonce=activation_nonce)
         return found_user
 

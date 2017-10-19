@@ -44,6 +44,8 @@ class APIUser(AbstractBaseUser):
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
     case_allowance = models.IntegerField(null=False, blank=False, default=settings.API_CASE_DAILY_ALLOWANCE)
+
+    # when we last reset the user's case count:
     case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
     is_researcher = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
@@ -65,17 +67,21 @@ class APIUser(AbstractBaseUser):
             self.save()
         return self.activation_nonce
 
-    def update_case_allowance(self):
+    def update_case_allowance(self, case_count=0):
         if self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) < timezone.now():
             self.case_allowance = settings.API_CASE_DAILY_ALLOWANCE
             self.case_allowance_last_updated = timezone.now()
-            self.save()
+
+        if case_count:
+            self.case_allowance -= case_count
+        self.save(update_fields=['case_allowance', 'case_allowance_last_updated'])
 
     def get_case_allowance_update_time_remaining(self):
         td = self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) - timezone.now()
         return "%sh. %sm." % (td.seconds / 3600, (td.seconds / 60) % 60)
 
     def authenticate_user(self, **kwargs):
+        # TODO: make into class method
         nonce = kwargs.get('activation_nonce')
         if self.activation_nonce == nonce and self.key_expires + timedelta(hours=24) > timezone.now():
             try:
@@ -85,7 +91,6 @@ class APIUser(AbstractBaseUser):
                 self.save()
             except IntegrityError as e:
                 logger.warning("IntegrityError in authenticating user: %s %s" % (e, self.email))
-                pass
         else:
             raise PermissionDenied
 
@@ -134,7 +139,7 @@ class APIToken(models.Model):
             token = cls(user=user)
             token.save()
         else:
-            raise Exception("")
+            raise Exception("Something went wrong when creating token")
 
     def save(self, *args, **kwargs):
         if not self.key:

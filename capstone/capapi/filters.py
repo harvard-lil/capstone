@@ -38,13 +38,11 @@ class CaseFilter(filters.FilterSet):
     decision_date_min = filters.CharFilter(
         label="Date Min (Format YYYY-MM-DD)",
         name="decision_date_min",
-        method="find_by_date",
-    )
+        method="find_by_date")
     decision_date_max = filters.CharFilter(
         label="Date Max (Format YYYY-MM-DD)",
         name="decision_date_max",
-        method="find_by_date",
-    )
+        method="find_by_date")
 
     def find_by_citation(self, qs, name, value):
         citation = models.Citation.objects.filter(cite__iexact=value)
@@ -59,12 +57,14 @@ class CaseFilter(filters.FilterSet):
     class Meta:
         model = models.CaseMetadata
         fields = ['citation',
+                  'slug',
                   'name',
                   'name_abbreviation',
                   'court_name',
                   'reporter_name',
                   'decision_date_min',
                   'decision_date_max',
-                  'jurisdiction']
+                  'jurisdiction',
+                  'docket_number']
 
 

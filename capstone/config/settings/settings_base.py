@@ -37,8 +37,12 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework_filters.backends.DjangoFilterBackend',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'capapi.authentication.CAPAPIUserAuthentication',
     ),
 }
 
@@ -164,6 +168,7 @@ INVENTORY = {
 ### CAP API settings ###
 
 API_CASE_DAILY_ALLOWANCE = 500
+API_DOWNLOAD_LIMIT = 100
 API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL = 'http://localhost:8000'
 API_BASE_URL_ROUTE = '/api'
@@ -173,7 +178,6 @@ API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
 
 # CAP API EMAIL #
-
 API_ADMIN_EMAIL_ADDRESS = 'main-email-address@example.com'
 API_EMAIL_ADDRESS = 'admin-email-address@example.com'
 

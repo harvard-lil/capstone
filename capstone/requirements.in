@@ -29,6 +29,7 @@ pytest-xdist        # run tests in parallel with pytest -n
 pytest-cov          # record code coverage
 moto                # mocking s3 access
 flake8              # linting
+factory-boy         # mocking
 
 # API
 beautifulsoup4
