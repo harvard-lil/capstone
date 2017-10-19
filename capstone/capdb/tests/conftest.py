@@ -24,7 +24,7 @@ def ingest_metadata(load_tracking_tool_database):
 
 @pytest.fixture
 def ingest_volumes(ingest_metadata):
-    fabfile.ingest_volumes()
+    fabfile.total_sync_with_s3()
 
 @pytest.fixture
 def volume_xml(ingest_volumes):
