@@ -199,3 +199,7 @@ EMAIL_HOST_PASSWORD = '123'
 EMAIL_HOST_USER = 'user-secret'
 EMAIL_HOST_PASSWORD = 'secret-secret'
 
+
+# redis
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379

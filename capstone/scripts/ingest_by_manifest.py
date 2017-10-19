@@ -7,14 +7,13 @@ import os
 from collections import defaultdict
 from datetime import datetime, timedelta
 from multiprocessing import Pool
-import redis
 import io
 
 from django.conf import settings
 from django.db import transaction, IntegrityError
 
 from capdb.models import VolumeXML, PageXML, CaseXML
-from capdb.storages import ingest_storage, inventory_storage
+from capdb.storages import ingest_storage, inventory_storage, redis_client as r
 
 
 """
@@ -87,7 +86,6 @@ AWS bill.
 
 ASYNC = True
 _last_sync = None
-r = redis.Redis(host='localhost', port=6379)
 
 ### entry points ###
 
@@ -178,6 +176,7 @@ def process_volume(vol_entry_bytestring):
         if set(r.smembers(queues['inventory'][file_type])) != set(r.smembers(queues['mets'][file_type])):
             r.sadd("nonmatching_files", vol_entry_bytestring)
             return False
+
     bucket, volmets_path = json.loads(r.spop(queues['inventory']['vol']).decode("utf-8"))
     alto_barcode_to_case_map = defaultdict(list)
     
@@ -293,11 +292,9 @@ def run_processes(func, args):
         for arg in args:
             func(*arg)
 
-
 def spop_all(key):
     while r.scard(key) > 0:
         yield r.spop(key)
-
 
 def empty_set(key):
     spop_all(key)

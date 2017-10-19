@@ -3,6 +3,15 @@ from django.core.management import call_command
 
 import fabfile
 from capdb.models import VolumeXML
+import capdb.storages
+
+
+### REDIS ###
+
+@pytest.fixture
+def redis_patch(redisdb):
+    capdb.storages.redis_client = redisdb
+    return capdb.storages.redis_client
 
 
 ### DATA INGEST FIXTURES ###
@@ -23,7 +32,11 @@ def ingest_metadata(load_tracking_tool_database):
     fabfile.ingest_metadata()
 
 @pytest.fixture
-def ingest_volumes(ingest_metadata):
+def ingest_volumes(ingest_metadata, redis_patch):
+    # patch redis client used by ingest_by_manifest
+    import scripts.ingest_by_manifest
+    scripts.ingest_by_manifest.r = redis_patch
+
     fabfile.total_sync_with_s3()
 
 @pytest.fixture
@@ -33,3 +46,5 @@ def volume_xml(ingest_volumes):
 @pytest.fixture
 def case_xml(volume_xml):
     return volume_xml.case_xmls.first()
+
+

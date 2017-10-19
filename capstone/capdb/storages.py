@@ -1,4 +1,5 @@
 import os
+import redis
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
@@ -103,3 +104,8 @@ for storage_name, storage_config in settings.STORAGES.items():
     storage_class_kwargs = storage_config.get('kwargs', {})
     storage_instance = storage_class(**storage_class_kwargs)
     globals_dict[storage_name] = storage_instance
+
+
+### redis connection ###
+
+redis_client = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
