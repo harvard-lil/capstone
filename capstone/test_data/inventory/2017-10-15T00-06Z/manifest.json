@@ -1,0 +1,16 @@
+{
+  "sourceBucket" : "harvard-ftl-shared",
+  "destinationBucket" : "arn:aws:s3:::harvard-cap-inventory",
+  "version" : "2016-11-30",
+  "fileFormat" : "CSV",
+  "fileSchema" : "Bucket, Key, Size, LastModifiedDate, ETag, IsMultipartUploaded",
+  "files" : [ {
+    "key" : "inventory/data/1.csv.gz",
+    "size" : 11028481,
+    "MD5checksum" : "358a4102a62aec8c59205783c2eafaae"
+  }, {
+    "key" : "inventory/data/2.csv.gz",
+    "size" : 12814993,
+    "MD5checksum" : "268091431c9c1f5c0e35a7d5603c9a43"
+  } ]
+}

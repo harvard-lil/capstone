@@ -1,6 +1,11 @@
 # set up Django
+import csv
 import glob
+import gzip
+import hashlib
 import os
+from datetime import datetime
+
 import django
 import zipfile
 
@@ -172,3 +177,32 @@ def zip_jurisdiction(jurname, zip_filename=None):
     print("completed: jurisdiction " + jurname + ", zip filename " + zip_filename)
 
 
+
+@task
+def write_inventory_files():
+    """ Create inventory.csv.gz files in test_data/inventory/data. Should be re-run if test_data/from_vendor changes. """
+
+    # get list of all files in test_data/from_vendor
+    results = []
+    for dir_name, subdir_list, file_list in os.walk(os.path.join(settings.BASE_DIR, 'test_data/from_vendor')):
+        for file_path in file_list:
+            if file_path == '.DS_Store':
+                continue
+            file_path = os.path.join(dir_name, file_path)
+
+            # for each file, get list of [bucket, path, size, mod_time, md5, multipart_upload]
+            results.append([
+                'harvard-ftl-shared',
+                file_path[len(os.path.join(settings.BASE_DIR, 'test_data/')):],
+                os.path.getsize(file_path),
+                datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                hashlib.md5(open(file_path, 'rb').read()).hexdigest(),
+                'FALSE',
+            ])
+
+    # write results, split in half, to two inventory files named test_data/inventory/data/1.csv.gz and test_data/inventory/data/2.csv.gz
+    for out_name, result_set in (("1", results[:len(results)//2]), ("2", results[len(results)//2:])):
+        with gzip.open(os.path.join(settings.BASE_DIR, 'test_data/inventory/data/%s.csv.gz' % out_name), "wt") as f:
+            csv_w = csv.writer(f)
+            for row in result_set:
+                csv_w.writerow(row)
