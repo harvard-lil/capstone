@@ -1,9 +1,11 @@
 import logging
 
+from wsgiref.util import FileWrapper
+
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django_filters.rest_framework import DjangoFilterBackend
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 
 from rest_framework import status
 from rest_framework import renderers, viewsets, mixins
@@ -71,10 +73,9 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         for backend in list(self.filter_backends):
             cases = backend().filter_queryset(self.request, cases, self)
 
-        # get max number of cases to download from query
-        # set max number to daily max if unspecified
         cases = cases[:int(self.request.query_params.get('max', settings.API_CASE_DAILY_ALLOWANCE))]
-        cases.select_related('jurisdiction')
+        cases = cases.select_related('jurisdiction')
+
         # user is requesting a zip but there is nothing to zip, so 404 is the right response.
         # See https://stackoverflow.com/a/11760249/307769
         if cases.count() == 0:
@@ -87,7 +88,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         blacklisted_case_count = len(list((case for case in cases if not case.jurisdiction.whitelisted)))
         case_allowance_sufficient = self.check_case_allowance(blacklisted_case_count)
 
-        response = self.create_download_response(list(cases), blacklisted_case_count, permitted=case_allowance_sufficient)
+        response = self.create_download_response(cases, blacklisted_case_count, permitted=case_allowance_sufficient)
 
         return response
 
@@ -110,24 +111,15 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
     def create_download_response(self, case_list, blacklisted_case_count, permitted=False):
         if permitted:
-            try:
-                from wsgiref.util import FileWrapper
-                from django.http import FileResponse
+            zip_filename = resources.create_zip_filename(case_list)
 
-                zip_filename = resources.create_zip_filename(case_list)
+            streamed_file = resources.create_zip(case_list)
+            response = FileResponse(FileWrapper(streamed_file), content_type='application/zip')
 
-                streamed_file = resources.create_zip(case_list)
-                response = FileResponse(FileWrapper(streamed_file), content_type='application/zip')
+            self.request.user.update_case_allowance(case_count=blacklisted_case_count)
 
-                # update case allowance if response ok
-                if response.status_code == 200:
-                    self.request.user.update_case_allowance(case_count=blacklisted_case_count)
-
-                response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
-                return response
-
-            except Exception as e:
-                return JsonResponse({'message': 'Download file error: %s' % e}, status=403, )
+            response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
+            return response
         else:
             case_allowance = self.request.user.case_allowance
             time_remaining = self.request.user.get_case_allowance_update_time_remaining()
@@ -138,8 +130,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
                       """ % (
                 blacklisted_case_count,
                 case_allowance,
-                case_allowance
-            )
+                case_allowance)
 
             return JsonResponse({'message': message, 'details': details}, status=403)
 

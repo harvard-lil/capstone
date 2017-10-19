@@ -39,7 +39,7 @@ def create_zip_filename(case_list):
     if len(case_list) == 1:
         return case_list[0].slug + '-' + ts + '.zip'
 
-    return '{0}_{1}_{2}.zip'.format(case_list[0].slug[:20], case_list[len(case_list)-1].slug[:20], ts)
+    return '{0}_{1}_{2}.zip'.format(case_list[0].slug[:20], case_list[-1].slug[:20], ts)
 
 
 def email(reason, user):
