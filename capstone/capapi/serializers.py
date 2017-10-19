@@ -12,10 +12,11 @@ logger = logging.getLogger(__name__)
 class CitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Citation
-        fields = ('type', 'cite')
+        fields = ('url', 'type', 'cite')
 
 
 class CaseSerializer(serializers.ModelSerializer):
+    # url = serializers.HyperlinkedModelSerializer(source='slug', read_only=True)
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
     court = serializers.ReadOnlyField(source='court.name')
     court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True)
@@ -27,8 +28,9 @@ class CaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.CaseMetadata
-        lookup_field = 'case_id'
+        lookup_field = 'slug'
         fields = (
+            'url',
             'slug',
             'name',
             'name_abbreviation',
@@ -50,7 +52,7 @@ class CaseSerializer(serializers.ModelSerializer):
 class JurisdictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Jurisdiction
-        fields = ('id', 'slug', 'name', )
+        fields = ('url', 'id', 'slug', 'name', )
 
 
 class VolumeSerializer(serializers.ModelSerializer):
@@ -63,6 +65,7 @@ class VolumeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VolumeMetadata
         fields = (
+            'url',
             'barcode',
             'volume_number',
             'title',
@@ -85,6 +88,7 @@ class ReporterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Reporter
         fields = (
+            'url',
             'full_name',
             'short_name',
             'start_year',
@@ -101,6 +105,7 @@ class CourtSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Court
         fields = (
+            'url',
             'name',
             'name_abbreviation',
             'jurisdiction',

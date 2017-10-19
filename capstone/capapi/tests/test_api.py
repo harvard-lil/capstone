@@ -79,6 +79,7 @@ def test_many_case_download(auth_user, api_url, auth_client):
     auth_user.refresh_from_db()
     assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - num_created
 
+
 @pytest.mark.django_db(transaction=True)
 def test_max_number_case_download(auth_user, api_url, auth_client):
     """
