@@ -73,7 +73,6 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         for backend in list(self.filter_backends):
             cases = backend().filter_queryset(self.request, cases, self)
 
-        cases = cases[:int(self.request.query_params.get('max', settings.API_CASE_DAILY_ALLOWANCE))]
         cases = cases.select_related('jurisdiction')
 
         # user is requesting a zip but there is nothing to zip, so 404 is the right response.

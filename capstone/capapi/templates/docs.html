@@ -59,10 +59,10 @@ The Caselaw Access Project API guide
         <p class="body-text">One specific case endpoint:</p>
         <pre><a href="/api/v1/cases/halling-v-united-states-7618" target="_blank">https://{{ request.get_host }}/api/v1/cases/halling-v-united-states-7618</a></pre>
         <p class="body-text">Here is an example wget request:</p>
-        <pre>$ wget --content-disposition "https://{{ request.get_host}}/api/v1/cases/?jurisdiction_name=alabama&max=3&type=download" \
+        <pre>$ wget --content-disposition "https://{{ request.get_host}}/api/v1/cases/?jurisdiction_name=alabama&limit=3&type=download" \
         <br/> --header="Authorization: Token your-token-here"</pre>
         <p class="body-text">Or if you prefer CURL:</p>
-        <pre>$ curl -O -J "https://{{ request.get_host}}/api/v1/cases/?jurisdiction_name=kansas&max=3&type=download" \
+        <pre>$ curl -O -J "https://{{ request.get_host}}/api/v1/cases/?jurisdiction_name=kansas&limit=3&type=download" \
         <br/> -H "Authorization: Token your-token-here"</pre>
 
         <p class="body-text">
@@ -87,7 +87,7 @@ The Caselaw Access Project API guide
           <li>reporter_id</li>
           <li>court_name</li>
           <li>court_id</li>
-          <li>max - number of maximum cases to return</li>
+          <li>limit - number of maximum cases to return</li>
         </p>
       </section>
 

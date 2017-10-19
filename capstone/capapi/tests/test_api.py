@@ -94,7 +94,7 @@ def test_max_number_case_download(auth_user, api_url, auth_client):
     assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
 
     # request download 2 cases
-    url = "%scases/?docket_number=123&max=%s&type=download" % (api_url, num_to_download)
+    url = "%scases/?docket_number=123&limit=%s&type=download" % (api_url, num_to_download)
 
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, format='')
