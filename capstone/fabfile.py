@@ -152,9 +152,14 @@ def write_tracking_tool_fixtures(*barcodes):
 
 
 @task
-def zip_jurisdiction(jurname):
+def zip_jurisdiction(jurname, zip_filename=None):
+    """
+    Write a zipped directory of all case xml files in a given jurisdiction.
+    The uncompressed output's structure looks like: jurisdiction/reporter_name/volume_number/case.xml
+    """
     jurisdiction = Jurisdiction.objects.get(name=jurname)
-    with zipfile.ZipFile(jurname + ".zip", 'w', zipfile.ZIP_DEFLATED) as archive:
+    zip_filename = zip_filename if zip_filename else jurname + ".zip"
+    with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as archive:
         cases = CaseMetadata.objects.filter(jurisdiction=jurisdiction)
 
         for case in cases:
@@ -164,6 +169,6 @@ def zip_jurisdiction(jurname):
             path = "{0}/{1}/{2}".format(reporter, volume, filename)
             archive.writestr(path, resources.get_matching_case_xml(case.case_id))
 
-    print("completed: " + jurname)
+    print("completed: jurisdiction " + jurname + ", zip filename " + zip_filename)
 
 
