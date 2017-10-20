@@ -2,7 +2,6 @@ import gzip
 import json
 import csv
 import re
-import itertools
 import os
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -113,11 +112,10 @@ def empty_queues():
     empty_set("unsorted_new_volumes")
 
 def inventory_build_pool():
-    manifest_texts = [json.loads(inventory_storage.contents(key))['files'] for key in get_fresh_manifests()]
-    run_processes(process_recent_manifest_data, ([file['key']] for file in itertools.chain(*manifest_texts)))
+    run_processes(process_recent_manifest_data, get_inventory_files_from_manifest(get_latest_manifest()))
 
 def inventory_ingest_pool():
-    run_processes(process_volume, ([vol] for vol in spop_all("new_volumes")))
+    run_processes(process_volume, (vol for vol in spop_all("new_volumes")))
 
 def cleanup_and_report():
     for nonmatching_file in spop_all("nonmatching_files"):
@@ -243,13 +241,9 @@ def process_recent_manifest_data(list_key):
             ):
             continue
         
-        barcode = file_entry[1].split("/")[1].split('_')[0]
+        file_key = trim_csv_key(file_entry[1])
+        barcode = file_key.split("/", 1)[0].split('_')[0]
         bucket = file_entry[0]
-        file_key = file_entry[1]
-
-        # file_key comes from S3's inventory report, so it includes full path.
-        # ingest_storage is relative to a subdir, so we have to strip the beginning of the key:
-        file_key = file_key[len(settings.INVENTORY['csv_path_prefix']):]
 
         version_match = version_regex.match(file_key)
         version_string = version_match.group(1) if version_match is not None else "0000_original"
@@ -285,7 +279,7 @@ def process_recent_manifest_data(list_key):
 def run_processes(func, args):
     if ASYNC:
         pool = Pool(64)
-        pool.starmap(func, args)
+        pool.map(func, args)
         pool.close()
         pool.join()
     else:
@@ -359,17 +353,15 @@ def check_last_sync():
 def write_last_sync():
     r.set("last_sync", str(datetime.now()))
 
-def get_fresh_manifests():
-    """ gets the most recent inventory report manifest files"""
-    subdirs = inventory_storage.iter_subdirs()
+def get_latest_manifest():
+    """ get the most recent inventory report manifest file """
+    subdirs = sorted(inventory_storage.iter_subdirs(), reverse=True)
+    last_subdir = next(subdir for subdir in subdirs if not subdir.endswith('data'))
+    return os.path.join(last_subdir, "manifest.json")
 
-    # takes directories in inventory storage, filters out 'data/' & dirs older than the last sync, adds manifest.json filename
-    return [
-        os.path.join(subdir, "manifest.json")
-        for subdir in subdirs
-        if not subdir.endswith('data') and
-        datetime.strptime(os.path.basename(subdir), '%Y-%m-%dT%H-%MZ') > check_last_sync()
-    ]
+def get_inventory_files_from_manifest(manifest_path):
+    for inventory_file in json.loads(inventory_storage.contents(manifest_path))['files']:
+        yield trim_manifest_key(inventory_file['key'])
 
 def tag_jp2(file_entry):
     """ This tags image file with their file type, so we can send jp2s to IA"""
@@ -379,11 +371,6 @@ def tag_jp2(file_entry):
 
 def read_inventory_file(key):
     """ Returns iterator over files listed in inventory report manifest """
-
-    # key comes from S3's inventory report, so it includes full path.
-    # inventory_storage is relative to a subdir, so we have to strip the beginning of the key:
-    key = key[len(settings.INVENTORY['manifest_path_prefix']):]
-
     with inventory_storage.open(key, mode='rb') as f:
         with gzip.GzipFile(fileobj=f) as g:
             for line in csv.reader(io.TextIOWrapper(g), delimiter=',', quotechar='"'):
@@ -406,3 +393,17 @@ def generate_queue_names(vol_entry_bytestring):
             continue
         queues['mets'][file_type] = "{}_{}_{}_mets".format(vol_entry['barcode'], file_type, vol_entry['version_string'])
     return queues
+
+def trim_manifest_key(key):
+    """
+        Keys in manifest.json include the full path in the S3 bin.
+        Our inventory_storage object is relative to a subdir, so we have to strip the beginning of the key.
+    """
+    return key[len(settings.INVENTORY['manifest_path_prefix']):]
+
+def trim_csv_key(key):
+    """
+        Keys in inventory CSV files include the full path in the S3 bin.
+        Our ingest_storage object is relative to a subdir, so we have to strip the beginning of the key.
+    """
+    return key[len(settings.INVENTORY['csv_path_prefix']):]
