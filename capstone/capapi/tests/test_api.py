@@ -1,7 +1,7 @@
 import pytest
 from django.conf import settings
 
-from capdb.models import CaseMetadata, Jurisdiction
+from capdb.models import Jurisdiction
 from test_data.factories import *
 
 
@@ -34,7 +34,6 @@ def test_jurisdictions(client, api_url, case):
 
 @pytest.mark.django_db
 def test_case(client, api_url, case):
-    case = CaseMetadata.objects.first()
     response = client.get("%scases/%s/?format=json" % (api_url, case.slug))
     check_response(response)
     content = response.json()
@@ -78,6 +77,7 @@ def test_many_case_download(auth_user, api_url, auth_client):
     # make sure we've subtracted user's case download
     auth_user.refresh_from_db()
     assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - num_created
+
 
 @pytest.mark.django_db(transaction=True)
 def test_max_number_case_download(auth_user, api_url, auth_client):

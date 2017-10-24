@@ -61,11 +61,11 @@ class CitationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins
 class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
-    lookup_field = 'slug'
     queryset = models.CaseMetadata.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     permission_classes = (permissions.IsAPIUser,)
     filter_class = filters.CaseFilter
+    lookup_field = 'slug'
 
     def download_many(self):
         cases = self.queryset.all().order_by('decision_date')
