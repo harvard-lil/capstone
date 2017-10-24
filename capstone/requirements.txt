@@ -45,11 +45,14 @@ libsass==0.13.2           # via django-libsass
 lxml==3.7.3
 markupsafe==1.0           # via jinja2
 mccabe==0.6.1             # via flake8
+mirakuru==0.8.2           # via pytest-redis
 moto==1.0.0
 mysqlclient==1.3.10
 packaging==16.8           # via cryptography
 paramiko==2.1.2           # via fabric3
 pip-tools==1.9.0
+port-for==0.4             # via pytest-redis
+psutil==5.4.0             # via mirakuru
 psycopg2==2.7.1
 py==1.4.33                # via pytest, pytest-xdist
 pyaml==16.12.2            # via moto
@@ -61,9 +64,10 @@ pyparsing==2.2.0          # via packaging
 pyquery==1.2.17
 pytest-cov==2.5.1
 pytest-django==3.1.2
+pytest-redis==1.3.2
 pytest-xdist==1.16.0
-pytest==3.1.0             # via pytest-cov, pytest-django, pytest-xdist
-python-dateutil==2.6.0    # via botocore, moto
+pytest==3.1.0             # via pytest-cov, pytest-django, pytest-redis, pytest-xdist
+python-dateutil==2.6.0    # via botocore, faker, moto
 pytz==2017.2              # via django, moto
 pyyaml==3.12              # via pyaml
 rcssmin==1.0.6            # via django-compressor

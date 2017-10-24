@@ -150,19 +150,29 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-# file ingest
-INGEST_STORAGE = {
-    'class': 'capdb.storages.CapFileStorage',
-    'kwargs': {
-        'location': os.path.join(BASE_DIR, 'test_data/from_vendor'),
+# define storages
+# each of these can be imported from capdb.storages, e.g. `from capdb.storages import ingest_storage`
+
+STORAGES = {
+    'ingest_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/from_vendor'),
+        },
+    },
+    'inventory_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/inventory'),
+        },
     }
 }
-INGEST_VOLUME_COUNT = 0  # if greater than 0, limit volumes ingested; for debugging
 
-SHARED_BUCKET_NAME = "harvard-ftl-shared"
 INVENTORY = {
-        'inventory_bucket_name': 'harvard-cap-inventory',
-        'inventory_directory': 'PrimarySharedInventoryReport'
+    # prefix to strip from paths in manifest.json
+    'manifest_path_prefix': 'inventory/',
+    # prefix to strip from paths in .csv
+    'csv_path_prefix': 'from_vendor/',
 }
 
 ### CAP API settings ###
@@ -189,3 +199,7 @@ EMAIL_HOST_PASSWORD = '123'
 EMAIL_HOST_USER = 'user-secret'
 EMAIL_HOST_PASSWORD = 'secret-secret'
 
+
+# redis
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379

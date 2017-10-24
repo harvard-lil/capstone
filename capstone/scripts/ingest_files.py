@@ -4,19 +4,14 @@ import time
 from collections import defaultdict
 from multiprocessing import Pool
 
-from django.utils.module_loading import import_string
-
 from django.conf import settings
 from django.db import transaction, IntegrityError
+
 from capdb.models import VolumeXML, PageXML, CaseXML
+from capdb.storages import ingest_storage
 
 
 ### helpers ###
-
-# Set up a Django abstract storage class for reading and writing to a file store -- could be either S3 or local files.
-ingest_storage_class = import_string(settings.INGEST_STORAGE['class'])
-ingest_storage = ingest_storage_class(**settings.INGEST_STORAGE.get('kwargs', {}))
-
 
 def get_file_contents(path):
     print("Getting", path)
@@ -144,8 +139,6 @@ def volume_files(volume_path):
         goes, the request is the biggest drag, so having a different request for alto,
         casemets, and volume files would be much slower.
     """
-    ingest_storage_local = ingest_storage_class(**settings.INGEST_STORAGE.get('kwargs', {}))
-    
     files = defaultdict(list)
 
     # check file paths for these patterns in order until we find one that matches
@@ -158,7 +151,7 @@ def volume_files(volume_path):
     ]
 
     print("Getting Volume Files for " + volume_path)
-    for file_name in ingest_storage_local.iter_files(volume_path):
+    for file_name in ingest_storage.iter_files(volume_path):
         for category, regex in regexes:
             if regex.search(file_name):
                 files[category].append(file_name)

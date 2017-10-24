@@ -2,13 +2,28 @@ from .settings_base import *  # noqa
 
 DEBUG = False
 
-INGEST_VOLUME_COUNT = 0  # unlimited
-INGEST_STORAGE = {
-    'class': 'capdb.storages.CapS3Storage',
-    'kwargs': {
-        'location': 'from_vendor',
-        'bucket_name': SHARED_BUCKET_NAME,
+STORAGES = {
+    'ingest_storage': {
+        'class': 'capdb.storages.CapS3Storage',
+        'kwargs': {
+            'location': 'from_vendor',
+            'bucket_name': 'harvard-ftl-shared',
+        }
+    },
+    'inventory_storage': {
+        'class': 'capdb.storages.CapS3Storage',
+        'kwargs': {
+            'location': 'harvard-ftl-shared/PrimarySharedInventoryReport',
+            'bucket_name': 'harvard-cap-inventory',
+        }
     }
+}
+
+INVENTORY = {
+    # prefix to strip from paths in manifest.json
+    'manifest_path_prefix': 'ftl-shared/PrimarySharedInventoryReport/',
+    # prefix to strip from paths in .csv
+    'csv_path_prefix': 'from_vendor/',
 }
 
 USE_TEST_TRACKING_TOOL_DB = False

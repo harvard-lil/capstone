@@ -27,6 +27,7 @@ Fabric3             # project automation
 pytest-django       # testing
 pytest-xdist        # run tests in parallel with pytest -n
 pytest-cov          # record code coverage
+pytest-redis        # redisdb fixture
 moto                # mocking s3 access
 flake8              # linting
 factory-boy         # mocking
