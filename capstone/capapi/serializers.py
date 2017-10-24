@@ -15,8 +15,8 @@ class CitationSerializer(serializers.ModelSerializer):
         fields = ('url', 'type', 'cite')
 
 
-class CaseSerializer(serializers.ModelSerializer):
-    # url = serializers.HyperlinkedModelSerializer(source='slug', read_only=True)
+class CaseSerializer(serializers.HyperlinkedModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name="casemetadata-detail", lookup_field='slug')
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
     court = serializers.ReadOnlyField(source='court.name')
     court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True)
@@ -28,10 +28,9 @@ class CaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.CaseMetadata
-        lookup_field = 'slug'
         fields = (
-            'url',
             'slug',
+            'url',
             'name',
             'name_abbreviation',
             'decision_date',

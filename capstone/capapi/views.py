@@ -65,6 +65,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     permission_classes = (permissions.IsAPIUser,)
     filter_class = filters.CaseFilter
+    lookup_field = 'slug'
 
     def download_many(self):
         cases = self.queryset.all().order_by('decision_date')
