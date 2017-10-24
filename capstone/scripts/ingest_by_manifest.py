@@ -184,38 +184,55 @@ def process_volume(vol_entry_bytestring):
             if volume:
                 if is_same_complete_volume(volume, vol_entry, bucket, queues, vol_entry['barcode']):
                     return False
-                else:
-                    volume.delete()
-            volume = VolumeXML(orig_xml=ingest_storage.contents(volmets_path), barcode=vol_entry['barcode'], s3_key=volmets_path)
-            volume.save()
+            else:
+                volume = VolumeXML(barcode=vol_entry['barcode'])
 
+            volume.orig_xml = ingest_storage.contents(volmets_path)
+            volume.s3_key = volmets_path
+            volume.save()
+            
+            existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('case_id', flat=True))
             for case_entry in spop_all(queues['inventory']['casemets']):
                 case_entry = json.loads(case_entry.decode("utf-8"))
                 case_s3_key = case_entry[1]
                 
-                case = CaseXML.objects.filter(case_id=vol_entry['barcode']).first()
-
                 case_barcode = vol_entry['barcode'] + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
-                case = CaseXML(orig_xml=ingest_storage.contents(case_s3_key), volume=volume, case_id=case_barcode)
+                if case_barcode in existing_case_ids:
+                    existing_case_ids.remove(case_barcode)
+
+                case, created = CaseXML.objects.get_or_create(volume=volume, case_id=case_barcode)
+                case.orig_xml = ingest_storage.contents(case_s3_key)
                 case.save()
                 case.update_case_metadata()
 
                 # store case-to-page matches
                 for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):
                     alto_barcode_to_case_map[vol_entry['barcode'] + "_" + alto_barcode].append(case.id)
-
+            
+            existing_page_ids = set(PageXML.objects.filter(volume=volume).values_list('barcode', flat=True))
             # save altos
             for page_entry in spop_all(queues['inventory']['alto']):
                 page_entry = json.loads(page_entry.decode("utf-8"))
                 page_s3_key = page_entry[1]
 
                 alto_barcode = vol_entry['barcode'] + "_" + page_s3_key.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
-                page = PageXML(orig_xml=ingest_storage.contents(page_s3_key), volume=volume, barcode=alto_barcode)
+                if alto_barcode in existing_page_ids:
+                    existing_page_ids.remove(alto_barcode)
+                page, created = PageXML.objects.get_or_create(volume=volume, barcode=alto_barcode)
+                page.orig_xml = ingest_storage.contents(page_s3_key)
                 page.save()
 
                 # write case-to-page matches
                 if alto_barcode_to_case_map[alto_barcode]:
                     page.cases.set(alto_barcode_to_case_map[alto_barcode])
+
+            for spare_case in existing_case_ids:
+                print("Whoa! Spare Case! {}".format(spare_case))
+                r.sadd("spare_cases_{}".format(vol_entry['barcode']), spare_case)
+
+            for spare_page in existing_page_ids:
+                print("Whoa! Spare Page! {}".format(spare_page))
+                r.sadd("spare_pages_{}".format(vol_entry['barcode']), spare_page)
 
     except IntegrityError as e:
         print("Integrity Error- {} : {}".format(volmets_path, e))
