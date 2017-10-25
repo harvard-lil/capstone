@@ -227,11 +227,9 @@ def process_volume(vol_entry_bytestring):
                     page.cases.set(alto_barcode_to_case_map[alto_barcode])
 
             for spare_case in existing_case_ids:
-                print("Whoa! Spare Case! {}".format(spare_case))
                 r.sadd("spare_cases_{}".format(vol_entry['barcode']), spare_case)
 
             for spare_page in existing_page_ids:
-                print("Whoa! Spare Page! {}".format(spare_page))
                 r.sadd("spare_pages_{}".format(vol_entry['barcode']), spare_page)
 
     except IntegrityError as e:
