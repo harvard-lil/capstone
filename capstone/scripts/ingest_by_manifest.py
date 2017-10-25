@@ -372,7 +372,7 @@ def write_last_sync():
 
 def get_latest_manifest():
     """ get the most recent inventory report manifest file """
-    subdirs = sorted(inventory_storage.iter_subdirs(), reverse=True)
+    subdirs = sorted(inventory_storage.iter_files(), reverse=True)
     last_subdir = next(subdir for subdir in subdirs if not subdir.endswith('data'))
     return os.path.join(last_subdir, "manifest.json")
 
