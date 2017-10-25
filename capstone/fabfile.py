@@ -1,14 +1,13 @@
-# set up Django
 import csv
 import glob
 import gzip
 import hashlib
 import os
 from datetime import datetime
-
 import django
 import zipfile
 
+# set up Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 try:
     django.setup()
@@ -103,40 +102,106 @@ def load_test_data():
     update_case_metadata()
 
 @task
-def write_tracking_tool_fixtures(*barcodes):
+def add_test_case(*barcodes):
     """
-        Write out subset of tracking_tool data needed for given list of barcodes.
-        This assumes DATABASES['tracking_tool'] is configured to point to real tracking tool db.
-        Output is stored in test_data/tracking_tool.json.
-        By default, uses barcodes from folders in test_data/from_vendor.
-        User details are anonymized.
+        Write test data and fixtures for given volume and case. Example: fab add_test_case:32044057891608_0001
+
+        NOTE:
+            DATABASES['tracking_tool'] must point to real tracking tool db.
+            STORAGES['ingest_storage'] must point to real harvard-ftl-shared.
+
+        Output is stored in test_data/tracking_tool.json and test_data/from_vendor.
+        Tracking tool user details are anonymized.
     """
+
     from django.core import serializers
     from tracking_tool.models import Volumes, Reporters, BookRequests, Pstep, Eventloggers, Hollis, Users
+    from capdb.storages import ingest_storage
+    from scripts.helpers import parse_xml, copy_file, resolve_namespace
 
-    if not barcodes:
-        barcodes = [os.path.basename(d).split('_')[0] for d in glob.glob(os.path.join(settings.BASE_DIR, 'test_data/from_vendor/*_redacted'))]
+    ## write S3 files to local disk
+
+    for barcode in barcodes:
+
+        print("Writing data for", barcode)
+
+        volume_barcode, case_number = barcode.split('_')
+
+        # get volume dir
+        source_volume_dirs = list(ingest_storage.iter_files(volume_barcode, partial_path=True))
+        if not source_volume_dirs:
+            print("ERROR: Can't find volume %s. Skipping!" % volume_barcode)
+        source_volume_dir = sorted(source_volume_dirs, reverse=True)[0]
+
+        # make local dir
+        dest_volume_dir = os.path.join(settings.BASE_DIR, 'test_data/from_vendor/%s' % os.path.basename(source_volume_dir))
+        os.makedirs(dest_volume_dir, exist_ok=True)
+
+        # copy volume-level files
+        for source_volume_path in ingest_storage.iter_files(source_volume_dir):
+            dest_volume_path = os.path.join(dest_volume_dir, os.path.basename(source_volume_path))
+            if '.' in os.path.basename(source_volume_path):
+                # files
+                copy_file(source_volume_path, dest_volume_path, from_storage=ingest_storage)
+            else:
+                # dirs
+                os.makedirs(dest_volume_path, exist_ok=True)
+
+        # read volmets xml
+        source_volmets_path = glob.glob(os.path.join(dest_volume_dir, '*.xml'))[0]
+        with open(source_volmets_path) as volmets_file:
+            volmets_xml = parse_xml(volmets_file.read())
+
+        # copy case file and read xml
+        source_case_path = volmets_xml.find('mets|file[ID="casemets_%s"] > mets|FLocat' % case_number).attr(resolve_namespace('xlink|href'))
+        source_case_path = os.path.join(source_volume_dir, source_case_path)
+        dest_case_path = os.path.join(dest_volume_dir, source_case_path[len(source_volume_dir)+1:])
+        copy_file(source_case_path, dest_case_path, from_storage=ingest_storage)
+        with open(dest_case_path) as case_file:
+            case_xml = parse_xml(case_file.read())
+
+        # copy support files for case
+        for flocat_el in case_xml.find('mets|FLocat'):
+            source_path = os.path.normpath(os.path.join(os.path.dirname(source_case_path), flocat_el.attrib[resolve_namespace('xlink|href')]))
+            dest_path = os.path.join(dest_volume_dir, source_path[len(source_volume_dir) + 1:])
+            copy_file(source_path, dest_path, from_storage=ingest_storage)
+
+        # remove unused files from volmets
+        local_files = glob.glob(os.path.join(dest_volume_dir, '*/*'))
+        local_files = [x[len(dest_volume_dir)+1:] for x in local_files]
+        for flocat_el in volmets_xml.find('mets|FLocat'):
+            if not flocat_el.attrib[resolve_namespace('xlink|href')] in local_files:
+                file_el = flocat_el.getparent()
+                file_el.getparent().remove(file_el)
+        with open(source_volmets_path, "w") as out_file:
+            out_file.write(str(volmets_xml))
+
+    ## load metadata into JSON fixtures from tracking tool
 
     to_serialize = set()
     user_ids = set()
+    volume_barcodes = [os.path.basename(d).split('_')[0] for d in
+                glob.glob(os.path.join(settings.BASE_DIR, 'test_data/from_vendor/*'))]
 
-    for barcode in barcodes:
-        print("Writing data for", barcode)
-        volume = Volumes.objects.get(bar_code=barcode)
-        to_serialize.add(volume)
+    for volume_barcode in volume_barcodes:
 
-        user_ids.add(volume.created_by)
+        print("Updating metadata for", volume_barcode)
 
-        reporter = Reporters.objects.get(id=volume.reporter_id)
-        to_serialize.add(reporter)
+        tt_volume = Volumes.objects.get(bar_code=volume_barcode)
+        to_serialize.add(tt_volume)
 
-        to_serialize.update(Hollis.objects.filter(reporter_id=reporter.id))
+        user_ids.add(tt_volume.created_by)
 
-        request = BookRequests.objects.get(id=volume.request_id)
+        tt_reporter = Reporters.objects.get(id=tt_volume.reporter_id)
+        to_serialize.add(tt_reporter)
+
+        to_serialize.update(Hollis.objects.filter(reporter_id=tt_reporter.id))
+
+        request = BookRequests.objects.get(id=tt_volume.request_id)
         request.from_field = request.recipients = 'example@example.com'
         to_serialize.add(request)
 
-        for event in Eventloggers.objects.filter(bar_code=volume.bar_code):
+        for event in Eventloggers.objects.filter(bar_code=tt_volume.bar_code):
             if not event.updated_at:
                 event.updated_at = event.created_at
             to_serialize.add(event)
@@ -145,8 +210,8 @@ def write_tracking_tool_fixtures(*barcodes):
                 pstep = Pstep.objects.get(step_id=event.pstep_id)
                 to_serialize.add(pstep)
 
-    for user in Users.objects.filter(id__in=user_ids):
-        user.email = "example@example.com"
+    for i, user in enumerate(Users.objects.filter(id__in=user_ids)):
+        user.email = "example%s@example.com" % i
         user.password = 'password'
         user.remember_token = ''
         to_serialize.add(user)
@@ -155,6 +220,8 @@ def write_tracking_tool_fixtures(*barcodes):
     with open(os.path.join(settings.BASE_DIR, "test_data/tracking_tool.json"), "w") as out:
         serializer.serialize(to_serialize, stream=out, indent=2)
 
+    ## update inventory files
+    write_inventory_files()
 
 @task
 def zip_jurisdiction(jurname, zip_filename=None):
