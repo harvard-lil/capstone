@@ -32,9 +32,13 @@ def base_test_iter_files(storage):
         storage.save(file_name, BytesIO(b'content'))
 
     # list files
-    assert set(file_names) == set(storage.iter_files())
-    assert set(sub_dir) == set(storage.iter_files('d'))
+    assert {'a', 'd', 'c.txt'} == set(storage.iter_files())
+    assert {'d/e', 'd/g'} == set(storage.iter_files('d'))
 
-    # list dirs
-    assert {'a', 'd'} == set(storage.iter_subdirs())
-    assert {'d/e', 'd/g'} == set(storage.iter_subdirs('d'))
+    # list files with partial_path
+    assert {'a/b.txt'} == set(storage.iter_files('a/b.', partial_path=True))
+
+    # list files recursively
+    assert set(file_names) == set(storage.iter_files_recursive())
+    assert set(sub_dir) == set(storage.iter_files_recursive('d'))
+
