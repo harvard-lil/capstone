@@ -43,8 +43,8 @@ def ingest_volume(volume_path):
         with transaction.atomic():
             volume = VolumeXML.objects.filter(barcode=vol_barcode).first()
             if volume:
-                existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('case_id', flat=True))
-                existing_page_ids = set(PageXML.objects.filter(volume=volume).values_list('barcode', flat=True))
+                existing_case_ids = set(volume.case_xmls.values_list('case_id', flat=True))
+                existing_page_ids = set(volume.page_xmls.values_list('barcode', flat=True))
             else:
                 existing_case_ids = existing_page_ids = set()
                 volume = VolumeXML(orig_xml=get_file_contents(volmets_path), barcode=vol_barcode)
