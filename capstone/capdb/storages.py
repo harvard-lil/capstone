@@ -1,4 +1,6 @@
 import os
+
+import itertools
 import redis
 
 from django.conf import settings
@@ -19,26 +21,35 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
     def _fix_path(self, path):
         return self._encode_name(self._normalize_name(self._clean_name(path)))
 
-    def iter_files(self, path=""):
+    def iter_files(self, path="", partial_path=False):
         """
-            Return iterator with all files within given path or subdirectories. 
-            Path should be relative to root for this storage.
+            Yield each immediate file or directory in path.
+
+            If partial_path is True, returns files starting with path.
+        """
+
+        path = path.rstrip('/')
+
+        # if not partial_path, prefix should end with a slash
+        if path and not partial_path:
+            path += '/'
+
+        path = self._fix_path(path)
+
+        paginator = self.connection.meta.client.get_paginator('list_objects_v2')
+        pages = paginator.paginate(Bucket=self.bucket_name, Delimiter='/', Prefix=path)
+        for page in pages:
+            for item in page.get('CommonPrefixes', []):
+                yield(self.relpath(item['Prefix'].rstrip('/')))
+            for item in page.get('Contents', []):
+                yield(self.relpath(item['Key']))
+
+    def iter_files_recursive(self, path=""):
+        """
+            Yield each file in path or subdirectories.
             Order is not specified.
         """
         return (self.relpath(self._decode_name(entry.key)) for entry in self.bucket.objects.filter(Prefix=self._fix_path(path)))
-
-    def iter_subdirs(self, path=""):
-        """
-            Yield each immediate subdirectory in path.  
-        """
-        
-        if path:
-            path = path.rstrip('/')+'/'  # exactly one slash on right
-
-        paginator = self.connection.meta.client.get_paginator('list_objects')
-        for result in paginator.paginate(Bucket=self.bucket_name, Prefix=self._fix_path(path), Delimiter='/'):
-            for prefix in result.get('CommonPrefixes', []):
-                yield(self.relpath(prefix.get('Prefix').rstrip('/')))
 
     def tag_file(self, path, key, value):
         """ Tag S3 item at path with key=value. """
@@ -58,23 +69,30 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
         return 'VersionId' in results
 
 class CapFileStorage(CapStorageMixin, FileSystemStorage):
-    def iter_files(self, path=""):
+
+    def iter_files(self, search_path="", partial_path=False):
         """
-            Return iterator with all files within given path or subdirectories. 
-            Path should be relative to root for this storage.
+            Yield each immediate file or directory in path.
+
+            If partial_path is True, returns files starting with path.
+        """
+        if partial_path:
+            search_path, prefix = os.path.split(search_path)
+
+        directories, files = self.listdir(search_path)
+        for file_name in itertools.chain(directories, files):
+            if partial_path and not file_name.startswith(prefix):
+                continue
+            yield os.path.join(search_path, file_name)
+
+    def iter_files_recursive(self, path=""):
+        """
+            Yield each file in path or subdirectories.
             Order is not specified.
         """
         return (self.relpath(os.path.join(root, file_name)).lstrip('/')
                 for root, dirs, file_names in os.walk(self.path(path))
                 for file_name in file_names)
-
-    def iter_subdirs(self, path=""):
-        """
-            Yield each immediate subdirectory in path.  
-        """
-        directories, files = self.listdir(path)
-        for subdir in directories:
-            yield os.path.join(path, subdir)
 
     def tag_file(self, path, key, value):
         """ For file storage, tags don't work. """

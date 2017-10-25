@@ -151,7 +151,7 @@ def volume_files(volume_path):
     ]
 
     print("Getting Volume Files for " + volume_path)
-    for file_name in ingest_storage.iter_files(volume_path):
+    for file_name in ingest_storage.iter_files_recursive(volume_path):
         for category, regex in regexes:
             if regex.search(file_name):
                 files[category].append(file_name)
@@ -170,7 +170,7 @@ def all_volumes():
     """
     print("Getting Volume List")
     volumes = []
-    for i, subdir in enumerate(ingest_storage.iter_subdirs()):
+    for i, subdir in enumerate(ingest_storage.iter_files()):
         volumes.append(subdir)
         if settings.INGEST_VOLUME_COUNT > 0 and i >= settings.INGEST_VOLUME_COUNT-1:
             return volumes
