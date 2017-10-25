@@ -1,0 +1,296 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mets xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.loc.gov/METS/">
+  <dmdSec ID="case">
+    <mdWrap MDTYPE="OTHER" OTHERMDTYPE="HLS-CASELAW-CASEXML">
+      <xmlData>
+        <case xmlns="http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case:v1" caseid="32044057891608_0001" publicationstatus="published">
+          <court abbreviation="Ill." jurisdiction="Illinois">Illinois Supreme Court</court>
+          <name abbreviation="Taylor v. Sprinkle">Jonathan Taylor, Appellant, v. Michael Sprinkle, Appellee</name>
+          <docketnumber/>
+          <citation category="official" type="bluebook">1 Ill. 17</citation>
+          <decisiondate>1819-12</decisiondate>
+        </case>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  <amdSec ID="amd0001">
+    <digiprovMD ID="digi001">
+      <mdWrap MDTYPE="PREMIS">
+        <xmlData>
+          <event xmlns="info:lc/xmlns/premis-v2">
+            <eventIdentifier>
+              <eventIdentifierType>Local</eventIdentifierType>
+              <eventIdentifierValue>scn0001</eventIdentifierValue>
+            </eventIdentifier>
+            <eventType>capture</eventType>
+            <eventDateTime>2015-08-19T14:51:02Z</eventDateTime>
+            <eventDetail>Scan date noting when printed source volume was converted to digital images used as sources for transcription.</eventDetail>
+          </event>
+          <agent xmlns="info:lc/xmlns/premis-v2">
+            <agentIdentifier>
+              <agentIdentifierType>Local</agentIdentifierType>
+              <agentIdentifierValue>HLSL</agentIdentifierValue>
+            </agentIdentifier>
+            <agentName>Harvard Law School Library</agentName>
+            <agentType>organization</agentType>
+          </agent>
+        </xmlData>
+      </mdWrap>
+    </digiprovMD>
+    <digiprovMD ID="digi002">
+      <mdWrap MDTYPE="PREMIS">
+        <xmlData>
+          <event xmlns="info:lc/xmlns/premis-v2">
+            <eventIdentifier>
+              <eventIdentifierType>Local</eventIdentifierType>
+              <eventIdentifierValue>ocr0001</eventIdentifierValue>
+            </eventIdentifier>
+            <eventType>transcription</eventType>
+            <eventDateTime>2016-03-08T19:20:14Z</eventDateTime>
+            <eventDetail>Transcription event</eventDetail>
+          </event>
+          <agent xmlns="info:lc/xmlns/premis-v2">
+            <agentIdentifier>
+              <agentIdentifierType>Local</agentIdentifierType>
+              <agentIdentifierValue>dsrs</agentIdentifierValue>
+            </agentIdentifier>
+            <agentName>Innodata DSRS, ABBYY FineReader</agentName>
+            <agentType>software</agentType>
+            <agentNote>Version 10</agentNote>
+          </agent>
+        </xmlData>
+      </mdWrap>
+    </digiprovMD>
+    <digiprovMD ID="digi003">
+      <mdWrap MDTYPE="PREMIS">
+        <xmlData>
+          <event xmlns="info:lc/xmlns/premis-v2">
+            <eventIdentifier>
+              <eventIdentifierType>Local</eventIdentifierType>
+              <eventIdentifierValue>crt0001</eventIdentifierValue>
+            </eventIdentifier>
+            <eventType>METScreation</eventType>
+            <eventDateTime>2016-03-18T03:43:18Z</eventDateTime>
+            <eventDetail>Creation of digital artifact described by this METS file</eventDetail>
+          </event>
+          <agent xmlns="info:lc/xmlns/premis-v2">
+            <agentIdentifier>
+              <agentIdentifierType>Local</agentIdentifierType>
+              <agentIdentifierValue>redrli</agentIdentifierValue>
+            </agentIdentifier>
+            <agentName>Innodata R.E.D. Workbench/RLI tool</agentName>
+            <agentType>software</agentType>
+            <agentNote>Version 20160223-118</agentNote>
+          </agent>
+        </xmlData>
+      </mdWrap>
+    </digiprovMD>
+  </amdSec>
+  <fileSec>
+    <fileGrp USE="tiff">
+      <file ID="tiff_00009_0" MIMETYPE="image/tiff" CHECKSUM="e145720b3db5be0cd09239b340637191" CHECKSUMTYPE="MD5" SIZE="32944">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057891608_00009_0.tif"/>
+      </file>
+      <file ID="tiff_00009_1" MIMETYPE="image/tiff" CHECKSUM="ab32fbe710f1d05d50eaba49333690b6" CHECKSUMTYPE="MD5" SIZE="50396">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057891608_00009_1.tif"/>
+      </file>
+    </fileGrp>
+    <fileGrp USE="jp2">
+      <file ID="jp2_00009_0" MIMETYPE="image/jp2" CHECKSUM="5a19e65122d0754db1dbb67c56509dc1" CHECKSUMTYPE="MD5" SIZE="2199258">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057891608_00009_0.jp2"/>
+      </file>
+      <file ID="jp2_00009_1" MIMETYPE="image/jp2" CHECKSUM="4293027c29aad9464e2b7816b6c45deb" CHECKSUMTYPE="MD5" SIZE="2277092">
+        <FLocat LOCTYPE="URL" xlink:href="../images/32044057891608_00009_1.jp2"/>
+      </file>
+    </fileGrp>
+    <fileGrp USE="alto">
+      <file ID="alto_00009_0" MIMETYPE="text/xml" CHECKSUM="f26b3b127a37e6a9991db054444ac9f0" CHECKSUMTYPE="MD5" SIZE="58897">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/32044057891608_redacted_ALTO_00009_0.xml"/>
+      </file>
+      <file ID="alto_00009_1" MIMETYPE="text/xml" CHECKSUM="bfbd53dc69feea9c0e806a4e37be465a" CHECKSUMTYPE="MD5" SIZE="116476">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/32044057891608_redacted_ALTO_00009_1.xml"/>
+      </file>
+    </fileGrp>
+    <fileGrp USE="casebody">
+      <file ID="casebody_0001" MIMETYPE="text/xml">
+        <FContent>
+          <xmlData>
+            <casebody xmlns="http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1" firstpage="17" lastpage="18">
+              <parties pgmap="17" id="b17-10">Jonathan Taylor, Appellant, v. Michael Sprinkle, Appellee.</parties>
+              <headnotes pgmap="17" id="Ay">APPEAL FROM GALLATIN.</headnotes>
+              <headnotes pgmap="17" id="b17-11">In all special pleas to the consideration of a note, the manner of avoiding the obligation ought to be shown; a failure to do it is error.</headnotes>
+              <opinion type="majority">
+                <p pgmap="17" id="b17-12">Opinion of the Court.<footnotemark>*</footnotemark> This was an action of covenant. The fifth plea states, that the consideration failed. This plea was demurred to, and the demurrer sustained by the court. The validity of the fifth plea, is the only point before the court. The plea was filed under the statute,<footnotemark>†</footnotemark> which introduces a new remedy contrary to the common law, and ought not to be extended too far; and in all special pleas, the manner of avoiding the obligation ought to be shown. As the precise manner is not shown by this plea, it is insufficient, and the demurrer to it was properly sustained. The judgment of the circuit court is affirmed, with five per cent, damages and costs. <footnotemark>(1)</footnotemark>
+                </p>
+                <p pgmap="17" id="b17-13">Judgment affirmed.</p>
+                <footnote label="*">
+                  <p pgmap="17" id="b17-14">* Justice Browne having decided this cause in the court below, gave no opinion.</p>
+                </footnote>
+                <footnote label="†">
+                  <p pgmap="17" id="AX">† Laws of 1819, page 59.</p>
+                </footnote>
+                <footnote label="(1)">
+                  <p pgmap="17(27) 18(28)" id="b17-15">(1) The principle asserted in this case has been repeated in numerous cases since this decision was made. A reference only to them is necessary. Cornelius v. Vanorsdale, post. Pool v. Vanlandingham, id. Bradshaw v. Newman, id. Sims v. Klein, id. Swain v. Cawood, 2 Scammon, 505. Vanlandingham v. Ryan, 17 Illi­nois Rep., 25.</p>
+                  <p pgmap="18" id="b18-11">A plea of failure of consideration to an action upon a note, should state partic­ularly in what the failure consisted. General allegations are not sufficient. Parks v. Holmes, 22 Illinois Rep., 522.</p>
+                  <p pgmap="18" id="b18-12">Under the general issue it is not competent to show a total or partial failure of consideration of a promissory note. Rose v. Mortimer, 17 Illinois Rep., 475.</p>
+                  <p pgmap="18" id="b18-13">Under a plea of a total failure of consideration, a partial failure can not be given in evidence. Sims v. Klein, post. Swain v. Cawood, 2 Scam., 505.</p>
+                </footnote>
+              </opinion>
+            </casebody>
+          </xmlData>
+        </FContent>
+      </file>
+    </fileGrp>
+  </fileSec>
+  <structMap TYPE="physical">
+    <div TYPE="volume">
+      <div ORDER="17" ORDERLABEL="17" TYPE="page">
+        <fptr FILEID="tiff_00009_0"/>
+        <fptr FILEID="jp2_00009_0"/>
+        <fptr FILEID="alto_00009_0"/>
+        <div TYPE="pagematter">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_17.10" BETYPE="IDREF" FILEID="alto_00009_0"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="18" ORDERLABEL="18" TYPE="page">
+        <fptr FILEID="tiff_00009_1"/>
+        <fptr FILEID="jp2_00009_1"/>
+        <fptr FILEID="alto_00009_1"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_18.5" BETYPE="IDREF" FILEID="alto_00009_1"/>
+            </seq>
+          </fptr>
+        </div>
+        <div TYPE="pagematter">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_18.6" BETYPE="IDREF" FILEID="alto_00009_1"/>
+              <area BEGIN="BL_18.7" BETYPE="IDREF" FILEID="alto_00009_1"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+    </div>
+  </structMap>
+  <structMap TYPE="xref">
+    <div TYPE="blocks">
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b17-10" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.2" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b17-11" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.4" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="Ay" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.3" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b17-13" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.6" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b17-14" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.7" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b17-15" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.9" BETYPE="IDREF" FILEID="alto_00009_0"/>
+            <area BEGIN="BL_18.1" BETYPE="IDREF" FILEID="alto_00009_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b18-11" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_18.2" BETYPE="IDREF" FILEID="alto_00009_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="AX" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.8" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b18-12" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_18.3" BETYPE="IDREF" FILEID="alto_00009_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b17-12" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_17.5" BETYPE="IDREF" FILEID="alto_00009_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b18-13" BETYPE="IDREF" FILEID="casebody_0001"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_18.4" BETYPE="IDREF" FILEID="alto_00009_1"/>
+          </seq>
+        </fptr>
+      </div>
+    </div>
+  </structMap>
+</mets>
