@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from multiprocessing import Pool
 import io
 
+from django import db
 from django.conf import settings
 from django.db import transaction, IntegrityError
 
@@ -290,16 +291,22 @@ def process_recent_manifest_data(list_key):
 
 ### helpers ###
 
+def reopen_db_and_call(func, *args):
+    # when running in subprocesses, Django database connections fight for the same socket, so re-open
+    for connection_name in db.connections.databases:
+        db.connections[connection_name].close()
+        db.connections[connection_name].connect()
+    return func(*args)
 
 def run_processes(func, args):
     if ASYNC:
         pool = Pool(64)
-        pool.map(func, args)
+        pool.starmap(reopen_db_and_call, ((func, arg) for arg in args))
         pool.close()
         pool.join()
     else:
         for arg in args:
-            func(*arg)
+            func(arg)
 
 def spop_all(key):
     while r.scard(key) > 0:
