@@ -97,9 +97,9 @@ def migrate():
 def load_test_data():
     if settings.USE_TEST_TRACKING_TOOL_DB:
         local("python manage.py loaddata --database=tracking_tool test_data/tracking_tool.json")
-    ingest_volumes()
     ingest_metadata()
-    update_case_metadata()
+    ingest_jurisdiction()
+    total_sync_with_s3()
 
 @task
 def add_test_case(*barcodes):
