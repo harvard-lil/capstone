@@ -362,13 +362,13 @@ def is_same_complete_volume(volume, queues, barcode):
 
     return True
 
-def update_keys(volume, queues):
+def update_keys(volume, queues, barcode):
 
     for alto_file in r.smembers(queues['inventory']['alto']):
         alto = json.loads(alto_file.decode("utf-8"))
         alto_s3_key = alto[1]
-        alto_sequence = re.match(r'.*ALTO_(0[0-9]+_[01])\.xml', s3_key).groups(1)[0]
-        alto_barcode = "{}_{}".format(barcode, alto_sequence)
+        alto_sequence = re.match(r'.*ALTO_(0[0-9]+_[01])\.xml', alto_s3_key).groups(1)[0]
+        alto_barcode = "{}_{}".format(volume.barcode, alto_sequence)
         db_alto = volume.page_xmls.get(barcode=alto_barcode)
         if db_alto.s3_key != alto_s3_key:
             db_alto.s3_key = alto_s3_key
@@ -377,7 +377,7 @@ def update_keys(volume, queues):
     for case_file in r.smembers(queues['inventory']['casemets']):
         case = json.loads(case_file.decode("utf-8"))
         case_s3_key = case[1]
-        case_sequence = re.match(r'.*CASEMETS_(0[0-9]+)\.xml', s3_key).groups(1)[0]
+        case_sequence = re.match(r'.*CASEMETS_(0[0-9]+)\.xml', case_s3_key).groups(1)[0]
         case_barcode = "{}_{}".format(barcode, case_sequence)
         db_case = volume.case_xmls.get(case_id=case_barcode)
         if db_case.s3_key != case_s3_key:
