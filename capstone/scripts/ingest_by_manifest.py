@@ -111,6 +111,7 @@ def empty_queues():
     empty_set("tag_these_queues")
     empty_set("new_volumes")
     empty_set("unsorted_new_volumes")
+    empty_set("spare_cases")
 
 def inventory_build_pool():
     run_processes(process_recent_manifest_data, get_inventory_files_from_manifest(get_latest_manifest()))
@@ -123,6 +124,8 @@ def cleanup_and_report():
         print(clean_queues(nonmatching_file))
     for integrity_error in spop_all("integrity_error"):
         print(clean_queues(integrity_error))
+    for spare_cases in spop_all("integrity_error"):
+        print("Spare Case: {}".format(spare_cases))
 
 def tag_jp2s():
     for queue_to_tag in spop_all("tag_these_queues"):
