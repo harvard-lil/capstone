@@ -1,3 +1,4 @@
+import hashlib
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 
@@ -7,14 +8,12 @@ from scripts.helpers import *
 
 ### helpers ###
 
-
 def choices(*args):
     """ Simple helper to create choices=(('Foo','Foo'),('Bar','Bar'))"""
     return zip(args, args)
 
 
 ### custom column types ###
-
 
 class XMLField(models.TextField):
     """
@@ -23,6 +22,10 @@ class XMLField(models.TextField):
     def db_type(self, connection):
         return 'xml'
 
+def checksum(xml):
+    m = hashlib.md5()
+    m.update(xml.encode())
+    return m.hexdigest()
 
 ### models ###
 
@@ -237,6 +240,9 @@ class VolumeXML(models.Model):
         # TODO: Once OneToOneField is set up, this method can be deleted
         return VolumeMetadata.objects.filter(barcode=self.barcode).first()
 
+    def md5(self):
+        return checksum(self.orig_xml)
+
 
 class Court(models.Model):
     name = models.CharField(max_length=255)
@@ -264,6 +270,9 @@ class CaseXML(models.Model):
 
     def __str__(self):
         return self.case_id
+
+    def md5(self):
+        return checksum(self.orig_xml)
 
     def update_case_metadata(self):
         data = get_case_metadata(self.orig_xml)
@@ -405,6 +414,9 @@ class PageXML(models.Model):
     volume = models.ForeignKey(VolumeXML, related_name='page_xmls')
     cases = models.ManyToManyField(CaseXML, related_name='pages')
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
+
+    def md5(self):
+        return checksum(self.orig_xml)
 
     def __str__(self):
         return self.barcode

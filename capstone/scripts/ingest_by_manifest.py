@@ -255,7 +255,8 @@ def process_recent_manifest_data(list_key):
                 file_entry[1].endswith('/')
             ):
             continue
-        
+
+        md5 = file_entry[4]
         file_key = trim_csv_key(file_entry[1])
         barcode = file_key.split("/", 1)[0].split('_')[0]
         bucket = file_entry[0]
@@ -268,12 +269,13 @@ def process_recent_manifest_data(list_key):
             mets_files = extract_file_dict(bucket, file_key)
             for queue_type in mets_files:
                 queue_name = "{}_{}_{}_mets".format(barcode, queue_type, version_string)
-                [r.sadd(queue_name, json.dumps([bucket, "{}/{}".format(os.path.dirname(file_key), f)])) for f in mets_files[queue_type]]
+                [r.sadd(queue_name, json.dumps([bucket, "{}/{}".format(os.path.dirname(file_key), f[0]), f[1]])) for f in mets_files[queue_type]]
             json_add = json.dumps({
                 "barcode": barcode, 
                 "timestamp": str(datetime.now(tz=None)), 
                 "version_string": version_string,
                 "key": file_key,
+                "md5": md5,
             })
             r.sadd("unsorted_new_volumes", json_add)
             r.sadd("{}_vol_{}_inventory".format(barcode, version_string), json.dumps([bucket, file_key]))
@@ -286,7 +288,7 @@ def process_recent_manifest_data(list_key):
                 queue_name = "{}_tif_{}_inventory".format(barcode, version_string)
             else:
                 queue_name = "{}_{}_{}_inventory".format(barcode, split_key.group(3), version_string)
-            r.sadd(queue_name, json.dumps([bucket, file_key]))
+            r.sadd(queue_name, json.dumps([bucket, file_key, md5]))
 
 ### helpers ###
 
@@ -311,47 +313,41 @@ def empty_set(key):
 def extract_file_dict(bucket, key):
     """Gets the files assocated with the volume from the mets"""
     volume_file = ingest_storage.contents(key)
-    files = re.findall(r'<FLocat LOCTYPE="URL" xlink:href="(([A-Za-z]+)/(([A-Za-z_0-9]+).(jp2|xml|tif)))"/>', volume_file)
+
+    #files = re.findall(r'<FLocat LOCTYPE="URL" xlink:href="(([A-Za-z]+)/(([A-Za-z_0-9]+).(jp2|xml|tif)))"/>', volume_file)
+    files = re.findall(r'<file[A-Za-z0-9"=\s/_]+CHECKSUM="([a-zA-Z0-9]+)"[A-Za-z0-9"=\s]+>[\s\n]+<FLocat LOCTYPE="URL" xlink:href="(([A-Za-z]+)/(([A-Za-z_0-9]+).(jp2|xml|tif)))"/>[\s\n]+</file>', volume_file, re.MULTILINE)
     file_dict = defaultdict()
 
-    file_dict['jp2'] = [ file[0] for file in files if file[4] == 'jp2' ]
-    file_dict['tif'] = [ file[0] for file in files if file[4] == 'tif' ]
-    file_dict['alto'] = [ file[0] for file in files if file[1] == 'alto' ]
-    file_dict['casemets'] = [ file[0] for file in files if file[1] == 'casemets' ]
+    file_dict['jp2'] = [ (file[1], file[0]) for file in files if file[5] == 'jp2' ]
+    file_dict['tif'] = [ (file[1], file[0]) for file in files if file[5] == 'tif' ]
+    file_dict['alto'] = [ (file[1], file[0]) for file in files if file[2] == 'alto' ]
+    file_dict['casemets'] = [ (file[1], file[0]) for file in files if file[2] == 'casemets' ]
     return file_dict
 
 def is_same_complete_volume(volume, vol_entry, bucket, queues, barcode):
     """This checks to see if the volume in the bucket is the same volume that's in the DB"""
-    existing_case_keys = set(CaseXML.objects.filter(volume=volume).values_list('s3_key', flat=True))
-    existing_page_keys = set(PageXML.objects.filter(volume=volume).values_list('s3_key', flat=True))
 
-    if ( existing_case_keys == set([entry[0] for entry in r.smembers(queues['inventory']['casemets'])]) and
-            existing_page_keys == set([entry[0] for entry in r.smembers(queues['inventory']['alto'])])
-        ):
-        return True
-
-    elif not volume_has_multi_s3_versions(vol_entry['key']):
-        existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('case_id', flat=True))
-        existing_page_ids = set(PageXML.objects.filter(volume=volume).values_list('barcode', flat=True))
-        for alto_file in r.smembers(queues['inventory']['alto']):
-            alto_id = "{}_{}".format(barcode, re.search(r'ALTO_([0-9]+_[0-9])\.xml', alto_file.decode('utf-8')).group(1))
-            if alto_id not in existing_page_ids:
-                return False
-            else:
-                existing_page_ids.remove(alto_id)
-        for case_file in r.smembers(queues['inventory']['casemets']):
-            case_id = "{}_{}".format(barcode, re.search(r'CASEMETS_([0-9]+)\.xml', case_file.decode('utf-8')).group(1))
-            if case_id not in existing_case_ids:
-                return False
-            else:
-                existing_case_ids.remove(case_id) 
-        if len(existing_case_ids) + len(existing_page_ids) > 0:
-            return False
-    else:
+    if (r.scard(queues['inventory']['casemets']) != volume.case_xmls.count()):
+        return False
+    if (r.scard(queues['inventory']['alto']) != volume.page_xmls.count()):
         return False
 
+    for alto_file in r.smembers(queues['inventory']['alto']):
+        alto = json.loads(alto_file.decode("utf-8"))
+        alto_sequence = re.match(r'.*ALTO_(0[0-9]+_[01])\.xml', alto[1]).groups(1)[0]
+        alto_barcode = "{}_{}".format(barcode, alto_sequence)
+        alto_md5 = alto[2]
+        if alto_md5 != pages.get(barcode=alto_barcode).md5():
+            return False
+    for case_file in r.smembers(queues['inventory']['casemets']):
+        case = json.loads(case_file.decode("utf-8"))
+        case_sequence = re.match(r'.*CASEMETS_(0[0-9]+)\.xml', case[1]).groups(1)[0]
+        case_barcode = "{}_{}".format(barcode, case_sequence)
+        case_md5 = case[2]
+        if case_md5 != cases.get(case_id=case_barcode).md5():
+            return False
+            
     return True
-
 
 def check_last_sync():
     """ This function gets called a LOT. Stores value in a global and returns that if it's already been checked
