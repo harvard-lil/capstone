@@ -21,7 +21,7 @@ def resolve_namespace(name):
     namespace, reference = name.split('|', 1)
     return '{%s}%s' % (nsmap[namespace], reference)
 
-jurisdiction_translation= {
+jurisdiction_translation = {
     '1': 'Ill.',
     'q': 'N.Y.',
     ' New York': 'N.Y.',

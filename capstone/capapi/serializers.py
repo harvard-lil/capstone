@@ -126,6 +126,20 @@ class UserSerializer(serializers.ModelSerializer):
             found_user.authenticate_user(activation_nonce=activation_nonce)
         return found_user
 
+    def verify_case_allowance(self, user, case_count):
+        if case_count <= 0:
+            return user
+        user.update_case_allowance()
+
+        if not user.case_allowance >= case_count:
+            time_remaining = user.get_case_allowance_update_time_remaining()
+            raise serializers.ValidationError({
+                "error": "You have attempted to download more than your allowed number of cases. Your limit will reset to default again in %s." % time_remaining,
+                "case_allowance_remaining": user.case_allowance,
+            })
+        else:
+            return user
+
 
 class RegisterUserSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
