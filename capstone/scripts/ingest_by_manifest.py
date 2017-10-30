@@ -344,14 +344,14 @@ def is_same_complete_volume(volume, vol_entry, bucket, queues, barcode):
         alto_sequence = re.match(r'.*ALTO_(0[0-9]+_[01])\.xml', alto[1]).groups(1)[0]
         alto_barcode = "{}_{}".format(barcode, alto_sequence)
         alto_md5 = alto[2]
-        if alto_md5 != pages.get(barcode=alto_barcode).md5():
+        if alto_md5 != volume.page_xmls.get(barcode=alto_barcode).md5():
             return False
     for case_file in r.smembers(queues['inventory']['casemets']):
         case = json.loads(case_file.decode("utf-8"))
         case_sequence = re.match(r'.*CASEMETS_(0[0-9]+)\.xml', case[1]).groups(1)[0]
         case_barcode = "{}_{}".format(barcode, case_sequence)
         case_md5 = case[2]
-        if case_md5 != cases.get(case_id=case_barcode).md5():
+        if case_md5 != volume.case_xmls.get(case_id=case_barcode).md5():
             return False
             
     return True
