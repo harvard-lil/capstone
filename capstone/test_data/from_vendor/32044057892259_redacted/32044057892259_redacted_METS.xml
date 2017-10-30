@@ -1,4 +1,3 @@
-<?xml version='1.0' encoding='utf-8'?>
 <mets xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.loc.gov/METS/">
   <!--Created by Innodata R.E.D. RLI tool version 20160223-118 on 2016-03-24T23:54:56.842446-->
   <dmdSec ID="volume">
@@ -110,9 +109,27 @@
       <file ID="tiff_00010_1" MIMETYPE="image/tiff" CHECKSUM="439bb6b1df9755fc5c06c60e49defb5c" CHECKSUMTYPE="MD5" SIZE="39108">
         <FLocat LOCTYPE="URL" xlink:href="images/32044057892259_00010_1.tif"/>
       </file>
-    </fileGrp>
+      </fileGrp>
     <fileGrp USE="jp2">
-    </fileGrp>
+      <file ID="jp2_00008_0" MIMETYPE="image/jp2" CHECKSUM="84dc759a110fed3d8f80ad360d3e9684" CHECKSUMTYPE="MD5" SIZE="2241750">
+        <FLocat LOCTYPE="URL" xlink:href="images/32044057892259_00008_0.jp2"/>
+      </file>
+      <file ID="jp2_00008_1" MIMETYPE="image/jp2" CHECKSUM="7bc2c63c3913fd6c8733962fb177dc41" CHECKSUMTYPE="MD5" SIZE="2302681">
+        <FLocat LOCTYPE="URL" xlink:href="images/32044057892259_00008_1.jp2"/>
+      </file>
+      <file ID="jp2_00009_0" MIMETYPE="image/jp2" CHECKSUM="27eedb543833a4bf033f9a6e19174663" CHECKSUMTYPE="MD5" SIZE="2389595">
+        <FLocat LOCTYPE="URL" xlink:href="images/32044057892259_00009_0.jp2"/>
+      </file>
+      <file ID="jp2_00009_1" MIMETYPE="image/jp2" CHECKSUM="1c32f76c330fe107b097da89d48628d2" CHECKSUMTYPE="MD5" SIZE="2319721">
+        <FLocat LOCTYPE="URL" xlink:href="images/32044057892259_00009_1.jp2"/>
+      </file>
+      <file ID="jp2_00010_0" MIMETYPE="image/jp2" CHECKSUM="071a98addf4b02a908546152c3be0ba6" CHECKSUMTYPE="MD5" SIZE="2402299">
+        <FLocat LOCTYPE="URL" xlink:href="images/32044057892259_00010_0.jp2"/>
+      </file>
+      <file ID="jp2_00010_1" MIMETYPE="image/jp2" CHECKSUM="82420fd9abea4071a93e6c798cfe9629" CHECKSUMTYPE="MD5" SIZE="2239182">
+        <FLocat LOCTYPE="URL" xlink:href="images/32044057892259_00010_1.jp2"/>
+      </file>
+      </fileGrp>
     <fileGrp USE="alto">
       <file ID="alto_00008_0" MIMETYPE="text/xml" CHECKSUM="8b1de65cd6f5d48eec6feb0ab2f5f1de" CHECKSUMTYPE="MD5" SIZE="52149">
         <FLocat LOCTYPE="URL" xlink:href="alto/32044057892259_redacted_ALTO_00008_0.xml"/>
@@ -132,12 +149,12 @@
       <file ID="alto_00010_1" MIMETYPE="text/xml" CHECKSUM="262eb69d776896ea939506d78258e1c2" CHECKSUMTYPE="MD5" SIZE="72897">
         <FLocat LOCTYPE="URL" xlink:href="alto/32044057892259_redacted_ALTO_00010_1.xml"/>
       </file>
-    </fileGrp>
+      </fileGrp>
     <fileGrp USE="casemets">
       <file ID="casemets_0001" MIMETYPE="text/xml" CHECKSUM="0ff8fb4b80793b83a99e7a48b083b0b3" CHECKSUMTYPE="MD5" SIZE="31151">
         <FLocat LOCTYPE="URL" xlink:href="casemets/32044057892259_redacted_CASEMETS_0001.xml"/>
       </file>
-    </fileGrp>
+      </fileGrp>
   </fileSec>
   <structMap TYPE="physical">
     <div TYPE="volume">

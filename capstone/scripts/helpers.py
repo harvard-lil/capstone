@@ -1,3 +1,4 @@
+import shutil
 from pyquery import PyQuery
 
 
@@ -11,6 +12,14 @@ nsmap = {
     'alto': 'http://www.loc.gov/standards/alto/ns-v3#',
     'info': 'info:lc/xmlns/premis-v2',
 }
+
+def resolve_namespace(name):
+    """
+        Given a pyquery-style namespaced string like 'xlink|href', return an lxml-style namespaced string like
+            '{http://www.w3.org/1999/xlink}href'
+    """
+    namespace, reference = name.split('|', 1)
+    return '{%s}%s' % (nsmap[namespace], reference)
 
 jurisdiction_translation= {
     '1': 'Ill.',
@@ -117,3 +126,13 @@ def parse_xml(xml):
         xml = xml.encode('utf8')
         
     return PyQuery(xml, parser='xml', namespaces=nsmap)
+
+def copy_file(from_path, to_path, from_storage=None, to_storage=None):
+    """
+        Copy contents of from_path to to_path, optionally using storages instead of filesystem open().
+    """
+    from_open = from_storage.open if from_storage else open
+    to_open = to_storage.open if to_storage else open
+    with from_open(from_path, "rb") as in_file:
+        with to_open(to_path, "wb") as out_file:
+            shutil.copyfileobj(in_file, out_file)
