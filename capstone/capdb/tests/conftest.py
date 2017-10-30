@@ -37,6 +37,11 @@ def ingest_volumes(ingest_metadata, redis_patch):
     import scripts.ingest_by_manifest
     scripts.ingest_by_manifest.r = redis_patch
 
+    # Ingest causes database errors if run in parallel inside test harness.
+    # This is probably because database connections have to be closed and reopened by subprocesses, and that triggers
+    # a wipe in the test harness.
+    scripts.ingest_by_manifest.ASYNC = False
+
     fabfile.total_sync_with_s3()
 
 @pytest.fixture
