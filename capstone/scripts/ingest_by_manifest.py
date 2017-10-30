@@ -186,7 +186,8 @@ def process_volume(vol_entry_bytestring):
         with transaction.atomic():
             volume = VolumeXML.objects.filter(barcode=vol_entry['barcode']).first()
             if volume:
-                if is_same_complete_volume(volume, vol_entry, bucket, queues, vol_entry['barcode']):
+                if is_same_complete_volume(volume, queues, vol_entry['barcode']):
+                    update_keys(volume, queues)
                     return False
             else:
                 volume = VolumeXML(barcode=vol_entry['barcode'])
@@ -334,7 +335,7 @@ def extract_file_dict(bucket, key):
     file_dict['casemets'] = [ (file[1], file[0]) for file in files if file[2] == 'casemets' ]
     return file_dict
 
-def is_same_complete_volume(volume, vol_entry, bucket, queues, barcode):
+def is_same_complete_volume(volume, queues, barcode):
     """This checks to see if the volume in the bucket is the same volume that's in the DB"""
 
     if (r.scard(queues['inventory']['casemets']) != volume.case_xmls.count()):
@@ -347,17 +348,42 @@ def is_same_complete_volume(volume, vol_entry, bucket, queues, barcode):
         alto_sequence = re.match(r'.*ALTO_(0[0-9]+_[01])\.xml', alto[1]).groups(1)[0]
         alto_barcode = "{}_{}".format(barcode, alto_sequence)
         alto_md5 = alto[2]
-        if alto_md5 != volume.page_xmls.get(barcode=alto_barcode).md5():
+        db_alto = volume.page_xmls.get(barcode=alto_barcode)
+        if alto_md5 != db_alto.md5():
             return False
     for case_file in r.smembers(queues['inventory']['casemets']):
         case = json.loads(case_file.decode("utf-8"))
         case_sequence = re.match(r'.*CASEMETS_(0[0-9]+)\.xml', case[1]).groups(1)[0]
         case_barcode = "{}_{}".format(barcode, case_sequence)
         case_md5 = case[2]
-        if case_md5 != volume.case_xmls.get(case_id=case_barcode).md5():
+        db_case = volume.case_xmls.get(case_id=case_barcode)
+        if case_md5 != db_case.md5():
             return False
-            
+
     return True
+
+def update_keys(volume, queues):
+
+    for alto_file in r.smembers(queues['inventory']['alto']):
+        alto = json.loads(alto_file.decode("utf-8"))
+        alto_s3_key = alto[1]
+        alto_sequence = re.match(r'.*ALTO_(0[0-9]+_[01])\.xml', s3_key).groups(1)[0]
+        alto_barcode = "{}_{}".format(barcode, alto_sequence)
+        db_alto = volume.page_xmls.get(barcode=alto_barcode)
+        if db_alto.s3_key != alto_s3_key:
+            db_alto.s3_key = alto_s3_key
+            db_alto.save()
+
+    for case_file in r.smembers(queues['inventory']['casemets']):
+        case = json.loads(case_file.decode("utf-8"))
+        case_s3_key = case[1]
+        case_sequence = re.match(r'.*CASEMETS_(0[0-9]+)\.xml', s3_key).groups(1)[0]
+        case_barcode = "{}_{}".format(barcode, case_sequence)
+        db_case = volume.case_xmls.get(case_id=case_barcode)
+        if db_case.s3_key != case_s3_key:
+            db_case.s3_key = case_s3_key
+            db_case.save()
+
 
 def check_last_sync():
     """ This function gets called a LOT. Stores value in a global and returns that if it's already been checked
