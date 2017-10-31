@@ -171,7 +171,9 @@ def process_volume(vol_entry_bytestring):
     """This ingests the volume into the capstone database"""
     vol_entry = json.loads(vol_entry_bytestring.decode("utf-8"))
     queues = generate_queue_names(vol_entry_bytestring)
+    global _last_sync
 
+    # checks if keys/checksums in vol mets match keys/checksums in inventory
     for file_type in queues['mets']:
         if file_type == 'vol':
             continue
@@ -179,20 +181,21 @@ def process_volume(vol_entry_bytestring):
             r.sadd("nonmatching_files", vol_entry_bytestring)
             return False
 
-    bucket, volmets_path = json.loads(r.spop(queues['inventory']['vol']).decode("utf-8"))
+    bucket, volmets_path, volmets_md5 = json.loads(r.spop(queues['inventory']['vol']).decode("utf-8"))
     alto_barcode_to_case_map = defaultdict(list)
     
     try:
         with transaction.atomic():
-            volume = VolumeXML.objects.filter(barcode=vol_entry['barcode']).first()
-            if volume:
-                if is_same_complete_volume(volume, queues, vol_entry['barcode']):
-                    update_keys(volume, queues)
-                    return False
-            else:
-                volume = VolumeXML(barcode=vol_entry['barcode'])
+            volume, vol_created = VolumeXML.objects.get_or_create(barcode=vol_entry['barcode'])
 
-            volume.orig_xml = ingest_storage.contents(volmets_path)
+            #same volmets path & same md5 & not forced full sync == same volume
+            if (volmets_path == volume.s3_key and
+                volume.md5() == volmets_md5 and 
+                _last_sync == datetime(1970, 1, 1)):
+                return False
+
+            if volume.md5() != volmets_md5:
+                volume.orig_xml = ingest_storage.contents(volmets_path)
             volume.s3_key = volmets_path
             volume.save()
             
@@ -200,13 +203,16 @@ def process_volume(vol_entry_bytestring):
             for case_entry in spop_all(queues['inventory']['casemets']):
                 case_entry = json.loads(case_entry.decode("utf-8"))
                 case_s3_key = case_entry[1]
-                
+                case_md5 = case_entry[2]
+
                 case_barcode = vol_entry['barcode'] + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
                 if case_barcode in existing_case_ids:
                     existing_case_ids.remove(case_barcode)
 
-                case, created = CaseXML.objects.get_or_create(volume=volume, case_id=case_barcode)
-                case.orig_xml = ingest_storage.contents(case_s3_key)
+                case, case_created = CaseXML.objects.get_or_create(volume=volume, case_id=case_barcode)
+                if case.md5() != case_md5:
+                    case.orig_xml = ingest_storage.contents(case_s3_key)
+                case.s3_key = case_s3_key
                 case.save()
                 case.update_case_metadata()
 
@@ -219,17 +225,21 @@ def process_volume(vol_entry_bytestring):
             for page_entry in spop_all(queues['inventory']['alto']):
                 page_entry = json.loads(page_entry.decode("utf-8"))
                 page_s3_key = page_entry[1]
+                page_md5 = page_entry[2]
 
                 alto_barcode = vol_entry['barcode'] + "_" + page_s3_key.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
                 if alto_barcode in existing_page_ids:
                     existing_page_ids.remove(alto_barcode)
-                page, created = PageXML.objects.get_or_create(volume=volume, barcode=alto_barcode)
-                page.orig_xml = ingest_storage.contents(page_s3_key)
-                page.save()
 
-                # write case-to-page matches
-                if alto_barcode_to_case_map[alto_barcode]:
-                    page.cases.set(alto_barcode_to_case_map[alto_barcode])
+                page, page_created = PageXML.objects.get_or_create(volume=volume, barcode=alto_barcode)
+                if page.md5() != page_md5:
+                    page.orig_xml = ingest_storage.contents(page_s3_key)
+                    page.s3_key = page_s3_key
+                    page.save()
+
+                    # write case-to-page matches
+                    if alto_barcode_to_case_map[alto_barcode]:
+                        page.cases.set(alto_barcode_to_case_map[alto_barcode])
 
             for spare_case in existing_case_ids:
                 r.sadd("spare_cases_{}".format(vol_entry['barcode']), spare_case)
@@ -283,7 +293,7 @@ def process_recent_manifest_data(list_key):
                 "md5": md5,
             })
             r.sadd("unsorted_new_volumes", json_add)
-            r.sadd("{}_vol_{}_inventory".format(barcode, version_string), json.dumps([bucket, file_key]))
+            r.sadd("{}_vol_{}_inventory".format(barcode, version_string), json.dumps([bucket, file_key, md5]))
         else:
             split_key = key_regex.match(file_key)
             if split_key.group(4) == 'jp2':
@@ -334,56 +344,6 @@ def extract_file_dict(bucket, key):
     file_dict['alto'] = [ (file[1], file[0]) for file in files if file[2] == 'alto' ]
     file_dict['casemets'] = [ (file[1], file[0]) for file in files if file[2] == 'casemets' ]
     return file_dict
-
-def is_same_complete_volume(volume, queues, barcode):
-    """This checks to see if the volume in the bucket is the same volume that's in the DB"""
-
-    if (r.scard(queues['inventory']['casemets']) != volume.case_xmls.count()):
-        return False
-    if (r.scard(queues['inventory']['alto']) != volume.page_xmls.count()):
-        return False
-
-    for alto_file in r.smembers(queues['inventory']['alto']):
-        alto = json.loads(alto_file.decode("utf-8"))
-        alto_sequence = re.match(r'.*ALTO_(0[0-9]+_[01])\.xml', alto[1]).groups(1)[0]
-        alto_barcode = "{}_{}".format(barcode, alto_sequence)
-        alto_md5 = alto[2]
-        db_alto = volume.page_xmls.get(barcode=alto_barcode)
-        if alto_md5 != db_alto.md5():
-            return False
-    for case_file in r.smembers(queues['inventory']['casemets']):
-        case = json.loads(case_file.decode("utf-8"))
-        case_sequence = re.match(r'.*CASEMETS_(0[0-9]+)\.xml', case[1]).groups(1)[0]
-        case_barcode = "{}_{}".format(barcode, case_sequence)
-        case_md5 = case[2]
-        db_case = volume.case_xmls.get(case_id=case_barcode)
-        if case_md5 != db_case.md5():
-            return False
-
-    return True
-
-def update_keys(volume, queues, barcode):
-
-    for alto_file in r.smembers(queues['inventory']['alto']):
-        alto = json.loads(alto_file.decode("utf-8"))
-        alto_s3_key = alto[1]
-        alto_sequence = re.match(r'.*ALTO_(0[0-9]+_[01])\.xml', alto_s3_key).groups(1)[0]
-        alto_barcode = "{}_{}".format(volume.barcode, alto_sequence)
-        db_alto = volume.page_xmls.get(barcode=alto_barcode)
-        if db_alto.s3_key != alto_s3_key:
-            db_alto.s3_key = alto_s3_key
-            db_alto.save()
-
-    for case_file in r.smembers(queues['inventory']['casemets']):
-        case = json.loads(case_file.decode("utf-8"))
-        case_s3_key = case[1]
-        case_sequence = re.match(r'.*CASEMETS_(0[0-9]+)\.xml', case_s3_key).groups(1)[0]
-        case_barcode = "{}_{}".format(barcode, case_sequence)
-        db_case = volume.case_xmls.get(case_id=case_barcode)
-        if db_case.s3_key != case_s3_key:
-            db_case.s3_key = case_s3_key
-            db_case.save()
-
 
 def check_last_sync():
     """ This function gets called a LOT. Stores value in a global and returns that if it's already been checked
