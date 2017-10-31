@@ -103,7 +103,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         except ValidationError as err:
             return JsonResponse(err.detail, status=403)
 
-        response = self.create_download_response(cases, blacklisted_case_count)
+        response = self.create_download_response(cases)
         user.update_case_allowance(case_count=blacklisted_case_count)
 
         return response
