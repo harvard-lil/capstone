@@ -59,15 +59,12 @@ def email(reason, user):
         logger.info("sent new_registration email for %s" % user.email)
 
     if reason == 'new_signup':
-        token_url = "%saccounts/verify-user/%s/%s" % (
-            settings.API_BASE_URL, user.id, user.get_activation_nonce()
-        )
+        token_url = os.path.join(settings.API_BASE_URL, "accounts/verify-user", str(user.id), user.get_activation_nonce())
         send_mail(
             'CaseLaw Access Project: Verify your email address',
-            """
-                Please click here to verify your email address: %s
-                If you believe you have received this message in error, please ignore it.
-            """ % token_url,
+            f"""Please click here to verify your email address: {token_url}
+            If you believe you have received this message in error, please ignore it.
+            """,
             settings.API_EMAIL_ADDRESS,
             [user.email],
             fail_silently=False, )
