@@ -111,6 +111,7 @@ def empty_queues():
     empty_set("tag_these_queues")
     empty_set("new_volumes")
     empty_set("unsorted_new_volumes")
+    empty_set("spare_cases")
 
 def inventory_build_pool():
     run_processes(process_recent_manifest_data, get_inventory_files_from_manifest(get_latest_manifest()))
@@ -123,6 +124,8 @@ def cleanup_and_report():
         print(clean_queues(nonmatching_file))
     for integrity_error in spop_all("integrity_error"):
         print(clean_queues(integrity_error))
+    for spare_cases in spop_all("integrity_error"):
+        print("Spare Case: {}".format(spare_cases))
 
 def tag_jp2s():
     for queue_to_tag in spop_all("tag_these_queues"):
@@ -168,7 +171,9 @@ def process_volume(vol_entry_bytestring):
     """This ingests the volume into the capstone database"""
     vol_entry = json.loads(vol_entry_bytestring.decode("utf-8"))
     queues = generate_queue_names(vol_entry_bytestring)
+    global _last_sync
 
+    # checks if keys/checksums in vol mets match keys/checksums in inventory
     for file_type in queues['mets']:
         if file_type == 'vol':
             continue
@@ -176,19 +181,21 @@ def process_volume(vol_entry_bytestring):
             r.sadd("nonmatching_files", vol_entry_bytestring)
             return False
 
-    bucket, volmets_path = json.loads(r.spop(queues['inventory']['vol']).decode("utf-8"))
+    bucket, volmets_path, volmets_md5 = json.loads(r.spop(queues['inventory']['vol']).decode("utf-8"))
     alto_barcode_to_case_map = defaultdict(list)
     
     try:
         with transaction.atomic():
-            volume = VolumeXML.objects.filter(barcode=vol_entry['barcode']).first()
-            if volume:
-                if is_same_complete_volume(volume, vol_entry, bucket, queues, vol_entry['barcode']):
-                    return False
-            else:
-                volume = VolumeXML(barcode=vol_entry['barcode'])
+            volume, vol_created = VolumeXML.objects.get_or_create(barcode=vol_entry['barcode'])
 
-            volume.orig_xml = ingest_storage.contents(volmets_path)
+            #same volmets path & same md5 & not forced full sync == same volume
+            if (volmets_path == volume.s3_key and
+                volume.md5() == volmets_md5 and 
+                _last_sync == datetime(1970, 1, 1)):
+                return False
+
+            if volume.md5() != volmets_md5:
+                volume.orig_xml = ingest_storage.contents(volmets_path)
             volume.s3_key = volmets_path
             volume.save()
             
@@ -196,13 +203,16 @@ def process_volume(vol_entry_bytestring):
             for case_entry in spop_all(queues['inventory']['casemets']):
                 case_entry = json.loads(case_entry.decode("utf-8"))
                 case_s3_key = case_entry[1]
-                
+                case_md5 = case_entry[2]
+
                 case_barcode = vol_entry['barcode'] + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
                 if case_barcode in existing_case_ids:
                     existing_case_ids.remove(case_barcode)
 
-                case, created = CaseXML.objects.get_or_create(volume=volume, case_id=case_barcode)
-                case.orig_xml = ingest_storage.contents(case_s3_key)
+                case, case_created = CaseXML.objects.get_or_create(volume=volume, case_id=case_barcode)
+                if case.md5() != case_md5:
+                    case.orig_xml = ingest_storage.contents(case_s3_key)
+                case.s3_key = case_s3_key
                 case.save()
                 case.update_case_metadata()
 
@@ -215,17 +225,21 @@ def process_volume(vol_entry_bytestring):
             for page_entry in spop_all(queues['inventory']['alto']):
                 page_entry = json.loads(page_entry.decode("utf-8"))
                 page_s3_key = page_entry[1]
+                page_md5 = page_entry[2]
 
                 alto_barcode = vol_entry['barcode'] + "_" + page_s3_key.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
                 if alto_barcode in existing_page_ids:
                     existing_page_ids.remove(alto_barcode)
-                page, created = PageXML.objects.get_or_create(volume=volume, barcode=alto_barcode)
-                page.orig_xml = ingest_storage.contents(page_s3_key)
-                page.save()
 
-                # write case-to-page matches
-                if alto_barcode_to_case_map[alto_barcode]:
-                    page.cases.set(alto_barcode_to_case_map[alto_barcode])
+                page, page_created = PageXML.objects.get_or_create(volume=volume, barcode=alto_barcode)
+                if page.md5() != page_md5:
+                    page.orig_xml = ingest_storage.contents(page_s3_key)
+                    page.s3_key = page_s3_key
+                    page.save()
+
+                    # write case-to-page matches
+                    if alto_barcode_to_case_map[alto_barcode]:
+                        page.cases.set(alto_barcode_to_case_map[alto_barcode])
 
             for spare_case in existing_case_ids:
                 r.sadd("spare_cases_{}".format(vol_entry['barcode']), spare_case)
@@ -256,7 +270,8 @@ def process_recent_manifest_data(list_key):
                 file_entry[1].endswith('/')
             ):
             continue
-        
+
+        md5 = file_entry[4]
         file_key = trim_csv_key(file_entry[1])
         barcode = file_key.split("/", 1)[0].split('_')[0]
         bucket = file_entry[0]
@@ -269,15 +284,16 @@ def process_recent_manifest_data(list_key):
             mets_files = extract_file_dict(bucket, file_key)
             for queue_type in mets_files:
                 queue_name = "{}_{}_{}_mets".format(barcode, queue_type, version_string)
-                [r.sadd(queue_name, json.dumps([bucket, "{}/{}".format(os.path.dirname(file_key), f)])) for f in mets_files[queue_type]]
+                [r.sadd(queue_name, json.dumps([bucket, "{}/{}".format(os.path.dirname(file_key), f[0]), f[1]])) for f in mets_files[queue_type]]
             json_add = json.dumps({
                 "barcode": barcode, 
                 "timestamp": str(datetime.now(tz=None)), 
                 "version_string": version_string,
                 "key": file_key,
+                "md5": md5,
             })
             r.sadd("unsorted_new_volumes", json_add)
-            r.sadd("{}_vol_{}_inventory".format(barcode, version_string), json.dumps([bucket, file_key]))
+            r.sadd("{}_vol_{}_inventory".format(barcode, version_string), json.dumps([bucket, file_key, md5]))
         else:
             split_key = key_regex.match(file_key)
             if split_key.group(4) == 'jp2':
@@ -287,7 +303,7 @@ def process_recent_manifest_data(list_key):
                 queue_name = "{}_tif_{}_inventory".format(barcode, version_string)
             else:
                 queue_name = "{}_{}_{}_inventory".format(barcode, split_key.group(3), version_string)
-            r.sadd(queue_name, json.dumps([bucket, file_key]))
+            r.sadd(queue_name, json.dumps([bucket, file_key, md5]))
 
 ### helpers ###
 
@@ -318,47 +334,16 @@ def empty_set(key):
 def extract_file_dict(bucket, key):
     """Gets the files assocated with the volume from the mets"""
     volume_file = ingest_storage.contents(key)
-    files = re.findall(r'<FLocat LOCTYPE="URL" xlink:href="(([A-Za-z]+)/(([A-Za-z_0-9]+).(jp2|xml|tif)))"/>', volume_file)
+
+    #files = re.findall(r'<FLocat LOCTYPE="URL" xlink:href="(([A-Za-z]+)/(([A-Za-z_0-9]+).(jp2|xml|tif)))"/>', volume_file)
+    files = re.findall(r'<file[A-Za-z0-9"=\s/_]+CHECKSUM="([a-zA-Z0-9]+)"[A-Za-z0-9"=\s]+>[\s\n]+<FLocat LOCTYPE="URL" xlink:href="(([A-Za-z]+)/(([A-Za-z_0-9]+).(jp2|xml|tif)))"/>[\s\n]+</file>', volume_file, re.MULTILINE)
     file_dict = defaultdict()
 
-    file_dict['jp2'] = [ file[0] for file in files if file[4] == 'jp2' ]
-    file_dict['tif'] = [ file[0] for file in files if file[4] == 'tif' ]
-    file_dict['alto'] = [ file[0] for file in files if file[1] == 'alto' ]
-    file_dict['casemets'] = [ file[0] for file in files if file[1] == 'casemets' ]
+    file_dict['jp2'] = [ (file[1], file[0]) for file in files if file[5] == 'jp2' ]
+    file_dict['tif'] = [ (file[1], file[0]) for file in files if file[5] == 'tif' ]
+    file_dict['alto'] = [ (file[1], file[0]) for file in files if file[2] == 'alto' ]
+    file_dict['casemets'] = [ (file[1], file[0]) for file in files if file[2] == 'casemets' ]
     return file_dict
-
-def is_same_complete_volume(volume, vol_entry, bucket, queues, barcode):
-    """This checks to see if the volume in the bucket is the same volume that's in the DB"""
-    existing_case_keys = set(CaseXML.objects.filter(volume=volume).values_list('s3_key', flat=True))
-    existing_page_keys = set(PageXML.objects.filter(volume=volume).values_list('s3_key', flat=True))
-
-    if ( existing_case_keys == set([entry[0] for entry in r.smembers(queues['inventory']['casemets'])]) and
-            existing_page_keys == set([entry[0] for entry in r.smembers(queues['inventory']['alto'])])
-        ):
-        return True
-
-    elif not volume_has_multi_s3_versions(vol_entry['key']):
-        existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('case_id', flat=True))
-        existing_page_ids = set(PageXML.objects.filter(volume=volume).values_list('barcode', flat=True))
-        for alto_file in r.smembers(queues['inventory']['alto']):
-            alto_id = "{}_{}".format(barcode, re.search(r'ALTO_([0-9]+_[0-9])\.xml', alto_file.decode('utf-8')).group(1))
-            if alto_id not in existing_page_ids:
-                return False
-            else:
-                existing_page_ids.remove(alto_id)
-        for case_file in r.smembers(queues['inventory']['casemets']):
-            case_id = "{}_{}".format(barcode, re.search(r'CASEMETS_([0-9]+)\.xml', case_file.decode('utf-8')).group(1))
-            if case_id not in existing_case_ids:
-                return False
-            else:
-                existing_case_ids.remove(case_id) 
-        if len(existing_case_ids) + len(existing_page_ids) > 0:
-            return False
-    else:
-        return False
-
-    return True
-
 
 def check_last_sync():
     """ This function gets called a LOT. Stores value in a global and returns that if it's already been checked
