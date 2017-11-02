@@ -2,7 +2,7 @@ import pytest
 from django.test import Client
 from django.conf import settings
 from django.core.management import call_command
-from rest_framework.test import RequestsClient
+from rest_framework.test import RequestsClient, APIRequestFactory
 
 from test_data import factories
 
@@ -54,4 +54,8 @@ def auth_client():
 def api_url():
     return "http://testserver" + settings.API_FULL_URL + "/"
 
+
+@pytest.fixture
+def api_request_factory():
+    return APIRequestFactory()
 

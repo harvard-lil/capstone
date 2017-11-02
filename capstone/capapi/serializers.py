@@ -80,11 +80,6 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
-class AuthenticatedCaseSerializer(CaseSerializer):
-    class Meta(CaseSerializer.Meta):
-        fields = CaseSerializer.Meta.fields + ('casebody',)
-
-
 class JurisdictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Jurisdiction

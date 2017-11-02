@@ -42,8 +42,6 @@ def create_download_response(filename='', content=[]):
     # Reset file pointer
     tmp_file.seek(0)
 
-    # return open file handle
-    # return tmp_file
     response = FileResponse(FileWrapper(tmp_file), content_type='application/zip')
     response['Content-Disposition'] = 'attachment; filename="%s"' % filename
     return response
@@ -69,7 +67,7 @@ def email(reason, user):
         token_url = os.path.join(settings.API_BASE_URL, "accounts/verify-user", str(user.id), user.get_activation_nonce())
         send_mail(
             'CaseLaw Access Project: Verify your email address',
-            f"Please click here to verify your email address: {token_url} If you believe you have received this message in error, please ignore it.",
+            "Please click here to verify your email address: %s If you believe you have received this message in error, please ignore it." % token_url,
             settings.API_EMAIL_ADDRESS,
             [user.email],
             fail_silently=False, )
