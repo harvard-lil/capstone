@@ -1,12 +1,15 @@
 import os
+import json
 from datetime import datetime
 import logging
 import zipfile
 import tempfile
+from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.defaultfilters import slugify
+from django.http import FileResponse
 
 from capdb.models import CaseXML
 
@@ -21,26 +24,29 @@ def get_matching_case_xml(case_id):
         logger.error("Case id mismatch", case_id)
 
 
-def create_zip(case_list):
-    # tmp file backed by RAM up to 10MB, then stored to disk
-    tmp_file = tempfile.SpooledTemporaryFile(10 * 2 ** 20)
-    with zipfile.ZipFile(tmp_file, 'w', zipfile.ZIP_DEFLATED) as archive:
-        for case in case_list:
-            archive.writestr(case.slug + '.xml', get_matching_case_xml(case.case_id))
-
-    # Reset file pointer
-    tmp_file.seek(0)
-
-    # return open file handle
-    return tmp_file
-
-
 def create_zip_filename(case_list):
     ts = slugify(datetime.now().timestamp())
     if len(case_list) == 1:
         return case_list[0].slug + '-' + ts + '.zip'
 
     return '{0}_{1}_{2}.zip'.format(case_list[0].slug[:20], case_list[-1].slug[:20], ts)
+
+
+def create_download_response(filename='', content=[]):
+    # tmp file backed by RAM up to 10MB, then stored to disk
+    tmp_file = tempfile.SpooledTemporaryFile(10 * 2 ** 20)
+    with zipfile.ZipFile(tmp_file, 'w', zipfile.ZIP_DEFLATED) as archive:
+        for item in content:
+            archive.writestr(item['slug'] + '.json', json.dumps(item))
+
+    # Reset file pointer
+    tmp_file.seek(0)
+
+    # return open file handle
+    # return tmp_file
+    response = FileResponse(FileWrapper(tmp_file), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+    return response
 
 
 def email(reason, user):

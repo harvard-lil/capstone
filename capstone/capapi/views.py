@@ -1,10 +1,8 @@
 import logging
 
-from wsgiref.util import FileWrapper
-
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
-from django.http import JsonResponse, FileResponse
+from django.http import JsonResponse
 
 from rest_framework import status
 from rest_framework import renderers, viewsets, mixins
@@ -95,26 +93,20 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         blacklisted_case_count = len(list((case for case in cases if not case.jurisdiction.whitelisted)))
 
-        user_serializer = serializers.UserSerializer()
-
         try:
             # check user's case allowance against blacklisted
-            user = user_serializer.verify_case_allowance(self.request.user, blacklisted_case_count)
+            user = serializers.UserSerializer().verify_case_allowance(self.request.user, blacklisted_case_count)
         except ValidationError as err:
             return JsonResponse(err.detail, status=403)
 
-        response = self.create_download_response(cases)
+        filename = resources.create_zip_filename(cases)
+
+        case_response = serializers.MetaCaseSerializer(data=cases, many=True, context={'request': self.request})
+        if case_response.is_valid():
+            case_objects = case_response.data
+        response = resources.create_download_response(filename=filename, content=case_objects)
         user.update_case_allowance(case_count=blacklisted_case_count)
 
-        return response
-
-    def create_download_response(self, case_list):
-        zip_filename = resources.create_zip_filename(case_list)
-
-        streamed_file = resources.create_zip(case_list)
-        response = FileResponse(FileWrapper(streamed_file), content_type='application/zip')
-
-        response['Content-Disposition'] = 'attachment; filename="%s"' % zip_filename
         return response
 
     def list(self, *args, **kwargs):

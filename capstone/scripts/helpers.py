@@ -116,6 +116,7 @@ def read_file(path):
     with open(path) as in_file:
         return in_file.read()
 
+
 def parse_xml(xml):
     """
         Parse XML with PyQuery.
@@ -127,6 +128,7 @@ def parse_xml(xml):
         
     return PyQuery(xml, parser='xml', namespaces=nsmap)
 
+
 def copy_file(from_path, to_path, from_storage=None, to_storage=None):
     """
         Copy contents of from_path to to_path, optionally using storages instead of filesystem open().
@@ -136,3 +138,17 @@ def copy_file(from_path, to_path, from_storage=None, to_storage=None):
     with from_open(from_path, "rb") as in_file:
         with to_open(to_path, "wb") as out_file:
             shutil.copyfileobj(in_file, out_file)
+
+
+def extract_casebody(case_xml):
+    # strip soft hyphens from line endings
+    text = case_xml.replace(u'\xad', '')
+    case = parse_xml(text)
+
+    # strip labels from footnotes:
+    for footnote in case('casebody|footnote'):
+        label = footnote.attrib.get('label')
+        if label and footnote[0].text.startswith(label):
+            footnote[0].text = footnote[0].text[len(label):]
+
+    return case('casebody|casebody').html()
