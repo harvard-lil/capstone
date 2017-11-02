@@ -26,6 +26,11 @@ def test_case_and_page_xml(volume_xml):
     assert case_xml.pages.count() == 6
 
 @pytest.mark.django_db
+def test_update_dup_checking(volume_xml):
+    fabfile.total_sync_with_s3()
+    test_case_and_page_xml(volume_xml)
+
+@pytest.mark.django_db
 def test_sync_metadata(ingest_metadata):
     # helper to get count of all migrated models
     models = [VolumeMetadata, TrackingToolLog, Reporter, ProcessStep, BookRequest, TrackingToolUser]
