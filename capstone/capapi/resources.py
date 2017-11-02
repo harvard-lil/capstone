@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import logging
 import zipfile
@@ -62,10 +63,9 @@ def email(reason, user):
         token_url = os.path.join(settings.API_BASE_URL, "accounts/verify-user", str(user.id), user.get_activation_nonce())
         send_mail(
             'CaseLaw Access Project: Verify your email address',
-            f"""Please click here to verify your email address: {token_url}
-            If you believe you have received this message in error, please ignore it.
-            """,
+            f"Please click here to verify your email address: {token_url} If you believe you have received this message in error, please ignore it.",
             settings.API_EMAIL_ADDRESS,
             [user.email],
             fail_silently=False, )
         logger.info("sent new_signup email for %s" % user.email)
+
