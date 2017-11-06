@@ -188,10 +188,14 @@ def process_volume(vol_entry_bytestring):
         with transaction.atomic():
             volume, vol_created = VolumeXML.objects.get_or_create(barcode=vol_entry['barcode'])
 
+            if not vol_created:
+                from scripts.helpers import parse_xml
+                parsed_volume = parse_xml(volume.orig_xml)
+
             #same volmets path & same md5 & not forced full sync == same volume
             if (volmets_path == volume.s3_key and
                 volume.md5() == volmets_md5 and 
-                _last_sync == datetime(1970, 1, 1)):
+                _last_sync != datetime(1970, 1, 1)):
                 return False
 
             if volume.md5() != volmets_md5:
@@ -204,7 +208,7 @@ def process_volume(vol_entry_bytestring):
                 case_entry = json.loads(case_entry.decode("utf-8"))
                 case_s3_key = case_entry[1]
                 case_md5 = case_entry[2]
-
+                
                 case_barcode = vol_entry['barcode'] + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
                 if case_barcode in existing_case_ids:
                     existing_case_ids.remove(case_barcode)
@@ -240,7 +244,7 @@ def process_volume(vol_entry_bytestring):
                     # write case-to-page matches
                     if alto_barcode_to_case_map[alto_barcode]:
                         page.cases.set(alto_barcode_to_case_map[alto_barcode])
-
+            
             for spare_case in existing_case_ids:
                 r.sadd("spare_cases_{}".format(vol_entry['barcode']), spare_case)
 

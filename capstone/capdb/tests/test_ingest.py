@@ -1,8 +1,8 @@
 import pytest
 
 import fabfile
-from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata
-
+from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata, VolumeXML, PageXML
+from scripts.helpers import parse_xml
 
 @pytest.mark.django_db
 def test_volume_metadata(volume_xml):
@@ -26,9 +26,55 @@ def test_case_and_page_xml(volume_xml):
     assert case_xml.pages.count() == 6
 
 @pytest.mark.django_db
-def test_update_dup_checking(volume_xml):
+def test_update_dup_checking(volume_xml, case_xml):
     fabfile.total_sync_with_s3()
-    test_case_and_page_xml(volume_xml)
+ 
+    # change value in ALTO
+    page_xml=PageXML.objects.get(barcode='32044057892259_00008_0')
+    original_page_md5 = page_xml.md5()    
+    parsed_page=parse_xml(page_xml.orig_xml)
+    parsed_page('alto|String[ID="ST_15.2.1.5"]').attr["CONTENT"] = "Inversion"
+    page_xml.orig_xml = str(parsed_page)
+    page_xml.save()
+
+    # change corresponding value in casemets
+    parsed_case = parse_xml(case_xml.orig_xml)
+    original_case_md5 = case_xml.md5()
+    parsed_case = parsed_case('casebody|parties[id="b15-4"]').text('The Home Inversion Company of New York v. John Kirk, for use of William Kirk.')
+    parsed_case('mets|file[ID="alto_00008_0"]').attr["CHECKSUM"] = page_xml.md5()
+    case_xml.orig_xml = str(parsed_case)
+    case_xml.save()
+
+    # update checksums in volume mets
+    parsed_volume = parse_xml(volume_xml.orig_xml)
+    original_vol_md5 = volume_xml.md5()
+    parsed_volume('mets|file[ID="alto_00008_0"]').attr["CHECKSUM"] = page_xml.md5()
+    parsed_volume('mets|file[ID="casemets_0001"]').attr["CHECKSUM"] = case_xml.md5()
+    volume_xml.save()
+
+    # requery items
+    volume_xml = VolumeXML.objects.get(barcode='32044057892259')
+    case_xml = volume_xml.case_xmls.first()
+    page_xml=PageXML.objects.get(barcode='32044057892259_00008_0')
+
+    # make sure the writes worked. If they failed, the test would falsely pass
+    assert original_page_md5 != page_xml.md5()
+    assert original_case_md5 != case_xml.md5()
+    assert 'Inversion' in case_xml.orig_xml
+    assert 'Inversion' in page_xml.orig_xml
+
+    fabfile.total_sync_with_s3()
+
+    # requery items
+    volume_xml = VolumeXML.objects.get(barcode='32044057892259')
+    case_xml = volume_xml.case_xmls.first()
+    page_xml=PageXML.objects.get(barcode='32044057892259_00008_0')
+
+    assert original_page_md5 == page_xml.md5()
+    assert original_case_md5 == case_xml.md5()
+    assert 'Inversion' not in case_xml.orig_xml
+    assert 'Inversion' not in page_xml.orig_xml
+
 
 @pytest.mark.django_db
 def test_sync_metadata(ingest_metadata):
