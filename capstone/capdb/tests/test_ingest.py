@@ -47,7 +47,6 @@ def test_update_dup_checking(volume_xml, case_xml):
 
     # update checksums in volume mets
     parsed_volume = parse_xml(volume_xml.orig_xml)
-    original_vol_md5 = volume_xml.md5()
     parsed_volume('mets|file[ID="alto_00008_0"]').attr["CHECKSUM"] = page_xml.md5()
     parsed_volume('mets|file[ID="casemets_0001"]').attr["CHECKSUM"] = case_xml.md5()
     volume_xml.save()

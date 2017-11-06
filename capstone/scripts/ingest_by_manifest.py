@@ -188,10 +188,6 @@ def process_volume(vol_entry_bytestring):
         with transaction.atomic():
             volume, vol_created = VolumeXML.objects.get_or_create(barcode=vol_entry['barcode'])
 
-            if not vol_created:
-                from scripts.helpers import parse_xml
-                parsed_volume = parse_xml(volume.orig_xml)
-
             #same volmets path & same md5 & not forced full sync == same volume
             if (volmets_path == volume.s3_key and
                 volume.md5() == volmets_md5 and 
