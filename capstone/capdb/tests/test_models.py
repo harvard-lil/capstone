@@ -1,7 +1,7 @@
 import pytest
 
 from capdb.models import CaseMetadata
-from scripts.helpers import parse_xml
+from scripts.helpers import parse_xml, serialize_xml
 
 
 ### CaseMetadata ###
@@ -14,7 +14,7 @@ def test_update_case_metadata(case_xml):
     # change xml
     parsed = parse_xml(case_xml.orig_xml)
     parsed('case|citation[category="official"]').text('123 Test 456')
-    case_xml.orig_xml = str(parsed)
+    case_xml.orig_xml = serialize_xml(parsed)
     case_xml.save()
     case_xml.update_case_metadata()
 
