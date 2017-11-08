@@ -1,4 +1,5 @@
 import shutil
+from lxml import etree
 from pyquery import PyQuery
 
 
@@ -128,6 +129,11 @@ def parse_xml(xml):
         
     return PyQuery(xml, parser='xml', namespaces=nsmap)
 
+def serialize_xml(xml):
+    """
+        Write PyQuery object back to utf-8 bytestring.
+    """
+    return b''.join([etree.tostring(e, encoding='utf-8', xml_declaration=True) for e in xml])
 
 def copy_file(from_path, to_path, from_storage=None, to_storage=None):
     """
