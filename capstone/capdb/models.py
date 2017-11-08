@@ -24,10 +24,7 @@ class XMLField(models.TextField):
 
 def checksum(xml):
     m = hashlib.md5()
-    hashstring = xml
-    if "<?xml version='1.0' encoding='utf-8'?>" != xml.split('\n')[0]:
-        hashstring = "<?xml version='1.0' encoding='utf-8'?>\n" + hashstring
-    m.update(hashstring.encode())
+    m.update(xml.encode())
     return m.hexdigest()
 
 ### models ###
