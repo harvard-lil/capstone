@@ -3,6 +3,7 @@ import logging
 from rest_framework import serializers
 
 from capdb import models
+from scripts.helpers import extract_casebody
 from .models import APIUser
 from .resources import email
 
@@ -15,8 +16,39 @@ class CitationSerializer(serializers.ModelSerializer):
         fields = ('url', 'type', 'cite')
 
 
+class MetaCaseSerializer(serializers.BaseSerializer):
+    """
+    Serializer for getting case metadata backfilled with the casebody xml
+    """
+    def to_internal_value(self, case):
+        case_metadata = CaseSerializer(case, context=self.context).data
+        case_xml = CaseXMLSerializer(case, context=self.context).data
+        meta_case = dict(case_metadata)
+        meta_case['casebody'] = case_xml['casebody']
+        return meta_case
+
+    def to_representation(self, obj):
+        return obj
+
+
+class CaseXMLSerializer(serializers.ModelSerializer):
+    casebody = serializers.SerializerMethodField(source='get_casebody')
+    case_id = serializers.CharField()
+
+    class Meta:
+        model = models.CaseXML
+        fields = ('casebody', 'case_id')
+
+    @staticmethod
+    def get_casebody(data):
+        case = models.CaseXML.objects.get(case_id=data.case_id)
+        return extract_casebody(case.orig_xml)
+
+
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name="casemetadata-detail", lookup_field='slug')
+    url = serializers.HyperlinkedIdentityField(
+        view_name="casemetadata-detail",
+        lookup_field='slug')
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
     court = serializers.ReadOnlyField(source='court.name')
     court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True)
@@ -51,7 +83,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
 class JurisdictionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Jurisdiction
-        fields = ('url', 'id', 'slug', 'name', )
+        fields = ('url', 'id', 'slug', 'name',)
 
 
 class VolumeSerializer(serializers.ModelSerializer):
@@ -125,6 +157,20 @@ class UserSerializer(serializers.ModelSerializer):
         if not found_user.is_authenticated:
             found_user.authenticate_user(activation_nonce=activation_nonce)
         return found_user
+
+    def verify_case_allowance(self, user, case_count):
+        if case_count <= 0:
+            return user
+        user.update_case_allowance()
+
+        if not user.case_allowance >= case_count:
+            time_remaining = user.get_case_allowance_update_time_remaining()
+            raise serializers.ValidationError({
+                "error": "You have attempted to download more than your allowed number of cases. Your limit will reset to default again in %s." % time_remaining,
+                "case_allowance_remaining": user.case_allowance,
+            })
+        else:
+            return user
 
 
 class RegisterUserSerializer(serializers.Serializer):

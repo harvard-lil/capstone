@@ -31,6 +31,12 @@ Clone:
 
     $ git clone https://github.com/harvard-lil/capstone.git
     
+You will need MySQL, Redis, and Postgres for Capstone.
+- MySQL installation:
+  `brew install mysql` or [with apt-get](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-14-04)
+- [Redis installation](https://redis.io/topics/quickstart)
+- [Postgres installation](https://www.postgresql.org/download/)
+
 Set up Python virtualenv:
     
     $ cd capstone/capstone  # move to Django subdirectory
@@ -40,7 +46,6 @@ Set up Python virtualenv:
 From here on, the prompt **(capstone)$** means you are running inside the `capstone/` subdir with
 the `capstone` virtualenv activated.
 
-[Download and install Postgres](https://www.postgresql.org/download/), if necessary.
 
 Set up a postgres database:
 
