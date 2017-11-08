@@ -1,7 +1,7 @@
 import pytest
 
 import fabfile
-from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata, VolumeXML, PageXML
+from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata, PageXML
 from scripts.helpers import parse_xml
 
 @pytest.mark.django_db
