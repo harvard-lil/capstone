@@ -10,8 +10,9 @@ def test_volume_metadata(volume_xml):
     assert volume_xml.volume_metadata.rare is False  # boolean conversion
 
 @pytest.mark.django_db
-def test_tracking_tool_relationship(volume_xml):
+def test_tracking_tool_relationships(volume_xml):
     assert volume_xml.volume_metadata.reporter.full_name == "Illinois Appellate Court Reports"
+    assert volume_xml.volume_metadata.tracking_tool_logs.first().pstep.pk == 'Prqu'
 
 @pytest.mark.django_db
 def test_volume_xml(volume_xml):
