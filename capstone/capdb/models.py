@@ -212,19 +212,22 @@ class VolumeMetadata(models.Model):
 
 
 class TrackingToolLog(models.Model):
-    volume = models.ForeignKey(VolumeMetadata)
+    volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs")
     entry_text = models.CharField(max_length=128, blank=True, help_text="Text log entry. Primarily used when pstep isn't set.")
     notes = models.TextField(blank=True, null=True)
-    created_by = models.ForeignKey(TrackingToolUser)
+    created_by = models.ForeignKey(TrackingToolUser, related_name="tracking_tool_logs")
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
-    pstep = models.ForeignKey(ProcessStep, blank=True, null=True, help_text="A significant event in production")
+    pstep = models.ForeignKey(ProcessStep, blank=True, null=True, help_text="A significant event in production", related_name="tracking_tool_logs")
     exception = models.BooleanField(help_text="Nothing to do with software exceptions - more like a UPS delivery 'exception'")
     warning = models.BooleanField(help_text="Something that's a bit off, but not necessarily indicative of a problem")
     version_string = models.CharField(max_length=32, blank=True, null=True, help_text="'YYYY_DD_MM_hh.mm.ss' Appended to s3 dir to distinguish versions")
 
     def __str__(self):
         return "%s %s" % (self.pstep, self.entry_text)
+
+    class Meta:
+        ordering = ['created_at']
 
 
 class VolumeXML(models.Model):
