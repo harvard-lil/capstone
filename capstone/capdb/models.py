@@ -358,16 +358,6 @@ class CaseXML(models.Model):
 
         case_metadata.save()
 
-    def update_case(self, updated_case):
-        results = update_case_alto_unified(self, updated_case)
-
-        if "ok" in results.keys():
-            # todo make entry in data migrations
-            return results["ok"]
-        else:
-            return results["error"]
-
-
 class CaseMetadata(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     case_id = models.CharField(max_length=64, null=True)
