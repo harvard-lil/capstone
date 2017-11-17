@@ -3,7 +3,7 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 
 from scripts.process_metadata import get_case_metadata
-from .utils import generate_unique_slug
+from .utils import generate_unique_slug, update_case_alto_unified
 from scripts.helpers import *
 
 ### helpers ###
@@ -358,6 +358,15 @@ class CaseXML(models.Model):
 
         case_metadata.save()
 
+    def update_case(self, updated_case):
+        results = update_case_alto_unified(self, updated_case)
+
+        if "ok" in results.keys():
+            # todo make entry in data migrations
+            return results["ok"]
+        else:
+            return results["error"]
+
 
 class CaseMetadata(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
@@ -427,7 +436,7 @@ class DataMigration(models.Model):
     transaction_timestamp = models.DateTimeField()
     notes = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=10, choices=(("applied", "applied"), ("pending", "pending"), ("error", "error")))
+    status = models.CharField(max_length=10, choices=(("ephemeral", "ephemeral"), ("applied", "applied"), ("pending", "pending"), ("error", "error")))
     traceback = models.TextField(blank=True, null=True)
     author = models.CharField(max_length=255)
     initiator = models.CharField(max_length=255)

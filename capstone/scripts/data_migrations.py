@@ -31,6 +31,25 @@ def run_pending_migrations():
                     migration.case_xml_rollback = modify(volume, 'volume')
             migration.save()
 
+def run_migration(id):
+    """ 
+        Runs one migration, based on ID
+    """
+    migration = DataMigration.get(id=id)
+    with migration_session_scope(migration):
+        migration.transaction_timestamp=datetime.datetime.now()
+        migration.status = "applied"
+        if migration.case_xml_changed is not None:
+            for case in migration.case_xml_changed:
+                migration.case_xml_rollback = modify(case, 'case')
+        if migration.alto_xml_changed is not None:
+            for alto in migration.alto_xml_changed:
+                migration.case_xml_rollback = modify(alto, 'alto')
+        if migration.volume_xml_changed is not None:
+            for volume in migration.volume_xml_changed:
+                migration.case_xml_rollback = modify(volume, 'volume')
+        migration.save()
+
 
 def modify(changes, type):
     """
