@@ -86,13 +86,20 @@ def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
         for source_field_name, dest_field_name in field_map.items():
             value = getattr(source_record, source_field_name)
             
-            # field specific operations
+            # field specific operations:
+
             # null value in boolean field should be False
             if destination._meta.get_field(dest_field_name).get_internal_type() == 'BooleanField':
                 if not value or value == 'N':
                     value = False
                 elif value == 'Y':
                     value = True
+
+            # false-y values like empty string in _id fields should be None --
+            # CharField foreign keys with empty string will throw an error on save, even if foreign key isn't required
+            elif dest_field_name.endswith("_id"):
+                if not value:
+                    value = None
 
             try:
                 setattr(destination_record, dest_field_name, value)
