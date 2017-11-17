@@ -2,8 +2,6 @@ from django.template.defaultfilters import slugify
 from scripts.helpers import parse_xml, nsmap
 from collections import defaultdict
 
-import json
-
 def generate_unique_slug(instance, raw_string, field='slug', max_tries=1000):
     """
         Get a unique slug for instance by sluggifying raw_string, checking database, and appending -1, -2 etc. if necessary.
