@@ -31,11 +31,18 @@ def test_case_alto_modify_word(case_xml):
     data_migration = update_case_alto_unified(case_xml, updated_case)
     assert 'ok' in data_migration
     assert '4rgUm3nt' in data_migration['ok']['case_xml_changed'][0]['changes'][0]['actions']['content']
-    assert '4rgUm3nt' in data_migration['ok']['alto_xml_changed'][0]['changes'][2]['actions']['add_update']['CONTENT']
+    assert '4rgUm3nt' == data_migration['ok']['alto_xml_changed'][0]['changes'][2]['actions']['add_update']['CONTENT']
+
+
 
 @pytest.mark.django_db
 def test_case_alto_add_delete_tag(case_xml):
-    pass
+    #updated_case = parse_xml(case_xml.orig_xml)
+    #updated_case('case|decisiondate').delete()
+    #data_migration = update_case_alto_unified(case_xml, updated_case)
+    #assert 'ok' in data_migration
+    #assert '4rgUm3nt' in data_migration['ok']['case_xml_changed'][0]['changes'][0]['actions']['content']
+
 
 @pytest.mark.django_db
 def test_case_alto_modify_tag(case_xml):
