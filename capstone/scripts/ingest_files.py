@@ -11,6 +11,7 @@ from django.db import transaction, IntegrityError
 from capdb.models import VolumeXML, PageXML, CaseXML
 from capdb.storages import ingest_storage
 
+from scripts.helpers import chunked_iterator
 
 ### helpers ###
 
@@ -179,8 +180,8 @@ def all_volumes():
 
 
 def update_case_metadata():
-    casexmls = CaseXML.objects.all()
-    for case in tqdm(casexmls):
+    casexmls = CaseXML.objects.all().order_by('id')
+    for case in tqdm(chunked_iterator(casexmls)):
         try:
             case.update_case_metadata()
         except Exception as e:
