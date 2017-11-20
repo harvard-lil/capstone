@@ -51,8 +51,12 @@ Set up a postgres database:
 
     (capstone)$ psql -c "CREATE DATABASE capstone;"
     (capstone)$ psql -c "CREATE DATABASE capapi;"
-    (capstone)$ fab init_db  # one time -- set up database tables and development Django admin user
+    (capstone)$ fab init_db  # one time -- set up database tables and development Django admin user, migrate databases
     (capstone)$ fab load_test_data  # load in our test data
+
+Migrate databases:
+
+    (capstone)$ fab migrate
 
 Running Capstone Server
 -----------------------
