@@ -1,6 +1,7 @@
 import shutil
 from lxml import etree
 from pyquery import PyQuery
+from django.core.paginator import Paginator
 
 
 nsmap = {
@@ -146,6 +147,17 @@ def copy_file(from_path, to_path, from_storage=None, to_storage=None):
             shutil.copyfileobj(in_file, out_file)
 
 
+def chunked_iterator(queryset, chunk_size=1000):
+    """
+    Avoiding holding a ton of objects in memory by paginating, yielding smaller amount of objects instead
+    From https://stackoverflow.com/questions/4222176/why-is-iterating-through-a-large-django-queryset-consuming-massive-amounts-of-me/31525594#31525594
+    """
+    paginator = Paginator(queryset, chunk_size)
+    for page in range(1, paginator.num_pages + 1):
+        for obj in paginator.page(page).object_list:
+            yield obj
+
+            
 def extract_casebody(case_xml):
     # strip soft hyphens from line endings
     text = case_xml.replace(u'\xad', '')
@@ -158,3 +170,5 @@ def extract_casebody(case_xml):
             footnote[0].text = footnote[0].text[len(label):]
 
     return case('casebody|casebody').html()
+
+ 
