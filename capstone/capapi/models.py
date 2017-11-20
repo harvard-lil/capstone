@@ -78,7 +78,7 @@ class APIUser(AbstractBaseUser):
 
     def get_case_allowance_update_time_remaining(self):
         td = self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) - timezone.now()
-        return "%sh. %sm." % (td.seconds / 3600, (td.seconds / 60) % 60)
+        return "%s hours or %s minutes." % (round(td.seconds / 3600, 2), round((td.seconds / 60) % 60, 2))
 
     def authenticate_user(self, **kwargs):
         # TODO: make into class method

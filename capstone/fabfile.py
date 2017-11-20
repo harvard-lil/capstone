@@ -8,6 +8,7 @@ import django
 import zipfile
 
 # set up Django
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 try:
     django.setup()
@@ -117,7 +118,7 @@ def add_test_case(*barcodes):
     from django.core import serializers
     from tracking_tool.models import Volumes, Reporters, BookRequests, Pstep, Eventloggers, Hollis, Users
     from capdb.storages import ingest_storage
-    from scripts.helpers import parse_xml, copy_file, resolve_namespace
+    from scripts.helpers import parse_xml, copy_file, resolve_namespace, serialize_xml
 
     ## write S3 files to local disk
 
@@ -173,8 +174,8 @@ def add_test_case(*barcodes):
             if not flocat_el.attrib[resolve_namespace('xlink|href')] in local_files:
                 file_el = flocat_el.getparent()
                 file_el.getparent().remove(file_el)
-        with open(source_volmets_path, "w") as out_file:
-            out_file.write(str(volmets_xml))
+        with open(source_volmets_path, "wb") as out_file:
+            out_file.write(serialize_xml(volmets_xml))
 
     ## load metadata into JSON fixtures from tracking tool
 
@@ -187,7 +188,10 @@ def add_test_case(*barcodes):
 
         print("Updating metadata for", volume_barcode)
 
-        tt_volume = Volumes.objects.get(bar_code=volume_barcode)
+        try:
+            tt_volume = Volumes.objects.get(bar_code=volume_barcode)
+        except Volumes.DoesNotExist:
+            raise Exception("Volume %s not found in the tracking tool -- is settings.py configured to point to live tracking tool data?" % volume_barcode)
         to_serialize.add(tt_volume)
 
         user_ids.add(tt_volume.created_by)
