@@ -3,6 +3,7 @@ import re
 import time
 from collections import defaultdict
 from multiprocessing import Pool
+from tqdm import tqdm
 
 from django.conf import settings
 from django.db import transaction, IntegrityError
@@ -179,5 +180,8 @@ def all_volumes():
 
 def update_case_metadata():
     casexmls = CaseXML.objects.all()
-    for case in casexmls:
-        case.update_case_metadata()
+    for case in tqdm(casexmls):
+        try:
+            case.update_case_metadata()
+        except Exception as e:
+            print(e, case.case_id)
