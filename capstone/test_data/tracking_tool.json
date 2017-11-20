@@ -39,6 +39,18 @@
   }
 },
 {
+  "model": "tracking_tool.pstep",
+  "pk": "Ppre",
+  "fields": {
+    "type": null,
+    "name": "prepped",
+    "prereq": "Pana",
+    "desc": "Read barcodes on Stack Wagon before moving vols to scan room",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-08-21T04:03:51Z"
+  }
+},
+{
   "model": "tracking_tool.users",
   "pk": 7,
   "fields": {
@@ -53,14 +65,14 @@
 },
 {
   "model": "tracking_tool.pstep",
-  "pk": "Drcs",
+  "pk": "Pana",
   "fields": {
     "type": null,
-    "name": "Received Shared",
-    "prereq": "",
-    "desc": "Received 'shared' files from innodata",
-    "created_at": "2016-06-30T17:44:18Z",
-    "updated_at": "2016-06-30T17:44:18Z"
+    "name": "analyzed",
+    "prereq": "AND Prec, {{publicationyear}}, {{hollis_no}}, {{reporter_id}}, {{volume}}, !!analysislogic!!",
+    "desc": "Load book cart on 1L to move completed vol to Room 231",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-12-21T00:19:22Z"
   }
 },
 {
@@ -256,6 +268,18 @@
   }
 },
 {
+  "model": "tracking_tool.pstep",
+  "pk": "Pugv",
+  "fields": {
+    "type": null,
+    "name": "Underground Vaults",
+    "prereq": "",
+    "desc": "Stored with Underground Vaults",
+    "created_at": "2016-08-16T19:21:12Z",
+    "updated_at": "2016-08-16T21:23:11Z"
+  }
+},
+{
   "model": "tracking_tool.eventloggers",
   "pk": 239193,
   "fields": {
@@ -437,18 +461,6 @@
   }
 },
 {
-  "model": "tracking_tool.pstep",
-  "pk": "Prqu",
-  "fields": {
-    "type": null,
-    "name": "queued",
-    "prereq": "",
-    "desc": "Placed in a request queue",
-    "created_at": "2013-12-13T05:26:17Z",
-    "updated_at": "2013-12-13T05:26:17Z"
-  }
-},
-{
   "model": "tracking_tool.eventloggers",
   "pk": 242832,
   "fields": {
@@ -564,18 +576,6 @@
 },
 {
   "model": "tracking_tool.pstep",
-  "pk": "Pmey",
-  "fields": {
-    "type": null,
-    "name": "Meyer pickup",
-    "prereq": "Pss1",
-    "desc": "Volumes have been boxed and transferred from Langdell to the Meyer facilitiy in CT.  For each instance of PMeyer, a barcode must be entered in the Meyer Box Barcode field.",
-    "created_at": "2016-03-31T12:37:09Z",
-    "updated_at": "2016-03-31T12:37:09Z"
-  }
-},
-{
-  "model": "tracking_tool.pstep",
   "pk": "Pss1",
   "fields": {
     "type": null,
@@ -587,15 +587,111 @@
   }
 },
 {
-  "model": "tracking_tool.pstep",
-  "pk": "Pana",
+  "model": "tracking_tool.volumes",
+  "pk": "32044057892259",
   "fields": {
-    "type": null,
-    "name": "analyzed",
-    "prereq": "AND Prec, {{publicationyear}}, {{hollis_no}}, {{reporter_id}}, {{volume}}, !!analysislogic!!",
-    "desc": "Load book cart on 1L to move completed vol to Room 231",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2013-12-21T00:19:22Z"
+    "hollis_no": "005457617",
+    "volume": "23",
+    "publicationdate": null,
+    "publisher": "Callaghan & Company",
+    "publicationyear": 1888,
+    "reporter_id": 315,
+    "publicationdategranularity": null,
+    "nom_volume": null,
+    "nominative_name": "E.B. Smith",
+    "series_volume": "",
+    "spine_start_date": 0,
+    "spine_end_date": 0,
+    "start_date": 1887,
+    "end_date": 1887,
+    "page_start_date": 0,
+    "page_end_date": 0,
+    "redaction_profile": "",
+    "contributing_library": "",
+    "rare": "N",
+    "hscrev": "N",
+    "hsc_accession": null,
+    "needs_repair": null,
+    "missing_text_pages": "",
+    "created_by": 3,
+    "bibrev": "N",
+    "pages": 699,
+    "dup": null,
+    "created_at": "2015-08-05T13:52:58Z",
+    "updated_at": "2016-08-16T19:31:09Z",
+    "replaced_pages": "",
+    "cases": null,
+    "marginalia": null,
+    "pop": "Chicago, IL",
+    "title": null,
+    "handfeed": null,
+    "imgct": 696,
+    "hold": null,
+    "request_id": 49,
+    "pub_del_pg": null,
+    "notes": "",
+    "pubdel_pages": null,
+    "original_barcode": null,
+    "scope_reason": null,
+    "out_of_scope": 0,
+    "meyer_box_barcode": "WBMBox538",
+    "uv_box_barcode": "L0000548486",
+    "meyer_ky_truck": "WBMKYTruck01",
+    "meyer_pallet": "WBMPallet12"
+  }
+},
+{
+  "model": "tracking_tool.volumes",
+  "pk": "32044057891608",
+  "fields": {
+    "hollis_no": "005821473",
+    "volume": "1",
+    "publicationdate": null,
+    "publisher": "Press of Case, Lockwood and Company",
+    "publicationyear": 1861,
+    "reporter_id": 1058,
+    "publicationdategranularity": null,
+    "nom_volume": null,
+    "nominative_name": "Breese & Beecher",
+    "series_volume": "",
+    "spine_start_date": 0,
+    "spine_end_date": 0,
+    "start_date": 1819,
+    "end_date": 1831,
+    "page_start_date": 1819,
+    "page_end_date": 1831,
+    "redaction_profile": "",
+    "contributing_library": "",
+    "rare": "N",
+    "hscrev": "N",
+    "hsc_accession": null,
+    "needs_repair": null,
+    "missing_text_pages": "",
+    "created_by": 18,
+    "bibrev": "N",
+    "pages": 452,
+    "dup": null,
+    "created_at": "2015-08-05T13:52:57Z",
+    "updated_at": "2016-09-28T18:17:28Z",
+    "replaced_pages": "",
+    "cases": null,
+    "marginalia": null,
+    "pop": "Hartford, CT",
+    "title": null,
+    "handfeed": null,
+    "imgct": 452,
+    "hold": null,
+    "request_id": 49,
+    "pub_del_pg": null,
+    "notes": "",
+    "pubdel_pages": null,
+    "original_barcode": "",
+    "scope_reason": "",
+    "out_of_scope": 0,
+    "meyer_box_barcode": "WBMBox538",
+    "uv_box_barcode": "L0000548486",
+    "meyer_ky_truck": "WBMKYTruck01",
+    "meyer_pallet": "WBMPallet12"
   }
 },
 {
@@ -625,6 +721,18 @@
     "exception": null,
     "warning": null,
     "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Dqac",
+  "fields": {
+    "type": null,
+    "name": "imaging QA completed",
+    "prereq": "",
+    "desc": "Results of QA of digital images (needs to be modeled)",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-08-21T04:03:51Z"
   }
 },
 {
@@ -666,6 +774,18 @@
   }
 },
 {
+  "model": "tracking_tool.pstep",
+  "pk": "Dclr",
+  "fields": {
+    "type": null,
+    "name": "Cleared for Delivery",
+    "prereq": "",
+    "desc": "The scans have been accepted by Innodata, and the volumes are cleared to be shipped.",
+    "created_at": "2016-05-02T23:16:47Z",
+    "updated_at": "2016-05-03T01:25:42Z"
+  }
+},
+{
   "model": "tracking_tool.eventloggers",
   "pk": 224498,
   "fields": {
@@ -682,6 +802,18 @@
     "exception": null,
     "warning": null,
     "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Prec",
+  "fields": {
+    "type": null,
+    "name": "received",
+    "prereq": "",
+    "desc": "Unpack HUMS delivered bins on 1L and distribute vols on shelves",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2015-04-17T14:19:34Z"
   }
 },
 {
@@ -837,72 +969,6 @@
   }
 },
 {
-  "model": "tracking_tool.pstep",
-  "pk": "Ppre",
-  "fields": {
-    "type": null,
-    "name": "prepped",
-    "prereq": "Pana",
-    "desc": "Read barcodes on Stack Wagon before moving vols to scan room",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2013-08-21T04:03:51Z"
-  }
-},
-{
-  "model": "tracking_tool.volumes",
-  "pk": "32044057891608",
-  "fields": {
-    "hollis_no": "005821473",
-    "volume": "1",
-    "publicationdate": null,
-    "publisher": "Press of Case, Lockwood and Company",
-    "publicationyear": 1861,
-    "reporter_id": 1058,
-    "publicationdategranularity": null,
-    "nom_volume": null,
-    "nominative_name": "Breese & Beecher",
-    "series_volume": "",
-    "spine_start_date": 0,
-    "spine_end_date": 0,
-    "start_date": 1819,
-    "end_date": 1831,
-    "page_start_date": 1819,
-    "page_end_date": 1831,
-    "redaction_profile": "",
-    "contributing_library": "",
-    "rare": "N",
-    "hscrev": "N",
-    "hsc_accession": null,
-    "needs_repair": null,
-    "missing_text_pages": "",
-    "created_by": 18,
-    "bibrev": "N",
-    "pages": 452,
-    "dup": null,
-    "created_at": "2015-08-05T13:52:57Z",
-    "updated_at": "2016-09-28T18:17:28Z",
-    "replaced_pages": "",
-    "cases": null,
-    "marginalia": null,
-    "pop": "Hartford, CT",
-    "title": null,
-    "handfeed": null,
-    "imgct": 452,
-    "hold": null,
-    "request_id": 49,
-    "pub_del_pg": null,
-    "notes": "",
-    "pubdel_pages": null,
-    "original_barcode": "",
-    "scope_reason": "",
-    "out_of_scope": 0,
-    "meyer_box_barcode": "WBMBox538",
-    "uv_box_barcode": "L0000548486",
-    "meyer_ky_truck": "WBMKYTruck01",
-    "meyer_pallet": "WBMPallet12"
-  }
-},
-{
   "model": "tracking_tool.eventloggers",
   "pk": 262930,
   "fields": {
@@ -960,18 +1026,6 @@
   }
 },
 {
-  "model": "tracking_tool.pstep",
-  "pk": "Prec",
-  "fields": {
-    "type": null,
-    "name": "received",
-    "prereq": "",
-    "desc": "Unpack HUMS delivered bins on 1L and distribute vols on shelves",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2015-04-17T14:19:34Z"
-  }
-},
-{
   "model": "tracking_tool.eventloggers",
   "pk": 263958,
   "fields": {
@@ -991,57 +1045,15 @@
   }
 },
 {
-  "model": "tracking_tool.volumes",
-  "pk": "32044057892259",
+  "model": "tracking_tool.pstep",
+  "pk": "Dx2v",
   "fields": {
-    "hollis_no": "005457617",
-    "volume": "23",
-    "publicationdate": null,
-    "publisher": "Callaghan & Company",
-    "publicationyear": 1888,
-    "reporter_id": 315,
-    "publicationdategranularity": null,
-    "nom_volume": null,
-    "nominative_name": "E.B. Smith",
-    "series_volume": "",
-    "spine_start_date": 0,
-    "spine_end_date": 0,
-    "start_date": 1887,
-    "end_date": 1887,
-    "page_start_date": 0,
-    "page_end_date": 0,
-    "redaction_profile": "",
-    "contributing_library": "",
-    "rare": "N",
-    "hscrev": "N",
-    "hsc_accession": null,
-    "needs_repair": null,
-    "missing_text_pages": "",
-    "created_by": 3,
-    "bibrev": "N",
-    "pages": 699,
-    "dup": null,
-    "created_at": "2015-08-05T13:52:58Z",
-    "updated_at": "2016-08-16T19:31:09Z",
-    "replaced_pages": "",
-    "cases": null,
-    "marginalia": null,
-    "pop": "Chicago, IL",
-    "title": null,
-    "handfeed": null,
-    "imgct": 696,
-    "hold": null,
-    "request_id": 49,
-    "pub_del_pg": null,
-    "notes": "",
-    "pubdel_pages": null,
-    "original_barcode": null,
-    "scope_reason": null,
-    "out_of_scope": 0,
-    "meyer_box_barcode": "WBMBox538",
-    "uv_box_barcode": "L0000548486",
-    "meyer_ky_truck": "WBMKYTruck01",
-    "meyer_pallet": "WBMPallet12"
+    "type": null,
+    "name": "xfer to vendor",
+    "prereq": "",
+    "desc": "Transferred to the s3 bucket for retrieval by the processing vendor",
+    "created_at": "2014-04-14T22:09:47Z",
+    "updated_at": "2014-04-14T22:09:47Z"
   }
 },
 {
@@ -1213,6 +1225,18 @@
     "exception": null,
     "warning": null,
     "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Drcs",
+  "fields": {
+    "type": null,
+    "name": "Received Shared",
+    "prereq": "",
+    "desc": "Received 'shared' files from innodata",
+    "created_at": "2016-06-30T17:44:18Z",
+    "updated_at": "2016-06-30T17:44:18Z"
   }
 },
 {
@@ -1438,18 +1462,6 @@
   }
 },
 {
-  "model": "tracking_tool.pstep",
-  "pk": "Dqac",
-  "fields": {
-    "type": null,
-    "name": "imaging QA completed",
-    "prereq": "",
-    "desc": "Results of QA of digital images (needs to be modeled)",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2013-08-21T04:03:51Z"
-  }
-},
-{
   "model": "tracking_tool.eventloggers",
   "pk": 914827,
   "fields": {
@@ -1507,54 +1519,6 @@
   }
 },
 {
-  "model": "tracking_tool.pstep",
-  "pk": "Psca",
-  "fields": {
-    "type": null,
-    "name": "scanned",
-    "prereq": "Pbat",
-    "desc": "First step in scanning: read barcode from cover sheet",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2013-08-21T04:03:51Z"
-  }
-},
-{
-  "model": "tracking_tool.pstep",
-  "pk": "Preq",
-  "fields": {
-    "type": null,
-    "name": "requested",
-    "prereq": "",
-    "desc": "Selector-provided barcodes recorded in TT and emailed to HD",
-    "created_at": "2013-09-26T18:13:11Z",
-    "updated_at": "2013-09-26T18:13:11Z"
-  }
-},
-{
-  "model": "tracking_tool.pstep",
-  "pk": "Pugv",
-  "fields": {
-    "type": null,
-    "name": "Underground Vaults",
-    "prereq": "",
-    "desc": "Stored with Underground Vaults",
-    "created_at": "2016-08-16T19:21:12Z",
-    "updated_at": "2016-08-16T21:23:11Z"
-  }
-},
-{
-  "model": "tracking_tool.pstep",
-  "pk": "Dx2v",
-  "fields": {
-    "type": null,
-    "name": "xfer to vendor",
-    "prereq": "",
-    "desc": "Transferred to the s3 bucket for retrieval by the processing vendor",
-    "created_at": "2014-04-14T22:09:47Z",
-    "updated_at": "2014-04-14T22:09:47Z"
-  }
-},
-{
   "model": "tracking_tool.eventloggers",
   "pk": 210332,
   "fields": {
@@ -1593,6 +1557,18 @@
   }
 },
 {
+  "model": "tracking_tool.pstep",
+  "pk": "Preq",
+  "fields": {
+    "type": null,
+    "name": "requested",
+    "prereq": "",
+    "desc": "Selector-provided barcodes recorded in TT and emailed to HD",
+    "created_at": "2013-09-26T18:13:11Z",
+    "updated_at": "2013-09-26T18:13:11Z"
+  }
+},
+{
   "model": "tracking_tool.eventloggers",
   "pk": 285118,
   "fields": {
@@ -1609,6 +1585,18 @@
     "exception": null,
     "warning": null,
     "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Pmey",
+  "fields": {
+    "type": null,
+    "name": "Meyer pickup",
+    "prereq": "Pss1",
+    "desc": "Volumes have been boxed and transferred from Langdell to the Meyer facilitiy in CT.  For each instance of PMeyer, a barcode must be entered in the Meyer Box Barcode field.",
+    "created_at": "2016-03-31T12:37:09Z",
+    "updated_at": "2016-03-31T12:37:09Z"
   }
 },
 {
@@ -1651,14 +1639,14 @@
 },
 {
   "model": "tracking_tool.pstep",
-  "pk": "Dclr",
+  "pk": "Psca",
   "fields": {
     "type": null,
-    "name": "Cleared for Delivery",
-    "prereq": "",
-    "desc": "The scans have been accepted by Innodata, and the volumes are cleared to be shipped.",
-    "created_at": "2016-05-02T23:16:47Z",
-    "updated_at": "2016-05-03T01:25:42Z"
+    "name": "scanned",
+    "prereq": "Pbat",
+    "desc": "First step in scanning: read barcode from cover sheet",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-08-21T04:03:51Z"
   }
 },
 {
@@ -1678,6 +1666,18 @@
     "exception": null,
     "warning": null,
     "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Prqu",
+  "fields": {
+    "type": null,
+    "name": "queued",
+    "prereq": "",
+    "desc": "Placed in a request queue",
+    "created_at": "2013-12-13T05:26:17Z",
+    "updated_at": "2013-12-13T05:26:17Z"
   }
 }
 ]

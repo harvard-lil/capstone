@@ -1,4 +1,5 @@
 import shutil
+from lxml import etree
 from pyquery import PyQuery
 from django.core.paginator import Paginator
 
@@ -22,7 +23,7 @@ def resolve_namespace(name):
     namespace, reference = name.split('|', 1)
     return '{%s}%s' % (nsmap[namespace], reference)
 
-jurisdiction_translation= {
+jurisdiction_translation = {
     '1': 'Ill.',
     'q': 'N.Y.',
     ' New York': 'N.Y.',
@@ -117,6 +118,7 @@ def read_file(path):
     with open(path) as in_file:
         return in_file.read()
 
+
 def parse_xml(xml):
     """
         Parse XML with PyQuery.
@@ -127,6 +129,12 @@ def parse_xml(xml):
         xml = xml.encode('utf8')
         
     return PyQuery(xml, parser='xml', namespaces=nsmap)
+
+def serialize_xml(xml):
+    """
+        Write PyQuery object back to utf-8 bytestring.
+    """
+    return b''.join([etree.tostring(e, encoding='utf-8', xml_declaration=True) for e in xml])
 
 def copy_file(from_path, to_path, from_storage=None, to_storage=None):
     """
@@ -149,3 +157,18 @@ def chunked_iterator(queryset, chunk_size=1000):
         for obj in paginator.page(page).object_list:
             yield obj
 
+            
+def extract_casebody(case_xml):
+    # strip soft hyphens from line endings
+    text = case_xml.replace(u'\xad', '')
+    case = parse_xml(text)
+
+    # strip labels from footnotes:
+    for footnote in case('casebody|footnote'):
+        label = footnote.attrib.get('label')
+        if label and footnote[0].text.startswith(label):
+            footnote[0].text = footnote[0].text[len(label):]
+
+    return case('casebody|casebody').html()
+
+ 
