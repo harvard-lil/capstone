@@ -175,6 +175,40 @@ INVENTORY = {
     'csv_path_prefix': 'from_vendor/',
 }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'api': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/tmp/capapi.log',
+            'delay': True
+        },
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'capapi': {
+            'level': 'INFO',
+            'handlers': ['api'],
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
+        },
+    },
+}
+
 ### CAP API settings ###
 
 API_CASE_DAILY_ALLOWANCE = 500

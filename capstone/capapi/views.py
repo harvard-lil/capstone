@@ -1,8 +1,7 @@
-import logging
-
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import JsonResponse
+from django.utils.decorators import decorator_from_middleware
 
 from rest_framework import status
 from rest_framework import renderers, viewsets, mixins
@@ -13,13 +12,19 @@ from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.exceptions import ValidationError
 
 from capapi import permissions, serializers, filters, resources, models as capapi_models
+from capapi.middleware import RequestLogMiddleware
 from capdb import models
 
 
-logger = logging.getLogger(__name__)
+class BaseViewMixin(viewsets.GenericViewSet):
+
+    @classmethod
+    def as_view(cls, *args, **kwargs):
+        view = super(BaseViewMixin, cls).as_view(*args, **kwargs)
+        return decorator_from_middleware(RequestLogMiddleware)(view)
 
 
-class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+class JurisdictionViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.JurisdictionSerializer
     http_method_names = ['get']
     filter_backends = (DjangoFilterBackend,)
@@ -28,35 +33,35 @@ class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mi
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+class VolumeViewSet(BaseViewMixin, viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.VolumeSerializer
     http_method_names = ['get']
     queryset = models.VolumeMetadata.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+class ReporterViewSet(BaseViewMixin, viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
     queryset = models.Reporter.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+class CourtViewSet(BaseViewMixin, viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.CourtSerializer
     http_method_names = ['get']
     queryset = models.Court.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class CitationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+class CitationViewSet(BaseViewMixin, viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.CitationSerializer
     http_method_names = ['get']
     queryset = models.Citation.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
     queryset = models.CaseMetadata.objects.all()
@@ -122,7 +127,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             return self.download(**kwargs)
 
 
-#   User specific views
+# User specific views
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.UserSerializer
     renderer_classes = [renderers.TemplateHTMLRenderer]
