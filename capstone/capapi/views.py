@@ -33,28 +33,28 @@ class JurisdictionViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListM
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class VolumeViewSet(BaseViewMixin, viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class VolumeViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.VolumeSerializer
     http_method_names = ['get']
     queryset = models.VolumeMetadata.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class ReporterViewSet(BaseViewMixin, viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class ReporterViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
     queryset = models.Reporter.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class CourtViewSet(BaseViewMixin, viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class CourtViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.CourtSerializer
     http_method_names = ['get']
     queryset = models.Court.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class CitationViewSet(BaseViewMixin, viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class CitationViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.CitationSerializer
     http_method_names = ['get']
     queryset = models.Citation.objects.all()

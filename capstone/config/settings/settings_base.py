@@ -198,7 +198,6 @@ LOGGING = {
     },
     'loggers': {
         'capapi': {
-            'level': 'INFO',
             'handlers': ['api'],
             'propagate': False,
         },
