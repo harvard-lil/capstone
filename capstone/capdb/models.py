@@ -3,7 +3,7 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 
 from scripts.process_metadata import get_case_metadata
-from .utils import generate_unique_slug, update_case_alto_unified
+from .utils import generate_unique_slug
 from scripts.helpers import *
 
 ### helpers ###
@@ -429,7 +429,7 @@ class DataMigration(models.Model):
     transaction_timestamp = models.DateTimeField()
     notes = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=10, choices=(("ephemeral", "ephemeral"), ("applied", "applied"), ("pending", "pending"), ("error", "error")))
+    status = models.CharField(max_length=10, choices=(("Partial Rollback", "partialrbk"), ("Rollback", "rollbk"), ("Ephemeral", "ephemeral"), ("Applied", "applied"), ("Pending", "pending"), ("Error", "error")))
     traceback = models.TextField(blank=True, null=True)
     author = models.CharField(max_length=255)
     initiator = models.CharField(max_length=255)
