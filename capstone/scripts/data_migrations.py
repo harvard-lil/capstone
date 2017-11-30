@@ -274,7 +274,16 @@ def error_migration(migration, err, tb):
 
 def generate_migration_from_case(orig_case, updated_case):
 
-    """ This compares two cases and makes a data migration JSON based on them"""
+    """ This compares two cases and makes a data migration JSON based on them. 
+    Most operations are supported. Neither adding an element to the casebody, 
+    nor adding to the number of words in the case text is yet supported because
+    it requires adding corresponding data to the ALTO which is an operation for
+    which we haven't yet developed a strategy. As it is, the existing alto IDs
+    don't change when an element is deleted, which sounds like the right
+    decision, but I'm not entirely sure. It may depend on the reason we're
+    deleting the element. (if it's not part of the physical page and is totally
+    errant data, maybe we should reorder the subsequent elements?
+    """
     parsed_orig_case = parse_xml(orig_case.orig_xml)
     updated_tree = updated_case.root
     original_tree = parsed_orig_case.root
@@ -292,15 +301,17 @@ def generate_migration_from_case(orig_case, updated_case):
         alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
         alto_files[alto_fileid] = alto 
 
-    original_element_dict = _get_element_dict(original_tree)
-    updated_element_dict = _get_element_dict(updated_tree)
+    # compare a flat list of xpaths to see if there are structural changes
+    original_xpaths = [ original_tree.getelementpath(element) for element in original_tree.iter()]
+    updated_xpaths = [ updated_tree.getelementpath(element) for element in updated_tree.iter()]
+    deleted_xpaths = set(original_xpaths) - set(updated_xpaths)
+    added_xpaths = set(updated_xpaths) - set(original_xpaths)
 
-    deleted_xpaths = set(original_element_dict) -  set(updated_element_dict)
-    added_xpaths = set(updated_element_dict) -  set(original_element_dict)
-
+    # iterate over the additions and deletions and add to DM, save element for later
     elements_to_delete_from_tree = []
     for xpath in deleted_xpaths:
         element = original_tree.find(xpath)
+        #if it's in the casebody, we need to modify the corresponding ALTO
         if _in_casebody(element):
             for alto_page in _get_alto_elements(element, parsed_orig_case, alto_files):
                 modified['alto'][alto_page['barcode']].append(
@@ -308,31 +319,29 @@ def generate_migration_from_case(orig_case, updated_case):
                 )
             modified['case']['changes'].append(_delete_casebody_element(element.get('id')))
         else:
+            #if it's not in the case body, we just need to store the change and xpath
             modified['case']['changes'].append(_delete_case_element(xpath, element))
         elements_to_delete_from_tree.append(element)
 
     elements_to_add_to_tree = []
     for xpath in added_xpaths:
         element = updated_tree.find(xpath)
+        attribute_dict = {name: element.get(name) for name in element.keys() }
         if _in_casebody(element):
-            for alto_page in _get_alto_elements(element, parsed_orig_case, alto_files):
-                modified['alto'][alto_page['barcode']].append(
-                    _delete_alto_element('layout', element.get('id'))
-                )
-
-            modified['case']['changes'].append(_add_casebody_element(element.get('id'), updated_tree.getpath(element.getparent().get('id')), element.items(), element.tag, element.text))
+            return {"error": "adding elements to casebody not yet supported"}
         else:
-            modified['case']['changes'].append(_add_case_element(xpath, updated_tree.getpath(element.getparent()), element.items(), element.tag, element.text))
+            modified['case']['changes'].append(_add_case_element(xpath, updated_tree.getpath(element.getparent()), attribute_dict, element.tag, element.text))
         elements_to_add_to_tree.append(element)
     
 
+    # now that we've documented additions/deletions, make the tree structures match
     for element in elements_to_add_to_tree:
         element.getparent().remove(element)
 
     for element in elements_to_delete_from_tree:
         element.getparent().remove(element)
 
-    # now that we've checked for additions and deletions, check for changes with matching paths
+    # since the tree structures match, we can just iterate over the tree and compare values
     for original_element in original_tree.iter():
         readable_xpath = original_tree.getelementpath(original_element)
         xpath = original_tree.getpath(original_element)
@@ -340,7 +349,7 @@ def generate_migration_from_case(orig_case, updated_case):
 
         updated_element = updated_element_search[0]
 
-
+        # modified tag name?
         if original_element.tag != updated_element.tag:
             if _in_casebody(original_element):
                 for alto_page in _get_alto_elements(element, parsed_orig_case, alto_files):
@@ -352,9 +361,12 @@ def generate_migration_from_case(orig_case, updated_case):
             else:
                 modified['case']['changes'].append(_change_case_tag(xpath, readable_xpath, updated_element.tag))
         
-        # check for modified element text
+        # modified element text?
         if original_element.text != updated_element.text:
             if _in_casebody(original_element):
+                # Case text elements can include text from multiple alto pages. To compare them you need
+                # to get all of the elements from all of the pages and compare them to a list of words 
+                # from the case text. 
                 if len(updated_element.text.split(" ")) != len(original_element.text.split(" ")):
                     return {"error": "adding or removing words from case text is not yet implemented"}
                 wordcount = 0
@@ -376,8 +388,6 @@ def generate_migration_from_case(orig_case, updated_case):
                 modified['case']['changes'].append(_change_casebody_content(original_element.get('id'), updated_element.text))
             else:
                 modified['case']['changes'].append(_change_case_content(xpath, readable_xpath, updated_element.text))
-
-        # I don't think the stuff below should directly affect the ALTO
 
         # check if any attributes were added or removed
         if set(original_element.keys()) != set(updated_element.keys()):
@@ -402,7 +412,7 @@ def generate_migration_from_case(orig_case, updated_case):
                 else:
                     modified['case']['changes'].append(_change_case_attrib(xpath, readable_xpath, attribute, updated_element.get(attribute)))
     
-
+    # this just bundles the alto changes up
     alto_migrations= []
     for alto in modified['alto']:
         alto_migrations.append({
@@ -411,6 +421,7 @@ def generate_migration_from_case(orig_case, updated_case):
             "changes": modified['alto'][alto]
         })
 
+    # compose the migration metadata
     migration = {}
     migration['notes'] = "Automatically generated during a CaseXML modification using the update_case_alto_unified function in capdb/utils.py"
     migration['status'] = "ephemeral"
@@ -423,48 +434,26 @@ def generate_migration_from_case(orig_case, updated_case):
 
 
 def _in_casebody(element):
+    """ Just checks to see if the element is in the casebody"""
     return element.tag.startswith("{" + nsmap['casebody']) and not element.tag.endswith('casebody')
 
-def _get_element_pages(element):
+def _get_alto_elements(element, parsed_case, alto_files):
+    """ This gets the alto elements referred to by the casebody element"""
+    
+    # gets the alto file list from the case file
+    alto_connections = {}
+    alto_element_references = parsed_case('mets|area[BEGIN="{}"]'.format(element.get('id'))).parent().nextAll('mets|fptr')
+    for area in alto_element_references('mets|area'):
+        pgmap = area.get('BEGIN').split(".")[0].split("_")[1]
+        alto_connections[pgmap] = (area.get('FILEID'), area.get('BEGIN'))
+
+    # gets the alto pages referred to by the element pagemap in the case text
     element_pages = {}
     if "pgmap" in element.keys() and ' ' in element.get("pgmap"):
         element_pages = { page.split('(')[0]: page.split('(')[1][:-1] for page in element.get("pgmap").split(" ") }
     elif "pgmap" in element.keys():
         element_pages = { element.get("pgmap"): len(element.text.split(" ")) }
-    return element_pages
 
-def _get_alto_connections(parsed_case, element):
-    alto_connections = {}
-    #this might be sketchy if it turns out that the case reference isn't always first
-    alto_element_references = parsed_case('mets|area[BEGIN="{}"]'.format(element.get('id'))).parent().nextAll('mets|fptr')
-    for area in alto_element_references('mets|area'):
-        pgmap = area.get('BEGIN').split(".")[0].split("_")[1]
-        alto_connections[pgmap] = (area.get('FILEID'), area.get('BEGIN'))
-    return alto_connections
-
-def _get_element_dict(tree):
-    return_dict = {}
-    for element in tree.iter():
-        return_dict[tree.getelementpath(element)] = {}
-        return_dict[tree.getelementpath(element)]['attributes'] = {attrib: element.get(attrib) for attrib in element.keys()}
-        return_dict[tree.getelementpath(element)]['content'] = element.text
-        if element.getnext() is not None:
-            return_dict[tree.getelementpath(element)]['next'] = tree.getelementpath(element.getnext())
-        else:
-            return_dict[tree.getelementpath(element)]['next'] = None
-        if element.getparent() is not None:
-            return_dict[tree.getelementpath(element)]['parent'] = tree.getelementpath(element.getparent())
-        else:
-            return_dict[tree.getelementpath(element)]['parent'] = None
-        if element.get('id') is not None:
-            return_dict[tree.getelementpath(element)]['id'] = element.get('id')
-        else:
-            return_dict[tree.getelementpath(element)]['id'] = None
-    return return_dict
-
-def _get_alto_elements(element, parsed_case, alto_files):
-    element_pages = _get_element_pages(element)
-    alto_connections = _get_alto_connections(parsed_case, element)
     for page in element_pages:
         return_map = {}
         alto_file = alto_files[alto_connections[page][0]]
@@ -475,6 +464,7 @@ def _get_alto_elements(element, parsed_case, alto_files):
         return_map['structure_tag'] = parsed_alto_file('alto|StructureTag[ID="{}"]'.format(element.get('id')))
         yield return_map
 
+"""Each function in this block of functions serves as a template for some part of the data migration JSON"""
 def _change_case_content(xpath, readable_xpath, content):
     return  { "type": "non_casebody", "xpath": xpath, "readable_xpath": readable_xpath, "actions": { "content": content }}
 def _change_casebody_content(element_id, content):
@@ -494,9 +484,7 @@ def _change_casebody_tag(element_id, tag):
 def _delete_case_element(xpath, readable_xpath):
     return  { "type": "non_casebody", "xpath": xpath, "readable_xpath": readable_xpath, "actions": { "remove": True }}
 def _add_case_element(xpath, parent, attribute_dict, name, content):
-    return  { "type": "non_casebody", "xpath": xpath, "content": content, "name": name, "parent_xpath": parent, "actions": { "create": True, "attributes": { "add_update": { attribute_dict } } } }
-def _add_casebody_element(element_id, parent, attribute_dict, name, content):
-    return  { "type": "casebody", "content": content, "name": name, "element_id": element_id, "parent_element_id": parent, "actions": { "create": True, "attributes": { "add_update": { attribute_dict } } } }
+    return  { "type": "non_casebody", "xpath": xpath, "content": content, "name": name, "parent_xpath": parent, "actions": { "create": True, "attributes": { "add_update": attribute_dict } } }
 def _delete_casebody_element(element_id):
     return  { "type": "casebody", "element_id": element_id, "actions": { "remove": True }}
 def _change_alto_attrib(element, attrib, value):

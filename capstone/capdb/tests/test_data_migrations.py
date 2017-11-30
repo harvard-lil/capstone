@@ -19,7 +19,7 @@ def test_case_delete_tag(case_xml):
     data_migration = generate_migration_from_case(case_xml, updated_case)
     assert 'ok' in data_migration
     assert data_migration['ok']['case_xml_changed'][0]['changes'][0]['actions']['remove'] is True
-"""
+
 @pytest.mark.django_db
 def test_casebody_delete_tag(case_xml):
     updated_case = parse_xml(case_xml.orig_xml)
@@ -31,23 +31,8 @@ def test_casebody_delete_tag(case_xml):
 @pytest.mark.django_db
 def test_case_add_tag(case_xml):
     updated_case = parse_xml(case_xml.orig_xml)
-    updated_case('case|case').append('case|decisiondate')
+    updateded_element="<test id='test_id'>test_content</test>"
+    updated_case('case|case').append(updateded_element)
     data_migration = generate_migration_from_case(case_xml, updated_case)
     assert 'ok' in data_migration
     assert data_migration['ok']['case_xml_changed'][0]['changes'][0]['actions']['create'] is True
-
-@pytest.mark.django_db
-def test_casebody_add_tag(case_xml):
-    updated_case = parse_xml(case_xml.orig_xml)
-    updated_case('case|case').remove('case|decisiondate')
-    data_migration = generate_migration_from_case(case_xml, updated_case)
-    assert 'ok' in data_migration
-    assert data_migration['ok']['case_xml_changed'][0]['changes'][0]['actions']['create'] is True
-@pytest.mark.django_db
-def test_case_alto_modify_tag(case_xml):
-    pass
-
-@pytest.mark.django_db
-def test_case_alto_add_delete_word(case_xml):
-    pass
-"""
