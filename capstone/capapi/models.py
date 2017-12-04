@@ -97,6 +97,7 @@ class APIUser(AbstractBaseUser):
     def create_nonce(self):
         self.activation_nonce = self.generate_nonce_timestamp()
         self.key_expires = timezone.now()
+        self.save()
 
     def save(self, *args, **kwargs):
         super(APIUser, self).save(*args, **kwargs)
