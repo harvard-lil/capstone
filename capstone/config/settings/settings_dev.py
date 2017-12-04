@@ -12,3 +12,5 @@ MOCK_S3 = True
 CELERY_TASK_ALWAYS_EAGER = True
 # propagate exceptions
 CELERY_TASK_EAGER_PROPAGATES = True
+# if running in Docker -- this will only be used if CELERY_TASK_ALWAYS_EAGER = False
+CELERY_BROKER_URL = 'amqp://admin:mypass@rabbit'
