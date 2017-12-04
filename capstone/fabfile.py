@@ -277,3 +277,10 @@ def write_inventory_files():
             csv_w = csv.writer(f)
             for row in result_set:
                 csv_w.writerow(row)
+
+@task
+def test_slow(jobs="1"):
+    """ For testing celery autoscaling, launch N jobs that will waste RAM and CPU. """
+    from capdb.tasks import test_slow
+    for i in range(int(jobs)):
+        test_slow.apply_async()

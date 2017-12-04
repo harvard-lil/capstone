@@ -3,6 +3,11 @@
 # general
 tqdm                # script progress bars
 
+# celery
+celery              # task queue
+pycurl              # let celery talk to SQS queue
+-e git://github.com/jcushman/celery-resource-autoscaler.git@master#egg=celery-resource-autoscaler  # autoscale celery processes
+
 # xml
 lxml
 xmltodict
