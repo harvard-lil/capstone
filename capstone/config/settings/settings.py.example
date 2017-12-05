@@ -13,3 +13,6 @@ INGEST_STORAGE = {
         'bucket_name': '',
     }
 }
+
+# for production
+CELERY_BROKER_URL = 'amqp://admin:mypass@localhost'
