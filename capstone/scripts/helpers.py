@@ -158,3 +158,63 @@ def extract_casebody(case_xml):
             footnote[0].text = footnote[0].text[len(label):]
 
     return case('casebody|casebody').html()
+
+"""Each function in this block of functions serves as a template for some part of the data migration JSON"""
+def dm_template_chg_case_content(xpath, readable_xpath, content):
+    return  { "type": "non_casebody", "xpath": xpath, "readable_xpath": readable_xpath, "actions": { "content": content }}
+def dm_template_chg_casebody_content(element_id, content):
+    return  { "type": "casebody", "element_id": element_id, "actions": { "content": content }}
+def dm_template_chg_case_attrib(xpath, readable_xpath, attrib, value):
+    return { "type": "casebody", "xpath": xpath, "readable_xpath": readable_xpath, "actions": { "attributes": { "add_update": { attrib: value }}}}
+def dm_template_chg_casebody_attrib(element, attrib, value):
+    return { "type": "casebody", "element_id": element, "actions": { "attributes": { "add_update": { attrib: value }}}}
+def dm_template_del_case_attrib(xpath, readable_xpath, attrib):
+    return { "type": "casebody", "xpath": xpath, "readable_xpath": readable_xpath, "actions": { "attributes": { "delete": [ attrib ]}}}
+def dm_template_del_casebody_attrib(element, attrib, value):
+    return { "type": "casebody", "element_id": element, "actions": { "attributes": { "delete": [ attrib ]}}}
+def dm_template_chg_case_tag(xpath, readable_xpath, tag):
+    return  { "type": "casebody", "xpath": xpath, "readable_xpath": readable_xpath, "actions": { "name": tag }}
+def dm_template_chg_casebody_tag(element_id, tag):
+    return  { "type": "casebody", "element_id": element_id, "actions": { "name": tag }}
+def dm_template_del_case_element(xpath, readable_xpath):
+    return  { "type": "non_casebody", "xpath": xpath, "readable_xpath": readable_xpath, "actions": { "remove": True }}
+def dm_template_add_case_element(xpath, parent, attribute_dict, name, content):
+    return  { "type": "non_casebody", "xpath": xpath, "content": content, "name": name, "parent_xpath": parent, "actions": { "create": True, "attributes": { "add_update": attribute_dict } } }
+def dm_template_del_casebody_element(element_id):
+    return  { "type": "casebody", "element_id": element_id, "actions": { "remove": True }}
+def dm_template_chg_alto_attrib(element, attrib, value):
+    return { "type": "layout", "element": element, "actions": { "add_update": { attrib: value }}}
+def dm_template_del_alto_element(element_type, element_id):
+    return { "type": element_type, "element_id": element_id, "actions": { "remove": True }}
+
+def get_alto_elements(element, parsed_case, alto_files):
+    """ This gets the alto elements referred to by the casebody element"""
+    
+    # gets the alto file list from the case file
+    alto_connections = {}
+    alto_element_references = parsed_case('mets|area[BEGIN="{}"]'.format(element.get('id'))).parent().nextAll('mets|fptr')
+    for area in alto_element_references('mets|area'):
+        pgmap = area.get('BEGIN').split(".")[0].split("_")[1]
+        alto_connections[pgmap] = (area.get('FILEID'), area.get('BEGIN'))
+
+    # gets the alto pages referred to by the element pagemap in the case text
+    element_pages = {}
+    if "pgmap" in element.keys() and ' ' in element.get("pgmap"):
+        element_pages = { page.split('(')[0]: page.split('(')[1][:-1] for page in element.get("pgmap").split(" ") }
+    elif "pgmap" in element.keys():
+        element_pages = { element.get("pgmap"): len(element.text.split(" ")) }
+
+    for page in element_pages:
+        return_map = {}
+        alto_file = alto_files[alto_connections[page][0]]
+        parsed_alto_file = parse_xml(alto_file.orig_xml)
+        return_map['db_entry'] = alto_file
+        return_map['barcode'] = alto_files[alto_connections[page][0]].barcode
+        return_map['page'] = alto_connections[page][0]
+        return_map['textblock'] = parsed_alto_file('alto|TextBlock[TAGREFS="{}"]'.format(element.get('id')))
+        return_map['structure_tag'] = parsed_alto_file('alto|StructureTag[ID="{}"]'.format(element.get('id')))
+        yield return_map
+
+def in_casebody(element):
+    """ Just checks to see if the element is in the casebody"""
+    return element.tag.startswith("{" + nsmap['casebody']) and not element.tag.endswith('casebody')

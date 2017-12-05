@@ -1,4 +1,5 @@
 import hashlib
+from collections import defaultdict
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 
@@ -270,6 +271,177 @@ class CaseXML(models.Model):
     orig_xml = XMLField()
     volume = models.ForeignKey(VolumeXML, related_name='case_xmls')
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
+    __existing_xml = None
+
+    def __init__(self, *args, **kwargs):
+        super(CaseXML, self).__init__(*args, **kwargs)
+        self.__existing_xml = self.orig_xml
+
+    def save(self, force_insert=False, force_update=False, *args, **kwargs):
+        if self.__existing_xml and self.orig_xml != self.__existing_xml:
+            """ This compares two cases and makes a data migration JSON based on them. 
+            Most operations are supported. Neither adding an element to the casebody, 
+            nor adding to the number of words in the case text is yet supported because
+            it requires adding corresponding data to the ALTO which is an operation for
+            which we haven't yet developed a strategy. As it is, the existing alto IDs
+            don't change when an element is deleted, which sounds like the right
+            decision, but I'm not entirely sure. It may depend on the reason we're
+            deleting the element. (if it's not part of the physical page and is totally
+            errant data, maybe we should reorder the subsequent elements?
+            """
+            parsed_orig_case = parse_xml(self.orig_xml)
+            updated_case = parse_xml(self.__existing_xml)
+            updated_tree = updated_case.root
+            original_tree = parsed_orig_case.root
+
+            #set up the basic structure of the change set map
+            modified = {}
+            modified['case'] = {}
+            modified['case']['barcode'] = self.case_id.split("_")[0]
+            modified['case']['case_id'] = self.case_id
+            modified['case']['changes']= []
+            modified['alto'] = defaultdict(list)
+
+            alto_files = {}
+            for alto in self.pages.all():
+                alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
+                alto_files[alto_fileid] = alto 
+
+            # compare a flat list of xpaths to see if there are structural changes
+            original_xpaths = [ original_tree.getelementpath(element) for element in original_tree.iter()]
+            updated_xpaths = [ updated_tree.getelementpath(element) for element in updated_tree.iter()]
+            deleted_xpaths = set(original_xpaths) - set(updated_xpaths)
+            added_xpaths = set(updated_xpaths) - set(original_xpaths)
+
+            # iterate over the additions and deletions and add to DM, save element for later
+            elements_to_delete_from_tree = []
+            for xpath in deleted_xpaths:
+                element = original_tree.find(xpath)
+                #if it's in the casebody, we need to modify the corresponding ALTO
+                if in_casebody(element):
+                    for alto_page in get_alto_elements(element, parsed_orig_case, alto_files):
+                        modified['alto'][alto_page['barcode']].append(
+                            dm_template_del_alto_element('layout', element.get('id'))
+                        )
+                        alto_page['db_entry'].save()
+                    modified['case']['changes'].append(dm_template_del_casebody_element(element.get('id')))
+                else:
+                    #if it's not in the case body, we just need to note the  and xpath
+                    modified['case']['changes'].append(dm_template_del_case_element(xpath, element))
+                elements_to_delete_from_tree.append(element)
+
+            elements_to_add_to_tree = []
+            for xpath in added_xpaths:
+                element = updated_tree.find(xpath)
+                attribute_dict = {name: element.get(name) for name in element.keys() }
+                if in_casebody(element):
+                    return {"error": "adding elements to casebody not yet supported"}
+                else:
+                    modified['case']['changes'].append(dm_template_add_case_element(xpath, updated_tree.getpath(element.getparent()), attribute_dict, element.tag, element.text))
+                elements_to_add_to_tree.append(element)
+            
+
+            # now that we've documented additions/deletions, make the tree structures match
+            for element in elements_to_add_to_tree:
+                element.getparent().remove(element)
+
+            for element in elements_to_delete_from_tree:
+                element.getparent().remove(element)
+
+            # since the tree structures match, we can just iterate over the tree and compare values
+            for original_element in original_tree.iter():
+                readable_xpath = original_tree.getelementpath(original_element)
+                xpath = original_tree.getpath(original_element)
+                updated_element_search = updated_tree.xpath(xpath)
+
+                updated_element = updated_element_search[0]
+
+                # modified tag name?
+                if original_element.tag != updated_element.tag:
+                    if in_casebody(original_element):
+                        for alto_page in get_alto_elements(element, parsed_orig_case, alto_files):
+                            if alto_page['structure_tag'] is not None:
+                                modified['alto'][alto_page['barcode']].append(
+                                    dm_template_chg_alto_attrib(original_element.get('id'), "LABEL", updated_element.tag)
+                                )
+                                alto_page['db_entry'].save()
+                        modified['case']['changes'].append(dm_template_chg_casebody_tag(original_element.get('id'), updated_element.tag))
+                    else:
+                        modified['case']['changes'].append(dm_template_chg_case_tag(xpath, readable_xpath, updated_element.tag))
+
+                # modified element text?
+                if original_element.text != updated_element.text:
+                    if in_casebody(original_element):
+                        # Case text elements can include text from multiple alto pages. To compare them you need
+                        # to get all of the elements from all of the pages and compare them to a list of words 
+                        # from the case text. 
+                        if len(updated_element.text.split(" ")) != len(original_element.text.split(" ")):
+                            return {"error": "adding or removing words from case text is not yet implemented"}
+                        wordcount = 0
+                        for alto_page in get_alto_elements(original_element, parsed_orig_case, alto_files):
+                            words = alto_page['textblock']("alto|String")
+                            for word in words:
+                                if updated_element.text.split(" ")[wordcount] != original_element.text.split(" ")[wordcount]:
+                                    # update ALTO & set the character confidence and word confidence to 100%
+                                    modified['alto'][alto_page['barcode']].append(
+                                        dm_template_chg_alto_attrib(original_element.get('id'), "WC", "1.00")
+                                    )
+                                    modified['alto'][alto_page['barcode']].append(
+                                        dm_template_chg_alto_attrib(original_element.get('id'), "CC", '0' * len(updated_element.text.split(" ")[wordcount]))
+                                    )
+                                    modified['alto'][alto_page['barcode']].append(
+                                        dm_template_chg_alto_attrib(original_element.get('id'), "CONTENT", updated_element.text.split(" ")[wordcount])
+                                    )
+                                wordcount += 1
+                            alto_page['db_entry'].save()
+                        modified['case']['changes'].append(dm_template_chg_casebody_content(original_element.get('id'), updated_element.text))
+                    else:
+                        modified['case']['changes'].append(dm_template_chg_case_content(xpath, readable_xpath, updated_element.text))
+
+                # check if any attributes were added or removed
+                if set(original_element.keys()) != set(updated_element.keys()):
+                    deleted_attributes = set(original_element.keys()) - set(updated_element.keys())
+                    added_attributes = set(updated_element.keys()) - set(original_element.keys())
+                    for attribute in deleted_attributes:
+                        if in_casebody(original_element):
+                            modified['case']['changes'].append(dm_template_del_casebody_attrib(original_element.get('id'), attribute))
+                        else:
+                            modified['case']['changes'].append(dm_template_del_case_attrib(xpath, readable_xpath, attribute))
+                    for attribute in added_attributes:
+                        if in_casebody(original_element):
+                            modified['case']['changes'].append(dm_template_chg_casebody_attrib(original_element.get('id'), attribute))
+                        else:
+                            modified['case']['changes'].append(dm_template_chg_case_attrib(xpath, readable_xpath, attribute, updated_element.get(attribute)))
+                            
+                # check to see if any attribute values changed
+                for attribute in original_element.keys():
+                    if original_element.get(attribute) != updated_element.get(attribute):
+                        if in_casebody(original_element):
+                            modified['case']['changes'].append(dm_template_chg_casebody_attrib(original_element.get('id'), attribute))
+                        else:
+                            modified['case']['changes'].append(dm_template_chg_case_attrib(xpath, readable_xpath, attribute, updated_element.get(attribute)))
+            
+            # this just bundles the alto changes up
+            alto_migrations= []
+            for alto in modified['alto']:
+                alto_migrations.append({
+                    "barcode": alto.split("_")[0],
+                    "alto_id": alto,
+                    "changes": modified['alto'][alto]
+                })
+
+            # compose the migration metadata
+            migration = DataMigration
+            migration.notes = "Automatically generated during a CaseXML modification using the update_case_alto_unified function in capdb/utils.py"
+            migration.status = "applied"
+            migration.author = "update_case_alto_unified"
+            migration.initiator = "update_case_alto_unified"
+            migration.case_xml_changed = [modified['case']]
+            migration.alto_xml_changed = alto_migrations
+            migration.save(self)
+
+        super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
+        self.__existing_xml = self.orig_xml
 
     def __str__(self):
         return self.case_id
@@ -361,6 +533,7 @@ class CaseXML(models.Model):
 
         case_metadata.save()
 
+
 class CaseMetadata(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     case_id = models.CharField(max_length=64, null=True)
@@ -416,6 +589,9 @@ class PageXML(models.Model):
     volume = models.ForeignKey(VolumeXML, related_name='page_xmls')
     cases = models.ManyToManyField(CaseXML, related_name='pages')
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
+
+    def save(self, *args, **kwargs):
+        super(PageXML, self).save(*args, **kwargs)
 
     def md5(self):
         return checksum(self.orig_xml)

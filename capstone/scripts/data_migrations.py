@@ -272,7 +272,7 @@ def error_migration(migration, err, tb):
     migration.save()
 
 
-def generate_migration_from_case(orig_case, updated_case):
+def generate_migration_from_case(orig_case, updated_case_xml_string):
 
     """ This compares two cases and makes a data migration JSON based on them. 
     Most operations are supported. Neither adding an element to the casebody, 
@@ -285,6 +285,7 @@ def generate_migration_from_case(orig_case, updated_case):
     errant data, maybe we should reorder the subsequent elements?
     """
     parsed_orig_case = parse_xml(orig_case.orig_xml)
+    updated_case = parse_xml(updated_case_xml_string)
     updated_tree = updated_case.root
     original_tree = parsed_orig_case.root
 
@@ -319,7 +320,7 @@ def generate_migration_from_case(orig_case, updated_case):
                 )
             modified['case']['changes'].append(_delete_casebody_element(element.get('id')))
         else:
-            #if it's not in the case body, we just need to store the change and xpath
+            #if it's not in the case body, we just need to note the  and xpath
             modified['case']['changes'].append(_delete_case_element(xpath, element))
         elements_to_delete_from_tree.append(element)
 
