@@ -13,7 +13,7 @@ billiard==3.5.0.3         # via celery
 boto3==1.4.4
 boto==2.47.0              # via moto
 botocore==1.5.55          # via boto3, s3transfer
-celery==4.1.0
+celery[redis]==4.1.0
 certifi==2017.4.17        # via requests
 cffi==1.10.0              # via cryptography
 chardet==3.0.3            # via requests
