@@ -102,6 +102,15 @@ def load_test_data():
     ingest_jurisdiction()
     total_sync_with_s3()
 
+
+@task
+def add_permissions_groups():
+    """
+    Add permissions groups for admin panel
+    """
+    # add capapi groups
+    local("python manage.py loaddata capapi/fixtures/groups.yaml")
+
 @task
 def add_test_case(*barcodes):
     """
