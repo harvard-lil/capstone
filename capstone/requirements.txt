@@ -50,7 +50,7 @@ moto==1.0.0
 mysqlclient==1.3.10
 packaging==16.8           # via cryptography
 paramiko==2.1.2           # via fabric3
-pip-tools==1.9.0
+pip-tools==1.11.0
 port-for==0.4             # via pytest-redis
 psutil==5.4.0             # via mirakuru
 psycopg2==2.7.1
