@@ -27,4 +27,3 @@ def generate_unique_slug(instance, raw_string, field='slug', max_tries=1000):
             return slug
 
     raise Exception("No unique slug found after %s tries." % max_tries)
-

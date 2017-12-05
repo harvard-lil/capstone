@@ -3,9 +3,6 @@ import pytest
 from capdb.models import CaseMetadata
 from scripts.helpers import parse_xml, serialize_xml
 
-
-### CaseMetadata ###
-
 @pytest.mark.django_db
 def test_update_case_metadata(case_xml):
     # fetch current metadata

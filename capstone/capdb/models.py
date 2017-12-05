@@ -361,7 +361,6 @@ class CaseXML(models.Model):
 
         case_metadata.save()
 
-
 class CaseMetadata(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     case_id = models.CharField(max_length=64, null=True)
@@ -430,7 +429,7 @@ class DataMigration(models.Model):
     transaction_timestamp = models.DateTimeField()
     notes = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=10, choices=(("applied", "applied"), ("pending", "pending"), ("error", "error")))
+    status = models.CharField(max_length=10, choices=(("Partial Rollback", "partialrbk"), ("Rollback", "rollbk"), ("Ephemeral", "ephemeral"), ("Applied", "applied"), ("Pending", "pending"), ("Error", "error")))
     traceback = models.TextField(blank=True, null=True)
     author = models.CharField(max_length=255)
     initiator = models.CharField(max_length=255)
