@@ -1,0 +1,16 @@
+- model: auth.group
+  pk: 1
+  fields:
+    name: api_token
+    permissions:
+    - [add_apitoken, capapi, apitoken]
+    - [change_apitoken, capapi, apitoken]
+    - [delete_apitoken, capapi, apitoken]
+- model: auth.group
+  pk: 2
+  fields:
+    name: api_user
+    permissions:
+    - [add_apiuser, capapi, apiuser]
+    - [change_apiuser, capapi, apiuser]
+    - [delete_apiuser, capapi, apiuser]
