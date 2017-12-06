@@ -14,3 +14,4 @@ CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 # if running in Docker -- this will only be used if CELERY_TASK_ALWAYS_EAGER = False
 CELERY_BROKER_URL = 'amqp://admin:mypass@rabbit'
+CELERY_RESULT_BACKEND = 'rpc://'

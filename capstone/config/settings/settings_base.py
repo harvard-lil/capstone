@@ -287,6 +287,6 @@ CELERY_RESOURCE_LIMITS = [
     },
     {
         'class': 'celery_resource_autoscaler:CPULimit',
-        'kwargs': {'max_load': 1.1},
+        'kwargs': {'max_load': 0.8},
     },
 ]

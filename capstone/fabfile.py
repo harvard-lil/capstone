@@ -288,8 +288,17 @@ def write_inventory_files():
                 csv_w.writerow(row)
 
 @task
-def test_slow(jobs="1"):
+def test_slow(jobs="1", ram="10", cpu="10"):
     """ For testing celery autoscaling, launch N jobs that will waste RAM and CPU. """
     from capdb.tasks import test_slow
-    for i in range(int(jobs)):
-        test_slow.apply_async()
+    from celery import group
+    import time
+
+    print("Running %s test_slow jobs and waiting for results ..." % jobs)
+    jobs = int(jobs)
+    job = group(test_slow.s(ram=int(ram), cpu=int(cpu)) for _ in range(jobs))
+    start_time = time.time()
+    result = job.apply_async()
+    result.get()  # wait for all jobs to finish
+    run_time = time.time() - start_time
+    print("Ran %s test_slow jobs in %s seconds (%s seconds/job)" % (jobs, run_time, run_time/jobs))
