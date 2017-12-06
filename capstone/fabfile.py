@@ -22,6 +22,7 @@ from fabric.decorators import task
 
 from capapi import resources
 from capdb.models import Jurisdiction, CaseMetadata
+from capdb.tasks import create_case_metadata_from_all_vols
 # from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, ingest_files, data_migrations, ingest_by_manifest
 
@@ -29,6 +30,10 @@ from scripts import set_up_postgres, ingest_tt_data, ingest_files, data_migratio
 @task(alias='run')
 def run_django():
     local("python manage.py runserver")
+
+@task
+def run_celery():
+    local("celery -A capdb worker -l info")
 
 @task
 def test():
@@ -71,6 +76,17 @@ def run_pending_migrations():
 @task
 def update_postgres_env():
     set_up_postgres.update_postgres_env()
+
+
+@task
+def create_or_update_case_metadata(update_existing='no'):
+    """
+        create or update CaseMetadata objects using celery
+        - if update_existing is 'no', just create cases if missing
+        - if update_existing is 'yes', create and update
+    """
+    update_flag = True if update_existing == 'yes' else False
+    create_case_metadata_from_all_vols(update_existing=update_flag)
 
 @task
 def init_db():

@@ -214,7 +214,7 @@ def process_volume(vol_entry_bytestring):
                     case.orig_xml = ingest_storage.contents(case_s3_key)
                 case.s3_key = case_s3_key
                 case.save()
-                case.update_case_metadata()
+                case.create_or_update_metadata()
 
                 # store case-to-page matches
                 for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):

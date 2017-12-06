@@ -210,7 +210,9 @@ LOGGING = {
 
 ### CELERY ###
 CELERY_BROKER_URL = 'redis://'
-
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_RESULT_BACKEND = 'redis://'
+CELERY_TASK_SERIALIZER = 'json'
 
 
 ### CAP API settings ###
