@@ -15,5 +15,5 @@ services:
             - .:/app
         depends_on:
             - rabbit
-        command: celery -A config worker --autoscale=100,1 --loglevel=info
+        command: celery -A config worker --concurrency=4 --loglevel=info
 #        mem_limit: 128M
