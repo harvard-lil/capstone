@@ -208,6 +208,11 @@ LOGGING = {
     },
 }
 
+### CELERY ###
+CELERY_BROKER_URL = 'redis://'
+
+
+
 ### CAP API settings ###
 
 API_CASE_DAILY_ALLOWANCE = 500
