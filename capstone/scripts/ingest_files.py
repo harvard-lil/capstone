@@ -59,7 +59,7 @@ def ingest_volume(volume_path):
                 if case_barcode not in existing_case_ids:
                     case = CaseXML(orig_xml=get_file_contents(xml_path), volume=volume, case_id=case_barcode)
                     case.save()
-                    case.update_case_metadata()
+                    case.create_or_update_metadata()
 
                     # store case-to-page matches
                     for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):
@@ -183,6 +183,6 @@ def update_case_metadata():
     casexmls = CaseXML.objects.all().order_by('id')
     for case in tqdm(chunked_iterator(casexmls)):
         try:
-            case.update_case_metadata()
+            case.create_or_update_metadata()
         except Exception as e:
             print(e, case.case_id)

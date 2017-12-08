@@ -175,38 +175,12 @@ INVENTORY = {
     'csv_path_prefix': 'from_vendor/',
 }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
-    },
-    'handlers': {
-        'api': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/tmp/capapi.log',
-            'delay': True
-        },
-        'console': {
-            'level': 'DEBUG',
-            'filters': ['require_debug_true'],
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'capapi': {
-            'handlers': ['api'],
-            'propagate': False,
-        },
-        'django': {
-            'handlers': ['console'],
-            'propagate': True,
-        },
-    },
-}
+### CELERY ###
+CELERY_BROKER_URL = 'redis://'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_RESULT_BACKEND = 'redis://'
+CELERY_TASK_SERIALIZER = 'json'
+
 
 ### CAP API settings ###
 
@@ -242,25 +216,33 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
+        'api': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/tmp/capapi.log',
+            'delay': True
+        },
+
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
     },
-    'formatters': {
-        'verbose': {
-            'format': '%(asctime)s %(levelname)s module=%(module)s, '
-            'process_id=%(process)d, %(message)s'
-        }
-    },
     'loggers': {
+        'capapi': {
+            'handlers': ['api'],
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
+        },
         'celery': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True
         },
-
         # silence boto3 info logging -- see https://github.com/boto/boto3/issues/521
         'boto3': {
             'level': 'WARNING',
@@ -274,7 +256,14 @@ LOGGING = {
         's3transfer': {
             'level': 'WARNING',
         },
-    }
+
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(levelname)s module=%(module)s, '
+            'process_id=%(process)d, %(message)s'
+        }
+    },
 }
 
 

@@ -277,7 +277,22 @@ class CaseXML(models.Model):
     def md5(self):
         return checksum(self.orig_xml)
 
-    def update_case_metadata(self):
+    def create_or_update_metadata(self, update_existing=True):
+        """
+            creates or updates CaseMetadata object
+            - if we want to skip over updating existing case metadata objects
+            method returns out.
+            - otherwise, create or overwrite properties on related metadata object
+        """
+        try:
+            # avoid get_or_create because that's tricky to use while generating a unique slug
+            case_metadata = CaseMetadata.objects.get(case_id=self.case_id)
+            if not update_existing:
+                # if case already exists, return out
+                return case_metadata
+        except CaseMetadata.DoesNotExist:
+            case_metadata = CaseMetadata(case_id=self.case_id)
+
         data = get_case_metadata(self.orig_xml)
         duplicative_case = data['duplicative']
 
@@ -299,12 +314,6 @@ class CaseXML(models.Model):
                 cite="{} {} {}".format(volume_metadata.volume_number, reporter.short_name, data["first_page"]),
                 type="official", duplicative=True)
             citations.append(cite)
-
-        # avoid get_or_create because that's tricky to use while generating a unique slug
-        try:
-            case_metadata = CaseMetadata.objects.get(case_id=self.case_id)
-        except CaseMetadata.DoesNotExist:
-            case_metadata = CaseMetadata(case_id=self.case_id)
 
         case_metadata.reporter = reporter
         case_metadata.volume = volume_metadata
@@ -360,6 +369,8 @@ class CaseXML(models.Model):
             court.save()
 
         case_metadata.save()
+
+        return case_metadata
 
 
 class CaseMetadata(models.Model):
