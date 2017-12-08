@@ -32,10 +32,6 @@ def run_django():
     local("python manage.py runserver")
 
 @task
-def run_celery():
-    local("celery -A capdb worker -l info")
-
-@task
 def test():
     """ Run tests with coverage report. """
     local("pytest --fail-on-template-vars --cov --cov-report=")

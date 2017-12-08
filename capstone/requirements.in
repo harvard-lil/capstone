@@ -45,6 +45,3 @@ django-libsass
 django-pipeline
 djangorestframework-filters
 djangorestframework
-
-# Tasks
-celery             # run parallel tasks
