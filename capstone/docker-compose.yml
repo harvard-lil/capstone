@@ -1,0 +1,19 @@
+version: '2'
+services:
+    rabbit:
+        # see https://github.com/dockerfile/rabbitmq/issues/22 if this should be persistent
+        hostname: rabbit
+        image: rabbitmq:latest
+        environment:
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=mypass
+#        mem_limit: 128M
+    worker:
+        build: .
+        image: harvard-cap-compress
+        volumes:
+            - .:/app
+        depends_on:
+            - rabbit
+        command: celery -A config worker --concurrency=4 --loglevel=info
+#        mem_limit: 128M

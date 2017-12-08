@@ -175,39 +175,6 @@ INVENTORY = {
     'csv_path_prefix': 'from_vendor/',
 }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
-    },
-    'handlers': {
-        'api': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/tmp/capapi.log',
-            'delay': True
-        },
-        'console': {
-            'level': 'DEBUG',
-            'filters': ['require_debug_true'],
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'capapi': {
-            'handlers': ['api'],
-            'propagate': False,
-        },
-        'django': {
-            'handlers': ['console'],
-            'propagate': True,
-        },
-    },
-}
-
 ### CELERY ###
 CELERY_BROKER_URL = 'redis://'
 CELERY_ACCEPT_CONTENT = ['json']
@@ -243,3 +210,72 @@ EMAIL_HOST_PASSWORD = 'secret-secret'
 # redis
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'api': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/tmp/capapi.log',
+            'delay': True
+        },
+
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'capapi': {
+            'handlers': ['api'],
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
+        },
+        'celery': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+        # silence boto3 info logging -- see https://github.com/boto/boto3/issues/521
+        'boto3': {
+            'level': 'WARNING',
+        },
+        'botocore': {
+            'level': 'WARNING',
+        },
+        'nose': {
+            'level': 'WARNING',
+        },
+        's3transfer': {
+            'level': 'WARNING',
+        },
+
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(levelname)s module=%(module)s, '
+            'process_id=%(process)d, %(message)s'
+        }
+    },
+}
+
+
+# if celery is launched with --autoscale=1000, celery will autoscale to 1000 but limited by system resources:
+CELERY_WORKER_AUTOSCALER = 'celery_resource_autoscaler:ResourceAutoscaler'
+CELERY_RESOURCE_LIMITS = [
+    {
+        'class': 'celery_resource_autoscaler:MemoryLimit',
+        'kwargs': {'max_memory': 0.8},
+    },
+    {
+        'class': 'celery_resource_autoscaler:CPULimit',
+        'kwargs': {'max_load': 0.8},
+    },
+]
