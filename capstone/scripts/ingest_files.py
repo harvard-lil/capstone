@@ -3,15 +3,12 @@ import re
 import time
 from collections import defaultdict
 from multiprocessing import Pool
-from tqdm import tqdm
 
 from django.conf import settings
 from django.db import transaction, IntegrityError
 
 from capdb.models import VolumeXML, PageXML, CaseXML
 from capdb.storages import ingest_storage
-
-from scripts.helpers import chunked_iterator
 
 ### helpers ###
 
@@ -178,11 +175,3 @@ def all_volumes():
             return volumes
     return volumes
 
-
-def update_case_metadata():
-    casexmls = CaseXML.objects.all().order_by('id')
-    for case in tqdm(chunked_iterator(casexmls)):
-        try:
-            case.create_or_update_metadata()
-        except Exception as e:
-            print(e, case.case_id)

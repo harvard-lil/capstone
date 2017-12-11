@@ -13,19 +13,41 @@ def choices(*args):
     return zip(args, args)
 
 
-### custom column types ###
+### Helpers for XML handling ###
 
 class XMLField(models.TextField):
-    """
-        Column type for Postgres XML columns.
-    """
+    """ Column type for Postgres XML columns. """
     def db_type(self, connection):
         return 'xml'
 
-def checksum(xml):
-    m = hashlib.md5()
-    m.update(xml.encode())
-    return m.hexdigest()
+
+class XMLQuerySet(models.QuerySet):
+    """ Query methods for BaseXMLModel. """
+    def defer_xml(self):
+        """
+            Defer orig_xml field.
+
+            Note: It might be a good idea to defer this field by default, if and when https://github.com/django/django/pull/9309 lands.
+            I played around with adding .defer('orig_xml') to the default queryset, but it broke the refresh_from_db() method --
+            seems better to wait until that's an official Django feature.
+        """
+        return self.defer('orig_xml')
+
+
+class BaseXMLModel(models.Model):
+    """ Base class for models that store XML documents. """
+    orig_xml = XMLField()
+
+    objects = XMLQuerySet.as_manager()
+
+    class Meta:
+        abstract = True
+
+    def md5(self):
+        m = hashlib.md5()
+        m.update(self.orig_xml.encode())
+        return m.hexdigest()
+
 
 ### models ###
 
@@ -230,9 +252,8 @@ class TrackingToolLog(models.Model):
         ordering = ['created_at']
 
 
-class VolumeXML(models.Model):
+class VolumeXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)  # models.OneToOneField(VolumeMetadata)
-    orig_xml = XMLField()
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     def __str__(self):
@@ -242,9 +263,6 @@ class VolumeXML(models.Model):
     def volume_metadata(self):
         # TODO: Once OneToOneField is set up, this method can be deleted
         return VolumeMetadata.objects.filter(barcode=self.barcode).first()
-
-    def md5(self):
-        return checksum(self.orig_xml)
 
 
 class Court(models.Model):
@@ -265,17 +283,13 @@ class Court(models.Model):
         ordering = ['name']
 
 
-class CaseXML(models.Model):
+class CaseXML(BaseXMLModel):
     case_id = models.CharField(max_length=255, unique=True, db_index=True)
-    orig_xml = XMLField()
     volume = models.ForeignKey(VolumeXML, related_name='case_xmls')
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     def __str__(self):
         return self.case_id
-
-    def md5(self):
-        return checksum(self.orig_xml)
 
     def create_or_update_metadata(self, update_existing=True):
         """
@@ -422,15 +436,11 @@ class Citation(models.Model):
         return self.slug
 
 
-class PageXML(models.Model):
+class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
-    orig_xml = XMLField()
     volume = models.ForeignKey(VolumeXML, related_name='page_xmls')
     cases = models.ManyToManyField(CaseXML, related_name='pages')
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
-
-    def md5(self):
-        return checksum(self.orig_xml)
 
     def __str__(self):
         return self.barcode
