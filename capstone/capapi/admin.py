@@ -18,7 +18,16 @@ authenticate_user.short_description = "Authenticate selected Users"
 
 class APIUserAdmin(admin.ModelAdmin):
     readonly_fields = ('date_joined', 'api_key')
-    list_display = ('email', 'last_name', 'first_name', 'api_key', 'total_case_allowance', 'case_allowance_remaining')
+    list_display = (
+        'email',
+        'last_name',
+        'first_name',
+        'api_key',
+        'case_allowance_remaining',
+        'total_case_allowance',
+    )
+
+    fields = list_display + ('is_active', 'date_joined', 'activation_nonce', 'is_researcher')
     actions = [authenticate_user]
 
     def api_key(self, instance):
