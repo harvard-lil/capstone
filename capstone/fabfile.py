@@ -49,10 +49,6 @@ def ingest_volumes():
     ingest_files.ingest_volumes()
 
 @task
-def update_case_metadata():
-    ingest_files.update_case_metadata()
-
-@task
 def ingest_jurisdiction():
     ingest_tt_data.populate_jurisdiction()
 

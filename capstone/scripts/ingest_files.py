@@ -178,11 +178,3 @@ def all_volumes():
             return volumes
     return volumes
 
-
-def update_case_metadata():
-    casexmls = CaseXML.objects.all().order_by('id')
-    for case in tqdm(chunked_iterator(casexmls)):
-        try:
-            case.create_or_update_metadata()
-        except Exception as e:
-            print(e, case.case_id)
