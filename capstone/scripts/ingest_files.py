@@ -3,15 +3,12 @@ import re
 import time
 from collections import defaultdict
 from multiprocessing import Pool
-from tqdm import tqdm
 
 from django.conf import settings
 from django.db import transaction, IntegrityError
 
 from capdb.models import VolumeXML, PageXML, CaseXML
 from capdb.storages import ingest_storage
-
-from scripts.helpers import chunked_iterator
 
 ### helpers ###
 
