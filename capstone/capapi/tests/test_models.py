@@ -3,7 +3,6 @@ from datetime import timedelta
 
 from django.utils import timezone
 from django.conf import settings
-from django.core.urlresolvers import get_callable
 
 from capapi.models import APIToken
 

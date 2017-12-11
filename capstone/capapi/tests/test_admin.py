@@ -13,7 +13,6 @@ def test_admin_user_create(admin_client):
         "email": "bob_lawblaw@example.com",
         "first_name": "Bob",
         "last_name": "Lawblaw",
-        "case_allowance": 500,
     }
     response = admin_client.post('/admin/capapi/apiuser/add/', data, follow=True)
     assert response.status_code == 200
