@@ -149,7 +149,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = APIUser
         fields = '__all__'
-        read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance', 'key_expires')
+        read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance_remaining', 'key_expires')
         lookup_field = 'email'
 
     def verify_with_nonce(self, user_id, activation_nonce):
@@ -163,11 +163,11 @@ class UserSerializer(serializers.ModelSerializer):
             return user
         user.update_case_allowance()
 
-        if not user.case_allowance >= case_count:
+        if not user.case_allowance_remaining >= case_count:
             time_remaining = user.get_case_allowance_update_time_remaining()
             raise serializers.ValidationError({
                 "error": "You have attempted to download more than your allowed number of cases. Your limit will reset to default again in %s." % time_remaining,
-                "case_allowance_remaining": user.case_allowance,
+                "case_allowance_remaining": user.case_allowance_remaining,
             })
         else:
             return user

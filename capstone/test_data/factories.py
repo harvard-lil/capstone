@@ -53,7 +53,8 @@ class APIUserFactory(factory.DjangoModelFactory):
 
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
-    case_allowance = 500
+    total_case_allowance = 500
+    case_allowance_remaining = 500
     is_admin = False
     is_active = True
     email = factory.LazyAttributeSequence(lambda o, n: '%s_%s%d@example.com' % (o.first_name, o.last_name, n))

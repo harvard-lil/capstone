@@ -42,7 +42,7 @@ def test_case(client, api_url, case):
 
 @pytest.mark.django_db(transaction=True)
 def test_single_case_download(auth_user, api_url, auth_client, case):
-    assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?type=download" % (api_url, case.slug)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, format='')
@@ -54,7 +54,7 @@ def test_single_case_download(auth_user, api_url, auth_client, case):
 
     # make sure we've subtracted auth_user's case download
     auth_user.refresh_from_db()
-    assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - 1
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
 
 
 @pytest.mark.django_db(transaction=True)
@@ -64,7 +64,7 @@ def test_many_case_download(auth_user, api_url, auth_client):
     for case in range(0, num_created):
         setup_case(**{'docket_number': '123'})
 
-    assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/?docket_number=123&type=download" % api_url
 
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
@@ -76,10 +76,10 @@ def test_many_case_download(auth_user, api_url, auth_client):
 
     # make sure we've subtracted user's case download
     auth_user.refresh_from_db()
-    assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - num_created
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - num_created
 
     # test too low case allowance
-    auth_user.case_allowance = 1
+    auth_user.case_allowance_remaining = 1
     auth_user.save()
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, status_code=403, format='')
@@ -97,7 +97,7 @@ def test_max_number_case_download(auth_user, api_url, auth_client):
     for case in range(0, num_created):
         setup_case(**{'docket_number': '123'})
 
-    assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
     # request download 2 cases
     url = "%scases/?docket_number=123&limit=%s&type=download" % (api_url, num_to_download)
@@ -111,18 +111,18 @@ def test_max_number_case_download(auth_user, api_url, auth_client):
 
     # make sure we've subtracted auth_user's case download
     auth_user.refresh_from_db()
-    assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - 2
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 2
 
 
 @pytest.mark.django_db(transaction=True)
 def test_unauthorized_download(user, api_url, auth_client, case):
-    assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+    assert user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?type=download" % (api_url, case.slug)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token fake'})
     check_response(response, status_code=401, format='')
 
     user.refresh_from_db()
-    assert user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+    assert user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
 
 @pytest.mark.django_db(transaction=True)
@@ -137,7 +137,7 @@ def test_open_jurisdiction(auth_user, api_url, auth_client):
                          'name': common_name,
                          'slug': slugify(common_name)})
 
-    assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?type=download" % (api_url, case.slug)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, format='')
@@ -147,9 +147,9 @@ def test_open_jurisdiction(auth_user, api_url, auth_client):
 
     # make sure the user's case download number has remained the same
     auth_user.refresh_from_db()
-    assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
-    # if auth_user downloads a mixed case load, their case_allowance should only reflect the blacklisted cases
+    # if auth_user downloads a mixed case load, their case_allowance_remaining should only reflect the blacklisted cases
     jurisdiction = JurisdictionFactory(name='Blocked')
     case = setup_case(**{'jurisdiction': jurisdiction,
                          'name': common_name,
@@ -164,7 +164,7 @@ def test_open_jurisdiction(auth_user, api_url, auth_client):
 
     # make sure the auth_user's case download number has remained the same
     auth_user.refresh_from_db()
-    assert auth_user.case_allowance == settings.API_CASE_DAILY_ALLOWANCE - 1
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
 
 
 @pytest.mark.django_db

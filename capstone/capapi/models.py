@@ -43,8 +43,8 @@ class APIUser(AbstractBaseUser):
 
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
-    case_allowance = models.IntegerField(null=False, blank=False, default=settings.API_CASE_DAILY_ALLOWANCE)
-
+    total_case_allowance = models.IntegerField(null=True, blank=True, default=settings.API_CASE_DAILY_ALLOWANCE)
+    case_allowance_remaining = models.IntegerField(null=False, blank=False, default=settings.API_CASE_DAILY_ALLOWANCE)
     # when we last reset the user's case count:
     case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
     is_researcher = models.BooleanField(default=False)
@@ -69,12 +69,12 @@ class APIUser(AbstractBaseUser):
 
     def update_case_allowance(self, case_count=0):
         if self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) < timezone.now():
-            self.case_allowance = settings.API_CASE_DAILY_ALLOWANCE
+            self.case_allowance_remaining = self.total_case_allowance
             self.case_allowance_last_updated = timezone.now()
 
         if case_count:
-            self.case_allowance -= case_count
-        self.save(update_fields=['case_allowance', 'case_allowance_last_updated'])
+            self.case_allowance_remaining -= case_count
+        self.save(update_fields=['case_allowance_remaining', 'case_allowance_last_updated'])
 
     def get_case_allowance_update_time_remaining(self):
         td = self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) - timezone.now()
@@ -119,7 +119,7 @@ class APIUser(AbstractBaseUser):
     def case_download_allowed(self, case_count):
         if case_count > 0:
             self.update_case_allowance()
-            return self.case_allowance >= case_count
+            return self.case_allowance_remaining >= case_count
         else:
             return True
 
