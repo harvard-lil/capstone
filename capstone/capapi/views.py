@@ -177,7 +177,12 @@ class UserViewSet(viewsets.ModelViewSet):
                     user.update_case_allowance()
                     user.refresh_from_db()
 
-                    return Response({'email': user.email, 'api_key': user.get_api_key(), 'case_allowance': user.case_allowance}, template_name='user-account.html',)
+                    return Response({
+                        'email': user.email,
+                        'api_key': user.get_api_key(),
+                        'case_allowance_remaining': user.case_allowance_remaining,
+                        'total_case_allowance': user.total_case_allowance
+                    }, template_name='user-account.html',)
                 else:
                     return Response({'user_id': user.id, 'user_email': user.email, 'info_email': settings.EMAIL_ADDRESS}, template_name='resend-nonce.html', )
             except Exception:
