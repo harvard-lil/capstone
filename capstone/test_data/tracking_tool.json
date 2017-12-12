@@ -39,18 +39,6 @@
   }
 },
 {
-  "model": "tracking_tool.pstep",
-  "pk": "Ppre",
-  "fields": {
-    "type": null,
-    "name": "prepped",
-    "prereq": "Pana",
-    "desc": "Read barcodes on Stack Wagon before moving vols to scan room",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2013-08-21T04:03:51Z"
-  }
-},
-{
   "model": "tracking_tool.users",
   "pk": 7,
   "fields": {
@@ -61,18 +49,6 @@
     "created_at": "2013-07-29T21:09:14Z",
     "updated_at": "2017-01-13T16:43:39Z",
     "remember_token": ""
-  }
-},
-{
-  "model": "tracking_tool.pstep",
-  "pk": "Pana",
-  "fields": {
-    "type": null,
-    "name": "analyzed",
-    "prereq": "AND Prec, {{publicationyear}}, {{hollis_no}}, {{reporter_id}}, {{volume}}, !!analysislogic!!",
-    "desc": "Load book cart on 1L to move completed vol to Room 231",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2013-12-21T00:19:22Z"
   }
 },
 {
@@ -112,6 +88,50 @@
     "created_at": "2015-08-26T21:15:57Z",
     "updated_at": "2017-01-30T15:25:15Z",
     "remember_token": ""
+  }
+},
+{
+  "model": "tracking_tool.users",
+  "pk": 27,
+  "fields": {
+    "privlevel": "10",
+    "email": "example7@example.com",
+    "password": "password",
+    "active": 0,
+    "created_at": "2015-09-04T18:42:13Z",
+    "updated_at": "2017-01-30T15:25:26Z",
+    "remember_token": ""
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1058332,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "stored, awaiting Meyer (streamlined tool)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 27,
+    "created_at": "2016-11-04T02:24:32Z",
+    "updated_at": "2016-11-04T02:24:32Z",
+    "pstep_id": "Pss1",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Dx2v",
+  "fields": {
+    "type": null,
+    "name": "xfer to vendor",
+    "prereq": "",
+    "desc": "Transferred to the s3 bucket for retrieval by the processing vendor",
+    "created_at": "2014-04-14T22:09:47Z",
+    "updated_at": "2014-04-14T22:09:47Z"
   }
 },
 {
@@ -175,6 +195,101 @@
 },
 {
   "model": "tracking_tool.eventloggers",
+  "pk": 786469,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Changed rare from '' to 'N.",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-06-09T21:59:41Z",
+    "updated_at": "2016-06-09T21:59:41Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 786470,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Changed HSC Review from '' to 'N.",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-06-09T21:59:41Z",
+    "updated_at": "2016-06-09T21:59:41Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 786471,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Changed Volume from '' to '60.",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-06-09T21:59:41Z",
+    "updated_at": "2016-06-09T21:59:41Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 786472,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Automatically defined as not rare (1851 or newer)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-06-09T21:59:44Z",
+    "updated_at": "2016-06-09T21:59:44Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 786473,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Automatically Excluded from HSC Review (1800 or newer)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-06-09T21:59:44Z",
+    "updated_at": "2016-06-09T21:59:44Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
   "pk": 239146,
   "fields": {
     "bar_code": "32044057891608",
@@ -187,6 +302,25 @@
     "created_at": "2015-08-20T15:48:03Z",
     "updated_at": "2015-08-20T15:48:24Z",
     "pstep_id": "Dqac",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 786474,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "analyzed (streamlined tool)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-06-09T21:59:44Z",
+    "updated_at": "2016-06-09T21:59:44Z",
+    "pstep_id": "Pana",
     "exception": null,
     "warning": null,
     "version_string": null
@@ -208,6 +342,196 @@
     "sent_at": "2015-08-05T09:54:25Z",
     "subject": "FTL Request",
     "delivery_date": "2015-08-06"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053749,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Scan New Batch",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:17:15Z",
+    "updated_at": "2016-11-01T20:29:58Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053750,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "PostScan Ready",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:22:06Z",
+    "updated_at": "2016-11-01T20:29:58Z",
+    "pstep_id": "Psca",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 796727,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "prepped (streamlined tool)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-06-16T18:09:10Z",
+    "updated_at": "2016-06-16T18:09:10Z",
+    "pstep_id": "Ppre",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053751,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "PostScan Processing",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:25:05Z",
+    "updated_at": "2016-11-01T20:29:58Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053752,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "PostScan Job Ready",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:29:51Z",
+    "updated_at": "2016-11-01T20:29:58Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053753,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "PostScan Job Processing",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:29:51Z",
+    "updated_at": "2016-11-01T20:29:58Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053754,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "QCC Eval Ready",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:29:55Z",
+    "updated_at": "2016-11-01T20:29:58Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053755,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "QCC Eval In Progress",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:29:55Z",
+    "updated_at": "2016-11-01T20:29:58Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053756,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "QCC Skipped",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:29:57Z",
+    "updated_at": "2016-11-01T20:29:58Z",
+    "pstep_id": "Dqas",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053757,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Xferring to AWS-DONT CHANGE STATUS",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:29:57Z",
+    "updated_at": "2016-11-01T20:29:58Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
   }
 },
 {
@@ -250,6 +574,44 @@
 },
 {
   "model": "tracking_tool.eventloggers",
+  "pk": 1053771,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Transferred to hlsldigilab-xfer, and Copied to Backup",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:29:57Z",
+    "updated_at": "2016-11-01T20:41:57Z",
+    "pstep_id": "Dx2v",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 1053772,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Backup Directory: 2016_11_01",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 25,
+    "created_at": "2016-11-01T20:29:57Z",
+    "updated_at": "2016-11-01T20:41:57Z",
+    "pstep_id": null,
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
   "pk": 215631,
   "fields": {
     "bar_code": "32044057892259",
@@ -269,14 +631,14 @@
 },
 {
   "model": "tracking_tool.pstep",
-  "pk": "Pugv",
+  "pk": "Preq",
   "fields": {
     "type": null,
-    "name": "Underground Vaults",
+    "name": "requested",
     "prereq": "",
-    "desc": "Stored with Underground Vaults",
-    "created_at": "2016-08-16T19:21:12Z",
-    "updated_at": "2016-08-16T21:23:11Z"
+    "desc": "Selector-provided barcodes recorded in TT and emailed to HD",
+    "created_at": "2013-09-26T18:13:11Z",
+    "updated_at": "2013-09-26T18:13:11Z"
   }
 },
 {
@@ -315,6 +677,18 @@
     "exception": null,
     "warning": null,
     "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Pana",
+  "fields": {
+    "type": null,
+    "name": "analyzed",
+    "prereq": "AND Prec, {{publicationyear}}, {{hollis_no}}, {{reporter_id}}, {{volume}}, !!analysislogic!!",
+    "desc": "Load book cart on 1L to move completed vol to Room 231",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-12-21T00:19:22Z"
   }
 },
 {
@@ -461,6 +835,60 @@
   }
 },
 {
+  "model": "tracking_tool.volumes",
+  "pk": "32044057892259",
+  "fields": {
+    "hollis_no": "005457617",
+    "volume": "23",
+    "publicationdate": null,
+    "publisher": "Callaghan & Company",
+    "publicationyear": 1888,
+    "reporter_id": 315,
+    "publicationdategranularity": null,
+    "nom_volume": null,
+    "nominative_name": "E.B. Smith",
+    "series_volume": "",
+    "spine_start_date": 0,
+    "spine_end_date": 0,
+    "start_date": 1887,
+    "end_date": 1887,
+    "page_start_date": 0,
+    "page_end_date": 0,
+    "redaction_profile": "",
+    "contributing_library": "",
+    "rare": "N",
+    "hscrev": "N",
+    "hsc_accession": null,
+    "needs_repair": null,
+    "missing_text_pages": "",
+    "created_by": 3,
+    "bibrev": "N",
+    "pages": 699,
+    "dup": null,
+    "created_at": "2015-08-05T13:52:58Z",
+    "updated_at": "2016-08-16T19:31:09Z",
+    "replaced_pages": "",
+    "cases": null,
+    "marginalia": null,
+    "pop": "Chicago, IL",
+    "title": null,
+    "handfeed": null,
+    "imgct": 696,
+    "hold": null,
+    "request_id": 49,
+    "pub_del_pg": null,
+    "notes": "",
+    "pubdel_pages": null,
+    "original_barcode": null,
+    "scope_reason": null,
+    "out_of_scope": 0,
+    "meyer_box_barcode": "WBMBox538",
+    "uv_box_barcode": "L0000548486",
+    "meyer_ky_truck": "WBMKYTruck01",
+    "meyer_pallet": "WBMPallet12"
+  }
+},
+{
   "model": "tracking_tool.eventloggers",
   "pk": 242832,
   "fields": {
@@ -576,122 +1004,56 @@
 },
 {
   "model": "tracking_tool.pstep",
-  "pk": "Pss1",
+  "pk": "Dclr",
   "fields": {
     "type": null,
-    "name": "stored, awaiting Meyer",
-    "prereq": "Psca",
-    "desc": "Vacuum seal QAskipped and QAcomplete vols, load book cart, move sealed vols to 3L stacks",
+    "name": "Cleared for Delivery",
+    "prereq": "",
+    "desc": "The scans have been accepted by Innodata, and the volumes are cleared to be shipped.",
+    "created_at": "2016-05-02T23:16:47Z",
+    "updated_at": "2016-05-03T01:25:42Z"
+  }
+},
+{
+  "model": "tracking_tool.bookrequests",
+  "pk": 149,
+  "fields": {
+    "updated_by": null,
+    "created_at": "2016-05-27T14:23:56Z",
+    "updated_at": "2016-05-27T14:28:30Z",
+    "recipients": "example@example.com",
+    "from_field": "example@example.com",
+    "mail_body": "Subject: Req. Supervisor Report for CreatedFriMay2720161423(Wed Jun, 08 2016) \nMessage:\nHollis\tVol count\tReporter Name\r\n000114135\t31\tNorth Eastern Reporter 3d\r\n000114134\t389\tNorth Western Reporter 2d\r\n",
+    "note": "FTL Request:",
+    "send_date": "2016-05-27",
+    "label": "CreatedFriMay2720161423",
+    "sent_at": "2016-05-27T14:28:30Z",
+    "subject": "FTL Request",
+    "delivery_date": "2016-06-08"
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Prec",
+  "fields": {
+    "type": null,
+    "name": "received",
+    "prereq": "",
+    "desc": "Unpack HUMS delivered bins on 1L and distribute vols on shelves",
     "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2015-08-01T19:15:36Z"
+    "updated_at": "2015-04-17T14:19:34Z"
   }
 },
 {
-  "model": "tracking_tool.volumes",
-  "pk": "32044057892259",
+  "model": "tracking_tool.pstep",
+  "pk": "Pmey",
   "fields": {
-    "hollis_no": "005457617",
-    "volume": "23",
-    "publicationdate": null,
-    "publisher": "Callaghan & Company",
-    "publicationyear": 1888,
-    "reporter_id": 315,
-    "publicationdategranularity": null,
-    "nom_volume": null,
-    "nominative_name": "E.B. Smith",
-    "series_volume": "",
-    "spine_start_date": 0,
-    "spine_end_date": 0,
-    "start_date": 1887,
-    "end_date": 1887,
-    "page_start_date": 0,
-    "page_end_date": 0,
-    "redaction_profile": "",
-    "contributing_library": "",
-    "rare": "N",
-    "hscrev": "N",
-    "hsc_accession": null,
-    "needs_repair": null,
-    "missing_text_pages": "",
-    "created_by": 3,
-    "bibrev": "N",
-    "pages": 699,
-    "dup": null,
-    "created_at": "2015-08-05T13:52:58Z",
-    "updated_at": "2016-08-16T19:31:09Z",
-    "replaced_pages": "",
-    "cases": null,
-    "marginalia": null,
-    "pop": "Chicago, IL",
-    "title": null,
-    "handfeed": null,
-    "imgct": 696,
-    "hold": null,
-    "request_id": 49,
-    "pub_del_pg": null,
-    "notes": "",
-    "pubdel_pages": null,
-    "original_barcode": null,
-    "scope_reason": null,
-    "out_of_scope": 0,
-    "meyer_box_barcode": "WBMBox538",
-    "uv_box_barcode": "L0000548486",
-    "meyer_ky_truck": "WBMKYTruck01",
-    "meyer_pallet": "WBMPallet12"
-  }
-},
-{
-  "model": "tracking_tool.volumes",
-  "pk": "32044057891608",
-  "fields": {
-    "hollis_no": "005821473",
-    "volume": "1",
-    "publicationdate": null,
-    "publisher": "Press of Case, Lockwood and Company",
-    "publicationyear": 1861,
-    "reporter_id": 1058,
-    "publicationdategranularity": null,
-    "nom_volume": null,
-    "nominative_name": "Breese & Beecher",
-    "series_volume": "",
-    "spine_start_date": 0,
-    "spine_end_date": 0,
-    "start_date": 1819,
-    "end_date": 1831,
-    "page_start_date": 1819,
-    "page_end_date": 1831,
-    "redaction_profile": "",
-    "contributing_library": "",
-    "rare": "N",
-    "hscrev": "N",
-    "hsc_accession": null,
-    "needs_repair": null,
-    "missing_text_pages": "",
-    "created_by": 18,
-    "bibrev": "N",
-    "pages": 452,
-    "dup": null,
-    "created_at": "2015-08-05T13:52:57Z",
-    "updated_at": "2016-09-28T18:17:28Z",
-    "replaced_pages": "",
-    "cases": null,
-    "marginalia": null,
-    "pop": "Hartford, CT",
-    "title": null,
-    "handfeed": null,
-    "imgct": 452,
-    "hold": null,
-    "request_id": 49,
-    "pub_del_pg": null,
-    "notes": "",
-    "pubdel_pages": null,
-    "original_barcode": "",
-    "scope_reason": "",
-    "out_of_scope": 0,
-    "meyer_box_barcode": "WBMBox538",
-    "uv_box_barcode": "L0000548486",
-    "meyer_ky_truck": "WBMKYTruck01",
-    "meyer_pallet": "WBMPallet12"
+    "type": null,
+    "name": "Meyer pickup",
+    "prereq": "Pss1",
+    "desc": "Volumes have been boxed and transferred from Langdell to the Meyer facilitiy in CT.  For each instance of PMeyer, a barcode must be entered in the Meyer Box Barcode field.",
+    "created_at": "2016-03-31T12:37:09Z",
+    "updated_at": "2016-03-31T12:37:09Z"
   }
 },
 {
@@ -724,15 +1086,32 @@
   }
 },
 {
-  "model": "tracking_tool.pstep",
-  "pk": "Dqac",
+  "model": "tracking_tool.hollis",
+  "pk": 705,
   "fields": {
-    "type": null,
-    "name": "imaging QA completed",
-    "prereq": "",
-    "desc": "Results of QA of digital images (needs to be modeled)",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2013-08-21T04:03:51Z"
+    "hollis_no": "000114134",
+    "reporter_id": 892,
+    "created_at": "2014-12-11T05:13:47Z",
+    "updated_at": "2014-12-11T00:13:47Z"
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 782017,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "received (streamlined tool)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 22,
+    "created_at": "2016-06-08T15:22:57Z",
+    "updated_at": "2016-06-08T15:22:57Z",
+    "pstep_id": "Prec",
+    "exception": null,
+    "warning": null,
+    "version_string": null
   }
 },
 {
@@ -775,14 +1154,14 @@
 },
 {
   "model": "tracking_tool.pstep",
-  "pk": "Dclr",
+  "pk": "Pugv",
   "fields": {
     "type": null,
-    "name": "Cleared for Delivery",
+    "name": "Underground Vaults",
     "prereq": "",
-    "desc": "The scans have been accepted by Innodata, and the volumes are cleared to be shipped.",
-    "created_at": "2016-05-02T23:16:47Z",
-    "updated_at": "2016-05-03T01:25:42Z"
+    "desc": "Stored with Underground Vaults",
+    "created_at": "2016-08-16T19:21:12Z",
+    "updated_at": "2016-08-16T21:23:11Z"
   }
 },
 {
@@ -802,18 +1181,6 @@
     "exception": null,
     "warning": null,
     "version_string": null
-  }
-},
-{
-  "model": "tracking_tool.pstep",
-  "pk": "Prec",
-  "fields": {
-    "type": null,
-    "name": "received",
-    "prereq": "",
-    "desc": "Unpack HUMS delivered bins on 1L and distribute vols on shelves",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2015-04-17T14:19:34Z"
   }
 },
 {
@@ -969,6 +1336,18 @@
   }
 },
 {
+  "model": "tracking_tool.pstep",
+  "pk": "Drcs",
+  "fields": {
+    "type": null,
+    "name": "Received Shared",
+    "prereq": "",
+    "desc": "Received 'shared' files from innodata",
+    "created_at": "2016-06-30T17:44:18Z",
+    "updated_at": "2016-06-30T17:44:18Z"
+  }
+},
+{
   "model": "tracking_tool.eventloggers",
   "pk": 262930,
   "fields": {
@@ -985,6 +1364,18 @@
     "exception": null,
     "warning": null,
     "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Ppre",
+  "fields": {
+    "type": null,
+    "name": "prepped",
+    "prereq": "Pana",
+    "desc": "Read barcodes on Stack Wagon before moving vols to scan room",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-08-21T04:03:51Z"
   }
 },
 {
@@ -1046,14 +1437,14 @@
 },
 {
   "model": "tracking_tool.pstep",
-  "pk": "Dx2v",
+  "pk": "Pss1",
   "fields": {
     "type": null,
-    "name": "xfer to vendor",
-    "prereq": "",
-    "desc": "Transferred to the s3 bucket for retrieval by the processing vendor",
-    "created_at": "2014-04-14T22:09:47Z",
-    "updated_at": "2014-04-14T22:09:47Z"
+    "name": "stored, awaiting Meyer",
+    "prereq": "Psca",
+    "desc": "Vacuum seal QAskipped and QAcomplete vols, load book cart, move sealed vols to 3L stacks",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2015-08-01T19:15:36Z"
   }
 },
 {
@@ -1228,18 +1619,6 @@
   }
 },
 {
-  "model": "tracking_tool.pstep",
-  "pk": "Drcs",
-  "fields": {
-    "type": null,
-    "name": "Received Shared",
-    "prereq": "",
-    "desc": "Received 'shared' files from innodata",
-    "created_at": "2016-06-30T17:44:18Z",
-    "updated_at": "2016-06-30T17:44:18Z"
-  }
-},
-{
   "model": "tracking_tool.reporters",
   "pk": 315,
   "fields": {
@@ -1394,6 +1773,60 @@
   }
 },
 {
+  "model": "tracking_tool.volumes",
+  "pk": "32044061407086",
+  "fields": {
+    "hollis_no": "000114134",
+    "volume": "60",
+    "publicationdate": null,
+    "publisher": "West Publishing Co.",
+    "publicationyear": 1954,
+    "reporter_id": 892,
+    "publicationdategranularity": null,
+    "nom_volume": null,
+    "nominative_name": "",
+    "series_volume": "",
+    "spine_start_date": 0,
+    "spine_end_date": 0,
+    "start_date": 0,
+    "end_date": 0,
+    "page_start_date": 1953,
+    "page_end_date": 1953,
+    "redaction_profile": "",
+    "contributing_library": "",
+    "rare": "N",
+    "hscrev": "N",
+    "hsc_accession": null,
+    "needs_repair": null,
+    "missing_text_pages": "",
+    "created_by": 25,
+    "bibrev": "N",
+    "pages": 1034,
+    "dup": null,
+    "created_at": "2016-05-27T18:23:58Z",
+    "updated_at": "2016-11-01T20:30:12Z",
+    "replaced_pages": "",
+    "cases": null,
+    "marginalia": null,
+    "pop": "St. Paul, MN",
+    "title": null,
+    "handfeed": null,
+    "imgct": 1058,
+    "hold": null,
+    "request_id": 149,
+    "pub_del_pg": null,
+    "notes": "",
+    "pubdel_pages": null,
+    "original_barcode": "",
+    "scope_reason": "",
+    "out_of_scope": 0,
+    "meyer_box_barcode": "",
+    "uv_box_barcode": "",
+    "meyer_ky_truck": "",
+    "meyer_pallet": ""
+  }
+},
+{
   "model": "tracking_tool.eventloggers",
   "pk": 819554,
   "fields": {
@@ -1407,6 +1840,25 @@
     "created_at": "2016-03-23T07:29:46Z",
     "updated_at": "2016-03-23T07:29:46Z",
     "pstep_id": "Drcs",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.eventloggers",
+  "pk": 758114,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Book Requested",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 18,
+    "created_at": "2016-05-27T18:28:30Z",
+    "updated_at": "2016-05-27T18:28:30Z",
+    "pstep_id": "Preq",
     "exception": null,
     "warning": null,
     "version_string": null
@@ -1459,6 +1911,39 @@
     "exception": null,
     "warning": null,
     "version_string": null
+  }
+},
+{
+  "model": "tracking_tool.pstep",
+  "pk": "Psca",
+  "fields": {
+    "type": null,
+    "name": "scanned",
+    "prereq": "Pbat",
+    "desc": "First step in scanning: read barcode from cover sheet",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-08-21T04:03:51Z"
+  }
+},
+{
+  "model": "tracking_tool.reporters",
+  "pk": 892,
+  "fields": {
+    "state": "Regional",
+    "reporter": "North Western Reporter 2d",
+    "short": "N.W. 2d",
+    "start_date": 1942,
+    "end_date": 2014,
+    "volumes": 847,
+    "created_at": "2014-12-11T05:13:47Z",
+    "updated_at": "2016-09-12T20:03:21Z",
+    "notes": "",
+    "original_volumes": null,
+    "original_start_date": null,
+    "original_end_date": null,
+    "observed_start_date": 1893,
+    "observed_end_date": 2016,
+    "observed_volumes": 851
   }
 },
 {
@@ -1557,15 +2042,34 @@
   }
 },
 {
+  "model": "tracking_tool.eventloggers",
+  "pk": 757681,
+  "fields": {
+    "bar_code": "32044061407086",
+    "type": "Request Queued (Request ID: 149)",
+    "location": null,
+    "destination": null,
+    "origination": null,
+    "notes": null,
+    "created_by": 18,
+    "created_at": "2016-05-27T18:23:58Z",
+    "updated_at": "2016-05-27T18:23:58Z",
+    "pstep_id": "Prqu",
+    "exception": null,
+    "warning": null,
+    "version_string": null
+  }
+},
+{
   "model": "tracking_tool.pstep",
-  "pk": "Preq",
+  "pk": "Dqac",
   "fields": {
     "type": null,
-    "name": "requested",
+    "name": "imaging QA completed",
     "prereq": "",
-    "desc": "Selector-provided barcodes recorded in TT and emailed to HD",
-    "created_at": "2013-09-26T18:13:11Z",
-    "updated_at": "2013-09-26T18:13:11Z"
+    "desc": "Results of QA of digital images (needs to be modeled)",
+    "created_at": "2013-08-21T04:03:51Z",
+    "updated_at": "2013-08-21T04:03:51Z"
   }
 },
 {
@@ -1589,14 +2093,14 @@
 },
 {
   "model": "tracking_tool.pstep",
-  "pk": "Pmey",
+  "pk": "Dqas",
   "fields": {
     "type": null,
-    "name": "Meyer pickup",
-    "prereq": "Pss1",
-    "desc": "Volumes have been boxed and transferred from Langdell to the Meyer facilitiy in CT.  For each instance of PMeyer, a barcode must be entered in the Meyer Box Barcode field.",
-    "created_at": "2016-03-31T12:37:09Z",
-    "updated_at": "2016-03-31T12:37:09Z"
+    "name": "QA Skipped",
+    "prereq": "",
+    "desc": "QA process skipped because it was not in the statistically selected material",
+    "created_at": "2013-09-24T18:49:42Z",
+    "updated_at": "2013-09-24T18:49:42Z"
   }
 },
 {
@@ -1639,14 +2143,68 @@
 },
 {
   "model": "tracking_tool.pstep",
-  "pk": "Psca",
+  "pk": "Prqu",
   "fields": {
     "type": null,
-    "name": "scanned",
-    "prereq": "Pbat",
-    "desc": "First step in scanning: read barcode from cover sheet",
-    "created_at": "2013-08-21T04:03:51Z",
-    "updated_at": "2013-08-21T04:03:51Z"
+    "name": "queued",
+    "prereq": "",
+    "desc": "Placed in a request queue",
+    "created_at": "2013-12-13T05:26:17Z",
+    "updated_at": "2013-12-13T05:26:17Z"
+  }
+},
+{
+  "model": "tracking_tool.volumes",
+  "pk": "32044057891608",
+  "fields": {
+    "hollis_no": "005821473",
+    "volume": "1",
+    "publicationdate": null,
+    "publisher": "Press of Case, Lockwood and Company",
+    "publicationyear": 1861,
+    "reporter_id": 1058,
+    "publicationdategranularity": null,
+    "nom_volume": null,
+    "nominative_name": "Breese & Beecher",
+    "series_volume": "",
+    "spine_start_date": 0,
+    "spine_end_date": 0,
+    "start_date": 1819,
+    "end_date": 1831,
+    "page_start_date": 1819,
+    "page_end_date": 1831,
+    "redaction_profile": "",
+    "contributing_library": "",
+    "rare": "N",
+    "hscrev": "N",
+    "hsc_accession": null,
+    "needs_repair": null,
+    "missing_text_pages": "",
+    "created_by": 18,
+    "bibrev": "N",
+    "pages": 452,
+    "dup": null,
+    "created_at": "2015-08-05T13:52:57Z",
+    "updated_at": "2016-09-28T18:17:28Z",
+    "replaced_pages": "",
+    "cases": null,
+    "marginalia": null,
+    "pop": "Hartford, CT",
+    "title": null,
+    "handfeed": null,
+    "imgct": 452,
+    "hold": null,
+    "request_id": 49,
+    "pub_del_pg": null,
+    "notes": "",
+    "pubdel_pages": null,
+    "original_barcode": "",
+    "scope_reason": "",
+    "out_of_scope": 0,
+    "meyer_box_barcode": "WBMBox538",
+    "uv_box_barcode": "L0000548486",
+    "meyer_ky_truck": "WBMKYTruck01",
+    "meyer_pallet": "WBMPallet12"
   }
 },
 {
@@ -1666,18 +2224,6 @@
     "exception": null,
     "warning": null,
     "version_string": null
-  }
-},
-{
-  "model": "tracking_tool.pstep",
-  "pk": "Prqu",
-  "fields": {
-    "type": null,
-    "name": "queued",
-    "prereq": "",
-    "desc": "Placed in a request queue",
-    "created_at": "2013-12-13T05:26:17Z",
-    "updated_at": "2013-12-13T05:26:17Z"
   }
 }
 ]
