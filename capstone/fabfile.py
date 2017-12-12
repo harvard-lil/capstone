@@ -71,14 +71,14 @@ def update_postgres_env():
 
 
 @task
-def create_or_update_case_metadata(update_existing='no'):
+def create_or_update_case_metadata(update_existing=False):
     """
         create or update CaseMetadata objects using celery
-        - if update_existing is 'no', just create cases if missing
-        - if update_existing is 'yes', create and update
+        - if update_existing, create and update
+        - else, just create cases if missing
     """
-    update_flag = True if update_existing == 'yes' else False
-    create_case_metadata_from_all_vols(update_existing=update_flag)
+    update_existing = True if update_existing else False
+    create_case_metadata_from_all_vols(update_existing=update_existing)
 
 @task
 def init_db():
