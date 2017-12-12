@@ -22,27 +22,12 @@ class MetaCaseSerializer(serializers.BaseSerializer):
     """
     def to_internal_value(self, case):
         case_metadata = CaseSerializer(case, context=self.context).data
-        case_xml = CaseXMLSerializer(case, context=self.context).data
         meta_case = dict(case_metadata)
-        meta_case['casebody'] = case_xml['casebody']
+        meta_case['casebody'] = extract_casebody(case.case_xml.orig_xml)
         return meta_case
 
     def to_representation(self, obj):
         return obj
-
-
-class CaseXMLSerializer(serializers.ModelSerializer):
-    casebody = serializers.SerializerMethodField(source='get_casebody')
-    case_id = serializers.CharField()
-
-    class Meta:
-        model = models.CaseXML
-        fields = ('casebody', 'case_id')
-
-    @staticmethod
-    def get_casebody(data):
-        case = models.CaseXML.objects.get(case_id=data.case_id)
-        return extract_casebody(case.orig_xml)
 
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
