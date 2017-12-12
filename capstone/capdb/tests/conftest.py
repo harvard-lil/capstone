@@ -2,7 +2,7 @@ import pytest
 from django.core.management import call_command
 
 import fabfile
-from capdb.models import VolumeXML
+from capdb.models import VolumeXML, CaseXML
 import capdb.storages
 
 
@@ -46,10 +46,12 @@ def ingest_volumes(ingest_metadata, redis_patch):
 
 @pytest.fixture
 def volume_xml(ingest_volumes):
-    return VolumeXML.objects.get(barcode='32044057892259')
+    return VolumeXML.objects.get(metadata__barcode='32044057892259')
 
 @pytest.fixture
 def case_xml(volume_xml):
     return volume_xml.case_xmls.first()
 
-
+@pytest.fixture
+def duplicative_case_xml(ingest_volumes):
+    return CaseXML.objects.get(metadata__case_id='32044061407086_0001')

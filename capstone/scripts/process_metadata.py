@@ -1,19 +1,28 @@
 from datetime import datetime
-from scripts.helpers import parse_xml
+from scripts.helpers import parse_xml, resolve_namespace
 
 
 def get_case_metadata(case_xml):
     parsed = parse_xml(case_xml)
-    volume_barcode = parsed('case|case').attr.caseid.split('_')[0]
+
+    # duplicative cases won't have a case section, so rather than using case.caseid we get the volume barcode from the
+    # first alto file entry, and the case number from the casebody:
+    volume_barcode = parsed('mets|fileGrp[USE="alto"] mets|FLocat')[0].attrib[resolve_namespace('xlink|href')].split('/')[-1].split('_')[0]
+    case_number = parsed('mets|fileGrp[USE="casebody"] > mets|file').attr["ID"].split('_')[1]
+    case_id = "%s_%s" % (volume_barcode, case_number)
+
+    metadata = {
+        'volume_barcode': volume_barcode,
+        'case_id': case_id
+    }
     if parsed('duplicative|casebody'):
         first_page = int(parsed('duplicative|casebody').attr.firstpage)
         last_page = int(parsed('duplicative|casebody').attr.lastpage)
-        return {
+        return dict(metadata, **{
             'duplicative': True,
             'first_page': first_page,
             'last_page': last_page,
-            'volume_barcode': volume_barcode,
-        }
+        })
 
     citation_entries = parsed('case|case').find('case|citation')
     citations = {cite.attrib['category']: cite.text for cite in citation_entries}
@@ -39,7 +48,7 @@ def get_case_metadata(case_xml):
         'name': parsed('case|court').text(),
     }
 
-    return {
+    return dict(metadata, **{
         'name': name,
         'name_abbreviation': name_abbreviation,
         'jurisdiction': jurisdiction,
@@ -50,9 +59,8 @@ def get_case_metadata(case_xml):
         'decision_date': decision_date,
         'court': court,
         'docket_number': docket_number,
-        'volume_barcode': volume_barcode,
         'duplicative': False,
-    }
+    })
 
 
 def decision_datetime(decision_date_text):
