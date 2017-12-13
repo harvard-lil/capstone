@@ -183,7 +183,7 @@ class VolumeMetadata(models.Model):
     volume_number = models.CharField(max_length=64, blank=True, null=True)
     publisher = models.CharField(max_length=255, blank=True, null=True)
     publication_year = models.IntegerField(blank=True, null=True)
-    reporter = models.ForeignKey(Reporter)
+    reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING)
     nominative_volume_number = models.CharField(max_length=1024, blank=True, null=True)
     nominative_name = models.CharField(max_length=1024, blank=True, null=True)
     series_volume_number = models.CharField(max_length=1024, blank=True, null=True)
@@ -198,7 +198,7 @@ class VolumeMetadata(models.Model):
     hsc_review = models.CharField(max_length=9, blank=True, null=True, choices=choices('No', 'Complete', 'Yes', 'Reclassed'), help_text="Historical and Special Collections Review")
     needs_repair = models.CharField(max_length=9, blank=True, null=True, choices=choices('No', 'Complete', 'Yes'))
     missing_text_pages = models.TextField(blank=True, null=True, help_text="Pages damaged enough to have lost text.")
-    created_by = models.ForeignKey(TrackingToolUser)
+    created_by = models.ForeignKey(TrackingToolUser, on_delete=models.DO_NOTHING)
     bibliographic_review = models.CharField(max_length=7, blank=True, null=True, choices=choices('No', 'Complete', 'Yes'))
     analyst_page_count = models.IntegerField(blank=True, null=True, help_text="The page number of the last numbered page in the book")
     duplicate = models.BooleanField(default=False)
@@ -210,7 +210,7 @@ class VolumeMetadata(models.Model):
     title = models.CharField(max_length=1024, blank=True, null=True)
     hand_feed = models.BooleanField(default=False, help_text="Instructions for operator, not whether or not it happened")
     image_count = models.IntegerField(blank=True, null=True, help_text="Count of images recieved from scanner")  # image_count?
-    request = models.ForeignKey(BookRequest, blank=True, null=True)
+    request = models.ForeignKey(BookRequest, blank=True, null=True, on_delete=models.SET_NULL)
     publisher_deleted_pages = models.BooleanField(default=False, help_text="")  # rename?
     notes = models.CharField(max_length=512, blank=True, null=True)
     original_barcode = models.CharField(max_length=64, blank=True, null=True, help_text="")
@@ -227,20 +227,16 @@ class VolumeMetadata(models.Model):
     def __str__(self):
         return self.barcode
 
-    @property
-    def volume_xml(self):
-        # TODO: Once OneToOneField is set up, this method can be deleted
-        return VolumeXML.objects.filter(barcode=self.barcode).first()
-
 
 class TrackingToolLog(models.Model):
-    volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs")
+    volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
     entry_text = models.CharField(max_length=128, blank=True, help_text="Text log entry. Primarily used when pstep isn't set.")
     notes = models.TextField(blank=True, null=True)
-    created_by = models.ForeignKey(TrackingToolUser, related_name="tracking_tool_logs")
+    created_by = models.ForeignKey(TrackingToolUser, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
-    pstep = models.ForeignKey(ProcessStep, blank=True, null=True, help_text="A significant event in production", related_name="tracking_tool_logs")
+    pstep = models.ForeignKey(ProcessStep, blank=True, null=True, help_text="A significant event in production",
+                              related_name="tracking_tool_logs", on_delete=models.SET_NULL)
     exception = models.BooleanField(help_text="Nothing to do with software exceptions - more like a UPS delivery 'exception'")
     warning = models.BooleanField(help_text="Something that's a bit off, but not necessarily indicative of a problem")
     version_string = models.CharField(max_length=32, blank=True, null=True, help_text="'YYYY_DD_MM_hh.mm.ss' Appended to s3 dir to distinguish versions")
@@ -253,7 +249,7 @@ class TrackingToolLog(models.Model):
 
 
 class VolumeXML(BaseXMLModel):
-    metadata = models.OneToOneField(VolumeMetadata, related_name='volume_xml')
+    metadata = models.OneToOneField(VolumeMetadata, related_name='volume_xml', on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     def __str__(self):
@@ -312,8 +308,10 @@ class CaseMetadata(models.Model):
 
 
 class CaseXML(BaseXMLModel):
-    metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml')
-    volume = models.ForeignKey(VolumeXML, related_name='case_xmls')
+    metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',
+                                     on_delete=models.SET_NULL)
+    volume = models.ForeignKey(VolumeXML, related_name='case_xmls',
+                                     on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     def __str__(self):
@@ -438,7 +436,8 @@ class Citation(models.Model):
 
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
-    volume = models.ForeignKey(VolumeXML, related_name='page_xmls')
+    volume = models.ForeignKey(VolumeXML, related_name='page_xmls',
+                                     on_delete=models.DO_NOTHING)
     cases = models.ManyToManyField(CaseXML, related_name='pages')
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
