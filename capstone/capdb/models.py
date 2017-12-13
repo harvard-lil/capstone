@@ -147,8 +147,8 @@ class ProcessStep(models.Model):
 
 class Jurisdiction(models.Model):
     name = models.CharField(max_length=100, blank=True)
+    name_long = models.CharField(max_length=100, blank=True)
     slug = models.SlugField(unique=True, max_length=255)
-    name_abbreviation = models.CharField(max_length=200, blank=True)
     whitelisted = models.BooleanField(default=False)
 
     def __str__(self):

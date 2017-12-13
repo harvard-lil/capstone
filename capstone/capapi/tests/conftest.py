@@ -31,6 +31,10 @@ def case():
     return factories.setup_case()
 
 @pytest.fixture
+def jurisdiction():
+    return factories.setup_jurisdiction()
+
+@pytest.fixture
 def court():
     return factories.setup_court()
 

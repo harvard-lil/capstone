@@ -31,6 +31,7 @@ class JurisdictionViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListM
     filter_class = filters.JurisdictionFilter
     queryset = models.Jurisdiction.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+    lookup_field = 'slug'
 
 
 class VolumeViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):

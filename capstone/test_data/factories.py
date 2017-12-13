@@ -26,6 +26,11 @@ def setup_case(**kwargs):
 
     return case
 
+def setup_jurisdiction(**kwargs):
+    jurisdiction = JurisdictionFactory.create()
+    jurisdiction.save()
+
+    return jurisdiction
 
 def setup_authenticated_user(**kwargs):
     user = APIUserFactory.create(**kwargs)
@@ -82,8 +87,8 @@ class JurisdictionFactory(factory.DjangoModelFactory):
     class Meta:
         model = Jurisdiction
 
-    name = factory.Faker('sentence', nb_words=5)
-    name_abbreviation = factory.Faker('sentence', nb_words=3)
+    name = factory.Faker('sentence', nb_words=2)
+    name_long = factory.Faker('sentence', nb_words=8)
     slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))
 
 
@@ -99,6 +104,16 @@ class CitationFactory(factory.DjangoModelFactory):
     slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.cite))
 
 
+class CourtFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Court
+
+    name = factory.Faker('sentence', nb_words=5)
+    name_abbreviation = factory.Faker('sentence', nb_words=3)
+    jurisdiction = factory.SubFactory(JurisdictionFactory)
+    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))
+
+
 class CaseMetadataFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseMetadata
@@ -111,6 +126,7 @@ class CaseMetadataFactory(factory.DjangoModelFactory):
     case_id = factory.Sequence(lambda n: '%08d' % n)
     decision_date = factory.Faker("date_this_century", before_today=True, after_today=False)
     citations = factory.RelatedFactory(CitationFactory)
+    court = factory.SubFactory(CourtFactory)
 
 
 class CaseXMLFactory(factory.DjangoModelFactory):
@@ -120,16 +136,6 @@ class CaseXMLFactory(factory.DjangoModelFactory):
     case_id = factory.Sequence(lambda n: '%08d' % n)
     orig_xml = xml_str
     volume = factory.SubFactory(VolumeXMLFactory)
-
-
-class CourtFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Court
-
-    name = factory.Faker('sentence', nb_words=5)
-    name_abbreviation = factory.Faker('sentence', nb_words=3)
-    jurisdiction = factory.SubFactory(JurisdictionFactory)
-    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))
 
 
 class ReporterFactory(factory.DjangoModelFactory):

@@ -104,6 +104,68 @@ jurisdiction_translation = {
     'Wyoming': 'Wyo.'
 }
 
+jurisdiction_translation_long_name = {
+    'Ill.': 'Illinois',
+    'N.Y.': 'New York',
+    'Ala.': 'Alabama',
+    'Alaska': 'Alaska',
+    'Am. Samoa': 'American Samoa',
+    'Ariz.': 'Arizona',
+    'Ark.': 'Arkansas',
+    'Pa.': 'Pennsylvania',
+    'Cal.': 'California',
+    'Colo.': 'Colorado',
+    'Conn.': 'Connecticut',
+    'Dakota Territory': 'Dakota Territory',
+    'Del.': 'Delaware',
+    'D.C.': 'District of Columbia',
+    'Fla.': 'Florida',
+    'Ga.': 'Georgia',
+    'Guam': 'Guam',
+    'Haw.': 'Hawaii',
+    'Idaho': 'Idaho',
+    'Ind.': 'Indiana',
+    'Iowa': 'Iowa',
+    'Kan.': 'Kansas',
+    'Ky.': 'Kentucky',
+    'La.': 'Louisiana',
+    'Me.': 'Maine',
+    'Md.': 'Maryland',
+    'Mass.': 'Massachusetts',
+    'Mich.': 'Michigan',
+    'Minn.': 'Minnesota',
+    'Miss.': 'Mississippi',
+    'Mo.': 'Missouri',
+    'Mont.': 'Montana',
+    'Navajo': 'Navajo Nation',
+    'Neb.': 'Nebraska',
+    'Nev.': 'Nevada',
+    'N.H.': 'New Hampshire',
+    'N.J.': 'New Jersey',
+    'N.M.': 'New Mexico',
+    'N.C.': 'North Carolina',
+    'N.D.': 'North Dakota',
+    'N. Mar. I.': 'Northern Mariana Islands',
+    'Ohio': 'Ohio',
+    'Okla.': 'Oklahoma',
+    'Or.': 'Oregon',
+    'P.R.': 'Puerto Rico',
+    'R.I.': 'Rhode Island',
+    'S.C.': 'South Carolina',
+    'S.D.': 'South Dakota',
+    'Tenn.': 'Tennessee',
+    'Tex.': 'Texas',
+    'U.S.': 'United States',
+    'Utah': 'Utah',
+    'Vt.': 'Vermont',
+    'V.I.': 'Virgin Islands',
+    'Va.': 'Virginia',
+    'Wash.': 'Washington',
+    'W. Va.': 'West Virginia',
+    'Wis.': 'Wisconsin',
+    'Wyo.': 'Wyoming'
+}
+
 special_jurisdiction_cases = {
     '32044078495512': 'Ohio',
     '32044078495546': 'Ohio',
@@ -130,11 +192,13 @@ def parse_xml(xml):
         
     return PyQuery(xml, parser='xml', namespaces=nsmap)
 
+
 def serialize_xml(xml):
     """
         Write PyQuery object back to utf-8 bytestring.
     """
     return b''.join([etree.tostring(e, encoding='utf-8', xml_declaration=True) for e in xml])
+
 
 def copy_file(from_path, to_path, from_storage=None, to_storage=None):
     """
