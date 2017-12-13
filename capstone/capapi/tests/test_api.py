@@ -33,11 +33,38 @@ def test_jurisdictions(client, api_url, case):
 
 
 @pytest.mark.django_db
+def test_jurisdiction(client, api_url, jurisdiction):
+    response = client.get("%sjurisdictions/%s/?format=json" % (api_url, jurisdiction.slug))
+    check_response(response)
+
+
+@pytest.mark.django_db
 def test_case(client, api_url, case):
     response = client.get("%scases/%s/?format=json" % (api_url, case.slug))
     check_response(response)
     content = response.json()
     assert content.get("name_abbreviation") == case.name_abbreviation
+
+
+@pytest.mark.django_db
+def test_flow(client, api_url, case):
+    """user should be able to click through to get to different tables"""
+    # start with case
+    response = client.get("%scases/%s/?format=json" % (api_url, case.slug))
+    check_response(response)
+    content = response.json()
+    # onwards to court
+    court_url = content.get("court_url")
+    assert court_url
+    response = client.get(court_url)
+    check_response(response)
+    # onwards to jurisdiction
+    jurisdiction_url = content.get("jurisdiction_url")
+    assert jurisdiction_url
+    response = client.get(jurisdiction_url)
+    check_response(response)
+    content = response.json()
+    assert content.get("name") == case.jurisdiction.name
 
 
 @pytest.mark.django_db(transaction=True)

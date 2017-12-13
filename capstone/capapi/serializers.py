@@ -50,6 +50,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
         view_name="casemetadata-detail",
         lookup_field='slug')
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
+    jurisdiction_url = serializers.HyperlinkedRelatedField(source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
     court = serializers.ReadOnlyField(source='court.name')
     court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True)
     reporter = serializers.ReadOnlyField(source='reporter.full_name')
@@ -71,6 +72,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'last_page',
             'citations',
             'jurisdiction',
+            'jurisdiction_url',
             'court',
             'court_url',
             'reporter',
@@ -81,9 +83,13 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class JurisdictionSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="jurisdiction-detail",
+        lookup_field='slug')
+
     class Meta:
         model = models.Jurisdiction
-        fields = ('url', 'id', 'slug', 'name',)
+        fields = ('url', 'id', 'slug', 'name', 'name_long')
 
 
 class VolumeSerializer(serializers.ModelSerializer):
@@ -130,7 +136,7 @@ class ReporterSerializer(serializers.ModelSerializer):
 
 class CourtSerializer(serializers.ModelSerializer):
     jurisdiction_url = serializers.HyperlinkedRelatedField(
-        source='jurisdiction', view_name='jurisdiction-detail', read_only=True)
+        source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
 
     class Meta:
