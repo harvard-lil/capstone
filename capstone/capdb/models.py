@@ -1,9 +1,9 @@
 import hashlib
 from django.contrib.postgres.fields import JSONField, ArrayField
-from django.db import models
+from django.db import models, IntegrityError, transaction
+from django.utils.text import slugify
 
 from scripts.process_metadata import get_case_metadata
-from .utils import generate_unique_slug
 from scripts.helpers import *
 
 ### helpers ###
@@ -12,6 +12,119 @@ def choices(*args):
     """ Simple helper to create choices=(('Foo','Foo'),('Bar','Bar'))"""
     return zip(args, args)
 
+
+class AutoSlugMixin():
+    """
+        Mixin for models that set the .slug field on first save.
+
+        Slug can be set in two ways: either manually or automatically.
+
+        Manually:
+
+            case_metadata.save(slug_base="Some Citation")
+
+        Automatically, given that Jurisdiction.get_slug() returns self.name:
+
+            Jurisdiction(name='Massachusetts').save()
+    """
+
+    @transaction.atomic
+    def save(self, *args, slug_base=None, **kwargs):
+
+        # if slug is explicitly provided or blank, keep trying to save until we find a unique slug:
+        if slug_base or not self.slug:
+
+            # start with explicit slug_base, or value of self.slug_source:
+            slug_base = slugify(slug_base or self.get_slug())
+
+            # try up to 1000 times to save with given slug, adding a number to the slug each time:
+            for count in range(1000):
+                slug = slug_base
+                if count:
+                    slug += "-%s" % count
+                self.slug = slug
+                try:
+                    # if we are running in a transaction, we have to run this save in a sub-transaction
+                    # to recover from expected IntegrityErrors:
+                    if transaction.get_connection().in_atomic_block:
+                        with transaction.atomic():
+                            return super(AutoSlugMixin, self).save(*args, **kwargs)
+
+                    # otherwise we run with no transaction for speed:
+                    else:
+                        return super(AutoSlugMixin, self).save(*args, **kwargs)
+                except IntegrityError as e:
+                    if not 'Key (slug)' in e.args[0]:
+                        raise
+
+            raise Exception("Unable to find unique slug for %s %s, slug_base %s" % (self.__class__.__name__, self.pk, slug_base))
+
+        # normal save without slug modification:
+        else:
+            return super(AutoSlugMixin, self).save(*args, **kwargs)
+
+    def get_slug(self):
+        raise NotImplementedError("Either define a get_slug() method for %s, or pass slug_base to save()." % self.__class__.__name__)
+
+class CachedLookupMixin():
+    """
+        Mixin for models that have a small number of items that get queried over and over but rarely change.
+    """
+
+    # Store all objects from the database here:
+    _cached_objects = None
+
+    # Store objects indexed by a given set of keys here. For example,
+    #   _lookup_tables[(name, jurisdiction_id)] = {('Foo', 7): obj}
+    # This is populated on demand the first time a particular combination of keys is queried.
+    _lookup_tables = {}
+
+    def _value_for_keys(self, keys):
+        """
+            Helper function for get_from_cache.
+            Given a list of items like ('name', 'abbreviation'), return (self.name, self.abbreviation).
+        """
+        return tuple(getattr(self, key) for key in keys)
+
+    @classmethod
+    def get_from_cache(cls, **kwargs):
+        """
+            Get a single item like `Court.get_from_cache(name='Foo', jurisdiction_id=7)`.
+            Database will be hit only if that item isn't already in the thread-local cache.
+            Entire cache is pre-filled on first call.
+        """
+
+        # prefill cache if necessary:
+        if cls._cached_objects is None:
+            cls._cached_objects = list(cls.objects.all())
+
+        # get sorted list of keys and values to fetch requested object from cache:
+        sorted_pairs = sorted(kwargs.items(), key=lambda i: i[0])
+        keys = tuple(s[0] for s in sorted_pairs)
+        value = tuple(s[1] for s in sorted_pairs)
+
+        # prefill lookup table for this combination of keys, if necessary:
+        if keys not in cls._lookup_tables:
+            cls._lookup_tables[keys] = {obj._value_for_keys(keys): obj for obj in cls._cached_objects}
+
+        # attempt to return item from cache:
+        if value in cls._lookup_tables[keys]:
+            return cls._lookup_tables[keys][value]
+
+        # if not in cache, attempt to fetch item from DB (raises cls.DoesNotExist if not found):
+        obj = cls.objects.get(**kwargs)
+
+        # update cache with newly found obj:
+        cls._cached_objects.append(obj)
+        for k, v in cls._lookup_tables.items():
+            v[obj._value_for_keys(k)] = obj
+
+        return obj
+
+    @classmethod
+    def reset_cache(cls):
+        cls._cached_objects = None
+        cls._lookup_tables = {}
 
 ### Helpers for XML handling ###
 
@@ -145,7 +258,7 @@ class ProcessStep(models.Model):
         return "%s - %s" % (self.step, self.label)
 
 
-class Jurisdiction(models.Model):
+class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
     name = models.CharField(max_length=100, blank=True)
     name_long = models.CharField(max_length=100, blank=True)
     slug = models.SlugField(unique=True, max_length=255)
@@ -157,6 +270,8 @@ class Jurisdiction(models.Model):
     class Meta:
         ordering = ['name']
 
+    def get_slug(self):
+        return self.name
 
 class Reporter(models.Model):
     jurisdictions = models.ManyToManyField(Jurisdiction)
@@ -256,16 +371,11 @@ class VolumeXML(BaseXMLModel):
         return self.metadata_id
 
 
-class Court(models.Model):
+class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
     name = models.CharField(max_length=255)
     name_abbreviation = models.CharField(max_length=100, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='courts', on_delete=models.SET_NULL)
     slug = models.SlugField(unique=True, max_length=255, blank=False)
-
-    def save(self, *args, **kwargs):
-        if not self.id and not self.slug:
-            self.slug = generate_unique_slug(self, self.name_abbreviation or self.name)
-        super(Court, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.slug
@@ -273,8 +383,11 @@ class Court(models.Model):
     class Meta:
         ordering = ['name']
 
+    def get_slug(self):
+        return self.name_abbreviation or self.name
 
-class CaseMetadata(models.Model):
+
+class CaseMetadata(AutoSlugMixin, models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     case_id = models.CharField(max_length=64, null=True)
     first_page = models.IntegerField(null=True, blank=True)
@@ -301,11 +414,6 @@ class CaseMetadata(models.Model):
     class Meta:
         ordering = ['case_id']
 
-    def save(self, *args, **kwargs):
-        # Ordinarily we would set slug here for new objects, but we can't because it's based on self.citations,
-        # which is a many-to-many that can't exist until the object is saved.
-        super(CaseMetadata, self).save(*args, **kwargs)
-
 
 class CaseXML(BaseXMLModel):
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',
@@ -313,6 +421,7 @@ class CaseXML(BaseXMLModel):
     volume = models.ForeignKey(VolumeXML, related_name='case_xmls',
                                      on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
+
 
     def __str__(self):
         return str(self.pk)
@@ -324,6 +433,8 @@ class CaseXML(BaseXMLModel):
             method returns out.
             - otherwise, create or overwrite properties on related metadata object
         """
+
+        # get or create case.metadata
         case_metadata = self.metadata
         if case_metadata:
             if not update_existing:
@@ -334,15 +445,53 @@ class CaseXML(BaseXMLModel):
             case_metadata = CaseMetadata()
             metadata_created = True
 
+        # set up data
         data = get_case_metadata(self.orig_xml)
         duplicative_case = data['duplicative']
-
         volume_metadata = self.volume.metadata
         reporter = volume_metadata.reporter
 
-        # we have to create citations first because case slug field relies on citation
+        # set case_metadata attributes
+        case_metadata.reporter = reporter
+        case_metadata.volume = volume_metadata
+        case_metadata.duplicative = duplicative_case
+        case_metadata.first_page = data["first_page"]
+        case_metadata.last_page = data["last_page"]
+        case_metadata.case_id = data["case_id"]
+
+        if not duplicative_case:
+            case_metadata.name = data["name"]
+            case_metadata.name_abbreviation = data["name_abbreviation"]
+            case_metadata.decision_date_original = data["decision_date_original"]
+            case_metadata.decision_date = data["decision_date"]
+            case_metadata.docket_number = data["docket_number"]
+
+            # set jurisdiction
+            if data['volume_barcode'] in special_jurisdiction_cases:
+                jurisdiction_name = special_jurisdiction_cases[data["volume_barcode"]]
+            else:
+                jurisdiction_name = jurisdiction_translation[data["jurisdiction"]]
+            case_metadata.jurisdiction = Jurisdiction.get_from_cache(name=jurisdiction_name)
+
+            # set or create court
+            # we look up court by name and/or name_abbreviation from data["court"]
+            court_kwargs = {k:v for k, v in data["court"].items() if v}
+            if court_kwargs:
+                try:
+                    court = Court.get_from_cache(**court_kwargs)
+                except Court.DoesNotExist:
+                    court = Court(**court_kwargs)
+                    court.save()
+                case_metadata.court = court
+                if court.jurisdiction_id != case_metadata.jurisdiction_id:
+                    court.jurisdiction_id = case_metadata.jurisdiction_id
+                    court.save()
+
+        ### Handle citations
+
         citations = list()
 
+        # first create citations because case slug field relies on citation
         if not duplicative_case:
             for citation_type, citation_text in data['citations'].items():
                 cite, created = Citation.objects.get_or_create(
@@ -356,83 +505,36 @@ class CaseXML(BaseXMLModel):
                 type="official", duplicative=True)
             citations.append(cite)
 
-        case_metadata.reporter = reporter
-        case_metadata.volume = volume_metadata
-        case_metadata.duplicative = duplicative_case
-        case_metadata.first_page = data["first_page"]
-        case_metadata.last_page = data["last_page"]
-        case_metadata.case_id = data["case_id"]
-
         # set slug to official citation, or first citation if there is no official
         citation_to_slugify = next((c for c in citations if c.type == 'official'), citations[0])
-        case_metadata.slug = generate_unique_slug(case_metadata, citation_to_slugify.cite)
 
-        # save here so we can add citation relationships before possibly returning
-        case_metadata.save()
+        case_metadata.save(slug_base=citation_to_slugify.cite)
+
+        # create links between metadata and cites
         # TODO: this may create orphan citations that aren't linked to any case
+        # why does this require a couple of selects???
         case_metadata.citations.set(citations)
 
+        # create link between casexml and metadata
         if metadata_created:
             self.metadata = case_metadata
-            self.save()
-
-        if duplicative_case:
-            return
-
-        case_metadata.name = data["name"]
-        case_metadata.name_abbreviation = data["name_abbreviation"]
-        case_metadata.decision_date_original = data["decision_date_original"]
-        case_metadata.decision_date = data["decision_date"]
-        case_metadata.docket_number = data["docket_number"]
-
-        if data['volume_barcode'] in special_jurisdiction_cases:
-            case_metadata.jurisdiction = Jurisdiction.objects.get(name=special_jurisdiction_cases[data["volume_barcode"]])
-        else:
-            case_metadata.jurisdiction = Jurisdiction.objects.get(name=jurisdiction_translation[data["jurisdiction"]])
-
-        court_name = data["court"]["name"]
-        court_name_abbreviation = data["court"]["name_abbreviation"]
-
-        if court_name and court_name_abbreviation:
-            court, created = Court.objects.get_or_create(
-                name=court_name,
-                name_abbreviation=court_name_abbreviation)
-            case_metadata.court = court
-
-        elif court_name_abbreviation:
-            court, created = Court.objects.get_or_create(
-                name_abbreviation=court_name_abbreviation)
-            case_metadata.court = court
-
-        elif court_name:
-            court, created = Court.objects.get_or_create(
-                name=court_name)
-            case_metadata.court = court
-
-        if case_metadata.court and case_metadata.jurisdiction:
-            court.jurisdiction = case_metadata.jurisdiction
-            court.save()
-
-        case_metadata.save()
+            self.save(update_fields=['metadata'])
 
         return case_metadata
 
 
-class Citation(models.Model):
+class Citation(AutoSlugMixin, models.Model):
     type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
     cite = models.CharField(max_length=255)
     duplicative = models.BooleanField(default=False)
     slug = models.SlugField(max_length=255, unique=True)
 
-    def save(self, *args, **kwargs):
-        if not self.id and not self.slug:
-            self.slug = generate_unique_slug(self, self.cite)
-        super(Citation, self).save(*args, **kwargs)
-
     def __str__(self):
         return self.slug
 
+    def get_slug(self):
+        return self.cite
 
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)

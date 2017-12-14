@@ -1,5 +1,3 @@
-from capdb.utils import generate_unique_slug
-
 from tqdm import tqdm
 
 from capdb.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest, Jurisdiction
@@ -118,10 +116,4 @@ def populate_jurisdiction():
     """This populates the jurisdiction table based on what's in the tracking tool stub"""
     reporters = Reporters.objects.values('state').distinct() 
     for jurisdiction in reporters:
-        # ensures no dupes if the command was already run. Small enough dataset to check every time
-        if Jurisdiction.objects.filter(name=jurisdiction['state']).count() > 0:
-            continue
-        new_jurisdiction = Jurisdiction()
-        new_jurisdiction.name = jurisdiction['state']
-        new_jurisdiction.slug = generate_unique_slug(new_jurisdiction, jurisdiction['state'])
-        new_jurisdiction.save()
+        Jurisdiction.objects.get_or_create(name=jurisdiction['state'])

@@ -3,21 +3,23 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-from django.core.exceptions import ObjectDoesNotExist
-from capdb.utils import generate_unique_slug
+# from django.core.exceptions import ObjectDoesNotExist
+# from capdb.utils import generate_unique_slug
 
 
 def fill_in_slug(apps, schema_editor):
     CaseMetadata = apps.get_model("capdb", "CaseMetadata")
 
-    for case in CaseMetadata.objects.all():
-        try:
-            citation = case.citations.get(type="official").cite
-        except ObjectDoesNotExist:
-            citation = case.citations.first().cite
-
-        case.slug = generate_unique_slug(case, citation)
-        case.save(update_fields=['slug'])
+    # Keeping for now for documentation -- we no longer handle slugs this way, and this migration has already been applied
+    # to all deployments:
+    # for case in CaseMetadata.objects.all():
+    #     try:
+    #         citation = case.citations.get(type="official").cite
+    #     except ObjectDoesNotExist:
+    #         citation = case.citations.first().cite
+    #
+    #     case.slug = generate_unique_slug(case, citation)
+    #     case.save(update_fields=['slug'])
 
 
 def remove_slug(apps, schema_editor):
