@@ -1,10 +1,12 @@
 import random
 import factory
 
+from django.utils import timezone
+from django.template.defaultfilters import slugify
+
 from capapi.models import *
 from capdb.models import *
 
-from django.template.defaultfilters import slugify
 
 xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w3.org/1999/xlink'></mets>"
 
@@ -86,7 +88,7 @@ class JurisdictionFactory(factory.DjangoModelFactory):
         model = Jurisdiction
 
     name = factory.Faker('sentence', nb_words=2)
-    name_long = factory.Faker('sentence', nb_words=8)
+    name_long = factory.Faker('sentence', nb_words=4)
 
 class ReporterFactory(factory.DjangoModelFactory):
     class Meta:
@@ -134,7 +136,6 @@ class CourtFactory(factory.DjangoModelFactory):
     name = factory.Faker('sentence', nb_words=5)
     name_abbreviation = factory.Faker('sentence', nb_words=3)
     jurisdiction = factory.SubFactory(JurisdictionFactory)
-    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))
 
 
 class CaseMetadataFactory(factory.DjangoModelFactory):
@@ -166,8 +167,8 @@ class ReporterFactory(factory.DjangoModelFactory):
 
     full_name = factory.Faker('sentence', nb_words=5)
     short_name = factory.Faker('sentence', nb_words=3)
-    start_year = datetime.now(pytz.UTC).timestamp()
-    created_at = datetime.now(pytz.UTC)
-    updated_at = datetime.now(pytz.UTC)
+    start_year = timezone.now().timestamp()
+    created_at = timezone.now()
+    updated_at = timezone.now()
     hollis = []
     jurisdiction = factory.RelatedFactory(JurisdictionFactory)
