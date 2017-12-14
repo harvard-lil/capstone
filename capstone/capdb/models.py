@@ -416,6 +416,9 @@ class CaseMetadata(AutoSlugMixin, models.Model):
 
 
 class CaseXML(BaseXMLModel):
+    # this field will get dropped once we confirm metadata field is correctly populated:
+    case_id = models.CharField(max_length=255, db_index=True)
+
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',
                                      on_delete=models.SET_NULL)
     volume = models.ForeignKey(VolumeXML, related_name='case_xmls',
