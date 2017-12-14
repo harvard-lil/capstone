@@ -83,6 +83,10 @@ def redis_patch(redisdb):
 
 @pytest.fixture
 def ingest_metadata(load_tracking_tool_database):
+    # reset caches
+    Jurisdiction.reset_cache()
+    Court.reset_cache()
+
     fabfile.ingest_metadata()
 
 @pytest.fixture
@@ -95,10 +99,6 @@ def ingest_volumes(ingest_metadata, redis_patch):
     # This is probably because database connections have to be closed and reopened by subprocesses, and that triggers
     # a wipe in the test harness.
     scripts.ingest_by_manifest.ASYNC = False
-
-    # reset caches
-    Jurisdiction.reset_cache()
-    Court.reset_cache()
 
     fabfile.total_sync_with_s3()
 
