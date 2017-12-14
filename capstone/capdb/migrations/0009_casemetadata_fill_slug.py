@@ -8,10 +8,12 @@ from django.db import migrations, models
 
 
 def fill_in_slug(apps, schema_editor):
-    CaseMetadata = apps.get_model("capdb", "CaseMetadata")
-
+    pass
     # Keeping for now for documentation -- we no longer handle slugs this way, and this migration has already been applied
     # to all deployments:
+
+    # CaseMetadata = apps.get_model("capdb", "CaseMetadata")
+
     # for case in CaseMetadata.objects.all():
     #     try:
     #         citation = case.citations.get(type="official").cite

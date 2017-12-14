@@ -54,7 +54,7 @@ class AutoSlugMixin():
                     else:
                         return super(AutoSlugMixin, self).save(*args, **kwargs)
                 except IntegrityError as e:
-                    if not 'Key (slug)' in e.args[0]:
+                    if 'Key (slug)' not in e.args[0]:
                         raise
 
             raise Exception("Unable to find unique slug for %s %s, slug_base %s" % (self.__class__.__name__, self.pk, slug_base))

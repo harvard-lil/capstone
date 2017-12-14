@@ -2,7 +2,7 @@ import os
 import datetime
 import pytest
 
-from capdb.models import CaseMetadata, VolumeXML, CaseXML
+from capdb.models import CaseMetadata
 from capdb.tasks import create_case_metadata_from_all_vols
 from scripts import process_metadata
 from scripts.helpers import read_file
