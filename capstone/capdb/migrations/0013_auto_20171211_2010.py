@@ -33,9 +33,12 @@ class Migration(migrations.Migration):
             field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='case_xml', to='capdb.CaseMetadata'),
         ),
         migrations.RunPython(link_case_tables),
-        migrations.RemoveField(
+
+        # make case_id non-unique for now -- will be deleted once migration confirmed
+        migrations.AlterField(
             model_name='casexml',
             name='case_id',
+            field=models.CharField(db_index=True, max_length=255),
         ),
 
         # turn volumexml.barcode into foreign key volumexml.metadata_id:
