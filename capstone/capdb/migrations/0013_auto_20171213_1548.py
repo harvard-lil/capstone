@@ -10,7 +10,10 @@ from scripts.helpers import jurisdiction_translation_long_name as long_names
 def create_long_names(apps, schema_editor):
     Jurisdiction = apps.get_model("capdb", "Jurisdiction")
     for jur in Jurisdiction.objects.all():
-        jur.name_long = long_names[jur.name]
+        if jur.name in long_names:
+            jur.name_long = long_names[jur.name]
+        else:
+            jur.name_long = jur.name
         jur.save()
 
 
@@ -19,7 +22,6 @@ def remove_long_names(apps, schema_editor):
     for jur in Jurisdiction.objects.all():
         jur.name_long = ''
         jur.save()
-
 
 
 class Migration(migrations.Migration):
