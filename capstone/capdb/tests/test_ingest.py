@@ -6,13 +6,13 @@ from scripts.helpers import parse_xml
 
 @pytest.mark.django_db
 def test_volume_metadata(volume_xml):
-    assert volume_xml.volume_metadata.hollis_number == "005457617"
-    assert volume_xml.volume_metadata.rare is False  # boolean conversion
+    assert volume_xml.metadata.hollis_number == "005457617"
+    assert volume_xml.metadata.rare is False  # boolean conversion
 
 @pytest.mark.django_db
 def test_tracking_tool_relationships(volume_xml):
-    assert volume_xml.volume_metadata.reporter.full_name == "Illinois Appellate Court Reports"
-    assert volume_xml.volume_metadata.tracking_tool_logs.first().pstep.pk == 'Prqu'
+    assert volume_xml.metadata.reporter.full_name == "Illinois Appellate Court Reports"
+    assert volume_xml.metadata.tracking_tool_logs.first().pstep.pk == 'Prqu'
 
 @pytest.mark.django_db
 def test_volume_xml(volume_xml):
@@ -25,6 +25,12 @@ def test_case_and_page_xml(volume_xml):
     case_xml = volume_xml.case_xmls.first()
     assert '<name abbreviation="Home Insurance Co. of New York v. Kirk">' in case_xml.orig_xml
     assert case_xml.pages.count() == 6
+
+@pytest.mark.django_db
+def test_duplicative_case_xml(duplicative_case_xml):
+    assert duplicative_case_xml.metadata.duplicative is True
+    assert duplicative_case_xml.metadata.first_page == 1
+    assert duplicative_case_xml.metadata.last_page == 4
 
 @pytest.mark.django_db
 def test_update_dup_checking(volume_xml, case_xml):

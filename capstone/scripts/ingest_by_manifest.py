@@ -12,7 +12,7 @@ from django import db
 from django.conf import settings
 from django.db import transaction, IntegrityError
 
-from capdb.models import VolumeXML, PageXML, CaseXML
+from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
 from capdb.storages import ingest_storage, inventory_storage, redis_client as r
 
 
@@ -186,11 +186,15 @@ def process_volume(vol_entry_bytestring):
     
     try:
         with transaction.atomic():
-            volume, vol_created = VolumeXML.objects.get_or_create(barcode=vol_entry['barcode'])
+            volume_metadata = VolumeMetadata.objects.get(barcode=vol_entry['barcode'])
+            try:
+                volume = volume_metadata.volume_xml
+            except VolumeXML.DoesNotExist:
+                volume = VolumeXML(metadata=volume_metadata)
 
             #same volmets path & same md5 & not forced full sync == same volume
             if (volmets_path == volume.s3_key and
-                volume.md5() == volmets_md5 and 
+                volume.md5() == volmets_md5 and
                 _last_sync != datetime(1970, 1, 1)):
                 return False
 
@@ -198,18 +202,18 @@ def process_volume(vol_entry_bytestring):
                 volume.orig_xml = ingest_storage.contents(volmets_path)
             volume.s3_key = volmets_path
             volume.save()
-            
-            existing_case_ids = set(CaseXML.objects.filter(volume=volume).values_list('case_id', flat=True))
+
+            existing_case_ids = set(volume.case_xmls.values_list('metadata__case_id', flat=True))
             for case_entry in spop_all(queues['inventory']['casemets']):
                 case_entry = json.loads(case_entry.decode("utf-8"))
                 case_s3_key = case_entry[1]
                 case_md5 = case_entry[2]
-                
+
                 case_barcode = vol_entry['barcode'] + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
                 if case_barcode in existing_case_ids:
                     existing_case_ids.remove(case_barcode)
 
-                case, case_created = CaseXML.objects.get_or_create(volume=volume, case_id=case_barcode)
+                case, case_created = CaseXML.objects.get_or_create(volume=volume, metadata__case_id=case_barcode)
                 if case.md5() != case_md5:
                     case.orig_xml = ingest_storage.contents(case_s3_key)
                 case.s3_key = case_s3_key
@@ -219,8 +223,8 @@ def process_volume(vol_entry_bytestring):
                 # store case-to-page matches
                 for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):
                     alto_barcode_to_case_map[vol_entry['barcode'] + "_" + alto_barcode].append(case.id)
-            
-            existing_page_ids = set(PageXML.objects.filter(volume=volume).values_list('barcode', flat=True))
+
+            existing_page_ids = set(volume.page_xmls.values_list('barcode', flat=True))
             # save altos
             for page_entry in spop_all(queues['inventory']['alto']):
                 page_entry = json.loads(page_entry.decode("utf-8"))
@@ -240,7 +244,7 @@ def process_volume(vol_entry_bytestring):
                     # write case-to-page matches
                     if alto_barcode_to_case_map[alto_barcode]:
                         page.cases.set(alto_barcode_to_case_map[alto_barcode])
-            
+
             for spare_case in existing_case_ids:
                 r.sadd("spare_cases_{}".format(vol_entry['barcode']), spare_case)
 

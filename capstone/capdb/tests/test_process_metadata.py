@@ -1,6 +1,9 @@
 import os
 import datetime
+import pytest
 
+from capdb.models import CaseMetadata
+from capdb.tasks import create_case_metadata_from_all_vols
 from scripts import process_metadata
 from scripts.helpers import read_file
 
@@ -12,9 +15,28 @@ def test_get_case_metadata():
             if "_redacted_CASEMETS" in fname:
                 case_xml = read_file("%s/%s" % (root, fname))
                 case_metadata = process_metadata.get_case_metadata(case_xml)
-                assert len(case_metadata["name"]) > 0
-                assert len(case_metadata["jurisdiction"]) > 0
                 assert len(case_metadata["volume_barcode"]) > 0
-                assert type(case_metadata["decision_date"]) is datetime.datetime
-                assert type(case_metadata["decision_date_original"]) is str
 
+                if not case_metadata['duplicative']:
+                    assert len(case_metadata["name"]) > 0
+                    assert len(case_metadata["jurisdiction"]) > 0
+                    assert type(case_metadata["decision_date"]) is datetime.datetime
+                    assert type(case_metadata["decision_date_original"]) is str
+
+@pytest.mark.django_db
+def test_create_case_metadata_from_all_vols(case_xml):
+    # get initial state
+    metadata_count = CaseMetadata.objects.count()
+    case_id = case_xml.metadata.case_id
+
+    # delete case metadata
+    case_xml.metadata.delete()
+    assert CaseMetadata.objects.count() == metadata_count - 1
+
+    # recreate case metadata
+    create_case_metadata_from_all_vols()
+
+    # check success
+    case_xml.refresh_from_db()
+    assert CaseMetadata.objects.count() == metadata_count
+    assert case_xml.metadata.case_id == case_id

@@ -1,8 +1,6 @@
 import pytest
-from django.conf import settings
 
-from capdb.models import Jurisdiction
-from test_data.factories import *
+from test_data.test_fixtures.factories import *
 
 
 def check_response(response, status_code=200, format='json'):
@@ -161,8 +159,7 @@ def test_open_jurisdiction(auth_user, api_url, auth_client):
     jurisdiction.save()
     common_name = 'Terrible v. Terrible'
     case = setup_case(**{'jurisdiction': jurisdiction,
-                         'name': common_name,
-                         'slug': slugify(common_name)})
+                         'name': common_name})
 
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?type=download" % (api_url, case.slug)
@@ -179,8 +176,7 @@ def test_open_jurisdiction(auth_user, api_url, auth_client):
     # if auth_user downloads a mixed case load, their case_allowance_remaining should only reflect the blacklisted cases
     jurisdiction = JurisdictionFactory(name='Blocked')
     case = setup_case(**{'jurisdiction': jurisdiction,
-                         'name': common_name,
-                         'slug': slugify(common_name) + '-1'})
+                         'name': common_name})
 
     url = "%scases/?name=%s&type=download" % (api_url, case.name)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})

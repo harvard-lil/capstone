@@ -1,14 +1,12 @@
-import os
-import binascii
 import random
-import pytz
-from datetime import datetime, timedelta
 import factory
+
+from django.utils import timezone
+from django.template.defaultfilters import slugify
 
 from capapi.models import *
 from capdb.models import *
 
-from django.template.defaultfilters import slugify
 
 xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w3.org/1999/xlink'></mets>"
 
@@ -16,10 +14,9 @@ xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w
 def setup_case(**kwargs):
     # set up casemetadata instance
     volume_xml = VolumeXMLFactory.create()
-    casexml = CaseXMLFactory.create(volume=volume_xml)
     citation = CitationFactory.create(type='official')
-    case = CaseMetadataFactory.create(
-        case_id=casexml.case_id, **kwargs)
+    case = CaseMetadataFactory(volume=volume_xml.metadata, slug=slugify(citation.cite), **kwargs)
+    casexml = CaseXMLFactory.create(volume=volume_xml, metadata=case)
     case.citations.add(citation)
     case.jurisdiction.save()
     case.save()
@@ -64,7 +61,7 @@ class APIUserFactory(factory.DjangoModelFactory):
     is_active = True
     email = factory.LazyAttributeSequence(lambda o, n: '%s_%s%d@example.com' % (o.first_name, o.last_name, n))
     password = factory.PostGenerationMethodCall('set_password', 'pass')
-    key_expires = datetime.now(pytz.UTC) + timedelta(hours=24)
+    key_expires = timezone.now() + timedelta(hours=24)
     activation_nonce = factory.Sequence(lambda n: '%08d' % n)
 
 class APITokenFactory(factory.DjangoModelFactory):
@@ -73,14 +70,17 @@ class APITokenFactory(factory.DjangoModelFactory):
 
     user = factory.SubFactory(APIUserFactory)
     key = binascii.hexlify(os.urandom(20)).decode()
-    created = datetime.now(pytz.UTC)
+    created = timezone.now()
 
 
-class VolumeXMLFactory(factory.DjangoModelFactory):
+class TrackingToolUserFactory(factory.DjangoModelFactory):
     class Meta:
-        model = VolumeXML
-    orig_xml = xml_str
-    barcode = factory.Sequence(lambda n: '%08d' % n)
+        model = TrackingToolUser
+
+    privilege_level = '0'
+    email = factory.Faker('email')
+    created_at = timezone.now()
+    updated_at = timezone.now()
 
 
 class JurisdictionFactory(factory.DjangoModelFactory):
@@ -88,8 +88,34 @@ class JurisdictionFactory(factory.DjangoModelFactory):
         model = Jurisdiction
 
     name = factory.Faker('sentence', nb_words=2)
-    name_long = factory.Faker('sentence', nb_words=8)
-    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))
+    name_long = factory.Faker('sentence', nb_words=4)
+
+class ReporterFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Reporter
+
+    full_name = factory.Faker('sentence', nb_words=5)
+    short_name = factory.Faker('sentence', nb_words=3)
+    start_year = timezone.now().timestamp()
+    created_at = timezone.now()
+    updated_at = timezone.now()
+    hollis = []
+    jurisdiction = factory.RelatedFactory(JurisdictionFactory)
+
+
+class VolumeMetadataFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = VolumeMetadata
+    barcode = factory.Sequence(lambda n: '%08d' % n)
+    created_by = factory.SubFactory(TrackingToolUserFactory)
+    reporter = factory.SubFactory(ReporterFactory)
+
+
+class VolumeXMLFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = VolumeXML
+    orig_xml = xml_str
+    metadata = factory.SubFactory(VolumeMetadataFactory)
 
 
 class CitationFactory(factory.DjangoModelFactory):
@@ -101,7 +127,6 @@ class CitationFactory(factory.DjangoModelFactory):
         return random.choice(['official', 'parallel'])
 
     cite = factory.Faker('sentence', nb_words=5)
-    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.cite))
 
 
 class CourtFactory(factory.DjangoModelFactory):
@@ -111,7 +136,6 @@ class CourtFactory(factory.DjangoModelFactory):
     name = factory.Faker('sentence', nb_words=5)
     name_abbreviation = factory.Faker('sentence', nb_words=3)
     jurisdiction = factory.SubFactory(JurisdictionFactory)
-    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))
 
 
 class CaseMetadataFactory(factory.DjangoModelFactory):
@@ -120,7 +144,6 @@ class CaseMetadataFactory(factory.DjangoModelFactory):
 
     name = factory.Faker('sentence', nb_words=5)
     jurisdiction = factory.SubFactory(JurisdictionFactory)
-    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))
     first_page = str(random.randrange(1000000))
     last_page = str(int(first_page) + random.randrange(100))
     case_id = factory.Sequence(lambda n: '%08d' % n)
@@ -133,7 +156,7 @@ class CaseXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseXML
 
-    case_id = factory.Sequence(lambda n: '%08d' % n)
+    metadata = factory.SubFactory(CaseMetadataFactory)
     orig_xml = xml_str
     volume = factory.SubFactory(VolumeXMLFactory)
 
@@ -144,8 +167,8 @@ class ReporterFactory(factory.DjangoModelFactory):
 
     full_name = factory.Faker('sentence', nb_words=5)
     short_name = factory.Faker('sentence', nb_words=3)
-    start_year = datetime.now(pytz.UTC).timestamp()
-    created_at = datetime.now(pytz.UTC)
-    updated_at = datetime.now(pytz.UTC)
+    start_year = timezone.now().timestamp()
+    created_at = timezone.now()
+    updated_at = timezone.now()
     hollis = []
     jurisdiction = factory.RelatedFactory(JurisdictionFactory)

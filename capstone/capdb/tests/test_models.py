@@ -9,7 +9,7 @@ from scripts.helpers import parse_xml, serialize_xml
 @pytest.mark.django_db
 def test_create_or_update_metadata(case_xml):
     # fetch current metadata
-    case_metadata = CaseMetadata.objects.get(case_id=case_xml.case_id)
+    case_metadata = case_xml.metadata
 
     # change xml
     parsed = parse_xml(case_xml.orig_xml)
@@ -19,7 +19,7 @@ def test_create_or_update_metadata(case_xml):
     case_xml.create_or_update_metadata()
 
     # fetch new metadata
-    new_case_metadata = CaseMetadata.objects.get(case_id=case_xml.case_id)
+    new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
     new_citations = list(new_case_metadata.citations.all())
 
     # case_metadata should have been updated, not duplicated
@@ -36,5 +36,5 @@ def test_create_or_update_metadata(case_xml):
     case_xml.save()
     case_xml.refresh_from_db()
     case_xml.create_or_update_metadata(update_existing=False)
-    new_case_metadata = CaseMetadata.objects.get(case_id=case_xml.case_id)
+    new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
     assert new_case_metadata == old_case_metadata
