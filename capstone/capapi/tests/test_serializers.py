@@ -1,8 +1,10 @@
 import os
+
 import pytest
 from rest_framework.request import Request
-from test_data.factories import setup_case
+
 from capapi import serializers
+from test_data.test_fixtures.factories import setup_case
 
 
 @pytest.mark.django_db(transaction=True)

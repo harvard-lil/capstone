@@ -12,9 +12,9 @@ xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w
 def setup_case(**kwargs):
     # set up casemetadata instance
     volume_xml = VolumeXMLFactory.create()
-    case = CaseMetadataFactory.create(volume=volume_xml.metadata, **kwargs)
-    casexml = CaseXMLFactory.create(volume=volume_xml, metadata=case)
     citation = CitationFactory.create(type='official')
+    case = CaseMetadataFactory(volume=volume_xml.metadata, slug=slugify(citation.cite), **kwargs)
+    casexml = CaseXMLFactory.create(volume=volume_xml, metadata=case)
     case.citations.add(citation)
     case.jurisdiction.save()
     case.save()
@@ -87,8 +87,6 @@ class JurisdictionFactory(factory.DjangoModelFactory):
 
     name = factory.Faker('sentence', nb_words=2)
     name_long = factory.Faker('sentence', nb_words=8)
-    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))
-
 
 class ReporterFactory(factory.DjangoModelFactory):
     class Meta:
@@ -127,7 +125,6 @@ class CitationFactory(factory.DjangoModelFactory):
         return random.choice(['official', 'parallel'])
 
     cite = factory.Faker('sentence', nb_words=5)
-    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.cite))
 
 
 class CourtFactory(factory.DjangoModelFactory):
@@ -146,7 +143,6 @@ class CaseMetadataFactory(factory.DjangoModelFactory):
 
     name = factory.Faker('sentence', nb_words=5)
     jurisdiction = factory.SubFactory(JurisdictionFactory)
-    slug = factory.LazyAttribute(lambda o: '%s' % slugify(o.name))
     first_page = str(random.randrange(1000000))
     last_page = str(int(first_page) + random.randrange(100))
     case_id = factory.Sequence(lambda n: '%08d' % n)
