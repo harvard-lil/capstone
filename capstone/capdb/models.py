@@ -512,7 +512,6 @@ class CaseXML(BaseXMLModel):
 
         # create links between metadata and cites
         # TODO: this may create orphan citations that aren't linked to any case
-        # why does this require a couple of selects???
         case_metadata.citations.set(citations)
 
         # create link between casexml and metadata
