@@ -528,7 +528,7 @@ class CaseXML(BaseXMLModel):
 class Citation(AutoSlugMixin, models.Model):
     type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
-    cite = models.CharField(max_length=255)
+    cite = models.CharField(max_length=255, db_index=True)
     duplicative = models.BooleanField(default=False)
     slug = models.SlugField(max_length=255, unique=True)
 
