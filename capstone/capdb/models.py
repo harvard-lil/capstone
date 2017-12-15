@@ -390,12 +390,12 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
 class CaseMetadata(AutoSlugMixin, models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     case_id = models.CharField(max_length=64, null=True)
-    first_page = models.IntegerField(null=True, blank=True)
-    last_page = models.IntegerField(null=True, blank=True)
+    first_page = models.CharField(max_length=255, null=True, blank=True)
+    last_page = models.CharField(max_length=255, null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
     citations = models.ManyToManyField('Citation', related_name='case_metadatas')
-    docket_number = models.CharField(max_length=255, blank=True)
+    docket_number = models.CharField(max_length=10000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
     court = models.ForeignKey('Court', null=True, related_name='case_metadatas', on_delete=models.SET_NULL)

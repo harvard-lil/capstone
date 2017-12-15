@@ -29,8 +29,8 @@ def test_case_and_page_xml(volume_xml):
 @pytest.mark.django_db
 def test_duplicative_case_xml(duplicative_case_xml):
     assert duplicative_case_xml.metadata.duplicative is True
-    assert duplicative_case_xml.metadata.first_page == 1
-    assert duplicative_case_xml.metadata.last_page == 4
+    assert duplicative_case_xml.metadata.first_page == "1"
+    assert duplicative_case_xml.metadata.last_page == "4"
 
 @pytest.mark.django_db
 def test_update_dup_checking(volume_xml, case_xml):
