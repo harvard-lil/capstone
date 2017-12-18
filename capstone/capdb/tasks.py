@@ -7,7 +7,14 @@ def create_case_metadata_from_all_vols(update_existing=False):
     """
         iterate through all volumes, call celery task for each volume
     """
-    for volume_id in VolumeXML.objects.values_list('pk', flat=True):
+    query = VolumeXML.objects.all()
+
+    # if not updating existing, then only launch jobs for volumes with unindexed cases:
+    if not update_existing:
+        query = query.filter(case_xmls__metadata_id=None).distinct()
+
+    # launch a job for each volume:
+    for volume_id in query.values_list('pk', flat=True):
         create_case_metadata_from_vol.delay(volume_id, update_existing=update_existing)
 
 
