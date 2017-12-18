@@ -528,7 +528,7 @@ class CaseXML(BaseXMLModel):
 class Citation(AutoSlugMixin, models.Model):
     type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
-    cite = models.CharField(max_length=255, db_index=True)
+    cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
     slug = models.SlugField(max_length=255, unique=True)
 
@@ -536,7 +536,7 @@ class Citation(AutoSlugMixin, models.Model):
         return self.slug
 
     def get_slug(self):
-        return self.cite
+        return self.cite[:100]
 
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)

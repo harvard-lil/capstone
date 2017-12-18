@@ -62,9 +62,18 @@ def get_case_metadata(case_xml):
 
 def decision_datetime(decision_date_text):
     try:
-        return datetime.strptime(decision_date_text, '%Y-%m-%d')
-    except ValueError:
         try:
-            return datetime.strptime(decision_date_text, '%Y-%m')
-        except ValueError:
-            return datetime.strptime(decision_date_text, '%Y')
+            return datetime.strptime(decision_date_text, '%Y-%m-%d')
+        except ValueError as e:
+
+            # if court used an invalid day of month (typically Feb. 29), strip day from date
+            if e.args[0] == 'day is out of range for month':
+                decision_date_text = decision_date_text.rsplit('-', 1)[0]
+
+            try:
+                return datetime.strptime(decision_date_text, '%Y-%m')
+            except ValueError:
+                return datetime.strptime(decision_date_text, '%Y')
+    except Exception as e:
+        # if for some reason we can't parse the date, just store None
+        return None
