@@ -32,9 +32,107 @@ def test_create_or_update_metadata(case_xml):
 
     # testing calling without updating metadata
     old_case_metadata = new_case_metadata
-    case_xml.orig_xml = "Nothing to see here"
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
+    case_parent_tag = parsed_case_xml('case|case')
+    case_parent_tag.remove('case|name')
+    case_parent_tag.remove('case|citation')
+    case_xml.orig_xml = serialize_xml(parsed_case_xml)
     case_xml.save()
     case_xml.refresh_from_db()
     case_xml.create_or_update_metadata(update_existing=False)
     new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
     assert new_case_metadata == old_case_metadata
+
+
+@pytest.mark.django_db
+def test_casebody_modify_word(case_xml):
+    # change a word in the case XML
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
+    parsed_case_xml('casebody|p[id="b17-6"]').text("The 4rgUm3nt in favor of the appellee rests wholly on the assumption that the judgment in the garnishee proceedings should be rendered in favor of the judgment debtor for the use of the judgment creditor, against the garnished party, for the whole amount due, and in case of failure to so render judgment for such amount and for a less amount than due, the balance over and above the amount of the judgment so rendered would be barred on the grounds of former recovery.")
+    case_xml.orig_xml = serialize_xml(parsed_case_xml)
+    case_xml.save()
+    # make sure the change shows up in the ALTO
+    alto = case_xml.pages.get(barcode="32044057892259_00009_0")
+    parsed_alto = parse_xml(alto.orig_xml)
+    element = parsed_alto('alto|String[ID="ST_17.7.1.3"]')
+    assert element.attr["CONTENT"] == '4rgUm3nt'
+
+@pytest.mark.django_db
+def test_case_alter_structure(case_xml):
+    # make non-casebody structural changes
+
+    #make sure we've got our decision date
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
+    case_parent_tag = parsed_case_xml('case|case')
+    assert case_parent_tag('case|decisiondate') is not []
+
+
+    #remove it and make sure it sticks
+    case_parent_tag.remove('case|decisiondate')
+    case_xml.orig_xml = serialize_xml(parsed_case_xml)
+    case_xml.save()
+    # make sure it saves
+    case_xml.refresh_from_db()
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
+    case_parent_tag = parsed_case_xml('case|case')
+    assert case_parent_tag('case|decisiondate') == []
+
+
+    #try adding a new element and make sure it saves
+    assert case_parent_tag('case|test') == []
+    case_parent_tag.append('<test>Frankly, this element is hot garbage.</test>')
+    case_xml.orig_xml = serialize_xml(parsed_case_xml)
+    case_xml.save()
+    case_xml.refresh_from_db()
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
+    case_parent_tag = parsed_case_xml('case|case')
+    assert case_parent_tag('case|test') != []
+
+
+@pytest.mark.django_db
+def test_casebody_delete_element_raise(case_xml):
+    # make a non-casebody structural change
+    with pytest.raises(Exception, match='No current support for removing casebody elements'):
+        parsed_case_xml = parse_xml(case_xml.orig_xml)
+        case_parent_tag = parsed_case_xml('casebody|casebody')
+        case_parent_tag.remove('casebody|parties')
+        case_xml.orig_xml = serialize_xml(parsed_case_xml)
+        case_xml.save()
+
+@pytest.mark.django_db
+def test_casebody_add_element_raise(case_xml):
+    # make a non-casebody structural change
+    with pytest.raises(Exception, match='No current support for adding casebody elements'):
+        parsed_case_xml = parse_xml(case_xml.orig_xml)
+        case_parent_tag = parsed_case_xml('casebody|casebody')
+        case_parent_tag.append('<test>Frankly, this element is hot garbage.</test>')
+        case_xml.orig_xml = serialize_xml(parsed_case_xml)
+        case_xml.save()
+
+
+@pytest.mark.django_db
+def test_casebody_delete_word_raise(case_xml):
+    # change a word in the case XML
+    with pytest.raises(Exception, match='No current support for adding or removing case text'):
+        parsed_case_xml = parse_xml(case_xml.orig_xml)
+        parsed_case_xml('casebody|p[id="b17-6"]').text("The in favor of the appellee rests wholly on the assumption that the judgment in the garnishee proceedings should be rendered in favor of the judgment debtor for the use of the judgment creditor, against the garnished party, for the whole amount due, and in case of failure to so render judgment for such amount and for a less amount than due, the balance over and above the amount of the judgment so rendered would be barred on the grounds of former recovery.")
+        case_xml.orig_xml = serialize_xml(parsed_case_xml)
+        case_xml.save()
+
+@pytest.mark.django_db
+def test_casebody_defer_save(volume_xml):
+    # since the model uses a different save function when "orig_xml" 
+    # is deferred, we should test it
+    case_xml = volume_xml.case_xmls.defer('orig_xml').first()
+    case_xml.case_id="Hmmmmmmm"
+    case_xml.save()
+    case_xml.refresh_from_db()
+    assert case_xml.case_id == "Hmmmmmmm"
+
+@pytest.mark.django_db
+def test_casebody_defer_save(volume_xml):
+    # is deferred, we should test it
+    with pytest.raises(Exception, match="Can't load a case with orig_xml deferred and then save it. We can't update alto if we do."):
+        case_xml = volume_xml.case_xmls.defer('orig_xml').first()
+        case_xml.orig_xml
+        case_xml.save()
