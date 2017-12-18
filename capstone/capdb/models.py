@@ -436,8 +436,11 @@ class CaseXML(BaseXMLModel):
         try:
             # do a regular save if the orig_xml isn't being updated
             if 'orig_xml' in self.get_deferred_fields():
-                # TODO— check what happens when a 
-                #kwargs['update_fields'] = [f.name for f in CaseXML._meta.get_fields() if f.name is not "orig_xml" and not f.many_to_many and not f.auto_created]
+                # TODO: should we just uncomment this line of code and assume
+                # that we know that saving a .defer('orig_xml') case means the
+                # XML won't save? It's elegant, but silently failing seems 
+                # dangerous!
+                # kwargs['update_fields'] = [f.name for f in CaseXML._meta.get_fields() if f.name is not "orig_xml" and not f.many_to_many and not f.auto_created]
                 super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
                 # do a regular save if the orig_xml isn't being updated
             else:

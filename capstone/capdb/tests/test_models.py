@@ -130,7 +130,7 @@ def test_casebody_defer_save(volume_xml):
     assert case_xml.case_id == "Hmmmmmmm"
 
 @pytest.mark.django_db
-def test_casebody_defer_save(volume_xml):
+def test_casebody_undeferred_raise(volume_xml):
     # is deferred, we should test it
     with pytest.raises(Exception, match="Can't load a case with orig_xml deferred and then save it. We can't update alto if we do."):
         case_xml = volume_xml.case_xmls.defer('orig_xml').first()
