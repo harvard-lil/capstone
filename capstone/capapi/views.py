@@ -2,6 +2,7 @@ from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import JsonResponse
 from django.utils.decorators import decorator_from_middleware
+from django.shortcuts import render
 
 from rest_framework import status
 from rest_framework import renderers, viewsets, mixins
@@ -221,3 +222,19 @@ def verify_user(request, user_id, activation_nonce):
         return Response(data, template_name='verified.html')
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+def get_docs(request):
+    case = models.CaseMetadata.objects.last()
+    reporter = models.Reporter.objects.last()
+    reporter_metadata = serializers.ReporterSerializer(reporter, context={'request': request}).data
+    reporter_metadata['jurisdictions'] = dict(reporter_metadata['jurisdictions'])
+    case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
+    context = {
+        "case_metadata": case_metadata,
+        "case_slug": case_metadata['slug'],
+        "case_jurisdiction": case_metadata['jurisdiction'],
+        "reporter_id": reporter_metadata['id'],
+        "reporter_metadata": reporter_metadata,
+    }
+    return render(request, 'docs.html', context)
