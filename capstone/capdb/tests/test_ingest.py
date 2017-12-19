@@ -38,25 +38,17 @@ def test_update_dup_checking(volume_xml, case_xml):
  
     # change value in ALTO
     page_xml=PageXML.objects.get(barcode='32044057892259_00008_0')
-    original_page_md5 = page_xml.md5()    
-    parsed_page=parse_xml(page_xml.orig_xml)
-    parsed_page('alto|String[ID="ST_15.2.1.5"]').attr["CONTENT"] = "Inversion"
-    page_xml.orig_xml = str(parsed_page)
-    page_xml.save()
+    original_page_md5 = page_xml.md5()
 
     # change corresponding value in casemets
     parsed_case = parse_xml(case_xml.orig_xml)
     original_case_md5 = case_xml.md5()
     parsed_case('casebody|parties[id="b15-4"]').text('The Home Inversion Company of New York v. John Kirk, for use of William Kirk.')
-    parsed_case('mets|file[ID="alto_00008_0"]').attr["CHECKSUM"] = page_xml.md5()
     case_xml.orig_xml = str(parsed_case)
     case_xml.save()
 
-    # update checksums in volume mets
-    parsed_volume = parse_xml(volume_xml.orig_xml)
-    parsed_volume('mets|file[ID="alto_00008_0"]').attr["CHECKSUM"] = page_xml.md5()
-    parsed_volume('mets|file[ID="casemets_0001"]').attr["CHECKSUM"] = case_xml.md5()
-    volume_xml.save()
+    case_xml.refresh_from_db()
+    page_xml.refresh_from_db()
 
     # make sure the writes worked. If they failed, the test would falsely pass
     assert original_page_md5 != page_xml.md5()

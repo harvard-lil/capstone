@@ -47,7 +47,6 @@ def test_create_or_update_metadata(case_xml):
 @pytest.mark.django_db
 def test_casebody_modify_word(case_xml):
     # change a word in the case XML
-    #updated_text = "The 4rgUm3nt in favor of the appellee rests wholly on the assumption that the judgment in the garnishee proceedings should be rendered in favor of the judgment debtor for the use of the judgment creditor, against the garnished party, for the whole amount due, and in case of failure to so render judgment for such amount and for a less amount than due, the balance over and above the amount of the judgment so rendered would be barred on the grounds of former recovery."
     parsed_case_xml = parse_xml(case_xml.orig_xml)
     updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
     parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
@@ -76,6 +75,7 @@ def test_case_alter_structure(case_xml):
     case_parent_tag.remove('case|decisiondate')
     case_xml.orig_xml = serialize_xml(parsed_case_xml)
     case_xml.save()
+
     # make sure it saves
     case_xml.refresh_from_db()
     parsed_case_xml = parse_xml(case_xml.orig_xml)
@@ -135,9 +135,21 @@ def test_casebody_defer_save(volume_xml):
     assert case_xml.case_id == "Hmmmmmmm"
 
 @pytest.mark.django_db
-def test_casebody_undeferred_raise(volume_xml):
-    # is deferred, we should test it
-    with pytest.raises(Exception, match="Can't load a case with orig_xml deferred and then save it. We can't update alto if we do."):
-        case_xml = volume_xml.case_xmls.defer('orig_xml').first()
-        case_xml.orig_xml
-        case_xml.save()
+def test_casebody_undeferred(volume_xml):
+
+    #same test as above, but with a deferred orig_xml field
+    case_xml = volume_xml.case_xmls.defer('orig_xml').first()
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
+    updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
+    parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
+    case_xml.orig_xml = serialize_xml(parsed_case_xml)
+    case_xml.save()
+    case_xml.refresh_from_db()
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
+    assert '4rgUm3nt' in parsed_case_xml('casebody|p[id="b17-6"]').text()
+    # make sure the change shows up in the ALTO
+    alto = case_xml.pages.get(barcode="32044057892259_00009_0")
+    parsed_alto = parse_xml(alto.orig_xml)
+    element = parsed_alto('alto|String[ID="ST_17.7.1.3"]')
+    assert element.attr["CONTENT"] == '4rgUm3nt'
+

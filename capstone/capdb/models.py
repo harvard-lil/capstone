@@ -2,9 +2,11 @@ import hashlib
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
+from django.utils.encoding import force_bytes
 
 from scripts.process_metadata import get_case_metadata
 from scripts.helpers import *
+
 
 ### helpers ###
 
@@ -57,14 +59,17 @@ class AutoSlugMixin():
                     if 'Key (slug)' not in e.args[0]:
                         raise
 
-            raise Exception("Unable to find unique slug for %s %s, slug_base %s" % (self.__class__.__name__, self.pk, slug_base))
+            raise Exception(
+                "Unable to find unique slug for %s %s, slug_base %s" % (self.__class__.__name__, self.pk, slug_base))
 
         # normal save without slug modification:
         else:
             return super(AutoSlugMixin, self).save(*args, **kwargs)
 
     def get_slug(self):
-        raise NotImplementedError("Either define a get_slug() method for %s, or pass slug_base to save()." % self.__class__.__name__)
+        raise NotImplementedError(
+            "Either define a get_slug() method for %s, or pass slug_base to save()." % self.__class__.__name__)
+
 
 class CachedLookupMixin():
     """
@@ -126,16 +131,19 @@ class CachedLookupMixin():
         cls._cached_objects = None
         cls._lookup_tables = {}
 
+
 ### Helpers for XML handling ###
 
 class XMLField(models.TextField):
     """ Column type for Postgres XML columns. """
+
     def db_type(self, connection):
         return 'xml'
 
 
 class XMLQuerySet(models.QuerySet):
     """ Query methods for BaseXMLModel. """
+
     def defer_xml(self):
         """
             Defer orig_xml field.
@@ -158,8 +166,14 @@ class BaseXMLModel(models.Model):
 
     def md5(self):
         m = hashlib.md5()
-        m.update(self.orig_xml.encode())
+        m.update(force_bytes(self.orig_xml))
         return m.hexdigest()
+
+    def update_related_md5(self, short_identifier, new_checksum):
+        parsed_document = parse_xml(self.orig_xml)
+        parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["CHECKSUM"] = new_checksum
+        self.orig_xml = serialize_xml(parsed_document)
+        self.save()
 
 
 ### models ###
@@ -169,7 +183,8 @@ class TrackingToolUser(models.Model):
     """
     These are tracking tool users - they are separate from Capstone users.
     """
-    privilege_level = models.CharField(max_length=3, choices=choices('0', '1', '5', '10', '15'), help_text="The lower the value, the higher the privilege level.")
+    privilege_level = models.CharField(max_length=3, choices=choices('0', '1', '5', '10', '15'),
+                                       help_text="The lower the value, the higher the privilege level.")
     email = models.CharField(max_length=255)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -190,12 +205,14 @@ class BookRequest(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
     recipients = models.CharField(max_length=512, blank=True, null=True, help_text="Email recipients")
-    from_field = models.CharField(db_column='from', max_length=128, blank=True, null=True)  # Field renamed because it was a Python reserved word.
+    from_field = models.CharField(db_column='from', max_length=128, blank=True,
+                                  null=True)  # Field renamed because it was a Python reserved word.
     mail_body = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
     send_date = models.DateField(blank=True, null=True, help_text="Future date on which to send the request")
     sent_at = models.DateTimeField(blank=True, null=True, help_text="Date which it was actually sent")
-    label = models.CharField(max_length=32, blank=True, null=True, help_text="So the user can disambiguate between reqs")
+    label = models.CharField(max_length=32, blank=True, null=True,
+                             help_text="So the user can disambiguate between reqs")
     subject = models.CharField(max_length=512, blank=True, null=True, help_text="Email subject")
     delivery_date = models.DateField(blank=True, null=True, help_text="Requested date of delivery")
 
@@ -247,9 +264,11 @@ class ProcessStep(models.Model):
         ('Pret', 'Returned to Lender')
     )
 
-    step = models.CharField(unique=True, max_length=255, choices=PROCESS_STEP_CHOICES, primary_key=True, help_text="The process step 'id'")
+    step = models.CharField(unique=True, max_length=255, choices=PROCESS_STEP_CHOICES, primary_key=True,
+                            help_text="The process step 'id'")
     label = models.CharField(max_length=24, blank=True, null=True, help_text="Label to use in lists/log views")
-    prerequisites = models.CharField(max_length=1024, blank=True, null=True, help_text="Other psteps which must be completed first")
+    prerequisites = models.CharField(max_length=1024, blank=True, null=True,
+                                     help_text="Other psteps which must be completed first")
     description = models.CharField(max_length=256)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -273,6 +292,7 @@ class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
     def get_slug(self):
         return self.name
 
+
 class Reporter(models.Model):
     jurisdictions = models.ManyToManyField(Jurisdiction)
     full_name = models.CharField(max_length=1024)
@@ -283,7 +303,8 @@ class Reporter(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     notes = models.TextField(blank=True, null=True)
-    hollis = ArrayField(models.CharField(max_length=9), blank=True, help_text="This is going to replace the Hollis model")
+    hollis = ArrayField(models.CharField(max_length=9), blank=True,
+                        help_text="This is going to replace the Hollis model")
 
     def __str__(self):
         return "%s: %s %s-%s" % (self.short_name, self.full_name, self.start_year or '', self.end_year or '')
@@ -308,33 +329,46 @@ class VolumeMetadata(models.Model):
     end_year = models.IntegerField(blank=True, null=True)
     page_start_year = models.IntegerField(blank=True, null=True)
     page_end_year = models.IntegerField(blank=True, null=True)
-    contributing_library = models.CharField(max_length=256, blank=True, null=True, help_text="Several volumes didn't come from our collection")
+    contributing_library = models.CharField(max_length=256, blank=True, null=True,
+                                            help_text="Several volumes didn't come from our collection")
     rare = models.BooleanField(default=False)
-    hsc_review = models.CharField(max_length=9, blank=True, null=True, choices=choices('No', 'Complete', 'Yes', 'Reclassed'), help_text="Historical and Special Collections Review")
+    hsc_review = models.CharField(max_length=9, blank=True, null=True,
+                                  choices=choices('No', 'Complete', 'Yes', 'Reclassed'),
+                                  help_text="Historical and Special Collections Review")
     needs_repair = models.CharField(max_length=9, blank=True, null=True, choices=choices('No', 'Complete', 'Yes'))
     missing_text_pages = models.TextField(blank=True, null=True, help_text="Pages damaged enough to have lost text.")
     created_by = models.ForeignKey(TrackingToolUser, on_delete=models.DO_NOTHING)
-    bibliographic_review = models.CharField(max_length=7, blank=True, null=True, choices=choices('No', 'Complete', 'Yes'))
-    analyst_page_count = models.IntegerField(blank=True, null=True, help_text="The page number of the last numbered page in the book")
+    bibliographic_review = models.CharField(max_length=7, blank=True, null=True,
+                                            choices=choices('No', 'Complete', 'Yes'))
+    analyst_page_count = models.IntegerField(blank=True, null=True,
+                                             help_text="The page number of the last numbered page in the book")
     duplicate = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(blank=True, null=True)
-    replaced_pages = models.CharField(max_length=1024, blank=True, null=True, help_text="List of pages that were replaced")
+    replaced_pages = models.CharField(max_length=1024, blank=True, null=True,
+                                      help_text="List of pages that were replaced")
     has_marginalia = models.BooleanField(default=False)
     publication_city = models.CharField(max_length=1024, blank=True, null=True)
     title = models.CharField(max_length=1024, blank=True, null=True)
-    hand_feed = models.BooleanField(default=False, help_text="Instructions for operator, not whether or not it happened")
-    image_count = models.IntegerField(blank=True, null=True, help_text="Count of images recieved from scanner")  # image_count?
+    hand_feed = models.BooleanField(default=False,
+                                    help_text="Instructions for operator, not whether or not it happened")
+    image_count = models.IntegerField(blank=True, null=True,
+                                      help_text="Count of images recieved from scanner")  # image_count?
     request = models.ForeignKey(BookRequest, blank=True, null=True, on_delete=models.SET_NULL)
     publisher_deleted_pages = models.BooleanField(default=False, help_text="")  # rename?
     notes = models.CharField(max_length=512, blank=True, null=True)
     original_barcode = models.CharField(max_length=64, blank=True, null=True, help_text="")
-    scope_reason = models.CharField(max_length=16, blank=True, null=True, choices=choices('Damaged','Not Official','Duplicate','No Cases'), help_text="The reason something would be out_of_scope")
+    scope_reason = models.CharField(max_length=16, blank=True, null=True,
+                                    choices=choices('Damaged', 'Not Official', 'Duplicate', 'No Cases'),
+                                    help_text="The reason something would be out_of_scope")
     out_of_scope = models.BooleanField(default=False)
     meyer_box_barcode = models.CharField(max_length=32, blank=True, null=True, help_text="The Meyer box barcode")
-    uv_box_barcode = models.CharField(max_length=32, blank=True, null=True, help_text="The Underground Vaults box barcode")
-    meyer_ky_truck = models.CharField(max_length=32, blank=True, null=True, help_text="The Meyer truck to Kentucky this book was shipped on")
-    meyer_pallet = models.CharField(max_length=32, blank=True, null=True, help_text="The pallet Meyer stored the book on")
+    uv_box_barcode = models.CharField(max_length=32, blank=True, null=True,
+                                      help_text="The Underground Vaults box barcode")
+    meyer_ky_truck = models.CharField(max_length=32, blank=True, null=True,
+                                      help_text="The Meyer truck to Kentucky this book was shipped on")
+    meyer_pallet = models.CharField(max_length=32, blank=True, null=True,
+                                    help_text="The pallet Meyer stored the book on")
 
     class Meta:
         verbose_name_plural = "Volumes"
@@ -345,16 +379,19 @@ class VolumeMetadata(models.Model):
 
 class TrackingToolLog(models.Model):
     volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
-    entry_text = models.CharField(max_length=128, blank=True, help_text="Text log entry. Primarily used when pstep isn't set.")
+    entry_text = models.CharField(max_length=128, blank=True,
+                                  help_text="Text log entry. Primarily used when pstep isn't set.")
     notes = models.TextField(blank=True, null=True)
     created_by = models.ForeignKey(TrackingToolUser, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     pstep = models.ForeignKey(ProcessStep, blank=True, null=True, help_text="A significant event in production",
                               related_name="tracking_tool_logs", on_delete=models.SET_NULL)
-    exception = models.BooleanField(help_text="Nothing to do with software exceptions - more like a UPS delivery 'exception'")
+    exception = models.BooleanField(
+        help_text="Nothing to do with software exceptions - more like a UPS delivery 'exception'")
     warning = models.BooleanField(help_text="Something that's a bit off, but not necessarily indicative of a problem")
-    version_string = models.CharField(max_length=32, blank=True, null=True, help_text="'YYYY_DD_MM_hh.mm.ss' Appended to s3 dir to distinguish versions")
+    version_string = models.CharField(max_length=32, blank=True, null=True,
+                                      help_text="'YYYY_DD_MM_hh.mm.ss' Appended to s3 dir to distinguish versions")
 
     def __str__(self):
         return "%s %s" % (self.pstep, self.entry_text)
@@ -402,7 +439,7 @@ class CaseMetadata(AutoSlugMixin, models.Model):
     name = models.TextField(blank=True)
     name_abbreviation = models.CharField(max_length=255, blank=True)
     volume = models.ForeignKey('VolumeMetadata', null=True, related_name='case_metadatas',
-                                 on_delete=models.SET_NULL)
+                               on_delete=models.SET_NULL)
     reporter = models.ForeignKey('Reporter', null=True, related_name='case_metadatas',
                                  on_delete=models.SET_NULL)
     date_added = models.DateTimeField(null=True, blank=True)
@@ -420,152 +457,175 @@ class CaseXML(BaseXMLModel):
     case_id = models.CharField(max_length=255, db_index=True)
 
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',
-                                     on_delete=models.SET_NULL)
+                                    on_delete=models.SET_NULL)
     volume = models.ForeignKey(VolumeXML, related_name='case_xmls',
-                                     on_delete=models.DO_NOTHING)
+                               on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     def __init__(self, *args, **kwargs):
+        super(CaseXML, self).__init__(*args, **kwargs)
         # this will copies orig_xml to __existing_xml for comparing updates.
         # as long as 'orig_xml' is not deferred
-        super(CaseXML, self).__init__(*args, **kwargs)
         if 'orig_xml' not in self.get_deferred_fields():
             self.__existing_xml = self.orig_xml
 
     def save(self, force_insert=False, force_update=False, *args, **kwargs):
-        try:
-            # do a regular save if the orig_xml isn't being updated
-            if 'orig_xml' in self.get_deferred_fields():
-                # TODO: should we just uncomment this line of code and assume
-                # that we know that saving a .defer('orig_xml') case means the
-                # XML won't save? It's elegant, but silently failing seems 
-                # dangerous!
-                # kwargs['update_fields'] = [f.name for f in CaseXML._meta.get_fields() if f.name is not "orig_xml" and not f.many_to_many and not f.auto_created]
-                super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
-                # do a regular save if the orig_xml isn't being updated
-            else:
-                # This compares new XML to the old and updates ALTO files as necessary.
-                # We don't yet support adding or removing words from the case body.
-                if self.__existing_xml and self.orig_xml != self.__existing_xml:
-                    def _in_casebody(element):
-                        return element.tag.startswith("{" + nsmap['casebody']) and not element.tag.endswith('casebody')
+        if 'orig_xml' in self.get_deferred_fields() or self.pk is None:
+            # do a regular save if the orig_xml isn't being updated or it's a new record
+            super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
+        else:
+            # if case_xml is a factor, compare new and old before saving
 
-                    parsed_orig_case = parse_xml(self.__existing_xml)
-                    parsed_updated_case = parse_xml(self.orig_xml)
-                    updated_tree = parsed_updated_case.root
-                    original_tree = parsed_orig_case.root
+            # if case was loaded as deferred but orig_xml was accessed afterwards,
+            # the __existing_xml field will not be set. We need to load the existing
+            # xml into the __existing_xml field and then reapply the changes to the
+            # active orig_xml property
+            if not hasattr(self, '__existing_xml'):
+                orig_xml_copy = self.orig_xml
+                self.refresh_from_db(fields=['orig_xml'])
+                self.__existing_xml = self.orig_xml
+                self.orig_xml = orig_xml_copy
 
-                    updated_alto_files = {}
-                    alto_files = {}
-                    for alto in self.pages.all():
-                        alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-                        alto_files[alto_fileid] = alto 
-                        updated_alto_files[alto_fileid] = alto 
+            # This compares new XML to the old and updates ALTO files as necessary.
+            # We don't yet support adding or removing words from the case body.
+            if self.__existing_xml and self.orig_xml != self.__existing_xml:
+                def __in_casebody(element):
+                    return element.tag.startswith("{" + nsmap['casebody']) and not element.tag.endswith('casebody')
 
-                    # compare a flat list of xpaths to see if there are structural changes
-                    original_xpaths = [ original_tree.getelementpath(element) for element in original_tree.iter()]
-                    updated_xpaths = [ updated_tree.getelementpath(element) for element in updated_tree.iter()]
-                    deleted_xpaths = set(original_xpaths) - set(updated_xpaths)
-                    added_xpaths = set(updated_xpaths) - set(original_xpaths)
+                # parse objects and get the xml tree objects
+                parsed_orig_case = parse_xml(self.__existing_xml)
+                parsed_updated_case = parse_xml(self.orig_xml)
+                updated_tree = parsed_updated_case.root
+                original_tree = parsed_orig_case.root
 
-                    # iterate over the additions and deletions and add to DM, save element for later
-                    # note that elements_to_add_to_tree contains elements from the updated tree while
-                    # elements_to_delete_from_tree has elements from the original tree
-                    elements_to_delete_from_tree = []
-                    for xpath in deleted_xpaths:
-                        element = original_tree.find(xpath)
-                        #if it's in the casebody, we need to modify the corresponding ALTO
-                        if _in_casebody(element):
-                            raise Exception("No current support for removing casebody elements")
-                        elements_to_delete_from_tree.append(element)
+                # If the case is duplicative, just save and move on
+                if updated_tree.find('//duplicative:casebody', nsmap) is not None:
+                    super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
+                    return
 
-                    elements_to_add_to_tree = []
-                    for xpath in added_xpaths:
-                        element = updated_tree.find(xpath)
-                        if _in_casebody(element):
-                            raise Exception("No current support for adding casebody elements")
-                        elements_to_add_to_tree.append(element)
+                if self.case_id == '':
+                    self.case_id = parsed_orig_case('case|case').attr('caseid')
 
-                    # now that we've documented additions/deletions, make the tree structures match
-                    # here we remove the new elements from the updated tree
-                    for element in elements_to_add_to_tree:
-                        element.getparent().remove(element)
+                # compare a flat list of xpaths to see if there are structural changes
+                original_xpaths = [original_tree.getelementpath(element) for element in original_tree.iter()]
+                updated_xpaths = [updated_tree.getelementpath(element) for element in updated_tree.iter()]
+                deleted_xpaths = set(original_xpaths) - set(updated_xpaths)
+                added_xpaths = set(updated_xpaths) - set(original_xpaths)
 
-                    # here we remove the deleted elements from the original tree 
-                    for element in elements_to_delete_from_tree:
-                        element.getparent().remove(element)
+                # iterate over the additions and deletions and add to DM, save element for later
+                # note that elements_to_add_to_tree contains elements from the updated tree while
+                # elements_to_delete_from_tree has elements from the original tree
+                elements_to_delete_from_tree = []
+                for xpath in deleted_xpaths:
+                    element = original_tree.find(xpath)
+                    # if it's in the casebody, we need to modify the corresponding ALTO
+                    if __in_casebody(element):
+                        raise Exception("No current support for removing casebody elements")
+                    elements_to_delete_from_tree.append(element)
 
-                    # since the tree structures match, we can just iterate over the whole tree and compare values
-                    for original_element in original_tree.iter():
+                elements_to_add_to_tree = []
+                for xpath in added_xpaths:
+                    element = updated_tree.find(xpath)
+                    if __in_casebody(element):
+                        raise Exception("No current support for adding casebody elements")
+                    elements_to_add_to_tree.append(element)
 
-                        # if it isn't in casebody, it won't affect the ALTO
-                        if not _in_casebody(original_element):
-                            continue
+                # now that we've documented additions/deletions, make the tree structures match
+                # here we remove the new elements from the updated tree
+                for element in elements_to_add_to_tree:
+                    element.getparent().remove(element)
 
-                        xpath = original_tree.getpath(original_element)
-                        updated_element_search = updated_tree.xpath(xpath)
+                # here we remove the deleted elements from the original tree
+                for element in elements_to_delete_from_tree:
+                    element.getparent().remove(element)
 
-                        updated_element = updated_element_search[0]
+                # get the alto files associated with the case in the DB
+                alto_files = {}
+                for alto in self.pages.all():
+                    alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
+                    alto_files[alto_fileid] = alto
 
-                        # get the alto file list from the case file
-                        alto_connections = {}
-                        alto_element_references = parsed_orig_case('mets|area[BEGIN="{}"]'.format(original_element.get('id'))).parent().nextAll('mets|fptr')
-                        for area in alto_element_references('mets|area'):
-                            pgmap = area.get('BEGIN').split(".")[0].split("_")[1]
-                            alto_connections[pgmap] = (area.get('FILEID'), area.get('BEGIN'))
+                # check to see if any elements in the casebody have been updated so we can update the ALTO
+                # since the tree structures match, we can just iterate over the tree elements and compare values
+                for original_element in original_tree.iter():
+                    # if it isn't in casebody, it won't affect the ALTO, so skip it
+                    if not __in_casebody(original_element):
+                        continue
 
-                        # frequently, case text elements span pages. This gets the alto pages referred
-                        # to by the element pagemap in the case text.
-                        element_pages = {}
-                        if "pgmap" in original_element.keys() and ' ' in original_element.get("pgmap"):
-                            element_pages = { page.split('(')[0]: page.split('(')[1][:-1] for page in original_element.get("pgmap").split(" ") }
-                        elif "pgmap" in original_element.keys():
-                            element_pages = { original_element.get("pgmap"): len(original_element.text.split(" ")) }
+                    xpath = original_tree.getpath(original_element)
+                    updated_element = updated_tree.xpath(xpath)[0]
 
-                        # modified tag name?
-                        if original_element.tag != updated_element.tag:
+                    # in the alto_connections dict is a map between the pgmap value, such as '17' and the
+                    # FILEID value, such as alto_0008_0
+                    alto_connections = {}
+                    alto_element_references = parsed_orig_case(
+                        'mets|area[BEGIN="{}"]'.format(original_element.get('id'))).parent().nextAll('mets|fptr')
+                    for area in alto_element_references('mets|area'):
+                        pgmap = area.get('BEGIN').split(".")[0].split("_")[1]
+                        alto_connections[pgmap] = area.get('FILEID')
 
-                            # go through each alto file that refers to the tag and update the reference
-                            for alto in element_pages:
-                                alto_page = alto_files[alto_connections[alto][0]]
-                                parsed_alto_page = parse_xml(alto_page.orig_xml)
-                                structure_tag = parsed_alto_page('alto|StructureTag[ID="{}"]'.format(original_element.get('id')))
-                                if structure_tag is not None:
-                                    structure_tag.attr["LABEL"] = updated_element.tag
-                                    alto_page.orig_xml = serialize_xml(parsed_alto_page)
-                                    alto_page.save()
-                        
-                        # modified element text?
-                        if original_element.text != updated_element.text:
-                            # we haven't devised a strategy for dealing with this yet
-                            if len(updated_element.text.split(" ")) != len(original_element.text.split(" ")):
-                                raise Exception("No current support for adding or removing case text")
-                            
-                            # Case text elements can include text from multiple alto pages. To compare them you need
-                            # to get all of the elements from all of the pages and compare them to a list of words 
-                            # from the case text.
-                            wordcount = 0
-                            for alto in element_pages:
-                                alto_page = alto_files[alto_connections[alto][0]]
-                                parsed_alto_page = parse_xml(alto_page.orig_xml)
-                                text_block = parsed_alto_page('alto|TextBlock[TAGREFS="{}"]'.format(original_element.get('id')))
-                                words = text_block("alto|String")
-                                for word in words:
-                                    if updated_element.text.split(" ")[wordcount] != original_element.text.split(" ")[wordcount]:
-                                        # update ALTO & set the character confidence and word confidence to 100%
-                                        word.set("WC", "1.00")
-                                        word.set("CC", "0")
-                                        word.set("CONTENT", updated_element.text.split(" ")[wordcount])
-                                    wordcount += 1
+                    # frequently, case text elements span pages. This gets the alto pages referred
+                    # to by the element's pagemap attribute, and returns the alto_id of the page
+                    if "pgmap" in original_element.keys() and ' ' in original_element.get("pgmap"):
+                        element_pages = [alto_connections[page.split('(')[0]] for page in
+                                         original_element.get("pgmap").split(" ")]
+                    elif "pgmap" in original_element.keys():
+                        element_pages = [alto_connections[original_element.get("pgmap")]]
+
+                    # check for a modified tag name
+                    if original_element.tag != updated_element.tag:
+                        # go through each alto file that refers to the tag and update the reference
+                        for alto in element_pages:
+                            print(alto)
+                            alto_page = alto_files[alto]
+                            parsed_alto_page = parse_xml(alto_page.orig_xml)
+                            structure_tag = parsed_alto_page(
+                                'alto|StructureTag[ID="{}"]'.format(original_element.get('id')))
+                            if structure_tag is not None:
+                                structure_tag.attr["LABEL"] = updated_element.tag
                                 alto_page.orig_xml = serialize_xml(parsed_alto_page)
                                 alto_page.save()
 
-                # save that ish
-                super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
-                #make sure we update __existing_xml in case it's changed again before its reloaded
-                self.__existing_xml = self.orig_xml
-        except AttributeError:
-            raise Exception("Can't load a case with orig_xml deferred and then save it. We can't update alto if we do.")
+                    # check for modified element text
+                    if original_element.text != updated_element.text:
+                        # we haven't devised a strategy for dealing with this yet
+                        if len(updated_element.text.split(" ")) != len(original_element.text.split(" ")):
+                            raise Exception("No current support for adding or removing case text")
+
+                        # Case text elements can include text from multiple alto pages. To compare them you need
+                        # to get all of the elements from all of the pages and compare them to a list of words
+                        # from the case text.
+                        wordcount = 0
+                        # loop through each referenced alto file
+                        for alto in element_pages:
+                            alto_page = alto_files[alto]
+                            parsed_alto_page = parse_xml(alto_page.orig_xml)
+                            text_block = parsed_alto_page(
+                                'alto|TextBlock[TAGREFS="{}"]'.format(original_element.get('id')))
+                            words = text_block("alto|String")
+                            # loop through each word in the ALTO text block
+                            for word in words:
+                                updated_word = updated_element.text.split(" ")[wordcount]
+                                original_word = original_element.text.split(" ")[wordcount]
+                                assert original_word == word.get("CONTENT")
+                                if updated_word != original_word:
+                                    # update ALTO & set the character confidence and word confidence to 100%
+                                    word.set("WC", "1.00")
+                                    word.set("CC", "0")
+                                    word.set("CONTENT", updated_element.text.split(" ")[wordcount])
+                                wordcount += 1
+                            alto_page.orig_xml = serialize_xml(parsed_alto_page)
+                            alto_page.save()
+
+                #update the volume md5
+                short_case_id = "casemets_{}".format(self.case_id.split('_')[1])
+                self.volume.update_related_md5(short_case_id, self.md5())
+
+            # save that ish
+            super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
+            # make sure we update __existing_xml in case it's changed again before its reloaded
+            self.__existing_xml = self.orig_xml
+
 
     def __str__(self):
         return str(self.pk)
@@ -590,7 +650,6 @@ class CaseXML(BaseXMLModel):
             metadata_created = True
 
         # set up data
-        self.__existing_xml = self.orig_xml # TODO: Fix! Not elegant!
         data = get_case_metadata(self.orig_xml)
         duplicative_case = data['duplicative']
         volume_metadata = self.volume.metadata
@@ -620,7 +679,7 @@ class CaseXML(BaseXMLModel):
 
             # set or create court
             # we look up court by name and/or name_abbreviation from data["court"]
-            court_kwargs = {k:v for k, v in data["court"].items() if v}
+            court_kwargs = {k: v for k, v in data["court"].items() if v}
             if court_kwargs:
                 try:
                     court = Court.get_from_cache(**court_kwargs)
@@ -680,12 +739,23 @@ class Citation(AutoSlugMixin, models.Model):
     def get_slug(self):
         return self.cite
 
+
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
     volume = models.ForeignKey(VolumeXML, related_name='page_xmls',
-                                     on_delete=models.DO_NOTHING)
+                               on_delete=models.DO_NOTHING)
     cases = models.ManyToManyField(CaseXML, related_name='pages')
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
+
+    def save(self, force_insert=False, force_update=False, *args, **kwargs):
+        super(PageXML, self).save(force_insert, force_update, *args, **kwargs)
+        split_barcode = self.barcode.split('_')
+        short_alto_id = "alto_{}_{}".format(split_barcode[1], split_barcode[2])
+        self.volume.update_related_md5(short_alto_id, self.md5())
+        for case in self.cases.all():
+            split_barcode = self.barcode.split('_')
+            short_alto_id = "alto_{}_{}".format(split_barcode[1], split_barcode[2])
+            self.volume.update_related_md5(short_alto_id, self.md5())
 
     def __str__(self):
         return self.barcode
@@ -696,7 +766,8 @@ class DataMigration(models.Model):
     transaction_timestamp = models.DateTimeField()
     notes = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=10, choices=(("applied", "applied"), ("pending", "pending"), ("error", "error")))
+    status = models.CharField(max_length=10,
+                              choices=(("applied", "applied"), ("pending", "pending"), ("error", "error")))
     traceback = models.TextField(blank=True, null=True)
     author = models.CharField(max_length=255)
     initiator = models.CharField(max_length=255)
