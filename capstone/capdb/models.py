@@ -2,6 +2,7 @@ import hashlib
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
+from django.utils.encoding import force_bytes
 from model_utils import FieldTracker
 
 from scripts.process_metadata import get_case_metadata
@@ -159,7 +160,7 @@ class BaseXMLModel(models.Model):
 
     def md5(self):
         m = hashlib.md5()
-        m.update(self.orig_xml.encode())
+        m.update(force_bytes(self.orig_xml))
         return m.hexdigest()
 
 
