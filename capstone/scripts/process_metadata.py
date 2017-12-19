@@ -16,8 +16,8 @@ def get_case_metadata(case_xml):
         'case_id': case_id
     }
     if parsed('duplicative|casebody'):
-        first_page = int(parsed('duplicative|casebody').attr.firstpage)
-        last_page = int(parsed('duplicative|casebody').attr.lastpage)
+        first_page = parsed('duplicative|casebody').attr.firstpage
+        last_page = parsed('duplicative|casebody').attr.lastpage
         return dict(metadata, **{
             'duplicative': True,
             'first_page': first_page,
@@ -27,16 +27,13 @@ def get_case_metadata(case_xml):
     citation_entries = parsed('case|case').find('case|citation')
     citations = {cite.attrib['category']: cite.text for cite in citation_entries}
     jurisdiction = parsed('case|court').attr('jurisdiction').strip()
-    
-    if parsed('casebody|casebody').attr.lastpage.isdigit():
-        last_page = int(parsed('casebody|casebody').attr.lastpage)
-    else:
-        last_page = None
+
 
     name = parsed('case|name').text()
     name_abbreviation = parsed('case|name').attr('abbreviation')
 
-    first_page = int(parsed('casebody|casebody').attr.firstpage)
+    first_page = parsed('casebody|casebody').attr.firstpage
+    last_page = parsed('casebody|casebody').attr.lastpage
 
     decision_date_original = parsed('case|decisiondate').text()
     decision_date = decision_datetime(decision_date_original)
@@ -65,9 +62,18 @@ def get_case_metadata(case_xml):
 
 def decision_datetime(decision_date_text):
     try:
-        return datetime.strptime(decision_date_text, '%Y-%m-%d')
-    except ValueError:
         try:
-            return datetime.strptime(decision_date_text, '%Y-%m')
-        except ValueError:
-            return datetime.strptime(decision_date_text, '%Y')
+            return datetime.strptime(decision_date_text, '%Y-%m-%d')
+        except ValueError as e:
+
+            # if court used an invalid day of month (typically Feb. 29), strip day from date
+            if e.args[0] == 'day is out of range for month':
+                decision_date_text = decision_date_text.rsplit('-', 1)[0]
+
+            try:
+                return datetime.strptime(decision_date_text, '%Y-%m')
+            except ValueError:
+                return datetime.strptime(decision_date_text, '%Y')
+    except Exception as e:
+        # if for some reason we can't parse the date, just store None
+        return None

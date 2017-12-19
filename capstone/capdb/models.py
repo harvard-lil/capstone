@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes
+from model_utils import FieldTracker
 
 from scripts.process_metadata import get_case_metadata
 from scripts.helpers import *
@@ -427,17 +428,17 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
 class CaseMetadata(AutoSlugMixin, models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     case_id = models.CharField(max_length=64, null=True)
-    first_page = models.IntegerField(null=True, blank=True)
-    last_page = models.IntegerField(null=True, blank=True)
+    first_page = models.CharField(max_length=255, null=True, blank=True)
+    last_page = models.CharField(max_length=255, null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
     citations = models.ManyToManyField('Citation', related_name='case_metadatas')
-    docket_number = models.CharField(max_length=255, blank=True)
+    docket_number = models.CharField(max_length=10000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
     court = models.ForeignKey('Court', null=True, related_name='case_metadatas', on_delete=models.SET_NULL)
     name = models.TextField(blank=True)
-    name_abbreviation = models.CharField(max_length=255, blank=True)
+    name_abbreviation = models.CharField(max_length=10000, blank=True)
     volume = models.ForeignKey('VolumeMetadata', null=True, related_name='case_metadatas',
                                on_delete=models.SET_NULL)
     reporter = models.ForeignKey('Reporter', null=True, related_name='case_metadatas',
@@ -462,6 +463,7 @@ class CaseXML(BaseXMLModel):
                                on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
+    tracker = FieldTracker()
     def __init__(self, *args, **kwargs):
         super(CaseXML, self).__init__(*args, **kwargs)
         # this will copies orig_xml to __existing_xml for comparing updates.
@@ -729,7 +731,7 @@ class CaseXML(BaseXMLModel):
 class Citation(AutoSlugMixin, models.Model):
     type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
-    cite = models.CharField(max_length=255, db_index=True)
+    cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
     slug = models.SlugField(max_length=255, unique=True)
 
@@ -737,7 +739,7 @@ class Citation(AutoSlugMixin, models.Model):
         return self.slug
 
     def get_slug(self):
-        return self.cite
+        return self.cite[:100]
 
 
 class PageXML(BaseXMLModel):
