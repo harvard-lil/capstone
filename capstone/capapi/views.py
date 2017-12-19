@@ -228,7 +228,6 @@ def get_docs(request):
     case = models.CaseMetadata.objects.last()
     reporter = models.Reporter.objects.last()
     reporter_metadata = serializers.ReporterSerializer(reporter, context={'request': request}).data
-    reporter_metadata['jurisdictions'] = dict(reporter_metadata['jurisdictions'])
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
     context = {
         "case_metadata": case_metadata,
