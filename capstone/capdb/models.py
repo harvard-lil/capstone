@@ -2,6 +2,7 @@ import hashlib
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
+from model_utils import FieldTracker
 
 from scripts.process_metadata import get_case_metadata
 from scripts.helpers import *
@@ -425,6 +426,7 @@ class CaseXML(BaseXMLModel):
                                      on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
+    tracker = FieldTracker()
 
     def __str__(self):
         return str(self.pk)
