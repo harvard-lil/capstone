@@ -152,13 +152,22 @@ class XMLQuerySet(models.QuerySet):
 class BaseXMLModel(models.Model):
     """ Base class for models that store XML documents. """
     orig_xml = XMLField()
+    md5 = models.CharField(max_length=255, blank=True, null=True)
 
     objects = XMLQuerySet.as_manager()
+    tracker = None  # should be set as tracker = FieldTracker() by subclasses
 
     class Meta:
         abstract = True
 
-    def md5(self):
+    def save(self, *args, **kwargs):
+        # update md5
+        if self.tracker.has_changed('orig_xml') and not self.tracker.has_changed('md5'):
+            self.md5 = self.get_md5()
+
+        return super().save(*args, **kwargs)
+
+    def get_md5(self):
         m = hashlib.md5()
         m.update(force_bytes(self.orig_xml))
         return m.hexdigest()
@@ -369,6 +378,8 @@ class VolumeXML(BaseXMLModel):
     metadata = models.OneToOneField(VolumeMetadata, related_name='volume_xml', on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
+    tracker = FieldTracker()
+
     def __str__(self):
         return self.metadata_id
 
@@ -547,6 +558,8 @@ class PageXML(BaseXMLModel):
                                      on_delete=models.DO_NOTHING)
     cases = models.ManyToManyField(CaseXML, related_name='pages')
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
+
+    tracker = FieldTracker()
 
     def __str__(self):
         return self.barcode
