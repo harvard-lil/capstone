@@ -114,7 +114,6 @@ def test_casebody_add_element_raise(case_xml):
         case_xml.orig_xml = serialize_xml(parsed_case_xml)
         case_xml.save()
 
-
 @pytest.mark.django_db
 def test_casebody_delete_word_raise(case_xml):
     # change a word in the case XML
@@ -124,32 +123,4 @@ def test_casebody_delete_word_raise(case_xml):
         case_xml.orig_xml = serialize_xml(parsed_case_xml)
         case_xml.save()
 
-@pytest.mark.django_db
-def test_casebody_defer_save(volume_xml):
-    # since the model uses a different save function when "orig_xml" 
-    # is deferred, we should test it
-    case_xml = volume_xml.case_xmls.defer('orig_xml').first()
-    case_xml.case_id="Hmmmmmmm"
-    case_xml.save()
-    case_xml.refresh_from_db()
-    assert case_xml.case_id == "Hmmmmmmm"
-
-@pytest.mark.django_db
-def test_casebody_undeferred(volume_xml):
-
-    #same test as above, but with a deferred orig_xml field
-    case_xml = volume_xml.case_xmls.defer('orig_xml').first()
-    parsed_case_xml = parse_xml(case_xml.orig_xml)
-    updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
-    parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
-    case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    case_xml.save()
-    case_xml.refresh_from_db()
-    parsed_case_xml = parse_xml(case_xml.orig_xml)
-    assert '4rgUm3nt' in parsed_case_xml('casebody|p[id="b17-6"]').text()
-    # make sure the change shows up in the ALTO
-    alto = case_xml.pages.get(barcode="32044057892259_00009_0")
-    parsed_alto = parse_xml(alto.orig_xml)
-    element = parsed_alto('alto|String[ID="ST_17.7.1.3"]')
-    assert element.attr["CONTENT"] == '4rgUm3nt'
 
