@@ -401,7 +401,7 @@ class CaseMetadata(AutoSlugMixin, models.Model):
     decision_date_original = models.CharField(max_length=100, blank=True)
     court = models.ForeignKey('Court', null=True, related_name='case_metadatas', on_delete=models.SET_NULL)
     name = models.TextField(blank=True)
-    name_abbreviation = models.CharField(max_length=255, blank=True)
+    name_abbreviation = models.CharField(max_length=10000, blank=True)
     volume = models.ForeignKey('VolumeMetadata', null=True, related_name='case_metadatas',
                                  on_delete=models.SET_NULL)
     reporter = models.ForeignKey('Reporter', null=True, related_name='case_metadatas',
