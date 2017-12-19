@@ -16,7 +16,7 @@ The Caselaw Access Project API guide
     </div>
   </div>
   <div class="separator" style="margin:0px"></div>
-  <div class="row cont-reading" id="api-overview">
+  <pre class="row cont-reading" id="api-overview">
     <div class="col-sm-4 container api-doc-toc">
       <ul>
         <li class="reading-toc-section"><a href="#overview-section">Overview</a></li>
@@ -27,7 +27,7 @@ The Caselaw Access Project API guide
       </ul>
     </div>
 
-    <div class="col-sm-8 docs reading-body">
+    <pre class="col-sm-8 docs reading-body">
       <section class="overview-section">
         <h2 id="overview-section" class="section-title">API Overview</h2>
         <p class="body-text">The CAP API lets you traverse through and download American caselaw from 1700 to present day.
@@ -57,12 +57,12 @@ The Caselaw Access Project API guide
         <p class="body-text">All cases endpoint:</p>
         <pre><a href="/api/v1/cases/" target="_blank">https://{{ request.get_host }}/api/v1/cases/</a></pre>
         <p class="body-text">One specific case endpoint:</p>
-        <pre><a href="/api/v1/cases/halling-v-united-states-7618" target="_blank">https://{{ request.get_host }}/api/v1/cases/halling-v-united-states-7618</a></pre>
+        <pre><a href="/api/v1/cases/{{ case_slug }}" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_slug }}</a></pre>
         <p class="body-text">Here is an example wget request:</p>
-        <pre>$ wget --content-disposition "https://{{ request.get_host}}/api/v1/cases/?jurisdiction_name=alabama&limit=3&type=download" \
+        <pre>$ wget --content-disposition "https://{{ request.get_host}}/api/v1/cases/?jurisdiction={{ case_jurisdiction }}&limit=3&type=download" \
         <br/> --header="Authorization: Token your-token-here"</pre>
         <p class="body-text">Or if you prefer CURL:</p>
-        <pre>$ curl -O -J "https://{{ request.get_host}}/api/v1/cases/?jurisdiction_name=kansas&limit=3&type=download" \
+        <pre>$ curl -O -J "https://{{ request.get_host}}/api/v1/cases/?jurisdiction={{ case_jurisdiction }}&limit=3&type=download" \
         <br/> -H "Authorization: Token your-token-here"</pre>
 
         <p class="body-text">
@@ -113,55 +113,22 @@ The Caselaw Access Project API guide
         <p class="body-text bold-text">
           A note on pagination:
         </p>
-        <p class="body-text">The API will return 20 items per response. If you have more than 20 items returned, you can page through the items using the <i>offset</i> parameter. For example, if you want to start at the 101st result, set the offset value to 4 (we start counting at 0, of course).</p>
+        <p class="body-text">The API will return 100 items per response. If you want more than 100 items returned, you can page through the items using the <i>offset</i> parameter. For example, if you want to start at the 101st result, set the offset value to 4 (we start counting at 0, of course).</p>
 
         <p class="body-text">Here are some examples of endpoints and their JSON responses.</p>
 
         <p class="body-text">A single case request (online):</p>
-        <pre><a href="/api/v1/cases/bates-v-united-states-4330/" target="_blank">https://{{ request.get_host }}/api/v1/cases/bates-v-united-states-4330/</a></pre>
+        <pre><a href="/api/v1/cases/{{ case_slug }}/" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_slug }}/</a></pre>
         <p class="body-text">A single case CURL request:</p>
-        <pre>$ curl "https://{{ request.get_host }}/api/v1/cases/bates-v-united-states-4330/?format=json"</pre>
-        <pre>{
-    "id": 393783,
-    "slug": "bates-v-united-states-4330",
-    "url": "https://capapi.org/cases/bates-v-united-states-4330/",
-    "name": "George W. BATES, Appellant, v. UNITED STATES of America, Appellee",
-    "name_abbreviation": "Bates v. United States",
-    "citation": "405 F.2d 1104",
-    "firstpage": 1104,
-    "lastpage": 1106,
-    "jurisdiction": "https://capapi.org/jurisdictions/1/",
-    "jurisdiction_name": "United States",
-    "jurisdiction_id": 1,
-    "docketnumber": "No. 21434",
-    "decisiondate_original": "1968-12-13",
-    "court": "https://capapi.org/courts/97/",
-    "court_name": "United States Court of Appeals for the District of Columbia Circuit",
-    "court_id": 97,
-    "reporter": "https://capapi.org/reporters/980/",
-    "reporter_name": "Federal Reporter 2d Series",
-    "reporter_id": 980,
-    "volume": 405
-}
+        <pre>$ curl "https://{{ request.get_host }}/api/v1/cases/{{ case_slug }}/?format=json"</pre>
+        <pre>{{ case_metadata }}
         </pre>
         <p class="body-text">A single reporter request (online):</p>
-        <pre><a href="https://{{ request.get_host }}/api/v1/reporters/385/" target="_blank">https://{{ request.get_host }}/api/v1/reporters/385/</a></pre>
+        <pre><a href="https://{{ request.get_host }}/api/v1/reporters/{{ reporter_id }}/" target="_blank">https://{{ request.get_host }}/api/v1/reporters/{{ reporter_id }}/</a></pre>
         <p class="body-text">A single case CURL request:</p>
-        <pre>$ curl "https://{{ request.get_host }}/api/v1/cases/385/?format=json"</pre>
-        <pre>{
-    "id": 385,
-    "jurisdiction": "https://capapi.org/jurisdictions/21/",
-    "jurisdiction_id": 21,
-    "jurisdiction_name": "Pennsylvania",
-    "name": "Pennsylvania District and County Reports",
-    "name_abbreviation": "Pa. D. & C.",
-    "start_date": 1922,
-    "end_date": 1954,
-    "volumes": 89,
-    "updated_at": "2016-09-12T20:03:19Z",
-    "slug": "pa-d-c"
-}
-        </pre>
+        <pre>$ curl "https://{{ request.get_host }}/api/v1/cases/{{ reporter_id }}/?format=json"</pre>
+        <p>{{ reporter_metadata }}
+        </p>
 
 
       </section>

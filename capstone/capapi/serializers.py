@@ -110,6 +110,7 @@ class ReporterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Reporter
         fields = (
+            'id',
             'url',
             'full_name',
             'short_name',

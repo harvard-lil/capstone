@@ -1,13 +1,7 @@
 import pytest
 
 from test_data.test_fixtures.factories import *
-
-
-def check_response(response, status_code=200, format='json'):
-    assert response.status_code == status_code
-    if format:
-        assert response.accepted_renderer.format == format
-
+from capapi.tests.helpers import check_response
 
 @pytest.mark.django_db(transaction=True)
 def test_api_urls(client, api_url, case):
