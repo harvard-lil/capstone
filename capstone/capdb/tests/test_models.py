@@ -17,7 +17,6 @@ def test_create_or_update_metadata(case_xml):
     case_xml.orig_xml = serialize_xml(parsed)
     case_xml.save()
     case_xml.create_or_update_metadata()
-
     # fetch new metadata
     new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
     new_citations = list(new_case_metadata.citations.all())
@@ -43,7 +42,6 @@ def test_create_or_update_metadata(case_xml):
     new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
     assert new_case_metadata == old_case_metadata
 
-
 @pytest.mark.django_db
 def test_casebody_modify_word(case_xml):
     # change a word in the case XML
@@ -54,7 +52,8 @@ def test_casebody_modify_word(case_xml):
     case_xml.save()
     case_xml.refresh_from_db()
     parsed_case_xml = parse_xml(case_xml.orig_xml)
-    assert '4rgUm3nt' in parsed_case_xml('casebody|p[id="b17-6"]').text() 
+    assert '4rgUm3nt' in parsed_case_xml('casebody|p[id="b17-6"]').text()
+
     # make sure the change shows up in the ALTO
     alto = case_xml.pages.get(barcode="32044057892259_00009_0")
     parsed_alto = parse_xml(alto.orig_xml)

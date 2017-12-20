@@ -1,4 +1,5 @@
 import hashlib
+
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
@@ -7,9 +8,6 @@ from model_utils import FieldTracker
 
 from scripts.process_metadata import get_case_metadata
 from scripts.helpers import *
-
-
-### helpers ###
 
 def choices(*args):
     """ Simple helper to create choices=(('Foo','Foo'),('Bar','Bar'))"""
@@ -469,56 +467,32 @@ class CaseXML(BaseXMLModel):
 
         # This compares new XML to the old and updates ALTO files as necessary.
         # We don't yet support adding or removing words from the case body.
-        if self.tracker.has_changed('orig_xml') and self.pk is not None and self.tracker.changed()['orig_xml']:
-            def __in_casebody(element):
-                return element.tag.startswith("{" + nsmap['casebody']) and not element.tag.endswith('casebody')
+        if self.tracker.has_changed('orig_xml') and self.pk is not None and self.tracker.previous('orig_xml'):
 
             # parse objects and get the xml tree objects
-            parsed_orig_case = parse_xml(self.tracker.changed()['orig_xml'])
+            parsed_original_case = parse_xml(self.tracker.previous('orig_xml'))
             parsed_updated_case = parse_xml(self.orig_xml)
             updated_tree = parsed_updated_case.root
-            original_tree = parsed_orig_case.root
+            original_tree = parsed_original_case.root
 
             # If the case is duplicative, just save and move on
             if updated_tree.find('//duplicative:casebody', nsmap) is not None:
                 super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
                 return
 
-            if self.case_id == '':
-                self.case_id = parsed_orig_case('case|case').attr('caseid')
+            original_casebody_tree = parsed_original_case("casebody|casebody")[0]
+            updated_casebody_tree = parsed_updated_case("casebody|casebody")[0]
 
-            # compare a flat list of xpaths to see if there are structural changes
-            original_xpaths = [original_tree.getelementpath(element) for element in original_tree.iter()]
-            updated_xpaths = [updated_tree.getelementpath(element) for element in updated_tree.iter()]
-            deleted_xpaths = set(original_xpaths) - set(updated_xpaths)
-            added_xpaths = set(updated_xpaths) - set(original_xpaths)
+            # get a list of casebody elements and make sure there's no additions or deletions
+            original_casebody_xpaths = set([original_tree.getelementpath(element) for element in original_casebody_tree])
+            updated_casebody_xpaths = set([updated_tree.getelementpath(element) for element in updated_casebody_tree])
 
-            # iterate over the additions and deletions and add to DM, save element for later
-            # note that elements_to_add_to_tree contains elements from the updated tree while
-            # elements_to_delete_from_tree has elements from the original tree
-            elements_to_delete_from_tree = []
-            for xpath in deleted_xpaths:
-                element = original_tree.find(xpath)
-                # if it's in the casebody, we need to modify the corresponding ALTO
-                if __in_casebody(element):
-                    raise Exception("No current support for removing casebody elements")
-                elements_to_delete_from_tree.append(element)
+            if len(original_casebody_xpaths - updated_casebody_xpaths) > 0:
+                raise Exception("No current support for removing casebody elements")
+            if len(updated_casebody_xpaths - original_casebody_xpaths) > 0:
+                raise Exception("No current support for adding casebody elements")
 
-            elements_to_add_to_tree = []
-            for xpath in added_xpaths:
-                element = updated_tree.find(xpath)
-                if __in_casebody(element):
-                    raise Exception("No current support for adding casebody elements")
-                elements_to_add_to_tree.append(element)
 
-            # now that we've documented additions/deletions, make the tree structures match
-            # here we remove the new elements from the updated tree
-            for element in elements_to_add_to_tree:
-                element.getparent().remove(element)
-
-            # here we remove the deleted elements from the original tree
-            for element in elements_to_delete_from_tree:
-                element.getparent().remove(element)
 
             # get the alto files associated with the case in the DB
             alto_files = {}
@@ -528,18 +502,14 @@ class CaseXML(BaseXMLModel):
 
             # check to see if any elements in the casebody have been updated so we can update the ALTO
             # since the tree structures match, we can just iterate over the tree elements and compare values
-            for original_element in original_tree.iter():
-                # if it isn't in casebody, it won't affect the ALTO, so skip it
-                if not __in_casebody(original_element):
-                    continue
-
+            for original_element in original_casebody_tree.iter():
                 xpath = original_tree.getpath(original_element)
                 updated_element = updated_tree.xpath(xpath)[0]
 
                 # in the alto_connections dict is a map between the pgmap value, such as '17' and the
                 # FILEID value, such as alto_0008_0
                 alto_connections = {}
-                alto_element_references = parsed_orig_case(
+                alto_element_references = parsed_original_case(
                     'mets|area[BEGIN="{}"]'.format(original_element.get('id'))).parent().nextAll('mets|fptr')
                 for area in alto_element_references('mets|area'):
                     pgmap = area.get('BEGIN').split(".")[0].split("_")[1]
@@ -594,12 +564,22 @@ class CaseXML(BaseXMLModel):
                                 word.set("CC", "0")
                                 word.set("CONTENT", updated_element.text.split(" ")[wordcount])
                             wordcount += 1
+
                         alto_page.orig_xml = serialize_xml(parsed_alto_page)
-                        alto_page.save()
+                        alto_page.save(save_case=False)
+
 
             #update the volume md5
-            short_case_id = "casemets_{}".format(self.case_id.split('_')[1])
+            case_id = parsed_original_case('case|case').attr('caseid')
+            short_case_id = "casemets_{}".format(case_id.split('_')[1])
             self.volume.update_related_md5(short_case_id, self.md5())
+
+            #update the page md5s
+            for alto in self.pages.all():
+                alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
+                parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5()
+
+            self.orig_xml=serialize_xml(parsed_updated_case)
 
         # save that ish.
         super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
@@ -727,16 +707,16 @@ class PageXML(BaseXMLModel):
 
     tracker = FieldTracker()
 
-    def save(self, force_insert=False, force_update=False, *args, **kwargs):
+    def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
         super(PageXML, self).save(force_insert, force_update, *args, **kwargs)
-        if self.tracker.has_changed('orig_xml') and self.pk is not None and self.tracker.changed()['orig_xml']:
+        if self.tracker.has_changed('orig_xml') and self.pk is not None and self.tracker.previous('orig_xml'):
             split_barcode = self.barcode.split('_')
             short_alto_id = "alto_{}_{}".format(split_barcode[1], split_barcode[2])
-            self.volume.update_related_md5(short_alto_id, self.md5())
-            for case in self.cases.all():
-                split_barcode = self.barcode.split('_')
-                short_alto_id = "alto_{}_{}".format(split_barcode[1], split_barcode[2])
+            if save_volume:
                 self.volume.update_related_md5(short_alto_id, self.md5())
+            if save_case:
+                for case in self.cases.all():
+                    case.update_related_md5(short_alto_id, self.md5())
 
     def __str__(self):
         return self.barcode

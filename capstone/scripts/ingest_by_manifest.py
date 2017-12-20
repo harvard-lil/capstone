@@ -221,7 +221,7 @@ def process_volume(vol_entry_bytestring):
                 case.create_or_update_metadata()
 
                 # store case-to-page matches
-                for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):
+                for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', str(case.orig_xml))):
                     alto_barcode_to_case_map[vol_entry['barcode'] + "_" + alto_barcode].append(case.id)
 
             existing_page_ids = set(volume.page_xmls.values_list('barcode', flat=True))

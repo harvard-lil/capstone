@@ -2,7 +2,7 @@ import pytest
 
 import fabfile
 from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata, PageXML
-from scripts.helpers import parse_xml
+from scripts.helpers import parse_xml, serialize_xml
 
 @pytest.mark.django_db
 def test_volume_metadata(volume_xml):
@@ -44,7 +44,7 @@ def test_update_dup_checking(volume_xml, case_xml):
     parsed_case = parse_xml(case_xml.orig_xml)
     original_case_md5 = case_xml.md5()
     parsed_case('casebody|parties[id="b15-4"]').text('The Home Inversion Company of New York v. John Kirk, for use of William Kirk.')
-    case_xml.orig_xml = str(parsed_case)
+    case_xml.orig_xml = serialize_xml(parsed_case)
     case_xml.save()
 
     case_xml.refresh_from_db()
