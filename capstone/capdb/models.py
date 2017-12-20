@@ -30,7 +30,6 @@ class AutoSlugMixin():
             Jurisdiction(name='Massachusetts').save()
     """
 
-    @transaction.atomic
     def save(self, *args, slug_base=None, **kwargs):
 
         # if slug is explicitly provided or blank, keep trying to save until we find a unique slug:
@@ -443,6 +442,7 @@ class CaseXML(BaseXMLModel):
     def __str__(self):
         return str(self.pk)
 
+    @transaction.atomic
     def create_or_update_metadata(self, update_existing=True):
         """
             creates or updates CaseMetadata object
