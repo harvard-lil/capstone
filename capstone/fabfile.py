@@ -21,8 +21,8 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi import resources
-from capdb.models import Jurisdiction, CaseMetadata
-from capdb.tasks import create_case_metadata_from_all_vols
+from capdb.models import Jurisdiction, CaseMetadata, VolumeXML
+from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
 # from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, ingest_files, data_migrations, ingest_by_manifest
 
@@ -310,3 +310,9 @@ def test_slow(jobs="1", ram="10", cpu="30"):
     result.get()  # wait for all jobs to finish
     run_time = time.time() - start_time
     print("Ran %s test_slow jobs in %s seconds (%s seconds/job)" % (jobs, run_time, run_time/jobs))
+
+@task
+def fix_md5_columns():
+    """ Run celery tasks to fix orig_xml and md5 column for all volumes. """
+    for volume_id in VolumeXML.objects.values_list('pk', flat=True):
+        fix_md5_column.delay(volume_id)
