@@ -137,6 +137,12 @@ class XMLField(models.TextField):
 
     def db_type(self, connection):
         return 'xml'
+    
+    def from_db_value(self, value, *args, **kwargs):
+        """ Make sure that XML returned from postgres includes XML declaration. """
+        if value and not value.startswith('<?'):
+            return "<?xml version='1.0' encoding='utf-8'?>\n" + value
+        return value
 
 
 class XMLQuerySet(models.QuerySet):
