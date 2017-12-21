@@ -1,3 +1,4 @@
+import os
 import pytest
 
 from django.conf import settings
@@ -10,6 +11,15 @@ from capdb.models import VolumeXML, CaseXML, Jurisdiction, Court
 import capdb.storages
 
 from . import factories
+
+
+### file contents ###
+
+@pytest.fixture
+def unaltered_alto_xml():
+    """ XML from an alto file we haven't modified at all. """
+    with open(os.path.join(settings.BASE_DIR, 'test_data/unaltered_32044057891608_redacted_ALTO_00009_1.xml'), 'rb') as in_file:
+        return in_file.read()
 
 
 ### Django json fixtures ###
@@ -37,6 +47,10 @@ def user():
 @pytest.fixture
 def auth_user():
     return factories.setup_authenticated_user()
+
+@pytest.fixture
+def volume_xml():
+    return factories.VolumeXMLFactory()
 
 @pytest.fixture
 def case():
@@ -103,13 +117,13 @@ def ingest_volumes(ingest_metadata, redis_patch):
     fabfile.total_sync_with_s3()
 
 @pytest.fixture
-def volume_xml(ingest_volumes):
+def ingest_volume_xml(ingest_volumes):
     return VolumeXML.objects.get(metadata__barcode='32044057892259')
 
 @pytest.fixture
-def case_xml(volume_xml):
-    return volume_xml.case_xmls.first()
+def ingest_case_xml(ingest_volume_xml):
+    return ingest_volume_xml.case_xmls.first()
 
 @pytest.fixture
-def duplicative_case_xml(ingest_volumes):
+def ingest_duplicative_case_xml(ingest_volumes):
     return CaseXML.objects.get(metadata__case_id='32044061407086_0001')
