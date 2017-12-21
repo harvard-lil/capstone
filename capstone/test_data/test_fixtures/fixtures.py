@@ -103,13 +103,13 @@ def ingest_volumes(ingest_metadata, redis_patch):
     fabfile.total_sync_with_s3()
 
 @pytest.fixture
-def volume_xml(ingest_volumes):
+def ingest_volume_xml(ingest_volumes):
     return VolumeXML.objects.get(metadata__barcode='32044057892259')
 
 @pytest.fixture
-def case_xml(volume_xml):
-    return volume_xml.case_xmls.first()
+def ingest_case_xml(ingest_volume_xml):
+    return ingest_volume_xml.case_xmls.first()
 
 @pytest.fixture
-def duplicative_case_xml(ingest_volumes):
+def ingest_duplicative_case_xml(ingest_volumes):
     return CaseXML.objects.get(metadata__case_id='32044061407086_0001')
