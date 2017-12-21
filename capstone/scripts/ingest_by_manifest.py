@@ -14,7 +14,6 @@ from django.db import transaction, IntegrityError
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
 from capdb.storages import ingest_storage, inventory_storage, redis_client as r
-from .helpers import serialize_xml
 
 """
 This script updates the capstone inventory based on an inventory report from s3
