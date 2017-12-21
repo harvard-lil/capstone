@@ -34,38 +34,48 @@ def test_duplicative_case_xml(duplicative_case_xml):
 
 @pytest.mark.django_db
 def test_update_dup_checking(volume_xml, case_xml):
-    fabfile.total_sync_with_s3()
- 
-    # change value in ALTO
-    page_xml=PageXML.objects.get(barcode='32044057892259_00008_0')
-    original_page_md5 = page_xml.md5()
+    def test_update_dup_checking(ingest_volume_xml, ingest_case_xml):
+        fabfile.total_sync_with_s3()
 
-    # change corresponding value in casemets
-    parsed_case = parse_xml(case_xml.orig_xml)
-    original_case_md5 = case_xml.md5()
-    parsed_case('casebody|parties[id="b15-4"]').text('The Home Inversion Company of New York v. John Kirk, for use of William Kirk.')
-    case_xml.orig_xml = serialize_xml(parsed_case)
-    case_xml.save()
+        # change value in ALTO
+        page_xml = PageXML.objects.get(barcode='32044057892259_00008_0')
+        original_page_md5 = page_xml.md5
+        parsed_page = parse_xml(page_xml.orig_xml)
+        parsed_page('alto|String[ID="ST_15.2.1.5"]').attr["CONTENT"] = "Inversion"
+        page_xml.orig_xml = str(parsed_page)
+        page_xml.save()
 
-    case_xml.refresh_from_db()
-    page_xml.refresh_from_db()
+        # change corresponding value in casemets
+        parsed_case = parse_xml(ingest_case_xml.orig_xml)
+        original_case_md5 = ingest_case_xml.md5
+        parsed_case('casebody|parties[id="b15-4"]').text(
+            'The Home Inversion Company of New York v. John Kirk, for use of William Kirk.')
+        parsed_case('mets|file[ID="alto_00008_0"]').attr["CHECKSUM"] = page_xml.md5
+        ingest_case_xml.orig_xml = str(parsed_case)
+        ingest_case_xml.save()
 
-    # make sure the writes worked. If they failed, the test would falsely pass
-    assert original_page_md5 != page_xml.md5()
-    assert original_case_md5 != case_xml.md5()
-    assert 'Inversion' in case_xml.orig_xml
-    assert 'Inversion' in page_xml.orig_xml
+        # update checksums in volume mets
+        parsed_volume = parse_xml(ingest_volume_xml.orig_xml)
+        parsed_volume('mets|file[ID="alto_00008_0"]').attr["CHECKSUM"] = page_xml.md5
+        parsed_volume('mets|file[ID="casemets_0001"]').attr["CHECKSUM"] = ingest_case_xml.md5
+        ingest_volume_xml.save()
 
-    fabfile.total_sync_with_s3()
+        # make sure the writes worked. If they failed, the test would falsely pass
+        assert original_page_md5 != page_xml.md5
+        assert original_case_md5 != ingest_case_xml.md5
+        assert 'Inversion' in ingest_case_xml.orig_xml
+        assert 'Inversion' in page_xml.orig_xml
 
-    volume_xml.refresh_from_db()
-    case_xml.refresh_from_db()
-    page_xml.refresh_from_db()
+        fabfile.total_sync_with_s3()
 
-    assert original_page_md5 == page_xml.md5()
-    assert original_case_md5 == case_xml.md5()
-    assert 'Inversion' not in case_xml.orig_xml
-    assert 'Inversion' not in page_xml.orig_xml
+        ingest_volume_xml.refresh_from_db()
+        ingest_case_xml.refresh_from_db()
+        page_xml.refresh_from_db()
+
+        assert original_page_md5 == page_xml.md5
+        assert original_case_md5 == ingest_case_xml.md5
+        assert 'Inversion' not in ingest_case_xml.orig_xml
+        assert 'Inversion' not in page_xml.orig_xml
 
 
 @pytest.mark.django_db

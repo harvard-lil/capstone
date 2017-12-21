@@ -3,7 +3,7 @@ import hashlib
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
-from django.utils.encoding import force_bytes
+from django.utils.encoding import force_bytes, force_str
 from model_utils import FieldTracker
 
 from scripts.process_metadata import get_case_metadata
@@ -29,7 +29,6 @@ class AutoSlugMixin():
             Jurisdiction(name='Massachusetts').save()
     """
 
-    @transaction.atomic
     def save(self, *args, slug_base=None, **kwargs):
 
         # if slug is explicitly provided or blank, keep trying to save until we find a unique slug:
@@ -157,13 +156,22 @@ class XMLQuerySet(models.QuerySet):
 class BaseXMLModel(models.Model):
     """ Base class for models that store XML documents. """
     orig_xml = XMLField()
+    md5 = models.CharField(max_length=255, blank=True, null=True)
 
     objects = XMLQuerySet.as_manager()
+    tracker = None  # should be set as tracker = FieldTracker() by subclasses
 
     class Meta:
         abstract = True
 
-    def md5(self):
+    def save(self, *args, **kwargs):
+        # update md5
+        if self.tracker.has_changed('orig_xml') and not self.tracker.has_changed('md5'):
+            self.md5 = self.get_md5()
+
+        return super().save(*args, **kwargs)
+
+    def get_md5(self):
         m = hashlib.md5()
         m.update(force_bytes(self.orig_xml))
         return m.hexdigest()
@@ -403,6 +411,8 @@ class VolumeXML(BaseXMLModel):
     metadata = models.OneToOneField(VolumeMetadata, related_name='volume_xml', on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
+    tracker = FieldTracker()
+
     def __str__(self):
         return self.metadata_id
 
@@ -468,7 +478,6 @@ class CaseXML(BaseXMLModel):
         # This compares new XML to the old and updates ALTO files as necessary.
         # We don't yet support adding or removing words from the case body.
         if self.tracker.has_changed('orig_xml') and self.pk is not None and self.tracker.previous('orig_xml'):
-
             # parse objects and get the xml tree objects
             parsed_original_case = parse_xml(self.tracker.previous('orig_xml'))
             parsed_updated_case = parse_xml(self.orig_xml)
@@ -572,14 +581,14 @@ class CaseXML(BaseXMLModel):
             #update the volume md5
             case_id = parsed_original_case('case|case').attr('caseid')
             short_case_id = "casemets_{}".format(case_id.split('_')[1])
-            self.volume.update_related_md5(short_case_id, self.md5())
+            self.volume.update_related_md5(short_case_id, self.md5)
 
             #update the page md5s
             for alto in self.pages.all():
                 alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-                parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5()
+                parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5
 
-            self.orig_xml=serialize_xml(parsed_updated_case)
+            self.orig_xml=force_str(serialize_xml(parsed_updated_case))
 
         # save that ish.
         super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
@@ -588,6 +597,7 @@ class CaseXML(BaseXMLModel):
     def __str__(self):
         return str(self.pk)
 
+    @transaction.atomic
     def create_or_update_metadata(self, update_existing=True):
         """
             creates or updates CaseMetadata object
@@ -713,10 +723,10 @@ class PageXML(BaseXMLModel):
             split_barcode = self.barcode.split('_')
             short_alto_id = "alto_{}_{}".format(split_barcode[1], split_barcode[2])
             if save_volume:
-                self.volume.update_related_md5(short_alto_id, self.md5())
+                self.volume.update_related_md5(short_alto_id, self.md5)
             if save_case:
                 for case in self.cases.all():
-                    case.update_related_md5(short_alto_id, self.md5())
+                    case.update_related_md5(short_alto_id, self.md5)
 
     def __str__(self):
         return self.barcode

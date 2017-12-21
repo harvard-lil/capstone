@@ -1,4 +1,5 @@
 from celery import shared_task
+from django.db import connection, transaction
 
 from capdb.models import VolumeXML, CaseXML
 
@@ -43,3 +44,19 @@ def test_slow(i, ram=10, cpu=30):
     total = 0
     for i in range(cpu * 1000000):
         total += i
+
+
+@shared_task
+@transaction.atomic
+def fix_md5_column(volume_id):
+    """
+        Our database has xml fields in the casexml and pagexml tables that are missing the <?xml> declaration, and that also don't have the md5 column filled.
+
+        Here we update all the xml fields to add the <?xml> declaration and md5 hash.
+    """
+    with connection.cursor() as cursor:
+        new_xml_sql = "E'<?xml version=''1.0'' encoding=''utf-8''?>\n' || orig_xml"
+        for table in ('capdb_casexml', 'capdb_pagexml'):
+            print("Volume %s: updating %s" % (volume_id, table))
+            update_sql = "UPDATE %(table)s SET orig_xml=xmlparse(CONTENT %(new_xml)s), md5=md5(%(new_xml)s) where volume_id = %%s and md5 is null" % {'table':table, 'new_xml':new_xml_sql}
+            cursor.execute(update_sql, [volume_id])

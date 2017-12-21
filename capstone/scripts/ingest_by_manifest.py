@@ -14,7 +14,7 @@ from django.db import transaction, IntegrityError
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
 from capdb.storages import ingest_storage, inventory_storage, redis_client as r
-
+from .helpers import serialize_xml
 
 """
 This script updates the capstone inventory based on an inventory report from s3
@@ -194,11 +194,11 @@ def process_volume(vol_entry_bytestring):
 
             #same volmets path & same md5 & not forced full sync == same volume
             if (volmets_path == volume.s3_key and
-                volume.md5() == volmets_md5 and
+                volume.md5 == volmets_md5 and
                 _last_sync != datetime(1970, 1, 1)):
                 return False
 
-            if volume.md5() != volmets_md5:
+            if volume.md5 != volmets_md5:
                 volume.orig_xml = ingest_storage.contents(volmets_path)
             volume.s3_key = volmets_path
             volume.save()
@@ -214,7 +214,7 @@ def process_volume(vol_entry_bytestring):
                     existing_case_ids.remove(case_barcode)
 
                 case, case_created = CaseXML.objects.get_or_create(volume=volume, metadata__case_id=case_barcode)
-                if case.md5() != case_md5:
+                if case.md5 != case_md5:
                     case.orig_xml = ingest_storage.contents(case_s3_key)
                 case.s3_key = case_s3_key
                 case.save()
@@ -236,7 +236,7 @@ def process_volume(vol_entry_bytestring):
                     existing_page_ids.remove(alto_barcode)
 
                 page, page_created = PageXML.objects.get_or_create(volume=volume, barcode=alto_barcode)
-                if page.md5() != page_md5:
+                if page.md5 != page_md5:
                     page.orig_xml = ingest_storage.contents(page_s3_key)
                     page.s3_key = page_s3_key
                     page.save()
