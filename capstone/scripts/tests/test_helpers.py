@@ -1,8 +1,3 @@
-import os
-import pytest
-
-from django.conf import settings
-
 from scripts.helpers import serialize_xml, parse_xml
 
 
