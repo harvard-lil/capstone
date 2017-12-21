@@ -1,3 +1,4 @@
+import os
 import pytest
 
 from django.conf import settings
@@ -10,6 +11,15 @@ from capdb.models import VolumeXML, CaseXML, Jurisdiction, Court
 import capdb.storages
 
 from . import factories
+
+
+### file contents ###
+
+@pytest.fixture
+def unaltered_alto_xml():
+    """ XML from an alto file we haven't modified at all. """
+    with open(os.path.join(settings.BASE_DIR, 'test_data/unaltered_32044057891608_redacted_ALTO_00009_1.xml'), 'rb') as in_file:
+        return in_file.read()
 
 
 ### Django json fixtures ###
@@ -37,6 +47,10 @@ def user():
 @pytest.fixture
 def auth_user():
     return factories.setup_authenticated_user()
+
+@pytest.fixture
+def volume_xml():
+    return factories.VolumeXMLFactory()
 
 @pytest.fixture
 def case():

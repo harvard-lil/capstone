@@ -4,6 +4,18 @@ from capdb.models import CaseMetadata
 from scripts.helpers import parse_xml, serialize_xml
 
 
+### BaseXMLModel ###
+
+@pytest.mark.django_db
+def test_database_should_not_modify_xml(volume_xml, unaltered_alto_xml):
+    # make sure that XMLField.from_db_value is doing its job and putting the correct XML declaration back in:
+    volume_xml.orig_xml = unaltered_alto_xml
+    volume_xml.save()
+    volume_xml.refresh_from_db()
+    assert volume_xml.orig_xml == unaltered_alto_xml.decode()
+    assert volume_xml.md5 == volume_xml.get_md5()
+
+
 ### CaseMetadata ###
 
 @pytest.mark.django_db
