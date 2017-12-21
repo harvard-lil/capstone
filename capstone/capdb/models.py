@@ -549,7 +549,7 @@ class CaseXML(BaseXMLModel):
                         if structure_tag is not None:
                             structure_tag.attr["LABEL"] = updated_element.tag
                             alto_page.orig_xml = serialize_xml(parsed_alto_page)
-                            alto_page.save()
+                            alto_page.save(save_case=False)
 
                 # check for modified element text
                 if original_element.text != updated_element.text:
