@@ -60,7 +60,7 @@ def test_create_or_update_metadata(ingest_case_xml):
 
 
 @pytest.mark.django_db
-def test_casebody_modify_word(ingest_case_xml):
+def test_checksums_update_casebody_modify_word(ingest_case_xml):
 
     parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
     parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
@@ -72,32 +72,40 @@ def test_casebody_modify_word(ingest_case_xml):
     initial_casemets_alto_md5 = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
     initial_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
     initial_volume_case_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_case_identifier)).attr["CHECKSUM"]
+    assert initial_casemets_alto_md5 == alto.md5
+    assert initial_volume_case_md5 == ingest_case_xml.md5
 
     # change a word in the case XML
     updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
     parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
     ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
     ingest_case_xml.save()
+
+
+    # make sure the change was saved in the case_xml
     ingest_case_xml.refresh_from_db()
-    ingest_case_xml.volume.refresh_from_db()
     parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
     parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
-
     assert '4rgUm3nt' in parsed_case_xml('casebody|p[id="b17-6"]').text()
 
     # make sure the change shows up in the ALTO
     alto.refresh_from_db()
-    assert '4rgUm3nt' in alto.orig_xml
+    assert '4rgUm3nt' in parse_xml(alto.orig_xml)('alto|String[ID="ST_17.7.1.3"]').attr["CONTENT"]
 
     #make sure the md5s got updated
-    #todo use real md5s
-    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
     new_casemets_alto_md5 = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
     new_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
     new_volume_case_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_case_identifier)).attr["CHECKSUM"]
+
+
+    # make sure the md5 has changed, and that it's the correct current md5
     assert new_casemets_alto_md5 != initial_casemets_alto_md5
     assert new_volume_case_md5 != initial_volume_case_md5
     assert new_volume_alto_md5 != initial_volume_alto_md5
+    assert new_casemets_alto_md5 == alto.md5
+    assert new_volume_alto_md5 == alto.md5
+    assert new_volume_case_md5 == ingest_case_xml.md5
+
 
 @pytest.mark.django_db
 def test_case_alter_structure(ingest_case_xml):

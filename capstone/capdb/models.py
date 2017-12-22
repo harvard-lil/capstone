@@ -730,8 +730,7 @@ class PageXML(BaseXMLModel):
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
         if self.tracker.has_changed('orig_xml') and\
                 self.pk is not None and\
-                self.tracker.previous('orig_xml') and \
-                force_str(self.orig_xml) != self.tracker.previous('orig_xml'):
+                self.tracker.previous('orig_xml'):
             split_barcode = self.barcode.split('_')
             short_alto_id = "alto_{}_{}".format(split_barcode[1], split_barcode[2])
             self.md5 = self.get_md5()
