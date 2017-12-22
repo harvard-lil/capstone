@@ -479,7 +479,6 @@ class CaseXML(BaseXMLModel):
     tracker = FieldTracker()
 
     def save(self, force_insert=False, force_update=False, *args, **kwargs):
-
         # This compares new XML to the old and updates ALTO files as necessary.
         # We don't yet support adding or removing words from the case body.
         if self.tracker.has_changed('orig_xml') and\
@@ -517,6 +516,7 @@ class CaseXML(BaseXMLModel):
                 alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
                 alto_files[alto_fileid] = alto
 
+            modified_casebody_element = False
             # check to see if any elements in the casebody have been updated so we can update the ALTO
             # since the tree structures match, we can just iterate over the tree elements and compare values
             for original_element in original_casebody_tree.iter():
@@ -542,6 +542,7 @@ class CaseXML(BaseXMLModel):
 
                 # check for a modified tag name
                 if original_element.tag != updated_element.tag:
+                    modified_casebody_element = True
                     # go through each alto file that refers to the tag and update the reference
                     for alto in element_pages:
                         alto_page = alto_files[alto]
@@ -555,6 +556,7 @@ class CaseXML(BaseXMLModel):
 
                 # check for modified element text
                 if original_element.text != updated_element.text:
+                    modified_casebody_element = True
                     # we haven't devised a strategy for dealing with this yet
                     if len(updated_element.text.split(" ")) != len(original_element.text.split(" ")):
                         raise Exception("No current support for adding or removing case text")
@@ -593,10 +595,12 @@ class CaseXML(BaseXMLModel):
             self.volume.refresh_from_db()
             self.volume.update_related_md5(short_case_id, self.md5)
 
-            #update the page md5s
-            for alto in self.pages.all():
-                alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-                parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5
+
+            # update the page md5s if a casebody element was modified
+            if modified_casebody_element == True:
+                for alto in self.pages.all():
+                    alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
+                    parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5
 
             self.orig_xml=force_str(serialize_xml(parsed_updated_case))
 
@@ -728,12 +732,13 @@ class PageXML(BaseXMLModel):
     tracker = FieldTracker()
 
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
+        #has our XML changed?
         if self.tracker.has_changed('orig_xml') and\
                 self.pk is not None and\
                 self.tracker.previous('orig_xml'):
-            split_barcode = self.barcode.split('_')
-            short_alto_id = "alto_{}_{}".format(split_barcode[1], split_barcode[2])
+            short_alto_id = "_".join((["alto"] + self.barcode.split('_')[1:3]))
             self.md5 = self.get_md5()
+
             if save_volume:
                 self.volume.update_related_md5(short_alto_id, self.md5)
             if save_case:
