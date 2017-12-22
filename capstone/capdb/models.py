@@ -416,7 +416,6 @@ class TrackingToolLog(models.Model):
 class VolumeXML(BaseXMLModel):
     metadata = models.OneToOneField(VolumeMetadata, related_name='volume_xml', on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
-
     tracker = FieldTracker()
 
     def __str__(self):
@@ -483,7 +482,10 @@ class CaseXML(BaseXMLModel):
 
         # This compares new XML to the old and updates ALTO files as necessary.
         # We don't yet support adding or removing words from the case body.
-        if self.tracker.has_changed('orig_xml') and self.pk is not None and self.tracker.previous('orig_xml'):
+        if self.tracker.has_changed('orig_xml') and\
+                self.pk is not None and\
+                self.tracker.previous('orig_xml') and \
+                force_str(self.orig_xml) != self.tracker.previous('orig_xml'):
             # parse objects and get the xml tree objects
             parsed_original_case = parse_xml(self.tracker.previous('orig_xml'))
             parsed_updated_case = parse_xml(self.orig_xml)
@@ -585,8 +587,10 @@ class CaseXML(BaseXMLModel):
 
 
             #update the volume md5
+            self.md5 = self.get_md5()
             case_id = parsed_original_case('case|case').attr('caseid')
             short_case_id = "casemets_{}".format(case_id.split('_')[1])
+            self.volume.refresh_from_db()
             self.volume.update_related_md5(short_case_id, self.md5)
 
             #update the page md5s
@@ -724,15 +728,19 @@ class PageXML(BaseXMLModel):
     tracker = FieldTracker()
 
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
-        super(PageXML, self).save(force_insert, force_update, *args, **kwargs)
-        if self.tracker.has_changed('orig_xml') and self.pk is not None and self.tracker.previous('orig_xml'):
+        if self.tracker.has_changed('orig_xml') and\
+                self.pk is not None and\
+                self.tracker.previous('orig_xml') and \
+                force_str(self.orig_xml) != self.tracker.previous('orig_xml'):
             split_barcode = self.barcode.split('_')
             short_alto_id = "alto_{}_{}".format(split_barcode[1], split_barcode[2])
+            self.md5 = self.get_md5()
             if save_volume:
                 self.volume.update_related_md5(short_alto_id, self.md5)
             if save_case:
                 for case in self.cases.all():
                     case.update_related_md5(short_alto_id, self.md5)
+        super(PageXML, self).save(force_insert, force_update, *args, **kwargs)
 
     def __str__(self):
         return self.barcode
