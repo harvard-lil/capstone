@@ -203,6 +203,15 @@ def test_court(api_url, client, court):
 
 
 @pytest.mark.django_db
+def test_filter_court(api_url, client, court):
+    jur_slug = court.jurisdiction.slug
+    response = client.get("%scourts/?jurisdiction_slug=%s&format=json" % (api_url, jur_slug))
+    check_response(response)
+    results = response.json()['results']
+    assert court.name_abbreviation == results[0]['name_abbreviation']
+
+
+@pytest.mark.django_db
 def test_reporter(api_url, client, reporter):
     response = client.get("%sreporters/?format=json" % api_url)
     check_response(response)
