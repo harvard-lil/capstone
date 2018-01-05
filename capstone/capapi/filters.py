@@ -8,6 +8,13 @@ class JurisdictionFilter(filters.FilterSet):
         fields = ('name', 'slug', 'name_long',)
         ordering_fields = ('name')
 
+
+class CourtFilter(filters.FilterSet):
+    class Meta:
+        model = models.Court
+        fields = '__all__'
+
+
 class CaseFilter(filters.FilterSet):
     name = filters.CharFilter(
         name='name',

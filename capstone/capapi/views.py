@@ -52,6 +52,7 @@ class ReporterViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModel
 class CourtViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.CourtSerializer
     http_method_names = ['get']
+    filter_class = filters.CourtFilter
     queryset = models.Court.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
