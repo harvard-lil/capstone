@@ -210,6 +210,9 @@ EMAIL_HOST_PASSWORD = 'secret-secret'
 # redis
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
+# redis by default has 16 databases, numbered 0-15:
+REDIS_DEFAULT_DB = 0
+REDIS_INGEST_DB = 1     # database for temporary data created during the S3 ingest process
 
 
 LOGGING = {
