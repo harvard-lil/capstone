@@ -37,7 +37,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
     jurisdiction_url = serializers.HyperlinkedRelatedField(source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
     court = serializers.ReadOnlyField(source='court.name')
-    court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True)
+    court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True, lookup_field='slug')
     reporter = serializers.ReadOnlyField(source='reporter.full_name')
     reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
     citations = CitationSerializer(many=True)
@@ -124,6 +124,9 @@ class CourtSerializer(serializers.ModelSerializer):
     jurisdiction_url = serializers.HyperlinkedRelatedField(
         source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
+    url = serializers.HyperlinkedIdentityField(
+        view_name="court-detail",
+        lookup_field='slug')
 
     class Meta:
         model = models.Court
