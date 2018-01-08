@@ -55,6 +55,7 @@ class CourtViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMix
     filter_class = filters.CourtFilter
     queryset = models.Court.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+    lookup_field = 'slug'
 
 
 class CitationViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):

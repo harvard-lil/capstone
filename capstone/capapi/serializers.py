@@ -16,6 +16,26 @@ class CitationSerializer(serializers.ModelSerializer):
         fields = ('url', 'type', 'cite')
 
 
+class CourtSerializer(serializers.ModelSerializer):
+    jurisdiction_url = serializers.HyperlinkedRelatedField(
+        source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
+    jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
+    url = serializers.HyperlinkedIdentityField(
+        view_name="court-detail",
+        lookup_field='slug')
+
+    class Meta:
+        model = models.Court
+        fields = (
+            'url',
+            'name',
+            'name_abbreviation',
+            'jurisdiction',
+            'jurisdiction_url',
+            'slug',
+        )
+
+
 class MetaCaseSerializer(serializers.BaseSerializer):
     """
     Serializer for getting case metadata backfilled with the casebody xml
@@ -37,7 +57,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
     jurisdiction_url = serializers.HyperlinkedRelatedField(source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
     court = serializers.ReadOnlyField(source='court.name')
-    court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True)
+    court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True, lookup_field='slug')
     reporter = serializers.ReadOnlyField(source='reporter.full_name')
     reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
     citations = CitationSerializer(many=True)
@@ -117,23 +137,6 @@ class ReporterSerializer(serializers.ModelSerializer):
             'start_year',
             'end_year',
             'jurisdictions',
-        )
-
-
-class CourtSerializer(serializers.ModelSerializer):
-    jurisdiction_url = serializers.HyperlinkedRelatedField(
-        source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
-    jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
-
-    class Meta:
-        model = models.Court
-        fields = (
-            'url',
-            'name',
-            'name_abbreviation',
-            'jurisdiction',
-            'jurisdiction_url',
-            'slug',
         )
 
 
