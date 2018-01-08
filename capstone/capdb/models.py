@@ -2,6 +2,7 @@ import hashlib
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
+from django.utils.encoding import force_bytes
 from model_utils import FieldTracker
 
 from scripts.process_metadata import get_case_metadata
@@ -29,7 +30,6 @@ class AutoSlugMixin():
             Jurisdiction(name='Massachusetts').save()
     """
 
-    @transaction.atomic
     def save(self, *args, slug_base=None, **kwargs):
 
         # if slug is explicitly provided or blank, keep trying to save until we find a unique slug:
@@ -133,6 +133,12 @@ class XMLField(models.TextField):
     """ Column type for Postgres XML columns. """
     def db_type(self, connection):
         return 'xml'
+    
+    def from_db_value(self, value, *args, **kwargs):
+        """ Make sure that XML returned from postgres includes XML declaration. """
+        if value and not value.startswith('<?'):
+            return "<?xml version='1.0' encoding='utf-8'?>\n" + value
+        return value
 
 
 class XMLQuerySet(models.QuerySet):
@@ -151,15 +157,24 @@ class XMLQuerySet(models.QuerySet):
 class BaseXMLModel(models.Model):
     """ Base class for models that store XML documents. """
     orig_xml = XMLField()
+    md5 = models.CharField(max_length=255, blank=True, null=True)
 
     objects = XMLQuerySet.as_manager()
+    tracker = None  # should be set as tracker = FieldTracker() by subclasses
 
     class Meta:
         abstract = True
 
-    def md5(self):
+    def save(self, *args, **kwargs):
+        # update md5
+        if self.tracker.has_changed('orig_xml') and not self.tracker.has_changed('md5'):
+            self.md5 = self.get_md5()
+
+        return super().save(*args, **kwargs)
+
+    def get_md5(self):
         m = hashlib.md5()
-        m.update(self.orig_xml.encode())
+        m.update(force_bytes(self.orig_xml))
         return m.hexdigest()
 
 
@@ -368,6 +383,8 @@ class VolumeXML(BaseXMLModel):
     metadata = models.OneToOneField(VolumeMetadata, related_name='volume_xml', on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
+    tracker = FieldTracker()
+
     def __str__(self):
         return self.metadata_id
 
@@ -431,6 +448,7 @@ class CaseXML(BaseXMLModel):
     def __str__(self):
         return str(self.pk)
 
+    @transaction.atomic
     def create_or_update_metadata(self, update_existing=True):
         """
             creates or updates CaseMetadata object
@@ -546,6 +564,8 @@ class PageXML(BaseXMLModel):
                                      on_delete=models.DO_NOTHING)
     cases = models.ManyToManyField(CaseXML, related_name='pages')
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
+
+    tracker = FieldTracker()
 
     def __str__(self):
         return self.barcode
