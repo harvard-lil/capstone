@@ -16,26 +16,6 @@ class CitationSerializer(serializers.ModelSerializer):
         fields = ('url', 'type', 'cite')
 
 
-class CourtSerializer(serializers.ModelSerializer):
-    jurisdiction_url = serializers.HyperlinkedRelatedField(
-        source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
-    jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
-    url = serializers.HyperlinkedIdentityField(
-        view_name="court-detail",
-        lookup_field='slug')
-
-    class Meta:
-        model = models.Court
-        fields = (
-            'url',
-            'name',
-            'name_abbreviation',
-            'jurisdiction',
-            'jurisdiction_url',
-            'slug',
-        )
-
-
 class MetaCaseSerializer(serializers.BaseSerializer):
     """
     Serializer for getting case metadata backfilled with the casebody xml
@@ -137,6 +117,26 @@ class ReporterSerializer(serializers.ModelSerializer):
             'start_year',
             'end_year',
             'jurisdictions',
+        )
+
+
+class CourtSerializer(serializers.ModelSerializer):
+    jurisdiction_url = serializers.HyperlinkedRelatedField(
+        source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
+    jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
+    url = serializers.HyperlinkedIdentityField(
+        view_name="court-detail",
+        lookup_field='slug')
+
+    class Meta:
+        model = models.Court
+        fields = (
+            'url',
+            'name',
+            'name_abbreviation',
+            'jurisdiction',
+            'jurisdiction_url',
+            'slug',
         )
 
 

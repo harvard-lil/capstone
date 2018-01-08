@@ -89,7 +89,7 @@ class JurisdictionFactory(factory.DjangoModelFactory):
 
     name = factory.Faker('sentence', nb_words=2)
     name_long = factory.Faker('sentence', nb_words=4)
-    slug = factory.Faker('word')
+    slug = factory.Sequence(lambda n: '%08d' % n)
 
 class ReporterFactory(factory.DjangoModelFactory):
     class Meta:
