@@ -6,8 +6,9 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from model_utils import FieldTracker
 
+from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation
 from scripts.process_metadata import get_case_metadata
-from scripts.helpers import *
+
 
 def choices(*args):
     """ Simple helper to create choices=(('Foo','Foo'),('Bar','Bar'))"""

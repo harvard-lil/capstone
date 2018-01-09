@@ -193,6 +193,29 @@ def test_filter_case_by_(api_url, client, case):
     assert len(content) == 1
     assert content[0].get("slug") == case.slug
 
+    # Check that we can get the correct case by court slug
+
+    cases = []
+    for case in range(0, 3):
+        cases.append(setup_case())
+
+    # check how many cases exist in a specific court
+    court_slug_to_test = cases[2].court.slug
+    case_slug_to_test = cases[2].slug
+    case_num = Court.objects.filter(slug=court_slug_to_test).count()
+
+    response = client.get("%scases/?court_slug=%s&format=json" % (api_url, cases[2].court.slug))
+    content = response.json()
+    assert CaseMetadata.objects.count() > case_num
+    # assert only the right case number is returned for court
+    assert content['count'] == case_num
+
+    slugs = []
+    for result in content['results']:
+        slugs.append(result['slug'])
+
+    assert case_slug_to_test in slugs
+
 
 @pytest.mark.django_db
 def test_court(api_url, client, court):
@@ -200,6 +223,15 @@ def test_court(api_url, client, court):
     check_response(response)
     results = response.json()['results']
     assert len(results) == 1
+
+
+@pytest.mark.django_db
+def test_filter_court(api_url, client, court):
+    jur_slug = court.jurisdiction.slug
+    response = client.get("%scourts/?jurisdiction_slug=%s&format=json" % (api_url, jur_slug))
+    check_response(response)
+    results = response.json()['results']
+    assert court.name_abbreviation == results[0]['name_abbreviation']
 
 
 @pytest.mark.django_db

@@ -8,6 +8,13 @@ class JurisdictionFilter(filters.FilterSet):
         fields = ('name', 'slug', 'name_long',)
         ordering_fields = ('name')
 
+
+class CourtFilter(filters.FilterSet):
+    class Meta:
+        model = models.Court
+        fields = '__all__'
+
+
 class CaseFilter(filters.FilterSet):
     name = filters.CharFilter(
         name='name',
@@ -21,6 +28,10 @@ class CaseFilter(filters.FilterSet):
         name='citations',
         label='Citation',
         method='find_by_citation')
+    court_slug = filters.CharFilter(
+        name='court__slug',
+        label='Court Slug',
+        lookup_expr='iexact')
     court_name = filters.CharFilter(
         name='court__name',
         label='Court Name',
@@ -63,6 +74,7 @@ class CaseFilter(filters.FilterSet):
                   'name',
                   'name_abbreviation',
                   'court_name',
+                  'court_slug',
                   'reporter_name',
                   'decision_date_min',
                   'decision_date_max',

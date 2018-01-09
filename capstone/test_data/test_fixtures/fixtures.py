@@ -88,9 +88,12 @@ def api_request_factory():
 ### REDIS ###
 
 @pytest.fixture
-def redis_patch(redisdb):
-    capdb.storages.redis_client = redisdb
-    return capdb.storages.redis_client
+def redis_patch(request):
+    import pytest_redis.factories
+
+    capdb.storages.redis_client = pytest_redis.factories.redisdb('redis_proc', db=settings.REDIS_DEFAULT_DB)(request)
+    capdb.storages.redis_ingest_client = pytest_redis.factories.redisdb('redis_proc', db=settings.REDIS_INGEST_DB)(request)
+    return capdb.storages.redis_client, capdb.storages.redis_ingest_client
 
 
 ### DATA INGEST FIXTURES ###
@@ -107,7 +110,7 @@ def ingest_metadata(load_tracking_tool_database):
 def ingest_volumes(ingest_metadata, redis_patch):
     # patch redis client used by ingest_by_manifest
     import scripts.ingest_by_manifest
-    scripts.ingest_by_manifest.r = redis_patch
+    scripts.ingest_by_manifest.redis_client, scripts.ingest_by_manifest.r = redis_patch
 
     # Ingest causes database errors if run in parallel inside test harness.
     # This is probably because database connections have to be closed and reopened by subprocesses, and that triggers
