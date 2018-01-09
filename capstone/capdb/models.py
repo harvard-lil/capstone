@@ -137,7 +137,7 @@ class XMLField(models.TextField):
 
     def db_type(self, connection):
         return 'xml'
-    
+
     def from_db_value(self, value, *args, **kwargs):
         """ Make sure that XML returned from postgres includes XML declaration. """
         if value and not value.startswith('<?'):
@@ -182,9 +182,10 @@ class BaseXMLModel(models.Model):
         m.update(force_bytes(self.orig_xml))
         return m.hexdigest()
 
-    def update_related_md5(self, short_identifier, new_checksum):
+    def update_related_md5(self, short_identifier, new_checksum, new_size):
         parsed_document = parse_xml(self.orig_xml)
         parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["CHECKSUM"] = new_checksum
+        parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["SIZE"] = new_size
         self.orig_xml = serialize_xml(parsed_document)
         self.save()
 
@@ -210,7 +211,7 @@ class BookRequest(models.Model):
     """
     These were automated emails created in a Tracking Tool interface
     which were sent to the Harvard Depository. They contained a list
-    of bar codes, and sometimes, preferred delivery dates and other 
+    of bar codes, and sometimes, preferred delivery dates and other
     information. Sometimes, when a request was sent manually, a dummy
     request was created in the tracking tool interface for consistency.
     """
@@ -593,7 +594,7 @@ class CaseXML(BaseXMLModel):
             case_id = parsed_original_case('case|case').attr('caseid')
             short_case_id = "casemets_{}".format(case_id.split('_')[1])
             self.volume.refresh_from_db()
-            self.volume.update_related_md5(short_case_id, self.md5)
+            self.volume.update_related_md5(short_case_id, self.md5, str(len(force_bytes(self.orig_xml))))
 
 
             # update the page md5s if a casebody element was modified
@@ -601,6 +602,7 @@ class CaseXML(BaseXMLModel):
                 for alto in self.pages.all():
                     alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
                     parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5
+                    parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["SIZE"] = str(len(force_bytes(self.orig_xml)))
 
             self.orig_xml=force_str(serialize_xml(parsed_updated_case))
 
@@ -740,10 +742,10 @@ class PageXML(BaseXMLModel):
             self.md5 = self.get_md5()
 
             if save_volume:
-                self.volume.update_related_md5(short_alto_id, self.md5)
+                self.volume.update_related_md5(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
             if save_case:
                 for case in self.cases.all():
-                    case.update_related_md5(short_alto_id, self.md5)
+                    case.update_related_md5(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
         super(PageXML, self).save(force_insert, force_update, *args, **kwargs)
 
     def __str__(self):

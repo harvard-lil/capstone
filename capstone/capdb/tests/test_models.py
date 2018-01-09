@@ -2,7 +2,7 @@ import pytest
 
 from capdb.models import CaseMetadata
 from scripts.helpers import parse_xml, serialize_xml
-
+from django.utils.encoding import force_bytes
 
 ### BaseXMLModel ###
 
@@ -186,7 +186,9 @@ def test_checksums_alto_update(ingest_case_xml):
     # get initial values
     short_alto_identifier = 'alto_00009_0'
     initial_casemets_alto_md5 = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    initial_casemets_alto_size = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
     initial_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    initial_volume_alto_size = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
 
     # change a value in the ALTO file
     parsed_alto_xml('alto|TextStyle[ID="Style_1"]').attr["FONTFAMILY"] = 'Juggalo Sans'
@@ -206,10 +208,16 @@ def test_checksums_alto_update(ingest_case_xml):
 
     # make sure the md5s got updated
     new_casemets_alto_md5 = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    new_casemets_alto_size = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
     new_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    new_volume_alto_size = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
 
-    # make sure the md5 has changed, and that it's the correct current md5
+    # make sure the md5 and size have changed, and that it's the correct current md5
     assert new_casemets_alto_md5 != initial_casemets_alto_md5
     assert new_volume_alto_md5 != initial_volume_alto_md5
     assert new_casemets_alto_md5 == alto.md5
     assert new_volume_alto_md5 == alto.md5
+    assert new_casemets_alto_size != initial_casemets_alto_size
+    assert new_volume_alto_size != initial_volume_alto_size
+    assert new_casemets_alto_size == str(len(force_bytes(alto.orig_xml)))
+    assert new_volume_alto_size == str(len(force_bytes(alto.orig_xml)))
