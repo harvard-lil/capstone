@@ -183,7 +183,7 @@ class BaseXMLModel(models.Model):
         m.update(force_bytes(self.orig_xml))
         return m.hexdigest()
 
-    def update_related_md5(self, short_identifier, new_checksum, new_size):
+    def update_related_sums(self, short_identifier, new_checksum, new_size):
         parsed_document = parse_xml(self.orig_xml)
         parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["CHECKSUM"] = new_checksum
         parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["SIZE"] = new_size
@@ -595,7 +595,7 @@ class CaseXML(BaseXMLModel):
             case_id = parsed_original_case('case|case').attr('caseid')
             short_case_id = "casemets_{}".format(case_id.split('_')[1])
             self.volume.refresh_from_db()
-            self.volume.update_related_md5(short_case_id, self.md5, str(len(force_bytes(self.orig_xml))))
+            self.volume.update_related_sums(short_case_id, self.md5, str(len(force_bytes(self.orig_xml))))
 
 
             # update the page md5s if a casebody element was modified
@@ -743,10 +743,10 @@ class PageXML(BaseXMLModel):
             self.md5 = self.get_md5()
 
             if save_volume:
-                self.volume.update_related_md5(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
+                self.volume.update_related_sums(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
             if save_case:
                 for case in self.cases.all():
-                    case.update_related_md5(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
+                    case.update_related_sums(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
         super(PageXML, self).save(force_insert, force_update, *args, **kwargs)
 
     def __str__(self):
