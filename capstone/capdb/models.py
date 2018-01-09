@@ -6,7 +6,7 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from model_utils import FieldTracker
 
-from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation
+from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation, parse_xml, serialize_xml, nsmap
 from scripts.process_metadata import get_case_metadata
 
 
@@ -599,7 +599,7 @@ class CaseXML(BaseXMLModel):
 
 
             # update the page md5s if a casebody element was modified
-            if modified_casebody_element == True:
+            if modified_casebody_element is True:
                 for alto in self.pages.all():
                     alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
                     parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5
