@@ -73,6 +73,7 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
     permission_classes = (permissions.IsAPIUser,)
     filter_class = filters.CaseFilter
     lookup_field = 'slug'
+    order_by = 'decision_date'
 
     def download(self, **kwargs):
         if kwargs.get(self.lookup_field):
@@ -84,12 +85,15 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
                 }, status=404, )
 
         else:
-            cases = self.queryset.all().order_by('decision_date')
-
+            cases = self.queryset.all()
             for backend in list(self.filter_backends):
                 cases = backend().filter_queryset(self.request, cases, self)
 
-            cases = cases.select_related('jurisdiction')
+            cases = cases.select_related(
+                'jurisdiction',
+                'volume',
+                'reporter',
+                'court').prefetch_related('citations')
 
             # user is requesting a zip but there is nothing to zip, so 404 is the right response.
             # See https://stackoverflow.com/a/11760249/307769
