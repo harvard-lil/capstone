@@ -1,0 +1,2 @@
+s3://harvard-cap-inventory/data/1.csv.gz
+s3://harvard-cap-inventory/data/2.csv.gz
