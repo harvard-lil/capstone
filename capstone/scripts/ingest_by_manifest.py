@@ -104,7 +104,7 @@ def read_inventory_files(full_sync):
 
     # find the newest inventory report directory, telling us which manifest file to read:
     subdirs = sorted(inventory_storage.iter_files(), reverse=True)
-    last_subdir = next(subdir for subdir in subdirs if not subdir.endswith('data'))
+    last_subdir = next(subdir for subdir in subdirs if subdir.endswith('Z'))  # subdir name should be a date; this skips 'hive' and 'data' folders
     manifest_path = os.path.join(last_subdir, "manifest.json")
 
     # read manifest file:
