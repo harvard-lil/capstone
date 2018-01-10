@@ -25,6 +25,8 @@ it.
 Setup Requirements
 ------------------
 
+(Also see alternate Docker setup requirements below.)
+
 Capstone is developed with Python 3. Requirements are installed with `pip`.
 
 Clone:
@@ -57,6 +59,24 @@ Set up a postgres database:
 Migrate databases:
 
     (capstone)$ fab migrate
+
+Docker Setup
+------------
+
+We have initial support for local development via `docker compose`. Docker setup looks like this:
+
+    $ docker-compose up &
+    $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capstone;"
+    $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capapi;"
+    $ docker-compose exec web fab init_db
+    $ docker-compose exec web fab load_test_data
+    
+Capstone should now be running at 127.0.0.1:8000.
+
+These commands can be shorter with something like this in .bash_profile:
+
+    alias d="docker-compose exec"
+    alias dfab="d web fab"
 
 Running Capstone Server
 -----------------------

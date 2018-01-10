@@ -1,19 +1,49 @@
 version: '2'
 services:
-    rabbit:
-        # see https://github.com/dockerfile/rabbitmq/issues/22 if this should be persistent
-        hostname: rabbit
-        image: rabbitmq:latest
+    db:
+        image: postgres:9.6
+        restart: always
         environment:
-            - RABBITMQ_DEFAULT_USER=admin
-            - RABBITMQ_DEFAULT_PASS=mypass
-#        mem_limit: 128M
+            POSTGRES_PASSWORD: password
+        volumes:
+          - db_data:/var/lib/postgresql/data
+    redis:
+        image: redis:4
+#    rabbit:
+#        # see https://github.com/dockerfile/rabbitmq/issues/22 if this should be persistent
+#        hostname: rabbit
+#        image: rabbitmq:latest
+#        environment:
+#            - RABBITMQ_DEFAULT_USER=admin
+#            - RABBITMQ_DEFAULT_PASS=mypass
+##        mem_limit: 128M
     worker:
         build: .
-        image: harvard-cap-compress
+        image: capstone
         volumes:
             - .:/app
         depends_on:
-            - rabbit
+            - redis
+            - db
         command: celery -A config worker --concurrency=4 --loglevel=info
+        environment:
+            # let Django load Docker-specific settings conditionally
+            - DOCKERIZED=True
+    web:
+        build: .
+        image: capstone
+        volumes:
+            - .:/app
+        depends_on:
+            - redis
+            - db
+        command: fab run:0.0.0.0:8000
+        environment:
+            # let Django load Docker-specific settings conditionally
+            - DOCKERIZED=True
+        ports:
+            - "8000:8000"
 #        mem_limit: 128M
+
+volumes:
+    db_data:
