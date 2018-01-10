@@ -25,11 +25,6 @@ def unaltered_alto_xml():
 ### Django json fixtures ###
 
 @pytest.fixture
-def load_parsed_metadata():
-    call_command('loaddata', 'test_data/parsed_metadata.json')
-
-
-@pytest.fixture
 def load_user_data():
     call_command('loaddata', 'test_data/user_data.json')
 
