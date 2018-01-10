@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import io
 
 import celery
+from celery import chord
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db import transaction, IntegrityError
@@ -64,24 +65,26 @@ def sync_s3_data(full_sync=False):
     # pre-run setup
     wipe_redis_db()
 
-    # We have two rounds of fanning out jobs to celery workers, because we first have to gather the listing of files
-    # for each volume, and then process each valid volume that is discovered.
-
     # Round One:
     #   - Find the latest manifest.json and get list of inventory files to process.
     #   - Call read_inventory_file() as a celery task for each inventory file. For each file:
     #      - Add name of each unique volume folder to the "volumes" queue.
     #      - Add list of volume files to "volume:<volume_folder>" queue.
-    #   - Return when all celery tasks are complete.
+    #   - Call sync_s3_data_step_two when all celery tasks are complete.
     read_inventory_files(full_sync)
 
+@celery.shared_task
+def sync_s3_data_step_two(full_sync=False):
     # Round Two:
     #   - Filter down "volumes" queue to most recent copy of each volume.
     #   - Call ingest_volume() as a celery task for each volume. For each volume:
     #       - Ingest volume XML, case XML, and alto XML, if not already in database.
     #       - If we are adding/updating volume XML, check that METS inventory is valid.
+    #   - Call sync_s3_data_step_three when all celery tasks are complete.
     ingest_volumes(full_sync)
 
+@celery.shared_task
+def sync_s3_data_step_three():
     # post-run teardown
     report_errors()
     write_last_sync()
@@ -116,7 +119,9 @@ def read_inventory_files(full_sync):
     minimum_date_str = None if full_sync else get_last_sync().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
     # process each inventory file:
-    run_tasks(read_inventory_file, inventory_files, extra_args=(field_names, minimum_date_str, full_sync))
+    chord(
+        (read_inventory_file.s(i, field_names, minimum_date_str, full_sync) for i in inventory_files)
+    )(sync_s3_data_step_two.si(full_sync))
 
 @celery.shared_task
 def read_inventory_file(inventory_file, field_names, minimum_date_str, full_sync):
@@ -177,7 +182,9 @@ def ingest_volumes(full_sync):
             filtered_volume_folders.append(volume_folder)
 
     # process each unique volume
-    run_tasks(ingest_volume, filtered_volume_folders, extra_args=(full_sync,))
+    chord(
+        (ingest_volume.s(i, full_sync) for i in filtered_volume_folders)
+    )(sync_s3_data_step_three.si())
 
 @celery.shared_task
 @transaction.atomic
@@ -324,14 +331,6 @@ def write_last_sync():
 
 def store_error(*args):
     r.sadd("errors", json.dumps([str(arg) for arg in args]))
-
-def run_tasks(task, args, extra_args=tuple()):
-    """ Run given celery task for each arg in args. Run tasks in parallel, but wait to return until all tasks are done. """
-    # Note: we use disable_sync_subtasks to stop celery from complaining that we shouldn't wait
-    # for results of subtasks within a task. This seems OK since we're just running one master task
-    # to wait for results. If it becomes a problem, switch to chord(tasks)(callback).
-    # See http://docs.celeryq.org/en/latest/userguide/tasks.html#task-synchronous-subtasks
-    celery.group(task.s(arg, *extra_args) for arg in args)().get(disable_sync_subtasks=False)
 
 def spop_all(key):
     while r.scard(key) > 0:
