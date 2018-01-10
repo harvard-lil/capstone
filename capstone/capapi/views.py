@@ -78,7 +78,7 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
     def download(self, **kwargs):
         if kwargs.get(self.lookup_field):
             try:
-                cases = [models.CaseMetadata.objects.get(**kwargs)]
+                case_list = [models.CaseMetadata.objects.get(**kwargs)]
             except models.CaseMetadata.DoesNotExist as e:
                 return JsonResponse({
                     'message': 'Unable to find case with matching slug: %s' % e
@@ -93,7 +93,8 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
             # See https://stackoverflow.com/a/11760249/307769
             if not cases.exists():
                 return JsonResponse({
-                    'message': 'Request did not return any results.'
+                    'message': 'Request did not return any results.',
+                    'params': str(dict(self.request.query_params)),
                 }, status=404, )
 
             cases = cases.select_related(
