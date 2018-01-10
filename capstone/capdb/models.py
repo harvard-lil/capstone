@@ -448,6 +448,9 @@ class CaseXML(BaseXMLModel):
     def __str__(self):
         return str(self.pk)
 
+    def get_casebody(self):
+        return extract_casebody(self.orig_xml)
+
     @transaction.atomic
     def create_or_update_metadata(self, update_existing=True):
         """
