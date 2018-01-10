@@ -282,3 +282,6 @@ CELERY_RESOURCE_LIMITS = [
         'kwargs': {'max_load': 0.8},
     },
 ]
+
+# security
+SECURE_CONTENT_TYPE_NOSNIFF = True
