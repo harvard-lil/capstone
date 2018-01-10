@@ -38,11 +38,11 @@ def test():
 
 @task
 def recent_sync_with_s3():
-    ingest_by_manifest.sync_s3_data()
+    ingest_by_manifest.sync_s3_data.delay()
 
 @task
 def total_sync_with_s3():
-    ingest_by_manifest.sync_s3_data(full_sync=True)
+    ingest_by_manifest.sync_s3_data.delay(full_sync=True)
 
 @task
 def ingest_volumes():
