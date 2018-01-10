@@ -72,7 +72,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
 class CaseXMLSerializer(serializers.ModelSerializer):
     def get_casebody(self, case):
         casebody = case.get_casebody()
-        return re.sub(r"\s{2,}", "", casebody)
+        return re.sub(r"\s{2,}", " ", casebody)
 
     casebody = serializers.SerializerMethodField()
 

@@ -89,22 +89,22 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
             for backend in list(self.filter_backends):
                 cases = backend().filter_queryset(self.request, cases, self)
 
+            # user is requesting a zip but there is nothing to zip, so 404 is the right response.
+            # See https://stackoverflow.com/a/11760249/307769
+            if not cases.exists():
+                return JsonResponse({
+                    'message': 'Request did not return any results.'
+                }, status=404, )
+
             cases = cases.select_related(
                 'jurisdiction',
                 'volume',
                 'reporter',
                 'court').prefetch_related('citations')
 
-            # user is requesting a zip but there is nothing to zip, so 404 is the right response.
-            # See https://stackoverflow.com/a/11760249/307769
-            if cases.count() == 0:
-                return JsonResponse({
-                    'message': 'Request did not return any results.'
-                }, status=404, )
+            case_list = self.paginate_queryset(cases)
 
-            cases = self.paginate_queryset(cases)
-
-        blacklisted_case_count = len(list((case for case in cases if not case.jurisdiction.whitelisted)))
+        blacklisted_case_count = len(list((case for case in case_list if not case.jurisdiction.whitelisted)))
 
         try:
             # check user's case allowance against blacklisted
@@ -112,9 +112,10 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         except ValidationError as err:
             return JsonResponse(err.detail, status=403)
 
-        filename = resources.create_zip_filename(cases)
+        filename = resources.create_zip_filename(case_list)
 
-        case_response = serializers.MetaCaseSerializer(data=cases, many=True, context={'request': self.request})
+        case_response = serializers.MetaCaseSerializer(data=case_list, many=True, context={'request': self.request})
+
         if case_response.is_valid():
             case_objects = case_response.data
         response = resources.create_download_response(filename=filename, content=case_objects)
