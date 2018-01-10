@@ -327,7 +327,11 @@ def store_error(*args):
 
 def run_tasks(task, args, extra_args=tuple()):
     """ Run given celery task for each arg in args. Run tasks in parallel, but wait to return until all tasks are done. """
-    celery.group(task.s(arg, *extra_args) for arg in args)().get()
+    # Note: we use disable_sync_subtasks to stop celery from complaining that we shouldn't wait
+    # for results of subtasks within a task. This seems OK since we're just running one master task
+    # to wait for results. If it becomes a problem, switch to chord(tasks)(callback).
+    # See http://docs.celeryq.org/en/latest/userguide/tasks.html#task-synchronous-subtasks
+    celery.group(task.s(arg, *extra_args) for arg in args)().get(disable_sync_subtasks=False)
 
 def spop_all(key):
     while r.scard(key) > 0:
