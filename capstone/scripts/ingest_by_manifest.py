@@ -5,15 +5,19 @@ import re
 import os
 from collections import defaultdict
 from datetime import datetime, timedelta
-from multiprocessing import Pool
 import io
 
-from django import db
+import celery
+from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db import transaction, IntegrityError
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
-from capdb.storages import ingest_storage, inventory_storage, redis_client as r
+from capdb.storages import ingest_storage, inventory_storage, redis_client, redis_ingest_client as r
+from scripts.helpers import resolve_namespace, parse_xml
+
+logger = get_task_logger(__name__)
+info = logger.info
 
 
 """
@@ -38,372 +42,329 @@ harvard-cap-inventory/harvard-ftl-shared/PrimarySharedInventoryReport:
 ---- 009c84a9-0d15-4858-8594-272a5b1606b6.csv.gz
 ---- 00[etc.].csv.gz
 
-Since many volumes are broken up between two inventory files, and we're
-not sure that all of the volumes will even be complete, because there are some
-which innodata obviously did not upload the whole thing at once, I'm using
-redis to make a database of keys to organize the inventory report data before
-it's actualy ingested. What I refer to as a queue in the code is a redis 
-unordered set.
+Since many volumes are broken up between two inventory files, and some are
+old versions that should not be uploaded at all, we use redis to make a database
+of keys to organize the inventory report data before it's actually ingested. 
+A "queue" in the code is a redis unordered set.
 
-The overall flow of the script goes like this:
-
-1) inventory_build_pool()
- - ingests the inventory data from the bucket and puts it in redis.
- - new volumes are stored in the unsorted_new_volumes queue as they come in
- - different file types are stored in their own queues. Each one has a queue
-   with files listed in METS, and one with files listed in the report
-
-2) trim_old_versions()
- - makes sure we're only ingesting the most recent version listed in the report
- - moves files from the unsorted_new_volumes queue into the new_volumes queue
-
-3) inventory_ingest_pool()
- - this step ingests the volumes/cases in the inventory report
- - uses new_volumes 
- - updates old volume versions with new versions
- - compares files in the ALTO with files in the ingest report to make sure we
- have everything
-
-4) tag_jp2s()
- - tags all of the jp2 files for our process
-
-5) cleanup_and_report()
- - deletes the queues that don't get popped
- - TODO this should also delete the inventory report files from s3
- - TODO this should email us a proper ingest report
-
-
-The redis stuff is pretty straightforward. 
-while r.scard("queue_name") > 0:
-    r.spop("queue_name") 
-
-I store the last DB sync in redis and use that to determine from which date 
-the sync should run. Alternately, you can just run the whole thing with 
-complete_data_sync. This could be a incur a non-negligable expense on our 
-AWS bill. 
-
+The overall flow of the script is outlined in sync_s3_data().
 """
 
-ASYNC = True
-_last_sync = None
 
-### entry points ###
+### entry point ###
 
-def sync_recent_data():
-    empty_queues()
-    inventory_build_pool()
-    trim_old_versions()
-    inventory_ingest_pool()
-    tag_jp2s()
-    cleanup_and_report()
+@celery.shared_task
+def sync_s3_data(full_sync=False):
+    """
+        Sync XML data from S3.
+
+        If full_sync is false, only sync files updated since the last sync (if any), or else within the last week.
+    """
+
+    # pre-run setup
+    wipe_redis_db()
+
+    # We have two rounds of fanning out jobs to celery workers, because we first have to gather the listing of files
+    # for each volume, and then process each valid volume that is discovered.
+
+    # Round One:
+    #   - Find the latest manifest.json and get list of inventory files to process.
+    #   - Call read_inventory_file() as a celery task for each inventory file. For each file:
+    #      - Add name of each unique volume folder to the "volumes" queue.
+    #      - Add list of volume files to "volume:<volume_folder>" queue.
+    #   - Return when all celery tasks are complete.
+    read_inventory_files(full_sync)
+
+    # Round Two:
+    #   - Filter down "volumes" queue to most recent copy of each volume.
+    #   - Call ingest_volume() as a celery task for each volume. For each volume:
+    #       - Ingest volume XML, case XML, and alto XML, if not already in database.
+    #       - If we are adding/updating volume XML, check that METS inventory is valid.
+    ingest_volumes(full_sync)
+
+    # post-run teardown
+    report_errors()
     write_last_sync()
+    wipe_redis_db()
 
-def complete_data_sync():
-    global _last_sync
-    _last_sync = datetime(1970, 1, 1)
-    sync_recent_data()
 
 ### processing steps ###
 
-def empty_queues():
-    empty_set("nonmatching_files")
-    empty_set("integrity_error")
-    empty_set("tag_these_queues")
-    empty_set("new_volumes")
-    empty_set("unsorted_new_volumes")
-    empty_set("spare_cases")
+def wipe_redis_db():
+    """
+        Clear out the redis ingest database.
+        This database is defined by settings.REDIS_INGEST_DB; it's distinct from our default redis DB.
+    """
+    r.flushdb()
 
-def inventory_build_pool():
-    run_processes(process_recent_manifest_data, get_inventory_files_from_manifest(get_latest_manifest()))
+def read_inventory_files(full_sync):
+    """
+        Get list of inventory files and start a celery task for each file, returning when all tasks are complete.
+    """
 
-def inventory_ingest_pool():
-    run_processes(process_volume, (vol for vol in spop_all("new_volumes")))
+    # find the newest inventory report directory, telling us which manifest file to read:
+    subdirs = sorted(inventory_storage.iter_files(), reverse=True)
+    last_subdir = next(subdir for subdir in subdirs if subdir.endswith('Z'))  # subdir name should be a date; this skips 'hive' and 'data' folders
+    manifest_path = os.path.join(last_subdir, "manifest.json")
 
-def cleanup_and_report():
-    for nonmatching_file in spop_all("nonmatching_files"):
-        print(clean_queues(nonmatching_file))
-    for integrity_error in spop_all("integrity_error"):
-        print(clean_queues(integrity_error))
-    for spare_cases in spop_all("integrity_error"):
-        print("Spare Case: {}".format(spare_cases))
+    # read manifest file:
+    manifest = json.loads(inventory_storage.contents(manifest_path))
+    inventory_files = (trim_manifest_key(inventory_file['key']) for inventory_file in manifest['files'])
+    field_names = manifest['fileSchema'].split(", ")
 
-def tag_jp2s():
-    for queue_to_tag in spop_all("tag_these_queues"):
-        for jp2 in spop_all(queue_to_tag):
-            tag_jp2(jp2)
+    # get earliest last-modified date we're interested in:
+    minimum_date_str = None if full_sync else get_last_sync().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
-def clean_queues(vol_entry_bytestring):
-    """This ingests the volume into the capstone database"""
-    queue_inventory = defaultdict(dict)
-    queues = generate_queue_names(vol_entry_bytestring)
-    for queue_type in queues:
-        for file_type in queues[queue_type]:
-            #we want to hang onto the jp2 queue for tagging
-            if file_type == 'inventory' and queue_type == 'jp2':
-                continue
-            queue_inventory[queue_type][file_type] = "{} {}".format(queues[queue_type][file_type], r.scard(queues[queue_type][file_type]))
-            r.delete(queues[queue_type][file_type])
+    # process each inventory file:
+    run_tasks(read_inventory_file, inventory_files, extra_args=(field_names, minimum_date_str, full_sync))
 
-    return queue_inventory
+@celery.shared_task
+def read_inventory_file(inventory_file, field_names, minimum_date_str, full_sync):
+    """
+        Process a single inventory file and add contents to redis queues.
+    """
+    info("Processing manifest file: %s" % inventory_file)
 
-def trim_old_versions():
-    """Gets all of the versions in the unsorted volume queue, checks the version string, only passes on the highest version string"""
-    for unsorted_volume in spop_all("unsorted_new_volumes"):
-        vol_dict = json.loads(unsorted_volume.decode("utf-8"))
-        
-        all_versions = [volume for volume in r.smembers("unsorted_new_volumes")
-            if json.loads(volume.decode("utf-8"))['barcode'] == vol_dict['barcode']] + [unsorted_volume]
+    volume_regex = re.compile(r'from_vendor/([A-Za-z0-9]+_redacted[^/]*)(/.+)')
+    files_grouped_by_volume = defaultdict(list)
 
-        highest_version_string = max([json.loads(version.decode("utf-8"))['version_string'] for version in all_versions
-            if json.loads(version.decode("utf-8"))['barcode'] == vol_dict['barcode']])
-        
-        for version in all_versions:
-            version_dict = json.loads(version.decode("utf-8"))
-            if unsorted_volume != version_dict:
-                r.srem("unsorted_new_volumes", version)
-
-            if version_dict['version_string'] == highest_version_string:
-                r.sadd("new_volumes", version)
-            else:
-                clean_queues(version)
-
-def process_volume(vol_entry_bytestring):
-    """This ingests the volume into the capstone database"""
-    vol_entry = json.loads(vol_entry_bytestring.decode("utf-8"))
-    queues = generate_queue_names(vol_entry_bytestring)
-    global _last_sync
-
-    # checks if keys/checksums in vol mets match keys/checksums in inventory
-    for file_type in queues['mets']:
-        if file_type == 'vol':
+    # read inventory file, grouping relevant files by volume name
+    for file_entry in get_inventory_file_entries(inventory_file, field_names):
+        # filter out old files
+        if not full_sync and file_entry['LastModifiedDate'] < minimum_date_str:
             continue
-        if set(r.smembers(queues['inventory'][file_type])) != set(r.smembers(queues['mets'][file_type])):
-            r.sadd("nonmatching_files", vol_entry_bytestring)
-            return False
 
-    bucket, volmets_path, volmets_md5 = json.loads(r.spop(queues['inventory']['vol']).decode("utf-8"))
+        # extract volume_folder name and file_name relative to volume folder
+        m = volume_regex.search(file_entry['Key'])
+        if m:
+            volume_folder, file_name = m.groups()
+
+            # filter out irrelevant files
+            if file_name.endswith('md5') or file_name.endswith('/'):
+                continue
+
+            # store tuple of (file_name, etag) grouped by volume_folder
+            files_grouped_by_volume[volume_folder].append([file_name, file_entry['ETag']])
+
+    # Add group of files for each volume to volume:<volume_folder> queue.
+    # Note that all files for a volume are added as a single queue item, tab and newline delimited.
+    for volume_folder, files in files_grouped_by_volume.items():
+        files_str = "\n".join("\t".join(line) for line in files)
+        r.sadd("volumes", volume_folder)
+        r.sadd("volume:" + volume_folder, files_str)
+
+def ingest_volumes(full_sync):
+    """
+        Start a celery task to ingest each valid volume folder, returning when all tasks are complete.
+    """
+
+    # Get list of volume folders in reverse alphabetical order, with duplicates removed.
+    # (List will contain duplicates because volumes can appear in more than one inventory file.)
+    volume_folders = sorted(set(spop_all("volumes")), reverse=True)
+
+    # Add the first occurrence of each volume to filtered_volume_folders.
+    # First occurrence in reverse-alphabetical order will be most recently-created volume,
+    # which supersedes earlier versions.
+    previous_barcode = None
+    filtered_volume_folders = []
+    for volume_folder in volume_folders:
+        barcode = volume_folder.split(b'_', 1)[0]
+        if barcode == previous_barcode:
+            # delete redis queues for duplicate volumes
+            r.delete('volume:'+volume_folder)
+        else:
+            previous_barcode = barcode
+            filtered_volume_folders.append(volume_folder)
+
+    # process each unique volume
+    run_tasks(ingest_volume, filtered_volume_folders, extra_args=(full_sync,))
+
+@celery.shared_task
+@transaction.atomic
+def ingest_volume(volume_folder, full_sync):
+    """
+        Celery task to ingest a single volume folder.
+    """
+    info("Processing volume: %s" % volume_folder)
+    volume_folder = volume_folder.decode()
+
+    # Get all entries from volume:<volume_folder> queue, splitting tab-delimited strings back into tuples:
+    s3_items = [line.split("\t") for files_str in spop_all('volume:' + volume_folder) for line in files_str.decode().split("\n")]
+
+    # sort s3 items by file type:
+    s3_items_by_type = {'alto': [], 'jp2': [], 'tiff': [], 'casemets': [], 'volmets': [], 'md5': []}
+    for file_name, etag in s3_items:
+        s3_key = volume_folder + file_name
+        file_type = get_file_type(s3_key)
+        if file_type:
+            s3_items_by_type[file_type].append((s3_key, etag))
+
+    # set up variables for ingest:
+    volume_barcode = volume_folder.split('_', 1)[0]
+    volmets_path, volmets_md5 = s3_items_by_type['volmets'][0]
     alto_barcode_to_case_map = defaultdict(list)
     
     try:
         with transaction.atomic():
-            volume_metadata = VolumeMetadata.objects.get(barcode=vol_entry['barcode'])
+            # get or create VolumeXML object from VolumeMetadata entry for this barcode:
+            volume_metadata = VolumeMetadata.objects.select_related('volume_xml').defer('volume_xml__orig_xml').get(barcode=volume_barcode)
             try:
                 volume = volume_metadata.volume_xml
             except VolumeXML.DoesNotExist:
                 volume = VolumeXML(metadata=volume_metadata)
 
-            #same volmets path & same md5 & not forced full sync == same volume
-            if (volmets_path == volume.s3_key and
-                volume.md5 == volmets_md5 and
-                _last_sync != datetime(1970, 1, 1)):
+            # If not forced full_sync, s3_key is already set, and same md5, skip this volume:
+            if not full_sync and volmets_path == volume.s3_key and volume.md5 == volmets_md5:
+                info("Skipping %s, already ingested." % volume_folder)
                 return False
 
+            # update volume xml
             if volume.md5 != volmets_md5:
                 volume.orig_xml = ingest_storage.contents(volmets_path)
+
+                # make sure that file listing in volmets matches s3 files; otherwise record error for this volume and return
+                volmets_valid = validate_volmets(volume.orig_xml, s3_items_by_type, path_prefix=volume_folder + '/')
+                if not volmets_valid:
+                    store_error("nonmatching_files", volume_folder)
+                    return False
+
             volume.s3_key = volmets_path
-            volume.save()
+            if volume.tracker.changed():
+                volume.save()
 
-            existing_case_ids = set(volume.case_xmls.values_list('metadata__case_id', flat=True))
-            for case_entry in spop_all(queues['inventory']['casemets']):
-                case_entry = json.loads(case_entry.decode("utf-8"))
-                case_s3_key = case_entry[1]
-                case_md5 = case_entry[2]
+            ### import cases
 
-                case_barcode = vol_entry['barcode'] + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
-                if case_barcode in existing_case_ids:
-                    existing_case_ids.remove(case_barcode)
-
-                case, case_created = CaseXML.objects.get_or_create(volume=volume, metadata__case_id=case_barcode)
-                if case.md5 != case_md5:
-                    case.orig_xml = ingest_storage.contents(case_s3_key)
-                case.s3_key = case_s3_key
-                case.save()
+            # make sure existing cases have metadata (this check can possibly be removed after first run)
+            for case in volume.case_xmls.filter(metadata_id=None):
                 case.create_or_update_metadata()
 
-                # store case-to-page matches
-                for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):
-                    alto_barcode_to_case_map[vol_entry['barcode'] + "_" + alto_barcode].append(case.id)
+            # create or update each case
+            existing_cases = {c.metadata.case_id: c for c in volume.case_xmls.select_related('metadata').defer('orig_xml')}
+            for case_s3_key, case_md5 in s3_items_by_type['casemets']:
+                case_barcode = volume_barcode + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
 
-            existing_page_ids = set(volume.page_xmls.values_list('barcode', flat=True))
-            # save altos
-            for page_entry in spop_all(queues['inventory']['alto']):
-                page_entry = json.loads(page_entry.decode("utf-8"))
-                page_s3_key = page_entry[1]
-                page_md5 = page_entry[2]
+                case = existing_cases.pop(case_barcode, None)
 
-                alto_barcode = vol_entry['barcode'] + "_" + page_s3_key.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
-                if alto_barcode in existing_page_ids:
-                    existing_page_ids.remove(alto_barcode)
+                # handle existing case
+                if case:
+                    case.s3_key = case_s3_key
+                    if case.md5 != case_md5:
+                        case.orig_xml = ingest_storage.contents(case_s3_key)
 
-                page, page_created = PageXML.objects.get_or_create(volume=volume, barcode=alto_barcode)
-                if page.md5 != page_md5:
-                    page.orig_xml = ingest_storage.contents(page_s3_key)
+                # handle new case
+                else:
+                    case = CaseXML(
+                        volume=volume,
+                        s3_key=case_s3_key,
+                        orig_xml=ingest_storage.contents(case_s3_key),
+                    )
+
+                if case.tracker.changed():
+                    xml_changed = case.tracker.has_changed('orig_xml')
+
+                    case.save()
+
+                    if xml_changed:
+                        # remove this when it gets called automatically by save()
+                        case.create_or_update_metadata()
+
+                        # store case-to-page matches
+                        for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):
+                            alto_barcode_to_case_map[volume_barcode + "_" + alto_barcode].append(case.id)
+
+            ### import pages
+            existing_pages = {p.barcode: p for p in volume.page_xmls.defer('orig_xml')}
+            for page_s3_key, page_md5 in s3_items_by_type['alto']:
+                alto_barcode = volume_barcode + "_" + page_s3_key.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
+
+                page = existing_pages.pop(alto_barcode, None)
+
+                # handle existing page
+                if page:
                     page.s3_key = page_s3_key
+                    if page.md5 != page_md5:
+                        page.orig_xml = ingest_storage.contents(page_s3_key)
+
+                # handle new page
+                else:
+                    page = PageXML(
+                        volume=volume,
+                        s3_key=page_s3_key,
+                        barcode=alto_barcode,
+                        orig_xml=ingest_storage.contents(page_s3_key),
+                    )
+
+                if page.tracker.changed():
                     page.save()
 
-                    # write case-to-page matches
-                    if alto_barcode_to_case_map[alto_barcode]:
-                        page.cases.set(alto_barcode_to_case_map[alto_barcode])
+                # write case-to-page matches
+                if alto_barcode_to_case_map[alto_barcode]:
+                    page.cases.set(alto_barcode_to_case_map[alto_barcode])
 
-            for spare_case in existing_case_ids:
-                r.sadd("spare_cases_{}".format(vol_entry['barcode']), spare_case)
+            for spare_case in existing_cases:
+                store_error("spare_case", volume_folder, spare_case.pk)
 
-            for spare_page in existing_page_ids:
-                r.sadd("spare_pages_{}".format(vol_entry['barcode']), spare_page)
+            for spare_page in existing_pages:
+                store_error("spare_page", volume_folder, spare_page.pk)
 
     except IntegrityError as e:
-        print("Integrity Error- {} : {}".format(volmets_path, e))
-        r.sadd("integrity_error", vol_entry_bytestring)
+        store_error("integrity_error", volume_folder, e)
 
+def report_errors():
+    if r.scard("errors"):
+        info("Errors during ingest:")
+        for item in spop_all("errors"):
+            info(item)
 
-def process_recent_manifest_data(list_key):
-    """This goes through the files in the inventory report and puts them into
-       queues. It makes queues for the alto files entries, and the inventory
-       report key entries. They're organized by bar code, version string, and
-       file type
-    """
+def write_last_sync():
+    redis_client.set("last_sync", str(datetime.now()))
 
-    version_regex = re.compile(r'[A-Za-z0-9]+_redacted_?([0-9_\.]+)/')
-    key_regex = re.compile(r'[A-Za-z0-9]+_redacted([0-9_\.]+)?/((images|alto|casemets)/[A-Za-z0-9_]+\.(jp2|xml|tif))')
-    for file_entry in read_inventory_file(list_key):
-        if (
-                len(file_entry) == 0 or
-                not file_entry[1].startswith('from_vendor') or
-                file_entry[1].endswith('md5') or
-                datetime.strptime(file_entry[3], '%Y-%m-%dT%H:%M:%S.%fZ') < check_last_sync() or
-                file_entry[1].endswith('/')
-            ):
-            continue
-
-        md5 = file_entry[4]
-        file_key = trim_csv_key(file_entry[1])
-        barcode = file_key.split("/", 1)[0].split('_')[0]
-        bucket = file_entry[0]
-
-        version_match = version_regex.match(file_key)
-        version_string = version_match.group(1) if version_match is not None else "0000_original"
-
-        #a length of less than 3 means it's a volume-level file
-        if len(file_key.split("/")) < 3:
-            mets_files = extract_file_dict(bucket, file_key)
-            for queue_type in mets_files:
-                queue_name = "{}_{}_{}_mets".format(barcode, queue_type, version_string)
-                [r.sadd(queue_name, json.dumps([bucket, "{}/{}".format(os.path.dirname(file_key), f[0]), f[1]])) for f in mets_files[queue_type]]
-            json_add = json.dumps({
-                "barcode": barcode, 
-                "timestamp": str(datetime.now(tz=None)), 
-                "version_string": version_string,
-                "key": file_key,
-                "md5": md5,
-            })
-            r.sadd("unsorted_new_volumes", json_add)
-            r.sadd("{}_vol_{}_inventory".format(barcode, version_string), json.dumps([bucket, file_key, md5]))
-        else:
-            split_key = key_regex.match(file_key)
-            if split_key.group(4) == 'jp2':
-                queue_name = "{}_jp2_{}_inventory".format(barcode, version_string)
-                r.sadd("tag_these_queues", queue_name)
-            elif split_key.group(4) == 'tif':
-                queue_name = "{}_tif_{}_inventory".format(barcode, version_string)
-            else:
-                queue_name = "{}_{}_{}_inventory".format(barcode, split_key.group(3), version_string)
-            r.sadd(queue_name, json.dumps([bucket, file_key, md5]))
 
 ### helpers ###
 
-def reopen_db_and_call(func, *args):
-    # when running in subprocesses, Django database connections fight for the same socket, so re-open
-    for connection_name in db.connections.databases:
-        db.connections[connection_name].close()
-        db.connections[connection_name].connect()
-    return func(*args)
+def store_error(*args):
+    r.sadd("errors", json.dumps([str(arg) for arg in args]))
 
-def run_processes(func, args):
-    if ASYNC:
-        pool = Pool(64)
-        pool.starmap(reopen_db_and_call, ((func, arg) for arg in args))
-        pool.close()
-        pool.join()
-    else:
-        for arg in args:
-            func(arg)
+def run_tasks(task, args, extra_args=tuple()):
+    """ Run given celery task for each arg in args. Run tasks in parallel, but wait to return until all tasks are done. """
+    celery.group(task.s(arg, *extra_args) for arg in args)().get()
 
 def spop_all(key):
     while r.scard(key) > 0:
         yield r.spop(key)
 
-def empty_set(key):
-    spop_all(key)
+def validate_volmets(volume_file, s3_items_by_type, path_prefix):
+    """Confirm that all paths and hashes in volmets match files in S3. """
+    parsed = parse_xml(volume_file)
 
-def extract_file_dict(bucket, key):
-    """Gets the files assocated with the volume from the mets"""
-    volume_file = ingest_storage.contents(key)
+    for file_type in ('jp2', 'tiff', 'alto', 'casemets'):
+        volmets_files = set(
+            (
+                path_prefix + i.children('mets|FLocat').attr(resolve_namespace('xlink|href')),
+                i.attr('CHECKSUM')
+            ) for i in parsed('mets|fileGrp[USE="%s"] mets|file' % file_type).items()
+        )
+        if set(s3_items_by_type[file_type]) != volmets_files:
+            return False
+    return True
 
-    #files = re.findall(r'<FLocat LOCTYPE="URL" xlink:href="(([A-Za-z]+)/(([A-Za-z_0-9]+).(jp2|xml|tif)))"/>', volume_file)
-    files = re.findall(r'<file[A-Za-z0-9"=\s/_]+CHECKSUM="([a-zA-Z0-9]+)"[A-Za-z0-9"=\s]+>[\s\n]+<FLocat LOCTYPE="URL" xlink:href="(([A-Za-z]+)/(([A-Za-z_0-9]+).(jp2|xml|tif)))"/>[\s\n]+</file>', volume_file, re.MULTILINE)
-    file_dict = defaultdict()
-
-    file_dict['jp2'] = [ (file[1], file[0]) for file in files if file[5] == 'jp2' ]
-    file_dict['tif'] = [ (file[1], file[0]) for file in files if file[5] == 'tif' ]
-    file_dict['alto'] = [ (file[1], file[0]) for file in files if file[2] == 'alto' ]
-    file_dict['casemets'] = [ (file[1], file[0]) for file in files if file[2] == 'casemets' ]
-    return file_dict
-
-def check_last_sync():
-    """ This function gets called a LOT. Stores value in a global and returns that if it's already been checked
-        if no last sync value is found in redis, it defaults to a value of one week.
+def get_last_sync():
     """
-    global _last_sync
-    if _last_sync is None:
-        if r.exists("last_sync"):
-            _last_sync = datetime.strptime(r.get("last_sync").decode(), '%Y-%m-%d %H:%M:%S.%f')
-        else:
-            _last_sync = datetime.now() - timedelta(days=7)
-    return _last_sync
+        Return last time we completed a sync, defaulting to one week.
 
-def write_last_sync():
-    r.set("last_sync", str(datetime.now()))
+        Uses "redis_client" instead of "r" because the "r" redis database gets wiped at the start and end of ingest.
+    """
+    if redis_client.exists("last_sync"):
+        return datetime.strptime(redis_client.get("last_sync").decode(), '%Y-%m-%d %H:%M:%S.%f')
+    else:
+        return datetime.now() - timedelta(days=7)
 
-def get_latest_manifest():
-    """ get the most recent inventory report manifest file """
-    subdirs = sorted(inventory_storage.iter_files(), reverse=True)
-    last_subdir = next(subdir for subdir in subdirs if not subdir.endswith('data'))
-    return os.path.join(last_subdir, "manifest.json")
-
-def get_inventory_files_from_manifest(manifest_path):
-    for inventory_file in json.loads(inventory_storage.contents(manifest_path))['files']:
-        yield trim_manifest_key(inventory_file['key'])
-
-def tag_jp2(file_entry):
-    """ This tags image file with their file type, so we can send jp2s to IA"""
-    file_dict = json.loads(file_entry.decode("utf-8"))
-    key= file_dict[1]
-    return ingest_storage.tag_file(key, 'file_type', 'jp2')
-
-def read_inventory_file(key):
-    """ Returns iterator over files listed in inventory report manifest """
+def get_inventory_file_entries(key, field_names):
+    """ Returns iterator over files listed in inventory report manifest, parsed as CSV """
     with inventory_storage.open(key, mode='rb') as f:
         with gzip.GzipFile(fileobj=f) as g:
-            for line in csv.reader(io.TextIOWrapper(g), delimiter=',', quotechar='"'):
+            for line in csv.DictReader(io.TextIOWrapper(g), fieldnames=field_names, delimiter=',', quotechar='"'):
                 yield line
-
-def volume_has_multi_s3_versions(key):
-    """Checks if there are multiple versions from innodata"""
-    return '_redacted_' in key
-
-def generate_queue_names(vol_entry_bytestring):
-    vol_entry = json.loads(vol_entry_bytestring.decode("utf-8"))
-    file_types = ['casemets', 'jp2', 'tif', 'alto', 'vol']
-    queues = {}
-    queues['inventory'] = {}
-    queues['mets'] = {}
-    
-    for file_type in file_types:
-        queues['inventory'][file_type] = "{}_{}_{}_inventory".format(vol_entry['barcode'], file_type, vol_entry['version_string'])
-        if file_type == 'vol':
-            continue
-        queues['mets'][file_type] = "{}_{}_{}_mets".format(vol_entry['barcode'], file_type, vol_entry['version_string'])
-    return queues
 
 def trim_manifest_key(key):
     """
@@ -418,3 +379,23 @@ def trim_csv_key(key):
         Our ingest_storage object is relative to a subdir, so we have to strip the beginning of the key.
     """
     return key[len(settings.INVENTORY['csv_path_prefix']):]
+
+def get_file_type(path):
+    """ Get file type for path. """
+    if path.endswith('.jp2'):
+        return 'jp2'
+    if path.endswith('.tif'):
+        return 'tiff'
+    if '/alto/' in path:
+        if path.endswith('.xml'):
+            return 'alto'
+        return None
+    if '/casemets/' in path:
+        if path.endswith('.xml'):
+            return 'casemets'
+        return None
+    if path.endswith('METS.md5'):
+        return 'md5'
+    if path.endswith('METS.xml'):
+        return 'volmets'
+    return None

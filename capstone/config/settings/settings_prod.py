@@ -21,7 +21,7 @@ STORAGES = {
 
 INVENTORY = {
     # prefix to strip from paths in manifest.json
-    'manifest_path_prefix': 'ftl-shared/PrimarySharedInventoryReport/',
+    'manifest_path_prefix': 'harvard-ftl-shared/PrimarySharedInventoryReport/',
     # prefix to strip from paths in .csv
     'csv_path_prefix': 'from_vendor/',
 }
