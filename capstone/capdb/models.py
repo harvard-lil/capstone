@@ -5,7 +5,7 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes
 from model_utils import FieldTracker
 
-from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation
+from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation, extract_casebody
 from scripts.process_metadata import get_case_metadata
 
 
