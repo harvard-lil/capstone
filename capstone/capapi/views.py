@@ -115,7 +115,7 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
 
         filename = resources.create_zip_filename(case_list)
 
-        case_response = serializers.MetaCaseSerializer(data=case_list, many=True, context={'request': self.request})
+        case_response = serializers.CaseSerializerWithCasebody(data=case_list, many=True, context={'request': self.request})
 
         if case_response.is_valid():
             case_objects = case_response.data

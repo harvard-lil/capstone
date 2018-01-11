@@ -16,22 +16,6 @@ class CitationSerializer(serializers.ModelSerializer):
         fields = ('url', 'type', 'cite')
 
 
-class MetaCaseSerializer(serializers.BaseSerializer):
-    """
-    Serializer for getting case metadata backfilled with the casebody xml
-    """
-
-    def to_internal_value(self, case):
-        case_metadata = CaseSerializer(case, context=self.context).data
-        meta_case = dict(case_metadata)
-        case_xml = CaseXMLSerializer(case.case_xml, context=self.context).data
-        meta_case['casebody'] = case_xml['casebody']
-        return meta_case
-
-    def to_representation(self, obj):
-        return obj
-
-
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="casemetadata-detail",
@@ -69,19 +53,28 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
-class CaseXMLSerializer(serializers.ModelSerializer):
+class CaseSerializerWithCasebody(CaseSerializer):
+    casebody = serializers.SerializerMethodField()
+
     def get_casebody(self, case):
-        casebody = case.get_casebody()
+        casebody = case.case_xml.get_casebody()
         if casebody:
             return re.sub(r"\s{2,}", " ", casebody)
         else:
             return ''
 
-    casebody = serializers.SerializerMethodField()
+    def to_internal_value(self, case):
+        case_metadata = CaseSerializer(case, context=self.context).data
+        meta_case = dict(case_metadata)
+        meta_case['casebody'] = self.get_casebody(case)
+        return meta_case
+
+    def to_representation(self, instance):
+        return instance
 
     class Meta:
-        model = models.Citation
-        fields = ('casebody',)
+        model = CaseSerializer.Meta.model
+        fields = CaseSerializer.Meta.fields + ('casebody',)
 
 
 class JurisdictionSerializer(serializers.ModelSerializer):
