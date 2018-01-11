@@ -28,8 +28,8 @@ from scripts import set_up_postgres, ingest_tt_data, ingest_files, data_migratio
 
 
 @task(alias='run')
-def run_django():
-    local("python manage.py runserver")
+def run_django(port="127.0.0.1:8000"):
+    local("python manage.py runserver %s" % port)
 
 @task
 def test():

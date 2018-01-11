@@ -1,9 +1,9 @@
+import re
 import logging
 
 from rest_framework import serializers
 
 from capdb import models
-from scripts.helpers import extract_casebody
 from .models import APIUser
 from .resources import email
 
@@ -14,20 +14,6 @@ class CitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Citation
         fields = ('url', 'type', 'cite')
-
-
-class MetaCaseSerializer(serializers.BaseSerializer):
-    """
-    Serializer for getting case metadata backfilled with the casebody xml
-    """
-    def to_internal_value(self, case):
-        case_metadata = CaseSerializer(case, context=self.context).data
-        meta_case = dict(case_metadata)
-        meta_case['casebody'] = extract_casebody(case.case_xml.orig_xml)
-        return meta_case
-
-    def to_representation(self, obj):
-        return obj
 
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
@@ -65,6 +51,21 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'volume',
             'volume_url',
         )
+
+
+class CaseSerializerWithCasebody(CaseSerializer):
+    casebody = serializers.SerializerMethodField()
+
+    def get_casebody(self, case):
+        casebody = case.case_xml.get_casebody()
+        if casebody:
+            return re.sub(r"\s{2,}", " ", casebody)
+        else:
+            return ''
+
+    class Meta:
+        model = CaseSerializer.Meta.model
+        fields = CaseSerializer.Meta.fields + ('casebody',)
 
 
 class JurisdictionSerializer(serializers.ModelSerializer):

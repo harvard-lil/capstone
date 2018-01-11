@@ -60,6 +60,19 @@ def test_create_or_update_metadata(ingest_case_xml):
     assert new_case_metadata == old_case_metadata
 
 
+
+### CaseXML ###
+
+@pytest.mark.django_db
+def test_get_casebody_from_xml(ingest_case_xml):
+    parsed = parse_xml(ingest_case_xml.orig_xml)
+    ingest_case_xml.orig_xml = serialize_xml(parsed)
+    ingest_case_xml.save()
+    ingest_case_xml.refresh_from_db()
+    casebody = ingest_case_xml.get_casebody()
+    assert casebody
+    assert "<parties " in casebody
+
 @pytest.mark.django_db
 def test_related_names(ingest_case_xml):
     ingest_case_xml.create_or_update_metadata()
