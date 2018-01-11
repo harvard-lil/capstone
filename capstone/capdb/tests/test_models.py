@@ -2,7 +2,7 @@ import pytest
 
 from capdb.models import CaseMetadata
 from scripts.helpers import parse_xml, serialize_xml
-
+from test_data.test_fixtures.factories import *
 
 ### BaseXMLModel ###
 
@@ -50,3 +50,28 @@ def test_create_or_update_metadata(ingest_case_xml):
     ingest_case_xml.create_or_update_metadata(update_existing=False)
     new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
     assert new_case_metadata == old_case_metadata
+
+@pytest.mark.django_db
+def test_related_names():
+    jur = setup_jurisdiction()
+    rep = setup_reporter()
+    court = setup_court()
+    vol = setup_volume()
+
+    case = setup_case(**{
+        'jurisdiction': jur,
+        'reporter': rep,
+        'court': court,
+        'volume': vol,
+    })
+
+    assert case in jur.case_metadatas.all()
+    assert case in rep.case_metadatas.all()
+    assert case in court.case_metadatas.all()
+    assert case in vol.case_metadatas.all()
+
+    volxml = setup_volumexml()
+    casexml = setup_casexml(**{'volume': volxml})
+
+    casexml.create_or_update_metadata(case)
+    assert casexml in volxml.case_xmls.all()
