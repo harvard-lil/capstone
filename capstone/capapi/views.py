@@ -118,8 +118,14 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         case_response = serializers.CaseSerializerWithCasebody(data=case_list, many=True, context={'request': self.request})
 
         if case_response.is_valid():
-            case_objects = case_response.data
-        response = resources.create_download_response(filename=filename, content=case_objects)
+            case_data = case_response.data
+        else:
+            return JsonResponse({
+                'message': 'Something went wrong',
+                'errors': case_response.errors
+            }, status=403, )
+
+        response = resources.create_download_response(filename=filename, content=case_data)
         user.update_case_allowance(case_count=blacklisted_case_count)
 
         return response
