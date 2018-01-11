@@ -2,7 +2,6 @@ version: '2'
 services:
     db:
         image: postgres:9.6
-        restart: always
         environment:
             POSTGRES_PASSWORD: password
         volumes:
