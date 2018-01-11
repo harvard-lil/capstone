@@ -1,8 +1,9 @@
 import pytest
 
-from capdb.models import CaseMetadata
-from scripts.helpers import parse_xml, serialize_xml
 from django.utils.encoding import force_bytes
+
+from scripts.helpers import parse_xml, serialize_xml
+from test_data.test_fixtures.factories import *
 
 ### BaseXMLModel ###
 
@@ -57,6 +58,26 @@ def test_create_or_update_metadata(ingest_case_xml):
 
     new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
     assert new_case_metadata == old_case_metadata
+
+
+@pytest.mark.django_db
+def test_related_names(ingest_case_xml):
+    ingest_case_xml.create_or_update_metadata()
+    volxml = ingest_case_xml.volume
+    case = ingest_case_xml.metadata
+
+    assert ingest_case_xml in volxml.case_xmls.all()
+
+    jur = Jurisdiction.objects.get(pk=case.jurisdiction.pk)
+    rep = Reporter.objects.get(pk=case.reporter.pk)
+    vol = VolumeMetadata.objects.get(pk=case.volume.pk)
+    court = Court.objects.get(pk=case.court.pk)
+
+    assert case in jur.case_metadatas.all()
+    assert case in rep.case_metadatas.all()
+    assert case in court.case_metadatas.all()
+    assert case in vol.case_metadatas.all()
+
 
 # CaseXML update
 
@@ -173,7 +194,7 @@ def test_casebody_delete_word_raise(ingest_case_xml):
 
 
 
-    # PageXML update
+# PageXML update
 
 @pytest.mark.django_db
 def test_checksums_alto_update(ingest_case_xml):

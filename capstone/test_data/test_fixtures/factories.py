@@ -15,13 +15,18 @@ def setup_case(**kwargs):
     # set up casemetadata instance
     volume_xml = VolumeXMLFactory.create()
     citation = CitationFactory.create(type='official')
-    case = CaseMetadataFactory(volume=volume_xml.metadata, slug=slugify(citation.cite), **kwargs)
-    casexml = CaseXMLFactory.create(volume=volume_xml, metadata=case)
+    case = CaseMetadataFactory(slug=slugify(citation.cite), **kwargs)
+    casexml = CaseXMLFactory.create(metadata=case)
     case.citations.add(citation)
     case.jurisdiction.save()
     case.save()
 
     return case
+
+
+def setup_casexml(**kwargs):
+    return CaseXMLFactory(**kwargs)
+
 
 def setup_jurisdiction(**kwargs):
     jurisdiction = JurisdictionFactory.create()
@@ -46,6 +51,18 @@ def setup_court(**kwargs):
 
 def setup_reporter(**kwargs):
     return ReporterFactory(**kwargs)
+
+
+def setup_volume(**kwargs):
+    return VolumeMetadataFactory(**kwargs)
+
+
+def setup_volumexml(**kwargs):
+    return VolumeXMLFactory(**kwargs)
+
+
+def setup_citations(**kwargs):
+    return CitationFactory(**kwargs)
 
 
 #   factories
@@ -151,13 +168,13 @@ class CaseMetadataFactory(factory.DjangoModelFactory):
     decision_date = factory.Faker("date_this_century", before_today=True, after_today=False)
     citations = factory.RelatedFactory(CitationFactory)
     court = factory.SubFactory(CourtFactory)
+    volume = factory.SubFactory(VolumeMetadataFactory)
 
 
 class CaseXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseXML
 
-    metadata = factory.SubFactory(CaseMetadataFactory)
     orig_xml = xml_str
     volume = factory.SubFactory(VolumeXMLFactory)
 
