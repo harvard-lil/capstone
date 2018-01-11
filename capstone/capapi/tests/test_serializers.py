@@ -14,10 +14,9 @@ def test_CaseSerializerWithCasebody(api_url, api_request_factory, auth_client, c
     request = api_request_factory.get(url)
     serializer_context = {'request': Request(request)}
 
-    serializer = serializers.CaseSerializerWithCasebody(data=case, context=serializer_context)
-    serializer.is_valid()
-    assert serializer.data['slug'] == case.slug
-    assert 'casebody' in serializer.data.keys()
+    serialized = serializers.CaseSerializerWithCasebody(case, context=serializer_context)
+    assert serialized.data['slug'] == case.slug
+    assert 'casebody' in serialized.data.keys()
 
     # can get multiple cases' data
     cases = []
@@ -25,8 +24,7 @@ def test_CaseSerializerWithCasebody(api_url, api_request_factory, auth_client, c
         case = setup_case()
         cases.append(case)
 
-    serializer = serializers.CaseSerializerWithCasebody(data=cases, many=True, context=serializer_context)
-    serializer.is_valid()
-    assert len(serializer.data) == 3
-    for case in serializer.data:
+    serialized = serializers.CaseSerializerWithCasebody(cases, many=True, context=serializer_context)
+    assert len(serialized.data) == 3
+    for case in serialized.data:
         assert 'casebody' in case.keys()

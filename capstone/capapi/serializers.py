@@ -63,15 +63,6 @@ class CaseSerializerWithCasebody(CaseSerializer):
         else:
             return ''
 
-    def to_internal_value(self, case):
-        case_metadata = CaseSerializer(case, context=self.context).data
-        meta_case = dict(case_metadata)
-        meta_case['casebody'] = self.get_casebody(case)
-        return meta_case
-
-    def to_representation(self, instance):
-        return instance
-
     class Meta:
         model = CaseSerializer.Meta.model
         fields = CaseSerializer.Meta.fields + ('casebody',)
