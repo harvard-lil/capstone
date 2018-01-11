@@ -20,7 +20,6 @@ from scripts.helpers import resolve_namespace, parse_xml
 logger = get_task_logger(__name__)
 info = logger.info
 
-
 """
 This script updates the capstone inventory based on an inventory report from s3
 
@@ -100,6 +99,7 @@ def wipe_redis_db():
     """
     r.flushdb()
 
+
 def read_inventory_files(full_sync):
     """
         Get list of inventory files and start a celery task for each file, returning when all tasks are complete.
@@ -122,6 +122,7 @@ def read_inventory_files(full_sync):
     chord(
         (read_inventory_file.s(i, field_names, minimum_date_str, full_sync) for i in inventory_files)
     )(sync_s3_data_step_two.si(full_sync))
+
 
 @celery.shared_task
 def read_inventory_file(inventory_file, field_names, minimum_date_str, full_sync):
@@ -158,6 +159,7 @@ def read_inventory_file(inventory_file, field_names, minimum_date_str, full_sync
         r.sadd("volumes", volume_folder)
         r.sadd("volume:" + volume_folder, files_str)
 
+
 def ingest_volumes(full_sync):
     """
         Start a celery task to ingest each valid volume folder, returning when all tasks are complete.
@@ -176,7 +178,7 @@ def ingest_volumes(full_sync):
         barcode = volume_folder.split(b'_', 1)[0]
         if barcode == previous_barcode:
             # delete redis queues for duplicate volumes
-            r.delete('volume:'+volume_folder)
+            r.delete('volume:' + volume_folder)
         else:
             previous_barcode = barcode
             filtered_volume_folders.append(volume_folder)
@@ -185,6 +187,7 @@ def ingest_volumes(full_sync):
     chord(
         (ingest_volume.s(i, full_sync) for i in filtered_volume_folders)
     )(sync_s3_data_step_three.si())
+
 
 @celery.shared_task
 @transaction.atomic
@@ -196,7 +199,8 @@ def ingest_volume(volume_folder, full_sync):
     volume_folder = volume_folder.decode()
 
     # Get all entries from volume:<volume_folder> queue, splitting tab-delimited strings back into tuples:
-    s3_items = [line.split("\t") for files_str in spop_all('volume:' + volume_folder) for line in files_str.decode().split("\n")]
+    s3_items = [line.split("\t") for files_str in spop_all('volume:' + volume_folder) for line in
+                files_str.decode().split("\n")]
 
     # sort s3 items by file type:
     s3_items_by_type = {'alto': [], 'jp2': [], 'tiff': [], 'casemets': [], 'volmets': [], 'md5': []}
@@ -210,11 +214,12 @@ def ingest_volume(volume_folder, full_sync):
     volume_barcode = volume_folder.split('_', 1)[0]
     volmets_path, volmets_md5 = s3_items_by_type['volmets'][0]
     alto_barcode_to_case_map = defaultdict(list)
-    
+
     try:
         with transaction.atomic():
             # get or create VolumeXML object from VolumeMetadata entry for this barcode:
-            volume_metadata = VolumeMetadata.objects.select_related('volume_xml').defer('volume_xml__orig_xml').get(barcode=volume_barcode)
+            volume_metadata = VolumeMetadata.objects.select_related('volume_xml').defer('volume_xml__orig_xml').get(
+                barcode=volume_barcode)
             try:
                 volume = volume_metadata.volume_xml
             except VolumeXML.DoesNotExist:
@@ -246,7 +251,8 @@ def ingest_volume(volume_folder, full_sync):
                 case.create_or_update_metadata()
 
             # create or update each case
-            existing_cases = {c.metadata.case_id: c for c in volume.case_xmls.select_related('metadata').defer('orig_xml')}
+            existing_cases = {c.metadata.case_id: c for c in
+                              volume.case_xmls.select_related('metadata').defer('orig_xml')}
             for case_s3_key, case_md5 in s3_items_by_type['casemets']:
                 case_barcode = volume_barcode + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
 
@@ -317,11 +323,13 @@ def ingest_volume(volume_folder, full_sync):
     except IntegrityError as e:
         store_error("integrity_error", volume_folder, e)
 
+
 def report_errors():
     if r.scard("errors"):
         info("Errors during ingest:")
         for item in spop_all("errors"):
             info(item)
+
 
 def write_last_sync():
     redis_client.set("last_sync", str(datetime.now()))
@@ -335,6 +343,7 @@ def store_error(*args):
 def spop_all(key):
     while r.scard(key) > 0:
         yield r.spop(key)
+
 
 def validate_volmets(volume_file, s3_items_by_type, path_prefix):
     """Confirm that all paths and hashes in volmets match files in S3. """
@@ -351,6 +360,7 @@ def validate_volmets(volume_file, s3_items_by_type, path_prefix):
             return False
     return True
 
+
 def get_last_sync():
     """
         Return last time we completed a sync, defaulting to one week.
@@ -362,12 +372,14 @@ def get_last_sync():
     else:
         return datetime.now() - timedelta(days=7)
 
+
 def get_inventory_file_entries(key, field_names):
     """ Returns iterator over files listed in inventory report manifest, parsed as CSV """
     with inventory_storage.open(key, mode='rb') as f:
         with gzip.GzipFile(fileobj=f) as g:
             for line in csv.DictReader(io.TextIOWrapper(g), fieldnames=field_names, delimiter=',', quotechar='"'):
                 yield line
+
 
 def trim_manifest_key(key):
     """
@@ -376,12 +388,14 @@ def trim_manifest_key(key):
     """
     return key[len(settings.INVENTORY['manifest_path_prefix']):]
 
+
 def trim_csv_key(key):
     """
         Keys in inventory CSV files include the full path in the S3 bin.
         Our ingest_storage object is relative to a subdir, so we have to strip the beginning of the key.
     """
     return key[len(settings.INVENTORY['csv_path_prefix']):]
+
 
 def get_file_type(path):
     """ Get file type for path. """
