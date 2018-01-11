@@ -94,7 +94,6 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
             if not cases.exists():
                 return JsonResponse({
                     'message': 'Request did not return any results.',
-                    'params': str(dict(self.request.query_params)),
                 }, status=404, )
 
             cases = cases.select_related(
