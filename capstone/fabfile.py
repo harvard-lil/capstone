@@ -59,6 +59,10 @@ def ingest_metadata():
 
 @task
 def sync_metadata():
+    """
+    Takes data from tracking tool db and translates them to the postgres db.
+    Changes field names according to maps listed at the top of ingest_tt_data script.
+    """
     ingest_tt_data.ingest(True)
 
 @task
