@@ -38,14 +38,16 @@ class JurisdictionViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListM
 class VolumeViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.VolumeSerializer
     http_method_names = ['get']
-    queryset = models.VolumeMetadata.objects.all()
+    queryset = models.VolumeMetadata.objects.all().select_related(
+        'reporter'
+    ).prefetch_related('reporter__jurisdictions')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
 class ReporterViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
-    queryset = models.Reporter.objects.all()
+    queryset = models.Reporter.objects.all().prefetch_related('jurisdictions')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
@@ -53,7 +55,7 @@ class CourtViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMix
     serializer_class = serializers.CourtSerializer
     http_method_names = ['get']
     filter_class = filters.CourtFilter
-    queryset = models.Court.objects.all()
+    queryset = models.Court.objects.all().select_related('jurisdiction')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field = 'slug'
 
@@ -68,7 +70,12 @@ class CitationViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModel
 class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
-    queryset = models.CaseMetadata.objects.all()
+    queryset = models.CaseMetadata.objects.all().select_related(
+        'jurisdiction',
+        'court',
+        'volume',
+        'reporter',
+    ).prefetch_related('citations')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     permission_classes = (permissions.IsAPIUser,)
     filter_class = filters.CaseFilter
@@ -95,12 +102,6 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
                 return JsonResponse({
                     'message': 'Request did not return any results.',
                 }, status=404, )
-
-            cases = cases.select_related(
-                'jurisdiction',
-                'volume',
-                'reporter',
-                'court').prefetch_related('citations')
 
             case_list = self.paginate_queryset(cases)
 
