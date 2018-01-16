@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 import django
 import zipfile
+import json
 
 # set up Django
 
@@ -24,7 +25,7 @@ from capapi import resources
 from capdb.models import Jurisdiction, CaseMetadata, VolumeXML
 from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
 # from process_ingested_xml import fill_case_page_join_table
-from scripts import set_up_postgres, ingest_tt_data, ingest_files, data_migrations, ingest_by_manifest
+from scripts import set_up_postgres, ingest_tt_data, ingest_files, data_migrations, ingest_by_manifest, mass_update
 
 
 @task(alias='run')
@@ -79,6 +80,12 @@ def create_or_update_case_metadata(update_existing=False):
     """
     update_existing = True if update_existing else False
     create_case_metadata_from_all_vols(update_existing=update_existing)
+
+@task
+def rename_tags_from_json_id_list(json_path, tag=None):
+    with open(os.path.abspath(os.path.expanduser(json_path))) as data_file:    
+        parsed_json = json.load(data_file)
+    mass_update.rename_casebody_tags_from_json_id_list(parsed_json, tag)
 
 @task
 def init_db():

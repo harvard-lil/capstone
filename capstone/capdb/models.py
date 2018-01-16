@@ -505,12 +505,31 @@ class CaseXML(BaseXMLModel):
             original_casebody_xpaths = set([original_tree.getelementpath(element) for element in original_casebody_tree])
             updated_casebody_xpaths = set([updated_tree.getelementpath(element) for element in updated_casebody_tree])
 
-            if len(original_casebody_xpaths - updated_casebody_xpaths) > 0:
-                raise Exception("No current support for removing casebody elements")
-            if len(updated_casebody_xpaths - original_casebody_xpaths) > 0:
-                raise Exception("No current support for adding casebody elements")
+            removed = original_casebody_xpaths - updated_casebody_xpaths
+            added = updated_casebody_xpaths - original_casebody_xpaths
 
+            if len(added) > 0 or len(removed) > 0:
+                # compile a list of xpath base paths without the tag name
+                # (an element with the same base xpath but not tag name
+                # is considered 'renamed')
+                removed_base_xpaths = []
+                for xpath in removed:
+                    base_path = xpath.rsplit('}', 1)[0] + '}'
+                    removed_base_xpaths.append(base_path)
 
+                added_base_xpaths = []
+                for xpath in added:
+                    base_path = xpath.rsplit('}', 1)[0] + '}'
+                    added_base_xpaths.append(base_path)
+
+                # get the difference
+                added_base_path_diff = set(added_base_xpaths) - set(removed_base_xpaths)
+                removed_base_path_diff = set(removed_base_xpaths) - set(added_base_xpaths)
+
+                if len(added) > len(removed) or len(added_base_path_diff) > 0:
+                    raise Exception("No current support for adding casebody elements")
+                if len(removed) > len(added) or len(removed_base_path_diff) > 0:
+                    raise Exception("No current support for removing casebody elements")
 
             # get the alto files associated with the case in the DB
             alto_files = {}
@@ -552,7 +571,7 @@ class CaseXML(BaseXMLModel):
                         structure_tag = parsed_alto_page(
                             'alto|StructureTag[ID="{}"]'.format(original_element.get('id')))
                         if structure_tag is not None:
-                            structure_tag.attr["LABEL"] = updated_element.tag
+                            structure_tag.attr["LABEL"] = updated_element.tag.rsplit('}', 1)[1]
                             alto_page.orig_xml = serialize_xml(parsed_alto_page)
                             alto_page.save(save_case=False)
 
