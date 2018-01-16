@@ -12,6 +12,31 @@ MOCK_S3 = True
 CELERY_TASK_ALWAYS_EAGER = True
 # propagate exceptions
 CELERY_TASK_EAGER_PROPAGATES = True
-# if running in Docker -- this will only be used if CELERY_TASK_ALWAYS_EAGER = False
-CELERY_BROKER_URL = 'amqp://admin:mypass@rabbit'
-CELERY_RESULT_BACKEND = 'rpc://'
+
+
+
+if os.environ.get('DOCKERIZED'):
+    DATABASES['default']['PASSWORD'] = 'password'
+    DATABASES['default']['HOST'] = 'db'
+    DATABASES['capapi']['PASSWORD'] = 'password'
+    DATABASES['capapi']['HOST'] = 'db'
+
+    REDIS_HOST = 'redis'
+
+    # this will only be used if CELERY_TASK_ALWAYS_EAGER = False
+    CELERY_BROKER_URL = 'redis://redis'
+    CELERY_RESULT_BACKEND = 'redis://redis'
+
+
+# turn sql console logging on by setting DEBUG_SQL = True
+DEBUG_SQL = False
+
+if DEBUG_SQL:
+    LOGGING['handlers']['sql'] = {
+        'level': 'DEBUG',
+        'class': 'logging.StreamHandler',
+    }
+    LOGGING['loggers']['django.db.backends'] = {
+        'level': 'DEBUG',
+        'handlers': ['sql']
+    }

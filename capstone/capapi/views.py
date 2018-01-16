@@ -38,14 +38,16 @@ class JurisdictionViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListM
 class VolumeViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.VolumeSerializer
     http_method_names = ['get']
-    queryset = models.VolumeMetadata.objects.all()
+    queryset = models.VolumeMetadata.objects.all().select_related(
+        'reporter'
+    ).prefetch_related('reporter__jurisdictions')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
 class ReporterViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
-    queryset = models.Reporter.objects.all()
+    queryset = models.Reporter.objects.all().prefetch_related('jurisdictions')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
@@ -53,7 +55,7 @@ class CourtViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMix
     serializer_class = serializers.CourtSerializer
     http_method_names = ['get']
     filter_class = filters.CourtFilter
-    queryset = models.Court.objects.all()
+    queryset = models.Court.objects.all().select_related('jurisdiction')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     lookup_field = 'slug'
 
@@ -68,39 +70,42 @@ class CitationViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModel
 class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
-    queryset = models.CaseMetadata.objects.all()
+    queryset = models.CaseMetadata.objects.all().select_related(
+        'jurisdiction',
+        'court',
+        'volume',
+        'reporter',
+    ).prefetch_related('citations')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     permission_classes = (permissions.IsAPIUser,)
     filter_class = filters.CaseFilter
     lookup_field = 'slug'
+    order_by = 'decision_date'
 
     def download(self, **kwargs):
         if kwargs.get(self.lookup_field):
             try:
-                cases = [models.CaseMetadata.objects.get(**kwargs)]
+                case_list = [models.CaseMetadata.objects.get(**kwargs)]
             except models.CaseMetadata.DoesNotExist as e:
                 return JsonResponse({
                     'message': 'Unable to find case with matching slug: %s' % e
                 }, status=404, )
 
         else:
-            cases = self.queryset.all().order_by('decision_date')
-
+            cases = self.queryset.all()
             for backend in list(self.filter_backends):
                 cases = backend().filter_queryset(self.request, cases, self)
 
-            cases = cases.select_related('jurisdiction')
-
             # user is requesting a zip but there is nothing to zip, so 404 is the right response.
             # See https://stackoverflow.com/a/11760249/307769
-            if cases.count() == 0:
+            if not cases.exists():
                 return JsonResponse({
-                    'message': 'Request did not return any results.'
+                    'message': 'Request did not return any results.',
                 }, status=404, )
 
-            cases = self.paginate_queryset(cases)
+            case_list = self.paginate_queryset(cases)
 
-        blacklisted_case_count = len(list((case for case in cases if not case.jurisdiction.whitelisted)))
+        blacklisted_case_count = len(list((case for case in case_list if not case.jurisdiction.whitelisted)))
 
         try:
             # check user's case allowance against blacklisted
@@ -108,12 +113,11 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         except ValidationError as err:
             return JsonResponse(err.detail, status=403)
 
-        filename = resources.create_zip_filename(cases)
+        filename = resources.create_zip_filename(case_list)
 
-        case_response = serializers.MetaCaseSerializer(data=cases, many=True, context={'request': self.request})
-        if case_response.is_valid():
-            case_objects = case_response.data
-        response = resources.create_download_response(filename=filename, content=case_objects)
+        case_response = serializers.CaseSerializerWithCasebody(case_list, many=True, context={'request': self.request})
+        case_data = case_response.data
+        response = resources.create_download_response(filename=filename, content=case_data)
         user.update_case_allowance(case_count=blacklisted_case_count)
 
         return response
