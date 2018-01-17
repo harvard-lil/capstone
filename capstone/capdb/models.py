@@ -508,10 +508,14 @@ class CaseXML(BaseXMLModel):
             removed = original_casebody_xpaths - updated_casebody_xpaths
             added = updated_casebody_xpaths - original_casebody_xpaths
 
-            if len(added) > 0 or len(removed) > 0:
-                # compile a list of xpath base paths without the tag name
-                # (an element with the same base xpath but not tag name
-                # is considered 'renamed')
+            if len(added) > len(removed):
+                raise Exception("No current support for adding casebody elements")
+            elif len(added) < len(removed):
+                raise Exception("No current support for removing casebody elements")
+            elif len(added) > 0 or len(removed) > 0:
+                # if we have the same number of added and removed, see
+                # if they have the same parent in the xpath, which means
+                # they're probably renamed elements rather than additions/deletions
                 removed_base_xpaths = []
                 for xpath in removed:
                     base_path = xpath.rsplit('}', 1)[0] + '}'
