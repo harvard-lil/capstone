@@ -24,12 +24,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='casemetadata',
-            name='opinion_dissent',
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='casemetadata',
-            name='opinion_majority',
+            name='opinions',
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(

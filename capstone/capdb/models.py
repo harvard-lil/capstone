@@ -449,8 +449,7 @@ class CaseMetadata(AutoSlugMixin, models.Model):
                                      on_delete=models.SET_NULL)
     judges = models.TextField(null=True, blank=True)
     parties = models.TextField(null=True, blank=True)
-    opinion_majority = models.TextField(null=True, blank=True)
-    opinion_dissent = models.TextField(null=True, blank=True)
+    opinions = models.TextField(null=True, blank=True)
     attorneys = models.TextField(null=True, blank=True)
 
     citations = models.ManyToManyField('Citation', related_name='case_metadatas')
