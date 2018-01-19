@@ -50,26 +50,24 @@ def get_people_for_casemetadata():
         sql = """
             CREATE OR REPLACE FUNCTION get_opinions(xml) RETURNS text[] AS $$
             DECLARE
-            --   x text[] := ARRAY[unnest(xpath('//casebody:casebody/casebody:attorneys/text()', $1, ARRAY[ARRAY['casebody','http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1']]))];
-              x text[] := (xpath('//casebody:opinion/@type', $1, ARRAY[ARRAY['casebody','http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1']])::text[]);
+              opinion_array text[] := (xpath('//casebody:opinion/@type', $1, ARRAY[ARRAY['casebody','http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1']])::text[]);
               result text[];
               opinion_type text;
             BEGIN
-              FOREACH opinion_type IN ARRAY x
+              FOREACH opinion_type IN ARRAY opinion_array
               LOOP
                 result := result || ARRAY[opinion_type, (
-                  xpath(
-                      format('//casebody:opinion[@type=%I]/author/text()', opinion_type
-                      ), $1, ARRAY[ARRAY['casebody','http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1']]
-                  )::text
+                  substring(
+                      xpath(
+                      format('//casebody:opinion[@type="%I"]/casebody:author/text()', opinion_type
+                    ), $1, ARRAY[ARRAY['casebody','http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1']]
+                  )::text, '\S(?:.*\S)*')
                 )];
               END LOOP;
               RETURN result;
             END;
             $$ LANGUAGE plpgsql;
         
-
-
             UPDATE capdb_casemetadata cm
             SET attorneys=ns_xpath('//casebody:attorneys/text()', cx.orig_xml),
             judges=ns_xpath('//casebody:judges/text()', cx.orig_xml),
