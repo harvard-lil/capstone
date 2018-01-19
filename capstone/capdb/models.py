@@ -656,6 +656,11 @@ class CaseXML(BaseXMLModel):
         case_metadata.last_page = data["last_page"]
         case_metadata.case_id = data["case_id"]
 
+        case_metadata.judges = data["judges"]
+        case_metadata.parties = data["parties"]
+        case_metadata.opinions = data["opinions"]
+        case_metadata.attorneys = data["attorneys"]
+
         if not duplicative_case:
             case_metadata.name = data["name"]
             case_metadata.name_abbreviation = data["name_abbreviation"]
