@@ -49,8 +49,15 @@ def get_case_metadata(case_xml):
     attorneys = str({attorney.text for attorney in parsed('casebody|attorneys')})
     parties = str({party.text for party in parsed('casebody|parties')})
     opinions = set()
-    for opinion in parsed('casebody|opinion > casebody|author'):
-        opinions.add(str({opinion.getparent().attrib['type'], opinion.text}))
+    for opinion in parsed('casebody|opinion'):
+        new_opinion = set()
+        new_opinion.add(opinion.attrib['type'])
+        for child in opinion.getchildren():
+            if 'author' in child.tag:
+                new_opinion.add(child.text)
+        if len(new_opinion) == 1:
+            new_opinion.add("")
+        opinions.add(str(new_opinion))
     opinions = str(opinions)
 
     return dict(metadata, **{
