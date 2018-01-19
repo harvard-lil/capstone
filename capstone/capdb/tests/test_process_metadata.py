@@ -28,6 +28,14 @@ def test_get_case_metadata():
                     assert type(case_metadata["opinions"]) is str
                     assert type(case_metadata["parties"]) is str
 
+def test_specific_case_metadata():
+    casemets_file = "test_data/from_vendor/32044057891608_redacted/casemets/32044057891608_redacted_CASEMETS_0001.xml"
+
+    case_xml = read_file(casemets_file)
+    case_metadata = dict(process_metadata.get_case_metadata(case_xml))
+    assert type(case_metadata["parties"]) is str
+    assert "Jonathan Taylor, Appellant" in case_metadata["parties"]
+    assert "majority" in case_metadata["opinion"]
 
 @pytest.mark.django_db
 def test_create_case_metadata_from_all_vols(ingest_case_xml):
