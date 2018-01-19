@@ -56,10 +56,10 @@ class CaseFilter(filters.FilterSet):
         label='Date Max (Format YYYY-MM-DD)',
         name='decision_date_max',
         method='find_by_date')
-    judges = filters.CharFilter(name='judges', label='judges', lookup_expr='iexact')
-    attorneys = filters.CharFilter(name='attorneys', label='attorneys', lookup_expr='iexact')
-    parties = filters.CharFilter(name='parties', label='parties', lookup_expr='iexact')
-    opinions = filters.CharFilter(name='opinions', label='opinions', lookup_expr='iexact')
+    judges = filters.CharFilter(name='judges', label='judges', lookup_expr='icontains')
+    attorneys = filters.CharFilter(name='attorneys', label='attorneys', lookup_expr='icontains')
+    parties = filters.CharFilter(name='parties', label='parties', lookup_expr='icontains')
+    opinions = filters.CharFilter(name='opinions', label='opinions', lookup_expr='icontains')
 
     def find_by_citation(self, qs, name, value):
         citation = models.Citation.objects.filter(cite__iexact=value)
