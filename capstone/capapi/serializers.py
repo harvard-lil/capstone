@@ -50,6 +50,10 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'reporter_url',
             'volume',
             'volume_url',
+            'judges',
+            'attorneys',
+            'opinions',
+            'parties',
         )
 
 

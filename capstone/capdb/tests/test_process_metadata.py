@@ -35,7 +35,7 @@ def test_specific_case_metadata():
     case_metadata = dict(process_metadata.get_case_metadata(case_xml))
     assert type(case_metadata["parties"]) is str
     assert "Jonathan Taylor, Appellant" in case_metadata["parties"]
-    assert "majority" in case_metadata["opinion"]
+    assert "majority" in case_metadata["opinions"]
 
 @pytest.mark.django_db
 def test_create_case_metadata_from_all_vols(ingest_case_xml):

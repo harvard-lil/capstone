@@ -77,4 +77,3 @@ def get_people_for_casemetadata():
             WHERE cm.id = cx.metadata_id;
         """
         cursor.execute(sql)
-        
