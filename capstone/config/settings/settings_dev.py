@@ -26,3 +26,17 @@ if os.environ.get('DOCKERIZED'):
     # this will only be used if CELERY_TASK_ALWAYS_EAGER = False
     CELERY_BROKER_URL = 'redis://redis'
     CELERY_RESULT_BACKEND = 'redis://redis'
+
+
+# turn sql console logging on by setting DEBUG_SQL = True
+DEBUG_SQL = False
+
+if DEBUG_SQL:
+    LOGGING['handlers']['sql'] = {
+        'level': 'DEBUG',
+        'class': 'logging.StreamHandler',
+    }
+    LOGGING['loggers']['django.db.backends'] = {
+        'level': 'DEBUG',
+        'handlers': ['sql']
+    }
