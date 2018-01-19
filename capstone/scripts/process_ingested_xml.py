@@ -48,7 +48,7 @@ def get_people_for_casemetadata():
     """
     with connection.cursor() as cursor:
         sql = """
-            CREATE OR REPLACE FUNCTION get_opinions(xml) RETURNS text[] AS $$
+            CREATE OR REPLACE FUNCTION get_opinions(xml) RETURNS json AS $$
             DECLARE
               opinion_array text[] := (xpath('//casebody:opinion/@type', $1, ARRAY[ARRAY['casebody','http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1']])::text[]);
               result text[];
@@ -56,22 +56,22 @@ def get_people_for_casemetadata():
             BEGIN
               FOREACH opinion_type IN ARRAY opinion_array
               LOOP
-                result := result || ARRAY[opinion_type, (
+                result := result || ARRAY[opinion_type, (array_to_json(
                   substring(
-                      xpath(
+                    xpath(
                       format('//casebody:opinion[@type="%I"]/casebody:author/text()', opinion_type
                     ), $1, ARRAY[ARRAY['casebody','http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1']]
-                  )::text, '\S(?:.*\S)*')
-                )];
+                  )::text, '\S(?:.*)\S*')::text[]
+                )::text)];
               END LOOP;
-              RETURN result;
+              RETURN json_object(result::text[]);
             END;
             $$ LANGUAGE plpgsql;
-        
+
             UPDATE capdb_casemetadata cm
-            SET attorneys=ns_xpath('//casebody:attorneys/text()', cx.orig_xml),
-            judges=ns_xpath('//casebody:judges/text()', cx.orig_xml),
-            parties=ns_xpath('//casebody:parties/text()', cx.orig_xml),
+            SET attorneys=array_to_json(ns_xpath('//casebody:attorneys/text()', cx.orig_xml)::text[]),
+            judges=array_to_json(ns_xpath('//casebody:judges/text()', cx.orig_xml)::text[]),
+            parties=array_to_json(ns_xpath('//casebody:parties/text()', cx.orig_xml)::text[]),
             opinions=get_opinions(cx.orig_xml)
             FROM capdb_casexml AS cx
             WHERE cm.id = cx.metadata_id;
