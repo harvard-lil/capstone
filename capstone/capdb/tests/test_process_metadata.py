@@ -22,6 +22,12 @@ def test_get_case_metadata():
                     assert len(case_metadata["jurisdiction"]) > 0
                     assert type(case_metadata["decision_date"]) is datetime.datetime
                     assert type(case_metadata["decision_date_original"]) is str
+                    assert type(case_metadata["opinions"]) is str
+                    assert type(case_metadata["attorneys"]) is str
+                    assert type(case_metadata["judges"]) is str
+                    assert type(case_metadata["opinions"]) is str
+                    assert type(case_metadata["parties"]) is str
+
 
 @pytest.mark.django_db
 def test_create_case_metadata_from_all_vols(ingest_case_xml):

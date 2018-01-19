@@ -656,17 +656,17 @@ class CaseXML(BaseXMLModel):
         case_metadata.last_page = data["last_page"]
         case_metadata.case_id = data["case_id"]
 
-        case_metadata.judges = data["judges"]
-        case_metadata.parties = data["parties"]
-        case_metadata.opinions = data["opinions"]
-        case_metadata.attorneys = data["attorneys"]
-
         if not duplicative_case:
             case_metadata.name = data["name"]
             case_metadata.name_abbreviation = data["name_abbreviation"]
             case_metadata.decision_date_original = data["decision_date_original"]
             case_metadata.decision_date = data["decision_date"]
             case_metadata.docket_number = data["docket_number"]
+
+            case_metadata.judges = data["judges"]
+            case_metadata.parties = data["parties"]
+            case_metadata.opinions = data["opinions"]
+            case_metadata.attorneys = data["attorneys"]
 
             # set jurisdiction
             if data['volume_barcode'] in special_jurisdiction_cases:
