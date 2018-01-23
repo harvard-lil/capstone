@@ -28,7 +28,6 @@ def get_case_metadata(case_xml):
     citations = {cite.attrib['category']: cite.text for cite in citation_entries}
     jurisdiction = parsed('case|court').attr('jurisdiction').strip()
 
-
     name = parsed('case|name').text()
     name_abbreviation = parsed('case|name').attr('abbreviation')
 
@@ -45,6 +44,18 @@ def get_case_metadata(case_xml):
         'name': parsed('case|court').text(),
     }
 
+    judges = str({judge.text for judge in parsed('casebody|judges')})
+    attorneys = str({attorney.text for attorney in parsed('casebody|attorneys')})
+    parties = str({party.text for party in parsed('casebody|parties')})
+    opinions = dict()
+    for opinion in parsed('casebody|opinion'):
+        opinions[opinion.attrib['type']] = "[]"
+        for child in opinion.getchildren():
+            if 'author' in child.tag:
+                opinions[opinion.attrib['type']] = child.text
+
+    opinions = str(opinions)
+
     return dict(metadata, **{
         'name': name,
         'name_abbreviation': name_abbreviation,
@@ -57,6 +68,10 @@ def get_case_metadata(case_xml):
         'court': court,
         'docket_number': docket_number,
         'duplicative': False,
+        'judges': judges,
+        'attorneys': attorneys,
+        'parties': parties,
+        'opinions': opinions
     })
 
 

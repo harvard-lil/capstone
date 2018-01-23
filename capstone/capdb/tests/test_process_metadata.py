@@ -22,6 +22,27 @@ def test_get_case_metadata():
                     assert len(case_metadata["jurisdiction"]) > 0
                     assert type(case_metadata["decision_date"]) is datetime.datetime
                     assert type(case_metadata["decision_date_original"]) is str
+                    assert type(case_metadata["opinions"]) is str
+                    assert type(case_metadata["attorneys"]) is str
+                    assert type(case_metadata["judges"]) is str
+                    assert type(case_metadata["opinions"]) is str
+                    assert type(case_metadata["parties"]) is str
+
+def test_case_metadata_opinion():
+    # test case with no opinion author
+    casemets_file = "test_data/from_vendor/32044057891608_redacted/casemets/32044057891608_redacted_CASEMETS_0001.xml"
+    case_xml = read_file(casemets_file)
+    case_metadata = dict(process_metadata.get_case_metadata(case_xml))
+    assert type(case_metadata["parties"]) is str
+    assert "majority" in case_metadata["opinions"]
+
+    # test case with opinion author
+    casemets_file = "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml"
+    case_xml = read_file(casemets_file)
+    case_metadata = dict(process_metadata.get_case_metadata(case_xml))
+    assert "majority" in case_metadata["opinions"]
+    assert "Lacey, J." in case_metadata["opinions"]
+
 
 @pytest.mark.django_db
 def test_create_case_metadata_from_all_vols(ingest_case_xml):

@@ -447,6 +447,11 @@ class CaseMetadata(AutoSlugMixin, models.Model):
     last_page = models.CharField(max_length=255, null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
+    judges = models.TextField(null=True, blank=True)
+    parties = models.TextField(null=True, blank=True)
+    opinions = models.TextField(null=True, blank=True)
+    attorneys = models.TextField(null=True, blank=True)
+
     citations = models.ManyToManyField('Citation', related_name='case_metadatas')
     docket_number = models.CharField(max_length=10000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
@@ -657,6 +662,11 @@ class CaseXML(BaseXMLModel):
             case_metadata.decision_date_original = data["decision_date_original"]
             case_metadata.decision_date = data["decision_date"]
             case_metadata.docket_number = data["docket_number"]
+
+            case_metadata.judges = data["judges"]
+            case_metadata.parties = data["parties"]
+            case_metadata.opinions = data["opinions"]
+            case_metadata.attorneys = data["attorneys"]
 
             # set jurisdiction
             if data['volume_barcode'] in special_jurisdiction_cases:

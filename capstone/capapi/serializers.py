@@ -1,5 +1,6 @@
 import re
 import logging
+import json
 
 from rest_framework import serializers
 
@@ -8,6 +9,18 @@ from .models import APIUser
 from .resources import email
 
 logger = logging.getLogger(__name__)
+
+
+class ExtraStringyJSONObject(serializers.JSONField):
+    def to_representation(self, value):
+        obj = super(ExtraStringyJSONObject, self).to_representation(value)
+        return {k: json.loads(v) for k, v in json.loads(obj).items()}
+
+
+class ExtraStringyJSONList(serializers.JSONField):
+    def to_representation(self, value):
+        l = super(ExtraStringyJSONList, self).to_representation(value)
+        return json.loads(l)
 
 
 class CitationSerializer(serializers.ModelSerializer):
@@ -29,6 +42,10 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     citations = CitationSerializer(many=True)
     volume = serializers.ReadOnlyField(source='volume.volume_number')
     volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
+    judges = ExtraStringyJSONList()
+    attorneys = ExtraStringyJSONList()
+    opinions = ExtraStringyJSONObject()
+    parties = ExtraStringyJSONList()
 
     class Meta:
         model = models.CaseMetadata
@@ -50,6 +67,10 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'reporter_url',
             'volume',
             'volume_url',
+            'judges',
+            'attorneys',
+            'opinions',
+            'parties',
         )
 
 
