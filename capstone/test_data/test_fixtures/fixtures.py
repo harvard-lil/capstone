@@ -120,3 +120,14 @@ def ingest_case_xml(ingest_volume_xml):
 @pytest.fixture
 def ingest_duplicative_case_xml(ingest_volumes):
     return CaseXML.objects.get(metadata__case_id='32044061407086_0001')
+
+@pytest.fixture
+def valid_mass_casebody_tag_rename():
+    return [{"caseid":"32044057892259_0001","id":"b15-13","barcode":"32044057892259","content":"Appeal from the Circuit Court of Woodford County; the lion. T. M. Shaw, Judge, presiding."},
+            {"caseid":"32044057891608_0001","id":"b17-14","barcode":"32044057891608","content":"* Justice Browne having decided this cause in the court below, gave no opinion."}]
+
+@pytest.fixture
+def invalid_mass_casebody_tag_rename():
+    return [{"caseid":"32044057892259_0001","id":"b15-13","barcode":"32044057892259","content":"Appeal from the Circuit Court of Woodford County; the lion. T. M. Shaw, Judge, presiding."},
+            {"caseid":"32044057891608_0001","id":"b17-14","barcode":"32044057891608","content":"* Justice Browne having decided this cause in the court below, gave no opinion."},
+            {"caseid":"32044061407086_0001","id":"b178-7","barcode":"32044061407086","content":"Before ALDRICH, Chief Judge, Mc­ENTEE and COFFIN, Circuit Judges."}]

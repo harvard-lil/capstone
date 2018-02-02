@@ -2,7 +2,7 @@ import pytest
 
 from django.utils.encoding import force_bytes
 
-from scripts.helpers import parse_xml, serialize_xml
+from scripts.helpers import parse_xml, serialize_xml, nsmap
 from test_data.test_fixtures.factories import *
 
 ### BaseXMLModel ###
@@ -176,6 +176,26 @@ def test_case_alter_structure(ingest_case_xml):
 
 
 @pytest.mark.django_db
+def test_case_rename_tag(ingest_case_xml):
+    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+    new_tag_name = "judges"
+    # make non-casebody structural changes
+    parties_element = parsed_case_xml('casebody|parties')[0]
+    parties_element.tag = "{{{}}}{}".format(nsmap['casebody'], new_tag_name)
+    ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
+    ingest_case_xml.save()
+    ingest_case_xml.refresh_from_db()
+    
+    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+    assert len(parsed_case_xml('casebody|judges')) == 1
+
+    alto = ingest_case_xml.pages.get(barcode="32044057892259_00008_0")
+    parsed_alto_xml = parse_xml(alto.orig_xml)
+    assert parsed_alto_xml('alto|StructureTag[ID="b15-4"]').attr["LABEL"] == new_tag_name
+
+
+
+@pytest.mark.django_db
 def test_casebody_delete_element_raise(ingest_case_xml):
     # make a non-casebody structural change
     with pytest.raises(Exception, match='No current support for removing casebody elements'):
@@ -203,8 +223,6 @@ def test_casebody_delete_word_raise(ingest_case_xml):
         parsed_case_xml('casebody|p[id="b17-6"]').text("The in favor of the appellee rests wholly on the assumption that the judgment in the garnishee proceedings should be rendered in favor of the judgment debtor for the use of the judgment creditor, against the garnished party, for the whole amount due, and in case of failure to so render judgment for such amount and for a less amount than due, the balance over and above the amount of the judgment so rendered would be barred on the grounds of former recovery.")
         ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
         ingest_case_xml.save()
-
-
 
 
 # PageXML update
