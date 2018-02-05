@@ -12,6 +12,7 @@ from celery import chord
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db import transaction, IntegrityError
+from django.utils.encoding import force_str
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
 from capdb.storages import ingest_storage, inventory_storage, redis_client, redis_ingest_client as r
@@ -175,7 +176,8 @@ def ingest_volumes(full_sync):
     previous_barcode = None
     filtered_volume_folders = []
     for volume_folder in volume_folders:
-        barcode = volume_folder.split(b'_', 1)[0]
+        volume_folder = force_str(volume_folder)
+        barcode = volume_folder.split('_', 1)[0]
         if barcode == previous_barcode:
             # delete redis queues for duplicate volumes
             r.delete('volume:' + volume_folder)
@@ -196,11 +198,11 @@ def ingest_volume(volume_folder, full_sync):
         Celery task to ingest a single volume folder.
     """
     info("Processing volume: %s" % volume_folder)
-    volume_folder = volume_folder.decode()
+    volume_folder = force_str(volume_folder)
 
     # Get all entries from volume:<volume_folder> queue, splitting tab-delimited strings back into tuples:
     s3_items = [line.split("\t") for files_str in spop_all('volume:' + volume_folder) for line in
-                files_str.decode().split("\n")]
+                force_str(files_str).split("\n")]
 
     # sort s3 items by file type:
     s3_items_by_type = {'alto': [], 'jp2': [], 'tiff': [], 'casemets': [], 'volmets': [], 'md5': []}
