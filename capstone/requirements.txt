@@ -4,7 +4,6 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
--e git+git://github.com/jcushman/celery-resource-autoscaler.git@master#egg=celery-resource-autoscaler
 amqp==2.2.2               # via kombu
 apipkg==1.4               # via execnet
 asn1crypto==0.22.0        # via cryptography
