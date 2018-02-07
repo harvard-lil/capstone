@@ -30,7 +30,6 @@ def test_create_or_update_metadata(ingest_case_xml):
 
     ingest_case_xml.orig_xml = serialize_xml(parsed)
     ingest_case_xml.save()
-    ingest_case_xml.create_or_update_metadata()
 
     # fetch new metadata
     new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
@@ -43,22 +42,6 @@ def test_create_or_update_metadata(ingest_case_xml):
     # citations should have been replaced
     assert len(new_citations) == 1
     assert new_citations[0].cite == '123 Test 456'
-
-    # testing calling without updating metadata
-    old_case_metadata = new_case_metadata
-
-    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
-    case_parent_tag = parsed_case_xml('case|case')
-    case_parent_tag.remove('case|name')
-    case_parent_tag.remove('case|citation')
-    ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    ingest_case_xml.save()
-    ingest_case_xml.refresh_from_db()
-    ingest_case_xml.create_or_update_metadata(update_existing=False)
-
-    new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
-    assert new_case_metadata == old_case_metadata
-
 
 
 ### CaseXML ###
@@ -75,7 +58,6 @@ def test_get_casebody_from_xml(ingest_case_xml):
 
 @pytest.mark.django_db
 def test_related_names(ingest_case_xml):
-    ingest_case_xml.create_or_update_metadata()
     volxml = ingest_case_xml.volume
     case = ingest_case_xml.metadata
 

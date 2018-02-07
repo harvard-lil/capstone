@@ -108,8 +108,11 @@ def migrate():
     """
         Migrate all dbs at once
     """
+    update_postgres_env()
+
     local("python manage.py migrate --database=default")
     local("python manage.py migrate --database=capapi")
+
     if settings.USE_TEST_TRACKING_TOOL_DB:
         local("python manage.py migrate --database=tracking_tool")
 

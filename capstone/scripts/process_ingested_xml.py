@@ -1,6 +1,6 @@
 from django.db import connection
 
-from capdb.models import VolumeXML
+from capdb.models import VolumeXML, PageXML
 
 
 def build_case_page_join_table(volume_id=None):
@@ -9,27 +9,33 @@ def build_case_page_join_table(volume_id=None):
 
         If volume_id is provided, only index cases with that volume_id.
     """
+    # remove existing relations
+    if volume_id:
+        case_page_join_model = PageXML.cases.through
+        case_page_join_model.objects.filter(casexml__volume_id=volume_id).delete()
+
+    # add new relations
     with connection.cursor() as cursor:
         params = {'volume_id': volume_id} if volume_id else {}
         sql = """
-            INSERT INTO cap_case_page (page_id, case_id)
-            SELECT p.id, case_id
-            FROM cap_page p,
-                (SELECT c.id as case_id,
-                    v.barcode || '_' || substring(
+            INSERT INTO capdb_pagexml_cases (pagexml_id, casexml_id)
+            SELECT p.id, casexml_id
+            FROM capdb_pagexml p,
+                (SELECT c.id as casexml_id,
+                    v.metadata_id || '_' || substring(
                         text(
                             unnest(
-                                ns_xpath('//METS:fileGrp[@USE="alto"]/METS:file/@ID', c.orig_xml)
+                                ns_xpath('//mets:fileGrp[@USE="alto"]/mets:file/@ID', c.orig_xml)
                             )
                         ), 6) as page_barcode
-                FROM cap_case c, cap_volume v
+                FROM capdb_casexml c, capdb_volumexml v
                 WHERE
                     v.id=c.volume_id
-                    AND NOT EXISTS (SELECT 1 FROM cap_case_page cp WHERE cp.case_id=c.id)
+                    AND NOT EXISTS (SELECT 1 FROM capdb_pagexml_cases cp WHERE cp.casexml_id=c.id)
                     %s
                 ) as subq
             WHERE subq.page_barcode=p.barcode;
-        """ % ("AND v.id=:volume_id" if volume_id else "")
+        """ % ("AND v.id=%(volume_id)s" if volume_id else "")
         cursor.execute(sql, params)
 
 

@@ -11,12 +11,13 @@ import celery
 from celery import chord
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError
 from django.utils.encoding import force_str
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
 from capdb.storages import ingest_storage, inventory_storage, redis_client, redis_ingest_client as r
 from scripts.helpers import resolve_namespace, parse_xml
+from scripts.process_ingested_xml import build_case_page_join_table
 
 logger = get_task_logger(__name__)
 info = logger.info
@@ -192,11 +193,11 @@ def ingest_volumes(full_sync):
 
 
 @celery.shared_task
-@transaction.atomic
 def ingest_volume(volume_folder, full_sync):
     """
         Celery task to ingest a single volume folder.
     """
+
     info("Processing volume: %s" % volume_folder)
     volume_folder = force_str(volume_folder)
 
@@ -215,112 +216,107 @@ def ingest_volume(volume_folder, full_sync):
     # set up variables for ingest:
     volume_barcode = volume_folder.split('_', 1)[0]
     volmets_path, volmets_md5 = s3_items_by_type['volmets'][0]
-    alto_barcode_to_case_map = defaultdict(list)
 
     try:
-        with transaction.atomic():
-            # get or create VolumeXML object from VolumeMetadata entry for this barcode:
+
+        ### import volume
+
+        # find VolumeMetadata entry for this barcode:
+        try:
             volume_metadata = VolumeMetadata.objects.select_related('volume_xml').defer('volume_xml__orig_xml').get(
                 barcode=volume_barcode)
-            try:
-                volume = volume_metadata.volume_xml
-            except VolumeXML.DoesNotExist:
-                volume = VolumeXML(metadata=volume_metadata)
+        except VolumeMetadata.DoesNotExist:
+            store_error("missing_volume_metadata", volume_barcode)
+            return False
 
-            # If not forced full_sync, s3_key is already set, and same md5, skip this volume:
-            if not full_sync and volmets_path == volume.s3_key and volume.md5 == volmets_md5:
-                info("Skipping %s, already ingested." % volume_folder)
+        # get or create VolumeXML object:
+        try:
+            volume = volume_metadata.volume_xml
+        except VolumeXML.DoesNotExist:
+            volume = VolumeXML(metadata=volume_metadata)
+
+        # If not forced full_sync, s3_key is already set, and same md5, skip this volume:
+        if not full_sync and volmets_path == volume.s3_key and volume.md5 == volmets_md5:
+            info("Skipping %s, already ingested." % volume_folder)
+            return False
+
+        # update volume xml
+        if volume.md5 != volmets_md5:
+            volume.orig_xml = ingest_storage.contents(volmets_path)
+
+            # make sure that file listing in volmets matches s3 files; otherwise record error for this volume and return
+            volmets_valid = validate_volmets(volume.orig_xml, s3_items_by_type, path_prefix=volume_folder + '/')
+            if not volmets_valid:
+                store_error("nonmatching_files", volume_folder)
                 return False
 
-            # update volume xml
-            if volume.md5 != volmets_md5:
-                volume.orig_xml = ingest_storage.contents(volmets_path)
+        volume.s3_key = volmets_path
+        if volume.tracker.changed():
+            volume.save()
 
-                # make sure that file listing in volmets matches s3 files; otherwise record error for this volume and return
-                volmets_valid = validate_volmets(volume.orig_xml, s3_items_by_type, path_prefix=volume_folder + '/')
-                if not volmets_valid:
-                    store_error("nonmatching_files", volume_folder)
-                    return False
+        ### import cases
 
-            volume.s3_key = volmets_path
-            if volume.tracker.changed():
-                volume.save()
+        # create or update each case
+        existing_cases = {c.metadata.case_id: c for c in
+                          volume.case_xmls.select_related('metadata').defer('orig_xml')}
+        for case_s3_key, case_md5 in s3_items_by_type['casemets']:
+            case_barcode = volume_barcode + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
 
-            ### import cases
+            case = existing_cases.pop(case_barcode, None)
 
-            # make sure existing cases have metadata (this check can possibly be removed after first run)
-            for case in volume.case_xmls.filter(metadata_id=None):
-                case.create_or_update_metadata()
+            # handle existing case
+            if case:
+                case.s3_key = case_s3_key
+                if case.md5 != case_md5:
+                    case.orig_xml = ingest_storage.contents(case_s3_key)
 
-            # create or update each case
-            existing_cases = {c.metadata.case_id: c for c in
-                              volume.case_xmls.select_related('metadata').defer('orig_xml')}
-            for case_s3_key, case_md5 in s3_items_by_type['casemets']:
-                case_barcode = volume_barcode + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
+            # handle new case
+            else:
+                case = CaseXML(
+                    volume=volume,
+                    s3_key=case_s3_key,
+                    orig_xml=ingest_storage.contents(case_s3_key),
+                )
 
-                case = existing_cases.pop(case_barcode, None)
+            if case.tracker.changed():
+                case.save()
 
-                # handle existing case
-                if case:
-                    case.s3_key = case_s3_key
-                    if case.md5 != case_md5:
-                        case.orig_xml = ingest_storage.contents(case_s3_key)
+        ### import pages
 
-                # handle new case
-                else:
-                    case = CaseXML(
-                        volume=volume,
-                        s3_key=case_s3_key,
-                        orig_xml=ingest_storage.contents(case_s3_key),
-                    )
+        existing_pages = {p.barcode: p for p in volume.page_xmls.defer('orig_xml')}
+        for page_s3_key, page_md5 in s3_items_by_type['alto']:
+            alto_barcode = volume_barcode + "_" + page_s3_key.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
 
-                if case.tracker.changed():
-                    xml_changed = case.tracker.has_changed('orig_xml')
+            page = existing_pages.pop(alto_barcode, None)
 
-                    case.save()
+            # handle existing page
+            if page:
+                page.s3_key = page_s3_key
+                if page.md5 != page_md5:
+                    page.orig_xml = ingest_storage.contents(page_s3_key)
 
-                    if xml_changed:
-                        # remove this when it gets called automatically by save()
-                        case.create_or_update_metadata()
+            # handle new page
+            else:
+                page = PageXML(
+                    volume=volume,
+                    s3_key=page_s3_key,
+                    barcode=alto_barcode,
+                    orig_xml=ingest_storage.contents(page_s3_key),
+                )
 
-                        # store case-to-page matches
-                        for alto_barcode in set(re.findall(r'file ID="alto_(\d{5}_[01])"', case.orig_xml)):
-                            alto_barcode_to_case_map[volume_barcode + "_" + alto_barcode].append(case.id)
+            if page.tracker.changed():
+                page.save()
 
-            ### import pages
-            existing_pages = {p.barcode: p for p in volume.page_xmls.defer('orig_xml')}
-            for page_s3_key, page_md5 in s3_items_by_type['alto']:
-                alto_barcode = volume_barcode + "_" + page_s3_key.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
+        ### cleanup
 
-                page = existing_pages.pop(alto_barcode, None)
+        # fill join table between PageXML and CaseXML
+        build_case_page_join_table(volume.pk)
 
-                # handle existing page
-                if page:
-                    page.s3_key = page_s3_key
-                    if page.md5 != page_md5:
-                        page.orig_xml = ingest_storage.contents(page_s3_key)
-
-                # handle new page
-                else:
-                    page = PageXML(
-                        volume=volume,
-                        s3_key=page_s3_key,
-                        barcode=alto_barcode,
-                        orig_xml=ingest_storage.contents(page_s3_key),
-                    )
-
-                if page.tracker.changed():
-                    page.save()
-
-                # write case-to-page matches
-                if alto_barcode_to_case_map[alto_barcode]:
-                    page.cases.set(alto_barcode_to_case_map[alto_barcode])
-
-            for spare_case in existing_cases:
-                store_error("spare_case", volume_folder, spare_case.pk)
-
-            for spare_page in existing_pages:
-                store_error("spare_page", volume_folder, spare_page.pk)
+        # report errors
+        for spare_case in existing_cases:
+            store_error("spare_case", volume_folder, spare_case.pk)
+        for spare_page in existing_pages:
+            store_error("spare_page", volume_folder, spare_page.pk)
 
     except IntegrityError as e:
         store_error("integrity_error", volume_folder, e)
