@@ -13,13 +13,14 @@ xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w
 #   helpers for common patterns
 def setup_case(**kwargs):
     # set up casemetadata instance
-    volume_xml = VolumeXMLFactory.create()
-    citation = CitationFactory.create(type='official')
+    citation = CitationFactory(type='official')
     case = CaseMetadataFactory(slug=slugify(citation.cite), **kwargs)
-    casexml = CaseXMLFactory.create(metadata=case)
     case.citations.add(citation)
-    case.jurisdiction.save()
-    case.save()
+
+    # Add VolumeXML and CaseXML instances
+    volume_xml = VolumeXMLFactory(metadata=case.volume)
+    casexml = CaseXMLFactory.build(metadata=case, volume=volume_xml)
+    casexml.save(create_or_update_metadata=False)
 
     return case
 
@@ -29,10 +30,8 @@ def setup_casexml(**kwargs):
 
 
 def setup_jurisdiction(**kwargs):
-    jurisdiction = JurisdictionFactory.create()
-    jurisdiction.save()
+    return JurisdictionFactory(**kwargs)
 
-    return jurisdiction
 
 def setup_authenticated_user(**kwargs):
     user = APIUserFactory.create(**kwargs)

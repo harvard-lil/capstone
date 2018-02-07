@@ -190,6 +190,15 @@ class BaseXMLModel(models.Model):
         self.orig_xml = serialize_xml(parsed_document)
         self.save()
 
+    def xml_modified(self):
+        """ Return True if orig_xml was previously saved to the database and is now different. """
+        return (
+            self.tracker.has_changed('orig_xml') and
+            self.pk is not None and
+            self.tracker.previous('orig_xml') and
+            force_str(self.orig_xml) != self.tracker.previous('orig_xml')
+        )
+
 
 ### models ###
 
@@ -485,159 +494,23 @@ class CaseXML(BaseXMLModel):
 
     tracker = FieldTracker()
 
-    def save(self, force_insert=False, force_update=False, *args, **kwargs):
-        # This compares new XML to the old and updates ALTO files as necessary.
-        # We don't yet support adding or removing words from the case body.
-        if self.tracker.has_changed('orig_xml') and\
-                self.pk is not None and\
-                self.tracker.previous('orig_xml') and \
-                force_str(self.orig_xml) != self.tracker.previous('orig_xml'):
-            # parse objects and get the xml tree objects
-            parsed_original_case = parse_xml(self.tracker.previous('orig_xml'))
-            parsed_updated_case = parse_xml(self.orig_xml)
-            updated_tree = parsed_updated_case.root
-            original_tree = parsed_original_case.root
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # allow disabling of create_or_update_metadata for testing
+        create_or_update_metadata = kwargs.pop('create_or_update_metadata', True)
 
-            # If the case is duplicative, just save and move on
-            if updated_tree.find('//duplicative:casebody', nsmap) is not None:
-                super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
-                return
+        if self.tracker.has_changed('orig_xml'):
 
-            original_casebody_tree = parsed_original_case("casebody|casebody")[0]
-            updated_casebody_tree = parsed_updated_case("casebody|casebody")[0]
+            # Create or update related CaseMetadata object
+            if create_or_update_metadata:
+                self.create_or_update_metadata(update_existing=True, save_self=False)
 
-            # get a list of casebody elements and make sure there's no additions or deletions
-            original_casebody_xpaths = set([original_tree.getelementpath(element) for element in original_casebody_tree])
-            updated_casebody_xpaths = set([updated_tree.getelementpath(element) for element in updated_casebody_tree])
-
-            removed = original_casebody_xpaths - updated_casebody_xpaths
-            added = updated_casebody_xpaths - original_casebody_xpaths
-
-            if len(added) > len(removed):
-                raise Exception("No current support for adding casebody elements")
-            elif len(added) < len(removed):
-                raise Exception("No current support for removing casebody elements")
-            elif len(added) > 0 or len(removed) > 0:
-                # if we have the same number of added and removed, see
-                # if they have the same parent in the xpath, which means
-                # they're probably renamed elements rather than additions/deletions
-                removed_base_xpaths = []
-                for xpath in removed:
-                    base_path = xpath.rsplit('}', 1)[0] + '}'
-                    removed_base_xpaths.append(base_path)
-
-                added_base_xpaths = []
-                for xpath in added:
-                    base_path = xpath.rsplit('}', 1)[0] + '}'
-                    added_base_xpaths.append(base_path)
-
-                # get the difference
-                added_base_path_diff = set(added_base_xpaths) - set(removed_base_xpaths)
-                removed_base_path_diff = set(removed_base_xpaths) - set(added_base_xpaths)
-
-                if len(added) > len(removed) or len(added_base_path_diff) > 0:
-                    raise Exception("No current support for adding casebody elements")
-                if len(removed) > len(added) or len(removed_base_path_diff) > 0:
-                    raise Exception("No current support for removing casebody elements")
-
-            # get the alto files associated with the case in the DB
-            alto_files = {}
-            for alto in self.pages.all():
-                alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-                alto_files[alto_fileid] = alto
-
-            modified_casebody_element = False
-            # check to see if any elements in the casebody have been updated so we can update the ALTO
-            # since the tree structures match, we can just iterate over the tree elements and compare values
-            for original_element in original_casebody_tree.iter():
-                xpath = original_tree.getpath(original_element)
-                updated_element = updated_tree.xpath(xpath)[0]
-
-                # in the alto_connections dict is a map between the pgmap value, such as '17' and the
-                # FILEID value, such as alto_0008_0
-                alto_connections = {}
-                alto_element_references = parsed_original_case(
-                    'mets|area[BEGIN="{}"]'.format(original_element.get('id'))).parent().nextAll('mets|fptr')
-                for area in alto_element_references('mets|area'):
-                    pgmap = area.get('BEGIN').split(".")[0].split("_")[1]
-                    alto_connections[pgmap] = area.get('FILEID')
-
-                # frequently, case text elements span pages. This gets the alto pages referred
-                # to by the element's pagemap attribute, and returns the alto_id of the page
-                if "pgmap" in original_element.keys() and ' ' in original_element.get("pgmap"):
-                    element_pages = [alto_connections[page.split('(')[0]] for page in
-                                     original_element.get("pgmap").split(" ")]
-                elif "pgmap" in original_element.keys():
-                    element_pages = [alto_connections[original_element.get("pgmap")]]
-
-                # check for a modified tag name
-                if original_element.tag != updated_element.tag:
-                    modified_casebody_element = True
-                    # go through each alto file that refers to the tag and update the reference
-                    for alto in element_pages:
-                        alto_page = alto_files[alto]
-                        parsed_alto_page = parse_xml(alto_page.orig_xml)
-                        structure_tag = parsed_alto_page(
-                            'alto|StructureTag[ID="{}"]'.format(original_element.get('id')))
-                        if structure_tag is not None:
-                            structure_tag.attr["LABEL"] = updated_element.tag.rsplit('}', 1)[1]
-                            alto_page.orig_xml = serialize_xml(parsed_alto_page)
-                            alto_page.save(save_case=False)
-
-                # check for modified element text
-                if original_element.text != updated_element.text:
-                    modified_casebody_element = True
-                    # we haven't devised a strategy for dealing with this yet
-                    if len(updated_element.text.split(" ")) != len(original_element.text.split(" ")):
-                        raise Exception("No current support for adding or removing case text")
-
-                    # Case text elements can include text from multiple alto pages. To compare them you need
-                    # to get all of the elements from all of the pages and compare them to a list of words
-                    # from the case text.
-                    wordcount = 0
-                    # loop through each referenced alto file
-                    for alto in element_pages:
-                        alto_page = alto_files[alto]
-                        parsed_alto_page = parse_xml(alto_page.orig_xml)
-                        text_block = parsed_alto_page(
-                            'alto|TextBlock[TAGREFS="{}"]'.format(original_element.get('id')))
-                        words = text_block("alto|String")
-                        # loop through each word in the ALTO text block
-                        for word in words:
-                            updated_word = updated_element.text.split(" ")[wordcount]
-                            original_word = original_element.text.split(" ")[wordcount]
-                            assert original_word == word.get("CONTENT")
-                            if updated_word != original_word:
-                                # update ALTO & set the character confidence and word confidence to 100%
-                                word.set("WC", "1.00")
-                                word.set("CC", "0")
-                                word.set("CONTENT", updated_element.text.split(" ")[wordcount])
-                            wordcount += 1
-
-                        alto_page.orig_xml = serialize_xml(parsed_alto_page)
-                        alto_page.save(save_case=False)
-
-
-            #update the volume md5
-            self.md5 = self.get_md5()
-            case_id = parsed_original_case('case|case').attr('caseid')
-            short_case_id = "casemets_{}".format(case_id.split('_')[1])
-            self.volume.refresh_from_db()
-            self.volume.update_related_sums(short_case_id, self.md5, str(len(force_bytes(self.orig_xml))))
-
-
-            # update the page md5s if a casebody element was modified
-            if modified_casebody_element is True:
-                for alto in self.pages.all():
-                    alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-                    parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5
-                    parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["SIZE"] = str(len(force_bytes(self.orig_xml)))
-
-            self.orig_xml=force_str(serialize_xml(parsed_updated_case))
+            # Update related VolumeXML and PageXML contents
+            if self.xml_modified():
+                self.process_updated_xml()
 
         # save that ish.
-        super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
-
+        super(CaseXML, self).save(*args, **kwargs)
 
     def __str__(self):
         return str(self.pk)
@@ -645,8 +518,157 @@ class CaseXML(BaseXMLModel):
     def get_casebody(self):
         return extract_casebody(self.orig_xml)
 
-    @transaction.atomic
-    def create_or_update_metadata(self, update_existing=True):
+    def process_updated_xml(self):
+        """
+            Update related PageXML and VolumeXML records based on updates to this record's XML.
+            We don't yet support adding or removing words from the case body.
+
+            This function should only be called if orig_xml has changed from a previously saved version,
+            and should only need to be called from save().
+        """
+
+        # parse objects and get the xml tree objects
+        parsed_original_case = parse_xml(self.tracker.previous('orig_xml'))
+        parsed_updated_case = parse_xml(self.orig_xml)
+        updated_tree = parsed_updated_case.root
+        original_tree = parsed_original_case.root
+
+        # If the case is duplicative, nothing needs to be done
+        if updated_tree.find('//duplicative:casebody', nsmap) is not None:
+            return
+
+        original_casebody_tree = parsed_original_case("casebody|casebody")[0]
+        updated_casebody_tree = parsed_updated_case("casebody|casebody")[0]
+
+        # get a list of casebody elements and make sure there's no additions or deletions
+        original_casebody_xpaths = set([original_tree.getelementpath(element) for element in original_casebody_tree])
+        updated_casebody_xpaths = set([updated_tree.getelementpath(element) for element in updated_casebody_tree])
+
+        removed = original_casebody_xpaths - updated_casebody_xpaths
+        added = updated_casebody_xpaths - original_casebody_xpaths
+
+        if len(added) > len(removed):
+            raise Exception("No current support for adding casebody elements")
+        elif len(added) < len(removed):
+            raise Exception("No current support for removing casebody elements")
+        elif len(added) > 0 or len(removed) > 0:
+            # if we have the same number of added and removed, see
+            # if they have the same parent in the xpath, which means
+            # they're probably renamed elements rather than additions/deletions
+            removed_base_xpaths = []
+            for xpath in removed:
+                base_path = xpath.rsplit('}', 1)[0] + '}'
+                removed_base_xpaths.append(base_path)
+
+            added_base_xpaths = []
+            for xpath in added:
+                base_path = xpath.rsplit('}', 1)[0] + '}'
+                added_base_xpaths.append(base_path)
+
+            # get the difference
+            added_base_path_diff = set(added_base_xpaths) - set(removed_base_xpaths)
+            removed_base_path_diff = set(removed_base_xpaths) - set(added_base_xpaths)
+
+            if len(added) > len(removed) or len(added_base_path_diff) > 0:
+                raise Exception("No current support for adding casebody elements")
+            if len(removed) > len(added) or len(removed_base_path_diff) > 0:
+                raise Exception("No current support for removing casebody elements")
+
+        # get the alto files associated with the case in the DB
+        alto_files = {}
+        for alto in self.pages.all():
+            alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
+            alto_files[alto_fileid] = alto
+
+        modified_casebody_element = False
+        # check to see if any elements in the casebody have been updated so we can update the ALTO
+        # since the tree structures match, we can just iterate over the tree elements and compare values
+        for original_element in original_casebody_tree.iter():
+            xpath = original_tree.getpath(original_element)
+            updated_element = updated_tree.xpath(xpath)[0]
+
+            # in the alto_connections dict is a map between the pgmap value, such as '17' and the
+            # FILEID value, such as alto_0008_0
+            alto_connections = {}
+            alto_element_references = parsed_original_case(
+                'mets|area[BEGIN="{}"]'.format(original_element.get('id'))).parent().nextAll('mets|fptr')
+            for area in alto_element_references('mets|area'):
+                pgmap = area.get('BEGIN').split(".")[0].split("_")[1]
+                alto_connections[pgmap] = area.get('FILEID')
+
+            # frequently, case text elements span pages. This gets the alto pages referred
+            # to by the element's pagemap attribute, and returns the alto_id of the page
+            if "pgmap" in original_element.keys() and ' ' in original_element.get("pgmap"):
+                element_pages = [alto_connections[page.split('(')[0]] for page in
+                                 original_element.get("pgmap").split(" ")]
+            elif "pgmap" in original_element.keys():
+                element_pages = [alto_connections[original_element.get("pgmap")]]
+
+            # check for a modified tag name
+            if original_element.tag != updated_element.tag:
+                modified_casebody_element = True
+                # go through each alto file that refers to the tag and update the reference
+                for alto in element_pages:
+                    alto_page = alto_files[alto]
+                    parsed_alto_page = parse_xml(alto_page.orig_xml)
+                    structure_tag = parsed_alto_page(
+                        'alto|StructureTag[ID="{}"]'.format(original_element.get('id')))
+                    if structure_tag is not None:
+                        structure_tag.attr["LABEL"] = updated_element.tag.rsplit('}', 1)[1]
+                        alto_page.orig_xml = serialize_xml(parsed_alto_page)
+                        alto_page.save(save_case=False)
+
+            # check for modified element text
+            if original_element.text != updated_element.text:
+                modified_casebody_element = True
+                # we haven't devised a strategy for dealing with this yet
+                if len(updated_element.text.split(" ")) != len(original_element.text.split(" ")):
+                    raise Exception("No current support for adding or removing case text")
+
+                # Case text elements can include text from multiple alto pages. To compare them you need
+                # to get all of the elements from all of the pages and compare them to a list of words
+                # from the case text.
+                wordcount = 0
+                # loop through each referenced alto file
+                for alto in element_pages:
+                    alto_page = alto_files[alto]
+                    parsed_alto_page = parse_xml(alto_page.orig_xml)
+                    text_block = parsed_alto_page(
+                        'alto|TextBlock[TAGREFS="{}"]'.format(original_element.get('id')))
+                    words = text_block("alto|String")
+                    # loop through each word in the ALTO text block
+                    for word in words:
+                        updated_word = updated_element.text.split(" ")[wordcount]
+                        original_word = original_element.text.split(" ")[wordcount]
+                        assert original_word == word.get("CONTENT")
+                        if updated_word != original_word:
+                            # update ALTO & set the character confidence and word confidence to 100%
+                            word.set("WC", "1.00")
+                            word.set("CC", "0")
+                            word.set("CONTENT", updated_element.text.split(" ")[wordcount])
+                        wordcount += 1
+
+                    alto_page.orig_xml = serialize_xml(parsed_alto_page)
+                    alto_page.save(save_case=False)
+
+        # update the volume md5
+        self.md5 = self.get_md5()
+        case_id = parsed_original_case('case|case').attr('caseid')
+        short_case_id = "casemets_{}".format(case_id.split('_')[1])
+        self.volume.refresh_from_db()
+        self.volume.update_related_sums(short_case_id, self.md5, str(len(force_bytes(self.orig_xml))))
+
+        # update the page md5s if a casebody element was modified
+        if modified_casebody_element is True:
+            for alto in self.pages.all():
+                alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
+                parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5
+                parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["SIZE"] = str(
+                    len(force_bytes(self.orig_xml)))
+
+        self.orig_xml = force_str(serialize_xml(parsed_updated_case))
+
+    def create_or_update_metadata(self, update_existing=True, save_self=True):
         """
             creates or updates CaseMetadata object
             - if we want to skip over updating existing case metadata objects
@@ -742,7 +764,8 @@ class CaseXML(BaseXMLModel):
         # create link between casexml and metadata
         if metadata_created:
             self.metadata = case_metadata
-            self.save(update_fields=['metadata'])
+            if save_self:
+                self.save(update_fields=['metadata'])
 
         return case_metadata
 
@@ -770,11 +793,10 @@ class PageXML(BaseXMLModel):
 
     tracker = FieldTracker()
 
+    @transaction.atomic
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
         #has our XML changed?
-        if self.tracker.has_changed('orig_xml') and\
-                self.pk is not None and\
-                self.tracker.previous('orig_xml'):
+        if self.xml_modified():
             short_alto_id = "_".join((["alto"] + self.barcode.split('_')[1:3]))
             self.md5 = self.get_md5()
 
