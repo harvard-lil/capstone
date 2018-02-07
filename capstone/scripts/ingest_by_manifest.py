@@ -11,7 +11,7 @@ import celery
 from celery import chord
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError
 from django.utils.encoding import force_str
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
