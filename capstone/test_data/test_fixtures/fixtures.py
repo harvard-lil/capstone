@@ -12,6 +12,19 @@ import capdb.storages
 
 from . import factories
 
+### One-time database setup ###
+
+# This is run once at database setup and data loaded here is available to all tests
+# See http://pytest-django.readthedocs.io/en/latest/database.html#populate-the-database-with-initial-test-data
+# Note that the documentation is currently misleading in that this function cannot create data (that seems to
+# deleted with each test), but can set up things like functions and triggers.
+@pytest.fixture(scope='session')
+def django_db_setup(django_db_setup, django_db_blocker, redis_proc):
+    with django_db_blocker.unblock():
+
+        # set up postgres functions and triggers
+        fabfile.update_postgres_env()
+
 
 ### file contents ###
 
