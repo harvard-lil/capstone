@@ -495,7 +495,7 @@ class CaseXML(BaseXMLModel):
     tracker = FieldTracker()
 
     @transaction.atomic
-    def save(self, *args, **kwargs):
+    def save(self, update_related=True, *args, **kwargs):
         # allow disabling of create_or_update_metadata for testing
         create_or_update_metadata = kwargs.pop('create_or_update_metadata', True)
 
@@ -506,7 +506,7 @@ class CaseXML(BaseXMLModel):
                 self.create_or_update_metadata(update_existing=True, save_self=False)
 
             # Update related VolumeXML and PageXML contents
-            if self.xml_modified():
+            if self.xml_modified() and update_related:
                 self.process_updated_xml()
 
         # save that ish.
