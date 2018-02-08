@@ -279,7 +279,7 @@ def ingest_volume(volume_folder, full_sync):
                 )
 
             if case.tracker.changed():
-                case.save()
+                case.save(update_related=False)
 
         ### import pages
 
@@ -305,7 +305,7 @@ def ingest_volume(volume_folder, full_sync):
                 )
 
             if page.tracker.changed():
-                page.save()
+                page.save(save_case=False, save_volume=False)
 
         ### cleanup
 
