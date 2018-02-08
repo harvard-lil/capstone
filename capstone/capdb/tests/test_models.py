@@ -124,6 +124,37 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml):
     assert new_volume_case_md5 == ingest_case_xml.md5
 
 
+# CaseXML update
+
+@pytest.mark.django_db
+def test_save_related_update_disabled(ingest_case_xml):
+
+    parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
+    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+    alto = ingest_case_xml.pages.get(barcode="32044057892259_00009_0")
+
+    # get ALTO
+    short_alto_identifier = 'alto_00009_0'
+    short_case_identifier = 'casemets_0001'
+
+    # change a word in the case XML
+    updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
+    parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
+    ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
+    ingest_case_xml.save(update_related=False)
+
+
+    # make sure the change was saved in the case_xml
+    ingest_case_xml.refresh_from_db()
+    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+    parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
+    assert '4rgUm3nt' in parsed_case_xml('casebody|p[id="b17-6"]').text()
+
+    # make sure the change shows up in the ALTO
+    alto.refresh_from_db()
+    assert '4rgUm3nt' not in parse_xml(alto.orig_xml)('alto|String[ID="ST_17.7.1.3"]').attr["CONTENT"]
+
+
 @pytest.mark.django_db
 def test_case_alter_structure(ingest_case_xml):
     # make non-casebody structural changes
@@ -255,3 +286,54 @@ def test_checksums_alto_update(ingest_case_xml):
     assert new_volume_alto_size != initial_volume_alto_size
     assert new_casemets_alto_size == str(len(force_bytes(alto.orig_xml)))
     assert new_volume_alto_size == str(len(force_bytes(alto.orig_xml)))
+
+
+
+# PageXML update
+
+@pytest.mark.django_db
+def test_alto_update_disable_related(ingest_case_xml):
+    parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
+    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+    alto = ingest_case_xml.pages.get(barcode="32044057892259_00009_0")
+    parsed_alto_xml = parse_xml(alto.orig_xml)
+
+
+    # get initial values
+    short_alto_identifier = 'alto_00009_0'
+    initial_casemets_alto_md5 = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    initial_casemets_alto_size = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
+    initial_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    initial_volume_alto_size = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
+
+    # change a value in the ALTO file
+    parsed_alto_xml('alto|TextStyle[ID="Style_1"]').attr["FONTFAMILY"] = 'Juggalo Sans'
+    alto.orig_xml = serialize_xml(parsed_alto_xml)
+    alto.save(save_case=False, save_volume=False)
+
+    # make sure the change was saved in the file
+    alto.refresh_from_db()
+    parsed_alto_xml = parse_xml(alto.orig_xml)
+    assert parsed_alto_xml('alto|TextStyle[ID="Style_1"]').attr["FONTFAMILY"] == 'Juggalo Sans'
+
+
+    ingest_case_xml.refresh_from_db()
+    ingest_case_xml.volume.refresh_from_db()
+    parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
+    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+
+    # make sure the md5s got updated
+    new_casemets_alto_md5 = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    new_casemets_alto_size = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
+    new_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    new_volume_alto_size = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
+
+    # make sure the md5 and size have changed, and that it's the correct current md5
+    assert new_casemets_alto_md5 == initial_casemets_alto_md5
+    assert new_volume_alto_md5 == initial_volume_alto_md5
+    assert new_casemets_alto_md5 != alto.md5
+    assert new_volume_alto_md5 != alto.md5
+    assert new_casemets_alto_size == initial_casemets_alto_size
+    assert new_volume_alto_size == initial_volume_alto_size
+    assert new_casemets_alto_size != str(len(force_bytes(alto.orig_xml)))
+    assert new_volume_alto_size != str(len(force_bytes(alto.orig_xml)))
