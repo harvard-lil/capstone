@@ -129,13 +129,10 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml):
 @pytest.mark.django_db
 def test_save_related_update_disabled(ingest_case_xml):
 
-    parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
     parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
     alto = ingest_case_xml.pages.get(barcode="32044057892259_00009_0")
 
     # get ALTO
-    short_alto_identifier = 'alto_00009_0'
-    short_case_identifier = 'casemets_0001'
 
     # change a word in the case XML
     updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
@@ -147,7 +144,6 @@ def test_save_related_update_disabled(ingest_case_xml):
     # make sure the change was saved in the case_xml
     ingest_case_xml.refresh_from_db()
     parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
-    parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
     assert '4rgUm3nt' in parsed_case_xml('casebody|p[id="b17-6"]').text()
 
     # make sure the change shows up in the ALTO
