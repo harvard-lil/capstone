@@ -9,9 +9,10 @@ import io
 
 import celery
 from celery import chord
+from celery.exceptions import ChordError
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.db import IntegrityError
+from django.db import IntegrityError, DatabaseError
 from django.utils.encoding import force_str
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
@@ -60,7 +61,7 @@ def sync_s3_data(full_sync=False):
     """
         Sync XML data from S3.
 
-        If full_sync is false, only sync files updated since the last sync (if any), or else within the last week.
+        If full_sync is false, only sync files where the VolumeXML with that md5 has not already been successfully ingested.
     """
 
     # pre-run setup
@@ -117,8 +118,8 @@ def read_inventory_files(full_sync):
     inventory_files = (trim_manifest_key(inventory_file['key']) for inventory_file in manifest['files'])
     field_names = manifest['fileSchema'].split(", ")
 
-    # get earliest last-modified date we're interested in:
-    minimum_date_str = None if full_sync else get_last_sync().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    # # get earliest last-modified date we're interested in:
+    minimum_date_str = None # if full_sync else get_last_sync().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
     # process each inventory file:
     chord(
@@ -138,9 +139,9 @@ def read_inventory_file(inventory_file, field_names, minimum_date_str, full_sync
 
     # read inventory file, grouping relevant files by volume name
     for file_entry in get_inventory_file_entries(inventory_file, field_names):
-        # filter out old files
-        if not full_sync and file_entry['LastModifiedDate'] < minimum_date_str:
-            continue
+        # # filter out old files
+        # if not full_sync and file_entry['LastModifiedDate'] < minimum_date_str:
+        #     continue
 
         # extract volume_folder name and file_name relative to volume folder
         m = volume_regex.search(file_entry['Key'])
@@ -187,10 +188,13 @@ def ingest_volumes(full_sync):
             filtered_volume_folders.append(volume_folder)
 
     # process each unique volume
-    chord(
-        (ingest_volume.s(i, full_sync) for i in filtered_volume_folders)
-    )(sync_s3_data_step_three.si())
-
+    try:
+        chord(
+            (ingest_volume.s(i, full_sync) for i in filtered_volume_folders)
+        )(sync_s3_data_step_three.si())
+    except ChordError as e:
+        # just log this -- detailed errors are collected in Redis and reported later
+        logger.exception("Error ingesting at least one volume")
 
 @celery.shared_task
 def ingest_volume(volume_folder, full_sync):
@@ -216,6 +220,7 @@ def ingest_volume(volume_folder, full_sync):
     # set up variables for ingest:
     volume_barcode = volume_folder.split('_', 1)[0]
     volmets_path, volmets_md5 = s3_items_by_type['volmets'][0]
+    volume_metadata = None
 
     try:
 
@@ -229,16 +234,19 @@ def ingest_volume(volume_folder, full_sync):
             store_error("missing_volume_metadata", volume_barcode)
             return False
 
+        volume_metadata.ingest_errors = None
+
+        # skip already ingested or skippable volumes:
+        if volume_metadata.ingest_status == "skip":
+            return
+        if volume_metadata.ingest_status == "ingested" and not full_sync:
+            return
+
         # get or create VolumeXML object:
         try:
             volume = volume_metadata.volume_xml
         except VolumeXML.DoesNotExist:
             volume = VolumeXML(metadata=volume_metadata)
-
-        # If not forced full_sync, s3_key is already set, and same md5, skip this volume:
-        if not full_sync and volmets_path == volume.s3_key and volume.md5 == volmets_md5:
-            info("Skipping %s, already ingested." % volume_folder)
-            return False
 
         # update volume xml
         if volume.md5 != volmets_md5:
@@ -247,7 +255,7 @@ def ingest_volume(volume_folder, full_sync):
             # make sure that file listing in volmets matches s3 files; otherwise record error for this volume and return
             volmets_valid = validate_volmets(volume.orig_xml, s3_items_by_type, path_prefix=volume_folder + '/')
             if not volmets_valid:
-                store_error("nonmatching_files", volume_folder)
+                store_error("nonmatching_files", volume_folder, volume_metadata=volume_metadata)
                 return False
 
         volume.s3_key = volmets_path
@@ -312,14 +320,20 @@ def ingest_volume(volume_folder, full_sync):
         # fill join table between PageXML and CaseXML
         build_case_page_join_table(volume.pk)
 
-        # report errors
-        for spare_case in existing_cases:
-            store_error("spare_case", volume_folder, spare_case.pk)
-        for spare_page in existing_pages:
-            store_error("spare_page", volume_folder, spare_page.pk)
+        # if errors, store to DB
+        if existing_cases or existing_pages:
+            if existing_cases:
+                store_error("spare_db_cases", [e.pk for e in existing_cases.values()], volume_metadata=volume_metadata)
+            if existing_pages:
+                store_error("spare_db_pages", [e.pk for e in existing_pages.values()], volume_metadata=volume_metadata)
 
-    except IntegrityError as e:
-        store_error("integrity_error", volume_folder, e)
+        # else mark volume as complete
+        else:
+            volume_metadata.ingest_status = "ingested"
+            volume_metadata.save()
+
+    except (IntegrityError, DatabaseError) as e:
+        store_error("database_error", [volume_folder, str(e)], volume_metadata=volume_metadata)
 
 
 def report_errors():
@@ -335,8 +349,14 @@ def write_last_sync():
 
 ### helpers ###
 
-def store_error(*args):
-    r.sadd("errors", json.dumps([str(arg) for arg in args]))
+def store_error(error_code, error_data, volume_metadata=None):
+    r.sadd("errors", json.dumps({'error_code': error_code, 'error_data': error_data, 'volume': volume_metadata.pk if volume_metadata else None}))
+    if volume_metadata:
+        if not volume_metadata.ingest_errors:
+            volume_metadata.ingest_errors = {}
+        volume_metadata.ingest_status = "error"
+        volume_metadata.ingest_errors[error_code] = error_data
+        volume_metadata.save()
 
 def spop_all(key):
     while r.scard(key) > 0:

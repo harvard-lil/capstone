@@ -38,11 +38,13 @@ def test():
     local("pytest --fail-on-template-vars --cov --cov-report=")
 
 @task
-def recent_sync_with_s3():
+def sync_with_s3():
+    """ Import XML for volumes that have not had a previous completed import with that VolumeXML md5. """
     ingest_by_manifest.sync_s3_data.delay()
 
 @task
 def total_sync_with_s3():
+    """ Inspect and import any changed XML for all volumes, including those with previous successful import. """
     ingest_by_manifest.sync_s3_data.delay(full_sync=True)
 
 @task
