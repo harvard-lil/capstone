@@ -6,7 +6,7 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from model_utils import FieldTracker
 
-from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation, parse_xml, serialize_xml, nsmap, extract_casebody
+from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation, parse_xml, serialize_xml, nsmap, extract_casebody, extract_casetext
 from scripts.process_metadata import get_case_metadata
 
 
@@ -638,12 +638,15 @@ class CaseXML(BaseXMLModel):
         # save that ish.
         super(CaseXML, self).save(force_insert, force_update, *args, **kwargs)
 
-
     def __str__(self):
         return str(self.pk)
 
     def get_casebody(self):
         return extract_casebody(self.orig_xml)
+
+    def get_casetext(self):
+        return extract_casetext(self.orig_xml)
+
 
     @transaction.atomic
     def create_or_update_metadata(self, update_existing=True):
