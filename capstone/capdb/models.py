@@ -394,6 +394,10 @@ class VolumeMetadata(models.Model):
     meyer_pallet = models.CharField(max_length=32, blank=True, null=True,
                                     help_text="The pallet Meyer stored the book on")
 
+    ingest_status = models.CharField(max_length=10, default="to_ingest",
+                                     choices=choices('to_ingest', 'ingested', 'error', 'skip'))
+    ingest_errors = JSONField(blank=True, null=True)
+
     class Meta:
         verbose_name_plural = "Volumes"
 
@@ -427,6 +431,7 @@ class TrackingToolLog(models.Model):
 class VolumeXML(BaseXMLModel):
     metadata = models.OneToOneField(VolumeMetadata, related_name='volume_xml', on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
+
     tracker = FieldTracker()
 
     def __str__(self):

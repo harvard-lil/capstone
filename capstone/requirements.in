@@ -22,7 +22,10 @@ Django
 django-storages     # abstract file access
 boto3               # for django-storages to talk to s3
 django-bulk-update  # bulk update of models
-django-model-utils  # FieldTracker for tracking changed fields on model instances
+#django-model-utils  # FieldTracker for tracking changed fields on model instances
+# see https://github.com/jazzband/django-model-utils/pull/313
+-e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
+
 
 # Admin stuff
 pip-tools           # freeze requirements.txt
