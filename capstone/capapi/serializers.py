@@ -7,6 +7,7 @@ from rest_framework import serializers
 from capdb import models
 from .models import APIUser
 from .resources import email
+from scripts.generate_case_html import generate_html
 
 logger = logging.getLogger(__name__)
 
@@ -78,11 +79,17 @@ class CaseSerializerWithCasebody(CaseSerializer):
     casebody = serializers.SerializerMethodField()
 
     def get_casebody(self, case):
-        casebody = case.case_xml.get_casebody()
-        if casebody:
+        req = self.context.get('request')
+        renderer_format = req.accepted_renderer.format
+        body_format = req.query_params.get('body_format', renderer_format).lower()
+        if body_format == 'html':
+            return generate_html(case.case_xml.orig_xml)
+        elif body_format == 'xml':
+            casebody = case.case_xml.get_casebody()
             return re.sub(r"\s{2,}", " ", casebody)
         else:
-            return ''
+            # send text to everyone else
+            return case.case_xml.get_casetext()
 
     class Meta:
         model = CaseSerializer.Meta.model
