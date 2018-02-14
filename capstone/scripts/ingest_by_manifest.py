@@ -172,32 +172,58 @@ def ingest_volumes(full_sync):
     # (List will contain duplicates because volumes can appear in more than one inventory file.)
     volume_folders = sorted(set(spop_all("volumes")), reverse=True)
 
+    # Fetch lists of VolumeMetadata entries from the database.
+    already_ingested_db_volumes = set(VolumeMetadata.objects.filter(ingest_status='ingested').values_list('barcode', flat=True))
+    not_ingested_db_volumes = set(VolumeMetadata.objects.filter(ingest_status__in=['to_ingest', 'error']).values_list('barcode', flat=True))
+    all_db_volumes = already_ingested_db_volumes | not_ingested_db_volumes
+
     # Add the first occurrence of each volume to filtered_volume_folders.
     # First occurrence in reverse-alphabetical order will be most recently-created volume,
     # which supersedes earlier versions.
     previous_barcode = None
     filtered_volume_folders = []
+    all_s3_barcodes = set()
     for volume_folder in volume_folders:
         volume_folder = force_str(volume_folder)
         barcode = volume_folder.split('_', 1)[0]
+
+        # duplicate volume (earlier, superseded)
         if barcode == previous_barcode:
-            # delete redis queues for duplicate volumes
+            # delete redis queues for duplicate
             r.delete('volume:' + volume_folder)
+
+        # first occurrence of volume
         else:
             previous_barcode = barcode
+            all_s3_barcodes.add(barcode)
+
+            # skip already ingested volumes if not full_sync
+            if not full_sync and barcode in already_ingested_db_volumes:
+                continue
+
+            # report error if S3 barcode isn't in VolumeMetadata db
+            if barcode not in all_db_volumes:
+                store_error("missing_volume_metadata", barcode)
+                continue
+
             filtered_volume_folders.append(volume_folder)
+
+    # Mark volumes that are in DB but not in S3.
+    missing_from_s3 = all_db_volumes - all_s3_barcodes
+    for barcode in missing_from_s3:
+        VolumeMetadata.objects.filter(barcode=barcode).update(ingest_status='error', ingest_errors={"missing_from_s3": barcode})
 
     # process each unique volume
     try:
         chord(
-            (ingest_volume.s(i, full_sync) for i in filtered_volume_folders)
+            (ingest_volume.s(i) for i in filtered_volume_folders)
         )(sync_s3_data_step_three.si())
     except ChordError as e:
         # just log this -- detailed errors are collected in Redis and reported later
         logger.exception("Error ingesting at least one volume")
 
 @celery.shared_task
-def ingest_volume(volume_folder, full_sync):
+def ingest_volume(volume_folder):
     """
         Celery task to ingest a single volume folder.
     """
@@ -231,16 +257,10 @@ def ingest_volume(volume_folder, full_sync):
             volume_metadata = VolumeMetadata.objects.select_related('volume_xml').defer('volume_xml__orig_xml').get(
                 barcode=volume_barcode)
         except VolumeMetadata.DoesNotExist:
-            store_error("missing_volume_metadata", volume_barcode)
+            # this shouldn't happen because we filter these out in ingest_volumes()
             return False
 
         volume_metadata.ingest_errors = None
-
-        # skip already ingested or skippable volumes:
-        if volume_metadata.ingest_status == "skip":
-            return
-        if volume_metadata.ingest_status == "ingested" and not full_sync:
-            return
 
         # get or create VolumeXML object:
         try:
