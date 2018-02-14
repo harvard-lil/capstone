@@ -189,8 +189,7 @@ def ingest_volumes(full_sync):
 
         # duplicate volume (earlier, superseded)
         if barcode == previous_barcode:
-            # delete redis queues for duplicate
-            r.delete('volume:' + volume_folder)
+            clear_redis_volume(volume_folder)
 
         # first occurrence of volume
         else:
@@ -199,10 +198,12 @@ def ingest_volumes(full_sync):
 
             # skip already ingested volumes if not full_sync
             if not full_sync and barcode in already_ingested_db_volumes:
+                clear_redis_volume(volume_folder)
                 continue
 
             # report error if S3 barcode isn't in VolumeMetadata db
             if barcode not in all_db_volumes:
+                clear_redis_volume(volume_folder)
                 store_error("missing_volume_metadata", barcode)
                 continue
 
@@ -378,10 +379,14 @@ def store_error(error_code, error_data, volume_metadata=None):
         volume_metadata.ingest_errors[error_code] = error_data
         volume_metadata.save()
 
+
 def spop_all(key):
     while r.scard(key) > 0:
         yield r.spop(key)
 
+
+def clear_redis_volume(volume_folder):
+    r.delete('volume:' + volume_folder)
 
 def validate_volmets(volume_file, s3_items_by_type, path_prefix):
     """Confirm that all paths and hashes in volmets match files in S3. """
