@@ -128,7 +128,7 @@ def ingest_volume_xml(ingest_volumes):
 
 @pytest.fixture
 def ingest_case_xml(ingest_volume_xml):
-    return ingest_volume_xml.case_xmls.first()
+    return CaseXML.objects.get(metadata__case_id='32044057892259_0001')
 
 @pytest.fixture
 def ingest_duplicative_case_xml(ingest_volumes):
