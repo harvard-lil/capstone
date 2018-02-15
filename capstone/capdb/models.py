@@ -461,10 +461,10 @@ class CaseMetadata(AutoSlugMixin, models.Model):
     last_page = models.CharField(max_length=255, null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
-    judges = models.TextField(null=True, blank=True)
-    parties = models.TextField(null=True, blank=True)
-    opinions = models.TextField(null=True, blank=True)
-    attorneys = models.TextField(null=True, blank=True)
+    judges = JSONField(null=True, blank=True)
+    parties = JSONField(null=True, blank=True)
+    opinions = JSONField(null=True, blank=True)
+    attorneys = JSONField(null=True, blank=True)
 
     citations = models.ManyToManyField('Citation', related_name='case_metadatas')
     docket_number = models.CharField(max_length=20000, blank=True)
