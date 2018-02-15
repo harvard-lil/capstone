@@ -467,7 +467,7 @@ class CaseMetadata(AutoSlugMixin, models.Model):
     attorneys = models.TextField(null=True, blank=True)
 
     citations = models.ManyToManyField('Citation', related_name='case_metadatas')
-    docket_number = models.CharField(max_length=10000, blank=True)
+    docket_number = models.CharField(max_length=20000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
     court = models.ForeignKey('Court', null=True, related_name='case_metadatas', on_delete=models.SET_NULL)
@@ -719,11 +719,15 @@ class CaseXML(BaseXMLModel):
             case_metadata.attorneys = data["attorneys"]
 
             # set jurisdiction
-            if data['volume_barcode'] in special_jurisdiction_cases:
-                jurisdiction_name = special_jurisdiction_cases[data["volume_barcode"]]
-            else:
-                jurisdiction_name = jurisdiction_translation[data["jurisdiction"]]
-            case_metadata.jurisdiction = Jurisdiction.get_from_cache(name=jurisdiction_name)
+            try:
+                if data['volume_barcode'] in special_jurisdiction_cases:
+                    jurisdiction_name = special_jurisdiction_cases[data["volume_barcode"]]
+                else:
+                    jurisdiction_name = jurisdiction_translation[data["jurisdiction"]]
+                case_metadata.jurisdiction = Jurisdiction.get_from_cache(name=jurisdiction_name)
+            except KeyError:
+                # just mark these as None -- they require manual cleanup
+                case_metadata.jurisdiction = None
 
             # set or create court
             # we look up court by name and/or name_abbreviation from data["court"]
@@ -735,7 +739,7 @@ class CaseXML(BaseXMLModel):
                     court = Court(**court_kwargs)
                     court.save()
                 case_metadata.court = court
-                if court.jurisdiction_id != case_metadata.jurisdiction_id:
+                if case_metadata.jurisdiction_id and court.jurisdiction_id != case_metadata.jurisdiction_id:
                     court.jurisdiction_id = case_metadata.jurisdiction_id
                     court.save()
 

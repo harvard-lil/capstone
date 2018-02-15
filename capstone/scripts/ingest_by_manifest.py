@@ -244,16 +244,12 @@ def ingest_volume(volume_folder):
         if file_type:
             s3_items_by_type[file_type].append((s3_key, etag))
 
-    # set up variables for ingest:
-    volume_barcode = volume_folder.split('_', 1)[0]
-    volmets_path, volmets_md5 = s3_items_by_type['volmets'][0]
-    volume_metadata = None
-
     try:
 
         ### import volume
 
         # find VolumeMetadata entry for this barcode:
+        volume_barcode = volume_folder.split('_', 1)[0]
         try:
             volume_metadata = VolumeMetadata.objects.select_related('volume_xml').defer('volume_xml__orig_xml').get(
                 barcode=volume_barcode)
@@ -263,6 +259,11 @@ def ingest_volume(volume_folder):
 
         volume_metadata.ingest_errors = None
 
+        # check for missing volmets
+        if not s3_items_by_type['volmets']:
+            store_error("volmets_missing", volume_folder, volume_metadata=volume_metadata)
+            return False
+
         # get or create VolumeXML object:
         try:
             volume = volume_metadata.volume_xml
@@ -270,13 +271,14 @@ def ingest_volume(volume_folder):
             volume = VolumeXML(metadata=volume_metadata)
 
         # update volume xml
+        volmets_path, volmets_md5 = s3_items_by_type['volmets'][0]
         if volume.md5 != volmets_md5:
             volume.orig_xml = ingest_storage.contents(volmets_path)
 
             # make sure that file listing in volmets matches s3 files; otherwise record error for this volume and return
-            volmets_valid = validate_volmets(volume.orig_xml, s3_items_by_type, path_prefix=volume_folder + '/')
-            if not volmets_valid:
-                store_error("nonmatching_files", volume_folder, volume_metadata=volume_metadata)
+            mismatched_files = validate_volmets(volume.orig_xml, s3_items_by_type, path_prefix=volume_folder + '/')
+            if mismatched_files:
+                store_error("nonmatching_files", {'s3_key': volume_folder, 'files': mismatched_files}, volume_metadata=volume_metadata)
                 return False
 
         volume.s3_key = volmets_path
@@ -389,8 +391,15 @@ def clear_redis_volume(volume_folder):
     r.delete('volume:' + volume_folder)
 
 def validate_volmets(volume_file, s3_items_by_type, path_prefix):
-    """Confirm that all paths and hashes in volmets match files in S3. """
+    """
+        Confirm that all paths and hashes in volmets match files in S3.
+
+        Returns 'None' if no errors detected, or else dict of files only in S3 and only in the METS file.
+    """
     parsed = parse_xml(volume_file)
+
+    only_in_mets = set()
+    only_in_s3 = set()
 
     for file_type in ('jp2', 'tiff', 'alto', 'casemets'):
         volmets_files = set(
@@ -400,8 +409,16 @@ def validate_volmets(volume_file, s3_items_by_type, path_prefix):
             ) for i in parsed('mets|fileGrp[USE="%s"] mets|file' % file_type).items()
         )
         if set(s3_items_by_type[file_type]) != volmets_files:
-            return False
-    return True
+            only_in_mets |= volmets_files - s3_items_by_type[file_type]
+            only_in_s3 |= s3_items_by_type[file_type] - volmets_files
+
+    if only_in_mets or only_in_s3:
+        return {
+            'only_in_mets': list(only_in_mets),
+            'only_in_s3': list(only_in_s3),
+        }
+
+    return None
 
 
 def get_last_sync():
