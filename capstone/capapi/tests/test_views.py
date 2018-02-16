@@ -1,12 +1,16 @@
 import re
 import pytest
 from capapi.tests.helpers import check_response
+from django.conf import settings
+
 
 @pytest.mark.django_db(transaction=True)
 def test_get_docs_urls(client, jurisdiction, case, reporter):
     """
     Test that every url in docs.html is functional
     """
+    settings.API_DOCS_CASE_ID = case.id
+
     response = client.get('/')
     html = response.content.decode()
     tmp_html = re.sub(";", "", html)

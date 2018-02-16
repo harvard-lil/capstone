@@ -231,8 +231,8 @@ def verify_user(request, user_id, activation_nonce):
 
 
 def get_docs(request):
-    case = models.CaseMetadata.objects.last()
-    reporter = models.Reporter.objects.last()
+    case = models.CaseMetadata.objects.get(id=settings.API_DOCS_CASE_ID)
+    reporter = case.reporter
     reporter_metadata = serializers.ReporterSerializer(reporter, context={'request': request}).data
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
     context = {

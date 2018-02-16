@@ -168,7 +168,7 @@ class CaseMetadataFactory(factory.DjangoModelFactory):
     citations = factory.RelatedFactory(CitationFactory)
     court = factory.SubFactory(CourtFactory)
     volume = factory.SubFactory(VolumeMetadataFactory)
-
+    reporter = factory.SubFactory(ReporterFactory)
 
 class CaseXMLFactory(factory.DjangoModelFactory):
     class Meta:

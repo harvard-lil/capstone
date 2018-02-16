@@ -39,3 +39,6 @@ DATABASES['tracking_tool'] = {
         }
     }
 }
+
+### API
+API_DOCS_CASE_ID = '11301409' # Brown v. Board

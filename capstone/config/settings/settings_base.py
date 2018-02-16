@@ -197,6 +197,7 @@ API_CASE_FILE_TYPE = '.xml'
 # CAP API EMAIL #
 API_ADMIN_EMAIL_ADDRESS = 'main-email-address@example.com'
 API_EMAIL_ADDRESS = 'admin-email-address@example.com'
+API_DOCS_CASE_ID = '1'
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'localhost'
