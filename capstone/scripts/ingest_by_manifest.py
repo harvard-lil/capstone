@@ -257,6 +257,7 @@ def ingest_volume(volume_folder):
             # this shouldn't happen because we filter these out in ingest_volumes()
             return False
 
+        needs_file_match_check = volume_metadata.ingest_errors and bool(volume_metadata.ingest_errors.get("nonmatching_files"))
         volume_metadata.ingest_errors = None
 
         # check for missing volmets
@@ -275,6 +276,8 @@ def ingest_volume(volume_folder):
         if volume.md5 != volmets_md5:
             volume.orig_xml = ingest_storage.contents(volmets_path)
 
+        # check METS report of expected files vs actual files in S3
+        if volume.md5 != volmets_md5 or needs_file_match_check:
             # make sure that file listing in volmets matches s3 files; otherwise record error for this volume and return
             mismatched_files = validate_volmets(volume.orig_xml, s3_items_by_type, path_prefix=volume_folder + '/')
             if mismatched_files:
@@ -361,9 +364,9 @@ def ingest_volume(volume_folder):
 
 def report_errors():
     if r.scard("errors"):
-        info("Errors during ingest:")
+        logger.error("Errors during ingest:")
         for item in spop_all("errors"):
-            info(item)
+            logger.error(item)
 
 
 def write_last_sync():
@@ -373,7 +376,9 @@ def write_last_sync():
 ### helpers ###
 
 def store_error(error_code, error_data, volume_metadata=None):
-    r.sadd("errors", json.dumps({'error_code': error_code, 'error_data': error_data, 'volume': volume_metadata.pk if volume_metadata else None}))
+    error_info = json.dumps({'error_code': error_code, 'error_data': error_data, 'volume': volume_metadata.pk if volume_metadata else None})
+    logger.error(error_info)
+    r.sadd("errors", error_info)
     if volume_metadata:
         if not volume_metadata.ingest_errors:
             volume_metadata.ingest_errors = {}
