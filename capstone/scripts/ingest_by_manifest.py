@@ -413,9 +413,10 @@ def validate_volmets(volume_file, s3_items_by_type, path_prefix):
                 i.attr('CHECKSUM')
             ) for i in parsed('mets|fileGrp[USE="%s"] mets|file' % file_type).items()
         )
-        if set(s3_items_by_type[file_type]) != volmets_files:
-            only_in_mets |= volmets_files - s3_items_by_type[file_type]
-            only_in_s3 |= s3_items_by_type[file_type] - volmets_files
+        s3_files = set(s3_items_by_type[file_type])
+        if s3_files != volmets_files:
+            only_in_mets |= volmets_files - s3_files
+            only_in_s3 |= s3_files - volmets_files
 
     if only_in_mets or only_in_s3:
         return {
