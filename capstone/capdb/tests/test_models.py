@@ -43,6 +43,15 @@ def test_create_or_update_metadata(ingest_case_xml):
     assert len(new_citations) == 1
     assert new_citations[0].cite == '123 Test 456'
 
+    # test update author
+    new_author = "Lacey, John"
+    parsed('casebody|author').text(new_author)
+    ingest_case_xml.orig_xml = serialize_xml(parsed)
+    ingest_case_xml.save()
+    # fetch new metadata
+    new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
+    assert new_case_metadata.opinions == {"majority": new_author}
+
 
 ### CaseXML ###
 
