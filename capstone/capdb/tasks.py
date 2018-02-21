@@ -24,11 +24,16 @@ def create_case_metadata_from_vol(volume_id, update_existing=False):
     """
         create or update cases for each volume
     """
-    for casexml in CaseXML.objects\
-            .filter(volume_id=volume_id, metadata_id=None)\
-            .select_related('metadata', 'volume__metadata__reporter')\
-            .defer('orig_xml', 'volume__orig_xml'):
-        casexml.create_or_update_metadata(update_existing=update_existing)
+    case_xmls = CaseXML.objects\
+        .filter(volume_id=volume_id)\
+        .select_related('metadata', 'volume__metadata__reporter')\
+        .defer('orig_xml', 'volume__orig_xml')
+
+    if not update_existing:
+        case_xmls = case_xmls.filter(metadata_id=None)
+
+    for case_xml in case_xmls:
+        case_xml.create_or_update_metadata(update_existing=update_existing)
 
 
 @shared_task
