@@ -1,5 +1,3 @@
-import os
-import datetime
 import pytest
 
 from capdb.models import CaseMetadata
