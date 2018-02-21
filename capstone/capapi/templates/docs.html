@@ -125,8 +125,8 @@ The Caselaw Access Project API guide
         </pre>
         <p class="body-text">A single reporter request (online):</p>
         <pre><a href="https://{{ request.get_host }}/api/v1/reporters/{{ reporter_id }}/" target="_blank">https://{{ request.get_host }}/api/v1/reporters/{{ reporter_id }}/</a></pre>
-        <p class="body-text">A single case CURL request:</p>
-        <pre>$ curl "https://{{ request.get_host }}/api/v1/cases/{{ reporter_id }}/?format=json"</pre>
+        <p class="body-text">A single reporter CURL request:</p>
+        <pre>$ curl "https://{{ request.get_host }}/api/v1/reporters/{{ reporter_id }}/?format=json"</pre>
         <p>{{ reporter_metadata }}
         </p>
 
