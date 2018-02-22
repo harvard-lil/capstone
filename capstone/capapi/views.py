@@ -70,7 +70,7 @@ class CitationViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModel
 class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
-    queryset = models.CaseMetadata.objects.exclude(duplicative='t').select_related(
+    queryset = models.CaseMetadata.objects.exclude(duplicative=True).select_related(
         'jurisdiction',
         'court',
         'volume',
