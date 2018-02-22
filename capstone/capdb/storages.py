@@ -5,6 +5,7 @@ import redis
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.utils.functional import SimpleLazyObject
 from storages.backends.s3boto3 import S3Boto3Storage
 
 class CapStorageMixin(object):
@@ -148,5 +149,5 @@ for storage_name in settings.STORAGES:
 
 ### redis connections ###
 
-redis_client = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DEFAULT_DB)
-redis_ingest_client = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_INGEST_DB)
+redis_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DEFAULT_DB))
+redis_ingest_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_INGEST_DB))
