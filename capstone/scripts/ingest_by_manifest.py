@@ -14,7 +14,7 @@ from django.db import IntegrityError, DatabaseError
 from django.utils.encoding import force_str
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
-from capdb.storages import get_storage, ingest_storage, inventory_storage, redis_ingest_client as r
+from capdb.storages import get_storage, ingest_storage, redis_ingest_client as r
 from scripts.helpers import resolve_namespace, parse_xml
 from scripts.process_ingested_xml import build_case_page_join_table
 
