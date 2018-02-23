@@ -7,7 +7,7 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.utils.encoding import force_str
 
-from capdb.storages import private_ingest_storage, private_inventory_storage
+from capdb.storages import private_ingest_storage
 from scripts.ingest_by_manifest import wipe_redis_db, read_inventory_files, get_unique_volumes_from_queue, \
     get_s3_items_by_type_from_queue, validate_volmets, report_errors, store_error
 
@@ -19,7 +19,7 @@ info = logger.info
 def validate_private_volumes():
     wipe_redis_db()
     chord_result = read_inventory_files(
-        inventory_storage=private_inventory_storage,
+        storage_name='private_inventory_storage',
         manifest_path_prefix=settings.INVENTORY['private_manifest_path_prefix'])
 
     # run chord with callback for next step

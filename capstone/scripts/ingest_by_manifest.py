@@ -14,7 +14,7 @@ from django.db import IntegrityError, DatabaseError
 from django.utils.encoding import force_str
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
-from capdb.storages import ingest_storage, inventory_storage, redis_ingest_client as r
+from capdb.storages import get_storage, ingest_storage, redis_ingest_client as r
 from scripts.helpers import resolve_namespace, parse_xml
 from scripts.process_ingested_xml import build_case_page_join_table
 
@@ -100,10 +100,12 @@ def wipe_redis_db():
     r.flushdb()
 
 
-def read_inventory_files(inventory_storage=inventory_storage, manifest_path_prefix=settings.INVENTORY['manifest_path_prefix']):
+def read_inventory_files(storage_name='inventory_storage', manifest_path_prefix=settings.INVENTORY['manifest_path_prefix']):
     """
         Get list of inventory files and start a celery task for each file, returning when all tasks are complete.
     """
+
+    inventory_storage = get_storage(storage_name)
 
     # find the newest inventory report directory, telling us which manifest file to read:
     subdirs = sorted(inventory_storage.iter_files(), reverse=True)
@@ -120,17 +122,18 @@ def read_inventory_files(inventory_storage=inventory_storage, manifest_path_pref
 
     # process each inventory file:
     return chord(
-        (read_inventory_file.s(i, field_names, inventory_storage) for i in inventory_files)
+        (read_inventory_file.s(i, field_names, storage_name) for i in inventory_files)
     )
 
 
 @celery.shared_task
-def read_inventory_file(inventory_file, field_names, inventory_storage):
+def read_inventory_file(inventory_file, field_names, storage_name):
     """
         Process a single inventory file and add contents to redis queues.
     """
     info("Processing manifest file: %s" % inventory_file)
 
+    inventory_storage = get_storage(storage_name)
     volume_regex = re.compile(r'from_vendor/([A-Za-z0-9]+_(?:un)?redacted[^/]*)(/.+)')
     files_grouped_by_volume = defaultdict(list)
 
