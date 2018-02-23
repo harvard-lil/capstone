@@ -1,7 +1,6 @@
 import json
 
 import celery
-import os
 from celery import chord
 from celery.utils.log import get_task_logger
 from django.conf import settings
@@ -33,6 +32,7 @@ def validate_private_volumes_step_two():
 def validate_private_volumes_step_three():
     # post-run teardown
     report_errors()
+    process_report()
     wipe_redis_db()
 
 def check_volumes():
@@ -72,5 +72,27 @@ def check_volume(volume_folder):
     write_to_report("%s\t%s\n" % (volume_folder, "ok"))
 
 def write_to_report(message):
-    with open(os.path.join(settings.BASE_DIR, "/tmp/validate_private_volumes_report.txt"), "a") as out:
+    with open("/tmp/validate_private_volumes_results.txt", "a") as out:
         out.write(message)
+
+def process_report():
+    with open("/tmp/validate_private_volumes_results.txt") as in_file:
+        in_file.readline()
+        expected_volumes = set(json.loads(in_file.readline()))
+        in_file.readline()
+        errors = {}
+        for line in in_file:
+            parts = line.strip().split("\t")
+            volume_folder, error_code, details = parts[0], parts[1], parts[2:]
+            expected_volumes.discard(volume_folder)
+            if error_code == 'ok':
+                continue
+            error = {'error_code': error_code}
+            if details:
+                error['files'] = details[0]
+            errors[volume_folder] = error
+        for missed_volume in expected_volumes:
+            errors[missed_volume] = {'error_code': 'missed'}
+
+    with open("/tmp/validate_private_volumes_report.txt", "w") as out:
+        out.write(json.dumps(errors, indent=4))
