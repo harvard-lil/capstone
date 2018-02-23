@@ -4,19 +4,17 @@ import csv
 import re
 import os
 from collections import defaultdict
-from datetime import datetime, timedelta
 import io
 
 import celery
 from celery import chord
-from celery.exceptions import ChordError
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db import IntegrityError, DatabaseError
 from django.utils.encoding import force_str
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
-from capdb.storages import ingest_storage, inventory_storage, redis_client, redis_ingest_client as r
+from capdb.storages import ingest_storage, inventory_storage, redis_ingest_client as r
 from scripts.helpers import resolve_namespace, parse_xml
 from scripts.process_ingested_xml import build_case_page_join_table
 
