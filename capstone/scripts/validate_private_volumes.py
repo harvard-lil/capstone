@@ -19,7 +19,7 @@ info = logger.info
 def validate_private_volumes():
     wipe_redis_db()
     chord_result = read_inventory_files(
-        inventory_storage=private_inventory_storage,
+        storage_name='private_inventory_storage',
         manifest_path_prefix=settings.INVENTORY['private_manifest_path_prefix'])
 
     # run chord with callback for next step
