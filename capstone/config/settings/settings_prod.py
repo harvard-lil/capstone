@@ -4,26 +4,39 @@ DEBUG = False
 
 STORAGES = {
     'ingest_storage': {
-        'class': 'capdb.storages.CapS3Storage',
+        'class': 'CapS3Storage',
         'kwargs': {
             'location': 'from_vendor',
             'bucket_name': 'harvard-ftl-shared',
         }
     },
+    'private_ingest_storage': {
+        'class': 'CapS3Storage',
+        'kwargs': {
+            'location': 'from_vendor',
+            'bucket_name': 'harvard-ftl-private',
+        }
+    },
     'inventory_storage': {
-        'class': 'capdb.storages.CapS3Storage',
+        'class': 'CapS3Storage',
         'kwargs': {
             'location': 'harvard-ftl-shared/PrimarySharedInventoryReport',
             'bucket_name': 'harvard-cap-inventory',
         }
-    }
+    },
+    'private_inventory_storage': {
+        'class': 'CapS3Storage',
+        'kwargs': {
+            'location': 'harvard-ftl-private/PrivateBucketInventory',
+            'bucket_name': 'harvard-cap-inventory',
+        }
+    },
 }
 
 INVENTORY = {
     # prefix to strip from paths in manifest.json
     'manifest_path_prefix': 'harvard-ftl-shared/PrimarySharedInventoryReport/',
-    # prefix to strip from paths in .csv
-    'csv_path_prefix': 'from_vendor/',
+    'private_manifest_path_prefix': 'harvard-ftl-private/PrivateBucketInventory/',
 }
 
 USE_TEST_TRACKING_TOOL_DB = False

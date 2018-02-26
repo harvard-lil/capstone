@@ -160,19 +160,30 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'test_data/from_vendor'),
         },
     },
+    'private_ingest_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/from_vendor'),
+        },
+    },
     'inventory_storage': {
         'class': 'CapFileStorage',
         'kwargs': {
             'location': os.path.join(BASE_DIR, 'test_data/inventory'),
         },
-    }
+    },
+    'private_inventory_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/inventory'),
+        },
+    },
 }
 
 INVENTORY = {
     # prefix to strip from paths in manifest.json
     'manifest_path_prefix': 'inventory/',
-    # prefix to strip from paths in .csv
-    'csv_path_prefix': 'from_vendor/',
+    'private_manifest_path_prefix': 'inventory/',
 }
 
 ### CELERY ###
