@@ -25,7 +25,7 @@ from capapi import resources
 from capdb.models import Jurisdiction, CaseMetadata, VolumeXML
 from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
 # from process_ingested_xml import fill_case_page_join_table
-from scripts import set_up_postgres, ingest_tt_data, ingest_files, data_migrations, ingest_by_manifest, mass_update, validate_private_volumes as validate_private_volumes_script
+from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, validate_private_volumes as validate_private_volumes_script
 
 
 @task(alias='run')
@@ -51,10 +51,6 @@ def total_sync_with_s3():
 def validate_private_volumes():
     """ Confirm that all volmets files in private S3 bin match S3 inventory. """
     validate_private_volumes_script.validate_private_volumes()
-
-@task
-def ingest_volumes():
-    ingest_files.ingest_volumes()
 
 @task
 def ingest_jurisdiction():
