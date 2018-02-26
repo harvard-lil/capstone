@@ -185,7 +185,7 @@ def test_open_jurisdiction(auth_user, api_url, auth_client):
 
 
 @pytest.mark.django_db
-def test_filter_case_by_(api_url, client, case):
+def test_filter_case(api_url, client, case):
     citation = case.citations.all().get(type="official").cite
     response = client.get("%scases/?citation=%s&format=json" % (api_url, citation))
     check_response(response)

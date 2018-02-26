@@ -176,6 +176,10 @@ class BaseXMLModel(models.Model):
         if self.tracker.has_changed('orig_xml') and not self.tracker.has_changed('md5'):
             self.md5 = self.get_md5()
 
+        # Django 2.0 doesn't save byte strings correctly -- make sure we save str()
+        if self.orig_xml:
+            self.orig_xml = force_str(self.orig_xml)
+
         return super().save(*args, **kwargs)
 
     def get_md5(self):

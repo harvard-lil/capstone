@@ -25,7 +25,7 @@ def test_rename_tag_by_json(valid_mass_casebody_tag_rename, ingest_case_xml):
 
 
 @pytest.mark.django_db
-def test_brename_tag_by_json_invalid_raise(invalid_mass_casebody_tag_rename, ingest_case_xml):
+def test_rename_tag_by_json_invalid_raise(invalid_mass_casebody_tag_rename, ingest_case_xml):
     """
         This makes sure rename_casebody_tags_from_json_id_list dies, thereby
         triggering a complete rollback, if it encounters an element it can't
