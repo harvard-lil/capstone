@@ -748,6 +748,10 @@ class CaseXML(BaseXMLModel):
         case_metadata.save()
 
         ### Handle citations
+        if not metadata_created:
+            #  delete existing citations
+            #  create new citations
+            Citation.objects.filter(case=case_metadata).delete()
 
         if not duplicative_case:
             for citation_type, citation_text in data['citations'].items():
