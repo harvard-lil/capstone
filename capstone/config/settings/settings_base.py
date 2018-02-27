@@ -201,6 +201,7 @@ API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL = 'http://localhost:8000'
 API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
+API_DOCS_CASE_ID = 2
 
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
@@ -208,13 +209,11 @@ API_CASE_FILE_TYPE = '.xml'
 # CAP API EMAIL #
 API_ADMIN_EMAIL_ADDRESS = 'main-email-address@example.com'
 API_EMAIL_ADDRESS = 'admin-email-address@example.com'
-API_DOCS_CASE_ID = '1'
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST_PASSWORD = '123'
 EMAIL_HOST_USER = 'user-secret'
 EMAIL_HOST_PASSWORD = 'secret-secret'
 
