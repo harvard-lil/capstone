@@ -1,7 +1,9 @@
+import os
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.utils.decorators import decorator_from_middleware
+from django.utils.text import slugify
 from django.shortcuts import render
 
 from rest_framework import status
@@ -60,7 +62,7 @@ class CourtViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMix
 
 
 class CitationViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
-    serializer_class = serializers.CitationSerializer
+    serializer_class = serializers.CitationWithCaseSerializer
     http_method_names = ['get']
     queryset = models.Citation.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
@@ -93,8 +95,16 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         return super(CaseViewSet, self).list(*args, **kwargs)
 
     def retrieve(self, *args, **kwargs):
-        self.serializer_class = self.get_serializer_class(self, *args, **kwargs)
-        return super(CaseViewSet, self).retrieve(*args, **kwargs)
+        slugified = slugify(kwargs[self.lookup_field])
+        # for user's convenience, if user gets /cases/case-citation
+        # we redirect to /cases/?cite=case-station
+        if '-' in slugified:
+            query_params = ''.join(list(map(lambda k: '&%s=%s' % (k, self.request.query_params[k]), self.request.query_params)))
+            new_url = os.path.join(settings.API_FULL_URL, 'cases/?cite=%s%s' % (slugified, query_params))
+            return HttpResponseRedirect(new_url)
+        else:
+            self.serializer_class = self.get_serializer_class(self, *args, **kwargs)
+            return super(CaseViewSet, self).retrieve(*args, **kwargs)
 
 
 # User specific views

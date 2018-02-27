@@ -12,10 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class CitationSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Citation
-        fields = ('type', 'cite', 'slug')
+        fields = ('type', 'cite', 'normalized_cite')
+
+
+class CitationWithCaseSerializer(CitationSerializer):
+    case_url = serializers.HyperlinkedRelatedField(source='case', view_name='casemetadata-detail',
+                                                   read_only=True, lookup_field='id')
+    class Meta:
+        model = models.Citation
+        fields = CitationSerializer.Meta.fields + ('case_id', 'case_url')
 
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
