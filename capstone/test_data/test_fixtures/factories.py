@@ -60,7 +60,7 @@ def setup_volumexml(**kwargs):
     return VolumeXMLFactory(**kwargs)
 
 
-def setup_citations(**kwargs):
+def setup_citation(**kwargs):
     return CitationFactory(**kwargs)
 
 

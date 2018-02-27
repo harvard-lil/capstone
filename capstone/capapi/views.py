@@ -75,11 +75,11 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         'court',
         'volume',
         'reporter',
-    ).prefetch_related('citations')
+    )
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     permission_classes = (permissions.IsAPIUser,)
     filter_class = filters.CaseFilter
-    lookup_field = 'slug'
+    lookup_field = 'id'
     order_by = 'decision_date'
 
     def download(self, **kwargs):
@@ -237,7 +237,6 @@ def get_docs(request):
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
     context = {
         "case_metadata": case_metadata,
-        "case_slug": case_metadata['slug'],
         "case_jurisdiction": case_metadata['jurisdiction'],
         "reporter_id": reporter_metadata['id'],
         "reporter_metadata": reporter_metadata,

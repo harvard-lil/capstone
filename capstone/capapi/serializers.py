@@ -12,29 +12,35 @@ logger = logging.getLogger(__name__)
 
 
 class CitationSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = models.Citation
-        fields = ('url', 'type', 'cite')
+        fields = ('type', 'cite', 'slug')
 
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="casemetadata-detail",
-        lookup_field='slug')
+        view_name="casemetadata-detail", lookup_field="id")
     jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
     jurisdiction_url = serializers.HyperlinkedRelatedField(source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
     court = serializers.ReadOnlyField(source='court.name')
     court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True, lookup_field='slug')
     reporter = serializers.ReadOnlyField(source='reporter.full_name')
     reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
-    citations = CitationSerializer(many=True)
+    citations = serializers.SerializerMethodField()
     volume = serializers.ReadOnlyField(source='volume.volume_number')
     volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
+
+    @staticmethod
+    def get_citations(case):
+        citation_vals = list(case.citation.all().values())
+        citations = list(map(lambda cite: CitationSerializer(cite).data, citation_vals))
+        return citations
 
     class Meta:
         model = models.CaseMetadata
         fields = (
-            'slug',
+            'id',
             'url',
             'name',
             'name_abbreviation',

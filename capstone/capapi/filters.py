@@ -73,8 +73,7 @@ class CaseFilter(filters.FilterSet):
 
     class Meta:
         model = models.CaseMetadata
-        fields = ['citation',
-                  'slug',
+        fields = [
                   'name',
                   'name_abbreviation',
                   'court_name',

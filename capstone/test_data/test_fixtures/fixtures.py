@@ -65,6 +65,10 @@ def case():
     return factories.setup_case()
 
 @pytest.fixture
+def citation():
+    return factories.setup_citation()
+
+@pytest.fixture
 def jurisdiction():
     return factories.setup_jurisdiction()
 
