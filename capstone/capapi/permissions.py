@@ -25,12 +25,16 @@ class IsAPIUser(permissions.BasePermission):
         if full_case != 'true':
             # serve metadata to everyone!
             return True
-
         kwargs = context.get('kwargs')
         # get blacklisted case count
+        cite = context.get('request').query_params.get('cite', None)
+
         if view.lookup_field in kwargs and '-' in slugify(kwargs[view.lookup_field]):
             # assume this is a lookup using a citation if hyphen is present
             cases = view.queryset.filter(citation__normalized_cite=slugify(kwargs[view.lookup_field]),
+                                         jurisdiction__whitelisted=False)
+        elif cite:
+            cases = view.queryset.filter(citation__normalized_cite=slugify(cite),
                                          jurisdiction__whitelisted=False)
         else:
             cases = view.queryset.filter(**kwargs, jurisdiction__whitelisted=False)

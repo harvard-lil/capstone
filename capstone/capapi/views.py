@@ -92,6 +92,9 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
 
     def list(self, *args, **kwargs):
         self.serializer_class = self.get_serializer_class(self, *args, **kwargs)
+        cite = self.request.query_params.get('cite', None)
+        if cite:
+            self.queryset = self.queryset.filter(citation__normalized_cite=cite)
         return super(CaseViewSet, self).list(*args, **kwargs)
 
     def retrieve(self, *args, **kwargs):
@@ -209,6 +212,7 @@ def get_docs(request):
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
     context = {
         "case_metadata": case_metadata,
+        "case_id": case_metadata['id'],
         "case_jurisdiction": case_metadata['jurisdiction'],
         "reporter_id": reporter_metadata['id'],
         "reporter_metadata": reporter_metadata,
