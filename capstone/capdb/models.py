@@ -6,7 +6,8 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from model_utils import FieldTracker
 
-from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation, parse_xml, serialize_xml, nsmap, extract_casebody, extract_casetext
+from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
+                             serialize_xml, nsmap, extract_casebody, extract_casetext)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -479,7 +480,7 @@ class CaseMetadata(models.Model):
     duplicative = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.id
+        return str(self.pk)
 
     class Meta:
         ordering = ['decision_date']
@@ -675,7 +676,6 @@ class CaseXML(BaseXMLModel):
         return extract_casetext(self.orig_xml)
 
     def create_or_update_metadata(self, update_existing=True, save_self=True):
-
         """
             creates or updates CaseMetadata object
             - if we want to skip over updating existing case metadata objects
@@ -786,10 +786,7 @@ class Citation(models.Model):
     case = models.ForeignKey('CaseMetadata', related_name='citation', null=True)
 
     def __str__(self):
-        return self.slug
-
-    def get_slug(self):
-        return self.cite[:100]
+        return self.normalized_cite
 
 
 class PageXML(BaseXMLModel):
