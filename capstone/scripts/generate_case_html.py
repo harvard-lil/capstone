@@ -14,8 +14,12 @@ tag_map = {  "author": "p", "opinion" : "article", "casebody" : "section",
 bracketnum_number = re.compile(r'\d')
 headnotes_number = re.compile(r'^(\d+).*')
 
+
 def generate_html(case_xml, tag_map=tag_map):
-    parsed_xml = parse_xml(case_xml.orig_xml)
+    """
+    converts case xml to html
+    """
+    parsed_xml = parse_xml(case_xml)
 
     # give a descriptive error for duplicative cases
     if parsed_xml('duplicative|casebody'):
