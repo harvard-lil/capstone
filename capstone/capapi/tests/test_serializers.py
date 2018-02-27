@@ -15,7 +15,6 @@ def test_CaseSerializerWithCasebody(api_url, api_request_factory, auth_client, c
     serializer_context = {'request': Request(request)}
 
     serialized = serializers.CaseSerializerWithCasebody(case, context=serializer_context)
-    assert serialized.data['slug'] == case.slug
     assert 'casebody' in serialized.data.keys()
 
     # can get multiple cases' data

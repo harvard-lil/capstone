@@ -76,7 +76,11 @@ class CaseSerializerWithCasebody(CaseSerializer):
 
     def get_casebody(self, case):
         req = self.context.get('request')
-        renderer_format = req.accepted_renderer.format
+        try:
+            renderer_format = req.accepted_renderer.format
+        except AttributeError:
+            # this can happen during testing
+            renderer_format = 'json'
         body_format = req.query_params.get('body_format', renderer_format).lower()
         if body_format == 'html':
             return generate_html(case.case_xml.orig_xml)

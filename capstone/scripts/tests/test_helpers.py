@@ -50,9 +50,9 @@ def test_generate_html_footnotes(ingest_case_xml):
 
         # shouldn't attempt to parse a duplicative case
         if parsed_case_xml('duplicative|casebody'):
-            assert generate_html(case).startswith("<h1 class='error'>")
+            assert generate_html(case.orig_xml).startswith("<h1 class='error'>")
             continue
-        casebody_html = generate_html(case).replace('\n', '').replace('\r', '').replace('\t', ' ')
+        casebody_html = generate_html(case.orig_xml).replace('\n', '').replace('\r', '').replace('\t', ' ')
 
         for footnote in parsed_case_xml("casebody|footnote"):
             footnote_anchor = '<a id="footnote_{}" class="footnote_anchor">'.format(footnote.attrib['label'])
