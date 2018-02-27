@@ -7,15 +7,15 @@ from django.template.defaultfilters import slugify
 from capapi.models import *
 from capdb.models import *
 
-
 xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w3.org/1999/xlink'></mets>"
 
 #   helpers for common patterns
 def setup_case(**kwargs):
     # set up casemetadata instance
+    case = CaseMetadataFactory(**kwargs)
     citation = CitationFactory(type='official')
-    case = CaseMetadataFactory(slug=slugify(citation.cite), **kwargs)
-    case.citations.add(citation)
+    citation.case = case
+    citation.save()
 
     # Add VolumeXML and CaseXML instances
     volume_xml = VolumeXMLFactory(metadata=case.volume)
@@ -61,7 +61,10 @@ def setup_volumexml(**kwargs):
 
 
 def setup_citation(**kwargs):
-    return CitationFactory(**kwargs)
+    citation = CitationFactory(**kwargs)
+    citation.normalized_cite = slugify(citation.cite)
+    citation.save()
+    return citation
 
 
 #   factories
@@ -134,18 +137,6 @@ class VolumeXMLFactory(factory.DjangoModelFactory):
     orig_xml = xml_str
     metadata = factory.SubFactory(VolumeMetadataFactory)
 
-
-class CitationFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Citation
-
-    @factory.lazy_attribute
-    def type(self):
-        return random.choice(['official', 'parallel'])
-
-    cite = factory.Faker('sentence', nb_words=5)
-
-
 class CourtFactory(factory.DjangoModelFactory):
     class Meta:
         model = Court
@@ -165,10 +156,21 @@ class CaseMetadataFactory(factory.DjangoModelFactory):
     last_page = str(int(first_page) + random.randrange(100))
     case_id = factory.Sequence(lambda n: '%08d' % n)
     decision_date = factory.Faker("date_this_century", before_today=True, after_today=False)
-    citations = factory.RelatedFactory(CitationFactory)
     court = factory.SubFactory(CourtFactory)
     volume = factory.SubFactory(VolumeMetadataFactory)
     reporter = factory.SubFactory(ReporterFactory)
+
+
+class CitationFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Citation
+
+    @factory.lazy_attribute
+    def type(self):
+        return random.choice(['official', 'parallel'])
+    case = factory.SubFactory(CaseMetadataFactory)
+    cite = factory.Faker('sentence', nb_words=5)
+
 
 class CaseXMLFactory(factory.DjangoModelFactory):
     class Meta:
