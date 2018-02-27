@@ -32,7 +32,7 @@ def test_jurisdiction(client, api_url, jurisdiction):
 
 @pytest.mark.django_db
 def test_case(client, api_url, case):
-    response = client.get("%scases/%s/?format=json" % (api_url, case.slug))
+    response = client.get("%scases/%s/?format=json" % (api_url, case.pk))
     check_response(response)
     content = response.json()
     assert content.get("name_abbreviation") == case.name_abbreviation
@@ -42,7 +42,7 @@ def test_case(client, api_url, case):
 def test_flow(client, api_url, case):
     """user should be able to click through to get to different tables"""
     # start with case
-    response = client.get("%scases/%s/?format=json" % (api_url, case.slug))
+    response = client.get("%scases/%s/?format=json" % (api_url, case.pk))
     check_response(response)
     content = response.json()
     # onwards to court
@@ -60,83 +60,32 @@ def test_flow(client, api_url, case):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_single_case_download(auth_user, api_url, auth_client, case):
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
-    url = "%scases/%s/?type=download" % (api_url, case.slug)
-    response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
-    check_response(response, format='')
+def test_case_citation_redirect(auth_user, api_url, client, citation):
+    # citation = case.citation.get(type='official')
 
-    # assert we've gotten something that looks like a zipped file
-    assert type(response.content) is bytes
-    assert response.headers['Content-Type'] == 'application/zip'
-    assert case.slug in response.headers['Content-Disposition']
+    url = "%scases/%s?format=json" % (api_url, citation.normalized_cite)
+    print('getting url:', url, citation.normalized_cite)
 
-    # make sure we've subtracted auth_user's case download
-    auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+    # should have received a redirect
+    response = client.get(url)
+    check_response(response, status_code=301, format='')
 
-
-@pytest.mark.django_db(transaction=True)
-def test_many_case_download(auth_user, api_url, auth_client):
-    num_created = 3
-    # generate 3 cases with the same docket_number
-    for case in range(0, num_created):
-        setup_case(**{'docket_number': '123'})
-
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
-    url = "%scases/?docket_number=123&type=download" % api_url
-
-    response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
-    check_response(response, format='')
-
-    # assert we've gotten something that looks like a zipped file
-    assert type(response.content) is bytes
-    assert response.headers['Content-Type'] == 'application/zip'
-
-    # make sure we've subtracted user's case download
-    auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - num_created
-
-    # test too low case allowance
-    auth_user.case_allowance_remaining = 1
-    auth_user.save()
-    response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
-    check_response(response, status_code=403, format='')
+    response = client.get(url, follow=True)
+    check_response(response)
+    content = response.json()['results']
+    case = citation.case
+    # should only have one case returned
+    assert len(content) == 1
+    assert content[0]['id'] == case.id
+    # should only have one citation for this case
+    assert len(content[0]['citations']) == 1
+    assert content[0]['citations'][0]['cite'] == citation.cite
 
 
 @pytest.mark.django_db(transaction=True)
-def test_max_number_case_download(auth_user, api_url, auth_client):
-    """
-    check that user only gets charged for the amount downloaded
-    not the amount available in all
-    """
-    num_to_download = 2
-    num_created = 3
-
-    for case in range(0, num_created):
-        setup_case(**{'docket_number': '123'})
-
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
-
-    # request download 2 cases
-    url = "%scases/?docket_number=123&limit=%s&type=download" % (api_url, num_to_download)
-
-    response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
-    check_response(response, format='')
-
-    # assert we've gotten something that looks like a zipped file
-    assert type(response.content) is bytes
-    assert response.headers['Content-Type'] == 'application/zip'
-
-    # make sure we've subtracted auth_user's case download
-    auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 2
-
-
-@pytest.mark.django_db(transaction=True)
-def test_unauthorized_download(user, api_url, auth_client, case):
+def test_unauthorized_request(user, api_url, auth_client, case):
     assert user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
-    url = "%scases/%s/?type=download" % (api_url, case.slug)
+    url = "%scases/%s/?full_case=true" % (api_url, case.id)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token fake'})
     check_response(response, status_code=401, format='')
 
@@ -145,9 +94,34 @@ def test_unauthorized_download(user, api_url, auth_client, case):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_open_jurisdiction(auth_user, api_url, auth_client):
+def test_unauthenticated_full_case(user, api_url, client):
     """
-    cases downloaded from open jurisdictions should not be counted against the user
+    we should allow users to get full case without authentication
+    if case is whitelisted
+    """
+    jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
+    jurisdiction.save()
+    case = setup_case(**{'jurisdiction': jurisdiction})
+
+    url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
+    response = client.get(url)
+    check_response(response, format='')
+    content = response.json()
+    assert "casebody" in content
+
+    jurisdiction = JurisdictionFactory(name='New York', whitelisted=False)
+    jurisdiction.save()
+    case = setup_case(**{'jurisdiction': jurisdiction})
+
+    url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
+    response = client.get(url)
+    check_response(response, format='', status_code=401)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_authenticated_full_case(auth_user, api_url, auth_client):
+    """
+    full cases viewed on whitelisted jurisdictions should not be counted against the user
     """
     jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
     jurisdiction.save()
@@ -156,28 +130,25 @@ def test_open_jurisdiction(auth_user, api_url, auth_client):
                          'name': common_name})
 
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
-    url = "%scases/%s/?type=download" % (api_url, case.slug)
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, format='')
 
-    assert type(response.content) is bytes
-    assert response.headers['Content-Type'] == 'application/zip'
+    assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
 
     # make sure the user's case download number has remained the same
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
     # if auth_user downloads a mixed case load, their case_allowance_remaining should only reflect the blacklisted cases
-    jurisdiction = JurisdictionFactory(name='Blocked')
-    case = setup_case(**{'jurisdiction': jurisdiction,
-                         'name': common_name})
+    jurisdiction = JurisdictionFactory(name='Blocked', whitelisted=False)
+    case = setup_case(**{'jurisdiction': jurisdiction})
 
-    url = "%scases/?name=%s&type=download" % (api_url, case.name)
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, format='')
 
-    assert type(response.content) is bytes
-    assert response.headers['Content-Type'] == 'application/zip'
+    assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
 
     # make sure the auth_user's case download number has remained the same
     auth_user.refresh_from_db()
@@ -185,36 +156,44 @@ def test_open_jurisdiction(auth_user, api_url, auth_client):
 
 
 @pytest.mark.django_db
+def test_full_case_formats(api_url, client, case):
+    """
+    api should return different casebody formats upon request
+    """
+    jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
+    jurisdiction.save()
+    case = setup_case(**{'jurisdiction': jurisdiction})
+
+    # test body_format not specified
+    url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
+    response = client.get(url)
+    check_response(response, format='json')
+    content = response.json()
+    assert "casebody" in content
+    assert type(content["casebody"]) is str
+
+
+@pytest.mark.django_db
 def test_filter_case_by_(api_url, client, case):
-    citation = case.citations.all().get(type="official").cite
-    response = client.get("%scases/?citation=%s&format=json" % (api_url, citation))
-    check_response(response)
-    content = response.json()['results']
-    assert len(content) == 1
-    assert content[0].get("slug") == case.slug
-
-    # Check that we can get the correct case by court slug
-
     cases = []
     for case in range(0, 3):
         cases.append(setup_case())
 
     # check how many cases exist in a specific court
     court_slug_to_test = cases[2].court.slug
-    case_slug_to_test = cases[2].slug
+    case_id_to_test = cases[2].id
     case_num = Court.objects.filter(slug=court_slug_to_test).count()
 
     response = client.get("%scases/?court_slug=%s&format=json" % (api_url, cases[2].court.slug))
     content = response.json()
-    assert CaseMetadata.objects.count() > case_num
     # assert only the right case number is returned for court
     assert content['count'] == case_num
 
-    slugs = []
+    ids = []
     for result in content['results']:
-        slugs.append(result['slug'])
+        ids.append(result['id'])
 
-    assert case_slug_to_test in slugs
+    assert case_id_to_test in ids
 
 
 @pytest.mark.django_db
