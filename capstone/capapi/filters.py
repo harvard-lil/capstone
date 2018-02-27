@@ -62,8 +62,8 @@ class CaseFilter(filters.FilterSet):
     opinions = filters.CharFilter(name='opinions', label='opinions', lookup_expr='icontains')
 
     def find_by_citation(self, qs, name, value):
-        citation = models.Citation.objects.filter(cite__iexact=value)
-        return qs.filter(citations=citation)
+        citation = models.Citation.objects.get(cite__iexact=value)
+        return qs.filter(citation=citation)
 
     def find_by_date(self, qs, name, value):
         if '_min' in name:
@@ -74,6 +74,7 @@ class CaseFilter(filters.FilterSet):
     class Meta:
         model = models.CaseMetadata
         fields = [
+                  'citation',
                   'name',
                   'name_abbreviation',
                   'court_name',
