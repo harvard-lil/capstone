@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from django.utils.text import slugify
 
 
 class AdminUserPermissions(permissions.BasePermission):
@@ -25,8 +26,15 @@ class IsAPIUser(permissions.BasePermission):
             # serve metadata to everyone!
             return True
 
+        kwargs = context.get('kwargs')
         # get blacklisted case count
-        cases = view.queryset.filter(**context.get('kwargs'), jurisdiction__whitelisted=False)
+        if view.lookup_field in kwargs and '-' in slugify(kwargs[view.lookup_field]):
+            # assume this is a lookup using a citation if hyphen is present
+            cases = view.queryset.filter(citation__normalized_cite=slugify(kwargs[view.lookup_field]),
+                                         jurisdiction__whitelisted=False)
+        else:
+            cases = view.queryset.filter(**kwargs, jurisdiction__whitelisted=False)
+
         blacklisted_count = cases.count()
 
         # If the request contains only whitelisted jurisdictions
