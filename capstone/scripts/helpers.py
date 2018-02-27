@@ -235,4 +235,8 @@ def extract_casebody(case_xml):
 
     return case('casebody|casebody').html()
 
- 
+
+def extract_casetext(case_xml):
+    text = case_xml.replace(u'\xad', '')
+    case = parse_xml(text)
+    return case.text()

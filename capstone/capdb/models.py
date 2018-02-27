@@ -6,7 +6,7 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from model_utils import FieldTracker
 
-from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation, parse_xml, serialize_xml, nsmap, extract_casebody
+from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation, parse_xml, serialize_xml, nsmap, extract_casebody, extract_casetext
 from scripts.process_metadata import get_case_metadata
 
 
@@ -673,7 +673,11 @@ class CaseXML(BaseXMLModel):
 
         self.orig_xml = force_str(serialize_xml(parsed_updated_case))
 
+    def get_casetext(self):
+        return extract_casetext(self.orig_xml)
+
     def create_or_update_metadata(self, update_existing=True, save_self=True):
+
         """
             creates or updates CaseMetadata object
             - if we want to skip over updating existing case metadata objects
