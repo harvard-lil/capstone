@@ -61,17 +61,14 @@ def test_flow(client, api_url, case):
 
 @pytest.mark.django_db(transaction=True)
 def test_case_citation_redirect(auth_user, api_url, client, citation):
-    # citation = case.citation.get(type='official')
-
     url = "%scases/%s?format=json" % (api_url, citation.normalized_cite)
-    print('getting url:', url, citation.normalized_cite)
 
     # should have received a redirect
     response = client.get(url)
     check_response(response, status_code=301, format='')
 
     response = client.get(url, follow=True)
-    check_response(response)
+    check_response(response, format='json')
     content = response.json()['results']
     case = citation.case
     # should only have one case returned
@@ -80,6 +77,29 @@ def test_case_citation_redirect(auth_user, api_url, client, citation):
     # should only have one citation for this case
     assert len(content[0]['citations']) == 1
     assert content[0]['citations'][0]['cite'] == citation.cite
+
+    # allow user to enter real citation (not normalized)
+    url = "%scases/%s?format=json" % (api_url, citation.cite)
+    response = client.get(url, follow=True)
+    check_response(response, format='json')
+    content = response.json()['results']
+    case = citation.case
+    assert len(content) == 1
+    assert content[0]['id'] == case.id
+
+    # citation redirect should work with periods in the url, too
+    new_citation = CitationFactory(cite='1 Mass. 1', normalized_cite='1-mass-1', case=citation.case)
+    new_citation.save()
+
+    url = "%scases/%s?format=json" % (api_url, new_citation.cite)
+    response = client.get(url)
+    check_response(response, status_code=301, format='')
+    response = client.get(url, follow=True)
+    check_response(response, format='json')
+    content = response.json()['results']
+    case = citation.case
+    assert len(content) == 1
+    assert content[0]['id'] == case.id
 
 
 @pytest.mark.django_db(transaction=True)

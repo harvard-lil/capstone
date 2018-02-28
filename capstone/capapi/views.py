@@ -16,7 +16,7 @@ from rest_framework.parsers import JSONParser, FormParser
 from capapi import permissions, serializers, filters, resources, models as capapi_models
 from capapi.middleware import RequestLogMiddleware
 from capdb import models
-from scripts.generate_case_html import *
+
 
 class BaseViewMixin(viewsets.GenericViewSet):
 
@@ -99,7 +99,7 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
 
     def retrieve(self, *args, **kwargs):
         slugified = slugify(kwargs[self.lookup_field])
-        # for user's convenience, if user gets /cases/case-citation
+        # for user's convenience, if user gets /cases/case-citation or /cases/Case Citation
         # we redirect to /cases/?cite=case-station
         if '-' in slugified:
             query_params = ''.join(list(map(lambda k: '&%s=%s' % (k, self.request.query_params[k]), self.request.query_params)))
