@@ -176,20 +176,47 @@ def test_authenticated_full_case(auth_user, api_url, auth_client):
 
 
 @pytest.mark.django_db
-def test_full_case_formats(api_url, client, case):
+def test_case_body_formats(api_url, client, case, ingest_case_xml):
     """
     api should return different casebody formats upon request
     """
     jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
     jurisdiction.save()
-    case = setup_case(**{'jurisdiction': jurisdiction})
-    # test body_format not specified
+    case = CaseMetadataFactory(jurisdiction=jurisdiction)
+    ingest_case_xml.metadata = case
+    ingest_case_xml.save()
+
+    # body_format not specified, should get back text
     url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
     response = client.get(url)
     check_response(response, format='json')
     content = response.json()
     assert "casebody" in content
-    assert type(content["casebody"]) is str
+    casebody = content["casebody"]
+    assert type(casebody) is str
+    assert len(casebody) > 0
+    assert "<" not in casebody
+
+    # getting back xml body
+    url = "%scases/%s/?format=json&full_case=true&body_format=xml" % (api_url, case.pk)
+    response = client.get(url)
+    check_response(response, format='json')
+    content = response.json()
+    assert "casebody" in content
+    casebody = content["casebody"]
+    assert len(casebody) > 0
+    assert "<?xml version=" in casebody
+
+    # getting back html body
+    url = "%scases/%s/?format=json&full_case=true&body_format=html" % (api_url, case.pk)
+    response = client.get(url)
+    check_response(response, format='json')
+    content = response.json()
+    assert "casebody" in content
+    casebody = content["casebody"]
+    assert len(casebody) > 0
+    assert "</h4>" in casebody
+
 
 
 @pytest.mark.django_db

@@ -233,7 +233,7 @@ def extract_casebody(case_xml):
         if label and footnote[0].text.startswith(label):
             footnote[0].text = footnote[0].text[len(label):]
 
-    return case('casebody|casebody').html()
+    return case('casebody|casebody')
 
 
 def extract_casetext(case_xml):

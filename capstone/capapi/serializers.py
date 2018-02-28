@@ -7,6 +7,7 @@ from capdb import models
 from .models import APIUser
 from .resources import email
 from scripts.generate_case_html import generate_html
+from scripts import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,7 @@ class CaseSerializerWithCasebody(CaseSerializer):
 
     def get_casebody(self, case):
         req = self.context.get('request')
+        orig_xml = case.case_xml.orig_xml
         try:
             renderer_format = req.accepted_renderer.format
         except AttributeError:
@@ -83,13 +85,14 @@ class CaseSerializerWithCasebody(CaseSerializer):
             renderer_format = 'json'
         body_format = req.query_params.get('body_format', renderer_format).lower()
         if body_format == 'html':
-            return generate_html(case.case_xml.orig_xml)
+            return generate_html(orig_xml)
         elif body_format == 'xml':
-            casebody = case.case_xml.get_casebody()
-            return re.sub(r"\s{2,}", " ", casebody)
+            extracted = helpers.extract_casebody(orig_xml)
+            casebody = helpers.serialize_xml(extracted)
+            return re.sub(r"\s{2,}", " ", casebody.decode())
         else:
             # send text to everyone else
-            return case.case_xml.get_casetext()
+            return helpers.extract_casebody(orig_xml).text()
 
     class Meta:
         model = CaseSerializer.Meta.model
