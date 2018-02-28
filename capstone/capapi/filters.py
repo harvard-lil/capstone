@@ -17,49 +17,49 @@ class CourtFilter(filters.FilterSet):
 
 class CaseFilter(filters.FilterSet):
     name = filters.CharFilter(
-        name='name',
+        field_name='name',
         label='Name',
         lookup_expr='iexact')
     name_abbreviation = filters.CharFilter(
-        name='name_abbreviation',
+        field_name='name_abbreviation',
         label='Name Abbreviation',
         lookup_expr='iexact')
     citation = filters.CharFilter(
-        name='citations',
+        field_name='citation',
         label='Citation',
         method='find_by_citation')
     court_slug = filters.CharFilter(
-        name='court__slug',
+        field_name='court__slug',
         label='Court Slug',
         lookup_expr='iexact')
     court_name = filters.CharFilter(
-        name='court__name',
+        field_name='court__name',
         label='Court Name',
         lookup_expr='iexact')
     reporter_name = filters.CharFilter(
-        name='reporter__full_name',
+        field_name='reporter__full_name',
         label='Reporter Name',
         lookup_expr='iexact')
     jurisdiction = filters.CharFilter(
-        name='jurisdiction__name',
+        field_name='jurisdiction__name',
         label='Jurisdiction Abbreviation',
         lookup_expr='iexact')
     jurisdiction_name = filters.CharFilter(
-        name='jurisdiction__name_long',
+        field_name='jurisdiction__name_long',
         label='Jurisdiction Name',
         lookup_expr='iexact')
     decision_date_min = filters.CharFilter(
         label='Date Min (Format YYYY-MM-DD)',
-        name='decision_date_min',
+        field_name='decision_date_min',
         method='find_by_date')
     decision_date_max = filters.CharFilter(
         label='Date Max (Format YYYY-MM-DD)',
-        name='decision_date_max',
+        field_name='decision_date_max',
         method='find_by_date')
-    judges = filters.CharFilter(name='judges', label='judges', lookup_expr='icontains')
-    attorneys = filters.CharFilter(name='attorneys', label='attorneys', lookup_expr='icontains')
-    parties = filters.CharFilter(name='parties', label='parties', lookup_expr='icontains')
-    opinions = filters.CharFilter(name='opinions', label='opinions', lookup_expr='icontains')
+    judges = filters.CharFilter(field_name='judges', label='judges', lookup_expr='icontains')
+    attorneys = filters.CharFilter(field_name='attorneys', label='attorneys', lookup_expr='icontains')
+    parties = filters.CharFilter(field_name='parties', label='parties', lookup_expr='icontains')
+    opinions = filters.CharFilter(field_name='opinions', label='opinions', lookup_expr='icontains')
 
     def find_by_citation(self, qs, name, value):
         citation = models.Citation.objects.get(cite__iexact=value)

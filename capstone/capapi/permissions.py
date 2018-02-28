@@ -47,7 +47,7 @@ class IsAPIUser(permissions.BasePermission):
             return True
 
         # from here forth one cannot be anonymous
-        if request.user.is_anonymous():
+        if request.user.is_anonymous:
             return False
 
         is_allowed = request.user.case_allowance_remaining >= blacklisted_count

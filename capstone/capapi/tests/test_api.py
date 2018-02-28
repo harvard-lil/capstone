@@ -4,7 +4,7 @@ from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
 
 @pytest.mark.django_db(transaction=True)
-def test_api_urls(client, api_url, case):
+def test_api_urls(client, api_url):
     response = client.get('%scases/' % api_url)
     check_response(response, format='api')
     response = client.get('%scases/?format=json' % api_url)
@@ -163,7 +163,6 @@ def test_full_case_formats(api_url, client, case):
     jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
     jurisdiction.save()
     case = setup_case(**{'jurisdiction': jurisdiction})
-
     # test body_format not specified
     url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
     response = client.get(url)

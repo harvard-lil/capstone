@@ -177,6 +177,10 @@ class BaseXMLModel(models.Model):
         if self.tracker.has_changed('orig_xml') and not self.tracker.has_changed('md5'):
             self.md5 = self.get_md5()
 
+        # Django 2.0 doesn't save byte strings correctly -- make sure we save str()
+        if self.orig_xml:
+            self.orig_xml = force_str(self.orig_xml)
+
         return super().save(*args, **kwargs)
 
     def get_md5(self):
@@ -787,7 +791,7 @@ class Citation(models.Model):
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
     normalized_cite = models.SlugField(max_length=255, null=True)
-    case = models.ForeignKey('CaseMetadata', related_name='citation', null=True)
+    case = models.ForeignKey('CaseMetadata', related_name='citation', null=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
         return self.normalized_cite

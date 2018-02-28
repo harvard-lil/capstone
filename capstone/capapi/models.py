@@ -131,7 +131,7 @@ class APIToken(models.Model):
     # see https://github.com/encode/django-rest-framework/blob/master/rest_framework/authtoken/models.py#L17
 
     key = models.CharField(max_length=40, primary_key=True)
-    user = models.OneToOneField('APIUser')
+    user = models.OneToOneField('APIUser', on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
 
     @classmethod

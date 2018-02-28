@@ -27,13 +27,13 @@ django-appconf==1.0.2     # via django-compressor
 django-bulk-update==2.1.0
 django-compressor==2.1.1  # via django-libsass
 django-extensions==1.8.1
-django-filter==1.0.4
+django-filter==1.1.0
 django-libsass==0.7
 django-pipeline==1.6.13
 django-storages==1.5.2
-django==1.11.1
-djangorestframework-filters==0.10.1
-djangorestframework==3.6.3
+django==2.0.2
+djangorestframework-filters==0.10.2
+djangorestframework==3.7.7
 docutils==0.13.1          # via botocore
 execnet==1.4.1            # via pytest-xdist
 fabric3==1.13.1.post1

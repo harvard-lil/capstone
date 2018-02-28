@@ -143,3 +143,15 @@ Running Command Line Scripts
 
 Command line scripts are defined in `fabfile.py`. You can list all available commands using `fab -l`, and run a
 command with `fab command_name`.
+
+
+Download real data locally 
+--------------------------
+
+To write test data and fixtures for given volume and case:
+run the fab command `fab add_test_case` with a volume barcode
+(like `fab add_test_case:32044057891608_0001`)
+- In settings.py, you will need to point DATABASES['tracking_tool'] to the real tracking tool db
+- You will also need to point STORAGES['ingest_storage'] to real harvard-ftl-shared
+
+
