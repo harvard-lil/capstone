@@ -76,7 +76,7 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         'court',
         'volume',
         'reporter',
-    )
+    ).prefetch_related('citation')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     permission_classes = (permissions.IsAPIUser,)
     filter_class = filters.CaseFilter

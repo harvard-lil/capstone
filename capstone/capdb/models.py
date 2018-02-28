@@ -7,7 +7,7 @@ from django.utils.encoding import force_bytes, force_str
 from model_utils import FieldTracker
 
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, nsmap, extract_casebody)
+                             serialize_xml, nsmap)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -753,19 +753,18 @@ class CaseXML(BaseXMLModel):
 
         if not duplicative_case:
             for citation_type, citation_text in data['citations'].items():
-                cite, created = Citation.objects.get_or_create(
+                cite = Citation.objects.create(
                     cite=citation_text,
                     type=citation_type,
-                    case=case_metadata,
                     duplicative=False)
-
+                cite.case = case_metadata
+                cite.save()
         else:
-            cite, created = Citation.objects.get_or_create(
+            cite = Citation.objects.create(
                 cite="{} {} {}".format(volume_metadata.volume_number, reporter.short_name, data["first_page"]),
-                case=case_metadata,
                 type="official", duplicative=True)
-
-
+            cite.case = case_metadata
+            cite.save()
 
         # create links between metadata and cites
         # TODO: this may create orphan citations that aren't linked to any case
@@ -784,11 +783,13 @@ class Citation(models.Model):
                             choices=(("official", "official"), ("parallel", "parallel")))
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
-    normalized_cite = models.SlugField(max_length=255, null=True)
+    normalized_cite = models.SlugField(max_length=255, null=True, db_index=True)
     case = models.ForeignKey('CaseMetadata', related_name='citation', null=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
-        return self.normalized_cite
+        if self.normalized_cite:
+            return "%s - %s" % (self.id, self.normalized_cite)
+        return "%s - %s" % (self.id, self.cite)
 
 
 class PageXML(BaseXMLModel):
