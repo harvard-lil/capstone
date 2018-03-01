@@ -784,12 +784,10 @@ class Citation(models.Model):
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
     normalized_cite = models.SlugField(max_length=255, null=True, db_index=True)
-    case = models.ForeignKey('CaseMetadata', related_name='citation', null=True, on_delete=models.DO_NOTHING)
+    case = models.ForeignKey('CaseMetadata', related_name='citation', null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        if self.normalized_cite:
-            return "%s - %s" % (self.id, self.normalized_cite)
-        return "%s - %s" % (self.id, self.cite)
+        return str(self.id)
 
 
 class PageXML(BaseXMLModel):
