@@ -25,7 +25,11 @@ def get_case_metadata(case_xml):
         })
 
     citation_entries = parsed('case|case').find('case|citation')
-    citations = {cite.attrib['category']: cite.text for cite in citation_entries}
+    citations = [{
+        'citation_type': cite.attrib['category'],
+        'citation_text': cite.text,
+        'is_duplicative': False
+    } for cite in citation_entries]
     jurisdiction = parsed('case|court').attr('jurisdiction').strip()
 
     name = parsed('case|name').text()
