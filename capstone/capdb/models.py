@@ -747,27 +747,38 @@ class CaseXML(BaseXMLModel):
 
         ### Handle citations
 
-        #  delete existing citations
-        #  create new citations
-        Citation.objects.filter(case_id=case_metadata.id).delete()
+        # fetch any existing cites from the database
+        existing_cites = {} if metadata_created else {cite.cite: cite for cite in case_metadata.citation.all()}
 
-        if not duplicative_case:
-            for citation_type, citation_text in data['citations'].items():
-                cite = Citation.objects.create(
-                    cite=citation_text,
-                    type=citation_type,
-                    duplicative=False)
-                cite.case = case_metadata
-                cite.save()
+        # set up a fake cite for duplicate cases
+        if duplicative_case:
+            citations = [{
+                "citation_type": "official",
+                "citation_text": "{} {} {}".format(volume_metadata.volume_number, reporter.short_name, data["first_page"]),
+                "is_duplicative": True,
+            }]
         else:
-            cite = Citation.objects.create(
-                cite="{} {} {}".format(volume_metadata.volume_number, reporter.short_name, data["first_page"]),
-                type="official", duplicative=True)
-            cite.case = case_metadata
-            cite.save()
+            citations = data['citations']
 
-        # create links between metadata and cites
-        # TODO: this may create orphan citations that aren't linked to any case
+        # update or create each citation
+        for citation in citations:
+            if citation['citation_text'] in existing_cites:
+                cite = existing_cites.pop(citation['citation_text'])
+                cite.cite = citation['citation_text']
+                cite.type = citation['citation_type']
+                cite.duplicative = citation['is_duplicative']
+            else:
+                cite = Citation(
+                    cite=citation['citation_text'],
+                    type=citation['citation_type'],
+                    duplicative=citation['is_duplicative'],
+                    case=case_metadata,
+                )
+            if cite.tracker.changed():
+                cite.save()
+
+        # clean up unused existing cites
+        Citation.objects.filter(pk__in=[cite.pk for cite in existing_cites.values()]).delete()
 
         # create link between casexml and metadata
         if metadata_created:
@@ -785,6 +796,8 @@ class Citation(models.Model):
     duplicative = models.BooleanField(default=False)
     normalized_cite = models.SlugField(max_length=255, null=True, db_index=True)
     case = models.ForeignKey('CaseMetadata', related_name='citation', null=True, on_delete=models.SET_NULL)
+
+    tracker = FieldTracker()
 
     def __str__(self):
         return str(self.id)
