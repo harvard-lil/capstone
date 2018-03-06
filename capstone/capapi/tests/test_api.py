@@ -134,14 +134,14 @@ def test_max_number_case_download(auth_user, api_url, auth_client):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_unauthorized_download(user, api_url, auth_client, case):
-    assert user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
+def test_unauthorized_download(api_user, api_url, auth_client, case):
+    assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?type=download" % (api_url, case.slug)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token fake'})
     check_response(response, status_code=401, format='')
 
-    user.refresh_from_db()
-    assert user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
+    api_user.refresh_from_db()
+    assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
 
 @pytest.mark.django_db(transaction=True)
