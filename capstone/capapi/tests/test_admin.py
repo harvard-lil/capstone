@@ -24,38 +24,38 @@ def test_admin_user_create(admin_client):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_admin_user_authenticate(admin_client, user):
+def test_admin_user_authenticate(admin_client, api_user):
     """
     Test if we can authenticate user through the admin panel
     """
     data = {
         'action': 'authenticate_user',
-        '_selected_action': user.id,
+        '_selected_action': api_user.id,
     }
     response = admin_client.post('/admin/capapi/apiuser/', data, follow=True)
-    user.refresh_from_db()
+    api_user.refresh_from_db()
 
     assert response.status_code == 200
-    assert user.is_authenticated
-    assert user.get_api_key()
+    assert api_user.is_authenticated
+    assert api_user.get_api_key()
 
 
 @pytest.mark.django_db(transaction=True)
-def test_admin_user_authenticate_without_key_expires(admin_client, user):
+def test_admin_user_authenticate_without_key_expires(admin_client, api_user):
     """
     Test if we can authenticate even if key_expires is missing
     """
-    user.key_expires = None
-    user.save()
+    api_user.key_expires = None
+    api_user.save()
     data = {
         'action': 'authenticate_user',
-        '_selected_action': user.id,
+        '_selected_action': api_user.id,
     }
     response = admin_client.post('/admin/capapi/apiuser/', data, follow=True)
-    user.refresh_from_db()
+    api_user.refresh_from_db()
 
     assert response.status_code == 200
-    assert user.is_authenticated
-    assert user.get_api_key()
+    assert api_user.is_authenticated
+    assert api_user.get_api_key()
 
 

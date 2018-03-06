@@ -7,10 +7,9 @@ from django.core.management import call_command
 from rest_framework.test import RequestsClient, APIRequestFactory
 
 import fabfile
-from capdb.models import VolumeXML, CaseXML, Jurisdiction, Court
 import capdb.storages
 
-from . import factories
+from .factories import *
 
 ### One-time database setup ###
 
@@ -49,32 +48,14 @@ def load_tracking_tool_database():
 ### Factory fixtures ###
 
 @pytest.fixture
-def user():
-    return factories.setup_user()
-
-@pytest.fixture
-def auth_user():
-    return factories.setup_authenticated_user()
-
-@pytest.fixture
-def volume_xml():
-    return factories.VolumeXMLFactory()
+def auth_user(api_token):
+    user = APIUserFactory()
+    token = APITokenFactory(user=user)
+    return user
 
 @pytest.fixture
 def case():
-    return factories.setup_case()
-
-@pytest.fixture
-def jurisdiction():
-    return factories.setup_jurisdiction()
-
-@pytest.fixture
-def court():
-    return factories.setup_court()
-
-@pytest.fixture
-def reporter():
-    return factories.setup_reporter()
+    return setup_case()
 
 @pytest.fixture
 def client():

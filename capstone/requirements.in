@@ -39,6 +39,7 @@ pytest-redis        # redisdb fixture
 moto                # mocking s3 access
 flake8              # linting
 factory-boy         # mocking
+pytest-factoryboy   # inject factory-boy factories into pytest fixtures
 
 # API
 beautifulsoup4
