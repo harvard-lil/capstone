@@ -77,7 +77,7 @@ def sync_s3_data(full_sync=False):
 def sync_s3_data_step_two(full_sync=False):
     # Round Two:
     #   - Filter down "volumes" queue to most recent copy of each volume.
-    #   - Call ingest_volume() as a celery task for each volume. For each volume:
+    #   - Call ingest_volume_from_redis() as a celery task for each volume. For each volume:
     #       - Ingest volume XML, case XML, and alto XML, if not already in database.
     #       - If we are adding/updating volume XML, check that METS inventory is valid.
     #   - Call sync_s3_data_step_three when all celery tasks are complete.
@@ -195,11 +195,11 @@ def ingest_volumes(full_sync):
 
     # process each unique volume
     return chord(
-        (ingest_volume.s(i) for i in filtered_volume_folders)
+        (ingest_volume_from_redis.s(i) for i in filtered_volume_folders)
     )
 
 @celery.shared_task
-def ingest_volume(volume_folder):
+def ingest_volume_from_redis(volume_folder):
     """
         Celery task to ingest a single volume folder.
     """
@@ -207,7 +207,27 @@ def ingest_volume(volume_folder):
     info("Processing volume: %s" % volume_folder)
     volume_folder = force_str(volume_folder)
     s3_items_by_type = get_s3_items_by_type_from_queue(volume_folder)
+    ingest_volume(volume_folder, s3_items_by_type)
 
+@celery.shared_task
+def ingest_volume_from_s3(volume_barcode):
+    """
+        Ingest a volume by requesting the S3 listing directly, instead of using inventory report.
+    """
+    # find latest volume folder based on barcode
+    volume_folders = ingest_storage.iter_files(volume_barcode, partial_path=True)
+    if not volume_folders:
+        VolumeMetadata.objects.filter(barcode=volume_barcode).update(ingest_status='error', ingest_errors={"missing_from_s3": volume_barcode})
+    volume_folder = sorted(volume_folders, reverse=True)[0]
+
+    # fetch all items in folder
+    s3_items = ((path.split(volume_folder, 1)[1], etag) for path, etag in ingest_storage.iter_files_recursive(volume_folder, with_md5=True))
+    s3_items_by_type = sort_s3_items_by_type(s3_items, volume_folder)
+
+    # ingest volume
+    ingest_volume(volume_folder, s3_items_by_type)
+
+def ingest_volume(volume_folder, s3_items_by_type):
     try:
 
         ### import volume
@@ -368,7 +388,9 @@ def get_s3_items_by_type_from_queue(volume_folder):
     # Get all entries from volume:<volume_folder> queue, splitting tab-delimited strings back into tuples:
     s3_items = [line.split("\t") for files_str in spop_all('volume:' + volume_folder) for line in
                 force_str(files_str).split("\n")]
+    return sort_s3_items_by_type(s3_items, volume_folder)
 
+def sort_s3_items_by_type(s3_items, volume_folder):
     # sort s3 items by file type:
     s3_items_by_type = {'alto': [], 'jp2': [], 'tiff': [], 'casemets': [], 'volmets': [], 'md5': []}
     for file_name, etag in s3_items:
