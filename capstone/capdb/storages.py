@@ -1,5 +1,5 @@
+import hashlib
 import os
-
 import itertools
 import redis
 
@@ -45,7 +45,7 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
             for item in page.get('Contents', []):
                 yield(self.relpath(item['Key']))
 
-    def iter_files_recursive(self, path=""):
+    def iter_files_recursive(self, path="", with_md5=False):
         """
             Yield each file in path or subdirectories.
             Order is not specified.
@@ -53,7 +53,11 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
         path = path.rstrip('/')
         if path:
             path += '/'  # should end with exactly one slash
-        return (self.relpath(self._decode_name(entry.key)) for entry in self.bucket.objects.filter(Prefix=self._fix_path(path)))
+        entries = self.bucket.objects.filter(Prefix=self._fix_path(path))
+        if with_md5:
+            return ((self.relpath(self._decode_name(entry.key)), entry.e_tag.strip('"')) for entry in entries)
+        else:
+            return (self.relpath(self._decode_name(entry.key)) for entry in entries)
 
     def tag_file(self, path, key, value):
         """ Tag S3 item at path with key=value. """
@@ -101,7 +105,7 @@ class CapFileStorage(CapStorageMixin, FileSystemStorage):
                 continue
             yield os.path.join(search_path, file_name)
 
-    def iter_files_recursive(self, path=""):
+    def iter_files_recursive(self, path="", with_md5=False):
         """
             Yield each file in path or subdirectories.
             Order is not specified.
@@ -111,7 +115,11 @@ class CapFileStorage(CapStorageMixin, FileSystemStorage):
                 # skip hidden files starting with .
                 if file_name.startswith('.'):
                     continue
-                yield self.relpath(os.path.join(root, file_name)).lstrip('/')
+                rel_path = self.relpath(os.path.join(root, file_name)).lstrip('/')
+                if with_md5:
+                    yield rel_path, hashlib.md5(self.contents(rel_path, 'rb')).hexdigest()
+                else:
+                    yield rel_path
 
     def tag_file(self, path, key, value):
         """ For file storage, tags don't work. """
