@@ -70,6 +70,10 @@ class TemporalHistoricalRecords(HistoricalRecords):
 
         # override string representation of history model to use the date range
         out['__str__'] = lambda self: '%s as of %s' % (self.history_object, self.sys_period)
+        out['history_date'] = lambda self: "%s to %s" % (
+            self.sys_period.lower.strftime('%B %d, %Y %I:%M%p') if self.sys_period.lower else "-",
+            self.sys_period.upper.strftime('%B %d, %Y %I:%M%p') if self.sys_period.upper else "-",
+        )
 
         return out
 
