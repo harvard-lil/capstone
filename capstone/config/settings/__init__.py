@@ -4,7 +4,7 @@
 # If it doesn't exist we assume this is a vanilla development environment and import .deployments.settings_dev.
 try:
     from .settings import *  # noqa
-except ModuleNotFoundError as e:
+except ImportError as e:
     if e.msg == "No module named 'config.settings.settings'":
         from .settings_dev import *  # noqa
     else:

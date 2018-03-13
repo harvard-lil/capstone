@@ -144,6 +144,14 @@ Running Command Line Scripts
 Command line scripts are defined in `fabfile.py`. You can list all available commands using `fab -l`, and run a
 command with `fab command_name`.
 
+Local debugging tools
+---------------------
+
+[django-extensions](https://github.com/django-extensions/django-extensions) is enabled by default, including the very
+handy `./manage.py shell_plus` command.
+
+[django-debug-toolbar](https://django-debug-toolbar.readthedocs.io/en/stable/) is not automatically enabled, but if you
+run `pip install django-debug-toolbar` it will be detected and enabled by `settings_dev.py`.
 
 Download real data locally 
 --------------------------
