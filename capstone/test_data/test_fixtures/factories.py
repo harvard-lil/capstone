@@ -1,4 +1,6 @@
 import random
+from pathlib import Path
+
 import factory
 from pytest_factoryboy import register
 
@@ -7,7 +9,6 @@ from django.template.defaultfilters import slugify
 from capapi.models import *
 from capdb.models import *
 
-xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w3.org/1999/xlink'></mets>"
 
 ### factories ###
 
@@ -28,13 +29,6 @@ def setup_case(**kwargs):
     casexml.save(create_or_update_metadata=False)
 
     return case
-
-
-def setup_authenticated_user(**kwargs):
-    user = APIUserFactory.create(**kwargs)
-    token = APITokenFactory.build(user=user)
-    token.save()
-    return user
 
 
 @register
@@ -79,6 +73,7 @@ class TrackingToolUserFactory(factory.DjangoModelFactory):
 class JurisdictionFactory(factory.DjangoModelFactory):
     class Meta:
         model = Jurisdiction
+        django_get_or_create = ('name',)
 
     name = factory.Faker('sentence', nb_words=2)
     name_long = factory.Faker('sentence', nb_words=4)
@@ -112,7 +107,12 @@ class VolumeFactory(factory.DjangoModelFactory):
 class VolumeXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = VolumeXML
-    orig_xml = xml_str
+
+    orig_xml = (
+            Path(settings.BASE_DIR) /
+            "test_data/from_vendor/32044057892259_redacted/32044057892259_redacted_METS.xml"
+    ).read_text()
+    s3_key = factory.Sequence(lambda n: '%08d' % n)
     metadata = factory.SubFactory(VolumeFactory)
 
 
@@ -141,6 +141,7 @@ class CaseFactory(factory.DjangoModelFactory):
     volume = factory.SubFactory(VolumeFactory)
     reporter = factory.SubFactory(ReporterFactory)
 
+
 @register
 class CitationFactory(factory.DjangoModelFactory):
     class Meta:
@@ -158,5 +159,28 @@ class CaseXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseXML
 
-    orig_xml = xml_str
+    orig_xml = (
+            Path(settings.BASE_DIR) /
+            "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml"
+    ).read_text()
+    volume = factory.SubFactory(VolumeXMLFactory)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        """ Add the needed Jurisdiction for this CaseXML's metadata instance to be created on save. """
+        parsed = parse_xml(cls.orig_xml)
+        JurisdictionFactory(name=jurisdiction_translation[parsed('case|court').attr('jurisdiction').strip()])
+        return super()._create(model_class, *args, **kwargs)
+
+
+@register
+class PageXMLFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = PageXML
+
+    orig_xml = (
+            Path(settings.BASE_DIR) /
+            "test_data/from_vendor/32044057892259_redacted/alto/32044057892259_redacted_ALTO_00008_0.xml"
+    ).read_text()
+    s3_key = factory.Sequence(lambda n: '%08d' % n)
     volume = factory.SubFactory(VolumeXMLFactory)
