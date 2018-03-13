@@ -61,7 +61,7 @@ def test_flow(client, api_url, case):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_case_citation_redirect(auth_user, api_url, client, citation):
+def test_case_citation_redirect(api_url, client, citation):
     url = "%scases/%s?format=json" % (api_url, citation.normalized_cite)
 
     # should have received a redirect
@@ -105,27 +105,28 @@ def test_case_citation_redirect(auth_user, api_url, client, citation):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_unauthorized_request(user, api_url, auth_client, case):
-    assert user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
+def test_unauthorized_request(api_user, api_url, auth_client, case):
+    assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?full_case=true" % (api_url, case.id)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token fake'})
     check_response(response, status_code=401, format='')
 
-    user.refresh_from_db()
-    assert user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
+    api_user.refresh_from_db()
+    assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
 
 @pytest.mark.django_db(transaction=True)
-def test_unauthenticated_full_case(user, api_url, client):
+def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     """
     we should allow users to get full case without authentication
     if case is whitelisted
     we should allow users to see why they couldn't get full case
     if case is blacklisted
     """
-    jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
+    jurisdiction.whitelisted = True
     jurisdiction.save()
-    case = setup_case(**{'jurisdiction': jurisdiction})
+    case.jurisdiction = jurisdiction
+    case.save()
 
     url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
     response = client.get(url)
@@ -133,9 +134,10 @@ def test_unauthenticated_full_case(user, api_url, client):
     content = response.json()
     assert "casebody" in content
 
-    jurisdiction = JurisdictionFactory(name='New York', whitelisted=False)
+    jurisdiction.whitelisted = False
     jurisdiction.save()
-    case = setup_case(**{'jurisdiction': jurisdiction})
+    case.jurisdiction = jurisdiction
+    case.save()
 
     url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
     response = client.get(url)
@@ -183,13 +185,14 @@ def test_authenticated_full_case(auth_user, api_url, auth_client):
 
 
 @pytest.mark.django_db
-def test_case_body_formats(api_url, client, case, ingest_case_xml):
+def test_case_body_formats(api_url, client, jurisdiction, ingest_case_xml):
     """
     api should return different casebody formats upon request
     """
-    jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
+    jurisdiction.whitelisted = True
     jurisdiction.save()
-    case = CaseMetadataFactory(jurisdiction=jurisdiction)
+    case = CaseFactory(jurisdiction=jurisdiction)
+    case.save()
     ingest_case_xml.metadata = case
     ingest_case_xml.save()
 

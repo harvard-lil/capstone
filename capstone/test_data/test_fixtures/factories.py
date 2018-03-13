@@ -1,7 +1,7 @@
 import random
 import factory
+from pytest_factoryboy import register
 
-from django.utils import timezone
 from django.template.defaultfilters import slugify
 
 from capapi.models import *
@@ -9,10 +9,15 @@ from capdb.models import *
 
 xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w3.org/1999/xlink'></mets>"
 
-#   helpers for common patterns
+### factories ###
+
+# Calling @pytest_factoryboy.register on each factory exposes it as a pytest fixture.
+# For example, APIUserFactory will be available as the fixture "api_user".
+
+
 def setup_case(**kwargs):
     # set up casemetadata instance
-    case = CaseMetadataFactory(**kwargs)
+    case = CaseFactory(**kwargs)
     citation = CitationFactory(type='official')
     citation.case = case
     citation.save()
@@ -25,14 +30,6 @@ def setup_case(**kwargs):
     return case
 
 
-def setup_casexml(**kwargs):
-    return CaseXMLFactory(**kwargs)
-
-
-def setup_jurisdiction(**kwargs):
-    return JurisdictionFactory(**kwargs)
-
-
 def setup_authenticated_user(**kwargs):
     user = APIUserFactory.create(**kwargs)
     token = APITokenFactory.build(user=user)
@@ -40,34 +37,7 @@ def setup_authenticated_user(**kwargs):
     return user
 
 
-def setup_user(**kwargs):
-    return APIUserFactory.create(**kwargs)
-
-
-def setup_court(**kwargs):
-    return CourtFactory(**kwargs)
-
-
-def setup_reporter(**kwargs):
-    return ReporterFactory(**kwargs)
-
-
-def setup_volume(**kwargs):
-    return VolumeMetadataFactory(**kwargs)
-
-
-def setup_volumexml(**kwargs):
-    return VolumeXMLFactory(**kwargs)
-
-
-def setup_citation(**kwargs):
-    citation = CitationFactory(**kwargs)
-    citation.normalized_cite = slugify(citation.cite)
-    citation.save()
-    return citation
-
-
-#   factories
+@register
 class APIUserFactory(factory.DjangoModelFactory):
     class Meta:
         model = APIUser
@@ -83,15 +53,18 @@ class APIUserFactory(factory.DjangoModelFactory):
     key_expires = timezone.now() + timedelta(hours=24)
     activation_nonce = factory.Sequence(lambda n: '%08d' % n)
 
+
+@register
 class APITokenFactory(factory.DjangoModelFactory):
     class Meta:
         model = APIToken
 
     user = factory.SubFactory(APIUserFactory)
-    key = binascii.hexlify(os.urandom(20)).decode()
+    key = factory.Sequence(lambda n: binascii.hexlify(os.urandom(20)).decode())
     created = timezone.now()
 
 
+@register
 class TrackingToolUserFactory(factory.DjangoModelFactory):
     class Meta:
         model = TrackingToolUser
@@ -102,6 +75,7 @@ class TrackingToolUserFactory(factory.DjangoModelFactory):
     updated_at = timezone.now()
 
 
+@register
 class JurisdictionFactory(factory.DjangoModelFactory):
     class Meta:
         model = Jurisdiction
@@ -110,6 +84,8 @@ class JurisdictionFactory(factory.DjangoModelFactory):
     name_long = factory.Faker('sentence', nb_words=4)
     slug = factory.Sequence(lambda n: '%08d' % n)
 
+
+@register
 class ReporterFactory(factory.DjangoModelFactory):
     class Meta:
         model = Reporter
@@ -123,7 +99,8 @@ class ReporterFactory(factory.DjangoModelFactory):
     jurisdiction = factory.RelatedFactory(JurisdictionFactory)
 
 
-class VolumeMetadataFactory(factory.DjangoModelFactory):
+@register
+class VolumeFactory(factory.DjangoModelFactory):
     class Meta:
         model = VolumeMetadata
     barcode = factory.Sequence(lambda n: '%08d' % n)
@@ -131,12 +108,15 @@ class VolumeMetadataFactory(factory.DjangoModelFactory):
     reporter = factory.SubFactory(ReporterFactory)
 
 
+@register
 class VolumeXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = VolumeXML
     orig_xml = xml_str
-    metadata = factory.SubFactory(VolumeMetadataFactory)
+    metadata = factory.SubFactory(VolumeFactory)
 
+
+@register
 class CourtFactory(factory.DjangoModelFactory):
     class Meta:
         model = Court
@@ -146,7 +126,8 @@ class CourtFactory(factory.DjangoModelFactory):
     jurisdiction = factory.SubFactory(JurisdictionFactory)
 
 
-class CaseMetadataFactory(factory.DjangoModelFactory):
+@register
+class CaseFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseMetadata
 
@@ -157,10 +138,10 @@ class CaseMetadataFactory(factory.DjangoModelFactory):
     case_id = factory.Sequence(lambda n: '%08d' % n)
     decision_date = factory.Faker("date_this_century", before_today=True, after_today=False)
     court = factory.SubFactory(CourtFactory)
-    volume = factory.SubFactory(VolumeMetadataFactory)
+    volume = factory.SubFactory(VolumeFactory)
     reporter = factory.SubFactory(ReporterFactory)
 
-
+@register
 class CitationFactory(factory.DjangoModelFactory):
     class Meta:
         model = Citation
@@ -168,26 +149,14 @@ class CitationFactory(factory.DjangoModelFactory):
     @factory.lazy_attribute
     def type(self):
         return random.choice(['official', 'parallel'])
-    case = factory.SubFactory(CaseMetadataFactory)
+    case = factory.SubFactory(CaseFactory)
     cite = factory.Faker('sentence', nb_words=5)
 
 
+@register
 class CaseXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseXML
 
     orig_xml = xml_str
     volume = factory.SubFactory(VolumeXMLFactory)
-
-
-class ReporterFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Reporter
-
-    full_name = factory.Faker('sentence', nb_words=5)
-    short_name = factory.Faker('sentence', nb_words=3)
-    start_year = timezone.now().timestamp()
-    created_at = timezone.now()
-    updated_at = timezone.now()
-    hollis = []
-    jurisdiction = factory.RelatedFactory(JurisdictionFactory)

@@ -748,7 +748,7 @@ class CaseXML(BaseXMLModel):
         ### Handle citations
 
         # fetch any existing cites from the database
-        existing_cites = {} if metadata_created else {cite.cite: cite for cite in case_metadata.citation.all()}
+        existing_cites = {} if metadata_created else {cite.cite: cite for cite in case_metadata.citations.all()}
 
         # set up a fake cite for duplicate cases
         if duplicative_case:

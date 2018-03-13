@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from django.utils.text import slugify
 
 
 class AdminUserPermissions(permissions.BasePermission):
@@ -36,6 +35,7 @@ casebody_permissions = [
 def get_single_casebody_permissions(request, case):
     """
     field-level (casebody) permissions for user
+    updating case download permissions for user if case is blacklisted
     """
     casebody = {"status": None, "data": None}
 

@@ -22,7 +22,7 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi import resources
-from capdb.models import Jurisdiction, CaseMetadata, VolumeXML
+from capdb.models import Jurisdiction, CaseMetadata, VolumeXML, VolumeMetadata
 from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
 # from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, validate_private_volumes as validate_private_volumes_script
@@ -40,7 +40,8 @@ def test():
 @task
 def sync_with_s3():
     """ Import XML for volumes that have not had a previous completed import with that VolumeXML md5. """
-    ingest_by_manifest.sync_s3_data.delay()
+    for volume_barcode in VolumeMetadata.objects.filter(ingest_status__in=['to_ingest', 'error']).values_list('barcode', flat=True):
+        ingest_by_manifest.ingest_volume_from_s3.delay(volume_barcode)
 
 @task
 def total_sync_with_s3():
