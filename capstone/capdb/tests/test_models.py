@@ -33,7 +33,7 @@ def test_create_or_update_metadata(ingest_case_xml):
 
     # fetch new metadata
     new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
-    new_citations = list(new_case_metadata.citation.all())
+    new_citations = list(new_case_metadata.citations.all())
 
     # case_metadata should have been updated, not duplicated
     assert new_case_metadata.pk == case_metadata.pk

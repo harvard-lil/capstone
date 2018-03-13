@@ -41,7 +41,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
 
     @staticmethod
     def get_citations(case):
-        citation_vals = list(case.citation.all().values())
+        citation_vals = list(case.citations.all().values())
         citations = list(map(lambda cite: CitationSerializer(cite).data, citation_vals))
         return citations
 
