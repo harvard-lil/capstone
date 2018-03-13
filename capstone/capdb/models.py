@@ -484,7 +484,7 @@ class CaseMetadata(models.Model):
     duplicative = models.BooleanField(default=False)
 
     def __str__(self):
-        return str(self.pk)
+        return self.case_id
 
     class Meta:
         ordering = ['decision_date']
@@ -783,11 +783,17 @@ class Citation(models.Model):
                             choices=(("official", "official"), ("parallel", "parallel")))
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
-    normalized_cite = models.SlugField(max_length=255, null=True, db_index=True)
-    case = models.ForeignKey('CaseMetadata', related_name='citation', null=True, on_delete=models.SET_NULL)
+    normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
+    case = models.ForeignKey('CaseMetadata', related_name='citations', null=True, on_delete=models.SET_NULL)
+    tracker = FieldTracker()
 
     def __str__(self):
         return str(self.id)
+
+    def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
+        if self.tracker.has_changed('cite'):
+            self.normalized_cite = slugify(self.cite)
+        super(Citation, self).save(force_insert, force_update, *args, **kwargs)
 
 
 class PageXML(BaseXMLModel):

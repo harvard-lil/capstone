@@ -44,6 +44,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'capapi.authentication.CAPAPIUserAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'capapi.permissions.IsSafeMethodsUser',
+    ),
 }
 
 MIDDLEWARE = [

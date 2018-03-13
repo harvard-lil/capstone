@@ -1,4 +1,5 @@
 import os
+import urllib
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import JsonResponse, HttpResponseRedirect
@@ -8,6 +9,7 @@ from django.shortcuts import render
 
 from rest_framework import status
 from rest_framework import renderers, viewsets, mixins
+from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, list_route, renderer_classes
 from rest_framework.permissions import AllowAny
@@ -89,24 +91,19 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         else:
             return self.serializer_class
 
-    def list(self, *args, **kwargs):
-        self.serializer_class = self.get_serializer_class(self, *args, **kwargs)
-        cite = self.request.query_params.get('cite', None)
-        if cite:
-            self.queryset = self.queryset.filter(citation__normalized_cite=cite)
-        return super(CaseViewSet, self).list(*args, **kwargs)
-
     def retrieve(self, *args, **kwargs):
-        slugified = slugify(kwargs[self.lookup_field])
         # for user's convenience, if user gets /cases/case-citation or /cases/Case Citation
-        # we redirect to /cases/?cite=case-station
-        if '-' in slugified:
-            query_params = ''.join(list(map(lambda k: '&%s=%s' % (k, self.request.query_params[k]), self.request.query_params)))
-            new_url = os.path.join(settings.API_FULL_URL, 'cases/?cite=%s%s' % (slugified, query_params))
-            return HttpResponseRedirect(new_url)
-        else:
-            self.serializer_class = self.get_serializer_class(self, *args, **kwargs)
-            return super(CaseViewSet, self).retrieve(*args, **kwargs)
+        # we redirect to /cases/?cite=case-citation
+        if kwargs.get(self.lookup_field, None):
+            slugified = slugify(kwargs[self.lookup_field])
+            if '-' in slugified:
+                query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=slugified), doseq=True)
+                new_url = reverse('casemetadata-list') + "?" + query_string
+                return HttpResponseRedirect(new_url)
+
+        queryset = super(CaseViewSet, self).retrieve(*args, **kwargs)
+
+        return queryset
 
 
 # User specific views
@@ -173,7 +170,7 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return Response({'errors': serializer.errors, 'serializer': serializer}, template_name='log-in.html', status=status.HTTP_401_UNAUTHORIZED)
 
-    @list_route(methods=['post'], permission_classes=[permissions.IsAPIUser])
+    @list_route(methods=['post'], permission_classes=[permissions.IsAuthenticatedAPIUser])
     def resend_verification(self, request):
 
         user = capapi_models.APIUser.objects.get(email=request.data.get('user_email'))

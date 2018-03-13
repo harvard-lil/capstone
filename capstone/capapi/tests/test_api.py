@@ -2,6 +2,7 @@ import pytest
 
 from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
+from capapi.permissions import casebody_permissions
 
 @pytest.mark.django_db(transaction=True)
 def test_api_urls(client, api_url):
@@ -81,6 +82,7 @@ def test_case_citation_redirect(auth_user, api_url, client, citation):
     # allow user to enter real citation (not normalized)
     url = "%scases/%s?format=json" % (api_url, citation.cite)
     response = client.get(url, follow=True)
+
     check_response(response, format='json')
     content = response.json()['results']
     case = citation.case
@@ -118,6 +120,8 @@ def test_unauthenticated_full_case(user, api_url, client):
     """
     we should allow users to get full case without authentication
     if case is whitelisted
+    we should allow users to see why they couldn't get full case
+    if case is blacklisted
     """
     jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
     jurisdiction.save()
@@ -135,7 +139,10 @@ def test_unauthenticated_full_case(user, api_url, client):
 
     url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, format='', status_code=401)
+    check_response(response, format='')
+    casebody = response.json()['casebody']
+    assert 'Error;' in casebody['status']
+    assert not casebody['data']
 
 
 @pytest.mark.django_db(transaction=True)
@@ -193,9 +200,10 @@ def test_case_body_formats(api_url, client, case, ingest_case_xml):
     content = response.json()
     assert "casebody" in content
     casebody = content["casebody"]
-    assert type(casebody) is str
-    assert len(casebody) > 0
-    assert "<" not in casebody
+    assert type(casebody) is dict
+    assert len(casebody['data']) > 0
+    assert casebody['status'] == casebody_permissions[0]
+    assert "<" not in casebody['data']
 
     # getting back xml body
     url = "%scases/%s/?format=json&full_case=true&body_format=xml" % (api_url, case.pk)
@@ -204,8 +212,8 @@ def test_case_body_formats(api_url, client, case, ingest_case_xml):
     content = response.json()
     assert "casebody" in content
     casebody = content["casebody"]
-    assert len(casebody) > 0
-    assert "<?xml version=" in casebody
+    assert "OK;" in casebody['status']
+    assert "<?xml version=" in casebody['data']
 
     # getting back html body
     url = "%scases/%s/?format=json&full_case=true&body_format=html" % (api_url, case.pk)
@@ -214,8 +222,8 @@ def test_case_body_formats(api_url, client, case, ingest_case_xml):
     content = response.json()
     assert "casebody" in content
     casebody = content["casebody"]
-    assert len(casebody) > 0
-    assert "</h4>" in casebody
+    assert "OK;" in casebody['status']
+    assert "</h4>" in casebody['data']
 
 
 

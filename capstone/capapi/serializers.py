@@ -6,6 +6,7 @@ from rest_framework import serializers
 from capdb import models
 from .models import APIUser
 from .resources import email
+from .permissions import get_single_casebody_permissions
 from scripts.generate_case_html import generate_html
 from scripts import helpers
 
@@ -76,23 +77,29 @@ class CaseSerializerWithCasebody(CaseSerializer):
     casebody = serializers.SerializerMethodField()
 
     def get_casebody(self, case):
-        req = self.context.get('request')
+        request = self.context.get('request')
+        casebody = get_single_casebody_permissions(request, case)
+        if "OK;" not in casebody["status"]:
+            return casebody
+
         orig_xml = case.case_xml.orig_xml
         try:
-            renderer_format = req.accepted_renderer.format
+            renderer_format = request.accepted_renderer.format
         except AttributeError:
             # this can happen during testing
             renderer_format = 'json'
-        body_format = req.query_params.get('body_format', renderer_format).lower()
+        body_format = request.query_params.get('body_format', renderer_format).lower()
         if body_format == 'html':
-            return generate_html(orig_xml)
+            casebody["data"] = generate_html(orig_xml)
+
         elif body_format == 'xml':
             extracted = helpers.extract_casebody(orig_xml)
-            casebody = helpers.serialize_xml(extracted)
-            return re.sub(r"\s{2,}", " ", casebody.decode())
+            c = helpers.serialize_xml(extracted)
+            casebody["data"] = re.sub(r"\s{2,}", " ", c.decode())
         else:
             # send text to everyone else
-            return helpers.extract_casebody(orig_xml).text()
+            casebody["data"] = helpers.extract_casebody(orig_xml).text()
+        return casebody
 
     class Meta:
         model = CaseSerializer.Meta.model
