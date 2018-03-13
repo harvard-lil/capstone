@@ -32,7 +32,7 @@ INSTALLED_APPS = [
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
-
+    'simple_history',   # model versioning
 ]
 
 REST_FRAMEWORK = {
@@ -299,3 +299,9 @@ CELERY_RESOURCE_LIMITS = [
 
 # security
 SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SILENCED_SYSTEM_CHECKS = [
+    "models.E004"   # For our history tables, the "id" field should not be a primary key. This disables the Django system
+                    # check that required "id" fields to be primary keys.
+]
+
