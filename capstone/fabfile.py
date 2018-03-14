@@ -21,7 +21,6 @@ from django.contrib.auth.models import User
 from fabric.api import local
 from fabric.decorators import task
 
-from capapi import resources
 from capdb.models import Jurisdiction, CaseMetadata, VolumeXML, VolumeMetadata
 from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
 # from process_ingested_xml import fill_case_page_join_table
@@ -271,14 +270,14 @@ def zip_jurisdiction(jurname, zip_filename=None):
     jurisdiction = Jurisdiction.objects.get(name=jurname)
     zip_filename = zip_filename if zip_filename else jurname + ".zip"
     with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as archive:
-        cases = CaseMetadata.objects.filter(jurisdiction=jurisdiction)
+        cases = CaseMetadata.objects.filter(jurisdiction=jurisdiction).select_related('volume', 'reporter')
 
         for case in cases:
             reporter = case.reporter.short_name
             volume = case.volume.volume_number
-            filename = case.slug + '.xml'
+            filename = case.case_id + '.xml'
             path = "{0}/{1}/{2}".format(reporter, volume, filename)
-            archive.writestr(path, resources.get_matching_case_xml(case.case_id))
+            archive.writestr(path, case.case_xml.orig_xml)
 
     print("completed: jurisdiction " + jurname + ", zip filename " + zip_filename)
 

@@ -11,17 +11,7 @@ from django.core.mail import send_mail
 from django.template.defaultfilters import slugify
 from django.http import FileResponse
 
-from capdb.models import CaseXML
-
 logger = logging.getLogger(__name__)
-
-
-def get_matching_case_xml(case_id):
-    try:
-        xml = CaseXML.objects.get(case_id=case_id)
-        return xml.orig_xml
-    except CaseXML.DoesNotExist:
-        logger.error("Case id mismatch", case_id)
 
 
 def create_zip_filename(case_list):
