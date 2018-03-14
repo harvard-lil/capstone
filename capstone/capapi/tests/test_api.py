@@ -52,7 +52,7 @@ def test_flow(client, api_url, case):
     response = client.get(court_url)
     check_response(response)
     # onwards to jurisdiction
-    jurisdiction_url = content.get("jurisdiction_url")
+    jurisdiction_url = content.get("jurisdiction")["url"]
     assert jurisdiction_url
     response = client.get(jurisdiction_url)
     check_response(response)
@@ -143,20 +143,20 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     response = client.get(url)
     check_response(response, format='')
     casebody = response.json()['casebody']
-    assert 'Error;' in casebody['status']
+    assert 'error_' in casebody['status']
     assert not casebody['data']
 
 
 @pytest.mark.django_db(transaction=True)
-def test_authenticated_full_case(auth_user, api_url, auth_client):
+def test_authenticated_full_case(auth_user, api_url, auth_client, jurisdiction, case):
     """
     full cases viewed on whitelisted jurisdictions should not be counted against the user
     """
-    jurisdiction = JurisdictionFactory(name='Illinois', whitelisted=True)
+    jurisdiction.whitelisted = True
     jurisdiction.save()
-    common_name = 'Terrible v. Terrible'
-    case = setup_case(**{'jurisdiction': jurisdiction,
-                         'name': common_name})
+
+    case.jurisdiction = jurisdiction
+    case.save()
 
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
@@ -170,8 +170,8 @@ def test_authenticated_full_case(auth_user, api_url, auth_client):
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
     # if auth_user downloads a mixed case load, their case_allowance_remaining should only reflect the blacklisted cases
-    jurisdiction = JurisdictionFactory(name='Blocked', whitelisted=False)
-    case = setup_case(**{'jurisdiction': jurisdiction})
+    jurisdiction.whitelisted = False
+    jurisdiction.save()
 
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
@@ -215,7 +215,7 @@ def test_case_body_formats(api_url, client, jurisdiction, ingest_case_xml):
     content = response.json()
     assert "casebody" in content
     casebody = content["casebody"]
-    assert "OK;" in casebody['status']
+    assert casebody['status'] == "ok"
     assert "<?xml version=" in casebody['data']
 
     # getting back html body
@@ -225,7 +225,7 @@ def test_case_body_formats(api_url, client, jurisdiction, ingest_case_xml):
     content = response.json()
     assert "casebody" in content
     casebody = content["casebody"]
-    assert "OK;" in casebody['status']
+    assert casebody['status'] == "ok"
     assert "</h4>" in casebody['data']
 
 

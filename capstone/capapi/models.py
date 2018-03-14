@@ -67,14 +67,18 @@ class APIUser(AbstractBaseUser):
             self.save()
         return self.activation_nonce
 
-    def update_case_allowance(self, case_count=0):
+    def update_case_allowance(self, case_count=0, save=True):
         if self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) < timezone.now():
             self.case_allowance_remaining = self.total_case_allowance
             self.case_allowance_last_updated = timezone.now()
 
         if case_count:
+            if self.case_allowance_remaining < case_count:
+                raise AttributeError("Case allowance is too low.")
             self.case_allowance_remaining -= case_count
-        self.save(update_fields=['case_allowance_remaining', 'case_allowance_last_updated'])
+
+        if save:
+            self.save(update_fields=['case_allowance_remaining', 'case_allowance_last_updated'])
 
     def get_case_allowance_update_time_remaining(self):
         td = self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) - timezone.now()

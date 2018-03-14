@@ -27,24 +27,27 @@ class CitationWithCaseSerializer(CitationSerializer):
         fields = CitationSerializer.Meta.fields + ('case_id', 'case_url')
 
 
+class JurisdictionSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="jurisdiction-detail",
+        lookup_field='slug')
+
+    class Meta:
+        model = models.Jurisdiction
+        fields = ('url', 'id', 'slug', 'name', 'name_long', 'whitelisted')
+
+
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="casemetadata-detail", lookup_field="id")
-    jurisdiction = serializers.ReadOnlyField(source='jurisdiction.name')
-    jurisdiction_url = serializers.HyperlinkedRelatedField(source='jurisdiction', view_name='jurisdiction-detail', read_only=True, lookup_field='slug')
     court = serializers.ReadOnlyField(source='court.name')
+    jurisdiction = JurisdictionSerializer()
     court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True, lookup_field='slug')
     reporter = serializers.ReadOnlyField(source='reporter.full_name')
     reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
-    citations = serializers.SerializerMethodField()
+    citations = CitationSerializer(many=True)
     volume = serializers.ReadOnlyField(source='volume.volume_number')
     volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
-
-    @staticmethod
-    def get_citations(case):
-        citation_vals = list(case.citations.all().values())
-        citations = list(map(lambda cite: CitationSerializer(cite).data, citation_vals))
-        return citations
 
     class Meta:
         model = models.CaseMetadata
@@ -59,7 +62,6 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'last_page',
             'citations',
             'jurisdiction',
-            'jurisdiction_url',
             'court',
             'court_url',
             'reporter',
@@ -79,7 +81,7 @@ class CaseSerializerWithCasebody(CaseSerializer):
     def get_casebody(self, case):
         request = self.context.get('request')
         casebody = get_single_casebody_permissions(request, case)
-        if "OK;" not in casebody["status"]:
+        if casebody["status"] != "ok":
             return casebody
 
         orig_xml = case.case_xml.orig_xml
@@ -104,16 +106,6 @@ class CaseSerializerWithCasebody(CaseSerializer):
     class Meta:
         model = CaseSerializer.Meta.model
         fields = CaseSerializer.Meta.fields + ('casebody',)
-
-
-class JurisdictionSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
-        view_name="jurisdiction-detail",
-        lookup_field='slug')
-
-    class Meta:
-        model = models.Jurisdiction
-        fields = ('url', 'id', 'slug', 'name', 'name_long')
 
 
 class VolumeSerializer(serializers.ModelSerializer):

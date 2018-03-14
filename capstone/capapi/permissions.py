@@ -23,13 +23,7 @@ class IsSafeMethodsUser(permissions.BasePermission):
         return request.method in permissions.SAFE_METHODS
 
 
-casebody_permissions = [
-    "OK; Whitelisted case",
-    "OK; Your API limit has been updated",
-    "Error; API token not provided",
-    "Error; API case limit too low",
-    "Error; Something went wrong"
-]
+casebody_permissions = ["ok", "error_auth_required", "error_limit_exceeded", "error_unknown"]
 
 
 def get_single_casebody_permissions(request, case):
@@ -40,22 +34,19 @@ def get_single_casebody_permissions(request, case):
     casebody = {"status": None, "data": None}
 
     if not case.jurisdiction:
-        casebody["status"] = casebody_permissions[4]
+        casebody["status"] = casebody_permissions[3]
         return casebody
 
-    if not case.jurisdiction.whitelisted:
-        if request.user.is_anonymous:
-            casebody["status"] = casebody_permissions[2]
-            return casebody
-        else:
-            request.user.update_case_allowance()
-            if request.user.case_allowance_remaining < 1:
-                casebody["status"] = casebody_permissions[3]
-                return casebody
-            else:
-                request.user.update_case_allowance(case_count=1)
-                casebody["status"] = casebody_permissions[1]
-    else:
+    if case.jurisdiction.whitelisted:
         casebody["status"] = casebody_permissions[0]
+    else:
+        if request.user.is_anonymous:
+            casebody["status"] = casebody_permissions[1]
+        else:
+            try:
+                request.user.update_case_allowance(case_count=1)
+                casebody["status"] = casebody_permissions[0]
+            except AttributeError:
+                casebody["status"] = casebody_permissions[2]
 
     return casebody

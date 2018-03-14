@@ -798,8 +798,6 @@ class Citation(models.Model):
     case = models.ForeignKey('CaseMetadata', related_name='citations', null=True, on_delete=models.SET_NULL)
     tracker = FieldTracker()
 
-    tracker = FieldTracker()
-
     def __str__(self):
         return str(self.id)
 
