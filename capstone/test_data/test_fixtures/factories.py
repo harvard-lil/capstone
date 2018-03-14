@@ -7,15 +7,20 @@ from django.template.defaultfilters import slugify
 from capapi.models import *
 from capdb.models import *
 
-
 xml_str = "<?xml version='1.0' encoding='utf-8'?><mets xmlns:xlink='http://www.w3.org/1999/xlink'></mets>"
 
-#   helpers for common patterns
+### factories ###
+
+# Calling @pytest_factoryboy.register on each factory exposes it as a pytest fixture.
+# For example, APIUserFactory will be available as the fixture "api_user".
+
+
 def setup_case(**kwargs):
     # set up casemetadata instance
+    case = CaseFactory(**kwargs)
     citation = CitationFactory(type='official')
-    case = CaseMetadataFactory(slug=slugify(citation.cite), **kwargs)
-    case.citations.add(citation)
+    citation.case = case
+    citation.save()
 
     # Add VolumeXML and CaseXML instances
     volume_xml = VolumeXMLFactory(metadata=case.volume)
@@ -25,10 +30,12 @@ def setup_case(**kwargs):
     return case
 
 
-### factories ###
+def setup_authenticated_user(**kwargs):
+    user = APIUserFactory.create(**kwargs)
+    token = APITokenFactory.build(user=user)
+    token.save()
+    return user
 
-# Calling @pytest_factoryboy.register on each factory exposes it as a pytest fixture.
-# For example, APIUserFactory will be available as the fixture "api_user".
 
 @register
 class APIUserFactory(factory.DjangoModelFactory):
@@ -93,7 +100,7 @@ class ReporterFactory(factory.DjangoModelFactory):
 
 
 @register
-class VolumeMetadataFactory(factory.DjangoModelFactory):
+class VolumeFactory(factory.DjangoModelFactory):
     class Meta:
         model = VolumeMetadata
     barcode = factory.Sequence(lambda n: '%08d' % n)
@@ -106,19 +113,7 @@ class VolumeXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = VolumeXML
     orig_xml = xml_str
-    metadata = factory.SubFactory(VolumeMetadataFactory)
-
-
-@register
-class CitationFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Citation
-
-    @factory.lazy_attribute
-    def type(self):
-        return random.choice(['official', 'parallel'])
-
-    cite = factory.Faker('sentence', nb_words=5)
+    metadata = factory.SubFactory(VolumeFactory)
 
 
 @register
@@ -132,7 +127,7 @@ class CourtFactory(factory.DjangoModelFactory):
 
 
 @register
-class CaseMetadataFactory(factory.DjangoModelFactory):
+class CaseFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseMetadata
 
@@ -142,10 +137,20 @@ class CaseMetadataFactory(factory.DjangoModelFactory):
     last_page = str(int(first_page) + random.randrange(100))
     case_id = factory.Sequence(lambda n: '%08d' % n)
     decision_date = factory.Faker("date_this_century", before_today=True, after_today=False)
-    citations = factory.RelatedFactory(CitationFactory)
     court = factory.SubFactory(CourtFactory)
-    volume = factory.SubFactory(VolumeMetadataFactory)
+    volume = factory.SubFactory(VolumeFactory)
     reporter = factory.SubFactory(ReporterFactory)
+
+@register
+class CitationFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Citation
+
+    @factory.lazy_attribute
+    def type(self):
+        return random.choice(['official', 'parallel'])
+    case = factory.SubFactory(CaseFactory)
+    cite = factory.Faker('sentence', nb_words=5)
 
 
 @register

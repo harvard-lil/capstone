@@ -37,7 +37,6 @@ def test_create_or_update_metadata(ingest_case_xml):
 
     # case_metadata should have been updated, not duplicated
     assert new_case_metadata.pk == case_metadata.pk
-    assert new_case_metadata.slug == '123-test-456'
 
     # citations should have been replaced
     assert len(new_citations) == 1
@@ -54,16 +53,6 @@ def test_create_or_update_metadata(ingest_case_xml):
 
 
 ### CaseXML ###
-
-@pytest.mark.django_db
-def test_get_casebody_from_xml(ingest_case_xml):
-    parsed = parse_xml(ingest_case_xml.orig_xml)
-    ingest_case_xml.orig_xml = serialize_xml(parsed)
-    ingest_case_xml.save()
-    ingest_case_xml.refresh_from_db()
-    casebody = ingest_case_xml.get_casebody()
-    assert casebody
-    assert "<parties " in casebody
 
 @pytest.mark.django_db
 def test_related_names(ingest_case_xml):

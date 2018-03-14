@@ -46,16 +46,15 @@ def load_tracking_tool_database():
 
 
 ### Factory fixtures ###
+@pytest.fixture
+def case():
+    return setup_case()
 
 @pytest.fixture
 def auth_user(api_token):
     user = APIUserFactory()
     token = APITokenFactory(user=user)
     return user
-
-@pytest.fixture
-def case():
-    return setup_case()
 
 @pytest.fixture
 def client():

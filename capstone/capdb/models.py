@@ -6,7 +6,8 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from model_utils import FieldTracker
 
-from scripts.helpers import special_jurisdiction_cases, jurisdiction_translation, parse_xml, serialize_xml, nsmap, extract_casebody
+from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
+                             serialize_xml, nsmap)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -15,7 +16,7 @@ def choices(*args):
     return zip(args, args)
 
 
-class AutoSlugMixin():
+class AutoSlugMixin:
     """
         Mixin for models that set the .slug field on first save.
 
@@ -458,8 +459,7 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
         return self.name_abbreviation or self.name
 
 
-class CaseMetadata(AutoSlugMixin, models.Model):
-    slug = models.SlugField(max_length=255, unique=True)
+class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
     last_page = models.CharField(max_length=255, null=True, blank=True)
@@ -470,7 +470,6 @@ class CaseMetadata(AutoSlugMixin, models.Model):
     opinions = JSONField(null=True, blank=True)
     attorneys = JSONField(null=True, blank=True)
 
-    citations = models.ManyToManyField('Citation', related_name='case_metadatas')
     docket_number = models.CharField(max_length=20000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
@@ -485,10 +484,10 @@ class CaseMetadata(AutoSlugMixin, models.Model):
     duplicative = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.slug
+        return self.case_id
 
     class Meta:
-        ordering = ['case_id']
+        ordering = ['decision_date']
 
 
 class CaseXML(BaseXMLModel):
@@ -523,9 +522,6 @@ class CaseXML(BaseXMLModel):
 
     def __str__(self):
         return str(self.pk)
-
-    def get_casebody(self):
-        return extract_casebody(self.orig_xml)
 
     def process_updated_xml(self):
         """
@@ -747,32 +743,42 @@ class CaseXML(BaseXMLModel):
                     court.jurisdiction_id = case_metadata.jurisdiction_id
                     court.save()
 
+        case_metadata.save()
+
         ### Handle citations
 
-        citations = list()
+        # fetch any existing cites from the database
+        existing_cites = {} if metadata_created else {cite.cite: cite for cite in case_metadata.citations.all()}
 
-        # first create citations because case slug field relies on citation
-        if not duplicative_case:
-            for citation_type, citation_text in data['citations'].items():
-                cite, created = Citation.objects.get_or_create(
-                    cite=citation_text,
-                    type=citation_type,
-                    duplicative=False)
-                citations.append(cite)
+        # set up a fake cite for duplicate cases
+        if duplicative_case:
+            citations = [{
+                "citation_type": "official",
+                "citation_text": "{} {} {}".format(volume_metadata.volume_number, reporter.short_name, data["first_page"]),
+                "is_duplicative": True,
+            }]
         else:
-            cite, created = Citation.objects.get_or_create(
-                cite="{} {} {}".format(volume_metadata.volume_number, reporter.short_name, data["first_page"]),
-                type="official", duplicative=True)
-            citations.append(cite)
+            citations = data['citations']
 
-        # set slug to official citation, or first citation if there is no official
-        citation_to_slugify = next((c for c in citations if c.type == 'official'), citations[0])
+        # update or create each citation
+        for citation in citations:
+            if citation['citation_text'] in existing_cites:
+                cite = existing_cites.pop(citation['citation_text'])
+                cite.cite = citation['citation_text']
+                cite.type = citation['citation_type']
+                cite.duplicative = citation['is_duplicative']
+            else:
+                cite = Citation(
+                    cite=citation['citation_text'],
+                    type=citation['citation_type'],
+                    duplicative=citation['is_duplicative'],
+                    case=case_metadata,
+                )
+            if cite.tracker.changed():
+                cite.save()
 
-        case_metadata.save(slug_base=citation_to_slugify.cite)
-
-        # create links between metadata and cites
-        # TODO: this may create orphan citations that aren't linked to any case
-        case_metadata.citations.set(citations)
+        # clean up unused existing cites
+        Citation.objects.filter(pk__in=[cite.pk for cite in existing_cites.values()]).delete()
 
         # create link between casexml and metadata
         if metadata_created:
@@ -783,18 +789,22 @@ class CaseXML(BaseXMLModel):
         return case_metadata
 
 
-class Citation(AutoSlugMixin, models.Model):
+class Citation(models.Model):
     type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
-    slug = models.SlugField(max_length=255, unique=True)
+    normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
+    case = models.ForeignKey('CaseMetadata', related_name='citations', null=True, on_delete=models.SET_NULL)
+    tracker = FieldTracker()
 
     def __str__(self):
-        return self.slug
+        return str(self.id)
 
-    def get_slug(self):
-        return self.cite[:100]
+    def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
+        if self.tracker.has_changed('cite'):
+            self.normalized_cite = slugify(self.cite)
+        super(Citation, self).save(force_insert, force_update, *args, **kwargs)
 
 
 class PageXML(BaseXMLModel):

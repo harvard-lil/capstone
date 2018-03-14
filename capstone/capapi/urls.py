@@ -21,5 +21,7 @@ urlpatterns = [
     url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt'), name='robots'),
     url(r'^', include(user_router.urls)),
     url(r'^api/v1/', include(router.urls)),
+    # convenience pattern: catch all citations, redirect in CaseViewSet's retrieve
+    url(r'^api/v1/cases/(?P<id>[0-9A-Za-z\s\.]+)/$', views.CaseViewSet.as_view({'get': 'retrieve'}), name='casemetadata-get-cite'),
     url(r'^accounts/verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
 ]
