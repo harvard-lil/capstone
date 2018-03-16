@@ -6,6 +6,7 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from model_utils import FieldTracker
 
+from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, nsmap)
 from scripts.process_metadata import get_case_metadata
@@ -438,6 +439,7 @@ class VolumeXML(BaseXMLModel):
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     tracker = FieldTracker()
+    history = TemporalHistoricalRecords()
 
     def __str__(self):
         return self.metadata_id
@@ -501,6 +503,7 @@ class CaseXML(BaseXMLModel):
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     tracker = FieldTracker()
+    history = TemporalHistoricalRecords()
 
     @transaction.atomic
     def save(self, update_related=True, *args, **kwargs):
@@ -819,6 +822,7 @@ class PageXML(BaseXMLModel):
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     tracker = FieldTracker()
+    history = TemporalHistoricalRecords()
 
     @transaction.atomic
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):

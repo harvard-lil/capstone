@@ -1,11 +1,13 @@
 from django.contrib import admin
+from simple_history.admin import SimpleHistoryAdmin
 
 from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, TrackingToolUser
+
 
 def new_class(name, *args, **kwargs):
     return type(name, args, kwargs)
 
-class VolumeXMLAdmin(admin.ModelAdmin):
+class VolumeXMLAdmin(SimpleHistoryAdmin):
     pass
 admin.site.register(VolumeXML, VolumeXMLAdmin)
 
@@ -14,12 +16,12 @@ class CasePageInline(admin.TabularInline):
     show_change_link = True
     raw_id_fields = ['casexml', 'pagexml']
 
-class PageXMLAdmin(admin.ModelAdmin):
+class PageXMLAdmin(SimpleHistoryAdmin):
     inlines = [CasePageInline]
     exclude = ('cases',)
 admin.site.register(PageXML, PageXMLAdmin)
 
-class CaseXMLAdmin(admin.ModelAdmin):
+class CaseXMLAdmin(SimpleHistoryAdmin):
     inlines = [CasePageInline]
 admin.site.register(CaseXML, CaseXMLAdmin)
 

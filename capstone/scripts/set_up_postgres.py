@@ -1,3 +1,8 @@
+from pathlib import Path
+from simple_history.manager import HistoryManager
+
+import django.apps
+from django.conf import settings
 from django.db import connection
 
 from .helpers import nsmap
@@ -21,52 +26,43 @@ def update_postgres_env():
             $$ LANGUAGE plpgSQL;
         """ % namespaces)
 
-        # ### VERSIONING STUFF ###
-        #
-        # # function called when a versioned record is updated or deleted:
-        # con.execute("""
-        #     CREATE OR REPLACE FUNCTION versioning() RETURNS trigger AS $$
-        #         var ql = plv8.quote_literal;
-        #         var qi = plv8.quote_ident;
-        #         var historyTableName = TG_TABLE_NAME+"_history";
-        #
-        #         // copy old record from primary table to history table, updating sys_period to indicate
-        #         // that validity of this record ends now:
-        #         var now = plv8.execute("SELECT text(now())")[0].text;  // use text() to stop plv8 converting to Date() object
-        #         var validityStartDate = OLD.sys_period.slice(2, -3);
-        #         if(validityStartDate >= now){
-        #             throw "Validity start date should never be later than now. Did server time change?";
-        #         }
-        #         OLD.sys_period = "[" + validityStartDate + "," + now + ")";
-        #         var keys = Object.keys(OLD).map(function(k){ return qi(k) }).join(', ');
-        #         var values = Object.keys(OLD).map(function(k){ return ql(OLD[k]) }).join(', ');
-        #         plv8.execute("INSERT INTO "+qi(historyTableName)+" ("+keys+") VALUES ("+values+")");
-        #
-        #         // on update, set validity of new record to start now
-        #         if (TG_OP == "UPDATE") {
-        #             NEW.sys_period = "[" + now + ",)";
-        #             return NEW;
-        #         }
-        #     $$ LANGUAGE "plv8";
-        # """)
-        #
-        # # setup for each versioned table:
-        # versioned_models = versioned_objects(getattr(models, attr) for attr in dir(models))
-        # for model in versioned_models:
-        #     # call versioning() on update/delete:
-        #     con.execute("""
-        #         DROP TRIGGER IF EXISTS versioning_trigger ON {table};
-        #         CREATE TRIGGER versioning_trigger
-        #         BEFORE UPDATE OR DELETE ON {table}
-        #         FOR EACH ROW EXECUTE PROCEDURE versioning();
-        #     """.format(table=model.__tablename__))
-        #
-        #     # create combined table_with_history views:
-        #     con.execute("""
-        #         CREATE OR REPLACE VIEW {table}_with_history AS
-        #             SELECT * FROM {table}
-        #         UNION ALL
-        #             SELECT * FROM {table}_history;
-        #     """.format(table=model.__tablename__))
-        #
-        #     # TODO: update privileges so table_with_history views are read-only and table_history tables can only be updated by trigger
+        # make sure the versioning() function exists in postgres
+        # note: versioning can be done with a C extension that we check for, or with a fallback PL/pgSQL function.
+        # if both of these turn out not to work, we could also try a plv8 version -- see
+        # https://github.com/harvard-lil/capstone/blob/219b5e45d004b607e16b7eb0711b0b30f7ed464f/capstone/scripts/set_up_postgres.py#L27
+        cursor.execute("select * from pg_extension where extname='temporal_tables';")
+        if len(cursor.fetchall()) == 0:
+            # if the temporal tables extension is not active, install a pure postgres version
+            print("WARNING: temporal_tables extension is not installed. Versioning will be slower. See https://pgxn.org/dist/temporal_tables/")
+            cursor.execute((Path(settings.BASE_DIR) / "../services/postgres/versioning_function.sql").read_text())
+
+        # set up versioning for versioned tables
+        for model in django.apps.apps.get_models():
+            # skip models that don't have a `history = TemporalHistoricalRecords()` attribute
+            if not isinstance(getattr(model, 'history', None), HistoryManager):
+                continue
+
+            # make sure versioned model has sys_period column
+            cursor.execute("""
+                ALTER TABLE {table} ADD COLUMN IF NOT EXISTS sys_period tstzrange NOT NULL DEFAULT tstzrange(current_timestamp, null);
+            """.format(table=model._meta.db_table))
+
+            # create trigger
+            cursor.execute("""
+                DROP TRIGGER IF EXISTS versioning_trigger ON {table};
+                CREATE TRIGGER versioning_trigger
+                BEFORE UPDATE OR DELETE ON {table}
+                FOR EACH ROW EXECUTE PROCEDURE versioning('sys_period', '{table}_history', true);
+            """.format(table=model._meta.db_table))
+
+            # create combined table_with_history views:
+            fields = sorted(field.get_attname() for field in model._meta.get_fields() if field.concrete and not field.many_to_many)
+            cursor.execute("""
+                CREATE OR REPLACE VIEW {table}_with_history AS
+                    SELECT {fields} FROM {table}
+                UNION ALL
+                    SELECT {fields} FROM {table}_history;
+            """.format(
+                table=model._meta.db_table,
+                fields=", ".join(fields),
+            ))

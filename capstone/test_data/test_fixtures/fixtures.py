@@ -1,9 +1,8 @@
-import os
 import pytest
 
-from django.conf import settings
 from django.test import Client
 from django.core.management import call_command
+import django.apps
 from rest_framework.test import RequestsClient, APIRequestFactory
 
 import fabfile
@@ -11,7 +10,7 @@ import capdb.storages
 
 from .factories import *
 
-### One-time database setup ###
+### Database setup ###
 
 # This is run once at database setup and data loaded here is available to all tests
 # See http://pytest-django.readthedocs.io/en/latest/database.html#populate-the-database-with-initial-test-data
@@ -23,6 +22,17 @@ def django_db_setup(django_db_setup, django_db_blocker, redis_proc):
 
         # set up postgres functions and triggers
         fabfile.update_postgres_env()
+
+@pytest.fixture(autouse=True)
+def clear_caches():
+    """ Clear any caches that might affect later tests. """
+    try:
+        yield
+    finally:
+        # call reset_cache for all models that have it:
+        for model in django.apps.apps.get_models():
+            if hasattr(model, 'reset_cache'):
+                model.reset_cache()
 
 
 ### file contents ###
@@ -88,10 +98,6 @@ def redis_patch(request):
 
 @pytest.fixture
 def ingest_metadata(load_tracking_tool_database):
-    # reset caches
-    Jurisdiction.reset_cache()
-    Court.reset_cache()
-
     fabfile.ingest_metadata()
 
 @pytest.fixture
