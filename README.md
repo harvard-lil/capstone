@@ -163,3 +163,20 @@ run the fab command `fab add_test_case` with a volume barcode
 - You will also need to point STORAGES['ingest_storage'] to real harvard-ftl-shared
 
 
+Model versioning
+----------------
+
+For database versioning we use the Postgres temporal tables approach inspired by SQL:2011's temporal databases.
+
+See [this blog post](http://clarkdave.net/2015/02/historical-records-with-postgresql-and-temporal-tables-and-sql-2011/)
+for an explanation of temporal tables and how to use them in Postgres. 
+
+We use [django-simple-history](https://django-simple-history.readthedocs.io/en/latest/) to manage creation, migration,
+and querying of the historical tables.
+
+Data is kept in sync through the [temporal_tables](https://github.com/arkhipov/temporal_tables) Postgres extension
+and the triggers created in our scripts/set_up_postgres.py file.
+
+Installing the temporal_tables extension is recommended for performance. If not installed, a pure postgres version
+will be installed by set_up_postgres.py; this is handy for development.
+
