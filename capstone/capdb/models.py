@@ -643,12 +643,12 @@ class CaseXML(BaseXMLModel):
                     words = text_block("alto|String")
 
                     updated_element_split = updated_element.text.split(" ")
-                    original_word_split = original_element.text.split(" ")
+                    original_element_split = original_element.text.split(" ")
 
                     # loop through each word in the ALTO text block
                     for word in words:
                         updated_word = updated_element_split[wordcount]
-                        original_word = original_word_split[wordcount]
+                        original_word = original_element_split[wordcount]
                         assert original_word == word.get("CONTENT")
                         if updated_word != original_word:
                             # update ALTO & set the character confidence and word confidence to 100%
