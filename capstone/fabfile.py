@@ -313,8 +313,8 @@ Bagging-Date: %s
             filename = case.case_id + '.xml'
             orig_xml = case.case_xml.orig_xml
             sha512 = hashlib.sha512(orig_xml.encode()).hexdigest()
-            path = os.path.join(slug, "data", reporter, volume, filename)
-            archive.writestr(path, orig_xml)
+            path = os.path.join("data", reporter, volume, filename)
+            archive.writestr(os.path.join(slug, path), orig_xml)
             payload.append("%s %s" % (sha512, path))
 
         archive.writestr(os.path.join(slug, "manifest-sha512.txt"), "\n".join(payload))
