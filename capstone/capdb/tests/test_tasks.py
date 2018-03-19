@@ -1,7 +1,6 @@
 import pytest
 import bagit
 import zipfile
-import os
 
 from capdb.models import CaseMetadata
 from capdb.tasks import create_case_metadata_from_all_vols
@@ -32,8 +31,8 @@ def test_bag_jurisdiction(ingest_case_xml, tmpdir):
     # bag the jurisdiction
     fabfile.bag_jurisdiction(jurisdiction.name, zip_directory=tmpdir)
     # validate the bag
-    bag_path = os.path.join(tmpdir, jurisdiction.slug)
-    with zipfile.ZipFile("%s.zip" % bag_path) as zf:
-        zf.extractall(tmpdir)
-    bag = bagit.Bag(bag_path)
+    bag_path = tmpdir / jurisdiction.slug
+    with zipfile.ZipFile(str(bag_path) + '.zip') as zf:
+        zf.extractall(str(tmpdir))
+    bag = bagit.Bag(str(bag_path))
     assert bag.is_valid()

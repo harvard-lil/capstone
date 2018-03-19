@@ -290,7 +290,7 @@ def bag_jurisdiction(jurname, zip_directory=".", zip_filename=None):
     jurisdiction = Jurisdiction.objects.get(name=jurname)
     slug = jurisdiction.slug
     zip_filename = zip_filename if zip_filename else slug + ".zip"
-    zip_path = os.path.join(zip_directory, zip_filename)
+    zip_path = os.path.join(str(zip_directory), zip_filename)
     payload = []
     bagit = """BagIt-Version: 1.0
 Tag-File-Character-Encoding: UTF-8
