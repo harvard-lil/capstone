@@ -1,7 +1,11 @@
 import pytest
+import bagit
+import zipfile
+import os
 
 from capdb.models import CaseMetadata
 from capdb.tasks import create_case_metadata_from_all_vols
+import fabfile
 
 @pytest.mark.django_db
 def test_create_case_metadata_from_all_vols(ingest_case_xml):
@@ -20,3 +24,16 @@ def test_create_case_metadata_from_all_vols(ingest_case_xml):
     ingest_case_xml.refresh_from_db()
     assert CaseMetadata.objects.count() == metadata_count
     assert ingest_case_xml.metadata.case_id == case_id
+
+@pytest.mark.django_db
+def test_bag_jurisdiction(ingest_case_xml, tmpdir):
+    # get the jurisdiction of the ingested case
+    jurisdiction = ingest_case_xml.metadata.jurisdiction
+    # bag the jurisdiction
+    fabfile.bag_jurisdiction(jurisdiction.name, zip_directory=tmpdir)
+    # validate the bag
+    bag_path = os.path.join(tmpdir, jurisdiction.slug)
+    with zipfile.ZipFile("%s.zip" % bag_path) as zf:
+        zf.extractall(tmpdir)
+    bag = bagit.Bag(bag_path)
+    assert bag.is_valid()
