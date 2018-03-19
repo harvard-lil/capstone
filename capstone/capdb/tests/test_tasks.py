@@ -31,8 +31,8 @@ def test_bag_jurisdiction(ingest_case_xml, tmpdir):
     # bag the jurisdiction
     fabfile.bag_jurisdiction(jurisdiction.name, zip_directory=tmpdir)
     # validate the bag
-    bag_path = tmpdir / jurisdiction.slug
-    with zipfile.ZipFile(str(bag_path) + '.zip') as zf:
+    bag_path = str(tmpdir / jurisdiction.slug)
+    with zipfile.ZipFile(bag_path + '.zip') as zf:
         zf.extractall(str(tmpdir))
-    bag = bagit.Bag(str(bag_path))
+    bag = bagit.Bag(bag_path)
     assert bag.is_valid()
