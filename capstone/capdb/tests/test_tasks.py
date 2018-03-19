@@ -25,9 +25,9 @@ def test_create_case_metadata_from_all_vols(ingest_case_xml):
     assert ingest_case_xml.metadata.case_id == case_id
 
 @pytest.mark.django_db
-def test_bag_jurisdiction(ingest_case_xml, tmpdir):
+def test_bag_jurisdiction(case_xml, tmpdir):
     # get the jurisdiction of the ingested case
-    jurisdiction = ingest_case_xml.metadata.jurisdiction
+    jurisdiction = case_xml.metadata.jurisdiction
     # bag the jurisdiction
     fabfile.bag_jurisdiction(jurisdiction.name, zip_directory=tmpdir)
     # validate the bag
