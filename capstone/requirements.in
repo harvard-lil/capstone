@@ -27,7 +27,7 @@ django-bulk-update  # bulk update of models
 -e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
 #django-simple-history   # model versioning
 # use this branch until Django 2 support lands:
--e git+https://github.com/treyhunner/django-simple-history.git@django-20#egg=django-simple-history
+-e git+https://github.com/treyhunner/django-simple-history.git@2fe4038#egg=django-simple-history
 
 # Admin stuff
 pip-tools           # freeze requirements.txt
