@@ -10,6 +10,7 @@ amqp==2.2.2               # via kombu
 apipkg==1.4               # via execnet
 asn1crypto==0.22.0        # via cryptography
 attrs==17.4.0             # via pytest
+bagit==1.6.4
 beautifulsoup4==4.6.0
 billiard==3.5.0.3         # via celery
 boto3==1.4.4

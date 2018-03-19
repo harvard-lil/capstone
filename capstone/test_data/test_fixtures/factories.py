@@ -101,6 +101,7 @@ class VolumeFactory(factory.DjangoModelFactory):
     barcode = factory.Sequence(lambda n: '%08d' % n)
     created_by = factory.SubFactory(TrackingToolUserFactory)
     reporter = factory.SubFactory(ReporterFactory)
+    volume_number = factory.Sequence(lambda n: n)
 
 
 @register
