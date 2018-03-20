@@ -72,12 +72,14 @@ class CitationViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModel
 class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
-    queryset = models.CaseMetadata.objects.exclude(duplicative=True).select_related(
-        'jurisdiction',
-        'court',
+    queryset = models.CaseMetadata.objects.exclude(
+        duplicative=True).select_related(
         'volume',
         'reporter',
-    ).prefetch_related('citations')
+        ).prefetch_related(
+        'citations'
+        ).filter(jurisdiction__isnull=False, court__isnull=False)
+
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     filter_class = filters.CaseFilter
     lookup_field = 'id'
