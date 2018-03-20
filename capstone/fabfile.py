@@ -260,26 +260,6 @@ def add_test_case(*barcodes):
     ## update inventory files
     write_inventory_files()
 
-@task
-def zip_jurisdiction(jurname, zip_filename=None):
-    """
-    Write a zipped directory of all case xml files in a given jurisdiction.
-    The uncompressed output's structure looks like: jurisdiction/reporter_name/volume_number/case.xml
-    """
-    jurisdiction = Jurisdiction.objects.get(name=jurname)
-    zip_filename = zip_filename if zip_filename else jurname + ".zip"
-    with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as archive:
-        cases = CaseMetadata.objects.filter(jurisdiction=jurisdiction).select_related('volume', 'reporter')
-
-        for case in cases:
-            reporter = case.reporter.short_name
-            volume = case.volume.volume_number
-            filename = case.case_id + '.xml'
-            path = "{0}/{1}/{2}".format(reporter, volume, filename)
-            archive.writestr(path, case.case_xml.orig_xml)
-
-    print("completed: jurisdiction " + jurname + ", zip filename " + zip_filename)
-
 
 @task
 def bag_jurisdiction(jurname, zip_directory=".", zip_filename=None):
