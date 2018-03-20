@@ -5,11 +5,12 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 -e git+git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
--e git+https://github.com/treyhunner/django-simple-history.git@django-20#egg=django-simple-history
+-e git+https://github.com/treyhunner/django-simple-history.git@2fe4038#egg=django-simple-history
 amqp==2.2.2               # via kombu
 apipkg==1.4               # via execnet
 asn1crypto==0.22.0        # via cryptography
 attrs==17.4.0             # via pytest
+bagit==1.6.4
 beautifulsoup4==4.6.0
 billiard==3.5.0.3         # via celery
 boto3==1.4.4
