@@ -61,7 +61,7 @@ def generate_styled_case_xml(case_xml, strict=True):
     alto_files = {}
     for alto in case_xml.pages.all():
         alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-        alto_files[alto_fileid] = alto
+        alto_files[alto_fileid] = parse_xml(alto.orig_xml)
 
     # The strategy here is to loop over each casebody element, then each alto
     # page associated with each element, then each String in the alto file,
@@ -98,8 +98,7 @@ def generate_styled_case_xml(case_xml, strict=True):
         for alto in element_pages:
             current_style = None
 
-            alto_page = alto_files[alto]
-            parsed_alto_page = parse_xml(alto_page.orig_xml)
+            parsed_alto_page = alto_files[alto]
             text_block = parsed_alto_page(
                 'alto|TextBlock[TAGREFS="{}"]'.format(casebody_element.get('id')))
 
@@ -139,17 +138,9 @@ def generate_styled_case_xml(case_xml, strict=True):
 
                 # loop through each character of the string
                 for i in range(0, len(alto_string.get("CONTENT"))):
-                    # do the characters match, or are they both different dashes?
-                    if casebody_element_text[0] == alto_string.get("CONTENT")[i] or \
-                            (casebody_element_text[0] == '\xad' and alto_string.get("CONTENT")[i] == '-'):
-
-                        # add the character on to the new_casebody_element_text
-                        new_casebody_element_text += casebody_element_text[0]
-                        # and remove the character from casebody_element_text
-                        casebody_element_text = casebody_element_text[1:]
 
                     # is this the start of a tag?
-                    elif casebody_element_text.startswith('__TAG_'):
+                    if casebody_element_text.startswith('__TAG_'):
                         # close out the style tag before starting a new tag.
                         if current_style in page_styles:
                             new_casebody_element_text += page_styles[current_style]['close']
@@ -171,6 +162,14 @@ def generate_styled_case_xml(case_xml, strict=True):
                         if casebody_element_text[0] == alto_string.get("CONTENT")[i]:
                             new_casebody_element_text += casebody_element_text[0]
                             casebody_element_text = casebody_element_text[1:]
+                    # do the chars match, or are they both different dashes?
+                    elif casebody_element_text[0] == alto_string.get("CONTENT")[i] or \
+                            (casebody_element_text[0] == '\xad' and alto_string.get("CONTENT")[i] == '-'):
+
+                        # add the character on to the new_casebody_element_text
+                        new_casebody_element_text += casebody_element_text[0]
+                        # and remove the character from casebody_element_text
+                        casebody_element_text = casebody_element_text[1:]
                     elif strict is False:
                         # these are some methods to deal with extra characters
                         # either in ALTO text, or CaseMETS. If we decided that
