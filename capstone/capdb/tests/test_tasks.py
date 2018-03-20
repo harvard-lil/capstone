@@ -25,6 +25,22 @@ def test_create_case_metadata_from_all_vols(ingest_case_xml):
     assert ingest_case_xml.metadata.case_id == case_id
 
 @pytest.mark.django_db
+def test_zip_jurisdiction(case_xml, tmpdir):
+    # get the jurisdiction of the ingested case
+    jurisdiction = case_xml.metadata.jurisdiction
+    # zip the jurisdiction
+    zip_path = str(tmpdir / jurisdiction.name) + '.zip'
+    fabfile.zip_jurisdiction(jurisdiction.name, zip_filename=zip_path)
+    # unzip the resulting file -- can we get the filename from the object?
+    with zipfile.ZipFile(zip_path) as zf:
+        zipped_xml = zf.read("%s/%d/%s" % (
+            case_xml.metadata.reporter.short_name,
+            case_xml.volume.metadata.volume_number,
+            "32044057892259_0001.xml")
+        )
+    assert zipped_xml == bytes(case_xml.orig_xml, encoding='utf-8')
+
+@pytest.mark.django_db
 def test_bag_jurisdiction(case_xml, tmpdir):
     # get the jurisdiction of the ingested case
     jurisdiction = case_xml.metadata.jurisdiction
