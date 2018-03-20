@@ -324,7 +324,7 @@ Bagging-Date: %s
 
 
 @task
-def write_inventory_files():
+def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test_data/inventory/data')):
     """ Create inventory.csv.gz files in test_data/inventory/data. Should be re-run if test_data/from_vendor changes. """
 
     # get list of all files in test_data/from_vendor
@@ -347,7 +347,7 @@ def write_inventory_files():
 
     # write results, split in half, to two inventory files named test_data/inventory/data/1.csv.gz and test_data/inventory/data/2.csv.gz
     for out_name, result_set in (("1", results[:len(results)//2]), ("2", results[len(results)//2:])):
-        with gzip.open(os.path.join(settings.BASE_DIR, 'test_data/inventory/data/%s.csv.gz' % out_name), "wt") as f:
+        with gzip.open(os.path.join(output_directory, '%s.csv.gz' % out_name), "wt") as f:
             csv_w = csv.writer(f)
             for row in result_set:
                 csv_w.writerow(row)
@@ -373,5 +373,3 @@ def fix_md5_columns():
     """ Run celery tasks to fix orig_xml and md5 column for all volumes. """
     for volume_id in VolumeXML.objects.values_list('pk', flat=True):
         fix_md5_column.delay(volume_id)
-
-
