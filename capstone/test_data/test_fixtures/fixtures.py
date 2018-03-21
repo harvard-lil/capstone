@@ -1,3 +1,6 @@
+from collections import defaultdict
+from contextlib import contextmanager
+
 import pytest
 
 from django.test import Client
@@ -33,6 +36,53 @@ def clear_caches():
         for model in django.apps.apps.get_models():
             if hasattr(model, 'reset_cache'):
                 model.reset_cache()
+
+@pytest.fixture(scope='function')
+def django_assert_num_queries(pytestconfig):
+    """
+        via https://github.com/pytest-dev/pytest-django/pull/387
+        modified to specify individual query types
+
+        Provide a context manager to assert which queries will be run by a block of code. Example:
+
+            def test_foo(django_assert_num_queries):
+                with django_assert_num_queries(select=1, update=2):
+                    # run one select and two updates
+
+        This tests only the default database.
+
+        Suggestions for adding this to existing tests: start by running with counts empty:
+
+            with django_assert_num_queries():
+
+        Run the test as:
+
+            pytest -k test_foo -v
+
+        Ensure that the queries run are as expected, then insert the correct counts based on the error message.
+    """
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    @contextmanager
+    def _assert_num_queries(**expected_counts):
+        with CaptureQueriesContext(connection) as context:
+            yield
+            query_counts = defaultdict(int)
+            for q in context.captured_queries:
+                query_type = q['sql'].split(" ",1)[0].lower()
+                if query_type not in ('savepoint', 'release'):
+                    query_counts[query_type] += 1
+            if expected_counts != query_counts:
+                msg = "Unexpected queries: expected %s, got %s" % (expected_counts, dict(query_counts))
+                if pytestconfig.getoption('verbose') > 0:
+                    sqls = (q['sql'] for q in context.captured_queries)
+                    msg += '\n\nQueries:\n========\n\n%s' % '\n\n'.join(sqls)
+                else:
+                    msg += " (add -v option to show queries)"
+                pytest.fail(msg)
+
+    return _assert_num_queries
 
 
 ### file contents ###
