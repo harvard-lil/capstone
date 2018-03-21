@@ -489,7 +489,11 @@ class CaseMetadata(models.Model):
         return self.case_id
 
     class Meta:
-        ordering = ['decision_date']
+        ordering = ['decision_date', 'id']  # include id to get consistent ordering for cases with same date
+        # speed up queries with default ordering
+        indexes = [
+            models.Index(fields=['decision_date', 'id']),
+        ]
 
 
 class CaseXML(BaseXMLModel):
