@@ -78,6 +78,9 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         'reporter',
         ).prefetch_related(
         'citations'
+        ).select_related(
+        'jurisdiction',
+        'court'
         ).filter(jurisdiction__isnull=False, court__isnull=False)
 
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
