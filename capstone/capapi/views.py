@@ -86,7 +86,6 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     filter_class = filters.CaseFilter
     lookup_field = 'id'
-    order_by = 'decision_date'
 
     def get_serializer_class(self, *args, **kwargs):
         full_case = self.request.query_params.get('full_case', 'false').lower()
