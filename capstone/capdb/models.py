@@ -462,7 +462,7 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
 
 
 class CaseMetadata(models.Model):
-    case_id = models.CharField(max_length=64, null=True)
+    case_id = models.CharField(max_length=64, null=True, db_index=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
     last_page = models.CharField(max_length=255, null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
@@ -478,10 +478,10 @@ class CaseMetadata(models.Model):
     court = models.ForeignKey('Court', null=True, related_name='case_metadatas', on_delete=models.SET_NULL)
     name = models.TextField(blank=True)
     name_abbreviation = models.CharField(max_length=10000, blank=True)
-    volume = models.ForeignKey('VolumeMetadata', null=True, related_name='case_metadatas',
-                               on_delete=models.SET_NULL)
-    reporter = models.ForeignKey('Reporter', null=True, related_name='case_metadatas',
-                                 on_delete=models.SET_NULL)
+    volume = models.ForeignKey('VolumeMetadata', related_name='case_metadatas',
+                               on_delete=models.DO_NOTHING)
+    reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
+                                 on_delete=models.DO_NOTHING)
     date_added = models.DateTimeField(null=True, blank=True)
     duplicative = models.BooleanField(default=False)
 

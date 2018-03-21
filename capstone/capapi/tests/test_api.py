@@ -236,15 +236,10 @@ def test_filter_case_by_(api_url, client, case):
     for case in range(0, 3):
         cases.append(setup_case())
 
-    # check how many cases exist in a specific court
-    court_slug_to_test = cases[2].court.slug
     case_id_to_test = cases[2].id
-    case_num = Court.objects.filter(slug=court_slug_to_test).count()
 
     response = client.get("%scases/?court_slug=%s&format=json" % (api_url, cases[2].court.slug))
     content = response.json()
-    # assert only the right case number is returned for court
-    assert content['count'] == case_num
 
     ids = []
     for result in content['results']:
