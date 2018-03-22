@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
+    'pipeline',
 
     # ours
     'capdb',
@@ -149,9 +150,47 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'pipeline.finders.PipelineFinder',
+)
 
+PIPELINE = {
+    'ENABLED': True,
+    'COMPILERS': ('pipeline.compilers.sass.SASSCompiler',),
+    'STYLESHEETS': {
+        'base': {
+            'source_filenames': (
+                'css/_normalize.css',
+                'css/scss/base.scss',
+            ),
+            'output_filename': 'css/base.css',
+        },
+        'docs': {
+            'source_filenames': (
+                'css/scss/docs.scss',
+            ),
+            'output_filename': 'css/docs.css',
+        }
+    },
+    # 'STYLESHEETS': {
+    #     'colors': {
+    #         'source_filenames': (
+    #           'css/core.css',
+    #           'css/colors/*.css',
+    #           'css/layers.css'
+    #         ),
+    #         'output_filename': 'css/colors.css',
+    #         'extra_context': {
+    #             'media': 'screen,projection',
+    #         },
+    #     },
+    # }
+}
 
 # define storages
 # each of these can be imported from capdb.storages, e.g. `from capdb.storages import ingest_storage`

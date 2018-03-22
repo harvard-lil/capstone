@@ -1,0 +1,44 @@
+/*
+Error: Invalid CSS after "  border: 0p": expected ";", was "`x;"
+        on line 2 of /Users/aaizman/Documents/capstone/capstone/static/css/base.scss
+
+1: fieldset {
+2:   border: 0p`x;
+3:   padding: 0px; }
+4: a {
+5:   cursor: pointer;
+6:   outline: none;
+7:   border-bottom: 0px;
+
+Backtrace:
+/Users/aaizman/Documents/capstone/capstone/static/css/base.scss:2
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:1278:in `expected'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:1208:in `expected'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:1203:in `tok!'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:804:in `block in try_declaration'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:1254:in `rethrow'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:809:in `try_declaration'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:732:in `declaration_or_ruleset'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:697:in `block_child'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:686:in `block_contents'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:678:in `block'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:670:in `ruleset'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:696:in `block_child'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:686:in `block_contents'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:137:in `stylesheet'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/scss/parser.rb:41:in `parse'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/engine.rb:414:in `_to_tree'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/engine.rb:389:in `_render_with_sourcemap'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/engine.rb:307:in `render_with_sourcemap'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/exec/sass_scss.rb:391:in `run'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/exec/sass_scss.rb:63:in `process_result'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/exec/base.rb:52:in `parse'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/lib/sass/exec/base.rb:19:in `parse!'
+/usr/local/lib/ruby/gems/2.4.0/gems/sass-3.5.3/bin/sass:13:in `<top (required)>'
+/usr/local/bin/sass:23:in `load'
+/usr/local/bin/sass:23:in `<main>'
+*/
+body:before {
+  white-space: pre;
+  font-family: monospace;
+  content: "Error: Invalid CSS after \"  border: 0p\": expected \";\", was \"`x;\"\A         on line 2 of /Users/aaizman/Documents/capstone/capstone/static/css/base.scss\A \A 1: fieldset {\A 2:   border: 0p`x;\A 3:   padding: 0px; }\A 4: a {\A 5:   cursor: pointer;\A 6:   outline: none;\A 7:   border-bottom: 0px;"; }

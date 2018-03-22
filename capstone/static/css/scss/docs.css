@@ -1,3 +1,6 @@
+li {
+  list-style: none; }
+
 .api-doc-toc {
   background: #f7f7f9;
   float: none;
@@ -12,12 +15,18 @@
     list-style: none;
     padding: 10px 0px;
     border-bottom: 1px solid #e8e8e8; }
-    .api-doc-toc li a {
-      color: #2f2f2f;
-      text-decoration: none; }
+  .api-doc-toc li a {
+    color: #2f2f2f;
+    text-decoration: none; }
+
+ul li {
+  list-style-type: '- '; }
 
 .reading-body {
   float: none;
   display: table-cell; }
-  .reading-body p {
-    max-width: 85%; }
+
+.reading-body p {
+  max-width: 85%; }
+
+/*# sourceMappingURL=docs.css.map */

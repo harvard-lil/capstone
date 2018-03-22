@@ -209,11 +209,16 @@ def get_docs(request):
     reporter = case.reporter
     reporter_metadata = serializers.ReporterSerializer(reporter, context={'request': request}).data
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
+    whitelisted_jurisdictions = models.Jurisdiction.objects.filter(whitelisted=True).values('name_long', 'name')
+
     context = {
+
         "case_metadata": case_metadata,
         "case_id": case_metadata['id'],
         "case_jurisdiction": case_metadata['jurisdiction'],
         "reporter_id": reporter_metadata['id'],
         "reporter_metadata": reporter_metadata,
+        "whitelisted_jurisdictions": whitelisted_jurisdictions,
     }
+
     return render(request, 'docs.html', context)

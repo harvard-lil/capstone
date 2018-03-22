@@ -1,46 +1,106 @@
 {% extends "base.html" %}
+{% load pipeline %}
+{% block extra_head %}
+  {% stylesheet 'docs' %}
+{% endblock %}
 
 {% block title %} | API guide{% endblock %}
 
 {% block meta_description %}
-The Caselaw Access Project API guide
+  The Caselaw Access Project API guide
 {% endblock %}
 
 {% block content %}
 <div class="header-margin">
   <div class="page-header cont-fixed">
     <div class="row">
-      <h1 class="centered-text bold-text"><span class="blue-text">CAP</span> API</h1>
-      <h3 class="centered-text semibold-text">EXPLORE AMERICAN CASELAW</h3>
-      <h5 class="centered-text light-text">Read the documentation below to get started</h5>
+      <h1 class="col centered-text bold-text">
+        <span class="blue-text">CAP</span> API
+      </h1>
+    </div>
+    <div class="row">
+      <h3 class="col centered-text semibold-text">
+        EXPLORE AMERICAN CASELAW</h3>
+    </div>
+    <div class="row">
+      <h5 class="col centered-text light-text">
+        Read the documentation below to get started
+      </h5>
     </div>
   </div>
-  <div class="separator" style="margin:0px"></div>
+  <div class="separator" style="margin: 0;"></div>
   <div class="row cont-reading" id="api-overview">
-    <div class="col-sm-4 container api-doc-toc">
+    <div class="col-3 api-doc-toc">
       <ul>
-        <li class="reading-toc-section"><a href="#overview-section">Overview</a></li>
-        <li class="reading-toc-section"><a href="#registration-section">Registration</a></li>
-        <li class="reading-toc-section"><a href="#downloading-casetext-section">Downloading Casetext</a></li>
-        <li class="reading-toc-section"><a href="#accessing-metadata-section">Accessing Metadata</a></li>
-        <li class="reading-toc-section"><a href="#terms-of-use-section">Terms of Use</a></li>
+        <li class="reading-toc-section">
+          <a href="#overview-section">Overview</a></li>
+        <li class="reading-toc-section">
+          <a href="#registration-section">Registration</a></li>
+        <li class="reading-toc-section">
+          <a href="#accessing-metadata-section">Accessing Metadata</a>
+        </li>
+
+        <li class="reading-toc-section">
+          <a href="#whitelisted-jurisdictions-section">Whitelisted Jurisdictions</a>
+        </li>
+
+        <li class="reading-toc-section">
+          <a href="#reading-casetext-section">Reading Casetext</a></li>
+        <li class="reading-toc-section">
+          <a href="#terms-of-use-section">Terms of Use</a></li>
       </ul>
     </div>
 
-    <div class="col-sm-8 docs reading-body">
+    <div class="col-9 docs reading-body">
       <section class="overview-section">
         <h2 id="overview-section" class="section-title">API Overview</h2>
-        <p class="body-text">The CAP API lets you traverse through and download American caselaw from 1700 to present day.
-        You can browse unlimited metadata but if you want to download case xml, you must first register for an API key.</p>
-        <p class="body-text">The API can be browsed through the browser (see https://{{ request.get_host }}/api/v1/cases/)</p>
-        <p class="body-text">Or using the command line. </p>
+
+        This API lets you traverse through American caselaw from the 1600s
+        to present day.
+        <br/>
+        The API can be browsed through the
+        <a href="/api/v1/cases/?full_case=true&jurisdiction=Ill.&body_format=text"
+           target="_blank">browser</a> or using the
+        <a href="#accessing-metadata-section">command line</a>.
+        <br/>
+        <br/>
+
+        The API can be browsed anonymously or with an API key.
+        <br/>
+
+        All users can:
+        <ul>
+          <li>See unlimited metadata (see <a href="" aria-label="unlimited metadata example">an example here</a>).</li>
+        </ul>
+        Anonymous users can:
+        <ul>
+          <li>Read whitelisted<strong>*</strong> cases' text (see <a href="">an example here</a>). </li>
+        </ul>
+
+        <strong>*</strong>Learn about whitelisting <a href="">here</a>.
+        <br/>
+        Registered users can:
+        <ul>
+          <li>
+            Request up to 500 cases a day.
+
+          </li>
+        </ul>
+
         <div class="separator"></div>
       </section>
+
       <section class="registration-section">
-        <h3  id="registration-section" class="section-title">Registration</h3>
-        <a href="/accounts/register"><button class="blue-button">REGISTER</button></a>
+        <h3  id="registration-section" class="section-title">Register for an API key</h3>
+        <a href="/accounts/register"
+           sr-only="Register"
+           class="blue-button">
+            REGISTER
+        </a>
         <p class="body-text">Once you have your API key, you can begin to download cases.</p>
-        <a href="/accounts/login"><button class="blue-button">LOGIN</button></a>
+        <a href="/accounts/login" class="blue-button">
+            LOGIN
+        </a>
         <p class="body-text">Log in to retrieve your API key and see your daily remaining case allowance.</p>
 
         <p class="body-text blue-text note-text">A note about rate limiting:
@@ -55,23 +115,19 @@ The Caselaw Access Project API guide
         <!-- <p class="body-text">All case metadata is viewable in the browser, or through the command line. -->
         <p class="body-text">The URI structure is simple. All cases are located at the /cases/ endpoint, and each case is accessible using its slug, which is made up of the case short name and four random numbers.</p>
         <p class="body-text">All cases endpoint:</p>
-        <pre><a href="/api/v1/cases/" target="_blank">https://{{ request.get_host }}/api/v1/cases/</a></pre>
+        <pre><a href="/api/v1/cases/" target="_blank">{{ protocol }}://{{ request.get_host }}/api/v1/cases/</a></pre>
         <p class="body-text">One specific case endpoint:</p>
         <pre><a href="/api/v1/cases/{{ case_id }}" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}</a></pre>
-        <p class="body-text">Here is an example wget request:</p>
-        <pre>$ wget --content-disposition "https://{{ request.get_host}}/api/v1/cases/?jurisdiction={{ case_jurisdiction }}&limit=3&type=download" \
-        <br/> --header="Authorization: Token your-token-here"</pre>
-        <p class="body-text">Or if you prefer CURL:</p>
-        <pre>$ curl -O -J "https://{{ request.get_host}}/api/v1/cases/?jurisdiction={{ case_jurisdiction }}&limit=3&type=download" \
-        <br/> -H "Authorization: Token your-token-here"</pre>
+        <p class="body-text">Here is an example CURL request:</p>
+        <pre>curl -O -J "{{ request.protocol }}://{{ request.get_host}}/api/v1/cases/?jurisdiction={{ case_jurisdiction }}&limit=3&type=download" -H "Authorization: Token your-token-here"</pre>
 
         <p class="body-text">
           This request will download a zip file of three cases from the jurisdiction Alabama.
         </p>
         <p class="body-text bold-text">
-          To download cases, you must include:
+          To read the full casebody, you must include:
           <li>
-            The <code>type="download"</code> flag
+            The <code>full_case="true"</code> flag
           </li>
           <li>
             Your API token. See the <a href="#registration-section">registration section</a>
@@ -95,20 +151,35 @@ The Caselaw Access Project API guide
 
       <section class="accessing-metadata-section">
         <h2 id="accessing-metadata-section" class="section-title">Accessing metadata</h2>
-        <p class="body-text">The metadata is viewable online as well as in the command line.</p>
+        <p class="body-text">The metadata is viewable online as well as using the command line.</p>
 
         <p class="body-text">
-          The main entrypoints are:
+          The main entrypoint is:
           <br/>
-          <a href="/api/v1/cases">https://{{ request.get_host }}/api/v1/cases</a>
+          <ul>
+            <li><a href="/api/v1/cases">https://{{ request.get_host }}/api/v1/cases</a></li>
+          </ul>
           <br/>
-          <a href="/api/v1/jurisdictions">https://{{ request.get_host }}/api/v1/jurisdictions</a>
+          The other entrypoints are:
           <br/>
-          <a href="/api/v1/reporters">https://{{ request.get_host }}/api/v1/reporters</a>
-          <br/>
-          <a href="/api/v1/courts">https://{{ request.get_host }}/api/v1/courts</a>
-          <br/>
-          <a href="/api/v1/volumes">https://{{ request.get_host }}/api/v1/volumes</a>
+          <ul>
+            <li>
+              <a href="/api/v1/jurisdictions">https://{{ request.get_host }}/api/v1/jurisdictions</a>
+            </li>
+            <li>
+              <a href="/api/v1/reporters">https://{{ request.get_host }}/api/v1/reporters</a>
+            </li>
+            <li>
+              <a href="/api/v1/courts">https://{{ request.get_host }}/api/v1/courts</a>
+            </li>
+            <li>
+              <a href="/api/v1/courts">https://{{ request.get_host }}/api/v1/courts</a>
+            </li>
+            <li>
+              <a href="/api/v1/volumes">https://{{ request.get_host }}/api/v1/volumes</a>
+            </li>
+          </ul>
+
         </p>
         <p class="body-text bold-text">
           A note on pagination:
@@ -130,12 +201,20 @@ The Caselaw Access Project API guide
         <p>{{ reporter_metadata }}
         </p>
 
-
       </section>
-     <section class="terms-of-use">
-      <h2 id="terms-of-use-section" class="section-title">Terms of Use</h2>
-      <p class="body-text">Your use of the CAP API is subject to your acceptance of our <a href="{% url 'terms' %}">Terms of Use</a>.</p>
-    </section>
+      <section class="whitelisted-jurisdictions-section">
+        <h2 id="whitelisted-jurisdictions-section"
+            class="section-title">Whitelisted Jurisdictions</h2>
+        <ul>
+          {% for jur in whitelisted_jurisdictions %}
+          <li>{{ jur.name_long }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+      <section class="terms-of-use">
+        <h2 id="terms-of-use-section" class="section-title">Terms of Use</h2>
+        <p class="body-text">Your use of the CAP API is subject to your acceptance of our <a href="{% url 'terms' %}">Terms of Use</a>.</p>
+      </section>
     </div>
   </div>
 </div>

@@ -1,12 +1,21 @@
-fieldset {
-  border: 0px;
-  padding: 0px; }
+@import '_variables.scss';
+
+a, button {
+  cursor: pointer;
+}
+pre
+{
+    white-space: -moz-pre-wrap;
+    //white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
 
 a {
   cursor: pointer;
-  outline: none;
   border-bottom: 0px;
-  color: #0075ff; }
+  color: $blue; }
   a:hover, a :focus, a :active {
     color: #2f2f2f;
     border-bottom: 0px; }
