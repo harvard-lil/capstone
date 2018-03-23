@@ -3,11 +3,12 @@ from capdb import models
 
 
 class JurisdictionFilter(filters.FilterSet):
+    whitelisted = filters.BooleanFilter()
+
     class Meta:
         model = models.Jurisdiction
-        fields = ('name', 'slug', 'name_long',)
+        fields = ('name', 'slug', 'name_long', 'whitelisted')
         ordering_fields = ('name')
-
 
 class CourtFilter(filters.FilterSet):
     class Meta:
