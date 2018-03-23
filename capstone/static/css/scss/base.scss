@@ -14,11 +14,11 @@ pre
 
 a {
   cursor: pointer;
-  border-bottom: 0px;
+  border-bottom: 0;
   color: $blue; }
   a:hover, a :focus, a :active {
-    color: #2f2f2f;
-    border-bottom: 0px; }
+    color: $black;
+    border-bottom: 0; }
 
 .blue-text {
   color: #0075ff; }
@@ -37,7 +37,11 @@ a {
 
 .separator {
   border-bottom: 1px solid #d9d9d9;
-  margin: 20px 0px; }
+  margin: 20px 0; }
+
+.text-primary {
+  color: $blue;
+}
 
 h1 {
   letter-spacing: 3px; }
@@ -47,7 +51,7 @@ code {
   color: #0075ff; }
 
 pre {
-  border: 0px; }
+  border: 0; }
 
 .section-title {
   font-size: 20px;
@@ -56,7 +60,8 @@ pre {
   letter-spacing: 0.8px; }
 
 .page-header {
-  border-bottom: 0px; }
+  padding-top: 60px;
+}
 
 .col-centered {
   margin: 0 auto;
@@ -76,37 +81,36 @@ pre {
   text-transform: uppercase; }
 
 .remove-padding-left {
-  margin-left: 0px;
+  margin-left: 0;
   left: -15px;
   position: relative; }
 
 .blue-button {
   font: 14px "Rajdhani", "Helvetica", sans-serif;
   font-weight: 700;
-  color: #0075ff;
+  color: $blue;
   letter-spacing: 2px;
   background: white;
-  border: 1px solid #0075ff;
+  border: 1px solid $blue;
   height: 35px;
-  padding: 0px 14px;
   border-radius: 5px;
   margin-bottom: 10px; }
   .blue-button:hover {
-    background-color: #d2e7ff; }
+    background-color: $light-blue;
+    border: 1px solid $blue;
+  }
 
 body {
   height: 100%;
   display: block;
   font-family: "Rajdhani", "Helvetica", sans-serif;
-  color: #2f2f2f; }
+  color: $black; }
   body header.header {
     width: 100%;
-    padding: 20px 0px 0px 20px;
     position: fixed;
     z-index: 10;
-    top: 0px;
     background-color: white;
-    border-bottom: 1px solid #d9d9d9; }
+    border-bottom: 1px solid $gray; }
   body .header-content {
     padding: 0px 20px 10px 20px; }
   body .header-logo, body .lil-logo {
@@ -122,12 +126,12 @@ body {
     position: relative; }
 
 .inverse {
-  background-color: #2f2f2f;
+  background-color: $black;
   color: white; }
   .inverse button:hover, .inverse button:active, .inverse button:focus {
     background-color: #d2e7ff;
-    color: #2f2f2f;
-    border: #2f2f2f; }
+    color: $black;
+    border: $black; }
   .inverse a:focus, .inverse a:active, .inverse a:hover {
     color: #d2e7ff; }
 
@@ -141,13 +145,13 @@ body {
     text-transform: uppercase; }
 
 .logged-in-page {
-  padding: 20px 0px;
+  padding: 20px 0;
   min-height: 70%; }
 
 footer.footer {
   width: 100%;
   background-color: #0075ff;
-  margin-bottom: 0px; }
+  margin-bottom: 0; }
   footer.footer hr.white-line {
     color: white; }
   footer.footer .credits {
@@ -188,14 +192,14 @@ footer.footer {
     letter-spacing: 3px; }
 
 .alert {
-  background-color: #eda633;
-  border: 0px;
+  background-color: $orange;
+  border: 0;
   background-image: none;
-  color: #2f2f2f;
-  padding-left: 0px;
-  padding-right: 0px; }
+  color: $black;
+  padding-left: 0;
+  padding-right: 0; }
   .alert .col-sm-4 {
-    padding-left: 0px;
-    padding-right: 0px; }
+    padding-left: 0;
+    padding-right: 0; }
   .alert li {
     list-style: none; }
