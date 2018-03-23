@@ -19,7 +19,7 @@ cache:
 before_install:
   - cd capstone
   - cp config/settings/settings_travis.py config/settings/settings.py
-  - sudo echo shared_preload_libraries = 'pg_stat_statements' >> /etc/postgresql/9.6/main/postgresql.conf
+  - sudo sh -c "echo shared_preload_libraries = 'pg_stat_statements' >> /etc/postgresql/9.6/main/postgresql.conf"
   - sudo /etc/init.d/postgresql restart
 
 install:
