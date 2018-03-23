@@ -36,3 +36,15 @@ ul li {
   display: table-cell; }
   .reading-body p {
     max-width: 85%; }
+
+.subsection {
+  line-height: 3rem;
+  margin-bottom: 0;
+}
+
+.json-response {
+  //background: $black;
+  //color: #fff;
+  border: 1px solid $black;
+  padding: 10px;
+}
