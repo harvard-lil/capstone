@@ -353,3 +353,34 @@ def fix_md5_columns():
     """ Run celery tasks to fix orig_xml and md5 column for all volumes. """
     for volume_id in VolumeXML.objects.values_list('pk', flat=True):
         fix_md5_column.delay(volume_id)
+
+@task
+def show_slow_queries():
+    """
+    Show slow queries for consumption by Slack bot.
+    This requires
+
+        shared_preload_libraries = 'pg_stat_statements'
+
+    in postgresql.conf, and that
+
+        CREATE EXTENSION pg_stat_statements;
+
+    has already been run for the capstone database.
+    """
+    cursor = django.db.connection.cursor()
+    with open('../services/postgres/s1_pg_stat_statements_top_total.sql') as f:
+        sql = f.read()
+        cursor.execute(sql)
+    try:
+        rows = cursor.fetchall()
+        output = "*capstone slow query report*\n"
+    except:
+        print(json.dumps({'text': 'Could not get slow queries'}))
+        return
+    for row in rows:
+        output += "```%s```\n" % row[8]
+        output += "ran on %s with %d call%s and took a total of %f ms\n" % (
+            row[7], row[0], "" if row[0] == 1 else "s", row[1]
+        )
+    print(json.dumps({'text': output}))
