@@ -150,7 +150,8 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
 @pytest.mark.django_db(transaction=True)
 def test_authenticated_full_case(auth_user, api_url, auth_client, jurisdiction, case):
     """
-    full cases viewed on whitelisted jurisdictions should not be counted against the user
+    whitelisted jurisdiction cases should not be counted against the user
+    blacklisted jurisdiction cases should be counted against the user
     """
     jurisdiction.whitelisted = True
     jurisdiction.save()
@@ -181,6 +182,32 @@ def test_authenticated_full_case(auth_user, api_url, auth_client, jurisdiction, 
 
     # make sure the auth_user's case download number has remained the same
     auth_user.refresh_from_db()
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_authentication_as_query_param(auth_user, api_url, auth_client, jurisdiction, case):
+    """
+    Allow the user to pass api key as query parameter
+    """
+
+    jurisdiction.whitelisted = False
+    jurisdiction.save()
+    case.jurisdiction = jurisdiction
+    case.save()
+
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
+    token = auth_user.get_api_key()
+    url = "%scases/%s/?full_case=true&api_key=%s&format=json" % (api_url, case.pk, token)
+    response = auth_client.get(url)
+    check_response(response, format='')
+    auth_user.refresh_from_db()
+
+    content = response.json()
+    assert "casebody" in content
+    casebody = content["casebody"]
+    assert casebody['status'] == "ok"
+
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
 
 

@@ -39,14 +39,16 @@ def get_single_casebody_permissions(request, case):
 
     if case.jurisdiction.whitelisted:
         casebody["status"] = casebody_permissions[0]
+        return casebody
+
+    if request.user.is_anonymous:
+        casebody["status"] = casebody_permissions[1]
     else:
-        if request.user.is_anonymous:
-            casebody["status"] = casebody_permissions[1]
-        else:
-            try:
-                request.user.update_case_allowance(case_count=1)
-                casebody["status"] = casebody_permissions[0]
-            except AttributeError:
-                casebody["status"] = casebody_permissions[2]
+
+        try:
+            request.user.update_case_allowance(case_count=1)
+            casebody["status"] = casebody_permissions[0]
+        except AttributeError:
+            casebody["status"] = casebody_permissions[2]
 
     return casebody
