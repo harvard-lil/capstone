@@ -57,6 +57,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'name',
             'name_abbreviation',
             'decision_date',
+            'decision_date_original',
             'docket_number',
             'first_page',
             'last_page',
