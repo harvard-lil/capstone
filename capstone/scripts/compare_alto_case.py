@@ -50,6 +50,7 @@ def validate(case_xml, bad_word_limit=2):
 
     return_status = {}
     return_status['problems'] = []
+    return_status['case'] = case_xml.metadata.case_id
 
     # dup cases have no casebody to style
     if parsed_case('duplicative|casebody'):
