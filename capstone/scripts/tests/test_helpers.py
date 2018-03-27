@@ -3,6 +3,7 @@ import pytest
 from scripts.helpers import serialize_xml, parse_xml
 from scripts.generate_case_html import generate_html, tag_map
 from scripts.merge_alto_style import generate_styled_case_xml
+from scripts.compare_alto_case import validate
 from capdb.models import CaseXML
 
 def test_serialize_xml_should_not_modify_input_xml(unaltered_alto_xml):
@@ -93,3 +94,18 @@ def test_merge_dup_exception(ingest_case_xml):
     with pytest.raises(Exception, match=r'Duplicative case: no casebody data to merge'):
         generate_styled_case_xml(case_xml)
 
+@pytest.mark.django_db
+def test_validate_alto_casemets(ingest_case_xml):
+    assert validate(case_xml=CaseXML.objects.get(metadata_id__case_id="32044061407086_0001")) == {
+        'status': {'ok': 'duplicative'}, 'problems': []}
+    assert validate(CaseXML.objects.get(metadata_id__case_id="32044057891608_0001")) == {
+        'status': {'ok': 'encountered 0 problems'}, 'problems': []}
+    assert validate(CaseXML.objects.get(metadata_id__case_id="32044057892259_0001")) == {'problems': [
+        {'casemets': {'snippet': 'tion of the subject-\xadmatter in controver', 'current_character': '\xad'},
+         'alto': {'current_character': {'ST_17.1.8.1': 'm'}, 'current': {'ST_17.1.8.1': 'matter'}, 'prev': None,
+                  'next': {'ST_17.1.8.3': 'in'}}, 'problem': 'extra char in case_mets? match found in current alto'},
+        {'casemets': {'snippet': 'Strobel, 24 Ill. 113; Carpenter v. Wells', 'current_character': ';'},
+         'alto': {'current_character': {'ST_19.1.11.7': '\xad'}, 'current': {'ST_19.1.11.7': '113\xad'}, 'prev': None,
+                  'next': {'ST_19.1.11.9': ';'}},
+         'problem': 'extra char in alto? match found subsequent alto element'}], 'status': {
+        'warning': 'encountered 2 problems'}}
