@@ -1,7 +1,7 @@
 from scripts.helpers import parse_xml
 
 
-def validate(case_xml, bad_word_limit=2):
+def validate(case_xml, consecutive_bad_word_limit=2):
     # Dealing with inline tags as elements ramps up the complexity of this
     # algorithm considerably. I'm replacing inline tags with placeholders
     # while mapping to the alto text, and replacing them with tags after
@@ -54,7 +54,8 @@ def validate(case_xml, bad_word_limit=2):
 
     # dup cases have no casebody to style
     if parsed_case('duplicative|casebody'):
-        return_status['status'] = {'ok': 'duplicative'}
+        return_status['status'] = 'ok'
+        return_status['results'] = 'duplicative'
         return return_status
 
     casebody_tree = parsed_case("casebody|casebody")[0]
@@ -102,7 +103,7 @@ def validate(case_xml, bad_word_limit=2):
             text_block = parsed_alto_page(
                 'alto|TextBlock[TAGREFS="{}"]'.format(casebody_element.get('id')))
 
-            bad_word = 0
+            consecutive_bad_words = 0
             # loop through each alto String for each page
             for alto_string in text_block("alto|String"):
                 # skip spaces
@@ -147,6 +148,13 @@ def validate(case_xml, bad_word_limit=2):
                         alto_context["current_character"] = { alto_string.get('ID'): alto_string.get('CONTENT')[i] }
                         alto_context["next"] = None
 
+                        snippet_beginning = len(casebody_element.text) - len(casebody_element_text) - 20 if len(casebody_element.text) - len(casebody_element_text) >= 20 else 0
+                        snippet_end = len(casebody_element.text) - len( casebody_element_text) + 20
+
+                        casemets_context["snippet"] = casebody_element.text[snippet_beginning:snippet_end]
+                        casemets_context["current"] = casebody_element_text[:len(alto_string.get('CONTENT'))]
+                        casemets_context["current_character"] = casebody_element_text[0]
+
                         # This code deals with cases where there is an extra
                         # character in an alto representation of a string. For
                         # example, in 32044057892259_00001, the end of the
@@ -161,12 +169,6 @@ def validate(case_xml, bad_word_limit=2):
                                     alto_context["next"] = {
                                         alto_string.getnext().getnext().get('ID'): alto_string.getnext().getnext().get(
                                             'CONTENT')}
-
-                        snippet_beginning = len(casebody_element.text) - len(casebody_element_text) - 20 if len(casebody_element.text) - len(casebody_element_text) >= 20 else 0
-                        snippet_end = len(casebody_element.text) - len( casebody_element_text) + 20
-
-                        casemets_context["snippet"] = casebody_element.text[snippet_beginning:snippet_end]
-                        casemets_context["current_character"] = casebody_element_text[0]
 
                         # this checks the next alto element for a match:
                         if problem_guess is None and alto_string.getnext() is not None:
@@ -190,19 +192,21 @@ def validate(case_xml, bad_word_limit=2):
 
                         if problem_guess is None:
                             problem_guess = "Unspecified Mismatch."
-                        return_status['problems'].append({"problem": problem_guess, "alto": alto_context, "casemets": casemets_context})
-                        bad_word_flag = True
 
-                if bad_word_flag:
-                    bad_word += 1
-                else:
-                    bad_word = 0
+                        if not bad_word_flag:
+                            return_status['problems'].append({"description": problem_guess, "alto": alto_context, "casemets": casemets_context})
+                            bad_word_flag = True
+                            consecutive_bad_words += 1
+                            if consecutive_bad_words >= consecutive_bad_word_limit:
+                                return_status['status'] = "error"
+                                return_status['results'] = 'gave up after {} consecutive bad words'.format(consecutive_bad_words)
+                                return return_status
 
-                if bad_word >= bad_word_limit:
-                    return_status['status'] = {
-                        'error': 'gave up after {} consecutive bad words'.format(bad_word)
-                    }
-                    return return_status
+                #reset the consecutive counter for good words
+                if not bad_word_flag:
+                    consecutive_bad_words = 0
+
+
 
         # the casebody_element_text should contain no characters unless
         # it is a closing tag, or trailing spaces for formatting
@@ -213,13 +217,14 @@ def validate(case_xml, bad_word_limit=2):
                 pass
             elif len(casebody_element_text) > 0:
                 return_status['problems'].append(
-                    "Leftover chars in casebody element not found in ALTO: '{}'".format(
-                        casebody_element_text))
+                    {"description": "Leftover chars in casebody element not found in ALTO", "casemets": casebody_element_text})
 
     if len(return_status['problems']) > 0:
-        return_status['status'] = {'warning': 'encountered {} problems'.format(len(return_status['problems']))}
+        return_status['status'] = 'warning'
+        return_status['results'] = 'encountered {} problems'.format(len(return_status['problems']))
     else:
-        return_status['status'] = {'ok': 'encountered 0 problems'}
+        return_status['status'] = 'ok'
+        return_status['results'] = 'encountered 0 problems'
 
     return return_status
 
