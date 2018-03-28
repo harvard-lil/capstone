@@ -62,7 +62,7 @@ class CaseFilter(filters.FilterSet):
     opinions = filters.CharFilter(field_name='opinions', label='opinions', lookup_expr='icontains')
 
     def find_by_citation(self, qs, name, value):
-        return qs.filter(citations__normalized_cite__iexact=value)
+        return qs.filter(citations__normalized_cite__exact=value)
 
     def find_by_date(self, qs, name, value):
         if '_min' in name:
