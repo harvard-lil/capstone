@@ -169,7 +169,15 @@ def validate(case_xml, consecutive_bad_word_limit=2):
                                     alto_context["next"] = {
                                         alto_string.getnext().getnext().get('ID'): alto_string.getnext().getnext().get(
                                             'CONTENT')}
+                        if alto_string.getprev() is not None:
+                            if alto_string.getprev().get('CONTENT') is not None:
+                                alto_context["prev"] = {alto_string.getprev().get('ID'): alto_string.getprev().get('CONTENT')}
 
+                            if alto_context["prev"] is None and alto_string.getprev().getprev() is not None:
+                                if alto_string.getprev().getprev().get('CONTENT') is not None:
+                                    alto_context["prev"] = {
+                                        alto_string.getprev().getprev().get('ID'): alto_string.getprev().getprev().get(
+                                            'CONTENT')}
                         # this checks the next alto element for a match:
                         if problem_guess is None and alto_string.getnext() is not None:
                             if alto_string.getnext().getnext() is not None:
