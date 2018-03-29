@@ -1,246 +1,219 @@
-from scripts.helpers import parse_xml
+import difflib
+import html
+import re
+from collections import defaultdict
+from pyquery import PyQuery
 
+from django.utils.encoding import force_str
+
+from scripts.helpers import parse_xml, serialize_xml
+
+
+### helpers
+
+def split_string_and_insertions(string, pattern):
+    """
+        Given a string and a regex pattern, return the string without instances of the pattern, along with a dictionary
+        of the locations of the pattern. For example, given "ab<el>cd</el>ef" and a pattern to extract tags,
+        return "abcdef" and the dictionary {2: "<el>", 4: "</el>"}
+    """
+    new_string = ""
+    index = 0
+    insertions = defaultdict(list)
+    parts = re.split(pattern, string)
+    for i, part in enumerate(parts):
+        if i % 2:
+            insertions[index].append(part)
+        else:
+            index += len(part)
+            new_string += part
+    return new_string, insertions
+
+def join_string_and_insertions(string, insertions):
+    """
+        Reverse the effects of split_string_and_insertions. Given a string and a set of insertions, return
+        the combined string.
+    """
+    parts = []
+    index = 0
+    sorted_insertions = sorted(insertions.items(), key=lambda item: item[0])
+    for i, insertion in sorted_insertions:
+        parts.append(string[index:i])
+        parts.extend(insertion)
+        index = i
+    parts.append(string[index:])
+    return ''.join(parts)
+
+# map styles in the alto header to casexml tags we're trying to insert:
+styles = {
+    'bold': {
+        'open': '<strong>',
+        'close': '</strong>',
+    },
+    'italics': {
+        'open': '<em>',
+        'close': '</em>',
+    }
+}
+
+# regex to strip style tags from existing casexml:
+strip_tags_re = '|'.join(
+    re.escape(tag)
+    for style in styles.values()
+    for tag in style.values()
+)
+
+
+### main script
 
 def generate_styled_case_xml(case_xml, strict=True):
-    # Dealing with inline tags as elements ramps up the complexity of this
-    # algorithm considerably. I'm replacing inline tags with placeholders
-    # while mapping to the alto text, and replacing them with tags after
-    # the XML has been serialized at the end.
-    # If the citation tag ends up having some sort of attributes,
-    # this script will need to be changed to use regex instead of a blanket
-    # .replace() and probably store individual tags with their attributes
-    # in a dictionary to be retrieved later. This is more efficient.
 
-    # these are the styles we're interested in taking from ALTO, and what
-    # we want their placeholders to be
-    styles = {}
-    styles['bold'] = {}
-    styles['italics'] = {}
-    styles['bold']['open'] = "__TAG_STN_OPEN_REPLACEMENT__"
-    styles['bold']['close'] = "__TAG_STN_CLOS_REPLACEMENT__"
-    styles['italics']['open'] = "__TAG_EMP_OPEN_REPLACEMENT__"
-    styles['italics']['close'] = "__TAG_EMP_CLOS_REPLACEMENT__"
-
-    # this is what we want the existing tags to be replaced with
-    # during processing
-    inline_placeholders = {
-        "<inlinecitation>": "__TAG_ILC_OPEN_REPLACEMENT__",
-        "</inlinecitation>": "__TAG_ILC_CLOS_REPLACEMENT__",
-        "<footnotemark>": "__TAG_FNM_OPEN_REPLACEMENT__",
-        "</footnotemark>": "__TAG_FNM_CLOS_REPLACEMENT__",
-        "<bracketnum>": "__TAG_BKN_OPEN_REPLACEMENT__",
-        "</bracketnum>": "__TAG_BKN_CLOS_REPLACEMENT__",
-        "<strong>": "__TAG_STN_OPEN_REPLACEMENT__",
-        "</strong>": "__TAG_STN_CLOS_REPLACEMENT__",
-        "<em>": "__TAG_EMP_OPEN_REPLACEMENT__",
-        "</em>": "__TAG_EMP_CLOS_REPLACEMENT__"
-    }
-
-    # just the inverse of inline_placeholders. it's easier to replace the tags this way
-    inline_tags = {inline_placeholders[key]: key for key in inline_placeholders}
-
-    # put in placeholders for the inline tags we want to keep-- this simplifies
-    # controlling iteration over the two different sets of XML
-    prepared_case = case_xml.orig_xml
-    for tag in inline_placeholders:
-        prepared_case = prepared_case.replace(tag, inline_placeholders[tag])
-
-    # strip out any existing style tags
-    for tag in styles:
-        prepared_case = prepared_case.replace(styles[tag]["open"], "").replace(styles[tag]["close"], "")
-
-    parsed_case = parse_xml(prepared_case)
+    # strip style tags from existing casexml:
+    stripped_xml = re.sub(strip_tags_re, '', case_xml.orig_xml)
+    parsed_case = parse_xml(stripped_xml)
 
     # dup cases have no casebody to style
     if parsed_case('duplicative|casebody'):
         raise Exception("Duplicative case: no casebody data to merge")
 
-    casebody_tree = parsed_case("casebody|casebody")[0]
-
-    # get the alto files associated with the case in the DB
-    alto_files = {}
+    # Build a dictionary of text blocks in the alto files, indexed by tagref, with their associated page styles if any.
+    # Each key is a tagref, and each value is a list of tuples of lxml TextBlock element and associated page styles.
+    # For example:
+    #   text_blocks_by_tagref = {
+    #       "b15-1": [(
+    #           <lxml TextBlockElement>,
+    #           {
+    #               "Style_1":{
+    #                   'open': '<strong><em>',
+    #                   'close': '</em></strong>',
+    #               }
+    #           }
+    #       )]
+    #   }
+    text_blocks_by_tagref = defaultdict(list)
     for alto in case_xml.pages.all():
-        alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-        alto_files[alto_fileid] = parse_xml(alto.orig_xml)
+        parsed_alto_page = parse_xml(alto.orig_xml)
 
-    # The strategy here is to loop over each casebody element, then each alto
-    # page associated with each element, then each String in the alto file,
-    # then each character in the word. There are too many exceptions simply
-    # trying to split the casebody up by space and match to the alto words.
-    for casebody_element in casebody_tree.iter():
-        # the casebody and opinion elements contain no stylable text, directly
-        if casebody_element.tag.endswith("casebody") or \
-                casebody_element.tag.endswith("opinion") or \
-                casebody_element.text.isspace():
+        # Make a dict of page styles and associated casexml tags.
+        # Styles that don't call for casexml tags are excluded.
+        page_styles = {}
+        for style in parsed_alto_page('alto|TextStyle'):
+            if style.get("FONTSTYLE"):
+                known_styles = sorted(i for i in style.get("FONTSTYLE").split(" ") if i in styles)
+                if known_styles:
+                    page_styles[style.get("ID")] = {
+                        'open': ''.join(styles[i]['open'] for i in known_styles),
+                        'close': ''.join(styles[i]['close'] for i in reversed(known_styles)),  # use reverse so tags are properly nested
+                    }
+
+        # index text blocks
+        for text_block in parsed_alto_page('alto|TextBlock[TAGREFS]'):
+            text_blocks_by_tagref[text_block.get('TAGREFS')].append((text_block, page_styles))
+
+    # Process each casebody element with a pgmap attribute:
+    for casebody_element in parsed_case("casebody|casebody [pgmap]"):
+
+        if casebody_element.text.isspace():
             continue
 
-        # in the alto_connections dict is a map between the pgmap value, such as '17' and the
-        # FILEID value, such as alto_0008_0
-        alto_connections = {}
-        alto_element_references = parsed_case(
-            'mets|area[BEGIN="{}"]'.format(casebody_element.get('id'))).parent().nextAll('mets|fptr')
-        for area in alto_element_references('mets|area'):
-            pgmap = area.get('BEGIN').split(".")[0].split("_")[1]
-            alto_connections[pgmap] = area.get('FILEID')
+        # make a list of each alto string that contributes to the casebody element, in a tuple along with its
+        # style (or None, if the alto string is unstyled).
+        # Spaces are removed and soft hyphens are normalized to hard hyphens.
+        alto_text_blocks = text_blocks_by_tagref[casebody_element.get('id')]
+        alto_strings = [
+            (alto_string.get("CONTENT").replace('\xad', '-').replace(' ', ''), page_styles.get(alto_string.get("STYLEREFS"), None))
+            for text_block, page_styles in alto_text_blocks
+            for alto_string in parsed_case(text_block)("alto|String")
+        ]
 
-        # frequently, case text elements span pages. This gets the alto pages referred
-        # to by the element's pagemap attribute, and returns the alto_id of the page
-        if "pgmap" in casebody_element.keys() and ' ' in casebody_element.get("pgmap"):
-            element_pages = [alto_connections[page.split('(')[0]] for page in
-                             casebody_element.get("pgmap").split(" ")]
-        elif "pgmap" in casebody_element.keys():
-            element_pages = [alto_connections[casebody_element.get("pgmap")]]
+        # if none of the alto strings are styled, move on to next casebody element
+        if not any(p[1] for p in alto_strings):
+            continue
 
-        casebody_element_text = casebody_element.text
-        new_casebody_element_text = ''
+        # Create a single string of alto text, as well as a list with the style for each character in the string:
+        alto_text = ''.join(i[0] for i in alto_strings)
+        alto_styles = [
+            style
+            for alto_info in alto_strings
+            for style in [alto_info[1]]*len(alto_info[0])
+        ]
 
-        # loop through each alto page referenced in the pagemap of the casexml element
-        for alto in element_pages:
-            current_style = None
+        # Now we have the alto text, we can extract the casebody text and coerce it to match:
 
-            parsed_alto_page = alto_files[alto]
-            text_block = parsed_alto_page(
-                'alto|TextBlock[TAGREFS="{}"]'.format(casebody_element.get('id')))
+        # Extract raw XML from the casebody element:
+        casebody_element_text = PyQuery(casebody_element).html()
 
-            # make a dict of ALTO page styles which modify the font style
-            page_styles = {}
-            for style in parsed_alto_page('alto|TextStyle'):
-                if style.get("FONTSTYLE") is not None:
-                    for fontstyle in sorted(style.get("FONTSTYLE").split(" ")):
-                        page_styles[style.get("ID")] = {}
-                        page_styles[style.get("ID")]['open'] = ''
-                        page_styles[style.get("ID")]['close'] = ''
-                        if fontstyle in styles:
-                            page_styles[style.get("ID")]['open'] = styles[fontstyle]['open'] + \
-                                                                   page_styles[style.get("ID")]['open']
-                            page_styles[style.get("ID")]['close'] = page_styles[style.get("ID")]['close'] + \
-                                                                    styles[fontstyle]['close']
+        # etree.tostring puts in bogus xmlns attributes:
+        casebody_element_text = re.sub(r' xmlns(?:\:\w+)?=".*?"', '', casebody_element_text)
 
-            # loop through each alto String for each page
-            for alto_string in text_block("alto|String"):
-                # see if the style has changed, and if so, apply the closing tag placeholder
-                if current_style is not None and current_style in page_styles:
-                    if alto_string.get("STYLEREFS") not in page_styles or \
-                            page_styles[alto_string.get("STYLEREFS")]['close'] != page_styles[current_style]['close']:
-                        new_casebody_element_text += page_styles[current_style]['close']
+        # Extract XML tags and spaces and store them in a separate insertions dictionary:
+        casebody_element_text, insertions = split_string_and_insertions(casebody_element_text, r'(<.*?>|\s+)')
 
-                # skip spaces
-                if casebody_element_text[0] == ' ':
-                    new_casebody_element_text += ' '
-                    casebody_element_text = casebody_element_text[1:]
+        # Decode &amp; to & so it matches the alto text:
+        casebody_element_text = html.unescape(casebody_element_text)
 
-                # see if a new style tag needs to be opened
-                if alto_string.get("STYLEREFS") in page_styles and \
-                        alto_string.get("STYLEREFS") != current_style:
-                    new_casebody_element_text += page_styles[alto_string.get("STYLEREFS")]['open']
+        # Normalize soft hyphens to hard hyphens:
+        output_text = casebody_element_text
+        casebody_element_text = casebody_element_text.replace('\xad', '-')
 
-                current_style = alto_string.get("STYLEREFS")
+        # Handle remaining cases where text does not match:
+        if casebody_element_text != alto_text:
 
-                # loop through each character of the string
-                for i in range(0, len(alto_string.get("CONTENT"))):
-
-                    # is this the start of a tag?
-                    if casebody_element_text.startswith('__TAG_'):
-                        # close out the style tag before starting a new tag.
-                        if current_style in page_styles:
-                            new_casebody_element_text += page_styles[current_style]['close']
-
-                        # move the tag text from casebody_element_text to new
-                        new_casebody_element_text += casebody_element_text[0:28]
-                        casebody_element_text = casebody_element_text[28:]
-
-                        # move any spaces
-                        if casebody_element_text[0] == ' ':
-                            new_casebody_element_text += ' '
-                            casebody_element_text = casebody_element_text[1:]
-
-                        # re-open any style tags
-                        if current_style in page_styles:
-                            new_casebody_element_text += page_styles[current_style]['open']
-
-                        # now deal with the character we're iterating over
-                        if casebody_element_text[0] == alto_string.get("CONTENT")[i]:
-                            new_casebody_element_text += casebody_element_text[0]
-                            casebody_element_text = casebody_element_text[1:]
-                    # do the chars match, or are they both different dashes?
-                    elif casebody_element_text[0] == alto_string.get("CONTENT")[i] or \
-                            (casebody_element_text[0] == '\xad' and alto_string.get("CONTENT")[i] == '-'):
-
-                        # add the character on to the new_casebody_element_text
-                        new_casebody_element_text += casebody_element_text[0]
-                        # and remove the character from casebody_element_text
-                        casebody_element_text = casebody_element_text[1:]
-                    elif strict is False:
-                        # these are some methods to deal with extra characters
-                        # either in ALTO text, or CaseMETS. If we decided that
-                        # these sorts of discrepancies were ok, this logic
-                        # could be expanded pretty easily.
-
-                        # This code deals with cases where there is an extra
-                        # character in an alto representation of a string. For
-                        # example, in 32044057892259_00001, the end of the
-                        # string "24 Ill. 113;" is incorrectly represented
-                        # in alto as "113­" and ";"
-
-                        # this checks the next alto element for a match:
-                        if alto_string.getnext() is not None:
-                            if alto_string.getnext().getnext() is not None:
-                                if casebody_element_text.startswith(alto_string.getnext().getnext().get("CONTENT")):
-                                    continue
-                        # this checks the current element:
-                        elif len(alto_string.get("CONTENT")) > i + 1:
-                            if alto_string.get("CONTENT")[i + 1:].startswith(
-                                    casebody_element_text[0:len(alto_string.get("CONTENT")) - i]):
-                                continue
-
-                        # this checks for an extra character in the caseMETS
-                        # For example, in 32044057892259_00001 in <p id="Ad5">
-                        # the string "subject-­matter" is represented in the
-                        # ALTO as "subject-" and "matter"
-                        if casebody_element_text[1:].startswith(alto_string.get("CONTENT")):
-                            new_casebody_element_text += casebody_element_text[0:2]
-                            casebody_element_text = casebody_element_text[2:]
-                            continue
-
-                        # if none of that manages to solve it, we'll throw
-                        # even if strict is False
-                        raise Exception(
-                            "Unrecoverable character discrepency in ALTO (\"{}\") and CaseMETS (\"{}\")".format(
-                                alto_string.get("CONTENT")[i:],
-                                casebody_element_text[:len(alto_string.get("CONTENT")[i:])]))
-                    else:
-                        raise Exception("Character discrepency between ALTO (\"{}\") and CaseMETS (\"{}\")".format(
-                            alto_string.get("CONTENT")[i:],
-                            casebody_element_text[:len(alto_string.get("CONTENT")[i:])]))
-
-            # if new casebody deosn't end with closing tag, add it
-            # because it won't loop through again to add it above
-            if current_style in page_styles and \
-                    not new_casebody_element_text[28:].endswith(page_styles[alto_string.get("STYLEREFS")]['close']) and \
-                    not new_casebody_element_text.endswith(page_styles[alto_string.get("STYLEREFS")]['close']):
-                new_casebody_element_text += page_styles[current_style]['close']
-
-        # the casebody_element_text should contain no characters unless
-        # it is a closing tag, or trailing spaces for formatting
-        if len(casebody_element_text) > 0:
-            if casebody_element_text.startswith('__TAG_'):
-                new_casebody_element_text += casebody_element_text[0:28]
-                casebody_element_text = casebody_element_text[28:]
-            if casebody_element_text.isspace():
-                new_casebody_element_text += casebody_element_text
-            elif len(casebody_element_text) > 0:
+            if strict:
                 raise Exception(
-                    "Trailing characters on casebody element which didn't seem to be\
-                     in the ALTO text. This indicates unclean CaseXML/Alto match-up.\
-                      These are the leftover characters: '{}'".format(
-                        casebody_element_text))
+                    "Case text and alto text do not match for case_xml ID %s, element ID %s.\n"
+                    "Case text: %s\nAlto text: %s"
+                    % (case_xml.pk, casebody_element.get('id'), casebody_element_text, alto_text)
+                )
 
-        casebody_element.text = new_casebody_element_text
-    plain_case_text = str(parsed_case)
+            # To handle mismatches, diff the two strings and patch alto_styles to match casebody_element_text.
+            # For example, suppose casebody_element_text = "abXcdef", alto_text = "abcdYef", and
+            # alto_styles = [1, 2, 3, 4, 5, 6, 7]. This patches alto_styles to [1, 2, 2, 3, 4, 6, 7],
+            # so each letter in casebody_element_text will receive the appropriate style.
+            diff = difflib.SequenceMatcher(None, alto_text, casebody_element_text)
+            i = 0
+            for tag, i1, i2, j1, j2 in diff.get_opcodes():
+                if tag == "delete":
+                    del alto_styles[i1 + i:i2 + i]
+                    i -= i2 - i1
+                elif tag == "replace":
+                    alto_styles[i1 + i:i2 + i] = [alto_styles[i1+i-1]] * (j2 - j1)
+                    i -= i2 - i1 - j2 + j1
+                elif tag == "insert":
+                    alto_styles[i1 + i:i2 + i] = [alto_styles[i1+i-1]] * (j2 - j1)
+                    i += j2 - j1
 
-    # replace the placeholders with their tags!
-    for placeholder in inline_tags:
-        plain_case_text = plain_case_text.replace(placeholder, inline_tags[placeholder])
+        # Style each letter in casebody_element_text:
+        for cursor, (casebody_char, current_tags, previous_tags) in enumerate(zip(casebody_element_text, alto_styles, [None]+alto_styles[:-1])):
+
+            # see if the style has changed, and if so, apply the closing tag
+            if previous_tags and (not current_tags or current_tags['close'] != previous_tags['close']):
+                insertions[cursor].insert(0, previous_tags['close'])
+
+            if current_tags:
+                # If tag changes, new style tag needs to be opened:
+                if not previous_tags or current_tags['open'] != previous_tags['open']:
+                    insertions[cursor].append(current_tags['open'])
+
+                # If tag does not change, we may need to wrap an existing tag like <footnote> in </em><footnote><em>:
+                elif cursor in insertions and not ''.join(insertions[cursor]).isspace():
+                    insertions[cursor].append(current_tags['open'])
+                    insertions[cursor].insert(0, current_tags['close'])
+
+        # Add final closing tag:
+        if current_tags:
+            insertions[cursor+1].insert(0, current_tags['close'])
+
+        # Write text back to parsed xml:
+        output_text = join_string_and_insertions(output_text, insertions)
+        PyQuery(casebody_element).html(output_text)
+
+    plain_case_text = force_str(serialize_xml(parsed_case))
+
+    # Make sure that we haven't modified the XML outside of the style tags:
+    new_stripped_xml = re.sub(strip_tags_re, '', plain_case_text)
+    if stripped_xml != new_stripped_xml:
+        diff = ''.join(difflib.context_diff(stripped_xml.splitlines(keepends=True), new_stripped_xml.splitlines(keepends=True), n=0))
+        raise Exception("Styling XML failed: original text and styled text do not match:\n%s" % diff)
 
     return plain_case_text
-

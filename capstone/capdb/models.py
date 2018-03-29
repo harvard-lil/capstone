@@ -825,6 +825,9 @@ class PageXML(BaseXMLModel):
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
 
+    class Meta:
+        ordering = ['barcode']
+
     @transaction.atomic
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
         #has our XML changed?

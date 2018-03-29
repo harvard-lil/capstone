@@ -67,26 +67,29 @@ def test_merge_alto_case(ingest_case_xml):
     # testing strict, totally compliant case
     case_xml = CaseXML.objects.get(metadata_id__case_id="32044057891608_0001")
     styled_case = parse_xml(generate_styled_case_xml(case_xml))
-    assert len(styled_case("casebody|em")) == 24
-    assert len(styled_case("casebody|strong")) == 7
-    assert '__TAG' not in case_xml.orig_xml
+    assert len(styled_case("casebody|em")) == 23
+    assert len(styled_case("casebody|strong")) == 11
 
 
 @pytest.mark.django_db
-def test_merge_alto_non_strict_case(ingest_case_xml):
-    # testing non-strict processing with a case that has some character mismatches.
+def test_merge_alto_extra_char_exception(ingest_case_xml):
+    # testing processing with a case that has some character mismatches.
     case_xml = CaseXML.objects.get(metadata_id__case_id="32044057892259_0001")
-    styled_case = parse_xml(generate_styled_case_xml(case_xml, False))
-    assert len(styled_case("casebody|em")) == 9
-    assert len(styled_case("casebody|strong")) == 7
-    assert '__TAG' not in case_xml.orig_xml
 
-@pytest.mark.django_db
-def test_merge_extra_char_exception(ingest_case_xml):
-    # testing exceptions on character mismatches.
-    case_xml = CaseXML.objects.get(metadata_id__case_id="32044057892259_0001")
-    with pytest.raises(Exception, match=r'Character discrepency between ALTO \("matter"\) and CaseMETS \("­matte"\)'):
+    case_xml.orig_xml = case_xml.orig_xml.replace("</p>", "y</p>")
+    alto_xml = case_xml.pages.first()
+    alto_xml.orig_xml = alto_xml.orig_xml.replace('CONTENT="', 'CONTENT="x')
+    alto_xml.save()
+
+    # fails with strict
+    with pytest.raises(Exception, match=r'Case text and alto text do not match'):
         generate_styled_case_xml(case_xml)
+
+    # passes without strict
+    styled_case = parse_xml(generate_styled_case_xml(case_xml, False))
+    assert len(styled_case("casebody|em")) == 8
+    assert len(styled_case("casebody|strong")) == 11
+
 
 @pytest.mark.django_db
 def test_merge_dup_exception(ingest_case_xml):
