@@ -6,6 +6,7 @@
 #
 -e git+git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
 -e git+https://github.com/treyhunner/django-simple-history.git@2fe4038#egg=django-simple-history
+-e git+git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
 amqp==2.2.2               # via kombu
 apipkg==1.4               # via execnet
 asn1crypto==0.22.0        # via cryptography
@@ -24,7 +25,7 @@ click==6.7                # via pip-tools
 cookies==2.2.1            # via moto
 coverage==4.4.1           # via pytest-cov
 cryptography==1.8.2       # via paramiko
-cssselect==1.0.1          # via pyquery
+cssselect==1.0.1
 dicttoxml==1.7.4          # via moto
 django-appconf==1.0.2     # via django-compressor
 django-bulk-update==2.1.0
@@ -72,7 +73,6 @@ pycparser==2.17           # via cffi
 pycurl==7.43.0
 pyflakes==1.5.0           # via flake8
 pyparsing==2.2.0          # via packaging
-pyquery==1.2.17
 pytest-cov==2.5.1
 pytest-django==3.1.2
 pytest-factoryboy==2.0.1
