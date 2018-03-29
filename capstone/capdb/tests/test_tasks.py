@@ -3,7 +3,7 @@ import bagit
 import zipfile
 import os
 import gzip
-from django.db import connection
+from django.db import connection, utils
 import json
 
 from capdb.models import CaseMetadata
@@ -65,8 +65,11 @@ def test_write_inventory_files(tmpdir):
 @pytest.mark.django_db
 def test_show_slow_queries(capsys):
     cursor = connection.cursor()
-    cursor.execute("create extension if not exists pg_stat_statements;")
-    fabfile.show_slow_queries()
-    captured = capsys.readouterr()
-    output = json.loads(captured.out)
-    assert "*capstone slow query report*" in output['text']
+    try:
+        cursor.execute("create extension if not exists pg_stat_statements;")
+        fabfile.show_slow_queries()
+        captured = capsys.readouterr()
+        output = json.loads(captured.out)
+        assert "*capstone slow query report*" in output['text']
+    except utils.OperationalError:
+        pytest.skip("pg_stat_statements is not in shared_preload_libraries")
