@@ -170,6 +170,15 @@ def validate(case_xml, consecutive_bad_word_limit=2):
                                         alto_string.getnext().getnext().get('ID'): alto_string.getnext().getnext().get(
                                             'CONTENT')}
 
+                        if alto_string.getprevious() is not None:
+                            if alto_string.getprevious().get('CONTENT') is not None:
+                                alto_context["prev"] = {alto_string.getprevious().get('ID'): alto_string.getprevious().get('CONTENT')}
+
+                            if alto_context["prev"] is None and alto_string.getprevious().getprevious() is not None:
+                                if alto_string.getprevious().getprevious().get('CONTENT') is not None:
+                                    alto_context["prev"] = {
+                                        alto_string.getprevious().getprevious().get('ID'): alto_string.getprevious().getprevious().get(
+                                            'CONTENT')}
                         # this checks the next alto element for a match:
                         if problem_guess is None and alto_string.getnext() is not None:
                             if alto_string.getnext().getnext() is not None:
@@ -194,6 +203,8 @@ def validate(case_xml, consecutive_bad_word_limit=2):
                             problem_guess = "Unspecified Mismatch."
 
                         if not bad_word_flag:
+                            from pprint import pprint
+                            pprint({"description": problem_guess, "alto": alto_context, "casemets": casemets_context})
                             return_status['problems'].append({"description": problem_guess, "alto": alto_context, "casemets": casemets_context})
                             bad_word_flag = True
                             consecutive_bad_words += 1
@@ -224,7 +235,7 @@ def validate(case_xml, consecutive_bad_word_limit=2):
         return_status['results'] = 'encountered {} problems'.format(len(return_status['problems']))
     else:
         return_status['status'] = 'ok'
-        return_status['results'] = 'encountered 0 problems'
+        return_status['results'] = 'clean'
 
     return return_status
 

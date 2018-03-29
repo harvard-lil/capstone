@@ -97,17 +97,38 @@ def test_merge_dup_exception(ingest_case_xml):
 @pytest.mark.django_db
 def test_validate_alto_casemets_dup(ingest_case_xml):
     results = validate(CaseXML.objects.get(metadata_id__case_id="32044061407086_0001"))
-    assert results == {'problems': [], 'results': 'duplicative', 'status': 'ok', 'case': '32044061407086_0001'}
+    assert results['status'] == 'ok'
+    assert results['results'] == 'duplicative'
 
 @pytest.mark.django_db
 def test_validate_alto_casemets_clean(ingest_case_xml):
     results = validate(CaseXML.objects.get(metadata_id__case_id="32044057891608_0001"))
-    assert results == {'results': 'encountered 0 problems', 'case': '32044057891608_0001', 'problems': [], 'status': 'ok'}
+    assert results['status'] == 'ok'
+    assert results['results'] == 'clean'
 
 @pytest.mark.django_db
 def test_validate_alto_casemets_dirty(ingest_case_xml):
     results = validate(CaseXML.objects.get(metadata_id__case_id="32044057892259_0001"))
-    assert results == {'case': '32044057892259_0001', 'status': 'warning', 'results': 'encountered 2 problems', 'problems': [{'description': 'extra char in case_mets? match found in current alto', 'alto': {'next': {'ST_17.1.8.3': 'in'}, 'current': {'ST_17.1.8.1': 'matter'}, 'prev': None, 'current_character': {'ST_17.1.8.1': 'm'}}, 'casemets': {'current': '\xadmatte', 'snippet': 'tion of the subject-\xadmatter in controver', 'current_character': '\xad'}}, {'description': 'extra char in alto? match found subsequent alto element', 'alto': {'next': {'ST_19.1.11.9': ';'}, 'current': {'ST_19.1.11.7': '113\xad'}, 'prev': None, 'current_character': {'ST_19.1.11.7': '\xad'}}, 'casemets': {'current': '; Ca', 'snippet': 'Strobel, 24 Ill. 113; Carpenter v. Wells', 'current_character': ';'}}]}
+    assert results['status'] == 'warning'
+    assert results['results'] == 'encountered 2 problems'
+    problem_1 = {'alto': {'current': {'ST_17.1.8.1': 'matter'},
+              'current_character': {'ST_17.1.8.1': 'm'},
+              'next': {'ST_17.1.8.3': 'in'},
+              'prev': None},
+     'casemets': {'current': '\xadmatte',
+                  'current_character': '\xad',
+                  'snippet': 'tion of the subject-\xadmatter in controver'},
+     'description': 'extra char in case_mets? match found in current alto'}
+    problem_2 = {'alto': {'current': {'ST_19.1.11.7': '113\xad'},
+              'current_character': {'ST_19.1.11.7': '\xad'},
+              'next': {'ST_19.1.11.9': ';'},
+              'prev': {'ST_19.1.11.5': 'Ill.'}},
+     'casemets': {'current': '; Ca',
+                  'current_character': ';',
+                  'snippet': 'Strobel, 24 Ill. 113; Carpenter v. Wells'},
+     'description': 'extra char in alto? match found subsequent alto element'}
+    assert problem_1 in results['problems']
+    assert problem_2 in results['problems']
 
 @pytest.mark.django_db
 def test_validate_alto_casemets_error(ingest_case_xml):
@@ -118,4 +139,23 @@ def test_validate_alto_casemets_error(ingest_case_xml):
     case_xml.orig_xml = serialize_xml(parsed_case_xml)
     case_xml.save(update_related=False)
     results = validate(case_xml)
-    assert results == {'status': 'error', 'problems': [{'description': 'Unspecified Mismatch.', 'casemets': {'current_character': 'P', 'snippet': 'Jonathan Taylor, Propellant, v. Macha', 'current': 'Propellant'}, 'alto': {'current_character': {'ST_17.2.1.5': 'A'}, 'current': {'ST_17.2.1.5': 'Appellant,'}, 'prev': None, 'next': {'ST_17.2.1.7': 'v.'}}}, {'description': 'Unspecified Mismatch.', 'casemets': {'current_character': 'P', 'snippet': 'Jonathan Taylor, Propellant, v. Macha', 'current': 'Pr'}, 'alto': {'current_character': {'ST_17.2.1.7': 'v'}, 'current': {'ST_17.2.1.7': 'v.'}, 'prev': None, 'next': {'ST_17.2.1.9': 'Michael'}}}], 'results': 'gave up after 2 consecutive bad words', 'case': '32044057891608_0001'}
+    problem_1 = {'alto': {'current': {'ST_17.2.1.5': 'Appellant,'},
+              'current_character': {'ST_17.2.1.5': 'A'},
+              'next': {'ST_17.2.1.7': 'v.'},
+              'prev': {'ST_17.2.1.3': 'Taylor,'}},
+     'casemets': {'current': 'Propellant',
+                  'current_character': 'P',
+                  'snippet': 'Jonathan Taylor, Propellant, v. Macha'},
+     'description': 'Unspecified Mismatch.'}
+    problem_2 = {'alto': {'current': {'ST_17.2.1.7': 'v.'},
+              'current_character': {'ST_17.2.1.7': 'v'},
+              'next': {'ST_17.2.1.9': 'Michael'},
+              'prev': {'ST_17.2.1.5': 'Appellant,'}},
+     'casemets': {'current': 'Pr',
+                  'current_character': 'P',
+                  'snippet': 'Jonathan Taylor, Propellant, v. Macha'},
+     'description': 'Unspecified Mismatch.'}
+    assert results['status'] == 'error'
+    assert results['results'] == 'gave up after 2 consecutive bad words'
+    assert problem_1 in results['problems']
+    assert problem_2 in results['problems']
