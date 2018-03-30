@@ -94,14 +94,6 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     },
-    'capapi': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'capapi',
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '',
-    },
     'tracking_tool': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'test_data/tracking_tool.sqlite'),
@@ -110,7 +102,6 @@ DATABASES = {
 
 # make sure tracking_tool app uses tracking_tool DB:
 DATABASE_ROUTERS = [
-    'capapi.routers.CAPAPIRouter',
     'tracking_tool.routers.TrackingToolDatabaseRouter',
 ]
 

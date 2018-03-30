@@ -110,8 +110,7 @@ def migrate():
         Migrate all dbs at once
     """
 
-    local("python manage.py migrate --database=default")
-    local("python manage.py migrate --database=capapi")
+    local("python manage.py migrate")
 
     if settings.USE_TEST_TRACKING_TOOL_DB:
         local("python manage.py migrate --database=tracking_tool")

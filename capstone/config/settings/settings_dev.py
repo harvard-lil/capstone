@@ -18,8 +18,6 @@ CELERY_TASK_EAGER_PROPAGATES = True
 if os.environ.get('DOCKERIZED'):
     DATABASES['default']['PASSWORD'] = 'password'
     DATABASES['default']['HOST'] = 'db'
-    DATABASES['capapi']['PASSWORD'] = 'password'
-    DATABASES['capapi']['HOST'] = 'db'
 
     REDIS_HOST = 'redis'
 

@@ -197,7 +197,7 @@ def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, thre
         extra_case.save()
 
     url = "%scases/?full_case=true" % (api_url)
-    with django_assert_num_queries(select=5):
+    with django_assert_num_queries(select=8, update=1):
         response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, format='')
     assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
@@ -316,7 +316,7 @@ def test_reporter(api_url, client, reporter):
 
 
 #  | User views
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_view_details(auth_user, auth_client):
     """
     User is able to log in successfully and see an API Token
