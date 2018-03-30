@@ -15,9 +15,9 @@ pre
 a {
   cursor: pointer;
   border-bottom: 0;
-  color: $blue; }
+  color: $color-blue; }
   a:hover, a :focus, a :active {
-    color: $black;
+    color: $color-black;
     border-bottom: 0; }
 
 .blue-text {
@@ -40,7 +40,7 @@ a {
   margin: 20px 0; }
 
 .text-primary {
-  color: $blue;
+  color: $color-blue;
 }
 
 h1 {
@@ -61,6 +61,11 @@ pre {
 
 .page-header {
   padding-top: 60px;
+}
+
+.main-content {
+  max-height: 80%;
+  overflow: scroll;
 }
 
 .col-centered {
@@ -88,50 +93,51 @@ pre {
 .blue-button {
   font: 14px "Rajdhani", "Helvetica", sans-serif;
   font-weight: 700;
-  color: $blue;
+  color: $color-blue;
   letter-spacing: 2px;
   background: white;
-  border: 1px solid $blue;
+  border: 1px solid $color-blue;
   height: 35px;
   border-radius: 5px;
   margin-bottom: 10px; }
   .blue-button:hover {
     background-color: $light-blue;
-    border: 1px solid $blue;
+    border: 1px solid $color-blue;
   }
 
 body {
   height: 100%;
   display: block;
   font-family: "Rajdhani", "Helvetica", sans-serif;
-  color: $black; }
-  body header.header {
+  color: $color-black;
+  font-size: 1.2rem;
+  .header {
     width: 100%;
     position: fixed;
     z-index: 10;
     background-color: white;
     border-bottom: 1px solid $gray; }
-  body .header-content {
+  .header-content {
     padding: 0px 20px 10px 20px; }
-  body .header-logo, body .lil-logo {
+  .header-logo, .lil-logo {
     height: 32px;
     width: 24px; }
-  body .lil-logo {
+  .lil-logo {
     float: right; }
-  body .header-text {
+  .header-text {
     font-weight: 700;
     font-size: 14px;
     left: 10px;
     letter-spacing: 1.5px;
     position: relative; }
-
+}
 .inverse {
-  background-color: $black;
+  background-color: $color-black;
   color: white; }
   .inverse button:hover, .inverse button:active, .inverse button:focus {
     background-color: #d2e7ff;
-    color: $black;
-    border: $black; }
+    color: $color-black;
+    border: $color-black; }
   .inverse a:focus, .inverse a:active, .inverse a:hover {
     color: #d2e7ff; }
 
@@ -148,54 +154,67 @@ body {
   padding: 20px 0;
   min-height: 70%; }
 
-footer.footer {
+footer {
   width: 100%;
   background-color: #0075ff;
-  margin-bottom: 0; }
-  footer.footer hr.white-line {
-    color: white; }
-  footer.footer .credits {
+  margin-bottom: 0;
+  bottom: 0;
+  hr.white-line {
+    color: white;
+  }
+  .credits {
     width: 100%;
-    margin-bottom: 20px; }
-    footer.footer .credits p {
-      text-align: center; }
-    footer.footer .credits .name {
-      font-weight: 500; }
-  footer.footer .footer-content {
+    margin-bottom: 20px;
+  }
+  .credits p {
+    text-align: center;
+  }
+  .credits .name {
+    font-weight: 500;
+  }
+  .footer-content {
     color: white;
     width: 100%;
     padding: 40px;
-    text-align: center; }
-    footer.footer .footer-content .cap-logo {
-      width: 54px;
-      height: 100px;
-      margin: 0 auto;
-      background-size: 54px 100px;
-      display: block;
-      text-indent: -9999px; }
-    footer.footer .footer-content .inline-link {
-      border-color: white; }
-  footer.footer a, footer.footer a:hover, footer.footer a:active {
+    text-align: center;
+  }
+  .footer-content .cap-logo {
+    width: 54px;
+    height: 100px;
+    margin: 0 auto;
+    background-size: 54px 100px;
+    display: block;
+    text-indent: -9999px;
+  }
+  .footer-content .inline-link {
+    border-color: white;
+  }
+  a, a:hover, a:active {
     padding-bottom: 3px;
     border-bottom: 1px solid white;
     text-decoration: none;
-    color: white; }
-  footer.footer h4.subheader {
-    margin-bottom: 40px; }
-  footer.footer h3.project-title {
-    margin-bottom: 30px; }
-  footer.footer h3, footer.footer h4, footer.footer button {
-    margin-top: 10px; }
-  footer.footer h3 {
+    color: white;
+  }
+  h4.subheader {
+    margin-bottom: 40px;
+  }
+  h3.project-title {
+    margin-bottom: 30px;
+  }
+  h3, h4, button {
+    margin-top: 10px;
+  }
+  h3 {
     font-weight: 700;
     font-size: 21px;
-    letter-spacing: 3px; }
-
+    letter-spacing: 3px;
+  }
+}
 .alert {
   background-color: $orange;
   border: 0;
   background-image: none;
-  color: $black;
+  color: $color-black;
   padding-left: 0;
   padding-right: 0; }
   .alert .col-sm-4 {
