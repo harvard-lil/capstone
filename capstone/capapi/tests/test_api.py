@@ -148,18 +148,12 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_authenticated_full_case(auth_user, api_url, auth_client, jurisdiction, case):
-    """
-    whitelisted jurisdiction cases should not be counted against the user
-    blacklisted jurisdiction cases should be counted against the user
-    """
-    jurisdiction.whitelisted = True
-    jurisdiction.save()
+def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, case):
+    ### whitelisted jurisdiction should not be counted against the user
 
-    case.jurisdiction = jurisdiction
-    case.save()
+    case.jurisdiction.whitelisted = True
+    case.jurisdiction.save()
 
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
     check_response(response, format='')
@@ -170,9 +164,12 @@ def test_authenticated_full_case(auth_user, api_url, auth_client, jurisdiction, 
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
-    # if auth_user downloads a mixed case load, their case_allowance_remaining should only reflect the blacklisted cases
-    jurisdiction.whitelisted = False
-    jurisdiction.save()
+@pytest.mark.django_db(transaction=True)
+def test_authenticated_full_case_blacklisted(auth_user, api_url, auth_client, case):
+    ### blacklisted jurisdiction cases should be counted against the user
+
+    case.jurisdiction.whitelisted = False
+    case.jurisdiction.save()
 
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
@@ -180,9 +177,34 @@ def test_authenticated_full_case(auth_user, api_url, auth_client, jurisdiction, 
 
     assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
 
-    # make sure the auth_user's case download number has remained the same
+    # make sure the auth_user's case download number has gone down by 1
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+
+@pytest.mark.django_db(transaction=True)
+def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, case, jurisdiction, django_assert_num_queries):
+    ### mixed requests should be counted only for blacklisted cases
+
+    case.jurisdiction.whitelisted = True
+    case.jurisdiction.save()
+
+    for i in range(2):
+        extra_case = CaseXMLFactory()
+        extra_case.metadata.jurisdiction = jurisdiction
+        extra_case.metadata.save()
+
+    jurisdiction.whitelisted = False
+    jurisdiction.save()
+
+    url = "%scases/?full_case=true" % (api_url)
+    with django_assert_num_queries(select=5):
+        response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
+    check_response(response, format='')
+    assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
+
+    # make sure the auth_user's case download number has gone down by 2
+    auth_user.refresh_from_db()
+    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 2
 
 
 @pytest.mark.django_db(transaction=True)
