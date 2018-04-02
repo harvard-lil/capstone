@@ -155,6 +155,7 @@ STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'pipeline.finders.PipelineFinder',
 )
 
@@ -165,15 +166,16 @@ PIPELINE = {
         'base': {
             'source_filenames': (
                 'css/_normalize.css',
+                'css/bootstrap.css',
                 'css/scss/base.scss',
             ),
-            'output_filename': 'css/base.css',
+            'output_filename': 'base.css',
         },
         'docs': {
             'source_filenames': (
                 'css/scss/docs.scss',
             ),
-            'output_filename': 'css/docs.css',
+            'output_filename': 'docs.css',
         }
     },
 }

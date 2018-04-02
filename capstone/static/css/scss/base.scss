@@ -1,8 +1,9 @@
 @import '_variables.scss';
 
-a, button {
+a, button, .btn {
   cursor: pointer;
 }
+
 pre
 {
     white-space: -moz-pre-wrap;
@@ -27,7 +28,10 @@ a {
 }
 
 .blue-text {
-  color: #0075ff; }
+  color: $color-blue;
+}
+
+
 
 .header-margin {
   margin-top: 60px; }
@@ -70,7 +74,6 @@ pre {
 }
 
 .main-content {
-  max-height: 80%;
   overflow: scroll;
 }
 
@@ -105,7 +108,7 @@ pre {
   border-radius: 5px;
   margin-bottom: 10px; }
   .blue-button:hover {
-    background-color: $light-blue;
+    background-color: $color-light-blue;
     border: 1px solid $color-blue;
   }
 
@@ -120,12 +123,12 @@ body {
     position: fixed;
     z-index: 10;
     background-color: white;
-    border-bottom: 1px solid $gray; }
+    border-bottom: 1px solid $color-gray; }
   .header-content {
     padding: 0px 20px 10px 20px; }
   .header-logo, .lil-logo {
-    height: 32px;
-    width: 24px; }
+    width: 24px;
+  }
   .lil-logo {
     float: right; }
   .header-text {
@@ -148,76 +151,24 @@ body {
 .login-form {
   letter-spacing: 1px;
   width: 100%;
-  min-height: 70%; }
-  .login-form h3 {
-    margin-left: -20px; }
-  .login-form form {
-    text-transform: uppercase; }
+  min-height: 70%;
+  h3 {
+    margin-left: -20px;
+  }
+  form {
+    text-transform: uppercase;
+  }
+}
+
 
 .logged-in-page {
   padding: 20px 0;
-  min-height: 70%; }
-
-footer {
-  width: 100%;
-  background-color: #0075ff;
-  margin-bottom: 0;
-  bottom: 0;
-  hr.white-line {
-    color: white;
-  }
-  .credits {
-    width: 100%;
-    margin-bottom: 20px;
-  }
-  .credits p {
-    text-align: center;
-  }
-  .credits .name {
-    font-family: $font-semibold;
-  }
-  .footer-content {
-    color: white;
-    width: 100%;
-    padding: 40px;
-    text-align: center;
-  }
-  .footer-content .cap-logo {
-    width: 54px;
-    height: 100px;
-    margin: 0 auto;
-    background-size: 54px 100px;
-    display: block;
-    text-indent: -9999px;
-  }
-  .footer-content .inline-link {
-    border-color: white;
-  }
-  a, a:hover, a:active {
-    padding-bottom: 3px;
-    border-bottom: 1px solid white;
-    text-decoration: none;
-    color: white;
-  }
-  h4.subheader {
-    margin-bottom: 40px;
-  }
-  h3.project-title {
-    margin-bottom: 30px;
-  }
-  h3, h4, button {
-    margin-top: 10px;
-  }
-  h3 {
-    font-family: $font-bold;
-    font-size: 21px;
-    letter-spacing: 3px;
-  }
+  min-height: 70%;
 }
+
 .alert {
-  background-color: $orange;
   border: 0;
-  background-image: none;
+  background: $color-orange none;
   color: $color-black;
   padding-left: 0;
   padding-right: 0; }

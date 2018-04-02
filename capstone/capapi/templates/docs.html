@@ -10,30 +10,34 @@
   The Caselaw Access Project API guide
 {% endblock %}
 
-{% block content %}
-<div class="page-header cont-fixed border-bottom">
-    <div class="row">
-      <h1 class="col centered-text bold-text">
-        <span class="blue-text">CAP</span> API
-      </h1>
-    </div>
-    <div class="row">
-      <h3 class="col centered-text semibold-text">
-        EXPLORE AMERICAN CASELAW</h3>
-    </div>
-    <div class="row">
-      <h5 class="col centered-text light-text">
-        Read the documentation below to get started
-      </h5>
-    </div>
-  </div>
 
+{% block content %}
   <div class="row flex-xl-nowrap" id="api-overview">
 
     {% include "includes/api-doc-toc.html" %}
 
-    <div class="col-12 col-md-9 col-xl-8 py-md-3 docs reading-body">
+    <div class="col-9 docs reading-body">
+      <div class="page-header cont-fixed border-bottom">
+        <div class="row">
+          <h1 class="col centered-text bold-text">
+            <span class="blue-text">CAP</span> API
+          </h1>
+        </div>
+      <div class="row">
+        <h3 class="col centered-text semibold-text">
+          EXPLORE AMERICAN CASELAW</h3>
+      </div>
+      <div class="row">
+        <h5 class="col centered-text light-text">
+          Read the documentation below to get started
+        </h5>
+      </div>
+    </div>
+
       <section class="border-bottom">
+        <a class="anchor-offset"
+           id="overview-section"
+           aria-label="API Overview"></a>
         <h2 id="overview-section" class="section-title">
           API Overview
         </h2>
@@ -54,18 +58,18 @@
         The API can be browsed anonymously or with an API key.
         <br/>
 
-        All users can:
+        <p class="subsection body-text bold-text">All users can:</p>
         <ul>
           <li>See unlimited metadata (see <a href="" aria-label="unlimited metadata example">an example here</a>).</li>
         </ul>
-        Anonymous users can:
+        <p class="subsection body-text bold-text">Anonymous users can:</p>
         <ul>
-          <li>Read whitelisted<strong>*</strong> cases' text (see <a href="">an example here</a>). </li>
+          <li>Read whitelisted<strong>*</strong> cases' text
+          <li class="simple-list-item">Learn about whitelisting <a href="">here</a>.</li>
+          <li class="simple-list-item">See <a href="">an example here</a>.</li>
         </ul>
 
-        <strong>*</strong>Learn about whitelisting <a href="">here</a>.
-        <br/>
-        Registered users can:
+        <p class="subsection body-text bold-text">Registered users can:</p>
         <ul>
           <li>
             Request up to 500 cases a day.
@@ -74,7 +78,11 @@
       </section>
 
       <section class="border-bottom">
-        <h3  id="registration-section" class="section-title">Register for an API key</h3>
+        <a class="anchor-offset"
+           id="registration-section"
+           aria-label="Register for an API key"></a>
+
+        <h3 class="section-title">Register for an API key</h3>
         <a href="/accounts/register"
            class="btn blue-button">
             REGISTER
@@ -99,7 +107,11 @@
       </section>
 
       <section class="border-bottom">
-        <h2 id="getting-started-section" class="section-title">Getting Started</h2>
+        <a class="anchor-offset"
+           id="getting-started-section"
+           aria-label="Getting Started"></a>
+
+        <h2 class="section-title">Getting Started</h2>
         <p class="body-text">The metadata is viewable online as well as using the command line.</p>
 
         <p class="body-text">
@@ -148,22 +160,29 @@
 
         </section>
         <section class="border-bottom">
-          <h2 id="endpoints-examples-section"
+          <a class="anchor-offset"
+           id="example-endpoints-section"
+           aria-label="Main Endpoint Examples"></a>
+          <h2
             class="section-title">
           Main Endpoint Examples
           </h2>
           A single case (metadata only):
           <pre><a href="/api/v1/cases/{{ case_id }}/" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/</a></pre>
+
           One or more cases with the same citation:
           <pre><a href="/api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/" target="_blank">https://{{ request.get_host }}/api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/</a></pre>
           <!--<pre class="json-response">{{ case_metadata }}</pre>-->
+          <p class="body-text bold-text subsection">Getting a complete casetext</p>
           A request for full casetext must include the following flag:
           <pre><code>?full_case=true</code></pre>
 
+          <p class="body-text bold-text subsection">Whitelisted casetext</p>
           Full whitelisted casetext (this case is whitelisted and can be seen by anyone):
           <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/?full_case=true</a></pre>
 
-          Full blacklisted casetext (you need to <a href="#registration-section" title="Register for an API key">register for an API key to see this</a>):
+          <p class="body-text bold-text subsection">Blacklisted casetext</p>
+          Full blacklisted casetext with api_key in query param (you need to <a href="#registration-section" title="Register for an API key">register for an API key to see this</a>):
           <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true&api_key=your-api-key-here" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/?full_case=true&api_key=your-api-key-here</a></pre>
 
           Full blacklisted casetext passing in api_key as a header (in the command line):
@@ -197,11 +216,12 @@
         </section>
 
         <section class="border-bottom">
-          <h2 id="other-endpoints-section"
-            class="section-title">
-          Other endpoints
+          <a class="anchor-offset"
+           id="other-endpoints-section"
+           aria-label="Other endpoints"></a>
+          <h2 class="section-title">
+            Other endpoints
           </h2>
-
         The other entrypoints are:
         <br/>
         <ul class="list-group">
@@ -225,8 +245,12 @@
 
       </section>
       <section class="border-bottom">
-        <h2 id="whitelisted-jurisdictions-section"
-            class="section-title">
+        <a class="anchor-offset"
+           id="whitelisted-jurisdictions-section"
+           aria-label="Whitelisted Jurisdictions"></a>
+
+
+        <h2 class="section-title">
           Whitelisted Jurisdictions
         </h2>
         <ul>
@@ -240,7 +264,12 @@
       </section>
 
       <section>
-        <h2 id="terms-of-use-section" class="section-title">Terms of Use</h2>
+        <a class="anchor-offset"
+           id="terms-of-use-section"
+           aria-label="Terms of Use"></a>
+
+
+        <h2 class="section-title">Terms of Use</h2>
         <p class="body-text">Your use of the CAP API is subject to your acceptance of our <a href="{% url 'terms' %}">Terms of Use</a>.</p>
       </section>
     </div>
