@@ -182,19 +182,19 @@ def test_authenticated_full_case_blacklisted(auth_user, api_url, auth_client, ca
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
 
 @pytest.mark.django_db(transaction=True)
-def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, case, jurisdiction, django_assert_num_queries):
+def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, three_cases, jurisdiction, django_assert_num_queries):
     ### mixed requests should be counted only for blacklisted cases
 
-    case.jurisdiction.whitelisted = True
-    case.jurisdiction.save()
+    # one whitelisted case
+    three_cases[0].jurisdiction.whitelisted = True
+    three_cases[0].jurisdiction.save()
 
-    for i in range(2):
-        extra_case = CaseXMLFactory()
-        extra_case.metadata.jurisdiction = jurisdiction
-        extra_case.metadata.save()
-
+    # two blacklisted cases
     jurisdiction.whitelisted = False
     jurisdiction.save()
+    for extra_case in three_cases[1:]:
+        extra_case.jurisdiction = jurisdiction
+        extra_case.save()
 
     url = "%scases/?full_case=true" % (api_url)
     with django_assert_num_queries(select=5):
@@ -280,21 +280,14 @@ def test_case_body_formats(api_url, client, jurisdiction, ingest_case_xml):
 
 
 @pytest.mark.django_db
-def test_filter_case_by_(api_url, client, case):
-    cases = []
-    for case in range(0, 3):
-        cases.append(setup_case())
+def test_filter_case_by_court(api_url, client, three_cases, court):
+    three_cases[2].court = court
+    three_cases[2].save()
+    case_id_to_test = three_cases[2].id
 
-    case_id_to_test = cases[2].id
-
-    response = client.get("%scases/?court_slug=%s&format=json" % (api_url, cases[2].court.slug))
+    response = client.get("%scases/?court_slug=%s&format=json" % (api_url, three_cases[2].court.slug))
     content = response.json()
-
-    ids = []
-    for result in content['results']:
-        ids.append(result['id'])
-
-    assert case_id_to_test in ids
+    assert [case_id_to_test] == [result['id'] for result in content['results']]
 
 
 @pytest.mark.django_db
