@@ -25,3 +25,5 @@ urlpatterns = [
     url(r'^api/v1/cases/(?P<id>[0-9A-Za-z\s\.]+)/$', views.CaseViewSet.as_view({'get': 'retrieve'}), name='casemetadata-get-cite'),
     url(r'^accounts/verify-user/(?P<user_id>[\d+]+)/(?P<activation_nonce>[0-9a-z]+)/?$', views.verify_user),
 ]
+
+handler404 = 'views.not_found'

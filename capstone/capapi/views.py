@@ -227,3 +227,7 @@ def get_docs(request):
 def get_terms(request):
     context = {"template_name": 'terms'}
     return render(request, 'terms-of-use.html', context)
+
+
+def not_found(request):
+    return render(request, '404.html')
