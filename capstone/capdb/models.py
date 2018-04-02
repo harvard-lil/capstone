@@ -645,10 +645,14 @@ class CaseXML(BaseXMLModel):
                     text_block = parsed_alto_page(
                         'alto|TextBlock[TAGREFS="{}"]'.format(original_element.get('id')))
                     words = text_block("alto|String")
+
+                    updated_element_split = updated_element.text.split(" ")
+                    original_element_split = original_element.text.split(" ")
+
                     # loop through each word in the ALTO text block
                     for word in words:
-                        updated_word = updated_element.text.split(" ")[wordcount]
-                        original_word = original_element.text.split(" ")[wordcount]
+                        updated_word = updated_element_split[wordcount]
+                        original_word = original_element_split[wordcount]
                         assert original_word == word.get("CONTENT")
                         if updated_word != original_word:
                             # update ALTO & set the character confidence and word confidence to 100%
@@ -820,6 +824,9 @@ class PageXML(BaseXMLModel):
 
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
+
+    class Meta:
+        ordering = ['barcode']
 
     @transaction.atomic
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):

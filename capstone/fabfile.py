@@ -7,7 +7,7 @@ from datetime import datetime
 import django
 import zipfile
 import json
-
+from random import randrange
 # set up Django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -21,10 +21,10 @@ from django.contrib.auth.models import User
 from fabric.api import local
 from fabric.decorators import task
 
-from capdb.models import Jurisdiction, CaseMetadata, VolumeXML, VolumeMetadata
+from capdb.models import Jurisdiction, CaseMetadata, VolumeXML, VolumeMetadata, CaseXML
 from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
 # from process_ingested_xml import fill_case_page_join_table
-from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, validate_private_volumes as validate_private_volumes_script
+from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, validate_private_volumes as validate_private_volumes_script, compare_alto_case
 
 
 @task(alias='run')
@@ -134,6 +134,31 @@ def add_permissions_groups():
     """
     # add capapi groups
     local("python manage.py loaddata capapi/fixtures/groups.yaml")
+
+
+@task
+def validate_casemets_alto_link(sample_size=100000):
+    """
+    Will test a random sample of cases.
+    Tests 100,000 by default, but you can specify a sample set size on the command line. For example, to test 14 cases:
+    fab validate_casemets_alto_link:14
+    """
+    sample_size = int(sample_size) if int(sample_size) < CaseXML.objects.all().count() else CaseXML.objects.all().count()
+    tested = []
+    while len(tested) < sample_size:
+        try:
+            key = randrange(1, CaseXML.objects.last().id + 1)
+            while key in tested:
+                key = randrange(1, CaseXML.objects.last().id + 1)
+            tested.append(key)
+            case_xml = CaseXML.objects.get(pk=key)
+            print(compare_alto_case.validate(case_xml))
+        except CaseXML.DoesNotExist:
+            continue
+    print("Tested these CaseXML IDs:")
+    print(tested)
+
+
 
 @task
 def add_test_case(*barcodes):
@@ -353,3 +378,34 @@ def fix_md5_columns():
     """ Run celery tasks to fix orig_xml and md5 column for all volumes. """
     for volume_id in VolumeXML.objects.values_list('pk', flat=True):
         fix_md5_column.delay(volume_id)
+
+@task
+def show_slow_queries():
+    """
+    Show slow queries for consumption by Slack bot.
+    This requires
+
+        shared_preload_libraries = 'pg_stat_statements'
+
+    in postgresql.conf, and that
+
+        CREATE EXTENSION pg_stat_statements;
+
+    has already been run for the capstone database.
+    """
+    cursor = django.db.connection.cursor()
+    with open('../services/postgres/s1_pg_stat_statements_top_total.sql') as f:
+        sql = f.read()
+        cursor.execute(sql)
+    try:
+        rows = cursor.fetchall()
+        output = "*capstone slow query report*\n"
+    except:
+        print(json.dumps({'text': 'Could not get slow queries'}))
+        return
+    for row in rows:
+        output += "```%s```\n" % row[8]
+        output += "ran on %s with %d call%s and took a total of %f ms\n" % (
+            row[7], row[0], "" if row[0] == 1 else "s", row[1]
+        )
+    print(json.dumps({'text': output}))

@@ -107,8 +107,12 @@ def load_tracking_tool_database():
 
 ### Factory fixtures ###
 @pytest.fixture
-def case():
-    return setup_case()
+def case(case_xml):
+    return case_xml.metadata
+
+@pytest.fixture
+def three_cases():
+    return [CaseXMLFactory().metadata for _ in range(3)]
 
 @pytest.fixture
 def auth_user(api_token):

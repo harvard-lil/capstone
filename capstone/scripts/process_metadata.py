@@ -39,7 +39,7 @@ def get_case_metadata(case_xml):
     last_page = parsed('casebody|casebody').attr.lastpage
 
     decision_date_original = parsed('case|decisiondate').text()
-    decision_date = decision_datetime(decision_date_original)
+    decision_date = parse_decision_date(decision_date_original)
 
     docket_number = parsed('case|docketnumber').text()
 
@@ -81,10 +81,10 @@ def get_case_metadata(case_xml):
     })
 
 
-def decision_datetime(decision_date_text):
+def parse_decision_date(decision_date_text):
     try:
         try:
-            return datetime.strptime(decision_date_text, '%Y-%m-%d')
+            return datetime.strptime(decision_date_text, '%Y-%m-%d').date()
         except ValueError as e:
 
             # if court used an invalid day of month (typically Feb. 29), strip day from date
@@ -92,9 +92,9 @@ def decision_datetime(decision_date_text):
                 decision_date_text = decision_date_text.rsplit('-', 1)[0]
 
             try:
-                return datetime.strptime(decision_date_text, '%Y-%m')
+                return datetime.strptime(decision_date_text, '%Y-%m').date()
             except ValueError:
-                return datetime.strptime(decision_date_text, '%Y')
+                return datetime.strptime(decision_date_text, '%Y').date()
     except Exception as e:
         # if for some reason we can't parse the date, just store None
         return None
