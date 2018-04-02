@@ -1,7 +1,7 @@
 @import "_variables.scss";
 
 .navbar.navbar-static-top .container {
-  padding: 0px;
+  padding: 0;
   width: 100%;
 }
 
@@ -30,4 +30,38 @@
 
 body.modal-open label {
   display: block;
+}
+
+.breadcrumb {
+  display: none;
+}
+
+nav {
+  margin-bottom: 15px;
+}
+
+.pager > .previous, .pager > .next {
+  list-style: none;
+  border: 1px solid $color-blue;
+  float: left;
+  width: 70px;
+  text-align: center;
+  border-radius: 3px;
+  margin-left: 5px;
+  background: $color-blue;
+  color: white;
+  font-size: 14px;
+  padding: 3px;
+  cursor: pointer;
+  a {
+    color: white;
+    text-decoration: none;
+    &:hover {
+      color: $color-blue;
+    }
+  }
+  &:hover {
+    background: $color-light-blue;
+    color: $color-blue;
+  }
 }

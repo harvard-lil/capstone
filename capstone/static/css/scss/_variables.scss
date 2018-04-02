@@ -59,3 +59,100 @@ $color-medium-blue: #78B6FF;
 $color-light-blue: #D2E7FF;
 $color-dark-blue: #22349A;
 $color-orange: #EDA633;
+
+
+// mixins
+//////////// general
+.inverse {
+  background-color: $color-black;
+  color: white; }
+
+//////////// grid / layout
+.col-centered {
+  margin: 0 auto;
+  float: none;
+}
+
+.header-margin {
+  padding-top: 52px;
+}
+
+.container-full {
+  width: 100%;
+  height: 100%;
+}
+
+/////////// text
+.centered-text {
+  text-align: center;
+}
+
+.blue-text {
+  color: $color-blue;
+}
+
+.bold-text {
+  font-family: $font-bold;
+}
+
+.semibold-text {
+  font-family: $font-semibold;
+}
+
+.text-primary {
+  color: $color-blue;
+}
+
+.help-block {
+  color: $color-orange;
+  text-transform: none;
+}
+
+strong {
+  font-family: $font-semibold;
+}
+
+/////////// buttons
+.button {
+  font-family: $font-bold;
+  color: $color-blue;
+  background: white;
+  border: 1px solid $color-blue;
+  letter-spacing: 2px;
+  height: 35px;
+  text-transform: uppercase;
+    &:hover {
+    background-color: $color-light-blue;
+    border: 1px solid $color-blue;
+  }
+}
+
+.inverse button:hover,
+.inverse button:active,
+.inverse button:focus {
+    background-color: $color-light-blue;
+    color: $color-black;
+    border: $color-black;
+}
+.inverse a:focus,
+.inverse a:active,
+.inverse a:hover {
+    color: $color-light-blue;
+}
+
+.inverse .alert {
+  background-color: transparent;
+  color: $color-orange;
+  border-bottom: 1px solid $color-orange;
+  border-radius: 0;
+}
+
+/////////// alerts
+.alert {
+  border: 0;
+  background: $color-orange none;
+  color: $color-black;
+  padding-left: 0;
+  padding-right: 0;
+}
+

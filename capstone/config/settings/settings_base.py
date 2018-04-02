@@ -169,20 +169,29 @@ PIPELINE = {
                 'css/bootstrap.css',
                 'css/scss/base.scss',
             ),
-            'output_filename': 'base.css',
+            'output_filename': 'base.css'
         },
         'docs': {
             'source_filenames': (
                 'css/scss/docs.scss',
             ),
-            'output_filename': 'docs.css',
+            'output_filename': 'docs.css'
         },
         'login': {
             'source_filenames': (
                 'css/scss/login.scss',
             ),
             'output_filename': 'login.css'
-        }
+        },
+        'api': {
+            'source_filenames': (
+                'css/_normalize.css',
+                'css/bootstrap.css',
+                'css/scss/base.scss',
+                'css/scss/api.scss',
+            ),
+            'output_filename': 'api.css'
+        },
     },
 }
 

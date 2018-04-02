@@ -1,7 +1,5 @@
 {% load static %}
 {% load pipeline %}
-
-
 <html>
   <head>
     <meta charset="utf-8">
@@ -16,21 +14,7 @@
     {% stylesheet 'base' %}
   </head>
   <body>
-    <header class="header navbar flex-column flex-md-row">
-      <div class="col-12">
-        <a href="/" title="CAP mainpage">
-          <img class="header-logo"
-               src="{% static "img/logo-small-blue.png" %}"
-               alt="CAP Logo"/>
-        </a>
-        <span class="header-text"> CASELAW ACCESS PROJECT</span>
-        <a href="https://lil.law.harvard.edu" target="_blank">
-          <img class="lil-logo"
-               src="{% static "img/LIL-logo.png" %}"
-               alt="Library Innovation Lab" />
-        </a>
-      </div>
-    </header>
+    {% include "includes/header.html" %}
     <div class="main-content header-margin" id="main" role="main">
         {% block content %}{% endblock content %}
     </div>

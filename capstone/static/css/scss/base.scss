@@ -1,16 +1,24 @@
 @import '_variables.scss';
 
+body {
+  height: 100%;
+  display: block;
+  font-family: $font-body;
+  color: $color-black;
+  font-size: 1.2rem;
+}
+
 a, button, .btn {
   cursor: pointer;
 }
 
-pre
-{
+pre {
     white-space: -moz-pre-wrap;
     //white-space: -pre-wrap;
     white-space: -o-pre-wrap;
     white-space: pre-wrap;
     word-wrap: break-word; /* Internet Explorer 5.5+ */
+    border: 0;
 }
 
 a {
@@ -24,44 +32,23 @@ a {
 .btn {
   font-size: 14px;
   font-family: $font-body;
-
+  border-radius: 5px;
+  margin-bottom: 10px;
 }
-
-.blue-text {
-  color: $color-blue;
-}
-
-
-
-.header-margin {
-  margin-top: 60px; }
-
-.centered-text {
-  text-align: center; }
-
-.bold-text {
-  font-family: $font-bold; }
-
-.semibold-text {
-  font-family: $font-semibold }
 
 .separator {
   border-bottom: 1px solid #d9d9d9;
-  margin: 20px 0; }
-
-.text-primary {
-  color: $color-blue;
+  margin: 20px 0;
 }
 
 h1 {
-  letter-spacing: 3px; }
+  letter-spacing: 3px;
+}
 
 code {
-  background-color: #d2e7ff;
-  color: #0075ff; }
-
-pre {
-  border: 0; }
+  background-color: $color-light-blue;
+  color: $color-blue;
+}
 
 .section-title {
   font-size: 20px;
@@ -69,61 +56,14 @@ pre {
   text-transform: uppercase;
   letter-spacing: 0.8px; }
 
-.page-header {
-  padding-top: 60px;
-}
-
-.main-content {
-  overflow: scroll;
-}
-
-.col-centered {
-  margin: 0 auto;
-  float: none; }
-
-.center-content {
-  text-align: center; }
-
-.white-button {
-  color: white;
-  letter-spacing: 2px;
-  background: transparent;
-  border: 1px solid white;
-  height: 35px;
-  padding: 0px 14px;
-  text-transform: uppercase; }
-
-.remove-padding-left {
-  margin-left: 0;
-  left: -15px;
-  position: relative; }
-
-.blue-button {
-  font-family: $font-bold;
-  color: $color-blue;
-  letter-spacing: 2px;
-  background: white;
-  border: 1px solid $color-blue;
-  height: 35px;
-  border-radius: 5px;
-  margin-bottom: 10px; }
-  .blue-button:hover {
-    background-color: $color-light-blue;
-    border: 1px solid $color-blue;
-  }
-
-body {
-  height: 100%;
-  display: block;
-  font-family: $font-body;
-  color: $color-black;
-  font-size: 1.2rem;
-  .header {
-    width: 100%;
-    position: fixed;
-    z-index: 10;
-    background-color: white;
-    border-bottom: 1px solid $color-gray; }
+.header {
+  width: 100%;
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  top: 0;
+  background-color: white;
+  border-bottom: 1px solid $color-gray;
   .header-content {
     padding: 0px 20px 10px 20px; }
   .header-logo, .lil-logo {
@@ -136,44 +76,36 @@ body {
     font-size: 14px;
     left: 10px;
     letter-spacing: 1.5px;
-    position: relative; }
-}
-.inverse {
-  background-color: $color-black;
-  color: white; }
-  .inverse button:hover, .inverse button:active, .inverse button:focus {
-    background-color: #d2e7ff;
-    color: $color-black;
-    border: $color-black; }
-  .inverse a:focus, .inverse a:active, .inverse a:hover {
-    color: #d2e7ff; }
-
-.login-form {
-  letter-spacing: 1px;
-  width: 100%;
-  min-height: 70%;
-  h3 {
-    margin-left: -20px;
+    position: relative;
   }
-  form {
-    text-transform: uppercase;
-  }
+
+}
+
+.main-content {
+  padding-left: 0;
+  padding-right: 0;
+  min-height: 100%;
+}
+
+.blue-button {
+  @extend .button;
+}
+
+.white-button {
+  @extend .button;
+  color: white;
+  background: transparent;
+  border: 1px solid white;
 }
 
 
-.logged-in-page {
-  padding: 20px 0;
-  min-height: 70%;
-}
+.remove-padding-left {
+  margin-left: 0;
+  left: -15px;
+  position: relative; }
 
-.alert {
-  border: 0;
-  background: $color-orange none;
-  color: $color-black;
+.alert .col-sm-4 {
   padding-left: 0;
   padding-right: 0; }
-  .alert .col-sm-4 {
-    padding-left: 0;
-    padding-right: 0; }
-  .alert li {
-    list-style: none; }
+.alert li {
+  list-style: none; }
