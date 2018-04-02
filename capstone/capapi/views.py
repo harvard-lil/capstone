@@ -222,3 +222,8 @@ def get_docs(request):
     }
 
     return render(request, 'docs.html', context)
+
+
+def get_terms(request):
+    context = {"template_name": 'terms'}
+    return render(request, 'terms-of-use.html', context)

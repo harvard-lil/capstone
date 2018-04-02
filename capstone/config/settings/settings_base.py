@@ -176,6 +176,12 @@ PIPELINE = {
                 'css/scss/docs.scss',
             ),
             'output_filename': 'docs.css',
+        },
+        'login': {
+            'source_filenames': (
+                'css/scss/login.scss',
+            ),
+            'output_filename': 'login.css'
         }
     },
 }

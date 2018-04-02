@@ -31,31 +31,13 @@
         </a>
       </div>
     </header>
-    <div class="spacer">&nbsp;</div>
-    <div class="main-content container-fluid" id="main" role="main">
+    <div class="main-content header-margin" id="main" role="main">
         {% block content %}{% endblock content %}
     </div>
+
+    {% if template_name != 'docs' and template_name != 'terms' %}
+      {#  hiding footer in docs, showing info in sidebar #}
+      {% include "includes/footer.html" %}
+    {% endif %}
   </body>
-{#  <footer class="footer">#}
-{#    <div class="footer-content container-fluid">#}
-{#      <img class="cap-logo img-responsive"#}
-{#           src="{% static "img/logo-small-white.svg" %}"#}
-{#           alt="Library Innovation Lab"/>#}
-{##}
-{#      <h3 class="project-title text-center">CASELAW ACCESS PROJECT</h3>#}
-{#      <p class="credits text-center">#}
-{#        This is an experimental workspace.#}
-{#        <br/>#}
-{#        For more information on this project click <a href="http://lil.law.harvard.edu/projects/caselaw-access-project/" target="_blank"> here</a>.#}
-{#        If you have ideas, please send us feedback <a href="mailto:lil@law.harvard.edu?Subject=CAP%20API">here </a> or#}
-{#        file an issue on github <a href="https://github.com/harvard-lil/cap-api" target="_blank"> here</a>.#}
-{#      </p>#}
-{#      <button id="return" onclick="returnToTop()" class="return-to-top white-button btn">RETURN TO TOP</button>#}
-{#    </div>#}
-{#  </footer>#}
-  <script>
-    function returnToTop() {
-      window.scrollTo(0, 0);
-    }
-  </script>
 </html>

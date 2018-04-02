@@ -1,26 +1,28 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% load pipeline %}
 
 {% block title %} | Register {% endblock %}
 
 {% block meta_description %}
 Register to use the Caselaw Access Project API
 {% endblock %}
+{% block extra_head %}
+  {% stylesheet 'login' %}
+{% endblock %}
 
 {% block content %}
   {% load rest_framework %}
-  <div class="container login-form container-full inverse header-margin">
+  <div class="login-form container-full inverse header-margin">
     <div class="row row-centered">
-      {% if errors != None %}
-      <div class="alert alert-warning">
-        <div class="col-sm-4 col-centered">
+      <div class="col-6 col-centered">
+        <h3>Register</h3>
+        {% if errors != None %}
+        <div class="alert alert-warning">
           <strong>Error!</strong> See below for details
         </div>
-      </div>
-      {% endif %}
-
-      <div class="col-sm-4 col-centered">
-        <h3>Register</h3>
-
+        {% endif %}
         <form class="form" action="/accounts/register_user/" method="POST">
           {% csrf_token %}
           {% render_form serializer %}
