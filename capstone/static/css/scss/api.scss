@@ -33,7 +33,12 @@ body.modal-open label {
 }
 
 .breadcrumb {
-  display: none;
+  margin-top: 60px;
+  font-size: 14px;
+  li {
+    list-style-type: ' / ';
+    margin-left: 10px;
+  }
 }
 
 nav {
