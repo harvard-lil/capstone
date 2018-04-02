@@ -11,6 +11,7 @@ from django.db import IntegrityError, models
 from django.utils import timezone
 
 from django.conf import settings
+from model_utils import FieldTracker
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,7 @@ class APIUser(AbstractBaseUser):
     USERNAME_FIELD = 'email'
 
     objects = APIUserManager()
+    tracker = FieldTracker()
 
     class Meta:
         verbose_name = 'User'

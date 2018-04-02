@@ -46,7 +46,7 @@ def get_single_casebody_permissions(request, case):
     else:
 
         try:
-            request.user.update_case_allowance(case_count=1)
+            request.user.update_case_allowance(case_count=1, save=False)
             casebody["status"] = casebody_permissions[0]
         except AttributeError:
             casebody["status"] = casebody_permissions[2]

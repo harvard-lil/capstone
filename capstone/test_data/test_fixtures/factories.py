@@ -15,22 +15,6 @@ from capdb.models import *
 # Calling @pytest_factoryboy.register on each factory exposes it as a pytest fixture.
 # For example, APIUserFactory will be available as the fixture "api_user".
 
-
-def setup_case(**kwargs):
-    # set up casemetadata instance
-    case = CaseFactory(**kwargs)
-    citation = CitationFactory(type='official')
-    citation.case = case
-    citation.save()
-
-    # Add VolumeXML and CaseXML instances
-    volume_xml = VolumeXMLFactory(metadata=case.volume)
-    casexml = CaseXMLFactory.build(metadata=case, volume=volume_xml)
-    casexml.save(create_or_update_metadata=False)
-
-    return case
-
-
 @register
 class APIUserFactory(factory.DjangoModelFactory):
     class Meta:

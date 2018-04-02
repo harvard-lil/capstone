@@ -33,7 +33,7 @@ django-compressor==2.1.1  # via django-libsass
 django-extensions==1.8.1
 django-filter==1.1.0
 django-libsass==0.7
-django-pipeline==1.6.13
+django-pipeline==1.6.14
 django-storages==1.5.2
 django==2.0.2
 djangorestframework-filters==0.10.2
@@ -45,7 +45,6 @@ factory-boy==2.10.0
 faker==0.8.4              # via factory-boy
 first==2.0.1              # via pip-tools
 flake8==3.4.1
-futures==3.1.1            # via django-pipeline
 idna==2.5                 # via cryptography, requests
 inflection==0.3.1         # via pytest-factoryboy
 jinja2==2.9.6             # via moto
