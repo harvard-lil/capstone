@@ -15,7 +15,7 @@ def test_get_single_case_metadata(ingest_case_xml):
     parties = case["parties"]
     assert "John Kirk" in parties[0]
 
-    assert type(case['decision_date']) is datetime.datetime
+    assert type(case['decision_date']) is datetime.date
     assert type(case['decision_date_original']) is str
 
     assert case['jurisdiction'] == 'Illinois'
@@ -32,7 +32,7 @@ def test_get_case_metadata():
                 if not case_metadata['duplicative']:
                     assert len(case_metadata["name"]) > 0
                     assert len(case_metadata["jurisdiction"]) > 0
-                    assert type(case_metadata["decision_date"]) is datetime.datetime
+                    assert type(case_metadata["decision_date"]) is datetime.date
                     assert type(case_metadata["decision_date_original"]) is str
                     assert type(case_metadata["opinions"]) is dict
                     assert type(case_metadata["attorneys"]) is list
