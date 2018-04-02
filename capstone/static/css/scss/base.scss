@@ -20,6 +20,12 @@ a {
     color: $color-black;
     border-bottom: 0; }
 
+.btn {
+  font-size: 14px;
+  font-family: $font-body;
+
+}
+
 .blue-text {
   color: #0075ff; }
 
@@ -30,10 +36,10 @@ a {
   text-align: center; }
 
 .bold-text {
-  font-weight: 700; }
+  font-family: $font-bold; }
 
 .semibold-text {
-  font-weight: 500; }
+  font-family: $font-semibold }
 
 .separator {
   border-bottom: 1px solid #d9d9d9;
@@ -55,7 +61,7 @@ pre {
 
 .section-title {
   font-size: 20px;
-  font-weight: 700;
+  font-family: $font-bold;
   text-transform: uppercase;
   letter-spacing: 0.8px; }
 
@@ -76,7 +82,6 @@ pre {
   text-align: center; }
 
 .white-button {
-  font: 14px "Rajdhani", "Helvetica", sans-serif;
   color: white;
   letter-spacing: 2px;
   background: transparent;
@@ -91,8 +96,7 @@ pre {
   position: relative; }
 
 .blue-button {
-  font: 14px "Rajdhani", "Helvetica", sans-serif;
-  font-weight: 700;
+  font-family: $font-bold;
   color: $color-blue;
   letter-spacing: 2px;
   background: white;
@@ -108,7 +112,7 @@ pre {
 body {
   height: 100%;
   display: block;
-  font-family: "Rajdhani", "Helvetica", sans-serif;
+  font-family: $font-body;
   color: $color-black;
   font-size: 1.2rem;
   .header {
@@ -125,7 +129,7 @@ body {
   .lil-logo {
     float: right; }
   .header-text {
-    font-weight: 700;
+    font-family: $font-bold;
     font-size: 14px;
     left: 10px;
     letter-spacing: 1.5px;
@@ -170,7 +174,7 @@ footer {
     text-align: center;
   }
   .credits .name {
-    font-weight: 500;
+    font-family: $font-semibold;
   }
   .footer-content {
     color: white;
@@ -205,7 +209,7 @@ footer {
     margin-top: 10px;
   }
   h3 {
-    font-weight: 700;
+    font-family: $font-bold;
     font-size: 21px;
     letter-spacing: 3px;
   }

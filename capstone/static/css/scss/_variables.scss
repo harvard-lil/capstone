@@ -1,7 +1,51 @@
+@font-face {
+    font-family: 'rajdhanibold';
+    src: url('../../fonts/rajdhani-bold-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-bold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'rajdhanilight';
+    src: url('../../fonts/rajdhani-light-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-light-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'rajdhanimedium';
+    src: url('../../fonts/rajdhani-medium-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-medium-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'rajdhaniregular';
+    src: url('../../fonts/rajdhani-regular-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'rajdhanisemibold';
+    src: url('../../fonts/rajdhani-semibold-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-semibold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+
 // font
-$font-name: "Rajdhani", "Helvetica", sans-serif;
-$font-bold: 700;
-$font-semibold: 500;
+$font-body: 'rajdhaniregular', Helvetica, Arial, sans-serif;
+$font-light: 'rajdhanilight', Helvetica, Arial, sans-serif;
+$font-semibold: 'rajdhanisemibold', Helvetica, Arial, sans-serif;
+$font-bold: 'rajdhanibold', Helvetica, Arial, sans-serif;
+
 
 $section-subtitle-size: 20px;
 
