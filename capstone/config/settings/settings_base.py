@@ -160,8 +160,9 @@ STATICFILES_FINDERS = (
 )
 
 PIPELINE = {
-    'ENABLED': True,
     'COMPILERS': ('pipeline.compilers.sass.SASSCompiler',),
+    'PIPELINE_ENABLED': False,
+    'PIPELINE_COLLECTOR_ENABLED': False,
     'STYLESHEETS': {
         'base': {
             'source_filenames': (
