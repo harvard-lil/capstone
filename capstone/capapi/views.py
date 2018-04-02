@@ -194,7 +194,7 @@ def verify_user(request, user_id, activation_nonce):
     """
     serializer = serializers.UserSerializer()
     user = serializer.verify_with_nonce(user_id, activation_nonce)
-    if user.is_authenticated():
+    if user.is_authenticated:
         resources.email(reason='new_registration', user=user)
         data = {'status': 'Success!', 'message': 'Thank you for verifying your email address. We will be in touch with you shortly.'}
         if request.accepted_renderer.format == 'json':
@@ -212,7 +212,7 @@ def get_docs(request):
     whitelisted_jurisdictions = models.Jurisdiction.objects.filter(whitelisted=True).values('name_long', 'name')
 
     context = {
-
+        "template_name": 'docs',
         "case_metadata": case_metadata,
         "case_id": case_metadata['id'],
         "case_jurisdiction": case_metadata['jurisdiction'],
