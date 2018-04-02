@@ -78,7 +78,6 @@ code {
     letter-spacing: 1.5px;
     position: relative;
   }
-
 }
 
 .main-content {
@@ -109,3 +108,60 @@ code {
   padding-right: 0; }
 .alert li {
   list-style: none; }
+
+footer {
+  width: 100%;
+  background-color: #0075ff;
+  margin-bottom: 0px;
+  hr.white-line {
+    color: white;
+  }
+  .credits {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .credits p {
+    text-align: center;
+  }
+  .credits .name {
+    font-weight: 500;
+  }
+  .footer-content {
+    color: white;
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+  }
+  .footer-content .cap-logo {
+    width: 54px;
+    height: 100px;
+    margin: 0 auto;
+    background-size: 54px 100px;
+    display: block;
+    text-indent: -9999px;
+  }
+  .footer-content .inline-link {
+    border-color: white;
+  }
+  a, a:hover, a:active {
+    padding-bottom: 3px;
+    border-bottom: 1px solid white;
+    text-decoration: none;
+    color: white;
+  }
+  h4.subheader {
+    margin-bottom: 40px;
+  }
+  h3.project-title {
+    margin-bottom: 30px;
+    border-bottom: 0;
+  }
+  h3, h4, button {
+    margin-top: 10px;
+  }
+  h3 {
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 3px;
+  }
+}
