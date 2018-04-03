@@ -1,10 +1,11 @@
 import pytest
+from rest_framework.reverse import reverse
 
 from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
 from capapi.permissions import casebody_permissions
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_api_urls(client, api_url):
     response = client.get('%scases/' % api_url)
     check_response(response, format='api')
@@ -60,7 +61,7 @@ def test_flow(client, api_url, case):
     assert content.get("name") == case.jurisdiction.name
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_case_citation_redirect(api_url, client, citation):
     url = "%scases/%s?format=json" % (api_url, citation.normalized_cite)
 
@@ -104,18 +105,19 @@ def test_case_citation_redirect(api_url, client, citation):
     assert content[0]['id'] == case.id
 
 
-@pytest.mark.django_db(transaction=True)
-def test_unauthorized_request(api_user, api_url, auth_client, case):
+@pytest.mark.django_db
+def test_unauthorized_request(api_user, api_url, client, case):
     assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?full_case=true" % (api_url, case.id)
-    response = auth_client.get(url, headers={'AUTHORIZATION': 'Token fake'})
+    client.credentials(HTTP_AUTHORIZATION='Token fake')
+    response = client.get(url)
     check_response(response, status_code=401, format='')
 
     api_user.refresh_from_db()
     assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     """
     we should allow users to get full case without authentication
@@ -147,7 +149,7 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     assert not casebody['data']
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, case):
     ### whitelisted jurisdiction should not be counted against the user
 
@@ -155,16 +157,16 @@ def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, ca
     case.jurisdiction.save()
 
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
-    response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
+    response = auth_client.get(url)
     check_response(response, format='')
 
-    assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
+    assert response['Content-Type'] == 'text/html; charset=utf-8'
 
     # make sure the user's case download number has remained the same
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_authenticated_full_case_blacklisted(auth_user, api_url, auth_client, case):
     ### blacklisted jurisdiction cases should be counted against the user
 
@@ -172,16 +174,16 @@ def test_authenticated_full_case_blacklisted(auth_user, api_url, auth_client, ca
     case.jurisdiction.save()
 
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
-    response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
+    response = auth_client.get(url)
     check_response(response, format='')
 
-    assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
+    assert response['Content-Type'] == 'text/html; charset=utf-8'
 
     # make sure the auth_user's case download number has gone down by 1
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, three_cases, jurisdiction, django_assert_num_queries):
     ### mixed requests should be counted only for blacklisted cases
 
@@ -197,18 +199,18 @@ def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, thre
         extra_case.save()
 
     url = "%scases/?full_case=true" % (api_url)
-    with django_assert_num_queries(select=8, update=1):
-        response = auth_client.get(url, headers={'AUTHORIZATION': 'Token {}'.format(auth_user.get_api_key())})
+    with django_assert_num_queries(select=7, update=1):
+        response = auth_client.get(url)
     check_response(response, format='')
-    assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
+    assert response['Content-Type'] == 'text/html; charset=utf-8'
 
     # make sure the auth_user's case download number has gone down by 2
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 2
 
 
-@pytest.mark.django_db(transaction=True)
-def test_authentication_as_query_param(auth_user, api_url, auth_client, jurisdiction, case):
+@pytest.mark.django_db
+def test_authentication_as_query_param(auth_user, api_url, client, jurisdiction, case):
     """
     Allow the user to pass api key as query parameter
     """
@@ -221,7 +223,7 @@ def test_authentication_as_query_param(auth_user, api_url, auth_client, jurisdic
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     token = auth_user.get_api_key()
     url = "%scases/%s/?full_case=true&api_key=%s&format=json" % (api_url, case.pk, token)
-    response = auth_client.get(url)
+    response = client.get(url)
     check_response(response, format='')
     auth_user.refresh_from_db()
 
@@ -316,26 +318,27 @@ def test_reporter(api_url, client, reporter):
 
 
 #  | User views
-@pytest.mark.django_db(transaction=True)
-def test_view_details(auth_user, auth_client):
+@pytest.mark.django_db
+def test_view_details(auth_user, client):
     """
     User is able to log in successfully and see an API Token
     """
-    url = "http://testserver/accounts/view_details/"
+    url = reverse('apiuser-view-details')
     auth_user.set_password('pass')
-    response = auth_client.post(url, json={
+    auth_user.save()
+    response = client.post(url, {
         'email': auth_user.email,
         'password': 'pass'
-    })
+    }, format='json')
 
     check_response(response, format='')
-    assert "user_api_key" in response.text
-    assert auth_user.get_api_key() in response.text
+    assert b"user_api_key" in response.content
+    assert auth_user.get_api_key() in response.content.decode()
 
-    response = auth_client.post(url, {
+    response = client.post(url, {
         'email': auth_user.email,
         'password': 'fake'
-    })
+    }, format='json')
 
     check_response(response, status_code=401, format='')
-    assert auth_user.get_api_key() not in response.text
+    assert auth_user.get_api_key() not in response.content.decode()

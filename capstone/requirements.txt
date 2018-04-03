@@ -30,7 +30,7 @@ dicttoxml==1.7.4          # via moto
 django-appconf==1.0.2     # via django-compressor
 django-bulk-update==2.1.0
 django-compressor==2.1.1  # via django-libsass
-django-extensions==1.8.1
+django-extensions==2.0.6
 django-filter==1.1.0
 django-libsass==0.7
 django-pipeline-compass==0.1.5

@@ -3,10 +3,9 @@ from contextlib import contextmanager
 
 import pytest
 
-from django.test import Client
 from django.core.management import call_command
 import django.apps
-from rest_framework.test import RequestsClient, APIRequestFactory
+from rest_framework.test import RequestsClient, APIRequestFactory, APIClient
 
 import fabfile
 import capdb.storages
@@ -116,17 +115,17 @@ def three_cases():
 
 @pytest.fixture
 def auth_user(api_token):
-    user = APIUserFactory()
-    token = APITokenFactory(user=user)
-    return user
+    return api_token.user
 
 @pytest.fixture
 def client():
-    return Client()
+    return APIClient()
 
 @pytest.fixture
-def auth_client():
-    return RequestsClient()
+def auth_client(auth_user, client):
+    """ Return client authenticated as auth_user. """
+    client.credentials(HTTP_AUTHORIZATION='Token ' + auth_user.get_api_key())
+    return client
 
 @pytest.fixture
 def api_url():

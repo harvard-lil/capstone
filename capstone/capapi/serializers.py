@@ -293,8 +293,9 @@ class LoginSerializer(serializers.ModelSerializer):
         lookup_field = 'email'
 
     def verify_with_password(self, email, password):
-        user = APIUser.objects.get(email=email)
-        correct_password = user.check_password(password)
-        if not correct_password:
-            raise serializers.ValidationError('Invalid password')
-        return user
+        try:
+            user = APIUser.objects.get(email=email)
+        except APIUser.DoesNotExist:
+            return None
+        if user.check_password(password):
+            return user

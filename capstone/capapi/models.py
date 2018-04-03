@@ -115,7 +115,7 @@ class APIUser(AbstractBaseUser):
 
     def get_api_key(self):
         try:
-            return APIToken.objects.get(user=self).key
+            return self.token.key
         except ObjectDoesNotExist:
             return None
 
@@ -137,7 +137,7 @@ class APIToken(models.Model):
     # see https://github.com/encode/django-rest-framework/blob/master/rest_framework/authtoken/models.py#L17
 
     key = models.CharField(max_length=40, primary_key=True)
-    user = models.OneToOneField('APIUser', on_delete=models.CASCADE)
+    user = models.OneToOneField('APIUser', on_delete=models.CASCADE, related_name='token')
     created = models.DateTimeField(auto_now_add=True)
 
     @classmethod

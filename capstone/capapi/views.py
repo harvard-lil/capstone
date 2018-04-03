@@ -150,26 +150,24 @@ class UserViewSet(viewsets.ModelViewSet):
     def view_details(self, request):
         serializer = serializers.LoginSerializer(data=request.data)
         if serializer.is_valid():
-            try:
-                user = serializer.verify_with_password(email=request.data.get('email'), password=request.data.get('password'))
-
-                api_key = user.get_api_key()
-                if api_key:
-                    # update case allowance before sending back
-                    user.update_case_allowance()
-                    user.refresh_from_db()
-
-                    return Response({
-                        'email': user.email,
-                        'api_key': user.get_api_key(),
-                        'case_allowance_remaining': user.case_allowance_remaining,
-                        'total_case_allowance': user.total_case_allowance
-                    }, template_name='user-account.html',)
-                else:
-                    return Response({'user_id': user.id, 'user_email': user.email, 'info_email': settings.EMAIL_ADDRESS}, template_name='resend-nonce.html', )
-            except Exception:
+            user = serializer.verify_with_password(email=request.data.get('email'), password=request.data.get('password'))
+            if not user:
                 content = {'errors': {'messages': 'Invalid password or email address'}, 'serializer': serializer}
                 return Response(content, template_name='log-in.html', status=status.HTTP_401_UNAUTHORIZED)
+
+            api_key = user.get_api_key()
+            if api_key:
+                # update case allowance before sending back
+                user.update_case_allowance()
+
+                return Response({
+                    'email': user.email,
+                    'api_key': api_key,
+                    'case_allowance_remaining': user.case_allowance_remaining,
+                    'total_case_allowance': user.total_case_allowance
+                }, template_name='user-account.html',)
+            else:
+                return Response({'user_id': user.id, 'user_email': user.email, 'info_email': settings.EMAIL_ADDRESS}, template_name='resend-nonce.html')
         else:
             return Response({'errors': serializer.errors, 'serializer': serializer}, template_name='log-in.html', status=status.HTTP_401_UNAUTHORIZED)
 
