@@ -1,14 +1,25 @@
+
+
 import rest_framework_filters as filters
 from capdb import models
+
+jur_choices = [(jur.id, jur.name) for jur in models.Jurisdiction.objects.all()]
 
 
 class JurisdictionFilter(filters.FilterSet):
     whitelisted = filters.BooleanFilter()
+    id = filters.ChoiceFilter(choices=jur_choices, label='Name')
+    name_long = filters.CharFilter(label='Long Name')
 
     class Meta:
         model = models.Jurisdiction
-        fields = ('name', 'slug', 'name_long', 'whitelisted')
-        ordering_fields = ('name')
+        fields = [
+            'id',
+            'name_long',
+            'whitelisted',
+            'slug',
+        ]
+
 
 class CourtFilter(filters.FilterSet):
     class Meta:
@@ -41,14 +52,7 @@ class CaseFilter(filters.FilterSet):
         field_name='reporter__full_name',
         label='Reporter Name',
         lookup_expr='iexact')
-    jurisdiction = filters.CharFilter(
-        field_name='jurisdiction__name',
-        label='Jurisdiction Abbreviation',
-        lookup_expr='iexact')
-    jurisdiction_name = filters.CharFilter(
-        field_name='jurisdiction__name_long',
-        label='Jurisdiction Name',
-        lookup_expr='iexact')
+    jurisdiction = filters.ChoiceFilter(choices=jur_choices, label='jurisdiction')
     decision_date_min = filters.CharFilter(
         label='Date Min (Format YYYY-MM-DD)',
         field_name='decision_date_min',
@@ -57,10 +61,6 @@ class CaseFilter(filters.FilterSet):
         label='Date Max (Format YYYY-MM-DD)',
         field_name='decision_date_max',
         method='find_by_date')
-    judges = filters.CharFilter(field_name='judges', label='judges', lookup_expr='icontains')
-    attorneys = filters.CharFilter(field_name='attorneys', label='attorneys', lookup_expr='icontains')
-    parties = filters.CharFilter(field_name='parties', label='parties', lookup_expr='icontains')
-    opinions = filters.CharFilter(field_name='opinions', label='opinions', lookup_expr='icontains')
 
     def find_by_citation(self, qs, name, value):
         return qs.filter(citations__normalized_cite__exact=value)
@@ -77,18 +77,13 @@ class CaseFilter(filters.FilterSet):
                   'cite',
                   'name',
                   'name_abbreviation',
+                  'jurisdiction',
                   'court_name',
                   'court_slug',
                   'reporter_name',
                   'decision_date_min',
                   'decision_date_max',
-                  'jurisdiction',
-                  'jurisdiction_name',
                   'docket_number',
-                  'judges',
-                  'parties',
-                  'opinions',
-                  'attorneys'
                   ]
 
 
