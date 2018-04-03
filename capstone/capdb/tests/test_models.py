@@ -336,4 +336,3 @@ def test_alto_update_disable_related(ingest_case_xml):
     assert new_volume_alto_size == initial_volume_alto_size
     assert new_casemets_alto_size != str(len(force_bytes(alto.orig_xml)))
     assert new_volume_alto_size != str(len(force_bytes(alto.orig_xml)))
-
