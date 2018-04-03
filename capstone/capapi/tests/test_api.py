@@ -234,16 +234,12 @@ def test_authentication_as_query_param(auth_user, api_url, auth_client, jurisdic
 
 
 @pytest.mark.django_db
-def test_case_body_formats(api_url, client, jurisdiction, ingest_case_xml):
+def test_case_body_formats(api_url, client, case):
     """
     api should return different casebody formats upon request
     """
-    jurisdiction.whitelisted = True
-    jurisdiction.save()
-    case = CaseFactory(jurisdiction=jurisdiction)
-    case.save()
-    ingest_case_xml.metadata = case
-    ingest_case_xml.save()
+    case.jurisdiction.whitelisted = True
+    case.jurisdiction.save()
 
     # body_format not specified, should get back text
     url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)

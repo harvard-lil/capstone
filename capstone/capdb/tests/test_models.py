@@ -55,11 +55,11 @@ def test_create_or_update_metadata(ingest_case_xml):
 ### CaseXML ###
 
 @pytest.mark.django_db
-def test_related_names(ingest_case_xml):
-    volxml = ingest_case_xml.volume
-    case = ingest_case_xml.metadata
+def test_related_names(case_xml):
+    volxml = case_xml.volume
+    case = case_xml.metadata
 
-    assert ingest_case_xml in volxml.case_xmls.all()
+    assert case_xml in volxml.case_xmls.all()
 
     jur = Jurisdiction.objects.get(pk=case.jurisdiction.pk)
     rep = Reporter.objects.get(pk=case.reporter.pk)
@@ -150,23 +150,23 @@ def test_save_related_update_disabled(ingest_case_xml):
 
 
 @pytest.mark.django_db
-def test_case_alter_structure(ingest_case_xml):
+def test_case_alter_structure(case_xml):
     # make non-casebody structural changes
 
     #make sure we've got our decision date
-    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
     case_parent_tag = parsed_case_xml('case|case')
     assert case_parent_tag('case|decisiondate') is not []
 
 
     #remove it and make sure it sticks
     case_parent_tag.remove('case|decisiondate')
-    ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    ingest_case_xml.save()
+    case_xml.orig_xml = serialize_xml(parsed_case_xml)
+    case_xml.save()
 
     # make sure it saves
-    ingest_case_xml.refresh_from_db()
-    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+    case_xml.refresh_from_db()
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
     case_parent_tag = parsed_case_xml('case|case')
     assert case_parent_tag('case|decisiondate') == []
 
@@ -174,10 +174,10 @@ def test_case_alter_structure(ingest_case_xml):
     #try adding a new element and make sure it saves
     assert case_parent_tag('case|test') == []
     case_parent_tag.append('<test>Frankly, this element is hot garbage.</test>')
-    ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    ingest_case_xml.save()
-    ingest_case_xml.refresh_from_db()
-    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+    case_xml.orig_xml = serialize_xml(parsed_case_xml)
+    case_xml.save()
+    case_xml.refresh_from_db()
+    parsed_case_xml = parse_xml(case_xml.orig_xml)
     case_parent_tag = parsed_case_xml('case|case')
     assert case_parent_tag('case|test') != []
 
@@ -203,33 +203,33 @@ def test_case_rename_tag(ingest_case_xml):
 
 
 @pytest.mark.django_db
-def test_casebody_delete_element_raise(ingest_case_xml):
+def test_casebody_delete_element_raise(case_xml):
     # make a non-casebody structural change
     with pytest.raises(Exception, match='No current support for removing casebody elements'):
-        parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+        parsed_case_xml = parse_xml(case_xml.orig_xml)
         case_parent_tag = parsed_case_xml('casebody|casebody')
         case_parent_tag.remove('casebody|parties')
-        ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-        ingest_case_xml.save()
+        case_xml.orig_xml = serialize_xml(parsed_case_xml)
+        case_xml.save()
 
 @pytest.mark.django_db
-def test_casebody_add_element_raise(ingest_case_xml):
+def test_casebody_add_element_raise(case_xml):
     # make a non-casebody structural change
     with pytest.raises(Exception, match='No current support for adding casebody elements'):
-        parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+        parsed_case_xml = parse_xml(case_xml.orig_xml)
         case_parent_tag = parsed_case_xml('casebody|casebody')
         case_parent_tag.append('<test>Frankly, this element is hot garbage.</test>')
-        ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-        ingest_case_xml.save()
+        case_xml.orig_xml = serialize_xml(parsed_case_xml)
+        case_xml.save()
 
 @pytest.mark.django_db
-def test_casebody_delete_word_raise(ingest_case_xml):
+def test_casebody_delete_word_raise(case_xml):
     # change a word in the case XML
     with pytest.raises(Exception, match='No current support for adding or removing case text'):
-        parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
+        parsed_case_xml = parse_xml(case_xml.orig_xml)
         parsed_case_xml('casebody|p[id="b17-6"]').text("The in favor of the appellee rests wholly on the assumption that the judgment in the garnishee proceedings should be rendered in favor of the judgment debtor for the use of the judgment creditor, against the garnished party, for the whole amount due, and in case of failure to so render judgment for such amount and for a less amount than due, the balance over and above the amount of the judgment so rendered would be barred on the grounds of former recovery.")
-        ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-        ingest_case_xml.save()
+        case_xml.orig_xml = serialize_xml(parsed_case_xml)
+        case_xml.save()
 
 
 # PageXML update
