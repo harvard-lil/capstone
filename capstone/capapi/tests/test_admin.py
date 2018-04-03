@@ -23,7 +23,7 @@ def test_admin_user_create(admin_client):
     assert user
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_admin_user_authenticate(admin_client, api_user):
     """
     Test if we can authenticate user through the admin panel
@@ -40,7 +40,7 @@ def test_admin_user_authenticate(admin_client, api_user):
     assert api_user.get_api_key()
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_admin_user_authenticate_without_key_expires(admin_client, api_user):
     """
     Test if we can authenticate even if key_expires is missing
