@@ -28,6 +28,9 @@ install:
   - pip install -r requirements.txt
   - pip install coveralls
 
+before_script:
+  - python manage.py collectstatic --noinput
+  
 script:
   # linting
   - flake8 .
