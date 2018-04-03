@@ -183,10 +183,10 @@
 
           <p class="body-text bold-text subsection">Blacklisted casetext</p>
           Full blacklisted casetext with api_key in query param (you need to <a href="#registration-section" title="Register for an API key">register for an API key to see this</a>):
-          <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true&api_key=your-api-key-here" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/?full_case=true&api_key=your-api-key-here</a></pre>
+          <pre><a href="/api/v1/cases/{{ case_id }}/?limit=1&full_case=true&api_key=your-api-key-here" target="_blank">https://{{ request.get_host }}/api/v1/cases/?limit=1&full_case=true&api_key=your-api-key-here</a></pre>
 
           Full blacklisted casetext passing in api_key as a header (in the command line):
-          <pre><code>$ curl "https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/?full_case=true -H Authorization: Token your-token-here"</code></pre>
+          <pre><code>$ curl "https://{{ request.get_host }}/api/v1/cases/?limit=1&full_case=true -H Authorization: Token your-token-here"</code></pre>
 
           <p class="body-text bold-text subsection">Query parameter examples</p>
           Getting a maximum amount of cases under a certain jurisdiction:
