@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
+    'pipeline',
 
     # ours
     'capdb',
@@ -140,9 +141,55 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+PIPELINE_COMPILERS = (
+    'pipeline_compass.compiler.CompassCompiler',
+)
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'pipeline.finders.PipelineFinder',
+)
 
+PIPELINE_CSS = {
+        'base': {
+            'source_filenames': (
+                'css/_normalize.css',
+                'css/bootstrap.css',
+                'css/scss/base.scss',
+            ),
+            'output_filename': 'base.css'
+        },
+        'docs': {
+            'source_filenames': (
+                'css/scss/docs.scss',
+            ),
+            'output_filename': 'docs.css'
+        },
+        'login': {
+            'source_filenames': (
+                'css/scss/login.scss',
+            ),
+            'output_filename': 'login.css'
+        },
+        'api': {
+            'source_filenames': (
+                'css/_normalize.css',
+                'css/bootstrap.css',
+                'css/scss/base.scss',
+                'css/scss/api.scss',
+            ),
+            'output_filename': 'api.css'
+        },
+}
+
+PIPELINE = {
+    'COMPILERS': PIPELINE_COMPILERS,
+    'PIPELINE_ENABLED': False,
+    'PIPELINE_COLLECTOR_ENABLED': False,
+    'STYLESHEETS': PIPELINE_CSS,
+}
 
 # define storages
 # each of these can be imported from capdb.storages, e.g. `from capdb.storages import ingest_storage`

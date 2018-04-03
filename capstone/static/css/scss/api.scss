@@ -1,0 +1,72 @@
+@import "_variables.scss";
+
+.navbar.navbar-static-top .container {
+  padding: 0;
+  width: 100%;
+}
+
+.page-header h1 {
+  font-family: $font-bold;
+  letter-spacing: 1px;
+}
+
+.prettyprint {
+  font-size: 13px;
+  border-radius: 0;
+  border: 0 !important;
+  span.str {
+    color: $color-black;
+  }
+  a span.str {
+    color: $color-blue;
+  }
+  span.lit {
+    color: $color-dark-blue;
+  }
+  span.kwd {
+    color: $color-orange;
+  }
+}
+
+body.modal-open label {
+  display: block;
+}
+
+.breadcrumb {
+  margin-top: 60px;
+  font-size: 14px;
+  li {
+    list-style-type: ' / ';
+    margin-left: 10px;
+  }
+}
+
+nav {
+  margin-bottom: 15px;
+}
+
+.pager > .previous, .pager > .next {
+  list-style: none;
+  border: 1px solid $color-blue;
+  float: left;
+  width: 70px;
+  text-align: center;
+  border-radius: 3px;
+  margin-left: 5px;
+  background: $color-blue;
+  color: white;
+  font-size: 14px;
+  padding: 3px;
+  cursor: pointer;
+  a {
+    color: white;
+    text-decoration: none;
+    &:hover {
+      color: $color-blue;
+    }
+  }
+  &:hover {
+    background: $color-light-blue;
+    color: $color-blue;
+  }
+}

@@ -399,7 +399,7 @@ def show_slow_queries():
     try:
         rows = cursor.fetchall()
         output = "*capstone slow query report*\n"
-    except:
+    except Exception:
         print(json.dumps({'text': 'Could not get slow queries'}))
         return
     for row in rows:

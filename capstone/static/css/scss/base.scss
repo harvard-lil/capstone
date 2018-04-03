@@ -1,0 +1,172 @@
+@import '_variables.scss';
+
+body {
+  height: 100%;
+  display: block;
+  font-family: $font-body;
+  color: $color-black;
+  font-size: 1.2rem;
+}
+
+a, button, .btn {
+  cursor: pointer;
+}
+
+li {
+  display: inline-block;
+}
+
+pre {
+    white-space: -moz-pre-wrap;
+    //white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+    border: 0;
+}
+
+a {
+  cursor: pointer;
+  border-bottom: 0;
+  color: $color-blue; }
+  a:hover, a :focus, a :active {
+    color: $color-black;
+    border-bottom: 0; }
+
+.btn {
+  font-size: 14px;
+  font-family: $font-body;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.separator {
+  border-bottom: 1px solid #d9d9d9;
+  margin: 20px 0;
+}
+
+h1 {
+  letter-spacing: 3px;
+}
+
+code {
+  background-color: $color-light-blue;
+  color: $color-blue;
+}
+
+.section-title {
+  font-size: 20px;
+  font-family: $font-bold;
+  text-transform: uppercase;
+  letter-spacing: 0.8px; }
+
+.header {
+  width: 100%;
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  top: 0;
+  background-color: white;
+  border-bottom: 1px solid $color-gray;
+  .header-content {
+    padding: 0px 20px 10px 20px; }
+  .header-logo, .lil-logo {
+    width: 24px;
+  }
+  .lil-logo {
+    float: right; }
+  .header-text {
+    font-family: $font-bold;
+    font-size: 14px;
+    left: 10px;
+    letter-spacing: 1.5px;
+    position: relative;
+  }
+}
+
+.main-content {
+  padding-left: 0;
+  padding-right: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.blue-button {
+  @extend .button;
+}
+
+.white-button {
+  @extend .button;
+  color: white;
+  background: transparent;
+  border: 1px solid white;
+}
+
+
+.remove-padding-left {
+  margin-left: 0;
+  left: -15px;
+  position: relative; }
+
+.alert .col-sm-4 {
+  padding-left: 0;
+  padding-right: 0; }
+.alert li {
+  list-style: none; }
+
+footer {
+  width: 100%;
+  background-color: #0075ff;
+  margin-bottom: 0px;
+  hr.white-line {
+    color: white;
+  }
+  .credits {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .credits p {
+    text-align: center;
+  }
+  .credits .name {
+    font-weight: 500;
+  }
+  .footer-content {
+    color: white;
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+  }
+  .footer-content .cap-logo {
+    width: 54px;
+    height: 100px;
+    margin: 0 auto;
+    background-size: 54px 100px;
+    display: block;
+    text-indent: -9999px;
+  }
+  .footer-content .inline-link {
+    border-color: white;
+  }
+  a, a:hover, a:active {
+    padding-bottom: 3px;
+    border-bottom: 1px solid white;
+    text-decoration: none;
+    color: white;
+  }
+  h4.subheader {
+    margin-bottom: 40px;
+  }
+  h3.project-title {
+    margin-bottom: 30px;
+    border-bottom: 0;
+  }
+  h3, h4, button {
+    margin-top: 10px;
+  }
+  h3 {
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 3px;
+  }
+}

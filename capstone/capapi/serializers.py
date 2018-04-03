@@ -258,7 +258,7 @@ class RegisterUserSerializer(serializers.Serializer):
     def validate_email(self, email):
         existing = APIUser.objects.filter(email=email).first()
         if existing:
-            msg = "Someone with that email address has already registered. Was it you?"
+            msg = "Someone with that email address has already registered."
             raise serializers.ValidationError(msg)
 
         return email

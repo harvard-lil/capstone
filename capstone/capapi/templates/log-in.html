@@ -1,29 +1,30 @@
 {% extends "base.html" %}
+{% load pipeline %}
 
 {% block title %} | Sign In{% endblock %}
 
 {% block meta_description %}
 Sign in to the Caselaw Access Project API
 {% endblock %}
+{% block extra_head %}
+  {% stylesheet 'login' %}
+{% endblock %}
 
 {% block content %}
   {% load rest_framework %}
-  <div class="container login-form container-full inverse header-margin">
+  <div class="login-form container-full inverse header-margin">
     <div class="row row-centered">
-      {% if errors %}
-      <div class="alert alert-warning">
-        <div class="col-sm-4 col-centered">
+      <div class="col-6 col-centered">
+        <h3>Log in</h3>
+        {% if errors %}
+        <div class="alert alert-warning">
           <strong>Error!</strong> {{ errors.messages }}
         </div>
-      </div>
-      {% endif %}
-
-      <div class="col-sm-4 col-centered">
-        <h3>Log in</h3>
-        <form class="form-horizontal" action="/accounts/view_details/" method="POST">
+        {% endif %}
+        <form class="form" action="/accounts/view_details/" method="POST">
           {% csrf_token %}
           {% render_form serializer %}
-          <button type="submit" class="btn btn-default white-button remove-padding-left">SIGN IN</button>
+          <button type="submit" class="btn btn-default white-button">SIGN IN</button>
         </form>
       </div>
     </div>

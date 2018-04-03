@@ -1,0 +1,300 @@
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\000031}}
+@font-face {
+  font-family: 'rajdhanibold';
+  src: url('../../fonts/rajdhani-bold-webfont.woff2') format('woff2'),
+    url('../../fonts/rajdhani-bold-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal; }
+
+  @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\000039}}
+  @font-face {
+    font-family: 'rajdhanilight';
+    src: url('../../fonts/rajdhani-light-webfont.woff2') format('woff2'),
+        url('../../fonts/rajdhani-light-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal; }
+
+    @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000317}}
+    @font-face {
+      font-family: 'rajdhanimedium';
+      src: url('../../fonts/rajdhani-medium-webfont.woff2') format('woff2'),
+            url('../../fonts/rajdhani-medium-webfont.woff') format('woff');
+      font-weight: normal;
+      font-style: normal; }
+
+      @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000325}}
+      @font-face {
+        font-family: 'rajdhaniregular';
+        src: url('../../fonts/rajdhani-regular-webfont.woff2') format('woff2'),
+                url('../../fonts/rajdhani-regular-webfont.woff') format('woff');
+        font-weight: normal;
+        font-style: normal; }
+
+        @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000333}}
+        @font-face {
+          font-family: 'rajdhanisemibold';
+          src: url('../../fonts/rajdhani-semibold-webfont.woff2') format('woff2'),
+                    url('../../fonts/rajdhani-semibold-webfont.woff') format('woff');
+          font-weight: normal;
+          font-style: normal; }
+
+          @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000366}}
+          .inverse {
+            background-color: #2F2F2F;
+            color: white; }
+
+            @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000371}}
+            .col-centered {
+              margin: 0 auto;
+              float: none; }
+
+              @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000376}}
+              .header-margin {
+                padding-top: 52px; }
+
+                @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000380}}
+                .container-full {
+                  width: 100%;
+                  height: 100%; }
+
+                  @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000386}}
+                  .centered-text {
+                    text-align: center; }
+
+                    @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000390}}
+                    .blue-text {
+                      color: #0075FF; }
+
+                      @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000394}}
+                      .bold-text {
+                        font-family: 'rajdhanibold', Helvetica, Arial, sans-serif; }
+
+                        @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\0000398}}
+                        .semibold-text {
+                          font-family: 'rajdhanisemibold', Helvetica, Arial, sans-serif; }
+
+                          @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\00003102}}
+                          .text-primary {
+                            color: #0075FF; }
+
+                            @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\00003106}}
+                            .help-block {
+                              color: #EDA633;
+                              text-transform: none; }
+
+                              @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\00003111}}
+                              strong {
+                                font-family: 'rajdhanisemibold', Helvetica, Arial, sans-serif; }
+
+                                @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\00003116}}
+                                .button, .blue-button, .white-button {
+                                  font-family: 'rajdhanibold', Helvetica, Arial, sans-serif;
+                                  color: #0075FF;
+                                  background: white;
+                                  border: 1px solid #0075FF;
+                                  letter-spacing: 2px;
+                                  height: 35px;
+                                  text-transform: uppercase; }
+                                  @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\00003124}}
+                                  .button:hover, :hover.blue-button, :hover.white-button {
+                                    background-color: #D2E7FF;
+                                    border: 1px solid #0075FF; }
+
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\00003132}}
+.inverse button:hover, .inverse button:active, .inverse button:focus {
+  background-color: #D2E7FF;
+  color: #2F2F2F;
+  border: #2F2F2F; }
+
+  @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\00003139}}
+  .inverse a:focus, .inverse a:active, .inverse a:hover {
+    color: #D2E7FF; }
+
+    @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\00003143}}
+    .inverse .alert {
+      background-color: transparent;
+      color: #EDA633;
+      border-bottom: 1px solid #EDA633;
+      border-radius: 0; }
+
+      @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/_variables\.scss}line{font-family:\00003151}}
+      .alert {
+        border: 0;
+        background: #EDA633 none;
+        color: #2F2F2F;
+        padding-left: 0;
+        padding-right: 0; }
+
+        @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\000033}}
+        body {
+          height: 100%;
+          display: block;
+          font-family: 'rajdhaniregular', Helvetica, Arial, sans-serif;
+          color: #2F2F2F;
+          font-size: 1.2rem; }
+
+          @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000311}}
+          a, button, .btn {
+            cursor: pointer; }
+
+            @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000315}}
+            li {
+              display: inline-block; }
+
+              @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000319}}
+              pre {
+                white-space: -moz-pre-wrap;
+                white-space: -o-pre-wrap;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                border: 0; }
+
+                @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000328}}
+                a {
+                  cursor: pointer;
+                  border-bottom: 0;
+                  color: #0075FF; }
+
+                  @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000332}}
+                  a:hover, a :focus, a :active {
+                    color: #2F2F2F;
+                    border-bottom: 0; }
+
+                    @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000336}}
+                    .btn {
+                      font-size: 14px;
+                      font-family: 'rajdhaniregular', Helvetica, Arial, sans-serif;
+                      border-radius: 5px;
+                      margin-bottom: 10px; }
+
+                      @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000343}}
+                      .separator {
+                        border-bottom: 1px solid #d9d9d9;
+                        margin: 20px 0; }
+
+                        @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000348}}
+                        h1 {
+                          letter-spacing: 3px; }
+
+                          @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000352}}
+                          code {
+                            background-color: #D2E7FF;
+                            color: #0075FF; }
+
+                            @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000357}}
+                            .section-title {
+                              font-size: 20px;
+                              font-family: 'rajdhanibold', Helvetica, Arial, sans-serif;
+                              text-transform: uppercase;
+                              letter-spacing: 0.8px; }
+
+                              @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000363}}
+                              .header {
+                                width: 100%;
+                                position: fixed;
+                                z-index: 10;
+                                left: 0;
+                                top: 0;
+                                background-color: white;
+                                border-bottom: 1px solid #D9D9D9; }
+                                @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000371}}
+                                .header .header-content {
+                                  padding: 0px 20px 10px 20px; }
+                                  @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000373}}
+                                  .header .header-logo, .header .lil-logo {
+                                    width: 24px; }
+                                    @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000376}}
+                                    .header .lil-logo {
+                                      float: right; }
+                                      @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000378}}
+                                      .header .header-text {
+                                        font-family: 'rajdhanibold', Helvetica, Arial, sans-serif;
+                                        font-size: 14px;
+                                        left: 10px;
+                                        letter-spacing: 1.5px;
+                                        position: relative; }
+
+@media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000387}}
+.main-content {
+  padding-left: 0;
+  padding-right: 0;
+  min-height: 100%;
+  overflow-x: hidden; }
+
+  @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\0000398}}
+  .white-button {
+    color: white;
+    background: transparent;
+    border: 1px solid white; }
+
+    @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003106}}
+    .remove-padding-left {
+      margin-left: 0;
+      left: -15px;
+      position: relative; }
+
+      @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003111}}
+      .alert .col-sm-4 {
+        padding-left: 0;
+        padding-right: 0; }
+
+        @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003114}}
+        .alert li {
+          list-style: none; }
+
+          @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003117}}
+          footer {
+            width: 100%;
+            background-color: #0075ff;
+            margin-bottom: 0px; }
+            @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003121}}
+            footer hr.white-line {
+              color: white; }
+              @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003124}}
+              footer .credits {
+                width: 100%;
+                margin-bottom: 20px; }
+                @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003128}}
+                footer .credits p {
+                  text-align: center; }
+                  @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003131}}
+                  footer .credits .name {
+                    font-weight: 500; }
+                    @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003134}}
+                    footer .footer-content {
+                      color: white;
+                      width: 100%;
+                      padding: 40px;
+                      text-align: center; }
+                      @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003140}}
+                      footer .footer-content .cap-logo {
+                        width: 54px;
+                        height: 100px;
+                        margin: 0 auto;
+                        background-size: 54px 100px;
+                        display: block;
+                        text-indent: -9999px; }
+                        @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003148}}
+                        footer .footer-content .inline-link {
+                          border-color: white; }
+                          @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003151}}
+                          footer a, footer a:hover, footer a:active {
+                            padding-bottom: 3px;
+                            border-bottom: 1px solid white;
+                            text-decoration: none;
+                            color: white; }
+                            @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003157}}
+                            footer h4.subheader {
+                              margin-bottom: 40px; }
+                              @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003160}}
+                              footer h3.project-title {
+                                margin-bottom: 30px;
+                                border-bottom: 0; }
+                                @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003164}}
+                                footer h3, footer h4, footer button {
+                                  margin-top: 10px; }
+                                  @media -sass-debug-info{filename{font-family:file\:\/\/\/Users\/aaizman\/Documents\/capstone\/capstone\/static\/css\/scss\/base\.scss}line{font-family:\00003167}}
+                                  footer h3 {
+                                    font-weight: 700;
+                                    font-size: 21px;
+                                    letter-spacing: 3px; }

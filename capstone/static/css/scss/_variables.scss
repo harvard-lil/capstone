@@ -1,0 +1,158 @@
+@font-face {
+    font-family: 'rajdhanibold';
+    src: url('../../fonts/rajdhani-bold-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-bold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'rajdhanilight';
+    src: url('../../fonts/rajdhani-light-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-light-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'rajdhanimedium';
+    src: url('../../fonts/rajdhani-medium-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-medium-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'rajdhaniregular';
+    src: url('../../fonts/rajdhani-regular-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'rajdhanisemibold';
+    src: url('../../fonts/rajdhani-semibold-webfont.woff2') format('woff2'),
+         url('../../fonts/rajdhani-semibold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+
+// font
+$font-body: 'rajdhaniregular', Helvetica, Arial, sans-serif;
+$font-light: 'rajdhanilight', Helvetica, Arial, sans-serif;
+$font-semibold: 'rajdhanisemibold', Helvetica, Arial, sans-serif;
+$font-bold: 'rajdhanibold', Helvetica, Arial, sans-serif;
+
+
+$section-subtitle-size: 20px;
+
+
+// colors
+$color-gray: #D9D9D9;
+$color-light-gray: #f7f7f9;
+$color-blue: #0075FF;
+$color-black: #2F2F2F;
+$color-medium-blue: #78B6FF;
+$color-light-blue: #D2E7FF;
+$color-dark-blue: #22349A;
+$color-orange: #EDA633;
+
+
+// mixins
+//////////// general
+.inverse {
+  background-color: $color-black;
+  color: white; }
+
+//////////// grid / layout
+.col-centered {
+  margin: 0 auto;
+  float: none;
+}
+
+.header-margin {
+  padding-top: 52px;
+}
+
+.container-full {
+  width: 100%;
+  height: 100%;
+}
+
+/////////// text
+.centered-text {
+  text-align: center;
+}
+
+.blue-text {
+  color: $color-blue;
+}
+
+.bold-text {
+  font-family: $font-bold;
+}
+
+.semibold-text {
+  font-family: $font-semibold;
+}
+
+.text-primary {
+  color: $color-blue;
+}
+
+.help-block {
+  color: $color-orange;
+  text-transform: none;
+}
+
+strong {
+  font-family: $font-semibold;
+}
+
+/////////// buttons
+.button {
+  font-family: $font-bold;
+  color: $color-blue;
+  background: white;
+  border: 1px solid $color-blue;
+  letter-spacing: 2px;
+  height: 35px;
+  text-transform: uppercase;
+    &:hover {
+    background-color: $color-light-blue;
+    border: 1px solid $color-blue;
+  }
+}
+
+.inverse button:hover,
+.inverse button:active,
+.inverse button:focus {
+    background-color: $color-light-blue;
+    color: $color-black;
+    border: $color-black;
+}
+.inverse a:focus,
+.inverse a:active,
+.inverse a:hover {
+    color: $color-light-blue;
+}
+
+.inverse .alert {
+  background-color: transparent;
+  color: $color-orange;
+  border-bottom: 1px solid $color-orange;
+  border-radius: 0;
+}
+
+/////////// alerts
+.alert {
+  border: 0;
+  background: $color-orange none;
+  color: $color-black;
+  padding-left: 0;
+  padding-right: 0;
+}
+
