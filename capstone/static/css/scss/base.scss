@@ -12,6 +12,10 @@ a, button, .btn {
   cursor: pointer;
 }
 
+li {
+  display: inline-block;
+}
+
 pre {
     white-space: -moz-pre-wrap;
     //white-space: -pre-wrap;
