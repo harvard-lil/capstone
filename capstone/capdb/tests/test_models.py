@@ -51,6 +51,11 @@ def test_create_or_update_metadata(ingest_case_xml):
     new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
     assert new_case_metadata.opinions == {"majority": new_author}
 
+    # strip soft dashes
+    ingest_case_xml.orig_xml = ingest_case_xml.orig_xml.replace(new_author, new_author + '\xad')
+    ingest_case_xml.save()
+    ingest_case_xml.refresh_from_db()
+    assert ingest_case_xml.metadata.opinions['majority'] == new_author
 
 ### CaseXML ###
 
@@ -331,3 +336,4 @@ def test_alto_update_disable_related(ingest_case_xml):
     assert new_volume_alto_size == initial_volume_alto_size
     assert new_casemets_alto_size != str(len(force_bytes(alto.orig_xml)))
     assert new_volume_alto_size != str(len(force_bytes(alto.orig_xml)))
+
