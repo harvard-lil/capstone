@@ -150,26 +150,24 @@ class UserViewSet(viewsets.ModelViewSet):
     def view_details(self, request):
         serializer = serializers.LoginSerializer(data=request.data)
         if serializer.is_valid():
-            try:
-                user = serializer.verify_with_password(email=request.data.get('email'), password=request.data.get('password'))
-
-                api_key = user.get_api_key()
-                if api_key:
-                    # update case allowance before sending back
-                    user.update_case_allowance()
-                    user.refresh_from_db()
-
-                    return Response({
-                        'email': user.email,
-                        'api_key': user.get_api_key(),
-                        'case_allowance_remaining': user.case_allowance_remaining,
-                        'total_case_allowance': user.total_case_allowance
-                    }, template_name='user-account.html',)
-                else:
-                    return Response({'user_id': user.id, 'user_email': user.email, 'info_email': settings.EMAIL_ADDRESS}, template_name='resend-nonce.html', )
-            except Exception:
+            user = serializer.verify_with_password(email=request.data.get('email'), password=request.data.get('password'))
+            if not user:
                 content = {'errors': {'messages': 'Invalid password or email address'}, 'serializer': serializer}
                 return Response(content, template_name='log-in.html', status=status.HTTP_401_UNAUTHORIZED)
+
+            api_key = user.get_api_key()
+            if api_key:
+                # update case allowance before sending back
+                user.update_case_allowance()
+
+                return Response({
+                    'email': user.email,
+                    'api_key': api_key,
+                    'case_allowance_remaining': user.case_allowance_remaining,
+                    'total_case_allowance': user.total_case_allowance
+                }, template_name='user-account.html',)
+            else:
+                return Response({'user_id': user.id, 'user_email': user.email, 'info_email': settings.EMAIL_ADDRESS}, template_name='resend-nonce.html')
         else:
             return Response({'errors': serializer.errors, 'serializer': serializer}, template_name='log-in.html', status=status.HTTP_401_UNAUTHORIZED)
 
@@ -194,7 +192,7 @@ def verify_user(request, user_id, activation_nonce):
     """
     serializer = serializers.UserSerializer()
     user = serializer.verify_with_nonce(user_id, activation_nonce)
-    if user.is_authenticated():
+    if user.is_authenticated:
         resources.email(reason='new_registration', user=user)
         data = {'status': 'Success!', 'message': 'Thank you for verifying your email address. We will be in touch with you shortly.'}
         if request.accepted_renderer.format == 'json':
@@ -209,11 +207,25 @@ def get_docs(request):
     reporter = case.reporter
     reporter_metadata = serializers.ReporterSerializer(reporter, context={'request': request}).data
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
+    whitelisted_jurisdictions = models.Jurisdiction.objects.filter(whitelisted=True).values('name_long', 'name')
+
     context = {
+        "template_name": 'docs',
         "case_metadata": case_metadata,
         "case_id": case_metadata['id'],
         "case_jurisdiction": case_metadata['jurisdiction'],
         "reporter_id": reporter_metadata['id'],
         "reporter_metadata": reporter_metadata,
+        "whitelisted_jurisdictions": whitelisted_jurisdictions,
     }
+
     return render(request, 'docs.html', context)
+
+
+def get_terms(request):
+    context = {"template_name": 'terms'}
+    return render(request, 'terms-of-use.html', context)
+
+
+def not_found(request):
+    return render(request, '404.html')

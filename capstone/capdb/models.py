@@ -701,7 +701,7 @@ class CaseXML(BaseXMLModel):
             metadata_created = True
 
         # set up data
-        data = get_case_metadata(self.orig_xml)
+        data = get_case_metadata(force_str(self.orig_xml))
         duplicative_case = data['duplicative']
         volume_metadata = self.volume.metadata
         reporter = volume_metadata.reporter

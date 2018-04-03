@@ -1,143 +1,278 @@
 {% extends "base.html" %}
+{% load pipeline %}
+{% block extra_head %}
+  {% stylesheet 'docs' %}
+{% endblock %}
 
 {% block title %} | API guide{% endblock %}
 
 {% block meta_description %}
-The Caselaw Access Project API guide
+  The Caselaw Access Project API guide
 {% endblock %}
 
+
 {% block content %}
-<div class="header-margin">
-  <div class="page-header cont-fixed">
-    <div class="row">
-      <h1 class="centered-text bold-text"><span class="blue-text">CAP</span> API</h1>
-      <h3 class="centered-text semibold-text">EXPLORE AMERICAN CASELAW</h3>
-      <h5 class="centered-text light-text">Read the documentation below to get started</h5>
-    </div>
-  </div>
-  <div class="separator" style="margin:0px"></div>
-  <div class="row cont-reading" id="api-overview">
-    <div class="col-sm-4 container api-doc-toc">
-      <ul>
-        <li class="reading-toc-section"><a href="#overview-section">Overview</a></li>
-        <li class="reading-toc-section"><a href="#registration-section">Registration</a></li>
-        <li class="reading-toc-section"><a href="#downloading-casetext-section">Downloading Casetext</a></li>
-        <li class="reading-toc-section"><a href="#accessing-metadata-section">Accessing Metadata</a></li>
-        <li class="reading-toc-section"><a href="#terms-of-use-section">Terms of Use</a></li>
-      </ul>
+  <div class="row flex-xl-nowrap" id="api-overview">
+
+    {% include "includes/api-doc-toc.html" %}
+
+    <div class="col-9 docs reading-body">
+      <div class="page-header cont-fixed border-bottom">
+        <div class="row">
+          <h1 class="col centered-text bold-text">
+            <span class="blue-text">CAP</span> API
+          </h1>
+        </div>
+      <div class="row">
+        <h3 class="col centered-text semibold-text">
+          Explore American Caselaw</h3>
+      </div>
+      <div class="row">
+        <h5 class="col centered-text light-text">
+          Read the documentation below to get started
+        </h5>
+      </div>
     </div>
 
-    <div class="col-sm-8 docs reading-body">
-      <section class="overview-section">
-        <h2 id="overview-section" class="section-title">API Overview</h2>
-        <p class="body-text">The CAP API lets you traverse through and download American caselaw from 1700 to present day.
-        You can browse unlimited metadata but if you want to download case xml, you must first register for an API key.</p>
-        <p class="body-text">The API can be browsed through the browser (see https://{{ request.get_host }}/api/v1/cases/)</p>
-        <p class="body-text">Or using the command line. </p>
-        <div class="separator"></div>
-      </section>
-      <section class="registration-section">
-        <h3  id="registration-section" class="section-title">Registration</h3>
-        <a href="/accounts/register"><button class="blue-button">REGISTER</button></a>
-        <p class="body-text">Once you have your API key, you can begin to download cases.</p>
-        <a href="/accounts/login"><button class="blue-button">LOGIN</button></a>
-        <p class="body-text">Log in to retrieve your API key and see your daily remaining case allowance.</p>
+      <section class="border-bottom">
+        <a class="anchor-offset"
+           id="overview-section"
+           aria-label="API Overview"></a>
+        <h2 id="overview-section" class="section-title">
+          API Overview
+        </h2>
 
-        <p class="body-text blue-text note-text">A note about rate limiting:
+        This API lets you traverse through American caselaw from the 1600s
+        to present day.
         <br/>
-        Currently we only allow users to download 500 cases a day. If you are a researcher
-        <br/> or you need to have more access, please write to us here:
-        <span class="black-text">info@capapi.org</span></p>
+        The API can be browsed through the
+        <a href="/api/v1/cases/?full_case=true&jurisdiction=Ill.&body_format=text"
+           target="_blank">browser</a>
+        or using the
+        <a href="#getting-started-section">
+          command line
+        </a>.
+        <br/>
+        <br/>
+
+        The API can be browsed anonymously or with an API key.
+        <br/>
+
+        <p class="subsection body-text bold-text">All users can:</p>
+        <ul>
+          <li>See unlimited metadata (see <a href="" aria-label="unlimited metadata example">an example here</a>).</li>
+        </ul>
+        <p class="subsection body-text bold-text">Anonymous users can:</p>
+        <ul>
+          <li>Read whitelisted<strong>*</strong> cases' text
+          <li class="simple-list-item"><strong>*</strong>Learn about whitelisting <a href="">here</a>.
+          See <a href="">an example here</a>.</li>
+        </ul>
+
+        <p class="subsection body-text bold-text">Registered users can:</p>
+        <ul>
+          <li>
+            Request up to 500 cases a day.
+          </li>
+        </ul>
       </section>
-      <div class="separator"></div>
-      <section class="api-endpoints-section">
-        <h2 id="downloading-casetext-section" class="section-title">Downloading casetext</h2>
-        <!-- <p class="body-text">All case metadata is viewable in the browser, or through the command line. -->
-        <p class="body-text">The URI structure is simple. All cases are located at the /cases/ endpoint, and each case is accessible using its slug, which is made up of the case short name and four random numbers.</p>
-        <p class="body-text">All cases endpoint:</p>
-        <pre><a href="/api/v1/cases/" target="_blank">https://{{ request.get_host }}/api/v1/cases/</a></pre>
-        <p class="body-text">One specific case endpoint:</p>
-        <pre><a href="/api/v1/cases/{{ case_id }}" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}</a></pre>
-        <p class="body-text">Here is an example wget request:</p>
-        <pre>$ wget --content-disposition "https://{{ request.get_host}}/api/v1/cases/?jurisdiction={{ case_jurisdiction }}&limit=3&type=download" \
-        <br/> --header="Authorization: Token your-token-here"</pre>
-        <p class="body-text">Or if you prefer CURL:</p>
-        <pre>$ curl -O -J "https://{{ request.get_host}}/api/v1/cases/?jurisdiction={{ case_jurisdiction }}&limit=3&type=download" \
-        <br/> -H "Authorization: Token your-token-here"</pre>
+
+      <section class="border-bottom">
+        <a class="anchor-offset"
+           id="registration-section"
+           aria-label="Register for an API key"></a>
+
+        <h3 class="section-title">Register for an API key</h3>
+        <a href="/accounts/register"
+           class="btn blue-button">
+            REGISTER
+        </a>
+        <br/>
+        Once you have your API key, you can begin to view full blacklisted cases.
+        <br/>
+        <a href="/accounts/login"
+           class="btn blue-button">
+            LOGIN
+        </a>
+        <br/>
+        Log in to retrieve your API key and see your daily remaining case allowance.
+
+        <p class="text-primary">
+          <span class="body-text bold-text subsection">A note about rate limiting:</span>
+        <br/>
+          Currently we only allow users to view <code>500 cases</code> a day. If you are a researcher
+         or you need to have more access, please write to us here:
+          <a href="mailto:info@capapi.org">info@capapi.org</a>
+        </p>
+      </section>
+
+      <section class="border-bottom">
+        <a class="anchor-offset"
+           id="getting-started-section"
+           aria-label="Getting Started"></a>
+
+        <h2 class="section-title">Getting Started</h2>
+        <p class="body-text">The metadata is viewable online as well as using the command line.</p>
 
         <p class="body-text">
-          This request will download a zip file of three cases from the jurisdiction Alabama.
-        </p>
-        <p class="body-text bold-text">
-          To download cases, you must include:
+          The main entrypoint is:
+          <br/>
+        <ul>
           <li>
-            The <code>type="download"</code> flag
+            <a href="/api/v1/cases">https://{{ request.get_host }}/api/v1/cases</a>
+          </li>
+        </ul>
+        </p>
+
+        <p class="subsection body-text bold-text">
+          Searching cases by citation, reading full case text
+        </p>
+        The easiest way to find a specific case is by searching for it using its
+        <a href="https://en.wikipedia.org/wiki/Case_citation"
+           aria-label="Wikipedia entry for caselaw citation">citation</a>.
+        For instance, if you are trying to find <code>1 Ill. 21</code>, here are your options:
+        <ul>
+          <li>
+            <a href="/api/v1/cases/1 Ill. 21">
+              https://{{ request.get_host }}/api/v1/cases/1 Ill. 21</a>
           </li>
           <li>
-            Your API token. See the <a href="#registration-section">registration section</a>
-            for more information
+            <a href="/api/v1/cases/?cite=1-Ill-21">
+              https://{{ request.get_host }}/api/v1/cases/?cite=1-ill-21</a>
           </li>
+        </ul>
+
+        <p class="subsection body-text bold-text">
+          Getting casetext (whitelisted vs. blacklisted jurisdictions)
         </p>
-        <p>
-          Here are some optional query parameters:
-          <li>citation</li>
-          <li>jurisdiction_name</li>
-          <li>jurisdiction_id</li>
-          <li>reporter_name</li>
-          <li>reporter_id</li>
-          <li>court_name</li>
-          <li>court_id</li>
-          <li>limit - number of maximum cases to return</li>
+        All case metadata is unlimited and available to registered and anonymous users.
+
+        See a <a href="#whitelisted-jurisdictions-section">list of whitelisted jurisdictions here</a>.
+        Anyone who has an <a href="#registration-section">API key</a> is able to view up to 500 cases a day.
+
+        <p class="subsection body-text bold-text">
+          A note on pagination
         </p>
+        The API will return 100 items per response.
+        If you want more than 100 items returned, you can page through the
+        items using the <i>offset</i> parameter. For example, if you want to start at the
+        101st result, set the offset value to 1 (we start counting at 0, of course).
+
+        </section>
+        <section class="border-bottom">
+          <a class="anchor-offset"
+           id="example-endpoints-section"
+           aria-label="Main Endpoint Examples"></a>
+          <h2
+            class="section-title">
+          Main Endpoint Examples
+          </h2>
+          A single case (metadata only):
+          <pre><a href="/api/v1/cases/{{ case_id }}/" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/</a></pre>
+
+          One or more cases with the same citation:
+          <pre><a href="/api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/" target="_blank">https://{{ request.get_host }}/api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/</a></pre>
+          <!--<pre class="json-response">{{ case_metadata }}</pre>-->
+          <p class="body-text bold-text subsection">Getting a complete casetext</p>
+          A request for full casetext must include the following flag:
+          <pre><code>?full_case=true</code></pre>
+
+          <p class="body-text bold-text subsection">Whitelisted casetext</p>
+          Full whitelisted casetext (this case is whitelisted and can be seen by anyone):
+          <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/?full_case=true</a></pre>
+
+          <p class="body-text bold-text subsection">Blacklisted casetext</p>
+          Full blacklisted casetext with api_key in query param (you need to <a href="#registration-section" title="Register for an API key">register for an API key to see this</a>):
+          <pre><a href="/api/v1/cases/{{ case_id }}/?limit=1&full_case=true&api_key=your-api-key-here" target="_blank">https://{{ request.get_host }}/api/v1/cases/?limit=1&full_case=true&api_key=your-api-key-here</a></pre>
+
+          Full blacklisted casetext passing in api_key as a header (in the command line):
+          <pre><code>$ curl "https://{{ request.get_host }}/api/v1/cases/?limit=1&full_case=true -H Authorization: Token your-token-here"</code></pre>
+
+          <p class="body-text bold-text subsection">Query parameter examples</p>
+          Getting a maximum amount of cases under a certain jurisdiction:
+          <pre><a href="/api/v1/cases/?jurisdiction=Ill." target="_blank">https://{{ request.get_host }}/api/v1/cases/?jurisdiction=Ill.</a></pre>
+
+          Getting a specified number of cases:
+          <pre><a href="/api/v1/cases/?limit=5" target="_blank">https://{{ request.get_host }}/api/v1/cases/?limit=5</a></pre>
+
+          Using offset to page through results:
+          <pre><a href="/api/v1/cases/?offset=10" target="_blank">https://{{ request.get_host }}/api/v1/cases/?offset=10</a></pre>
+
+          Searching by min date (using format YYYY-MM-DD):
+          <pre><a href="/api/v1/cases/?decision_date_min=2000-11-01" target="_blank">https://{{ request.get_host }}/api/v1/cases/?decision_date_min=2000-11-01</a></pre>
+
+          Searching by min and max dates (using format YYYY-MM-DD):
+          <pre><a href="/api/v1/cases/?decision_date_min=1820-12-01&decision_date_max=1821-12-01" target="_blank">https://{{ request.get_host }}/api/v1/cases/?decision_date_min=1820-12-01&decision_date_max=1821-12-01</a></pre>
+
+          Getting casetext in html:
+          <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true&body_format=html" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/?full_case=true&body_format=html</a></pre>
+
+          Getting casetext in xml:
+          <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true&body_format=xml" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/?full_case=true&body_format=xml</a></pre>
+
+          Here is an example of some of these query parameters together:
+          <pre><a href="/api/v1/cases/?full_case=true&jurisdiction=Ill.&decision_date_min=1820-12-01&decision_date_max=1821-12-01&limit=1&body_format=xml" target="_blank">https://{{ request.get_host }}/api/v1/cases/?full_case=true&jurisdiction=Ill.&decision_date_min=1820-12-01&decision_date_max=1821-12-01&limit=1&body_format=xml</a></pre>
+          This request should return a single case with full casetext as xml
+        </section>
+
+        <section class="border-bottom">
+          <a class="anchor-offset"
+           id="other-endpoints-section"
+           aria-label="Other endpoints"></a>
+          <h2 class="section-title">
+            Other endpoints
+          </h2>
+        The other entrypoints are:
+        <br/>
+        <ul class="list-group">
+          <li class="list-item">
+            <a href="/api/v1/jurisdictions">https://{{ request.get_host }}/api/v1/jurisdictions</a>
+          </li>
+          <li class="list-item">
+            <a href="/api/v1/reporters">https://{{ request.get_host }}/api/v1/reporters</a>
+          </li>
+          <li class="list-item">
+            <a href="/api/v1/courts">https://{{ request.get_host }}/api/v1/courts</a>
+          </li>
+          <li class="list-item">
+            <a href="/api/v1/courts">https://{{ request.get_host }}/api/v1/courts</a>
+          </li>
+          <li class="list-item">
+            <a href="/api/v1/volumes">https://{{ request.get_host }}/api/v1/volumes</a>
+          </li>
+        </ul>
+
+
+      </section>
+      <section class="border-bottom">
+        <a class="anchor-offset"
+           id="whitelisted-jurisdictions-section"
+           aria-label="Whitelisted Jurisdictions"></a>
+
+
+        <h2 class="section-title">
+          Whitelisted Jurisdictions
+        </h2>
+        <ul>
+          {% for jur in whitelisted_jurisdictions %}
+          <li>{{ jur.name_long }}</li>
+          {% endfor %}
+        </ul>
+        To see an up to date list of whitelisted jurisdictions:
+        <pre><a href="/api/v1/jurisdictions/?whitelisted=true" target="_blank">https://{{ request.get_host }}/api/v1/jurisdictions/?whitelisted=true</a></pre>
+        You can help us expand this list by asking your courts to digitize their caselaw!
       </section>
 
-      <div class="separator"></div>
-
-      <section class="accessing-metadata-section">
-        <h2 id="accessing-metadata-section" class="section-title">Accessing metadata</h2>
-        <p class="body-text">The metadata is viewable online as well as in the command line.</p>
-
-        <p class="body-text">
-          The main entrypoints are:
-          <br/>
-          <a href="/api/v1/cases">https://{{ request.get_host }}/api/v1/cases</a>
-          <br/>
-          <a href="/api/v1/jurisdictions">https://{{ request.get_host }}/api/v1/jurisdictions</a>
-          <br/>
-          <a href="/api/v1/reporters">https://{{ request.get_host }}/api/v1/reporters</a>
-          <br/>
-          <a href="/api/v1/courts">https://{{ request.get_host }}/api/v1/courts</a>
-          <br/>
-          <a href="/api/v1/volumes">https://{{ request.get_host }}/api/v1/volumes</a>
-        </p>
-        <p class="body-text bold-text">
-          A note on pagination:
-        </p>
-        <p class="body-text">The API will return 100 items per response. If you want more than 100 items returned, you can page through the items using the <i>offset</i> parameter. For example, if you want to start at the 101st result, set the offset value to 4 (we start counting at 0, of course).</p>
-
-        <p class="body-text">Here are some examples of endpoints and their JSON responses.</p>
-
-        <p class="body-text">A single case request (online):</p>
-        <pre><a href="/api/v1/cases/{{ case_id }}/" target="_blank">https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/</a></pre>
-        <p class="body-text">A single case CURL request:</p>
-        <pre>$ curl "https://{{ request.get_host }}/api/v1/cases/{{ case_id }}/?format=json"</pre>
-        <pre>{{ case_metadata }}
-        </pre>
-        <p class="body-text">A single reporter request (online):</p>
-        <pre><a href="https://{{ request.get_host }}/api/v1/reporters/{{ reporter_id }}/" target="_blank">https://{{ request.get_host }}/api/v1/reporters/{{ reporter_id }}/</a></pre>
-        <p class="body-text">A single reporter CURL request:</p>
-        <pre>$ curl "https://{{ request.get_host }}/api/v1/reporters/{{ reporter_id }}/?format=json"</pre>
-        <p>{{ reporter_metadata }}
-        </p>
+      <section>
+        <a class="anchor-offset"
+           id="terms-of-use-section"
+           aria-label="Terms of Use"></a>
 
 
+        <h2 class="section-title">Terms of Use</h2>
+        <p class="body-text">Your use of the CAP API is subject to your acceptance of our <a href="{% url 'terms' %}">Terms of Use</a>.</p>
       </section>
-     <section class="terms-of-use">
-      <h2 id="terms-of-use-section" class="section-title">Terms of Use</h2>
-      <p class="body-text">Your use of the CAP API is subject to your acceptance of our <a href="{% url 'terms' %}">Terms of Use</a>.</p>
-    </section>
     </div>
   </div>
-</div>
 
 {% endblock %}

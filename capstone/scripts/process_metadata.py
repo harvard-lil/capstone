@@ -3,7 +3,7 @@ from scripts.helpers import parse_xml, resolve_namespace
 
 
 def get_case_metadata(case_xml):
-    parsed = parse_xml(case_xml)
+    parsed = parse_xml(case_xml.replace('\xad', ''))
 
     # duplicative cases won't have a case section, so rather than using case.caseid we get the volume barcode from the
     # first alto file entry, and the case number from the casebody:

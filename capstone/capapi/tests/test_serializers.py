@@ -6,7 +6,7 @@ from rest_framework.request import Request
 from capapi import serializers
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_CaseSerializerWithCasebody(api_url, api_request_factory, case, three_cases):
     # can get single case data
     url = os.path.join(api_url, "cases")

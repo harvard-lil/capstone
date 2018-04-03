@@ -1,3 +1,5 @@
+from django.core.management.color import no_style
+from django.db import connection
 from tqdm import tqdm
 
 from capdb.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest, Jurisdiction
@@ -111,6 +113,12 @@ def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
 
         except Exception as e:
             print("Error saving %s ID %s: %s" % (source, getattr(source_record, dupe_field), e))
+
+    # reset primary key sequence number based on imported data
+    sequence_sql = connection.ops.sequence_reset_sql(no_style(), [destination])
+    if sequence_sql:
+        with connection.cursor() as cursor:
+            cursor.execute(sequence_sql[0])
 
 def populate_jurisdiction():
     """This populates the jurisdiction table based on what's in the tracking tool stub"""

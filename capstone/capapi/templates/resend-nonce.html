@@ -7,14 +7,14 @@ Verify your email address to use the Caselaw Access Project API
 {% endblock %}
 
 {% block content %}
-  <div class="container login-form center-content container-full inverse header-margin">
+  <div class="login-form container-full inverse header-margin">
     <div class="row row-centered">
       <div class="alert alert-warning">
         <div class="col-sm-4 col-centered">
           <strong>Error!</strong> You need to verify your email address before continuing.
         </div>
       </div>
-      <div class="col-sm-4 col-centered">
+      <div class="col-6 col-centered">
         <form action="/accounts/resend_verification/" method="POST">
           <input type="hidden" name="user_id" value="{{user_id}}">
           <input type="hidden" name="user_email" value="{{user_email}}">

@@ -13,8 +13,6 @@ CELERY_TASK_ALWAYS_EAGER = True
 # propagate exceptions
 CELERY_TASK_EAGER_PROPAGATES = True
 
-
-
 if os.environ.get('DOCKERIZED'):
     DATABASES['default']['PASSWORD'] = 'password'
     DATABASES['default']['HOST'] = 'db'
@@ -38,6 +36,7 @@ if DEBUG_SQL:
         'level': 'DEBUG',
         'handlers': ['sql']
     }
+
 
 # django-debug-toolbar
 try:
