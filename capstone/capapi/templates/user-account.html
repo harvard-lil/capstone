@@ -3,10 +3,8 @@
 {% block title %} | Your Account{% endblock %}
 
 {% block content %}
-  {% load rest_framework %}
-  <div class="logged-in-page container-full header-margin inverse">
-    <div class="row row-centered">
-
+<div class="logged-in-page container-full header-margin inverse">
+  <div class="row row-centered">
     <div class="col-6 col-centered">
       <h3>Profile details</h3>
       {% if errors %}
@@ -27,4 +25,5 @@
       <b>Total case allowance (updated daily):</b> <span class="user_total_case_allowance">{{total_case_allowance}}</span>
     </div>
   </div>
+</div>
 {% endblock content %}

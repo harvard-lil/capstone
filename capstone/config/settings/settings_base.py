@@ -152,18 +152,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
-STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+PIPELINE_COMPILERS = (
+    'pipeline_compass.compiler.CompassCompiler',
+)
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'pipeline.finders.PipelineFinder',
 )
 
-PIPELINE = {
-    'COMPILERS': ('pipeline.compilers.sass.SASSCompiler',),
-    'PIPELINE_ENABLED': False,
-    'PIPELINE_COLLECTOR_ENABLED': False,
-    'STYLESHEETS': {
+PIPELINE_CSS = {
         'base': {
             'source_filenames': (
                 'css/_normalize.css',
@@ -193,7 +191,13 @@ PIPELINE = {
             ),
             'output_filename': 'api.css'
         },
-    },
+}
+
+PIPELINE = {
+    'COMPILERS': PIPELINE_COMPILERS,
+    'PIPELINE_ENABLED': False,
+    'PIPELINE_COLLECTOR_ENABLED': False,
+    'STYLESHEETS': PIPELINE_CSS,
 }
 
 # define storages

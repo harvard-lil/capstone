@@ -52,5 +52,6 @@ django-extensions
 django-filter
 django-libsass
 django-pipeline
+django-pipeline-compass
 djangorestframework-filters
 djangorestframework
