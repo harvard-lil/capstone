@@ -141,18 +141,23 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
-PIPELINE_COMPILERS = (
-    'pipeline_compass.compiler.CompassCompiler',
-)
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'pipeline.finders.PipelineFinder',
 )
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
-PIPELINE_CSS = {
+PIPELINE = {
+    'COMPILERS': (
+        'pipeline_compass.compiler.CompassCompiler',
+    ),
+    'STYLESHEETS': {
         'base': {
             'source_filenames': (
                 'css/_normalize.css',
@@ -182,13 +187,11 @@ PIPELINE_CSS = {
             ),
             'output_filename': 'api.css'
         },
-}
+    },
 
-PIPELINE = {
-    'COMPILERS': PIPELINE_COMPILERS,
-    'PIPELINE_ENABLED': False,
-    'PIPELINE_COLLECTOR_ENABLED': False,
-    'STYLESHEETS': PIPELINE_CSS,
+    # avoid compressing assets for now
+    'CSS_COMPRESSOR': None,
+    'JS_COMPRESSOR': None,
 }
 
 # define storages
