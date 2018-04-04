@@ -1,11 +1,10 @@
 {% extends "rest_framework/base.html" %}
 {% load pipeline %}
 {% load static %}
-
-{% block bootstrap_theme %}
-  {% stylesheet 'base' %}
+{% block style %}
   {% stylesheet 'api' %}
 {% endblock %}
+
 {% block branding %}
   {% include "includes/header.html" %}
 {% endblock %}
