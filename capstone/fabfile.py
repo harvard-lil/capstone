@@ -386,11 +386,15 @@ def show_slow_queries():
 
         shared_preload_libraries = 'pg_stat_statements'
 
-    in postgresql.conf, and that
+    in postgresql.conf, that
 
         CREATE EXTENSION pg_stat_statements;
 
-    has already been run for the capstone database.
+    has been run for the capstone database, and that
+
+        GRANT EXECUTE ON FUNCTION pg_stat_statements_reset() TO <user>;
+
+    has been run for the capstone user.
     """
     cursor = django.db.connection.cursor()
     with open('../services/postgres/s1_pg_stat_statements_top_total.sql') as f:
@@ -398,13 +402,19 @@ def show_slow_queries():
         cursor.execute(sql)
     try:
         rows = cursor.fetchall()
-        output = "*capstone slow query report*\n"
-    except Exception:
+        heading = "*capstone slow query report for %s*" % datetime.now().strftime("%Y-%m-%d")
+        queries = []
+    except:
         print(json.dumps({'text': 'Could not get slow queries'}))
         return
     for row in rows:
-        output += "```%s```\n" % row[8]
-        output += "ran on %s with %d call%s and took a total of %f ms\n" % (
-            row[7], row[0], "" if row[0] == 1 else "s", row[1]
-        )
-    print(json.dumps({'text': output}))
+        queries.append({
+            'title': "slow query",
+            'fallback': "%s" % row[8],
+            'pretext': "Ran on %s with %d call%s and took a total of %f ms" % (
+                row[7], row[0], "" if row[0] == 1 else "s", row[1]
+            ),
+            'text': "```%s```" % row[8]
+        })
+    print(json.dumps({'text': heading, 'attachments': queries}))
+    cursor.execute("select pg_stat_statements_reset();")
