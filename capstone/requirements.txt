@@ -93,4 +93,5 @@ tqdm==4.11.2
 urllib3==1.21.1           # via requests
 vine==1.1.4               # via amqp
 werkzeug==0.12.2          # via moto
+whitenoise==3.3.1
 xmltodict==0.11.0
