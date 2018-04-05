@@ -409,10 +409,9 @@ def show_slow_queries():
         return
     for row in rows:
         queries.append({
-            'title': "slow query",
             'fallback': "%s" % row[8],
-            'pretext': "Ran on %s with %d call%s and took a total of %f ms" % (
-                row[7], row[0], "" if row[0] == 1 else "s", row[1]
+            'title': "%d call%s, %f ms" % (
+                row[0], "" if row[0] == 1 else "s", row[1]
             ),
             'text': "```%s```" % row[8]
         })
