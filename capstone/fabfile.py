@@ -7,7 +7,9 @@ from datetime import datetime
 import django
 import zipfile
 import json
-from random import randrange
+from random import randrange, randint
+from pathlib import Path
+
 # set up Django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -417,3 +419,68 @@ def show_slow_queries():
         })
     print(json.dumps({'text': heading, 'attachments': queries}))
     cursor.execute("select pg_stat_statements_reset();")
+
+
+@task
+def create_fixtures_db_for_benchmarking():
+    """
+    In settings_dev mark TEST_SLOW_QUERIES as True
+    """
+    try:
+        local('psql -c "CREATE DATABASE %s;"' % settings.TEST_SLOW_QUERIES_DB_NAME)
+        init_db()
+    except:
+        # Exception is thrown if test db has already been created
+        pass
+
+    migrate()
+
+
+@task
+def create_case_fixtures_for_benchmarking(amount=50000, randomize_casemets=False):
+    """
+    Create an amount of case fixtures.
+    This tasks assumes the existence of some casemet xmls in test_data
+
+    Make sure that you have the necessary jurisdictions for this task.
+    It might be a good idea to:
+        1. point tracking_tool to prod (WARNING: you are dealing with prod data be very very careful!)
+        2. go to ingest_tt_data.py's `ingest` method and comment out all
+            copyModel statements except
+            `copyModel(Reporters, Reporter, reporter_field_map, dupcheck)`
+            since Reporter is required for populating jurisdictions
+
+        3. run `fab ingest_metadata`
+        4. remove pointer to prod tracking_tool db!!
+    """
+    from test_data.test_fixtures.factories import CaseXMLFactory
+    if randomize_casemets:
+        # get all casemet paths to choose a random casemet xml
+        # for test case creation
+        casemet_paths = []
+        d = os.path.join(settings.BASE_DIR, "test_data/from_vendor/")
+        for root, dirs, files in os.walk(d):
+            for name in files:
+                if "_redacted_CASEMETS" in name:
+                    casemet_paths.append(os.path.join(root, name))
+        amount_of_paths = len(casemet_paths) - 1
+    else:
+        case_xml = (Path(settings.BASE_DIR) / "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml").read_text()
+
+    for _ in range(amount):
+        if randomize_casemets:
+            case_xml = (Path(casemet_paths[randint(0, amount_of_paths)])).read_text()
+        try:
+            # create casexml and casemetadata objects, save to db
+            CaseXMLFactory(orig_xml=case_xml)
+        except:
+            # Exception could happen because of duplicate slug keys on jurisdiction creation
+            # For now, skipping this issue
+            pass
+
+@task
+def tear_down_case_fixtures_for_benchmarking():
+    """
+    Make sure to mark settings_dev.TEST_SLOW_QUERIES as False
+    """
+    local('psql -c "DROP DATABASE %s;"' % settings.TEST_SLOW_QUERIES_DB_NAME)
