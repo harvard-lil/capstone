@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 import bagit
 import zipfile
@@ -39,7 +41,20 @@ def test_bag_jurisdiction(case_xml, tmpdir):
     with zipfile.ZipFile(bag_path + '.zip') as zf:
         zf.extractall(str(tmpdir))
     bag = bagit.Bag(bag_path)
-    assert bag.is_valid()
+    bag.validate()
+
+@pytest.mark.django_db
+def test_bag_reporter(case_xml, tmpdir):
+    # get the jurisdiction of the ingested case
+    reporter = case_xml.metadata.reporter
+    # bag the reporter
+    fabfile.bag_reporter(reporter.full_name, zip_directory=tmpdir)
+    # validate the bag
+    bag_path = next(Path(str(tmpdir)).glob("*.zip"))
+    with zipfile.ZipFile(str(bag_path)) as zf:
+        zf.extractall(str(tmpdir))
+    bag = bagit.Bag(str(bag_path.with_suffix('')))
+    bag.validate()
 
 @pytest.mark.django_db
 def test_write_inventory_files(tmpdir):
