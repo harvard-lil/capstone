@@ -37,10 +37,9 @@ if DEBUG_SQL:
         'handlers': ['sql']
     }
 
-TEST_SLOW_QUERIES = False
 TEST_SLOW_QUERIES_DB_NAME = 'capstone_test_queries'
-if TEST_SLOW_QUERIES:
-    DATABASES['default']['NAME'] = TEST_SLOW_QUERIES_DB_NAME
+# to use slow queries db, add this to settings.py:
+# DATABASES['default']['NAME'] = TEST_SLOW_QUERIES_DB_NAME
 
 
 
