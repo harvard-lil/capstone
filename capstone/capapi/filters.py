@@ -15,6 +15,7 @@ class JurisdictionFilter(filters.FilterSet):
         model = models.Jurisdiction
         fields = [
             'id',
+            'name',
             'name_long',
             'whitelisted',
             'slug',
@@ -22,6 +23,8 @@ class JurisdictionFilter(filters.FilterSet):
 
 
 class ReporterFilter(filters.FilterSet):
+    jurisdictions = filters.MultipleChoiceFilter(choices=jur_choices)
+
     class Meta:
         model = models.Reporter
         fields = [
@@ -51,7 +54,7 @@ class CaseFilter(filters.FilterSet):
     name_abbreviation = filters.CharFilter(
         field_name='name_abbreviation',
         label='Name Abbreviation',
-        lookup_expr='iexact')
+        lookup_expr='icontains')
     cite = filters.CharFilter(
         field_name='cite',
         label='Citation',
@@ -59,12 +62,12 @@ class CaseFilter(filters.FilterSet):
     court_name = filters.CharFilter(
         field_name='court__name',
         label='Court Name',
-        lookup_expr='iexact')
+        lookup_expr='icontains')
     reporter_name = filters.CharFilter(
         field_name='reporter__full_name',
         label='Reporter Name',
-        lookup_expr='iexact')
-    jurisdiction = filters.ChoiceFilter(choices=jur_choices, label='jurisdiction')
+        lookup_expr='icontains')
+    jurisdiction = filters.ChoiceFilter(choices=jur_choices)
     decision_date_min = filters.CharFilter(
         label='Date Min (Format YYYY-MM-DD)',
         field_name='decision_date_min',

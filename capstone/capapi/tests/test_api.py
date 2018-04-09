@@ -340,6 +340,25 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
 
+    # filtering case by name_abbreviation lowercased substring
+    assert case_to_test.name_abbreviation != three_cases[1].name_abbreviation
+    response = client.get("%scases/?name_abbreviation=%s&format=json" % (api_url, "bill"))
+    content = response.json()
+    assert [case_to_test.id] == [result['id'] for result in content['results']]
+
+    # filtering case by court substring
+    case_to_test = three_cases[2]
+    court_name = case_to_test.court.name.split(' ')[1]
+    response = client.get("%scases/?court_name=%s&format=json" % (api_url, court_name))
+    content = response.json()
+    assert [case_to_test.id] == [result['id'] for result in content['results']]
+
+    # filtering case by reporter substring
+    reporter_name = case_to_test.reporter.full_name.split(' ')[1]
+    response = client.get("%scases/?reporter_name=%s&format=json" % (api_url, reporter_name))
+    content = response.json()
+    assert [case_to_test.id] == [result['id'] for result in content['results']]
+
 
 @pytest.mark.django_db
 def test_filter_court(api_url, client, court):
