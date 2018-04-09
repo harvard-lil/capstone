@@ -47,6 +47,7 @@ class VolumeViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMi
 class ReporterViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
+    filter_class = filters.ReporterFilter
     queryset = models.Reporter.objects.all().prefetch_related('jurisdictions')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
@@ -74,12 +75,13 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         duplicative=True).select_related(
         'volume',
         'reporter',
-        ).prefetch_related(
-        'citations'
-        ).select_related(
         'jurisdiction',
         'court'
-        ).filter(jurisdiction__isnull=False, court__isnull=False)
+        ).prefetch_related(
+        'citations'
+        ).filter(
+        jurisdiction__isnull=False,
+        court__isnull=False)
 
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     filter_class = filters.CaseFilter

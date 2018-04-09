@@ -283,7 +283,7 @@ def test_filter_case_by_court(api_url, client, three_cases, court):
     three_cases[2].save()
     case_id_to_test = three_cases[2].id
 
-    response = client.get("%scases/?court_slug=%s&format=json" % (api_url, three_cases[2].court.slug))
+    response = client.get("%scases/?court_name=%s&format=json" % (api_url, three_cases[2].court.name))
     content = response.json()
     assert [case_id_to_test] == [result['id'] for result in content['results']]
 
