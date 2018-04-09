@@ -48,10 +48,6 @@ class CourtFilter(filters.FilterSet):
 
 
 class CaseFilter(filters.FilterSet):
-    name = filters.CharFilter(
-        field_name='name',
-        label='Name',
-        lookup_expr='iexact')
     name_abbreviation = filters.CharFilter(
         field_name='name_abbreviation',
         label='Name Abbreviation',
@@ -91,13 +87,11 @@ class CaseFilter(filters.FilterSet):
         model = models.CaseMetadata
         fields = [
                   'cite',
-                  'name',
                   'name_abbreviation',
                   'jurisdiction',
                   'reporter_name',
                   'decision_date_min',
                   'decision_date_max',
-                  'docket_number',
                   ]
 
 

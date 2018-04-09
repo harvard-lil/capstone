@@ -478,7 +478,7 @@ class CaseMetadata(models.Model):
     decision_date_original = models.CharField(max_length=100, blank=True)
     court = models.ForeignKey('Court', null=True, related_name='case_metadatas', on_delete=models.SET_NULL)
     name = models.TextField(blank=True)
-    name_abbreviation = models.CharField(max_length=10000, blank=True)
+    name_abbreviation = models.CharField(max_length=1024, blank=True, db_index=True)
     volume = models.ForeignKey('VolumeMetadata', related_name='case_metadatas',
                                on_delete=models.DO_NOTHING)
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
