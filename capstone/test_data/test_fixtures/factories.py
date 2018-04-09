@@ -79,8 +79,6 @@ class ReporterFactory(factory.DjangoModelFactory):
     created_at = timezone.now()
     updated_at = timezone.now()
     hollis = []
-    jurisdiction = factory.RelatedFactory(JurisdictionFactory)
-
 
 @register
 class VolumeFactory(factory.DjangoModelFactory):
