@@ -1,6 +1,6 @@
-
-
+from django.utils.text import slugify
 import rest_framework_filters as filters
+
 from capdb import models
 
 jur_choices = [(jur.id, jur.name) for jur in models.Jurisdiction.objects.all()]
@@ -21,10 +21,30 @@ class JurisdictionFilter(filters.FilterSet):
         ]
 
 
+class ReporterFilter(filters.FilterSet):
+    class Meta:
+        model = models.Reporter
+        fields = [
+            'jurisdictions',
+            'full_name',
+            'short_name',
+            'start_year',
+            'end_year',
+            'volume_count'
+        ]
+
+
 class CourtFilter(filters.FilterSet):
+    jurisdiction = filters.ChoiceFilter(choices=jur_choices)
+
     class Meta:
         model = models.Court
-        fields = '__all__'
+        fields = [
+            'slug',
+            'name',
+            'name_abbreviation',
+            'jurisdiction'
+        ]
 
 
 class CaseFilter(filters.FilterSet):
@@ -40,10 +60,6 @@ class CaseFilter(filters.FilterSet):
         field_name='cite',
         label='Citation',
         method='find_by_citation')
-    court_slug = filters.CharFilter(
-        field_name='court__slug',
-        label='Court Slug',
-        lookup_expr='iexact')
     court_name = filters.CharFilter(
         field_name='court__name',
         label='Court Name',
@@ -63,7 +79,7 @@ class CaseFilter(filters.FilterSet):
         method='find_by_date')
 
     def find_by_citation(self, qs, name, value):
-        return qs.filter(citations__normalized_cite__exact=value)
+        return qs.filter(citations__normalized_cite__exact=slugify(value))
 
     def find_by_date(self, qs, name, value):
         if '_min' in name:
@@ -78,8 +94,6 @@ class CaseFilter(filters.FilterSet):
                   'name',
                   'name_abbreviation',
                   'jurisdiction',
-                  'court_name',
-                  'court_slug',
                   'reporter_name',
                   'decision_date_min',
                   'decision_date_max',
