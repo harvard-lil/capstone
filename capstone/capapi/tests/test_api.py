@@ -5,40 +5,6 @@ from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
 from capapi.permissions import casebody_permissions
 
-@pytest.mark.django_db
-def test_api_urls(client, api_url):
-    response = client.get('%scases/' % api_url)
-    check_response(response, format='api')
-    response = client.get('%scases/?format=json' % api_url)
-    check_response(response)
-    response = client.get('%sjurisdictions/' % api_url)
-    check_response(response, format='api')
-    response = client.get('%sjurisdictions/?format=json' % api_url)
-    check_response(response)
-
-
-@pytest.mark.django_db
-def test_jurisdictions(client, api_url, case):
-    response = client.get("%sjurisdictions/?format=json" % api_url)
-    check_response(response)
-    jurisdictions = response.json()['results']
-    assert len(jurisdictions) > 0
-    assert len(jurisdictions) == Jurisdiction.objects.all().count()
-
-
-@pytest.mark.django_db
-def test_jurisdiction(client, api_url, jurisdiction):
-    response = client.get("%sjurisdictions/%s/?format=json" % (api_url, jurisdiction.slug))
-    check_response(response)
-
-
-@pytest.mark.django_db
-def test_case(client, api_url, case):
-    response = client.get("%scases/%s/?format=json" % (api_url, case.pk))
-    check_response(response)
-    content = response.json()
-    assert content.get("name_abbreviation") == case.name_abbreviation
-
 
 @pytest.mark.django_db
 def test_flow(client, api_url, case):
@@ -61,50 +27,80 @@ def test_flow(client, api_url, case):
     assert content.get("name") == case.jurisdiction.name
 
 
+# RESOURCE ENDPOINTS
 @pytest.mark.django_db
-def test_case_citation_redirect(api_url, client, citation):
-    url = "%scases/%s?format=json" % (api_url, citation.normalized_cite)
-
-    # should have received a redirect
-    response = client.get(url)
-    check_response(response, status_code=301, format='')
-
-    response = client.get(url, follow=True)
-    check_response(response, format='json')
-    content = response.json()['results']
-    case = citation.case
-    # should only have one case returned
-    assert len(content) == 1
-    assert content[0]['id'] == case.id
-    # should only have one citation for this case
-    assert len(content[0]['citations']) == 1
-    assert content[0]['citations'][0]['cite'] == citation.cite
-
-    # allow user to enter real citation (not normalized)
-    url = "%scases/%s?format=json" % (api_url, citation.cite)
-    response = client.get(url, follow=True)
-
-    check_response(response, format='json')
-    content = response.json()['results']
-    case = citation.case
-    assert len(content) == 1
-    assert content[0]['id'] == case.id
-
-    # citation redirect should work with periods in the url, too
-    new_citation = CitationFactory(cite='1 Mass. 1', normalized_cite='1-mass-1', case=citation.case)
-    new_citation.save()
-
-    url = "%scases/%s?format=json" % (api_url, new_citation.cite)
-    response = client.get(url)
-    check_response(response, status_code=301, format='')
-    response = client.get(url, follow=True)
-    check_response(response, format='json')
-    content = response.json()['results']
-    case = citation.case
-    assert len(content) == 1
-    assert content[0]['id'] == case.id
+def test_jurisdictions(client, api_url, case):
+    response = client.get("%sjurisdictions/?format=json" % api_url)
+    check_response(response)
+    jurisdictions = response.json()['results']
+    assert len(jurisdictions) > 0
+    assert len(jurisdictions) == Jurisdiction.objects.count()
 
 
+@pytest.mark.django_db
+def test_single_jurisdiction(client, api_url, jurisdiction):
+    response = client.get("%sjurisdictions/%s/?format=json" % (api_url, jurisdiction.slug))
+    check_response(response)
+    jur_result = response.json()
+    assert len(jur_result) > 1
+    print(jur_result)
+    assert jur_result['name_long'] == jurisdiction.name_long
+
+
+@pytest.mark.django_db
+def test_courts(api_url, client, court):
+    response = client.get("%scourts/?format=json" % api_url)
+    check_response(response)
+    courts = response.json()['results']
+    assert len(courts) > 0
+    assert len(courts) == Court.objects.count()
+
+
+@pytest.mark.django_db
+def test_single_court(api_url, client, court):
+    court.slug = "unique-slug"
+    court.save()
+    response = client.get("%scourts/%s/?format=json" % (api_url, court.slug))
+    check_response(response)
+    court_result = response.json()
+    assert court_result['name'] == court.name
+
+
+@pytest.mark.django_db
+def test_cases(client, api_url, case):
+    response = client.get("%scases/?format=json" % api_url)
+    check_response(response)
+    cases = response.json()['results']
+    assert len(cases) > 0
+    assert len(cases) == CaseMetadata.objects.count()
+
+
+@pytest.mark.django_db
+def test_single_case(client, api_url, case):
+    response = client.get("%scases/%s/?format=json" % (api_url, case.pk))
+    check_response(response)
+    content = response.json()
+    assert content.get("name_abbreviation") == case.name_abbreviation
+
+
+@pytest.mark.django_db
+def test_reporters(client, api_url, reporter):
+    response = client.get("%sreporters/?format=json" % api_url)
+    check_response(response)
+    reporters = response.json()['results']
+    assert len(reporters) > 0
+    assert len(reporters) == Reporter.objects.count()
+
+
+@pytest.mark.django_db
+def test_single_reporter(client, api_url, reporter):
+    response = client.get("%sreporters/%s/?format=json" % (api_url, reporter.pk))
+    check_response(response)
+    content = response.json()
+    assert content.get("full_name") == reporter.full_name
+
+
+# REQUEST AUTHORIZATION
 @pytest.mark.django_db
 def test_unauthorized_request(api_user, api_url, client, case):
     assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
@@ -214,7 +210,6 @@ def test_authentication_as_query_param(auth_user, api_url, client, jurisdiction,
     """
     Allow the user to pass api key as query parameter
     """
-
     jurisdiction.whitelisted = False
     jurisdiction.save()
     case.jurisdiction = jurisdiction
@@ -235,6 +230,54 @@ def test_authentication_as_query_param(auth_user, api_url, client, jurisdiction,
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
 
 
+# CITATION REDIRECTS
+@pytest.mark.django_db
+def test_case_citation_redirect(api_url, client, citation):
+    """Should allow various forms of citation, should redirect to normalized_cite"""
+    url = "%scases/%s?format=json" % (api_url, citation.normalized_cite)
+
+    # should have received a redirect
+    response = client.get(url)
+    check_response(response, status_code=301, format='')
+
+    response = client.get(url, follow=True)
+    check_response(response, format='json')
+    content = response.json()['results']
+    case = citation.case
+    # should only have one case returned
+    assert len(content) == 1
+    assert content[0]['id'] == case.id
+    # should only have one citation for this case
+    citations_result = content[0]['citations']
+    assert len(citations_result) == 1
+    assert citations_result[0]['cite'] == citation.cite
+
+    # allow user to enter real citation (not normalized)
+    url = "%scases/%s?format=json" % (api_url, citation.cite)
+    response = client.get(url, follow=True)
+
+    check_response(response, format='json')
+    content = response.json()['results']
+    case = citation.case
+    assert len(content) == 1
+    assert content[0]['id'] == case.id
+
+    # citation redirect should work with periods in the url, too
+    new_citation = CitationFactory(cite='1 Mass. 1', normalized_cite='1-mass-1', case=citation.case)
+    new_citation.save()
+
+    url = "%scases/%s?format=json" % (api_url, new_citation.cite)
+    response = client.get(url)
+    check_response(response, status_code=301, format='')
+    response = client.get(url, follow=True)
+    check_response(response, format='json')
+    content = response.json()['results']
+    case = citation.case
+    assert len(content) == 1
+    assert content[0]['id'] == case.id
+
+
+# FORMATS
 @pytest.mark.django_db
 def test_case_body_formats(api_url, client, case):
     """
@@ -276,28 +319,31 @@ def test_case_body_formats(api_url, client, case):
     assert "</h4>" in casebody['data']
 
 
-
+# FILTERING
 @pytest.mark.django_db
-def test_filter_case_by_court(api_url, client, three_cases, court):
-    three_cases[2].court = court
-    three_cases[2].save()
-    case_id_to_test = three_cases[2].id
+def test_filter_case(api_url, client, three_cases, court, jurisdiction):
+    # filtering case by court
+    case_to_test = three_cases[2]
+    case_to_test.court = court
+    case_to_test.save()
 
     response = client.get("%scases/?court_name=%s&format=json" % (api_url, three_cases[2].court.name))
     content = response.json()
-    assert [case_id_to_test] == [result['id'] for result in content['results']]
+    assert [case_to_test.id] == [result['id'] for result in content['results']]
 
-
-@pytest.mark.django_db
-def test_court(api_url, client, court):
-    response = client.get("%scourts/?format=json" % api_url)
-    check_response(response)
-    results = response.json()['results']
-    assert len(results) == 1
+    # filtering case by name_abbreviation
+    case_to_test = three_cases[0]
+    case_to_test.name_abbreviation = "Bill v. Bob"
+    case_to_test.save()
+    assert case_to_test.name_abbreviation != three_cases[1].name_abbreviation
+    response = client.get("%scases/?name_abbreviation=%s&format=json" % (api_url, case_to_test.name_abbreviation))
+    content = response.json()
+    assert [case_to_test.id] == [result['id'] for result in content['results']]
 
 
 @pytest.mark.django_db
 def test_filter_court(api_url, client, court):
+    # filtering court by jurisdiction
     jur_slug = court.jurisdiction.slug
     response = client.get("%scourts/?jurisdiction_slug=%s&format=json" % (api_url, jur_slug))
     check_response(response)
@@ -305,15 +351,7 @@ def test_filter_court(api_url, client, court):
     assert court.name_abbreviation == results[0]['name_abbreviation']
 
 
-@pytest.mark.django_db
-def test_reporter(api_url, client, reporter):
-    response = client.get("%sreporters/?format=json" % api_url)
-    check_response(response)
-    results = response.json()['results']
-    assert len(results) == 1
-
-
-#  | User views
+#  USER VIEWS
 @pytest.mark.django_db
 def test_view_details(auth_user, client):
     """
