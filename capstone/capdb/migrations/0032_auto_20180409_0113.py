@@ -30,9 +30,10 @@ class Migration(migrations.Migration):
             name='full_name',
             field=models.CharField(db_index=True, max_length=1024),
         ),
-        migrations.RunSQL(
-            sql='CREATE INDEX idx_casemetadata_name_upper ON capdb_casemetadata (UPPER(name) text_pattern_ops);',
-            reverse_sql='DROP INDEX idx_casemetadata_name_upper;'
+        migrations.AlterField(
+            model_name='casemetadata',
+            name='name_abbreviation',
+            field=models.CharField(blank=True, db_index=True, max_length=1024),
         ),
         migrations.RunSQL(
             sql='CREATE INDEX idx_casemetadata_name_abbr_upper ON capdb_casemetadata (UPPER(name_abbreviation) varchar_pattern_ops);',
