@@ -55,3 +55,6 @@ try:
     INTERNAL_IPS = ['127.0.0.1']
 except ImportError:
     pass
+
+STATICFILES_STORAGE='pipeline.storage.NonPackagingPipelineStorage'
+PIPELINE_ENABLED=False
