@@ -24,6 +24,7 @@ class JurisdictionFilter(filters.FilterSet):
 
 class ReporterFilter(filters.FilterSet):
     jurisdictions = filters.MultipleChoiceFilter(choices=jur_choices)
+    full_name = filters.CharFilter(lookup_expr='icontains', label='Full Name (contains)')
 
     class Meta:
         model = models.Reporter
@@ -39,7 +40,7 @@ class ReporterFilter(filters.FilterSet):
 
 class CourtFilter(filters.FilterSet):
     jurisdiction = filters.ChoiceFilter(choices=jur_choices)
-
+    name = filters.CharFilter(lookup_expr='icontains', label='Name (contains)')
     class Meta:
         model = models.Court
         fields = [
@@ -53,7 +54,7 @@ class CourtFilter(filters.FilterSet):
 class CaseFilter(filters.FilterSet):
     name_abbreviation = filters.CharFilter(
         field_name='name_abbreviation',
-        label='Name Abbreviation',
+        label='Name Abbreviation (contains)',
         lookup_expr='icontains')
     cite = filters.CharFilter(
         field_name='cite',
@@ -61,11 +62,11 @@ class CaseFilter(filters.FilterSet):
         method='find_by_citation')
     court_name = filters.CharFilter(
         field_name='court__name',
-        label='Court Name',
+        label='Court Name (contains)',
         lookup_expr='icontains')
     reporter_name = filters.CharFilter(
         field_name='reporter__full_name',
-        label='Reporter Name',
+        label='Reporter Name (contains)',
         lookup_expr='icontains')
     jurisdiction = filters.ChoiceFilter(choices=jur_choices)
     decision_date_min = filters.CharFilter(

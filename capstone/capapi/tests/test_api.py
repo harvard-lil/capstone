@@ -351,13 +351,15 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     court_name = case_to_test.court.name.split(' ')[1]
     response = client.get("%scases/?court_name=%s&format=json" % (api_url, court_name))
     content = response.json()
-    assert [case_to_test.id] == [result['id'] for result in content['results']]
+    for result in content['results']:
+        assert result['court'] == case_to_test.court.name
 
     # filtering case by reporter substring
     reporter_name = case_to_test.reporter.full_name.split(' ')[1]
     response = client.get("%scases/?reporter_name=%s&format=json" % (api_url, reporter_name))
     content = response.json()
-    assert [case_to_test.id] == [result['id'] for result in content['results']]
+    for result in content['results']:
+        assert result['reporter'] == case_to_test.reporter.full_name
 
 
 @pytest.mark.django_db
@@ -368,6 +370,23 @@ def test_filter_court(api_url, client, court):
     check_response(response)
     results = response.json()['results']
     assert court.name_abbreviation == results[0]['name_abbreviation']
+
+    # filtering court by name substring
+    court_name_str = court.name.split(' ')[1]
+    response = client.get("%scourts/?name=%s&format=json" % (api_url, court_name_str))
+    content = response.json()
+    for result in content['results']:
+        assert court_name_str in result['name']
+
+
+@pytest.mark.django_db
+def test_filter_reporter(api_url, client, reporter):
+    # filtering reporter by name substring
+    reporter_name_str = reporter.full_name.split(' ')[1]
+    response = client.get("%sreporters/?full_name=%s&format=json" % (api_url, reporter_name_str))
+    content = response.json()
+    for result in content['results']:
+        assert reporter_name_str in result['full_name']
 
 
 #  USER VIEWS
