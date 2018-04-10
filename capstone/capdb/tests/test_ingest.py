@@ -1,33 +1,32 @@
 import pytest
 
 import fabfile
-from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata, PageXML
+from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata, PageXML, \
+    CaseXML
 from scripts.helpers import parse_xml, serialize_xml
 
 @pytest.mark.django_db
-def test_volume_metadata(ingest_volume_xml):
+def test_ingested_xml(ingest_volume_xml):
+    # volume xml ingest
+    assert '<reporter abbreviation="Ill. App." volnumber="23">Illinois Appellate Court Reports</reporter>' in ingest_volume_xml.orig_xml
+
+    # volume metadata
     assert ingest_volume_xml.metadata.hollis_number == "005457617"
     assert ingest_volume_xml.metadata.rare is False  # boolean conversion
 
-@pytest.mark.django_db
-def test_tracking_tool_relationships(ingest_volume_xml):
+    # tracking tool relationships
     assert ingest_volume_xml.metadata.reporter.full_name == "Illinois Appellate Court Reports"
     assert ingest_volume_xml.metadata.tracking_tool_logs.first().pstep.pk == 'Prqu'
 
-@pytest.mark.django_db
-def test_volume_xml(ingest_volume_xml):
-    assert '<reporter abbreviation="Ill. App." volnumber="23">Illinois Appellate Court Reports</reporter>' in ingest_volume_xml.orig_xml
-
-@pytest.mark.django_db
-def test_case_and_page_xml(ingest_volume_xml):
+    # case and page relationships
     assert ingest_volume_xml.case_xmls.count() == 1
     assert ingest_volume_xml.page_xmls.count() == 6
     case_xml = ingest_volume_xml.case_xmls.first()
     assert '<name abbreviation="Home Insurance Co. of New York v. Kirk">' in case_xml.orig_xml
     assert case_xml.pages.count() == 6
 
-@pytest.mark.django_db
-def test_duplicative_case_xml(ingest_duplicative_case_xml):
+    # duplicative case
+    ingest_duplicative_case_xml = CaseXML.objects.get(metadata__case_id='32044061407086_0001')
     assert ingest_duplicative_case_xml.metadata.duplicative is True
     assert ingest_duplicative_case_xml.metadata.first_page == "1"
     assert ingest_duplicative_case_xml.metadata.last_page == "4"

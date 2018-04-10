@@ -61,8 +61,12 @@ class JurisdictionFactory(factory.DjangoModelFactory):
 
     name = factory.Faker('sentence', nb_words=2)
     name_long = factory.Faker('sentence', nb_words=4)
-    slug = factory.Sequence(lambda n: '%08d' % n)
 
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        """Making sure our slugs are pretty random so we don't run into IntegrityErrors on save."""
+        kwargs['slug'] = '%s-%s' % (slugify(kwargs['name']), random.randrange(1000000000))
+        return super()._create(model_class, *args, **kwargs)
 
 @register
 class ReporterFactory(factory.DjangoModelFactory):
@@ -75,18 +79,15 @@ class ReporterFactory(factory.DjangoModelFactory):
     created_at = timezone.now()
     updated_at = timezone.now()
     hollis = []
-    jurisdiction = factory.RelatedFactory(JurisdictionFactory)
-
 
 @register
 class VolumeFactory(factory.DjangoModelFactory):
     class Meta:
         model = VolumeMetadata
-    barcode = factory.Sequence(lambda n: '%08d' % n)
+    barcode = factory.Faker('ean', length=13)
     created_by = factory.SubFactory(TrackingToolUserFactory)
     reporter = factory.SubFactory(ReporterFactory)
     volume_number = factory.Sequence(lambda n: n)
-
 
 @register
 class VolumeXMLFactory(factory.DjangoModelFactory):
@@ -125,7 +126,6 @@ class CaseFactory(factory.DjangoModelFactory):
     court = factory.SubFactory(CourtFactory)
     volume = factory.SubFactory(VolumeFactory)
     reporter = factory.SubFactory(ReporterFactory)
-
 
 @register
 class CitationFactory(factory.DjangoModelFactory):

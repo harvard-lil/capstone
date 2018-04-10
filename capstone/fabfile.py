@@ -5,9 +5,10 @@ import hashlib
 import os
 from datetime import datetime
 import django
-import zipfile
 import json
-from random import randrange
+from random import randrange, randint
+from pathlib import Path
+
 # set up Django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
@@ -21,10 +22,11 @@ from django.contrib.auth.models import User
 from fabric.api import local
 from fabric.decorators import task
 
-from capdb.models import Jurisdiction, CaseMetadata, VolumeXML, VolumeMetadata, CaseXML
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML
 from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
 # from process_ingested_xml import fill_case_page_join_table
-from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, validate_private_volumes as validate_private_volumes_script, compare_alto_case
+from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
+    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export
 
 
 @task(alias='run')
@@ -286,45 +288,21 @@ def add_test_case(*barcodes):
 
 
 @task
-def bag_jurisdiction(jurname, zip_directory=".", zip_filename=None):
+def bag_jurisdiction(name, zip_directory=".", zip_filename=None):
     """
     Write a BagIt package of all case XML files in a given jurisdiction.
-    See http://gwdev-justinlittman.wrlc.org/bagit.html
     """
-    jurisdiction = Jurisdiction.objects.get(name=jurname)
-    slug = jurisdiction.slug
-    zip_filename = zip_filename if zip_filename else slug + ".zip"
-    zip_path = os.path.join(str(zip_directory), zip_filename)
-    payload = []
-    bagit = """BagIt-Version: 1.0
-Tag-File-Character-Encoding: UTF-8
-"""
-    baginfo = """Source-Organization: Harvard Law School Library Innovation Lab
-Organization-Address: 1545 Massachusetts Avenue, Cambridge, MA 02138
-Contact-Name: Library Innovation Lab
-Contact-Email: lil@law.harvard.edu
-External-Description: Case XML for %s
-Bagging-Date: %s
-""" % (jurisdiction.name_long, datetime.now().strftime("%Y-%m-%d"))
-    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as archive:
-        archive.writestr(os.path.join(slug, "bagit.txt"), bagit)
-        archive.writestr(os.path.join(slug, "bag-info.txt"), baginfo)
+    out_path = export.bag_jurisdiction(name, zip_directory, zip_filename)
+    print("Exported jurisdiction %s to %s" % (name, out_path))
 
-        cases = CaseMetadata.objects.filter(jurisdiction=jurisdiction).select_related('volume', 'reporter')
-        for case in cases:
-            reporter = case.reporter.short_name
-            volume = case.volume.volume_number
-            filename = case.case_id + '.xml'
-            orig_xml = case.case_xml.orig_xml
-            sha512 = hashlib.sha512(orig_xml.encode()).hexdigest()
-            path = os.path.join("data", reporter, volume, filename)
-            archive.writestr(os.path.join(slug, path), orig_xml)
-            payload.append("%s %s" % (sha512, path))
 
-        archive.writestr(os.path.join(slug, "manifest-sha512.txt"), "\n".join(payload))
-
-    print("completed: jurisdiction " + jurname + ", zip file " + zip_path)
-
+@task
+def bag_reporter(name, zip_directory=".", zip_filename=None):
+    """
+    Write a BagIt package of all case XML files in a given reporter.
+    """
+    out_path = export.bag_reporter(name, zip_directory, zip_filename)
+    print("Exported reporter %s to %s" % (name, out_path))
 
 
 @task
@@ -386,11 +364,15 @@ def show_slow_queries():
 
         shared_preload_libraries = 'pg_stat_statements'
 
-    in postgresql.conf, and that
+    in postgresql.conf, that
 
         CREATE EXTENSION pg_stat_statements;
 
-    has already been run for the capstone database.
+    has been run for the capstone database, and that
+
+        GRANT EXECUTE ON FUNCTION pg_stat_statements_reset() TO <user>;
+
+    has been run for the capstone user.
     """
     cursor = django.db.connection.cursor()
     with open('../services/postgres/s1_pg_stat_statements_top_total.sql') as f:
@@ -398,13 +380,83 @@ def show_slow_queries():
         cursor.execute(sql)
     try:
         rows = cursor.fetchall()
-        output = "*capstone slow query report*\n"
-    except Exception:
+        heading = "*capstone slow query report for %s*" % datetime.now().strftime("%Y-%m-%d")
+        queries = []
+    except:
         print(json.dumps({'text': 'Could not get slow queries'}))
         return
     for row in rows:
-        output += "```%s```\n" % row[8]
-        output += "ran on %s with %d call%s and took a total of %f ms\n" % (
-            row[7], row[0], "" if row[0] == 1 else "s", row[1]
-        )
-    print(json.dumps({'text': output}))
+        queries.append({
+            'fallback': "%s" % row[8],
+            'title': "%d call%s, %f ms" % (
+                row[0], "" if row[0] == 1 else "s", row[1]
+            ),
+            'text': "```%s```" % row[8]
+        })
+    print(json.dumps({'text': heading, 'attachments': queries}))
+    cursor.execute("select pg_stat_statements_reset();")
+
+
+@task
+def create_fixtures_db_for_benchmarking():
+    """
+    In settings_dev mark TEST_SLOW_QUERIES as True
+    """
+    try:
+        local('psql -c "CREATE DATABASE %s;"' % settings.TEST_SLOW_QUERIES_DB_NAME)
+        init_db()
+    except:
+        # Exception is thrown if test db has already been created
+        pass
+
+    migrate()
+
+
+@task
+def create_case_fixtures_for_benchmarking(amount=50000, randomize_casemets=False):
+    """
+    Create an amount of case fixtures.
+    This tasks assumes the existence of some casemet xmls in test_data
+
+    Make sure that you have the necessary jurisdictions for this task.
+    It might be a good idea to:
+        1. point tracking_tool to prod (WARNING: you are dealing with prod data be very very careful!)
+        2. go to ingest_tt_data.py's `ingest` method and comment out all
+            copyModel statements except
+            `copyModel(Reporters, Reporter, reporter_field_map, dupcheck)`
+            since Reporter is required for populating jurisdictions
+
+        3. run `fab ingest_metadata`
+        4. remove pointer to prod tracking_tool db!!
+    """
+    from test_data.test_fixtures.factories import CaseXMLFactory
+    if randomize_casemets:
+        # get all casemet paths to choose a random casemet xml
+        # for test case creation
+        casemet_paths = []
+        d = os.path.join(settings.BASE_DIR, "test_data/from_vendor/")
+        for root, dirs, files in os.walk(d):
+            for name in files:
+                if "_redacted_CASEMETS" in name:
+                    casemet_paths.append(os.path.join(root, name))
+        amount_of_paths = len(casemet_paths) - 1
+    else:
+        case_xml = (Path(settings.BASE_DIR) / "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml").read_text()
+
+    for _ in range(amount):
+        if randomize_casemets:
+            case_xml = (Path(casemet_paths[randint(0, amount_of_paths)])).read_text()
+        try:
+            # create casexml and casemetadata objects, save to db
+            CaseXMLFactory(orig_xml=case_xml)
+        except:
+            # Exception could happen because of duplicate slug keys on jurisdiction creation
+            # For now, skipping this issue
+            pass
+
+@task
+def tear_down_case_fixtures_for_benchmarking():
+    """
+    Make sure to mark settings_dev.TEST_SLOW_QUERIES as False
+    """
+    local('psql -c "DROP DATABASE %s;"' % settings.TEST_SLOW_QUERIES_DB_NAME)

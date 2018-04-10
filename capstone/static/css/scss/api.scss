@@ -28,15 +28,43 @@
   }
 }
 
-body.modal-open label {
-  display: block;
+///////////// modal
+// bootstrap4 changed .in class to .show
+// rest_framework still relies on old classes
+.fade.in {
+  opacity: 1;
 }
+.modal.in .modal-dialog {
+  -webkit-transform: translate(0, 0);
+  transform: translate(0, 0);
+}
+
+.modal-backdrop.in {
+  opacity: 0.5;
+}
+
+.modal-title {
+  display: none;
+}
+
+.modal-content {
+  font-size: 1rem;
+  input, select {
+    width: 100%;
+  }
+  select {
+    padding: 2px;
+  }
+  label {
+    text-transform: capitalize;
+  }
+}
+
 
 .breadcrumb {
   margin-top: 60px;
   font-size: 14px;
   li {
-    list-style-type: ' / ';
     margin-left: 10px;
   }
 }

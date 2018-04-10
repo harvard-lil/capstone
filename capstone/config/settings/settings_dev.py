@@ -37,6 +37,11 @@ if DEBUG_SQL:
         'handlers': ['sql']
     }
 
+TEST_SLOW_QUERIES_DB_NAME = 'capstone_test_queries'
+# to use slow queries db, add this to settings.py:
+# DATABASES['default']['NAME'] = TEST_SLOW_QUERIES_DB_NAME
+
+
 
 # django-debug-toolbar
 try:

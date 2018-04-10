@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 import bagit
 import zipfile
@@ -11,22 +13,22 @@ from capdb.tasks import create_case_metadata_from_all_vols
 import fabfile
 
 @pytest.mark.django_db
-def test_create_case_metadata_from_all_vols(ingest_case_xml):
+def test_create_case_metadata_from_all_vols(case_xml):
     # get initial state
     metadata_count = CaseMetadata.objects.count()
-    case_id = ingest_case_xml.metadata.case_id
+    case_id = case_xml.metadata.case_id
 
     # delete case metadata
-    ingest_case_xml.metadata.delete()
+    case_xml.metadata.delete()
     assert CaseMetadata.objects.count() == metadata_count - 1
 
     # recreate case metadata
     create_case_metadata_from_all_vols()
 
     # check success
-    ingest_case_xml.refresh_from_db()
+    case_xml.refresh_from_db()
     assert CaseMetadata.objects.count() == metadata_count
-    assert ingest_case_xml.metadata.case_id == case_id
+    assert case_xml.metadata.case_id == case_id
 
 @pytest.mark.django_db
 def test_bag_jurisdiction(case_xml, tmpdir):
@@ -39,7 +41,20 @@ def test_bag_jurisdiction(case_xml, tmpdir):
     with zipfile.ZipFile(bag_path + '.zip') as zf:
         zf.extractall(str(tmpdir))
     bag = bagit.Bag(bag_path)
-    assert bag.is_valid()
+    bag.validate()
+
+@pytest.mark.django_db
+def test_bag_reporter(case_xml, tmpdir):
+    # get the jurisdiction of the ingested case
+    reporter = case_xml.metadata.reporter
+    # bag the reporter
+    fabfile.bag_reporter(reporter.full_name, zip_directory=tmpdir)
+    # validate the bag
+    bag_path = next(Path(str(tmpdir)).glob("*.zip"))
+    with zipfile.ZipFile(str(bag_path)) as zf:
+        zf.extractall(str(tmpdir))
+    bag = bagit.Bag(str(bag_path.with_suffix('')))
+    bag.validate()
 
 @pytest.mark.django_db
 def test_write_inventory_files(tmpdir):
@@ -70,6 +85,6 @@ def test_show_slow_queries(capsys):
         fabfile.show_slow_queries()
         captured = capsys.readouterr()
         output = json.loads(captured.out)
-        assert "*capstone slow query report*" in output['text']
+        assert "capstone slow query report" in output['text']
     except utils.OperationalError:
         pytest.skip("pg_stat_statements is not in shared_preload_libraries")

@@ -18,7 +18,7 @@ user_router.register(r'accounts', views.UserViewSet)
 urlpatterns = [
     url(r'^$', views.get_docs, name='docs'),
     url(r'^terms$', views.get_terms, name='terms'),
-    url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt'), name='robots'),
+    url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots'),
     url(r'^', include(user_router.urls)),
     url(r'^api/v1/', include(router.urls)),
     # convenience pattern: catch all citations, redirect in CaseViewSet's retrieve

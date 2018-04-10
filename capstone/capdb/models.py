@@ -72,7 +72,7 @@ class AutoSlugMixin:
             "Either define a get_slug() method for %s, or pass slug_base to save()." % self.__class__.__name__)
 
 
-class CachedLookupMixin():
+class CachedLookupMixin:
     """
         Mixin for models that have a small number of items that get queried over and over but rarely change.
     """
@@ -307,8 +307,8 @@ class ProcessStep(models.Model):
 
 
 class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
-    name = models.CharField(max_length=100, blank=True)
-    name_long = models.CharField(max_length=100, blank=True)
+    name = models.CharField(max_length=100, blank=True, db_index=True)
+    name_long = models.CharField(max_length=100, blank=True, db_index=True)
     slug = models.SlugField(unique=True, max_length=255)
     whitelisted = models.BooleanField(default=False)
 
@@ -324,7 +324,7 @@ class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
 
 class Reporter(models.Model):
     jurisdictions = models.ManyToManyField(Jurisdiction)
-    full_name = models.CharField(max_length=1024)
+    full_name = models.CharField(max_length=1024, db_index=True)
     short_name = models.CharField(max_length=64)
     start_year = models.IntegerField(blank=True, null=True)
     end_year = models.IntegerField(blank=True, null=True)
@@ -445,9 +445,10 @@ class VolumeXML(BaseXMLModel):
 
 
 class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, db_index=True)
     name_abbreviation = models.CharField(max_length=100, blank=True)
-    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='courts', on_delete=models.SET_NULL)
+    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='courts',
+                                     on_delete=models.SET_NULL)
     slug = models.SlugField(unique=True, max_length=255, blank=False)
 
     def __str__(self):
@@ -476,7 +477,7 @@ class CaseMetadata(models.Model):
     decision_date_original = models.CharField(max_length=100, blank=True)
     court = models.ForeignKey('Court', null=True, related_name='case_metadatas', on_delete=models.SET_NULL)
     name = models.TextField(blank=True)
-    name_abbreviation = models.CharField(max_length=10000, blank=True)
+    name_abbreviation = models.CharField(max_length=1024, blank=True, db_index=True)
     volume = models.ForeignKey('VolumeMetadata', related_name='case_metadatas',
                                on_delete=models.DO_NOTHING)
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',

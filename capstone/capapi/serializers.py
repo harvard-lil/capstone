@@ -48,7 +48,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     reporter = serializers.ReadOnlyField(source='reporter.full_name')
     reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
     citations = CitationSerializer(many=True)
-    volume = serializers.ReadOnlyField(source='volume.volume_number')
+    volume_number = serializers.ReadOnlyField(source='volume.volume_number')
     volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
 
     class Meta:
@@ -69,7 +69,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'court_url',
             'reporter',
             'reporter_url',
-            'volume',
+            'volume_number',
             'volume_url',
             # 'judges',
             # 'attorneys',

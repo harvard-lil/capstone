@@ -1,6 +1,5 @@
 import urllib
 from django.conf import settings
-from django_filters.rest_framework import DjangoFilterBackend
 from django.http import JsonResponse, HttpResponseRedirect
 from django.utils.decorators import decorator_from_middleware
 from django.utils.text import slugify
@@ -30,7 +29,6 @@ class BaseViewMixin(viewsets.GenericViewSet):
 class JurisdictionViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.JurisdictionSerializer
     http_method_names = ['get']
-    filter_backends = (DjangoFilterBackend,)
     filter_class = filters.JurisdictionFilter
     queryset = models.Jurisdiction.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
@@ -49,6 +47,7 @@ class VolumeViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMi
 class ReporterViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
+    filter_class = filters.ReporterFilter
     queryset = models.Reporter.objects.all().prefetch_related('jurisdictions')
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
@@ -76,12 +75,13 @@ class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixi
         duplicative=True).select_related(
         'volume',
         'reporter',
-        ).prefetch_related(
-        'citations'
-        ).select_related(
         'jurisdiction',
         'court'
-        ).filter(jurisdiction__isnull=False, court__isnull=False)
+        ).prefetch_related(
+        'citations'
+        ).filter(
+        jurisdiction__isnull=False,
+        court__isnull=False)
 
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
     filter_class = filters.CaseFilter
