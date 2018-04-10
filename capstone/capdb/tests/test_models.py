@@ -54,7 +54,7 @@ def test_create_or_update_metadata(ingest_case_xml):
     # strip soft dashes
     ingest_case_xml.orig_xml = ingest_case_xml.orig_xml.replace(new_author, new_author + '\xad')
     ingest_case_xml.save()
-    ingest_case_xml.refresh_from_db()
+    ingest_case_xml.metadata.refresh_from_db()
     assert ingest_case_xml.metadata.opinions['majority'] == new_author
 
 ### CaseXML ###
@@ -99,7 +99,7 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml, django_assert_nu
     updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
     parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
     ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    with django_assert_num_queries(select=9, update=6):
+    with django_assert_num_queries(select=5, update=4):
         ingest_case_xml.save()
 
 
