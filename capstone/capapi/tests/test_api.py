@@ -112,6 +112,11 @@ def test_unauthorized_request(api_user, api_url, client, case):
     api_user.refresh_from_db()
     assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
+    # unauthorized token as query_param
+    url = "%scases/%s/?full_case=true&api_key=%s" % (api_url, case.id, '00000fake')
+    response = client.get(url)
+    check_response(response, status_code=401, format='')
+
 
 @pytest.mark.django_db
 def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
@@ -144,6 +149,18 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     assert 'error_' in casebody['status']
     assert not casebody['data']
 
+    url = "%scases/%s/?format=xml&full_case=true" % (api_url, case.pk)
+    response = client.get(url)
+    check_response(response, format='')
+    response_content = response.content.decode()
+    assert '<error>Casebody Error</error>' in response_content
+
+    url = "%scases/%s/?format=html&full_case=true" % (api_url, case.pk)
+    response = client.get(url)
+    check_response(response, format='')
+    response_content = response.content.decode()
+    assert '<p>Casebody Error</p>' in response_content
+
 
 @pytest.mark.django_db
 def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, case):
@@ -162,6 +179,7 @@ def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, ca
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
+
 @pytest.mark.django_db
 def test_authenticated_full_case_blacklisted(auth_user, api_url, auth_client, case):
     ### blacklisted jurisdiction cases should be counted against the user
@@ -178,6 +196,7 @@ def test_authenticated_full_case_blacklisted(auth_user, api_url, auth_client, ca
     # make sure the auth_user's case download number has gone down by 1
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+
 
 @pytest.mark.django_db
 def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, three_cases, jurisdiction, django_assert_num_queries):
@@ -349,6 +368,27 @@ def test_filter_court(api_url, client, court):
     check_response(response)
     results = response.json()['results']
     assert court.name_abbreviation == results[0]['name_abbreviation']
+
+
+# RESPONSE FORMATS
+@pytest.mark.django_db
+def test_formats(api_url, auth_user, client, case):
+    formats = ['html', 'xml', 'json']
+    for format in formats:
+        # test format html without api_key
+        url = "%scases/%s/?format=%s&full_case=true" % (api_url, case.id, format)
+        response = client.get(url)
+        check_response(response, format=format)
+        response_content = response.content.decode()
+        assert 'error' in response_content.lower()
+
+        # test full, authorized case
+        token = auth_user.get_api_key()
+        url = "%scases/%s/?format=%s&full_case=true&api_key=%s" % (api_url, case.id, format, token)
+        response = client.get(url)
+        check_response(response, format=format)
+        response_content = response.content.decode()
+        assert case.name in response_content
 
 
 #  USER VIEWS
