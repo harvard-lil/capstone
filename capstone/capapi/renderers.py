@@ -3,8 +3,6 @@ from rest_framework import renderers
 from scripts.generate_case_html import generate_html
 from scripts import helpers
 
-from capdb.models import CaseMetadata
-
 
 class JSONRenderer(renderers.JSONRenderer):
     media_type = 'application/json'
