@@ -1,7 +1,6 @@
 import urllib
 from django.conf import settings
 from django.http import JsonResponse, HttpResponseRedirect
-from django.utils.decorators import decorator_from_middleware
 from django.utils.text import slugify
 from django.shortcuts import render
 
@@ -14,20 +13,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser, FormParser
 
 from capapi import permissions, serializers, filters, resources, models as capapi_models
+
 from capapi import renderers as capapi_renderers
-from capapi.middleware import RequestLogMiddleware
+
 from capdb import models
 
 
-class BaseViewMixin(viewsets.GenericViewSet):
-
-    @classmethod
-    def as_view(cls, *args, **kwargs):
-        view = super(BaseViewMixin, cls).as_view(*args, **kwargs)
-        return decorator_from_middleware(RequestLogMiddleware)(view)
-
-
-class JurisdictionViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.JurisdictionSerializer
     http_method_names = ['get']
     filter_class = filters.JurisdictionFilter
@@ -36,7 +28,7 @@ class JurisdictionViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListM
     lookup_field = 'slug'
 
 
-class VolumeViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.VolumeSerializer
     http_method_names = ['get']
     queryset = models.VolumeMetadata.objects.all().select_related(
@@ -45,7 +37,7 @@ class VolumeViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMi
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class ReporterViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
     filter_class = filters.ReporterFilter
@@ -53,7 +45,7 @@ class ReporterViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModel
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class CourtViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.CourtSerializer
     http_method_names = ['get']
     filter_class = filters.CourtFilter
@@ -62,14 +54,14 @@ class CourtViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMix
     lookup_field = 'slug'
 
 
-class CitationViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class CitationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.CitationWithCaseSerializer
     http_method_names = ['get']
     queryset = models.Citation.objects.all()
     renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
 
 
-class CaseViewSet(BaseViewMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
     queryset = models.CaseMetadata.objects.exclude(
