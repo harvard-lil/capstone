@@ -194,7 +194,6 @@ class BaseXMLModel(models.Model):
         parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["CHECKSUM"] = new_checksum
         parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["SIZE"] = new_size
         self.orig_xml = serialize_xml(parsed_document)
-        self.save()
 
     def xml_modified(self):
         """ Return True if orig_xml was previously saved to the database and is now different. """
@@ -509,6 +508,7 @@ class CaseXML(BaseXMLModel):
 
     @transaction.atomic
     def save(self, update_related=True, *args, **kwargs):
+
         # allow disabling of create_or_update_metadata for testing
         create_or_update_metadata = kwargs.pop('create_or_update_metadata', True)
 
@@ -536,7 +536,6 @@ class CaseXML(BaseXMLModel):
             This function should only be called if orig_xml has changed from a previously saved version,
             and should only need to be called from save().
         """
-
         # parse objects and get the xml tree objects
         parsed_original_case = parse_xml(self.tracker.previous('orig_xml'))
         parsed_updated_case = parse_xml(self.orig_xml)
@@ -586,11 +585,11 @@ class CaseXML(BaseXMLModel):
 
         # get the alto files associated with the case in the DB
         alto_files = {}
+        alto_files['modified'] = {}
         for alto in self.pages.all():
             alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-            alto_files[alto_fileid] = alto
+            alto_files[alto_fileid] = parse_xml(alto.orig_xml)
 
-        modified_casebody_element = False
         # check to see if any elements in the casebody have been updated so we can update the ALTO
         # since the tree structures match, we can just iterate over the tree elements and compare values
         for original_element in original_casebody_tree.iter():
@@ -616,21 +615,16 @@ class CaseXML(BaseXMLModel):
 
             # check for a modified tag name
             if original_element.tag != updated_element.tag:
-                modified_casebody_element = True
                 # go through each alto file that refers to the tag and update the reference
                 for alto in element_pages:
-                    alto_page = alto_files[alto]
-                    parsed_alto_page = parse_xml(alto_page.orig_xml)
-                    structure_tag = parsed_alto_page(
+                    structure_tag = alto_files[alto](
                         'alto|StructureTag[ID="{}"]'.format(original_element.get('id')))
                     if structure_tag is not None:
                         structure_tag.attr["LABEL"] = updated_element.tag.rsplit('}', 1)[1]
-                        alto_page.orig_xml = serialize_xml(parsed_alto_page)
-                        alto_page.save(save_case=False)
+                        alto_files['modified'][alto] = True
 
             # check for modified element text
             if original_element.text != updated_element.text:
-                modified_casebody_element = True
                 # we haven't devised a strategy for dealing with this yet
                 if len(updated_element.text.split(" ")) != len(original_element.text.split(" ")):
                     raise Exception("No current support for adding or removing case text")
@@ -641,9 +635,7 @@ class CaseXML(BaseXMLModel):
                 wordcount = 0
                 # loop through each referenced alto file
                 for alto in element_pages:
-                    alto_page = alto_files[alto]
-                    parsed_alto_page = parse_xml(alto_page.orig_xml)
-                    text_block = parsed_alto_page(
+                    text_block = alto_files[alto](
                         'alto|TextBlock[TAGREFS="{}"]'.format(original_element.get('id')))
                     words = text_block("alto|String")
 
@@ -656,31 +648,32 @@ class CaseXML(BaseXMLModel):
                         original_word = original_element_split[wordcount]
                         assert original_word == word.get("CONTENT")
                         if updated_word != original_word:
+                            alto_files['modified'][alto] = True
                             # update ALTO & set the character confidence and word confidence to 100%
                             word.set("WC", "1.00")
                             word.set("CC", "0")
                             word.set("CONTENT", updated_element.text.split(" ")[wordcount])
                         wordcount += 1
 
-                    alto_page.orig_xml = serialize_xml(parsed_alto_page)
-                    alto_page.save(save_case=False)
+        self.orig_xml = force_str(serialize_xml(parsed_updated_case))
 
-        # update the volume md5
+        # update and save the modified altos, and update the md5/size in the case and volume
+        for alto in self.pages.all():
+            alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
+            if alto_fileid in alto_files['modified']:
+                alto.orig_xml = serialize_xml(alto_files[alto_fileid])
+                alto.md5 = alto.get_md5()
+                alto.save(save_case=False, save_volume=False)
+                self.volume.update_related_sums(alto_fileid, alto.md5, str(len(force_bytes(alto.orig_xml))))
+                self.update_related_sums(alto_fileid, alto.md5, str(len(force_bytes(alto.orig_xml))))
+
+        # update md5 and update the volume with the new md5/size
         self.md5 = self.get_md5()
         case_id = parsed_original_case('case|case').attr('caseid')
         short_case_id = "casemets_{}".format(case_id.split('_')[1])
-        self.volume.refresh_from_db()
         self.volume.update_related_sums(short_case_id, self.md5, str(len(force_bytes(self.orig_xml))))
+        self.volume.save()
 
-        # update the page md5s if a casebody element was modified
-        if modified_casebody_element is True:
-            for alto in self.pages.all():
-                alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-                parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["CHECKSUM"] = alto.md5
-                parsed_updated_case('mets|file[ID="{}"]'.format(alto_fileid)).attr["SIZE"] = str(
-                    len(force_bytes(self.orig_xml)))
-
-        self.orig_xml = force_str(serialize_xml(parsed_updated_case))
 
     def create_or_update_metadata(self, update_existing=True, save_self=True):
         """
@@ -691,20 +684,22 @@ class CaseXML(BaseXMLModel):
         """
 
         # get or create case.metadata
-        case_metadata = self.metadata
-        if case_metadata:
+        if self.metadata_id is not None:
+            case_for_relations = CaseXML.objects.select_related('volume__metadata__reporter', 'metadata').prefetch_related('metadata__citations').get(id=self.pk)
+            case_metadata = case_for_relations.metadata
             if not update_existing:
                 # if case already exists, return out
-                return case_metadata
+                return self.metadata
             metadata_created = False
         else:
+            case_for_relations = self
             case_metadata = CaseMetadata()
             metadata_created = True
 
         # set up data
         data = get_case_metadata(force_str(self.orig_xml))
         duplicative_case = data['duplicative']
-        volume_metadata = self.volume.metadata
+        volume_metadata = case_for_relations.volume.metadata
         reporter = volume_metadata.reporter
 
         # set case_metadata attributes
@@ -757,7 +752,7 @@ class CaseXML(BaseXMLModel):
         ### Handle citations
 
         # fetch any existing cites from the database
-        existing_cites = {} if metadata_created else {cite.cite: cite for cite in case_metadata.citations.all()}
+        existing_cites = {} if metadata_created else {cite.cite: cite for cite in case_for_relations.metadata.citations.all()}
 
         # set up a fake cite for duplicate cases
         if duplicative_case:
@@ -833,14 +828,18 @@ class PageXML(BaseXMLModel):
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
         #has our XML changed?
         if self.xml_modified():
-            short_alto_id = "_".join((["alto"] + self.barcode.split('_')[1:3]))
-            self.md5 = self.get_md5()
 
-            if save_volume:
-                self.volume.update_related_sums(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
-            if save_case:
-                for case in self.cases.all():
-                    case.update_related_sums(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
+            if save_case or save_volume:
+                short_alto_id = "_".join((["alto"] + self.barcode.split('_')[1:3]))
+                self.md5 = self.get_md5()
+
+                if save_volume:
+                    self.volume.update_related_sums(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
+                    self.volume.save()
+                if save_case:
+                    for case in self.cases.all():
+                        case.update_related_sums(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
+                        case.save()
         super(PageXML, self).save(force_insert, force_update, *args, **kwargs)
 
     def __str__(self):
