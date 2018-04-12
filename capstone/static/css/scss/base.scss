@@ -28,10 +28,13 @@ pre {
 a {
   cursor: pointer;
   border-bottom: 0;
-  color: $color-blue; }
-  a:hover, a :focus, a :active {
+  color: $color-blue;
+  &:hover, &:focus, &:active {
     color: $color-black;
-    border-bottom: 0; }
+    border-bottom: 0;
+    text-decoration: none;
+  }
+}
 
 .btn {
   font-size: 14px;
