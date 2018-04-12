@@ -127,6 +127,7 @@ class CaseFactory(factory.DjangoModelFactory):
     volume = factory.SubFactory(VolumeFactory)
     reporter = factory.SubFactory(ReporterFactory)
 
+
 @register
 class CitationFactory(factory.DjangoModelFactory):
     class Meta:
