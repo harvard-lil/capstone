@@ -493,6 +493,7 @@ class CaseMetadata(models.Model):
         # speed up queries with default ordering
         indexes = [
             models.Index(fields=['decision_date', 'id']),
+            models.Index(fields=['jurisdiction_id', 'decision_date', 'id']),
         ]
 
 
