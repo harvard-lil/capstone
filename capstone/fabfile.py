@@ -22,7 +22,7 @@ from django.contrib.auth.models import User
 from fabric.api import local
 from fabric.decorators import task
 
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery
 from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
 # from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
@@ -386,12 +386,19 @@ def show_slow_queries():
         print(json.dumps({'text': 'Could not get slow queries'}))
         return
     for row in rows:
+        call_count, run_time, query = row[0], row[1], row[8]
+
+        # fetch query from DB log and update last seen time
+        saved_query, created = SlowQuery.objects.get_or_create(query=query)
+        if not created:
+            saved_query.save(update_fields=['last_seen'])
+
         queries.append({
-            'fallback': "%s" % row[8],
-            'title': "%d call%s, %f ms" % (
-                row[0], "" if row[0] == 1 else "s", row[1]
+            'fallback': saved_query.label or query,
+            'title': "%d call%s, %.1f ms, %.1f ms/query" % (
+                call_count, "" if call_count == 1 else "s", run_time, run_time/float(call_count)
             ),
-            'text': "```%s```" % row[8]
+            'text': saved_query.label or "```%s```" % query
         })
     print(json.dumps({'text': heading, 'attachments': queries}))
     cursor.execute("select pg_stat_statements_reset();")

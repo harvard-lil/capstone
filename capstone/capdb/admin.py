@@ -1,7 +1,8 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, TrackingToolUser
+from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, \
+    TrackingToolUser, SlowQuery
 
 
 def new_class(name, *args, **kwargs):
@@ -34,6 +35,11 @@ class ReporterAdmin(admin.ModelAdmin):
     # to inline volumes:
     # inlines = [new_class('VolumeInline', admin.TabularInline, model=VolumeMetadata)]
 admin.site.register(Reporter, ReporterAdmin)
+
+@admin.register(SlowQuery)
+class SlowQueryAdmin(admin.ModelAdmin):
+    list_display = ['last_seen', 'label', 'query']
+    list_editable = ['label']
 
 admin.site.register(VolumeMetadata)
 admin.site.register(ProcessStep)
