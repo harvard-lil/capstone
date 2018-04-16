@@ -111,7 +111,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.UserSerializer
     renderer_classes = [renderers.TemplateHTMLRenderer]
-    queryset = capapi_models.APIUser.objects.all()
+    queryset = capapi_models.CapUser.objects.all()
     parser_classes = (JSONParser, FormParser,)
     lookup_field = 'email'
 
@@ -169,10 +169,10 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return Response({'errors': serializer.errors, 'serializer': serializer}, template_name='log-in.html', status=status.HTTP_401_UNAUTHORIZED)
 
-    @list_route(methods=['post'], permission_classes=[permissions.IsAuthenticatedAPIUser])
+    @list_route(methods=['post'], permission_classes=[permissions.IsAuthenticatedCapUser])
     def resend_verification(self, request):
 
-        user = capapi_models.APIUser.objects.get(email=request.data.get('user_email'))
+        user = capapi_models.CapUser.objects.get(email=request.data.get('user_email'))
 
         resources.email(reason='new_signup', user=user)
         content = {
