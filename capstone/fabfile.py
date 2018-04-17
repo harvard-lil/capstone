@@ -18,10 +18,10 @@ except Exception as e:
     print("WARNING: Can't configure Django -- tasks depending on Django will fail:\n%s" % e)
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from fabric.api import local
 from fabric.decorators import task
 
+from capapi.models import CapUser
 from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery
 from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
 # from process_ingested_xml import fill_case_page_join_table
@@ -111,7 +111,7 @@ def init_db():
     migrate()
 
     print("Creating DEV admin user:")
-    User.objects.create_superuser('admin', 'admin@example.com', 'admin')
+    CapUser.objects.create_superuser('admin@example.com', 'admin')
 
 @task
 def migrate():

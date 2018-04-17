@@ -102,15 +102,15 @@ def test_single_reporter(client, api_url, reporter):
 
 # REQUEST AUTHORIZATION
 @pytest.mark.django_db
-def test_unauthorized_request(api_user, api_url, client, case):
-    assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
+def test_unauthorized_request(cap_user, api_url, client, case):
+    assert cap_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
     url = "%scases/%s/?full_case=true" % (api_url, case.id)
     client.credentials(HTTP_AUTHORIZATION='Token fake')
     response = client.get(url)
     check_response(response, status_code=401, format='')
 
-    api_user.refresh_from_db()
-    assert api_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
+    cap_user.refresh_from_db()
+    assert cap_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
 
     # unauthorized token as query_param
     url = "%scases/%s/?full_case=true&api_key=%s" % (api_url, case.id, '00000fake')
@@ -440,7 +440,7 @@ def test_view_details(auth_user, client):
     """
     User is able to log in successfully and see an API Token
     """
-    url = reverse('apiuser-view-details')
+    url = reverse('capuser-view-details')
     auth_user.set_password('pass')
     auth_user.save()
     response = client.post(url, {
