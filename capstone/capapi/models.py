@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class CapUserManager(BaseUserManager):
-    def create_user(self, **kwargs):
-        email = kwargs.pop('email')
-        password = kwargs.pop('password')
+    def create_user(self, email, password, **kwargs):
         if not email:
             raise ValueError('Email address is required')
 
@@ -38,9 +36,7 @@ class CapUserManager(BaseUserManager):
         if kwargs.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        kwargs.setdefault('email', email)
-        kwargs.setdefault('password', password)
-        return self.create_user(**kwargs)
+        return self.create_user(email=email, password=password, **kwargs)
 
 
 class CapUser(AbstractBaseUser):
@@ -127,7 +123,7 @@ class CapUser(AbstractBaseUser):
     def get_api_key(self):
         try:
             # relying on DRF's Token model
-            return self.auth_token
+            return self.auth_token.key
         except ObjectDoesNotExist:
             return None
 

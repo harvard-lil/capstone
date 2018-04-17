@@ -257,7 +257,9 @@ class RegisterUserSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         try:
-            user = CapUser.objects.create_user(**validated_data)
+            email_val = validated_data.pop('email', None)
+            password = validated_data.pop('password', None)
+            user = CapUser.objects.create_user(email=email_val, password=password, **validated_data)
             email(reason='new_signup', user=user)
             return user
         except Exception as e:
