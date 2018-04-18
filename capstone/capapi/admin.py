@@ -3,7 +3,6 @@ from django.contrib import admin
 
 from . import models
 
-
 def authenticate_user(modeladmin, request, queryset):
     """
     This method will override old key_expires fields by setting it to timezone.now()

@@ -151,6 +151,12 @@ def admin_user(db, django_user_model, django_username_field):
             'test_admin_user@example.com', 'password', **extra_fields)
     return user
 
+@pytest.fixture()
+def staff_user(cap_user):
+    cap_user.is_staff = True
+    cap_user.save()
+    return cap_user
+
 
 @pytest.fixture()
 def admin_client(db, admin_user):
