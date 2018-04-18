@@ -65,16 +65,20 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
     queryset = models.CaseMetadata.objects.exclude(
-        duplicative=True).select_related(
+        duplicative=True
+    ).select_related(
         'volume',
         'reporter',
         'jurisdiction',
         'court'
-        ).prefetch_related(
+    ).prefetch_related(
         'citations'
-        ).filter(
+    ).filter(
         jurisdiction__isnull=False,
-        court__isnull=False)
+        court__isnull=False
+    ).order_by(
+        'decision_date', 'id'  # include id to get consistent ordering for cases with same date
+    )
 
     renderer_classes = (
         renderers.BrowsableAPIRenderer,
