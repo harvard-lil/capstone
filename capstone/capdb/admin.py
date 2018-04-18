@@ -2,7 +2,7 @@ from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, \
-    TrackingToolUser, SlowQuery
+    TrackingToolUser, SlowQuery, Jurisdiction
 
 
 def new_class(name, *args, **kwargs):
@@ -43,12 +43,18 @@ class SlowQueryAdmin(admin.ModelAdmin):
     list_editable = ['label']
 
 
+class JurisdictionAdmin(admin.ModelAdmin):
+    list_display = ['whitelisted', 'name_long']
+
+
 admin.site.register(VolumeXML, VolumeXMLAdmin)
 admin.site.register(PageXML, PageXMLAdmin)
 admin.site.register(CaseXML, CaseXMLAdmin)
 admin.site.register(TrackingToolLog, TrackingToolLogAdmin)
 admin.site.register(Reporter, ReporterAdmin)
 admin.site.register(SlowQuery, SlowQueryAdmin)
+admin.site.register(Jurisdiction, JurisdictionAdmin)
+
 admin.site.register(VolumeMetadata)
 admin.site.register(ProcessStep)
 admin.site.register(BookRequest)
