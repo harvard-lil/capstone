@@ -1,4 +1,3 @@
-import re
 import logging
 
 from django.db import transaction
@@ -9,8 +8,6 @@ from capdb import models
 from .models import APIUser
 from .resources import email
 from .permissions import get_single_casebody_permissions
-from scripts.generate_case_html import generate_html
-from scripts import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -130,26 +127,11 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
     def get_casebody(self, case):
         request = self.context.get('request')
         casebody = get_single_casebody_permissions(request, case)
-        if casebody["status"] != "ok":
-            return casebody
-
-        orig_xml = case.case_xml.orig_xml
-        try:
-            renderer_format = request.accepted_renderer.format
-        except AttributeError:
-            # this can happen during testing
-            renderer_format = 'json'
-        body_format = request.query_params.get('body_format', renderer_format).lower()
-        if body_format == 'html':
-            casebody["data"] = generate_html(orig_xml)
-
-        elif body_format == 'xml':
-            extracted = helpers.extract_casebody(orig_xml)
-            c = helpers.serialize_xml(extracted)
-            casebody["data"] = re.sub(r"\s{2,}", " ", c.decode())
-        else:
-            # send text to everyone else
-            casebody["data"] = helpers.extract_casebody(orig_xml).text()
+        # if getting casebody is allowed set casebody to orig_xml
+        # while we figure out what to do with it in our renderers
+        # otherwise return casebody obj with status errors
+        if casebody['status'] == 'ok':
+            casebody['data'] = case.case_xml.orig_xml
         return casebody
 
 

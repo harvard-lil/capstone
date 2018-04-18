@@ -13,6 +13,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser, FormParser
 
 from capapi import permissions, serializers, filters, resources, models as capapi_models
+
+from capapi import renderers as capapi_renderers
+
 from capdb import models
 
 
@@ -73,7 +76,12 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         jurisdiction__isnull=False,
         court__isnull=False)
 
-    renderer_classes = (renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+    renderer_classes = (
+        renderers.BrowsableAPIRenderer,
+        capapi_renderers.JSONRenderer,
+        capapi_renderers.XMLRenderer,
+        capapi_renderers.HTMLRenderer,
+    )
     filter_class = filters.CaseFilter
     lookup_field = 'id'
 

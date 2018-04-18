@@ -493,6 +493,7 @@ class CaseMetadata(models.Model):
         # speed up queries with default ordering
         indexes = [
             models.Index(fields=['decision_date', 'id']),
+            models.Index(fields=['jurisdiction_id', 'decision_date', 'id']),
         ]
 
 
@@ -862,3 +863,16 @@ class DataMigration(models.Model):
     alto_xml_rollback = JSONField()
     volume_xml_rollback = JSONField()
     case_xml_rollback = JSONField()
+
+
+class SlowQuery(models.Model):
+    query = models.TextField()
+    label = models.CharField(max_length=255, blank=True, null=True)
+    last_seen = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-last_seen']
+        verbose_name_plural = "Slow queries"
+
+    def __str__(self):
+        return self.label or self.query
