@@ -1,9 +1,11 @@
+from django.utils.functional import SimpleLazyObject
 from django.utils.text import slugify
 import rest_framework_filters as filters
 
 from capdb import models
 
-jur_choices = [(jur.id, jur.name) for jur in models.Jurisdiction.objects.all()]
+# lazy load jur_choices so we don't get an error if this file is imported when database tables don't exist yet
+jur_choices = SimpleLazyObject(lambda: [(jur.id, jur.name) for jur in models.Jurisdiction.objects.all()])
 
 
 class JurisdictionFilter(filters.FilterSet):

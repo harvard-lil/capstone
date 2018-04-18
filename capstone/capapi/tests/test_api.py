@@ -213,6 +213,11 @@ def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, thre
         extra_case.jurisdiction = jurisdiction
         extra_case.save()
 
+    # preload capapi.filters.jur_choices so it doesn't sometimes get counted by django_assert_num_queries below
+    from capapi.filters import jur_choices
+    len(jur_choices)
+
+    # fetch the two blacklisted cases and one whitelisted case
     url = "%scases/?full_case=true" % (api_url)
     with django_assert_num_queries(select=7, update=1):
         response = auth_client.get(url)
@@ -371,14 +376,14 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     response = client.get("%scases/?court_name=%s&format=json" % (api_url, court_name))
     content = response.json()
     for result in content['results']:
-        assert result['court'] == case_to_test.court.name
+        assert court_name in result['court']
 
     # filtering case by reporter substring
     reporter_name = case_to_test.reporter.full_name.split(' ')[1]
     response = client.get("%scases/?reporter_name=%s&format=json" % (api_url, reporter_name))
     content = response.json()
     for result in content['results']:
-        assert result['reporter'] == case_to_test.reporter.full_name
+        assert reporter_name in result['reporter']
 
 
 @pytest.mark.django_db
