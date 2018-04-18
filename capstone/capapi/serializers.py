@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ListSerializer
 
 from capdb import models
-from .models import APIUser
+from .models import CapUser
 from .resources import email
 from .permissions import get_single_casebody_permissions
 
@@ -200,13 +200,13 @@ class CourtSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = APIUser
+        model = CapUser
         fields = '__all__'
         read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance_remaining', 'key_expires')
         lookup_field = 'email'
 
     def verify_with_nonce(self, user_id, activation_nonce):
-        found_user = APIUser.objects.get(pk=user_id)
+        found_user = CapUser.objects.get(pk=user_id)
         if not found_user.is_authenticated:
             found_user.authenticate_user(activation_nonce=activation_nonce)
         return found_user
@@ -238,7 +238,7 @@ class RegisterUserSerializer(serializers.Serializer):
         fields = '__all__'
 
     def validate_email(self, email):
-        existing = APIUser.objects.filter(email=email).first()
+        existing = CapUser.objects.filter(email=email).first()
         if existing:
             msg = "Someone with that email address has already registered."
             raise serializers.ValidationError(msg)
@@ -257,7 +257,9 @@ class RegisterUserSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         try:
-            user = APIUser.objects.create_user(**validated_data)
+            email_val = validated_data.pop('email', None)
+            password = validated_data.pop('password', None)
+            user = CapUser.objects.create_user(email=email_val, password=password, **validated_data)
             email(reason='new_signup', user=user)
             return user
         except Exception as e:
@@ -269,15 +271,15 @@ class LoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=100, style={'input_type': 'password'})
 
     class Meta:
-        model = APIUser
+        model = CapUser
         fields = ('email', 'password')
         write_only_fields = ('password')
         lookup_field = 'email'
 
     def verify_with_password(self, email, password):
         try:
-            user = APIUser.objects.get(email=email)
-        except APIUser.DoesNotExist:
+            user = CapUser.objects.get(email=email)
+        except CapUser.DoesNotExist:
             return None
         if user.check_password(password):
             return user

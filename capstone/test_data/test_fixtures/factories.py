@@ -1,4 +1,7 @@
+import os
+import binascii
 import random
+from datetime import timezone
 from pathlib import Path
 
 import factory
@@ -13,18 +16,19 @@ from capdb.models import *
 ### factories ###
 
 # Calling @pytest_factoryboy.register on each factory exposes it as a pytest fixture.
-# For example, APIUserFactory will be available as the fixture "api_user".
+# For example, CapUserFactory will be available as the fixture "cap_user".
 
 @register
-class APIUserFactory(factory.DjangoModelFactory):
+class CapUserFactory(factory.DjangoModelFactory):
     class Meta:
-        model = APIUser
+        model = CapUser
 
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
     total_case_allowance = 500
     case_allowance_remaining = 500
-    is_admin = False
+    is_staff = False
+    is_superuser = False
     is_active = True
     email = factory.LazyAttributeSequence(lambda o, n: '%s_%s%d@example.com' % (o.first_name, o.last_name, n))
     password = factory.PostGenerationMethodCall('set_password', 'pass')
@@ -33,11 +37,11 @@ class APIUserFactory(factory.DjangoModelFactory):
 
 
 @register
-class APITokenFactory(factory.DjangoModelFactory):
+class TokenFactory(factory.DjangoModelFactory):
     class Meta:
-        model = APIToken
+        model = Token
 
-    user = factory.SubFactory(APIUserFactory)
+    user = factory.SubFactory(CapUserFactory)
     key = factory.Sequence(lambda n: binascii.hexlify(os.urandom(20)).decode())
     created = timezone.now()
 

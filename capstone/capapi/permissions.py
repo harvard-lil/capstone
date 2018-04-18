@@ -11,7 +11,7 @@ class IsAdmin(permissions.BasePermission):
         return request.user.is_admin
 
 
-class IsAuthenticatedAPIUser(permissions.BasePermission):
+class IsAuthenticatedCapUser(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.auth is not None
 
@@ -44,7 +44,6 @@ def get_single_casebody_permissions(request, case):
     if request.user.is_anonymous:
         casebody["status"] = casebody_permissions[1]
     else:
-
         try:
             request.user.update_case_allowance(case_count=1, save=False)
             casebody["status"] = casebody_permissions[0]

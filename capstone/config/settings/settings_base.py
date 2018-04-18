@@ -8,6 +8,7 @@ ALLOWED_HOSTS = []
 
 ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
 
+AUTH_USER_MODEL = 'capapi.CapUser'
 
 # Application definition
 
@@ -43,7 +44,7 @@ REST_FRAMEWORK = {
         'rest_framework_filters.backends.DjangoFilterBackend',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'capapi.authentication.CAPAPIUserAuthentication',
+        'capapi.authentication.CapUserAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'capapi.permissions.IsSafeMethodsUser',

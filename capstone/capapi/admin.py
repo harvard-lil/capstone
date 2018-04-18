@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.contrib import admin
+
 from . import models
 
 
@@ -16,12 +17,13 @@ def authenticate_user(modeladmin, request, queryset):
 authenticate_user.short_description = "Authenticate selected Users"
 
 
-class APIUserAdmin(admin.ModelAdmin):
+class CapUserAdmin(admin.ModelAdmin):
     readonly_fields = ('date_joined', 'api_key')
     list_display = (
         'email',
         'last_name',
         'first_name',
+        'is_staff',
         'api_key',
         'case_allowance_remaining',
         'total_case_allowance',
@@ -36,5 +38,4 @@ class APIUserAdmin(admin.ModelAdmin):
     api_key.short_description = "API Key"
 
 
-admin.site.register(models.APIUser, APIUserAdmin)
-admin.site.register(models.APIToken)
+admin.site.register(models.CapUser, CapUserAdmin)

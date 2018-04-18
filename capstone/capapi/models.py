@@ -1,40 +1,45 @@
 from datetime import timedelta
 import uuid
 import logging
-import binascii
-import os
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import IntegrityError, models
 from django.utils import timezone
-
 from django.conf import settings
+
 from model_utils import FieldTracker
+
+from rest_framework.authtoken.models import Token
 
 logger = logging.getLogger(__name__)
 
 
-class APIUserManager(BaseUserManager):
-    def create_user(self, **kwargs):
-        email = kwargs.get('email')
-        password = kwargs.get('password')
+class CapUserManager(BaseUserManager):
+    def create_user(self, email, password, **kwargs):
         if not email:
             raise ValueError('Email address is required')
 
-        user = self.model(
-            email=self.normalize_email(email),
-        )
-        user.first_name = kwargs.get('first_name')
-        user.last_name = kwargs.get('last_name')
+        user = self.model(email=self.normalize_email(email), **kwargs)
         user.set_password(password)
         user.create_nonce()
         user.save(using=self._db)
         return user
 
+    def create_superuser(self, email, password, **kwargs):
+        kwargs.setdefault('is_staff', True)
+        kwargs.setdefault('is_superuser', True)
+        kwargs.setdefault('is_active', True)
 
-class APIUser(AbstractBaseUser):
+        if kwargs.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if kwargs.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email=email, password=password, **kwargs)
+
+
+class CapUser(AbstractBaseUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
@@ -49,15 +54,18 @@ class APIUser(AbstractBaseUser):
     # when we last reset the user's case count:
     case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
     is_researcher = models.BooleanField(default=False)
-    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     activation_nonce = models.CharField(max_length=40, null=True, blank=True)
+    # TODO: should be renamed nonce_expires
+
     key_expires = models.DateTimeField(null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'email'
 
-    objects = APIUserManager()
+    objects = CapUserManager()
     tracker = FieldTracker()
 
     class Meta:
@@ -87,11 +95,10 @@ class APIUser(AbstractBaseUser):
         return "%s hours or %s minutes." % (round(td.seconds / 3600, 2), round((td.seconds / 60) % 60, 2))
 
     def authenticate_user(self, **kwargs):
-        # TODO: make into class method
         nonce = kwargs.get('activation_nonce')
         if self.activation_nonce == nonce and self.key_expires + timedelta(hours=24) > timezone.now():
             try:
-                APIToken.objects.create(user=self)
+                Token.objects.create(user=self)
                 self.activation_nonce = ''
                 self.is_active = True
                 self.save()
@@ -106,7 +113,7 @@ class APIUser(AbstractBaseUser):
         self.save()
 
     def save(self, *args, **kwargs):
-        super(APIUser, self).save(*args, **kwargs)
+        super(CapUser, self).save(*args, **kwargs)
 
     @staticmethod
     def generate_nonce_timestamp():
@@ -115,7 +122,8 @@ class APIUser(AbstractBaseUser):
 
     def get_api_key(self):
         try:
-            return self.token.key
+            # relying on DRF's Token model
+            return self.auth_token.key
         except ObjectDoesNotExist:
             return None
 
@@ -129,34 +137,16 @@ class APIUser(AbstractBaseUser):
         else:
             return True
 
+    def has_module_perms(self, app_label):
+        if app_label == 'capapi':
+            return self.is_staff
 
-class APIToken(models.Model):
-    # essentially a clone of DRF's Token class
-    # we need to create our own Token generating class because DRF's
-    # requires the user to be the project's AUTH_USER_MODEL
-    # see https://github.com/encode/django-rest-framework/blob/master/rest_framework/authtoken/models.py#L17
+        return self.is_superuser
 
-    key = models.CharField(max_length=40, primary_key=True)
-    user = models.OneToOneField('APIUser', on_delete=models.CASCADE, related_name='token')
-    created = models.DateTimeField(auto_now_add=True)
+    def has_perm(self, perm, obj=None):
+        app, action = perm.split('.')
 
-    @classmethod
-    def create(cls, user):
-        if user == APIUser.objects.get(pk=user.id):
-            token = cls(user=user)
-            token.save()
-        else:
-            raise Exception("Something went wrong when creating token")
+        if app == 'capapi':
+            return self.is_staff
 
-    def save(self, *args, **kwargs):
-        if not self.key:
-            self.key = self.generate_key()
-        return super(APIToken, self).save(*args, **kwargs)
-
-    def generate_key(self):
-        return binascii.hexlify(os.urandom(20)).decode()
-
-    def __str__(self):
-        return self.key
-
-
+        return self.is_superuser

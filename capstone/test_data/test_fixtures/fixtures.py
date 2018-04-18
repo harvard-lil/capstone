@@ -5,7 +5,7 @@ import pytest
 
 from django.core.management import call_command
 import django.apps
-from rest_framework.test import RequestsClient, APIRequestFactory, APIClient
+from rest_framework.test import APIRequestFactory, APIClient
 
 import fabfile
 import capdb.storages
@@ -114,8 +114,8 @@ def three_cases():
     return [CaseXMLFactory().metadata for _ in range(3)]
 
 @pytest.fixture
-def auth_user(api_token):
-    return api_token.user
+def auth_user(token):
+    return token.user
 
 @pytest.fixture
 def client():
@@ -134,6 +134,32 @@ def api_url():
 @pytest.fixture
 def api_request_factory():
     return APIRequestFactory()
+
+
+@pytest.fixture()
+def admin_user(db, django_user_model, django_username_field):
+    # Overwrite of pytest's Django admin_user fixture because
+    # we're using email as username_field
+    UserModel = django_user_model
+    username_field = django_username_field
+
+    try:
+        user = UserModel._default_manager.get(**{username_field: 'admin@example.com'})
+    except UserModel.DoesNotExist:
+        extra_fields = {}
+        user = UserModel._default_manager.create_superuser(
+            'test_admin_user@example.com', 'password', **extra_fields)
+    return user
+
+
+@pytest.fixture()
+def admin_client(db, admin_user):
+    # Overwrite of pytest's Django admin_client
+    from django.test.client import Client
+
+    client = Client()
+    client.login(email=admin_user.email, password='password')
+    return client
 
 
 ### REDIS ###
