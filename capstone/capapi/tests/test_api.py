@@ -376,14 +376,14 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     response = client.get("%scases/?court_name=%s&format=json" % (api_url, court_name))
     content = response.json()
     for result in content['results']:
-        assert result['court'] == case_to_test.court.name
+        assert court_name in result['court']
 
     # filtering case by reporter substring
     reporter_name = case_to_test.reporter.full_name.split(' ')[1]
     response = client.get("%scases/?reporter_name=%s&format=json" % (api_url, reporter_name))
     content = response.json()
     for result in content['results']:
-        assert result['reporter'] == case_to_test.reporter.full_name
+        assert reporter_name in result['reporter']
 
 
 @pytest.mark.django_db
