@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import IntegrityError, models
 from django.utils import timezone
 from django.conf import settings
+from capapi.permissions import staff_level_permissions
 
 from model_utils import FieldTracker
 
@@ -138,15 +139,12 @@ class CapUser(AbstractBaseUser):
             return True
 
     def has_module_perms(self, app_label):
-        if app_label == 'capapi':
+        if app_label == 'capapi' or app_label == 'capdb':
             return self.is_staff
 
         return self.is_superuser
 
     def has_perm(self, perm, obj=None):
-        app, action = perm.split('.')
-
-        if app == 'capapi':
+        if perm in staff_level_permissions:
             return self.is_staff
-
         return self.is_superuser
