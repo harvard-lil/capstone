@@ -489,10 +489,10 @@ class CaseMetadata(models.Model):
         return self.case_id
 
     class Meta:
-        ordering = ['decision_date', 'id']  # include id to get consistent ordering for cases with same date
-        # speed up queries with default ordering
         indexes = [
+            # index for ordering of case API endpoint
             models.Index(fields=['decision_date', 'id']),
+            # index for ordering of case API endpoint when filtered by jurisdiction
             models.Index(fields=['jurisdiction_id', 'decision_date', 'id']),
         ]
 
