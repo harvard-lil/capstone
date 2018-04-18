@@ -72,6 +72,13 @@ def sync_metadata():
     ingest_tt_data.ingest(True)
 
 @task
+def relink_reporter_jurisdiction():
+    """
+    This will re-build the links between the Reporter table and Jurisdiction table
+    """
+    ingest_tt_data.relink_reporter_jurisdiction()
+
+@task
 def run_pending_migrations():
     data_migrations.run_pending_migrations()
 

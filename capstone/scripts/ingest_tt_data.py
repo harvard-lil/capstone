@@ -125,3 +125,8 @@ def populate_jurisdiction():
     reporters = Reporters.objects.values('state').distinct() 
     for jurisdiction in reporters:
         Jurisdiction.objects.get_or_create(name=jurisdiction['state'])
+
+def relink_reporter_jurisdiction():
+    for tt_reporter in Reporters.objects.all():
+        reporter = Reporter.objects.get(id=tt_reporter.id)
+        reporter.jurisdictions.add(Jurisdiction.objects.get(name=tt_reporter.state))
