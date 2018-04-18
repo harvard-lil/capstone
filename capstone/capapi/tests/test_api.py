@@ -213,6 +213,11 @@ def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, thre
         extra_case.jurisdiction = jurisdiction
         extra_case.save()
 
+    # preload capapi.filters.jur_choices so it doesn't sometimes get counted by django_assert_num_queries below
+    from capapi.filters import jur_choices
+    len(jur_choices)
+
+    # fetch the two blacklisted cases and one whitelisted case
     url = "%scases/?full_case=true" % (api_url)
     with django_assert_num_queries(select=7, update=1):
         response = auth_client.get(url)
