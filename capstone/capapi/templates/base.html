@@ -19,7 +19,7 @@
         {% block content %}{% endblock content %}
     </div>
 
-    {% if template_name != 'docs' and template_name != 'terms' %}
+    {% if not hide_footer %}
       {#  hiding footer in docs, showing info in sidebar #}
       {% include "includes/footer.html" %}
     {% endif %}

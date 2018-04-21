@@ -1,4 +1,3 @@
-import os
 import json
 from datetime import datetime
 import logging
@@ -10,6 +9,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.defaultfilters import slugify
 from django.http import FileResponse
+from django.urls import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +54,16 @@ def email(reason, user):
         logger.info("sent new_registration email for %s" % user.email)
 
     if reason == 'new_signup':
-        token_url = os.path.join(settings.API_BASE_URL, "accounts/verify-user", str(user.id), user.get_activation_nonce())
+        token_url = settings.API_BASE_URL + reverse('verify-user', kwargs={'user_id':user.pk, 'activation_nonce': user.get_activation_nonce()})
         send_mail(
             'CaseLaw Access Project: Verify your email address',
-            "Please click here to verify your email address: %s If you believe you have received this message in error, please ignore it." % token_url,
+            "Please click here to verify your email address: \n\n%s \n\nIf you believe you have received this message in error, please ignore it." % token_url,
             settings.API_EMAIL_ADDRESS,
             [user.email],
             fail_silently=False, )
         logger.info("sent new_signup email for %s" % user.email)
 
+
+def form_for_request(request, FormClass):
+    """ return FormClass loaded with request.POST data, if any """
+    return FormClass(request.POST if request.method == 'POST' else None)

@@ -94,7 +94,7 @@
            aria-label="Register for an API key"></a>
 
         <h3 class="section-title">Register for an API key</h3>
-        <a href="/accounts/register"
+        <a href="{% url "register" %}"
            class="btn blue-button">
             REGISTER
         </a>
@@ -139,7 +139,7 @@
         or
         <ul>
           <li>
-            <pre><code>curl {{ request.build_absolute_uri }}api/v1/cases/?format=json</code></pre>
+            <pre><code>curl {{ request.build_absolute_uri }}api/v1/cases/</code></pre>
           </li>
         </ul>
         </p>
@@ -198,11 +198,7 @@
 
           <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/?full_case=true</a></pre>
 
-          For cases not in <a href="#whitelisted-jurisdictions-section">whitelisted</a> jurisdictions, include your <a href="#registration-section">API key</a> in the query parameters:
-
-          <pre><a href="/api/v1/cases/{{ case_id }}/?limit=1&full_case=true&api_key=your-api-key-here">{{ request.build_absolute_uri }}api/v1/cases/?limit=1&full_case=true&api_key=your-api-key-here</a></pre>
-
-          You can also pass your API key in as a header on the command line:
+          For cases not in <a href="#whitelisted-jurisdictions-section">whitelisted</a> jurisdictions, include your <a href="#registration-section">API key</a> as an Authorization header:
 
           <pre><code>curl -H "Authorization: Token your-token-here" "{{ request.build_absolute_uri }}api/v1/cases/?limit=1&full_case=true"</code></pre>
 

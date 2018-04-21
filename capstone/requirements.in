@@ -56,3 +56,4 @@ django-pipeline
 django-pipeline-compass
 djangorestframework-filters
 djangorestframework
+django-bootstrap4   # render bootstrap forms in django templates

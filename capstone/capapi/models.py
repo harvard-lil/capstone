@@ -4,7 +4,7 @@ import logging
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-from django.db import IntegrityError, models
+from django.db import models
 from django.utils import timezone
 from django.conf import settings
 from capapi.permissions import staff_level_permissions
@@ -30,7 +30,9 @@ class CapUserManager(BaseUserManager):
     def create_superuser(self, email, password, **kwargs):
         kwargs.setdefault('is_staff', True)
         kwargs.setdefault('is_superuser', True)
-        kwargs.setdefault('is_active', True)
+        kwargs.setdefault('email_verified', True)
+        kwargs.setdefault('total_case_allowance', settings.API_CASE_DAILY_ALLOWANCE)
+        kwargs.setdefault('case_allowance_remaining', settings.API_CASE_DAILY_ALLOWANCE)
 
         if kwargs.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
@@ -50,18 +52,19 @@ class CapUser(AbstractBaseUser):
 
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
-    total_case_allowance = models.IntegerField(null=True, blank=True, default=settings.API_CASE_DAILY_ALLOWANCE)
-    case_allowance_remaining = models.IntegerField(null=False, blank=False, default=settings.API_CASE_DAILY_ALLOWANCE)
+    total_case_allowance = models.IntegerField(null=True, blank=True, default=0)
+    case_allowance_remaining = models.IntegerField(null=False, blank=False, default=0)
     # when we last reset the user's case count:
     case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
     is_researcher = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
-    activation_nonce = models.CharField(max_length=40, null=True, blank=True)
-    # TODO: should be renamed nonce_expires
+    is_active = models.BooleanField(default=True)
 
-    key_expires = models.DateTimeField(null=True, blank=True)
+    email_verified = models.BooleanField(default=False, help_text="Whether user has verified their email address")
+    activation_nonce = models.CharField(max_length=40, null=True, blank=True)
+    nonce_expires = models.DateTimeField(null=True, blank=True)
+
     date_joined = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'email'
@@ -73,7 +76,7 @@ class CapUser(AbstractBaseUser):
         verbose_name = 'User'
 
     def get_activation_nonce(self):
-        if self.key_expires + timedelta(hours=24) < timezone.now():
+        if self.nonce_expires + timedelta(hours=24) < timezone.now():
             self.create_nonce()
             self.save()
         return self.activation_nonce
@@ -95,22 +98,18 @@ class CapUser(AbstractBaseUser):
         td = self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) - timezone.now()
         return "%s hours or %s minutes." % (round(td.seconds / 3600, 2), round((td.seconds / 60) % 60, 2))
 
-    def authenticate_user(self, **kwargs):
-        nonce = kwargs.get('activation_nonce')
-        if self.activation_nonce == nonce and self.key_expires + timedelta(hours=24) > timezone.now():
-            try:
-                Token.objects.create(user=self)
-                self.activation_nonce = ''
-                self.is_active = True
-                self.save()
-            except IntegrityError as e:
-                logger.warning("IntegrityError in authenticating user: %s %s" % (e, self.email))
+    def authenticate_user(self, activation_nonce):
+        if self.activation_nonce == activation_nonce and self.nonce_expires + timedelta(hours=24) > timezone.now():
+            Token.objects.create(user=self)
+            self.activation_nonce = ''
+            self.email_verified = True
+            self.save()
         else:
             raise PermissionDenied
 
     def create_nonce(self):
         self.activation_nonce = self.generate_nonce_timestamp()
-        self.key_expires = timezone.now()
+        self.nonce_expires = timezone.now()
         self.save()
 
     def save(self, *args, **kwargs):

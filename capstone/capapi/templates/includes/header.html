@@ -12,5 +12,13 @@
            src="{% static "img/LIL-logo.png" %}"
            alt="Library Innovation Lab" />
     </a>
+    <span class="header-text float-right">
+      {% if request.user.is_anonymous %}
+        <a href="{% url "login" %}">Log in</a>
+      {% else %}
+        Logged in as {{ request.user }} -
+        <a href="{% url "logout" %}">Log out</a>
+      {% endif %}
+    </span>
   </div>
 </header>
