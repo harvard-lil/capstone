@@ -18,8 +18,7 @@ def test_get_docs_urls(client, jurisdiction, case, reporter):
     for line in possible_lines:
         if line[0:4] == "http":
             response = client.get(line)
-            request_format = "json" if "format=json" in line else None
-            check_response(response, format=request_format)
+            check_response(response)
 
 
 

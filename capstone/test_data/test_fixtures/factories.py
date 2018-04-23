@@ -32,7 +32,8 @@ class CapUserFactory(factory.DjangoModelFactory):
     is_active = True
     email = factory.LazyAttributeSequence(lambda o, n: '%s_%s%d@example.com' % (o.first_name, o.last_name, n))
     password = factory.PostGenerationMethodCall('set_password', 'pass')
-    key_expires = timezone.now() + timedelta(hours=24)
+    email_verified = False
+    nonce_expires = timezone.now() + timedelta(hours=24)
     activation_nonce = factory.Sequence(lambda n: '%08d' % n)
 
 

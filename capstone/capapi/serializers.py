@@ -5,8 +5,6 @@ from rest_framework import serializers
 from rest_framework.serializers import ListSerializer
 
 from capdb import models
-from .models import CapUser
-from .resources import email
 from .permissions import get_single_casebody_permissions
 
 logger = logging.getLogger(__name__)
@@ -197,89 +195,3 @@ class CourtSerializer(serializers.ModelSerializer):
             'slug',
         )
 
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CapUser
-        fields = '__all__'
-        read_only_fields = ('is_admin', 'is_researcher', 'activation_key', 'is_validated', 'case_allowance_remaining', 'key_expires')
-        lookup_field = 'email'
-
-    def verify_with_nonce(self, user_id, activation_nonce):
-        found_user = CapUser.objects.get(pk=user_id)
-        if not found_user.is_authenticated:
-            found_user.authenticate_user(activation_nonce=activation_nonce)
-        return found_user
-
-    def verify_case_allowance(self, user, case_count):
-        if case_count <= 0:
-            return user
-        user.update_case_allowance()
-
-        if not user.case_allowance_remaining >= case_count:
-            time_remaining = user.get_case_allowance_update_time_remaining()
-            raise serializers.ValidationError({
-                "error": "You have attempted to download more than your allowed number of cases. Your limit will reset to default again in %s." % time_remaining,
-                "case_allowance_remaining": user.case_allowance_remaining,
-            })
-        else:
-            return user
-
-
-class RegisterUserSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    first_name = serializers.CharField(required=False)
-    last_name = serializers.CharField(required=False)
-    password = serializers.CharField(style={'input_type': 'password'})
-    confirm_password = serializers.CharField(style={'input_type': 'password'})
-
-    class Meta:
-        # write_only_fields = ('password', 'confirm_password')
-        fields = '__all__'
-
-    def validate_email(self, email):
-        existing = CapUser.objects.filter(email=email).first()
-        if existing:
-            msg = "Someone with that email address has already registered."
-            raise serializers.ValidationError(msg)
-
-        return email
-
-    def validate(self, data):
-        if not data.get('password') or not data.get('confirm_password'):
-            msg = "Please enter a password and confirm it."
-            raise serializers.ValidationError(msg)
-
-        if data.get('password') != data.get('confirm_password'):
-            raise serializers.ValidationError("Those passwords don't match.")
-
-        return data
-
-    def create(self, validated_data):
-        try:
-            email_val = validated_data.pop('email', None)
-            password = validated_data.pop('password', None)
-            user = CapUser.objects.create_user(email=email_val, password=password, **validated_data)
-            email(reason='new_signup', user=user)
-            return user
-        except Exception as e:
-            raise Exception(e)
-
-
-class LoginSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(max_length=100, style={'input_type': 'password'})
-
-    class Meta:
-        model = CapUser
-        fields = ('email', 'password')
-        write_only_fields = ('password')
-        lookup_field = 'email'
-
-    def verify_with_password(self, email, password):
-        try:
-            user = CapUser.objects.get(email=email)
-        except CapUser.DoesNotExist:
-            return None
-        if user.check_password(password):
-            return user

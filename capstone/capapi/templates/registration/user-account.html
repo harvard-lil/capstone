@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %} | Your Account{% endblock %}
+
+{% block content %}
+<div class="logged-in-page container-full header-margin inverse">
+  <div class="row row-centered">
+    <div class="col-6 col-centered">
+      <h3>Profile details</h3>
+      <b>Email:</b> <span class="user_email">{{ request.user.email }}</span>
+      <br/>
+      <b>API Key:</b> <span class="user_api_key">{{ request.user.get_api_key }}</span>
+      <br/>
+      <b>Cases left to view today:</b> <span class="user_case_allowance_remaining">{{ request.user.case_allowance_remaining }}</span>
+      <br/>
+      <b>Total case allowance (updated daily):</b> <span class="user_total_case_allowance">{{ request.user.total_case_allowance }}</span>
+    </div>
+  </div>
+</div>
+{% endblock content %}

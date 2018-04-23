@@ -115,6 +115,8 @@ def three_cases():
 
 @pytest.fixture
 def auth_user(token):
+    token.user.email_verified = True
+    token.user.save()
     return token.user
 
 @pytest.fixture
@@ -124,7 +126,10 @@ def client():
 @pytest.fixture
 def auth_client(auth_user, client):
     """ Return client authenticated as auth_user. """
+    # API auth
     client.credentials(HTTP_AUTHORIZATION='Token ' + auth_user.get_api_key())
+    # Django auth
+    client.force_login(user=auth_user)
     return client
 
 @pytest.fixture

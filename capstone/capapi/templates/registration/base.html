@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load pipeline %}
+
+{% block title %} | {{ title }}{% endblock %}
+
+{% block extra_head %}
+  {% stylesheet 'login' %}
+{% endblock %}
+
+{% block content %}
+  <div class="login-form container-full inverse header-margin">
+    <div class="row row-centered">
+      <div class="col-6 col-centered">
+        {% block registration_content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

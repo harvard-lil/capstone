@@ -5,10 +5,10 @@ from . import models
 
 def authenticate_user(modeladmin, request, queryset):
     """
-    This method will override old key_expires fields by setting it to timezone.now()
+    This method will override old nonce_expires fields by setting it to timezone.now()
     """
     for user in queryset:
-        user.key_expires = timezone.now()
+        user.nonce_expires = timezone.now()
         user.authenticate_user(activation_nonce=user.activation_nonce)
         user.save()
 
@@ -28,7 +28,7 @@ class CapUserAdmin(admin.ModelAdmin):
         'total_case_allowance',
     )
 
-    fields = list_display + ('is_active', 'date_joined', 'activation_nonce', 'is_researcher')
+    fields = list_display + ('is_active', 'email_verified', 'date_joined', 'activation_nonce', 'is_researcher')
     actions = [authenticate_user]
 
     def api_key(self, instance):
