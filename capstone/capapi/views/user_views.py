@@ -14,6 +14,7 @@ def register_user(request):
 
     if request.method == 'POST' and form.is_valid():
         form.save()
+        resources.send_new_signup_email(request, form.instance)
         return render(request, 'registration/sign-up-success.html', {
             'status': 'Success!',
             'message': 'Thank you. Please check your email for a verification link.'
@@ -48,7 +49,7 @@ def resend_verification(request):
             if user.email_verified:
                 form.add_error('email', "Email address is already verified.")
         if form.is_valid():
-            resources.email(reason='new_signup', user=user)
+            resources.send_new_signup_email(request, user)
             return render(request, 'registration/sign-up-success.html', {
                 'status': 'Success!',
                 'message': 'Thank you. Please check your email %s for a verification link.' % user.email
