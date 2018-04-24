@@ -3,7 +3,6 @@ from django import forms
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from capapi import resources
 from capapi.models import CapUser
 
 
@@ -30,5 +29,4 @@ class RegisterUserForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit)
         user.create_nonce()
-        resources.email(reason='new_signup', user=user)
         return user
