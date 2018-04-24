@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'capdb',
     'tracking_tool',
     'capapi',
+    'django_sql_trace',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
