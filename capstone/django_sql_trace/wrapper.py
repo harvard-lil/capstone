@@ -11,10 +11,10 @@ class TracingDebugWrapper(utils.CursorDebugWrapper):
         utils.logger.debug(message)
 
     def get_userland_stack_frame(self, stack):
-        try:
-            return next(x for x in stack[2:] if not x.filename.startswith(python_lib_path))
-        except StopIteration:
-            return None
+        for stack_frame in stack[2:]:
+            if stack_frame.code_context and not stack_frame.filename.startswith(python_lib_path):
+                return stack_frame
+        return None
 
     def capture_stack(self):
         stack = inspect.stack()
