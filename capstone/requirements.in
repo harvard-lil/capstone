@@ -6,6 +6,7 @@ tqdm                # script progress bars
 # celery
 celery[redis]       # task queue
 pycurl              # let celery talk to SQS queue
+flower              # monitoring
 
 # xml
 lxml
