@@ -55,3 +55,9 @@ DATABASES['tracking_tool'] = {
 
 ### API
 API_DOCS_CASE_ID = '11301409' # Brown v. Board
+
+### SECURITY
+
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
