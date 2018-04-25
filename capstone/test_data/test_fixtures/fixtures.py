@@ -36,6 +36,8 @@ def clear_caches():
             if hasattr(model, 'reset_cache'):
                 model.reset_cache()
 
+
+
 @pytest.fixture(scope='function')
 def django_assert_num_queries(pytestconfig):
     """
@@ -75,8 +77,16 @@ def django_assert_num_queries(pytestconfig):
             if expected_counts != query_counts:
                 msg = "Unexpected queries: expected %s, got %s" % (expected_counts, dict(query_counts))
                 if pytestconfig.getoption('verbose') > 0:
-                    sqls = (q['sql'] for q in context.captured_queries)
-                    msg += '\n\nQueries:\n========\n\n%s' % '\n\n'.join(sqls)
+                    msg += '\n\nQueries:\n========\n\n'
+                    for q in context.captured_queries:
+                        if q['userland_stack_frame']:
+                            msg += "%s:%s:\n%s\n" % (
+                                q['userland_stack_frame'].filename,
+                                q['userland_stack_frame'].lineno,
+                                q['userland_stack_frame'].code_context[0].rstrip())
+                        else:
+                            msg += "Not via userland:\n"
+                        msg += "%s\n\n" % q['sql']
                 else:
                     msg += " (add -v option to show queries)"
                 pytest.fail(msg)
