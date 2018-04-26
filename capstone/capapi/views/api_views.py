@@ -76,9 +76,17 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     filter_class = filters.CaseFilter
     lookup_field = 'id'
 
+    def is_full_case_request(self):
+        return True if self.request.query_params.get('full_case', 'false').lower() == 'true' else False
+
+    def get_queryset(self):
+        if self.is_full_case_request():
+            return self.queryset.select_related('case_xml')
+        else:
+            return self.queryset
+
     def get_serializer_class(self, *args, **kwargs):
-        full_case = self.request.query_params.get('full_case', 'false').lower()
-        if full_case == 'true':
+        if self.is_full_case_request():
             return serializers.CaseSerializerWithCasebody
         else:
             return self.serializer_class

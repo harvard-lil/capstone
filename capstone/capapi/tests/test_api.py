@@ -205,7 +205,7 @@ def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, thre
 
     # fetch the two blacklisted cases and one whitelisted case
     url = "%scases/?full_case=true" % (api_url)
-    with django_assert_num_queries(select=7, update=1):
+    with django_assert_num_queries(select=4, update=1):
         response = auth_client.get(url)
     check_response(response)
 
