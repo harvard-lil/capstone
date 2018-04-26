@@ -1,3 +1,4 @@
+import re
 import shutil
 from lxml import etree
 from pyquery import PyQuery
@@ -225,6 +226,11 @@ def chunked_iterator(queryset, chunk_size=1000):
 def extract_casebody(case_xml):
     # strip soft hyphens from line endings
     text = case_xml.replace(u'\xad', '')
+
+    # fix quotation marks
+    text = re.sub(r'[\u201c\u201d]', '"', text)
+    text = re.sub(r'[\u2018\u2019]', "'", text)
+
     case = parse_xml(text)
 
     # strip labels from footnotes:
