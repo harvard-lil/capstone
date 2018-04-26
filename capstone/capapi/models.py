@@ -94,10 +94,6 @@ class CapUser(AbstractBaseUser):
         if save:
             self.save(update_fields=['case_allowance_remaining', 'case_allowance_last_updated'])
 
-    def get_case_allowance_update_time_remaining(self):
-        td = self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) - timezone.now()
-        return "%s hours or %s minutes." % (round(td.seconds / 3600, 2), round((td.seconds / 60) % 60, 2))
-
     def authenticate_user(self, activation_nonce):
         if self.activation_nonce == activation_nonce and self.nonce_expires + timedelta(hours=24) > timezone.now():
             Token.objects.create(user=self)
