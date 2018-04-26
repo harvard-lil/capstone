@@ -45,6 +45,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     citations = CitationSerializer(many=True)
     volume_number = serializers.ReadOnlyField(source='volume.volume_number')
     volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
+    decision_date = serializers.DateField(source='decision_date_original')
 
     class Meta:
         model = models.CaseMetadata
@@ -54,7 +55,6 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'name',
             'name_abbreviation',
             'decision_date',
-            'decision_date_original',
             'docket_number',
             'first_page',
             'last_page',

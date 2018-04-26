@@ -1,6 +1,7 @@
 import pytest
 
 from test_data.test_fixtures.factories import *
+from scripts.process_metadata import parse_decision_date
 from capapi.tests.helpers import check_response
 from capapi.permissions import casebody_permissions
 
@@ -344,6 +345,18 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     content = response.json()
     for result in content['results']:
         assert reporter_name in result['reporter']
+
+    # filtering by decision_date
+    # make sure that we can filter by decision_date's datefield
+    # but we get decision_date_original string in response
+    case_to_test = three_cases[0]
+    case_to_test.decision_date_original = "1988"
+    case_to_test.decision_date = parse_decision_date(case_to_test.decision_date_original)
+    case_to_test.save()
+    response = client.get("%scases/?decision_date_min=%s&decision_date_max=%s" % (api_url, "1987-12-30", "1988-01-02"))
+    content = response.json()
+    result = content['results'][0]
+    assert case_to_test.decision_date_original == result['decision_date']
 
 
 @pytest.mark.django_db
