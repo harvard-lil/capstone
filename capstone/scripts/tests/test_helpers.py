@@ -1,6 +1,6 @@
 import re
 import pytest
-from scripts.helpers import serialize_xml, parse_xml
+from scripts.helpers import serialize_xml, parse_xml, extract_casebody
 from scripts.generate_case_html import generate_html, tag_map
 from scripts.merge_alto_style import generate_styled_case_xml
 from scripts.compare_alto_case import validate
@@ -162,3 +162,12 @@ def test_validate_alto_casemets_error(ingest_case_xml):
     assert results['results'] == 'gave up after 2 consecutive bad words'
     assert problem_1 in results['problems']
     assert problem_2 in results['problems']
+
+
+@pytest.mark.django_db
+def test_extract_casebody(ingest_case_xml):
+    # extract_casebody should clean up quotation marks
+    orig_xml = ingest_case_xml.orig_xml
+    assert '\u2019' in orig_xml
+    casebody = extract_casebody(orig_xml)
+    assert '\u2019' not in casebody.text()
