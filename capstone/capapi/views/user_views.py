@@ -63,7 +63,8 @@ def resend_verification(request):
 def user_details(request):
     """ Show user details """
     request.user.update_case_allowance()
-    return render(request, 'registration/user-account.html')
+    context = {'unlimited': request.user.unlimited_access_in_effect()}
+    return render(request, 'registration/user-account.html', context)
 
 
 
