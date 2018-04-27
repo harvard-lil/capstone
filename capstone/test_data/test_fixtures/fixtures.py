@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from contextlib import contextmanager
 
@@ -86,7 +87,8 @@ def django_assert_num_queries(pytestconfig):
                                 q['userland_stack_frame'].code_context[0].rstrip())
                         else:
                             msg += "Not via userland:\n"
-                        msg += "%s\n\n" % q['sql']
+                        short_sql = re.sub(r'\'.*?\'', "'<str>'", q['sql'], flags=re.DOTALL)
+                        msg += "%s\n\n" % short_sql
                 else:
                     msg += " (add -v option to show queries)"
                 pytest.fail(msg)

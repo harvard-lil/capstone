@@ -17,6 +17,104 @@ def choices(*args):
     return zip(args, args)
 
 
+def fetch_relations(instance, select_relations=None, prefetch_relations=None):
+    """
+        Load attributes on instance as though they had been loaded by objects.select_related() and object.prefetch_related().
+        For example, these are equivalent, with the second taking one more SQL query:
+
+            instance = Model.objects.select_related('foo__bar', 'baz').prefetch_related('bang').get(pk=1)
+
+        And:
+
+            instance = Model.objects.get(pk=1)
+            fetch_relations(instance, select_relations=['foo__bar', 'baz'], prefetch_relations=['bang'])
+
+    """
+    select_relations = select_relations or []
+    prefetch_relations = prefetch_relations or []
+
+    # filter out any relations that have already been loaded
+    def filter_relations(relations, kind):
+        non_loaded_relations = []
+        field_names = []
+        for relation in relations:
+            relation_parts = relation.split('__', 1)
+            field_name, sub_relation = relation_parts[0], relation_parts[1:]
+
+            # fetch the field referred to by this field_name
+            field = instance._meta.get_field(field_name)
+            assert field.is_relation, "%s is not a foreign field" % field_name
+
+            # if this is a forward relation with no ID set, we can cache the None value immediately,
+            # and there is no need to fetch anything
+            if hasattr(field, 'get_local_related_value') and None in field.get_local_related_value(instance):
+                getattr(instance, field_name)
+                continue
+
+            # if this is a prefetch field that's already prefetched, no need to fetch anything
+            if kind == 'prefetch_relations' and not sub_relation and hasattr(instance, '_prefetched_objects_cache') and field_name in instance._prefetched_objects_cache:
+                continue
+
+            # if field isn't cached, we should fetch it
+            if not field.is_cached(instance):
+                non_loaded_relations.append(relation)
+                field_names.append(field_name)
+
+            # if field is cached, we can't safely fetch subrelations ourselves, so call fetch_relations recursively
+            elif sub_relation:
+                fetch_relations(getattr(instance, field_name), **{kind: sub_relation})
+
+        return non_loaded_relations, field_names
+
+    select_relations, select_field_names = filter_relations(select_relations, 'select_relations')
+    prefetch_relations, _ = filter_relations(prefetch_relations, 'prefetch_relations')
+
+    if not instance.pk:
+        # if this instance isn't saved, we can't fetch anything more
+        return
+
+    if not select_relations and not prefetch_relations:
+        # nothing to look up
+        return
+
+    # select prefetch paths for efficiency
+    for relation in prefetch_relations:
+        relation_parts = relation.split('__')
+        if len(relation_parts) > 1:
+            select_relations.append('__'.join(relation_parts[:-1]))
+            select_field_names.append(relation_parts[0])
+
+    # fetch a new instance with select_related and prefetch_related
+    instance_class = instance._meta.concrete_model
+    query = instance_class.objects.only(*select_field_names)
+    if select_relations:
+        query = query.select_related(*select_relations)
+    if prefetch_relations:
+        query = query.prefetch_related(*prefetch_relations)
+    new_instance = query.get(pk=instance.pk)
+
+    # copy over select_related fields
+    for field_name in select_field_names:
+        setattr(instance, field_name, getattr(new_instance, field_name))
+
+    # copy over prefetch_relations caches into appropriate models
+    if prefetch_relations:
+        for relation in prefetch_relations:
+            # find sub-instance if relation includes __
+            sub_instance = instance
+            sub_new_instance = new_instance
+            relation_parts = relation.split('__')
+            relation_path, sub_field_name = relation_parts[:-1], relation_parts[-1]
+            for field_name in relation_path:
+                sub_instance = getattr(sub_instance, field_name)
+                sub_new_instance = getattr(sub_new_instance, field_name)
+
+            # copy cache
+            if not hasattr(sub_instance, '_prefetched_objects_cache'):
+                sub_instance._prefetched_objects_cache = {}
+            sub_instance._prefetched_objects_cache[sub_field_name] = sub_new_instance._prefetched_objects_cache[sub_field_name]
+
+
 class AutoSlugMixin:
     """
         Mixin for models that set the .slug field on first save.
@@ -514,6 +612,10 @@ class CaseXML(BaseXMLModel):
         create_or_update_metadata = kwargs.pop('create_or_update_metadata', True)
 
         if self.tracker.has_changed('orig_xml'):
+            # prefetch data needed by create_or_update_metadata() and process_updated_xml()
+            fetch_relations(self,
+                select_relations=['volume__metadata__reporter', 'metadata'],
+                prefetch_relations=['metadata__citations'])
 
             # Create or update related CaseMetadata object
             if create_or_update_metadata:
@@ -537,6 +639,7 @@ class CaseXML(BaseXMLModel):
             This function should only be called if orig_xml has changed from a previously saved version,
             and should only need to be called from save().
         """
+
         # parse objects and get the xml tree objects
         parsed_original_case = parse_xml(self.tracker.previous('orig_xml'))
         parsed_updated_case = parse_xml(self.orig_xml)
@@ -685,22 +788,19 @@ class CaseXML(BaseXMLModel):
         """
 
         # get or create case.metadata
-        if self.metadata_id is not None:
-            case_for_relations = CaseXML.objects.select_related('volume__metadata__reporter', 'metadata').prefetch_related('metadata__citations').get(id=self.pk)
-            case_metadata = case_for_relations.metadata
+        if self.metadata_id:
             if not update_existing:
-                # if case already exists, return out
-                return self.metadata
+                return
+            case_metadata = self.metadata
             metadata_created = False
         else:
-            case_for_relations = self
             case_metadata = CaseMetadata()
             metadata_created = True
 
         # set up data
         data = get_case_metadata(force_str(self.orig_xml))
         duplicative_case = data['duplicative']
-        volume_metadata = case_for_relations.volume.metadata
+        volume_metadata = self.volume.metadata
         reporter = volume_metadata.reporter
 
         # set case_metadata attributes
@@ -753,7 +853,7 @@ class CaseXML(BaseXMLModel):
         ### Handle citations
 
         # fetch any existing cites from the database
-        existing_cites = {} if metadata_created else {cite.cite: cite for cite in case_for_relations.metadata.citations.all()}
+        existing_cites = {} if metadata_created else {cite.cite: cite for cite in self.metadata.citations.all()}
 
         # set up a fake cite for duplicate cases
         if duplicative_case:
@@ -790,8 +890,6 @@ class CaseXML(BaseXMLModel):
             self.metadata = case_metadata
             if save_self:
                 self.save(update_fields=['metadata'])
-
-        return case_metadata
 
 
 class Citation(models.Model):

@@ -5,6 +5,43 @@ from django.utils.encoding import force_bytes
 from scripts.helpers import parse_xml, serialize_xml, nsmap
 from test_data.test_fixtures.factories import *
 
+
+### helpers ###
+
+@pytest.mark.django_db
+def test_fetch_relations(case, court, django_assert_num_queries):
+    case = CaseMetadata.objects.get(pk=case.pk)
+    with django_assert_num_queries(select=2):
+        fetch_relations(case, select_relations=['volume__volume_xml', 'jurisdiction'], prefetch_relations=['citations'])
+    with django_assert_num_queries():
+        fetch_relations(case, select_relations=['volume__volume_xml', 'jurisdiction'], prefetch_relations=['citations'])
+    with django_assert_num_queries():
+        assert case.jurisdiction
+    with django_assert_num_queries():
+        assert case.volume.volume_xml
+    with django_assert_num_queries():
+        assert len(list(case.citations.all()))
+
+    # can prefetch_related on sub-relationships
+    case_xml = CaseXML.objects.get(pk=case.case_xml.pk)
+    with django_assert_num_queries(select=2):
+        fetch_relations(case_xml, prefetch_relations=['metadata__citations'])
+    with django_assert_num_queries():
+        assert len(list(case_xml.metadata.citations.all()))
+
+    # can change items and it fetches relations of sub-items
+    case = CaseMetadata.objects.get(pk=case.pk)
+    court = Court.objects.get(pk=court.pk)
+    assert case.court != court
+    case.court = court
+    with django_assert_num_queries(select=1):
+        fetch_relations(case, select_relations=['court__jurisdiction'])
+    with django_assert_num_queries():
+        assert case.court == court
+        assert case.court.jurisdiction
+
+
+
 ### BaseXMLModel ###
 
 @pytest.mark.django_db
@@ -99,7 +136,7 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml, django_assert_nu
     updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
     parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
     ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    with django_assert_num_queries(select=5, update=4):
+    with django_assert_num_queries(select=6, update=4):
         ingest_case_xml.save()
 
 
