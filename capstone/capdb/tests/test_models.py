@@ -54,6 +54,27 @@ def test_database_should_not_modify_xml(volume_xml, unaltered_alto_xml):
     assert volume_xml.md5 == volume_xml.get_md5()
 
 
+### VolumeXML ###
+
+@pytest.mark.django_db
+def test_volumexml_update_metadata(volume_xml):
+    # metadata is extracted during initial save:
+    assert int(volume_xml.metadata.xml_start_year) == 1877
+    assert int(volume_xml.metadata.xml_end_year) == 1887
+    assert int(volume_xml.metadata.xml_publication_year) == 1888
+    assert int(volume_xml.metadata.xml_volume_number) == 23
+    assert volume_xml.metadata.xml_publisher == "Callaghan & Company"
+    assert volume_xml.metadata.xml_publication_city == "Chicago, IL"
+    assert volume_xml.metadata.xml_reporter_short_name == "Ill. App."
+    assert volume_xml.metadata.xml_reporter_full_name == "Illinois Appellate Court Reports"
+
+    # metadata is extracted during update:
+    volume_xml.orig_xml = volume_xml.orig_xml.replace('1888', '1999')
+    volume_xml.save()
+    volume_xml.metadata.refresh_from_db()
+    assert volume_xml.metadata.xml_publication_year == 1999
+
+
 ### CaseMetadata ###
 
 @pytest.mark.django_db

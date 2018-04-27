@@ -98,7 +98,7 @@ def process_report():
     for missed_volume in expected_volumes:
         errors[missed_volume] = {'error_code': 'in inventory report but not processed'}
 
-    db_vols = VolumeMetadata.objects.exclude(ingest_status='skip').filter(publication_year__gte=1923).values_list('pk', flat=True)
+    db_vols = VolumeMetadata.objects.exclude(ingest_status='skip').filter(xml_publication_year__gte=1923).values_list('pk', flat=True)
     missing_vols = set(db_vols) - set(i.split('_')[0] for i in processed_vols)
     for missed_volume in missing_vols:
         errors[missed_volume] = {'error_code': 'in database but not in S3'}

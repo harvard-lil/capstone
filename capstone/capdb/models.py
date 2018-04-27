@@ -501,6 +501,19 @@ class VolumeMetadata(models.Model):
                                      choices=choices('to_ingest', 'ingested', 'error', 'skip'))
     ingest_errors = JSONField(blank=True, null=True)
 
+    # values extracted from VolumeXML
+    xml_start_year = models.IntegerField(blank=True, null=True)
+    xml_end_year = models.IntegerField(blank=True, null=True)
+    xml_publication_year = models.IntegerField(blank=True, null=True)
+    xml_publisher = models.CharField(max_length=255, blank=True, null=True)
+    xml_publication_city = models.CharField(max_length=1024, blank=True, null=True)
+    xml_volume_number = models.CharField(max_length=64, blank=True, null=True)
+    # just extract this and keep it here for now -- we can use it to check the reporter= field later:
+    xml_reporter_short_name = models.CharField(max_length=255, blank=True, null=True)
+    xml_reporter_full_name = models.CharField(max_length=255, blank=True, null=True)
+
+    tracker = FieldTracker()
+
     class Meta:
         verbose_name_plural = "Volumes"
 
@@ -540,6 +553,40 @@ class VolumeXML(BaseXMLModel):
 
     def __str__(self):
         return self.metadata_id
+
+    @transaction.atomic
+    def save(self, update_related=True, *args, **kwargs):
+
+        if self.tracker.has_changed('orig_xml') and update_related:
+            self.update_metadata()
+
+        super().save(*args, **kwargs)
+
+    def update_metadata(self):
+        """
+            Update related VolumeMetadata object based on updated xml.
+        """
+        parsed_xml = parse_xml(self.orig_xml)
+
+        metadata = self.metadata
+
+        metadata.xml_start_year = parsed_xml('volume|voldate > volume|start').text() or None
+        if metadata.xml_start_year:
+            metadata.xml_start_year = int(metadata.xml_start_year)
+        metadata.xml_end_year = parsed_xml('volume|voldate > volume|end').text() or None
+        if metadata.xml_end_year:
+            metadata.xml_end_year = int(metadata.xml_end_year)
+        metadata.xml_publication_year = parsed_xml('volume|publicationdate').text() or None
+        if metadata.xml_publication_year:
+            metadata.xml_publication_year = int(metadata.xml_publication_year)
+        metadata.xml_publisher = parsed_xml('volume|publisher').text() or None
+        metadata.xml_publication_city = parsed_xml('volume|publisher').attr.place or None
+        metadata.xml_volume_number = parsed_xml('volume|reporter').attr.volnumber or None
+        metadata.xml_reporter_short_name = parsed_xml('volume|reporter').attr.abbreviation or None
+        metadata.xml_reporter_full_name = parsed_xml('volume|reporter').text() or None
+
+        if metadata.tracker.changed():
+            metadata.save()
 
 
 class Court(CachedLookupMixin, AutoSlugMixin, models.Model):

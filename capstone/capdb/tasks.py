@@ -35,6 +35,9 @@ def create_case_metadata_from_vol(volume_id, update_existing=False):
     for case_xml in case_xmls:
         case_xml.create_or_update_metadata(update_existing=update_existing)
 
+@shared_task
+def update_volume_metadata(volume_xml_id):
+    VolumeXML.objects.get(pk=volume_xml_id).update_metadata()
 
 @shared_task
 def test_slow(i, ram=10, cpu=30):
