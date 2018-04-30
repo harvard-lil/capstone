@@ -44,7 +44,7 @@ class SlowQueryAdmin(admin.ModelAdmin):
 
 
 class JurisdictionAdmin(admin.ModelAdmin):
-    list_display = ['whitelisted', 'name_long']
+    list_display = ['id', 'slug', 'name', 'name_long', 'whitelisted']
 
 
 admin.site.register(VolumeXML, VolumeXMLAdmin)
