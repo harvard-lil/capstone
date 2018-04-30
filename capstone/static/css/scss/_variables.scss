@@ -41,17 +41,20 @@
 
 
 // font
-$font-body: 'rajdhaniregular', Helvetica, Arial, sans-serif;
-$font-light: 'rajdhanilight', Helvetica, Arial, sans-serif;
-$font-semibold: 'rajdhanisemibold', Helvetica, Arial, sans-serif;
-$font-bold: 'rajdhanibold', Helvetica, Arial, sans-serif;
-
+$font-body: 'proxima-nova', sans-serif;
+$font-header-light: 'rajdhanilight', Helvetica, Arial, sans-serif;
+$font-header: 'rajdhaniregular', Helvetica, Arial, sans-serif;
+$font-header-semibold: 'rajdhanisemibold', Helvetica, Arial, sans-serif;
+$font-header-medium: 'rajdhanimedium', Helvetica, Arial, sans-serif;
+$font-header-bold: 'rajdhanibold', Helvetica, Arial, sans-serif;
+$font-code: 'fira-mono', monospace;
 
 $section-subtitle-size: 20px;
 
 
 // colors
 $color-gray: #D9D9D9;
+$color-medium-gray: #686868;
 $color-light-gray: #f7f7f9;
 $color-blue: #0075FF;
 $color-black: #2F2F2F;
@@ -63,6 +66,46 @@ $color-orange: #EDA633;
 
 // mixins
 //////////// general
+.font-body {
+  font-family: $font-body;
+  font-size: 1rem;
+}
+
+.font-body-bold {
+  @extend .font-body;
+  font-weight: 600;
+}
+
+.font-body-semibold {
+  @extend .font-body;
+  font-weight: 700;
+}
+
+.font-header {
+  font-family: $font-header;
+}
+
+.font-header-medium {
+  font-family: $font-header-medium;
+}
+
+.font-header-semibold {
+  font-family: $font-header-semibold;
+}
+
+.font-header-bold {
+  font-family: $font-header-bold;
+}
+
+.font-code {
+  font-family: $font-code;
+}
+
+.font-code-bold {
+  font-family: $font-code;
+  font-weight: 700;
+}
+
 .inverse {
   background-color: $color-black;
   color: white; }
@@ -92,11 +135,11 @@ $color-orange: #EDA633;
 }
 
 .bold-text {
-  font-family: $font-bold;
+  @extend .font-body-bold;
 }
 
 .semibold-text {
-  font-family: $font-semibold;
+  @extend .font-body-semibold;
 }
 
 .text-primary {
@@ -108,13 +151,13 @@ $color-orange: #EDA633;
   text-transform: none;
 }
 
-strong {
-  font-family: $font-semibold;
+strong, b {
+  @extend .font-body-semibold;
 }
 
 /////////// buttons
 .button {
-  font-family: $font-bold;
+  @extend .font-header-bold;
   color: $color-blue;
   background: white;
   border: 1px solid $color-blue;

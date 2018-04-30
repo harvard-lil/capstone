@@ -8,6 +8,7 @@ section {
 }
 
 .nav-toc.sidebar {
+  @extend .font-header-medium;
   position: fixed;
   background: $color-light-gray;
   min-height: 100%;
@@ -16,14 +17,14 @@ section {
   li {
     font-size: 16px;
     letter-spacing: 0.5px;
-    color: $color-black;
+    color: $color-medium-gray;
     text-align: right;
     list-style: none;
     padding: 10px 0;
     background: transparent;
   }
   li a {
-    color: $color-black;
+    color: $color-medium-gray;
     text-decoration: none;
     &:hover, &:focus, &:active {
       color: $color-blue;
@@ -68,6 +69,7 @@ ul li {
 }
 
 .subsection {
+  @extend .font-header-semibold;
   line-height: 3rem;
   margin-bottom: 0;
 }
