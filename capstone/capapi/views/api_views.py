@@ -113,8 +113,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
                 new_url = reverse('casemetadata-list') + "?" + query_string
                 return HttpResponseRedirect(new_url)
 
-        queryset = super(CaseViewSet, self).retrieve(*args, **kwargs)
 
-        return queryset
+        return super(CaseViewSet, self).retrieve(*args, **kwargs)
 
 
