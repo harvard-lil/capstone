@@ -465,7 +465,10 @@ class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
     last_page = models.CharField(max_length=255, null=True, blank=True)
-    jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
+    jurisdiction = models.ForeignKey('Jurisdiction',
+                                     null=True,
+                                     to_field='slug',
+                                     related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
     judges = JSONField(null=True, blank=True)
     parties = JSONField(null=True, blank=True)
@@ -744,8 +747,8 @@ class CaseXML(BaseXMLModel):
                     court = Court(**court_kwargs)
                     court.save()
                 case_metadata.court = court
-                if case_metadata.jurisdiction_id and court.jurisdiction_id != case_metadata.jurisdiction_id:
-                    court.jurisdiction_id = case_metadata.jurisdiction_id
+                if case_metadata.jurisdiction and court.jurisdiction != case_metadata.jurisdiction:
+                    court.jurisdiction = case_metadata.jurisdiction
                     court.save()
 
         case_metadata.save()

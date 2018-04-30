@@ -99,7 +99,7 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml, django_assert_nu
     updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
     parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
     ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    with django_assert_num_queries(select=5, update=4):
+    with django_assert_num_queries(select=6, update=4):
         ingest_case_xml.save()
 
 
