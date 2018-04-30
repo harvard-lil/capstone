@@ -29,6 +29,20 @@ def test_flow(client, api_url, case):
     assert content.get("name") == case.jurisdiction.name
 
 
+@pytest.mark.django_db
+def test_jurisdiction_redirect(api_url, client, case, jurisdiction):
+    jurisdiction.name = 'Neb.'
+    jurisdiction.slug = 'neb'
+    jurisdiction.save()
+    case.jurisdiction = jurisdiction
+    case.save()
+
+    response = client.get("%scases/?jurisdiction=%s" % (api_url, jurisdiction.name), follow=True)
+    query_string = response.request.get('QUERY_STRING')
+    query, jurisdiction_name = query_string.split('=')
+    assert jurisdiction_name == jurisdiction.slug
+
+
 # RESOURCE ENDPOINTS
 @pytest.mark.django_db
 def test_jurisdictions(client, api_url, case):
@@ -401,6 +415,19 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     content = response.json()
     result = content['results'][0]
     assert case_to_test.decision_date_original == result['decision_date']
+
+    # by jurisdiction
+    case_to_test = three_cases[0]
+    jurisdiction.name = 'Neb.'
+    jurisdiction.slug = 'neb'
+    jurisdiction.save()
+    case_to_test.jurisdiction = jurisdiction
+    case_to_test.save()
+
+    response = client.get("%scases/?jurisdiction=%s" % (api_url, jurisdiction.name), follow=True)
+    content = response.json()
+    result = content['results'][0]
+    assert case_to_test.jurisdiction.slug == result['jurisdiction']['slug']
 
 
 @pytest.mark.django_db

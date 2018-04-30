@@ -91,9 +91,21 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         else:
             return self.serializer_class
 
+    def list(self, *args, **kwargs):
+        jur_value = self.request.query_params.get('jurisdiction', None)
+        jur_slug = slugify(jur_value)
+
+        if not jur_value or jur_slug == jur_value:
+            return super(CaseViewSet, self).list(*args, **kwargs)
+
+        query_string = urllib.parse.urlencode(dict(self.request.query_params, jurisdiction=jur_slug), doseq=True)
+        new_url = reverse('casemetadata-list') + "?" + query_string
+        return HttpResponseRedirect(new_url)
+
     def retrieve(self, *args, **kwargs):
         # for user's convenience, if user gets /cases/case-citation or /cases/Case Citation
         # we redirect to /cases/?cite=case-citation
+
         if kwargs.get(self.lookup_field, None):
             slugified = slugify(kwargs[self.lookup_field])
             if '-' in slugified:
