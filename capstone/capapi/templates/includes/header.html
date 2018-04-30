@@ -9,6 +9,8 @@
     </a>
     <span class="header-text float-right">
       {% if request.user.is_anonymous %}
+        <a href="{% url "register" %}">Register</a>
+        <span>&nbsp;|&nbsp;</span>
         <a href="{% url "login" %}">Log in</a>
       {% else %}
         <a href="{% url "user-details" %}">Account</a>
