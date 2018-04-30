@@ -108,7 +108,12 @@ $color-orange: #EDA633;
 
 .inverse {
   background-color: $color-black;
-  color: white; }
+  color: white;
+  strong, b, span {
+    color: white;
+  }
+}
+
 
 //////////// grid / layout
 .col-centered {

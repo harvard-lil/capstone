@@ -187,3 +187,19 @@ footer {
     letter-spacing: 3px;
   }
 }
+
+.inverse {
+  .form-control {
+    background-color: $color-black;
+    color: white;
+    border-radius: 0;
+  }
+  .form-control-sm {
+    border: 0px;
+    border-bottom: 1px solid $color-gray;
+    padding: 15px 0px;
+  }
+  label.col-form-label {
+    padding: 15px;
+  }
+}
