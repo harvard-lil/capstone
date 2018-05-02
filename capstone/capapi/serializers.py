@@ -43,7 +43,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     reporter = serializers.ReadOnlyField(source='reporter.full_name')
     reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
     citations = CitationSerializer(many=True)
-    volume_number = serializers.ReadOnlyField(source='volume.volume_number')
+    volume_number = serializers.ReadOnlyField(source='volume.xml_volume_number')
     volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
     decision_date = serializers.DateField(source='decision_date_original')
 
@@ -137,9 +137,12 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
 class VolumeSerializer(serializers.ModelSerializer):
     jurisdictions = JurisdictionSerializer(source='reporter.jurisdictions', many=True)
     reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
-    reporter = serializers.ReadOnlyField(source='reporter.full_name')
+    reporter = serializers.ReadOnlyField(source='xml_reporter_full_name')
     start_year = serializers.ReadOnlyField(source='spine_start_year')
     end_year = serializers.ReadOnlyField(source='spine_end_year')
+    volume_number = serializers.ReadOnlyField(source='xml_volume_number')
+    publisher = serializers.ReadOnlyField(source='xml_publisher')
+    publication_year = serializers.ReadOnlyField(source='xml_publication_year')
 
     class Meta:
         model = models.VolumeMetadata
