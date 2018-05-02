@@ -95,8 +95,9 @@ class CaseAllowanceMixin:
             user = request.user.__class__.objects.select_for_update().get(pk=request.user.pk)
 
             # update the info for the existing user model, in case it's changed since the request began
-            request.user.case_allowance_remaining = user.case_allowance_remaining
-            request.user.case_allowance_last_updated = user.case_allowance_last_updated
+            if not request.user.unlimited_access_in_effect():
+                request.user.case_allowance_remaining = user.case_allowance_remaining
+                request.user.case_allowance_last_updated = user.case_allowance_last_updated
 
             result = super().data
 

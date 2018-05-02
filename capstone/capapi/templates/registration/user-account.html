@@ -11,9 +11,13 @@
       <br/>
       <b>API Key:</b> <span class="user_api_key">{{ request.user.get_api_key }}</span>
       <br/>
-      <b>Cases left to view today:</b> <span class="user_case_allowance_remaining">{{ request.user.case_allowance_remaining }}</span>
-      <br/>
-      <b>Total case allowance (updated daily):</b> <span class="user_total_case_allowance">{{ request.user.total_case_allowance }}</span>
+      {% if unlimited %}
+        <b>Unlimited access until:</b> <span class="user_case_allowance_remaining">{{ request.user.unlimited_access_until }}</span>
+      {% else %}
+        <b>Cases left to view today:</b> <span class="user_case_allowance_remaining">{{ request.user.case_allowance_remaining }}</span>
+        <br/>
+        <b>Total case allowance (updated daily):</b> <span class="user_total_case_allowance">{{ request.user.total_case_allowance }}</span>
+      {% endif %}
     </div>
   </div>
 </div>

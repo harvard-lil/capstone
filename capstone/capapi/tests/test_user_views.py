@@ -1,7 +1,11 @@
 import re
 
 import pytest
+from datetime import timedelta
+
 from django.core import mail
+from django.utils import timezone
+
 from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
 
@@ -103,3 +107,15 @@ def test_view_user_details(auth_user, auth_client):
     check_response(response)
     assert b"user_api_key" in response.content
     assert auth_user.get_api_key() in response.content.decode()
+
+    # normal user can see limit
+    total_case_allowance_html = b"""<span class="user_total_case_allowance">500</span>"""
+    assert total_case_allowance_html in response.content
+
+    # user can't see limit if they have unlimited access
+    auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
+    auth_user.save()
+    response = auth_client.get(reverse('user-details'))
+    check_response(response)
+    assert total_case_allowance_html not in response.content
+    assert b"Unlimited access until:" in response.content
