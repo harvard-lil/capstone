@@ -185,7 +185,7 @@
           One or more cases with the same citation:
           <pre><a href="/api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/">{{ request.build_absolute_uri }}api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/</a></pre>
           <!--<pre class="json-response">{{ case_metadata }}</pre>-->
-          <p class="body-text bold-text subsection">Case text</p>
+          <p class="body-text subsection">Case text</p>
           A request for full case text must include the query parameter <code>full_case=true</code>:
 
           <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/?full_case=true</a></pre>
@@ -194,7 +194,7 @@
 
           <pre><code>curl -H "Authorization: Token your-token-here" "{{ request.build_absolute_uri }}api/v1/cases/?limit=1&full_case=true"</code></pre>
 
-          <p class="body-text bold-text subsection">Query parameter examples</p>
+          <p class="body-text subsection">Query parameter examples</p>
           All cases under a certain jurisdiction:
           <pre><a href="/api/v1/cases/?jurisdiction=Ill.">{{ request.build_absolute_uri }}api/v1/cases/?jurisdiction=Ill.</a></pre>
 
