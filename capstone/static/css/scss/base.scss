@@ -1,24 +1,35 @@
 @import '_variables.scss';
 
 body {
+  @extend .font-body;
   height: 100%;
   display: block;
-  font-family: $font-body;
-  color: $color-black;
-  font-size: 1.2rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @extend .font-header-bold;
 }
 
 a, button, .btn {
   cursor: pointer;
 }
 
+code {
+  @extend .font-code;
+  background-color: $color-light-blue;
+  color: $color-black;
+  padding: 0 5px;
+}
+
+
 pre {
-    white-space: -moz-pre-wrap;
-    //white-space: -pre-wrap;
-    white-space: -o-pre-wrap;
-    white-space: pre-wrap;
-    word-wrap: break-word; /* Internet Explorer 5.5+ */
-    border: 0;
+  @extend .font-code;
+  white-space: -moz-pre-wrap;
+  //white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  white-space: pre-wrap;
+  word-wrap: break-word; /* Internet Explorer 5.5+ */
+  border: 0;
 }
 
 a {
@@ -40,26 +51,23 @@ a {
 }
 
 .separator {
-  border-bottom: 1px solid #d9d9d9;
+  border-bottom: 1px solid $color-gray;
   margin: 20px 0;
 }
 
 h1 {
-  letter-spacing: 3px;
+  letter-spacing: 1px;
 }
 
-code {
-  background-color: $color-light-blue;
-  color: $color-blue;
-}
 
 .section-title {
   font-size: 20px;
-  font-family: $font-bold;
+  font-family: $font-header-semibold;
   text-transform: uppercase;
   letter-spacing: 0.8px; }
 
 .header {
+  @extend .font-header-bold;
   width: 100%;
   position: fixed;
   z-index: 10;
@@ -69,17 +77,27 @@ code {
   border-bottom: 1px solid $color-gray;
   .header-content {
     padding: 0px 20px 10px 20px; }
-  .header-logo, .lil-logo {
+  .header-logo {
     width: 24px;
   }
   .lil-logo {
-    float: right; }
+    float: right;
+    padding-left: 15px;
+    width: 38px;
+  }
   .header-text {
-    font-family: $font-bold;
     font-size: 14px;
     left: 10px;
     letter-spacing: 1.5px;
     position: relative;
+    line-height: 26px;
+    &.cap-name {
+      color: $color-black;
+    }
+
+    span, a {
+      vertical-align: middle;
+    }
   }
 }
 
@@ -167,5 +185,21 @@ footer {
     font-weight: 700;
     font-size: 21px;
     letter-spacing: 3px;
+  }
+}
+
+.inverse {
+  .form-control {
+    background-color: $color-black;
+    color: white;
+    border-radius: 0;
+  }
+  .form-control-sm {
+    border: 0px;
+    border-bottom: 1px solid $color-gray;
+    padding: 15px 0px;
+  }
+  label.col-form-label {
+    padding: 15px;
   }
 }

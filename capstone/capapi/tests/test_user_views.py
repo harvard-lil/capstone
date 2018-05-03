@@ -109,13 +109,16 @@ def test_view_user_details(auth_user, auth_client):
     assert auth_user.get_api_key() in response.content.decode()
 
     # normal user can see limit
-    total_case_allowance_html = b"""<span class="user_total_case_allowance">500</span>"""
-    assert total_case_allowance_html in response.content
+    content = re.sub(r'\s+', ' ', response.content.decode()).strip()
+    assert "Unlimited access until" not in content
+    total_case_allowance_html = """<span class="user_total_case_allowance form-control form-control-sm"> 500 </span>"""
+    assert total_case_allowance_html in content
 
     # user can't see limit if they have unlimited access
     auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
     auth_user.save()
     response = auth_client.get(reverse('user-details'))
     check_response(response)
-    assert total_case_allowance_html not in response.content
-    assert b"Unlimited access until:" in response.content
+    content = re.sub(r'\s+', ' ', response.content.decode()).strip()
+    assert total_case_allowance_html not in content
+    assert "Unlimited access until" in content

@@ -19,16 +19,16 @@
     <div class="col-9 docs reading-body">
       <div class="page-header cont-fixed border-bottom">
         <div class="row">
-          <h1 class="col centered-text bold-text">
+          <h1 class="col centered-text">
             <span class="blue-text">CAP</span> API
           </h1>
         </div>
       <div class="row">
-        <h3 class="col centered-text semibold-text">
+        <h3 class="col centered-text font-header-semibold">
           Explore United States Caselaw</h3>
       </div>
       <div class="row">
-        <h5 class="col centered-text light-text">
+        <h5 class="col centered-text font-body">
           Read the documentation below to get started
         </h5>
       </div>
@@ -59,14 +59,14 @@
           as a registered user.
         </p>
 
-        <p class="subsection body-text bold-text">All users can</p>
+        <p class="subsection">All users can</p>
         <ul>
           <li>
             see unlimited metadata.
           </li>
         </ul>
 
-        <p class="subsection body-text bold-text">Anonymous users can</p>
+        <p class="subsection">Anonymous users can</p>
         <ul>
           <li>
             read the full text of all cases from whitelisted jurisdictions,
@@ -79,7 +79,7 @@
           </li>
         </ul>
 
-        <p class="subsection body-text bold-text">Registered users can</p>
+        <p class="subsection">Registered users can</p>
         <ul>
           <li>
             additionally request the full text of up to 500 cases per
@@ -131,17 +131,9 @@
         <p class="body-text">
           On the command line, you might use curl:
           <br/>
-        <ul>
-          <li>
             <pre><code>curl -H "Accept: application/json" {{ request.build_absolute_uri }}api/v1/cases/</code></pre>
-          </li>
-        </ul>
         or
-        <ul>
-          <li>
-            <pre><code>curl {{ request.build_absolute_uri }}api/v1/cases/</code></pre>
-          </li>
-        </ul>
+          <pre><code>curl {{ request.build_absolute_uri }}api/v1/cases/</code></pre>
         </p>
 
         <p class="body-text">
@@ -150,7 +142,7 @@
           which offers interfaces for filtering and pagination.
         </p>
 
-        <p class="subsection body-text bold-text">
+        <p class="subsection">
           Searching cases by citation
         </p>
         The easiest way to find a specific case is by
@@ -167,7 +159,7 @@
           </li>
         </ul>
 
-        <p class="subsection body-text bold-text">
+        <p class="subsection">
           Pagination
         </p>
         The API defaults to returning one hundred items per response.
@@ -193,7 +185,7 @@
           One or more cases with the same citation:
           <pre><a href="/api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/">{{ request.build_absolute_uri }}api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/</a></pre>
           <!--<pre class="json-response">{{ case_metadata }}</pre>-->
-          <p class="body-text bold-text subsection">Case text</p>
+          <p class="body-text subsection">Case text</p>
           A request for full case text must include the query parameter <code>full_case=true</code>:
 
           <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/?full_case=true</a></pre>
@@ -202,7 +194,7 @@
 
           <pre><code>curl -H "Authorization: Token your-token-here" "{{ request.build_absolute_uri }}api/v1/cases/?limit=1&full_case=true"</code></pre>
 
-          <p class="body-text bold-text subsection">Query parameter examples</p>
+          <p class="body-text subsection">Query parameter examples</p>
           All cases under a certain jurisdiction:
           <pre><a href="/api/v1/cases/?jurisdiction=Ill.">{{ request.build_absolute_uri }}api/v1/cases/?jurisdiction=Ill.</a></pre>
 
