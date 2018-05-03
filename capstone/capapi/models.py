@@ -56,7 +56,7 @@ class CapUser(AbstractBaseUser):
     case_allowance_remaining = models.IntegerField(null=False, blank=False, default=0)
     # when we last reset the user's case count:
     case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
-    is_researcher = models.BooleanField(default=False)
+    unlimited_access_until = models.DateTimeField(null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -81,7 +81,15 @@ class CapUser(AbstractBaseUser):
             self.save()
         return self.activation_nonce
 
+    def unlimited_access_in_effect(self):
+        if not self.unlimited_access_until:
+            return False
+        return self.unlimited_access_until > timezone.now()
+
     def update_case_allowance(self, case_count=0, save=True):
+        if self.unlimited_access_in_effect():
+            return
+
         if self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) < timezone.now():
             self.case_allowance_remaining = self.total_case_allowance
             self.case_allowance_last_updated = timezone.now()
@@ -93,10 +101,6 @@ class CapUser(AbstractBaseUser):
 
         if save:
             self.save(update_fields=['case_allowance_remaining', 'case_allowance_last_updated'])
-
-    def get_case_allowance_update_time_remaining(self):
-        td = self.case_allowance_last_updated + timedelta(hours=settings.API_CASE_EXPIRE_HOURS) - timezone.now()
-        return "%s hours or %s minutes." % (round(td.seconds / 3600, 2), round((td.seconds / 60) % 60, 2))
 
     def authenticate_user(self, activation_nonce):
         if self.activation_nonce == activation_nonce and self.nonce_expires + timedelta(hours=24) > timezone.now():

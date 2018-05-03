@@ -26,6 +26,18 @@
             {{ request.user.get_api_key }}
             </span>
           </div>
+          {% if unlimited %}
+            <label for="unlimited_access_until"
+                   class="col-sm-4 col-form-label col-form-label-sm">
+              Unlimited access until
+            </label>
+            <div class="col-sm-8">
+              <span class="unlimited_access_until form-control form-control-sm">
+                {{ request.user.unlimited_access_until }}
+              </span>
+            </div>
+          {% else %}
+
           <label for="user_case_allowance_remaining"
                  class="col-sm-4 col-form-label col-form-label-sm">
             Cases left to view today
@@ -44,6 +56,7 @@
               {{ request.user.total_case_allowance }}
             </span>
           </div>
+          {% endif %}
       </div>
       <div class="btn-group float-right">
         <a href="{% url "password_reset" %}">

@@ -5,6 +5,43 @@ from django.utils.encoding import force_bytes
 from scripts.helpers import parse_xml, serialize_xml, nsmap
 from test_data.test_fixtures.factories import *
 
+
+### helpers ###
+
+@pytest.mark.django_db
+def test_fetch_relations(case, court, django_assert_num_queries):
+    case = CaseMetadata.objects.get(pk=case.pk)
+    with django_assert_num_queries(select=2):
+        fetch_relations(case, select_relations=['volume__volume_xml', 'jurisdiction'], prefetch_relations=['citations'])
+    with django_assert_num_queries():
+        fetch_relations(case, select_relations=['volume__volume_xml', 'jurisdiction'], prefetch_relations=['citations'])
+    with django_assert_num_queries():
+        assert case.jurisdiction
+    with django_assert_num_queries():
+        assert case.volume.volume_xml
+    with django_assert_num_queries():
+        assert len(list(case.citations.all()))
+
+    # can prefetch_related on sub-relationships
+    case_xml = CaseXML.objects.get(pk=case.case_xml.pk)
+    with django_assert_num_queries(select=2):
+        fetch_relations(case_xml, prefetch_relations=['metadata__citations'])
+    with django_assert_num_queries():
+        assert len(list(case_xml.metadata.citations.all()))
+
+    # can change items and it fetches relations of sub-items
+    case = CaseMetadata.objects.get(pk=case.pk)
+    court = Court.objects.get(pk=court.pk)
+    assert case.court != court
+    case.court = court
+    with django_assert_num_queries(select=1):
+        fetch_relations(case, select_relations=['court__jurisdiction'])
+    with django_assert_num_queries():
+        assert case.court == court
+        assert case.court.jurisdiction
+
+
+
 ### BaseXMLModel ###
 
 @pytest.mark.django_db
@@ -15,6 +52,27 @@ def test_database_should_not_modify_xml(volume_xml, unaltered_alto_xml):
     volume_xml.refresh_from_db()
     assert volume_xml.orig_xml == unaltered_alto_xml.decode()
     assert volume_xml.md5 == volume_xml.get_md5()
+
+
+### VolumeXML ###
+
+@pytest.mark.django_db
+def test_volumexml_update_metadata(volume_xml):
+    # metadata is extracted during initial save:
+    assert int(volume_xml.metadata.xml_start_year) == 1877
+    assert int(volume_xml.metadata.xml_end_year) == 1887
+    assert int(volume_xml.metadata.xml_publication_year) == 1888
+    assert int(volume_xml.metadata.xml_volume_number) == 23
+    assert volume_xml.metadata.xml_publisher == "Callaghan & Company"
+    assert volume_xml.metadata.xml_publication_city == "Chicago, IL"
+    assert volume_xml.metadata.xml_reporter_short_name == "Ill. App."
+    assert volume_xml.metadata.xml_reporter_full_name == "Illinois Appellate Court Reports"
+
+    # metadata is extracted during update:
+    volume_xml.orig_xml = volume_xml.orig_xml.replace('1888', '1999')
+    volume_xml.save()
+    volume_xml.metadata.refresh_from_db()
+    assert volume_xml.metadata.xml_publication_year == 1999
 
 
 ### CaseMetadata ###
@@ -99,7 +157,7 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml, django_assert_nu
     updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
     parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
     ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    with django_assert_num_queries(select=5, update=4):
+    with django_assert_num_queries(select=6, update=4):
         ingest_case_xml.save()
 
 

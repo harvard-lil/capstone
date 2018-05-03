@@ -1,4 +1,6 @@
 import pytest
+from datetime import timedelta
+from django.utils import timezone
 
 from test_data.test_fixtures.factories import *
 from scripts.process_metadata import parse_decision_date
@@ -163,6 +165,8 @@ def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, ca
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = auth_client.get(url)
     check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
 
     # make sure the user's case download number has remained the same
     auth_user.refresh_from_db()
@@ -179,10 +183,50 @@ def test_authenticated_full_case_blacklisted(auth_user, api_url, auth_client, ca
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = auth_client.get(url)
     check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
 
     # make sure the auth_user's case download number has gone down by 1
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 1
+
+
+@pytest.mark.django_db
+def test_unlimited_access(auth_user, api_url, auth_client, case):
+    ### user with unlimited access should not have blacklisted cases count against them
+    auth_user.total_case_allowance = 500
+    auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
+    auth_user.save()
+    case.jurisdiction.whitelisted = False
+    case.jurisdiction.save()
+
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
+    response = auth_client.get(url)
+    check_response(response)
+    auth_user.refresh_from_db()
+    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance
+
+    # total_case_allowance shouldn't matter if unlimited access is in effect
+    auth_user.total_case_allowance = 0
+    auth_user.case_allowance_remaining = 0
+    auth_user.save()
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
+    response = auth_client.get(url)
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
+
+    # don't allow user to download blacklisted case if unlimited access has expired
+    # and they don't have enough case allowance
+    auth_user.total_case_allowance = 0
+    auth_user.case_allowance_remaining = 0
+    auth_user.unlimited_access_until = timezone.now() - timedelta(hours=1)
+    auth_user.save()
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
+    response = auth_client.get(url)
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] != 'ok'
 
 
 @pytest.mark.django_db
