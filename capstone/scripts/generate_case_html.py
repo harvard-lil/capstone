@@ -9,7 +9,7 @@ tag_map = {  "author": "p", "opinion" : "article", "casebody" : "section",
              "parties": "h4", "seealso": "aside", "summary": "aside",
              "syllabus": "p", "footnote": "aside", "attorneys": "p",
              "judges": "p", "bracketnum": "a", "footnotemark": "a",
-             "pagebreak": "span"}
+             "pagebreak": "br"}
 
 # these will pull out the headnotes number and corresponding bracketnum
 bracketnum_number = re.compile(r'\d')
