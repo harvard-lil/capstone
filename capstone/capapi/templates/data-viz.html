@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load pipeline %}
+{% load static %}
+{#{% block style %}#}
+{#  {% stylesheet 'viz' %}#}
+{#{% endblock %}#}
+{##}
+{% block extra_head %}
+  <script
+    src="https://code.jquery.com/jquery-3.3.1.js"
+    integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+    crossorigin="anonymous"></script>
+  <script src="{% static "js/chart.js" %}"></script>
+  <script src="{% static "js/data-viz.js" %}"></script>
+  {% stylesheet 'viz' %}
+{% endblock %}
+{##}
+{% block meta_description %}
+The Caselaw Access Project Data Visualization
+{% endblock %}
+{% block content %}
+  <div class="container">
+    <div class="row">
+    <h3>Just how much data is there?</h3>
+    </div>
+    <div class="row">
+      <div class="col-4 jurisdiction-list">
+        <ul class="list-group jurisdiction-list-group">
+            <a class="a-item a-item-total"
+               href="#total">
+              <li class="list-group-item">Total</li>
+            </a>
+           {% for slug, val in jurisdictions.items %}
+             {% if val.name_long %}
+              <a class="a-item a-item-{{ val.name_long }}"
+                 id="jurisdiction-item-{{ val.name_long }}"
+                 href="#{{ slug }}">
+                <li class="list-group-item jurisdiction-item">{{ val.name_long }}</li>
+              </a>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="col-8 count-data">
+        <h5 class="selected-jurisdiction"></h5>
+        {% include 'includes/us/us_territories.svg' %}
+        <ul class="list-group data-list-group">
+          <li class="list-group-item data-item">
+            Reporters
+            <span id="reporter-count" class="count"></span>
+          </li>
+          <li class="list-group-item data-item">
+            Volumes
+            <span id="volume-count" class="count"></span>
+          </li>
+            <li class="list-group-item data-item">
+              Cases
+              <span id="case-count" class="count"></span>
+            </li>
+          <li class="list-group-item data-item">
+            Courts
+            <span id="court-count" class="count"></span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <canvas id="myChart" width="400" height="400"></canvas>
+  </div>
+
+  <script>
+  var results = JSON.parse("{{ data_js|escapejs }}");
+  </script>
+
+{% endblock %}
+

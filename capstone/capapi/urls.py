@@ -34,4 +34,6 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),  # logout, password change, password reset
     path('accounts/detail/', user_views.user_details, name='user-details'),
     path('accounts/resend-verification/', user_views.resend_verification, name='resend-verification'),
+
+    path('data', doc_views.data, name='data')
 ]
