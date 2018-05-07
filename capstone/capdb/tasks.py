@@ -1,8 +1,12 @@
+import json
+from datetime import datetime
 from celery import shared_task
+
 from django.db import connection, transaction
+from django.db.models import Min, Max
 
-from capdb.models import VolumeXML, CaseXML
-
+from capdb.models import *
+from capapi.models import CapData
 
 def create_case_metadata_from_all_vols(update_existing=False):
     """
@@ -68,3 +72,109 @@ def fix_md5_column(volume_id):
             print("Volume %s: updating %s" % (volume_id, table))
             update_sql = "UPDATE %(table)s SET orig_xml=xmlparse(CONTENT %(new_xml)s), md5=md5(%(new_xml)s) where volume_id = %%s and md5 is null" % {'table':table, 'new_xml':new_xml_sql}
             cursor.execute(update_sql, [volume_id])
+
+
+@shared_task
+def count_data(jurisdiction=None):
+    # jurisdictions
+    # reporters per jurisdiction
+    # volumes per reporter
+    # cases per volume?
+    if jurisdiction:
+        print("creating data for specific jurisdiction")
+        return
+
+    total_data, created = CapData.objects.get_or_create(slug='total')
+    total_data.reset()
+    jurisdictions = Jurisdiction.objects.all()
+    for jur in jurisdictions:
+        data, created = CapData.objects.get_or_create(slug=jur.slug)
+        data.reset()
+        reps = Reporter.objects.filter(jurisdictions=jur.id)
+        data.reporters = reps.count()
+
+        for rep in reps:
+            vols = VolumeMetadata.objects.filter(reporter=rep.id)
+            data.volumes = vols.count()
+            for vol in vols:
+                cases = vol.case_metadatas.filter(duplicative=False)
+                data.cases = cases.count()
+        data.save()
+        total_data.cases += data.cases
+        total_data.reporters += data.reporters
+        total_data.volumes += data.volumes
+        total_data.save()
+
+
+@shared_task
+def count_courts(file_path='capapi/data/court_count.json'):
+    jurs = Jurisdiction.objects.all()
+    results = {}
+    total = 0
+    for jur in jurs:
+        court_count = Court.objects.filter(jurisdiction=jur).count()
+        results[jur.slug] = court_count
+        total += court_count
+    results['total'] = total
+    results['recorded'] = str(datetime.now())
+    with open(file_path, 'w+') as f:
+        json.dump(results, f)
+    print('done counting courts')
+
+
+@shared_task
+def count_reporters(file_path='capapi/data/reporter_count.json'):
+    jurs = Jurisdiction.objects.all()
+    results = {}
+    total = 0
+    for jur in jurs:
+        reporters = Reporter.objects.filter(jurisdictions=jur, start_year__isnull=False)\
+            .order_by('start_year')
+        total_volume_count = 0
+        for rep in reporters:
+            if rep.volume_count:
+                total_volume_count += rep.volume_count
+        rep_count = reporters.count()
+        total += rep_count
+        try:
+            results[jur.slug] = {
+                "count": rep_count,
+                "first_year": reporters.aggregate(oldest=Min('start_year')),
+                "last_year": reporters.aggregate(newest=Max('end_year')),
+                "volume_count": total_volume_count
+            }
+        except:
+            pass
+    results["total"] = total
+    results["recorded"] = str(datetime.now())
+    with open(file_path, "w+") as f:
+        json.dump(results, f)
+    print('done counting reporters')
+
+
+@shared_task
+def count_cases(file_path='capapi/data/case_count.json'):
+    jurisdictions = Jurisdiction.objects.all()
+    results = {'total': 0}
+    oldest_year = 1640
+    newest_year = datetime.now().year
+    
+    for jur in jurisdictions:
+        jur_specific_data = {'total': 0}
+        # organize cases per year
+        cases = CaseMetadata.objects.filter(jurisdiction=jur).order_by('decision_date')
+        # cases = CaseMetadata.objects.all().order_by('decision_date')
+        for year in range(oldest_year, newest_year):
+            count = cases.filter(decision_date__year=year).count()
+            if count:
+                jur_specific_data[year] = count
+                jur_specific_data['total'] += count
+                # add to total count, too
+                results['total'] += count
+        results[jur.slug] = jur_specific_data
+
+    results["recorded"] = str(datetime.now())
+    with open(file_path, "w+") as f:
+        json.dump(results, f)
+    print('done counting cases')
+
