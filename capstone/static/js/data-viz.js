@@ -1,13 +1,8 @@
 $(function() {
   $(".a-item").click(function() {
     var id = $(this).attr('id').split('jurisdiction-item-')[1];
-    if (id === 'total') {
-      // populateTotalData();
-      populateCaseChart();
-    }
-    // var name = results[id].name_long;
-    populateJurisdictionData(this, name, id);
     populateCaseChart(id);
+    populateJurisdictionData(this, name, id);
   });
 });
 
@@ -19,18 +14,27 @@ var populateJurisdictionData = function(el, name, id) {
   $("#US-" + id).toggleClass('active');
 
   $('h5.selected-jurisdiction').text(name);
-
-  $('#reporter-count').text(reporter_count[id]['count']);
+  if (id === 'totals') {
+    $('#reporter-count').text(reporter_count[id]['total']);
+    $('#court-count').text(court_count['total']);
+  } else {
+    $('#reporter-count').text(reporter_count[id]);
+    $('#court-count').text(court_count[id]);
+  }
   $('#volume-count').text(reporter_count[id]['volume_count']);
-  $('#court-count').text(court_count[id]);
   $('#case-count').text(case_count[id]['total']);
 };
 
 var populateCaseChart = function (id) {
   var years = Object.keys(case_count[id]);
-  years.pop();
+  if (years[years.length-1] === 'total') {
+    years.pop();
+  }
   var caseNumber = Object.values(case_count[id]);
-  caseNumber.pop();
+  if (caseNumber[caseNumber.length-1] === 'total') {
+    caseNumber.pop();
+  }
+
   var ctx = document.getElementById("caseChart").getContext('2d');
   new Chart(ctx, {
     type: 'line',

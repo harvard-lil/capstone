@@ -4,7 +4,6 @@ body {
 }
 
 h3 {
-  margin-left: -20px;
   border-bottom: 1px solid $color-black;
   padding-bottom: 5px;
 }
@@ -66,4 +65,12 @@ h3 {
   height: 360px;
   overflow: scroll;
   width: 200px;
+}
+
+// chart
+.chart-container {
+  position: relative;
+  margin: auto;
+  height: 80vh;
+  width: 80vw;
 }

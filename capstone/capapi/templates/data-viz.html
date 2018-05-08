@@ -24,26 +24,27 @@ The Caselaw Access Project Data Visualization
     <h3>Just how much data is there?</h3>
     </div>
     <div class="row">
-      <div class="col-4 jurisdiction-list">
+      <div class="col-3 jurisdiction-list">
         <ul class="list-group jurisdiction-list-group">
-            <a class="a-item a-item-total"
-               href="#total">
-              <li class="list-group-item">Total</li>
+            <a class="a-item a-item-totals"
+               id="jurisdiction-item-totals">
+              <li class="list-group-item jurisdiction-item">Total</li>
             </a>
-           {% for slug, val in jurisdictions.items %}
+           {% for id, val in jurisdictions.items %}
              {% if val.name_long %}
               <a class="a-item a-item-{{ val.name_long }}"
-                 id="jurisdiction-item-{{ val.name_long }}"
-                 href="#{{ slug }}">
+                 id="jurisdiction-item-{{ id }}">
                 <li class="list-group-item jurisdiction-item">{{ val.name_long }}</li>
               </a>
             {% endif %}
           {% endfor %}
         </ul>
       </div>
-      <div class="col-8 count-data">
+      <div class="col-3">
         <h5 class="selected-jurisdiction"></h5>
         {% include 'includes/us/us_territories.svg' %}
+      </div>
+      <div class="col-6 count-data">
         <ul class="list-group data-list-group">
           <li class="list-group-item data-item">
             Reporters
@@ -64,11 +65,18 @@ The Caselaw Access Project Data Visualization
         </ul>
       </div>
     </div>
-    <canvas id="myChart" width="400" height="400"></canvas>
+    <div class="row">
+      <div class="chart-container">
+        <canvas id="caseChart"></canvas>
+      </div>
+    </div>
   </div>
 
   <script>
-  var results = JSON.parse("{{ data_js|escapejs }}");
+  var reporter_count = JSON.parse("{{ reporter_count|escapejs }}");
+  var case_count = JSON.parse("{{ case_count|escapejs }}");
+  var court_count = JSON.parse("{{ court_count|escapejs }}");
+
   </script>
 
 {% endblock %}

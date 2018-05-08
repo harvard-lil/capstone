@@ -41,18 +41,16 @@ def data(request):
     data, jurs = {}, {}
 
     for jur in jurisdictions:
-        jurs[jur.slug] = {
+        jurs[jur.id] = {
+            'slug': jur.slug,
             'whitelisted': jur.whitelisted,
             'name_long': jur.name_long,
             'name': jur.name,
-
-        }
-        data[jur.slug] = {
-            'slug': jur.slug,
-            'name_long': jur.name_long,
-            'reporters': reporter_count[jur.slug],
-            'courts': court_count[jur.slug],
-            'cases': case_count[jur.slug]
         }
 
-    return render(request, 'data-viz.html', {'jurisdictions': jurs, 'data_js': json.dumps(data)})
+    return render(request, 'data-viz.html', {
+            'jurisdictions': jurs,
+            'court_count': json.dumps(court_count),
+            'reporter_count': json.dumps(reporter_count),
+            'case_count': json.dumps(case_count)
+    })
