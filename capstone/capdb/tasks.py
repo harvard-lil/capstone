@@ -1,12 +1,11 @@
+import os
 import json
 from datetime import datetime
 from celery import shared_task
 
 from django.db import connection, transaction
-from django.db.models import Min, Max
 
 from capdb.models import *
-from capapi.models import CapData
 
 def create_case_metadata_from_all_vols(update_existing=False):
     """
@@ -75,44 +74,13 @@ def fix_md5_column(volume_id):
 
 
 @shared_task
-def count_data(jurisdiction=None):
-    # jurisdictions
-    # reporters per jurisdiction
-    # volumes per reporter
-    # cases per volume?
-    if jurisdiction:
-        print("creating data for specific jurisdiction")
-        return
-
-    total_data, created = CapData.objects.get_or_create(slug='total')
-    total_data.reset()
-    jurisdictions = Jurisdiction.objects.all()
-    for jur in jurisdictions:
-        data, created = CapData.objects.get_or_create(slug=jur.slug)
-        data.reset()
-        reps = Reporter.objects.filter(jurisdictions=jur.id)
-        data.reporters = reps.count()
-
-        for rep in reps:
-            vols = VolumeMetadata.objects.filter(reporter=rep.id)
-            data.volumes = vols.count()
-            for vol in vols:
-                cases = vol.case_metadatas.filter(duplicative=False)
-                data.cases = cases.count()
-        data.save()
-        total_data.cases += data.cases
-        total_data.reporters += data.reporters
-        total_data.volumes += data.volumes
-        total_data.save()
-
-
-@shared_task
-def count_courts(file_path='capapi/data/court_count.json'):
+def count_courts(file_name='court_count.json', file_dir='capapi/data/'):
+    file_path = os.path.join(file_dir, file_name)
     jurs = Jurisdiction.objects.all()
     results = {}
     total = 0
     for jur in jurs:
-        court_count = Court.objects.filter(jurisdiction=jur).count()
+        court_count = jur.courts.count()
         results[jur.slug] = court_count
         total += court_count
     results['total'] = total
@@ -123,37 +91,38 @@ def count_courts(file_path='capapi/data/court_count.json'):
 
 
 @shared_task
-def count_reporters(file_path='capapi/data/reporter_count.json'):
-    jurs = Jurisdiction.objects.all()
-    results = {}
-    total = 0
-    for jur in jurs:
-        reporters = Reporter.objects.filter(jurisdictions=jur, start_year__isnull=False)\
-            .order_by('start_year')
-        total_volume_count = 0
-        for rep in reporters:
-            if rep.volume_count:
-                total_volume_count += rep.volume_count
-        rep_count = reporters.count()
-        total += rep_count
-        try:
-            results[jur.slug] = {
-                "count": rep_count,
-                "first_year": reporters.aggregate(oldest=Min('start_year')),
-                "last_year": reporters.aggregate(newest=Max('end_year')),
-                "volume_count": total_volume_count
-            }
-        except:
-            pass
-    results["total"] = total
+def count_reporters(file_name='reporter_count.json', file_dir='capapi/data/'):
+    file_path = os.path.join(file_dir, file_name)
+    results = {'total': 0}
+    with connection.cursor() as cursor:
+        cursor.execute("select r.id, r.start_year, r.full_name, r.volume_count, j.jurisdiction_id as jurisdiction_id from capdb_reporter r join capdb_reporter_jurisdictions j on (r.id = j.reporter_id) order by j.jurisdiction_id, r.start_year;")
+        db_results = cursor.fetchall()
+
+    old_jur = db_results[0][4]
+    for res in db_results:
+        results['total'] += 1
+        jur = res[4]
+        if jur == old_jur and jur in results:
+            results[jur]['count'] += 1
+            results[jur]['reporters'].append(res[2])
+            if res[3]:
+                results[jur]['volume_count'] += res[3]
+
+        else:
+            results[jur] = {'count': 1}
+            results[jur]['start_year'] = res[1]
+            results[jur]['reporters'] = [res[2]]
+            results[jur]['volume_count'] = res[3]
+            old_jur = jur
+
     results["recorded"] = str(datetime.now())
     with open(file_path, "w+") as f:
         json.dump(results, f)
     print('done counting reporters')
 
-
 @shared_task
-def count_cases(file_path='capapi/data/case_count.json'):
+def count_cases(file_name='case_count.json', file_dir='capapi/data'):
+    file_path = os.path.join(file_dir, file_name)
     results = {'total': 0}
     with connection.cursor() as cursor:
         cursor.execute("select jurisdiction_id, extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false group by jurisdiction_id, case_year;")
@@ -171,4 +140,3 @@ def count_cases(file_path='capapi/data/case_count.json'):
     with open(file_path, "w+") as f:
         json.dump(results, f)
     print('done counting cases')
-
