@@ -116,6 +116,7 @@ def count_reporters(file_name='reporter_count.json', file_dir='capapi/data/'):
             old_jur = jur
 
     results["recorded"] = str(datetime.now())
+
     with open(file_path, "w+") as f:
         json.dump(results, f)
     print('done counting reporters')
@@ -131,9 +132,10 @@ def count_cases(file_name='case_count.json', file_dir='capapi/data'):
 
     for res in db_results:
         if res[0] not in results:
-            results[res[0]] = {res[1]: res[2]}
+            results[res[0]] = {'total': res[2], res[1]: res[2]}
         else:
             results[res[0]][res[1]] = res[2]
+            results[res[0]]['total'] += res[2]
         results['total'] += res[2]
 
     results["recorded"] = str(datetime.now())
