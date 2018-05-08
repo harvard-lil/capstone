@@ -451,3 +451,21 @@ def test_formats(api_url, client, auth_client, case):
         response = auth_client.get(url)
         check_response(response, content_type=content_type, content_includes=case.name)
 
+
+# API SPECIFICATION ENDPOINTS
+@pytest.mark.django_db
+def test_swagger(client):
+    routes = [
+        ('/', 'text/html'),
+        ('.json', 'application/json'),
+        ('.yaml', 'application/yaml'),
+    ]
+    for route, content_type in routes:
+        response = client.get("/swagger%s" % route)
+        check_response(response, content_type=content_type)
+
+
+@pytest.mark.django_db
+def test_redoc(client):
+    response = client.get("/redoc/")
+    check_response(response, content_type="text/html")

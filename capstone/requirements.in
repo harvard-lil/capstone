@@ -58,3 +58,6 @@ django-pipeline-compass
 djangorestframework-filters
 djangorestframework
 django-bootstrap4   # render bootstrap forms in django templates
+drf-yasg            # expose API specification
+flex                    # both required for
+swagger_spec_validator  # validation by drf-yasg?
