@@ -81,7 +81,7 @@ def count_courts(file_name='court_count.json', file_dir='capapi/data/'):
     total = 0
     for jur in jurs:
         court_count = jur.courts.count()
-        results[jur.slug] = court_count
+        results[jur.id] = court_count
         total += court_count
     results['total'] = total
     results['recorded'] = str(datetime.now())
