@@ -19,23 +19,29 @@
 The Caselaw Access Project Data Visualization
 {% endblock %}
 {% block content %}
-  <div class="container">
+  <div class="container header-margin">
     <div class="row">
     <h3>Just how much data is there?</h3>
     </div>
     <div class="row">
       <div class="col-3 jurisdiction-list">
         <ul class="list-group jurisdiction-list-group">
+          <li class="list-group-item jurisdiction-item">
             <a class="a-item a-item-totals"
                id="jurisdiction-item-totals">
-              <li class="list-group-item jurisdiction-item">Total</li>
+              Total
             </a>
+          </li>
+
            {% for id, val in jurisdictions.items %}
              {% if val.name_long %}
-              <a class="a-item a-item-{{ val.name_long }}"
-                 id="jurisdiction-item-{{ id }}">
-                <li class="list-group-item jurisdiction-item">{{ val.name_long }}</li>
-              </a>
+
+               <li class="list-group-item jurisdiction-item">
+                 <a class="a-item a-item-{{ val.name_long }}"
+                    id="jurisdiction-item-{{ id }}">
+                   {{ val.name_long }}
+                 </a>
+               </li>
             {% endif %}
           {% endfor %}
         </ul>
@@ -43,6 +49,7 @@ The Caselaw Access Project Data Visualization
       <div class="col-3">
         <h5 class="selected-jurisdiction"></h5>
         {% include 'includes/us/us_territories.svg' %}
+        {% include 'includes/us/us_territories_together.svg' %}
       </div>
       <div class="col-6 count-data">
         <ul class="list-group data-list-group">
@@ -76,7 +83,7 @@ The Caselaw Access Project Data Visualization
   var reporter_count = JSON.parse("{{ reporter_count|escapejs }}");
   var case_count = JSON.parse("{{ case_count|escapejs }}");
   var court_count = JSON.parse("{{ court_count|escapejs }}");
-
+  var jurisdiction_data = JSON.parse("{{ jurisdiction_data|escapejs }}");
   </script>
 
 {% endblock %}

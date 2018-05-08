@@ -5,7 +5,8 @@ body {
 
 h3 {
   border-bottom: 1px solid $color-black;
-  padding-bottom: 5px;
+  margin-bottom: 40px;
+  font-size: 1.2rem;
 }
 
 .hidden {
@@ -16,15 +17,18 @@ h3 {
   background-color: transparent;
 }
 
+
 .list-group-item {
   @extend .font-header;
   border-radius: 0 !important;
   border: 0px;
   border-bottom: 1px solid $color-gray;
+  &:last-child {
+    border-bottom: 0px;
+  }
   &.data-item {
     text-transform: uppercase;
     letter-spacing: 1px;
-
   }
   .count {
     @extend .blue-text;
@@ -33,16 +37,28 @@ h3 {
   }
 }
 
+.a-item-totals > li {
+  border-bottom: 1px solid $color-gray;
+}
+
 .jurisdiction-list {
   border: 1px solid $color-gray;
   padding: 10px;
 }
 
+#US-all {
+  top: 20px;
+  display: none;
+  position: absolute;
+  stroke-width: 3;
+  &.active {
+    display: block;
+  }
+}
 .land {
-  fill: #CCCCCC;
+  fill: #fff;
   fill-opacity: 0;
   stroke-opacity: 0;
-
   &.active {
     fill-opacity: 1;
     fill: white;

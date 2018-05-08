@@ -109,13 +109,13 @@ def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capap
         rep_id, start_year, full_name, volume_count, jur = res
 
         if jur == old_jur and jur in results:
-            results[jur]['count'] += 1
+            results[jur]['total'] += 1
             results[jur]['reporters'].append(full_name)
             if volume_count:
                 results[jur]['volume_count'] += volume_count
 
         else:
-            results[jur] = {'count': 1}
+            results[jur] = {'total': 1}
             results[jur]['start_year'] = res[1]
             results[jur]['reporters'] = [full_name]
             results[jur]['volume_count'] = volume_count
@@ -135,6 +135,7 @@ def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capap
     with open(file_path, "w+") as f:
         json.dump(results, f)
     print('done counting reporters')
+
 
 @shared_task
 def count_cases(file_name='case_count.json', file_dir='capapi/data'):

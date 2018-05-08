@@ -473,12 +473,14 @@ def create_case_fixtures_for_benchmarking(amount=50000, randomize_casemets=False
             # For now, skipping this issue
             pass
 
+
 @task
 def tear_down_case_fixtures_for_benchmarking():
     """
     Make sure to mark settings_dev.TEST_SLOW_QUERIES as False
     """
     local('psql -c "DROP DATABASE %s;"' % settings.TEST_SLOW_QUERIES_DB_NAME)
+
 
 @task
 def count_data(file_dir='capapi/data'):

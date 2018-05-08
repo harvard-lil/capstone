@@ -26,7 +26,7 @@ def home(request):
 
 
 def data(request):
-    jurisdictions = models.Jurisdiction.objects.all()
+    jurisdictions = models.Jurisdiction.objects.all().order_by('name_long')
     data_dir = 'capapi/data/'
 
     with open(os.path.join(data_dir, 'court_count.json'), 'r') as f:
@@ -38,7 +38,7 @@ def data(request):
     with open(os.path.join(data_dir, 'case_count.json'), 'r') as f:
         case_count = json.load(f)
 
-    data, jurs = {}, {}
+    jurs = {}
 
     for jur in jurisdictions:
         jurs[jur.id] = {
@@ -50,6 +50,7 @@ def data(request):
 
     return render(request, 'data-viz.html', {
             'jurisdictions': jurs,
+            'jurisdiction_data': json.dumps(jurs),
             'court_count': json.dumps(court_count),
             'reporter_count': json.dumps(reporter_count),
             'case_count': json.dumps(case_count)
