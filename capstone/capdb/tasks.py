@@ -154,24 +154,18 @@ def count_reporters(file_path='capapi/data/reporter_count.json'):
 
 @shared_task
 def count_cases(file_path='capapi/data/case_count.json'):
-    jurisdictions = Jurisdiction.objects.all()
     results = {'total': 0}
-    oldest_year = 1640
-    newest_year = datetime.now().year
-    
-    for jur in jurisdictions:
-        jur_specific_data = {'total': 0}
-        # organize cases per year
-        cases = CaseMetadata.objects.filter(jurisdiction=jur).order_by('decision_date')
-        # cases = CaseMetadata.objects.all().order_by('decision_date')
-        for year in range(oldest_year, newest_year):
-            count = cases.filter(decision_date__year=year).count()
-            if count:
-                jur_specific_data[year] = count
-                jur_specific_data['total'] += count
-                # add to total count, too
-                results['total'] += count
-        results[jur.slug] = jur_specific_data
+    with connection.cursor() as cursor:
+        cursor.execute("select jurisdiction_id, extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false group by jurisdiction_id, case_year;")
+
+        db_results = cursor.fetchall()
+
+    for res in db_results:
+        if res[0] not in results:
+            results[res[0]] = {res[1]: res[2]}
+        else:
+            results[res[0]][res[1]] = res[2]
+        results['total'] += res[2]
 
     results["recorded"] = str(datetime.now())
     with open(file_path, "w+") as f:
