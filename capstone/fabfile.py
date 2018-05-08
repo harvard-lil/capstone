@@ -481,8 +481,11 @@ def tear_down_case_fixtures_for_benchmarking():
     local('psql -c "DROP DATABASE %s;"' % settings.TEST_SLOW_QUERIES_DB_NAME)
 
 @task
-def count_data():
-    tasks.count_courts.delay()
-    tasks.count_reporters.delay()
-    tasks.count_cases.delay()
+def count_data(file_dir='capapi/data'):
+    """
+    Run some basic analytics for visualization purposes
+    """
+    tasks.count_courts.delay(file_dir=file_dir)
+    tasks.count_reporters_and_volumes.delay(file_dir=file_dir)
+    tasks.count_cases.delay(file_dir=file_dir)
 

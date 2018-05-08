@@ -77,43 +77,58 @@ def fix_md5_column(volume_id):
 def count_courts(file_name='court_count.json', file_dir='capapi/data/'):
     file_path = os.path.join(file_dir, file_name)
     jurs = Jurisdiction.objects.all()
-    results = {}
-    total = 0
+    results = {'total': 0}
     for jur in jurs:
         court_count = jur.courts.count()
         results[jur.id] = court_count
-        total += court_count
-    results['total'] = total
+        results['total'] += court_count
+
     results['recorded'] = str(datetime.now())
+
     with open(file_path, 'w+') as f:
         json.dump(results, f)
     print('done counting courts')
 
 
 @shared_task
-def count_reporters(file_name='reporter_count.json', file_dir='capapi/data/'):
+def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capapi/data/'):
     file_path = os.path.join(file_dir, file_name)
-    results = {'total': 0}
+    results = {
+        'totals': {
+            'total': 0,
+            'volume_count': 0
+        }
+    }
+
     with connection.cursor() as cursor:
         cursor.execute("select r.id, r.start_year, r.full_name, r.volume_count, j.jurisdiction_id as jurisdiction_id from capdb_reporter r join capdb_reporter_jurisdictions j on (r.id = j.reporter_id) order by j.jurisdiction_id, r.start_year;")
         db_results = cursor.fetchall()
 
     old_jur = db_results[0][4]
     for res in db_results:
-        results['total'] += 1
-        jur = res[4]
+        rep_id, start_year, full_name, volume_count, jur = res
+
         if jur == old_jur and jur in results:
             results[jur]['count'] += 1
-            results[jur]['reporters'].append(res[2])
-            if res[3]:
-                results[jur]['volume_count'] += res[3]
+            results[jur]['reporters'].append(full_name)
+            if volume_count:
+                results[jur]['volume_count'] += volume_count
 
         else:
             results[jur] = {'count': 1}
             results[jur]['start_year'] = res[1]
-            results[jur]['reporters'] = [res[2]]
-            results[jur]['volume_count'] = res[3]
+            results[jur]['reporters'] = [full_name]
+            results[jur]['volume_count'] = volume_count
             old_jur = jur
+
+        results['totals']['total'] += 1
+        if volume_count:
+            results['totals']['volume_count'] += volume_count
+        if start_year in results:
+            results['totals'][start_year]['volume_count'] += volume_count
+            results['totals'][start_year]['total'] += 1
+        else:
+            results['totals'][start_year] = {'volume_count': volume_count, 'total': 1}
 
     results["recorded"] = str(datetime.now())
 
@@ -124,21 +139,29 @@ def count_reporters(file_name='reporter_count.json', file_dir='capapi/data/'):
 @shared_task
 def count_cases(file_name='case_count.json', file_dir='capapi/data'):
     file_path = os.path.join(file_dir, file_name)
-    results = {'total': 0}
+    results = {'totals': {'total': 0}}
     with connection.cursor() as cursor:
         cursor.execute("select jurisdiction_id, extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false group by jurisdiction_id, case_year;")
 
         db_results = cursor.fetchall()
 
     for res in db_results:
-        if res[0] not in results:
-            results[res[0]] = {'total': res[2], res[1]: res[2]}
+        jur, case_year, count = res
+        if jur not in results:
+            results[jur] = {'total': count, case_year: count}
         else:
-            results[res[0]][res[1]] = res[2]
-            results[res[0]]['total'] += res[2]
-        results['total'] += res[2]
+            results[jur][case_year] = count
+            results[jur]['total'] += count
+
+        if case_year in results['totals']:
+            results['totals'][case_year] += count
+        else:
+            results['totals'][case_year] = count
+
+        results['totals']['total'] += count
 
     results["recorded"] = str(datetime.now())
+
     with open(file_path, "w+") as f:
         json.dump(results, f)
     print('done counting cases')
