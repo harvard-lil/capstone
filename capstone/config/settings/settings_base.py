@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
     'simple_history',   # model versioning
     'bootstrap4',   # bootstrap form rendering
+    'drf_yasg',   # API specification
 ]
 
 REST_FRAMEWORK = {
