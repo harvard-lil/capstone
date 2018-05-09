@@ -138,10 +138,9 @@ def generate_styled_case_xml(case_xml, strict=True):
 
         # the first element of every alto_text_block except the first should be preceded by a page break
         page_breaks = []
-        if  len(alto_text_blocks) > 1:
-            page_breaks = [ parsed_case(text_block)("alto|String")[0].get("ID") for text_block, page_styles in alto_text_blocks ][1:]
+        if len(alto_text_blocks) > 1:
+            page_breaks = [ parsed_case(text_block)("alto|String")[0].get("ID") for text_block, page_styles in alto_text_blocks if text_block.get("ID").split(".")[1] == '1' ]
 
-        # if none of the alto strings are styled, and there are no page breaks, move on to next casebody element
         if not any(p[1] for p in alto_strings) and len(page_breaks) == 0:
             continue
 
