@@ -198,6 +198,12 @@ PIPELINE = {
             ),
             'output_filename': 'api.css'
         },
+        'viz': {
+            'source_filenames': (
+                'css/scss/viz.scss',
+            ),
+            'output_filename': 'viz.css'
+        }
     },
 
     # avoid compressing assets for now

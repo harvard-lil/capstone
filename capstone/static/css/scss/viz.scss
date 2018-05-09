@@ -1,0 +1,92 @@
+@import "_variables.scss";
+body {
+  background-color: $color-tan;
+}
+
+h3 {
+  border-bottom: 1px solid $color-black;
+  margin-bottom: 40px;
+  font-size: 1.2rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.list-group, .list-group-item {
+  background-color: transparent;
+}
+
+
+.list-group-item {
+  @extend .font-header;
+  border-radius: 0 !important;
+  border: 0px;
+  border-bottom: 1px solid $color-gray;
+  &:last-child {
+    border-bottom: 0px;
+  }
+  &.data-item {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .count {
+    @extend .blue-text;
+    @extend .font-header-bold;
+    float: right;
+  }
+}
+
+.a-item-totals > li {
+  border-bottom: 1px solid $color-gray;
+}
+
+.jurisdiction-list {
+  border: 1px solid $color-gray;
+  padding: 10px;
+}
+
+#US-all {
+  top: 20px;
+  display: none;
+  position: absolute;
+  stroke-width: 3;
+  &.active {
+    display: block;
+  }
+}
+.land {
+  fill: #fff;
+  fill-opacity: 0;
+  stroke-opacity: 0;
+  &.active {
+    fill-opacity: 1;
+    fill: white;
+    stroke: $color-blue;
+    stroke-opacity: 1;
+    stroke-width:1;
+  }
+}
+
+.jurisdiction-list-group {
+  a.list-group-item:hover,
+  a.list-group-item:focus,
+  a.list-group-item:active {
+    background-color: $color-blue !important;
+    color: white;
+  }
+}
+
+.jurisdiction-list {
+  height: 360px;
+  overflow: scroll;
+  width: 200px;
+}
+
+// chart
+.chart-container {
+  position: relative;
+  margin: auto;
+  height: 80vh;
+  width: 80vw;
+}

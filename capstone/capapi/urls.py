@@ -50,8 +50,12 @@ urlpatterns = [
     path('accounts/detail/', user_views.user_details, name='user-details'),
     path('accounts/resend-verification/', user_views.resend_verification, name='resend-verification'),
 
+
     ### Swagger/OpenAPI/ReDoc ###
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=None), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=None), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
+
+    path('data', doc_views.data, name='data')
+
 ]
