@@ -83,6 +83,7 @@ class ReporterFactory(factory.DjangoModelFactory):
     start_year = timezone.now().timestamp()
     created_at = timezone.now()
     updated_at = timezone.now()
+    volume_count = random.randrange(100000)
     hollis = []
 
 @register
