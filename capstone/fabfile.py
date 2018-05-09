@@ -23,7 +23,7 @@ from fabric.decorators import task
 
 from capapi.models import CapUser
 from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery
-from capdb.tasks import create_case_metadata_from_all_vols, fix_md5_column
+import capdb.tasks as tasks
 # from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
     validate_private_volumes as validate_private_volumes_script, compare_alto_case, export
@@ -86,6 +86,11 @@ def run_pending_migrations():
 def update_postgres_env():
     set_up_postgres.update_postgres_env()
 
+@task
+def update_volume_metadata():
+    """ Update VolumeMetadata fields from VolumeXML. """
+    for volume_xml_id in VolumeXML.objects.values_list('pk', flat=True):
+        tasks.update_volume_metadata.delay(volume_xml_id)
 
 @task
 def create_or_update_case_metadata(update_existing=False):
@@ -95,7 +100,7 @@ def create_or_update_case_metadata(update_existing=False):
         - else, just create cases if missing
     """
     update_existing = True if update_existing else False
-    create_case_metadata_from_all_vols(update_existing=update_existing)
+    tasks.create_case_metadata_from_all_vols(update_existing=update_existing)
 
 @task
 def rename_tags_from_json_id_list(json_path, tag=None):
@@ -361,7 +366,7 @@ def test_slow(jobs="1", ram="10", cpu="30"):
 def fix_md5_columns():
     """ Run celery tasks to fix orig_xml and md5 column for all volumes. """
     for volume_id in VolumeXML.objects.values_list('pk', flat=True):
-        fix_md5_column.delay(volume_id)
+        tasks.fix_md5_column.delay(volume_id)
 
 @task
 def show_slow_queries():

@@ -5,6 +5,9 @@
 
   form {
     text-transform: uppercase;
+    .alert {
+      text-transform: none;
+    }
   }
 }
 

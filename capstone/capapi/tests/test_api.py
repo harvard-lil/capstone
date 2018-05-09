@@ -1,7 +1,9 @@
 import pytest
-from rest_framework.reverse import reverse
+from datetime import timedelta
+from django.utils import timezone
 
 from test_data.test_fixtures.factories import *
+from scripts.process_metadata import parse_decision_date
 from capapi.tests.helpers import check_response
 from capapi.permissions import casebody_permissions
 
@@ -10,7 +12,7 @@ from capapi.permissions import casebody_permissions
 def test_flow(client, api_url, case):
     """user should be able to click through to get to different tables"""
     # start with case
-    response = client.get("%scases/%s/?format=json" % (api_url, case.pk))
+    response = client.get("%scases/%s/" % (api_url, case.pk))
     check_response(response)
     content = response.json()
     # onwards to court
@@ -30,7 +32,7 @@ def test_flow(client, api_url, case):
 # RESOURCE ENDPOINTS
 @pytest.mark.django_db
 def test_jurisdictions(client, api_url, case):
-    response = client.get("%sjurisdictions/?format=json" % api_url)
+    response = client.get("%sjurisdictions/" % api_url)
     check_response(response)
     jurisdictions = response.json()['results']
     assert len(jurisdictions) > 0
@@ -39,7 +41,7 @@ def test_jurisdictions(client, api_url, case):
 
 @pytest.mark.django_db
 def test_single_jurisdiction(client, api_url, jurisdiction):
-    response = client.get("%sjurisdictions/%s/?format=json" % (api_url, jurisdiction.slug))
+    response = client.get("%sjurisdictions/%s/" % (api_url, jurisdiction.slug))
     check_response(response)
     jur_result = response.json()
     assert len(jur_result) > 1
@@ -49,7 +51,7 @@ def test_single_jurisdiction(client, api_url, jurisdiction):
 
 @pytest.mark.django_db
 def test_courts(api_url, client, court):
-    response = client.get("%scourts/?format=json" % api_url)
+    response = client.get("%scourts/" % api_url)
     check_response(response)
     courts = response.json()['results']
     assert len(courts) > 0
@@ -60,7 +62,7 @@ def test_courts(api_url, client, court):
 def test_single_court(api_url, client, court):
     court.slug = "unique-slug"
     court.save()
-    response = client.get("%scourts/%s/?format=json" % (api_url, court.slug))
+    response = client.get("%scourts/%s/" % (api_url, court.slug))
     check_response(response)
     court_result = response.json()
     assert court_result['name'] == court.name
@@ -68,7 +70,7 @@ def test_single_court(api_url, client, court):
 
 @pytest.mark.django_db
 def test_cases(client, api_url, case):
-    response = client.get("%scases/?format=json" % api_url)
+    response = client.get("%scases/" % api_url)
     check_response(response)
     cases = response.json()['results']
     assert len(cases) > 0
@@ -77,7 +79,7 @@ def test_cases(client, api_url, case):
 
 @pytest.mark.django_db
 def test_single_case(client, api_url, case):
-    response = client.get("%scases/%s/?format=json" % (api_url, case.pk))
+    response = client.get("%scases/%s/" % (api_url, case.pk))
     check_response(response)
     content = response.json()
     assert content.get("name_abbreviation") == case.name_abbreviation
@@ -85,7 +87,7 @@ def test_single_case(client, api_url, case):
 
 @pytest.mark.django_db
 def test_reporters(client, api_url, reporter):
-    response = client.get("%sreporters/?format=json" % api_url)
+    response = client.get("%sreporters/" % api_url)
     check_response(response)
     reporters = response.json()['results']
     assert len(reporters) > 0
@@ -94,7 +96,7 @@ def test_reporters(client, api_url, reporter):
 
 @pytest.mark.django_db
 def test_single_reporter(client, api_url, reporter):
-    response = client.get("%sreporters/%s/?format=json" % (api_url, reporter.pk))
+    response = client.get("%sreporters/%s/" % (api_url, reporter.pk))
     check_response(response)
     content = response.json()
     assert content.get("full_name") == reporter.full_name
@@ -103,19 +105,14 @@ def test_single_reporter(client, api_url, reporter):
 # REQUEST AUTHORIZATION
 @pytest.mark.django_db
 def test_unauthorized_request(cap_user, api_url, client, case):
-    assert cap_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
+    assert cap_user.case_allowance_remaining == cap_user.total_case_allowance
     url = "%scases/%s/?full_case=true" % (api_url, case.id)
     client.credentials(HTTP_AUTHORIZATION='Token fake')
     response = client.get(url)
-    check_response(response, status_code=401, format='')
+    check_response(response, status_code=401)
 
     cap_user.refresh_from_db()
-    assert cap_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
-
-    # unauthorized token as query_param
-    url = "%scases/%s/?full_case=true&api_key=%s" % (api_url, case.id, '00000fake')
-    response = client.get(url)
-    check_response(response, status_code=401, format='')
+    assert cap_user.case_allowance_remaining == cap_user.total_case_allowance
 
 
 @pytest.mark.django_db
@@ -131,9 +128,9 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     case.jurisdiction = jurisdiction
     case.save()
 
-    url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, format='')
+    check_response(response)
     content = response.json()
     assert "casebody" in content
 
@@ -142,24 +139,20 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     case.jurisdiction = jurisdiction
     case.save()
 
-    url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, format='')
+    check_response(response)
     casebody = response.json()['casebody']
     assert 'error_' in casebody['status']
     assert not casebody['data']
 
     url = "%scases/%s/?format=xml&full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, format='')
-    response_content = response.content.decode()
-    assert '<error>Casebody Error</error>' in response_content
+    check_response(response, content_type="application/xml", content_includes='<error>Casebody Error</error>')
 
     url = "%scases/%s/?format=html&full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, format='')
-    response_content = response.content.decode()
-    assert '<p>Casebody Error</p>' in response_content
+    check_response(response, content_type="text/html", content_includes='<p>Casebody Error</p>')
 
 
 @pytest.mark.django_db
@@ -171,13 +164,13 @@ def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, ca
 
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = auth_client.get(url)
-    check_response(response, format='')
-
-    assert response['Content-Type'] == 'text/html; charset=utf-8'
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
 
     # make sure the user's case download number has remained the same
     auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
+    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance
 
 
 @pytest.mark.django_db
@@ -189,13 +182,51 @@ def test_authenticated_full_case_blacklisted(auth_user, api_url, auth_client, ca
 
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = auth_client.get(url)
-    check_response(response, format='')
-
-    assert response['Content-Type'] == 'text/html; charset=utf-8'
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
 
     # make sure the auth_user's case download number has gone down by 1
     auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 1
+
+
+@pytest.mark.django_db
+def test_unlimited_access(auth_user, api_url, auth_client, case):
+    ### user with unlimited access should not have blacklisted cases count against them
+    auth_user.total_case_allowance = 500
+    auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
+    auth_user.save()
+    case.jurisdiction.whitelisted = False
+    case.jurisdiction.save()
+
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
+    response = auth_client.get(url)
+    check_response(response)
+    auth_user.refresh_from_db()
+    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance
+
+    # total_case_allowance shouldn't matter if unlimited access is in effect
+    auth_user.total_case_allowance = 0
+    auth_user.case_allowance_remaining = 0
+    auth_user.save()
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
+    response = auth_client.get(url)
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
+
+    # don't allow user to download blacklisted case if unlimited access has expired
+    # and they don't have enough case allowance
+    auth_user.total_case_allowance = 0
+    auth_user.case_allowance_remaining = 0
+    auth_user.unlimited_access_until = timezone.now() - timedelta(hours=1)
+    auth_user.save()
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
+    response = auth_client.get(url)
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] != 'ok'
 
 
 @pytest.mark.django_db
@@ -219,53 +250,27 @@ def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, thre
 
     # fetch the two blacklisted cases and one whitelisted case
     url = "%scases/?full_case=true" % (api_url)
-    with django_assert_num_queries(select=7, update=1):
+    with django_assert_num_queries(select=4, update=1):
         response = auth_client.get(url)
-    check_response(response, format='')
-    assert response['Content-Type'] == 'text/html; charset=utf-8'
+    check_response(response)
 
     # make sure the auth_user's case download number has gone down by 2
     auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 2
-
-
-@pytest.mark.django_db
-def test_authentication_as_query_param(auth_user, api_url, client, jurisdiction, case):
-    """
-    Allow the user to pass api key as query parameter
-    """
-    jurisdiction.whitelisted = False
-    jurisdiction.save()
-    case.jurisdiction = jurisdiction
-    case.save()
-
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE
-    token = auth_user.get_api_key()
-    url = "%scases/%s/?full_case=true&api_key=%s&format=json" % (api_url, case.pk, token)
-    response = client.get(url)
-    check_response(response, format='')
-    auth_user.refresh_from_db()
-
-    content = response.json()
-    assert "casebody" in content
-    casebody = content["casebody"]
-    assert casebody['status'] == "ok"
-
-    assert auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 2
 
 
 # CITATION REDIRECTS
 @pytest.mark.django_db
 def test_case_citation_redirect(api_url, client, citation):
     """Should allow various forms of citation, should redirect to normalized_cite"""
-    url = "%scases/%s?format=json" % (api_url, citation.normalized_cite)
+    url = "%scases/%s" % (api_url, citation.normalized_cite)
 
     # should have received a redirect
     response = client.get(url)
-    check_response(response, status_code=301, format='')
+    check_response(response, status_code=301)
 
     response = client.get(url, follow=True)
-    check_response(response, format='json')
+    check_response(response)
     content = response.json()['results']
     case = citation.case
     # should only have one case returned
@@ -277,10 +282,10 @@ def test_case_citation_redirect(api_url, client, citation):
     assert citations_result[0]['cite'] == citation.cite
 
     # allow user to enter real citation (not normalized)
-    url = "%scases/%s?format=json" % (api_url, citation.cite)
+    url = "%scases/%s" % (api_url, citation.cite)
     response = client.get(url, follow=True)
 
-    check_response(response, format='json')
+    check_response(response)
     content = response.json()['results']
     case = citation.case
     assert len(content) == 1
@@ -290,11 +295,11 @@ def test_case_citation_redirect(api_url, client, citation):
     new_citation = CitationFactory(cite='1 Mass. 1', normalized_cite='1-mass-1', case=citation.case)
     new_citation.save()
 
-    url = "%scases/%s?format=json" % (api_url, new_citation.cite)
+    url = "%scases/%s" % (api_url, new_citation.cite)
     response = client.get(url)
-    check_response(response, status_code=301, format='')
+    check_response(response, status_code=301)
     response = client.get(url, follow=True)
-    check_response(response, format='json')
+    check_response(response)
     content = response.json()['results']
     case = citation.case
     assert len(content) == 1
@@ -311,9 +316,9 @@ def test_case_body_formats(api_url, client, case):
     case.jurisdiction.save()
 
     # body_format not specified, should get back text
-    url = "%scases/%s/?format=json&full_case=true" % (api_url, case.pk)
+    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, format='json')
+    check_response(response)
     content = response.json()
     assert "casebody" in content
     casebody = content["casebody"]
@@ -323,9 +328,9 @@ def test_case_body_formats(api_url, client, case):
     assert "<" not in casebody['data']
 
     # getting back xml body
-    url = "%scases/%s/?format=json&full_case=true&body_format=xml" % (api_url, case.pk)
+    url = "%scases/%s/?full_case=true&body_format=xml" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, format='json')
+    check_response(response)
     content = response.json()
     assert "casebody" in content
     casebody = content["casebody"]
@@ -333,9 +338,9 @@ def test_case_body_formats(api_url, client, case):
     assert "<?xml version=" in casebody['data']
 
     # getting back html body
-    url = "%scases/%s/?format=json&full_case=true&body_format=html" % (api_url, case.pk)
+    url = "%scases/%s/?full_case=true&body_format=html" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, format='json')
+    check_response(response)
     content = response.json()
     assert "casebody" in content
     casebody = content["casebody"]
@@ -351,7 +356,7 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     case_to_test.court = court
     case_to_test.save()
 
-    response = client.get("%scases/?court_name=%s&format=json" % (api_url, three_cases[2].court.name))
+    response = client.get("%scases/?court_name=%s" % (api_url, three_cases[2].court.name))
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
 
@@ -360,44 +365,56 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     case_to_test.name_abbreviation = "Bill v. Bob"
     case_to_test.save()
     assert case_to_test.name_abbreviation != three_cases[1].name_abbreviation
-    response = client.get("%scases/?name_abbreviation=%s&format=json" % (api_url, case_to_test.name_abbreviation))
+    response = client.get("%scases/?name_abbreviation=%s" % (api_url, case_to_test.name_abbreviation))
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
 
     # filtering case by name_abbreviation lowercased substring
     assert case_to_test.name_abbreviation != three_cases[1].name_abbreviation
-    response = client.get("%scases/?name_abbreviation=%s&format=json" % (api_url, "bill"))
+    response = client.get("%scases/?name_abbreviation=%s" % (api_url, "bill"))
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
 
     # filtering case by court substring
     case_to_test = three_cases[2]
     court_name = case_to_test.court.name.split(' ')[1]
-    response = client.get("%scases/?court_name=%s&format=json" % (api_url, court_name))
+    response = client.get("%scases/?court_name=%s" % (api_url, court_name))
     content = response.json()
     for result in content['results']:
         assert court_name in result['court']
 
     # filtering case by reporter substring
     reporter_name = case_to_test.reporter.full_name.split(' ')[1]
-    response = client.get("%scases/?reporter_name=%s&format=json" % (api_url, reporter_name))
+    response = client.get("%scases/?reporter_name=%s" % (api_url, reporter_name))
     content = response.json()
     for result in content['results']:
         assert reporter_name in result['reporter']
+
+    # filtering by decision_date
+    # make sure that we can filter by decision_date's datefield
+    # but we get decision_date_original string in response
+    case_to_test = three_cases[0]
+    case_to_test.decision_date_original = "1988"
+    case_to_test.decision_date = parse_decision_date(case_to_test.decision_date_original)
+    case_to_test.save()
+    response = client.get("%scases/?decision_date_min=%s&decision_date_max=%s" % (api_url, "1987-12-30", "1988-01-02"))
+    content = response.json()
+    result = content['results'][0]
+    assert case_to_test.decision_date_original == result['decision_date']
 
 
 @pytest.mark.django_db
 def test_filter_court(api_url, client, court):
     # filtering court by jurisdiction
     jur_slug = court.jurisdiction.slug
-    response = client.get("%scourts/?jurisdiction_slug=%s&format=json" % (api_url, jur_slug))
+    response = client.get("%scourts/?jurisdiction_slug=%s" % (api_url, jur_slug))
     check_response(response)
     results = response.json()['results']
     assert court.name_abbreviation == results[0]['name_abbreviation']
 
     # filtering court by name substring
     court_name_str = court.name.split(' ')[1]
-    response = client.get("%scourts/?name=%s&format=json" % (api_url, court_name_str))
+    response = client.get("%scourts/?name=%s" % (api_url, court_name_str))
     content = response.json()
     for result in content['results']:
         assert court_name_str in result['name']
@@ -407,7 +424,7 @@ def test_filter_court(api_url, client, court):
 def test_filter_reporter(api_url, client, reporter):
     # filtering reporter by name substring
     reporter_name_str = reporter.full_name.split(' ')[1]
-    response = client.get("%sreporters/?full_name=%s&format=json" % (api_url, reporter_name_str))
+    response = client.get("%sreporters/?full_name=%s" % (api_url, reporter_name_str))
     content = response.json()
     for result in content['results']:
         assert reporter_name_str in result['full_name']
@@ -415,47 +432,22 @@ def test_filter_reporter(api_url, client, reporter):
 
 # RESPONSE FORMATS
 @pytest.mark.django_db
-def test_formats(api_url, auth_user, client, case):
-    formats = ['html', 'xml', 'json']
-    for format in formats:
+def test_formats(api_url, client, auth_client, case):
+    formats = [
+        ('html', 'text/html'),
+        ('xml', 'application/xml'),
+        ('json', 'application/json'),
+    ]
+    for format, content_type in formats:
         # test format html without api_key
         url = "%scases/%s/?format=%s&full_case=true" % (api_url, case.id, format)
         response = client.get(url)
-        check_response(response, format=format)
+        check_response(response, content_type=content_type)
         response_content = response.content.decode()
         assert 'error' in response_content.lower()
 
         # test full, authorized case
-        token = auth_user.get_api_key()
-        url = "%scases/%s/?format=%s&full_case=true&api_key=%s" % (api_url, case.id, format, token)
-        response = client.get(url)
-        check_response(response, format=format)
-        response_content = response.content.decode()
-        assert case.name in response_content
+        url = "%scases/%s/?format=%s&full_case=true" % (api_url, case.id, format)
+        response = auth_client.get(url)
+        check_response(response, content_type=content_type, content_includes=case.name)
 
-
-#  USER VIEWS
-@pytest.mark.django_db
-def test_view_details(auth_user, client):
-    """
-    User is able to log in successfully and see an API Token
-    """
-    url = reverse('capuser-view-details')
-    auth_user.set_password('pass')
-    auth_user.save()
-    response = client.post(url, {
-        'email': auth_user.email,
-        'password': 'pass'
-    }, format='json')
-
-    check_response(response, format='')
-    assert b"user_api_key" in response.content
-    assert auth_user.get_api_key() in response.content.decode()
-
-    response = client.post(url, {
-        'email': auth_user.email,
-        'password': 'fake'
-    }, format='json')
-
-    check_response(response, status_code=401, format='')
-    assert auth_user.get_api_key() not in response.content.decode()

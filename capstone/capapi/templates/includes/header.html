@@ -5,12 +5,23 @@
       <img class="header-logo"
            src="{% static "img/logo-small-blue.png" %}"
            alt="CAP Logo"/>
+      <span class="header-text cap-name"> CASELAW ACCESS PROJECT</span>
     </a>
-    <span class="header-text"> CASELAW ACCESS PROJECT</span>
-    <a href="https://lil.law.harvard.edu">
+    <span class="header-text float-right">
+      {% if request.user.is_anonymous %}
+        <a href="{% url "register" %}">Register</a>
+        <span>&nbsp;|&nbsp;</span>
+        <a href="{% url "login" %}">Log in</a>
+      {% else %}
+        <a href="{% url "user-details" %}">Account</a>
+        <span>&nbsp;|&nbsp;</span>
+        <a href="{% url "logout" %}">Log out</a>
+      {% endif %}
+      <a href="https://lil.law.harvard.edu">
       <img class="lil-logo"
            src="{% static "img/LIL-logo.png" %}"
            alt="Library Innovation Lab" />
-    </a>
+      </a>
+    </span>
   </div>
 </header>

@@ -55,3 +55,13 @@ DATABASES['tracking_tool'] = {
 
 ### API
 API_DOCS_CASE_ID = '11301409' # Brown v. Board
+
+### SECURITY
+
+# No need for SECURE_SSL_REDIRECT, because nginx is configured to redirect, and this setting doesn't add any additional
+# security since it relies on the same nginx proxy setting X-Forwarded-Proto correctly:
+# SECURE_SSL_REDIRECT = True
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

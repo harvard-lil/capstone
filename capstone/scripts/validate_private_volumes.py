@@ -6,6 +6,7 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.utils.encoding import force_str
 
+from capdb.models import VolumeMetadata
 from capdb.storages import private_ingest_storage
 from scripts.ingest_by_manifest import wipe_redis_db, read_inventory_files, get_unique_volumes_from_queue, \
     get_s3_items_by_type_from_queue, validate_volmets, report_errors, store_error
@@ -81,18 +82,26 @@ def process_report():
         expected_volumes = set(json.loads(in_file.readline()))
         in_file.readline()
         errors = {}
+        processed_vols = set()
         for line in in_file:
             parts = line.strip().split("\t")
             volume_folder, error_code, details = parts[0], parts[1], parts[2:]
             expected_volumes.discard(volume_folder)
+            processed_vols.add(volume_folder)
             if error_code == 'ok':
                 continue
             error = {'error_code': error_code}
             if details:
                 error['files'] = details[0]
             errors[volume_folder] = error
-        for missed_volume in expected_volumes:
-            errors[missed_volume] = {'error_code': 'missed'}
+
+    for missed_volume in expected_volumes:
+        errors[missed_volume] = {'error_code': 'in inventory report but not processed'}
+
+    db_vols = VolumeMetadata.objects.exclude(ingest_status='skip').filter(xml_publication_year__gte=1923).values_list('pk', flat=True)
+    missing_vols = set(db_vols) - set(i.split('_')[0] for i in processed_vols)
+    for missed_volume in missing_vols:
+        errors[missed_volume] = {'error_code': 'in database but not in S3'}
 
     with open("/tmp/validate_private_volumes_report.txt", "w") as out:
         out.write(json.dumps(errors, indent=4))

@@ -11,6 +11,7 @@ amqp==2.2.2               # via kombu
 apipkg==1.4               # via execnet
 asn1crypto==0.22.0        # via cryptography
 attrs==17.4.0             # via pytest
+babel==2.5.3              # via flower
 bagit==1.6.4
 beautifulsoup4==4.6.0
 billiard==3.5.0.3         # via celery
@@ -28,6 +29,7 @@ cryptography==1.8.2       # via paramiko
 cssselect==1.0.1
 dicttoxml==1.7.4          # via moto
 django-appconf==1.0.2     # via django-compressor
+django-bootstrap4==0.0.6
 django-bulk-update==2.1.0
 django-compressor==2.1.1  # via django-libsass
 django-extensions==2.0.6
@@ -46,6 +48,7 @@ factory-boy==2.10.0
 faker==0.8.4              # via factory-boy
 first==2.0.1              # via pip-tools
 flake8==3.4.1
+flower==0.9.2
 idna==2.5                 # via cryptography, requests
 inflection==0.3.1         # via pytest-factoryboy
 jinja2==2.9.6             # via moto
@@ -60,7 +63,7 @@ moto==1.0.0
 mysqlclient==1.3.10
 packaging==16.8           # via cryptography
 paramiko==2.1.2           # via fabric3
-pip-tools==1.11.0
+pip-tools==2.0.1
 pluggy==0.6.0             # via pytest
 port-for==0.4             # via pytest-redis
 psutil==5.4.0             # via mirakuru
@@ -81,7 +84,7 @@ pytest-redis==1.3.2
 pytest-xdist==1.16.0
 pytest==3.4.2             # via pytest-cov, pytest-django, pytest-factoryboy, pytest-redis, pytest-xdist
 python-dateutil==2.6.0    # via botocore, faker, moto
-pytz==2017.2              # via celery, django, moto
+pytz==2017.2              # via babel, celery, django, flower, moto
 pyyaml==3.12              # via pyaml
 rcssmin==1.0.6            # via django-compressor
 redis==2.10.6
@@ -89,6 +92,7 @@ requests==2.16.4          # via moto
 rjsmin==1.0.12            # via django-compressor
 s3transfer==0.1.10        # via boto3
 six==1.10.0               # via cryptography, django-extensions, fabric3, faker, libsass, moto, packaging, pip-tools, pyscss, pytest, python-dateutil
+tornado==5.0.2            # via flower
 tqdm==4.11.2
 urllib3==1.21.1           # via requests
 vine==1.1.4               # via amqp

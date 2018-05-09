@@ -6,7 +6,7 @@
 }
 
 .page-header h1 {
-  font-family: $font-bold;
+  font-family: $font-header-bold;
   letter-spacing: 1px;
 }
 
@@ -77,14 +77,13 @@ nav {
   list-style: none;
   border: 1px solid $color-blue;
   float: left;
-  width: 70px;
   text-align: center;
   border-radius: 3px;
   margin-left: 5px;
   background: $color-blue;
   color: white;
   font-size: 14px;
-  padding: 3px;
+  padding: 3px 7px;
   cursor: pointer;
   a {
     color: white;

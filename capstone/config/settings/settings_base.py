@@ -9,6 +9,7 @@ ALLOWED_HOSTS = []
 ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
 
 AUTH_USER_MODEL = 'capapi.CapUser'
+LOGIN_REDIRECT_URL = '/'
 
 # Application definition
 
@@ -31,10 +32,12 @@ INSTALLED_APPS = [
     'capdb',
     'tracking_tool',
     'capapi',
+    'django_sql_trace',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
     'simple_history',   # model versioning
+    'bootstrap4',   # bootstrap form rendering
 ]
 
 REST_FRAMEWORK = {
@@ -44,10 +47,15 @@ REST_FRAMEWORK = {
         'rest_framework_filters.backends.DjangoFilterBackend',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'capapi.authentication.CapUserAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'capapi.permissions.IsSafeMethodsUser',
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ),
 }
 
@@ -242,9 +250,7 @@ CELERY_TASK_SERIALIZER = 'json'
 ### CAP API settings ###
 
 API_CASE_DAILY_ALLOWANCE = 500
-API_DOWNLOAD_LIMIT = 100
 API_CASE_EXPIRE_HOURS = 24
-API_BASE_URL = 'http://localhost:8000'
 API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
 API_DOCS_CASE_ID = 2

@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from contextlib import contextmanager
 
@@ -35,6 +36,8 @@ def clear_caches():
         for model in django.apps.apps.get_models():
             if hasattr(model, 'reset_cache'):
                 model.reset_cache()
+
+
 
 @pytest.fixture(scope='function')
 def django_assert_num_queries(pytestconfig):
@@ -75,8 +78,17 @@ def django_assert_num_queries(pytestconfig):
             if expected_counts != query_counts:
                 msg = "Unexpected queries: expected %s, got %s" % (expected_counts, dict(query_counts))
                 if pytestconfig.getoption('verbose') > 0:
-                    sqls = (q['sql'] for q in context.captured_queries)
-                    msg += '\n\nQueries:\n========\n\n%s' % '\n\n'.join(sqls)
+                    msg += '\n\nQueries:\n========\n\n'
+                    for q in context.captured_queries:
+                        if q['userland_stack_frame']:
+                            msg += "%s:%s:\n%s\n" % (
+                                q['userland_stack_frame'].filename,
+                                q['userland_stack_frame'].lineno,
+                                q['userland_stack_frame'].code_context[0].rstrip())
+                        else:
+                            msg += "Not via userland:\n"
+                        short_sql = re.sub(r'\'.*?\'', "'<str>'", q['sql'], flags=re.DOTALL)
+                        msg += "%s\n\n" % short_sql
                 else:
                     msg += " (add -v option to show queries)"
                 pytest.fail(msg)
@@ -115,6 +127,8 @@ def three_cases():
 
 @pytest.fixture
 def auth_user(token):
+    token.user.email_verified = True
+    token.user.save()
     return token.user
 
 @pytest.fixture
@@ -124,7 +138,10 @@ def client():
 @pytest.fixture
 def auth_client(auth_user, client):
     """ Return client authenticated as auth_user. """
+    # API auth
     client.credentials(HTTP_AUTHORIZATION='Token ' + auth_user.get_api_key())
+    # Django auth
+    client.force_login(user=auth_user)
     return client
 
 @pytest.fixture

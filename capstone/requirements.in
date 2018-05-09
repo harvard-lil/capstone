@@ -6,6 +6,7 @@ tqdm                # script progress bars
 # celery
 celery[redis]       # task queue
 pycurl              # let celery talk to SQS queue
+flower              # monitoring
 
 # xml
 lxml
@@ -56,3 +57,4 @@ django-pipeline
 django-pipeline-compass
 djangorestframework-filters
 djangorestframework
+django-bootstrap4   # render bootstrap forms in django templates

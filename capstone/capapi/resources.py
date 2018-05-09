@@ -1,4 +1,3 @@
-import os
 import json
 from datetime import datetime
 import logging
@@ -10,6 +9,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.defaultfilters import slugify
 from django.http import FileResponse
+from rest_framework.reverse import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -37,29 +37,17 @@ def create_download_response(filename='', content=[]):
     return response
 
 
-def email(reason, user):
-    title = 'CAP API: %s' % reason
-    if reason == 'new_registration':
-        message = "user %s %s at %s has requested API access." % (
-            user.first_name,
-            user.last_name,
-            user.email
-        )
-        send_mail(
-            title,
-            message,
-            settings.API_ADMIN_EMAIL_ADDRESS,
-            [settings.API_EMAIL_ADDRESS]
-        )
-        logger.info("sent new_registration email for %s" % user.email)
+def send_new_signup_email(request, user):
+    token_url = reverse('verify-user', kwargs={'user_id':user.pk, 'activation_nonce': user.get_activation_nonce()}, request=request)
+    send_mail(
+        'CaseLaw Access Project: Verify your email address',
+        "Please click here to verify your email address: \n\n%s \n\nIf you believe you have received this message in error, please ignore it." % token_url,
+        settings.API_EMAIL_ADDRESS,
+        [user.email],
+        fail_silently=False, )
+    logger.info("sent new_signup email for %s" % user.email)
 
-    if reason == 'new_signup':
-        token_url = os.path.join(settings.API_BASE_URL, "accounts/verify-user", str(user.id), user.get_activation_nonce())
-        send_mail(
-            'CaseLaw Access Project: Verify your email address',
-            "Please click here to verify your email address: %s If you believe you have received this message in error, please ignore it." % token_url,
-            settings.API_EMAIL_ADDRESS,
-            [user.email],
-            fail_silently=False, )
-        logger.info("sent new_signup email for %s" % user.email)
 
+def form_for_request(request, FormClass):
+    """ return FormClass loaded with request.POST data, if any """
+    return FormClass(request.POST if request.method == 'POST' else None)
