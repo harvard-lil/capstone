@@ -7,10 +7,15 @@ import os
 import gzip
 from django.db import connection, utils
 import json
+from datetime import datetime
 
-from capdb.models import CaseMetadata
-from capdb.tasks import create_case_metadata_from_all_vols
+from capdb.models import CaseMetadata, Court, Reporter, VolumeMetadata
+from capdb.tasks import create_case_metadata_from_all_vols, count_courts, count_reporters_and_volumes, count_cases
+
+from test_data.test_fixtures.factories import *
+
 import fabfile
+
 
 @pytest.mark.django_db
 def test_create_case_metadata_from_all_vols(case_xml):
@@ -30,6 +35,7 @@ def test_create_case_metadata_from_all_vols(case_xml):
     assert CaseMetadata.objects.count() == metadata_count
     assert case_xml.metadata.case_id == case_id
 
+
 @pytest.mark.django_db
 def test_bag_jurisdiction(case_xml, tmpdir):
     # get the jurisdiction of the ingested case
@@ -43,6 +49,7 @@ def test_bag_jurisdiction(case_xml, tmpdir):
     bag = bagit.Bag(bag_path)
     bag.validate()
 
+
 @pytest.mark.django_db
 def test_bag_reporter(case_xml, tmpdir):
     # get the jurisdiction of the ingested case
@@ -55,6 +62,7 @@ def test_bag_reporter(case_xml, tmpdir):
         zf.extractall(str(tmpdir))
     bag = bagit.Bag(str(bag_path.with_suffix('')))
     bag.validate()
+
 
 @pytest.mark.django_db
 def test_write_inventory_files(tmpdir):
@@ -77,6 +85,7 @@ def test_write_inventory_files(tmpdir):
             file_path = os.path.join(dir_name, file_path)
             assert file_path[len('test_data/'):] in contents
 
+
 @pytest.mark.django_db
 def test_show_slow_queries(capsys):
     cursor = connection.cursor()
@@ -88,3 +97,44 @@ def test_show_slow_queries(capsys):
         assert "capstone slow query report" in output['text']
     except utils.OperationalError:
         pytest.skip("pg_stat_statements is not in shared_preload_libraries")
+
+
+@pytest.mark.django_db
+def test_count_courts(court):
+    results = count_courts(write_to_file=False)
+    assert results['total'] == Court.objects.count()
+    date = datetime.strptime(results['recorded'], "%Y-%m-%d %H:%M:%S.%f")
+    assert date.day == datetime.now().day
+
+
+@pytest.mark.django_db
+def test_count_reporters_and_volumes(three_cases, jurisdiction, reporter, volume_metadata):
+    for rep in Reporter.objects.all():
+        rep.jurisdictions.add(jurisdiction)
+    results = count_reporters_and_volumes(write_to_file=False)
+
+    assert results['totals']['total'] == Reporter.objects.count()
+    actual_vol_count = 0
+    for rep in Reporter.objects.all():
+        actual_vol_count += rep.volume_count
+    res_vol_count = results['totals']['volume_count']
+    assert actual_vol_count == res_vol_count
+    assert results[jurisdiction.id]['total'] == Reporter.objects.filter(jurisdictions=jurisdiction.id).count()
+
+    date = datetime.strptime(results['recorded'], "%Y-%m-%d %H:%M:%S.%f")
+    assert date.day == datetime.now().day
+
+
+@pytest.mark.django_db
+def test_count_cases(three_cases):
+    results = count_cases(write_to_file=False)
+    for key in results:
+        if key == 'totals':
+            assert results['totals']['total'] == CaseMetadata.objects.count()
+            continue
+        if key == 'recorded':
+            date = datetime.strptime(results[key], "%Y-%m-%d %H:%M:%S.%f")
+            assert date.day == datetime.now().day
+            continue
+        totals = results[key]
+        assert totals['total'] == CaseMetadata.objects.filter(jurisdiction=key).count()

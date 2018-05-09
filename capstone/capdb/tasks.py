@@ -74,7 +74,7 @@ def fix_md5_column(volume_id):
 
 
 @shared_task
-def count_courts(file_name='court_count.json', file_dir='capapi/data/'):
+def count_courts(file_name='court_count.json', file_dir='capapi/data/', write_to_file=True):
     file_path = os.path.join(file_dir, file_name)
     jurs = Jurisdiction.objects.all()
     results = {'total': 0}
@@ -85,13 +85,16 @@ def count_courts(file_name='court_count.json', file_dir='capapi/data/'):
 
     results['recorded'] = str(datetime.now())
 
+    if not write_to_file:
+        return results
+
     with open(file_path, 'w+') as f:
         json.dump(results, f)
     print('done counting courts')
 
 
 @shared_task
-def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capapi/data/'):
+def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capapi/data/', write_to_file=True):
     file_path = os.path.join(file_dir, file_name)
     results = {
         'totals': {
@@ -104,10 +107,13 @@ def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capap
         cursor.execute("select r.id, r.start_year, r.full_name, r.volume_count, j.jurisdiction_id as jurisdiction_id from capdb_reporter r join capdb_reporter_jurisdictions j on (r.id = j.reporter_id) order by j.jurisdiction_id, r.start_year;")
         db_results = cursor.fetchall()
 
+    # make sure we don't count reporter in two jurisdictions twice
+    reps = set()
+
     old_jur = db_results[0][4]
     for res in db_results:
         rep_id, start_year, full_name, volume_count, jur = res
-
+        reps.add(rep_id)
         if jur == old_jur and jur in results:
             results[jur]['total'] += 1
             results[jur]['reporters'].append(full_name)
@@ -121,7 +127,6 @@ def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capap
             results[jur]['volume_count'] = volume_count
             old_jur = jur
 
-        results['totals']['total'] += 1
         if volume_count:
             results['totals']['volume_count'] += volume_count
         if start_year in results:
@@ -130,7 +135,11 @@ def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capap
         else:
             results['totals'][start_year] = {'volume_count': volume_count, 'total': 1}
 
-    results["recorded"] = str(datetime.now())
+    results['totals']['total'] = len(reps)
+    results['recorded'] = str(datetime.now())
+
+    if not write_to_file:
+        return results
 
     with open(file_path, "w+") as f:
         json.dump(results, f)
@@ -138,12 +147,11 @@ def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capap
 
 
 @shared_task
-def count_cases(file_name='case_count.json', file_dir='capapi/data'):
+def count_cases(file_name='case_count.json', file_dir='capapi/data', write_to_file=True):
     file_path = os.path.join(file_dir, file_name)
     results = {'totals': {'total': 0}}
     with connection.cursor() as cursor:
         cursor.execute("select jurisdiction_id, extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false group by jurisdiction_id, case_year;")
-
         db_results = cursor.fetchall()
 
     for res in db_results:
@@ -161,7 +169,10 @@ def count_cases(file_name='case_count.json', file_dir='capapi/data'):
 
         results['totals']['total'] += count
 
-    results["recorded"] = str(datetime.now())
+    results['recorded'] = str(datetime.now())
+
+    if not write_to_file:
+        return results
 
     with open(file_path, "w+") as f:
         json.dump(results, f)
