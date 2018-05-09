@@ -33,7 +33,7 @@ The Caselaw Access Project Data Visualization
             </a>
           </li>
 
-           {% for id, val in jurisdictions.items %}
+           {% for id, val in jurisdictions_for_handlebars.items %}
              {% if val.name_long %}
 
                <li class="list-group-item jurisdiction-item">
@@ -83,7 +83,7 @@ The Caselaw Access Project Data Visualization
   var reporter_count = JSON.parse("{{ reporter_count|escapejs }}");
   var case_count = JSON.parse("{{ case_count|escapejs }}");
   var court_count = JSON.parse("{{ court_count|escapejs }}");
-  var jurisdiction_data = JSON.parse("{{ jurisdiction_data|escapejs }}");
+  var jurisdiction_data = JSON.parse("{{ jurisdictions|escapejs }}");
   </script>
 
 {% endblock %}

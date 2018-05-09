@@ -9,10 +9,8 @@ from django.db import connection, utils
 import json
 from datetime import datetime
 
-from capdb.models import CaseMetadata, Court, Reporter, VolumeMetadata
+from capdb.models import CaseMetadata, Court, Reporter
 from capdb.tasks import create_case_metadata_from_all_vols, count_courts, count_reporters_and_volumes, count_cases
-
-from test_data.test_fixtures.factories import *
 
 import fabfile
 

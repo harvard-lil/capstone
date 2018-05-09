@@ -49,9 +49,9 @@ def data(request):
         }
 
     return render(request, 'data-viz.html', {
-            'jurisdictions': jurs,
-            'jurisdiction_data': json.dumps(jurs),
-            'court_count': json.dumps(court_count),
-            'reporter_count': json.dumps(reporter_count),
-            'case_count': json.dumps(case_count)
+        'jurisdictions_for_handlebars': jurs,
+        'jurisdictions': json.dumps(jurs),
+        'court_count': json.dumps(court_count),
+        'reporter_count': json.dumps(reporter_count),
+        'case_count': json.dumps(case_count)
     })
