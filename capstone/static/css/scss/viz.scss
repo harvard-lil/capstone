@@ -7,6 +7,14 @@ h3 {
   border-bottom: 1px solid $color-black;
   margin-bottom: 40px;
   font-size: 1.2rem;
+  color: $color-black;
+}
+
+h5.selected-jurisdiction {
+  font-family: $font-header-semibold;
+  font-size: 1rem;
+  padding-bottom: 2px;
+  color: $color-black;
 }
 
 .hidden {

@@ -483,11 +483,11 @@ def tear_down_case_fixtures_for_benchmarking():
 
 
 @task
-def count_data(file_dir='capapi/data'):
+def count_data():
     """
     Run some basic analytics for visualization purposes
     """
-    tasks.count_courts.delay(file_dir=file_dir)
-    tasks.count_reporters_and_volumes.delay(file_dir=file_dir)
-    tasks.count_cases.delay(file_dir=file_dir)
+    tasks.count_courts.delay()
+    tasks.count_reporters_and_volumes.delay()
+    tasks.count_cases.delay()
 

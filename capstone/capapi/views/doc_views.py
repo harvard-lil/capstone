@@ -27,7 +27,7 @@ def home(request):
 
 def data(request):
     jurisdictions = models.Jurisdiction.objects.all().order_by('name_long')
-    data_dir = 'capapi/data/'
+    data_dir = settings.DATA_COUNT_DIR
 
     with open(os.path.join(data_dir, 'court_count.json'), 'r') as f:
         court_count = json.load(f)
