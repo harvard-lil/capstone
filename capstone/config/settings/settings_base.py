@@ -269,6 +269,9 @@ API_CASE_FILE_TYPE = '.xml'
 API_ADMIN_EMAIL_ADDRESS = 'main-email-address@example.com'
 API_EMAIL_ADDRESS = 'admin-email-address@example.com'
 
+# DATA VISUALIZATION
+DATA_COUNT_DIR = '/tmp/count-data'
+
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25

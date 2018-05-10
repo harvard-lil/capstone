@@ -4,6 +4,7 @@ from datetime import datetime
 from celery import shared_task
 
 from django.db import connection, transaction
+from django.conf import settings
 
 from capdb.models import *
 
@@ -74,7 +75,8 @@ def fix_md5_column(volume_id):
 
 
 @shared_task
-def count_courts(file_name='court_count.json', file_dir='capapi/data/', write_to_file=True):
+def count_courts(file_name='court_count.json', write_to_file=True):
+    file_dir = settings.DATA_COUNT_DIR
     file_path = os.path.join(file_dir, file_name)
     jurs = Jurisdiction.objects.all()
     results = {'total': 0}
@@ -94,7 +96,8 @@ def count_courts(file_name='court_count.json', file_dir='capapi/data/', write_to
 
 
 @shared_task
-def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capapi/data/', write_to_file=True):
+def count_reporters_and_volumes(file_name='reporter_count.json', write_to_file=True):
+    file_dir = settings.DATA_COUNT_DIR
     file_path = os.path.join(file_dir, file_name)
     results = {
         'totals': {
@@ -147,7 +150,8 @@ def count_reporters_and_volumes(file_name='reporter_count.json', file_dir='capap
 
 
 @shared_task
-def count_cases(file_name='case_count.json', file_dir='capapi/data', write_to_file=True):
+def count_cases(file_name='case_count.json', write_to_file=True):
+    file_dir = settings.DATA_COUNT_DIR
     file_path = os.path.join(file_dir, file_name)
     results = {'totals': {'total': 0}}
     with connection.cursor() as cursor:

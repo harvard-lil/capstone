@@ -1,11 +1,13 @@
 $(function() {
   $(".a-item").click(function() {
     var id = $(this).attr('id').split('jurisdiction-item-')[1];
-    var slug;
+    var slug, name;
     if (id === 'totals') {
       slug = 'totals';
+      name = 'Total'
     } else {
       slug = jurisdiction_data[id].slug;
+      name = jurisdiction_data[id].name_long;
     }
     populateCaseChart(id);
     populateJurisdictionData(this, name, id, slug);
@@ -46,12 +48,11 @@ var populateCaseChart = function (id) {
   if (!(id in case_count)) {
     return
   }
+
   var years = Object.keys(case_count[id]);
+  var caseNumber = Object.values(case_count[id]);
   if (years[years.length-1] === 'total') {
     years.pop();
-  }
-  var caseNumber = Object.values(case_count[id]);
-  if (caseNumber[caseNumber.length-1] === 'total') {
     caseNumber.pop();
   }
 
