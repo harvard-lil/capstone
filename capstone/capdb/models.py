@@ -8,7 +8,7 @@ from model_utils import FieldTracker
 
 from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, nsmap)
+                             serialize_xml, nsmap, jurisdiction_translation_long_name)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -412,6 +412,13 @@ class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
 
     def __str__(self):
         return self.slug
+
+    def save(self, *args, **kwargs):
+        # set name_long based on name
+        if self.name and not self.name_long:
+            self.name_long = jurisdiction_translation_long_name.get(self.name, self.name)
+
+        return super().save(*args, **kwargs)
 
     class Meta:
         ordering = ['name']
