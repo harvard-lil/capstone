@@ -87,6 +87,17 @@ def update_postgres_env():
     set_up_postgres.update_postgres_env()
 
 @task
+def initialize_denormalization_fields():
+    """
+        Manually populate or repopulate denormalized fields.
+
+        Typically initialize_denormalization_fields should instead be called in a migration that adds denormalized fields, as
+            migrations.RunPython(initialize_denormalization_fields),
+        but this allows it to be re-run manually if necessary.
+    """
+    set_up_postgres.initialize_denormalization_fields()
+
+@task
 def update_volume_metadata():
     """ Update VolumeMetadata fields from VolumeXML. """
     for volume_xml_id in VolumeXML.objects.values_list('pk', flat=True):
