@@ -637,6 +637,31 @@ class CaseMetadata(models.Model):
     date_added = models.DateTimeField(null=True, blank=True)
     duplicative = models.BooleanField(default=False)
 
+    # denormalized fields -
+    # these should not be set directly, but are automatically copied from self.jurisdiction by database triggers
+    denormalized_fields = {
+        'jurisdiction_slug': 'jurisdiction__slug',
+        'jurisdiction_name': 'jurisdiction__name',
+        'jurisdiction_name_long': 'jurisdiction__name_long',
+        'jurisdiction_whitelisted': 'jurisdiction__whitelisted',
+    }
+    jurisdiction_name = models.CharField(blank=True, null=True, max_length=100)
+    jurisdiction_name_long = models.CharField(blank=True, null=True, max_length=100)
+    jurisdiction_slug = models.CharField(blank=True, null=True, max_length=255)
+    jurisdiction_whitelisted = models.NullBooleanField(blank=True, null=True)
+
+    @property
+    def denormalized_jurisdiction(self):
+        """
+            Equivalent to self.jurisdiction, but populated based on denormalized fields.
+        """
+        return Jurisdiction(
+            id=self.jurisdiction_id,
+            slug=self.jurisdiction_slug,
+            name=self.jurisdiction_name,
+            name_long=self.jurisdiction_name_long,
+            whitelisted=self.jurisdiction_whitelisted)
+
     def __str__(self):
         return self.case_id
 
@@ -645,7 +670,7 @@ class CaseMetadata(models.Model):
             # index for ordering of case API endpoint
             models.Index(fields=['decision_date', 'id']),
             # index for ordering of case API endpoint when filtered by jurisdiction
-            models.Index(fields=['jurisdiction_id', 'decision_date', 'id']),
+            models.Index(fields=['jurisdiction_slug', 'decision_date', 'id']),
         ]
 
 

@@ -115,6 +115,35 @@ def test_create_or_update_metadata(ingest_case_xml):
     ingest_case_xml.metadata.refresh_from_db()
     assert ingest_case_xml.metadata.opinions['majority'] == new_author
 
+@pytest.mark.django_db
+def test_denormalized_fields(case):
+    jurisdiction = case.jurisdiction
+    jurisdiction.whitelisted = True
+    jurisdiction.save()
+
+    # if source is set to none, destination fields should be nulled out
+    case.jurisdiction = None
+    case.save()
+    case.refresh_from_db()
+    assert case.jurisdiction_name is None
+    assert case.jurisdiction_whitelisted is None
+
+    # if source foreign key is changed, destination fields should be updated
+    case.jurisdiction = jurisdiction
+    case.save()
+    case.refresh_from_db()
+    assert case.jurisdiction_name == jurisdiction.name
+    assert case.jurisdiction_whitelisted == jurisdiction.whitelisted
+
+    # if source fields are changed, destination fields should be updated
+    jurisdiction.whitelisted = False
+    jurisdiction.name = 'foo'
+    jurisdiction.save()
+    case.refresh_from_db()
+    assert case.jurisdiction_name == jurisdiction.name
+    assert case.jurisdiction_whitelisted == jurisdiction.whitelisted
+
+
 ### CaseXML ###
 
 @pytest.mark.django_db

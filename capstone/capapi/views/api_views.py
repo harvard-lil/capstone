@@ -56,7 +56,6 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     ).select_related(
         'volume',
         'reporter',
-        'jurisdiction',
         'court'
     ).prefetch_related(
         'citations'
