@@ -76,6 +76,33 @@ h5.selected-jurisdiction {
   }
 }
 
+.land-total {
+  fill: #fff;
+  fill-opacity: 1;
+  &.level-1 {
+    fill: $color-blue;
+  }
+  &.level-2 {
+    fill: $color-medium-blue;
+  }
+  &.level-3 {
+    fill: $color-light-blue;
+  }
+  &.level-4 {
+    fill: $color-orange;
+  }
+  //&.level-5 {
+  //  fill: red;
+  //}
+
+  &:hover {
+    fill: #fff;
+    stroke-width: 1;
+    stroke: $color-blue;
+  }
+
+}
+
 .jurisdiction-list-group {
   a.list-group-item:hover,
   a.list-group-item:focus,

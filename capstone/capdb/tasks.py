@@ -155,7 +155,7 @@ def count_cases(file_name='case_count.json', write_to_file=True):
     file_path = os.path.join(file_dir, file_name)
     results = {'totals': {'total': 0}}
     with connection.cursor() as cursor:
-        cursor.execute("select jurisdiction_id, extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false group by jurisdiction_id, case_year;")
+        cursor.execute("select jurisdiction_id, extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false group by case_year, jurisdiction_id;")
         db_results = cursor.fetchall()
 
     for res in db_results:
@@ -181,3 +181,32 @@ def count_cases(file_name='case_count.json', write_to_file=True):
     with open(file_path, "w+") as f:
         json.dump(results, f)
     print('done counting cases')
+
+def count_totals_per_year():
+    cc_file_name = 'case_count.json'
+    file_dir = settings.DATA_COUNT_DIR
+    cc_file_path = os.path.join(file_dir, cc_file_name)
+    file_name = 'case_totals_per_year.json'
+    file_path = os.path.join(file_dir, file_name)
+    with connection.cursor() as cursor:
+        cursor.execute("select distinct extract(year from decision_date)::integer as case_year from capdb_casemetadata order by case_year;")
+        years_results = cursor.fetchall()
+
+    years = [year[0] for year in years_results]
+    results = {'years': years}
+    with open(cc_file_path, 'r') as f:
+        case_counts = json.load(f)
+
+    for jur_id in case_counts:
+        if jur_id.isdigit():
+            results[jur_id] = []
+            recorded_years = case_counts[jur_id].keys()
+            for year in years:
+                # if year is not in recorded years, there were zero cases
+                if str(year) not in recorded_years:
+                    results[jur_id].append(0)
+                else:
+                    results[jur_id].append(case_counts[jur_id][str(year)])
+
+    with open(file_path, 'w+') as f:
+        json.dump(results, f)

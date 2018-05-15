@@ -80,10 +80,11 @@ The Caselaw Access Project Data Visualization
   </div>
 
   <script>
-  var reporter_count = JSON.parse("{{ reporter_count|escapejs }}");
-  var case_count = JSON.parse("{{ case_count|escapejs }}");
-  var court_count = JSON.parse("{{ court_count|escapejs }}");
-  var jurisdiction_data = JSON.parse("{{ jurisdictions|escapejs }}");
+    let reporter_count = JSON.parse("{{ reporter_count|escapejs }}");
+    let case_count = JSON.parse("{{ case_count|escapejs }}");
+    let court_count = JSON.parse("{{ court_count|escapejs }}");
+    let jurisdiction_data = JSON.parse("{{ jurisdictions|escapejs }}");
+    let case_count_per_year = JSON.parse("{{ case_count_per_year|escapejs }}");
   </script>
 
 {% endblock %}

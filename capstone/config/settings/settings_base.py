@@ -202,7 +202,14 @@ PIPELINE = {
                 'css/scss/viz.scss',
             ),
             'output_filename': 'viz.css'
-        }
+        },
+        'viz_total': {
+          'source_filenames': (
+              'css/nouislider.css',
+              'css/scss/viz.scss',
+          ),
+          'output_filename': 'viz_total.css'
+        },
     },
 
     # avoid compressing assets for now

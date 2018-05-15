@@ -38,6 +38,9 @@ def data(request):
     with open(os.path.join(data_dir, 'case_count.json'), 'r') as f:
         case_count = json.load(f)
 
+    with open(os.path.join(data_dir, 'case_totals_per_year.json'), 'r') as f:
+        case_count_per_year = json.load(f)
+
     jurs = {}
 
     for jur in jurisdictions:
@@ -53,5 +56,34 @@ def data(request):
         'jurisdictions': json.dumps(jurs),
         'court_count': json.dumps(court_count),
         'reporter_count': json.dumps(reporter_count),
-        'case_count': json.dumps(case_count)
+        'case_count': json.dumps(case_count),
+        'case_count_per_year': json.dumps(case_count_per_year)
+    })
+
+
+def data_totals(request):
+    jurisdictions = models.Jurisdiction.objects.all().order_by('name_long')
+    data_dir = settings.DATA_COUNT_DIR
+
+    with open(os.path.join(data_dir, 'case_count.json'), 'r') as f:
+        case_count = json.load(f)
+
+    with open(os.path.join(data_dir, 'case_totals_per_year.json'), 'r') as f:
+        case_count_per_year = json.load(f)
+
+    jurs = {}
+
+    for jur in jurisdictions:
+        jurs[jur.id] = {
+            'slug': jur.slug,
+            'whitelisted': jur.whitelisted,
+            'name_long': jur.name_long,
+            'name': jur.name,
+        }
+
+    return render(request, 'data/totals.html', {
+        'jurisdictions_for_handlebars': jurs,
+        'jurisdictions': json.dumps(jurs),
+        'case_count': json.dumps(case_count),
+        'case_count_per_year': json.dumps(case_count_per_year)
     })
