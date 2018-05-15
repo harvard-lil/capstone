@@ -1,5 +1,7 @@
 import pytest
 from datetime import timedelta
+
+from django.urls import reverse
 from django.utils import timezone
 
 from test_data.test_fixtures.factories import *
@@ -98,6 +100,16 @@ def test_single_case(client, api_url, case):
     content = response.json()
     assert content.get("name_abbreviation") == case.name_abbreviation
 
+
+@pytest.mark.django_db
+def test_cases_count_cache(client, three_cases, django_assert_num_queries):
+    # fetching same endpoing a second time should have one less query, because queryset.count() is cached
+    with django_assert_num_queries(select=3):
+        response = client.get(reverse('casemetadata-list'))
+        assert response.json()['count'] == 3
+    with django_assert_num_queries(select=2):
+        response = client.get(reverse('casemetadata-list'))
+        assert response.json()['count'] == 3
 
 @pytest.mark.django_db
 def test_reporters(client, api_url, reporter):
@@ -264,7 +276,7 @@ def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, thre
 
     # fetch the two blacklisted cases and one whitelisted case
     url = "%scases/?full_case=true" % (api_url)
-    with django_assert_num_queries(select=4, update=1):
+    with django_assert_num_queries(select=5, update=1):
         response = auth_client.get(url)
     check_response(response)
 
