@@ -47,9 +47,6 @@ def generate_html(case_xml, tag_map=tag_map):
         element_text_copy = element.text
 
         if element_text_copy is None and tag != 'pagebreak':
-            if len(element.getchildren()) == 0:
-                import ipdb
-                ipdb.set_trace()
             element_text_copy = element.getchildren()[0].text
 
         # for every attribute except id, turn it into an accepted data-* attribute
