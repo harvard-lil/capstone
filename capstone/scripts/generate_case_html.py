@@ -8,7 +8,8 @@ tag_map = {  "author": "p", "opinion" : "article", "casebody" : "section",
              "headnotes": "aside", "history": "p", "otherdate": "p",
              "parties": "h4", "seealso": "aside", "summary": "aside",
              "syllabus": "p", "footnote": "aside", "attorneys": "p",
-             "judges": "p", "bracketnum": "a", "footnotemark": "a" }
+             "judges": "p", "bracketnum": "a", "footnotemark": "a",
+             "pagebreak": "br"}
 
 # these will pull out the headnotes number and corresponding bracketnum
 bracketnum_number = re.compile(r'\d')
@@ -41,6 +42,13 @@ def generate_html(case_xml, tag_map=tag_map):
         # remove the namespace from the tag name
         tag = element.tag.split('}')[1]
 
+
+
+        element_text_copy = element.text
+
+        if element_text_copy is None and tag != 'pagebreak':
+            element_text_copy = element.getchildren()[0].text
+
         # for every attribute except id, turn it into an accepted data-* attribute
         for attribute in element.attrib:
             if attribute == 'id':
@@ -64,7 +72,7 @@ def generate_html(case_xml, tag_map=tag_map):
             element.append(anchor)
         elif tag == "headnotes":
             # this anchor allows the bracketnum to link to the proper headnote, if it exists
-            number_match = headnotes_number.match(element.text)
+            number_match = headnotes_number.match(element_text_copy)
             if number_match:
                 number = number_match.groups(1)[0]
                 anchor = etree.Element("a")
@@ -75,11 +83,14 @@ def generate_html(case_xml, tag_map=tag_map):
         elif tag == "footnotemark":
             # point to the anchor in the footnote
             element.tag = "a"
-            element.attrib['href'] = "#footnote_" + element.text
+            element.attrib['href'] = "#footnote_" + element_text_copy
         elif tag == "bracketnum":
             # point to the anchor in the headnote
             element.tag = "a"
-            element.attrib['href'] = "#headnote_" + bracketnum_number.search(element.text).group(0)
+            element.attrib['href'] = "#headnote_" + bracketnum_number.search(element_text_copy).group(0)
+        elif tag == "pagebreak":
+            # point to the anchor in the headnote
+            element.attrib['style'] = "page-break-before: always"
 
     # change the properties of the casebody tag itself
     casebody[0].tag = tag_map['casebody']
