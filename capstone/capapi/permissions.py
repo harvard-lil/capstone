@@ -31,11 +31,11 @@ def get_single_casebody_permissions(request, case):
     """
     casebody = {"status": None, "data": None}
 
-    if not case.jurisdiction:
+    if not case.jurisdiction_id:
         casebody["status"] = casebody_permissions[3]
         return casebody
 
-    if case.jurisdiction.whitelisted:
+    if case.jurisdiction_whitelisted:
         casebody["status"] = casebody_permissions[0]
         return casebody
 

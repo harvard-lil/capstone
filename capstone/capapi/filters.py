@@ -80,7 +80,7 @@ class CaseFilter(filters.FilterSet):
         label='Reporter Name (contains)',
         lookup_expr='icontains')
     jurisdiction = filters.ChoiceFilter(
-        field_name='jurisdiction__slug',
+        field_name='jurisdiction_slug',
         choices=jur_choices)
     decision_date_min = filters.CharFilter(
         label='Date Min (Format YYYY-MM-DD)',
