@@ -61,7 +61,12 @@ def sync_s3_data(full_sync=False):
 
         If full_sync is false, only sync files where the VolumeXML with that md5 has not already been successfully ingested.
     """
-
+    if full_sync:
+        raise Exception("""Full sync is not currently supported. We currently cannot distinguish between volumes that
+            have been imported and edited in the database, and those that have been imported and had a second version
+            uploaded to S3, so we will only import a volume from S3 a single time unless it is marked as
+            import_status='pending' to trigger re-import.""")
+    
     # pre-run setup
     wipe_redis_db()
 
