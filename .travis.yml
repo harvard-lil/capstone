@@ -35,9 +35,6 @@ before_script:
   - python manage.py collectstatic --noinput
   
 script:
-  # linting
-  - flake8 .
-
   - fab test
 
 after_success:
