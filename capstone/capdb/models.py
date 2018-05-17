@@ -264,6 +264,7 @@ class BaseXMLModel(models.Model):
     """ Base class for models that store XML documents. """
     orig_xml = XMLField()
     md5 = models.CharField(max_length=255, blank=True, null=True)
+    size = models.IntegerField(blank=True, null=True)
 
     objects = XMLQuerySet.as_manager()
     tracker = None  # should be set as tracker = FieldTracker() by subclasses
@@ -273,8 +274,11 @@ class BaseXMLModel(models.Model):
 
     def save(self, *args, **kwargs):
         # update md5
-        if self.tracker.has_changed('orig_xml') and not self.tracker.has_changed('md5'):
-            self.md5 = self.get_md5()
+        if self.tracker.has_changed('orig_xml'):
+            if not self.tracker.has_changed('md5'):
+                self.md5 = self.get_md5()
+            if not self.tracker.has_changed('size'):
+                self.size = self.get_size()
 
         # Django 2.0 doesn't save byte strings correctly -- make sure we save str()
         if self.orig_xml:
@@ -292,6 +296,8 @@ class BaseXMLModel(models.Model):
         parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["CHECKSUM"] = new_checksum
         parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["SIZE"] = new_size
         self.orig_xml = serialize_xml(parsed_document)
+    def get_size(self):
+        return len(force_bytes(self.orig_xml))
 
     def xml_modified(self):
         """ Return True if orig_xml was previously saved to the database and is now different. """
