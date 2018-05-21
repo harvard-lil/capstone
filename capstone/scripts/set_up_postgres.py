@@ -209,6 +209,7 @@ def initialize_denormalization_fields(*args, **kwargs):
                 SET {values}
                 FROM {dest_table} AS dest
                 {left_joins}
+                WHERE dest.id={dest_table}.id
             """.format(
                 dest_table=dest_table,
                 values=", ".join(values),
