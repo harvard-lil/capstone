@@ -2,8 +2,6 @@
 
 from django.db import migrations, models
 
-from scripts.set_up_postgres import initialize_denormalization_fields
-
 
 class Migration(migrations.Migration):
 
@@ -40,7 +38,4 @@ class Migration(migrations.Migration):
             model_name='casemetadata',
             index=models.Index(fields=['jurisdiction_slug', 'decision_date', 'id'], name='capdb_casem_jurisdi_429073_idx'),
         ),
-
-        # populate denormalized fields created above
-        migrations.RunPython(initialize_denormalization_fields),
     ]
