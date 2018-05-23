@@ -63,6 +63,60 @@ def test_generate_html_footnotes(ingest_case_xml):
             assert footnote_element in casebody_html
 
 @pytest.mark.django_db
+def test_html_pagebreak(ingest_case_xml):
+    for case in CaseXML.objects.all():
+        parsed_case_xml = parse_xml(case.orig_xml)
+
+        # shouldn't attempt to parse a duplicative case
+        if parsed_case_xml('duplicative|casebody'):
+            assert generate_html(case.orig_xml).startswith("<h1 class='error'>")
+            continue
+
+        styled_xml = generate_styled_case_xml(case, strict = False)
+        styled_html = generate_html(styled_xml)
+        pb_list = re.findall(r'(.{3})<pagebreak/>(.{3})', styled_xml)
+        br_list = re.findall(r'(.{3})<br class="pagebreak" style="page-break-before: always"/>(.{3})', styled_html)
+        assert set(pb_list) == set(br_list)
+
+
+@pytest.mark.django_db
+def test_generate_pagebreak(ingest_case_xml):
+    page_break_element_search = re.compile(r'\d+\((\d+)\)')
+    for case in CaseXML.objects.all():
+        parsed_case_xml = parse_xml(case.orig_xml)
+        # shouldn't attempt to parse a duplicative case
+        if parsed_case_xml('duplicative|casebody'):
+            assert generate_html(case.orig_xml).startswith("<h1 class='error'>")
+            continue
+
+        #generate the styled and page broken XML
+        styled_xml = generate_styled_case_xml(case, strict = False)
+
+        # get rid of all tags that will interfere with the xml parsing
+        strip_tags= r'\<em\>|\<\/em\>|\<strong\>|\<\/strong\>|\<footnotemark\>|\<\/footnotemark\>|\<bracketnum\>|\<\/bracketnum\>'
+        stripped_xml = re.sub(strip_tags, '', styled_xml)
+        stripped_xml = re.sub(r'\<pagebreak\/\>', '__PAGE_BREAK__ ', stripped_xml)
+        stripped_xml = re.sub(r'\xad', ' ', stripped_xml)
+
+        parsed_xml = parse_xml(stripped_xml)
+        for p in parsed_xml("casebody|p"):
+            if ') ' in p.get('pgmap'):
+                page_breaks = page_break_element_search.findall(p.get('pgmap'))
+                page_break_element_counts = []
+                for i, value in enumerate(page_breaks):
+                    if i >= len(page_breaks) - 1:
+                        break
+                    value = int(value) + int(page_breaks[i - 1]) if i > 0 else int(value)
+                    page_break_element_counts.append(value)
+                element_split = p.text.split(" ")
+                actual_locations = []
+                while '__PAGE_BREAK__' in element_split:
+                    loc = element_split.index("__PAGE_BREAK__")
+                    del element_split[loc]
+                    actual_locations.append(loc)
+                assert set(actual_locations) == set(page_break_element_counts)
+
+@pytest.mark.django_db
 def test_merge_alto_case(ingest_case_xml):
     # testing strict, totally compliant case
     case_xml = CaseXML.objects.get(metadata_id__case_id="32044057891608_0001")

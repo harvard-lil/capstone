@@ -46,8 +46,13 @@ def sync_with_s3():
 
 @task
 def total_sync_with_s3():
-    """ Inspect and import any changed XML for all volumes, including those with previous successful import. """
-    ingest_by_manifest.sync_s3_data.delay(full_sync=True)
+    """
+        Inspect and import any changed XML for all volumes not yet imported.
+
+        This now does the same thing as sync_with_s3, but is more efficient than sync_with_s3 for large numbers of volumes
+        because it uses the S3 manifest.
+    """
+    ingest_by_manifest.sync_s3_data.delay(full_sync=False)
 
 @task
 def validate_private_volumes():
@@ -85,6 +90,17 @@ def run_pending_migrations():
 @task
 def update_postgres_env():
     set_up_postgres.update_postgres_env()
+
+@task
+def initialize_denormalization_fields():
+    """
+        Manually populate or repopulate denormalized fields.
+
+        Typically initialize_denormalization_fields should instead be called in a migration that adds denormalized fields, as
+            migrations.RunPython(initialize_denormalization_fields),
+        but this allows it to be re-run manually if necessary.
+    """
+    set_up_postgres.initialize_denormalization_fields()
 
 @task
 def update_volume_metadata():

@@ -43,7 +43,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
-    'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CountlessPagination',
+    'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CachedCountLimitOffsetPagination',
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework_filters.backends.DjangoFilterBackend',
     ),
@@ -261,7 +261,7 @@ API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
 API_DOCS_CASE_ID = 2
-
+API_COUNT_CACHE_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 1 day
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
 

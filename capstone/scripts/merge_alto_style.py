@@ -56,20 +56,30 @@ styles = {
     }
 }
 
-# regex to strip style tags from existing casexml:
-strip_tags_re = '|'.join(
+# other self closing tags we might want to insert, such as pagebreaks
+additional_self_closing_tags = {
+    'pagebreak': '<pagebreak/>'
+}
+
+
+# regexes to strip added tags from existing casexml:
+strip_style_tags_re = '|'.join(
     re.escape(tag)
     for style in styles.values()
     for tag in style.values()
 )
 
+strip_additonal_tags_re = '|'.join(
+    re.escape(tag)
+    for tag in additional_self_closing_tags.values()
+)
 
 ### main script
 
 def generate_styled_case_xml(case_xml, strict=True):
 
-    # strip style tags from existing casexml:
-    stripped_xml = re.sub(strip_tags_re, '', case_xml.orig_xml)
+    # strip added tags from existing casexml:
+    stripped_xml = re.sub(strip_style_tags_re, '', re.sub(strip_additonal_tags_re, '', case_xml.orig_xml))
     parsed_case = parse_xml(stripped_xml)
 
     # dup cases have no casebody to style
@@ -117,23 +127,27 @@ def generate_styled_case_xml(case_xml, strict=True):
             continue
 
         # make a list of each alto string that contributes to the casebody element, in a tuple along with its
-        # style (or None, if the alto string is unstyled).
+        # style (or None, if the alto string is unstyled), and the alto id to check for page breaks.
         # Spaces are removed and soft hyphens are normalized to hard hyphens.
         alto_text_blocks = text_blocks_by_tagref[casebody_element.get('id')]
         alto_strings = [
-            (alto_string.get("CONTENT").replace('\xad', '-').replace(' ', ''), page_styles.get(alto_string.get("STYLEREFS"), None))
+            (alto_string.get("CONTENT").replace('\xad', '-').replace(' ', ''), page_styles.get(alto_string.get("STYLEREFS"), None), alto_string.get("ID"))
             for text_block, page_styles in alto_text_blocks
             for alto_string in parsed_case(text_block)("alto|String")
         ]
 
-        # if none of the alto strings are styled, move on to next casebody element
-        if not any(p[1] for p in alto_strings):
+        # the first element of every alto_text_block except the first should be preceded by a page break
+        page_breaks = []
+        if len(alto_text_blocks) > 1:
+            page_breaks = [ parsed_case(text_block)("alto|String")[0].get("ID") for text_block, page_styles in alto_text_blocks if text_block.get("ID").split(".")[1] == '1' ]
+
+        if not any(p[1] for p in alto_strings) and len(page_breaks) == 0:
             continue
 
         # Create a single string of alto text, as well as a list with the style for each character in the string:
         alto_text = ''.join(i[0] for i in alto_strings)
         alto_styles = [
-            style
+            (style, alto_info[2])
             for alto_info in alto_strings
             for style in [alto_info[1]]*len(alto_info[0])
         ]
@@ -184,7 +198,12 @@ def generate_styled_case_xml(case_xml, strict=True):
                     i += j2 - j1
 
         # Style each letter in casebody_element_text:
-        for cursor, (casebody_char, current_tags, previous_tags) in enumerate(zip(casebody_element_text, alto_styles, [None]+alto_styles[:-1])):
+        for cursor, (casebody_char, current_info, previous_info) in enumerate(zip(casebody_element_text, alto_styles, [None]+alto_styles[:-1])):
+
+            # separate styles and alto element names for better code readability
+            current_tags = current_info[0] if current_info and current_info[0] else None
+            previous_tags = previous_info[0] if previous_info and previous_info[0] else None
+            alto_element = current_info[1] if current_info and current_info[1] else None
 
             # see if the style has changed, and if so, apply the closing tag
             if previous_tags and (not current_tags or current_tags['close'] != previous_tags['close']):
@@ -192,13 +211,18 @@ def generate_styled_case_xml(case_xml, strict=True):
 
             if current_tags:
                 # If tag changes, new style tag needs to be opened:
-                if not previous_tags or current_tags['open'] != previous_tags['open']:
+                if not previous_tags or (current_tags['open'] != previous_tags['open']):
                     insertions[cursor].append(current_tags['open'])
 
                 # If tag does not change, we may need to wrap an existing tag like <footnote> in </em><footnote><em>:
                 elif cursor in insertions and not ''.join(insertions[cursor]).isspace():
                     insertions[cursor].append(current_tags['open'])
                     insertions[cursor].insert(0, current_tags['close'])
+
+            # check if this element needs a page break
+            if len(page_breaks) > 0 and alto_element in page_breaks:
+                insertions[cursor].append(additional_self_closing_tags['pagebreak'])
+                page_breaks.remove(alto_element)
 
         # Add final closing tag:
         if current_tags:
@@ -210,8 +234,8 @@ def generate_styled_case_xml(case_xml, strict=True):
 
     plain_case_text = force_str(serialize_xml(parsed_case))
 
-    # Make sure that we haven't modified the XML outside of the style tags:
-    new_stripped_xml = re.sub(strip_tags_re, '', plain_case_text)
+    # Make sure that we haven't modified the XML outside of the tags:
+    new_stripped_xml = re.sub(strip_style_tags_re, '', re.sub(strip_additonal_tags_re, '', plain_case_text))
     if stripped_xml != new_stripped_xml:
         diff = ''.join(difflib.context_diff(stripped_xml.splitlines(keepends=True), new_stripped_xml.splitlines(keepends=True), n=0))
         raise Exception("Styling XML failed: original text and styled text do not match:\n%s" % diff)

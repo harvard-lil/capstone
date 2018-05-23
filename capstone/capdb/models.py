@@ -8,7 +8,7 @@ from model_utils import FieldTracker
 
 from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, nsmap)
+                             serialize_xml, nsmap, jurisdiction_translation_long_name)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -413,6 +413,13 @@ class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
     def __str__(self):
         return self.slug
 
+    def save(self, *args, **kwargs):
+        # set name_long based on name
+        if self.name and not self.name_long:
+            self.name_long = jurisdiction_translation_long_name.get(self.name, self.name)
+
+        return super().save(*args, **kwargs)
+
     class Meta:
         ordering = ['name']
 
@@ -630,6 +637,31 @@ class CaseMetadata(models.Model):
     date_added = models.DateTimeField(null=True, blank=True)
     duplicative = models.BooleanField(default=False)
 
+    # denormalized fields -
+    # these should not be set directly, but are automatically copied from self.jurisdiction by database triggers
+    denormalized_fields = {
+        'jurisdiction_slug': 'jurisdiction__slug',
+        'jurisdiction_name': 'jurisdiction__name',
+        'jurisdiction_name_long': 'jurisdiction__name_long',
+        'jurisdiction_whitelisted': 'jurisdiction__whitelisted',
+    }
+    jurisdiction_name = models.CharField(blank=True, null=True, max_length=100)
+    jurisdiction_name_long = models.CharField(blank=True, null=True, max_length=100)
+    jurisdiction_slug = models.CharField(blank=True, null=True, max_length=255)
+    jurisdiction_whitelisted = models.NullBooleanField(blank=True, null=True)
+
+    @property
+    def denormalized_jurisdiction(self):
+        """
+            Equivalent to self.jurisdiction, but populated based on denormalized fields.
+        """
+        return Jurisdiction(
+            id=self.jurisdiction_id,
+            slug=self.jurisdiction_slug,
+            name=self.jurisdiction_name,
+            name_long=self.jurisdiction_name_long,
+            whitelisted=self.jurisdiction_whitelisted)
+
     def __str__(self):
         return self.case_id
 
@@ -638,7 +670,7 @@ class CaseMetadata(models.Model):
             # index for ordering of case API endpoint
             models.Index(fields=['decision_date', 'id']),
             # index for ordering of case API endpoint when filtered by jurisdiction
-            models.Index(fields=['jurisdiction_id', 'decision_date', 'id']),
+            models.Index(fields=['jurisdiction_slug', 'decision_date', 'id']),
         ]
 
 

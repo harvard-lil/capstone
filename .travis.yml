@@ -12,6 +12,8 @@ python:
 
 addons:
   postgresql: "9.6"
+  apt:
+    update: true
 
 cache:
   pip: true
@@ -20,6 +22,7 @@ before_install:
   - cd capstone
   - cp config/settings/settings_travis.py config/settings/settings.py
   - sudo sh -c "echo shared_preload_libraries = 'pg_stat_statements' >> /etc/postgresql/9.6/main/postgresql.conf"
+  - sudo apt-get install postgresql-9.6-plv8
   - sudo /etc/init.d/postgresql restart
   - sudo rm -f /etc/boto.cfg
 
@@ -32,9 +35,6 @@ before_script:
   - python manage.py collectstatic --noinput
   
 script:
-  # linting
-  - flake8 .
-
   - fab test
 
 after_success:
