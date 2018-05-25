@@ -69,7 +69,8 @@ def update_postgres_env():
             # create combined table_with_history views:
             fields = sorted(field.get_attname() for field in model._meta.get_fields() if field.concrete and not field.many_to_many)
             cursor.execute("""
-                CREATE OR REPLACE VIEW {table}_with_history AS
+                DROP VIEW IF EXISTS {table}_with_history;
+                CREATE VIEW {table}_with_history AS
                     SELECT {fields} FROM {table}
                 UNION ALL
                     SELECT {fields} FROM {table}_history;
