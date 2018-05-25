@@ -2,6 +2,7 @@
 
 # general
 tqdm                # script progress bars
+wrapt               # object proxying
 
 # celery
 celery[redis]       # task queue
