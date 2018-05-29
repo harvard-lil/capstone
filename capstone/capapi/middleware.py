@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
+from django.utils.cache import patch_cache_control
 
 from capapi import TrackingWrapper
 
@@ -62,7 +63,9 @@ def cache_header_middleware(get_response):
         cache_response = all(view_tests.values())
         logger.info("Cacheable response: %s (%s)" % (cache_response, view_tests))
         if cache_response:
-            response['Cache-Control'] = 's-maxage=%d' % settings.CACHE_CONTROL_DEFAULT_MAX_AGE
+            patch_cache_control(response, s_maxage=settings.CACHE_CONTROL_DEFAULT_MAX_AGE)
+        else:
+            patch_cache_control(response, s_maxage=0)
 
         return response
 
