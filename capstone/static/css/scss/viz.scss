@@ -69,7 +69,7 @@ h5.selected-jurisdiction {
   stroke-opacity: 0;
   &.active {
     fill-opacity: 1;
-    fill: white;
+    fill: #fff;
     stroke: $color-blue;
     stroke-opacity: 1;
     stroke-width:1;
@@ -91,10 +91,6 @@ h5.selected-jurisdiction {
   &.level-4 {
     fill: $color-orange;
   }
-  //&.level-5 {
-  //  fill: red;
-  //}
-
   &:hover {
     fill: #fff;
     stroke-width: 1;
@@ -108,7 +104,7 @@ h5.selected-jurisdiction {
   a.list-group-item:focus,
   a.list-group-item:active {
     background-color: $color-blue !important;
-    color: white;
+    color: #fff;
   }
 }
 

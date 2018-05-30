@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from rest_framework import routers
 
-from capapi.views import api_views, user_views, doc_views
+from capapi.views import api_views, user_views, doc_views, viz_views
 from capapi.forms import LoginForm
 
 
@@ -35,8 +35,7 @@ urlpatterns = [
     path('accounts/detail/', user_views.user_details, name='user-details'),
     path('accounts/resend-verification/', user_views.resend_verification, name='resend-verification'),
 
-
     ### data views ###
-    path('data/', doc_views.data, name='data'),
-    path('data/totals', doc_views.data_totals, name='data_totals'),
+    path('data/', viz_views.data_totals, name='data_totals'),
+    path('data/<str:slug>/', viz_views.jurisdiction_details, name='jurisdiction_details')
 ]

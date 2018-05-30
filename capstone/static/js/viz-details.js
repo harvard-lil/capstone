@@ -1,25 +1,3 @@
-$(function() {
-  $(".a-item").click(function() {
-    let id = $(this).attr('id').split('jurisdiction-item-')[1];
-    let slug, name;
-    resetChart();
-
-    if (id === 'totals') {
-      slug = 'totals';
-      name = 'Total'
-      populateStackedCaseChart()
-    } else {
-      slug = jurisdiction_data[id].slug;
-      name = jurisdiction_data[id].name_long;
-      populateCaseChart(id);
-    }
-    populateJurisdictionData(this, name, id, slug);
-  });
-
-  // on load, display totals
-  $('#jurisdiction-item-totals').click();
-});
-
 let resetChart = function() {
   // empty previous chart
   $(".chart-container")
@@ -46,7 +24,7 @@ let populateJurisdictionData = function(el, name, id, slug) {
   }
 
   if (id in reporter_count) {
-    $('#reporter-count').text(formatNumToStr(reporter_count[id]['total']));
+    $('#reporter-count').text(formatNumToStr(reporter_count[id]['reporter_count']));
     $('#volume-count').text(formatNumToStr(reporter_count[id]['volume_count']));
   }
   if (id in case_count) {
@@ -155,3 +133,29 @@ let parseStrToNum = function(str) {
   // takes comma delineated str, returns num
   return parseInt(str.replace(/,/g, ''));
 };
+
+
+
+$(function() {
+
+  $(".a-item").click(function() {
+    let id = $(this).attr('id').split('jurisdiction-item-')[1];
+    let slug, name;
+    resetChart();
+
+    if (id === 'totals') {
+      slug = 'totals';
+      name = 'Total'
+      populateStackedCaseChart()
+    } else {
+      slug = jurisdiction_data[id].slug;
+      name = jurisdiction_data[id].name_long;
+      populateCaseChart(id);
+    }
+    populateJurisdictionData(this, name, id, slug);
+  });
+
+  // on load, display totals
+  $('#jurisdiction-item-totals').click();
+});
+

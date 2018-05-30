@@ -1,0 +1,39 @@
+<div class="dropdown show">
+  <a class="dropdown-toggle" href="#" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    {{ data.jurisdiction.name_long }}
+  </a>
+
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+   {% for id, jurisdiction in jurisdictions.items %}
+      <a class="dropdown-item" href="/data/{{ jurisdiction.slug }}">{{ jurisdiction.name_long }}</a>
+   {% endfor %}
+  </div>
+</div>
+
+<div class="col-4">
+  <input id="year-value" type="number">
+</div>
+<div class="col-3">
+  {% include 'includes/us/us_territories.svg' %}
+</div>
+<div class="col-6 count-data">
+  <ul class="list-group data-list-group">
+    <li class="list-group-item data-item">
+      Reporters
+      <span id="reporter-count" class="count">{{ data.reporter_count.total }}</span>
+    </li>
+    <li class="list-group-item data-item">
+      Volumes
+      <span id="volume-count" class="count"></span>
+    </li>
+      <li class="list-group-item data-item">
+        Cases
+        <span id="case-count" class="count">{{ data.case_count.total }}</span>
+      </li>
+    <li class="list-group-item data-item">
+      Courts
+      <span id="court-count" class="count">{{ data.court_count }}</span>
+    </li>
+  </ul>
+</div>
+

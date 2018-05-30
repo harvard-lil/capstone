@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load pipeline %}
+{% load static %}
+{% block extra_head %}
+  {% stylesheet 'viz' %}
+
+  {% javascript 'base' %}
+    {% if page_name == 'totals' %}
+      {% javascript 'viz_totals' %}
+        <script>
+          let data = JSON.parse("{{ data|escapejs }}");
+          let jurisdiction_data = JSON.parse("{{ jurisdictions|escapejs }}");
+        </script>
+    {% elif page_name == 'jurisdiction_details' %}
+      {% javascript 'viz_details' %}
+    {% endif %}
+{% endblock %}
+{% block meta_description %}
+  The Caselaw Access Project Data Visualization
+{% endblock %}
+{% block content %}
+    <div class="row flex-xl-nowrap " id="api-overview">
+    <div class="col-3 navbar navbar-nav nav-toc sidebar">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          <a href="/data/">Overview</a>
+        </li>
+        <li class="list-group-item">
+          <a href="/data/ala">By State</a>
+        </li>
+        {% include "includes/toc-footer.html" %}
+      </ul>
+    </div>
+      <div class="col-9 viz-content header-margin">
+        {% if page_name == 'totals' %}
+          {% include "includes/viz/totals.html" %}
+        {% elif page_name == 'jurisdiction_details' %}
+          {% include "includes/viz/jurisdiction_details.html" %}
+        {% endif %}
+      </div>
+    </div>
+{% endblock %}

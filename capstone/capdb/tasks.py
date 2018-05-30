@@ -8,6 +8,7 @@ from django.conf import settings
 
 from capdb.models import *
 
+
 def create_case_metadata_from_all_vols(update_existing=False):
     """
         iterate through all volumes, call celery task for each volume
@@ -39,9 +40,11 @@ def create_case_metadata_from_vol(volume_id, update_existing=False):
     for case_xml in case_xmls:
         case_xml.create_or_update_metadata(update_existing=update_existing)
 
+
 @shared_task
 def update_volume_metadata(volume_xml_id):
     VolumeXML.objects.get(pk=volume_xml_id).update_metadata()
+
 
 @shared_task
 def test_slow(i, ram=10, cpu=30):
@@ -96,12 +99,12 @@ def count_courts(file_name='court_count.json', write_to_file=True):
 
 
 @shared_task
-def count_reporters_and_volumes(file_name='reporter_count.json', write_to_file=True):
+def count_reporters_and_volumes(file_name='reporter_and_volume_count.json', write_to_file=True):
     file_dir = settings.DATA_COUNT_DIR
     file_path = os.path.join(file_dir, file_name)
     results = {
         'totals': {
-            'total': 0,
+            'reporter_count': 0,
             'volume_count': 0
         }
     }
@@ -118,13 +121,13 @@ def count_reporters_and_volumes(file_name='reporter_count.json', write_to_file=T
         rep_id, start_year, full_name, volume_count, jur = res
         reps.add(rep_id)
         if jur == old_jur and jur in results:
-            results[jur]['total'] += 1
+            results[jur]['reporter_count'] += 1
             results[jur]['reporters'].append(full_name)
             if volume_count:
                 results[jur]['volume_count'] += volume_count
 
         else:
-            results[jur] = {'total': 1}
+            results[jur] = {'reporter_count': 1}
             results[jur]['start_year'] = res[1]
             results[jur]['reporters'] = [full_name]
             results[jur]['volume_count'] = volume_count
@@ -134,11 +137,11 @@ def count_reporters_and_volumes(file_name='reporter_count.json', write_to_file=T
             results['totals']['volume_count'] += volume_count
         if start_year in results:
             results['totals'][start_year]['volume_count'] += volume_count
-            results['totals'][start_year]['total'] += 1
+            results['totals'][start_year]['reporter_count'] += 1
         else:
-            results['totals'][start_year] = {'volume_count': volume_count, 'total': 1}
+            results['totals'][start_year] = {'volume_count': volume_count, 'reporter_count': 1}
 
-    results['totals']['total'] = len(reps)
+    results['totals']['reporter_count'] = len(reps)
     results['recorded'] = str(datetime.now())
 
     if not write_to_file:
@@ -150,37 +153,139 @@ def count_reporters_and_volumes(file_name='reporter_count.json', write_to_file=T
 
 
 @shared_task
-def count_cases(file_name='case_count.json', write_to_file=True):
-    file_dir = settings.DATA_COUNT_DIR
-    file_path = os.path.join(file_dir, file_name)
-    results = {'totals': {'total': 0}}
+def get_reporter_count_for_jur(jurisdiction_id):
+    """
+    Count reporters through the years per jurisdiction. Include totals.
+    """
+    if not jurisdiction_id:
+        print('Must provide jurisdiction id')
+        return
+
     with connection.cursor() as cursor:
-        cursor.execute("select jurisdiction_id, extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false group by case_year, jurisdiction_id;")
+        cursor.execute("select r.id, r.start_year, r.full_name, r.volume_count from capdb_reporter r join capdb_reporter_jurisdictions j on (r.id = j.reporter_id) where j.jurisdiction_id=%s order by r.start_year;" % jurisdiction_id)
         db_results = cursor.fetchall()
 
+    results = {
+        'total': 0,
+    }
+    try:
+        results['first_year'] = db_results[0][1]
+        results['last_year'] = db_results[-1][1]
+    except IndexError:
+        results['first_year'] = None
+        results['last_year'] = None
+
     for res in db_results:
-        jur, case_year, count = res
-        if jur not in results:
-            results[jur] = {'total': count, case_year: count}
+        rep_id, start_year, full_name, volume_count = res
+        if start_year in results:
+            results[start_year] += 1
         else:
-            results[jur][case_year] = count
-            results[jur]['total'] += count
-
-        if case_year in results['totals']:
-            results['totals'][case_year] += count
-        else:
-            results['totals'][case_year] = count
-
-        results['totals']['total'] += count
+            results[start_year] = 1
+        results['total'] += 1
 
     results['recorded'] = str(datetime.now())
 
-    if not write_to_file:
-        return results
+    return results
 
-    with open(file_path, "w+") as f:
-        json.dump(results, f)
-    print('done counting cases')
+@shared_task
+def get_case_count_for_jur(jurisdiction_id):
+    if not jurisdiction_id:
+        print('Must provide jurisdiction id')
+        return
+
+    with connection.cursor() as cursor:
+        cursor.execute("select extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false and jurisdiction_id=%s group by case_year;" % jurisdiction_id)
+        db_results = cursor.fetchall()
+
+    results = {'total': 0}
+    for res in db_results:
+        case_year, count = res
+        results[case_year] = count
+        results['total'] += count
+
+    results['recorded'] = str(datetime.now())
+    return results
+
+
+@shared_task
+def get_court_count_for_jur(jurisdiction_id):
+    if not jurisdiction_id:
+        print("Must provide jurisdiction id")
+        return
+
+    jur = Jurisdiction.objects.get(id=jurisdiction_id)
+    return jur.courts.count()
+
+
+@shared_task
+def get_counts_for_jur(jurisdiction_id):
+    if not jurisdiction_id:
+        print("Must provide jurisdiction id")
+        return
+
+    reporter_count = get_reporter_count_for_jur(jurisdiction_id)
+    case_count = get_case_count_for_jur(jurisdiction_id)
+    court_count = get_court_count_for_jur(jurisdiction_id)
+
+    return {
+        'reporter_count': reporter_count,
+        'case_count': case_count,
+        'court_count': court_count
+    }
+
+
+@shared_task
+def get_case_totals_per_year(file_name="case_count.json", jurisdiction_id=None, write_to_file=True):
+    jurs = [jurisdiction_id] if jurisdiction_id else list(Jurisdiction.objects.all().order_by('id').values_list('id', flat=True))
+    results = {}
+    years = range(1640, datetime.now().year+1)
+    for jur in jurs:
+        case_counts = get_case_count_for_jur(jur)
+        for year in years:
+            count_per_year = case_counts[year] if year in case_counts else 0
+            if year not in results:
+                results[year] = {jur: count_per_year}
+            else:
+                results[year][jur] = count_per_year
+
+    if write_to_file:
+        file_dir = settings.DATA_COUNT_DIR
+        if not os.path.exists(file_dir):
+            os.mkdir(file_dir)
+        file_path = os.path.join(file_dir, file_name)
+        with open(file_path, 'w+') as f:
+            json.dump(results, f)
+    else:
+        print(results)
+
+
+@shared_task
+def get_reporter_totals_per_year(jurisdiction_id=None, write_to_file=True):
+    jurs = [jurisdiction_id] if jurisdiction_id else list(Jurisdiction.objects.all().order_by('id').values_list('id', flat=True))
+    results = {}
+    years = range(1640, datetime.now().year+1)
+    for jur in jurs:
+        reporter_counts = get_reporter_count_for_jur(jur)
+        for year in years:
+            str_year = str(year)
+            count_per_year = reporter_counts[str_year] if str_year in reporter_counts else 0
+
+            if str_year not in results:
+
+                results[str_year] = {jur: count_per_year}
+            else:
+                results[str_year][jur] = count_per_year
+
+    if write_to_file:
+        file_dir = settings.DATA_COUNT_DIR
+        if not os.path.exists(file_dir):
+            os.mkdir(file_dir)
+        file_path = os.path.join(file_dir, "reporter_count.json")
+        with open(file_path, 'w+') as f:
+            json.dump(results, f)
+    else:
+        print(results)
+
 
 def count_totals_per_year():
     cc_file_name = 'case_count.json'
