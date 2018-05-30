@@ -5,6 +5,11 @@
   {% stylesheet 'api' %}
 {% endblock %}
 
-{% block branding %}
-  {% include "includes/header.html" %}
+{% block navbar %}
+  <div class="navbar navbar-static-top {% block bootstrap_navbar_variant %}navbar-inverse{% endblock %}"
+       role="navigation" aria-label="navbar">
+    <div class="container">
+      {% include "includes/header.html" %}
+    </div>
+  </div>
 {% endblock %}

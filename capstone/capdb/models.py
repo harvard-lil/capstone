@@ -1,14 +1,16 @@
 import hashlib
+import re
 
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
+from lxml import etree
 from model_utils import FieldTracker
 
 from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, nsmap, jurisdiction_translation_long_name)
+                             serialize_xml, jurisdiction_translation_long_name)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -264,6 +266,7 @@ class BaseXMLModel(models.Model):
     """ Base class for models that store XML documents. """
     orig_xml = XMLField()
     md5 = models.CharField(max_length=255, blank=True, null=True)
+    size = models.IntegerField(blank=True, null=True)
 
     objects = XMLQuerySet.as_manager()
     tracker = None  # should be set as tracker = FieldTracker() by subclasses
@@ -273,8 +276,11 @@ class BaseXMLModel(models.Model):
 
     def save(self, *args, **kwargs):
         # update md5
-        if self.tracker.has_changed('orig_xml') and not self.tracker.has_changed('md5'):
-            self.md5 = self.get_md5()
+        if self.tracker.has_changed('orig_xml'):
+            if not self.tracker.has_changed('md5'):
+                self.md5 = self.get_md5()
+            if not self.tracker.has_changed('size'):
+                self.size = self.get_size()
 
         # Django 2.0 doesn't save byte strings correctly -- make sure we save str()
         if self.orig_xml:
@@ -287,11 +293,18 @@ class BaseXMLModel(models.Model):
         m.update(force_bytes(self.orig_xml))
         return m.hexdigest()
 
-    def update_related_sums(self, short_identifier, new_checksum, new_size):
-        parsed_document = parse_xml(self.orig_xml)
-        parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["CHECKSUM"] = new_checksum
-        parsed_document('mets|file[ID="{}"]'.format(short_identifier)).attr["SIZE"] = new_size
-        self.orig_xml = serialize_xml(parsed_document)
+    def get_size(self):
+        return len(force_bytes(self.orig_xml))
+
+    def update_related_sums(self, short_id, new_checksum, new_size):
+        parsed_xml = parse_xml(self.orig_xml)
+        self.update_related_sums_in_parsed_xml(parsed_xml, short_id, new_checksum, new_size)
+        self.orig_xml = serialize_xml(parsed_xml)
+
+    def update_related_sums_in_parsed_xml(self, parsed_xml, short_id, new_checksum, new_size):
+        file_el = parsed_xml('mets|file[ID="{}"]'.format(short_id))
+        file_el.attr["CHECKSUM"] = new_checksum
+        file_el.attr["SIZE"] = str(new_size)
 
     def xml_modified(self):
         """ Return True if orig_xml was previously saved to the database and is now different. """
@@ -507,6 +520,9 @@ class VolumeMetadata(models.Model):
     ingest_status = models.CharField(max_length=10, default="to_ingest",
                                      choices=choices('to_ingest', 'ingested', 'error', 'skip'))
     ingest_errors = JSONField(blank=True, null=True)
+    xml_checksums_need_update = models.BooleanField(default=False,
+                                                    help_text="Whether checksums in volume_xml match current values in "
+                                                               "related case_xml and page_xml data.")
 
     # values extracted from VolumeXML
     xml_start_year = models.IntegerField(blank=True, null=True)
@@ -526,6 +542,10 @@ class VolumeMetadata(models.Model):
 
     def __str__(self):
         return self.barcode
+
+    def set_xml_checksums_need_update(self, value=True):
+        self.xml_checksums_need_update = value
+        self.save(update_fields=['xml_checksums_need_update'])
 
 
 class TrackingToolLog(models.Model):
@@ -594,6 +614,39 @@ class VolumeXML(BaseXMLModel):
 
         if metadata.tracker.changed():
             metadata.save()
+
+    def update_checksums(self):
+        """
+            Update the size and md5 values in this volume based on the current case_xmls and page_xmls.
+            Mark self.metadata.xml_checksums_need_update = False.
+        """
+
+        # Build dictionary mapping short IDs to new (md5, size).
+        # E.g. {"alto_00009_1": ("bfbd53dc...", 116476)}
+        replacements = {}
+        for item in self.page_xmls.defer('orig_xml'):
+            replacements[item.short_id] = (item.md5, item.size)
+        for item in self.case_xmls.defer('orig_xml').select_related('metadata'):
+            replacements[item.short_id] = (item.md5, item.size)
+
+        # Below we find all <file> tags with short_ids in the replacements dict, and replace their checksum and size fields.
+        # Example file tag:
+        #   <file ID="alto_00009_1" MIMETYPE="text/xml" CHECKSUM="bfbd53d..." CHECKSUMTYPE="MD5" SIZE="116476">
+
+        # regex to match file tags
+        file_tag_re = r'(<file ID="(%s)" MIMETYPE="text/xml" CHECKSUM=")[^"]+(" CHECKSUMTYPE="MD5" SIZE=")\d+' % '|'.join(replacements.keys())
+
+        # replacement function looks up new values from replacements dict
+        def format_file_tag(m):
+            new_md5, new_size = replacements[m.group(2)]
+            return "%s%s%s%s" % (m.group(1), new_md5, m.group(3), new_size)
+
+        # apply replacements
+        self.orig_xml = re.sub(file_tag_re, format_file_tag, self.orig_xml)
+
+        # save results
+        self.save()
+        self.metadata.set_xml_checksums_need_update(False)
 
 
 class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
@@ -702,6 +755,7 @@ class CaseXML(BaseXMLModel):
 
             # Update related VolumeXML and PageXML contents
             if self.xml_modified() and update_related:
+                self.metadata.volume.set_xml_checksums_need_update()
                 self.process_updated_xml()
 
         # save that ish.
@@ -719,18 +773,22 @@ class CaseXML(BaseXMLModel):
             and should only need to be called from save().
         """
 
+        # If the case is duplicative, nothing needs to be done
+        if self.metadata.duplicative:
+            return
+
         # parse objects and get the xml tree objects
         parsed_original_case = parse_xml(self.tracker.previous('orig_xml'))
         parsed_updated_case = parse_xml(self.orig_xml)
-        updated_tree = parsed_updated_case.root
-        original_tree = parsed_original_case.root
-
-        # If the case is duplicative, nothing needs to be done
-        if updated_tree.find('//duplicative:casebody', nsmap) is not None:
-            return
-
         original_casebody_tree = parsed_original_case("casebody|casebody")[0]
         updated_casebody_tree = parsed_updated_case("casebody|casebody")[0]
+
+        # if there are no changes inside casebody, nothing needs to be done
+        if etree.tostring(original_casebody_tree) == etree.tostring(updated_casebody_tree):
+            return
+
+        updated_tree = parsed_updated_case.root
+        original_tree = parsed_original_case.root
 
         # get a list of casebody elements and make sure there's no additions or deletions
         original_casebody_xpaths = set([original_tree.getelementpath(element) for element in original_casebody_tree])
@@ -767,11 +825,8 @@ class CaseXML(BaseXMLModel):
                 raise Exception("No current support for removing casebody elements")
 
         # get the alto files associated with the case in the DB
-        alto_files = {}
-        alto_files['modified'] = {}
-        for alto in self.pages.all():
-            alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-            alto_files[alto_fileid] = parse_xml(alto.orig_xml)
+        alto_files = {alto.short_id: (alto, parse_xml(alto.orig_xml)) for alto in self.pages.all()}
+        modified_alto_files = set()
 
         # check to see if any elements in the casebody have been updated so we can update the ALTO
         # since the tree structures match, we can just iterate over the tree elements and compare values
@@ -799,12 +854,13 @@ class CaseXML(BaseXMLModel):
             # check for a modified tag name
             if original_element.tag != updated_element.tag:
                 # go through each alto file that refers to the tag and update the reference
-                for alto in element_pages:
-                    structure_tag = alto_files[alto](
+                for short_id in element_pages:
+                    alto, parsed_alto = alto_files[short_id]
+                    structure_tag = parsed_alto(
                         'alto|StructureTag[ID="{}"]'.format(original_element.get('id')))
                     if structure_tag is not None:
                         structure_tag.attr["LABEL"] = updated_element.tag.rsplit('}', 1)[1]
-                        alto_files['modified'][alto] = True
+                        modified_alto_files.add(alto)
 
             # check for modified element text
             if original_element.text != updated_element.text:
@@ -817,8 +873,9 @@ class CaseXML(BaseXMLModel):
                 # from the case text.
                 wordcount = 0
                 # loop through each referenced alto file
-                for alto in element_pages:
-                    text_block = alto_files[alto](
+                for short_id in element_pages:
+                    alto, parsed_alto = alto_files[short_id]
+                    text_block = parsed_alto(
                         'alto|TextBlock[TAGREFS="{}"]'.format(original_element.get('id')))
                     words = text_block("alto|String")
 
@@ -831,32 +888,20 @@ class CaseXML(BaseXMLModel):
                         original_word = original_element_split[wordcount]
                         assert original_word == word.get("CONTENT")
                         if updated_word != original_word:
-                            alto_files['modified'][alto] = True
+                            modified_alto_files.add(alto)
                             # update ALTO & set the character confidence and word confidence to 100%
                             word.set("WC", "1.00")
                             word.set("CC", "0")
                             word.set("CONTENT", updated_element.text.split(" ")[wordcount])
                         wordcount += 1
 
-        self.orig_xml = force_str(serialize_xml(parsed_updated_case))
+        # update and save the modified altos, and update the md5/size in the case
+        for alto in modified_alto_files:
+            alto.orig_xml = serialize_xml(alto_files[alto.short_id][1])
+            alto.save(save_case=False, save_volume=False)
+            self.update_related_sums_in_parsed_xml(parsed_updated_case, alto.short_id, alto.md5, alto.size)
 
-        # update and save the modified altos, and update the md5/size in the case and volume
-        for alto in self.pages.all():
-            alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-            if alto_fileid in alto_files['modified']:
-                alto.orig_xml = serialize_xml(alto_files[alto_fileid])
-                alto.md5 = alto.get_md5()
-                alto.save(save_case=False, save_volume=False)
-                self.volume.update_related_sums(alto_fileid, alto.md5, str(len(force_bytes(alto.orig_xml))))
-                self.update_related_sums(alto_fileid, alto.md5, str(len(force_bytes(alto.orig_xml))))
-
-        # update md5 and update the volume with the new md5/size
-        self.md5 = self.get_md5()
-        case_id = parsed_original_case('case|case').attr('caseid')
-        short_case_id = "casemets_{}".format(case_id.split('_')[1])
-        self.volume.update_related_sums(short_case_id, self.md5, str(len(force_bytes(self.orig_xml))))
-        self.volume.save()
-
+        self.orig_xml = serialize_xml(parsed_updated_case)
 
     def create_or_update_metadata(self, update_existing=True, save_self=True):
         """
@@ -970,6 +1015,10 @@ class CaseXML(BaseXMLModel):
             if save_self:
                 self.save(update_fields=['metadata'])
 
+    @property
+    def short_id(self):
+        """ ID of this case as referred to by volume xml file. """
+        return "casemets_" + self.metadata.case_id.split('_', 1)[1]
 
 class Citation(models.Model):
     type = models.CharField(max_length=100,
@@ -1004,24 +1053,22 @@ class PageXML(BaseXMLModel):
 
     @transaction.atomic
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
-        #has our XML changed?
         if self.xml_modified():
-
-            if save_case or save_volume:
-                short_alto_id = "_".join((["alto"] + self.barcode.split('_')[1:3]))
-                self.md5 = self.get_md5()
-
-                if save_volume:
-                    self.volume.update_related_sums(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
-                    self.volume.save()
-                if save_case:
-                    for case in self.cases.all():
-                        case.update_related_sums(short_alto_id, self.md5, str(len(force_bytes(self.orig_xml))))
-                        case.save()
+            if save_volume:
+                self.volume.metadata.set_xml_checksums_need_update()
+            if save_case:
+                for case in self.cases.all():
+                    case.update_related_sums(self.short_id, self.get_md5(), str(self.get_size()))
+                    case.save()
         super(PageXML, self).save(force_insert, force_update, *args, **kwargs)
 
     def __str__(self):
         return self.barcode
+
+    @property
+    def short_id(self):
+        """ ID of this page as referred to by volume xml file. """
+        return "alto_" + self.barcode.split('_', 1)[1]
 
 
 class DataMigration(models.Model):

@@ -140,9 +140,10 @@ def client():
     return APIClient()
 
 @pytest.fixture
-def auth_client(auth_user, client):
+def auth_client(auth_user):
     """ Return client authenticated as auth_user. """
     # API auth
+    client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + auth_user.get_api_key())
     # Django auth
     client.force_login(user=auth_user)

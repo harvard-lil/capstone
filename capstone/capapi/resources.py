@@ -4,6 +4,7 @@ import logging
 import zipfile
 import tempfile
 from wsgiref.util import FileWrapper
+import wrapt
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -51,3 +52,21 @@ def send_new_signup_email(request, user):
 def form_for_request(request, FormClass):
     """ return FormClass loaded with request.POST data, if any """
     return FormClass(request.POST if request.method == 'POST' else None)
+
+
+class TrackingWrapper(wrapt.ObjectProxy):
+    """
+        Object wrapper that stores all accessed attributes of underlying object in _self_accessed_attrs. Example:
+
+            user = CapUser.objects.get(pk=1)
+            user = TrackingWrapper(user)
+            print(user.id)
+            assert user._self_accessed_attrs == {'id'}
+    """
+    def __init__(self, wrapped):
+        super().__init__(wrapped)
+        self._self_accessed_attrs = set()
+
+    def __getattr__(self, item):
+        self._self_accessed_attrs.add(item)
+        return super().__getattr__(item)
