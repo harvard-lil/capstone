@@ -61,13 +61,21 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+
+    # cache middleware should come before:
+    # - CsrfViewMiddleware, to skip caching on views that use csrf
+    # - SessionMiddleware, to skip caching on views that set session cookies
+    # cache middleware should come after:
+    # - WhiteNoiseMiddleware, because whitenoise already sets cache headers on static assets
+    'capapi.middleware.cache_header_middleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # 'capdb.middleware.login_required_middleware',
+    'capapi.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -364,3 +372,6 @@ SILENCED_SYSTEM_CHECKS = [
                     # check that required "id" fields to be primary keys.
 ]
 
+# cache headers
+SET_CACHE_CONTROL_HEADER = False  # whether to set a cache-control header on all cacheable views
+CACHE_CONTROL_DEFAULT_MAX_AGE = 60*60*24  # length of time to cache pages by default, in seconds
