@@ -17,6 +17,13 @@ h5.selected-jurisdiction {
 
 // DROPDOWN
 
+.dropdown {
+  .helper-text {
+    position: relative;
+    top: 5px;
+  }
+}
+
 .dropdown-menu {
   max-height: 300px;
   overflow-y: scroll;
@@ -30,6 +37,7 @@ h5.selected-jurisdiction {
   padding-bottom: 7px;
   &:hover {
     border-bottom: 1px solid;
+    color: $color-blue;
   }
   &::after {
     float: right;
@@ -40,14 +48,29 @@ h5.selected-jurisdiction {
   border-bottom: 1px solid;
 }
 
-.dropdown-item-text {
-  padding: 2px 7px;
+.dropdown-jurisdiction-item {
+  list-style: none;
+  padding: 10px 0;
   border-bottom: 1px solid $color-gray;
 }
 
+.dropdown-ul {
+  padding: 10px;
+}
 
 .viz-content {
   margin-left: auto;
+}
+
+@media (min-width: 992px) {
+  .viz-content {
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+}
+
+.viz-section {
+  padding-bottom: 10px;
 }
 
 .hidden {
@@ -70,6 +93,7 @@ h5.selected-jurisdiction {
   &.data-item {
     text-transform: uppercase;
     letter-spacing: 1px;
+    padding-left: 0;
   }
   .count {
     @extend .blue-text;
@@ -90,6 +114,28 @@ h5.selected-jurisdiction {
 .helper-text {
   font-size: 12px;
   color: $color-medium-gray;
+}
+
+.first-figures {
+  .first-figure {
+    height: 50px;
+  }
+  .helper-text {
+    bottom: 0;
+    position: absolute;
+  }
+}
+
+#first-year {
+  @extend .font-header-bold;
+  color: $color-blue;
+  font-size: 25px;
+}
+
+#first-case, #first-reporter {
+  border-bottom: 1px solid;
+  padding-bottom: 3px;
+  cursor: pointer;
 }
 
 #US-all {
@@ -155,8 +201,8 @@ h5.selected-jurisdiction {
 .chart-container {
   position: relative;
   margin: auto;
-  height: 80vh;
   width: 80vw;
+  height: 300px;
 }
 
 
