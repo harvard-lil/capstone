@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load pipeline %}
+{% load static %}
+{% block extra_head %}
+  {% stylesheet 'viz' %}
+
+  {% javascript 'base' %}
+  {% javascript 'viz_details' %}
+{% endblock %}
+{% block meta_description %}
+  The Caselaw Access Project Data Visualization
+{% endblock %}
+{% block content %}
+  <div class="flex-xl-nowrap">
+    {% include "includes/viz-toc.html" %}
+    <div class="col-xs-9 col-md-10 viz-content header-margin">
+      <div class="col-12 dropdown show">
+          <a class="dropdown-toggle"
+            id="dropdown-menu-link"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+            href="#">
+          </a>
+        <span class="helper-text">Choose state for more details</span>
+        <div class="dropdown-menu" aria-labelledby="dropdown-menu-link">
+         {% for id, jurisdiction in jurisdictions.items %}
+            <li class="dropdown-item-text" id="{{ jurisdiction.slug }}">
+              <a href="#">{{ jurisdiction.name_long }}</a>
+            </li>
+         {% endfor %}
+        </div>
+      </div>
+    <div class="row">
+      <div class="col-3 float-left">
+        {% include 'includes/us/us_territories.svg' %}
+      </div>
+      <div class="col-9 count-data">
+        <ul class="list-group data-list-group">
+          <li class="list-group-item data-item">
+            Reporters
+            <span id="reporter-count" class="count"></span>
+          </li>
+          <li class="list-group-item data-item">
+            Volumes
+            <span id="volume-count" class="count"></span>
+          </li>
+            <li class="list-group-item data-item">
+              Cases
+              <span id="case-count" class="count"></span>
+            </li>
+          <li class="list-group-item data-item">
+            Courts
+            <span id="court-count" class="count"></span>
+          </li>
+        </ul>
+      </div>
+      </div>
+      <div class="col-12">
+        Firsts on record
+      </div>
+      <div class="chart-container col-12">
+        <canvas id="caseChart"></canvas>
+      </div>
+
+    </div>
+  </div>
+
+
+  <script>
+    {#let jurisdiction_data = JSON.parse("{{ jurisdictions|escapejs }}");#}
+  </script>
+
+
+{% endblock %}

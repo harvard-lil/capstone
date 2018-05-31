@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load pipeline %}
+{% load static %}
+{% block extra_head %}
+  {% stylesheet 'viz' %}
+  {% javascript 'base' %}
+  {% javascript 'viz_totals' %}
+{% endblock %}
+{% block meta_description %}
+  The Caselaw Access Project Data Visualization
+{% endblock %}
+{% block content %}
+  <div class="flex-xl-nowrap">
+    {% include "includes/viz-toc.html" %}
+    <div class="col-xs-9 col-md-10 viz-content header-margin">
+      <div class="col-9">
+          <h3>Data visualized: {{ page_name|title }}</h3>
+      </div>
+      <div class="col-4">
+        <input id="year-value" type="number">
+      </div>
+      <div class="col-12">
+        {% include "includes/us/us_territories_map.svg" %}
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    let jurisdiction_data = JSON.parse("{{ jurisdictions|escapejs }}");
+  </script>
+
+
+{% endblock %}
