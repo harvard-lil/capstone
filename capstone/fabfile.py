@@ -22,7 +22,7 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction
 import capdb.tasks as tasks
 # from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
@@ -483,11 +483,37 @@ def tear_down_case_fixtures_for_benchmarking():
 
 
 @task
-def count_data():
+def count_data_per_jurisdiction(jurisdiction_id=None, write_to_file=True, write_totals_to_file=True):
     """
     Run some basic analytics for visualization purposes
     """
-    tasks.count_courts.delay()
-    tasks.count_reporters_and_volumes.delay()
-    tasks.count_cases.delay()
+
+    jurs = [jurisdiction_id] if jurisdiction_id else list(Jurisdiction.objects.all().order_by('id').values_list('id', flat=True))
+    print('counting data for:', jurs)
+    results = {}
+    if write_to_file:
+        file_dir = settings.DATA_COUNT_DIR
+        if not os.path.exists(file_dir):
+            os.mkdir(file_dir)
+
+    for jur in jurs:
+        jur_results = {
+            'case_count': tasks.get_case_count_for_jur(jur),
+            'reporter_count': tasks.get_reporter_count_for_jur(jur),
+            'court_count': tasks.get_court_count_for_jur(jur),
+        }
+        if write_to_file:
+            file_path = os.path.join(file_dir, "%s.json" % jur)
+            with open(file_path, 'w+') as f:
+                json.dump(jur_results, f)
+
+        results[jur] = jur_results
+
+    if write_to_file:
+        file_path = os.path.join(file_dir, "totals.json")
+        with open(file_path, 'w+') as f:
+            json.dump(results, f)
+    else:
+        print(results)
+
 

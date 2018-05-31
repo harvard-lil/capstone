@@ -167,20 +167,25 @@ def get_reporter_count_for_jur(jurisdiction_id):
 
     results = {
         'total': 0,
+        'years': {},
+        'firsts': {
+            'name': '',
+            'id': ''
+        }
     }
+
     try:
-        results['first_year'] = db_results[0][1]
-        results['last_year'] = db_results[-1][1]
+        results['firsts']['name'] = db_results[0][2]
+        results['firsts']['id'] = db_results[0][0]
     except IndexError:
-        results['first_year'] = None
-        results['last_year'] = None
+        pass
 
     for res in db_results:
         rep_id, start_year, full_name, volume_count = res
         if start_year in results:
-            results[start_year] += 1
+            results['years'][start_year] += 1
         else:
-            results[start_year] = 1
+            results['years'][start_year] = 1
         results['total'] += 1
 
     results['recorded'] = str(datetime.now())
@@ -197,10 +202,25 @@ def get_case_count_for_jur(jurisdiction_id):
         cursor.execute("select extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false and jurisdiction_id=%s group by case_year;" % jurisdiction_id)
         db_results = cursor.fetchall()
 
-    results = {'total': 0}
+    results = {
+        'total': 0,
+        'years': {},
+        'firsts': {
+            'name_abbreviation': '',
+            'name': '',
+            'id': ''
+        }
+    }
+
+    first_case = CaseMetadata.objects.filter(jurisdiction_id=jurisdiction_id).order_by('decision_date').first()
+    if first_case:
+        results['firsts']['name_abbreviation'] = first_case.name_abbreviation
+        results['firsts']['name'] = first_case.name
+        results['firsts']['id'] = first_case.id
+
     for res in db_results:
         case_year, count = res
-        results[case_year] = count
+        results['years'][case_year] = count
         results['total'] += count
 
     results['recorded'] = str(datetime.now())

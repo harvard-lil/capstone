@@ -36,6 +36,6 @@ urlpatterns = [
     path('accounts/resend-verification/', user_views.resend_verification, name='resend-verification'),
 
     ### data views ###
-    path('data/', viz_views.data_totals, name='data_totals'),
-    path('data/<str:slug>/', viz_views.jurisdiction_details, name='jurisdiction_details')
+    path('data/', viz_views.totals_view, name='totals_view'),
+    path('data/details/', viz_views.details_view, name='jurisdiction_details'),
 ]
