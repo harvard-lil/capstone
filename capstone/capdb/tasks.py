@@ -1,10 +1,7 @@
-import os
-import json
 from datetime import datetime
 from celery import shared_task
 
 from django.db import connection, transaction
-from django.conf import settings
 
 from capdb.models import *
 
