@@ -20,9 +20,9 @@ def details_view(request):
 
         if not os.path.exists(file_path):
             results = {
-                'case_count': tasks.get_case_count_for_jur(jur),
-                'reporter_count': tasks.get_reporter_count_for_jur(jur),
-                'court_count': tasks.get_court_count_for_jur(jur),
+                'case_count': tasks.get_case_count_for_jur(jurisdiction.id),
+                'reporter_count': tasks.get_reporter_count_for_jur(jurisdiction.id),
+                'court_count': tasks.get_court_count_for_jur(jurisdiction.id),
             }
 
         else:
