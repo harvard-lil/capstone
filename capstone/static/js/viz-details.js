@@ -29,7 +29,7 @@ let populateJurisdictionData = function(data) {
   $('h5.selected-jurisdiction').text(data.jurisdiction.name_long);
 
   // add all counts
-  court_count_el.text(formatNumToStr(data.court_count));
+  court_count_el.text(formatNumToStr(data.court_count.total));
   reporter_count_el.text(formatNumToStr(data.reporter_count.total));
   // $('#volume-count').text(formatNumToStr(reporter_count[id]['volume_count']));
   case_count_el.text(formatNumToStr(data.case_count.total));

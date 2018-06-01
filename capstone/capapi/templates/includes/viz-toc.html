@@ -1,10 +1,18 @@
 <div class="col-md-2 col-xs-3 navbar navbar-nav nav-toc sidebar">
   <ul class="list-group list-group-flush">
     <li class="list-group-item">
-      <a href="/data/">Overview</a>
+      {% if page_name == 'totals' %}
+        <a href="/data/" class="active">Overview</a>
+      {% else %}
+        <a href="/data/">Overview</a>
+      {% endif %}
     </li>
     <li class="list-group-item">
-      <a href="/data/details">By Jurisdiction</a>
+      {% if page_name == 'jurisdiction_details' %}
+        <a href="/data/details" class="active">By Jurisdiction</a>
+      {% else %}
+        <a href="/data/details">By Jurisdiction</a>
+      {% endif %}
     </li>
     <br/>
     <br/>

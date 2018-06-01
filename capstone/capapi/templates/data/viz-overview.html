@@ -13,21 +13,24 @@
   <div class="flex-xl-nowrap">
     {% include "includes/viz-toc.html" %}
     <div class="col-xs-9 col-md-10 viz-content header-margin">
-      <div class="col-9">
-          <h3>Data visualized: {{ page_name|title }}</h3>
+      <div class="col-12">
+        <span class="font-header-bold">
+          Number of cases through the years
+        </span>
       </div>
-      <div class="col-4">
+      <br/>
+      <div class="col-2">
         <input id="year-value" type="number">
+        <div class="helper-text">Year</div>
       </div>
       <div class="col-12">
         {% include "includes/us/us_territories_map.svg" %}
       </div>
     </div>
   </div>
-
-
   <script>
     let jurisdiction_data = JSON.parse("{{ jurisdictions|escapejs }}");
+    let data = JSON.parse("{{ data|escapejs }}");
   </script>
 
 

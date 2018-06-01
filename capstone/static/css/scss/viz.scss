@@ -14,6 +14,13 @@ h5.selected-jurisdiction {
   color: $color-black;
 }
 
+.nav-toc.sidebar li a.active {
+  color: $color-blue;
+}
+
+hr {
+  max-width: 98%;
+}
 
 // DROPDOWN
 
@@ -30,11 +37,11 @@ h5.selected-jurisdiction {
 }
 
 .dropdown-toggle {
+  border-bottom: 1px solid !important;
+  padding-bottom: 7px;
   display: inherit;
-  border-bottom: 1px solid;
   color: $color-black;
   font-family: $font-header-bold;
-  padding-bottom: 7px;
   &:hover {
     border-bottom: 1px solid;
     color: $color-blue;
@@ -210,4 +217,14 @@ h5.selected-jurisdiction {
 svg.us_territories {
   display: block;
   margin: 0 auto;
+}
+
+
+// viz - overview
+input[type="number"] {
+  font-family: $font-header-bold;
+  font-size: 34px;
+  border: 0;
+  border-bottom: 1px solid $color-black;
+  padding-bottom: 5px;
 }

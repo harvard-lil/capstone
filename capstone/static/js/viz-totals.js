@@ -19,7 +19,7 @@ let populateForYear = function(year) {
   }
 };
 
-let updateTerritoriesForYear = function(el, year_input_el) {
+let updateForYear = function(el, year_input_el) {
   let chosen_year = el.value;
   if (chosen_year > max_year || chosen_year === '') {
     year_input_el.val(max_year);
@@ -29,7 +29,6 @@ let updateTerritoriesForYear = function(el, year_input_el) {
   populateForYear(el.value);
 };
 
-
 $(function () {
   let year_input = $('#year-value');
   // Initialize with min_year
@@ -37,11 +36,11 @@ $(function () {
   populateForYear(min_year);
   // On update input val, load pertinent data
   year_input.on('change', function() {
-    updateTerritoriesForYear(this, year_input);
+    updateForYear(this, year_input);
   });
 
-  // On state click, redirect to more details
-  $('.land-total').on('click', function() {
-    window.location.href = this.id.split('US-')[1];
-  });
+  // // On state click, redirect to more details
+  // $('.land-total').on('click', function() {
+  //   window.location.href = this.id.split('US-')[1];
+  // });
 });
