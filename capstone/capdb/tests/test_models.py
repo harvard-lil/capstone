@@ -115,6 +115,35 @@ def test_create_or_update_metadata(ingest_case_xml):
     ingest_case_xml.metadata.refresh_from_db()
     assert ingest_case_xml.metadata.opinions['majority'] == new_author
 
+@pytest.mark.django_db
+def test_denormalized_fields(case):
+    jurisdiction = case.jurisdiction
+    jurisdiction.whitelisted = True
+    jurisdiction.save()
+
+    # if source is set to none, destination fields should be nulled out
+    case.jurisdiction = None
+    case.save()
+    case.refresh_from_db()
+    assert case.jurisdiction_name is None
+    assert case.jurisdiction_whitelisted is None
+
+    # if source foreign key is changed, destination fields should be updated
+    case.jurisdiction = jurisdiction
+    case.save()
+    case.refresh_from_db()
+    assert case.jurisdiction_name == jurisdiction.name
+    assert case.jurisdiction_whitelisted == jurisdiction.whitelisted
+
+    # if source fields are changed, destination fields should be updated
+    jurisdiction.whitelisted = False
+    jurisdiction.name = 'foo'
+    jurisdiction.save()
+    case.refresh_from_db()
+    assert case.jurisdiction_name == jurisdiction.name
+    assert case.jurisdiction_whitelisted == jurisdiction.whitelisted
+
+
 ### CaseXML ###
 
 @pytest.mark.django_db
@@ -145,8 +174,8 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml, django_assert_nu
     alto = ingest_case_xml.pages.get(barcode="32044057892259_00009_0")
 
     # get ALTO
-    short_alto_identifier = 'alto_00009_0'
-    short_case_identifier = 'casemets_0001'
+    short_alto_identifier = alto.short_id
+    short_case_identifier = ingest_case_xml.short_id
     initial_casemets_alto_md5 = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
     initial_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
     initial_volume_case_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_case_identifier)).attr["CHECKSUM"]
@@ -157,9 +186,8 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml, django_assert_nu
     updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
     parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
     ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    with django_assert_num_queries(select=6, update=4):
+    with django_assert_num_queries(select=5, update=4):
         ingest_case_xml.save()
-
 
     # make sure the change was saved in the case_xml
     ingest_case_xml.refresh_from_db()
@@ -176,12 +204,24 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml, django_assert_nu
     new_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
     new_volume_case_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_case_identifier)).attr["CHECKSUM"]
 
-
     # make sure the md5 has changed, and that it's the correct current md5
     assert new_casemets_alto_md5 != initial_casemets_alto_md5
+    assert new_casemets_alto_md5 == alto.md5
+
+    # volume xml should still have old md5
+    assert new_volume_alto_md5 == initial_volume_alto_md5
+    assert new_volume_case_md5 == initial_volume_case_md5
+
+    # now update volume checksums
+    assert ingest_case_xml.volume.metadata.xml_checksums_need_update
+    ingest_case_xml.volume.update_checksums()
+    parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
+    new_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    new_volume_case_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_case_identifier)).attr["CHECKSUM"]
+
+    # volume xml should have new md5
     assert new_volume_case_md5 != initial_volume_case_md5
     assert new_volume_alto_md5 != initial_volume_alto_md5
-    assert new_casemets_alto_md5 == alto.md5
     assert new_volume_alto_md5 == alto.md5
     assert new_volume_case_md5 == ingest_case_xml.md5
 
@@ -307,7 +347,7 @@ def test_checksums_alto_update(ingest_case_xml):
 
 
     # get initial values
-    short_alto_identifier = 'alto_00009_0'
+    short_alto_identifier = alto.short_id
     initial_casemets_alto_md5 = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
     initial_casemets_alto_size = parsed_case_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
     initial_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
@@ -337,14 +377,26 @@ def test_checksums_alto_update(ingest_case_xml):
 
     # make sure the md5 and size have changed, and that it's the correct current md5
     assert new_casemets_alto_md5 != initial_casemets_alto_md5
-    assert new_volume_alto_md5 != initial_volume_alto_md5
     assert new_casemets_alto_md5 == alto.md5
-    assert new_volume_alto_md5 == alto.md5
     assert new_casemets_alto_size != initial_casemets_alto_size
-    assert new_volume_alto_size != initial_volume_alto_size
     assert new_casemets_alto_size == str(len(force_bytes(alto.orig_xml)))
-    assert new_volume_alto_size == str(len(force_bytes(alto.orig_xml)))
 
+    # volume xml should still have old md5
+    assert new_volume_alto_md5 == initial_volume_alto_md5
+    assert new_volume_alto_size == initial_volume_alto_size
+
+    # now update volume checksums
+    assert ingest_case_xml.volume.metadata.xml_checksums_need_update
+    ingest_case_xml.volume.update_checksums()
+    parsed_volume_xml = parse_xml(ingest_case_xml.volume.orig_xml)
+    new_volume_alto_md5 = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["CHECKSUM"]
+    new_volume_alto_size = parsed_volume_xml('mets|file[ID="{}"]'.format(short_alto_identifier)).attr["SIZE"]
+
+    # volume xml should now have new md5
+    assert new_volume_alto_md5 != initial_volume_alto_md5
+    assert new_volume_alto_md5 == alto.md5
+    assert new_volume_alto_size != initial_volume_alto_size
+    assert new_volume_alto_size == str(len(force_bytes(alto.orig_xml)))
 
 
 # PageXML update

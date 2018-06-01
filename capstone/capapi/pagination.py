@@ -1,44 +1,37 @@
-from collections import OrderedDict
-
+import hashlib
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.utils.urls import replace_query_param
-from rest_framework.response import Response
+
+from django.conf import settings
+from django.core.cache import caches
 
 
-class CountlessPagination(LimitOffsetPagination):
+def CachedCountQueryset(queryset, timeout=60*60, cache_name='default'):
     """
-    This is a custom paginator that's limit/offset based, but
-    does not include count, and so only shows next/previous
-    buttons in browsing mode
+        Return copy of queryset with queryset.count() wrapped to cache result for `timeout` seconds.
     """
-    template = 'rest_framework/pagination/previous_and_next.html'
+    cache = caches[cache_name]
+    queryset = queryset._chain()
+    real_count = queryset.count
 
-    def paginate_queryset(self, queryset, request, view=None):
-        self.limit = self.get_limit(request)
-        if self.limit is None:
-            return None
-        self.offset = self.get_offset(request)
-        self.request = request
-        self.display_page_controls = True
-        return list(queryset[self.offset:self.offset + self.limit])
+    def count(queryset):
+        cache_key = 'query-count:' + hashlib.md5(str(queryset.query).encode('utf8')).hexdigest()
 
-    def get_paginated_response(self, data):
-        return Response(OrderedDict([
-            ('count', None),
-            ('next', self.get_next_link()),
-            ('previous', self.get_previous_link()),
-            ('results', data)
-        ]))
+        # return existing value, if any
+        value = cache.get(cache_key)
+        if value is not None:
+            return value
 
-    def get_next_link(self):
-        url = self.request.build_absolute_uri()
-        url = replace_query_param(url, self.limit_query_param, self.limit)
+        # cache new value
+        value = real_count()
+        cache.set(cache_key, value, timeout)
+        return value
 
-        offset = self.offset + self.limit
-        return replace_query_param(url, self.offset_query_param, offset)
+    queryset.count = count.__get__(queryset, type(queryset))
+    return queryset
 
-    def get_html_context(self):
-        return {
-            'previous_url': self.get_previous_link(),
-            'next_url': self.get_next_link()
-        }
+
+class CachedCountLimitOffsetPagination(LimitOffsetPagination):
+    def paginate_queryset(self, queryset, *args, **kwargs):
+        if hasattr(queryset, 'count'):
+            queryset = CachedCountQueryset(queryset, settings.API_COUNT_CACHE_TIMEOUT)
+        return super().paginate_queryset(queryset, *args, **kwargs)

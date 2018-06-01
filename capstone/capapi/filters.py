@@ -9,13 +9,13 @@ from capdb import models
 # lazy load jur_choices so we don't get an error if this file is imported when database tables don't exist yet
 @lru_cache(None)
 def get_jur_choices():
-    return [(jur.id, jur.name) for jur in models.Jurisdiction.objects.all()]
+    return [(jur.slug, jur.name_long) for jur in models.Jurisdiction.objects.all()]
 jur_choices = SimpleLazyObject(get_jur_choices)
 
 
 class JurisdictionFilter(filters.FilterSet):
     whitelisted = filters.BooleanFilter()
-    id = filters.ChoiceFilter(choices=jur_choices, label='Name')
+    slug = filters.ChoiceFilter(choices=jur_choices, label='Name')
     name_long = filters.CharFilter(label='Long Name')
 
     class Meta:
@@ -30,7 +30,9 @@ class JurisdictionFilter(filters.FilterSet):
 
 
 class ReporterFilter(filters.FilterSet):
-    jurisdictions = filters.MultipleChoiceFilter(choices=jur_choices)
+    jurisdictions = filters.MultipleChoiceFilter(
+        field_name='jurisdictions__slug',
+        choices=jur_choices)
     full_name = filters.CharFilter(lookup_expr='icontains', label='Full Name (contains)')
 
     class Meta:
@@ -46,7 +48,9 @@ class ReporterFilter(filters.FilterSet):
 
 
 class CourtFilter(filters.FilterSet):
-    jurisdiction = filters.ChoiceFilter(choices=jur_choices)
+    jurisdiction = filters.ChoiceFilter(
+        field_name='jurisdiction__slug',
+        choices=jur_choices)
     name = filters.CharFilter(lookup_expr='icontains', label='Name (contains)')
     class Meta:
         model = models.Court
@@ -75,7 +79,9 @@ class CaseFilter(filters.FilterSet):
         field_name='reporter__full_name',
         label='Reporter Name (contains)',
         lookup_expr='icontains')
-    jurisdiction = filters.ChoiceFilter(choices=jur_choices)
+    jurisdiction = filters.ChoiceFilter(
+        field_name='jurisdiction_slug',
+        choices=jur_choices)
     decision_date_min = filters.CharFilter(
         label='Date Min (Format YYYY-MM-DD)',
         field_name='decision_date_min',

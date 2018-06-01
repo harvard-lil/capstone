@@ -38,11 +38,12 @@ INSTALLED_APPS = [
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
     'simple_history',   # model versioning
     'bootstrap4',   # bootstrap form rendering
+    'drf_yasg',   # API specification
 ]
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
-    'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CountlessPagination',
+    'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CachedCountLimitOffsetPagination',
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework_filters.backends.DjangoFilterBackend',
     ),
@@ -60,13 +61,21 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+
+    # cache middleware should come before:
+    # - CsrfViewMiddleware, to skip caching on views that use csrf
+    # - SessionMiddleware, to skip caching on views that set session cookies
+    # cache middleware should come after:
+    # - WhiteNoiseMiddleware, because whitenoise already sets cache headers on static assets
+    'capapi.middleware.cache_header_middleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # 'capdb.middleware.login_required_middleware',
+    'capapi.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -285,7 +294,7 @@ API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
 API_DOCS_CASE_ID = 2
-
+API_COUNT_CACHE_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 1 day
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
 
@@ -388,3 +397,6 @@ SILENCED_SYSTEM_CHECKS = [
                     # check that required "id" fields to be primary keys.
 ]
 
+# cache headers
+SET_CACHE_CONTROL_HEADER = False  # whether to set a cache-control header on all cacheable views
+CACHE_CONTROL_DEFAULT_MAX_AGE = 60*60*24  # length of time to cache pages by default, in seconds

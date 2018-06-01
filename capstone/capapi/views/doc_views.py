@@ -6,7 +6,10 @@ from capdb import models
 
 
 def home(request):
-    case = models.CaseMetadata.objects.get(id=settings.API_DOCS_CASE_ID)
+    try:
+        case = models.CaseMetadata.objects.get(id=settings.API_DOCS_CASE_ID)
+    except models.CaseMetadata.DoesNotExist:
+        case = models.CaseMetadata.objects.filter(duplicative=False).first()
     reporter = case.reporter
     reporter_metadata = serializers.ReporterSerializer(reporter, context={'request': request}).data
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data

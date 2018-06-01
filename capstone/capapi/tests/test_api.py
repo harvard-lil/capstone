@@ -1,5 +1,7 @@
 import pytest
 from datetime import timedelta
+
+from django.urls import reverse
 from django.utils import timezone
 
 from test_data.test_fixtures.factories import *
@@ -27,6 +29,20 @@ def test_flow(client, api_url, case):
     check_response(response)
     content = response.json()
     assert content.get("name") == case.jurisdiction.name
+
+
+@pytest.mark.django_db
+def test_jurisdiction_redirect(api_url, client, case, jurisdiction):
+    jurisdiction.name = 'Neb.'
+    jurisdiction.slug = 'neb'
+    jurisdiction.save()
+    case.jurisdiction = jurisdiction
+    case.save()
+
+    response = client.get("%scases/?jurisdiction=%s" % (api_url, jurisdiction.name), follow=True)
+    query_string = response.request.get('QUERY_STRING')
+    query, jurisdiction_name = query_string.split('=')
+    assert jurisdiction_name == jurisdiction.slug
 
 
 # RESOURCE ENDPOINTS
@@ -84,6 +100,16 @@ def test_single_case(client, api_url, case):
     content = response.json()
     assert content.get("name_abbreviation") == case.name_abbreviation
 
+
+@pytest.mark.django_db
+def test_cases_count_cache(client, three_cases, django_assert_num_queries):
+    # fetching same endpoing a second time should have one less query, because queryset.count() is cached
+    with django_assert_num_queries(select=3):
+        response = client.get(reverse('casemetadata-list'))
+        assert response.json()['count'] == 3
+    with django_assert_num_queries(select=2):
+        response = client.get(reverse('casemetadata-list'))
+        assert response.json()['count'] == 3
 
 @pytest.mark.django_db
 def test_reporters(client, api_url, reporter):
@@ -250,7 +276,7 @@ def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, thre
 
     # fetch the two blacklisted cases and one whitelisted case
     url = "%scases/?full_case=true" % (api_url)
-    with django_assert_num_queries(select=4, update=1):
+    with django_assert_num_queries(select=5, update=1):
         response = auth_client.get(url)
     check_response(response)
 
@@ -402,6 +428,19 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     result = content['results'][0]
     assert case_to_test.decision_date_original == result['decision_date']
 
+    # by jurisdiction
+    case_to_test = three_cases[0]
+    jurisdiction.name = 'Neb.'
+    jurisdiction.slug = 'neb'
+    jurisdiction.save()
+    case_to_test.jurisdiction = jurisdiction
+    case_to_test.save()
+
+    response = client.get("%scases/?jurisdiction=%s" % (api_url, jurisdiction.name), follow=True)
+    content = response.json()
+    result = content['results'][0]
+    assert case_to_test.jurisdiction.slug == result['jurisdiction']['slug']
+
 
 @pytest.mark.django_db
 def test_filter_court(api_url, client, court):
@@ -451,3 +490,21 @@ def test_formats(api_url, client, auth_client, case):
         response = auth_client.get(url)
         check_response(response, content_type=content_type, content_includes=case.name)
 
+
+# API SPECIFICATION ENDPOINTS
+@pytest.mark.django_db
+def test_swagger(client):
+    routes = [
+        ('/', 'text/html'),
+        ('.json', 'application/json'),
+        ('.yaml', 'application/yaml'),
+    ]
+    for route, content_type in routes:
+        response = client.get("/swagger%s" % route)
+        check_response(response, content_type=content_type)
+
+
+@pytest.mark.django_db
+def test_redoc(client):
+    response = client.get("/redoc/")
+    check_response(response, content_type="text/html")

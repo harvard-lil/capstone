@@ -19,3 +19,6 @@ def test_pip_compile():
                             env={k:v for k,v in os.environ.items() if not k.startswith('COV_')})
     existing_requirements = Path('requirements.txt').read_bytes()
     assert result.stdout == existing_requirements, "Changes detected to requirements.in. Please run pip-compile"
+
+def test_flake8():
+    subprocess.check_call('flake8')

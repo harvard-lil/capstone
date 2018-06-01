@@ -2,7 +2,7 @@ from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, \
-    TrackingToolUser, SlowQuery, Jurisdiction
+    TrackingToolUser, SlowQuery, Jurisdiction, CaseMetadata
 
 
 def new_class(name, *args, **kwargs):
@@ -11,6 +11,15 @@ def new_class(name, *args, **kwargs):
 
 class VolumeXMLAdmin(SimpleHistoryAdmin):
     pass
+
+
+@admin.register(CaseMetadata)
+class CaseMetadataAdmin(admin.ModelAdmin):
+    list_display = ['name_abbreviation', 'decision_date', 'jurisdiction', 'court', 'reporter']
+    list_select_related = ('jurisdiction', 'court', 'reporter')
+    inlines = (
+        new_class('CaseXMLInline', admin.StackedInline, model=CaseXML),
+    )
 
 
 class CasePageInline(admin.TabularInline):
@@ -44,7 +53,7 @@ class SlowQueryAdmin(admin.ModelAdmin):
 
 
 class JurisdictionAdmin(admin.ModelAdmin):
-    list_display = ['whitelisted', 'name_long']
+    list_display = ['id', 'slug', 'name', 'name_long', 'whitelisted']
 
 
 admin.site.register(VolumeXML, VolumeXMLAdmin)

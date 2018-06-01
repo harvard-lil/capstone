@@ -1,7 +1,9 @@
 from django.urls import path, re_path, include
 from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
-from rest_framework import routers
+from rest_framework import routers, permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
 from capapi.views import api_views, user_views, doc_views, viz_views
 from capapi.forms import LoginForm
@@ -14,6 +16,19 @@ router.register('jurisdictions', api_views.JurisdictionViewSet)
 router.register('courts', api_views.CourtViewSet)
 router.register('volumes', api_views.VolumeViewSet)
 router.register('reporters', api_views.ReporterViewSet)
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="CAP API",
+        default_version='v1',
+        description="United States Caselaw",
+        terms_of_service="https://capapi.org/terms",
+        contact=openapi.Contact(email="lil@law.harvard.edu"),
+    ),
+    validators=['flex', 'ssv'],
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     ### pages ###
@@ -38,4 +53,10 @@ urlpatterns = [
     ### data views ###
     path('data/', viz_views.totals_view, name='totals_view'),
     path('data/details/', viz_views.details_view, name='jurisdiction_details'),
+
+    ### Swagger/OpenAPI/ReDoc ###
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=None), name='schema-json'),
+    re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=None), name='schema-swagger-ui'),
+    re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
+
 ]

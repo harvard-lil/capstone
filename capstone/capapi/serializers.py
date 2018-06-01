@@ -38,7 +38,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="casemetadata-detail", lookup_field="id")
     court = serializers.ReadOnlyField(source='court.name')
-    jurisdiction = JurisdictionSerializer()
+    jurisdiction = JurisdictionSerializer(source='denormalized_jurisdiction')
     court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True, lookup_field='slug')
     reporter = serializers.ReadOnlyField(source='reporter.full_name')
     reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)

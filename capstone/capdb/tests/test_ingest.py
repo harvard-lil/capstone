@@ -31,6 +31,8 @@ def test_ingested_xml(ingest_volume_xml):
     assert ingest_duplicative_case_xml.metadata.first_page == "1"
     assert ingest_duplicative_case_xml.metadata.last_page == "4"
 
+@pytest.mark.skip(reason="Currently this intentionally fails -- total_sync_with_s3 does not import volumes"
+                         "that are already imported, so we don't overwrite database changes.")
 @pytest.mark.django_db
 def test_update_dup_checking(ingest_volume_xml, ingest_case_xml):
 

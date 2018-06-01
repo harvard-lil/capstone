@@ -3,6 +3,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 
 import pytest
+from django.core.cache import cache as django_cache
 
 from django.core.management import call_command
 import django.apps
@@ -32,6 +33,9 @@ def clear_caches():
     try:
         yield
     finally:
+        # clear django cache
+        django_cache.clear()
+
         # call reset_cache for all models that have it:
         for model in django.apps.apps.get_models():
             if hasattr(model, 'reset_cache'):
@@ -136,9 +140,10 @@ def client():
     return APIClient()
 
 @pytest.fixture
-def auth_client(auth_user, client):
+def auth_client(auth_user):
     """ Return client authenticated as auth_user. """
     # API auth
+    client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + auth_user.get_api_key())
     # Django auth
     client.force_login(user=auth_user)
