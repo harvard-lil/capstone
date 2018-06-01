@@ -8,6 +8,8 @@ from capdb import models, tasks
 
 
 def details_view(request):
+    # if we're receiving an ajax request for a certain slug,
+    # send back JSON data for particular slug
     if request.is_ajax() and request.GET.get('slug', None):
         try:
             jurisdiction = models.Jurisdiction.objects.get(slug=request.GET.get('slug'))
@@ -17,7 +19,12 @@ def details_view(request):
         file_path = os.path.join(data_dir, "%s.json" % jurisdiction.id)
 
         if not os.path.exists(file_path):
-            results = tasks.get_counts_for_jur(jurisdiction.id)
+            results = {
+                'case_count': tasks.get_case_count_for_jur(jur),
+                'reporter_count': tasks.get_reporter_count_for_jur(jur),
+                'court_count': tasks.get_court_count_for_jur(jur),
+            }
+
         else:
             with open(file_path, 'r') as f:
                 results = json.load(f)
@@ -29,6 +36,7 @@ def details_view(request):
         }
         return JsonResponse(results)
 
+    # otherwise send back template with jurisdiction data
     jurisdictions = {}
     for jur in models.Jurisdiction.objects.all():
         jurisdictions[jur.id] = {
@@ -49,7 +57,7 @@ def totals_view(request):
     jurisdictions = models.Jurisdiction.objects.all().order_by('name_long')
     data_dir = settings.DATA_COUNT_DIR
 
-    with open(os.path.join(data_dir, 'case_count.json'), 'r') as f:
+    with open(os.path.join(data_dir, 'totals.json'), 'r') as f:
         case_count = json.load(f)
 
     jurs = {}
@@ -62,10 +70,9 @@ def totals_view(request):
             'name': jur.name,
         }
 
-    return render(request, 'data/viz-overview.html', {
+    return render(request, 'data/viz-totals.html', {
         "hide_footer": True,
         'page_name': 'totals',
-        'jurisdictions_for_handlebars': jurs,
         'jurisdictions': json.dumps(jurs),
         'data': json.dumps(case_count),
     })

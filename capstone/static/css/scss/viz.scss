@@ -167,28 +167,6 @@ hr {
   }
 }
 
-.land-total {
-  fill: #fff;
-  fill-opacity: 1;
-  &.level-1 {
-    fill: $color-black;
-  }
-  &.level-2 {
-    fill: $color-blue;
-
-  }
-  &.level-3 {
-    fill: $color-medium-blue;
-
-  }
-  &.level-4 {
-    fill: $color-light-blue;
-  }
-  &:hover {
-    fill: $color-orange;
-  }
-}
-
 .jurisdiction-list-group {
   a.list-group-item:hover,
   a.list-group-item:focus,
@@ -227,4 +205,64 @@ input[type="number"] {
   border: 0;
   border-bottom: 1px solid $color-black;
   padding-bottom: 5px;
+}
+
+
+.land-total {
+  fill: #fff;
+  fill-opacity: 1;
+  &.level-0 {
+    fill: $color-black;
+  }
+  &.level-1 {
+    fill: $color-blue;
+
+  }
+  &.level-2 {
+    fill: $color-medium-blue;
+
+  }
+  &.level-3 {
+    fill: $color-light-blue;
+  }
+  &:hover {
+    fill: $color-orange;
+  }
+}
+
+ul.legend {
+  text-align: center;
+  li {
+    list-style: none;
+    .swatch {
+      float: left;
+      margin-top: 7px;
+      margin-right: 5px;
+    }
+    &.level-0 {
+      .swatch {
+        background-color: $color-black;
+      }
+
+    }
+    &.level-1 {
+      .swatch {
+        background-color: $color-blue;
+      }
+    }
+    &.level-2 {
+      .swatch {
+        background-color: $color-medium-blue;
+      }
+    }
+    &.level-3 {
+      .swatch {
+        background-color: $color-light-blue;
+      }
+    }
+  }
+  div.swatch {
+    width: 10px;
+    height: 10px;
+  }
 }
