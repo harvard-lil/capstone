@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 from capdb.models import CaseMetadata, Court, Reporter
-from capdb.tasks import create_case_metadata_from_all_vols, count_courts, count_reporters_and_volumes, count_cases
+from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, get_reporter_count_for_jur
 
 import fabfile
 
@@ -98,41 +98,47 @@ def test_show_slow_queries(capsys):
 
 
 @pytest.mark.django_db
-def test_count_courts(court):
-    results = count_courts(write_to_file=False)
-    assert results['total'] == Court.objects.count()
+def test_get_court_count_for_jur(court, jurisdiction):
+    court.jurisdiction = jurisdiction
+    court.save()
+
+    results = get_court_count_for_jur(jurisdiction.id)
+    assert results['total'] == Court.objects.filter(jurisdiction=jurisdiction).count()
     date = datetime.strptime(results['recorded'], "%Y-%m-%d %H:%M:%S.%f")
     assert date.day == datetime.now().day
 
 
 @pytest.mark.django_db
-def test_count_reporters_and_volumes(three_cases, jurisdiction, reporter, volume_metadata):
-    for rep in Reporter.objects.all():
-        rep.jurisdictions.add(jurisdiction)
-    results = count_reporters_and_volumes(write_to_file=False)
+def test_get_case_count_for_jur(three_cases, jurisdiction):
+    for case in three_cases:
+        case.jurisdiction = jurisdiction
+        case.save()
 
-    assert results['totals']['total'] == Reporter.objects.count()
-    actual_vol_count = 0
-    for rep in Reporter.objects.all():
-        actual_vol_count += rep.volume_count
-    res_vol_count = results['totals']['volume_count']
-    assert actual_vol_count == res_vol_count
-    assert results[jurisdiction.id]['total'] == Reporter.objects.filter(jurisdictions=jurisdiction.id).count()
+    results = get_case_count_for_jur(jurisdiction.id)
+
+    for case in three_cases:
+        assert case.decision_date.year in results['years']
 
     date = datetime.strptime(results['recorded'], "%Y-%m-%d %H:%M:%S.%f")
     assert date.day == datetime.now().day
+    assert results['total'] == CaseMetadata.objects.filter(jurisdiction=jurisdiction.id).count()
 
 
 @pytest.mark.django_db
-def test_count_cases(three_cases):
-    results = count_cases(write_to_file=False)
-    for key in results:
-        if key == 'totals':
-            assert results['totals']['total'] == CaseMetadata.objects.count()
-            continue
-        if key == 'recorded':
-            date = datetime.strptime(results[key], "%Y-%m-%d %H:%M:%S.%f")
-            assert date.day == datetime.now().day
-            continue
-        totals = results[key]
-        assert totals['total'] == CaseMetadata.objects.filter(jurisdiction=key).count()
+def test_get_reporter_count_for_jur(reporter, jurisdiction):
+    reporter.jurisdictions.add(jurisdiction)
+    reporter.full_name = 'Alabama Reports'
+    reporter.save()
+
+    oldest_reporter = Reporter.objects.filter(jurisdictions=jurisdiction).order_by('start_year').first()
+    reporter.start_year = oldest_reporter.start_year - 1
+    reporter.save()
+
+    results = get_reporter_count_for_jur(jurisdiction.id)
+
+    assert results['firsts']['name'] == reporter.full_name
+    assert results['firsts']['id'] == reporter.id
+
+    date = datetime.strptime(results['recorded'], "%Y-%m-%d %H:%M:%S.%f")
+    assert date.day == datetime.now().day
+    assert results['total'] == Reporter.objects.filter(jurisdictions=jurisdiction.id).count()

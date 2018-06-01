@@ -483,15 +483,16 @@ def tear_down_case_fixtures_for_benchmarking():
 
 
 @task
-def count_data_per_jurisdiction(jurisdiction_id=None, write_to_file=True, write_totals_to_file=True):
+def count_data_per_jurisdiction(jurisdiction_id=None, write_to_file=True):
     """
     Run some basic analytics for visualization purposes
     """
 
     jurs = [jurisdiction_id] if jurisdiction_id else list(Jurisdiction.objects.all().order_by('id').values_list('id', flat=True))
-    print('counting data for:', jurs)
     results = {}
+
     if write_to_file:
+        # make sure we have a directory to write to
         file_dir = settings.DATA_COUNT_DIR
         if not os.path.exists(file_dir):
             os.mkdir(file_dir)
@@ -514,6 +515,47 @@ def count_data_per_jurisdiction(jurisdiction_id=None, write_to_file=True, write_
         with open(file_path, 'w+') as f:
             json.dump(results, f)
     else:
-        print(results)
+        return results
 
+@task
+def count_case_totals(write_to_file=True, min_year=1640):
+    """
+    Gets case counts for every jurisdiction through every recorded year
+    compiles into json or returns results
+    """
 
+    jurs = list(Jurisdiction.objects.all().order_by('id').values_list('id', flat=True))
+    file_dir = settings.DATA_COUNT_DIR
+    warning = """Data per jurisdiction hasn\'t been compiled yet.
+               \nMake sure to run `fab count_data_per_jurisdiction` first."""
+    results = {}
+
+    if not os.path.exists(file_dir):
+        print(warning)
+        return
+
+    def assign_key(key):
+        results[key] = {}
+
+    # populate results with years
+    [assign_key(year) for year in range(min_year, datetime.now().year+1)]
+
+    for jur in jurs:
+        file_path = os.path.join(file_dir, "%s.json" % jur)
+        if not os.path.exists(file_path):
+            print(warning)
+            return
+
+        with open(file_path, 'r') as f:
+            jur_case_count = json.load(f)['case_count']['years']
+
+        for year in results:
+            str_year = str(year)
+            results[year][jur] = jur_case_count[str_year] if str_year in jur_case_count else 0
+
+    if write_to_file:
+        file_path = os.path.join(file_dir, "totals.json")
+        with open(file_path, 'w+') as f:
+            json.dump(results, f)
+    else:
+        return results
