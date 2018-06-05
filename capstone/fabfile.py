@@ -27,7 +27,7 @@ import capdb.tasks as tasks
 # from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
     validate_private_volumes as validate_private_volumes_script, compare_alto_case, export
-from scripts.helpers import parse_xml, serialize_xml, court_name_strip, court_abbreviation_strip
+from scripts.helpers import parse_xml, serialize_xml, court_name_strip, court_abbreviation_strip, copy_file, resolve_namespace
 
 
 @task(alias='run')
@@ -206,7 +206,6 @@ def add_test_case(*barcodes):
     from django.core import serializers
     from tracking_tool.models import Volumes, Reporters, BookRequests, Pstep, Eventloggers, Hollis, Users
     from capdb.storages import ingest_storage
-    from scripts.helpers import copy_file, resolve_namespace
 
     ## write S3 files to local disk
 
