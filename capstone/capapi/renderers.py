@@ -21,7 +21,6 @@ class JSONRenderer(renderers.JSONRenderer):
 
         if body_format == 'html':
             data['casebody']['data'] = generate_html(data['casebody']['data'])
-
         elif body_format == 'xml':
             extracted = helpers.extract_casebody(data['casebody']['data'])
             c = helpers.serialize_xml(extracted)
@@ -39,31 +38,19 @@ class XMLRenderer(renderers.BaseRenderer):
 
     def render(self, data, media_type=None, renderer_context=None):
         if 'detail' in data:
-            return """
-                <data>
-                    <error>Authentication Error</error>
-                    <message>%s</message>
-                </data>s
-            """ % (data['detail'])
+            if data['detail'] == "Not found.":
+                return generate_xml_error("Case Not Found.", "The case specified by the URL does not exist in our database.")
+
+            return generate_xml_error("Authentication Error", data['detail'])
 
         # if user requested format=xml without requesting full casebody
         if 'casebody' not in data:
-            return """
-                <data>
-                    <error>Not Allowed Error</error>     
-                </data>
-            """
+            return generate_xml_error("Case Body Not Retrieved", "When specifying a return format other than JSON, you must explicity specify full_case=true")
 
         if data['casebody']['status'] != 'ok':
-            return """
-                <data>
-                    <error>Casebody Error</error>
-                    <message>%s</message>
-                </data>
-            """ % (data['casebody']['status'])
+            return generate_xml_error("Case Body Error", data['casebody']['status'])
         else:
             return data['casebody']['data']
-
 
 class HTMLRenderer(renderers.BaseRenderer):
     media_type = 'text/html'
@@ -71,37 +58,43 @@ class HTMLRenderer(renderers.BaseRenderer):
 
     def render(self, data, media_type=None, renderer_context=None):
         if 'detail' in data:
-            return """
-                <section>
-                    <article class='error'>
-                        <p>Authentication Error</p>
-                        <p>%s</p>
-                    </article>
-                </section>
-            """ % (data['detail'])
+            if data['detail'] == "Not found.":
+                return generate_html_error("Case Not Found.", "The case specified by the URL does not exist in our database.")
+            return generate_html_error("Authentication Error", data['detail'])
 
         # if user requested format=html without requesting full casebody
         if 'casebody' not in data:
-            return """
-                <section>
-                    <article class='error'>
-                        <p>Not Allowed Error</p>
-                    </article>
-                </section>
-            """
+            return generate_html_error("Case Body Not Retrieved", "When specifying a return format other than JSON, you must explicity specify full_case=true")
 
         if data['casebody']['status'] != 'ok':
-            return """
-                <section data-data-firstpage="%s" data-data-lastpage="%s" data-class="casebody">
-                <h4>%s</h4>
-                <article class='error'>
-                    <p>Casebody Error</p>
-                    <p>%s</p>
-                </article>
-                </section>
-            """ % (data['first_page'],
-                   data['last_page'],
-                   data['name'],
-                   data['casebody']['status'])
+            return generate_html_error("Case Body Error", data['casebody']['status'], data['first_page'], data['last_page'], data['name'],)
         else:
             return generate_html(data['casebody']['data'])
+
+
+def generate_xml_error(error_text, message_text):
+    return """
+        <data>
+            <error>%s</error>
+            <message>%s</message>
+        </data>
+    """ % (error_text, message_text)
+
+def generate_html_error(error_text, message_text, first_page=None, last_page=None, case_name=None):
+    if first_page is not None and last_page is not None and case_name is not None:
+        section_and_title = """
+        <section data-data-firstpage="{0}" data-data-lastpage="{1}" data-class="casebody">
+        <h4>{2}</h4>
+        """.format(first_page, last_page, case_name)
+    else:
+        section_and_title = "<section>"
+
+    return """
+        %s
+        <article class='error'>
+            <p>{0}</p>
+            <p>{1}</p>
+        </article>
+        </section>
+    """.format(section_and_title, error_text, message_text)
+

@@ -174,11 +174,13 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
 
     url = "%scases/%s/?format=xml&full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, content_type="application/xml", content_includes='<error>Casebody Error</error>')
+    print(response.content)
+
+    check_response(response, content_type="application/xml", content_includes='<error>Case Body Error</error>')
 
     url = "%scases/%s/?format=html&full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, content_type="text/html", content_includes='<p>Casebody Error</p>')
+    check_response(response, content_type="text/html", content_includes='<p>Case Body Error</p>')
 
 
 @pytest.mark.django_db
