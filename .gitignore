@@ -13,3 +13,6 @@ db.sqlite3
 .pytest_cache
 tracking_tool.sqlite
 .coverage
+
+bulk-data/
+
