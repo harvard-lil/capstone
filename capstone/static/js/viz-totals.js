@@ -41,10 +41,11 @@ let populateLegend = function() {
 
 $(function () {
   let year_input = $('#year-value');
+  let first_year = 1880;
   populateLegend();
   // Initialize with min_year
-  year_input.val(min_year);
-  populateForYear(min_year);
+  year_input.val(first_year);
+  populateForYear(first_year);
   // On update input val, load pertinent data
   year_input.on('change', function() {
     updateForYear(this, year_input);

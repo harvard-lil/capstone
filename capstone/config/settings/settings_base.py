@@ -218,7 +218,7 @@ PIPELINE = {
         'base': {
             'source_filenames': (
                 'js/jquery-3.3.1.js',
-                'js/bootstrap.js',
+                'js/bootstrap.min.js',
             ),
             'output_filename': 'base.js'
         },
@@ -236,7 +236,6 @@ PIPELINE = {
             ),
             'output_filename': 'viz_details.js'
         },
-
     },
 
     # avoid compressing assets for now
