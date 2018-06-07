@@ -131,6 +131,56 @@ h1 {
 .alert li {
   list-style: none; }
 
+
+// SIDEBAR
+
+.nav-toc.sidebar {
+  @extend .font-header-medium;
+  background: $color-light-gray;
+  min-height: 100%;
+  padding-top: 60px;
+  padding-left: 15px;
+  li {
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    color: $color-medium-gray;
+    text-align: right;
+    list-style: none;
+    padding: 10px 0;
+    background: transparent;
+  }
+  li a {
+    color: $color-medium-gray;
+    text-decoration: none;
+    &:hover, &:focus, &:active {
+      color: $color-blue;
+    }
+  }
+  li.credits{
+    font-size: 12px;
+    padding-left: 20px;
+    a {
+      color: $color-blue;
+      &:hover {
+        border-bottom: 1px solid $color-blue;
+      }
+    }
+  }
+
+  ul {
+    min-width: 80%;
+  }
+}
+
+@media (min-width: 770px) {
+  .nav-toc.sidebar {
+    position: fixed;
+  }
+}
+
+
+
+
 footer {
   width: 100%;
   background-color: #0075ff;
@@ -203,3 +253,11 @@ footer {
     padding: 15px;
   }
 }
+
+//
+//// sidebar footer
+//.sidebar-footer {
+//  li.credits {
+//    max-width: 100px;
+//  }
+//}

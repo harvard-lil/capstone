@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load pipeline %}
+{% load static %}
+{% block extra_head %}
+  {% stylesheet 'viz' %}
+
+  {% javascript 'base' %}
+  {% javascript 'viz_details' %}
+{% endblock %}
+{% block meta_description %}
+  The Caselaw Access Project Data Visualization
+{% endblock %}
+{% block content %}
+    {% include "includes/viz-toc.html" %}
+    <div class="col-xs-9 col-md-10 viz-content header-margin">
+      <div class="col-12 dropdown show">
+          <a class="dropdown-toggle"
+            id="dropdown-menu-link"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+            href="#">
+          </a>
+
+        <span class="helper-text">Choose a jurisdiction for more details</span>
+        <div class="dropdown-menu" aria-labelledby="dropdown-menu-link">
+        <ul class="dropdown-ul">
+           {% for id, jurisdiction in jurisdictions.items %}
+              <li class="dropdown-item-text dropdown-jurisdiction-item" id="{{ jurisdiction.slug }}">
+                <a href="#">{{ jurisdiction.name_long }}</a>
+              </li>
+           {% endfor %}
+        </ul>
+        </div>
+      </div>
+    <div class="col-12">
+      <div class="row">
+        <div class="col-3 float-left">
+          {% include 'includes/us/us_territories.svg' %}
+        </div>
+        <div class="col-9 count-data">
+          <br/>
+          <ul class="list-group data-list-group">
+            <li class="list-group-item data-item">
+              Reporters
+              <span id="reporter-count" class="count"></span>
+            </li>
+            <!--<li class="list-group-item data-item">
+              Volumes
+              <span id="volume-count" class="count"></span>
+            </li>-->
+              <li class="list-group-item data-item">
+                Cases
+                <span id="case-count" class="count"></span>
+              </li>
+            <li class="list-group-item data-item">
+              Courts
+              <span id="court-count" class="count"></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+      <br/><br/><br/><br/>
+      <div class="col-12">
+        <span class="font-header-bold">
+          <span id="chosen-jurisdiction">
+            Jurisdiction
+          </span>
+          firsts on record
+        </span>
+      </div>
+      <div class="col-12">
+        <div class="row first-figures">
+          <div class="col-2">
+            <div class="first-figure" id="first-year"></div>
+            <div class="helper-text">First year</div>
+          </div>
+          <div class="col-4">
+            <div class="first-figure">
+              <a href="#" target="_blank" id="first-case"></a>
+              <div class="helper-text">First case</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="first-figure">
+              <a href="#" target="_blank" id="first-reporter"></a>
+              <div class="helper-text">First reporter</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br/><br/><br/><br/>
+      <div class="col-12">
+        <span class="font-header-bold">
+          Number of cases through the years
+        </span>
+      </div>
+      <br/>
+      <div class="col-12">
+        <div class="row chart-container">
+          <canvas id="caseChart"></canvas>
+          </div>
+      </div>
+
+    </div>
+
+{% endblock %}
