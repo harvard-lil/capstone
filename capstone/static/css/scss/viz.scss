@@ -211,18 +211,21 @@ input[type="number"] {
 .land-total {
   fill: #fff;
   fill-opacity: 1;
+  stroke-width: 1;
+  stroke: $color-gray;
   &.level-0 {
     fill: $color-black;
   }
   &.level-1 {
-    fill: $color-blue;
-
+    fill: $color-dark-blue;
   }
   &.level-2 {
-    fill: $color-medium-blue;
-
+    fill: $color-blue;
   }
   &.level-3 {
+    fill: $color-medium-blue;
+  }
+  &.level-4 {
     fill: $color-light-blue;
   }
   &:hover {
@@ -247,15 +250,20 @@ ul.legend {
     }
     &.level-1 {
       .swatch {
-        background-color: $color-blue;
+        background-color: $color-dark-blue;
       }
     }
     &.level-2 {
       .swatch {
-        background-color: $color-medium-blue;
+        background-color: $color-blue;
       }
     }
     &.level-3 {
+      .swatch {
+        background-color: $color-medium-blue;
+      }
+    }
+    &.level-4 {
       .swatch {
         background-color: $color-light-blue;
       }
