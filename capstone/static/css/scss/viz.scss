@@ -1,7 +1,4 @@
 @import "_variables.scss";
-body {
-  background-color: $color-tan;
-}
 
 h3 {
   border-bottom: 1px solid $color-black;
@@ -15,6 +12,72 @@ h5.selected-jurisdiction {
   font-size: 1rem;
   padding-bottom: 2px;
   color: $color-black;
+}
+
+.nav-toc.sidebar li a.active {
+  color: $color-blue;
+}
+
+hr {
+  max-width: 98%;
+}
+
+// DROPDOWN
+
+.dropdown {
+  .helper-text {
+    position: relative;
+    top: 5px;
+  }
+}
+
+.dropdown-menu {
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
+.dropdown-toggle {
+  border-bottom: 1px solid !important;
+  padding-bottom: 7px;
+  display: inherit;
+  color: $color-black;
+  font-family: $font-header-bold;
+  &:hover {
+    border-bottom: 1px solid;
+    color: $color-blue;
+  }
+  &::after {
+    float: right;
+  }
+}
+
+.dropdown-toggle[aria-expanded="true"] {
+  border-bottom: 1px solid;
+}
+
+.dropdown-jurisdiction-item {
+  list-style: none;
+  padding: 10px 0;
+  border-bottom: 1px solid $color-gray;
+}
+
+.dropdown-ul {
+  padding: 10px;
+}
+
+.viz-content {
+  margin-left: auto;
+}
+
+@media (min-width: 992px) {
+  .viz-content {
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+}
+
+.viz-section {
+  padding-bottom: 10px;
 }
 
 .hidden {
@@ -37,6 +100,7 @@ h5.selected-jurisdiction {
   &.data-item {
     text-transform: uppercase;
     letter-spacing: 1px;
+    padding-left: 0;
   }
   .count {
     @extend .blue-text;
@@ -54,6 +118,33 @@ h5.selected-jurisdiction {
   padding: 10px;
 }
 
+.helper-text {
+  font-size: 12px;
+  color: $color-medium-gray;
+}
+
+.first-figures {
+  .first-figure {
+    height: 50px;
+  }
+  .helper-text {
+    bottom: 0;
+    position: absolute;
+  }
+}
+
+#first-year {
+  @extend .font-header-bold;
+  color: $color-blue;
+  font-size: 25px;
+}
+
+#first-case, #first-reporter {
+  border-bottom: 1px solid;
+  padding-bottom: 3px;
+  cursor: pointer;
+}
+
 #US-all {
   top: 20px;
   display: none;
@@ -69,10 +160,10 @@ h5.selected-jurisdiction {
   stroke-opacity: 0;
   &.active {
     fill-opacity: 1;
-    fill: white;
-    stroke: $color-blue;
-    stroke-opacity: 1;
-    stroke-width:1;
+    fill: $color-blue;
+    //stroke: $color-blue;
+    //stroke-opacity: 1;
+    //stroke-width:1;
   }
 }
 
@@ -81,7 +172,7 @@ h5.selected-jurisdiction {
   a.list-group-item:focus,
   a.list-group-item:active {
     background-color: $color-blue !important;
-    color: white;
+    color: #fff;
   }
 }
 
@@ -95,6 +186,91 @@ h5.selected-jurisdiction {
 .chart-container {
   position: relative;
   margin: auto;
-  height: 80vh;
   width: 80vw;
+  height: 300px;
+}
+
+
+// svg
+svg.us_territories {
+  display: block;
+  margin: 0 auto;
+}
+
+
+// viz - overview
+input[type="number"] {
+  font-family: $font-header-bold;
+  font-size: 34px;
+  border: 0;
+  border-bottom: 1px solid $color-black;
+  padding-bottom: 5px;
+}
+
+
+.land-total {
+  fill: #fff;
+  fill-opacity: 1;
+  stroke-width: 1;
+  stroke: $color-gray;
+  &.level-0 {
+    fill: $color-black;
+  }
+  &.level-1 {
+    fill: $color-dark-blue;
+  }
+  &.level-2 {
+    fill: $color-blue;
+  }
+  &.level-3 {
+    fill: $color-medium-blue;
+  }
+  &.level-4 {
+    fill: $color-light-blue;
+  }
+  &:hover {
+    fill: $color-orange;
+  }
+}
+
+ul.legend {
+  text-align: center;
+  li {
+    list-style: none;
+    .swatch {
+      float: left;
+      margin-top: 7px;
+      margin-right: 5px;
+    }
+    &.level-0 {
+      .swatch {
+        background-color: $color-black;
+      }
+
+    }
+    &.level-1 {
+      .swatch {
+        background-color: $color-dark-blue;
+      }
+    }
+    &.level-2 {
+      .swatch {
+        background-color: $color-blue;
+      }
+    }
+    &.level-3 {
+      .swatch {
+        background-color: $color-medium-blue;
+      }
+    }
+    &.level-4 {
+      .swatch {
+        background-color: $color-light-blue;
+      }
+    }
+  }
+  div.swatch {
+    width: 10px;
+    height: 10px;
+  }
 }

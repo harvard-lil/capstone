@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load pipeline %}
+{% load static %}
+{% block extra_head %}
+  {% stylesheet 'viz' %}
+  {% javascript 'base' %}
+  {% javascript 'viz_totals' %}
+{% endblock %}
+{% block meta_description %}
+  The Caselaw Access Project Data Visualization
+{% endblock %}
+{% block content %}
+  <div class="flex-xl-nowrap">
+    {% include "includes/viz-toc.html" %}
+    <div class="col-xs-9 col-md-10 viz-content header-margin">
+      <div class="col-12">
+        <span class="font-header-bold">
+          Number of cases through the years
+        </span>
+      </div>
+      <br/>
+      <div class="col-2">
+        <input id="year-value" type="number">
+        <div class="helper-text">Year</div>
+      </div>
+      <br/>
+      <div class="col-12">
+        <ul class="list-inline legend">
+          <li class="list-inline-item">Key: </li>
+          <li class="list-inline-item level-4">
+            <div class="swatch"></div>
+            <span class="label"></span>
+          </li>
+          <li class="list-inline-item level-3">
+            <div class="swatch"></div>
+            <span class="label"></span>
+          </li>
+          <li class="list-inline-item level-2">
+            <div class="swatch"></div>
+            <span class="label"></span>
+          </li>
+          <li class="list-inline-item level-1">
+            <div class="swatch"></div>
+            <span class="label"></span>
+          </li>
+          <li class="list-inline-item level-0">
+            <div class="swatch"></div>
+            <span class="label"></span>
+          </li>
+        </ul>
+      </div>
+      <br/>
+      <div class="col-12">
+        {% include "includes/us/us_territories_map.svg" %}
+      </div>
+    </div>
+  </div>
+  <script>
+    let jurisdiction_data = JSON.parse("{{ jurisdictions|escapejs }}");
+    let data = JSON.parse("{{ data|escapejs }}");
+  </script>
+
+
+{% endblock %}

@@ -5,7 +5,7 @@ from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from capapi.views import api_views, user_views, doc_views
+from capapi.views import api_views, user_views, doc_views, viz_views
 from capapi.forms import LoginForm
 
 
@@ -50,13 +50,14 @@ urlpatterns = [
     path('accounts/detail/', user_views.user_details, name='user-details'),
     path('accounts/resend-verification/', user_views.resend_verification, name='resend-verification'),
 
+    ### data views ###
+    path('data/', viz_views.totals_view, name='totals_view'),
+    path('data/details/', viz_views.details_view, name='jurisdiction_details'),
 
     ### Swagger/OpenAPI/ReDoc ###
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=None), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=None), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
-
-    path('data', doc_views.data, name='data'),
 
     ### bulk data ###
     path('bulk-access/download/<str:jur>/<str:filename>', user_views.bulk_download, name='bulk-download'),

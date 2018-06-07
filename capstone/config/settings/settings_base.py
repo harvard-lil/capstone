@@ -208,10 +208,34 @@ PIPELINE = {
         },
         'viz': {
             'source_filenames': (
+                'css/scss/docs.scss',
                 'css/scss/viz.scss',
             ),
             'output_filename': 'viz.css'
-        }
+        },
+    },
+    'JAVASCRIPT': {
+        'base': {
+            'source_filenames': (
+                'js/jquery-3.3.1.js',
+                'js/bootstrap.min.js',
+            ),
+            'output_filename': 'base.js'
+        },
+        'viz_totals': {
+            'source_filenames': (
+                'js/chart.js',
+                'js/viz-totals.js',
+            ),
+            'output_filename': 'viz_totals.js'
+        },
+        'viz_details': {
+            'source_filenames': (
+                'js/chart.js',
+                'js/viz-details.js',
+            ),
+            'output_filename': 'viz_details.js'
+        },
     },
 
     # avoid compressing assets for now

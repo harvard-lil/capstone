@@ -1,4 +1,5 @@
 import shutil
+import re
 from lxml import etree
 from pyquery import PyQuery
 from django.core.paginator import Paginator
@@ -234,3 +235,24 @@ def extract_casebody(case_xml):
             footnote[0].text = footnote[0].text[len(label):]
 
     return case('casebody|casebody')
+
+def court_name_strip(name_text):
+    name_text = re.sub('\xa0', ' ', name_text)
+    name_text = re.sub('\'|’', u"\u2019", name_text)
+    name_text = re.sub('\\\\', '', name_text)
+    name_text = re.sub('\+', '', name_text)
+    name_text = re.sub('`', '', name_text)
+    name_text = re.sub(']', '', name_text)
+    name_text = re.sub('0-9', '', name_text)
+    name_text = re.sub('Court for The', 'Court for the', name_text)
+    name_text = re.sub('Appeals[A-Za-z]', 'Appeals', name_text)
+    name_text = re.sub('Pennsylvania[A-Za-z0-9\.].', 'Pennsylvania', name_text)
+    return name_text
+
+def court_abbreviation_strip(name_abbreviation_text):
+    name_abbreviation_text = re.sub('\xa0', ' ', name_abbreviation_text)
+    name_abbreviation_text = re.sub('\n', ' ', name_abbreviation_text)
+    name_abbreviation_text = re.sub('\'|’', u"\u2019", name_abbreviation_text)
+    name_abbreviation_text = re.sub('`', '', name_abbreviation_text)
+    name_abbreviation_text = re.sub('^ ', '', name_abbreviation_text)
+    return name_abbreviation_text
