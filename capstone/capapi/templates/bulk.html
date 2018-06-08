@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load pipeline %}
+{% load static %}
+{% block title %} | Bulk Access {% endblock %}
+
+{% block meta_description %}
+The Caselaw Access Project Bulk Access
+{% endblock %}
+
+{% block content %}
+  <div class="container header-margin">
+  <h3 class="font-header-semibold">Bulk Data</h3>
+  <p class="font-body">Click a link to download</p>
+  <hr/>
+  {% for jur, filelist in files.items %}
+    <h2 class="section-title">{{ jur }}</h2>
+    <ul>
+    {% for file in filelist %}
+      <li><a href="download/{{ jur }}/{{ file }}">{{ file }}</a></li>
+    {% endfor %}
+    </ul>
+  {% endfor %}
+  </div>
+{% endblock %}

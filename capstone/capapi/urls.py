@@ -59,4 +59,7 @@ urlpatterns = [
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=None), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
 
+    ### bulk data ###
+    path('bulk-access/download/<str:jur>/<str:filename>', user_views.bulk_download, name='bulk-download'),
+    path('bulk-access/', user_views.bulk, name='bulk-data'),
 ]

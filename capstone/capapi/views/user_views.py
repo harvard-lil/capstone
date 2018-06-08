@@ -1,7 +1,11 @@
+import os
+from wsgiref.util import FileWrapper
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
+from django.http import StreamingHttpResponse
 
 from capapi import models as capapi_models, resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm
@@ -22,6 +26,7 @@ def register_user(request):
 
     return render(request, 'registration/sign-up.html', {'form': form})
 
+
 def verify_user(request, user_id, activation_nonce):
     """ Verify email and assign api token """
     try:
@@ -35,6 +40,7 @@ def verify_user(request, user_id, activation_nonce):
         'contact_email': settings.API_EMAIL_ADDRESS,
         'error': error,
     })
+
 
 def resend_verification(request):
     """ Resend verification code """
@@ -59,6 +65,7 @@ def resend_verification(request):
         'form': form,
     })
 
+
 @login_required
 def user_details(request):
     """ Show user details """
@@ -67,6 +74,40 @@ def user_details(request):
     return render(request, 'registration/user-account.html', context)
 
 
+@login_required
+def bulk(request):
+    if not request.user.unlimited_access_in_effect():
+        raise PermissionDenied
+
+    root_dir = settings.BULK_DATA_DIR
+    context = {'root_dir': root_dir, 'files': {}}
+
+    if not os.path.exists(root_dir):
+        return render(request, 'bulk.html', context)
+
+    for subdir, dirs, files in os.walk(root_dir):
+        jur = subdir.split(root_dir)[1]
+        if not jur:
+            continue
+        jur = jur[1:] if jur[0] == '/' else jur
+        context['files'][jur] = []
+        for f in files:
+            if f[0] != '.':
+                context['files'][jur].append(f)
+
+    return render(request, 'bulk.html', context)
 
 
+@login_required
+def bulk_download(request, jur, filename):
+    """
+    View for downloading zipped jurisdiction files
+    """
+    if not request.user.unlimited_access_in_effect():
+        raise PermissionDenied
 
+    full_filename = os.path.join(settings.BULK_DATA_DIR, "%s/%s" % (jur, filename))
+    response = StreamingHttpResponse(FileWrapper(open(full_filename, 'rb')), content_type='application/zip')
+    response['Content-Length'] = os.path.getsize(full_filename)
+    response['Content-Disposition'] = 'attachment; filename="%s"' % full_filename
+    return response
