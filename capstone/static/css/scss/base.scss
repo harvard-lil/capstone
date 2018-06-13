@@ -60,6 +60,16 @@ h1 {
 }
 
 
+.alpha-banner {
+  background-color: $color-black;
+  color: #fff;
+  padding: 10px;
+  a {
+    color: lighten($color-blue, 20%);
+    border-bottom: 1px solid lighten($color-blue, 20%);
+  }
+}
+
 .section-title {
   font-size: 20px;
   font-family: $font-header-semibold;
@@ -93,6 +103,11 @@ h1 {
     line-height: 26px;
     &.cap-name {
       color: $color-black;
+    }
+    &.alpha {
+      color: $color-blue;
+      margin-left: 3px;
+      font-size: 12px;
     }
 
     span, a {
