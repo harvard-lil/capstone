@@ -3,10 +3,12 @@ from datetime import datetime
 import logging
 import zipfile
 import tempfile
+from functools import wraps
 from wsgiref.util import FileWrapper
 import wrapt
 
 from django.conf import settings
+from django.core.cache import caches
 from django.core.mail import send_mail
 from django.template.defaultfilters import slugify
 from django.http import FileResponse
@@ -70,3 +72,29 @@ class TrackingWrapper(wrapt.ObjectProxy):
     def __getattr__(self, item):
         self._self_accessed_attrs.add(item)
         return super().__getattr__(item)
+
+
+def cache_func(key, timeout=None, cache_name='default'):
+    """
+        Decorator to cache decorated function's output according to a custom key.
+        `key` should be a lambda that takes the decorated function's arguments and returns a cache key.
+    """
+    cache = caches[cache_name]
+    def decorator(func):
+        @wraps(func)
+        def decorated(*args, **kwargs):
+            cache_key = key(*args, **kwargs)
+
+            # return existing value, if any
+            value = cache.get(cache_key)
+            if value is not None:
+                print("Got existing for", cache_key)
+                return value
+            print("Making new for", cache_key)
+
+            # cache new value
+            value = func(*args, **kwargs)
+            cache.set(cache_key, value, timeout)
+            return value
+        return decorated
+    return decorator

@@ -1,5 +1,10 @@
+import hashlib
 import re
+
+from django.conf import settings
 from rest_framework import renderers
+
+from capapi.resources import cache_func
 from scripts.generate_case_html import generate_html
 from scripts import helpers
 
@@ -68,6 +73,15 @@ class HTMLRenderer(renderers.BaseRenderer):
             return generate_html_error("Case Body Error", data['casebody']['status'], data['first_page'], data['last_page'], data['name'],)
         else:
             return generate_html(data['casebody']['data'])
+
+
+class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
+    @cache_func(
+        key=lambda self, data, view, request: hashlib.md5(('filter-form:'+request.get_full_path()).encode('utf8')).hexdigest(),
+        timeout=settings.API_COUNT_CACHE_TIMEOUT,
+    )
+    def get_filter_form(self, data, view, request):
+        return super().get_filter_form(data, view, request)
 
 
 def generate_xml_error(error_text, message_text):
