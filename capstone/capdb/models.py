@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from lxml import etree
 from model_utils import FieldTracker
+from partial_index import PartialIndex
 
 from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
@@ -666,6 +667,9 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
         return self.name_abbreviation or self.name
 
 
+# where clause for creating DB indexes used by the api /cases/ endpoint
+case_metadata_partial_index_where = "jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative"
+
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
@@ -721,9 +725,9 @@ class CaseMetadata(models.Model):
     class Meta:
         indexes = [
             # index for ordering of case API endpoint
-            models.Index(fields=['decision_date', 'id']),
+            PartialIndex(fields=['decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             # index for ordering of case API endpoint when filtered by jurisdiction
-            models.Index(fields=['jurisdiction_slug', 'decision_date', 'id']),
+            PartialIndex(fields=['jurisdiction_slug', 'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
         ]
 
 

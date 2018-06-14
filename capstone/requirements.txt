@@ -37,6 +37,7 @@ django-compressor==2.1.1  # via django-libsass
 django-extensions==2.0.6
 django-filter==1.1.0
 django-libsass==0.7
+django-partial-index==0.4.0
 django-pipeline-compass==0.1.5
 django-pipeline==1.6.14
 django-storages==1.5.2
