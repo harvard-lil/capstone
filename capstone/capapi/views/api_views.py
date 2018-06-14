@@ -51,17 +51,16 @@ class CitationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins
 class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
     serializer_class = serializers.CaseSerializer
     http_method_names = ['get']
-    queryset = models.CaseMetadata.objects.exclude(
-        duplicative=True
+    queryset = models.CaseMetadata.objects.filter(
+        duplicative=False,
+        jurisdiction__isnull=False,
+        court__isnull=False,
     ).select_related(
         'volume',
         'reporter',
         'court'
     ).prefetch_related(
         'citations'
-    ).filter(
-        jurisdiction__isnull=False,
-        court__isnull=False
     ).order_by(
         'decision_date', 'id'  # include id to get consistent ordering for cases with same date
     )
