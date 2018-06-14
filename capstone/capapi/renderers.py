@@ -1,21 +1,23 @@
+import hashlib
 import re
+
+from django.conf import settings
 from rest_framework import renderers
+
+from capapi.resources import cache_func
 from scripts.generate_case_html import generate_html
 from scripts import helpers
 
 
-class JSONRenderer(renderers.JSONRenderer):
-    media_type = 'application/json'
-    format = 'json'
-
+class CaseJSONRenderer(renderers.JSONRenderer):
     def render(self, data, media_type=None, renderer_context=None):
         request = renderer_context['request']
 
         if 'casebody' not in data:
-            return super(JSONRenderer, self).render(data, renderer_context=renderer_context)
+            return super(CaseJSONRenderer, self).render(data, renderer_context=renderer_context)
 
         if data['casebody']['status'] != 'ok':
-            return super(JSONRenderer, self).render(data, renderer_context=renderer_context)
+            return super(CaseJSONRenderer, self).render(data, renderer_context=renderer_context)
 
         body_format = request.query_params.get('body_format', None)
 
@@ -29,7 +31,7 @@ class JSONRenderer(renderers.JSONRenderer):
             # send text to everyone else
             data['casebody']['data'] = helpers.extract_casebody(data['casebody']['data']).text()
 
-        return super(JSONRenderer, self).render(data, renderer_context=renderer_context)
+        return super(CaseJSONRenderer, self).render(data, renderer_context=renderer_context)
 
 
 class XMLRenderer(renderers.BaseRenderer):
@@ -52,6 +54,7 @@ class XMLRenderer(renderers.BaseRenderer):
         else:
             return data['casebody']['data']
 
+
 class HTMLRenderer(renderers.BaseRenderer):
     media_type = 'text/html'
     format = 'html'
@@ -70,6 +73,15 @@ class HTMLRenderer(renderers.BaseRenderer):
             return generate_html_error("Case Body Error", data['casebody']['status'], data['first_page'], data['last_page'], data['name'],)
         else:
             return generate_html(data['casebody']['data'])
+
+
+class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
+    @cache_func(
+        key=lambda self, data, view, request: hashlib.md5(('filter-form:'+request.get_full_path()).encode('utf8')).hexdigest(),
+        timeout=settings.API_COUNT_CACHE_TIMEOUT,
+    )
+    def get_filter_form(self, data, view, request):
+        return super().get_filter_form(data, view, request)
 
 
 def generate_xml_error(error_text, message_text):
