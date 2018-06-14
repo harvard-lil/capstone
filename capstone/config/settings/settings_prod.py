@@ -68,3 +68,13 @@ CSRF_COOKIE_SECURE = True
 
 # caching
 SET_CACHE_CONTROL_HEADER = True
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/%s" % REDIS_DJANGO_CACHE_DB,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

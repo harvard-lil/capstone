@@ -320,7 +320,8 @@ REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 # redis by default has 16 databases, numbered 0-15:
 REDIS_DEFAULT_DB = 0
-REDIS_INGEST_DB = 1     # database for temporary data created during the S3 ingest process
+REDIS_INGEST_DB = 1         # database for temporary data created during the S3 ingest process
+REDIS_DJANGO_CACHE_DB = 2   # database for django's cache framework
 
 
 LOGGING = {

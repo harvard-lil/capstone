@@ -40,6 +40,7 @@ django-libsass==0.7
 django-partial-index==0.4.0
 django-pipeline-compass==0.1.5
 django-pipeline==1.6.14
+django-redis==4.9.0
 django-storages==1.5.2
 django==2.0.2
 djangorestframework-filters==0.10.2
