@@ -2,7 +2,7 @@ import urllib
 from django.http import HttpResponseRedirect
 from django.utils.text import slugify
 
-from rest_framework import renderers, viewsets, mixins
+from rest_framework import viewsets, mixins
 from rest_framework.reverse import reverse
 
 from capdb import models
@@ -66,8 +66,8 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     )
 
     renderer_classes = (
-        capapi_renderers.JSONRenderer,
-        renderers.BrowsableAPIRenderer,
+        capapi_renderers.CaseJSONRenderer,
+        capapi_renderers.BrowsableAPIRenderer,
         capapi_renderers.XMLRenderer,
         capapi_renderers.HTMLRenderer,
     )

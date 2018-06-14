@@ -4,18 +4,15 @@ from scripts.generate_case_html import generate_html
 from scripts import helpers
 
 
-class JSONRenderer(renderers.JSONRenderer):
-    media_type = 'application/json'
-    format = 'json'
-
+class CaseJSONRenderer(renderers.JSONRenderer):
     def render(self, data, media_type=None, renderer_context=None):
         request = renderer_context['request']
 
         if 'casebody' not in data:
-            return super(JSONRenderer, self).render(data, renderer_context=renderer_context)
+            return super(CaseJSONRenderer, self).render(data, renderer_context=renderer_context)
 
         if data['casebody']['status'] != 'ok':
-            return super(JSONRenderer, self).render(data, renderer_context=renderer_context)
+            return super(CaseJSONRenderer, self).render(data, renderer_context=renderer_context)
 
         body_format = request.query_params.get('body_format', None)
 
@@ -29,7 +26,7 @@ class JSONRenderer(renderers.JSONRenderer):
             # send text to everyone else
             data['casebody']['data'] = helpers.extract_casebody(data['casebody']['data']).text()
 
-        return super(JSONRenderer, self).render(data, renderer_context=renderer_context)
+        return super(CaseJSONRenderer, self).render(data, renderer_context=renderer_context)
 
 
 class XMLRenderer(renderers.BaseRenderer):
@@ -51,6 +48,7 @@ class XMLRenderer(renderers.BaseRenderer):
             return generate_xml_error("Case Body Error", data['casebody']['status'])
         else:
             return data['casebody']['data']
+
 
 class HTMLRenderer(renderers.BaseRenderer):
     media_type = 'text/html'
