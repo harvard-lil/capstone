@@ -6,11 +6,16 @@ import rest_framework_filters as filters
 
 from capdb import models
 
-# lazy load jur_choices so we don't get an error if this file is imported when database tables don't exist yet
-@lru_cache(None)
-def get_jur_choices():
-    return [(jur.slug, jur.name_long) for jur in models.Jurisdiction.objects.all()]
-jur_choices = SimpleLazyObject(get_jur_choices)
+
+# lazy load and cache choices so we don't get an error if this file is imported when database tables don't exist yet
+def lazy_choices(queryset, id_attr, label_attr):
+    @lru_cache(None)
+    def get_choices():
+        return queryset.order_by(label_attr).values_list(id_attr, label_attr)
+    return SimpleLazyObject(get_choices)
+jur_choices = lazy_choices(models.Jurisdiction.objects.all(), 'slug', 'name_long')
+court_choices = lazy_choices(models.Court.objects.all(), 'id', 'name')
+reporter_choices = lazy_choices(models.Reporter.objects.all(), 'id', 'full_name')
 
 
 class JurisdictionFilter(filters.FilterSet):
@@ -71,16 +76,17 @@ class CaseFilter(filters.FilterSet):
         field_name='cite',
         label='Citation',
         method='find_by_citation')
-    court_name = filters.CharFilter(
-        field_name='court__name',
-        label='Court Name (contains)',
-        lookup_expr='icontains')
-    reporter_name = filters.CharFilter(
-        field_name='reporter__full_name',
-        label='Reporter Name (contains)',
-        lookup_expr='icontains')
+    court = filters.ChoiceFilter(
+        field_name='court_id',
+        label='Court',
+        choices=court_choices)
+    reporter = filters.ChoiceFilter(
+        field_name='reporter_id',
+        label='Reporter',
+        choices=reporter_choices)
     jurisdiction = filters.ChoiceFilter(
         field_name='jurisdiction_slug',
+        label='Jurisdiction',
         choices=jur_choices)
     decision_date_min = filters.CharFilter(
         label='Date Min (Format YYYY-MM-DD)',
@@ -106,7 +112,7 @@ class CaseFilter(filters.FilterSet):
                   'cite',
                   'name_abbreviation',
                   'jurisdiction',
-                  'reporter_name',
+                  'reporter',
                   'decision_date_min',
                   'decision_date_max',
                   ]

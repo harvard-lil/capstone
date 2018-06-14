@@ -384,10 +384,6 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     case_to_test.court = court
     case_to_test.save()
 
-    response = client.get("%scases/?court_name=%s" % (api_url, three_cases[2].court.name))
-    content = response.json()
-    assert [case_to_test.id] == [result['id'] for result in content['results']]
-
     # filtering case by name_abbreviation
     case_to_test = three_cases[0]
     case_to_test.name_abbreviation = "Bill v. Bob"
@@ -405,18 +401,16 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
 
     # filtering case by court substring
     case_to_test = three_cases[2]
-    court_name = case_to_test.court.name.split(' ')[1]
-    response = client.get("%scases/?court_name=%s" % (api_url, court_name))
+    court = case_to_test.court
+    response = client.get("%scases/?court=%s" % (api_url, court.pk))
     content = response.json()
-    for result in content['results']:
-        assert court_name in result['court']
+    assert [case_to_test.id] == [result['id'] for result in content['results']]
 
-    # filtering case by reporter substring
-    reporter_name = case_to_test.reporter.full_name.split(' ')[1]
-    response = client.get("%scases/?reporter_name=%s" % (api_url, reporter_name))
+    # filtering case by reporter
+    reporter = case_to_test.reporter
+    response = client.get("%scases/?reporter=%s" % (api_url, reporter.pk))
     content = response.json()
-    for result in content['results']:
-        assert reporter_name in result['reporter']
+    assert [case_to_test.id] == [result['id'] for result in content['results']]
 
     # filtering by decision_date
     # make sure that we can filter by decision_date's datefield
