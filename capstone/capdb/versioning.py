@@ -50,13 +50,13 @@ class TemporalHistoricalRecords(HistoricalRecords):
             return super(cls, self)._do_insert(manager, using, fields, update_pk, raw)
         cls.add_to_class('_do_insert', _do_insert)
 
-    def create_history_model(self, model):
+    def create_history_model(self, model, inherited):
         """
             Set name of history table to original table name + '_history'
         """
         if not self.table_name:
             self.table_name = model._meta.db_table + '_history'
-        return super().create_history_model(model)
+        return super().create_history_model(model, inherited)
 
     def get_extra_fields(self, model, fields):
         """
