@@ -1,6 +1,8 @@
 import pytest
 from django.urls import reverse
 
+from capapi.tests.helpers import is_cached
+
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("view_name, cache_if_logged_out, cache_if_logged_in, get_kwargs", [
@@ -20,6 +22,9 @@ from django.urls import reverse
 
     # api views that depend on the user account are cached only for logged out
     ("casemetadata-list",   True,   False,  {"data": {"full_case": "true"}}),
+
+    # bulk list cacheable only for logged-out users
+    ("bulk-data",        True,   False, {}),
 ])
 @pytest.mark.parametrize("client_fixture_name", ["client", "auth_client"])
 def test_cache_headers(case, request, settings,
@@ -34,8 +39,7 @@ def test_cache_headers(case, request, settings,
 
     # see if response is cached
     response = client.get(url, **get_kwargs)
-    cache_header = response['cache-control'] if response.has_header('cache-control') else ''
-    cache_actual = 's-maxage=%d' % settings.CACHE_CONTROL_DEFAULT_MAX_AGE in cache_header
+    cache_actual = is_cached(response)
 
     assert cache_actual == cache_expected, "Checking %s with %s, expected %scached but found %scached." % (
         url,

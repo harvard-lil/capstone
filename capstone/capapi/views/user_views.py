@@ -1,14 +1,15 @@
-import os
+from pathlib import Path
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, Http404
 
 from capapi import models as capapi_models, resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm
+from capapi.middleware import add_cache_header
 from capapi.resources import form_for_request
 
 
@@ -74,40 +75,49 @@ def user_details(request):
     return render(request, 'registration/user-account.html', context)
 
 
-@login_required
 def bulk(request):
-    if not request.user.unlimited_access_in_effect():
-        raise PermissionDenied
+    """ List zips available for download """
+    def get_zips(folder):
+        # helper to fetch public or private zips, returning {'Jurisdiction': ['file_name', 'file_name']}
+        path = Path(settings.BULK_DATA_DIR, folder)
+        zip_groups = {}
+        for zip_path in path.glob('*/*.zip'):
+            jurisdiction, file_name = zip_path.parts[-2:]
+            zip_groups.setdefault(jurisdiction, []).append(file_name)
+        return zip_groups
 
-    root_dir = settings.BULK_DATA_DIR
-    context = {'root_dir': root_dir, 'files': {}}
+    public_zips = get_zips('public')
+    private_zips = get_zips('private') if request.user.unlimited_access_in_effect() else []
 
-    if not os.path.exists(root_dir):
-        return render(request, 'bulk.html', context)
-
-    for subdir, dirs, files in os.walk(root_dir):
-        jur = subdir.split(root_dir)[1]
-        if not jur:
-            continue
-        jur = jur[1:] if jur[0] == '/' else jur
-        context['files'][jur] = []
-        for f in files:
-            if f[0] != '.':
-                context['files'][jur].append(f)
-
-    return render(request, 'bulk.html', context)
+    return render(request, 'bulk.html', {
+        'public_zips': public_zips,
+        'private_zips': private_zips,
+    })
 
 
-@login_required
-def bulk_download(request, jur, filename):
+def bulk_download(request, public_or_private, jur, filename):
     """
     View for downloading zipped jurisdiction files
     """
-    if not request.user.unlimited_access_in_effect():
-        raise PermissionDenied
+    # enforce permissions
+    if public_or_private == 'private':
+        if not request.user.unlimited_access_in_effect():
+            raise PermissionDenied
+    elif public_or_private != 'public':
+        raise Http404
 
-    full_filename = os.path.join(settings.BULK_DATA_DIR, "%s/%s" % (jur, filename))
-    response = StreamingHttpResponse(FileWrapper(open(full_filename, 'rb')), content_type='application/zip')
-    response['Content-Length'] = os.path.getsize(full_filename)
-    response['Content-Disposition'] = 'attachment; filename="%s"' % full_filename
+    # make sure requested file is a zip and exists
+    file_path = Path(settings.BULK_DATA_DIR, public_or_private, jur, filename)
+    if file_path.suffix != '.zip' or not file_path.exists():
+        raise Http404
+
+    # send file
+    response = StreamingHttpResponse(FileWrapper(file_path.open('rb')), content_type='application/zip')
+    response['Content-Length'] = file_path.stat().st_size
+    response['Content-Disposition'] = 'attachment; filename="%s"' % file_path.name
+
+    # public downloads are cacheable
+    if public_or_private == 'public':
+        add_cache_header(response)
+
     return response
