@@ -83,7 +83,7 @@ def bulk(request):
         zip_groups = {}
         for zip_path in path.glob('*/*.zip'):
             jurisdiction, file_name = zip_path.parts[-2:]
-            zip_groups.setdefault(jurisdiction, []).append(file_name)
+            zip_groups.setdefault(jurisdiction, []).append([file_name, zip_path.stat().st_size])
         return zip_groups
 
     public_zips = get_zips('public')

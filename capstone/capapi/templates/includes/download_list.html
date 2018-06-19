@@ -1,0 +1,11 @@
+{% for jur, filelist in zips.items %}
+  <h3 class="section-title">{{ jur }}</h3>
+  <ul>
+  {% for filename, size in filelist %}
+    <li>
+      <a href="{% url "bulk-download" public_or_private=public_or_private jur=jur filename=filename %}">{{ filename }}</a> -
+      {{ size|filesizeformat }}
+    </li>
+  {% endfor %}
+  </ul>
+{% endfor %}
