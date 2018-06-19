@@ -74,8 +74,6 @@ Capstone is a Django application with a PostgreSQL database which stores and man
 * External metadata, such as the Reporter database
 * Changelog data, tracking changes and corrections
 
-The general philosophy is *progressive enhancement*. We started with a simple document store where each table was just a long list of XML documents, and then built relational database features around that. Currently, we
-
 ## CAPAPI <a id="capapi"></a>
 CAPAPI is the API with which users can access CAP data.
 
