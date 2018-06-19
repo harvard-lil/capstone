@@ -14,5 +14,5 @@ db.sqlite3
 tracking_tool.sqlite
 .coverage
 
-bulk-data/
+capstone/bulk-data/
 
