@@ -93,12 +93,12 @@ CAPAPI is the API with which users can access CAP data.
 
 
 #### 1. Install global system requirements <a id="install-global-system-requirements"></a>
-- **Python 3.5.4** While there shouldn't be any issues with using a more recent version, we will only accept PRs that are fully compatible with 3.5.4.
-- **MySQL** On Macs with homebrew, the version installed with `brew install mysql` works fine. On Linux, [apt-get](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-14-04) does the job
-- **Redis** ([Instructions](https://redis.io/topics/quickstart))
-- **Postgres > 9.5** ([Instructions](https://www.postgresql.org/download/))
+- **Python 3.5.4**— While there shouldn't be any issues with using a more recent version, we will only accept PRs that are fully compatible with 3.5.4.
+- **MySQL**— On Macs with homebrew, the version installed with `brew install mysql` works fine. On Linux, [apt-get](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-14-04) does the job
+- **Redis**— ([Instructions](https://redis.io/topics/quickstart))
+- **Postgres > 9.5**— ([Instructions](https://www.postgresql.org/download/))
 For Mac developers, [Postgres.app](https://postgresapp.com/) is a nice, simple way to get an instant postgres dev installation.
-- **Git** ([Instructions](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git))
+- **Git**— ([Instructions](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git))
 
 
 #### 2. Clone the repository <a id="clone-the-repository"></a>
