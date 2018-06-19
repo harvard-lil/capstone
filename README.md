@@ -7,9 +7,10 @@ This repository contains Capstone and CAPAPI, the applications written by the Ha
 
 - [Project Background](#project-background)
 - [The Data](#the-data)
-  - [Documentation and Samples](#documentation-and-samples)
+  - [Format Documentation and Samples](#documentation-and-samples)
   - [Obtaining Real Data](#obtaining-real-data)
   - [Reporting Data Errors](#reporting-data-errors)
+  - [Errata](#errata)
 - [The Capstone Application](#the-capstone-application)
 - [CAPAPI](#capapi)
 - [Installing Capstone and CAPAPI](#installing-capstone-and-capapi)
@@ -36,11 +37,12 @@ This repository contains Capstone and CAPAPI, the applications written by the Ha
 The Caselaw Access Project is a large-scale digitization project hosted by the Harvard Law School [Library Innovation Lab.](http://lil.law.harvard.edu "LIL Website") Visit https://case.law.harvard.edu for more details:
 
 ## The Data <a id="the-data"></a>
-1. [Documentation and Samples](#documentation-and-samples)
+1. [Format Documentation and Samples](#documentation-and-samples)
 2. [Obtaining Real Data](#obtaining-real-data)
 3. [Reporting Data Errors](#reporting-data-errors)
+4. [Errata](#errata)
 
-### Documentation and Samples <a id="documentation-and-samples"></a>
+### Format Documentation and Samples <a id="documentation-and-samples"></a>
 The output of the project consists of page images, marked up case XML files, ALTO XML files, and METS XML files. This repository has a more detailed explanation of the format, and two volumes worth of sample data:
 
 [CAP Samples and Format Documentation](https://github.com/harvard-lil/CAP_Sample_Volumes_Arkansas/tree/master/32044078573896_redacted)
@@ -51,8 +53,17 @@ This data, with some temporary restrictions, is available to all. Please see our
 
 https://case.law.harvard.edu/
 
+
 ### Reporting Data Errors <a id="reporting-data-errors"></a>
 This is a living, breathing corpus of data. While we've taken great pains to ensure its accuracy and integrity, two large components of this project, namely OCR and human review, are utterly fallible. When we were designing Capstone, we knew that one of its primary functions would be to facilitate safe, accountable updates. If you find any errors in the data, we would be extraordinarily grateful for your taking a moment to create an issue in this GitHub repository's issue tracker to report it. If you notice a large pattern of problems that would be better fixed programmatically, or have a very large number of modifications, describe it in an issue. If we need more information, we'll ask. We'll close the issue when the issue has been corrected.
+
+### Errata <a id="errata"></a>
+These are known issues— there's no need to file an issue in the issue if you come across one. 
+- Missing Judges Tag: In many volumes, elements which should have the tag name `<judges>` instead have the tag name `<p>`. We're working on this one.
+- Nominative Case Citations: In many cases that come from nominative volumes, the citation format is wrong. We hope to have this corrected soon.
+- Jurisdictions: Though the jurisdiction values in our API metadata entries are normalized, we have not propagated those changes to the XML.
+- Court Name: We've seen some inconsistencies in the court name. We're trying to get this normalized in the data, and we'll also publish a complete court name list when we're done.
+- OCR errors: There will be OCR errors on nearly every page. We're still trying to figure out how best to address this. If you've got some killer OCR correction strategies, get at us.
 
 ## The Capstone Application <a id="the-capstone-application"></a>
 
@@ -229,3 +240,4 @@ run the fab command `fab add_test_case` with a volume barcode
 
 ## Documentation <a id="documentation"></a>
 This readme, code comments, and the API usage docs are the only docs we have. If you want something documented more thoroughly, file an issue and we'll get back to you.
+
