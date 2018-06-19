@@ -17,6 +17,9 @@ _capuser_cache_safe_attributes = {
     'is_anonymous', 'is_authenticated', '__class__',
 }
 
+def add_cache_header(response, s_maxage=settings.CACHE_CONTROL_DEFAULT_MAX_AGE):
+    patch_cache_control(response, s_maxage=s_maxage)
+
 def cache_header_middleware(get_response):
     """
         Set an outgoing "Cache-Control: s-maxage=<settings.CACHE_CONTROL_DEFAULT_MAX_AGE>" header on all requests
@@ -35,6 +38,10 @@ def cache_header_middleware(get_response):
         response = get_response(request)
 
         if not settings.SET_CACHE_CONTROL_HEADER:
+            return response
+
+        # do nothing if s-maxage already set
+        if response.has_header("Cache-Control") and 's-maxage' in response['cache-control'].lower():
             return response
 
         # To cache this response, all of these must be true:
@@ -63,9 +70,9 @@ def cache_header_middleware(get_response):
         cache_response = all(view_tests.values())
         logger.info("Cacheable response: %s (%s)" % (cache_response, view_tests))
         if cache_response:
-            patch_cache_control(response, s_maxage=settings.CACHE_CONTROL_DEFAULT_MAX_AGE)
+            add_cache_header(response)
         else:
-            patch_cache_control(response, s_maxage=0)
+            add_cache_header(response, s_maxage=0)
 
         return response
 
