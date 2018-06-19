@@ -15,14 +15,7 @@ The Caselaw Access Project Bulk Access
     <section class="border-bottom mb-5">
       <h2 class="font-header-semibold">Public Bulk Data</h2>
       <p class="font-body">Click a link to download.</p>
-      {% for jur, filelist in public_zips.items %}
-        <h3 class="section-title">{{ jur }}</h3>
-        <ul>
-        {% for file in filelist %}
-          <li><a href="download/public/{{ jur }}/{{ file }}">{{ file }}</a></li>
-        {% endfor %}
-        </ul>
-      {% endfor %}
+      {% include "includes/download_list.html" with public_or_private="public" zips=public_zips %}
     </section>
 
     <section>
@@ -32,14 +25,7 @@ The Caselaw Access Project Bulk Access
           The following jurisdictions are available for download under your academic research agreement.
           Click a link to download.
         </p>
-        {% for jur, filelist in private_zips.items %}
-          <h3 class="section-title">{{ jur }}</h3>
-          <ul>
-            {% for file in filelist %}
-              <li><a href="download/private/{{ jur }}/{{ file }}">{{ file }}</a></li>
-            {% endfor %}
-          </ul>
-        {% endfor %}
+        {% include "includes/download_list.html" with public_or_private="private" zips=private_zips %}
       {% else %}
         <p class="font-body">
           Bulk downloads of the remaining jurisdictions are freely available for academic research.
