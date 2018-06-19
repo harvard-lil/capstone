@@ -112,10 +112,6 @@ def unaltered_alto_xml():
 ### Django json fixtures ###
 
 @pytest.fixture
-def load_user_data():
-    call_command('loaddata', 'test_data/user_data.json')
-
-@pytest.fixture
 def load_tracking_tool_database():
     call_command('loaddata', 'test_data/tracking_tool.json', database='tracking_tool')
 
