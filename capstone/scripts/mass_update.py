@@ -13,7 +13,7 @@ from scripts.helpers import parse_xml, nsmap, serialize_xml
 
 
 def rename_casebody_tags_from_json_id_list(parsed_json, tag_name=None):
-    with transaction.atomic():
+    with transaction.atomic(using='capdb'):
         updated_records = 0
         for element in parsed_json:
             if tag_name is None:

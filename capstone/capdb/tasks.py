@@ -59,7 +59,7 @@ def test_slow(i, ram=10, cpu=30):
 
 
 @shared_task
-@transaction.atomic
+@transaction.atomic(using='capdb')
 def fix_md5_column(volume_id):
     """
         Our database has xml fields in the casexml and pagexml tables that are missing the <?xml> declaration, and that also don't have the md5 column filled.
