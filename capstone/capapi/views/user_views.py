@@ -1,5 +1,6 @@
 from pathlib import Path
 from wsgiref.util import FileWrapper
+from collections import OrderedDict
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -84,7 +85,7 @@ def bulk(request):
         for zip_path in path.glob('*/*.zip'):
             jurisdiction, file_name = zip_path.parts[-2:]
             zip_groups.setdefault(jurisdiction, []).append([file_name, zip_path.stat().st_size])
-        return zip_groups
+        return OrderedDict(sorted(zip_groups.items(), key=lambda t: t[0].lower()))
 
     public_zips = get_zips('public')
     private_zips = get_zips('private') if request.user.unlimited_access_in_effect() else []
