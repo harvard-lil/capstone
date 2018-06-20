@@ -21,7 +21,8 @@ def update_postgres_env():
         our models. Queries here should be idempotent, so they're safe to run whenever migrations are run, or any
         other time.
     """
-    with connection.cursor() as cursor:
+    from django.db import connections
+    with connections['capdb'].cursor() as cursor:
         ### XML namespace stuff ###
 
         # wrapper for the postgres `xpath(<xpath>, <xml>, <namespaces>)` function with our namespaces preloaded.
@@ -181,7 +182,8 @@ def initialize_denormalization_fields(*args, **kwargs):
 
         This function takes *args, **kwargs so it can be called from RunPython in a migration.
     """
-    with connection.cursor() as cursor:
+    from django.db import connections
+    with connections['capdb'].cursor() as cursor:
 
         # for each destination table, construct a sql query that updates the table based on all source tables
         dest_triggers, _ = get_denormalization_triggers()

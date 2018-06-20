@@ -14,7 +14,8 @@ def test_relink_reporter_jurisdiction(ingest_case_xml):
         return output_map
 
     initial_map = make_reporter_jur_map()
-    with connection.cursor() as cursor:
+    from django.db import connections
+    with connections['capdb'].cursor() as cursor:
         cursor.execute("select count(*) from capdb_reporter_jurisdictions")
         assert cursor.fetchone()[0] == 3
         cursor.execute("delete from capdb_reporter_jurisdictions")

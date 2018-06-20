@@ -150,8 +150,8 @@ class AutoSlugMixin:
                 try:
                     # if we are running in a transaction, we have to run this save in a sub-transaction
                     # to recover from expected IntegrityErrors:
-                    if transaction.get_connection(using='capdb').in_atomic_block:
-                        with transaction.atomic():
+                    if transaction.get_connection().in_atomic_block:
+                        with transaction.atomic(using='capdb'):
                             return super(AutoSlugMixin, self).save(*args, **kwargs)
 
                     # otherwise we run with no transaction for speed:

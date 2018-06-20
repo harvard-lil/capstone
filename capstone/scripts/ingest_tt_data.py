@@ -117,7 +117,8 @@ def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
     # reset primary key sequence number based on imported data
     sequence_sql = connection.ops.sequence_reset_sql(no_style(), [destination])
     if sequence_sql:
-        with connection.cursor() as cursor:
+        from django.db import connections
+        with connections['capdb'].cursor() as cursor:
             cursor.execute(sequence_sql[0])
 
 def populate_jurisdiction():
