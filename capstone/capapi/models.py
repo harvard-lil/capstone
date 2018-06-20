@@ -2,7 +2,7 @@ from datetime import timedelta
 import uuid
 import logging
 
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AnonymousUser
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models
 from django.utils import timezone
@@ -151,3 +151,8 @@ class CapUser(AbstractBaseUser):
         if perm in staff_level_permissions:
             return self.is_staff
         return self.is_superuser
+
+
+# make AnonymousUser API conform with CapUser API
+AnonymousUser.unlimited_access_until = None
+AnonymousUser.unlimited_access_in_effect = lambda self: False

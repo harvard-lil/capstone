@@ -9,16 +9,29 @@ The Caselaw Access Project Bulk Access
 
 {% block content %}
   <div class="container header-margin">
-  <h3 class="font-header-semibold">Bulk Data</h3>
-  <p class="font-body">Click a link to download</p>
-  <hr/>
-  {% for jur, filelist in files.items %}
-    <h2 class="section-title">{{ jur }}</h2>
-    <ul>
-    {% for file in filelist %}
-      <li><a href="download/{{ jur }}/{{ file }}">{{ file }}</a></li>
-    {% endfor %}
-    </ul>
-  {% endfor %}
+
+    <h1>Bulk Caselaw Data</h1>
+
+    <section class="border-bottom mb-5">
+      <h2 class="font-header-semibold">Public Bulk Data</h2>
+      <p class="font-body">Click a link to download.</p>
+      {% include "includes/download_list.html" with public_or_private="public" zips=public_zips %}
+    </section>
+
+    <section>
+      <h2 class="font-header-semibold">Bulk Data for Academic Research</h2>
+      {% if private_zips %}
+        <p class="font-body">
+          The following jurisdictions are available for download under your academic research agreement.
+          Click a link to download.
+        </p>
+        {% include "includes/download_list.html" with public_or_private="private" zips=private_zips %}
+      {% else %}
+        <p class="font-body">
+          Bulk downloads of the remaining jurisdictions are freely available for academic research.
+          Please <a href="mailto:info@capapi.org">contact us</a> for access.
+        </p>
+      {% endif %}
+    </section>
   </div>
 {% endblock %}

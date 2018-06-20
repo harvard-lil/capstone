@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
 
 from capapi.models import CapUser
-from capapi.tests.helpers import check_response
+from capapi.tests.helpers import check_response, is_cached
 
 
 ### register, verify email address, login ###
@@ -122,3 +122,62 @@ def test_view_user_details(auth_user, auth_client):
     content = re.sub(r'\s+', ' ', response.content.decode()).strip()
     assert total_case_allowance_html not in content
     assert "Unlimited access until" in content
+
+
+### bulk downloads ###
+
+@pytest.mark.django_db
+def test_bulk_data_logged_out_list(client):
+    response = client.get(reverse('bulk-data'))
+    check_response(response)
+    content = response.content.decode()
+    assert "Arkansas" in content
+    assert "Massachusetts" not in content
+
+@pytest.mark.django_db
+def test_bulk_data_logged_in_list(auth_client):
+    response = auth_client.get(reverse('bulk-data'))
+    check_response(response)
+    content = response.content.decode()
+    assert "Arkansas" in content
+    # logged in user still shouldn't see bulk data
+    assert "Massachusetts" not in content
+
+@pytest.mark.django_db
+def test_bulk_data_unlimited_list(unlimited_auth_client):
+    response = unlimited_auth_client.get(reverse('bulk-data'))
+    check_response(response)
+    content = response.content.decode()
+    assert "Arkansas" in content
+    assert "Massachusetts" in content
+
+private_zip_url = reverse('bulk-download', kwargs={'public_or_private': 'private', 'jur': 'Massachusetts', 'filename': 'Fake Massachusetts.zip'})
+public_zip_url = reverse('bulk-download', kwargs={'public_or_private': 'public', 'jur': 'Illinois', 'filename': 'Fake Illinois.zip'})
+def check_zip_response(response):
+    check_response(response, content_type='application/zip')
+    assert b''.join(response.streaming_content) == b'fake zip content\n'
+
+@pytest.mark.django_db
+def test_bulk_data_logged_out_download(client):
+    response = client.get(public_zip_url)
+    check_zip_response(response)
+    assert is_cached(response)
+    response = client.get(private_zip_url)
+    check_response(response, status_code=403)
+
+@pytest.mark.django_db
+def test_bulk_data_logged_in_download(auth_client):
+    response = auth_client.get(public_zip_url)
+    check_zip_response(response)
+    assert is_cached(response)
+    response = auth_client.get(private_zip_url)
+    check_response(response, status_code=403)
+
+@pytest.mark.django_db
+def test_bulk_data_unlimited_download(unlimited_auth_client):
+    response = unlimited_auth_client.get(public_zip_url)
+    check_zip_response(response)
+    assert is_cached(response)
+    response = unlimited_auth_client.get(private_zip_url)
+    check_zip_response(response)
+    assert not is_cached(response)

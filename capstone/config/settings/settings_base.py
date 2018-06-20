@@ -312,7 +312,7 @@ API_ADMIN_EMAIL_ADDRESS = 'main-email-address@example.com'
 API_EMAIL_ADDRESS = 'admin-email-address@example.com'
 
 # BULK DATA
-BULK_DATA_DIR = 'bulk-data'
+BULK_DATA_DIR = os.path.join(BASE_DIR, 'bulk-data')
 
 # DATA VISUALIZATION
 DATA_COUNT_DIR = '/tmp/count-data'

@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.response import Response
 
 
@@ -17,3 +18,7 @@ def check_response(response, status_code=200, content_type=None, content_include
     if content_includes:
         assert content_includes in response.content.decode()
 
+
+def is_cached(response):
+    cache_header = response['cache-control'] if response.has_header('cache-control') else ''
+    return 's-maxage=%d' % settings.CACHE_CONTROL_DEFAULT_MAX_AGE in cache_header

@@ -143,7 +143,16 @@ def auth_client(auth_user):
     client.credentials(HTTP_AUTHORIZATION='Token ' + auth_user.get_api_key())
     # Django auth
     client.force_login(user=auth_user)
+    # make user available to tests
+    client.auth_user = auth_user
     return client
+
+@pytest.fixture
+def unlimited_auth_client(auth_client):
+    user = auth_client.auth_user
+    user.unlimited_access_until = timezone.now() + timedelta(days=1)
+    user.save()
+    return auth_client
 
 @pytest.fixture
 def api_url():
