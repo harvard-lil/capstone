@@ -67,12 +67,13 @@ def django_assert_num_queries(pytestconfig):
 
         Ensure that the queries run are as expected, then insert the correct counts based on the error message.
     """
-    from django.db import connection
+    from django.db import connections
     from django.test.utils import CaptureQueriesContext
 
     @contextmanager
-    def _assert_num_queries(**expected_counts):
-        with CaptureQueriesContext(connection) as context:
+    def _assert_num_queries(db='capdb', **expected_counts):
+        conn = connections[db]
+        with CaptureQueriesContext(conn) as context:
             yield
             query_counts = defaultdict(int)
             for q in context.captured_queries:

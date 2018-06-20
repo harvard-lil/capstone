@@ -7,7 +7,6 @@ from simple_history.manager import HistoryManager
 
 import django.apps
 from django.conf import settings
-from django.db import connection
 
 from .helpers import nsmap
 
@@ -15,14 +14,14 @@ def run_sql_file(cursor, file_name):
     """ Run a sql file in the postgres/ folder """
     cursor.execute(Path(settings.BASE_DIR, "../services/postgres", file_name).read_text())
 
-def update_postgres_env():
+def update_postgres_env(db='capdb'):
     """
         Write or replace stored functions and triggers in postgres. This makes sure that the postgres environment matches
         our models. Queries here should be idempotent, so they're safe to run whenever migrations are run, or any
         other time.
     """
     from django.db import connections
-    with connections['capdb'].cursor() as cursor:
+    with connections[db].cursor() as cursor:
         ### XML namespace stuff ###
 
         # wrapper for the postgres `xpath(<xpath>, <xml>, <namespaces>)` function with our namespaces preloaded.

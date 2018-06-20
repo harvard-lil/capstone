@@ -1,5 +1,6 @@
 from django.core.management.color import no_style
-from django.db import connection
+from django.db import connections
+
 from tqdm import tqdm
 
 from capdb.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest, Jurisdiction
@@ -115,15 +116,14 @@ def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
             print("Error saving %s ID %s: %s" % (source, getattr(source_record, dupe_field), e))
 
     # reset primary key sequence number based on imported data
-    sequence_sql = connection.ops.sequence_reset_sql(no_style(), [destination])
+    sequence_sql = connections['capdb'].ops.sequence_reset_sql(no_style(), [destination])
     if sequence_sql:
-        from django.db import connections
         with connections['capdb'].cursor() as cursor:
             cursor.execute(sequence_sql[0])
 
 def populate_jurisdiction():
     """This populates the jurisdiction table based on what's in the tracking tool stub"""
-    reporters = Reporters.objects.values('state').distinct() 
+    reporters = Reporters.objects.values('state').distinct()
     for jurisdiction in reporters:
         Jurisdiction.objects.get_or_create(name=jurisdiction['state'])
 

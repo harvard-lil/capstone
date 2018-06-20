@@ -1,5 +1,3 @@
-from django.db import connection
-
 from capdb.models import VolumeXML, PageXML
 
 
