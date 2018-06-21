@@ -5,7 +5,7 @@ import bagit
 import zipfile
 import os
 import gzip
-from django.db import connection, utils
+from django.db import connections, utils
 import json
 from datetime import datetime
 
@@ -86,7 +86,7 @@ def test_write_inventory_files(tmpdir):
 
 @pytest.mark.django_db
 def test_show_slow_queries(capsys):
-    cursor = connection.cursor()
+    cursor = connections['capdb'].cursor()
     try:
         cursor.execute("create extension if not exists pg_stat_statements;")
         fabfile.show_slow_queries()

@@ -7,6 +7,7 @@ from simple_history.manager import HistoryManager
 
 import django.apps
 from django.conf import settings
+from django.db import connections
 
 from .helpers import nsmap
 
@@ -20,7 +21,6 @@ def update_postgres_env(db='capdb'):
         our models. Queries here should be idempotent, so they're safe to run whenever migrations are run, or any
         other time.
     """
-    from django.db import connections
     with connections[db].cursor() as cursor:
         ### XML namespace stuff ###
 
@@ -181,7 +181,6 @@ def initialize_denormalization_fields(*args, **kwargs):
 
         This function takes *args, **kwargs so it can be called from RunPython in a migration.
     """
-    from django.db import connections
     with connections['capdb'].cursor() as cursor:
 
         # for each destination table, construct a sql query that updates the table based on all source tables

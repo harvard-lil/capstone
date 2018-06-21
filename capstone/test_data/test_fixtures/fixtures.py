@@ -5,6 +5,7 @@ from contextlib import contextmanager
 import pytest
 from django.core.cache import cache as django_cache
 from django.core.management import call_command
+from django.db import connections
 import django.apps
 from rest_framework.test import APIRequestFactory, APIClient
 
@@ -74,7 +75,6 @@ def django_assert_num_queries(pytestconfig):
 
         Ensure that the queries run are as expected, then insert the correct counts based on the error message.
     """
-    from django.db import connections
     from django.test.utils import CaptureQueriesContext
 
     @contextmanager

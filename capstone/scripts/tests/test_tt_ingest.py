@@ -1,8 +1,9 @@
 from collections import defaultdict
 import pytest
+from django.db import connections
+
 from scripts import ingest_tt_data
 from capdb.models import Reporter, Jurisdiction
-from django.db import connection
 
 @pytest.mark.django_db
 def test_relink_reporter_jurisdiction(ingest_case_xml):
@@ -14,7 +15,6 @@ def test_relink_reporter_jurisdiction(ingest_case_xml):
         return output_map
 
     initial_map = make_reporter_jur_map()
-    from django.db import connections
     with connections['capdb'].cursor() as cursor:
         cursor.execute("select count(*) from capdb_reporter_jurisdictions")
         assert cursor.fetchone()[0] == 3
