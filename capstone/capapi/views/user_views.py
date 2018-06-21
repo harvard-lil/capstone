@@ -81,11 +81,11 @@ def bulk(request):
     def get_zips(folder):
         # helper to fetch public or private zips, returning {'Jurisdiction': ['file_name', 'file_name']}
         path = Path(settings.BULK_DATA_DIR, folder)
-        zip_groups = {}
+        zip_groups = OrderedDict()
         for zip_path in sorted(path.glob('*/*.zip'), key=lambda x: x.parts):
             jurisdiction, file_name = zip_path.parts[-2:]
             zip_groups.setdefault(jurisdiction, []).append([file_name, zip_path.stat().st_size])
-        return OrderedDict(sorted(zip_groups.items(), key=lambda t: t[0].lower()))
+        return zip_groups
 
     public_zips = get_zips('public')
     private_zips = get_zips('private') if request.user.unlimited_access_in_effect() else []
