@@ -34,7 +34,7 @@ This repository contains Capstone and CAPAPI, the applications written by the Ha
 - [Documentation](#documentation)
 
 ## Project Background <a id="project-background"></a>
-The Caselaw Access Project is a large-scale digitization project hosted by the Harvard Law School [Library Innovation Lab.](http://lil.law.harvard.edu "LIL Website") Visit https://case.law.harvard.edu for more details:
+The Caselaw Access Project is a large-scale digitization project hosted by the Harvard Law School [Library Innovation Lab.](http://lil.law.harvard.edu "LIL Website") Visit https://case.law.harvard.edu for more details.
 
 ## The Data <a id="the-data"></a>
 1. [Format Documentation and Samples](#documentation-and-samples)
@@ -130,7 +130,8 @@ Capstone should now be running at 127.0.0.1:8000.
 We have initial support for local development via `docker compose`. Docker setup looks like this:
 
     $ docker-compose up &
-    $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capstone;"
+    $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capdb;"
+    $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capapi;"
     $ docker-compose exec web fab init_db
     $ docker-compose exec web fab load_test_data
 
