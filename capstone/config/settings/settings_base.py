@@ -121,7 +121,6 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
-
     },
     'tracking_tool': {
         'ENGINE': 'django.db.backends.sqlite3',
