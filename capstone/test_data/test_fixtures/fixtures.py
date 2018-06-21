@@ -4,7 +4,6 @@ from contextlib import contextmanager
 
 import pytest
 from django.core.cache import cache as django_cache
-
 from django.core.management import call_command
 import django.apps
 from rest_framework.test import APIRequestFactory, APIClient
@@ -22,10 +21,19 @@ from .factories import *
 # deleted with each test), but can set up things like functions and triggers.
 @pytest.fixture(scope='session')
 def django_db_setup(django_db_setup, django_db_blocker, redis_proc):
+    from django.test import TransactionTestCase, TestCase
+    # This is a hack around pytest not playing nice with multiple databases
+    # Without these flags set, we don't get any non-default database cleanup
+    # in between tests
+    # https://github.com/pytest-dev/pytest-django/issues/76
+    TransactionTestCase.multi_db = True
+    TestCase.multi_db = True
+
     with django_db_blocker.unblock():
 
         # set up postgres functions and triggers
         fabfile.update_postgres_env()
+
 
 @pytest.fixture(autouse=True)
 def clear_caches():
@@ -40,7 +48,6 @@ def clear_caches():
         for model in django.apps.apps.get_models():
             if hasattr(model, 'reset_cache'):
                 model.reset_cache()
-
 
 
 @pytest.fixture(scope='function')
