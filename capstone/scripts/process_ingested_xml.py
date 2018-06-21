@@ -1,5 +1,4 @@
-from django.db import connection
-
+from django.db import connections
 from capdb.models import VolumeXML, PageXML
 
 
@@ -15,7 +14,8 @@ def build_case_page_join_table(volume_id=None):
         case_page_join_model.objects.filter(casexml__volume_id=volume_id).delete()
 
     # add new relations
-    with connection.cursor() as cursor:
+
+    with connections['capdb'].cursor() as cursor:
         params = {'volume_id': volume_id} if volume_id else {}
         sql = """
             INSERT INTO capdb_pagexml_cases (pagexml_id, casexml_id)
@@ -52,7 +52,7 @@ def get_people_for_casemetadata():
 
     for opinions, we return array tuples, with type of opinion and opinion author
     """
-    with connection.cursor() as cursor:
+    with connections['capdb'].cursor() as cursor:
         sql = """
             CREATE OR REPLACE FUNCTION get_opinions(xml) RETURNS json AS $$
             DECLARE

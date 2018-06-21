@@ -108,7 +108,15 @@ USE_TEST_TRACKING_TOOL_DB = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'capstone',
+        'NAME': 'capapi',
+        'USER': 'postgres',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '',
+    },
+    'capdb': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'capdb',
         'USER': 'postgres',
         'PASSWORD': '',
         'HOST': 'localhost',
@@ -120,9 +128,10 @@ DATABASES = {
     }
 }
 
-# make sure tracking_tool app uses tracking_tool DB:
+# make sure tracking_tool and capdb apps use the correct DBs:
 DATABASE_ROUTERS = [
     'tracking_tool.routers.TrackingToolDatabaseRouter',
+    'capdb.routers.CapDBRouter',
 ]
 
 # Password validation

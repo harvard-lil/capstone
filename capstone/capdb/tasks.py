@@ -1,7 +1,6 @@
 from datetime import datetime
 from celery import shared_task
-
-from django.db import connection, transaction
+from django.db import connections, transaction
 
 from capdb.models import *
 
@@ -66,7 +65,7 @@ def fix_md5_column(volume_id):
 
         Here we update all the xml fields to add the <?xml> declaration and md5 hash.
     """
-    with connection.cursor() as cursor:
+    with connections['capdb'].cursor() as cursor:
         new_xml_sql = "E'<?xml version=''1.0'' encoding=''utf-8''?>\n' || orig_xml"
         for table in ('capdb_casexml', 'capdb_pagexml'):
             print("Volume %s: updating %s" % (volume_id, table))
@@ -82,7 +81,7 @@ def get_reporter_count_for_jur(jurisdiction_id):
         print('Must provide jurisdiction id')
         return
 
-    with connection.cursor() as cursor:
+    with connections['capdb'].cursor() as cursor:
         cursor.execute("select r.id, r.start_year, r.full_name, r.volume_count from capdb_reporter r join capdb_reporter_jurisdictions j on (r.id = j.reporter_id) where j.jurisdiction_id=%s order by r.start_year;" % jurisdiction_id)
         db_results = cursor.fetchall()
 
@@ -119,7 +118,7 @@ def get_case_count_for_jur(jurisdiction_id):
         print('Must provide jurisdiction id')
         return
 
-    with connection.cursor() as cursor:
+    with connections['capdb'].cursor() as cursor:
         cursor.execute("select extract(year from decision_date)::integer as case_year, count(*) from capdb_casemetadata where duplicative=false and jurisdiction_id=%s group by case_year;" % jurisdiction_id)
         db_results = cursor.fetchall()
 

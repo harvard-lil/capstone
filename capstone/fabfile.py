@@ -90,8 +90,8 @@ def run_pending_migrations():
     data_migrations.run_pending_migrations()
 
 @task
-def update_postgres_env():
-    set_up_postgres.update_postgres_env()
+def update_postgres_env(db='capdb'):
+    set_up_postgres.update_postgres_env(db=db)
 
 @task
 def initialize_denormalization_fields():
@@ -142,8 +142,8 @@ def migrate():
         Migrate all dbs at once
     """
 
-    local("python manage.py migrate")
-
+    local("python manage.py migrate --database=default")
+    local("python manage.py migrate --database=capdb")
     if settings.USE_TEST_TRACKING_TOOL_DB:
         local("python manage.py migrate --database=tracking_tool")
 
@@ -403,7 +403,7 @@ def show_slow_queries():
 
     has been run for the capstone user.
     """
-    cursor = django.db.connection.cursor()
+    cursor = django.db.connections['capdb'].cursor()
     with open('../services/postgres/s1_pg_stat_statements_top_total.sql') as f:
         sql = f.read()
         cursor.execute(sql)

@@ -271,17 +271,15 @@ def test_authenticated_multiple_full_cases(auth_user, api_url, auth_client, thre
     for extra_case in three_cases[1:]:
         extra_case.jurisdiction = jurisdiction
         extra_case.save()
-
     # preload capapi.filters.jur_choices so it doesn't sometimes get counted by django_assert_num_queries below
     from capapi.filters import jur_choices
     len(jur_choices)
 
     # fetch the two blacklisted cases and one whitelisted case
     url = "%scases/?full_case=true" % (api_url)
-    with django_assert_num_queries(select=5, update=1):
+    with django_assert_num_queries(select=3):
         response = auth_client.get(url)
     check_response(response)
-
     # make sure the auth_user's case download number has gone down by 2
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 2

@@ -151,7 +151,7 @@ class AutoSlugMixin:
                     # if we are running in a transaction, we have to run this save in a sub-transaction
                     # to recover from expected IntegrityErrors:
                     if transaction.get_connection().in_atomic_block:
-                        with transaction.atomic():
+                        with transaction.atomic(using='capdb'):
                             return super(AutoSlugMixin, self).save(*args, **kwargs)
 
                     # otherwise we run with no transaction for speed:
@@ -582,7 +582,7 @@ class VolumeXML(BaseXMLModel):
     def __str__(self):
         return self.metadata_id
 
-    @transaction.atomic
+    @transaction.atomic(using='capdb')
     def save(self, update_related=True, *args, **kwargs):
 
         if self.tracker.has_changed('orig_xml') and update_related:
@@ -743,7 +743,7 @@ class CaseXML(BaseXMLModel):
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
 
-    @transaction.atomic
+    @transaction.atomic(using='capdb')
     def save(self, update_related=True, *args, **kwargs):
 
         # allow disabling of create_or_update_metadata for testing
@@ -1057,7 +1057,7 @@ class PageXML(BaseXMLModel):
     class Meta:
         ordering = ['barcode']
 
-    @transaction.atomic
+    @transaction.atomic(using='capdb')
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
         if self.xml_modified():
             if save_volume:

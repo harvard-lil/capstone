@@ -23,7 +23,7 @@ def test_versioning(versioned_fixture_name, request):
     # versions are only created once per transaction.
     # since tests run in transactions, run an initial sub-transaction to make sure our
     # next save causes a new version to be created:
-    with transaction.atomic():
+    with transaction.atomic(using='capdb'):
         versioned_instance.save()
 
     # make some modifications:
@@ -33,7 +33,7 @@ def test_versioning(versioned_fixture_name, request):
     versioned_instance.orig_xml = serialize_xml(parsed)
 
     # save modified version:
-    with transaction.atomic():
+    with transaction.atomic(using='capdb'):
         versioned_instance.save()
 
     # historical version should now exist:
