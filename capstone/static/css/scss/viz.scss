@@ -213,23 +213,9 @@ input[type="number"] {
   fill-opacity: 1;
   stroke-width: 1;
   stroke: $color-gray;
-  &.level-0 {
-    fill: $color-black;
-  }
-  &.level-1 {
-    fill: $color-dark-blue;
-  }
-  &.level-2 {
-    fill: $color-blue;
-  }
-  &.level-3 {
-    fill: $color-medium-blue;
-  }
-  &.level-4 {
-    fill: $color-light-blue;
-  }
   &:hover {
-    fill: $color-orange;
+    fill: $color-orange !important;
+    cursor: pointer;
   }
 }
 
@@ -242,32 +228,13 @@ ul.legend {
       margin-top: 7px;
       margin-right: 5px;
     }
-    &.level-0 {
-      .swatch {
-        background-color: $color-black;
-      }
+    .swatch.least-cases {
+      background-color: $color-light-blue;
+    }
+    .swatch.most-cases {
+      background-color: $color-dark-blue;
+    }
 
-    }
-    &.level-1 {
-      .swatch {
-        background-color: $color-dark-blue;
-      }
-    }
-    &.level-2 {
-      .swatch {
-        background-color: $color-blue;
-      }
-    }
-    &.level-3 {
-      .swatch {
-        background-color: $color-medium-blue;
-      }
-    }
-    &.level-4 {
-      .swatch {
-        background-color: $color-light-blue;
-      }
-    }
   }
   div.swatch {
     width: 10px;
