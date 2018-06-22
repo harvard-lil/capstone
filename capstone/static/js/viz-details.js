@@ -174,6 +174,7 @@ let updateSelectedJurisdiction = function(id) {
     $.ajax({
     url: '?slug=' + id,
     success: function(data) {
+      resetChart();
       populateCaseChart(data.case_count.years);
       populateJurisdictionData(data);
       $('#dropdown-menu-link').text(data.jurisdiction.name_long);
@@ -185,11 +186,10 @@ let updateSelectedJurisdiction = function(id) {
 
 
 $(function() {
-  // display Illinois first
-  updateSelectedJurisdiction('ill');
-
-  $("li.dropdown-item-text").on('click', function() {
-    updateSelectedJurisdiction(this.id);
-  });
+  // if no jurisdiction is selected, display Illinois first
+  let jurToDisplay = 'ill';
+  if (window.location.search) {
+    jurToDisplay = window.location.search.substr(1).split('slug=')[1];
+  }
+  updateSelectedJurisdiction(jurToDisplay);
 });
-

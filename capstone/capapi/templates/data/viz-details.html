@@ -27,7 +27,7 @@
         <ul class="dropdown-ul">
            {% for id, jurisdiction in jurisdictions.items %}
               <li class="dropdown-item-text dropdown-jurisdiction-item" id="{{ jurisdiction.slug }}">
-                <a href="#">{{ jurisdiction.name_long }}</a>
+                <a href="?slug={{ jurisdiction.slug }}">{{ jurisdiction.name_long }}</a>
               </li>
            {% endfor %}
         </ul>
