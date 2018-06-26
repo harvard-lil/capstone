@@ -115,7 +115,8 @@ This will make a virtualenv entitled "capstone." You can tell that you're inside
 
 #### 5. Set up the postgres database and load test data <a id="set-up-the-postgres-database-and-load-test-data"></a>
 
-    (capstone)$ psql -c "CREATE DATABASE capstone;"
+    (capstone)$ psql -c "CREATE DATABASE capdb;"
+    (capstone)$ psql -c "CREATE DATABASE capapi;"
     (capstone)$ fab init_db  # one time -- set up database tables and development Django admin user, migrate databases
     (capstone)$ fab load_test_data  # load in our test data
 
