@@ -15,4 +15,4 @@ tracking_tool.sqlite
 .coverage
 
 capstone/bulk-data/
-
+capstone/test_data/zips/
