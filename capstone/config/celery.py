@@ -11,6 +11,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 app = Celery('config', include=[
     'scripts.ingest_by_manifest',
     'scripts.validate_private_volumes',
+    'scripts.compress_volumes',
 ])
 
 # Using a string here means the worker doesn't have to serialize

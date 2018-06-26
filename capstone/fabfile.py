@@ -622,3 +622,41 @@ def fix_court_names():
                 court.name_abbreviation = stripped_abbrev
                 court.save()
                 update_cases(court, stripped_name, stripped_abbrev)
+
+@task
+def compress_volumes(*barcodes, max_volumes=10):
+    """
+        To test local compression of volumes:
+
+        First build docker container:
+            docker build -t compress-worker -f ../services/docker/compress-worker.dockerfile .
+
+        Next run fab task:
+            docker run -v .:/app/ compress-worker fab compress_volumes
+    """
+    from capdb.storages import ingest_storage
+    import scripts.compress_volumes
+
+    max_volumes = int(max_volumes)
+
+    def get_volumes():
+        """ Get all up-to-date volumes. """
+        volumes = ingest_storage.iter_files("")
+        current_vol = next(volumes, "")
+        while current_vol:
+            next_vol = next(volumes, "")
+            if current_vol.split("_", 1)[0] != next_vol.split("_", 1)[0]:
+                yield current_vol
+            current_vol = next_vol
+
+    if barcodes:
+        # get folder for each barcode provided at command line
+        barcodes = [max(ingest_storage.iter_files(barcode, partial_path=True)) for barcode in barcodes]
+    else:
+        # get latest folder all volumes
+        barcodes = get_volumes()
+
+    for i, barcode in enumerate(barcodes):
+        scripts.compress_volumes.compress_volume.delay(barcode)
+        if max_volumes and i >= max_volumes:
+            break

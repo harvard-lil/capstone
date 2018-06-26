@@ -280,6 +280,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'test_data/inventory'),
         },
     },
+    'captar_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/zips'),
+        },
+    },
 }
 
 INVENTORY = {
