@@ -170,16 +170,19 @@ let parseStrToNum = function(str) {
   return parseInt(str.replace(/,/g, ''));
 };
 
-let updateSelectedJurisdiction = function(id) {
+let updateSelectedJurisdiction = function(slug) {
     $.ajax({
-    url: '?slug=' + id,
+    url: '/data/details/' + slug,
     success: function(data) {
       resetChart();
       populateCaseChart(data.case_count.years);
       populateJurisdictionData(data);
       $('#dropdown-menu-link').text(data.jurisdiction.name_long);
       $('#chosen-jurisdiction').text(data.jurisdiction.name_long);
-      window.ddata = data;
+      window.jurisdiction_data = data;
+    },
+    error: function (err) {
+      console.error("Error", err);
     }
   });
 };
