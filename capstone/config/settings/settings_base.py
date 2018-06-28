@@ -234,6 +234,7 @@ PIPELINE = {
         'viz_totals': {
             'source_filenames': (
                 'js/chart.js',
+                'js/color-blend.js',
                 'js/viz-totals.js',
             ),
             'output_filename': 'viz_totals.js'
