@@ -1,37 +1,10 @@
 import hashlib
-import re
 
 from django.conf import settings
 from rest_framework import renderers
 
 from capapi.resources import cache_func
 from scripts.generate_case_html import generate_html
-from scripts import helpers
-
-
-class CaseJSONRenderer(renderers.JSONRenderer):
-    def render(self, data, media_type=None, renderer_context=None):
-        request = renderer_context['request']
-
-        if 'casebody' not in data:
-            return super(CaseJSONRenderer, self).render(data, renderer_context=renderer_context)
-
-        if data['casebody']['status'] != 'ok':
-            return super(CaseJSONRenderer, self).render(data, renderer_context=renderer_context)
-
-        body_format = request.query_params.get('body_format', None)
-
-        if body_format == 'html':
-            data['casebody']['data'] = generate_html(data['casebody']['data'])
-        elif body_format == 'xml':
-            extracted = helpers.extract_casebody(data['casebody']['data'])
-            c = helpers.serialize_xml(extracted)
-            data['casebody']['data'] = re.sub(r"\s{2,}", " ", c.decode())
-        else:
-            # send text to everyone else
-            data['casebody']['data'] = helpers.extract_casebody(data['casebody']['data']).text()
-
-        return super(CaseJSONRenderer, self).render(data, renderer_context=renderer_context)
 
 
 class XMLRenderer(renderers.BaseRenderer):
@@ -55,10 +28,7 @@ class XMLRenderer(renderers.BaseRenderer):
             return data['casebody']['data']
 
 
-class HTMLRenderer(renderers.BaseRenderer):
-    media_type = 'text/html'
-    format = 'html'
-
+class HTMLRenderer(renderers.StaticHTMLRenderer):
     def render(self, data, media_type=None, renderer_context=None):
         if 'detail' in data:
             if data['detail'] == "Not found.":
@@ -71,8 +41,8 @@ class HTMLRenderer(renderers.BaseRenderer):
 
         if data['casebody']['status'] != 'ok':
             return generate_html_error("Case Body Error", data['casebody']['status'], data['first_page'], data['last_page'], data['name'],)
-        else:
-            return generate_html(data['casebody']['data'])
+
+        return super().render(generate_html(data['casebody']['data']), media_type, renderer_context)
 
 
 class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
@@ -102,10 +72,10 @@ def generate_html_error(error_text, message_text, first_page=None, last_page=Non
         section_and_title = "<section>"
 
     return """
-        %s
+        {}
         <article class='error'>
-            <p>{0}</p>
-            <p>{1}</p>
+            <p>{}</p>
+            <p>{}</p>
         </article>
         </section>
     """.format(section_and_title, error_text, message_text)

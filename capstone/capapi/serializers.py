@@ -1,10 +1,14 @@
 import logging
+import re
 
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.serializers import ListSerializer
 
+from capapi.renderers import HTMLRenderer, XMLRenderer
 from capdb import models
+from scripts import helpers
+from scripts.generate_case_html import generate_html
 from .permissions import get_single_casebody_permissions
 
 logger = logging.getLogger(__name__)
@@ -124,13 +128,37 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
         list_serializer_class = ListSerializerWithCaseAllowance
 
     def get_casebody(self, case):
+        # check permissions for full-text access to this case
         request = self.context.get('request')
         casebody = get_single_casebody_permissions(request, case)
-        # if getting casebody is allowed set casebody to orig_xml
-        # while we figure out what to do with it in our renderers
-        # otherwise return casebody obj with status errors
+
         if casebody['status'] == 'ok':
-            casebody['data'] = case.case_xml.orig_xml
+            # if status is 'ok', we've passed the perms check and have to load orig_xml into casebody['data']
+            orig_xml = case.case_xml.orig_xml
+
+            # non-JSON, single-case delivery formats will be handled by custom renderers
+            if type(request.accepted_renderer) == HTMLRenderer:
+                data = orig_xml
+            elif type(request.accepted_renderer) == XMLRenderer:
+                data = orig_xml
+
+            # for JSON, pick html, xml, or text based on body_format query param
+            else:
+                body_format = request.query_params.get('body_format', None)
+
+                if body_format == 'html':
+                    # html
+                    data = generate_html(orig_xml)
+                elif body_format == 'xml':
+                    # xml
+                    extracted = helpers.extract_casebody(orig_xml)
+                    c = helpers.serialize_xml(extracted)
+                    data = re.sub(r"\s{2,}", " ", c.decode())
+                else:
+                    # plain text
+                    data = helpers.extract_casebody(orig_xml).text()
+
+            casebody['data'] = data
         return casebody
 
 
