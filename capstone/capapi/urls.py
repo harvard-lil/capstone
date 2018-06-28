@@ -52,7 +52,8 @@ urlpatterns = [
 
     ### data views ###
     path('data/', viz_views.totals_view, name='totals_view'),
-    path('data/details/', viz_views.details_view, name='jurisdiction_details'),
+    path('data/details/', viz_views.details_view, name='details_view'),
+    path('data/details/<str:slug>', viz_views.get_details, name='get_details'),
 
     ### Swagger/OpenAPI/ReDoc ###
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=None), name='schema-json'),

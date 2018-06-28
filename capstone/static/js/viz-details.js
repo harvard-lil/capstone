@@ -170,9 +170,9 @@ let parseStrToNum = function(str) {
   return parseInt(str.replace(/,/g, ''));
 };
 
-let updateSelectedJurisdiction = function(id) {
+let updateSelectedJurisdiction = function(slug) {
     $.ajax({
-    url: '?slug=' + id,
+    url: '/data/details/' + slug,
     success: function(data) {
       resetChart();
       populateCaseChart(data.case_count.years);
