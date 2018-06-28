@@ -1,7 +1,6 @@
 let min_year = 1640;
 let max_year = (new Date()).getFullYear();
 
-let levels = [3000, 2000, 1000, 500, 1];
 //max cases seems to be 10,000
 let max_cases = 10000;
 let no_color = "rgb(255, 255, 255)";
@@ -13,6 +12,7 @@ let populateForYear = function(year) {
     let slug = jurisdiction_data[jur].slug;
     let total_for_year = data[year][jur];
     let id = "#US-" + slug;
+    console.log("populateForYear", year, slug, jur, total_for_year);
     // add name of jurisdiction and total for hover state
     $(id).html("<title>" + jurisdiction_data[jur].name_long + ": " + total_for_year + " cases</title>");
     if (total_for_year === 0) {
@@ -28,6 +28,7 @@ let populateForYear = function(year) {
 let colorSVG = function(id, color) {
   $(id).css('fill', color);
 };
+
 let updateForYear = function(el, year_input_el) {
   let chosen_year = el.value;
   if (chosen_year > max_year || chosen_year === '') {
@@ -38,11 +39,6 @@ let updateForYear = function(el, year_input_el) {
   populateForYear(el.value);
 };
 
-let populateLegend = function() {
-  for(let i=0; i<levels.length; i++) {
-    $('li.level-'+i).find('span.label').text(levels[i] + '+');
-  }
-};
 
 let goToDetailsView = function(element) {
   let id = element.id;
@@ -57,8 +53,6 @@ $(function () {
   states.on('click', function() {
     goToDetailsView(this);
   });
-
-  populateLegend();
   // Initialize with min_year
   year_input.val(first_year);
   populateForYear(first_year);

@@ -179,7 +179,10 @@ let updateSelectedJurisdiction = function(slug) {
       populateJurisdictionData(data);
       $('#dropdown-menu-link').text(data.jurisdiction.name_long);
       $('#chosen-jurisdiction').text(data.jurisdiction.name_long);
-      window.ddata = data;
+      window.jurisdiction_data = data;
+    },
+    error: function (err) {
+      console.error("Error", err);
     }
   });
 };
