@@ -5,7 +5,7 @@ tqdm                # script progress bars
 wrapt               # object proxying
 
 # celery
-celery[redis]       # task queue
+celery[redis,sqs]       # task queue
 pycurl              # let celery talk to SQS queue
 flower              # monitoring
 

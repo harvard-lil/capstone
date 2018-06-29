@@ -14,10 +14,10 @@ babel==2.5.3              # via flower
 bagit==1.6.4
 beautifulsoup4==4.6.0
 billiard==3.5.0.3         # via celery
-boto3==1.4.4
+boto3==1.7.48
 boto==2.47.0              # via moto
-botocore==1.5.55          # via boto3, s3transfer
-celery[redis]==4.1.0
+botocore==1.10.48         # via boto3, s3transfer
+celery[redis,sqs]==4.2.0
 certifi==2017.4.17        # via requests
 cffi==1.10.0              # via cryptography
 chardet==3.0.3            # via requests
@@ -63,7 +63,7 @@ jinja2==2.9.6             # via coreschema, moto
 jmespath==0.9.2           # via boto3, botocore
 jsonpointer==1.14         # via flex
 jsonschema==2.6.0         # via swagger-spec-validator
-kombu==4.1.0              # via celery
+kombu==4.2.1              # via celery
 libsass==0.13.2           # via django-libsass
 lxml==3.7.3
 markupsafe==1.0           # via jinja2

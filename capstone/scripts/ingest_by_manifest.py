@@ -8,6 +8,7 @@ import io
 
 import celery
 from celery import chord
+from celery.result import allow_join_result
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db import IntegrityError, DatabaseError
@@ -76,7 +77,12 @@ def sync_s3_data(full_sync=False):
     #      - Add name of each unique volume folder to the "volumes" queue.
     #      - Add list of volume files to "volume:<volume_folder>" queue.
     #   - Call sync_s3_data_step_two when all celery tasks are complete.
-    read_inventory_files()(sync_s3_data_step_two.si(full_sync))
+
+    # This "with" is required only because celery 4.2 falsely detects the following line as a problem when CELERY_TASK_ALWAYS_EAGER=True
+    # See https://github.com/celery/celery/issues/4576
+    with allow_join_result():
+
+        read_inventory_files()(sync_s3_data_step_two.si(full_sync))
 
 @celery.shared_task
 def sync_s3_data_step_two(full_sync=False):
@@ -86,7 +92,11 @@ def sync_s3_data_step_two(full_sync=False):
     #       - Ingest volume XML, case XML, and alto XML, if not already in database.
     #       - If we are adding/updating volume XML, check that METS inventory is valid.
     #   - Call sync_s3_data_step_three when all celery tasks are complete.
-    ingest_volumes(full_sync)(sync_s3_data_step_three.si())
+
+    # This "with" is required only because celery 4.2 falsely detects the following line as a problem when CELERY_TASK_ALWAYS_EAGER=True
+    # See https://github.com/celery/celery/issues/4576
+    with allow_join_result():
+        ingest_volumes(full_sync)(sync_s3_data_step_three.si())
 
 @celery.shared_task
 def sync_s3_data_step_three():
