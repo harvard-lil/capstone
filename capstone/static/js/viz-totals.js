@@ -12,12 +12,10 @@ let populateForYear = function(year) {
     let slug = jurisdiction_data[jur].slug;
     let total_for_year = data[year][jur];
     let id = "#US-" + slug;
-    console.log("populateForYear", year, slug, jur, total_for_year);
     // add name of jurisdiction and total for hover state
     $(id).html("<title>" + jurisdiction_data[jur].name_long + ": " + total_for_year + " cases</title>");
     if (total_for_year === 0) {
       colorSVG(id, no_color);
-      return
     }
     let percentStep = total_for_year > max_cases ? 1 : total_for_year/max_cases
     let color = pSBC(percentStep, min_color, max_color);
