@@ -1,4 +1,3 @@
-
 import csv
 import gzip
 import hashlib
@@ -17,6 +16,8 @@ import shutil
 import subprocess
 import copy
 
+from django.conf import settings
+
 from capdb.storages import ingest_storage, captar_storage, get_storage
 from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml
 
@@ -30,9 +31,6 @@ logger = logging.getLogger(__name__)
 info = logger.info
 info = print
 
-# debugging
-MAX_JP2_PER_ZIP = 0
-MULTITHREADED = True
 
 # separate function to check .tar integrity against volmets
 # encryption?
@@ -358,8 +356,8 @@ def compress_volume(volume_name):
 
         # set up multithreading -- file_map function lets us run function in parallel across a list of file paths,
         # passing in tempdir along with each file path.
-        if MULTITHREADED:
-            pool = ThreadPool(20)
+        if settings.COMPRESS_VOLUMES_THREAD_COUNT > 1:
+            pool = ThreadPool(settings.COMPRESS_VOLUMES_THREAD_COUNT)
             mapper = pool.map
         else:
             mapper = map
@@ -393,7 +391,7 @@ def compress_volume(volume_name):
 
         # tar volume
         info("tarring %s" % volume_path)
-        with captar_storage.open(archive_name, "wb") as tar_out:
+        with tempfile.SpooledTemporaryFile(max_size=settings.COMPRESS_VOLUMES_SPOOL_SIZE) as tar_out:
             tar_out = HashingFile(tar_out, hash_name='sha256')
             tar = LoggingTarFile.open(fileobj=tar_out, mode='w|')
             try:
@@ -414,6 +412,12 @@ def compress_volume(volume_name):
             # write sha256 file
             with captar_storage.open(archive_name+".sha256", "w") as sha_out:
                 sha_out.write(tar_out.hexdigest())
+
+            # write tar file to S3
+            tar_out.seek(0)
+            with captar_storage.open(archive_name, "wb") as out:
+                shutil.copyfileobj(tar_out, out)
+
 
 @shared_task
 def validate_volume(volume_name):

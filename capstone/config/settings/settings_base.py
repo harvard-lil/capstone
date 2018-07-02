@@ -419,3 +419,7 @@ SILENCED_SYSTEM_CHECKS = [
 # cache headers
 SET_CACHE_CONTROL_HEADER = False  # whether to set a cache-control header on all cacheable views
 CACHE_CONTROL_DEFAULT_MAX_AGE = 60*60*24  # length of time to cache pages by default, in seconds
+
+# settings for scripts/compress_volumes.py
+COMPRESS_VOLUMES_THREAD_COUNT = 20   # if < 2, no thread pool will be used
+COMPRESS_VOLUMES_SPOOL_SIZE = 2**30  # build tar file of up to 1gb in ram before spooling to disk
