@@ -391,32 +391,31 @@ def compress_volume(volume_name):
 
         # tar volume
         info("tarring %s" % volume_path)
-        with tempfile.SpooledTemporaryFile(max_size=settings.COMPRESS_VOLUMES_SPOOL_SIZE) as tar_out:
+        with tempfile.NamedTemporaryFile() as tar_out:
+            # track hash of tar file
             tar_out = HashingFile(tar_out, hash_name='sha256')
+
+            # track offsets of files in tar file
             tar = LoggingTarFile.open(fileobj=tar_out, mode='w|')
-            try:
 
-                # write tar file
-                tar.add(str(volume_path), volume_name)
+            # write files to temp tar file
+            tar.add(str(volume_path), volume_name)
+            tar.close()
 
-                # write csv file
-                with captar_storage.open(archive_name+".csv", "w") as csv_out:
-                    csv_writer = csv.writer(csv_out)
-                    csv_writer.writerow(["path", "offset", "size"])
-                    for member in tar.members:
-                        csv_writer.writerow([member.name, member.offset_data, member.size])
+            # write csv file to S3
+            with captar_storage.open(archive_name+".csv", "w") as csv_out:
+                csv_writer = csv.writer(csv_out)
+                csv_writer.writerow(["path", "offset", "size"])
+                for member in tar.members:
+                    csv_writer.writerow([member.name, member.offset_data, member.size])
 
-            finally:
-                tar.close()
-
-            # write sha256 file
+            # write sha256 file to S3
             with captar_storage.open(archive_name+".sha256", "w") as sha_out:
                 sha_out.write(tar_out.hexdigest())
 
             # write tar file to S3
-            tar_out.seek(0)
-            with captar_storage.open(archive_name, "wb") as out:
-                shutil.copyfileobj(tar_out, out)
+            with open(tar_out.name, 'rb') as in_file:
+                captar_storage.save(archive_name, in_file)
 
 
 @shared_task
