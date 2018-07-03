@@ -160,6 +160,36 @@ def jp2_to_jpg(jp2_file, quality=50):
 
         return out
 
+def jp2_to_jpg_slow(jp2_file, quality=50):
+    """
+        Convert jp2_file, an open file handle, to jpg and return jpg data.
+        Requires opj_decompress and mozcjpeg to be in PATH.
+    """
+    with tempfile.NamedTemporaryFile(suffix=".jp2") as jp2_temp_file, \
+         tempfile.TemporaryDirectory() as tga_dir:
+
+        # create temp jp2 on disk, required by obj_decompress
+        shutil.copyfileobj(jp2_file, jp2_temp_file)
+        jp2_temp_file.flush()
+
+        tga_file = os.path.join(tga_dir, "temp.tga")
+
+        subprocess.check_call([
+            "opj_decompress",
+            "-i", jp2_temp_file.name,
+            "-o", tga_file,
+            "-threads", "5",  # on a quick test, 5 threads seems to be fastest
+            "-quiet",  # suppress progress messages
+        ])
+
+        out = subprocess.check_output([
+            "mozcjpeg",
+            "-quality", str(quality),
+            "-targa", tga_file
+        ])
+
+        return out
+
 def tif_to_png(tif_file):
     """
         Convert tif_file, an open file handle, to png and return png data.
@@ -375,7 +405,7 @@ def compress_volume(volume_name):
 
         # write alto, tif, and jpg files
         tif_file_results = file_map(handle_image_file, volume_files_by_type.get('tif', []), '.png', tif_to_png)
-        jpg_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jpg', jp2_to_jpg)
+        jpg_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jpg', jp2_to_jpg_slow)
         alto_file_results = file_map(handle_alto_file, volume_files_by_type.get('alto', []))
 
         # write casemets files, using data gathered in previous step
@@ -422,3 +452,4 @@ def compress_volume(volume_name):
 @shared_task
 def validate_volume(volume_name):
     pass
+
