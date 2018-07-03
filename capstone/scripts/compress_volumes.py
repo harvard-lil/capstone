@@ -337,8 +337,8 @@ def compress_volume(volume_name):
     info("listing volume")
 
     # only create archive if it doesn't already exist
-    archive_name = volume_name + ".tar"
-    if captar_storage.exists(archive_name):
+    archive_name = "%s/%s.tar" % (volume_name, volume_name)
+    if settings.COMPRESS_VOLUMES_SKIP_EXISTING and captar_storage.exists(archive_name):
         info("%s already exists, returning" % volume_name)
         return
 
@@ -402,6 +402,10 @@ def compress_volume(volume_name):
             tar.add(str(volume_path), volume_name)
             tar.close()
 
+            # write tar file to S3
+            with open(tar_out.name, 'rb') as in_file:
+                archive_name = captar_storage.save(archive_name, in_file)
+
             # write csv file to S3
             with captar_storage.open(archive_name+".csv", "w") as csv_out:
                 csv_writer = csv.writer(csv_out)
@@ -413,9 +417,6 @@ def compress_volume(volume_name):
             with captar_storage.open(archive_name+".sha256", "w") as sha_out:
                 sha_out.write(tar_out.hexdigest())
 
-            # write tar file to S3
-            with open(tar_out.name, 'rb') as in_file:
-                captar_storage.save(archive_name, in_file)
 
 
 @shared_task
