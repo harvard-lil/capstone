@@ -69,6 +69,13 @@
         <p class="body-text">
           The API can be browsed anonymously or, with an API key,
           as a registered user.
+            <br />
+            You can get the details about access
+            restrictions and the exceptions, which we call whitelisted
+            jurisdictions,
+            <a href="#restrictions-and-whitelists-section">here</a>.
+            <br />
+            Here's a quick summary:
         </p>
 
         <p class="subsection">All users can</p>
@@ -86,8 +93,6 @@
             {% for jur in whitelisted_jurisdictions %}
             {{ jur.name_long }}{% if not loop.last and loop.length > 2%}, {% endif %}{% if loop.revindex0 == 1 %} and {% endif %}{% endfor %}.
             <br />
-            Learn more about whitelisting
-            <a href="#whitelisted-jurisdictions-section">here</a>.
           </li>
         </ul>
 
@@ -202,7 +207,7 @@
 
           <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/?full_case=true</a></pre>
 
-          For cases not in <a href="#whitelisted-jurisdictions-section">whitelisted</a> jurisdictions, include your <a href="#registration-section">API key</a> as an Authorization header:
+          For cases not in <a href="#restrictions-and-whitelists-section">whitelisted</a> jurisdictions, include your <a href="#registration-section">API key</a> as an Authorization header:
 
           <pre><code>curl -H "Authorization: Token your-token-here" "{{ request.build_absolute_uri }}api/v1/cases/?limit=1&full_case=true"</code></pre>
 
@@ -269,19 +274,23 @@
 
       <section class="border-bottom">
         <a class="anchor-offset"
-           id="whitelisted-jurisdictions-section"
-           aria-label="Whitelisted Jurisdictions"></a>
+           id="restrictions-and-whitelists-section"
+           aria-label="Restrictions & Whitelists"></a>
 
 
         <h2 class="section-title">
-          Whitelisted Jurisdictions
+          Restrictions & Whitelists
         </h2>
 
         <p class="body-text">
-          According to the terms of our agreement with Ravel Law,
-          our partner in digitizing all U.S. caselaw, full text is
-          freely available for jurisdictions that currently publish
-          caselaw in machine-readable form. These include:
+            A temporary restriction in our agreement with Ravel
+            Law, Harvard's partner in digitizing all U.S. caselaw,
+            stipulates that we may not furnish non-academic-research
+            users with more than 500 full-text cases per day.
+            Jurisdictions that currently publish caselaw in
+            machine-readable form are exempt from this restriction
+            and require no API key for access. We call these
+            whitelisted jurisdictions. Right now, they are:
         </p>
         <ul>
           {% for jur in whitelisted_jurisdictions %}
@@ -294,8 +303,18 @@
           <a href="/api/v1/jurisdictions/?whitelisted=true"
             >via the API</a>.
           <br />
-          You can help us expand this list by asking your courts to
-          digitize their caselaw!
+          Help us expand this list by asking your courts to publish
+            their digital caselaw!
+        </p>
+        <p class="body-text">
+          Metadata is not subject to this restriction&mdash; anonymous
+          users may access all metadata without an API
+          key.
+        </p>
+        <p class="body-text">
+        If you have questions about the specifics, or think you might
+            qualify as an academic user, don't hesitate to
+            <a href="mailto:info@capapi.org">email</a> us and ask!
         </p>
       </section>
 
@@ -328,6 +347,7 @@
           <a href="{% url 'terms' %}">Terms of Use</a>.
         </p>
       </section>
+
     </div>
   </div>
 
