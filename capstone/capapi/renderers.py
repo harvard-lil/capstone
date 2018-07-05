@@ -20,10 +20,12 @@ class XMLRenderer(renderers.BaseRenderer):
 
         # if user requested format=xml without requesting full casebody
         if 'casebody' not in data:
-            return generate_xml_error("Case Body Not Retrieved", "When specifying a return format other than JSON, you must explicity specify full_case=true")
+            return generate_xml_error("Full Case Parameter Missing in Non-JSON Request", "To retrieve the full case body, you must specify full_case=true in the URL. If you only want metadata, you must specify format=json in the URL. We only serve standalone metadata in JSON format.")
 
         if data['casebody']['status'] != 'ok':
-            return generate_xml_error("Case Body Error", data['casebody']['status'])
+            if data['casebody']['status'] == 'error_auth_required':
+                return generate_xml_error("Could Not Load Case Body", "{}: You must be authenticated to view this case".format(data['casebody']['status']))
+            return generate_xml_error("Could Not Load Case Body", data['casebody']['status'])
         else:
             return data['casebody']['data']
 
@@ -37,10 +39,12 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
 
         # if user requested format=html without requesting full casebody
         if 'casebody' not in data:
-            return generate_html_error("Case Body Not Retrieved", "When specifying a return format other than JSON, you must explicity specify full_case=true")
+            return generate_html_error("Full Case Parameter Missing in Non-JSON Request", "To retrieve the full case body, you must specify <span style='font-family: monospace; font-style: normal;'>full_case=true</span> in the URL. If you only want metadata you must specify <span style='font-family: monospace; font-style: normal;'>format=json</span> in the URL. We only serve standalone metadata in JSON format.")
 
         if data['casebody']['status'] != 'ok':
-            return generate_html_error("Case Body Error", data['casebody']['status'], data['first_page'], data['last_page'], data['name'],)
+            if data['casebody']['status'] == 'error_auth_required':
+                return generate_html_error("Could Not Load Case Body", "You must be authenticated to view this case. <span style='font-family: monospace; font-style: normal;'>({})</span>".format(data['casebody']['status']))
+            return generate_html_error("Could Not Load Case Body", data['casebody']['status'], data['first_page'], data['last_page'], data['name'])
 
         return super().render(generate_html(data['casebody']['data']), media_type, renderer_context)
 
@@ -74,8 +78,8 @@ def generate_html_error(error_text, message_text, first_page=None, last_page=Non
     return """
         {}
         <article class='error'>
-            <p>{}</p>
-            <p>{}</p>
+            <h1>Error: {}</h1>
+            <p><span style="font-weight: bold;">Details:</span> <span style="font-style: italic;">{}</span></p>
         </article>
         </section>
     """.format(section_and_title, error_text, message_text)
