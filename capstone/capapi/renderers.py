@@ -24,7 +24,7 @@ class XMLRenderer(renderers.BaseRenderer):
 
         if data['casebody']['status'] != 'ok':
             if data['casebody']['status'] == 'error_auth_required':
-                return generate_xml_error("Could Not Load Case Body", "{}: You must be authenticated to view this case".format(data['casebody']['status']))
+                return generate_xml_error("Not Authenticated ({})".format(data['casebody']['status']), "You must be authenticated to view this case.")
             return generate_xml_error("Could Not Load Case Body", data['casebody']['status'])
         else:
             return data['casebody']['data']
@@ -43,7 +43,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
 
         if data['casebody']['status'] != 'ok':
             if data['casebody']['status'] == 'error_auth_required':
-                return generate_html_error("Could Not Load Case Body", "You must be authenticated to view this case. <span style='font-family: monospace; font-style: normal;'>({})</span>".format(data['casebody']['status']))
+                return generate_html_error("Not Authenticated <span style='font-family: monospace; font-style: normal;'>({})</span>".format(data['casebody']['status']), "You must be authenticated to view this case.")
             return generate_html_error("Could Not Load Case Body", data['casebody']['status'], data['first_page'], data['last_page'], data['name'])
 
         return super().render(generate_html(data['casebody']['data']), media_type, renderer_context)
