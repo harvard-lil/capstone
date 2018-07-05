@@ -176,7 +176,7 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     response = client.get(url)
     print(response.content)
 
-    check_response(response, content_type="application/xml", content_includes='<error>Case Body Error</error>')
+    check_response(response, content_type="application/xml", content_includes='error_auth_required')
 
     url = "%scases/%s/?format=html&full_case=true" % (api_url, case.pk)
     response = client.get(url)
