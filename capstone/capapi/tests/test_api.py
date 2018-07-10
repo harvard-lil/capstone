@@ -399,7 +399,7 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     # filtering case by court substring
     case_to_test = three_cases[2]
     court = case_to_test.court
-    response = client.get("%scases/?court=%s" % (api_url, court.pk))
+    response = client.get("%scases/?court=%s" % (api_url, court.slug))
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
 
