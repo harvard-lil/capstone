@@ -78,7 +78,7 @@ class CaseFilter(filters.FilterSet):
         label='Citation',
         method='find_by_citation')
     court = filters.ChoiceFilter(
-        field_name='court__slug',
+        field_name='court_slug',
         label='Court',
         choices=court_choices)
     reporter = filters.ChoiceFilter(

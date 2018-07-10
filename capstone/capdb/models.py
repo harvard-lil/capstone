@@ -670,6 +670,7 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
 # where clause for creating DB indexes used by the api /cases/ endpoint
 case_metadata_partial_index_where = "jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative"
 
+
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
@@ -701,23 +702,42 @@ class CaseMetadata(models.Model):
         'jurisdiction_name': 'jurisdiction__name',
         'jurisdiction_name_long': 'jurisdiction__name_long',
         'jurisdiction_whitelisted': 'jurisdiction__whitelisted',
+        'court_name': 'court__name',
+        'court_name_abbreviation': 'court__name_abbreviation',
+        'court_slug': 'court__slug',
     }
+
     jurisdiction_name = models.CharField(blank=True, null=True, max_length=100)
     jurisdiction_name_long = models.CharField(blank=True, null=True, max_length=100)
     jurisdiction_slug = models.CharField(blank=True, null=True, max_length=255)
     jurisdiction_whitelisted = models.NullBooleanField(blank=True, null=True)
+
+    court_name = models.CharField(blank=True, null=True, max_length=255)
+    court_name_abbreviation = models.CharField(blank=True, null=True, max_length=100)
+    court_slug = models.CharField(blank=True, null=True, max_length=255)
 
     @property
     def denormalized_jurisdiction(self):
         """
             Equivalent to self.jurisdiction, but populated based on denormalized fields.
         """
+        print("calling denormalized_jur")
         return Jurisdiction(
             id=self.jurisdiction_id,
             slug=self.jurisdiction_slug,
             name=self.jurisdiction_name,
             name_long=self.jurisdiction_name_long,
             whitelisted=self.jurisdiction_whitelisted)
+
+    @property
+    def denormalized_court(self):
+        print("calling denormalized_court")
+        return Court(
+            id=self.court_id,
+            slug=self.court_slug,
+            name=self.court_name,
+            name_abbreviation=self.court_name_abbreviation,
+        )
 
     def __str__(self):
         return self.case_id
@@ -728,6 +748,7 @@ class CaseMetadata(models.Model):
             PartialIndex(fields=['decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             # indexes for ordering of case API endpoint when filtered by jurisdiction, court, or reporter
             PartialIndex(fields=['jurisdiction_slug', 'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
+            PartialIndex(fields=['court_slug',        'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             PartialIndex(fields=['court_id',          'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             PartialIndex(fields=['reporter_id',       'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
         ]
