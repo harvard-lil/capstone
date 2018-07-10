@@ -156,7 +156,10 @@ def test_denormalized_fields(case):
     case.refresh_from_db()
     assert case.court_name == court.name
     assert case.court_slug == court.slug
-
+    court.name = 'foo'
+    court.save()
+    case.refresh_from_db()
+    assert case.court_name == court.name
 
 
 ### CaseXML ###

@@ -18,7 +18,7 @@ def test_flow(client, api_url, case):
     check_response(response)
     content = response.json()
     # onwards to court
-    court_url = content.get("court_url")
+    court_url = content.get("court")["url"]
     assert court_url
     response = client.get(court_url)
     check_response(response)
