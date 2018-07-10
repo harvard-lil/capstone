@@ -219,6 +219,7 @@ class CourtSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Court
         fields = (
+            'id',
             'url',
             'name',
             'name_abbreviation',
