@@ -24,7 +24,7 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, CaseMetadata, SlowQuery, Court, Jurisdiction
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Court, Jurisdiction
 
 import capdb.tasks as tasks
 # from process_ingested_xml import fill_case_page_join_table
@@ -633,7 +633,7 @@ def fix_jurisdictions():
     query = """SELECT x.id, x.orig_xml, j.name_long, m.case_id from capdb_casexml x
     inner join capdb_casemetadata m on x.metadata_id = m.id
     inner join capdb_jurisdiction j on m.jurisdiction_id = j.id
-    where text((ns_xpath('//case:court/@jurisdiction', x.orig_xml))[1]) != text(j.name_long)""";
+    where text((ns_xpath('//case:court/@jurisdiction', x.orig_xml))[1]) != text(j.name_long)"""
 
     with connections['capdb'].cursor() as cursor:
         cursor.execute(query)
