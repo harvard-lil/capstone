@@ -2,6 +2,7 @@ from datetime import timedelta
 import uuid
 import logging
 
+import email_normalize
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AnonymousUser
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models
@@ -49,6 +50,7 @@ class CapUser(AbstractBaseUser):
         db_index=True,
         error_messages={'unique': "A user with that email address already exists."}
     )
+    normalized_email = models.CharField(max_length=255, help_text="Used to ensure that new emails are unique.")
 
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
@@ -117,6 +119,8 @@ class CapUser(AbstractBaseUser):
         self.save()
 
     def save(self, *args, **kwargs):
+        if self.tracker.has_changed('email'):
+            self.normalized_email = self.normalize_email(self.email)
         super(CapUser, self).save(*args, **kwargs)
 
     @staticmethod
@@ -151,6 +155,15 @@ class CapUser(AbstractBaseUser):
         if perm in staff_level_permissions:
             return self.is_staff
         return self.is_superuser
+
+    @staticmethod
+    def normalize_email(email):
+        """
+            Return a normalized form of the email address:
+            - lowercase
+            - applying host-specific rules for domains hosted by Google, Microsoft, Yahoo, Fastmail
+        """
+        return email_normalize.normalize(email.strip(), resolve=False)
 
 
 # make AnonymousUser API conform with CapUser API
