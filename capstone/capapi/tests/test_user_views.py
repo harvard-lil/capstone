@@ -19,15 +19,16 @@ from capapi.tests.helpers import check_response, is_cached
 def test_registration_flow(client, case):
 
     # can register
+    email = 'new_user@gmail.com'
     response = client.post(reverse('register'), {
-        'email': 'new_user@example.com',
+        'email': email,
         'first_name': 'First',
         'last_name': 'Last',
         'password1': 'Password2',
         'password2': 'Password2',
     })
     check_response(response)
-    user = CapUser.objects.get(email='new_user@example.com')
+    user = CapUser.objects.get(email=email)
     assert user.first_name == "First"
     assert user.last_name == "Last"
     assert user.check_password("Password2")
@@ -65,6 +66,15 @@ def test_registration_flow(client, case):
     response = client.get(reverse('casemetadata-detail', kwargs={'id': case.pk}), {'full_case':'true'})
     check_response(response, content_includes="error_limit_exceeded")
 
+    # can't register with similar email addresses
+    response = client.post(reverse('register'), {
+        'email': email.replace('new_user', 'new_user+stuff'),
+        'first_name': 'First',
+        'last_name': 'Last',
+        'password1': 'Password2',
+        'password2': 'Password2',
+    })
+    check_response(response, content_includes="A user with the same email address has already registered.")
 
 @pytest.mark.django_db
 def test_login_wrong_password(auth_user, client):
