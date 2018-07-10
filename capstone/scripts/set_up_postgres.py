@@ -184,32 +184,40 @@ def initialize_denormalization_fields(*args, **kwargs):
     with connections['capdb'].cursor() as cursor:
         # for each destination table, construct a sql query that updates the table based on all source tables
         dest_triggers, _ = get_denormalization_triggers()
+        print("running initialize_denormalization_fields")
+
         for dest_table, sources in dest_triggers.items():
+            try:
+                # for each source table, collect the necessary parts of the sql query
+                for source_table, dest_join_field, source_join_field, field_map in sources:
+                    # collect assignments like "jurisdiction_name=capdb_jurisdiction.name"
+                    values = []
+                    for source_field, dest_field in field_map.items():
+                        values.append("%s=%s.%s" % (dest_field, source_table, source_field))
 
-            # for each source table, collect the necessary parts of the sql query
-            for source_table, dest_join_field, source_join_field, field_map in sources:
-                # collect assignments like "jurisdiction_name=capdb_jurisdiction.name"
-                values = []
-                for source_field, dest_field in field_map.items():
-                    values.append("%s=%s.%s" % (dest_field, source_table, source_field))
+                    # collect joins like "LEFT JOIN capdb_jurisdiction ON dest.jurisdiction_id=capdb_jurisdiction.id"
+                    left_join = "LEFT JOIN {source_table} ON dest.{dest_join_field}={source_table}.{source_join_field}".format(
+                        source_table=source_table,
+                        dest_join_field=dest_join_field,
+                        source_join_field=source_join_field,
+                    )
 
-                # collect joins like "LEFT JOIN capdb_jurisdiction ON dest.jurisdiction_id=capdb_jurisdiction.id"
-                left_join = "LEFT JOIN {source_table} ON dest.{dest_join_field}={source_table}.{source_join_field}".format(
-                    source_table=source_table,
-                    dest_join_field=dest_join_field,
-                    source_join_field=source_join_field,
-                )
+                    # build and run query
+                    command = """
+                        UPDATE {dest_table}
+                        SET {values}
+                        FROM {dest_table} AS dest
+                        {left_join}
+                        WHERE dest.id={dest_table}.id
+                    """.format(
+                        dest_table=dest_table,
+                        values=", ".join(values),
+                        left_join=left_join)
 
-                # build and run query
-                command = """
-                    UPDATE {dest_table}
-                    SET {values}
-                    FROM {dest_table} AS dest
-                    {left_join}
-                    WHERE dest.id={dest_table}.id
-                """.format(
-                    dest_table=dest_table,
-                    values=", ".join(values),
-                    left_join=left_join)
+                    cursor.execute(command)
 
-                cursor.execute(command)
+            except:
+                # Excepting here because earlier migrations will have different versions of our tables
+                # Running this will result in "field does not exist" errors
+                print("Unable to denormalize fields for %s" % values)
+                pass

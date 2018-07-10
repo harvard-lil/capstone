@@ -29,7 +29,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='casemetadata',
-            index=partial_index.PartialIndex(fields=['court_slug', 'decision_date', 'id'], name='capdb_casem_court_s_34d559_partial', unique=True, where='jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative', where_postgresql='', where_sqlite=''),
+            index=partial_index.PartialIndex(fields=['court_slug', 'decision_date', 'id'],
+                                             name='capdb_casem_court_s_34d559_partial',
+                                             unique=True,
+                                             where='jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative',
+                                             where_postgresql='', where_sqlite=''),
         ),
         migrations.RunPython(initialize_denormalization_fields, migrations.RunPython.noop),
     ]
