@@ -160,6 +160,19 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     content = response.json()
     assert "casebody" in content
 
+    if case.judges:
+        judges = content['casebody']['judges']
+        assert len(judges)
+    if case.attorneys:
+        attorneys = content['casebody']['attorneys']
+        assert len(attorneys)
+    if case.parties:
+        parties = content['casebody']['parties']
+        assert len(parties)
+    if case.opinions:
+        opinions = content['casebody']['opinions']
+        assert len(opinions)
+
     jurisdiction.whitelisted = False
     jurisdiction.save()
     case.jurisdiction = jurisdiction
@@ -168,9 +181,18 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = client.get(url)
     check_response(response)
-    casebody = response.json()['casebody']
+    content = response.json()
+    casebody = content['casebody']
     assert 'error_' in casebody['status']
     assert not casebody['data']
+    if case.judges:
+        assert 'judges' not in casebody
+    if case.attorneys:
+        assert 'attorneys' not in casebody
+    if case.parties:
+        assert 'parties' not in casebody
+    if case.opinions:
+        assert 'opinions' not in casebody
 
     url = "%scases/%s/?format=xml&full_case=true" % (api_url, case.pk)
     response = client.get(url)
@@ -193,7 +215,12 @@ def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, ca
     response = auth_client.get(url)
     check_response(response)
     result = response.json()
-    assert result['casebody']['status'] == 'ok'
+    casebody = result['casebody']
+    assert casebody['status'] == 'ok'
+    assert 'judges' in casebody
+    assert 'attorneys' in casebody
+    assert 'parties' in casebody
+    assert 'opinions' in casebody
 
     # make sure the user's case download number has remained the same
     auth_user.refresh_from_db()
@@ -241,7 +268,12 @@ def test_unlimited_access(auth_user, api_url, auth_client, case):
     response = auth_client.get(url)
     check_response(response)
     result = response.json()
-    assert result['casebody']['status'] == 'ok'
+    casebody = result['casebody']
+    assert casebody['status'] == 'ok'
+    assert 'judges' in casebody
+    assert 'attorneys' in casebody
+    assert 'parties' in casebody
+    assert 'opinions' in casebody
 
     # don't allow user to download blacklisted case if unlimited access has expired
     # and they don't have enough case allowance
