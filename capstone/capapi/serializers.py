@@ -70,10 +70,6 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'reporter_url',
             'volume_number',
             'volume_url',
-            # 'judges',
-            # 'attorneys',
-            # 'opinions',
-            # 'parties',
         )
 
 
@@ -159,6 +155,11 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
                     data = helpers.extract_casebody(orig_xml).text()
 
             casebody['data'] = data
+            casebody['judges'] = case.judges
+            casebody['attorneys'] = case.attorneys
+            casebody['opinions'] = case.opinions
+            casebody['parties'] = case.parties
+
         return casebody
 
 
