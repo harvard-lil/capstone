@@ -721,7 +721,6 @@ class CaseMetadata(models.Model):
         """
             Equivalent to self.jurisdiction, but populated based on denormalized fields.
         """
-        print("calling denormalized_jur")
         return Jurisdiction(
             id=self.jurisdiction_id,
             slug=self.jurisdiction_slug,
@@ -731,7 +730,6 @@ class CaseMetadata(models.Model):
 
     @property
     def denormalized_court(self):
-        print("calling denormalized_court")
         return Court(
             id=self.court_id,
             slug=self.court_slug,
