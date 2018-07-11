@@ -7,7 +7,7 @@ from scripts.set_up_postgres import initialize_denormalization_fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('capdb', '0044_auto_20180614_1750'),
+        ('capdb', '0045_docketnumber_index'),
     ]
 
     operations = [
