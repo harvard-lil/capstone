@@ -466,6 +466,15 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     result = content['results'][0]
     assert case_to_test.jurisdiction.slug == result['jurisdiction']['slug']
 
+    # by docket_number
+    case_to_test = three_cases[0]
+    case_to_test.docket_number = "NUMBER 13-16-00273-CV"
+    case_to_test.save()
+    response = client.get("%scases/?docket_number=%s" % (api_url, "13-16-00273"), follow=True)
+    content = response.json()
+    result = content['results'][0]
+    assert case_to_test.docket_number== result['docket_number']
+
 
 @pytest.mark.django_db
 def test_filter_court(api_url, client, court):

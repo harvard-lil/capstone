@@ -97,6 +97,10 @@ class CaseFilter(filters.FilterSet):
         label='Date Max (Format YYYY-MM-DD)',
         field_name='decision_date_max',
         method='find_by_date')
+    docket_number = filters.CharFilter(
+        field_name='docket_number',
+        label='Docket Number (contains)',
+        lookup_expr='icontains')
 
     def find_by_citation(self, qs, name, value):
         return qs.filter(citations__normalized_cite__exact=slugify(value))
@@ -116,6 +120,7 @@ class CaseFilter(filters.FilterSet):
                   'reporter',
                   'decision_date_min',
                   'decision_date_max',
+                  'docket_number',
                   ]
 
 
