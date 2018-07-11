@@ -11,6 +11,7 @@ from django.http import StreamingHttpResponse, Http404
 from capapi import models as capapi_models, resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm
 from capapi.middleware import add_cache_header
+from capapi.models import SiteLimits
 from capapi.resources import form_for_request
 
 
@@ -37,7 +38,14 @@ def verify_user(request, user_id, activation_nonce):
     except (capapi_models.CapUser.DoesNotExist, PermissionDenied):
         error = "Unknown verification code."
     else:
+        # user authenticated successfully
         error = None
+
+        # update API limits for first 50 users per day
+        site_limits = SiteLimits.add_values(daily_signups=1)
+        if site_limits.daily_signups < site_limits.daily_signup_limit:
+            user.total_case_allowance = user.case_allowance_remaining = settings.API_CASE_DAILY_ALLOWANCE
+            user.save()
     return render(request, 'registration/verified.html', {
         'contact_email': settings.API_EMAIL_ADDRESS,
         'error': error,

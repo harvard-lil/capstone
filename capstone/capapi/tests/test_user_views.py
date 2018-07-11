@@ -3,6 +3,7 @@ import re
 import pytest
 from datetime import timedelta
 
+from django.conf import settings
 from django.core import mail
 from django.utils import timezone
 
@@ -32,6 +33,7 @@ def test_registration_flow(client, case):
     assert user.first_name == "First"
     assert user.last_name == "Last"
     assert user.check_password("Password2")
+    assert user.total_case_allowance == 0
 
     # new user doesn't have a token yet
     with pytest.raises(Token.DoesNotExist):
@@ -52,6 +54,7 @@ def test_registration_flow(client, case):
     user.refresh_from_db()
     assert user.email_verified
     assert user.auth_token
+    assert user.total_case_allowance == settings.API_CASE_DAILY_ALLOWANCE
 
     # can login with verified email address
     response = client.post(reverse('login'), {
@@ -60,11 +63,11 @@ def test_registration_flow(client, case):
     })
     check_response(response, status_code=302)
 
-    # can't fetch blacklisted case yet
+    # can fetch blacklisted case
     case.jurisdiction.whitelisted = False
     case.jurisdiction.save()
     response = client.get(reverse('casemetadata-detail', kwargs={'id': case.pk}), {'full_case':'true'})
-    check_response(response, content_includes="error_limit_exceeded")
+    check_response(response, content_includes="ok")
 
     # can't register with similar email addresses
     response = client.post(reverse('register'), {
