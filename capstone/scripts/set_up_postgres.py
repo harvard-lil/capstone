@@ -178,7 +178,6 @@ def initialize_denormalization_fields(*args, **kwargs):
     """
         Run UPDATE query for all tables with denormalized fields, to initialize the values of existing rows.
         This should be run to populate any new denormalized_fields that are added, and can be rerun harmlessly if desired.
-
         This function takes *args, **kwargs so it can be called from RunPython in a migration.
     """
     with connections['capdb'].cursor() as cursor:
@@ -214,5 +213,5 @@ def initialize_denormalization_fields(*args, **kwargs):
             """.format(
                 dest_table=dest_table,
                 values=", ".join(values),
-                left_joins=", ".join(left_joins),
+                left_joins=" ".join(left_joins),
             ))
