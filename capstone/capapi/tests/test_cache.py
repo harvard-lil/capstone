@@ -1,4 +1,5 @@
 import pytest
+from django.http import SimpleCookie
 from django.urls import reverse
 
 from capapi.tests.helpers import is_cached
@@ -47,3 +48,22 @@ def test_cache_headers(case, request, settings,
         "" if cache_expected else "not ",
         "" if cache_actual else "not ",
     )
+
+@pytest.mark.django_db
+def test_cache_headers_with_bad_auth(client, case, settings):
+    settings.SET_CACHE_CONTROL_HEADER = True
+
+    # visiting homepage when logged out is cached ...
+    response = client.get(reverse('home'))
+    assert is_cached(response)
+
+    # ... but visiting with a bad Authorization header is not cached
+    client.credentials(HTTP_AUTHORIZATION='Token fake')
+    response = client.get(reverse('home'))
+    assert not is_cached(response)
+
+    # ... and visiting with a bad session cookie is not cached
+    client.credentials()
+    client.cookies = SimpleCookie({settings.SESSION_COOKIE_NAME: 'fake'})
+    response = client.get(reverse('home'))
+    assert not is_cached(response)
