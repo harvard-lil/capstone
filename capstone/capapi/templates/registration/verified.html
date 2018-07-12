@@ -15,8 +15,7 @@ You are a verified user of the Caselaw Access Project API guide
       {% else %}
         <h3>Thank you for verifying your email address. </h3>
         <p>
-          You can now <a href="{% url "login" %}">log in</a>. During the alpha period, users are not able to download "blacklisted" cases by default.
-          Please email us at <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> to have this restriction lifted.
+          You can now <a href="{% url "login" %}">log in</a>.
         </p>
       {% endif %}
     </div>

@@ -296,11 +296,18 @@ INVENTORY = {
 }
 
 ### CELERY ###
+from celery.schedules import crontab
 CELERY_BROKER_URL = 'redis://'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_BACKEND = 'redis://'
 CELERY_TASK_SERIALIZER = 'json'
-
+CELERY_BEAT_SCHEDULE = {
+    'handle-site-limits': {
+        'task': 'capapi.tasks.daily_site_limit_reset_and_report',
+        'schedule': crontab(hour=0, minute=0),
+    },
+}
+CELERY_TIMEZONE = 'UTC'
 
 ### CAP API settings ###
 

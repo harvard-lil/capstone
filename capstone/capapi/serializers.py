@@ -5,6 +5,7 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.serializers import ListSerializer
 
+from capapi.models import SiteLimits
 from capapi.renderers import HTMLRenderer, XMLRenderer
 from capdb import models
 from scripts import helpers
@@ -97,6 +98,9 @@ class CaseAllowanceMixin:
             # logged out users won't get any blacklisted case bodies, so nothing to update
             return super().data
 
+        # set request.site_limits so it can be checked later in get_single_casebody_permissions()
+        request.site_limits = SiteLimits.get()
+
         with transaction.atomic():
             # for logged-in users, fetch the current user data here inside a transaction, using select_for_update
             # to lock the row so we don't collide with any simultaneous requests
@@ -104,6 +108,7 @@ class CaseAllowanceMixin:
 
             # update the info for the existing user model, in case it's changed since the request began
             if not request.user.unlimited_access_in_effect():
+                allowance_before = user.case_allowance_remaining
                 request.user.case_allowance_remaining = user.case_allowance_remaining
                 request.user.case_allowance_last_updated = user.case_allowance_last_updated
 
@@ -115,8 +120,12 @@ class CaseAllowanceMixin:
             if request.user.tracker.changed():
                 request.user.save()
 
-            return result
+        # update site-wide limits
+        if not request.user.unlimited_access_in_effect():
+            cases_sent = allowance_before - request.user.case_allowance_remaining
+            SiteLimits.add_values(daily_downloads=cases_sent)
 
+        return result
 
 class ListSerializerWithCaseAllowance(CaseAllowanceMixin, ListSerializer):
     """ Custom ListSerializer for CaseSerializerWithCasebody that enforces CaseAllowance. """
