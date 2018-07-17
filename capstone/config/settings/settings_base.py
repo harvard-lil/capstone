@@ -59,6 +59,7 @@ REST_FRAMEWORK = {
         'capapi.renderers.BrowsableAPIRenderer',
     ),
 }
+MAX_API_OFFSET = 10000
 
 MIDDLEWARE = [
 
