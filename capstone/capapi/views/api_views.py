@@ -1,8 +1,11 @@
 import urllib
+
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils.text import slugify
 
 from rest_framework import viewsets, mixins, renderers
+from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from capdb import models
@@ -89,6 +92,16 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
             return self.serializer_class
 
     def list(self, *args, **kwargs):
+        # limit offset= query parameter to settings.MAX_API_OFFSET
+        offset = self.request.query_params.get('offset', None)
+        try:
+            offset = int(offset)
+        except (TypeError, ValueError):
+            pass
+        else:
+            if offset > settings.MAX_API_OFFSET:
+                return Response({"error": "Maximum offset is %s." % settings.MAX_API_OFFSET})
+
         jur_value = self.request.query_params.get('jurisdiction', None)
         jur_slug = slugify(jur_value)
 

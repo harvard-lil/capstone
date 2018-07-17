@@ -26,6 +26,8 @@ def CachedCountQueryset(queryset, timeout=60*60, cache_name='default'):
 
 
 class CachedCountLimitOffsetPagination(LimitOffsetPagination):
+    max_limit = 100
+
     def paginate_queryset(self, queryset, *args, **kwargs):
         if hasattr(queryset, 'count'):
             queryset = CachedCountQueryset(queryset, settings.API_COUNT_CACHE_TIMEOUT)
