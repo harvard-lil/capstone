@@ -419,3 +419,6 @@ SILENCED_SYSTEM_CHECKS = [
 # cache headers
 SET_CACHE_CONTROL_HEADER = False  # whether to set a cache-control header on all cacheable views
 CACHE_CONTROL_DEFAULT_MAX_AGE = 60*60*24  # length of time to cache pages by default, in seconds
+
+# override django-storages default
+AWS_DEFAULT_ACL = 'private'
