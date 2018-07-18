@@ -8,6 +8,7 @@ import django
 import json
 from random import randrange, randint
 from pathlib import Path
+from celery import shared_task, group
 
 # set up Django
 
@@ -369,7 +370,6 @@ def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test
 def test_slow(jobs="1", ram="10", cpu="30"):
     """ For testing celery autoscaling, launch N jobs that will waste RAM and CPU. """
     from capdb.tasks import test_slow
-    from celery import group
     import time
 
     print("Running %s test_slow jobs and waiting for results ..." % jobs)
@@ -625,11 +625,19 @@ def fix_court_names():
                 court.save()
                 update_cases(court, stripped_name, stripped_abbrev)
 
+
 @task
 def fix_jurisdictions():
     """
         Finds cases where the XML jurisdiction value is different from the text in the jurisdiction table and fixes it.
     """
+    @shared_task
+    def update_xml_jurisdiction(case_xml_id, orig_xml, jurisdiction, case_id):
+        parsed = parse_xml(orig_xml)
+        print("Updating {} to {} in {}".format(parsed('case|court')[0].get("jurisdiction"), jurisdiction, case_id))
+        parsed('case|court')[0].set("jurisdiction", jurisdiction)
+        CaseXML.objects.filter(pk=case_xml_id).update(orig_xml=force_str(serialize_xml(parsed)))
+
     query = """SELECT x.id, x.orig_xml, j.name_long, m.case_id from capdb_casexml x
     inner join capdb_casemetadata m on x.metadata_id = m.id
     inner join capdb_jurisdiction j on m.jurisdiction_id = j.id
@@ -643,14 +651,7 @@ def fix_jurisdictions():
             orig_xml = row[1]
             jurisdiction = row[2]
             case_id = row[3]
-            try:
-                parsed = parse_xml(orig_xml)
-                print("Updating {} to {} in {}".format(parsed('case|court')[0].get("jurisdiction"), jurisdiction, case_id))
-                parsed('case|court')[0].set("jurisdiction", jurisdiction)
-                CaseXML.objects.filter(pk=case_xml_id).update(orig_xml=force_str(serialize_xml(parsed)))
-            except Exception as e:
-                print("======================")
-                print("\tSomething went wrong with case {}: ({}) {}".format(case_id, e.__class__.__name__, e))
+            update_xml_jurisdiction(case_xml_id, orig_xml, jurisdiction, case_id)
             row = cursor.fetchone()
 
 
