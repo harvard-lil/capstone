@@ -53,9 +53,14 @@ def cache_header_middleware(get_response):
         # - No cookies are set by this view.
         view_tests = {
             'user_safe': (
-                not hasattr(request, 'user')
-                or request.user.is_anonymous
-                or (
+                (
+                    # if user failed to authenticate, we can only cache if they
+                    # didn't supply a bad sessionid cookie or authorization header
+                    'HTTP_AUTHORIZATION' not in request.META
+                    and settings.SESSION_COOKIE_NAME not in request.COOKIES
+                ) if (not hasattr(request, 'user') or request.user.is_anonymous) else (
+                    # if user successfully authenticated, we can only cache if we
+                    # didn't access any user-specific data in preparing this view
                     hasattr(request.user, '_self_accessed_attrs')
                     and not (request.user._self_accessed_attrs - _capuser_cache_safe_attributes)
                 )

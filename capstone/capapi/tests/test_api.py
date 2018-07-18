@@ -18,7 +18,7 @@ def test_flow(client, api_url, case):
     check_response(response)
     content = response.json()
     # onwards to court
-    court_url = content.get("court_url")
+    court_url = content.get("court")["url"]
     assert court_url
     response = client.get(court_url)
     check_response(response)
@@ -160,6 +160,19 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     content = response.json()
     assert "casebody" in content
 
+    if case.judges:
+        judges = content['casebody']['judges']
+        assert len(judges)
+    if case.attorneys:
+        attorneys = content['casebody']['attorneys']
+        assert len(attorneys)
+    if case.parties:
+        parties = content['casebody']['parties']
+        assert len(parties)
+    if case.opinions:
+        opinions = content['casebody']['opinions']
+        assert len(opinions)
+
     jurisdiction.whitelisted = False
     jurisdiction.save()
     case.jurisdiction = jurisdiction
@@ -168,19 +181,27 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     url = "%scases/%s/?full_case=true" % (api_url, case.pk)
     response = client.get(url)
     check_response(response)
-    casebody = response.json()['casebody']
+    content = response.json()
+    casebody = content['casebody']
     assert 'error_' in casebody['status']
     assert not casebody['data']
+    if case.judges:
+        assert 'judges' not in casebody
+    if case.attorneys:
+        assert 'attorneys' not in casebody
+    if case.parties:
+        assert 'parties' not in casebody
+    if case.opinions:
+        assert 'opinions' not in casebody
 
     url = "%scases/%s/?format=xml&full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    print(response.content)
 
-    check_response(response, content_type="application/xml", content_includes='<error>Case Body Error</error>')
+    check_response(response, content_type="application/xml", content_includes='error_auth_required')
 
     url = "%scases/%s/?format=html&full_case=true" % (api_url, case.pk)
     response = client.get(url)
-    check_response(response, content_type="text/html", content_includes='<p>Case Body Error</p>')
+    check_response(response, content_type="text/html", content_includes='<h1>Error: Not Authenticated')
 
 
 @pytest.mark.django_db
@@ -194,7 +215,12 @@ def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, ca
     response = auth_client.get(url)
     check_response(response)
     result = response.json()
-    assert result['casebody']['status'] == 'ok'
+    casebody = result['casebody']
+    assert casebody['status'] == 'ok'
+    assert 'judges' in casebody
+    assert 'attorneys' in casebody
+    assert 'parties' in casebody
+    assert 'opinions' in casebody
 
     # make sure the user's case download number has remained the same
     auth_user.refresh_from_db()
@@ -242,7 +268,12 @@ def test_unlimited_access(auth_user, api_url, auth_client, case):
     response = auth_client.get(url)
     check_response(response)
     result = response.json()
-    assert result['casebody']['status'] == 'ok'
+    casebody = result['casebody']
+    assert casebody['status'] == 'ok'
+    assert 'judges' in casebody
+    assert 'attorneys' in casebody
+    assert 'parties' in casebody
+    assert 'opinions' in casebody
 
     # don't allow user to download blacklisted case if unlimited access has expired
     # and they don't have enough case allowance
@@ -400,7 +431,7 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     # filtering case by court substring
     case_to_test = three_cases[2]
     court = case_to_test.court
-    response = client.get("%scases/?court=%s" % (api_url, court.pk))
+    response = client.get("%scases/?court=%s" % (api_url, court.slug))
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
 
@@ -434,6 +465,15 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     content = response.json()
     result = content['results'][0]
     assert case_to_test.jurisdiction.slug == result['jurisdiction']['slug']
+
+    # by docket_number
+    case_to_test = three_cases[0]
+    case_to_test.docket_number = "NUMBER 13-16-00273-CV"
+    case_to_test.save()
+    response = client.get("%scases/?docket_number=%s" % (api_url, "13-16-00273"), follow=True)
+    content = response.json()
+    result = content['results'][0]
+    assert case_to_test.docket_number== result['docket_number']
 
 
 @pytest.mark.django_db

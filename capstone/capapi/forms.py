@@ -26,6 +26,13 @@ class RegisterUserForm(UserCreationForm):
         model = CapUser
         fields = ["email", "first_name", "last_name"]
 
+    def clean_email(self):
+        """ Ensure that email address doesn't match an existing CapUser.normalized_email. """
+        email = self.cleaned_data.get("email")
+        if CapUser.objects.filter(normalized_email=CapUser.normalize_email(email)).exists():
+            raise forms.ValidationError("A user with the same email address has already registered.")
+        return email
+
     def save(self, commit=True):
         user = super().save(commit)
         user.create_nonce()

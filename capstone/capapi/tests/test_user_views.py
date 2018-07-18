@@ -3,6 +3,7 @@ import re
 import pytest
 from datetime import timedelta
 
+from django.conf import settings
 from django.core import mail
 from django.utils import timezone
 
@@ -19,18 +20,20 @@ from capapi.tests.helpers import check_response, is_cached
 def test_registration_flow(client, case):
 
     # can register
+    email = 'new_user@gmail.com'
     response = client.post(reverse('register'), {
-        'email': 'new_user@example.com',
+        'email': email,
         'first_name': 'First',
         'last_name': 'Last',
         'password1': 'Password2',
         'password2': 'Password2',
     })
     check_response(response)
-    user = CapUser.objects.get(email='new_user@example.com')
+    user = CapUser.objects.get(email=email)
     assert user.first_name == "First"
     assert user.last_name == "Last"
     assert user.check_password("Password2")
+    assert user.total_case_allowance == 0
 
     # new user doesn't have a token yet
     with pytest.raises(Token.DoesNotExist):
@@ -51,6 +54,7 @@ def test_registration_flow(client, case):
     user.refresh_from_db()
     assert user.email_verified
     assert user.auth_token
+    assert user.total_case_allowance == settings.API_CASE_DAILY_ALLOWANCE
 
     # can login with verified email address
     response = client.post(reverse('login'), {
@@ -59,12 +63,21 @@ def test_registration_flow(client, case):
     })
     check_response(response, status_code=302)
 
-    # can't fetch blacklisted case yet
+    # can fetch blacklisted case
     case.jurisdiction.whitelisted = False
     case.jurisdiction.save()
     response = client.get(reverse('casemetadata-detail', kwargs={'id': case.pk}), {'full_case':'true'})
-    check_response(response, content_includes="error_limit_exceeded")
+    check_response(response, content_includes="ok")
 
+    # can't register with similar email addresses
+    response = client.post(reverse('register'), {
+        'email': email.replace('new_user', 'new_user+stuff'),
+        'first_name': 'First',
+        'last_name': 'Last',
+        'password1': 'Password2',
+        'password2': 'Password2',
+    })
+    check_response(response, content_includes="A user with the same email address has already registered.")
 
 @pytest.mark.django_db
 def test_login_wrong_password(auth_user, client):

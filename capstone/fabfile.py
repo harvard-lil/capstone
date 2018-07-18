@@ -632,7 +632,7 @@ def compress_volumes(*barcodes, max_volumes=10):
             docker build -t compress-worker -f ../services/docker/compress-worker.dockerfile .
 
         Next run fab task:
-            docker run -v .:/app/ compress-worker fab compress_volumes
+            docker run -v `pwd`:/app/ compress-worker fab compress_volumes
     """
     from capdb.storages import ingest_storage
     import scripts.compress_volumes

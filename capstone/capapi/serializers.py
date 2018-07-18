@@ -5,6 +5,7 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.serializers import ListSerializer
 
+from capapi.models import SiteLimits
 from capapi.renderers import HTMLRenderer, XMLRenderer
 from capdb import models
 from scripts import helpers
@@ -38,12 +39,21 @@ class JurisdictionSerializer(serializers.ModelSerializer):
         fields = ('url', 'id', 'slug', 'name', 'name_long', 'whitelisted')
 
 
+class CourtSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="court-detail",
+        lookup_field='slug')
+
+    class Meta:
+        model = models.Court
+        fields = ('url', 'id', 'slug', 'name', 'name_abbreviation')
+
+
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="casemetadata-detail", lookup_field="id")
-    court = serializers.ReadOnlyField(source='court.name')
+    court = CourtSerializer(source='denormalized_court')
     jurisdiction = JurisdictionSerializer(source='denormalized_jurisdiction')
-    court_url = serializers.HyperlinkedRelatedField(source='court', view_name='court-detail', read_only=True, lookup_field='slug')
     reporter = serializers.ReadOnlyField(source='reporter.full_name')
     reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
     citations = CitationSerializer(many=True)
@@ -65,15 +75,10 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'citations',
             'jurisdiction',
             'court',
-            'court_url',
             'reporter',
             'reporter_url',
             'volume_number',
             'volume_url',
-            # 'judges',
-            # 'attorneys',
-            # 'opinions',
-            # 'parties',
         )
 
 
@@ -93,6 +98,9 @@ class CaseAllowanceMixin:
             # logged out users won't get any blacklisted case bodies, so nothing to update
             return super().data
 
+        # set request.site_limits so it can be checked later in get_single_casebody_permissions()
+        request.site_limits = SiteLimits.get()
+
         with transaction.atomic():
             # for logged-in users, fetch the current user data here inside a transaction, using select_for_update
             # to lock the row so we don't collide with any simultaneous requests
@@ -100,6 +108,7 @@ class CaseAllowanceMixin:
 
             # update the info for the existing user model, in case it's changed since the request began
             if not request.user.unlimited_access_in_effect():
+                allowance_before = user.case_allowance_remaining
                 request.user.case_allowance_remaining = user.case_allowance_remaining
                 request.user.case_allowance_last_updated = user.case_allowance_last_updated
 
@@ -111,8 +120,12 @@ class CaseAllowanceMixin:
             if request.user.tracker.changed():
                 request.user.save()
 
-            return result
+        # update site-wide limits
+        if not request.user.unlimited_access_in_effect():
+            cases_sent = allowance_before - request.user.case_allowance_remaining
+            SiteLimits.add_values(daily_downloads=cases_sent)
 
+        return result
 
 class ListSerializerWithCaseAllowance(CaseAllowanceMixin, ListSerializer):
     """ Custom ListSerializer for CaseSerializerWithCasebody that enforces CaseAllowance. """
@@ -159,6 +172,11 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
                     data = helpers.extract_casebody(orig_xml).text()
 
             casebody['data'] = data
+            casebody['judges'] = case.judges
+            casebody['attorneys'] = case.attorneys
+            casebody['opinions'] = case.opinions
+            casebody['parties'] = case.parties
+
         return casebody
 
 
@@ -219,6 +237,7 @@ class CourtSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Court
         fields = (
+            'id',
             'url',
             'name',
             'name_abbreviation',

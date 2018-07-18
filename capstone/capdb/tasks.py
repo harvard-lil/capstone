@@ -45,11 +45,11 @@ def update_volume_metadata(volume_xml_id):
 @shared_task
 def test_slow(i, ram=10, cpu=30):
     """
-        Waste a bunch of memory and CPU.
+        Allocate `ram` megabytes of ram and run `cpu` million additions.
     """
     print("Task %s" % i)
     # waste 0-ram MB of RAM
-    waste_ram = bytearray(2**20 * i%ram)  # noqa
+    waste_ram = bytearray(2**20 * ram)  # noqa
 
     # waste CPU
     total = 0

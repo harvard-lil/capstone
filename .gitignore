@@ -7,6 +7,7 @@ __pycache__
 .virtualenvs/
 
 db.sqlite3
+celerybeat-schedule.db
 
 # pytest
 .cache

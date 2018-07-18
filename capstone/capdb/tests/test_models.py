@@ -142,6 +142,24 @@ def test_denormalized_fields(case):
     case.refresh_from_db()
     assert case.jurisdiction_name == jurisdiction.name
     assert case.jurisdiction_whitelisted == jurisdiction.whitelisted
+    
+    court = case.court
+    case.court = None
+    case.save()
+    case.refresh_from_db()
+    assert case.court_name is None
+    assert case.court_name_abbreviation is None
+
+    # if source foreign key is changed, destination fields should be updated
+    case.court = court
+    case.save()
+    case.refresh_from_db()
+    assert case.court_name == court.name
+    assert case.court_slug == court.slug
+    court.name = 'foo'
+    court.save()
+    case.refresh_from_db()
+    assert case.court_name == court.name
 
 
 ### CaseXML ###

@@ -1,4 +1,3 @@
-
 import csv
 import gzip
 import hashlib
@@ -17,6 +16,8 @@ import shutil
 import subprocess
 import copy
 
+from django.conf import settings
+
 from capdb.storages import ingest_storage, captar_storage, get_storage
 from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml
 
@@ -30,9 +31,6 @@ logger = logging.getLogger(__name__)
 info = logger.info
 info = print
 
-# debugging
-MAX_JP2_PER_ZIP = 0
-MULTITHREADED = True
 
 # separate function to check .tar integrity against volmets
 # encryption?
@@ -159,6 +157,36 @@ def jp2_to_jpg(jp2_file, quality=50):
 
         if err:
             raise Exception("Error calling cjpeg: %s" % err)
+
+        return out
+
+def jp2_to_jpg_slow(jp2_file, quality=50):
+    """
+        Convert jp2_file, an open file handle, to jpg and return jpg data.
+        Requires opj_decompress and mozcjpeg to be in PATH.
+    """
+    with tempfile.NamedTemporaryFile(suffix=".jp2") as jp2_temp_file, \
+         tempfile.TemporaryDirectory() as tga_dir:
+
+        # create temp jp2 on disk, required by obj_decompress
+        shutil.copyfileobj(jp2_file, jp2_temp_file)
+        jp2_temp_file.flush()
+
+        tga_file = os.path.join(tga_dir, "temp.tga")
+
+        subprocess.check_call([
+            "opj_decompress",
+            "-i", jp2_temp_file.name,
+            "-o", tga_file,
+            "-threads", "5",  # on a quick test, 5 threads seems to be fastest
+            "-quiet",  # suppress progress messages
+        ])
+
+        out = subprocess.check_output([
+            "mozcjpeg",
+            "-quality", str(quality),
+            "-targa", tga_file
+        ])
 
         return out
 
@@ -339,8 +367,8 @@ def compress_volume(volume_name):
     info("listing volume")
 
     # only create archive if it doesn't already exist
-    archive_name = volume_name + ".tar"
-    if captar_storage.exists(archive_name):
+    archive_name = "%s/%s.tar" % (volume_name, volume_name)
+    if settings.COMPRESS_VOLUMES_SKIP_EXISTING and captar_storage.exists(archive_name):
         info("%s already exists, returning" % volume_name)
         return
 
@@ -358,8 +386,8 @@ def compress_volume(volume_name):
 
         # set up multithreading -- file_map function lets us run function in parallel across a list of file paths,
         # passing in tempdir along with each file path.
-        if MULTITHREADED:
-            pool = ThreadPool(20)
+        if settings.COMPRESS_VOLUMES_THREAD_COUNT > 1:
+            pool = ThreadPool(settings.COMPRESS_VOLUMES_THREAD_COUNT)
             mapper = pool.map
         else:
             mapper = map
@@ -377,7 +405,7 @@ def compress_volume(volume_name):
 
         # write alto, tif, and jpg files
         tif_file_results = file_map(handle_image_file, volume_files_by_type.get('tif', []), '.png', tif_to_png)
-        jpg_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jpg', jp2_to_jpg)
+        jpg_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jpg', jp2_to_jpg_slow)
         alto_file_results = file_map(handle_alto_file, volume_files_by_type.get('alto', []))
 
         # write casemets files, using data gathered in previous step
@@ -393,28 +421,35 @@ def compress_volume(volume_name):
 
         # tar volume
         info("tarring %s" % volume_path)
-        with captar_storage.open(archive_name, "wb") as tar_out:
+        with tempfile.NamedTemporaryFile() as tar_out:
+            # track hash of tar file
             tar_out = HashingFile(tar_out, hash_name='sha256')
+
+            # track offsets of files in tar file
             tar = LoggingTarFile.open(fileobj=tar_out, mode='w|')
-            try:
 
-                # write tar file
-                tar.add(str(volume_path), volume_name)
+            # write files to temp tar file
+            tar.add(str(volume_path), volume_name)
+            tar.close()
 
-                # write csv file
-                with captar_storage.open(archive_name+".csv", "w") as csv_out:
-                    csv_writer = csv.writer(csv_out)
-                    csv_writer.writerow(["path", "offset", "size"])
-                    for member in tar.members:
-                        csv_writer.writerow([member.name, member.offset_data, member.size])
+            # write tar file to S3
+            with open(tar_out.name, 'rb') as in_file:
+                archive_name = captar_storage.save(archive_name, in_file)
 
-            finally:
-                tar.close()
+            # write csv file to S3
+            with captar_storage.open(archive_name+".csv", "w") as csv_out:
+                csv_writer = csv.writer(csv_out)
+                csv_writer.writerow(["path", "offset", "size"])
+                for member in tar.members:
+                    csv_writer.writerow([member.name, member.offset_data, member.size])
 
-            # write sha256 file
+            # write sha256 file to S3
             with captar_storage.open(archive_name+".sha256", "w") as sha_out:
                 sha_out.write(tar_out.hexdigest())
+
+
 
 @shared_task
 def validate_volume(volume_name):
     pass
+

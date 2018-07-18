@@ -5,6 +5,7 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 -e git+git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
+-e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
 -e git+git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
 amqp==2.2.2               # via kombu
 apipkg==1.4               # via execnet
@@ -45,6 +46,7 @@ django-storages==1.5.2
 django==2.0.2
 djangorestframework-filters==0.10.2
 djangorestframework==3.7.7
+dnspython==1.15.0
 docutils==0.13.1          # via botocore
 drf-yasg==1.7.1
 execnet==1.4.1            # via pytest-xdist

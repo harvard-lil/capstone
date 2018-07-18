@@ -2,9 +2,10 @@ from datetime import timedelta
 import uuid
 import logging
 
+import email_normalize
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AnonymousUser
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-from django.db import models
+from django.db import models, IntegrityError, transaction
 from django.utils import timezone
 from django.conf import settings
 from capapi.permissions import staff_level_permissions
@@ -49,6 +50,7 @@ class CapUser(AbstractBaseUser):
         db_index=True,
         error_messages={'unique': "A user with that email address already exists."}
     )
+    normalized_email = models.CharField(max_length=255, help_text="Used to ensure that new emails are unique.")
 
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
@@ -117,6 +119,8 @@ class CapUser(AbstractBaseUser):
         self.save()
 
     def save(self, *args, **kwargs):
+        if self.tracker.has_changed('email'):
+            self.normalized_email = self.normalize_email(self.email)
         super(CapUser, self).save(*args, **kwargs)
 
     @staticmethod
@@ -152,7 +156,80 @@ class CapUser(AbstractBaseUser):
             return self.is_staff
         return self.is_superuser
 
+    @staticmethod
+    def normalize_email(email):
+        """
+            Return a normalized form of the email address:
+            - lowercase
+            - applying host-specific rules for domains hosted by Google, Microsoft, Yahoo, Fastmail
+        """
+        return email_normalize.normalize(email.strip(), resolve=False)
+
 
 # make AnonymousUser API conform with CapUser API
 AnonymousUser.unlimited_access_until = None
 AnonymousUser.unlimited_access_in_effect = lambda self: False
+
+
+class SiteLimits(models.Model):
+    """
+        Singleton model to track sitewide values in a row with ID=1
+    """
+    daily_signup_limit = models.IntegerField(default=50)
+    daily_signups = models.IntegerField(default=0)
+    daily_download_limit = models.IntegerField(default=50000)
+    daily_downloads = models.IntegerField(default=0)
+
+    @classmethod
+    def create(cls):
+        """ Create and return the ID=1 row, or fetch the existing one. """
+        site_limits = cls(pk=1)
+        try:
+            site_limits.save()
+        except IntegrityError:
+            return cls.objects.get(pk=1)
+        else:
+            return site_limits
+
+    @classmethod
+    def get(cls):
+        """ Get the ID=1 row, creating if necessary. """
+        try:
+            return cls.objects.get(pk=1)
+        except cls.DoesNotExist:
+            return cls.create()
+
+    @classmethod
+    def get_for_update(cls):
+        """
+            Get the ID=1 row with select_for_update()
+            This must be run from within a transaction.
+        """
+        try:
+            site_limits = cls.objects.select_for_update().get(pk=1)
+        except cls.DoesNotExist:
+            cls.create()
+            site_limits = cls.objects.select_for_update().get(pk=1)
+        return site_limits
+
+    @classmethod
+    def add_values(cls, **pairs):
+        """
+            Modify existing values.
+            E.g., SiteLimits.add_values(daily_downloads=1) increases daily_downloads by 1.
+        """
+        with transaction.atomic():
+            site_limits = cls.get_for_update()
+            for k, v in pairs.items():
+                setattr(site_limits, k, getattr(site_limits, k) + v)
+            site_limits.save()
+        return site_limits
+
+    @classmethod
+    def reset(cls):
+        """ Reset all counters to 0. """
+        with transaction.atomic():
+            site_limits = cls.get_for_update()
+            site_limits.daily_signups = 0
+            site_limits.daily_downloads = 0
+            site_limits.save()

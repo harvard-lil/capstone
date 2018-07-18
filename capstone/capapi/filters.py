@@ -14,7 +14,7 @@ def lazy_choices(queryset, id_attr, label_attr):
         return queryset.order_by(label_attr).values_list(id_attr, label_attr)
     return SimpleLazyObject(get_choices)
 jur_choices = lazy_choices(models.Jurisdiction.objects.all(), 'slug', 'name_long')
-court_choices = lazy_choices(models.Court.objects.all(), 'id', 'name')
+court_choices = lazy_choices(models.Court.objects.all(), 'slug', 'name')
 reporter_choices = lazy_choices(models.Reporter.objects.all(), 'id', 'full_name')
 
 
@@ -57,6 +57,7 @@ class CourtFilter(filters.FilterSet):
         field_name='jurisdiction__slug',
         choices=jur_choices)
     name = filters.CharFilter(lookup_expr='icontains', label='Name (contains)')
+
     class Meta:
         model = models.Court
         fields = [
@@ -77,7 +78,7 @@ class CaseFilter(filters.FilterSet):
         label='Citation',
         method='find_by_citation')
     court = filters.ChoiceFilter(
-        field_name='court_id',
+        field_name='court_slug',
         label='Court',
         choices=court_choices)
     reporter = filters.ChoiceFilter(
@@ -96,6 +97,10 @@ class CaseFilter(filters.FilterSet):
         label='Date Max (Format YYYY-MM-DD)',
         field_name='decision_date_max',
         method='find_by_date')
+    docket_number = filters.CharFilter(
+        field_name='docket_number',
+        label='Docket Number (contains)',
+        lookup_expr='icontains')
 
     def find_by_citation(self, qs, name, value):
         return qs.filter(citations__normalized_cite__exact=slugify(value))
@@ -115,6 +120,7 @@ class CaseFilter(filters.FilterSet):
                   'reporter',
                   'decision_date_min',
                   'decision_date_max',
+                  'docket_number',
                   ]
 
 

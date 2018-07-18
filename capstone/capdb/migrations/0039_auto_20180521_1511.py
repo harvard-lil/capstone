@@ -2,7 +2,7 @@
 
 from django.db import migrations
 
-from scripts.set_up_postgres import initialize_denormalization_fields
+# from scripts.set_up_postgres import initialize_denormalization_fields
 
 
 class Migration(migrations.Migration):
@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # keeping for posterity, running initialize_denormalization_fields at a later migration
         # populate denormalized fields created above
-        migrations.RunPython(initialize_denormalization_fields, migrations.RunPython.noop),
+        # migrations.RunPython(initialize_denormalization_fields, migrations.RunPython.noop),
     ]

@@ -59,6 +59,7 @@ REST_FRAMEWORK = {
         'capapi.renderers.BrowsableAPIRenderer',
     ),
 }
+MAX_API_OFFSET = 10000
 
 MIDDLEWARE = [
 
@@ -296,11 +297,18 @@ INVENTORY = {
 }
 
 ### CELERY ###
+from celery.schedules import crontab
 CELERY_BROKER_URL = 'redis://'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_BACKEND = 'redis://'
 CELERY_TASK_SERIALIZER = 'json'
-
+CELERY_BEAT_SCHEDULE = {
+    'handle-site-limits': {
+        'task': 'capapi.tasks.daily_site_limit_reset_and_report',
+        'schedule': crontab(hour=0, minute=0),
+    },
+}
+CELERY_TIMEZONE = 'UTC'
 
 ### CAP API settings ###
 
@@ -419,6 +427,10 @@ SILENCED_SYSTEM_CHECKS = [
 # cache headers
 SET_CACHE_CONTROL_HEADER = False  # whether to set a cache-control header on all cacheable views
 CACHE_CONTROL_DEFAULT_MAX_AGE = 60*60*24  # length of time to cache pages by default, in seconds
+
+# settings for scripts/compress_volumes.py
+COMPRESS_VOLUMES_THREAD_COUNT = 20   # if < 2, no thread pool will be used
+COMPRESS_VOLUMES_SKIP_EXISTING = True  # don't process volumes that already exist in the dest dir; if False, will create additional files with random suffixes
 
 # override django-storages default
 AWS_DEFAULT_ACL = 'private'
