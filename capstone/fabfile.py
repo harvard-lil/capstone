@@ -8,6 +8,7 @@ import django
 import json
 from random import randrange, randint
 from pathlib import Path
+from celery import shared_task, group
 
 # set up Django
 
@@ -17,6 +18,8 @@ try:
 except Exception as e:
     print("WARNING: Can't configure Django -- tasks depending on Django will fail:\n%s" % e)
 
+from django.db import connections
+from django.utils.encoding import force_str
 from django.conf import settings
 from fabric.api import local
 from fabric.decorators import task
@@ -367,7 +370,6 @@ def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test
 def test_slow(jobs="1", ram="10", cpu="30"):
     """ For testing celery autoscaling, launch N jobs that will waste RAM and CPU. """
     from capdb.tasks import test_slow
-    from celery import group
     import time
 
     print("Running %s test_slow jobs and waiting for results ..." % jobs)
@@ -623,6 +625,36 @@ def fix_court_names():
                 court.save()
                 update_cases(court, stripped_name, stripped_abbrev)
 
+
+@task
+def fix_jurisdictions():
+    """
+        Finds cases where the XML jurisdiction value is different from the text in the jurisdiction table and fixes it.
+    """
+    @shared_task
+    def update_xml_jurisdiction(case_xml_id, orig_xml, jurisdiction, case_id):
+        parsed = parse_xml(orig_xml)
+        print("Updating {} to {} in {}".format(parsed('case|court')[0].get("jurisdiction"), jurisdiction, case_id))
+        parsed('case|court')[0].set("jurisdiction", jurisdiction)
+        CaseXML.objects.filter(pk=case_xml_id).update(orig_xml=force_str(serialize_xml(parsed)))
+
+    query = """SELECT x.id, x.orig_xml, j.name_long, m.case_id from capdb_casexml x
+    inner join capdb_casemetadata m on x.metadata_id = m.id
+    inner join capdb_jurisdiction j on m.jurisdiction_id = j.id
+    where text((ns_xpath('//case:court/@jurisdiction', x.orig_xml))[1]) != text(j.name_long)"""
+
+    with connections['capdb'].cursor() as cursor:
+        cursor.execute(query)
+        row = cursor.fetchone()
+        while row is not None:
+            case_xml_id = row[0]
+            orig_xml = row[1]
+            jurisdiction = row[2]
+            case_id = row[3]
+            update_xml_jurisdiction(case_xml_id, orig_xml, jurisdiction, case_id)
+            row = cursor.fetchone()
+
+
 @task
 def compress_volumes(*barcodes, max_volumes=10):
     """
@@ -660,3 +692,4 @@ def compress_volumes(*barcodes, max_volumes=10):
         scripts.compress_volumes.compress_volume.delay(barcode)
         if max_volumes and i >= max_volumes:
             break
+
