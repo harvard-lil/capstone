@@ -3,7 +3,7 @@ from scripts.helpers import parse_xml
 import re
 
 tag_map = {  "author": "p", "opinion" : "article", "casebody" : "section",
-             "citation": "h2", "correction": "aside", "court": "h3",
+             "citation": "p", "correction": "aside", "court": "p",
              "decisiondate": "p", "disposition": "p", "docketnumber": "p",
              "headnotes": "aside", "history": "p", "otherdate": "p",
              "parties": "h4", "seealso": "aside", "summary": "aside",
@@ -11,12 +11,91 @@ tag_map = {  "author": "p", "opinion" : "article", "casebody" : "section",
              "judges": "p", "bracketnum": "a", "footnotemark": "a",
              "pagebreak": "br"}
 
+
+# these styles will only be applied if case_body_only is explicitly set to false
+bulma_class_map = {  "author": "title is-5", "opinion" : "section is-large", "casebody" : "container",
+             "citation": "tag is-link", "correction": "tag is-warning", "court": "",
+             "decisiondate": "subtitle is-5 has-text-centered", "disposition": "tile", "docketnumber": "",
+             "headnotes": "tile", "history": "tile", "otherdate": "",
+             "parties": "title is-4 has-text-centered", "seealso": "", "summary": "tile",
+             "syllabus": "tile", "footnote": "box", "attorneys": "subtitle is-5 has-text-centered",
+             "judges": "subtitle is-5 has-text-centered", "bracketnum": "", "footnotemark": "",
+             "pagebreak": ""}
+
+style = """ .headnotes::before {
+    content: "Headnote: ";
+    font-weight: bold;
+    margin-right: 10px;
+} 
+.summary::before {
+    content: "Summary: ";
+    font-weight: bold;
+    margin-right: 10px;
+} 
+.history::before {
+    content: "History: ";
+    font-weight: bold;
+    margin-right: 10px;
+} 
+
+.disposition::before {
+    content: "Disposition: ";
+    font-weight: bold;
+    margin-right: 10px;
+} 
+
+.syllabus::before {
+    content: "Syllabus: ";
+    font-weight: bold;
+    margin-right: 10px;
+} 
+
+.author::before {
+    content: "Author: ";
+} 
+
+.opinion::before {
+    content: "Opinion";
+    font-weight: bold;
+} 
+
+.opinion > p {
+margin-bottom: 15px;
+} 
+
+.casebody > p {
+margin-left: 25px;
+margin-top: 10px;
+} 
+
+.footnote > p {
+font-size: 0.75rem;
+margin-bottom: 8px;
+} 
+
+article.opinion {
+padding-top: 20px !important;
+}
+
+aside.footnote {
+padding-top: 8px;
+padding-left: 8px;
+padding-right: 8px;
+padding-bottom: 2px;
+}
+#top-citation {
+    margin-left: 0 auto;
+    margin-right: 0 auto;
+    text-align: center;
+}
+"""
+
 # these will pull out the headnotes number and corresponding bracketnum
 bracketnum_number = re.compile(r'\d')
 headnotes_number = re.compile(r'^(\d+).*')
 
 
-def generate_html(case_xml, tag_map=tag_map):
+def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
     """
     converts case xml to html
     """
@@ -41,8 +120,6 @@ def generate_html(case_xml, tag_map=tag_map):
 
         # remove the namespace from the tag name
         tag = element.tag.split('}')[1]
-
-
 
         element_text_copy = element.text
 
@@ -92,11 +169,30 @@ def generate_html(case_xml, tag_map=tag_map):
             # point to the anchor in the headnote
             element.attrib['style'] = "page-break-before: always"
 
+        # apply the bulma styles
+        if not case_body_only and tag in bulma_class_map and bulma_class_map[tag] is not "":
+            element.attrib['class'] = "{} {}".format(bulma_class_map[tag], element.attrib['class'])
+
     # change the properties of the casebody tag itself
     casebody[0].tag = tag_map['casebody']
     for attribute in casebody[0].attrib:
+        if attribute == 'class':
+            continue
         casebody[0].attrib['data-' + attribute] = casebody[0].attrib[attribute]
         casebody[0].attrib.pop(attribute)
 
-    # return a copy of the string with the namepsaces stripped
-    return str(re.sub(r' xmlns(:xlink)?="http://[^"]+"', '', str(casebody)))
+    # return if we only need the unstyled case body snippet
+    if case_body_only is True:
+        # return a copy of the string with the namepsaces stripped
+        return str(re.sub(r' xmlns(:xlink)?="http://[^"]+"', '', str(casebody)))
+
+    # add in the surrounding HTML
+    pre_case_body = """<!doctype html>\n\n<html lang="en">\n\t<head>\n\t\t<title>CAPAPI: {0}</title>\n\t</head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css" />
+    <style>{1}</style>
+    \t<body>\n\t\t<h2 id="top-citation" class="subtitle is-5">{0}</h2>""".format(parsed_xml('case|citation')[0].text, style)
+
+    post_case_body = "</body></html>"
+
+
+    return "{}{}{}".format(pre_case_body, str(re.sub(r' xmlns(:xlink)?="http://[^"]+"', '', str(casebody))), post_case_body)
