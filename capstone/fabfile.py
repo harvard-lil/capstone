@@ -693,3 +693,12 @@ def compress_volumes(*barcodes, max_volumes=10):
         if max_volumes and i >= max_volumes:
             break
 
+
+@task
+def validate_captar_volumes():
+    from capdb.storages import captar_storage
+    import scripts.compress_volumes
+    for volume_name in captar_storage.iter_files(""):
+        if volume_name == "validation":
+            continue
+        scripts.compress_volumes.validate_volume.delay(volume_name)

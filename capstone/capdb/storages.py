@@ -1,12 +1,18 @@
+import csv
+import gzip
 import hashlib
 import os
 import itertools
+from pathlib import Path
+
 import redis
 
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
+from django.core.files import File
+from django.core.files.storage import FileSystemStorage, Storage
 from django.utils.functional import SimpleLazyObject
 from storages.backends.s3boto3 import S3Boto3Storage
+
 
 class CapStorageMixin(object):
     def relpath(self, path):
@@ -125,6 +131,133 @@ class CapFileStorage(CapStorageMixin, FileSystemStorage):
         """ For file storage, tags don't work. """
         return False
 
+
+class CaptarFile(File):
+    """
+        File wrapper used by CaptarStorage. This is a limit-offset file reader, which reads a subset of bytes from a
+        larger file. For example:
+
+            CaptarFile(BytesIO(b"Hey what's up"), offset=4, size=6).read() == b"what's"
+
+        Inspired by https://github.com/webrecorder/warcio/blob/master/warcio/limitreader.py
+    """
+
+    def __init__(self, file, offset, size):
+        super(CaptarFile, self).__init__(file)
+        self.end = offset+size
+        self.start = offset
+        self.pos = offset
+        file.seek(offset)
+
+    def _update(self, buff):
+        self.pos += len(buff)
+        return buff
+
+    def _safe_length(self, length):
+        if length is not None:
+            return min(length, self.end - self.pos)
+        else:
+            return self.end - self.pos
+
+    def read(self, length=None):
+        length = self._safe_length(length)
+
+        if length == 0:
+            return b''
+
+        buff = self.file.read(length)
+        return self._update(buff)
+
+    def readline(self, length=None):
+        length = self._safe_length(length)
+
+        if length == 0:
+            return b''
+
+        buff = self.file.readline(length)
+        return self._update(buff)
+
+    def seek(self, pos):
+        pos = max(self.start, min(self.end, pos))
+        self.file.seek(pos)
+        self.pos = pos
+
+
+class CaptarStorage(CapStorageMixin, Storage):
+    """
+        This storage reads files from a CAPTAR volume, using the index CSV file. An example volume might be laid out like
+        this:
+
+            volume_name/volume_name.tar
+            volume_name/volume_name.tar.csv:
+                foo/entry1.jpg      offset  size
+                foo/entry2.xml.gz   offset  size
+
+        Example usage:
+
+            volume_storage = CaptarStorage(parent_storage, "volume_name")
+            print("JPG contents:", volume_storage.contents("foo/entry1.jpg"))
+            print("Gzip contents:", volume_storage.contents("foo/entry2.xml.gz"))
+            print("Automatically ungzipped contents:", volume_storage.contents("foo/entry2.xml"))
+    """
+    def __init__(self, parent, path):
+        self.parent = parent
+        self.path = path
+        self.tar_path = str(Path(path, Path(path).name+".tar"))
+        self.index_path = self.tar_path+".csv"
+        self.index = {line["path"]: line for line in csv.DictReader(parent.contents(self.index_path).split("\n"))}
+
+    def contents(self, path, mode='r'):
+        contents = super().contents(path, 'rb')
+        if mode == 'r':
+            contents = contents.decode()
+        return contents
+
+    def _open(self, name, mode):
+        if name not in self.index:
+            # if given a file name that doesn't exist, but where the name with .gz does exist,
+            # return the ungzipped version
+            gz_name = name+'.gz'
+            if gz_name in self.index:
+                gz_in = self._open(gz_name, "rb")
+                return gzip.open(gz_in, mode)
+
+            raise IOError('File does not exist: %s' % name)
+        
+        file_info = self.index[name]
+        return CaptarFile(self.parent.open(self.tar_path, mode), int(file_info["offset"]), int(file_info["size"]))
+
+    def iter_files(self, path="", partial_path=False):
+        """
+            Yield each immediate file or directory in path.
+
+            If partial_path is True, returns files starting with path.
+        """
+
+        path = path.rstrip('/')
+
+        # if not partial_path, prefix should end with a slash
+        if path and not partial_path:
+            path += '/'
+
+        items = set(path+key[len(path):].split('/',1)[0] for key in self.index.keys())
+        for item in items:
+            yield item
+
+    def iter_files_recursive(self, path="", with_md5=False):
+        """
+            Yield each file in path or subdirectories.
+            Order is not specified.
+        """
+        path = path.rstrip('/')
+        if path:
+            path += '/'  # should end with exactly one slash
+        for key, info in self.index.items():
+            if info["size"] != "0" and key.startswith(path):
+                if with_md5:
+                    yield key, hashlib.md5(self.contents(key, 'rb')).hexdigest()
+                else:
+                    yield key
 
 ### instances ###
 

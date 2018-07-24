@@ -1,10 +1,12 @@
 import csv
 import gzip
 import hashlib
+import json
 import logging
 import tarfile
 import tempfile
 import os
+from io import StringIO
 from collections import defaultdict
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
@@ -18,11 +20,12 @@ import copy
 
 from django.conf import settings
 
-from capdb.storages import ingest_storage, captar_storage, get_storage
+from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage
 from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml
 
 # logging
 # disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
+
 logging.getLogger('boto3').setLevel(logging.WARNING)
 logging.getLogger('botocore').setLevel(logging.WARNING)
 logging.getLogger('nose').setLevel(logging.WARNING)
@@ -448,8 +451,89 @@ def compress_volume(volume_name):
                 sha_out.write(tar_out.hexdigest())
 
 
-
 @shared_task
 def validate_volume(volume_name):
-    pass
+    class ValidationResult(Exception):
+        pass
 
+    # check last result
+    result_path = str(Path('validation', volume_name).with_suffix('.txt'))
+    if captar_storage.exists(result_path):
+        last_result = json.loads(captar_storage.contents(result_path))
+        if last_result[0] == "ok":
+            print("Volume %s already validated; skipping." % volume_name)
+            return
+
+    temp_dir = TemporaryDirectory()
+    try:
+        # copy captar from S3 to disk if necessary
+        if isinstance(captar_storage, CapS3Storage) or True:
+            Path(temp_dir.name, volume_name).mkdir(parents=True)
+            for path in captar_storage.iter_files(volume_name):
+                copy_file(path, Path(temp_dir.name, path), from_storage=captar_storage)
+            local_storage = CapFileStorage(temp_dir.name)
+        else:
+            local_storage = captar_storage
+
+        # load tar file as a storage wrapper and get list of items
+        volume_storage = CaptarStorage(local_storage, volume_name)
+        if not volume_storage.index:
+            raise ValidationResult("index_missing", "Failed to load index from %s" % volume_storage.index_path)
+        tar_items = list(volume_storage.iter_files_recursive(with_md5=True))
+
+        # volmets_path is shortest path with only one slash, ending in .xml.gz
+        volmets_path = next((item for item in tar_items if item[0].count("/") == 1 and item[0].endswith(".xml.gz")), None)
+
+        # check for missing volmets
+        if not volmets_path:
+            raise ValidationResult("volmets_missing", volume_name)
+
+        # check md5 of volmets
+        md5_path = next((item[0] for item in tar_items if item[0].count("/") == 1 and item[0].endswith(".md5")), None)
+        if not md5_path:
+            raise ValidationResult("md5_missing")
+        if volmets_path[1] != volume_storage.contents(md5_path):
+            raise ValidationResult("volmets_md5_mismatch")
+
+        # strip .gz so the storage will decompress for us
+        volmets_path = volmets_path[0][:-3]
+
+        # strip enclosing directory from file paths
+        tar_items = set((item[0].split('/', 1)[1], item[1]) for item in tar_items)
+
+        # check for mismatched files
+        orig_xml = volume_storage.contents(volmets_path)
+        parsed = parse_xml(orig_xml)
+        volmets_files = set(
+            (
+                i.children('mets|FLocat').attr(resolve_namespace('xlink|href')),
+                i.attr('CHECKSUM')
+            ) for i in parsed('mets|file').items()
+        )
+
+        # check that all files in METS are expected
+        only_in_mets = volmets_files - tar_items
+        if only_in_mets:
+            raise ValidationResult("only_in_mets", only_in_mets)
+
+        # check that all files only_in_tar are expected (should be one volmets and one volmets md5)
+        only_in_tar = sorted(item[0] for item in tar_items - volmets_files)
+        if not len(only_in_tar) == 2 and only_in_tar[0].endswith("_METS.md5") and only_in_tar[1].endswith("_METS.xml.gz"):
+            raise ValidationResult("only_in_tar", only_in_tar)
+
+        # count suffixes
+        suffix_counts = defaultdict(int)
+        for item in volmets_files:
+            suffix_counts[item[0].split('.', 1)[1]] += 1
+        case_count = suffix_counts['xml.gz'] - suffix_counts['jpg']
+        if suffix_counts['jpg'] == 0 or suffix_counts['jpg'] != suffix_counts['png'] or case_count <= 0:
+            raise ValidationResult("unexpected_suffix_counts", suffix_counts)
+
+        raise ValidationResult("ok")
+
+    except ValidationResult as result:
+        print(result.args)
+        captar_storage.save(result_path, StringIO(json.dumps(result.args)))
+
+    finally:
+        temp_dir.cleanup()
