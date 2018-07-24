@@ -188,7 +188,7 @@ def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
 
     # add in the surrounding HTML
     pre_case_body = """<!doctype html>\n\n<html lang="en">\n\t<head>\n\t\t<title>CAPAPI: {0}</title>\n\t</head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css" />
+    <link rel="stylesheet" href="/static/css/bulma.min.css" />
     <style>{1}</style>
     \t<body>\n\t\t<h2 id="top-citation" class="subtitle is-5">{0}</h2>""".format(parsed_xml('case|citation')[0].text, style)
 
