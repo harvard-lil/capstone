@@ -207,8 +207,8 @@ def copy_file(from_path, to_path, from_storage=None, to_storage=None):
     """
     from_open = from_storage.open if from_storage else open
     to_open = to_storage.open if to_storage else open
-    with from_open(from_path, "rb") as in_file:
-        with to_open(to_path, "wb") as out_file:
+    with from_open(str(from_path), "rb") as in_file:
+        with to_open(str(to_path), "wb") as out_file:
             shutil.copyfileobj(in_file, out_file)
 
 
