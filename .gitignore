@@ -17,3 +17,5 @@ tracking_tool.sqlite
 
 capstone/bulk-data/
 capstone/test_data/zips/
+
+*.ipynb*
