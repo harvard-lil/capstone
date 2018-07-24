@@ -6,7 +6,7 @@ import logging
 import tarfile
 import tempfile
 import os
-from io import StringIO
+from io import BytesIO
 from collections import defaultdict
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
@@ -533,7 +533,7 @@ def validate_volume(volume_name):
 
     except ValidationResult as result:
         print(result.args)
-        captar_storage.save(result_path, StringIO(json.dumps(result.args)))
+        captar_storage.save(result_path, BytesIO(json.dumps(result.args).encode()))
 
     finally:
         temp_dir.cleanup()
