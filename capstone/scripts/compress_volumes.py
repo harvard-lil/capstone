@@ -19,6 +19,7 @@ import subprocess
 import copy
 
 from django.conf import settings
+from django.template.defaultfilters import filesizeformat
 
 from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage
 from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml
@@ -525,8 +526,7 @@ def validate_volume(volume_name):
         suffix_counts = defaultdict(int)
         for item in volmets_files:
             suffix_counts[item[0].split('.', 1)[1]] += 1
-        case_count = suffix_counts['xml.gz'] - suffix_counts['jpg']
-        if suffix_counts['jpg'] == 0 or suffix_counts['jpg'] != suffix_counts['png'] or case_count <= 0:
+        if suffix_counts['jpg'] == 0 or suffix_counts['jpg'] != suffix_counts['png'] or suffix_counts['xml.gz'] < suffix_counts['jpg']:
             raise ValidationResult("unexpected_suffix_counts", suffix_counts)
 
         raise ValidationResult("ok")
@@ -537,3 +537,54 @@ def validate_volume(volume_name):
 
     finally:
         temp_dir.cleanup()
+
+def report_sizes():
+    """
+        Test function to find out size breakdown of files.
+    """
+    size_counts = defaultdict(int)
+    suffix_counts = defaultdict(int)
+    for index_path in captar_storage.iter_files_recursive():
+        if not index_path.endswith('.csv'):
+            continue
+        file_list = csv.DictReader(captar_storage.contents(index_path).split("\n"))
+        for item in file_list:
+            size = int(item['size'])
+            if size:
+                suffix = item['path'].split('.', 1)[1]
+                size_counts[suffix] += size
+                suffix_counts[suffix] += 1
+    total_size = sum(size_counts.values())
+    print("Total size: %s" % total_size)
+    for suffix, size in size_counts.items():
+        print("- {}: {} files, {}, {:.1%}".format(suffix, suffix_counts[suffix], filesizeformat(size), size/total_size))
+
+
+def sample_images(count=100):
+    """
+        Test function to sample random images from ingest.
+    """
+    import random
+    from capdb.storages import private_ingest_storage
+    def get_volumes():
+        """ Get all up-to-date volumes. """
+        volumes = private_ingest_storage.iter_files("")
+        current_vol = next(volumes, "")
+        while current_vol:
+            next_vol = next(volumes, "")
+            if current_vol.split("_", 1)[0] != next_vol.split("_", 1)[0]:
+                yield current_vol
+            current_vol = next_vol
+
+    print("Loading volumes to sample")
+    volumes = list(get_volumes())
+    for vol in random.sample(volumes, min(len(volumes), count)):
+        print("Sampling", vol)
+        id = vol.split('_', 1)[0]
+        for i in [0,1]:
+            img_name = "%s_00050_%s.tif" % (id, i)
+            copy_file(
+                Path(vol, "images", img_name),
+                Path('sample_images_private_tif', img_name),
+                from_storage=private_ingest_storage,
+                to_storage=captar_storage)
