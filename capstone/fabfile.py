@@ -656,8 +656,23 @@ def fix_jurisdictions():
 
 
 @task
-def compress_volumes(*barcodes, max_volumes=10):
+def compress_volumes(*barcodes, storage_name='ingest_storage', max_volumes=10):
     """
+        To compress a single volume:
+
+            fab compress_volumes:32044057891608_redacted
+            fab compress_volumes:32044057891608_unredacted,storage_name=private_ingest_storage
+
+        To compress first N redacted volumes:
+
+            fab compress_volumes:max_volumes=5
+
+        To compress all volumes (including unredacted):
+
+            fab compress_volumes:max_volumes=0
+
+        ---
+
         To test local compression of volumes:
 
         First build docker container:
@@ -666,30 +681,33 @@ def compress_volumes(*barcodes, max_volumes=10):
         Next run fab task:
             docker run -v `pwd`:/app/ compress-worker fab compress_volumes
     """
-    from capdb.storages import ingest_storage
+    import capdb.storages
     import scripts.compress_volumes
 
     max_volumes = int(max_volumes)
 
     def get_volumes():
         """ Get all up-to-date volumes. """
-        volumes = ingest_storage.iter_files("")
-        current_vol = next(volumes, "")
-        while current_vol:
-            next_vol = next(volumes, "")
-            if current_vol.split("_", 1)[0] != next_vol.split("_", 1)[0]:
-                yield current_vol
-            current_vol = next_vol
+        for storage_name in ('ingest_storage', 'private_ingest_storage'):
+            storage = getattr(capdb.storages, storage_name)
+            volumes = storage.iter_files("")
+            current_vol = next(volumes, "")
+            while current_vol:
+                next_vol = next(volumes, "")
+                if current_vol.split("_", 1)[0] != next_vol.split("_", 1)[0]:
+                    yield storage_name, current_vol
+                current_vol = next_vol
 
     if barcodes:
         # get folder for each barcode provided at command line
-        barcodes = [max(ingest_storage.iter_files(barcode, partial_path=True)) for barcode in barcodes]
+        storage = getattr(capdb.storages, storage_name)
+        barcodes = [(storage_name, max(storage.iter_files(barcode, partial_path=True))) for barcode in barcodes]
     else:
         # get latest folder all volumes
         barcodes = get_volumes()
 
-    for i, barcode in enumerate(barcodes):
-        scripts.compress_volumes.compress_volume.delay(barcode)
+    for i, args in enumerate(barcodes):
+        scripts.compress_volumes.compress_volume.delay(*args)
         if max_volumes and i >= max_volumes:
             break
 
@@ -698,7 +716,6 @@ def compress_volumes(*barcodes, max_volumes=10):
 def validate_captar_volumes():
     from capdb.storages import captar_storage
     import scripts.compress_volumes
-    for volume_name in captar_storage.iter_files(""):
-        if volume_name == "validation":
-            continue
-        scripts.compress_volumes.validate_volume.delay(volume_name)
+    for folder in ('redacted', 'unredacted'):
+        for volume_name in captar_storage.iter_files(folder):
+            scripts.compress_volumes.validate_volume.delay(volume_name)
