@@ -4,4 +4,5 @@ from . import views
 
 urlpatterns = [
     url(r'^capdb/', views.index, name='index'),
+
 ]

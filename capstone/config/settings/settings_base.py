@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'tracking_tool',
     'capapi',
     'django_sql_trace',
+    'capweb',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
@@ -86,7 +87,8 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates')], # required by DRF for some reason
+        'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates'),
+                 os.path.join(BASE_DIR, 'capweb', 'templates')], # required by DRF for some reason
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

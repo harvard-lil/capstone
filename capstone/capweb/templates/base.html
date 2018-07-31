@@ -1,0 +1,40 @@
+{% load static %}
+{% load pipeline %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {# favicon #}
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static "img/favicon/apple-touch-icon.png" %}">
+    <link rel="icon" type="image/png" sizes="192x192"  href="{% static "img/favicon/android-chrome-144x144.png" %}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{% static "img/favicon/favicon.ico" %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static "img/favicon/favicon-32x32.png" %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static "img/favicon/favicon-16x16.png" %}">
+    <link rel="mask-icon" href="{% static "img/favicon/safari-pinned-tab.svg" %}" color="#0075FF">
+    <meta name="msapplication-TileColor" content="#2b5797">
+    <meta name="msapplication-TileImage" content="{% static "img/favicon/mstile-150x150.png" %}">
+    <meta name="theme-color" content="#ffffff">
+
+    <title>Caselaw Access Project{% block title %}{% endblock title %}</title>
+    <meta name="robots" content="noindex">
+    <meta name="description" content="{% block meta_description %}Explore American Caselaw{% endblock meta_description %}">
+
+{#    {% stylesheet 'base' %}#}
+    {% block extra_head %}
+
+    {% endblock %}
+  </head>
+  <body>
+  {% include "includes/header.html" %}
+    <div class="main-content header-margin d-flex" id="main" role="main">
+        {% block content %}{% endblock content %}
+    </div>
+{##}
+{#    {% if not hide_footer %}#}
+      {#  hiding footer in docs, showing info in sidebar #}
+{#      {% include "includes/footer.html" %}#}
+{#    {% endif %}#}
+  </body>
+</html>
