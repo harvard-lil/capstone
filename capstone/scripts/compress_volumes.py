@@ -21,7 +21,7 @@ import copy
 from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 
-from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage
+from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage, private_ingest_storage
 from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml
 
 # logging
@@ -40,6 +40,11 @@ info = print
 # encryption?
 
 ### HELPERS ###
+
+storage_lookup = {
+    'ingest_storage': (ingest_storage, 'redacted'),
+    'private_ingest_storage': (private_ingest_storage, 'unredacted'),
+}
 
 def get_file_type(path):
     """ Sort volume files by type. """
@@ -241,16 +246,16 @@ def write_xml_gz(xml, out_path):
 
 ### FILE HANDLERS ###
 
-def handle_simple_file(volume_file_path, tempdir):
-    ingest_storage, out_path = single_file_setup(volume_file_path, tempdir)
-    copy_file(volume_file_path, str(out_path), from_storage=ingest_storage)
+def handle_simple_file(volume_file_path, tempdir, storage_name):
+    storage, out_path = single_file_setup(volume_file_path, tempdir, storage_name)
+    copy_file(volume_file_path, str(out_path), from_storage=storage)
 
-def handle_image_file(volume_file_path, tempdir, new_suffix, conversion_function):
-    ingest_storage, out_path = single_file_setup(volume_file_path, tempdir)
+def handle_image_file(volume_file_path, tempdir, storage_name, new_suffix, conversion_function):
+    storage, out_path = single_file_setup(volume_file_path, tempdir, storage_name)
 
     out_path = out_path.with_suffix(new_suffix)
     start_time = time.time()
-    with ingest_storage.open(volume_file_path, "rb") as im_file:
+    with storage.open(volume_file_path, "rb") as im_file:
         converted_image_data = conversion_function(im_file)
 
     with out_path.open("wb") as out_file:
@@ -260,10 +265,10 @@ def handle_image_file(volume_file_path, tempdir, new_suffix, conversion_function
 
     return format_new_file_info(volume_file_path, out_path, out_file)
 
-def handle_alto_file(volume_file_path, tempdir):
-    ingest_storage, out_path = single_file_setup(volume_file_path, tempdir)
+def handle_alto_file(volume_file_path, tempdir, storage_name):
+    storage, out_path = single_file_setup(volume_file_path, tempdir, storage_name)
 
-    with ingest_storage.open(volume_file_path, "r") as in_file:
+    with storage.open(volume_file_path, "r") as in_file:
         alto_xml = parse_xml(in_file.read())
 
     filename_el = alto_xml('alto|fileName')
@@ -276,10 +281,10 @@ def handle_alto_file(volume_file_path, tempdir):
     out_file, out_path = write_xml_gz(alto_xml, out_path)
     return format_new_file_info(volume_file_path, out_path, out_file)
 
-def handle_mets_file(volume_file_path, tempdir, new_file_info, relative_path_prefix=''):
-    ingest_storage, out_path = single_file_setup(volume_file_path, tempdir)
+def handle_mets_file(volume_file_path, tempdir, storage_name, new_file_info, relative_path_prefix=''):
+    storage, out_path = single_file_setup(volume_file_path, tempdir, storage_name)
 
-    with ingest_storage.open(volume_file_path, "r") as in_file:
+    with storage.open(volume_file_path, "r") as in_file:
         mets_xml = parse_xml(in_file.read())
 
     # add provenance data
@@ -347,11 +352,8 @@ def handle_mets_file(volume_file_path, tempdir, new_file_info, relative_path_pre
     out_file, out_path = write_xml_gz(mets_xml, out_path)
     return format_new_file_info(volume_file_path, out_path, out_file)
 
-
-
-
-def handle_md5_file(volume_file_path, tempdir, new_digest):
-    ingest_storage, out_path = single_file_setup(volume_file_path, tempdir)
+def handle_md5_file(volume_file_path, tempdir, storage_name, new_digest):
+    storage, out_path = single_file_setup(volume_file_path, tempdir, storage_name)
 
     with out_path.open('w') as out:
         out.write(new_digest)
@@ -359,25 +361,25 @@ def handle_md5_file(volume_file_path, tempdir, new_digest):
 def format_new_file_info(volume_file_path, out_path, out_file):
     return volume_file_path, {'new_path': str(out_path), 'digest':out_file.hexdigest(), 'length':out_file.length}
 
-def single_file_setup(volume_file_path, tempdir):
+def single_file_setup(volume_file_path, tempdir, storage_name):
     info("processing %s" % volume_file_path)
-    ingest_storage = get_storage('ingest_storage')  # start new connection for threads
+    storage = get_storage(storage_name)  # start new connection for threads
     out_path = tempdir / volume_file_path
     out_path.parents[0].mkdir(parents=True, exist_ok=True)
-    return ingest_storage, out_path
+    return storage, out_path
 
 @shared_task
-def compress_volume(volume_name):
-    info("listing volume")
+def compress_volume(storage_name, volume_name):
+    storage, path_prefix = storage_lookup[storage_name]
 
     # only create archive if it doesn't already exist
-    archive_name = "%s/%s.tar" % (volume_name, volume_name)
+    archive_name = "%s/%s/%s.tar" % (path_prefix, volume_name, volume_name)
     if settings.COMPRESS_VOLUMES_SKIP_EXISTING and captar_storage.exists(archive_name):
         info("%s already exists, returning" % volume_name)
         return
 
     # get sorted files
-    volume_files = ingest_storage.iter_files_recursive(volume_name)
+    volume_files = storage.iter_files_recursive(volume_name)
     volume_files_by_type = defaultdict(list)
     for volume_file in volume_files:
         volume_files_by_type[get_file_type(volume_file)].append(volume_file)
@@ -396,7 +398,7 @@ def compress_volume(volume_name):
         else:
             mapper = map
         def file_map(func, files, *args, **kwargs):
-            return list(mapper((lambda f: func(f, tempdir, *args, **kwargs)), files))
+            return list(mapper((lambda f: func(f, tempdir, storage_name, *args, **kwargs)), files))
 
         # store mapping of old paths to new paths and related md5 info
         new_file_info = {}
@@ -418,10 +420,10 @@ def compress_volume(volume_name):
 
         # write volmets file, using data gathered in previous step
         add_file_info(case_file_results)
-        new_volume_info = handle_mets_file(volume_files_by_type['volume'][0], tempdir, new_file_info)
+        new_volume_info = handle_mets_file(volume_files_by_type['volume'][0], tempdir, storage_name, new_file_info)
 
         # finally write volmets md5
-        handle_md5_file(volume_files_by_type['md5'][0], tempdir, new_volume_info[1]['digest'])
+        handle_md5_file(volume_files_by_type['md5'][0], tempdir, storage_name, new_volume_info[1]['digest'])
 
         # tar volume
         info("tarring %s" % volume_path)
