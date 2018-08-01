@@ -205,7 +205,13 @@ class CaptarStorage(CapStorageMixin, Storage):
         self.path = path
         self.tar_path = str(Path(path, Path(path).name+".tar"))
         self.index_path = self.tar_path+".csv"
-        self.index = {line["path"]: line for line in csv.DictReader(parent.contents(self.index_path).split("\n"))}
+        self.index = {}
+        for line in csv.DictReader(parent.contents(self.index_path).split("\n")):
+            path = line["path"]
+            if '/' not in path:
+                continue
+            path = path.split("/", 1)[1]  # remove top-level directory
+            self.index[path] = line
 
     def contents(self, path, mode='r'):
         contents = super().contents(path, 'rb')
@@ -214,6 +220,7 @@ class CaptarStorage(CapStorageMixin, Storage):
         return contents
 
     def _open(self, name, mode):
+        name = str(name)
         if name not in self.index:
             # if given a file name that doesn't exist, but where the name with .gz does exist,
             # return the ungzipped version
@@ -240,7 +247,7 @@ class CaptarStorage(CapStorageMixin, Storage):
         if path and not partial_path:
             path += '/'
 
-        items = set(path+key[len(path):].split('/',1)[0] for key in self.index.keys())
+        items = set(path+key[len(path):].split('/',1)[0] for key in self.index.keys() if key.startswith(path))
         for item in items:
             yield item
 

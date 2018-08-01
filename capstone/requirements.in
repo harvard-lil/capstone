@@ -63,3 +63,8 @@ drf-yasg            # expose API specification
 flex                    # both used for spec validation
 swagger_spec_validator  # by drf-yasg
 -e git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
+
+# pdf generation
+PyPDF2
+reportlab
+img2pdf

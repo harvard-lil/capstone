@@ -470,7 +470,7 @@ def validate_volume(volume_name):
     temp_dir = TemporaryDirectory()
     try:
         # copy captar from S3 to disk if necessary
-        if isinstance(captar_storage, CapS3Storage) or True:
+        if isinstance(captar_storage, CapS3Storage):
             Path(temp_dir.name, volume_name).mkdir(parents=True)
             for path in captar_storage.iter_files(volume_name):
                 copy_file(path, Path(temp_dir.name, path), from_storage=captar_storage)
