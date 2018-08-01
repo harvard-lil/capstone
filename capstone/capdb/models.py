@@ -298,7 +298,7 @@ class BaseXMLModel(models.Model):
         return len(force_bytes(self.orig_xml))
 
     def update_related_sums(self, short_id, new_checksum, new_size):
-        parsed_xml = parse_xml(self.orig_xml)
+        parsed_xml = self.get_parsed_xml()
         self.update_related_sums_in_parsed_xml(parsed_xml, short_id, new_checksum, new_size)
         self.orig_xml = serialize_xml(parsed_xml)
 
@@ -315,6 +315,9 @@ class BaseXMLModel(models.Model):
             self.tracker.previous('orig_xml') and
             force_str(self.orig_xml) != self.tracker.previous('orig_xml')
         )
+
+    def get_parsed_xml(self):
+        return parse_xml(self.orig_xml)
 
 
 ### models ###
