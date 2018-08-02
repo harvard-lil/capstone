@@ -108,6 +108,7 @@ class CaseAllowanceMixin:
 
             # update the info for the existing user model, in case it's changed since the request began
             if not request.user.unlimited_access_in_effect():
+                user.update_case_allowance(save=False)  # for SiteLimits, make sure we start with up-to-date user.case_allowance_remaining
                 allowance_before = user.case_allowance_remaining
                 request.user.case_allowance_remaining = user.case_allowance_remaining
                 request.user.case_allowance_last_updated = user.case_allowance_last_updated
