@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="144px" height="144px" viewBox="0 0 144 144" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 10</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-wide" transform="translate(-692.000000, -1330.000000)">
+            <g id="Group-10" transform="translate(690.000000, 1331.000000)">
+                <circle id="Oval-Copy-2" stroke="#F7F6F2" stroke-width="2" fill="#9797B0" cx="74" cy="71" r="71"></circle>
+                <path d="M15.9730638,73.5 L132.001196,73.5" id="Line-2-Copy-3" stroke="#FFFFFF" stroke-width="2" stroke-linecap="square"></path>
+                <text id="40" font-family="TitilliumWeb-Bold, Titillium Web" font-size="60" font-weight="bold" line-spacing="78" letter-spacing="1.13" fill="#FFFFFF">
+                    <tspan x="40" y="62.1600952">40</tspan>
+                </text>
+                <text id="MILLION-PAGES-SCANNE" font-family="TitilliumWeb-Bold, Titillium Web" font-size="14" font-weight="bold" line-spacing="15" letter-spacing="0.4289568" fill="#FFFFFF">
+                    <tspan x="25" y="96.4040222">MILLION PAGES</tspan>
+                    <tspan x="42" y="111.404022">SCANNED</tspan>
+                </text>
+            </g>
+        </g>
+    </g>
+</svg>

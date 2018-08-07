@@ -1,0 +1,33 @@
+@import '_variables.scss';
+
+// buttons
+.btn {
+  @extend .font-body-bold;
+  font-size: 14px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  padding: 10px;
+  text-decoration: none !important;
+}
+
+.btn-default {
+  @extend .btn;
+  background: $color-violet-light;
+  color: $color-white !important;
+
+  &:hover, &:focus {
+    background: $color-pink;
+  }
+}
+
+.btn-inverse {
+  @extend .btn;
+  border: 2px solid $color-black;
+  color: $color-black;
+  background: $color-white;
+  &:hover, &:focus {
+    background: $color-yellow;
+    border: 2px solid;
+  }
+}

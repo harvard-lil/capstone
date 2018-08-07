@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="144px" height="144px" viewBox="0 0 144 144" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 9</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-wide" transform="translate(-467.000000, -1329.000000)">
+            <g id="Group-9" transform="translate(468.000000, 1330.000000)">
+                <circle id="Oval-Copy" stroke="#2A2A2A" stroke-width="2" fill="#FFFFFF" cx="71" cy="71" r="71"></circle>
+                <g id="Group-8" transform="translate(3.000000, 13.000000)">
+                    <text id="1640" font-family="TitilliumWeb-Bold, Titillium Web" font-size="35" font-weight="bold" line-spacing="52" letter-spacing="0.8925" fill="#9797B0">
+                        <tspan x="25" y="40">1640</tspan>
+                    </text>
+                    <text id="2017" font-family="TitilliumWeb-Bold, Titillium Web" font-size="35" font-weight="bold" line-spacing="52" letter-spacing="-0.09333333" fill="#9797B0">
+                        <tspan x="30.5" y="105">2017</tspan>
+                    </text>
+                    <g id="Group-7" transform="translate(0.000000, 49.000000)">
+                        <text id="TO" font-family="TitilliumWeb-SemiBold, Titillium Web" font-size="24" font-weight="500" line-spacing="22" letter-spacing="0.5682286" fill="#2A2A2A">
+                            <tspan x="46.5157714" y="20.5760498">TO</tspan>
+                        </text>
+                        <path d="M7.5,11.5 L39.5156212,11.5" id="Line-3" stroke="#2A2A2A" stroke-width="2" stroke-linecap="square"></path>
+                        <path d="M98.5,11.5 L130.515621,11.5" id="Line-3-Copy-2" stroke="#2A2A2A" stroke-width="2" stroke-linecap="square"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

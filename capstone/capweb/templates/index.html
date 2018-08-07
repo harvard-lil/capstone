@@ -26,65 +26,98 @@
     </section>
 
     {# Dive in #}
-    <section class="separator">
+    <section id="section-dive-in" class="separator">
       <div class="row">
+        <div class="col-lg col-md-6 mt-5">
+          <h2 class="georgia section-title">Dive in!</h2>
+        </div>
         <div class="col-lg col-md-6">
-          <h2 class="georgia text-right">Dive in!</h2>
+          <p class="georgia color-violet">Start exploring the data! Here are some tools you can use to check it out.</p>
+          <h4 class="georgia">API</h4>
+          <p>The API allows users to browse and download cases using a few short commands.</p>
+
+          <h4 class="georgia">Bulk data</h4>
+          <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
+          <br/>
+          <a href="/tools" class="btn-default">BROWSE TOOLS</a>
         </div>
-        <div class="col-lg">
-          <p class="georgia">Start exploring the data! Here are some tools you can use to check it out.</p>
+        <div class="col-lg d-sm-none d-lg-block">
+          <img class="img-fluid" src="{% static "img/reporters.png" %}">
         </div>
-        <div class="col-lg visible-md">This is a test</div>
-        <div class="sleeve">
-          <div class="col-6 mt-5">
-            <div class="col-sm-12 col-md-8 m-auto">
-              <h2 class="georgia">Dive in!</h2>
-              <p>Start exploring the data! Here are some tools you can use to check it out.</p>
-              <div class="row">
-                <div class="col-xs-12 col-sm-6 pl-0">
-                  <h4 class="section-subtitle">API</h4>
-                  <p>The API allows users to browse and download cases using a few short commands.</p>
-                </div>
-                <div class="col-xs-12 col-sm-6 pl-0">
-                  <h4 class="section-subtitle">Bulk Data</h4>
-                  <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
-                </div>
-              </div>
-                <div class="col-12 pl-0">
-                  <button class="btn btn-default">SEE MORE WAYS TO BROWSE</button>
-                </div>
-            </div>
-          </div>
-          <div class="col-6">
-            <img class="img-fluid" src="{% static "img/steve-stacking-law.jpg" %}">
-          </div>
-        </div>
-        </div>
+      </div>
     </section>
 
     {# Map + about #}
-    <section>
+    <section id="section-about">
       <div class="row">
-        <div class="col-8">
+        <div class="col-8 d-sm-none d-none d-md-block pl-0 bg-tan">
+          <div class="col-12 mt-5">
+            <span class="col-4 float-right text-right">
+              {% include "includes/round-1.svg" %}
+            </span>
+            <span class="col-4 float-right text-right">
+              {% include "includes/round-2.svg" %}
+            </span>
+            <span class="col-4 float-right text-right">
+              {% include "includes/round-3.svg" %}
+            </span>
+          </div>
           <img class="img-fluid" src="{% static "img/purple-us.png" %}">
+          <a class="btn btn-default">GO TO MAP</a>
 
         </div>
 
-        <div class="col-4 bg-tan">
-          <div class="col-10 mt-5 m-auto">
-            <h4>What kind of data do we have?</h4>
-            <p>Short blurb about what kind of data we have.
-              We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
-            <a class="btn btn-default">SEE MORE</a>
-            <div class="col-10 m-auto separator"></div>
+        <div class="sidebar-content col-md-4 col-xs-12">
+          <div class="mt-5">
+            <div class="col-lg col-md-4 col-sm-4 d-none d-sm-block d-md-none d-lg-none pl-0">
+              <h2 class="georgia section-title">About</h2>
+            </div>
 
-            <h4>Limits on use</h4>
-            <p>Short blurb about what kind of data we have.
-              We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
-            <button class="btn btn-default">SEE MORE</button>
+            <div class="content col-lg-10 col-md-8 pl-0">
+              <h4 class="georgia">What kind of data do we have?</h4>
+              <p class="color-white">Short blurb about what kind of data we have.
+                We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
+              <a class="btn btn-inverse">SEE MORE</a>
+              <br/><br/>
+              <div class="separator color-white"></div>
+              <br/>
+              <h4 class="georgia">Limits on use</h4>
+              <p class="color-white">Short blurb about what kind of data we have.
+                We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
+              <a class="btn btn-inverse">SEE MORE</a>
+              <br/>
+              <br/>
+            </div>
           </div>
         </div>
+      </div>
+    </section>
+    {#  Showcase #}
+    <section id="section-showcase" class="bg-black">
+      <div class="row">
+        <div class="col-lg-4 col-md-6 mt-5">
+          <h2 class="georgia section-title">What's <br/>Possible?</h2>
         </div>
+        <div class="col-lg col-md-6 mt-5">
+          <div class="row">
+            <div class="col-sm showcase-item">
+              <div class="showcase-item-img bg-yellow"></div>
+              <h6 class="showcase-item-title georgia">Wordclouds</h6>
+              <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
+            </div>
+            <div class="col-sm showcase-item">
+              <div class="showcase-item-img bg-yellow"></div>
+              <h6 class="showcase-item-title georgia">Topic mapping</h6>
+              <p>Ipsam culpa dolorem repellat nihil adipisci ea eligendi quasi. Id voluptas labore odio sunt perferendis aut et ut.</p>
+            </div>
+            <div class="col-sm showcase-item">
+              <div class="showcase-item-img bg-yellow"></div>
+              <h6 class="showcase-item-title georgia">Limericks</h6>
+              <p>Veritatis qui est quasi minima quae est tempore. Omnis velit ab sit cumque id autem est.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 {% endblock %}
