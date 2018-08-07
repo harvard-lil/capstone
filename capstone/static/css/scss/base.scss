@@ -80,13 +80,36 @@ a {
 
 // MENU
 #main-menu {
-  border-bottom: 1px solid $color-medium-gray;
-  border-top: 1px solid $color-medium-gray;
   a {
     color: $color-black;
   }
+
+  @include media-breakpoint-up(lg) {
+    border-bottom: 1px solid $color-medium-gray;
+    border-top: 1px solid $color-medium-gray;
+  }
+  @include media-breakpoint-down(md) {
+    background-color: $color-yellow-light;
+    #navbar-content, .dropdown-menu {
+      background-color: $color-black;
+      a {
+        color: $color-white;
+        border-bottom: 1px solid $color-yellow-light;
+        padding-bottom: 5px;
+      }
+      a:hover, a:focus {
+        background-color: $color-violet-gray;
+        color: $color-yellow-light;
+      }
+    }
+  }
+
   .nav-item {
     padding: 0 1rem;
+  }
+  .navbar-toggler {
+    background: $color-violet;
+    border-radius: 0px;
   }
 }
 

@@ -1,22 +1,31 @@
-
-<nav id="main-menu" class="navbar navbar-expand-lg">
+<nav id="main-menu" class="navbar navbar-expand-lg p-0">
   {% if page_name != 'index' %}
     <a class="navbar-brand" href="#">Caselaw Access Project</a>
   {% endif %}
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+  <button class="navbar-toggler pull-xs-right p-0"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbar-content"
+          aria-controls="navbar-content"
+          aria-expanded="false"
+          aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbar-content">
     <ul class="navbar-nav mx-auto list-inline">
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle"
-           href="#" id="navbarDropdown"
+           href="#" id="navbar-dropdown"
            role="button"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
           ABOUT
         </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
           <a class="dropdown-item" href="#">Overview</a>
-            <a class="dropdown-item" href="#">What data?</a>
+          <a class="dropdown-item" href="#">What data?</a>
           <a class="dropdown-item" href="#">Usage & access</a>
           <a class="dropdown-item" href="#">Press</a>
           <a class="dropdown-item" href="#">Contributors</a>
@@ -24,14 +33,14 @@
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle"
-           href="#" id="navbarDropdown"
+           href="#" id="navbar-dropdown"
            role="button"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
           TOOLS
         </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
           <a class="dropdown-item" href="#">Overview</a>
           <a class="dropdown-item" href="#">API</a>
           <a class="dropdown-item" href="#">Bulk Data</a>
@@ -39,14 +48,14 @@
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle"
-           href="#" id="navbarDropdown"
+           href="#" id="navbar-dropdown"
            role="button"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
           SHOWCASE
         </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
           <a class="dropdown-item" href="#">Overview</a>
           <a class="dropdown-item" href="#">Limericks</a>
           <a class="dropdown-item" href="#">Wordclouds</a>
@@ -61,15 +70,6 @@
       </li>
     </ul>
   </div>
-  <button class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
 </nav>
 
 
