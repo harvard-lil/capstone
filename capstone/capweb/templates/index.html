@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
 {% load static %}
 {% load pipeline %}
 
@@ -8,16 +8,83 @@
 
 {% block content %}
   {% include "includes/menu.html" %}
-  <section class="bg-tan">
-    <div class="row">
-      <div class="col-6 m-auto text-center">
-        <h2 class="georgia">
+  <div class="row">
+    <section class="separator bg-yellow">
+      <div class="col-xl-4 col-md-6 col-sm-10 m-auto text-center">
+        <h2 class="georgia mt-5">
           A complete collection of  published United States caselaw  from 1640 to 2017
         </h2>
       </div>
-    </div>
-    <div class="container-fluid">
-      <img class="img-fluid" src="{% static "img/mountains.png" %}">
-    </div>
-  </section>
+      <div class="container-fluid">
+        <div class="col-xl-8 col-lg-10 col-md-12 m-auto">
+          <img class="img-fluid"
+             alt="stylized mountains"
+             src="{% static "img/mountains.png" %}">
+
+        </div>
+      </div>
+    </section>
+
+    {# Dive in #}
+    <section class="separator">
+      <div class="row">
+        <div class="col-lg col-md-6">
+          <h2 class="georgia text-right">Dive in!</h2>
+        </div>
+        <div class="col-lg">
+          <p class="georgia">Start exploring the data! Here are some tools you can use to check it out.</p>
+        </div>
+        <div class="col-lg visible-md">This is a test</div>
+        <div class="sleeve">
+          <div class="col-6 mt-5">
+            <div class="col-sm-12 col-md-8 m-auto">
+              <h2 class="georgia">Dive in!</h2>
+              <p>Start exploring the data! Here are some tools you can use to check it out.</p>
+              <div class="row">
+                <div class="col-xs-12 col-sm-6 pl-0">
+                  <h4 class="section-subtitle">API</h4>
+                  <p>The API allows users to browse and download cases using a few short commands.</p>
+                </div>
+                <div class="col-xs-12 col-sm-6 pl-0">
+                  <h4 class="section-subtitle">Bulk Data</h4>
+                  <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
+                </div>
+              </div>
+                <div class="col-12 pl-0">
+                  <button class="btn btn-default">SEE MORE WAYS TO BROWSE</button>
+                </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <img class="img-fluid" src="{% static "img/steve-stacking-law.jpg" %}">
+          </div>
+        </div>
+        </div>
+    </section>
+
+    {# Map + about #}
+    <section>
+      <div class="row">
+        <div class="col-8">
+          <img class="img-fluid" src="{% static "img/purple-us.png" %}">
+
+        </div>
+
+        <div class="col-4 bg-tan">
+          <div class="col-10 mt-5 m-auto">
+            <h4>What kind of data do we have?</h4>
+            <p>Short blurb about what kind of data we have.
+              We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
+            <a class="btn btn-default">SEE MORE</a>
+            <div class="col-10 m-auto separator"></div>
+
+            <h4>Limits on use</h4>
+            <p>Short blurb about what kind of data we have.
+              We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
+            <button class="btn btn-default">SEE MORE</button>
+          </div>
+        </div>
+        </div>
+    </section>
+  </div>
 {% endblock %}
