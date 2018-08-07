@@ -13,10 +13,10 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name='casemetadata',
-            index=partial_index.PartialIndex(fields=['court_id', 'decision_date', 'id'], name='capdb_casem_court_i_42eeb9_partial', unique=True, where='jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative', where_postgresql='', where_sqlite=''),
+            index=partial_index.PartialIndex(fields=['court', 'decision_date', 'id'], name='capdb_casem_court_i_42eeb9_partial', unique=True, where='jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative', where_postgresql='', where_sqlite=''),
         ),
         migrations.AddIndex(
             model_name='casemetadata',
-            index=partial_index.PartialIndex(fields=['reporter_id', 'decision_date', 'id'], name='capdb_casem_reporte_3f581c_partial', unique=True, where='jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative', where_postgresql='', where_sqlite=''),
+            index=partial_index.PartialIndex(fields=['reporter', 'decision_date', 'id'], name='capdb_casem_reporte_3f581c_partial', unique=True, where='jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative', where_postgresql='', where_sqlite=''),
         ),
     ]

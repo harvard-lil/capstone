@@ -17,7 +17,7 @@ from capapi import renderers as capapi_renderers
 class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.JurisdictionSerializer
     http_method_names = ['get']
-    filter_class = filters.JurisdictionFilter
+    filterset_class = filters.JurisdictionFilter
     queryset = models.Jurisdiction.objects.all()
     lookup_field = 'slug'
 
@@ -33,14 +33,14 @@ class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.L
 class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
-    filter_class = filters.ReporterFilter
+    filterset_class = filters.ReporterFilter
     queryset = models.Reporter.objects.all().prefetch_related('jurisdictions')
 
 
 class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.CourtSerializer
     http_method_names = ['get']
-    filter_class = filters.CourtFilter
+    filterset_class = filters.CourtFilter
     queryset = models.Court.objects.all().select_related('jurisdiction')
     lookup_field = 'slug'
 
@@ -73,7 +73,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         capapi_renderers.XMLRenderer,
         capapi_renderers.HTMLRenderer,
     )
-    filter_class = filters.CaseFilter
+    filterset_class = filters.CaseFilter
     lookup_field = 'id'
 
     def is_full_case_request(self):
