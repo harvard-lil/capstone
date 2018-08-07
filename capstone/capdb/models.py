@@ -749,8 +749,8 @@ class CaseMetadata(models.Model):
             PartialIndex(fields=['decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             # indexes for ordering of case API endpoint when filtered by jurisdiction, court, or reporter
             PartialIndex(fields=['jurisdiction_slug', 'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
-            PartialIndex(fields=['court_id',          'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
-            PartialIndex(fields=['reporter_id',       'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
+            PartialIndex(fields=['court',             'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
+            PartialIndex(fields=['reporter',          'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
         ]
 
 
