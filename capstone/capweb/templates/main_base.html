@@ -35,10 +35,10 @@
     <div class="main-content header-margin flex-xl-nowrap" id="main" role="main">
         {% block content %}{% endblock content %}
     </div>
-{##}
-{#    {% if not hide_footer %}#}
-      {#  hiding footer in docs, showing info in sidebar #}
-{#      {% include "includes/footer.html" %}#}
-{#    {% endif %}#}
+
+    {% if not hide_footer %}
+      {#  hiding footer in docs, showing info in sidebar#}
+      {% include "includes/footer.html" %}
+    {% endif %}
   </body>
 </html>

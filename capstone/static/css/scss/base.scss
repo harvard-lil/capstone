@@ -160,6 +160,9 @@ section#section-about {
       //  bac
       //}
     }
+    .viz-circles {
+      padding-bottom: 6rem;
+    }
     .sidebar-content {
       p {
         color: $color-white;
@@ -182,6 +185,24 @@ section#section-about {
         }
       }
     }
+    #purple-us-map {
+      @include media-breakpoint-only(lg) {
+        width: 80%;
+      }
+    }
+  }
+}
+
+section#section-links {
+  padding-bottom: 30px;
+  .item-title {
+    margin-bottom: 0;
+  }
+  .item-set {
+    margin-bottom: 20px;
+  }
+  li {
+    list-style: none;
   }
 }
 
@@ -193,4 +214,16 @@ section#section-about {
 
 .showcase-item-title {
   color: $color-yellow;
+}
+
+
+// FOOTER
+footer {
+  a {
+    color: $color-black;
+    font-weight: 700;
+    &:hover, &:focus {
+      color: $color-blue;
+    }
+  }
 }

@@ -51,7 +51,7 @@
     <section id="section-about">
       <div class="row">
         <div class="col-8 d-sm-none d-none d-md-block pl-0 bg-tan">
-          <div class="col-12 mt-5">
+          <div class="col-12 mt-5 viz-circles">
             <span class="col-4 float-right text-right">
               {% include "includes/round-1.svg" %}
             </span>
@@ -62,9 +62,11 @@
               {% include "includes/round-3.svg" %}
             </span>
           </div>
-          <img class="img-fluid" src="{% static "img/purple-us.png" %}">
-          <a class="btn btn-default">GO TO MAP</a>
-
+          <br/>
+          <div class="col-12 p-0 mt-5">
+            <img id="purple-us-map" class="align-bottom" alt="Stylized US map" src="{% static "img/purple-us-2.png" %}">
+            {# <a class="btn btn-default float-right">GO TO MAP</a>#}
+          </div>
         </div>
 
         <div class="sidebar-content col-md-4 col-xs-12">
@@ -92,6 +94,7 @@
         </div>
       </div>
     </section>
+
     {#  Showcase #}
     <section id="section-showcase" class="bg-black">
       <div class="row">
@@ -119,5 +122,58 @@
         </div>
       </div>
     </section>
+
+    {# Links #}
+    <section id="section-links" class="bg-tan">
+      <div class="row">
+        <div class="col-lg-4 col-md-6 mt-5">
+          <h2 class="georgia section-title">Links &amp;<br/>Press</h2>
+        </div>
+        <div class="col-lg col-md-6 mt-5">
+          <ul>
+            <li class="item-set">
+              <p class="item-title georgia">
+                Caselaw Access Project Scanning Now Complete
+              </p>
+              <span class="item-origin">
+                <a href="">Et Seq.</a>
+              </span>
+              <span class="item-date">January 30, 2017</span>
+            </li>
+
+            <li class="item-set">
+              <p class="item-title georgia">
+                Caselaw Access Project Scanning Now Complete
+              </p>
+              <span class="item-origin">
+                <a href="">Et Seq.</a>
+              </span>
+              <span class="item-date">January 30, 2017</span>
+            </li>
+
+            <li class="item-set">
+              <p class="item-title georgia">
+                Caselaw Access Project Scanning Now Complete
+              </p>
+              <span class="item-origin">
+                <a href="">Et Seq.</a>
+              </span>
+              <span class="item-date">January 30, 2017</span>
+            </li>
+
+            <li class="item-set">
+              <p class="item-title georgia">
+                Caselaw Access Project Scanning Now Complete
+              </p>
+              <span class="item-origin">
+                <a href="">Et Seq.</a>
+              </span>
+              <span class="item-date">January 30, 2017</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
   </div>
 {% endblock %}
+
