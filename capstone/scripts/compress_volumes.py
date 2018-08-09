@@ -169,7 +169,7 @@ def jp2_to_jpg(jp2_file, quality=50):
 
         return out
 
-def jp2_to_jpg_slow(jp2_file, quality=50):
+def jp2_to_jpg_slow(jp2_file, quality=40):
     """
         Convert jp2_file, an open file handle, to jpg and return jpg data.
         Requires opj_decompress and mozcjpeg to be in PATH.
@@ -198,6 +198,38 @@ def jp2_to_jpg_slow(jp2_file, quality=50):
         ])
 
         return out
+
+def compress_jp2(in_file, quality=35):
+    """
+        Convert in_file, an open file handle, to compressed jp2.
+        Requires opj_compress to be in PATH.
+    """
+    with tempfile.NamedTemporaryFile(suffix=".jp2") as jp2_temp_file, \
+         tempfile.NamedTemporaryFile(suffix=".tga") as tga_temp_file:
+
+        # create temp jp2 on disk, required by obj_compress
+        shutil.copyfileobj(in_file, jp2_temp_file)
+        jp2_temp_file.flush()
+
+        subprocess.check_call([
+            "opj_decompress",
+            "-i", jp2_temp_file.name,
+            "-o", tga_temp_file.name,
+            "-threads", "5",  # on a quick test, 5 threads seems to be fastest
+            "-quiet",  # suppress progress messages
+        ])
+
+        subprocess.check_call([
+            "opj_compress",
+            "-i", tga_temp_file.name,
+            "-o", jp2_temp_file.name,
+            "-q", str(quality),
+            "-quiet",  # suppress progress messages
+        ])
+
+        # return small jp2 data
+        with open(jp2_temp_file.name, "rb") as out:
+            return out.read()
 
 def tif_to_png(tif_file):
     """
@@ -317,7 +349,7 @@ def handle_mets_file(volume_file_path, tempdir, storage_name, new_file_info, rel
     # update <fileGrp> sections
     fptr_elements = mets_xml('mets|fptr')
 
-    def fix_file_group(group_name, new_mime_type, new_id_prefix=None):
+    def fix_file_group(group_name, new_mime_type=None, new_id_prefix=None):
         file_group = mets_xml('mets|fileGrp[USE="%s"]' % group_name)
         for file_el in file_group('mets|file'):
             file_el = parse_xml(file_el)
@@ -327,7 +359,8 @@ def handle_mets_file(volume_file_path, tempdir, storage_name, new_file_info, rel
 
             if new_id_prefix:
                 file_el.attr('ID', file_el.attr('ID').replace(group_name, new_id_prefix))
-            file_el.attr('MIMETYPE', new_mime_type)
+            if new_mime_type:
+                file_el.attr('MIMETYPE', new_mime_type)
             file_el.attr('CHECKSUM', new_data['digest'])
             file_el.attr('SIZE', str(new_data['length']))
 
@@ -344,7 +377,10 @@ def handle_mets_file(volume_file_path, tempdir, storage_name, new_file_info, rel
                     fptr.attrib['FILEID'] = fileid.replace(group_name, new_id_prefix)
 
     fix_file_group('jp2', 'image/jpg', 'jpg')
-    fix_file_group('tiff', 'image/png', 'png')
+    # use this if doing jp2 -> compressed jp2
+    # fix_file_group('jp2')
+    # use this if compressing tiff -> png
+    # fix_file_group('tiff', 'image/png', 'png')
     fix_file_group('alto', 'text/xml+gzip')
     fix_file_group('casemets', 'text/xml+gzip')
 
@@ -410,12 +446,16 @@ def compress_volume(storage_name, volume_name):
                     v['new_path'] = os.path.relpath(v['new_path'], str(volume_path))
 
         # write alto, tif, and jpg files
-        tif_file_results = file_map(handle_image_file, volume_files_by_type.get('tif', []), '.png', tif_to_png)
-        jpg_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jpg', jp2_to_jpg_slow)
+        # use this if compressing tiff -> png
+        # tif_file_results = file_map(handle_image_file, volume_files_by_type.get('tif', []), '.png', tif_to_png)
+        file_map(handle_simple_file, volume_files_by_type.get('tif', []))
+        color_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jpg', jp2_to_jpg_slow)
+        # use this if compressing jp2 -> jp2
+        # color_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jp2', compress_jp2)
         alto_file_results = file_map(handle_alto_file, volume_files_by_type.get('alto', []))
 
         # write casemets files, using data gathered in previous step
-        add_file_info(jpg_file_results, alto_file_results, tif_file_results)
+        add_file_info(color_file_results, alto_file_results)
         case_file_results = file_map(handle_mets_file, volume_files_by_type.get('case', []), new_file_info, '../')
 
         # write volmets file, using data gathered in previous step
@@ -482,17 +522,17 @@ def validate_volume(volume_name):
         volume_storage = CaptarStorage(local_storage, volume_name)
         if not volume_storage.index:
             raise ValidationResult("index_missing", "Failed to load index from %s" % volume_storage.index_path)
-        tar_items = list(volume_storage.iter_files_recursive(with_md5=True))
+        tar_items = set(volume_storage.iter_files_recursive(with_md5=True))
 
-        # volmets_path is shortest path with only one slash, ending in .xml.gz
-        volmets_path = next((item for item in tar_items if item[0].count("/") == 1 and item[0].endswith(".xml.gz")), None)
+        # volmets_path is shortest path with no slashes, ending in .xml.gz
+        volmets_path = next((item for item in tar_items if item[0].count("/") == 0 and item[0].endswith(".xml.gz")), None)
 
         # check for missing volmets
         if not volmets_path:
             raise ValidationResult("volmets_missing", volume_name)
 
         # check md5 of volmets
-        md5_path = next((item[0] for item in tar_items if item[0].count("/") == 1 and item[0].endswith(".md5")), None)
+        md5_path = next((item[0] for item in tar_items if item[0].count("/") == 0 and item[0].endswith(".md5")), None)
         if not md5_path:
             raise ValidationResult("md5_missing")
         if volmets_path[1] != volume_storage.contents(md5_path):
@@ -500,9 +540,6 @@ def validate_volume(volume_name):
 
         # strip .gz so the storage will decompress for us
         volmets_path = volmets_path[0][:-3]
-
-        # strip enclosing directory from file paths
-        tar_items = set((item[0].split('/', 1)[1], item[1]) for item in tar_items)
 
         # check for mismatched files
         orig_xml = volume_storage.contents(volmets_path)
@@ -528,7 +565,7 @@ def validate_volume(volume_name):
         suffix_counts = defaultdict(int)
         for item in volmets_files:
             suffix_counts[item[0].split('.', 1)[1]] += 1
-        if suffix_counts['jpg'] == 0 or suffix_counts['jpg'] != suffix_counts['png'] or suffix_counts['xml.gz'] < suffix_counts['jpg']:
+        if suffix_counts['jpg'] == 0 or suffix_counts['jpg'] != suffix_counts['tif'] or suffix_counts['xml.gz'] < suffix_counts['jpg']:
             raise ValidationResult("unexpected_suffix_counts", suffix_counts)
 
         raise ValidationResult("ok")
