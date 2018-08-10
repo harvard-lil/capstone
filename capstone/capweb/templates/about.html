@@ -1,0 +1,32 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block extra_head %}
+  {% javascript 'base' %}
+{% endblock %}
+
+{% block content %}
+  {% include "includes/menu.html" %}
+  <div class="row">
+    <div class="col-4"></div>
+    <div class="col-8">
+      <h1>About the Project</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-4 list-group sidebar-menu">
+      <a class="list-group-item" href="#overview">Overview</a>
+      <a class="list-group-item" href="#data">What data?</a>
+      <a class="list-group-item" href="#usage">Usage &amp; access</a>
+      <a class="list-group-item" href="#press">Press</a>
+      <a class="list-group-item" href="#contributors">Contributors</a>
+    </div>
+    <div class="col-8">
+      <p class="pullquote georgia">Providing an open data set of every U.S. court decision ever published, for use by lawyers, scholars, programmers, and everyone else.”</p>
+      <img src="" alt=""/>
+      <p class=""></p>
+    </div>
+  </div>
+
+{% endblock %}

@@ -31,8 +31,8 @@
 {#    {% stylesheet 'base' %}#}
     {% block extra_head %}{% endblock %}
   </head>
-  <body>
-    <div class="main-content header-margin flex-xl-nowrap" id="main" role="main">
+  <body class="page-{{ page_name }}">
+    <div class="main-content flex-xl-nowrap {% if page_name == 'index' %}header-margin{% endif %}" id="main" role="main">
         {% block content %}{% endblock content %}
     </div>
 

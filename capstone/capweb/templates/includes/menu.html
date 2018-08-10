@@ -1,6 +1,12 @@
-<nav id="main-menu" class="navbar navbar-expand-lg p-0">
+{% load static %}
+<nav id="main-menu" class="navbar navbar-expand-lg pl-0 pr-0">
   {% if page_name != 'index' %}
-    <a class="navbar-brand" href="#">Caselaw Access Project</a>
+    <a href="/">
+      <img id="cap-logo-long"
+       class="img-fluid"
+       alt="CAP logo"
+       src="{% static "img/cap-logo-final-long-small.png" %}">
+    </a>
   {% endif %}
   <button class="navbar-toggler pull-xs-right p-0"
           type="button"
@@ -15,7 +21,7 @@
   <div class="collapse navbar-collapse" id="navbar-content">
     <ul class="navbar-nav mx-auto list-inline">
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle"
+        <a class="nav-link dropdown-toggle {% if page_name == 'about' %}selected{% endif %}"
            href="#" id="navbar-dropdown"
            role="button"
            data-toggle="dropdown"
@@ -24,15 +30,15 @@
           ABOUT
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
-          <a class="dropdown-item" href="#">Overview</a>
-          <a class="dropdown-item" href="#">What data?</a>
-          <a class="dropdown-item" href="#">Usage & access</a>
-          <a class="dropdown-item" href="#">Press</a>
-          <a class="dropdown-item" href="#">Contributors</a>
+          <a class="dropdown-item" href="/about">Overview</a>
+          <a class="dropdown-item" href="/about#data">What data?</a>
+          <a class="dropdown-item" href="/about#usage">Usage & access</a>
+          <a class="dropdown-item" href="/about#press">Press</a>
+          <a class="dropdown-item" href="/about#contributors">Contributors</a>
         </div>
       </li>
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle"
+        <a class="nav-link dropdown-toggle {% if page_name == 'tools' %}selected{% endif %}"
            href="#" id="navbar-dropdown"
            role="button"
            data-toggle="dropdown"
@@ -41,12 +47,12 @@
           TOOLS
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
-          <a class="dropdown-item" href="#">Overview</a>
-          <a class="dropdown-item" href="#">API</a>
-          <a class="dropdown-item" href="#">Bulk Data</a>
+          <a class="dropdown-item" href="/tools#">Overview</a>
+          <a class="dropdown-item" href="/tools#">API</a>
+          <a class="dropdown-item" href="/tools#">Bulk Data</a>
         </div>
       </li>
-      <li class="nav-item dropdown">
+      <li class="nav-item dropdown {% if page_name == 'showcase' %}selected{% endif %}">
         <a class="nav-link dropdown-toggle"
            href="#" id="navbar-dropdown"
            role="button"
@@ -63,10 +69,10 @@
       </li>
 
       <li class="nav-item">
-        <a class="nav-link" href="#">LOG IN</a>
+        <a class="nav-link {% if page_name == 'login' %}selected{% endif %}" href="#">LOG IN</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">CONTACT</a>
+        <a class="nav-link {% if page_name == 'contact' %}selected{% endif %}" href="#">CONTACT</a>
       </li>
     </ul>
   </div>

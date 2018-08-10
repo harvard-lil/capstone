@@ -1,0 +1,11 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block extra_head %}
+  {% javascript 'base' %}
+{% endblock %}
+
+{% block content %}
+  {% include "includes/menu.html" %}
+{% endblock %}
