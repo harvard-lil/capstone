@@ -1061,9 +1061,12 @@ class Citation(models.Model):
 
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
         if self.tracker.has_changed('cite'):
-            self.normalized_cite = slugify(self.cite)
+            self.normalized_cite = self.normalize_cite(self.cite)
         super(Citation, self).save(force_insert, force_update, *args, **kwargs)
 
+    @staticmethod
+    def normalize_cite(cite):
+        return re.sub(r'[^0-9a-z]', '', cite.lower())
 
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)

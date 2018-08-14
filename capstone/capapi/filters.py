@@ -1,7 +1,6 @@
 from functools import lru_cache
 
 from django.utils.functional import SimpleLazyObject
-from django.utils.text import slugify
 import rest_framework_filters as filters
 
 from capdb import models
@@ -103,7 +102,7 @@ class CaseFilter(filters.FilterSet):
         lookup_expr='icontains')
 
     def find_by_citation(self, qs, name, value):
-        return qs.filter(citations__normalized_cite__exact=slugify(value))
+        return qs.filter(citations__normalized_cite__exact=models.Citation.normalize_cite(value))
 
     def find_by_date(self, qs, name, value):
         if '_min' in name:
