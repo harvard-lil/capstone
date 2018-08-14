@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class CitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Citation
-        fields = ('type', 'cite', 'normalized_cite')
+        fields = ('type', 'cite')
 
 
 class CitationWithCaseSerializer(CitationSerializer):
@@ -49,16 +49,33 @@ class CourtSerializer(serializers.ModelSerializer):
         fields = ('url', 'id', 'slug', 'name', 'name_abbreviation')
 
 
+class CaseVolumeSerializer(serializers.ModelSerializer):
+    """ Abbreviated version of VolumeSerializer for embedding in CaseSerializer. """
+    volume_number = serializers.ReadOnlyField(source='xml_volume_number')
+
+    class Meta:
+        model = models.VolumeMetadata
+        fields = ('url', 'volume_number')
+
+
+class CaseReporterSerializer(serializers.ModelSerializer):
+    """ Abbreviated version of CaseSerializer for embedding in CaseSerializer. """
+    class Meta:
+        model = models.Reporter
+        fields = (
+            'url',
+            'full_name',
+        )
+
+
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="casemetadata-detail", lookup_field="id")
     court = CourtSerializer(source='denormalized_court')
     jurisdiction = JurisdictionSerializer(source='denormalized_jurisdiction')
-    reporter = serializers.ReadOnlyField(source='reporter.full_name')
-    reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
     citations = CitationSerializer(many=True)
-    volume_number = serializers.ReadOnlyField(source='volume.xml_volume_number')
-    volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
+    volume = CaseVolumeSerializer()
+    reporter = CaseReporterSerializer()
     decision_date = serializers.DateField(source='decision_date_original')
 
     class Meta:
@@ -73,12 +90,10 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'first_page',
             'last_page',
             'citations',
-            'jurisdiction',
-            'court',
+            'volume',
             'reporter',
-            'reporter_url',
-            'volume_number',
-            'volume_url',
+            'court',
+            'jurisdiction',
         )
 
 
