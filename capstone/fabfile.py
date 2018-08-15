@@ -719,3 +719,9 @@ def validate_captar_volumes():
     for folder in ('redacted', 'unredacted'):
         for volume_name in captar_storage.iter_files(folder):
             scripts.compress_volumes.validate_volume.delay(volume_name)
+
+
+@task
+def create_case_text_for_all_cases(update_existing=False):
+    update_existing = True if update_existing else False
+    tasks.create_case_text_for_all_cases(update_existing=update_existing)

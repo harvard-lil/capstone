@@ -3,7 +3,8 @@ import re
 from lxml import etree
 from pyquery import PyQuery
 from django.core.paginator import Paginator
-
+from django.utils.html import strip_tags
+from django.db import connections
 
 nsmap = {
     'duplicative': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body_Duplicative:v1',
@@ -235,6 +236,22 @@ def extract_casebody(case_xml):
             footnote[0].text = footnote[0].text[len(label):]
 
     return case('casebody|casebody')
+
+
+def get_case_text(input_case, case_parsed = True):
+    if case_parsed:
+        plain_text_case = serialize_xml(input_case)
+    else:
+        plain_text_case = input_case
+    return strip_tags(extract_casebody(plain_text_case))
+
+def to_tsvector(input_text):
+    query = """SELECT to_tsvector('english', %s);  """
+
+    with connections['capdb'].cursor() as cursor:
+        cursor.execute(query, [input_text])
+        row = cursor.fetchone()
+        print(row)
 
 def court_name_strip(name_text):
     name_text = re.sub('\xa0', ' ', name_text)

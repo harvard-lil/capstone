@@ -11,7 +11,7 @@ from partial_index import PartialIndex
 
 from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, jurisdiction_translation_long_name)
+                             serialize_xml, jurisdiction_translation_long_name, get_case_text)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -685,6 +685,7 @@ class CaseMetadata(models.Model):
     opinions = JSONField(null=True, blank=True)
     attorneys = JSONField(null=True, blank=True)
 
+    tsvector = models.TextField(blank=True, null=True)
     docket_number = models.CharField(max_length=20000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
@@ -754,6 +755,7 @@ class CaseMetadata(models.Model):
         ]
 
 
+
 class CaseXML(BaseXMLModel):
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',
                                     on_delete=models.SET_NULL)
@@ -766,14 +768,13 @@ class CaseXML(BaseXMLModel):
 
     @transaction.atomic(using='capdb')
     def save(self, update_related=True, *args, **kwargs):
-
         # allow disabling of create_or_update_metadata for testing
         create_or_update_metadata = kwargs.pop('create_or_update_metadata', True)
 
         if self.tracker.has_changed('orig_xml'):
             # prefetch data needed by create_or_update_metadata() and process_updated_xml()
             fetch_relations(self,
-                select_relations=['volume__metadata__reporter', 'metadata'],
+                select_relations=['volume__metadata__reporter', 'metadata__case_text'],
                 prefetch_relations=['metadata__citations'])
 
             # Create or update related CaseMetadata object
@@ -922,6 +923,11 @@ class CaseXML(BaseXMLModel):
                             word.set("CONTENT", updated_element.text.split(" ")[wordcount])
                         wordcount += 1
 
+
+        if len(modified_alto_files) > 0:
+            self.metadata.case_text.text =  get_case_text(parsed_updated_case)
+            self.metadata.case_text.save()
+
         # update and save the modified altos, and update the md5/size in the case
         for alto in modified_alto_files:
             alto.orig_xml = serialize_xml(alto_files[alto.short_id][1])
@@ -929,6 +935,9 @@ class CaseXML(BaseXMLModel):
             self.update_related_sums_in_parsed_xml(parsed_updated_case, alto.short_id, alto.md5, alto.size)
 
         self.orig_xml = serialize_xml(parsed_updated_case)
+
+
+
 
     def create_or_update_metadata(self, update_existing=True, save_self=True):
         """
@@ -1127,3 +1136,13 @@ class SlowQuery(models.Model):
 
     def __str__(self):
         return self.label or self.query
+
+class CaseText(models.Model):
+    """
+    This is nothing more than a plain-text rendition of a case and the metadata field it's connected
+    to. When this gets inserted or updated, a database trigger runs a function, both of which are
+    defined in scripts.set_up_postgres, that creates writes a tsvector to the casemetadata field.
+    """
+    text = models.TextField(blank=True, null=True)
+    metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_text',
+                                    on_delete=models.SET_NULL)

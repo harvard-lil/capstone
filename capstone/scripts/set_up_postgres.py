@@ -122,6 +122,8 @@ def update_postgres_env(db='capdb'):
                 table=source_table,
                 placeholders=", ".join(["%s"] * len(params))
             ), params)
+    define_case_search_update()
+    set_case_search_trigger()
 
 
 def get_denormalization_triggers():
@@ -215,3 +217,28 @@ def initialize_denormalization_fields(*args, **kwargs):
                 values=", ".join(values),
                 left_joins=" ".join(left_joins),
             ))
+
+
+def define_case_search_update():
+    with connections['capdb'].cursor() as cursor:
+        cursor.execute("""
+            CREATE OR REPLACE FUNCTION update_case_search() RETURNS TRIGGER AS
+            $BODY$
+            BEGIN
+                UPDATE capdb_casemetadata
+                      SET tsvector = to_tsvector('english', NEW.text)
+                      WHERE id=NEW.metadata_id;
+                      RETURN new;
+            END;
+            $BODY$
+            language plpgsql;
+        """)
+
+def set_case_search_trigger():
+    with connections['capdb'].cursor() as cursor:
+        cursor.execute("""
+            DROP TRIGGER IF EXISTS case_search_update_trigger ON capdb_casetext;
+            CREATE TRIGGER case_search_update_trigger
+            BEFORE INSERT OR UPDATE ON capdb_casetext
+            FOR EACH ROW EXECUTE PROCEDURE update_case_search();
+        """.format(table=model._meta.db_table))
