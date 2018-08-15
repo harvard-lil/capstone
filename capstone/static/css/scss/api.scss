@@ -64,8 +64,11 @@
 .breadcrumb {
   margin-top: 60px;
   font-size: 14px;
-  li {
-    margin-left: 10px;
+  li::after {
+    display: inline-block;
+    content: '\00bb';
+    margin: 0 .6em;
+    color: #959fa5;
   }
 }
 
@@ -96,4 +99,9 @@ nav {
     background: $color-light-blue;
     color: $color-blue;
   }
+}
+
+// hide "Get" button -- button itself doesn't do anything, and dropdown is broken from including bootstrap 4 instead of 3
+#get-form{
+  display:none;
 }
