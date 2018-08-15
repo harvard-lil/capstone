@@ -241,4 +241,4 @@ def set_case_search_trigger():
             CREATE TRIGGER case_search_update_trigger
             BEFORE INSERT OR UPDATE ON capdb_casetext
             FOR EACH ROW EXECUTE PROCEDURE update_case_search();
-        """.format(table=model._meta.db_table))
+        """)
