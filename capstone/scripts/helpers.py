@@ -227,12 +227,6 @@ def extract_casebody(case_xml):
     text = case_xml.replace(u'\xad', '')
     case = parse_xml(text)
 
-    # strip labels from footnotes:
-    for footnote in case('casebody|footnote'):
-        label = footnote.attrib.get('label')
-        if label and footnote[0].text.startswith(label):
-            footnote[0].text = footnote[0].text[len(label):]
-
     return case('casebody|casebody')
 
 
@@ -256,3 +250,46 @@ def court_abbreviation_strip(name_abbreviation_text):
     name_abbreviation_text = re.sub('`', '', name_abbreviation_text)
     name_abbreviation_text = re.sub('^ ', '', name_abbreviation_text)
     return name_abbreviation_text
+
+def element_text_iter(el, with_tail=False):
+    """
+        Given an element, yield each (element, attr_name) pair that has text contents, in reading order.
+        attr_name can be either 'text' or 'tail'.
+        This is handy for processing all text within the element.
+
+        For example, given "<p><strong><em>*</em></strong> <foo>Justice</foo></p>",
+        yield (<em>, 'text'), (<strong>, 'tail'), (<foo>, 'text').
+    """
+    if el.text:
+        yield el, 'text'
+    for sub_el in el:
+        for pair in element_text_iter(sub_el, True):
+            yield pair
+    if with_tail and el.tail:
+        yield el, 'tail'
+
+def left_strip_text(el, text):
+    """
+        Given an element with subelements, strip text from the left side.
+
+        For example, given el == "<p><strong><em>*</em></strong> <strong>Justice</strong></p>", text="* JABC",
+        return "<p><strong><em></em></strong><strong>ustice</strong></p>".
+
+        Partial matches will work -- we stop removing text as soon as it stops matching.
+    """
+    for sub_el, text_attr in element_text_iter(el):
+        # get text from target element
+        new_val = getattr(sub_el, text_attr)
+
+        # strip characters one by one while they match
+        while text and new_val and text[0] == new_val[0]:
+            text = text[1:]
+            new_val = new_val[1:]
+
+        # write stripped text back
+        setattr(sub_el, text_attr, new_val)
+
+        # If text is empty, we have matched all text and can stop.
+        # If new_val still has text, our string has stopped matching and we can stop.
+        if new_val or not text:
+            break

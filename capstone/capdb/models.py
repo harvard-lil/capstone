@@ -754,6 +754,9 @@ class CaseMetadata(models.Model):
             PartialIndex(fields=['reporter',          'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
         ]
 
+    def full_cite(self):
+        return "%s, %s (%s)" % (self.name_abbreviation, ", ".join(cite.cite for cite in self.citations.all()), self.decision_date.year)
+
 
 
 class CaseXML(BaseXMLModel):
@@ -1058,6 +1061,7 @@ class CaseXML(BaseXMLModel):
         """ ID of this case as referred to by volume xml file. """
         return "casemets_" + self.metadata.case_id.split('_', 1)[1]
 
+
 class Citation(models.Model):
     type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
@@ -1072,9 +1076,12 @@ class Citation(models.Model):
 
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
         if self.tracker.has_changed('cite'):
-            self.normalized_cite = slugify(self.cite)
+            self.normalized_cite = self.normalize_cite(self.cite)
         super(Citation, self).save(force_insert, force_update, *args, **kwargs)
 
+    @staticmethod
+    def normalize_cite(cite):
+        return re.sub(r'[^0-9a-z]', '', cite.lower())
 
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)

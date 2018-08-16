@@ -200,7 +200,7 @@
           <pre><a href="/api/v1/cases/{{ case_id }}/">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/</a></pre>
 
           One or more cases with the same citation:
-          <pre><a href="/api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/">{{ request.build_absolute_uri }}api/v1/cases/?cite={{ case_metadata.citations.0.normalized_cite }}/</a></pre>
+          <pre><a href="/api/v1/cases/?cite={{ case_metadata.citations.0.cite }}">{{ request.build_absolute_uri }}api/v1/cases/?cite={{ case_metadata.citations.0.cite }}</a></pre>
           <!--<pre class="json-response">{{ case_metadata }}</pre>-->
           <p class="body-text subsection">Case text</p>
           A request for full case text must include the query parameter <code>full_case=true</code>:

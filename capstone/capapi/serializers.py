@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class CitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Citation
-        fields = ('type', 'cite', 'normalized_cite')
+        fields = ('type', 'cite')
 
 
 class CitationWithCaseSerializer(CitationSerializer):
@@ -49,16 +49,33 @@ class CourtSerializer(serializers.ModelSerializer):
         fields = ('url', 'id', 'slug', 'name', 'name_abbreviation')
 
 
+class CaseVolumeSerializer(serializers.ModelSerializer):
+    """ Abbreviated version of VolumeSerializer for embedding in CaseSerializer. """
+    volume_number = serializers.ReadOnlyField(source='xml_volume_number')
+
+    class Meta:
+        model = models.VolumeMetadata
+        fields = ('url', 'volume_number')
+
+
+class CaseReporterSerializer(serializers.ModelSerializer):
+    """ Abbreviated version of CaseSerializer for embedding in CaseSerializer. """
+    class Meta:
+        model = models.Reporter
+        fields = (
+            'url',
+            'full_name',
+        )
+
+
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="casemetadata-detail", lookup_field="id")
     court = CourtSerializer(source='denormalized_court')
     jurisdiction = JurisdictionSerializer(source='denormalized_jurisdiction')
-    reporter = serializers.ReadOnlyField(source='reporter.full_name')
-    reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
     citations = CitationSerializer(many=True)
-    volume_number = serializers.ReadOnlyField(source='volume.xml_volume_number')
-    volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
+    volume = CaseVolumeSerializer()
+    reporter = CaseReporterSerializer()
     decision_date = serializers.DateField(source='decision_date_original')
 
     class Meta:
@@ -73,12 +90,10 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'first_page',
             'last_page',
             'citations',
-            'jurisdiction',
-            'court',
+            'volume',
             'reporter',
-            'reporter_url',
-            'volume_number',
-            'volume_url',
+            'court',
+            'jurisdiction',
         )
 
 
@@ -153,6 +168,7 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
             # non-JSON, single-case delivery formats will be handled by custom renderers
             if type(request.accepted_renderer) == HTMLRenderer:
                 data = orig_xml
+                casebody['title'] = case.full_cite()
             elif type(request.accepted_renderer) == XMLRenderer:
                 data = orig_xml
 
@@ -161,22 +177,44 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
                 body_format = request.query_params.get('body_format', None)
 
                 if body_format == 'html':
-                    # html
+                    # serialize to html
                     data = generate_html(orig_xml)
                 elif body_format == 'xml':
-                    # xml
-                    extracted = helpers.extract_casebody(orig_xml)
-                    c = helpers.serialize_xml(extracted)
+                    # serialize to xml
+                    casebody_pq = helpers.extract_casebody(orig_xml)
+
+                    # For the XML output, footnotes have <footnote label="foo">, so we should strip "foo" from the start
+                    # of the footnote text.
+                    for footnote in casebody_pq('casebody|footnote'):
+                        label = footnote.attrib.get('label')
+                        if label:
+                            helpers.left_strip_text(footnote[0], label)
+
+                    c = helpers.serialize_xml(casebody_pq)
                     data = re.sub(r"\s{2,}", " ", c.decode())
                 else:
-                    # plain text
-                    data = helpers.extract_casebody(orig_xml).text()
+                    casebody_pq = helpers.extract_casebody(orig_xml)
+
+                    # For the plain text output, footnotes should keep their labels in the text, but we want to make sure
+                    # there is a space separating the labels from the first word. Otherwise a text analysis comes up with
+                    # a lot of noise like "1The".
+                    for footnote in casebody_pq('casebody|footnote'):
+                        label = footnote.attrib.get('label')
+                        if label:
+                            # Get text of footnote and replace "[label][nonwhitespace char]" with "[label][nonwhitespace char]"
+                            footnote_paragraph = casebody_pq(footnote[0])
+                            new_text = footnote_paragraph.text()
+                            new_text = re.sub(r'^(%s)(\S)' % re.escape(label), r'\1 \2', new_text)
+                            footnote_paragraph.text(new_text)
+
+                    data = casebody_pq.text()
+
+                casebody['judges'] = case.judges
+                casebody['attorneys'] = case.attorneys
+                casebody['opinions'] = case.opinions
+                casebody['parties'] = case.parties
 
             casebody['data'] = data
-            casebody['judges'] = case.judges
-            casebody['attorneys'] = case.attorneys
-            casebody['opinions'] = case.opinions
-            casebody['parties'] = case.parties
 
         return casebody
 
