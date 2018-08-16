@@ -1,7 +1,7 @@
 from datetime import datetime
 from celery import shared_task
 from django.db import connections, transaction
-from scripts.helpers import get_case_text
+from scripts.helpers import extract_casebody
 
 from capdb.models import *
 
@@ -175,7 +175,7 @@ def create_case_text_for_all_cases(update_existing=False):
 
     # launch a job for each volume:
     for cmd_id in query.values_list('pk', flat=True):
-        create_case_metadata_from_vol.delay(cmd_id, update_existing=update_existing)
+        create_case_text.delay(cmd_id, update_existing=update_existing)
 
 
 @shared_task
@@ -190,6 +190,6 @@ def create_case_text(case_id, update_existing=False):
     elif not update_existing:
         return False
 
-    case_metadata.case_text.text = get_case_text(case_metadata.case_xml.orig_xml, case_parsed = False)
+    case_metadata.case_text.text = extract_casebody(case_metadata.case_xml.orig_xml).text()
     case_metadata.case_text.save()
 

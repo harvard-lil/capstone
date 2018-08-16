@@ -11,7 +11,7 @@ from partial_index import PartialIndex
 
 from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, jurisdiction_translation_long_name, get_case_text)
+                             serialize_xml, jurisdiction_translation_long_name, extract_casebody)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -923,11 +923,6 @@ class CaseXML(BaseXMLModel):
                             word.set("CONTENT", updated_element.text.split(" ")[wordcount])
                         wordcount += 1
 
-
-        if len(modified_alto_files) > 0:
-            self.metadata.case_text.text =  get_case_text(parsed_updated_case)
-            self.metadata.case_text.save()
-
         # update and save the modified altos, and update the md5/size in the case
         for alto in modified_alto_files:
             alto.orig_xml = serialize_xml(alto_files[alto.short_id][1])
@@ -935,8 +930,6 @@ class CaseXML(BaseXMLModel):
             self.update_related_sums_in_parsed_xml(parsed_updated_case, alto.short_id, alto.md5, alto.size)
 
         self.orig_xml = serialize_xml(parsed_updated_case)
-
-
 
 
     def create_or_update_metadata(self, update_existing=True, save_self=True):
@@ -956,6 +949,8 @@ class CaseXML(BaseXMLModel):
         else:
             case_metadata = CaseMetadata()
             metadata_created = True
+
+
 
         # set up data
         data = get_case_metadata(force_str(self.orig_xml))
@@ -1009,6 +1004,13 @@ class CaseXML(BaseXMLModel):
                     court.save()
 
         case_metadata.save()
+
+        # create case text and tsvector (which is created via a DB trigger)
+        if not hasattr(case_metadata, 'case_text'):
+            case_metadata.case_text = CaseText()
+
+        case_metadata.case_text.text = extract_casebody(force_str(self.orig_xml)).text()
+        case_metadata.case_text.save()
 
         ### Handle citations
 
