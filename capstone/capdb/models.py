@@ -753,6 +753,9 @@ class CaseMetadata(models.Model):
             PartialIndex(fields=['reporter',          'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
         ]
 
+    def full_cite(self):
+        return "%s, %s (%s)" % (self.name_abbreviation, ", ".join(cite.cite for cite in self.citations.all()), self.decision_date.year)
+
 
 class CaseXML(BaseXMLModel):
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',
@@ -1046,6 +1049,7 @@ class CaseXML(BaseXMLModel):
     def short_id(self):
         """ ID of this case as referred to by volume xml file. """
         return "casemets_" + self.metadata.case_id.split('_', 1)[1]
+
 
 class Citation(models.Model):
     type = models.CharField(max_length=100,
