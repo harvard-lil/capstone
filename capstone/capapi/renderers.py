@@ -1,6 +1,7 @@
 import hashlib
 
 from django.conf import settings
+from django.template import loader
 from rest_framework import renderers
 
 from capapi.resources import cache_func
@@ -46,7 +47,12 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 return generate_html_error("Not Authenticated <span style='font-family: monospace; font-style: normal;'>({})</span>".format(data['casebody']['status']), "You must be authenticated to view this case.")
             return generate_html_error("Could Not Load Case Body", data['casebody']['status'], data['first_page'], data['last_page'], data['name'])
 
-        return super().render(generate_html(data['casebody']['data'], case_body_only=False), media_type, renderer_context)
+        template = loader.get_template('case.html')
+        context = {
+            'title': data['casebody']['title'],
+            'case_html': generate_html(data['casebody']['data']),
+        }
+        return template.render(context)
 
 
 class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):

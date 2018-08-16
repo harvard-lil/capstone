@@ -225,6 +225,12 @@ PIPELINE = {
             ),
             'output_filename': 'viz.css'
         },
+        'case': {
+            'source_filenames': {
+                'css/scss/case.scss',
+            },
+            'output_filename': 'case.css'
+        }
     },
     'JAVASCRIPT': {
         'base': {
