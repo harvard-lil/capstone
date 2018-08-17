@@ -9,19 +9,11 @@
 {% block content %}
   {% include "includes/menu.html" %}
   <div class="row">
-    <section class="separator bg-yellow">
+    <section class="separator bg-black">
       <div class="col-xl-4 col-md-6 col-sm-10 m-auto text-center">
         <h2 class="georgia mt-5">
-          A complete collection of  published United States caselaw  from 1640 to 2017
+          A complete collection of  published United States caselaw  from 1640 to 2018
         </h2>
-      </div>
-      <div class="container-fluid">
-        <div class="col-xl-8 col-lg-10 col-md-12 m-auto">
-          <img class="img-fluid"
-             alt="stylized mountains"
-             src="{% static "img/mountains.png" %}">
-
-        </div>
       </div>
     </section>
 
@@ -131,45 +123,19 @@
         </div>
         <div class="col-lg col-md-6 mt-5">
           <ul>
+            {% for news_item in news %}
             <li class="item-set">
               <p class="item-title georgia">
-                Caselaw Access Project Scanning Now Complete
+                <a href="{{ news_item.url }}" >{{ news_item.title }}</a>
               </p>
               <span class="item-origin">
-                <a href="">Et Seq.</a>
+                {{ news_item.publication }}
               </span>
-              <span class="item-date">January 30, 2017</span>
-            </li>
-
-            <li class="item-set">
-              <p class="item-title georgia">
-                Caselaw Access Project Scanning Now Complete
-              </p>
-              <span class="item-origin">
-                <a href="">Et Seq.</a>
+              <span class="item-date">
+                {{ news_item.date }}
               </span>
-              <span class="item-date">January 30, 2017</span>
             </li>
-
-            <li class="item-set">
-              <p class="item-title georgia">
-                Caselaw Access Project Scanning Now Complete
-              </p>
-              <span class="item-origin">
-                <a href="">Et Seq.</a>
-              </span>
-              <span class="item-date">January 30, 2017</span>
-            </li>
-
-            <li class="item-set">
-              <p class="item-title georgia">
-                Caselaw Access Project Scanning Now Complete
-              </p>
-              <span class="item-origin">
-                <a href="">Et Seq.</a>
-              </span>
-              <span class="item-date">January 30, 2017</span>
-            </li>
+            {% endfor %}
           </ul>
         </div>
       </div>

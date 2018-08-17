@@ -1,13 +1,11 @@
 {% load static %}
 <nav id="main-menu" class="navbar navbar-expand-lg pl-0 pr-0">
-  {% if page_name != 'index' %}
     <a href="/">
-      <img id="cap-logo-long"
+      <img id="cap-logo"
        class="img-fluid"
        alt="CAP logo"
-       src="{% static "img/cap-logo-final-long-small.png" %}">
+       src="{% static "img/cap-logo-white.png" %}">
     </a>
-  {% endif %}
   <button class="navbar-toggler pull-xs-right p-0"
           type="button"
           data-toggle="collapse"
@@ -70,9 +68,6 @@
 
       <li class="nav-item">
         <a class="nav-link {% if page_name == 'login' %}selected{% endif %}" href="#">LOG IN</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link {% if page_name == 'contact' %}selected{% endif %}" href="#">CONTACT</a>
       </li>
     </ul>
   </div>

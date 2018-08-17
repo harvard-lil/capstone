@@ -8,25 +8,111 @@
 
 {% block content %}
   {% include "includes/menu.html" %}
-  <div class="row">
-    <div class="col-4"></div>
-    <div class="col-8">
-      <h1>About the Project</h1>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-4 list-group sidebar-menu">
-      <a class="list-group-item" href="#overview">Overview</a>
-      <a class="list-group-item" href="#data">What data?</a>
-      <a class="list-group-item" href="#usage">Usage &amp; access</a>
-      <a class="list-group-item" href="#press">Press</a>
-      <a class="list-group-item" href="#contributors">Contributors</a>
-    </div>
-    <div class="col-8">
-      <p class="pullquote georgia">Providing an open data set of every U.S. court decision ever published, for use by lawyers, scholars, programmers, and everyone else.”</p>
-      <img src="" alt=""/>
-      <p class=""></p>
-    </div>
-  </div>
+  <div class="row header-margin basic-page">
+    <div class="col-xl-7 m-auto">
 
+      <div class="row">
+        {# ==============> MENU <============== #}
+        <div class="col-3 list-group sidebar-menu header-margin">
+          <a class="list-group-item" href="#overview">Overview</a>
+          <a class="list-group-item" href="#data">What data?</a>
+          <a class="list-group-item" href="#usage">Usage &amp; access</a>
+          <a class="list-group-item" href="#press">Press</a>
+          <a class="list-group-item" href="#contributors">Contributors</a>
+        </div>
+        {# ==============> CONTENT <============== #}
+          <div class="col-9">
+
+            {# ==============> OVERVIEW <============== #}
+            <div class="page-section">
+              <a name="overview"></a>
+              <h1>
+                <img id="triple-arrows" alt=">>>"
+                      src="{% static "img/triple-arrows.gif" %}">
+                About the Project
+              </h1>
+              <p>
+                Short blurb about what kind of data we have. We took xyz reporters and stripped them of abc proprietary data. This is what we have.
+              </p>
+              <blockquote class="pullquote georgia">
+                &#8220;Providing an open data set of every U.S. court decision ever published, for use by lawyers, scholars, programmers, and everyone else.&#8221;
+              </blockquote>
+               <img class="img-fluid"
+               alt="Scanning pages"
+               src="{% static "img/page-scanning.gif" %}">
+            </div>
+
+            {# ==============> DATA <============== #}
+            <div class="page-section">
+              <a name="data"></a>
+              <h4 class="subtitle georgia">
+                What data do we have?
+              </h4>
+              <p>
+                Short blurb about what kind of data we have.
+                We took xyz reporters and stripped them of abc proprietary data. This is what we have. Voluptas maxime earum non et voluptatem nulla recusandae. Expedita ut esse sit voluptatem soluta rerum. Sit sapiente animi id necessitatibus ea accusamus. Nobis veritatis odit maxime.
+              </p>
+              <p>
+                Voluptas maxime earum non et voluptatem nulla recusandae. Expedita ut esse sit voluptatem soluta rerum. Sit sapiente animi id necessitatibus ea accusamus. Nobis veritatis odit maxime.
+              </p>
+            </div>
+
+            {# ==============> USAGE <============== #}
+            <div class="page-section">
+              <a name="usage"></a>
+              <h4 class="subtitle georgia">
+                Usage &amp; access
+              </h4>
+              <p>
+                Short blurb about what kind of data we have. We took xyz reporters and stripped them of abc proprietary data. This is what we have. Voluptas maxime earum non et voluptatem nulla recusandae. Expedita ut esse sit voluptatem soluta rerum. Sit sapiente animi id necessitatibus ea accusamus. Nobis veritatis odit maxime.
+              </p>
+              <p>
+                Voluptas maxime earum non et voluptatem nulla recusandae. Expedita ut esse sit voluptatem soluta rerum. Sit sapiente animi id necessitatibus ea accusamus. Nobis veritatis odit maxime.
+              </p>
+            </div>
+
+            {# ==============> PRESS <============== #}
+            <div class="page-section">
+              <a name="press"></a>
+              <h4 class="subtitle georgia">
+                Press
+              </h4>
+              <ul>
+                {% for news_item in news %}
+                <li class="item-set">
+                  <p class="item-title georgia">
+                    <a href="{{ news_item.url }}" >{{ news_item.title }}</a>
+                  </p>
+                  <span class="item-origin">
+                    {{ news_item.publication }}
+                  </span>
+                  <span class="item-date">
+                    {{ news_item.date }}
+                  </span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            {# ==============> CONTRIBUTORS <============== #}
+            <div class="page-section">
+              <a name="contributors"></a>
+              <h4 class="subtitle georgia">
+                Contributors
+              </h4>
+
+                <ul>
+                  {% for key,contributor in contributors.items %}
+                    {% if contributor.name %}
+                      <li>{{ contributor.name }}: {{ contributor.role }}</li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 {% endblock %}
