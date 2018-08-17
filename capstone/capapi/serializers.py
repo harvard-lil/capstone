@@ -193,6 +193,7 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
                     c = helpers.serialize_xml(casebody_pq)
                     data = re.sub(r"\s{2,}", " ", c.decode())
                 else:
+                    # serialize to json
                     casebody_pq = helpers.extract_casebody(orig_xml)
 
                     # For the plain text output, footnotes should keep their labels in the text, but we want to make sure
@@ -207,12 +208,25 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
                             new_text = re.sub(r'^(%s)(\S)' % re.escape(label), r'\1 \2', new_text)
                             footnote_paragraph.text(new_text)
 
-                    data = casebody_pq.text()
+                    # extract each opinion into a dictionary
+                    opinions = []
+                    for opinion in casebody_pq.items('casebody|opinion'):
+                        opinions.append({
+                            'type': opinion.attr('type'),
+                            'author': opinion('casebody|author').text() or None,
+                            'text': opinion.text(),
+                        })
 
-                casebody['judges'] = case.judges
-                casebody['attorneys'] = case.attorneys
-                casebody['opinions'] = case.opinions
-                casebody['parties'] = case.parties
+                        # remove opinion so it doesn't get included in head_matter below
+                        opinion.remove()
+
+                    data = {
+                        'head_matter': casebody_pq.text(),
+                        'judges': case.judges,
+                        'attorneys': case.attorneys,
+                        'parties': case.parties,
+                        'opinions': opinions
+                    }
 
             casebody['data'] = data
 

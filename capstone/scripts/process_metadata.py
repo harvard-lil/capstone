@@ -51,16 +51,13 @@ def get_case_metadata(case_xml):
     judges = [judge.text for judge in parsed('casebody|judges')]
     attorneys = [attorney.text for attorney in parsed('casebody|attorneys')]
     parties = [party.text for party in parsed('casebody|parties')]
-
-    opinions = {}
-    for opinion in parsed('casebody|opinion'):
-        # sometimes authors are not included, default to ""
-        opinions[opinion.attrib['type']] = ""
-        for child in opinion.getchildren():
-            # record author for each opinion type
-            if 'author' in child.tag:
-                opinions[opinion.attrib['type']] = child.text
-
+    opinions = [
+        {
+            'type': opinion.attr('type'),
+            'author': opinion('casebody|author').text() or None,
+        }
+        for opinion in parsed.items('casebody|opinion')
+    ]
 
     return dict(metadata, **{
         'name': name,

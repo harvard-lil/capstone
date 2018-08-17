@@ -107,13 +107,13 @@ def test_create_or_update_metadata(ingest_case_xml):
     ingest_case_xml.save()
     # fetch new metadata
     new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
-    assert new_case_metadata.opinions == {"majority": new_author}
+    assert new_case_metadata.opinions == [{"type": "majority", "author": new_author}]
 
     # strip soft dashes
     ingest_case_xml.orig_xml = ingest_case_xml.orig_xml.replace(new_author, new_author + '\xad')
     ingest_case_xml.save()
     ingest_case_xml.metadata.refresh_from_db()
-    assert ingest_case_xml.metadata.opinions['majority'] == new_author
+    assert ingest_case_xml.metadata.opinions[0]['author'] == new_author
 
 @pytest.mark.django_db
 def test_denormalized_fields(case):
