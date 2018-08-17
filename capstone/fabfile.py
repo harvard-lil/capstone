@@ -338,6 +338,16 @@ def bag_reporter(name, zip_directory=".", zip_filename=None):
 
 
 @task
+def export_jurisdiction_json(name, out_path, body_format=""):
+    """ Write .jsonl.gz file of all cases for given jurisdiction to out_path. E.g. `fab export_jurisdiction_json:Ill.,ill.jsonl.gz,xml`. """
+    export.export_jurisdiction_json(name, out_path, body_format)
+
+@task
+def export_reporter_json(name, out_path, body_format=""):
+    """ Write .jsonl.gz file of all cases for given reporter to out_path. E.g. `fab export_reporter_json:Illinois Appellate Court Reports,ill-app.jsonl.gz,xml`. """
+    export.export_reporter_json(name, out_path, body_format)
+
+@task
 def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test_data/inventory/data')):
     """ Create inventory.csv.gz files in test_data/inventory/data. Should be re-run if test_data/from_vendor changes. """
 

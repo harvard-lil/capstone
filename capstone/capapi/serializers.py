@@ -156,10 +156,13 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
         fields = CaseSerializer.Meta.fields + ('casebody',)
         list_serializer_class = ListSerializerWithCaseAllowance
 
-    def get_casebody(self, case):
+    def get_casebody(self, case, check_permissions=True):
         # check permissions for full-text access to this case
-        request = self.context.get('request')
-        casebody = get_single_casebody_permissions(request, case)
+        if check_permissions:
+            request = self.context.get('request')
+            casebody = get_single_casebody_permissions(request, case)
+        else:
+            casebody = {'status': 'ok', 'data': None}
 
         if casebody['status'] == 'ok':
             # if status is 'ok', we've passed the perms check and have to load orig_xml into casebody['data']
@@ -285,3 +288,42 @@ class CourtSerializer(serializers.ModelSerializer):
             'slug',
         )
 
+
+### BULK SERIALIZERS ###
+
+# modified serializers for use by scripts/export.py
+
+class BulkJurisdictionSerializer(JurisdictionSerializer):
+    class Meta(JurisdictionSerializer.Meta):
+        fields = [field for field in JurisdictionSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCourtSerializer(CourtSerializer):
+    class Meta(CourtSerializer.Meta):
+        fields = [field for field in CourtSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCaseVolumeSerializer(CaseVolumeSerializer):
+    class Meta(CaseVolumeSerializer.Meta):
+        fields = [field for field in CaseVolumeSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCaseReporterSerializer(CaseReporterSerializer):
+    class Meta(CaseReporterSerializer.Meta):
+        fields = [field for field in CaseReporterSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCaseSerializer(CaseSerializerWithCasebody):
+    court = BulkCourtSerializer(source='denormalized_court')
+    jurisdiction = BulkJurisdictionSerializer(source='denormalized_jurisdiction')
+    volume = BulkCaseVolumeSerializer()
+    reporter = BulkCaseReporterSerializer()
+
+    class Meta(CaseSerializerWithCasebody.Meta):
+        model = models.CaseMetadata
+        fields = [field for field in CaseSerializerWithCasebody.Meta.fields if field not in ('url',)]
+
+    def get_casebody(self, case):
+        """ Tell get_casebody not to check for case download permissions. """
+        return super().get_casebody(case, check_permissions=True)
+
+    @property
+    def data(self):
+        """ Skip tracking of download counts. """
+        return super(serializers.HyperlinkedModelSerializer, self).data
