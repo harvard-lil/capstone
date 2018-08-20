@@ -73,7 +73,7 @@ jsonpickle==0.9.6         # via aws-xray-sdk
 jsonpointer==1.14         # via flex
 jsonschema==2.6.0         # via swagger-spec-validator
 kombu==4.2.1              # via celery
-libsass==0.13.2           # via django-libsass
+libsass==0.14.5           # via django-libsass
 lxml==3.7.3
 markupsafe==1.0           # via jinja2
 mccabe==0.6.1             # via flake8
