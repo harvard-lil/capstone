@@ -1,6 +1,8 @@
 from functools import lru_cache
 
 from django.utils.functional import SimpleLazyObject
+from django.contrib.postgres.search import SearchQuery
+
 import rest_framework_filters as filters
 
 from capdb import models
@@ -100,6 +102,11 @@ class CaseFilter(filters.FilterSet):
         field_name='docket_number',
         label='Docket Number (contains)',
         lookup_expr='icontains')
+    search = filters.CharFilter(
+        field_name='tsvector',
+        label='Full-Text Search',
+        method='full_text_search_simple')
+
 
     def find_by_citation(self, qs, name, value):
         return qs.filter(citations__normalized_cite__exact=models.Citation.normalize_cite(value))
@@ -109,6 +116,9 @@ class CaseFilter(filters.FilterSet):
             return qs.filter(decision_date__gte=value)
         else:
             return qs.filter(decision_date__lte=value)
+
+    def full_text_search_simple(self, qs, name, value):
+        return qs.filter(tsvector=SearchQuery(value))
 
     class Meta:
         model = models.CaseMetadata
