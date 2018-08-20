@@ -10,9 +10,11 @@
   {% include "includes/menu.html" %}
   <div class="row">
     <section class="separator bg-black">
-      <div class="col-xl-4 col-md-6 col-sm-10 m-auto text-center">
-        <h2 class="georgia mt-5">
+      <div class="col-xl-5 col-md-6 col-sm-10 m-auto text-center pb-5 pt-5">
+        <h2 class="font-serif mt-5">
+          <img src="{% static "img/red-arrow-right.svg" %}">
           A complete collection of  published United States caselaw  from 1640 to 2018
+          <img src="{% static "img/red-arrow-left.svg" %}">
         </h2>
       </div>
     </section>
@@ -21,14 +23,14 @@
     <section id="section-dive-in" class="separator">
       <div class="row">
         <div class="col-lg col-md-6 mt-5">
-          <h2 class="georgia section-title">Dive in!</h2>
+          <h2 class="font-serif section-title">Dive in!</h2>
         </div>
         <div class="col-lg col-md-6">
-          <p class="georgia color-violet">Start exploring the data! Here are some tools you can use to check it out.</p>
-          <h4 class="georgia">API</h4>
+          <p class="font-serif color-violet">Start exploring the data! Here are some tools you can use to check it out.</p>
+          <h4 class="font-serif">API</h4>
           <p>The API allows users to browse and download cases using a few short commands.</p>
 
-          <h4 class="georgia">Bulk data</h4>
+          <h4 class="font-serif">Bulk data</h4>
           <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
           <br/>
           <a href="/tools" class="btn-default">BROWSE TOOLS</a>
@@ -64,18 +66,18 @@
         <div class="sidebar-content col-md-4 col-xs-12">
           <div class="mt-5">
             <div class="col-lg col-md-4 col-sm-4 d-none d-sm-block d-md-none d-lg-none pl-0">
-              <h2 class="georgia section-title">About</h2>
+              <h2 class="font-serif section-title">About</h2>
             </div>
 
             <div class="content col-lg-10 col-md-8 pl-0">
-              <h4 class="georgia">What kind of data do we have?</h4>
+              <h4 class="font-serif">What kind of data do we have?</h4>
               <p class="color-white">Short blurb about what kind of data we have.
                 We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
               <a class="btn btn-inverse">SEE MORE</a>
               <br/><br/>
               <div class="separator color-white"></div>
               <br/>
-              <h4 class="georgia">Limits on use</h4>
+              <h4 class="font-serif">Limits on use</h4>
               <p class="color-white">Short blurb about what kind of data we have.
                 We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
               <a class="btn btn-inverse">SEE MORE</a>
@@ -91,23 +93,23 @@
     <section id="section-showcase" class="bg-black">
       <div class="row">
         <div class="col-lg-4 col-md-6 mt-5">
-          <h2 class="georgia section-title">What's <br/>Possible?</h2>
+          <h2 class="font-serif section-title">What's <br/>Possible?</h2>
         </div>
         <div class="col-lg col-md-6 mt-5">
           <div class="row">
             <div class="col-sm showcase-item">
               <div class="showcase-item-img bg-yellow"></div>
-              <h6 class="showcase-item-title georgia">Wordclouds</h6>
+              <h6 class="showcase-item-title font-serif">Wordclouds</h6>
               <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
             </div>
             <div class="col-sm showcase-item">
               <div class="showcase-item-img bg-yellow"></div>
-              <h6 class="showcase-item-title georgia">Topic mapping</h6>
+              <h6 class="showcase-item-title font-serif">Topic mapping</h6>
               <p>Ipsam culpa dolorem repellat nihil adipisci ea eligendi quasi. Id voluptas labore odio sunt perferendis aut et ut.</p>
             </div>
             <div class="col-sm showcase-item">
               <div class="showcase-item-img bg-yellow"></div>
-              <h6 class="showcase-item-title georgia">Limericks</h6>
+              <h6 class="showcase-item-title font-serif">Limericks</h6>
               <p>Veritatis qui est quasi minima quae est tempore. Omnis velit ab sit cumque id autem est.</p>
             </div>
           </div>
@@ -119,13 +121,13 @@
     <section id="section-links" class="bg-tan">
       <div class="row">
         <div class="col-lg-4 col-md-6 mt-5">
-          <h2 class="georgia section-title">Links &amp;<br/>Press</h2>
+          <h2 class="font-serif section-title">Links &amp;<br/>Press</h2>
         </div>
         <div class="col-lg col-md-6 mt-5">
           <ul>
             {% for news_item in news %}
             <li class="item-set">
-              <p class="item-title georgia">
+              <p class="item-title font-serif">
                 <a href="{{ news_item.url }}" >{{ news_item.title }}</a>
               </p>
               <span class="item-origin">

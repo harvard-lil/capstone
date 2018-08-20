@@ -104,10 +104,6 @@
 }
 
 
-.georgia {
-  font-family: "Libre Baskerville", "Baskerville", "Georgia", serif;
-}
-
 
 // logo
 $color-blue: #0075FF;
@@ -202,6 +198,12 @@ $color-pink: #E878FF;
   @extend .font-body;
   font-weight: 700;
 }
+
+.font-serif {
+  font-family: "Libre Baskerville", "Baskerville", "Georgia", serif;
+}
+
+
 //
 //.font-code {
 //  font-family: $font-code;
