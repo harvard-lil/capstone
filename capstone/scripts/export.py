@@ -1,10 +1,15 @@
+import gzip
 import hashlib
+import json
 import zipfile
+from collections import namedtuple
 from datetime import datetime
 from pathlib import Path
 
 from django.utils.text import slugify
 
+from capapi.serializers import BulkCaseSerializer
+from capapi.views.api_views import CaseViewSet
 from capdb.models import Jurisdiction, CaseMetadata, Reporter
 
 
@@ -67,3 +72,34 @@ def bag_cases(cases, description, zip_directory=".", zip_filename=None):
         archive.writestr(str(internal_path / "manifest-sha512.txt"), "\n".join(payload))
 
     return str(zip_path)
+
+def export_jurisdiction_json(name, out_path, body_format=''):
+    """
+        Write a .jsonl.gz file with all cases for jurisdiction.
+    """
+    jurisdiction = Jurisdiction.objects.get(name=name)
+    cases = CaseViewSet.queryset.filter(jurisdiction=jurisdiction)
+    export_queryset(cases, BulkCaseSerializer, out_path, query_params={'body_format': body_format})
+
+def export_reporter_json(name, out_path, body_format='json'):
+    """
+        Write a .jsonl.gz file with all cases for reporter.
+    """
+    reporter = Reporter.objects.get(full_name=name)
+    cases = CaseViewSet.queryset.filter(reporter=reporter)
+    export_queryset(cases, BulkCaseSerializer, out_path, query_params={'body_format': body_format})
+
+def export_queryset(queryset, serializer_class, out_path, query_params={}):
+    """
+        Fetch all items in queryset, and use serializer_class to write one item per line to out_path.
+        query_params are attached to a fake request that may be used by the DRF serializer.
+    """
+    fake_request = namedtuple('Request', ['query_params', 'accepted_renderer'])(
+        query_params=query_params,
+        accepted_renderer=None,
+    )
+    with gzip.open(out_path, 'wb') as out:
+        for item in queryset:
+            serializer = serializer_class(item, context={'request': fake_request})
+            out.write(bytes(json.dumps(serializer.data), 'utf8'))
+            out.write(b'\n')
