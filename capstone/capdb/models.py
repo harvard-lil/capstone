@@ -9,6 +9,9 @@ from lxml import etree
 from model_utils import FieldTracker
 from partial_index import PartialIndex
 
+from django.contrib.postgres.indexes import GinIndex
+import django.contrib.postgres.search as pg_search
+
 from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name, extract_casebody)
@@ -685,7 +688,8 @@ class CaseMetadata(models.Model):
     opinions = JSONField(null=True, blank=True)
     attorneys = JSONField(null=True, blank=True)
 
-    tsvector = models.TextField(blank=True, null=True)
+
+    tsvector = pg_search.SearchVectorField(blank=True,null=True)
     docket_number = models.CharField(max_length=20000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
@@ -752,6 +756,8 @@ class CaseMetadata(models.Model):
             PartialIndex(fields=['jurisdiction_slug', 'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             PartialIndex(fields=['court',             'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             PartialIndex(fields=['reporter',          'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
+            # index for full text search
+            GinIndex(fields=['tsvector']),
         ]
 
     def full_cite(self):
