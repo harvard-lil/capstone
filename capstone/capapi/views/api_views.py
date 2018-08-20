@@ -1,3 +1,4 @@
+import re
 import urllib
 
 from django.conf import settings
@@ -12,12 +13,13 @@ from capdb import models
 
 from capapi import serializers, filters
 from capapi import renderers as capapi_renderers
+from capdb.models import Citation
 
 
 class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.JurisdictionSerializer
     http_method_names = ['get']
-    filter_class = filters.JurisdictionFilter
+    filterset_class = filters.JurisdictionFilter
     queryset = models.Jurisdiction.objects.all()
     lookup_field = 'slug'
 
@@ -33,14 +35,14 @@ class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.L
 class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.ReporterSerializer
     http_method_names = ['get']
-    filter_class = filters.ReporterFilter
+    filterset_class = filters.ReporterFilter
     queryset = models.Reporter.objects.all().prefetch_related('jurisdictions')
 
 
 class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
     serializer_class = serializers.CourtSerializer
     http_method_names = ['get']
-    filter_class = filters.CourtFilter
+    filterset_class = filters.CourtFilter
     queryset = models.Court.objects.all().select_related('jurisdiction')
     lookup_field = 'slug'
 
@@ -73,7 +75,7 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         capapi_renderers.XMLRenderer,
         capapi_renderers.HTMLRenderer,
     )
-    filter_class = filters.CaseFilter
+    filterset_class = filters.CaseFilter
     lookup_field = 'id'
 
     def is_full_case_request(self):
@@ -113,16 +115,14 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
         return HttpResponseRedirect(new_url)
 
     def retrieve(self, *args, **kwargs):
-        # for user's convenience, if user gets /cases/case-citation or /cases/Case Citation
-        # we redirect to /cases/?cite=case-citation
-
-        if kwargs.get(self.lookup_field, None):
-            slugified = slugify(kwargs[self.lookup_field])
-            if '-' in slugified:
-                query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=slugified), doseq=True)
-                new_url = reverse('casemetadata-list') + "?" + query_string
-                return HttpResponseRedirect(new_url)
-
+        # for user's convenience, if user gets /cases/casecitation or /cases/Case Citation (or any non-numeric value)
+        # we redirect to /cases/?cite=casecitation
+        id = kwargs[self.lookup_field]
+        if re.search(r'\D', id):
+            normalized_cite = Citation.normalize_cite(id)
+            query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
+            new_url = reverse('casemetadata-list') + "?" + query_string
+            return HttpResponseRedirect(new_url)
 
         return super(CaseViewSet, self).retrieve(*args, **kwargs)
 

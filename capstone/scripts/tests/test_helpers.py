@@ -1,5 +1,7 @@
 import re
 import pytest
+from pyquery import PyQuery
+
 from scripts.helpers import serialize_xml, parse_xml
 from scripts.generate_case_html import generate_html, tag_map
 from scripts.merge_alto_style import generate_styled_case_xml
@@ -55,12 +57,12 @@ def test_generate_html_footnotes(ingest_case_xml):
             assert generate_html(case.orig_xml).startswith("<h1 class='error'>")
             continue
         casebody_html = generate_html(case.orig_xml).replace('\n', '').replace('\r', '').replace('\t', ' ')
+        parsed_html = PyQuery(casebody_html)
 
         for footnote in parsed_case_xml("casebody|footnote"):
-            footnote_anchor = '<a id="footnote_{}" class="footnote_anchor">'.format(footnote.attrib['label'])
-            footnote_element = '<a class="footnotemark" href="#footnote_{}">{}</a>'.format(footnote.attrib['label'], footnote.attrib['label'])
-            assert footnote_anchor in casebody_html
-            assert footnote_element in casebody_html
+            footnote_id = "footnote_" + footnote.attrib['label']
+            assert parsed_html('aside[id="%s"]' % footnote_id).length == 1
+            assert parsed_html('a[href="#%s"]' % footnote_id).length == 1
 
 @pytest.mark.django_db
 def test_html_pagebreak(ingest_case_xml):

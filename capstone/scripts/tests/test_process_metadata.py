@@ -34,7 +34,7 @@ def test_get_case_metadata():
                     assert len(case_metadata["jurisdiction"]) > 0
                     assert type(case_metadata["decision_date"]) is datetime.date
                     assert type(case_metadata["decision_date_original"]) is str
-                    assert type(case_metadata["opinions"]) is dict
+                    assert type(case_metadata["opinions"]) is list
                     assert type(case_metadata["attorneys"]) is list
                     assert type(case_metadata["judges"]) is list
                     assert type(case_metadata["parties"]) is list
@@ -45,12 +45,11 @@ def test_case_metadata_opinion():
     case_xml = read_file(casemets_file)
     case_metadata = dict(process_metadata.get_case_metadata(case_xml))
     assert type(case_metadata["parties"]) is list
-    assert "majority" in case_metadata["opinions"]
+    assert case_metadata["opinions"][0] == {"type": "majority", "author": None}
 
     # test case with opinion author
     casemets_file = "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml"
     case_xml = read_file(casemets_file)
     case_metadata = dict(process_metadata.get_case_metadata(case_xml))
-    assert "majority" in case_metadata["opinions"]
-    assert "Lacey, J." in case_metadata["opinions"]["majority"]
+    assert case_metadata["opinions"][0] == {"type": "majority", "author": "Lacey, J."}
 

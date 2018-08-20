@@ -5,50 +5,54 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 -e git+git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
+-e git+git://github.com/philipn/django-rest-framework-filters.git@c5ffc8276431cf49dddbcebab322b142843de4ef#egg=djangorestframework-filters
 -e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
 -e git+git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
 amqp==2.2.2               # via kombu
 apipkg==1.4               # via execnet
 asn1crypto==0.22.0        # via cryptography
+atomicwrites==1.1.5       # via pytest
 attrs==17.4.0             # via pytest
+aws-xray-sdk==0.95        # via moto
 babel==2.5.3              # via flower
 bagit==1.6.4
 beautifulsoup4==4.6.0
 billiard==3.5.0.3         # via celery
 boto3==1.7.48
 boto==2.47.0              # via moto
-botocore==1.10.48         # via boto3, s3transfer
+botocore==1.10.48         # via boto3, moto, s3transfer
 celery[redis,sqs]==4.2.0
 certifi==2017.4.17        # via requests
 cffi==1.10.0              # via cryptography
 chardet==3.0.3            # via requests
 click==6.7                # via flex, pip-tools
-cookies==2.2.1            # via moto
+cookies==2.2.1            # via moto, responses
 coreapi==2.3.3            # via drf-yasg, openapi-codec
 coreschema==0.0.4         # via coreapi, drf-yasg
 coverage==4.4.1           # via pytest-cov
-cryptography==1.8.2       # via paramiko
+cryptography==2.3         # via moto, paramiko
 cssselect==1.0.1
-dicttoxml==1.7.4          # via moto
 django-appconf==1.0.2     # via django-compressor
 django-bootstrap4==0.0.6
 django-bulk-update==2.1.0
 django-compressor==2.1.1  # via django-libsass
 django-extensions==2.0.6
-django-filter==1.1.0
+django-filter==2.0.0
 django-libsass==0.7
 django-partial-index==0.4.0
 django-pipeline-compass==0.1.5
 django-pipeline==1.6.14
 django-redis==4.9.0
 django-simple-history==2.1.1
-django-storages==1.5.2
-django==2.0.2
-djangorestframework-filters==0.10.2
-djangorestframework==3.7.7
+django-storages==1.6.6
+django==2.0.8
+djangorestframework==3.8.2
 dnspython==1.15.0
+docker-pycreds==0.3.0     # via docker
+docker==3.4.1             # via moto
 docutils==0.13.1          # via botocore
 drf-yasg==1.7.1
+ecdsa==0.13               # via python-jose
 execnet==1.4.1            # via pytest-xdist
 fabric3==1.13.1.post1
 factory-boy==2.10.0
@@ -57,12 +61,15 @@ first==2.0.1              # via pip-tools
 flake8==3.4.1
 flex==6.13.1
 flower==0.9.2
-future==0.16.0            # via drf-yasg
+future==0.16.0            # via drf-yasg, python-jose
 idna==2.5                 # via cryptography, requests
+img2pdf==0.3.0
 inflection==0.3.1         # via drf-yasg, pytest-factoryboy
 itypes==1.1.0             # via coreapi
 jinja2==2.9.6             # via coreschema, moto
 jmespath==0.9.2           # via boto3, botocore
+jsondiff==1.1.1           # via moto
+jsonpickle==0.9.6         # via aws-xray-sdk
 jsonpointer==1.14         # via flex
 jsonschema==2.6.0         # via swagger-spec-validator
 kombu==4.2.1              # via celery
@@ -71,13 +78,17 @@ lxml==3.7.3
 markupsafe==1.0           # via jinja2
 mccabe==0.6.1             # via flake8
 mirakuru==0.8.2           # via pytest-redis
-moto==1.0.0
+mock==2.0.0               # via moto
+more-itertools==4.3.0     # via pytest
+moto==1.3.4
 mysqlclient==1.3.10
 openapi-codec==1.3.2      # via drf-yasg
-packaging==16.8           # via cryptography
 paramiko==2.1.2           # via fabric3
+pathlib2==2.3.2           # via pytest
+pbr==4.2.0                # via mock
+pillow==5.2.0             # via img2pdf, reportlab
 pip-tools==2.0.1
-pluggy==0.6.0             # via pytest
+pluggy==0.7.1             # via pytest
 port-for==0.4             # via pytest-redis
 psutil==5.4.0             # via mirakuru
 psycopg2==2.7.1
@@ -86,27 +97,31 @@ pyaml==16.12.2            # via moto
 pyasn1==0.2.3             # via paramiko
 pycodestyle==2.3.1        # via flake8
 pycparser==2.17           # via cffi
+pycryptodome==3.6.4       # via python-jose
 pycurl==7.43.0
 pyflakes==1.5.0           # via flake8
-pyparsing==2.2.0          # via packaging
+pypdf2==1.26.0
 pyscss==1.3.5             # via django-pipeline-compass
 pytest-cov==2.5.1
-pytest-django==3.1.2
+pytest-django==3.3.3
 pytest-factoryboy==2.0.1
 pytest-redis==1.3.2
 pytest-xdist==1.16.0
-pytest==3.4.2             # via pytest-cov, pytest-django, pytest-factoryboy, pytest-redis, pytest-xdist
+pytest==3.7.0             # via pytest-cov, pytest-django, pytest-factoryboy, pytest-redis, pytest-xdist
 python-dateutil==2.6.0    # via botocore, faker, moto
+python-jose==2.0.2        # via moto
 pytz==2017.2              # via babel, celery, django, flower, moto
 pyyaml==3.12              # via flex, pyaml
 rcssmin==1.0.6            # via django-compressor
 redis==2.10.6
-requests==2.16.4          # via coreapi, flex, moto
+reportlab==3.5.2
+requests==2.16.4          # via aws-xray-sdk, coreapi, docker, flex, moto, responses
+responses==0.9.0          # via moto
 rfc3987==1.3.7            # via flex
 rjsmin==1.0.12            # via django-compressor
 ruamel.yaml==0.15.37      # via drf-yasg
 s3transfer==0.1.10        # via boto3
-six==1.10.0               # via cryptography, django-extensions, drf-yasg, fabric3, faker, flex, libsass, moto, packaging, pip-tools, pyscss, pytest, python-dateutil, swagger-spec-validator
+six==1.10.0               # via cryptography, django-extensions, docker, docker-pycreds, drf-yasg, fabric3, faker, flex, libsass, mock, more-itertools, moto, pathlib2, pip-tools, pyscss, pytest, python-dateutil, python-jose, responses, swagger-spec-validator, websocket-client
 strict-rfc3339==0.7       # via flex
 swagger-spec-validator==2.1.0
 tornado==5.0.2            # via flower
@@ -115,6 +130,7 @@ uritemplate==3.0.0        # via coreapi, drf-yasg
 urllib3==1.21.1           # via requests
 validate-email==1.3       # via flex
 vine==1.1.4               # via amqp
+websocket-client==0.48.0  # via docker
 werkzeug==0.12.2          # via moto
 whitenoise==3.3.1
 wrapt==1.10.11

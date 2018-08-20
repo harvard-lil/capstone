@@ -89,7 +89,7 @@ def test_login_wrong_password(auth_user, client):
     assert "Please enter a correct email and password." in response.content.decode()
 
 @pytest.mark.django_db
-def test_resend_verification(client):
+def test_resend_verification(client, mailoutbox):
     # create new user
     response = client.post(reverse('register'), {
         'email': 'new_user@example.com',
@@ -99,7 +99,7 @@ def test_resend_verification(client):
         'password2': 'Password2',
     })
     check_response(response)
-    assert len(mail.outbox) == 1
+    assert len(mailoutbox) == 1
 
     # resend verification
     response = client.post(reverse('resend-verification'), {
@@ -108,7 +108,7 @@ def test_resend_verification(client):
     check_response(response)
 
     # same verification email sent
-    assert mail.outbox[0].body == mail.outbox[1].body
+    assert mailoutbox[0].body == mailoutbox[1].body
 
 
 ### view account details ###

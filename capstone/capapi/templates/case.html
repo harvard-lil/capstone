@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load pipeline %}
+{% block extra_head %}
+  {% stylesheet 'case' %}
+{% endblock %}
+
+{% block title %} | {{ title }}{% endblock %}
+
+{% block content %}
+  <div class="container header-margin">
+    <h1 class="text-center">{{ title }}</h1>
+    {{ case_html|safe }}
+  </div>
+{% endblock %}

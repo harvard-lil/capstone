@@ -1,13 +1,10 @@
 import pytest
-from datetime import timedelta
 
 from django.urls import reverse
-from django.utils import timezone
 
 from test_data.test_fixtures.factories import *
 from scripts.process_metadata import parse_decision_date
 from capapi.tests.helpers import check_response
-from capapi.permissions import casebody_permissions
 
 
 @pytest.mark.django_db
@@ -159,19 +156,7 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     check_response(response)
     content = response.json()
     assert "casebody" in content
-
-    if case.judges:
-        judges = content['casebody']['judges']
-        assert len(judges)
-    if case.attorneys:
-        attorneys = content['casebody']['attorneys']
-        assert len(attorneys)
-    if case.parties:
-        parties = content['casebody']['parties']
-        assert len(parties)
-    if case.opinions:
-        opinions = content['casebody']['opinions']
-        assert len(opinions)
+    assert type(content['casebody']['data']) is dict
 
     jurisdiction.whitelisted = False
     jurisdiction.save()
@@ -185,14 +170,6 @@ def test_unauthenticated_full_case(api_url, case, jurisdiction, client):
     casebody = content['casebody']
     assert 'error_' in casebody['status']
     assert not casebody['data']
-    if case.judges:
-        assert 'judges' not in casebody
-    if case.attorneys:
-        assert 'attorneys' not in casebody
-    if case.parties:
-        assert 'parties' not in casebody
-    if case.opinions:
-        assert 'opinions' not in casebody
 
     url = "%scases/%s/?format=xml&full_case=true" % (api_url, case.pk)
     response = client.get(url)
@@ -217,10 +194,7 @@ def test_authenticated_full_case_whitelisted(auth_user, api_url, auth_client, ca
     result = response.json()
     casebody = result['casebody']
     assert casebody['status'] == 'ok'
-    assert 'judges' in casebody
-    assert 'attorneys' in casebody
-    assert 'parties' in casebody
-    assert 'opinions' in casebody
+    assert type(casebody['data']) is dict
 
     # make sure the user's case download number has remained the same
     auth_user.refresh_from_db()
@@ -270,10 +244,7 @@ def test_unlimited_access(auth_user, api_url, auth_client, case):
     result = response.json()
     casebody = result['casebody']
     assert casebody['status'] == 'ok'
-    assert 'judges' in casebody
-    assert 'attorneys' in casebody
-    assert 'parties' in casebody
-    assert 'opinions' in casebody
+    assert type(casebody['data']) is dict
 
     # don't allow user to download blacklisted case if unlimited access has expired
     # and they don't have enough case allowance
@@ -364,45 +335,33 @@ def test_case_citation_redirect(api_url, client, citation):
 
 
 # FORMATS
+def get_casebody_data_with_format(client, case, body_format):
+    response = client.get(reverse('casemetadata-detail', args=[case.pk]), {"full_case": "true", "body_format": body_format})
+    check_response(response)
+    content = response.json()
+    casebody = content["casebody"]
+    assert casebody['status'] == "ok"
+    return casebody['data']
+
 @pytest.mark.django_db
-def test_case_body_formats(api_url, client, case):
-    """
-    api should return different casebody formats upon request
-    """
-    case.jurisdiction.whitelisted = True
-    case.jurisdiction.save()
+def test_body_format_default(auth_client, case):
+    data = get_casebody_data_with_format(auth_client, case, "")
+    assert type(data["judges"]) is list
+    assert type(data["attorneys"]) is list
+    assert type(data["parties"]) is list
+    opinion = data["opinions"][0]
+    assert set(opinion.keys()) == {'type', 'author', 'text'}
+    assert opinion["text"]
 
-    # body_format not specified, should get back text
-    url = "%scases/%s/?full_case=true" % (api_url, case.pk)
-    response = client.get(url)
-    check_response(response)
-    content = response.json()
-    assert "casebody" in content
-    casebody = content["casebody"]
-    assert type(casebody) is dict
-    assert len(casebody['data']) > 0
-    assert casebody['status'] == casebody_permissions[0]
-    assert "<" not in casebody['data']
+@pytest.mark.django_db
+def test_body_format_xml(auth_client, case):
+    data = get_casebody_data_with_format(auth_client, case, "xml")
+    assert "<?xml version=" in data
 
-    # getting back xml body
-    url = "%scases/%s/?full_case=true&body_format=xml" % (api_url, case.pk)
-    response = client.get(url)
-    check_response(response)
-    content = response.json()
-    assert "casebody" in content
-    casebody = content["casebody"]
-    assert casebody['status'] == "ok"
-    assert "<?xml version=" in casebody['data']
-
-    # getting back html body
-    url = "%scases/%s/?full_case=true&body_format=html" % (api_url, case.pk)
-    response = client.get(url)
-    check_response(response)
-    content = response.json()
-    assert "casebody" in content
-    casebody = content["casebody"]
-    assert casebody['status'] == "ok"
-    assert "</h4>" in casebody['data']
+@pytest.mark.django_db
+def test_body_format_html(auth_client, case):
+    data = get_casebody_data_with_format(auth_client, case, "html")
+    assert "</h4>" in data
 
 
 # FILTERING

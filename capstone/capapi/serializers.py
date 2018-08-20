@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class CitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Citation
-        fields = ('type', 'cite', 'normalized_cite')
+        fields = ('type', 'cite')
 
 
 class CitationWithCaseSerializer(CitationSerializer):
@@ -49,16 +49,33 @@ class CourtSerializer(serializers.ModelSerializer):
         fields = ('url', 'id', 'slug', 'name', 'name_abbreviation')
 
 
+class CaseVolumeSerializer(serializers.ModelSerializer):
+    """ Abbreviated version of VolumeSerializer for embedding in CaseSerializer. """
+    volume_number = serializers.ReadOnlyField(source='xml_volume_number')
+
+    class Meta:
+        model = models.VolumeMetadata
+        fields = ('url', 'volume_number')
+
+
+class CaseReporterSerializer(serializers.ModelSerializer):
+    """ Abbreviated version of CaseSerializer for embedding in CaseSerializer. """
+    class Meta:
+        model = models.Reporter
+        fields = (
+            'url',
+            'full_name',
+        )
+
+
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="casemetadata-detail", lookup_field="id")
     court = CourtSerializer(source='denormalized_court')
     jurisdiction = JurisdictionSerializer(source='denormalized_jurisdiction')
-    reporter = serializers.ReadOnlyField(source='reporter.full_name')
-    reporter_url = serializers.HyperlinkedRelatedField(source='reporter', view_name='reporter-detail', read_only=True)
     citations = CitationSerializer(many=True)
-    volume_number = serializers.ReadOnlyField(source='volume.xml_volume_number')
-    volume_url = serializers.HyperlinkedRelatedField(source='volume', view_name='volumemetadata-detail', read_only=True)
+    volume = CaseVolumeSerializer()
+    reporter = CaseReporterSerializer()
     decision_date = serializers.DateField(source='decision_date_original')
 
     class Meta:
@@ -73,12 +90,10 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'first_page',
             'last_page',
             'citations',
-            'jurisdiction',
-            'court',
+            'volume',
             'reporter',
-            'reporter_url',
-            'volume_number',
-            'volume_url',
+            'court',
+            'jurisdiction',
         )
 
 
@@ -108,6 +123,7 @@ class CaseAllowanceMixin:
 
             # update the info for the existing user model, in case it's changed since the request began
             if not request.user.unlimited_access_in_effect():
+                user.update_case_allowance(save=False)  # for SiteLimits, make sure we start with up-to-date user.case_allowance_remaining
                 allowance_before = user.case_allowance_remaining
                 request.user.case_allowance_remaining = user.case_allowance_remaining
                 request.user.case_allowance_last_updated = user.case_allowance_last_updated
@@ -140,10 +156,13 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
         fields = CaseSerializer.Meta.fields + ('casebody',)
         list_serializer_class = ListSerializerWithCaseAllowance
 
-    def get_casebody(self, case):
+    def get_casebody(self, case, check_permissions=True):
         # check permissions for full-text access to this case
-        request = self.context.get('request')
-        casebody = get_single_casebody_permissions(request, case)
+        if check_permissions:
+            request = self.context.get('request')
+            casebody = get_single_casebody_permissions(request, case)
+        else:
+            casebody = {'status': 'ok', 'data': None}
 
         if casebody['status'] == 'ok':
             # if status is 'ok', we've passed the perms check and have to load orig_xml into casebody['data']
@@ -152,6 +171,7 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
             # non-JSON, single-case delivery formats will be handled by custom renderers
             if type(request.accepted_renderer) == HTMLRenderer:
                 data = orig_xml
+                casebody['title'] = case.full_cite()
             elif type(request.accepted_renderer) == XMLRenderer:
                 data = orig_xml
 
@@ -160,22 +180,58 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
                 body_format = request.query_params.get('body_format', None)
 
                 if body_format == 'html':
-                    # html
+                    # serialize to html
                     data = generate_html(orig_xml)
                 elif body_format == 'xml':
-                    # xml
-                    extracted = helpers.extract_casebody(orig_xml)
-                    c = helpers.serialize_xml(extracted)
+                    # serialize to xml
+                    casebody_pq = helpers.extract_casebody(orig_xml)
+
+                    # For the XML output, footnotes have <footnote label="foo">, so we should strip "foo" from the start
+                    # of the footnote text.
+                    for footnote in casebody_pq('casebody|footnote'):
+                        label = footnote.attrib.get('label')
+                        if label:
+                            helpers.left_strip_text(footnote[0], label)
+
+                    c = helpers.serialize_xml(casebody_pq)
                     data = re.sub(r"\s{2,}", " ", c.decode())
                 else:
-                    # plain text
-                    data = helpers.extract_casebody(orig_xml).text()
+                    # serialize to json
+                    casebody_pq = helpers.extract_casebody(orig_xml)
+
+                    # For the plain text output, footnotes should keep their labels in the text, but we want to make sure
+                    # there is a space separating the labels from the first word. Otherwise a text analysis comes up with
+                    # a lot of noise like "1The".
+                    for footnote in casebody_pq('casebody|footnote'):
+                        label = footnote.attrib.get('label')
+                        if label:
+                            # Get text of footnote and replace "[label][nonwhitespace char]" with "[label][nonwhitespace char]"
+                            footnote_paragraph = casebody_pq(footnote[0])
+                            new_text = footnote_paragraph.text()
+                            new_text = re.sub(r'^(%s)(\S)' % re.escape(label), r'\1 \2', new_text)
+                            footnote_paragraph.text(new_text)
+
+                    # extract each opinion into a dictionary
+                    opinions = []
+                    for opinion in casebody_pq.items('casebody|opinion'):
+                        opinions.append({
+                            'type': opinion.attr('type'),
+                            'author': opinion('casebody|author').text() or None,
+                            'text': opinion.text(),
+                        })
+
+                        # remove opinion so it doesn't get included in head_matter below
+                        opinion.remove()
+
+                    data = {
+                        'head_matter': casebody_pq.text(),
+                        'judges': case.judges,
+                        'attorneys': case.attorneys,
+                        'parties': case.parties,
+                        'opinions': opinions
+                    }
 
             casebody['data'] = data
-            casebody['judges'] = case.judges
-            casebody['attorneys'] = case.attorneys
-            casebody['opinions'] = case.opinions
-            casebody['parties'] = case.parties
 
         return casebody
 
@@ -246,3 +302,42 @@ class CourtSerializer(serializers.ModelSerializer):
             'slug',
         )
 
+
+### BULK SERIALIZERS ###
+
+# modified serializers for use by scripts/export.py
+
+class BulkJurisdictionSerializer(JurisdictionSerializer):
+    class Meta(JurisdictionSerializer.Meta):
+        fields = [field for field in JurisdictionSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCourtSerializer(CourtSerializer):
+    class Meta(CourtSerializer.Meta):
+        fields = [field for field in CourtSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCaseVolumeSerializer(CaseVolumeSerializer):
+    class Meta(CaseVolumeSerializer.Meta):
+        fields = [field for field in CaseVolumeSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCaseReporterSerializer(CaseReporterSerializer):
+    class Meta(CaseReporterSerializer.Meta):
+        fields = [field for field in CaseReporterSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCaseSerializer(CaseSerializerWithCasebody):
+    court = BulkCourtSerializer(source='denormalized_court')
+    jurisdiction = BulkJurisdictionSerializer(source='denormalized_jurisdiction')
+    volume = BulkCaseVolumeSerializer()
+    reporter = BulkCaseReporterSerializer()
+
+    class Meta(CaseSerializerWithCasebody.Meta):
+        model = models.CaseMetadata
+        fields = [field for field in CaseSerializerWithCasebody.Meta.fields if field not in ('url',)]
+
+    def get_casebody(self, case):
+        """ Tell get_casebody not to check for case download permissions. """
+        return super().get_casebody(case, check_permissions=True)
+
+    @property
+    def data(self):
+        """ Skip tracking of download counts. """
+        return super(serializers.HyperlinkedModelSerializer, self).data

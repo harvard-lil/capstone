@@ -2,6 +2,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SERVICES_DIR = os.path.join(os.path.dirname(BASE_DIR), 'services')
 
 
 ALLOWED_HOSTS = []
@@ -27,6 +28,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'compressor',
+    'rest_framework_filters',
     'pipeline',
 
     # ours
@@ -47,7 +49,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
     'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CachedCountLimitOffsetPagination',
     'DEFAULT_FILTER_BACKENDS': (
-        'rest_framework_filters.backends.DjangoFilterBackend',
+        'rest_framework_filters.backends.RestFrameworkFilterBackend',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
@@ -231,6 +233,12 @@ PIPELINE = {
             ),
             'output_filename': 'viz.css'
         },
+        'case': {
+            'source_filenames': {
+                'css/scss/case.scss',
+            },
+            'output_filename': 'case.css'
+        }
     },
     'JAVASCRIPT': {
         'base': {
@@ -294,6 +302,12 @@ STORAGES = {
         'class': 'CapFileStorage',
         'kwargs': {
             'location': os.path.join(BASE_DIR, 'test_data/zips'),
+        },
+    },
+    'pdf_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/pdfs'),
         },
     },
 }

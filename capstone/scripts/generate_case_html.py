@@ -1,6 +1,8 @@
 from lxml import etree
-from scripts.helpers import parse_xml
 import re
+
+from .helpers import parse_xml, left_strip_text
+
 
 tag_map = {  "author": "p", "opinion" : "article", "casebody" : "section",
              "citation": "p", "correction": "aside", "court": "p",
@@ -12,90 +14,12 @@ tag_map = {  "author": "p", "opinion" : "article", "casebody" : "section",
              "pagebreak": "br"}
 
 
-# these styles will only be applied if case_body_only is explicitly set to false
-bulma_class_map = {  "author": "title is-5", "opinion" : "section is-large", "casebody" : "container",
-             "citation": "tag is-link", "correction": "tag is-warning", "court": "",
-             "decisiondate": "subtitle is-5 has-text-centered", "disposition": "tile", "docketnumber": "",
-             "headnotes": "tile", "history": "tile", "otherdate": "",
-             "parties": "title is-4 has-text-centered", "seealso": "", "summary": "tile",
-             "syllabus": "tile", "footnote": "box", "attorneys": "subtitle is-5 has-text-centered",
-             "judges": "subtitle is-5 has-text-centered", "bracketnum": "", "footnotemark": "",
-             "pagebreak": ""}
-
-style = """ .headnotes::before {
-    content: "Headnote: ";
-    font-weight: bold;
-    margin-right: 10px;
-} 
-.summary::before {
-    content: "Summary: ";
-    font-weight: bold;
-    margin-right: 10px;
-} 
-.history::before {
-    content: "History: ";
-    font-weight: bold;
-    margin-right: 10px;
-} 
-
-.disposition::before {
-    content: "Disposition: ";
-    font-weight: bold;
-    margin-right: 10px;
-} 
-
-.syllabus::before {
-    content: "Syllabus: ";
-    font-weight: bold;
-    margin-right: 10px;
-} 
-
-.author::before {
-    content: "Author: ";
-} 
-
-.opinion::before {
-    content: "Opinion";
-    font-weight: bold;
-} 
-
-.opinion > p {
-margin-bottom: 15px;
-} 
-
-.casebody > p {
-margin-left: 25px;
-margin-top: 10px;
-} 
-
-.footnote > p {
-font-size: 0.75rem;
-margin-bottom: 8px;
-} 
-
-article.opinion {
-padding-top: 20px !important;
-}
-
-aside.footnote {
-padding-top: 8px;
-padding-left: 8px;
-padding-right: 8px;
-padding-bottom: 2px;
-}
-#top-citation {
-    margin-left: 0 auto;
-    margin-right: 0 auto;
-    text-align: center;
-}
-"""
-
 # these will pull out the headnotes number and corresponding bracketnum
 bracketnum_number = re.compile(r'\d')
 headnotes_number = re.compile(r'^(\d+).*')
 
 
-def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
+def generate_html(case_xml, tag_map=tag_map):
     """
     converts case xml to html
     """
@@ -109,6 +33,12 @@ def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
     casebody = parsed_xml("casebody|casebody")
     casebody_tree = casebody[0]
 
+    # all elements before the first opinion go into a <section class="head-matter"> container
+    first_opinion = casebody("casebody|opinion").eq(0)
+    head_matter_els = first_opinion.prev_all()
+    head_matter_el = etree.Element("section", {"class": "head-matter"})
+    casebody(head_matter_el).append(head_matter_els)
+    casebody.prepend(head_matter_el)
 
     # traverse the casebody tree and convert elements
     for element in casebody_tree.iter():
@@ -118,8 +48,12 @@ def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
             if element.attrib['class'] == 'footnote_anchor' or element.attrib['class'] == 'headnote_anchor':
                 continue
 
+        # skip new section tag
+        if element.tag == "section":
+            continue
+
         # remove the namespace from the tag name
-        tag = element.tag.split('}')[1]
+        tag = element.tag.split('}')[-1]
 
         element_text_copy = element.text
 
@@ -128,7 +62,7 @@ def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
 
         # for every attribute except id, turn it into an accepted data-* attribute
         for attribute in element.attrib:
-            if attribute == 'id':
+            if attribute == 'id' or attribute.startswith('data-'):
                 continue
             element.attrib['data-' + attribute] = element.attrib[attribute]
             element.attrib.pop(attribute)
@@ -141,12 +75,18 @@ def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
 
         # create internal links
         if tag == "footnote":
-            # this anchor allows the footnotemark to link to the footnote
-            anchor = etree.Element("a")
-            anchor.attrib["id"] = "footnote_" + element.attrib['data-label']
-            anchor.text = " "
-            anchor.attrib['class'] = "footnote_anchor"
-            element.append(anchor)
+            label = element.attrib.get('data-label')
+            if label:
+                # strip footnote label from start of footnote text
+                left_strip_text(element[0], label)
+
+                # element id allows the footnotemark to link to the footnote
+                element.attrib["id"] = "footnote_" + label
+
+                # add link to show footnote label and jump back up to text
+                anchor = etree.Element("a", href="#ref_" + label)
+                anchor.text = label
+                element.insert(0, anchor)
         elif tag == "headnotes":
             # this anchor allows the bracketnum to link to the proper headnote, if it exists
             number_match = headnotes_number.match(element_text_copy)
@@ -161,6 +101,7 @@ def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
             # point to the anchor in the footnote
             element.tag = "a"
             element.attrib['href'] = "#footnote_" + element_text_copy
+            element.attrib['id'] = "ref_" + element_text_copy
         elif tag == "bracketnum":
             # point to the anchor in the headnote
             element.tag = "a"
@@ -168,10 +109,6 @@ def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
         elif tag == "pagebreak":
             # point to the anchor in the headnote
             element.attrib['style'] = "page-break-before: always"
-
-        # apply the bulma styles
-        if not case_body_only and tag in bulma_class_map and bulma_class_map[tag] is not "":
-            element.attrib['class'] = "{} {}".format(bulma_class_map[tag], element.attrib['class'])
 
     # change the properties of the casebody tag itself
     casebody[0].tag = tag_map['casebody']
@@ -181,18 +118,7 @@ def generate_html(case_xml, tag_map=tag_map, case_body_only=True):
         casebody[0].attrib['data-' + attribute] = casebody[0].attrib[attribute]
         casebody[0].attrib.pop(attribute)
 
-    # return if we only need the unstyled case body snippet
-    if case_body_only is True:
-        # return a copy of the string with the namepsaces stripped
-        return str(re.sub(r' xmlns(:xlink)?="http://[^"]+"', '', str(casebody)))
+    # get casebody as string with namespaces stripped
+    casebody_str = re.sub(r' xmlns(:xlink)?="http://[^"]+"', '', str(casebody))
 
-    # add in the surrounding HTML
-    pre_case_body = """<!doctype html>\n\n<html lang="en">\n\t<head>\n\t\t<title>CAPAPI: {0}</title>\n\t</head>
-    <link rel="stylesheet" href="/static/css/bulma.min.css" />
-    <style>{1}</style>
-    \t<body>\n\t\t<h2 id="top-citation" class="subtitle is-5">{0}</h2>""".format(parsed_xml('case|citation')[0].text, style)
-
-    post_case_body = "</body></html>"
-
-
-    return "{}{}{}".format(pre_case_body, str(re.sub(r' xmlns(:xlink)?="http://[^"]+"', '', str(casebody))), post_case_body)
+    return casebody_str
