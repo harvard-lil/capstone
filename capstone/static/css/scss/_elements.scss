@@ -2,7 +2,7 @@
 
 // buttons
 .btn {
-  @extend .font-body-bold;
+  @extend .font-bold;
   font-size: 14px;
   border-radius: 5px;
   margin-bottom: 10px;
@@ -32,10 +32,6 @@
   }
 }
 
-#cap-logo-long {
-  max-width: 250px;
-}
-
 #triple-arrows {
   left: -25px;
   position: absolute;
@@ -48,3 +44,8 @@
   font-size: 1.5em;
   color: $color-violet-light;
 }
+
+.decorative-arrow {
+  margin-left: -3rem;
+}
+

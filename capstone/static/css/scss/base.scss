@@ -1,7 +1,6 @@
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
-@import 'bootstrap/mixins/_grid.scss';
-@import 'bootstrap/mixins/_breakpoints.scss';
+@import 'bootstrap/mixins';
 @import '_variables.scss';
 @import '_elements.scss';
 
@@ -9,6 +8,7 @@
   background: $color-yellow; /* WebKit/Blink Browsers */
   color: $color-black;
 }
+
 ::-moz-selection {
   background: $color-yellow; /* Gecko Browsers */
   color: $color-black;
@@ -22,9 +22,9 @@ body {
   flex-direction: column;
 }
 
-//h1, h2, h3, h4, h5, h6 {
-//  @extend .font-header-bold;
-//}
+ul {
+  padding-left: 0;
+}
 
 section {
   width: 100%;
@@ -100,12 +100,17 @@ a {
     }
   }
 
-  .cap-logo {
-    padding: 10px;
+  #cap-logo {
+    max-width: 150px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
   }
 
   @include media-breakpoint-up(lg) {
-    border-bottom: 1px solid $color-violet-light;
+    -webkit-box-shadow: 0 1px 5px #4A4A4A;
+    -moz-box-shadow: 0 1px 5px #4A4A4A;
+    box-shadow: 0 1px 5px #4A4A4A;
   }
   @include media-breakpoint-down(md) {
     background-color: transparent;
@@ -161,29 +166,32 @@ a {
 }
 
 // Typography
-.section-subtitle {
-  @extend .font-header-semibold;
-  letter-spacing: 0;
+
+section {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
 }
 
-.section-header-text {
-  @extend .font-body-semibold;
-}
-
-.section-title {
-  @include media-breakpoint-up(md) {
-    text-align: right;
-  }
-}
-
-section#section-dive-in {
-  .row {
-    div:nth-child(2) {
-      @include media-breakpoint-up(md) {
-        margin-top: 3rem !important;
-      }
+section.section-default {
+  @include media-breakpoint-down(sm) {
+    .section-title, .section-subtitle {
+      color: $color-violet;
+    }
+    .section-subtitle {
+      font-weight: 300;
+    }
+    .section-content {
+      padding-left: 0;
     }
   }
+  &.bg-black {
+    .section-title, .section-subtitle {
+      color: $color-yellow;
+    }
+  }
+}
+
+#section-dive-in {
   @include media-breakpoint-down(lg) {
     padding-bottom: 50px;
   }
@@ -197,56 +205,36 @@ section#section-dive-in {
   }
 }
 
-section#section-about {
-  .row {
-    div:nth-child(1) {
-      //@include media-breakpoint-up(lg) {
-      //  bac
-      //}
-    }
-    .viz-circles {
-      padding-bottom: 6rem;
-    }
-    .sidebar-content {
-      p {
-        color: $color-white;
-      }
-
-      @include media-breakpoint-up(md) {
-        background-color: $color-violet-light;
-        h2, h4 {
-          color: $color-black;
-        }
-        .content {
-          margin: 0 auto;
-        }
-
-      }
-      @include media-breakpoint-down(sm) {
-        background-color: $color-violet-gray-dark;
-        h2, h4 {
-          color: $color-white;
-        }
-      }
-    }
-    #purple-us-map {
-      @include media-breakpoint-only(lg) {
-        width: 80%;
-      }
-    }
+#section-about {
+  @extend .bg-gradient;
+  @include media-breakpoint-down(sm) {
+    background: $color-violet;
   }
 }
 
-section#section-links {
+#section-links {
   padding-bottom: 30px;
   .item-title {
-    margin-bottom: 0;
+    margin-bottom: 0.5em;
   }
   .item-set {
     margin-bottom: 20px;
   }
+  .item-origin {
+    color: $color-red;
+    font-weight: 700;
+  }
+  .item-date {
+    color: $color-violet-gray;
+    padding-left: 0.5em;
+  }
   li {
     list-style: none;
+    a {
+      color: $color-violet;
+      border-bottom: 1px solid $color-violet;
+      font-weight: 600;
+    }
   }
 }
 
@@ -259,7 +247,6 @@ section#section-links {
 .showcase-item-title {
   color: $color-yellow;
 }
-
 
 .basic-page {
   h1 {
@@ -282,8 +269,6 @@ section#section-links {
   }
 }
 
-
-
 // FOOTER
 footer {
   a {
@@ -295,8 +280,26 @@ footer {
   }
 }
 
+.page-index {
+  footer {
+    background-color: $color-violet;
+    color: white;
+    a {
+      color: white;
+    }
+  }
+}
+
 .page-about {
   footer {
-    background-color: $color-yellow-light
+    background-color: $color-yellow-light;
+  }
+}
+
+#usa-territories-white {
+  .state:hover {
+    fill: $color-yellow;
+    stroke: $color-yellow;
+    cursor: pointer;
   }
 }

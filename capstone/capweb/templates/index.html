@@ -9,126 +9,152 @@
 {% block content %}
   {% include "includes/menu.html" %}
   <div class="row">
-    <section class="separator bg-black">
-      <div class="col-xl-5 col-md-6 col-sm-10 m-auto text-center pb-5 pt-5">
-        <h2 class="font-serif mt-5">
-          <img src="{% static "img/red-arrow-right.svg" %}">
+    <section class="bg-black">
+      <div class="col-xl-5 col-md-6 col-sm-10 m-auto text-center">
+        <h4 class="font-serif mt-5">
+          <img src='{% static "img/red-arrow-right.svg" %}'/>
           A complete collection of  published United States caselaw  from 1640 to 2018
-          <img src="{% static "img/red-arrow-left.svg" %}">
-        </h2>
+          <img src='{% static "img/red-arrow-left.svg" %}'/>
+        </h4>
       </div>
     </section>
 
     {# Dive in #}
-    <section id="section-dive-in" class="separator">
-      <div class="row">
-        <div class="col-lg col-md-6 mt-5">
-          <h2 class="font-serif section-title">Dive in!</h2>
-        </div>
-        <div class="col-lg col-md-6">
-          <p class="font-serif color-violet">Start exploring the data! Here are some tools you can use to check it out.</p>
-          <h4 class="font-serif">API</h4>
-          <p>The API allows users to browse and download cases using a few short commands.</p>
-
-          <h4 class="font-serif">Bulk data</h4>
-          <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
-          <br/>
-          <a href="/tools" class="btn-default">BROWSE TOOLS</a>
-        </div>
-        <div class="col-lg d-sm-none d-lg-block">
-          <img class="img-fluid" src="{% static "img/reporters.png" %}">
-        </div>
-      </div>
-    </section>
-
-    {# Map + about #}
     <section id="section-about">
-      <div class="row">
-        <div class="col-8 d-sm-none d-none d-md-block pl-0 bg-tan">
-          <div class="col-12 mt-5 viz-circles">
-            <span class="col-4 float-right text-right">
-              {% include "includes/round-1.svg" %}
-            </span>
-            <span class="col-4 float-right text-right">
-              {% include "includes/round-2.svg" %}
-            </span>
-            <span class="col-4 float-right text-right">
-              {% include "includes/round-3.svg" %}
-            </span>
+      <div class="col-xl-10 m-auto">
+        <div class="row">
+          <div class="col-xl-3 col-lg col-md-6 col-sm-12 mt-5">
+              <h1 class="font-serif section-title">
+                <img class="decorative-arrow"
+                     src='{% static "img/red-arrow-right.svg" %}'>
+                  What data do we have?
+              </h1>
           </div>
-          <br/>
-          <div class="col-12 p-0 mt-5">
-            <img id="purple-us-map" class="align-bottom" alt="Stylized US map" src="{% static "img/purple-us-2.png" %}">
-            {# <a class="btn btn-default float-right">GO TO MAP</a>#}
+          <div class="col-lg col-md-6 mt-5 section-content">
+            <h5 class="font-semibold col-8">
+              Planning, scanning, digitizing, and enabling access since 2013
+            </h5>
+            <div class="map col-lg-8 d-none d-md-block mt-5 mb-5">
+              <!-- show map only on medium sized devices and above -->
+              {% include "includes/usa_territories_white.svg" %}
+            </div>
+            <div class="numbers col-lg-4">
+              <div class="row">
+                <div class="col-4">
+                  <h1 class="font-bold">6.4M</h1>
+                  <p>Unique cases</p>
+                </div>
+                <div class="col-4">
+                  <h1 class="font-bold">627</h1>
+                  <p>Reporters</p>
+                </div>
+                <div class="col-4">
+                  <h1 class="font-bold">40M</h1>
+                  <p>Pages scanned</p>
+                </div>
+
+              </div>
+            </div>
           </div>
         </div>
+        <a class="btn btn-default" href="/about#overview">Learn more
+        </a>
 
-        <div class="sidebar-content col-md-4 col-xs-12">
-          <div class="mt-5">
-            <div class="col-lg col-md-4 col-sm-4 d-none d-sm-block d-md-none d-lg-none pl-0">
-              <h2 class="font-serif section-title">About</h2>
-            </div>
+      </div>
+    </section>
 
-            <div class="content col-lg-10 col-md-8 pl-0">
-              <h4 class="font-serif">What kind of data do we have?</h4>
-              <p class="color-white">Short blurb about what kind of data we have.
-                We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
-              <a class="btn btn-inverse">SEE MORE</a>
-              <br/><br/>
-              <div class="separator color-white"></div>
-              <br/>
-              <h4 class="font-serif">Limits on use</h4>
-              <p class="color-white">Short blurb about what kind of data we have.
-                We took xyz reporters and stripped them of abc proprietary data. This is what we have.</p>
-              <a class="btn btn-inverse">SEE MORE</a>
-              <br/>
-              <br/>
-            </div>
+    <!-- Dive in -->
+    <section id="section-dive-in" class="section-default">
+      <div class="col-xl-10 m-auto">
+        <div class="row mt-5">
+          <div class="col-xl-3 col-lg col-md-6 col-sm-12">
+            <!-- section title -->
+            <h1 class="font-serif section-title">
+              <img class="decorative-arrow"
+                   src='{% static "img/red-arrow-right.svg" %}'>
+                Dive in!
+            </h1>
+          </div>
+          <div class="col-md col-md-6 section-content">
+            <!-- section subtitle -->
+            <h5 class="font-semibold section-subtitle">
+              Start exploring the data! Here are some tools you can use to check it out.
+            </h5>
+
+            <h6 class="font-semibold">
+              <span class="section-symbol color-red">&#167;</span>
+              <span class="color-violet">API</span>
+            </h6>
+            <p>The API allows users to browse and download cases using a few short commands.</p>
+            <h6 class="font-semibold">
+              <span class="section-symbol color-red">&#167;</span>
+              <span class="color-violet">Bulk data</span>
+            </h6>
+            <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
+            <br/>
+            <a href="/tools" class="btn-default">BROWSE TOOLS</a>
           </div>
         </div>
       </div>
     </section>
+    <!-- /Dive in -->
 
-    {#  Showcase #}
-    <section id="section-showcase" class="bg-black">
-      <div class="row">
-        <div class="col-lg-4 col-md-6 mt-5">
-          <h2 class="font-serif section-title">What's <br/>Possible?</h2>
-        </div>
-        <div class="col-lg col-md-6 mt-5">
-          <div class="row">
-            <div class="col-sm showcase-item">
-              <div class="showcase-item-img bg-yellow"></div>
-              <h6 class="showcase-item-title font-serif">Wordclouds</h6>
-              <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
-            </div>
-            <div class="col-sm showcase-item">
-              <div class="showcase-item-img bg-yellow"></div>
-              <h6 class="showcase-item-title font-serif">Topic mapping</h6>
-              <p>Ipsam culpa dolorem repellat nihil adipisci ea eligendi quasi. Id voluptas labore odio sunt perferendis aut et ut.</p>
-            </div>
-            <div class="col-sm showcase-item">
-              <div class="showcase-item-img bg-yellow"></div>
-              <h6 class="showcase-item-title font-serif">Limericks</h6>
-              <p>Veritatis qui est quasi minima quae est tempore. Omnis velit ab sit cumque id autem est.</p>
-            </div>
+    <!-- Showcase -->
+    <section id="section-gallery" class="bg-black section-default">
+      <div class="col-xl-10 m-auto">
+        <div class="row mt-5">
+          <div class="col-xl-3 col-lg col-md-6 col-sm-12">
+            <!-- section title -->
+            <h1 class="font-serif section-title">
+              <img class="decorative-arrow"
+                   src='{% static "img/red-arrow-right.svg" %}'>
+                Gallery
+            </h1>
+          </div>
+          <div class="col-md col-md-6 section-content">
+            <!-- section subtitle -->
+            <h5 class="font-semibold section-subtitle">
+              Sky’s the limit. See some early experiments made possible by the opening up of caselaw data.
+            </h5>
+            <h6 class="font-semibold">
+              <span class="section-symbol color-yellow">&#167;</span>
+              <span>Wordclouds</span>
+            </h6>
+            <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
+            <h6 class="font-semibold">
+              <span class="section-symbol color-yellow">&#167;</span>
+              <span>Limericks</span>
+            </h6>
+            <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
+
           </div>
         </div>
       </div>
     </section>
+    <!-- /Showcase -->
 
-    {# Links #}
-    <section id="section-links" class="bg-tan">
-      <div class="row">
-        <div class="col-lg-4 col-md-6 mt-5">
-          <h2 class="font-serif section-title">Links &amp;<br/>Press</h2>
-        </div>
-        <div class="col-lg col-md-6 mt-5">
-          <ul>
+    <!-- Links -->
+    <section id="section-links" class="section-default">
+       <div class="col-xl-10 m-auto">
+        <div class="row mt-5">
+          <div class="col-xl-3 col-lg col-md-6 col-sm-12">
+            <!-- section title -->
+            <h1 class="font-serif section-title">
+              <img class="decorative-arrow"
+                   src='{% static "img/red-arrow-right.svg" %}'>
+                Links &amp; press
+            </h1>
+          </div>
+          <div class="col-md col-md-6 section-content">
+            <!-- section subtitle -->
+            <h5 class="font-semibold section-subtitle">
+              What's been written about Caselaw Access Project around the web
+            </h5>
+            <ul>
             {% for news_item in news %}
             <li class="item-set">
-              <p class="item-title font-serif">
-                <a href="{{ news_item.url }}" >{{ news_item.title }}</a>
+              <p class="item-title">
+                <a href="{{ news_item.url }}" target="_blank">{{ news_item.title }}</a>
               </p>
               <span class="item-origin">
                 {{ news_item.publication }}
@@ -139,9 +165,12 @@
             </li>
             {% endfor %}
           </ul>
+            <a href="/about#press" class="btn btn-default">See all</a>
+          </div>
         </div>
-      </div>
+       </div>
     </section>
+    <!-- /Links -->
   </div>
 {% endblock %}
 

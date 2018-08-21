@@ -24,11 +24,10 @@
 
     {% compress css %}
       <link rel="stylesheet" type="text/css" href="{% static "css/_normalize.css" %}" />
-      <link rel="stylesheet" type="text/x-scss" href="{% static "css/scss/bootstrap/bootstrap.scss" %}" />
+      <link rel="stylesheet" type="text/x-scss" href="{% static "css/scss/custom.scss" %}" />
       <link rel="stylesheet" type="text/x-scss" href="{% static "css/scss/base.scss" %}" />
     {% endcompress %}
 
-{#    {% stylesheet 'base' %}#}
     {% block extra_head %}{% endblock %}
   </head>
   <body class="page-{{ page_name }}">
