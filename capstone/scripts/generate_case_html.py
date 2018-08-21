@@ -103,8 +103,6 @@ def generate_html(case_xml, tag_map=tag_map):
             element.attrib['href'] = "#footnote_" + element_text_copy
             element.attrib['id'] = "ref_" + element_text_copy
         elif tag == "bracketnum":
-            import ipdb
-            ipdb.set_trace()
             # point to the anchor in the headnote.
             # Hack-> If it can't find the headnote, maybe because it's an imporperly tagged bracketnum,
             # just make it a span
