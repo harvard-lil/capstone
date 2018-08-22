@@ -10,7 +10,7 @@
 {% block content %}
   <div class="container header-margin">
     <div id="citation_container" class="text-center">
-      <input title="official citation" size="10" readonly="readonly" class="center" type="input" id="citation_for_copy" name="citation" value="{{ citation }}">
+      <input title="official citation" readonly="readonly" class="center" type="input" id="citation_for_copy" name="citation" value="{{ citation }}">
         <button data-toggle="tooltip" title="Copy Citation to Clipboard" id="citation_copy" onclick="copyCitation()">
         <img src="{% static "img/copy_icon.png" %}" alt="clipboard icon to copy citation">
         </button>
