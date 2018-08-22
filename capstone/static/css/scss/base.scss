@@ -1,8 +1,20 @@
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
-@import '_variables.scss';
-@import '_elements.scss';
+
+@import "bootstrap/reboot";
+
+@import "bootstrap/type";
+@import 'bootstrap/grid';
+
+@import "bootstrap/navbar";
+@import "bootstrap/dropdown";
+
+@import "bootstrap/utilities/spacing";
+@import "bootstrap/utilities/text";
+
+@import 'variables';
+@import 'elements';
 
 ::selection {
   background: $color-yellow; /* WebKit/Blink Browsers */
@@ -26,17 +38,15 @@ ul {
   padding-left: 0;
 }
 
+li {
+  list-style: none;
+}
+
 section {
   width: 100%;
 }
 
-
-a, button, .btn {
-  cursor: pointer;
-}
-
 code {
-  //@extend .font-code;
   background-color: $color-light-blue;
   color: $color-black;
   padding: 0 5px;
@@ -44,9 +54,8 @@ code {
 
 
 pre {
-  //@extend .font-code;
   white-space: -moz-pre-wrap;
-  //white-space: -pre-wrap;
+  white-space: -pre-wrap;
   white-space: -o-pre-wrap;
   white-space: pre-wrap;
   word-wrap: break-word; /* Internet Explorer 5.5+ */
@@ -54,19 +63,33 @@ pre {
 }
 
 a {
-  cursor: pointer;
-  border-bottom: 0;
-  color: $color-blue;
+  text-decoration: none;
+  color: $color-violet;
+  border-bottom: 1px solid $color-violet;
+
   &:hover, &:focus, &:active {
-    color: $color-black;
-    border-bottom: 0;
     text-decoration: none;
+    color: $color-blue;
+    border-bottom: 1px solid $color-blue;
+  }
+}
+
+a, button, .btn {
+  cursor: pointer;
+}
+
+button, .btn, .btn:hover, .btn:active, .btn:focus {
+  border: 0;
+}
+
+nav {
+  a {
+    border-bottom: 0;
   }
 }
 
 .row {
-  max-width: 100%;
-  margin-left: 0;
+  @extend .no-gutters;
 }
 
 .separator {
@@ -86,7 +109,7 @@ a {
   }
 }
 
-// MENU
+// NAV MENU
 #main-menu {
   padding-top: 10px;
   padding-bottom: 10px;
@@ -108,9 +131,9 @@ a {
   }
 
   @include media-breakpoint-up(lg) {
-    -webkit-box-shadow: 0 1px 5px #4A4A4A;
-    -moz-box-shadow: 0 1px 5px #4A4A4A;
-    box-shadow: 0 1px 5px #4A4A4A;
+    -webkit-box-shadow: 0 1px 5px $color-violet-gray-dark;
+    -moz-box-shadow: 0 1px 5px $color-violet-gray-dark;
+    box-shadow: 0 1px 5px $color-violet-gray-dark;
   }
   @include media-breakpoint-down(md) {
     background-color: transparent;
@@ -155,65 +178,104 @@ a {
   }
 }
 
-// if header-margin exists, we're in homepage showing a big logo.
-// Add top border
-.header-margin {
-  #main-menu {
-    @include media-breakpoint-up(lg) {
-      border-top: 1px solid $color-medium-gray;
-    }
-  }
-}
 
-// Typography
-
+/* Section styles */
 section {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-section.section-default {
+  padding-top: 5rem;
+  padding-bottom: 7rem;
   @include media-breakpoint-down(sm) {
-    .section-title, .section-subtitle {
+    .section-title,
+    .section-subtitle {
       color: $color-violet;
     }
     .section-subtitle {
       font-weight: 300;
     }
-    .section-content {
-      padding-left: 0;
-    }
-  }
-  &.bg-black {
-    .section-title, .section-subtitle {
-      color: $color-yellow;
-    }
   }
 }
 
-#section-dive-in {
-  @include media-breakpoint-down(lg) {
-    padding-bottom: 50px;
-  }
-  @include media-breakpoint-down(xs) {
-    padding-bottom: 0;
-    .row {
-      div:nth-child(2) {
-        margin-bottom: 30px;
-      }
-    }
+section > .content {
+  margin: 0 auto;
+  @include make-col(10);
+  @include media-breakpoint-down(md) {
+    @include make-col(11);
   }
 }
 
-#section-about {
-  @extend .bg-gradient;
+section > .content > .row > .content-left {
+  @include media-breakpoint-only(xl) {
+    @include make-col(3);
+  }
+  @include media-breakpoint-only(lg) {
+    .decorative-arrow { margin-left: -2rem; }
+    @include make-col(4);
+  }
+  @include media-breakpoint-only(md) {
+    @include make-col(4);
+  }
   @include media-breakpoint-down(sm) {
-    background: $color-violet;
+    .decorative-arrow { display: none; }
+    @include make-col(10);
+  }
+}
+
+section > .content > .row > .content-right {
+  /* usually includes subtitle, content */
+  @include media-breakpoint-only(xl) {
+    @include make-col(7);
+    @include make-col-offset(1);
+  }
+  @include media-breakpoint-only(lg) {
+    @include make-col(6);
+    @include make-col-offset(1);
+  }
+  @include media-breakpoint-only(md) {
+    padding-left: 20px;
+    @include make-col(6);
+    @include make-col-offset(1);
+  }
+}
+
+/* show map only on medium sized devices and above */
+.content-right > .map {
+  margin-top: 3em;
+  margin-bottom: 3em;
+
+  @include media-breakpoint-down(sm) {
+    display: none;
+  }
+}
+
+.content {
+  .numbers {
+    h1 { font-weight: $font-weight-bold; }
+  }
+}
+.content-right > .numbers-horizontal {
+  text-align: center;
+  @include media-breakpoint-down(lg) {
+    display: none;
+  }
+}
+
+.content-left > .numbers-vertical {
+  text-align: left;
+  @include media-breakpoint-only(xl) {
+    display: none;
+  }
+}
+
+section > .splash-quote {
+  //col-xl-5 col-md-6 col-sm-10 m-auto text-center
+  margin: 0 auto;
+  text-align: center;
+  @include make-col(5);
+  @include media-breakpoint-down(md) {
+    @include make-col(8);
   }
 }
 
 #section-links {
-  padding-bottom: 30px;
   .item-title {
     margin-bottom: 0.5em;
   }
@@ -231,8 +293,6 @@ section.section-default {
   li {
     list-style: none;
     a {
-      color: $color-violet;
-      border-bottom: 1px solid $color-violet;
       font-weight: 600;
     }
   }
@@ -278,6 +338,25 @@ footer {
       color: $color-blue;
     }
   }
+  #lil-logo {
+    height: 100px;
+  }
+  @include media-breakpoint-up(md) {
+    .credits {
+      text-align: right;
+    }
+  }
+  @include media-breakpoint-down(sm) {
+    .links {
+      display: none;
+    }
+    .credits {
+      text-align: center;
+    }
+
+  }
+
+
 }
 
 .page-index {
@@ -292,7 +371,12 @@ footer {
 
 .page-about {
   footer {
-    background-color: $color-yellow-light;
+    background-color: $color-yellow;
+    #lil-logo {
+      .lil-logo-item {
+        fill: $color-black;
+      }
+    }
   }
 }
 
@@ -303,3 +387,5 @@ footer {
     cursor: pointer;
   }
 }
+
+

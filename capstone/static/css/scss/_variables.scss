@@ -109,7 +109,7 @@
 
 
 
-// logo
+// brand color
 $color-blue: #0075FF;
 
 // main colors
@@ -188,6 +188,11 @@ $color-violet-gray-dark: #474756;
 .bg-gradient {
   @include diagonal_gradient(#6350fd,#a559b3);
   color: white;
+  /* in small screens, simply make background violet */
+  @include media-breakpoint-down(sm) {
+    background: $color-violet;
+  }
+
 }
 
 
@@ -199,23 +204,21 @@ $color-violet-gray-dark: #474756;
   letter-spacing: 0.05em;
 }
 
-.font-bold {
+.font-bold,
+.font-semibold,
+.font-body,
+.font-header,
+.font-header-bold {
   @extend .font-body;
-  font-weight: 600;
 }
 
-.font-semibold {
-  @extend .font-body;
-  font-weight: 600;
-}
+$font-weight-semibold: 600;
 
 .font-header {
-  @extend .font-body;
   font-weight: 700;
 }
 
 .font-header-bold {
-  @extend .font-body;
   font-weight: 700;
 }
 
@@ -381,4 +384,7 @@ strong, b {
   padding-left: 0;
   padding-right: 0;
 }
+
+
+
 

@@ -16,9 +16,10 @@
   background: $color-violet;
   color: $color-white !important;
 
-  &:hover, &:focus {
+  &:hover, &:focus, &:active {
     background: $color-red;
   }
+
 }
 
 .btn-inverse {
@@ -26,9 +27,10 @@
   border: 2px solid $color-black;
   color: $color-black;
   background: $color-white;
-  &:hover, &:focus {
+  &:hover, &:focus, &:active {
     background: $color-yellow;
     border: 2px solid;
+    color: $color-black;
   }
 }
 

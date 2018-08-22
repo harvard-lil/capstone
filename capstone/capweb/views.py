@@ -6,10 +6,15 @@ from capweb.helpers import get_data_from_lil_site
 
 def index(request):
     news = get_data_from_lil_site(section="news")
-
+    numbers = {
+        "pages_scanned": "40M",
+        "cases": "6.4M",
+        "reporters": "627",
+    }
     return render(request, "index.html", {
         'page_name': 'index',
-        'news': news[0:5]
+        'news': news[0:5],
+        'numbers': numbers,
     })
 
 

@@ -1,11 +1,8 @@
 {% load static %}
 <footer class="footer">
   <div class="footer-content container-fluid pt-5">
-    <div class="row">
-      <div class="col-4">
-          {% include "includes/lil-logo.svg" %}
-      </div>
-      <div class="col-8 text-right">
+      {% include "includes/lil-logo.svg" %}
+      <div class="text-right">
         <ul class="list-inline links">
           <li class="list-inline-item">
             <a href="/about">ABOUT</a>
@@ -35,7 +32,7 @@
       </div>
 
       <div class="col-12 text-center">
-        <button id="return" onclick="returnToTop()" class="return-to-top white-button btn">RETURN TO TOP</button>
+        <button id="return" onclick="returnToTop()" class="return-to-top btn btn-inverse">RETURN TO TOP</button>
       </div>
     </div>
   </div>

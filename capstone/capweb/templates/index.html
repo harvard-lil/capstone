@@ -1,6 +1,7 @@
 {% extends "main_base.html" %}
 {% load static %}
 {% load pipeline %}
+{% load compress %}
 
 {% block extra_head %}
   {% javascript 'base' %}
@@ -10,7 +11,7 @@
   {% include "includes/menu.html" %}
   <div class="row">
     <section class="bg-black">
-      <div class="col-xl-5 col-md-6 col-sm-10 m-auto text-center">
+      <div class="splash-quote">
         <h4 class="font-serif mt-5">
           <img src='{% static "img/red-arrow-right.svg" %}'/>
           A complete collection of  published United States caselaw  from 1640 to 2018
@@ -19,55 +20,70 @@
       </div>
     </section>
 
-    {# Dive in #}
-    <section id="section-about">
-      <div class="col-xl-10 m-auto">
+    <!-- About -->
+    <section id="section-about" class="bg-gradient section-purple">
+      <div class="content">
         <div class="row">
-          <div class="col-xl-3 col-lg col-md-6 col-sm-12 mt-5">
-              <h1 class="font-serif section-title">
-                <img class="decorative-arrow"
-                     src='{% static "img/red-arrow-right.svg" %}'>
-                  What data do we have?
-              </h1>
+          <div class="content-left">
+            <h1 class="font-serif section-title">
+              <img class="decorative-arrow"
+                   src='{% static "img/red-arrow-right.svg" %}'>
+                What data do we have?
+            </h1>
+            <div class="numbers numbers-vertical">
+              <ul>
+                <li class="item-set">
+                  <h1>{{ numbers.cases }}</h1>
+                  <p>Unique cases</p>
+                </li>
+                <li class="item-set">
+                  <h1>{{ numbers.reporters }}</h1>
+                  <p>Reporters</p>
+                </li>
+                <li class="item-set">
+                  <h1>{{ numbers.pages_scanned }}</h1>
+                  <p>Pages scanned</p>
+                </li>
+              </ul>
+            </div>
+
           </div>
-          <div class="col-lg col-md-6 mt-5 section-content">
-            <h5 class="font-semibold col-8">
+          <div class="content-right">
+            <h5 class="font-semibold">
               Planning, scanning, digitizing, and enabling access since 2013
             </h5>
-            <div class="map col-lg-8 d-none d-md-block mt-5 mb-5">
-              <!-- show map only on medium sized devices and above -->
+            <div class="map">
+
               {% include "includes/usa_territories_white.svg" %}
             </div>
-            <div class="numbers col-lg-4">
+            <div class="numbers numbers-horizontal">
               <div class="row">
                 <div class="col-4">
-                  <h1 class="font-bold">6.4M</h1>
+                  <h1>{{ numbers.cases }}</h1>
                   <p>Unique cases</p>
                 </div>
                 <div class="col-4">
-                  <h1 class="font-bold">627</h1>
+                  <h1>{{ numbers.reporters }}</h1>
                   <p>Reporters</p>
                 </div>
                 <div class="col-4">
-                  <h1 class="font-bold">40M</h1>
+                  <h1>{{ numbers.pages_scanned }}</h1>
                   <p>Pages scanned</p>
                 </div>
-
               </div>
             </div>
           </div>
         </div>
-        <a class="btn btn-default" href="/about#overview">Learn more
-        </a>
-
       </div>
     </section>
+    <!-- /About -->
+
 
     <!-- Dive in -->
     <section id="section-dive-in" class="section-default">
-      <div class="col-xl-10 m-auto">
-        <div class="row mt-5">
-          <div class="col-xl-3 col-lg col-md-6 col-sm-12">
+      <div class="content">
+        <div class="row">
+          <div class="content-left">
             <!-- section title -->
             <h1 class="font-serif section-title">
               <img class="decorative-arrow"
@@ -75,7 +91,7 @@
                 Dive in!
             </h1>
           </div>
-          <div class="col-md col-md-6 section-content">
+          <div class="content-right">
             <!-- section subtitle -->
             <h5 class="font-semibold section-subtitle">
               Start exploring the data! Here are some tools you can use to check it out.
@@ -101,9 +117,9 @@
 
     <!-- Showcase -->
     <section id="section-gallery" class="bg-black section-default">
-      <div class="col-xl-10 m-auto">
-        <div class="row mt-5">
-          <div class="col-xl-3 col-lg col-md-6 col-sm-12">
+      <div class="content">
+        <div class="row">
+          <div class="content-left">
             <!-- section title -->
             <h1 class="font-serif section-title">
               <img class="decorative-arrow"
@@ -111,7 +127,7 @@
                 Gallery
             </h1>
           </div>
-          <div class="col-md col-md-6 section-content">
+          <div class="content-right">
             <!-- section subtitle -->
             <h5 class="font-semibold section-subtitle">
               Sky’s the limit. See some early experiments made possible by the opening up of caselaw data.
@@ -126,7 +142,9 @@
               <span>Limericks</span>
             </h6>
             <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
-
+            <br/>
+            <a class="btn btn-inverse"
+               href="/showcase#overview">See more</a>
           </div>
         </div>
       </div>
@@ -135,9 +153,9 @@
 
     <!-- Links -->
     <section id="section-links" class="section-default">
-       <div class="col-xl-10 m-auto">
-        <div class="row mt-5">
-          <div class="col-xl-3 col-lg col-md-6 col-sm-12">
+       <div class="content">
+        <div class="row">
+          <div class="content-left">
             <!-- section title -->
             <h1 class="font-serif section-title">
               <img class="decorative-arrow"
@@ -145,27 +163,29 @@
                 Links &amp; press
             </h1>
           </div>
-          <div class="col-md col-md-6 section-content">
+          <div class="content-right">
             <!-- section subtitle -->
             <h5 class="font-semibold section-subtitle">
               What's been written about Caselaw Access Project around the web
             </h5>
             <ul>
             {% for news_item in news %}
-            <li class="item-set">
-              <p class="item-title">
-                <a href="{{ news_item.url }}" target="_blank">{{ news_item.title }}</a>
-              </p>
-              <span class="item-origin">
-                {{ news_item.publication }}
-              </span>
-              <span class="item-date">
-                {{ news_item.date }}
-              </span>
-            </li>
+              <li class="item-set">
+                <p class="item-title">
+                  <a href="{{ news_item.url }}" target="_blank">{{ news_item.title }}</a>
+                </p>
+                <span class="item-origin">
+                  {{ news_item.publication }}
+                </span>
+                <span class="item-date">
+                  {{ news_item.date }}
+                </span>
+              </li>
             {% endfor %}
-          </ul>
-            <a href="/about#press" class="btn btn-default">See all</a>
+            </ul>
+            <br/>
+            <a href="/about#press"
+               class="btn btn-default">See more</a>
           </div>
         </div>
        </div>
