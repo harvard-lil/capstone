@@ -103,9 +103,15 @@ def generate_html(case_xml, tag_map=tag_map):
             element.attrib['href'] = "#footnote_" + element_text_copy
             element.attrib['id'] = "ref_" + element_text_copy
         elif tag == "bracketnum":
-            # point to the anchor in the headnote
-            element.tag = "a"
-            element.attrib['href'] = "#headnote_" + bracketnum_number.search(element_text_copy).group(0)
+            # point to the anchor in the headnote.
+            # Hack-> If it can't find the headnote, maybe because it's an imporperly tagged bracketnum,
+            # just make it a span
+            if bracketnum_number.search(element_text_copy):
+                element.tag = "a"
+                element.attrib['href'] = "#headnote_" + bracketnum_number.search(element_text_copy).group(0)
+            else:
+                element.tag = "span"
+
         elif tag == "pagebreak":
             # point to the anchor in the headnote
             element.attrib['style'] = "page-break-before: always"
