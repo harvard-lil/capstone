@@ -47,8 +47,12 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 return generate_html_error("Not Authenticated <span style='font-family: monospace; font-style: normal;'>({})</span>".format(data['casebody']['status']), "You must be authenticated to view this case.")
             return generate_html_error("Could Not Load Case Body", data['casebody']['status'], data['first_page'], data['last_page'], data['name'])
 
+        official_cit_entries = [ citation['cite'] for citation in data['citations'] if citation['type'] == 'official' ]
+        official_citation = official_cit_entries[0] if len(official_cit_entries[0]) > 0 else None
+
         template = loader.get_template('case.html')
         context = {
+            'citation': official_citation,
             'title': data['casebody']['title'],
             'case_html': generate_html(data['casebody']['data']),
         }
