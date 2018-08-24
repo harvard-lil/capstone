@@ -1,33 +1,35 @@
 {% load static %}
+<!-- On small screens, show logo on its own row --->
+<div class="row">
+  <div class="branding small-screen">
+    <a class="nav-branding" href="/">
+      <img class="cap-logo img-fluid"
+         alt="CAP logo"
+         src="{% static "img/cap-logo-black.png" %}">
+    </a>
+  </div>
+</div>
 
-<div class="branding" id="branding-small-screen">
-  <a class="nav-branding" href="/">
-    <img class="cap-logo img-fluid"
-       alt="CAP logo"
-       src="{% static "img/cap-logo-black.png" %}">
-  </a>
-</div>
 <nav role="navigation">
-<div class="branding" id="branding-big-screen">
-  <a class="nav-branding" href="/">
-    <img class="cap-logo img-fluid"
-       alt="CAP logo"
-       src="{% static "img/cap-logo-white.png" %}">
-  </a>
-</div>
+    <div class="branding big-screen">
+      <a class="nav-branding" href="/">
+        <img class="cap-logo img-fluid"
+           alt="CAP logo"
+           src="{% static "img/cap-logo-white.png" %}">
+      </a>
+    </div>
+
 
   <div id="burger-icon">
     <div class="burger-item"></div>
     <div class="burger-item"></div>
     <div class="burger-item"></div>
   </div>
-
   <div class="nav-content">
-    <ul id="nav-ul">
+    <ul class="nav">
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle {% if page_name == 'about' %}selected{% endif %}"
            href="#" id="navbar-dropdown"
-           role="button"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
@@ -44,7 +46,6 @@
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle {% if page_name == 'tools' %}selected{% endif %}"
            href="#" id="navbar-dropdown"
-           role="button"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
@@ -59,7 +60,6 @@
       <li class="nav-item dropdown {% if page_name == 'showcase' %}selected{% endif %}">
         <a class="nav-link dropdown-toggle"
            href="#" id="navbar-dropdown"
-           role="button"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
@@ -77,4 +77,5 @@
       </li>
     </ul>
   </div>
+
 </nav>
