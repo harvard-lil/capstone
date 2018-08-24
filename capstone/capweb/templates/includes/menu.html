@@ -1,23 +1,29 @@
 {% load static %}
-<nav id="main-menu" class="navbar navbar-expand-lg pl-0 pr-0">
-    <a href="/">
-      <img id="cap-logo"
-       class="img-fluid"
+
+<div class="branding" id="branding-small-screen">
+  <a class="nav-branding" href="/">
+    <img class="cap-logo img-fluid"
+       alt="CAP logo"
+       src="{% static "img/cap-logo-black.png" %}">
+  </a>
+</div>
+<nav role="navigation">
+<div class="branding" id="branding-big-screen">
+  <a class="nav-branding" href="/">
+    <img class="cap-logo img-fluid"
        alt="CAP logo"
        src="{% static "img/cap-logo-white.png" %}">
-    </a>
-  <button class="navbar-toggler pull-xs-right p-0"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbar-content"
-          aria-controls="navbar-content"
-          aria-expanded="false"
-          aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+  </a>
+</div>
 
-  <div class="collapse navbar-collapse" id="navbar-content">
-    <ul class="navbar-nav mx-auto list-inline">
+  <div id="burger-icon">
+    <div class="burger-item"></div>
+    <div class="burger-item"></div>
+    <div class="burger-item"></div>
+  </div>
+
+  <div class="nav-content">
+    <ul id="nav-ul">
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle {% if page_name == 'about' %}selected{% endif %}"
            href="#" id="navbar-dropdown"
@@ -72,12 +78,3 @@
     </ul>
   </div>
 </nav>
-
-
-
-
-
-
-
-
-
