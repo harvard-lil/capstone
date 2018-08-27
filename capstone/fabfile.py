@@ -30,7 +30,7 @@ from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Court, J
 import capdb.tasks as tasks
 # from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
-    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export
+    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars
 from scripts.helpers import parse_xml, serialize_xml, court_name_strip, court_abbreviation_strip, copy_file, resolve_namespace
 
 
@@ -729,3 +729,10 @@ def validate_captar_volumes():
     for folder in ('redacted', 'unredacted'):
         for volume_name in captar_storage.iter_files(folder):
             scripts.compress_volumes.validate_volume.delay(volume_name)
+
+
+
+@task
+def count_chars_in_all_cases(path="/tmp/counts"):
+    count_chars.count_chars_in_all_cases(path)
+
