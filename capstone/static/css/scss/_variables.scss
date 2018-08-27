@@ -156,17 +156,11 @@ $color-violet-gray-dark: #474756;
 
 }
 
-.bg-yellow {
-  background: $color-yellow !important;
-}
+.bg-yellow { background: $color-yellow; }
 
-.bg-tan {
-  background: $color-tan;
-}
+.bg-tan { background: $color-tan; }
 
-.bg-violet-light {
-  background: $color-violet-light;
-}
+.bg-violet-light { background: $color-violet-light; }
 
 .color-white { color: white; }
 
@@ -176,6 +170,7 @@ $color-violet-gray-dark: #474756;
 
 .color-yellow { color: $color-yellow; }
 
+.color-orange { color: $color-orange; }
 
 @mixin diagonal_gradient($color1, $color2) {
   background: $color1; /* Old browsers */
@@ -192,7 +187,6 @@ $color-violet-gray-dark: #474756;
   @include media-breakpoint-down(sm) {
     background: $color-violet;
   }
-
 }
 
 
@@ -214,17 +208,8 @@ $color-violet-gray-dark: #474756;
 
 $font-weight-semibold: 600;
 
-.font-header {
-  font-weight: 700;
-}
+$font-serif: "Libre Baskerville", "Baskerville", "Georgia", serif;
 
-.font-header-bold {
-  font-weight: 700;
-}
-
-.font-serif {
-  font-family: "Libre Baskerville", "Baskerville", "Georgia", serif;
-}
 
 
 .section-symbol {
@@ -248,10 +233,10 @@ $font-weight-semibold: 600;
   $base-font-size: 18px;
   $heading-scale: 8; // amount of px headings grow from h6 to h1
   @for $i from 1 through 6 {
-  h#{$i} {
-    font-size: $base-font-size + $heading-scale * (6 - $i);
+    h#{$i} {
+      font-size: $base-font-size + $heading-scale * (6 - $i);
+    }
   }
-}
 
 }
 
@@ -259,11 +244,10 @@ $font-weight-semibold: 600;
   $base-font-size: 16px;
   $heading-scale: 6; // amount of px headings grow from h6 to h1
   @for $i from 1 through 6 {
-  h#{$i} {
-    font-size: $base-font-size + $heading-scale * (6 - $i);
+    h#{$i} {
+      font-size: $base-font-size + $heading-scale * (6 - $i);
+    }
   }
-}
-
 }
 
 @include media-breakpoint-down(sm) {
@@ -282,10 +266,6 @@ $font-weight-semibold: 600;
   margin-top: 20px;
 }
 
-.section-header-text {
-  @extend .font-semibold;
-}
-
 .section-title {
   @include media-breakpoint-up(lg) {
     text-align: left;
@@ -296,15 +276,14 @@ $font-weight-semibold: 600;
 }
 
 
-//////////// grid / layout
+/* grid / layout */
 .col-centered {
   margin: 0 auto;
   float: none;
 }
 
-.header-margin {
-  padding-top: 52px;
-}
+$header-margin-size: 4rem;
+
 
 .container-full {
   width: 100%;

@@ -7,9 +7,9 @@ from capweb.helpers import get_data_from_lil_site
 def index(request):
     news = get_data_from_lil_site(section="news")
     numbers = {
-        "pages_scanned": "40M",
-        "cases": "6.4M",
-        "reporters": "627",
+        "pages_scanned": 40,
+        "cases": 6.4,
+        "reporters": 627,
     }
     return render(request, "index.html", {
         'page_name': 'index',
@@ -23,7 +23,10 @@ def about(request):
     contributors = get_data_from_lil_site(section="contributors")
     sorted_contributors = {}
     for contributor in contributors:
+
         sorted_contributors[contributor['sort_name']] = contributor
+        if contributor['affiliated']:
+            sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
     sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
     return render(request, "about.html", {
         "page_name": "about",

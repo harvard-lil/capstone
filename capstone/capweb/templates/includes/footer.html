@@ -1,7 +1,14 @@
 {% load static %}
 <footer class="footer">
   <div class="footer-content container-fluid pt-5">
-      {% include "includes/lil-logo.svg" %}
+      <div class="lil-logo-container">
+
+        <a href="https://lil.law.harvard.edu"
+           class="lil-logo"
+           target="_blank">
+          {% include "includes/lil-logo.svg" %}
+        </a>
+      </div>
       <div class="text-right">
         <ul class="list-inline links">
           <li class="list-inline-item">
@@ -25,14 +32,20 @@
           {#            {% include "includes/project_message.html" %}#}
         </p>
         <p class="credits">
-          The content on this site is covered under a Creative Commons
+          The content on this site is covered under a
+          Creative Commons
           <br/>
-          Attribution-ShareAlike 3.0 Unported license unless otherwise noted
+          Attribution-ShareAlike 3.0 Unported license
+          unless otherwise noted
         </p>
       </div>
 
       <div class="col-12 text-center">
-        <button id="return" onclick="returnToTop()" class="return-to-top btn btn-inverse">RETURN TO TOP</button>
+        <button id="return"
+                onclick="returnToTop()"
+                class="return-to-top btn btn-inverse">
+          RETURN TO TOP
+        </button>
       </div>
     </div>
   </div>

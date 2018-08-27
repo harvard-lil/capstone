@@ -1,7 +1,7 @@
 {% load static %}
 <!-- On small screens, show logo on its own row --->
 <div class="row">
-  <div class="branding small-screen">
+  <div class="branding branding-white-bg">
     <a class="nav-branding" href="/">
       <img class="cap-logo img-fluid"
          alt="CAP logo"
@@ -11,7 +11,7 @@
 </div>
 
 <nav role="navigation">
-    <div class="branding big-screen">
+    <div class="branding branding-black-bg">
       <a class="nav-branding" href="/">
         <img class="cap-logo img-fluid"
            alt="CAP logo"
@@ -20,11 +20,13 @@
     </div>
 
 
-  <div id="burger-icon">
-    <div class="burger-item"></div>
-    <div class="burger-item"></div>
-    <div class="burger-item"></div>
-  </div>
+
+    <button id="burger-icon">
+      <div class="burger-item"></div>
+      <div class="burger-item"></div>
+      <div class="burger-item"></div>
+    </button>
+    </a>
   <div class="nav-content">
     <ul class="nav">
       <li class="nav-item dropdown">

@@ -10,6 +10,8 @@
 @import "bootstrap/utilities/spacing";
 @import "bootstrap/utilities/text";
 
+@import "bootstrap/list-group";
+
 @import 'variables';
 @import 'elements';
 @import 'dropdown';
@@ -31,7 +33,13 @@ body {
   /* push footer to bottom of screen if insufficient main-content to fill page */
   display: flex;
   flex-direction: column;
+  color: $color-black;
+  overflow-x: hidden;
 }
+
+h1, h2, h3, h4, h5, h6 { font-family: $font-serif; }
+
+
 
 ul {
   padding-left: 0;
@@ -54,7 +62,6 @@ code {
 
 pre {
   white-space: -moz-pre-wrap;
-  white-space: -pre-wrap;
   white-space: -o-pre-wrap;
   white-space: pre-wrap;
   word-wrap: break-word; /* Internet Explorer 5.5+ */
@@ -87,6 +94,11 @@ nav {
   }
 }
 
+.decorative-arrow {
+  margin-left: -2rem;
+  color: $color-red;
+  &.left { margin-left: 0.4rem; }
+}
 .row {
   @extend .no-gutters;
 }
@@ -99,84 +111,21 @@ nav {
 }
 
 .sidebar-menu {
+  @include make-col(4);
+  font-family: $font-serif;
+  padding-right: 15px;
   .list-group-item {
     border: 0;
     color: $color-black;
+
     &:hover, &:focus {
       background-color: $color-yellow;
     }
   }
-}
-
-// NAV MENU
-#main-menu {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  background: $color-black;
-  font-weight: 600;
-  a.nav-link, a.navbar-dropdown {
-    color: white;
-    &.selected {
-      font-weight: 500;
-      color: $color-violet-light;
-    }
-  }
-
-  #cap-logo {
-    max-width: 150px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 20px;
-  }
-
-  @include media-breakpoint-up(lg) {
-    -webkit-box-shadow: 0 1px 5px $color-violet-gray-dark;
-    -moz-box-shadow: 0 1px 5px $color-violet-gray-dark;
-    box-shadow: 0 1px 5px $color-violet-gray-dark;
-  }
-  @include media-breakpoint-down(md) {
-    background-color: transparent;
-    #navbar-content, .dropdown-menu {
-      background-color: $color-black;
-      a {
-        color: $color-white;
-        border-bottom: 1px solid $color-yellow-light;
-        padding-bottom: 5px;
-      }
-      a:hover, a:focus {
-        background-color: $color-violet-gray;
-        color: $color-yellow-light;
-      }
-    }
-  }
-  .dropdown-menu {
-    border-radius: 0;
-    margin-top: 10px;
-    padding: 0;
-    border: 1px solid $color-violet-light;
-  }
-  .dropdown-item {
-    padding-top: 10px;
-    padding-bottom: 10px;
-    &:hover, &:focus {
-      background: $color-yellow;
-    }
-  }
-  .nav-link {
-    &:hover, &:focus {
-      font-weight: 500;
-      color: $color-violet;
-    }
-  }
-  .nav-item {
-    padding: 0 1rem;
-  }
-  .navbar-toggler {
-    background: $color-violet;
-    border-radius: 0px;
+  @include media-breakpoint-down(sm) {
+    display: none;
   }
 }
-
 
 /* Section styles */
 section {
@@ -233,6 +182,7 @@ section > .content > .row > .content-right {
     @include make-col(6);
     @include make-col-offset(1);
   }
+  h5, h6 { font-weight: $font-weight-semibold; }
 }
 
 /* show map only on medium sized devices and above */
@@ -245,11 +195,21 @@ section > .content > .row > .content-right {
   }
 }
 
+#section-about > .content > .row {
+  .content-left,
+  .content-right {
+    @include media-breakpoint-down(sm) {
+      display: none;
+    }
+  }
+}
+
 .content {
   .numbers {
     h1 { font-weight: $font-weight-bold; }
   }
 }
+
 .content-right > .numbers-horizontal {
   text-align: center;
   @include media-breakpoint-down(lg) {
@@ -264,53 +224,69 @@ section > .content > .row > .content-right {
   }
 }
 
+section > .content > .row > .content-small-screen {
+  @include media-breakpoint-between(xs, sm) {
+    @include make-col(10);
+    margin: 0 auto;
+  }
+  @include media-breakpoint-up(md) {
+    display: none;
+  }
+  .small-screen-number-col {
+    @include make-col(6);
+    h1 { font-size: 5rem; }
+    h3 { font-size: 3rem; }
+    h4 { font-size: 1.8rem; }
+  }
+}
+
 section > .splash-quote {
-  //col-xl-5 col-md-6 col-sm-10 m-auto text-center
   margin: 0 auto;
   text-align: center;
   @include make-col(5);
   @include media-breakpoint-down(md) {
     @include make-col(8);
-  }
-}
-
-#section-links {
-  .item-title {
-    margin-bottom: 0.5em;
-  }
-  .item-set {
-    margin-bottom: 20px;
-  }
-  .item-origin {
-    color: $color-red;
-    font-weight: 700;
-  }
-  .item-date {
-    color: $color-violet-gray;
-    padding-left: 0.5em;
-  }
-  li {
-    list-style: none;
-    a {
-      font-weight: 600;
+    .decorative-arrow { display: none; }
+    > h3 {
+      font-size: 1.25rem;
+      line-height: 1.75rem;
     }
   }
 }
 
-.showcase-item-img {
-  width: 180px;
-  height: 180px;
+li.item-set {
   margin-bottom: 20px;
+  list-style: none;
+  a { font-weight: $font-weight-semibold; }
+  > .item-title {
+    margin-bottom: 0.5em;
+  }
+  > .item-title.darker {
+    a {
+      color: $color-violet-light;
+      border-bottom: 1px solid $color-violet-light;
+    }
+  }
+  > .item-origin {
+    color: $color-red;
+    font-weight: $font-weight-bold;
+  }
+  > .item-name {
+    //color: $color-violet;
+    font-weight: $font-weight-normal;
+  }
+  > .item-date {
+    color: $color-violet-gray;
+    padding-left: 0.5em;
+  }
 }
 
-.showcase-item-title {
-  color: $color-yellow;
-}
 
 .basic-page {
+  @extend .row;
+  margin-top: $header-margin-size;
   h1 {
-    font-weight: 200;
-    color: $color-dark-blue;
+    color: $color-black;
   }
   ul {
     padding-left: 0;
@@ -318,17 +294,50 @@ section > .splash-quote {
   li {
     list-style: none;
   }
+  img {
+    max-width: 100%;
+  }
+  .page-title {
+    .decorative-arrow { display: none; }
+    @include media-breakpoint-up(md) {
+      @include make-col(6);
+      .decorative-arrow {
+        display: inline-block;
+      }
+    }
+  }
   .subtitle {
     border-bottom: 1px solid $color-violet-gray-dark;
     color: $color-violet;
-    line-height: 3rem;
+    padding-bottom: 0.4em;
   }
   .page-section {
     margin-bottom: 30px;
+    margin-top: 1rem;
   }
 }
 
-// FOOTER
+.basic-page > .full-content {
+  margin: 0 auto;
+  @include make-col(10);
+  @include media-breakpoint-only(xl) {
+    @include make-col(6);
+  }
+  @include media-breakpoint-only(lg) {
+    @include make-col(8);
+  }
+}
+
+.basic-page {
+  .content {
+    @include media-breakpoint-up(md) {
+      @include make-col(8);
+    }
+  }
+}
+
+
+/* footer styles */
 footer {
   a {
     color: $color-black;
@@ -337,8 +346,20 @@ footer {
       color: $color-blue;
     }
   }
+  a.lil-logo {
+    border-bottom: 0;
+  }
+  .lil-logo-container {
+    @include media-breakpoint-down(sm) {
+      width: 100%;
+    }
+  }
   #lil-logo {
     height: 100px;
+    @include media-breakpoint-down(sm) {
+      display: block;
+      margin: auto;
+    }
   }
   @include media-breakpoint-up(md) {
     .credits {
@@ -346,25 +367,23 @@ footer {
     }
   }
   @include media-breakpoint-down(sm) {
+    .lil-logo-item {
+      fill: $color-black;
+    }
     .links {
       display: none;
     }
     .credits {
       text-align: center;
     }
-
   }
-
-
 }
 
 .page-index {
   footer {
     background-color: $color-violet;
     color: white;
-    a {
-      color: white;
-    }
+    a { color: white; }
   }
 }
 
