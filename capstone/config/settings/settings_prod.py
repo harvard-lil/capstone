@@ -31,6 +31,12 @@ STORAGES = {
             'bucket_name': 'harvard-cap-inventory',
         }
     },
+    'bulk_export_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'bulk-data'),
+        },
+    },
 }
 
 INVENTORY = {
