@@ -16,6 +16,7 @@ router.register('jurisdictions', api_views.JurisdictionViewSet)
 router.register('courts', api_views.CourtViewSet)
 router.register('volumes', api_views.VolumeViewSet)
 router.register('reporters', api_views.ReporterViewSet)
+router.register('bulk', api_views.CaseExportViewSet)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -61,6 +62,5 @@ urlpatterns = [
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
 
     ### bulk data ###
-    path('bulk-access/download/<str:public_or_private>/<str:jur>/<str:filename>', user_views.bulk_download, name='bulk-download'),
     path('bulk-access/', user_views.bulk, name='bulk-data'),
 ]

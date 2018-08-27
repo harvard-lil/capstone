@@ -55,7 +55,7 @@ drf-yasg==1.7.1
 ecdsa==0.13               # via python-jose
 execnet==1.4.1            # via pytest-xdist
 fabric3==1.13.1.post1
-factory-boy==2.10.0
+factory-boy==2.11.1
 faker==0.8.4              # via factory-boy
 first==2.0.1              # via pip-tools
 flake8==3.4.1

@@ -1,18 +1,13 @@
-from pathlib import Path
-from wsgiref.util import FileWrapper
-from collections import OrderedDict
-
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
-from django.http import StreamingHttpResponse, Http404
 
-from capapi import models as capapi_models, resources
+from capapi import resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm
-from capapi.middleware import add_cache_header
-from capapi.models import SiteLimits
+from capapi.models import SiteLimits, CapUser
 from capapi.resources import form_for_request
+from capdb.models import CaseExport
 
 
 def register_user(request):
@@ -33,9 +28,9 @@ def register_user(request):
 def verify_user(request, user_id, activation_nonce):
     """ Verify email and assign api token """
     try:
-        user = capapi_models.CapUser.objects.get(pk=user_id)
+        user = CapUser.objects.get(pk=user_id)
         user.authenticate_user(activation_nonce=activation_nonce)
-    except (capapi_models.CapUser.DoesNotExist, PermissionDenied):
+    except (CapUser.DoesNotExist, PermissionDenied):
         error = "Unknown verification code."
     else:
         # user authenticated successfully
@@ -58,8 +53,8 @@ def resend_verification(request):
 
     if request.method == 'POST' and form.is_valid():
         try:
-            user = capapi_models.CapUser.objects.get(email=form.cleaned_data['email'])
-        except capapi_models.CapUser.DoesNotExist:
+            user = CapUser.objects.get(email=form.cleaned_data['email'])
+        except CapUser.DoesNotExist:
             form.add_error('email', "User with that email does not exist.")
         else:
             if user.email_verified:
@@ -86,47 +81,34 @@ def user_details(request):
 
 def bulk(request):
     """ List zips available for download """
-    def get_zips(folder):
-        # helper to fetch public or private zips, returning {'Jurisdiction': ['file_name', 'file_name']}
-        path = Path(settings.BULK_DATA_DIR, folder)
-        zip_groups = OrderedDict()
-        for zip_path in sorted(path.glob('*/*.zip'), key=lambda x: x.parts):
-            jurisdiction, file_name = zip_path.parts[-2:]
-            zip_groups.setdefault(jurisdiction, []).append([file_name, zip_path.stat().st_size])
-        return zip_groups
+    query = CaseExport.objects.exclude_old().order_by('body_format')
 
-    public_zips = get_zips('public')
-    private_zips = get_zips('private') if request.user.unlimited_access_in_effect() else []
+    # only show private downloads to logged in users
+    if not request.user.unlimited_access_in_effect():
+        query = query.filter(public=True)
+
+    # sort exports by filter_item so they appear in alphabetical order
+    exports = list(query)
+    CaseExport.load_filter_items(exports)
+    exports.sort(key=lambda x: str(x.filter_item))
+
+    # group exports into the hierarchy they'll appear on the page, making a dictionary like:
+    # sorted_exports = {
+    #   'public': {
+    #       'jurisdiction': {
+    #           <Jurisdiction>: {'xml': <CaseExport>, 'text': <CaseExport>},
+    #       },
+    #       'reporter': <ditto>
+    #   'private: { <ditto> }
+    # }
+    sorted_exports = {}
+    for export in exports:
+        sorted_exports\
+            .setdefault('public' if export.public else 'private', {})\
+            .setdefault(export.filter_type, {})\
+            .setdefault(export.filter_item, {}) \
+            [export.body_format] = export
 
     return render(request, 'bulk.html', {
-        'public_zips': public_zips,
-        'private_zips': private_zips,
+        'exports': sorted_exports,
     })
-
-
-def bulk_download(request, public_or_private, jur, filename):
-    """
-    View for downloading zipped jurisdiction files
-    """
-    # enforce permissions
-    if public_or_private == 'private':
-        if not request.user.unlimited_access_in_effect():
-            raise PermissionDenied
-    elif public_or_private != 'public':
-        raise Http404
-
-    # make sure requested file is a zip and exists
-    file_path = Path(settings.BULK_DATA_DIR, public_or_private, jur, filename)
-    if file_path.suffix != '.zip' or not file_path.exists():
-        raise Http404
-
-    # send file
-    response = StreamingHttpResponse(FileWrapper(file_path.open('rb')), content_type='application/zip')
-    response['Content-Length'] = file_path.stat().st_size
-    response['Content-Disposition'] = 'attachment; filename="%s"' % file_path.name
-
-    # public downloads are cacheable
-    if public_or_private == 'public':
-        add_cache_header(response)
-
-    return response

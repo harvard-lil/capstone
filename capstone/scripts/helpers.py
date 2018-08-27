@@ -1,3 +1,4 @@
+import hashlib
 import shutil
 import re
 from lxml import etree
@@ -293,3 +294,30 @@ def left_strip_text(el, text):
         # If new_val still has text, our string has stopped matching and we can stop.
         if new_val or not text:
             break
+
+
+class HashingFile:
+    """ File wrapper that stores a hash of the read or written data. """
+    def __init__(self, source, hash_name='md5'):
+        self._sig = hashlib.new(hash_name)
+        self._source = source
+        self.length = 0
+
+    def read(self, *args, **kwargs):
+        result = self._source.read(*args, **kwargs)
+        self.update_hash(result)
+        return result
+
+    def write(self, value, *args, **kwargs):
+        self.update_hash(value)
+        return self._source.write(value, *args, **kwargs)
+
+    def update_hash(self, value):
+        self._sig.update(value)
+        self.length += len(value)
+
+    def hexdigest(self):
+        return self._sig.hexdigest()
+
+    def __getattr__(self, attr):
+        return getattr(self._source, attr)
