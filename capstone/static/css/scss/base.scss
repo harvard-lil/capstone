@@ -339,20 +339,24 @@ li.item-set {
 
 /* footer styles */
 footer {
+  .footer-content {
+    margin: 0 auto;
+    @include media-breakpoint-up(md) {
+      @include make-col(11);
+    }
+    padding: 3rem 0;
+  }
   a {
     color: $color-black;
     font-weight: 700;
-    &:hover, &:focus {
+    border-bottom: 0;
+    &:hover, &:focus, &:active {
       color: $color-blue;
+      border-bottom: 0;
     }
   }
   a.lil-logo {
     border-bottom: 0;
-  }
-  .lil-logo-container {
-    @include media-breakpoint-down(sm) {
-      width: 100%;
-    }
   }
   #lil-logo {
     height: 100px;
@@ -375,6 +379,28 @@ footer {
     }
     .credits {
       text-align: center;
+      color: $color-violet;
+      &.copyright {
+        color: $color-black;
+        font-weight: $font-weight-semibold;
+      }
+    }
+  }
+
+  .return-to-top {
+    @include make-col(12);
+    font-weight: $font-weight-normal;
+    text-align: center;
+    a {
+      font-weight: $font-weight-normal;
+      border-bottom: 0;
+      &:hover, &:active, &:focus {
+        color: $color-yellow !important;
+        text-decoration: none;
+      }
+    }
+    .arrow {
+      font-size: 2rem;
     }
   }
 }

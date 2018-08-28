@@ -1,51 +1,58 @@
 {% load static %}
 <footer class="footer">
-  <div class="footer-content container-fluid pt-5">
-      <div class="lil-logo-container">
-
+  <div class="footer-content container-fluid">
+    <div class="row">
+      <div class="col">
         <a href="https://lil.law.harvard.edu"
            class="lil-logo"
            target="_blank">
           {% include "includes/lil-logo.svg" %}
         </a>
       </div>
-      <div class="text-right">
-        <ul class="list-inline links">
-          <li class="list-inline-item">
-            <a href="/about">ABOUT</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="/tools">TOOLS</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="/showcase">SHOWCASE</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="/login">LOG IN</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="/contact">CONTACT</a>
-          </li>
-        </ul>
-        <p class="credits color-violet">
-          ©2017 The President and Fellows of Harvard University
-          {#            {% include "includes/project_message.html" %}#}
-        </p>
-        <p class="credits">
-          The content on this site is covered under a
-          Creative Commons
-          <br/>
-          Attribution-ShareAlike 3.0 Unported license
-          unless otherwise noted
-        </p>
+      <div class="col">
+        <div class="text-right">
+          <ul class="list-inline links">
+            <li class="list-inline-item">
+              <a href="/">HOME</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="/about">ABOUT</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="/tools">TOOLS</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="/showcase">SHOWCASE</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="/login">LOG IN</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="/contact">CONTACT</a>
+            </li>
+          </ul>
+          <p class="credits copyright">
+            ©2017 The President and Fellows of Harvard University
+            {#            {% include "includes/project_message.html" %}#}
+          </p>
+          <p class="credits">
+            The content on this site is covered under a
+            Creative Commons
+            <br/>
+            Attribution-ShareAlike 3.0 Unported license
+            unless otherwise noted
+          </p>
+        </div>
       </div>
-
-      <div class="col-12 text-center">
-        <button id="return"
-                onclick="returnToTop()"
-                class="return-to-top btn btn-inverse">
-          RETURN TO TOP
-        </button>
+      </div>
+      <div class="return-to-top">
+        <a id="return"
+            onclick="returnToTop()"
+            href="#">
+          <span class="arrow">&uparrow;</span>
+          <br/>
+          Return to top
+        </a>
       </div>
     </div>
   </div>
