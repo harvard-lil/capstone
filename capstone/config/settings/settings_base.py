@@ -183,24 +183,22 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
     'pipeline.finders.PipelineFinder',
 )
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
-COMPRESS_PRECOMPILERS = (
-    ('text/x-scss', 'django_libsass.SassCompiler'),
-)
+STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
 PIPELINE = {
     'COMPILERS': (
-        'pipeline_compass.compiler.CompassCompiler',
+        'libsasscompiler.LibSassCompiler',
     ),
     'STYLESHEETS': {
+
         'base': {
             'source_filenames': (
                 'css/_normalize.css',
-                'css/bootstrap.css',
                 'css/scss/base.scss',
             ),
             'output_filename': 'base.css'
@@ -213,6 +211,8 @@ PIPELINE = {
         },
         'login': {
             'source_filenames': (
+                'css/_normalize.css',
+                'css/scss/base.scss',
                 'css/scss/login.scss',
             ),
             'output_filename': 'login.css'
@@ -220,7 +220,6 @@ PIPELINE = {
         'api': {
             'source_filenames': (
                 'css/_normalize.css',
-                'css/bootstrap.css',
                 'css/scss/base.scss',
                 'css/scss/api.scss',
             ),

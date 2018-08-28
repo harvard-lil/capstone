@@ -34,6 +34,8 @@ django-simple-history   # model versioning
 django-partial-index    # create partial postgres indexes
 django-redis        # use redis as Django cache backend
 
+libsasscompiler     # for compiling scss in pipeline
+
 # Admin stuff
 pip-tools           # freeze requirements.txt
 Fabric3             # project automation
