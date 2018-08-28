@@ -13,7 +13,7 @@
 @import "bootstrap/list-group";
 
 @import 'variables';
-@import '_elements';
+@import 'elements';
 @import 'dropdown';
 @import 'nav';
 
@@ -92,6 +92,10 @@ nav {
   a {
     border-bottom: 0;
   }
+}
+
+.main-content {
+  padding: $header-margin-size 0;
 }
 
 .decorative-arrow {
@@ -284,7 +288,6 @@ li.item-set {
 
 .basic-page {
   @extend .row;
-  margin-top: $header-margin-size;
   h1 {
     color: $color-black;
   }
