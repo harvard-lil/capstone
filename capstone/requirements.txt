@@ -16,6 +16,7 @@ attrs==17.4.0             # via pytest
 aws-xray-sdk==0.95        # via moto
 babel==2.5.3              # via flower
 bagit==1.6.4
+bcrypt==3.1.4             # via paramiko
 beautifulsoup4==4.6.0
 billiard==3.5.0.3         # via celery
 boto3==1.7.48
@@ -23,7 +24,7 @@ boto==2.47.0              # via moto
 botocore==1.10.48         # via boto3, moto, s3transfer
 celery[redis,sqs]==4.2.0
 certifi==2017.4.17        # via requests
-cffi==1.10.0              # via cryptography
+cffi==1.10.0              # via bcrypt, cryptography, pynacl
 chardet==3.0.3            # via requests
 click==6.7                # via flex, pip-tools
 cookies==2.2.1            # via moto, responses
@@ -54,7 +55,7 @@ docutils==0.13.1          # via botocore
 drf-yasg==1.7.1
 ecdsa==0.13               # via python-jose
 execnet==1.4.1            # via pytest-xdist
-fabric3==1.13.1.post1
+fabric3==1.14.post1
 factory-boy==2.11.1
 faker==0.8.4              # via factory-boy
 first==2.0.1              # via pip-tools
@@ -83,7 +84,7 @@ more-itertools==4.3.0     # via pytest
 moto==1.3.4
 mysqlclient==1.3.10
 openapi-codec==1.3.2      # via drf-yasg
-paramiko==2.1.2           # via fabric3
+paramiko==2.4.1           # via fabric3
 pathlib2==2.3.2           # via pytest
 pbr==4.2.0                # via mock
 pillow==5.2.0             # via img2pdf, reportlab
@@ -97,9 +98,10 @@ pyaml==16.12.2            # via moto
 pyasn1==0.2.3             # via paramiko
 pycodestyle==2.3.1        # via flake8
 pycparser==2.17           # via cffi
-pycryptodome==3.6.4       # via python-jose
+pycryptodome==3.6.6       # via python-jose
 pycurl==7.43.0
 pyflakes==1.5.0           # via flake8
+pynacl==1.2.1             # via paramiko
 pypdf2==1.26.0
 pyscss==1.3.5             # via django-pipeline-compass
 pytest-cov==2.5.1
@@ -121,7 +123,7 @@ rfc3987==1.3.7            # via flex
 rjsmin==1.0.12            # via django-compressor
 ruamel.yaml==0.15.37      # via drf-yasg
 s3transfer==0.1.10        # via boto3
-six==1.10.0               # via cryptography, django-extensions, docker, docker-pycreds, drf-yasg, fabric3, faker, flex, libsass, mock, more-itertools, moto, pathlib2, pip-tools, pyscss, pytest, python-dateutil, python-jose, responses, swagger-spec-validator, websocket-client
+six==1.10.0               # via bcrypt, cryptography, django-extensions, docker, docker-pycreds, drf-yasg, fabric3, faker, flex, libsass, mock, more-itertools, moto, pathlib2, pip-tools, pynacl, pyscss, pytest, python-dateutil, python-jose, responses, swagger-spec-validator, websocket-client
 strict-rfc3339==0.7       # via flex
 swagger-spec-validator==2.1.0
 tornado==5.0.2            # via flower
