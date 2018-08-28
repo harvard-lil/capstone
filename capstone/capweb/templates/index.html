@@ -131,7 +131,9 @@
             </h6>
             <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
             <br/>
-            <a href="/tools" class="btn-default">BROWSE TOOLS</a>
+            <a href="/tools"
+               class="btn btn-default"
+               >Browse tools</a>
           </div>
         </div>
       </div>
@@ -167,7 +169,7 @@
             <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
             <br/>
             <a class="btn btn-inverse"
-               href="/showcase#overview">See more</a>
+               href="/showcase#overview">See gallery</a>
           </div>
         </div>
       </div>
@@ -195,7 +197,9 @@
             {% for news_item in news %}
               <li class="item-set">
                 <p class="item-title">
-                  <a href="{{ news_item.url }}" target="_blank">{{ news_item.title }}</a>
+                  <a href="{{ news_item.url }}"
+                     title="Go to {{ news_item.publication }} to read {{ news_item.title }}"
+                     target="_blank">{{ news_item.title }}</a>
                 </p>
                 <span class="item-origin">
                   {{ news_item.publication }}
@@ -208,6 +212,7 @@
             </ul>
             <br/>
             <a href="/about#press"
+               title="Read more Caselaw Access Project press"
                class="btn btn-default">See more</a>
           </div>
         </div>
