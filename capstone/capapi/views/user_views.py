@@ -27,7 +27,7 @@ def register_user(request):
             'message': 'Thank you. Please check your email for a verification link.'
         })
 
-    return render(request, 'registration/sign-up.html', {'form': form})
+    return render(request, 'registration/register.html', {'form': form})
 
 
 def verify_user(request, user_id, activation_nonce):
@@ -81,7 +81,7 @@ def user_details(request):
     """ Show user details """
     request.user.update_case_allowance()
     context = {'unlimited': request.user.unlimited_access_in_effect()}
-    return render(request, 'registration/user-account.html', context)
+    return render(request, 'registration/account.html', context)
 
 
 def bulk(request):

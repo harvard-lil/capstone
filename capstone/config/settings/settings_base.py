@@ -209,13 +209,13 @@ PIPELINE = {
             ),
             'output_filename': 'docs.css'
         },
-        'login': {
+        'registration': {
             'source_filenames': (
                 'css/_normalize.css',
                 'css/scss/base.scss',
-                'css/scss/login.scss',
+                'css/scss/registration.scss',
             ),
-            'output_filename': 'login.css'
+            'output_filename': 'registration.css'
         },
         'api': {
             'source_filenames': (

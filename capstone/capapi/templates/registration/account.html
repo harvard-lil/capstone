@@ -1,12 +1,26 @@
-{% extends "base.html" %}
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
 
 {% block title %} | Your Account{% endblock %}
+{% block extra_head %}
+  {% javascript 'base' %}
+  {% stylesheet 'registration' %}
+{% endblock %}
+
 
 {% block content %}
-<div class="logged-in-page container-full header-margin inverse">
-  <div class="row row-centered">
-    <div class="col-6 col-centered">
-      <h3>Profile details</h3>
+  <h1>
+    <img alt="›"
+         src='{% static "img/red-arrow-right.svg" %}'
+         class="decorative-arrow"/>
+    Register
+  </h1>
+  <div class="basic-page">
+  <div class="full-content">
+    <div class="row">
+
+      <div class="content">
       <div class="form-group row">
           <label for="user_email"
                  class="col-sm-4 col-form-label col-form-label-sm">
@@ -59,20 +73,20 @@
           {% endif %}
       </div>
       <div class="btn-group float-right">
-        <a href="{% url "password_reset" %}">
-          <button type="submit" class="btn btn-default white-button">
-            CHANGE PASSWORD
-          </button>
+        <a href="{% url "password_reset" %}"
+          class="btn btn-default">
+          Change password
         </a>
         &nbsp;
-        <a href="{% url "logout" %}">
-          <button type="submit" class="btn btn-default white-button">
-            LOGOUT
-          </button>
+        <a href="{% url "logout" %}"
+          class="btn btn-default">
+          Log out
         </a>
+      </div>
       </div>
     </div>
   </div>
-{#  </div>#}
-</div>
+  </div>
+
+
 {% endblock content %}

@@ -41,15 +41,6 @@ urlpatterns = [
     # convenience pattern: catch all citations, redirect in CaseViewSet's retrieve
     re_path(r'^api/v1/cases/(?P<id>[0-9A-Za-z\s\.]+)/$', api_views.CaseViewSet.as_view({'get': 'retrieve'}), name='casemetadata-get-cite'),
 
-    ### user account pages ###
-    path('accounts/register/', user_views.register_user, name='register'),
-    path('accounts/verify-user/<int:user_id>/<activation_nonce>/', user_views.verify_user, name='verify-user'),
-    # override default Django login view to use custom LoginForm
-    path('accounts/login/', auth_views.LoginView.as_view(form_class=LoginForm), name='login'),
-    path('accounts/', include('django.contrib.auth.urls')),  # logout, password change, password reset
-    path('accounts/detail/', user_views.user_details, name='user-details'),
-    path('accounts/resend-verification/', user_views.resend_verification, name='resend-verification'),
-
     ### data views ###
     path('data/', viz_views.totals_view, name='totals_view'),
     path('data/details/', viz_views.details_view, name='details_view'),
