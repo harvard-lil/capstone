@@ -1,3 +1,4 @@
+import lzma
 from pathlib import Path
 
 import pytest
@@ -34,32 +35,56 @@ def test_create_case_metadata_from_all_vols(case_xml):
     assert case_xml.metadata.case_id == case_id
 
 
+def check_exports(case, filter_item, tmpdir):
+    tmpdir = Path(str(tmpdir))
+
+    # should have two exports
+    exports = list(filter_item.case_exports.all())
+    assert len(exports) == 2
+
+    for export in exports:
+        assert export.public is False
+
+        # check bag format
+        bag_path = Path(export.file_name).with_suffix('')
+        with zipfile.ZipFile(export.file.open()) as zf:
+            zf.extractall(str(tmpdir))
+        bag = bagit.Bag(str(tmpdir / bag_path))
+        bag.validate()
+
+        # check data file
+        with lzma.open(str(tmpdir / bag_path / 'data' / 'data.jsonl.xz')) as in_file:
+            records = [json.loads(str(line, 'utf8')) for line in in_file if line]
+        assert len(records) == 1
+        assert records[0]['name'] == case.name
+        if export.body_format == 'xml':
+            assert records[0]['casebody']['data'].startswith('<?xml')
+        else:
+            assert 'opinions' in records[0]['casebody']['data']
+
+        # clean up files
+        # (this is hard to do with tmpdir, because the path is set by CaseExport.file.storage when pytest loads)
+        export.file.delete(save=False)
+
+
 @pytest.mark.django_db
 def test_bag_jurisdiction(case_xml, tmpdir):
-    # get the jurisdiction of the ingested case
-    jurisdiction = case_xml.metadata.jurisdiction
+    # setup
+    case = case_xml.metadata
+    jurisdiction = case.jurisdiction
+    jurisdiction.whitelisted = False
+    jurisdiction.save()
+
     # bag the jurisdiction
-    fabfile.bag_jurisdiction(jurisdiction.name, zip_directory=tmpdir)
-    # validate the bag
-    bag_path = str(tmpdir / jurisdiction.slug)
-    with zipfile.ZipFile(bag_path + '.zip') as zf:
-        zf.extractall(str(tmpdir))
-    bag = bagit.Bag(bag_path)
-    bag.validate()
+    fabfile.bag_jurisdiction(jurisdiction.name)
+    check_exports(case, jurisdiction, tmpdir)
 
 
 @pytest.mark.django_db
 def test_bag_reporter(case_xml, tmpdir):
-    # get the jurisdiction of the ingested case
     reporter = case_xml.metadata.reporter
-    # bag the reporter
-    fabfile.bag_reporter(reporter.full_name, zip_directory=tmpdir)
-    # validate the bag
-    bag_path = next(Path(str(tmpdir)).glob("*.zip"))
-    with zipfile.ZipFile(str(bag_path)) as zf:
-        zf.extractall(str(tmpdir))
-    bag = bagit.Bag(str(bag_path.with_suffix('')))
-    bag.validate()
+    fabfile.bag_reporter(reporter.full_name)
+    check_exports(case_xml.metadata, reporter, tmpdir)
 
 
 @pytest.mark.django_db

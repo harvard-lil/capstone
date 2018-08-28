@@ -1,105 +1,121 @@
-import gzip
-import hashlib
 import json
+import lzma
+import tempfile
 import zipfile
 from collections import namedtuple
-from datetime import datetime
 from pathlib import Path
+from tempfile import SpooledTemporaryFile
 
-from django.utils.text import slugify
+from django.core.files import File
+from django.utils import timezone
 
 from capapi.serializers import BulkCaseSerializer
 from capapi.views.api_views import CaseViewSet
-from capdb.models import Jurisdiction, CaseMetadata, Reporter
+from capdb.models import Jurisdiction, Reporter, CaseExport
+from scripts.helpers import HashingFile
 
 
-def bag_jurisdiction(name, zip_directory=".", zip_filename=None):
-    """
-        Write a BagIt package of all case XML files in a given jurisdiction.
-    """
-    jurisdiction = Jurisdiction.objects.get(name=name)
-    zip_filename = zip_filename or jurisdiction.slug
-    cases = CaseMetadata.objects.filter(jurisdiction=jurisdiction)
-    return bag_cases(cases, jurisdiction.name_long, zip_directory, zip_filename)
-
-def bag_reporter(name, zip_directory=".", zip_filename=None):
-    """
-        Write a BagIt package of all case XML files for a given reporter.
-    """
-    reporter = Reporter.objects.get(full_name=name)
-    zip_filename = zip_filename or slugify(name)
-    cases = CaseMetadata.objects.filter(reporter=reporter)
-    return bag_cases(cases, name, zip_directory, zip_filename)
-
-def bag_cases(cases, description, zip_directory=".", zip_filename=None):
-    """
-        Write a BagIt package of all case XML files in a given query.
-        See http://gwdev-justinlittman.wrlc.org/bagit.html
-    """
-
-    # set up paths
-    zip_path = Path(str(zip_directory), str(zip_filename)+"").with_suffix('.zip')
-    internal_path = Path(zip_path.stem)
-
-    # set up bagit metadata files
-    payload = []
-    bagit = "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\n"
-    baginfo = (
-        "Source-Organization: Harvard Law School Library Innovation Lab\n"
-        "Organization-Address: 1545 Massachusetts Avenue, Cambridge, MA 02138\n"
-        "Contact-Name: Library Innovation Lab\n"
-        "Contact-Email: lil@law.harvard.edu\n"
-        "External-Description: Case XML for %s\n"
-        "Bagging-Date: %s\n"
-    ) % (description, datetime.now().strftime("%Y-%m-%d"))
-
-    with zipfile.ZipFile(str(zip_path), 'w', zipfile.ZIP_DEFLATED) as archive:
-
-        # write cases
-        for case in cases.select_related('volume', 'reporter'):
-            reporter = case.reporter.short_name
-            volume = case.volume.volume_number
-            filename = case.case_id + '.xml'
-            orig_xml = case.case_xml.orig_xml
-            sha512 = hashlib.sha512(orig_xml.encode()).hexdigest()
-            path = Path("data", reporter, volume, filename)
-            archive.writestr(str(internal_path / path), orig_xml)
-            payload.append("%s %s" % (sha512, path))
-
-        # write bagit metadata files
-        archive.writestr(str(internal_path / "bagit.txt"), bagit)
-        archive.writestr(str(internal_path / "bag-info.txt"), baginfo)
-        archive.writestr(str(internal_path / "manifest-sha512.txt"), "\n".join(payload))
-
-    return str(zip_path)
-
-def export_jurisdiction_json(name, out_path, body_format=''):
+def export_cases_by_jurisdiction(name):
     """
         Write a .jsonl.gz file with all cases for jurisdiction.
     """
     jurisdiction = Jurisdiction.objects.get(name=name)
     cases = CaseViewSet.queryset.filter(jurisdiction=jurisdiction)
-    export_queryset(cases, BulkCaseSerializer, out_path, query_params={'body_format': body_format})
+    out_path = "{}-{:%Y%m%d}".format(jurisdiction.name_long, timezone.now())
+    export_queryset(cases, out_path, jurisdiction, public=jurisdiction.whitelisted)
 
-def export_reporter_json(name, out_path, body_format='json'):
+def export_cases_by_reporter(name):
     """
         Write a .jsonl.gz file with all cases for reporter.
     """
     reporter = Reporter.objects.get(full_name=name)
     cases = CaseViewSet.queryset.filter(reporter=reporter)
-    export_queryset(cases, BulkCaseSerializer, out_path, query_params={'body_format': body_format})
+    out_path = "{}-{:%Y%m%d}".format(reporter.full_name, timezone.now())
+    export_queryset(cases, out_path, reporter, public=False)
 
-def export_queryset(queryset, serializer_class, out_path, query_params={}):
+def try_to_close(file_handle):
     """
-        Fetch all items in queryset, and use serializer_class to write one item per line to out_path.
-        query_params are attached to a fake request that may be used by the DRF serializer.
+        Cleanup helper used by exception handler. Try calling .close() on file_handle.
+        If this fails, presumably file_handle was never opened so no cleanup necessary.
     """
-    fake_request = namedtuple('Request', ['query_params', 'accepted_renderer'])(
-        query_params=query_params,
-        accepted_renderer=None,
-    )
-    with gzip.open(out_path, 'wb') as out:
+    if file_handle:
+        try:
+            file_handle.close()
+        except Exception:
+            pass
+
+def export_queryset(queryset, dir_name, filter_item, public=False):
+    """
+        Export cases in queryset to dir_name.zip.
+        filter_item is the Jurisdiction or Reporter used to select the cases.
+        public controls whether export is downloadable by non-researchers.
+    """
+    formats = {'xml': {}, 'text': {}}
+
+    try:
+        # set up vars for each format
+        for format_name, vars in formats.items():
+
+            # set up bagit metadata files
+            vars['payload'] = []
+            vars['bagit'] = "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\n"
+            vars['baginfo'] = (
+                "Source-Organization: Harvard Law School Library Innovation Lab\n"
+                "Organization-Address: 1545 Massachusetts Avenue, Cambridge, MA 02138\n"
+                "Contact-Name: Library Innovation Lab\n"
+                "Contact-Email: lil@law.harvard.edu\n"
+                "External-Description: Cases for %s\n"
+                "Bagging-Date: %s\n"
+            ) % (filter_item, timezone.now().strftime("%Y-%m-%d"))
+
+            # fake Request object used for serializing cases with DRF's serializer
+            vars['fake_request'] = namedtuple('Request', ['query_params', 'accepted_renderer'])(
+                query_params={'body_format': format_name},
+                accepted_renderer=None,
+            )
+
+            # set up paths for zip file output
+            vars['internal_path'] = Path(dir_name + '-' + format_name)
+            vars['data_file_path'] = Path('data', 'data.jsonl.xz')
+
+            # create new zip file in memory
+            vars['out_spool'] = SpooledTemporaryFile(max_size=2**30)
+            vars['archive'] = zipfile.ZipFile(vars['out_spool'], 'w', zipfile.ZIP_STORED)
+            vars['data_file'] = tempfile.NamedTemporaryFile()
+            vars['hashing_data_file'] = HashingFile(vars['data_file'], 'sha512')
+            vars['compressed_data_file'] = lzma.open(vars['hashing_data_file'], "w")
+
+        # write each case
         for item in queryset:
-            serializer = serializer_class(item, context={'request': fake_request})
-            out.write(bytes(json.dumps(serializer.data), 'utf8'))
-            out.write(b'\n')
+            for format_name, vars in formats.items():
+                serializer = BulkCaseSerializer(item, context={'request': vars['fake_request']})
+                vars['compressed_data_file'].write(bytes(json.dumps(serializer.data), 'utf8'))
+                vars['compressed_data_file'].write(b'\n')
+
+        # finish bag for each format
+        for format_name, vars in formats.items():
+            # write temp data file to bag
+            vars['compressed_data_file'].close()
+            vars['data_file'].flush()
+            vars['payload'].append("%s %s" % (vars['hashing_data_file'].hexdigest(), vars['data_file_path']))
+            vars['archive'].write(vars['data_file'].name, str(vars['internal_path'] / vars['data_file_path']))
+            vars['data_file'].close()
+
+            # write bagit metadata files and close zip
+            vars['archive'].writestr(str(vars['internal_path'] / "bagit.txt"), vars['bagit'])
+            vars['archive'].writestr(str(vars['internal_path'] / "bag-info.txt"), vars['baginfo'])
+            vars['archive'].writestr(str(vars['internal_path'] / "manifest-sha512.txt"), "\n".join(vars['payload']))
+            vars['archive'].close()
+
+            # copy temp file to django storage
+            vars['out_spool'].seek(0)
+            zip_name = str(vars['internal_path']) + '.zip'
+            case_export = CaseExport(public=public, filter_id=filter_item.pk, filter_type=filter_item.__class__.__name__.lower(), body_format=format_name, file_name=zip_name)
+            case_export.file.save(zip_name, File(vars['out_spool']))
+
+    finally:
+        # in case of error, make sure anything opened was closed
+        for format_name, vars in formats.items():
+            for file_handle in ('compressed_data_file', 'data_file', 'archive', 'out_spool'):
+                try_to_close(vars.get(file_handle))
+

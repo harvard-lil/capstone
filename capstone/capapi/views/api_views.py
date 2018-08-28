@@ -2,60 +2,60 @@ import re
 import urllib
 
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, FileResponse
 from django.utils.text import slugify
 
-from rest_framework import viewsets, mixins, renderers
+from rest_framework import viewsets, renderers
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
+from capapi.middleware import add_cache_header
 from capdb import models
 
-from capapi import serializers, filters
+from capapi import serializers, filters, permissions
 from capapi import renderers as capapi_renderers
 from capdb.models import Citation
 
 
-class JurisdictionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
-    serializer_class = serializers.JurisdictionSerializer
+class BaseViewSet(viewsets.ReadOnlyModelViewSet):
     http_method_names = ['get']
+
+
+class JurisdictionViewSet(BaseViewSet):
+    serializer_class = serializers.JurisdictionSerializer
     filterset_class = filters.JurisdictionFilter
     queryset = models.Jurisdiction.objects.all()
     lookup_field = 'slug'
 
 
-class VolumeViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class VolumeViewSet(BaseViewSet):
     serializer_class = serializers.VolumeSerializer
-    http_method_names = ['get']
     queryset = models.VolumeMetadata.objects.all().select_related(
         'reporter'
     ).prefetch_related('reporter__jurisdictions')
 
 
-class ReporterViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class ReporterViewSet(BaseViewSet):
     serializer_class = serializers.ReporterSerializer
-    http_method_names = ['get']
     filterset_class = filters.ReporterFilter
     queryset = models.Reporter.objects.all().prefetch_related('jurisdictions')
 
 
-class CourtViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class CourtViewSet(BaseViewSet):
     serializer_class = serializers.CourtSerializer
-    http_method_names = ['get']
     filterset_class = filters.CourtFilter
     queryset = models.Court.objects.all().select_related('jurisdiction')
     lookup_field = 'slug'
 
 
-class CitationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+class CitationViewSet(BaseViewSet):
     serializer_class = serializers.CitationWithCaseSerializer
-    http_method_names = ['get']
     queryset = models.Citation.objects.all()
 
 
-class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin,):
+class CaseViewSet(BaseViewSet):
     serializer_class = serializers.CaseSerializer
-    http_method_names = ['get']
     queryset = models.CaseMetadata.objects.filter(
         duplicative=False,
         jurisdiction__isnull=False,
@@ -126,4 +126,29 @@ class CaseViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
 
         return super(CaseViewSet, self).retrieve(*args, **kwargs)
 
+
+class CaseExportViewSet(BaseViewSet):
+    serializer_class = serializers.CaseExportSerializer
+    queryset = models.CaseExport.objects.all()
+    filterset_class = filters.CaseExportFilter
+
+    @action(
+        methods=['get'],
+        detail=True,
+        renderer_classes=(capapi_renderers.PassthroughRenderer,),
+        permission_classes=(permissions.CanDownloadCaseExport,),
+    )
+    def download(self, *args, **kwargs):
+        instance = self.get_object()
+
+        # send file
+        response = FileResponse(instance.file.open(), content_type='application/zip')
+        response['Content-Length'] = instance.file.size
+        response['Content-Disposition'] = 'attachment; filename="%s"' % instance.file_name
+
+        # public downloads are cacheable
+        if instance.public:
+            add_cache_header(response)
+
+        return response
 

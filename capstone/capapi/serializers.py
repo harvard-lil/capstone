@@ -3,6 +3,7 @@ import re
 
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from rest_framework.serializers import ListSerializer
 
 from capapi.models import SiteLimits
@@ -158,8 +159,8 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
 
     def get_casebody(self, case, check_permissions=True):
         # check permissions for full-text access to this case
+        request = self.context.get('request')
         if check_permissions:
-            request = self.context.get('request')
             casebody = get_single_casebody_permissions(request, case)
         else:
             casebody = {'status': 'ok', 'data': None}
@@ -305,6 +306,17 @@ class CourtSerializer(serializers.ModelSerializer):
 
 ### BULK SERIALIZERS ###
 
+class CaseExportSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.CaseExport
+        fields = ('id', 'download_url', 'file_name', 'export_date', 'public', 'filter_type', 'filter_id', 'body_format')
+
+    def get_download_url(self, obj):
+        return reverse('caseexport-download', kwargs={'pk': obj.pk}, request=self.context.get('request'))
+
+
 # modified serializers for use by scripts/export.py
 
 class BulkJurisdictionSerializer(JurisdictionSerializer):
@@ -335,7 +347,7 @@ class BulkCaseSerializer(CaseSerializerWithCasebody):
 
     def get_casebody(self, case):
         """ Tell get_casebody not to check for case download permissions. """
-        return super().get_casebody(case, check_permissions=True)
+        return super().get_casebody(case, check_permissions=False)
 
     @property
     def data(self):

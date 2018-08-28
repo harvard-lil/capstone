@@ -302,6 +302,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'test_data/pdfs'),
         },
     },
+    'bulk_export_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/bulk-data'),
+        },
+    },
 }
 
 INVENTORY = {
