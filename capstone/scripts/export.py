@@ -6,6 +6,7 @@ from collections import namedtuple
 from pathlib import Path
 from tempfile import SpooledTemporaryFile
 
+from celery import shared_task
 from django.core.files import File
 from django.utils import timezone
 
@@ -15,20 +16,36 @@ from capdb.models import Jurisdiction, Reporter, CaseExport
 from scripts.helpers import HashingFile
 
 
-def export_cases_by_jurisdiction(name):
+def export_all(before_date=None):
+    """
+        Queue celery tasks to export all jurisdictions and reporters.
+        If before_date is provided, only queue jobs where the last export's export_date was less than before_date.
+    """
+    for model, task in ((Jurisdiction, export_cases_by_jurisdiction), (Reporter, export_cases_by_reporter)):
+        print("Queueing %s" % model.__name__)
+        for item in model.objects.all():
+            if before_date and item.case_exports.filter(export_date__gte=before_date).exists():
+                print("- Skipping %s" % item)
+                continue
+            print("- Adding %s" % item)
+            task.delay(item.pk)
+
+@shared_task
+def export_cases_by_jurisdiction(id):
     """
         Write a .jsonl.gz file with all cases for jurisdiction.
     """
-    jurisdiction = Jurisdiction.objects.get(name=name)
+    jurisdiction = Jurisdiction.objects.get(pk=id)
     cases = CaseViewSet.queryset.filter(jurisdiction=jurisdiction)
     out_path = "{}-{:%Y%m%d}".format(jurisdiction.name_long, timezone.now())
     export_queryset(cases, out_path, jurisdiction, public=jurisdiction.whitelisted)
 
-def export_cases_by_reporter(name):
+@shared_task
+def export_cases_by_reporter(id):
     """
         Write a .jsonl.gz file with all cases for reporter.
     """
-    reporter = Reporter.objects.get(full_name=name)
+    reporter = Reporter.objects.get(pk=id)
     cases = CaseViewSet.queryset.filter(reporter=reporter)
     out_path = "{}-{:%Y%m%d}".format(reporter.full_name, timezone.now())
     export_queryset(cases, out_path, reporter, public=False)

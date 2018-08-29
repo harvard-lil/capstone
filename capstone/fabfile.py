@@ -25,7 +25,7 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Court, Jurisdiction
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Court, Jurisdiction, Reporter
 
 import capdb.tasks as tasks
 # from process_ingested_xml import fill_case_page_join_table
@@ -321,12 +321,27 @@ def add_test_case(*barcodes):
 @task
 def bag_jurisdiction(name):
     """ Write a BagIt package of all cases in a given jurisdiction. E.g. fab bag_jurisdiction:Ill. """
-    export.export_cases_by_jurisdiction(name)
+    jurisdiction = Jurisdiction.objects.get(name=name)
+    export.export_cases_by_jurisdiction.delay(jurisdiction.pk)
 
 @task
 def bag_reporter(name):
     """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
-    export.export_cases_by_reporter(name)
+    reporter = Reporter.objects.get(full_name=name)
+    export.export_cases_by_reporter.delay(reporter.pk)
+
+@task
+def bag_all_cases(before_date=None):
+    """
+        Export cases for all jurisdictions and reporters.
+        If before_date is provided, only export targets where the export_date for the last export is less than before_date.
+    """
+    export.export_all(before_date)
+
+@task
+def bag_all_reporters(name):
+    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
+    export.export_cases_by_reporter.delay(name)
 
 @task
 def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test_data/inventory/data')):
