@@ -51,7 +51,18 @@ nav {
     -moz-box-shadow: 0 1px 5px $color-violet-gray-dark;
     box-shadow: 0 1px 5px $color-violet-gray-dark;
   }
+  a {
+    border-bottom: 0;
+  }
 }
+
+/* show border in homepage */
+.page-index {
+  nav {
+    border-bottom: 0.5px solid $color-gray;
+  }
+}
+
 
 .nav-content {
   position: relative;
@@ -59,11 +70,16 @@ nav {
   flex-wrap: wrap; // allow us to do the line break for collapsing content
   align-items: center;
   padding: $navbar-padding-y $navbar-padding-x;
-  background: $color-black;
   flex-direction: column;
   z-index: 1;
+  margin-top: 1rem;
 
   > .nav { width: 100%; }
+
+  @include media-breakpoint-up(lg) {
+    position: absolute;
+    right: 0;
+  }
 
   @include media-breakpoint-down(md) {
     //-webkit-box-shadow: 0px 0 5px $color-yellow;
@@ -100,6 +116,7 @@ nav {
 
 .nav-item {
   float: left;
+  padding: 0 $navbar-padding-x;
   @include make-col(4);
   @include media-breakpoint-down(md) {
     float: none;
