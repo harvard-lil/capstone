@@ -599,22 +599,24 @@ def fix_court_names():
             case.orig_xml = serialize_xml(parsed)
             case.save(create_or_update_metadata=False)
 
-
     for court in Court.objects.all():
+        print("Checking court: %s" % court.name)
         stripped_name = court_name_strip(court.name)
         stripped_abbrev = court_abbreviation_strip(court.name_abbreviation)
 
         if court.name != stripped_name or court.name_abbreviation != stripped_abbrev:
 
             # see if there are any entries which already have the correct court name/abbr/jur
-            similar_courts = Court.objects.order_by('slug')\
+            similar_court = Court.objects.order_by('slug')\
                 .prefetch_related('case_metadatas__case_xml')\
-                .filter(name=stripped_name, name_abbreviation=stripped_abbrev, jurisdiction=court.jurisdiction)
+                .filter(name=stripped_name, name_abbreviation=stripped_abbrev, jurisdiction=court.jurisdiction)\
+                .first()
 
             # if so, set the court entry this court's cases to the correct court, and delete this court
             # We are assuming that the first entry, organized by slug, is the correct one.
-            if similar_courts.count() > 0:
-                update_cases(court, stripped_name, stripped_abbrev, similar_courts[0])
+            if similar_court:
+                print("- Replacing %s with %s" % (court.name, similar_court.name))
+                update_cases(court, stripped_name, stripped_abbrev, similar_court)
 
                 # we delete the court once we confirm that there are no more cases associated with it
                 if len(court.case_metadatas.all()) == 0:
@@ -622,10 +624,11 @@ def fix_court_names():
                 else:
                     raise Exception('{} case(s) not moved from court "{}" ("{}") to "{}" ("{}").'
                                     .format(court.case_metadatas.count(), court.name, court.name_abbreviation,
-                                            similar_courts[0].name, similar_courts[0].name_abbreviation))
+                                            similar_court.name, similar_court.name_abbreviation))
 
             # If there are no other similar courts, let's correct this name and cases
             else:
+                print("- Changing %s to %s" % (court.name, similar_court.name))
                 court.name = stripped_name
                 court.name_abbreviation = stripped_abbrev
                 court.save()
