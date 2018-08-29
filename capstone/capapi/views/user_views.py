@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -87,10 +89,10 @@ def bulk(request):
     if not request.user.unlimited_access_in_effect():
         query = query.filter(public=True)
 
-    # sort exports by filter_item so they appear in alphabetical order
+    # sort exports by filter_type, filter_item, body_format so various levels are consistently sorted
     exports = list(query)
     CaseExport.load_filter_items(exports)
-    exports.sort(key=lambda x: str(x.filter_item))
+    exports.sort(key=lambda x: (x.filter_type, str(x.filter_item), x.body_format))
 
     # group exports into the hierarchy they'll appear on the page, making a dictionary like:
     # sorted_exports = {
@@ -104,9 +106,9 @@ def bulk(request):
     sorted_exports = {}
     for export in exports:
         sorted_exports\
-            .setdefault('public' if export.public else 'private', {})\
-            .setdefault(export.filter_type, {})\
-            .setdefault(export.filter_item, {}) \
+            .setdefault('public' if export.public else 'private', OrderedDict())\
+            .setdefault(export.filter_type, OrderedDict())\
+            .setdefault(export.filter_item, OrderedDict()) \
             [export.body_format] = export
 
     return render(request, 'bulk.html', {
