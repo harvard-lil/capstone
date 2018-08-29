@@ -277,6 +277,10 @@ class BaseXMLModel(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
+        # no need to save if nothing changed
+        if not (set(self.tracker.changed()) - {'sys_period'}):
+            return
+
         # update md5
         if self.tracker.has_changed('orig_xml'):
             if not self.tracker.has_changed('md5'):
@@ -704,7 +708,7 @@ class CaseMetadata(models.Model):
                                on_delete=models.DO_NOTHING)
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
                                  on_delete=models.DO_NOTHING)
-    date_added = models.DateTimeField(null=True, blank=True)
+    date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
     duplicative = models.BooleanField(default=False)
 
     # denormalized fields -
