@@ -708,7 +708,7 @@ class CaseMetadata(models.Model):
                                on_delete=models.DO_NOTHING)
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
                                  on_delete=models.DO_NOTHING)
-    date_added = models.DateTimeField(null=True, blank=True)
+    date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
     duplicative = models.BooleanField(default=False)
 
     # denormalized fields -
