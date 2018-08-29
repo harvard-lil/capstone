@@ -1,26 +1,44 @@
-{% extends "base.html" %}
+{% extends "registration/base.html" %}
 {% load bootstrap4 %}
+{% load static %}
 
 {% block title %} | Verify Your Email{% endblock %}
 
 {% block meta_description %}
-Verify your email address to use the Caselaw Access Project API
+Verify your email address
 {% endblock %}
 
 {% block content %}
-  <div class="login-form container-full inverse header-margin">
-    <div class="row row-centered">
-      <div class="col-6 col-centered">
-        {% if error %}
-          <div class="alert alert-warning">{{ error }}</div>
-        {% else %}
-          <form action="{% url "resend-verification" %}" method="POST">
-            {% csrf_token %}
-            {% bootstrap_form form %}
-            <button type="submit" class="white-button">Click to resend a verification email</button>
-          </form>
-        {% endif %}
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <div class="page-title">
+            <h1>
+              <img alt="›"
+                   src='{% static "img/red-arrow-right.svg" %}'
+                   class="decorative-arrow"/>
+              Resend verification
+            </h1>
+          </div>
+
+          <div class="content">
+            {% if error %}
+              <div class="alert alert-warning">{{ error }}</div>
+            {% else %}
+              <form action="{% url "resend-verification" %}" method="POST">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                <br/>
+                <button type="submit"
+                        class="btn btn-default">
+                  Resend verification email
+                </button>
+              </form>
+            {% endif %}
+          </div>
       </div>
     </div>
   </div>
+
+
 {% endblock %}

@@ -26,3 +26,17 @@ footer {
   }
 }
 
+footer {
+  background-color: $color-black;
+  a {
+    color: $color-yellow;
+    &:hover, &:focus, &:active {
+      color: $color-blue;
+    }
+  }
+  #lil-logo {
+    .lil-logo-item {
+      fill: $color-yellow;
+    }
+  }
+}
