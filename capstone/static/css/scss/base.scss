@@ -27,6 +27,7 @@
   color: $color-black;
 }
 
+
 body {
   @extend .font-body;
   height: 100%;
@@ -37,9 +38,9 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 { font-family: $font-serif; }
-
-
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-serif;
+}
 
 ul {
   padding-left: 0;
@@ -51,6 +52,20 @@ li {
 
 section {
   width: 100%;
+}
+
+table {
+  margin-bottom: 4rem;
+}
+
+table > tbody > tr {
+  line-height: 2.5rem;
+}
+
+table > tbody > tr > th {
+  font-family: $font-serif;
+  font-weight: $font-weight-normal;
+  min-width: 400px;
 }
 
 code {
@@ -91,6 +106,10 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
 
 
 .main-content {
+  //padding: $header-margin-size 0;
+}
+
+.basic-page {
   padding: $header-margin-size 0;
 }
 
@@ -98,7 +117,11 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
   margin-left: -2rem;
   color: $color-red;
   &.left { margin-left: 0.4rem; }
+  @include media-breakpoint-down(sm) {
+     display: none;
+  }
 }
+
 .row {
   @extend .no-gutters;
 }
@@ -162,7 +185,6 @@ section > .content > .row > .content-left {
     @include make-col(4);
   }
   @include media-breakpoint-down(sm) {
-    .decorative-arrow { display: none; }
     @include make-col(10);
   }
 }
@@ -297,12 +319,8 @@ li.item-set {
     max-width: 100%;
   }
   .page-title {
-    .decorative-arrow { display: none; }
     @include media-breakpoint-up(md) {
       @include make-col(6);
-      .decorative-arrow {
-        display: inline-block;
-      }
     }
   }
   .subtitle {

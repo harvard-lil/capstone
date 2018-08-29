@@ -46,6 +46,7 @@ nav {
   color: $color-white;
   font-weight: $font-weight-semibold;
   letter-spacing: 0.1em;
+  z-index: 1;
   @include media-breakpoint-up(lg) {
     -webkit-box-shadow: 0 1px 5px $color-violet-gray-dark;
     -moz-box-shadow: 0 1px 5px $color-violet-gray-dark;
@@ -56,27 +57,31 @@ nav {
   }
 }
 
-/* show border in homepage */
+/* show light border in homepage */
 .page-index {
   nav {
-    border-bottom: 0.5px solid $color-gray;
+    @include media-breakpoint-up(lg) {
+      -webkit-box-shadow: 0 0.2px 5px $color-gray;
+      -moz-box-shadow: 0 0.2px 5px $color-gray;
+      box-shadow: 0 0.2px 5px $color-gray;
+    }
+
   }
 }
-
 
 .nav-content {
   position: relative;
   display: flex;
   flex-wrap: wrap; // allow us to do the line break for collapsing content
   align-items: center;
-  padding: $navbar-padding-y $navbar-padding-x;
   flex-direction: column;
   z-index: 1;
-  margin-top: 1rem;
 
   > .nav { width: 100%; }
 
   @include media-breakpoint-up(lg) {
+    margin-top: 1rem;
+    padding: $navbar-padding-y $navbar-padding-x;
     position: absolute;
     right: 0;
   }
@@ -85,6 +90,7 @@ nav {
     //-webkit-box-shadow: 0px 0 5px $color-yellow;
     //-moz-box-shadow: 0px 0 5px $color-yellow;
     //box-shadow: 0px 0 5px $color-yellow;
+    background-color: $color-black;
     border-left: 0.5px solid $color-yellow;
     width: 50%;
   }
@@ -116,7 +122,10 @@ nav {
 
 .nav-item {
   float: left;
-  padding: 0 $navbar-padding-x;
+  @include media-breakpoint-up(lg) {
+    padding: 0 $navbar-padding-x;
+
+  }
   @include make-col(4);
   @include media-breakpoint-down(md) {
     float: none;
