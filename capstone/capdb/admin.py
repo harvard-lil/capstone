@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.forms.widgets import Textarea
+from django.utils.text import normalize_newlines
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, \
@@ -13,6 +15,10 @@ def new_class(name, *args, **kwargs):
 # change Django defaults, because 'extra' isn't helpful anymore now you can add more with javascript
 admin.TabularInline.extra = 0
 admin.StackedInline.extra = 0
+
+# ensure that CRLF data from Textareas is normalized to LF
+real_textarea_value_from_datadict = Textarea.value_from_datadict
+Textarea.value_from_datadict = lambda *a, **k: normalize_newlines(real_textarea_value_from_datadict(*a, **k))
 
 
 ### admin models ###

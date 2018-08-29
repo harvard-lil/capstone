@@ -277,6 +277,10 @@ class BaseXMLModel(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
+        # no need to save if nothing changed
+        if not (set(self.tracker.changed()) - {'sys_period'}):
+            return
+
         # update md5
         if self.tracker.has_changed('orig_xml'):
             if not self.tracker.has_changed('md5'):
