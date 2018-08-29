@@ -68,6 +68,16 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
         return super().get_filter_form(data, view, request)
 
 
+class PassthroughRenderer(renderers.BaseRenderer):
+    """
+        Return data as-is. View should supply a Response.
+    """
+    media_type = 'application/json'  # used only for rendering errors
+    format = ''
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return data
+
+
 def generate_xml_error(error_text, message_text):
     return """
         <data>

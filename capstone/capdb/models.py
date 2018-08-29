@@ -9,6 +9,7 @@ from lxml import etree
 from model_utils import FieldTracker
 from partial_index import PartialIndex
 
+from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name)
@@ -428,7 +429,7 @@ class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
     whitelisted = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.slug
+        return self.name_long
 
     def save(self, *args, **kwargs):
         # set name_long based on name
@@ -442,6 +443,10 @@ class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
 
     def get_slug(self):
         return self.name
+
+    @property
+    def case_exports(self):
+        return CaseExport.objects.filter(filter_type='jurisdiction', filter_id=self.pk)
 
 
 class Reporter(models.Model):
@@ -462,6 +467,10 @@ class Reporter(models.Model):
 
     class Meta:
         ordering = ['full_name']
+
+    @property
+    def case_exports(self):
+        return CaseExport.objects.filter(filter_type='reporter', filter_id=self.pk)
 
 
 class VolumeMetadata(models.Model):
@@ -1134,3 +1143,51 @@ class SlowQuery(models.Model):
 
     def __str__(self):
         return self.label or self.query
+
+
+class CaseExportQuerySet(models.QuerySet):
+    """ Query methods for BaseXMLModel. """
+
+    def exclude_old(self):
+        """
+            Return only the latest file for each export (based on filter_type, filter_id, body_format)
+        """
+        return self.extra(where=['id in (SELECT max(id) FROM capdb_caseexport GROUP BY (filter_type, filter_id, body_format))'])
+
+class CaseExport(models.Model):
+    file_name = models.CharField(max_length=255)
+    file = models.FileField(storage=bulk_export_storage)
+    body_format = models.CharField(max_length=10, choices=(('xml','xml'),('text','text')))
+
+    export_date = models.DateTimeField(auto_now_add=True)
+    public = models.BooleanField(default=False)
+
+    # do it this way instead of with GenericForeignKey because Django's content_type table is in the other database
+    filter_type = models.CharField(max_length=20, choices=(('jurisdiction','jurisdiction'),('reporter','reporter')))
+    filter_id = models.PositiveIntegerField(null=True, blank=True)
+
+    objects = CaseExportQuerySet.as_manager()
+
+    _filter_item_lookup = {'jurisdiction': Jurisdiction, 'reporter': Reporter}
+    _filter_item_cache = None
+
+    @property
+    def filter_item(self):
+        """ Return the Jurisdiction or Reporter referred to by filter_type and filter_id. """
+        if not self._filter_item_cache:
+            self._filter_item_cache = self._filter_item_lookup[self.filter_type].objects.get(pk=self.filter_id)
+        return self._filter_item_cache
+
+    @classmethod
+    def load_filter_items(cls, instances):
+        """
+            Set the .filter_item property for a list of instances -- this uses fewer sql queries than calling
+            instance.filter_item individually for each instance.
+        """
+        lookups = {
+            filter_type: {item.pk: item for item in model.objects.filter(
+                pk__in=[instance.filter_id for instance in instances if instance.filter_type == filter_type])}
+            for filter_type, model in cls._filter_item_lookup.items()
+        }
+        for instance in instances:
+            instance._filter_item_cache = lookups[instance.filter_type][instance.filter_id]

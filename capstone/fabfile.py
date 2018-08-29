@@ -318,34 +318,15 @@ def add_test_case(*barcodes):
     ## update inventory files
     write_inventory_files()
 
+@task
+def bag_jurisdiction(name):
+    """ Write a BagIt package of all cases in a given jurisdiction. E.g. fab bag_jurisdiction:Ill. """
+    export.export_cases_by_jurisdiction(name)
 
 @task
-def bag_jurisdiction(name, zip_directory=".", zip_filename=None):
-    """
-    Write a BagIt package of all case XML files in a given jurisdiction.
-    """
-    out_path = export.bag_jurisdiction(name, zip_directory, zip_filename)
-    print("Exported jurisdiction %s to %s" % (name, out_path))
-
-
-@task
-def bag_reporter(name, zip_directory=".", zip_filename=None):
-    """
-    Write a BagIt package of all case XML files in a given reporter.
-    """
-    out_path = export.bag_reporter(name, zip_directory, zip_filename)
-    print("Exported reporter %s to %s" % (name, out_path))
-
-
-@task
-def export_jurisdiction_json(name, out_path, body_format=""):
-    """ Write .jsonl.gz file of all cases for given jurisdiction to out_path. E.g. `fab export_jurisdiction_json:Ill.,ill.jsonl.gz,xml`. """
-    export.export_jurisdiction_json(name, out_path, body_format)
-
-@task
-def export_reporter_json(name, out_path, body_format=""):
-    """ Write .jsonl.gz file of all cases for given reporter to out_path. E.g. `fab export_reporter_json:Illinois Appellate Court Reports,ill-app.jsonl.gz,xml`. """
-    export.export_reporter_json(name, out_path, body_format)
+def bag_reporter(name):
+    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
+    export.export_cases_by_reporter(name)
 
 @task
 def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test_data/inventory/data')):
