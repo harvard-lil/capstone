@@ -18,12 +18,12 @@
 @import 'nav';
 
 ::selection {
-  background: $color-yellow; /* WebKit/Blink Browsers */
+  background: $color-yellow-bright; /* WebKit/Blink Browsers */
   color: $color-black;
 }
 
 ::-moz-selection {
-  background: $color-yellow; /* Gecko Browsers */
+  background: $color-yellow-bright; /* Gecko Browsers */
   color: $color-black;
 }
 
@@ -86,12 +86,11 @@ pre {
 a {
   text-decoration: none;
   color: $color-violet;
-  border-bottom: 1px solid $color-violet;
+  border-bottom: 4px solid $color-yellow-bright;
 
   &:hover, &:focus, &:active {
     text-decoration: none;
     color: $color-blue;
-    border-bottom: 1px solid $color-blue;
   }
 }
 
@@ -103,7 +102,9 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
   border: 0;
 }
 
-
+.list-group-item {
+  border-radius: 0 !important;
+}
 
 .main-content {
   //padding: $header-margin-size 0;
@@ -283,12 +284,6 @@ li.item-set {
   > .item-title {
     margin-bottom: 0.5em;
   }
-  > .item-title.darker {
-    a {
-      color: $color-violet-light;
-      border-bottom: 1px solid $color-violet-light;
-    }
-  }
   > .item-origin {
     color: $color-red;
     font-weight: $font-weight-bold;
@@ -324,9 +319,9 @@ li.item-set {
     }
   }
   .subtitle {
-    border-bottom: 1px solid $color-violet-gray-dark;
+    //border-bottom: 1px solid $color-violet-gray-dark;
     color: $color-violet;
-    padding-bottom: 0.4em;
+    //padding-bottom: 0.4em;
   }
   .page-section {
     margin-bottom: 30px;
@@ -351,6 +346,40 @@ li.item-set {
       @include make-col(8);
     }
   }
+  p {
+    margin-bottom: 2rem;
+  }
+}
+
+.basic-page.inverse {
+  background-color: $color-black;
+  color: $color-white;
+  .page-title > h1 {
+    color: $color-white;
+  }
+  .list-group-item {
+    background-color: transparent;
+    color: $color-white;
+    &:focus, &:hover, &:active {
+      color: $color-black;
+      background-color: $color-yellow;
+    }
+  }
+  .subtitle {
+    color: $color-yellow;
+    border-bottom: 1px solid $color-yellow;
+  }
+}
+.github {
+  display: inline;
+
+}
+.github > a {
+  background-image: url('../../img/github-sprite.svg');
+  background-size: auto 24px;
+  background-position-x: 0;
+  background-repeat: no-repeat;
+  border-bottom: none;
 }
 
 
@@ -425,8 +454,8 @@ footer {
 .page-index {
   footer {
     background-color: $color-violet;
-    color: white;
-    a { color: white; }
+    color: $color-white;
+    a { color: $color-white; }
   }
 }
 
@@ -440,6 +469,8 @@ footer {
     }
   }
 }
+
+
 
 #usa-territories-white {
   .state:hover {
