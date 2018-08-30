@@ -50,7 +50,7 @@ class CachedCountMixin(object):
 
 @admin.register(VolumeXML)
 class VolumeXMLAdmin(SimpleHistoryAdmin):
-    pass
+    raw_id_fields = ['metadata']
 
 
 @admin.register(CaseMetadata)
@@ -103,7 +103,7 @@ class PageXMLAdmin(CachedCountMixin, SimpleHistoryAdmin):
 @admin.register(CaseXML)
 class CaseXMLAdmin(CachedCountMixin, SimpleHistoryAdmin):
     inlines = [CasePageInline]
-    raw_id_fields = ['volume']
+    raw_id_fields = ['volume', 'metadata']
 
 
 @admin.register(TrackingToolLog)
