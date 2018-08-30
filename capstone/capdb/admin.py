@@ -3,6 +3,7 @@ from django.forms.widgets import Textarea
 from django.utils.text import normalize_newlines
 from simple_history.admin import SimpleHistoryAdmin
 
+from capapi.resources import CachedCountQuerySet
 from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, \
     TrackingToolUser, SlowQuery, Jurisdiction, CaseMetadata, CaseExport, Citation
 
@@ -37,6 +38,14 @@ class ReadonlyInlineMixin(object):
         return result
 
 
+class CachedCountMixin(object):
+    """ Mixin for ModelAdmin to use cached .count() queries. """
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs.__class__ = CachedCountQuerySet
+        return qs
+
+
 ### admin models ###
 
 @admin.register(VolumeXML)
@@ -45,12 +54,12 @@ class VolumeXMLAdmin(SimpleHistoryAdmin):
 
 
 @admin.register(CaseMetadata)
-class CaseMetadataAdmin(admin.ModelAdmin):
+class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
     list_display = ['name_abbreviation', 'decision_date', 'jurisdiction', 'court', 'reporter']
     list_select_related = ('jurisdiction', 'court', 'reporter')
     inlines = (
         new_class('CitationInline', ReadonlyInlineMixin, admin.TabularInline, model=Citation),
-        new_class('CaseXMLInline', admin.StackedInline, model=CaseXML),
+        new_class('CaseXMLInline', admin.StackedInline, model=CaseXML, raw_id_fields=['volume']),
     )
     fieldsets = (
         ('Ingest metadata', {
@@ -77,6 +86,7 @@ class CaseMetadataAdmin(admin.ModelAdmin):
     # mark all fields as readonly
     readonly_fields = sum((f[1]['fields'] for f in fieldsets), ())
 
+
 class CasePageInline(admin.TabularInline):
     model = PageXML.cases.through
     show_change_link = True
@@ -84,14 +94,16 @@ class CasePageInline(admin.TabularInline):
 
 
 @admin.register(PageXML)
-class PageXMLAdmin(SimpleHistoryAdmin):
+class PageXMLAdmin(CachedCountMixin, SimpleHistoryAdmin):
     inlines = [CasePageInline]
     exclude = ('cases',)
+    raw_id_fields = ['volume']
 
 
 @admin.register(CaseXML)
-class CaseXMLAdmin(SimpleHistoryAdmin):
+class CaseXMLAdmin(CachedCountMixin, SimpleHistoryAdmin):
     inlines = [CasePageInline]
+    raw_id_fields = ['volume']
 
 
 @admin.register(TrackingToolLog)

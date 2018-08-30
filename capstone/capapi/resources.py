@@ -1,3 +1,4 @@
+import hashlib
 import json
 from datetime import datetime
 import logging
@@ -10,6 +11,7 @@ import wrapt
 from django.conf import settings
 from django.core.cache import caches
 from django.core.mail import send_mail
+from django.db.models import QuerySet
 from django.template.defaultfilters import slugify
 from django.http import FileResponse
 from rest_framework.reverse import reverse
@@ -98,3 +100,16 @@ def cache_func(key, timeout=None, cache_name='default'):
             return value
         return decorated
     return decorator
+
+
+class CachedCountQuerySet(QuerySet):
+    """
+        Queryset that caches counts based on generated SQL.
+        Usage: queryset.__class__ = CachedCountQuerySet
+    """
+    @cache_func(
+        key=lambda queryset:'query-count:' + hashlib.md5(str(queryset.query).encode('utf8')).hexdigest(),
+        timeout=settings.CACHED_COUNT_TIMEOUT,
+    )
+    def count(self):
+        return super().count()
