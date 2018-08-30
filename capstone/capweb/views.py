@@ -37,3 +37,15 @@ def about(request):
 
 def tools(request):
     return render(request, "tools.html", {"page_name": "tools"})
+
+
+def gallery(request):
+    return render(request, "gallery.html", {"page_name": "gallery"})
+
+
+def wordclouds(request):
+    return render(request, "gallery/wordclouds.html", {"page_name": "wordclouds"})
+
+
+def limericks(request):
+    return render(request, "gallery/limericks.html", {"page_name": "limericks"})

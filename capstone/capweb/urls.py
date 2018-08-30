@@ -12,8 +12,10 @@ urlpatterns = [
     path('', views.index, name='home'),
     path('about/', views.about, name='about'),
     path('tools/', views.tools, name='tools'),
-    # path('showcase/', views.showcase, name='showcase'),
+    path('gallery/', views.gallery, name='gallery'),
 
+    path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
+    path('gallery/limericks', views.limericks, name='limericks'),
 
     ### user account pages ###
 

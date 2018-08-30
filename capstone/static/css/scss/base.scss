@@ -319,10 +319,16 @@ li.item-set {
     }
   }
   .subtitle {
-    //border-bottom: 1px solid $color-violet-gray-dark;
     color: $color-violet;
-    //padding-bottom: 0.4em;
   }
+  @include media-breakpoint-up(md) {
+    .subtitle:before {
+      content: "\00A7";
+      color: $color-yellow;
+      margin-left: -2.5rem;
+    }
+  }
+
   .page-section {
     margin-bottom: 30px;
     margin-top: 1rem;
@@ -375,11 +381,12 @@ li.item-set {
 
 }
 .github > a {
-  background-image: url('../../img/github-sprite.svg');
-  background-size: auto 24px;
+  background: url('../../img/github-sprite.svg') no-repeat;
+  background-size: contain;
   background-position-x: 0;
-  background-repeat: no-repeat;
   border-bottom: none;
+  display: block;
+  height: 40px;
 }
 
 

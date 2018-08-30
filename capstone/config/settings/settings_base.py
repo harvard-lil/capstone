@@ -203,6 +203,12 @@ PIPELINE = {
             ),
             'output_filename': 'base.css'
         },
+        'gallery': {
+            'source_filenames': (
+                'css/scss/gallery.scss',
+            ),
+            'output_filename': 'gallery.css'
+        },
         'docs': {
             'source_filenames': (
                 'css/scss/docs.scss',

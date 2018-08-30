@@ -1,0 +1,41 @@
+@import 'variables';
+@import 'nav-inverse';
+
+.basic-page.inverse .subtitle {
+  font-family: $font-sans-serif;
+  font-weight: $font-weight-semibold;
+  border-bottom: 0;
+  &::before {
+    margin-left: 0 !important;
+    content: '' !important;
+
+  }
+}
+
+.project-image, .project-description {
+  @include media-breakpoint-up(lg) {
+    @include make-col(6);
+  }
+}
+
+.project-image {
+  @include media-breakpoint-up(lg) {
+    > .img-fluid {
+      max-width: 80%;
+    }
+  }
+  > .img-fluid {
+    border-radius: 50%;
+  }
+}
+
+footer {
+  background-color: $color-red;
+  #lil-logo {
+    .lil-logo-item {
+      fill: $color-black;
+    }
+  }
+}
+
+

@@ -1,0 +1,90 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block extra_head %}
+  {% javascript 'base' %}
+  {% stylesheet 'gallery' %}
+{% endblock %}
+
+{% block title %} — Gallery{% endblock %}
+
+{% block meta_description %}
+Caselaw Access Project gallery
+{% endblock %}
+
+
+{% block content %}
+  <div class="basic-page inverse">
+    <div class="full-content">
+      <div class="row">
+        <div class="page-title">
+          <h1>
+            <img alt="›" src='{% static "img/red-arrow-right.svg" %}'
+                 class="decorative-arrow"/>
+            Gallery
+          </h1>
+        </div>
+      </div>
+      <div class="row">
+        {# ==============> MENU <============== #}
+        <div class="sidebar-menu"></div>
+        {# ==============> CONTENT <============== #}
+        <div class="content">
+          {# ==============> OVERVIEW <============== #}
+          <div class="page-section">
+            <a name="overview"></a>
+            <p>
+              Sky is the limit!
+              <br/> Here are some examples of what’s possible.
+            </p>
+          </div>
+          <div class="page-section">
+            <a name="wordclouds"></a>
+            <div class="row">
+              <div class="project-image">
+                  <img class="img-fluid"
+                     alt="Wordcloud from 1930, California"
+                     src="{% static "img/wordclouds-1933.png" %}">
+
+              </div>
+              <div class="project-description">
+                <h6 class="subtitle">Wordclouds</h6>
+                <p>
+                  Most used words for every year of California caselaw from 1852 to 2015.
+                </p>
+                <p>
+                  <a href="/gallery/wordclouds"
+                    class="btn btn-default">See more</a>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="page-section">
+            <a name="limericks"></a>
+            <div class="row">
+              <div class="project-image">
+              </div>
+              <div class="project-description">
+                <h6 class="subtitle">Limericks</h6>
+                <p>
+                  Generate rhymes using caselaw!
+                </p>
+                <p>
+                  <a href="/gallery/limericks"
+                    class="btn btn-default">See more</a>
+                  <span class="github">
+                    <a href="github.com" target="_blank"></a>
+                  </span>
+                </p>
+              </div>
+            </div>
+            <p>
+
+            </p>
+          </div>
+        </div>
+      </div></div></div>
+
+
+{% endblock %}

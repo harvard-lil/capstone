@@ -6,10 +6,23 @@
 .branding > a { border-bottom: 0 !important; }
 
 .branding {
-   .cap-logo { max-width: 140px; }
+   .nav-branding {
+     background: url("../../img/cap-logo-black.png") no-repeat;
+     background-size: contain;
+     display: block;
+     width: 140px;
+     height: 50px;
+     background-position-x: 0;
+   }
+  &.large-screen {
+    .nav-branding {
+      background: url("../../img/cap-logo-white.png") no-repeat;
+      background-size: contain;
+    }
+  }
 }
 
-.branding.branding-black-bg {
+.branding.large-screen {
   display: inline-block;
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -18,17 +31,17 @@
   white-space: nowrap;
 }
 
-.branding.branding-white-bg { display: none; }
+.branding.small-screen { display: none; }
 
 /* on index, display white background logo on small screens
   display black background logo in all other instances */
 .page-index {
-  .branding.branding-white-bg {
+  .branding.small-screen {
     @include media-breakpoint-down(md) {
       display: block;
     }
   }
-  .branding.branding-black-bg {
+  .branding.large-screen {
     @include media-breakpoint-down(md) {
       display: none;
     }
@@ -61,9 +74,9 @@ nav {
 .page-index {
   nav {
     @include media-breakpoint-up(lg) {
-      -webkit-box-shadow: 0 0.2px 5px $color-gray;
-      -moz-box-shadow: 0 0.2px 5px $color-gray;
-      box-shadow: 0 0.2px 5px $color-gray;
+      -webkit-box-shadow: 0 0.2px 5px rgba(255,255,255,0.1);
+      -moz-box-shadow: 0 0.2px 5px rgba(255,255,255,0.1);
+      box-shadow: 0 0.2px 5px rgba(255,255,255,0.1);
     }
 
   }
@@ -71,19 +84,17 @@ nav {
 
 .nav-content {
   position: relative;
-  display: flex;
-  flex-wrap: wrap; // allow us to do the line break for collapsing content
-  align-items: center;
-  flex-direction: column;
+  min-height: 100%;
+  display: block;
   z-index: 1;
-
-  > .nav { width: 100%; }
+  > .nav {
+    width: 100%;
+    height: 100%;
+  }
 
   @include media-breakpoint-up(lg) {
-    margin-top: 1rem;
-    padding: $navbar-padding-y $navbar-padding-x;
-    position: absolute;
-    right: 0;
+    //padding: $navbar-padding-y $navbar-padding-x;
+    margin-left: auto;
   }
 
   @include media-breakpoint-down(md) {
@@ -93,6 +104,7 @@ nav {
     background-color: $color-black;
     border-left: 0.5px solid $color-yellow;
     width: 50%;
+    float: left;
   }
 
   .dropdown-menu {
@@ -112,19 +124,32 @@ nav {
       border: 0.5px solid $color-yellow;
     }
     @include media-breakpoint-down(md) {
-      > a::before {
+      > a:before {
         color: $color-violet;
-        content: "› ";
+        content: "\0226B ";
       }
     }
   }
 }
 
-.nav-item {
-  float: left;
-  @include media-breakpoint-up(lg) {
-    padding: 0 $navbar-padding-x;
+/* show symbols on expand and collapse of dropdowns */
+li.nav-item.dropdown {
+  > a.nav-link:after {
+    content: '\25BE';
+  }
+  &.show {
+    > a:after {
+      content: "\02212";
+    }
+  }
+}
 
+
+.nav-item {
+  height: 100%;
+  @include media-breakpoint-up(lg) {
+    float: left;
+    padding: $navbar-padding-x $navbar-padding-y;
   }
   @include make-col(4);
   @include media-breakpoint-down(md) {
@@ -138,7 +163,8 @@ nav {
   display: block;
   color: $color-white;
   padding: 0.5rem;
-  &:hover, &:active, &:focus {
+  &:hover, &:active, &:focus,   &.selected
+ {
     color: $color-yellow;
   }
 }

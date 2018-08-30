@@ -1,22 +1,15 @@
 {% load static %}
 <!-- On small screens, show logo on its own row --->
 <div class="row">
-  <div class="branding branding-white-bg">
-    <a class="nav-branding" href="/">
-      <img class="cap-logo img-fluid"
-         alt="CAP logo"
-         src="{% static "img/cap-logo-black.png" %}">
-    </a>
+  <div class="branding small-screen">
+    <a class="nav-branding" href="/" alt="CAP logo"></a>
   </div>
 </div>
 
 <nav role="navigation">
-    <div class="branding branding-black-bg">
-      <a class="nav-branding" href="/">
-        <img class="cap-logo img-fluid"
-           alt="CAP logo"
-           src="{% static "img/cap-logo-white.png" %}">
-      </a>
+    <div class="branding large-screen">
+      <a class="nav-branding" href="/" alt="CAP logo"></a>
+
     </div>
 
     <button id="burger-icon">
@@ -33,7 +26,7 @@
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
-          ABOUT &blacktriangledown;
+          ABOUT
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
           <a class="dropdown-item" href="/about">Overview</a>
@@ -49,7 +42,7 @@
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
-          TOOLS &blacktriangledown;
+          TOOLS
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
           <a class="dropdown-item" href="/tools#">Overview</a>
@@ -57,18 +50,18 @@
           <a class="dropdown-item" href="/tools#">Bulk Data</a>
         </div>
       </li>
-      <li class="nav-item dropdown {% if page_name == 'showcase' %}selected{% endif %}">
-        <a class="nav-link dropdown-toggle"
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle {% if page_name == 'gallery' %}selected{% endif %}"
            href="#" id="navbar-dropdown"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
-          SHOWCASE &blacktriangledown;
+          GALLERY
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
-          <a class="dropdown-item" href="#">Overview</a>
-          <a class="dropdown-item" href="#">Limericks</a>
-          <a class="dropdown-item" href="#">Wordclouds</a>
+          <a class="dropdown-item" href="/gallery#overview">Overview</a>
+          <a class="dropdown-item" href="/gallery#limericks">Limericks</a>
+          <a class="dropdown-item" href="/gallery#wordclouds">Wordclouds</a>
         </div>
       </li>
 
