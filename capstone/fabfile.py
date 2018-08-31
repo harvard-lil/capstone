@@ -608,7 +608,6 @@ def fix_court_names(dry_run=False):
 
             # see if there are any entries which already have the correct court name/abbr/jur
             similar_court = Court.objects.order_by('slug')\
-                .prefetch_related('case_metadatas__case_xml')\
                 .filter(name=stripped_name, name_abbreviation=stripped_abbrev, jurisdiction=court.jurisdiction)\
                 .first()
 
