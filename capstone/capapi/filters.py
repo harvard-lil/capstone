@@ -142,18 +142,11 @@ class CaseFilter(filters.FilterSet):
 
 class CaseExportFilter(filters.FilterSet):
     with_old = filters.ChoiceFilter(
-        field_name='jurisdiction_slug',
+        field_name='with_old',
         label='Include previous versions of files?',
         choices=(('true', 'Include previous versions of files'), ('false', 'Only include newest version of each file')),
-        method='find_with_old',
+        method='noop',  # handled by CaseExportViewSet.filter_queryset()
     )
-
-    def __init__(self, data, *args, **kwargs):
-        # make sure with_old defaults to "false", so we apply the filter in find_with_old by default
-        if data.get('with_old') != 'true':
-            data = data.copy()
-            data['with_old'] = 'false'
-        super().__init__(data, *args, **kwargs)
 
     class Meta:
         model = models.CaseExport
@@ -163,9 +156,6 @@ class CaseExportFilter(filters.FilterSet):
             'filter_id': ['exact'],
         }
 
-    def find_with_old(self, qs, name, value):
-        """ Unless user requests otherwise with with_old=true, only show latest version of each export. """
-        if value != 'true':
-            qs = qs.exclude_old()
+    def noop(self, qs, name, value):
+        """ Not really a filter -- do nothing. """
         return qs
-

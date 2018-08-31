@@ -132,6 +132,23 @@ class CaseExportViewSet(BaseViewSet):
     queryset = models.CaseExport.objects.all()
     filterset_class = filters.CaseExportFilter
 
+    def list(self, request, *args, **kwargs):
+        # mark list requests to filter out superseded downloads by default
+        self.request.hide_old_by_default = True
+        return super().list(request, *args, **kwargs)
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+
+        # filter out superseded downloads for list requests unless with_old=true
+        try:
+            if self.request.hide_old_by_default and self.request.GET.get('with_old') != 'true':
+                queryset = queryset.exclude_old()
+        except AttributeError:
+            pass
+
+        return queryset
+
     @action(
         methods=['get'],
         detail=True,
