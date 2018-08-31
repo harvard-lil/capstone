@@ -1,6 +1,7 @@
 import hashlib
 
 from django.conf import settings
+from django.http.response import HttpResponseBase
 from django.template import loader
 from rest_framework import renderers
 
@@ -68,14 +69,16 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
         return super().get_filter_form(data, view, request)
 
 
-class PassthroughRenderer(renderers.BaseRenderer):
+class PassthroughRenderer(renderers.JSONRenderer):
     """
         Return data as-is. View should supply a Response.
     """
     media_type = 'application/json'  # used only for rendering errors
     format = ''
     def render(self, data, accepted_media_type=None, renderer_context=None):
-        return data
+        if isinstance(data, HttpResponseBase):
+            return data
+        return super().render(data, accepted_media_type, renderer_context)
 
 
 def generate_xml_error(error_text, message_text):

@@ -253,9 +253,11 @@ def ordered_query_iterator(queryset, chunk_size=1000):
     filter = Q()
     while True:
         obj = None
+        i = 0
         for obj in queryset.filter(filter)[:chunk_size]:
             yield obj
-        if not obj:
+            i += 1
+        if i < chunk_size:
             break
         filter = get_filter(order_by, obj)
             

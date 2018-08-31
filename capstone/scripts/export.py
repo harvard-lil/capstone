@@ -67,7 +67,9 @@ def export_queryset(queryset, dir_name, filter_item, public=False):
         public controls whether export is downloadable by non-researchers.
     """
     formats = {'xml': {}, 'text': {}}
-    queryset = queryset.order_by('id')
+    
+    # we can safely select_related case_xml because we fetch these in blocks of 1000 via ordered_query_iterator
+    queryset = queryset.select_related('case_xml').order_by('id')
 
     try:
         # set up vars for each format
