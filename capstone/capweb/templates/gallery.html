@@ -43,7 +43,7 @@ Caselaw Access Project gallery
             <a name="wordclouds"></a>
             <div class="row">
               <div class="project-image">
-                  <img class="img-fluid"
+                  <img class="main-img rounded"
                      alt="Wordcloud from 1930, California"
                      src="{% static "img/wordclouds-1933.png" %}">
 
@@ -53,7 +53,12 @@ Caselaw Access Project gallery
                 <p>
                   Most used words for every year of California caselaw from 1852 to 2015.
                 </p>
-                <p>
+                <p class="social">
+                  <span class="github">
+                    <!-- TODO: link to project's github-->
+                    <a href="https://github.com" target="_blank"></a>
+                  </span>
+
                   <a href="/gallery/wordclouds"
                     class="btn btn-default">See more</a>
                 </p>
@@ -64,17 +69,23 @@ Caselaw Access Project gallery
             <a name="limericks"></a>
             <div class="row">
               <div class="project-image">
+                <img class="main-img"
+                     alt="Wordcloud from 1930, California"
+                     src="{% static "img/limerick-btn.png" %}">
+
               </div>
               <div class="project-description">
                 <h6 class="subtitle">Limericks</h6>
                 <p>
                   Generate rhymes using caselaw!
                 </p>
-                <p>
-                  <a href="/gallery/limericks"
-                    class="btn btn-default">See more</a>
+                <p class="social">
+{#                  <span><a href="/gallery/limericks"#}
+{#                    class="">See more</a>#}
+{#                  </span>#}
                   <span class="github">
-                    <a href="github.com" target="_blank"></a>
+                    <!-- TODO: link to project's github-->
+                    <a href="https://github.com" target="_blank"></a>
                   </span>
                 </p>
               </div>

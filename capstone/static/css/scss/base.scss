@@ -376,17 +376,34 @@ li.item-set {
     border-bottom: 1px solid $color-yellow;
   }
 }
+
 .github {
   display: inline;
-
 }
-.github > a {
-  background: url('../../img/github-sprite.svg') no-repeat;
-  background-size: contain;
-  background-position-x: 0;
-  border-bottom: none;
-  display: block;
-  height: 40px;
+
+.social {
+  a {
+    background-position-x: 0;
+    border-bottom: none;
+    display: block;
+    height: 40px;
+    width: 40px;
+    &:hover, &:active, &:focus {
+      background-position-x: -40px !important;
+    }
+  }
+  .github > a {
+    background: url('../../img/github-sprite.svg') no-repeat;
+    background-size: auto 40px;
+  }
+}
+
+.inverse {
+  .social {
+    .github > a {
+      background-position-x: -80px;
+    }
+  }
 }
 
 
