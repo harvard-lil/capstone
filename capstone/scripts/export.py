@@ -4,7 +4,6 @@ import tempfile
 import zipfile
 from collections import namedtuple
 from pathlib import Path
-from tempfile import SpooledTemporaryFile
 
 from celery import shared_task
 from django.core.files import File

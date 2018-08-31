@@ -5,7 +5,6 @@ import re
 from django.db.models import Q
 from lxml import etree
 from pyquery import PyQuery
-from django.core.paginator import Paginator
 
 
 nsmap = {
