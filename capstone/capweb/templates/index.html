@@ -4,6 +4,7 @@
 
 {% block extra_head %}
   {% javascript 'base' %}
+  {% javascript 'map_mouseovers' %}
 {% endblock %}
 
 {% block content %}
@@ -31,7 +32,6 @@
               </div>
               <div class="small-screen-number-col">
                 <h4>
-                  Million
                   <br/>
                   Unique cases
                 </h4>
@@ -55,15 +55,15 @@
             <div class="numbers numbers-vertical">
               <ul>
                 <li class="item-set">
-                  <h1>{{ numbers.cases }}M</h1>
+                  <h1 class="num_cases">{{ numbers.cases }}M</h1>
                   <p>Unique cases</p>
                 </li>
                 <li class="item-set">
-                  <h1>{{ numbers.reporters }}</h1>
+                  <h1 class="num_reporters">{{ numbers.reporters }}</h1>
                   <p>Reporters</p>
                 </li>
                 <li class="item-set">
-                  <h1>{{ numbers.pages_scanned }}M</h1>
+                  <h1 class="num_pages">{{ numbers.pages_scanned }}M</h1>
                   <p>Pages scanned</p>
                 </li>
               </ul>
@@ -81,15 +81,15 @@
             <div class="numbers numbers-horizontal">
               <div class="row">
                 <div class="col-4">
-                  <h1>{{ numbers.cases }}M</h1>
+                  <h1 class="num_cases">{{ numbers.cases }}M</h1>
                   <p>Unique cases</p>
                 </div>
                 <div class="col-4">
-                  <h1>{{ numbers.reporters }}</h1>
+                  <h1 class="num_reporters">{{ numbers.reporters }}</h1>
                   <p>Reporters</p>
                 </div>
                 <div class="col-4">
-                  <h1>{{ numbers.pages_scanned }}M</h1>
+                  <h1 class="num_pages">{{ numbers.pages_scanned }}M</h1>
                   <p>Pages scanned</p>
                 </div>
               </div>
