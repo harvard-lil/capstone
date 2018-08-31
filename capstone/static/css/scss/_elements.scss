@@ -2,7 +2,8 @@
 
 // buttons
 .btn {
-  @extend .font-bold;
+  font-family: $font-sans-serif;
+  font-weight: $font-weight-normal;
   font-size: 14px;
   border-radius: 5px;
   margin-bottom: 10px;
@@ -13,13 +14,17 @@
 
 .btn-default {
   @extend .btn;
-  background: $color-violet;
-  color: $color-white !important;
+  background-color: $color-violet;
+  color: $color-white;
 
-  &:hover, &:focus, &:active {
-    background: $color-red;
+  &:hover, &:active {
+    background-color: $color-blue;
+    color: $color-white;
   }
-
+  &:focus {
+    background-color: $color-yellow;
+    color: $color-black;
+  }
 }
 
 .btn-inverse {
@@ -34,17 +39,10 @@
   }
 }
 
-#triple-arrows {
-  left: -25px;
-  position: absolute;
-  top: 17px;
-  width: 25px;
-}
 
-.pullquote {
-  text-indent: -0.4em;
-  font-size: 1.5em;
-  color: $color-violet-light;
+.highlighted {
+  color: $color-black;
+  background-color: $color-yellow-bright;
 }
 
 .decorative-arrow {

@@ -35,14 +35,20 @@ Sign in to the Caselaw Access Project
       <br/>
       <button type="submit"
               class="btn btn-default">
-        Sign in
+        Log in
       </button>
       <input type="hidden" name="next" value="{{ next }}" />
     </form>
-
     <p>
-      <a href="{% url 'password_reset' %}">
-        Lost password?
+      Don't have an account?
+      <a href="{%  url 'register'  %}"
+         class="">Sign up</a>
+    </p>
+    <p>
+      Lost your password?
+      <a href="{% url 'password_reset' %}"
+        class="">
+        Reset password
       </a>
     </p>
   </div>

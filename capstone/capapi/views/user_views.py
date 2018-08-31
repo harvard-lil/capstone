@@ -24,10 +24,12 @@ def register_user(request):
         resources.send_new_signup_email(request, form.instance)
         return render(request, 'registration/sign-up-success.html', {
             'status': 'Success!',
-            'message': 'Thank you. Please check your email for a verification link.'
+            'message': 'Thank you. Please check your email for a verification link.',
+            'page_name': 'user-register-success'
         })
 
-    return render(request, 'registration/register.html', {'form': form})
+    return render(request, 'registration/register.html', {'form': form,
+                                                          'page_name': 'user-register'})
 
 
 def verify_user(request, user_id, activation_nonce):
@@ -49,6 +51,7 @@ def verify_user(request, user_id, activation_nonce):
     return render(request, 'registration/verified.html', {
         'contact_email': settings.API_EMAIL_ADDRESS,
         'error': error,
+        'page_name': 'user-verify'
     })
 
 
@@ -73,6 +76,7 @@ def resend_verification(request):
     return render(request, 'registration/resend-nonce.html', {
         'info_email': settings.API_EMAIL_ADDRESS,
         'form': form,
+        'page_name': 'user-resend-verification'
     })
 
 
@@ -80,8 +84,11 @@ def resend_verification(request):
 def user_details(request):
     """ Show user details """
     request.user.update_case_allowance()
-    context = {'unlimited': request.user.unlimited_access_in_effect()}
-    return render(request, 'registration/account.html', context)
+    context = {
+        'unlimited': request.user.unlimited_access_in_effect(),
+        'page_name': 'user-details'
+    }
+    return render(request, 'registration/user-details.html', context)
 
 
 def bulk(request):

@@ -6,6 +6,13 @@
   {% javascript 'base' %}
 {% endblock %}
 
+{% block title %} — About{% endblock %}
+
+{% block meta_description %}
+About the Caselaw Access Project
+{% endblock %}
+
+
 {% block content %}
   <div class="basic-page">
     <div class="full-content">
@@ -40,7 +47,10 @@
               </p>
               <a name="overview"></a>
               <p>
-                The Caselaw Access Project (&#8220;CAP&#8221;) is an effort to expand public access to U.S. law.
+                <span class="highlighted">
+                  The Caselaw Access Project (&#8220;CAP&#8221;)
+                  is an effort to expand public access to U.S. law.
+                </span>
               </p>
               <p>
                 The written decisions of state and federal courts in the U.S.
@@ -72,7 +82,7 @@
                 Usage &amp; access
               </h4>
               <p>
-                The CAP data is free for the public to use and access.
+                <span class="highlighted">The CAP data is free for the public to use and access.</span>
               </p>
               <p>
                 Case metadata, such as the case name, citation, court, date, etc.,
@@ -104,7 +114,7 @@
               <ul>
                 {% for news_item in news %}
                   <li class="item-set">
-                    <p class="item-title darker">
+                    <p class="item-title">
                       <a href="{{ news_item.url }}" target="_blank">{{ news_item.title }}</a>
                     </p>
                     <span class="color-red">

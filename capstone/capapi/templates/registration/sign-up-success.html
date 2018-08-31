@@ -1,19 +1,27 @@
-{% extends "base.html" %}
-
-{% block title %} | Success{% endblock %}
+{% extends "registration/base.html" %}
+{% load static %}
+{% block title %} — Registration success{% endblock %}
 
 {% block meta_description %}
 You have successfully registered to use the Caselaw Access Project API
 {% endblock %}
 
 {% block content %}
-<div class="login-form container-full inverse header-margin">
-  <div class="row row-centered">
-    <div class="col-sm-4 col-centered">
-
-      <h3>{% if status %}{{status}}{% endif %}</h3>
-      {% if message %}{{ message }}{% endif %}
-    </div>
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <div class="page-title">
+          <h1>
+            <img alt="›"
+                 src='{% static "img/red-arrow-right.svg" %}'
+                 class="decorative-arrow"/>
+            Registration {% if status %}{{status}}{% endif %}
+          </h1>
+        </div>
+        <div class="content">
+          {% if message %}{{ message }}{% endif %}
+        </div>
+      </div>
   </div>
 </div>
 {% endblock content %}

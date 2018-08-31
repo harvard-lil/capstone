@@ -18,14 +18,15 @@
 @import 'nav';
 
 ::selection {
-  background: $color-yellow; /* WebKit/Blink Browsers */
+  background: $color-yellow-bright; /* WebKit/Blink Browsers */
   color: $color-black;
 }
 
 ::-moz-selection {
-  background: $color-yellow; /* Gecko Browsers */
+  background: $color-yellow-bright; /* Gecko Browsers */
   color: $color-black;
 }
+
 
 body {
   @extend .font-body;
@@ -37,9 +38,9 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 { font-family: $font-serif; }
-
-
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-serif;
+}
 
 ul {
   padding-left: 0;
@@ -51,6 +52,20 @@ li {
 
 section {
   width: 100%;
+}
+
+table {
+  margin-bottom: 4rem;
+}
+
+table > tbody > tr {
+  line-height: 2.5rem;
+}
+
+table > tbody > tr > th {
+  font-family: $font-serif;
+  font-weight: $font-weight-normal;
+  min-width: 400px;
 }
 
 code {
@@ -71,12 +86,11 @@ pre {
 a {
   text-decoration: none;
   color: $color-violet;
-  border-bottom: 1px solid $color-violet;
+  border-bottom: 4px solid $color-yellow-bright;
 
   &:hover, &:focus, &:active {
     text-decoration: none;
     color: $color-blue;
-    border-bottom: 1px solid $color-blue;
   }
 }
 
@@ -88,13 +102,15 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
   border: 0;
 }
 
-nav {
-  a {
-    border-bottom: 0;
-  }
+.list-group-item {
+  border-radius: 0 !important;
 }
 
 .main-content {
+  //padding: $header-margin-size 0;
+}
+
+.basic-page {
   padding: $header-margin-size 0;
 }
 
@@ -102,7 +118,11 @@ nav {
   margin-left: -2rem;
   color: $color-red;
   &.left { margin-left: 0.4rem; }
+  @include media-breakpoint-down(sm) {
+     display: none;
+  }
 }
+
 .row {
   @extend .no-gutters;
 }
@@ -166,7 +186,6 @@ section > .content > .row > .content-left {
     @include make-col(4);
   }
   @include media-breakpoint-down(sm) {
-    .decorative-arrow { display: none; }
     @include make-col(10);
   }
 }
@@ -265,12 +284,6 @@ li.item-set {
   > .item-title {
     margin-bottom: 0.5em;
   }
-  > .item-title.darker {
-    a {
-      color: $color-violet-light;
-      border-bottom: 1px solid $color-violet-light;
-    }
-  }
   > .item-origin {
     color: $color-red;
     font-weight: $font-weight-bold;
@@ -301,19 +314,21 @@ li.item-set {
     max-width: 100%;
   }
   .page-title {
-    .decorative-arrow { display: none; }
     @include media-breakpoint-up(md) {
       @include make-col(6);
-      .decorative-arrow {
-        display: inline-block;
-      }
     }
   }
   .subtitle {
-    border-bottom: 1px solid $color-violet-gray-dark;
     color: $color-violet;
-    padding-bottom: 0.4em;
   }
+  @include media-breakpoint-up(md) {
+    .subtitle:before {
+      content: "\00A7";
+      color: $color-yellow;
+      margin-left: -2.5rem;
+    }
+  }
+
   .page-section {
     margin-bottom: 30px;
     margin-top: 1rem;
@@ -337,6 +352,41 @@ li.item-set {
       @include make-col(8);
     }
   }
+  p {
+    margin-bottom: 2rem;
+  }
+}
+
+.basic-page.inverse {
+  background-color: $color-black;
+  color: $color-white;
+  .page-title > h1 {
+    color: $color-white;
+  }
+  .list-group-item {
+    background-color: transparent;
+    color: $color-white;
+    &:focus, &:hover, &:active {
+      color: $color-black;
+      background-color: $color-yellow;
+    }
+  }
+  .subtitle {
+    color: $color-yellow;
+    border-bottom: 1px solid $color-yellow;
+  }
+}
+.github {
+  display: inline;
+
+}
+.github > a {
+  background: url('../../img/github-sprite.svg') no-repeat;
+  background-size: contain;
+  background-position-x: 0;
+  border-bottom: none;
+  display: block;
+  height: 40px;
 }
 
 
@@ -411,8 +461,8 @@ footer {
 .page-index {
   footer {
     background-color: $color-violet;
-    color: white;
-    a { color: white; }
+    color: $color-white;
+    a { color: $color-white; }
   }
 }
 
@@ -426,6 +476,8 @@ footer {
     }
   }
 }
+
+
 
 #usa-territories-white {
   .state:hover {

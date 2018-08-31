@@ -12,20 +12,20 @@ urlpatterns = [
     path('', views.index, name='home'),
     path('about/', views.about, name='about'),
     path('tools/', views.tools, name='tools'),
-    # path('showcase/', views.showcase, name='showcase'),
+    path('gallery/', views.gallery, name='gallery'),
 
+    path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
+    path('gallery/limericks', views.limericks, name='limericks'),
 
     ### user account pages ###
 
     # All templates live in capapi/registration for now
-    path('login/', auth_views.LoginView.as_view(form_class=LoginForm), name='login'),
-
-
-    path('register/', user_views.register_user, name='register'),
-    path('verify-user/<int:user_id>/<activation_nonce>/', user_views.verify_user, name='verify-user'),
+    path('user/login/', auth_views.LoginView.as_view(form_class=LoginForm), name='login'),
+    path('user/register/', user_views.register_user, name='register'),
+    path('user/verify-user/<int:user_id>/<activation_nonce>/', user_views.verify_user, name='verify-user'),
     # override default Django login view to use custom LoginForm
-    path('accounts/', include('django.contrib.auth.urls')),  # logout, password change, password reset
-    path('account/', user_views.user_details, name='user-details'),
-    path('accounts/resend-verification/', user_views.resend_verification, name='resend-verification'),
+    path('user/', include('django.contrib.auth.urls')),  # logout, password change, password reset
+    path('user/details', user_views.user_details, name='user-details'),
+    path('user/resend-verification/', user_views.resend_verification, name='resend-verification'),
 
 ]
