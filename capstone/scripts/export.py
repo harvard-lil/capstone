@@ -13,7 +13,7 @@ from django.utils import timezone
 from capapi.serializers import BulkCaseSerializer
 from capapi.views.api_views import CaseViewSet
 from capdb.models import Jurisdiction, Reporter, CaseExport
-from scripts.helpers import HashingFile
+from scripts.helpers import HashingFile, ordered_query_iterator
 
 
 def export_all(before_date=None):
@@ -68,6 +68,7 @@ def export_queryset(queryset, dir_name, filter_item, public=False):
         public controls whether export is downloadable by non-researchers.
     """
     formats = {'xml': {}, 'text': {}}
+    queryset = queryset.order_by('id')
 
     try:
         # set up vars for each format
@@ -96,14 +97,14 @@ def export_queryset(queryset, dir_name, filter_item, public=False):
             vars['data_file_path'] = Path('data', 'data.jsonl.xz')
 
             # create new zip file in memory
-            vars['out_spool'] = SpooledTemporaryFile(max_size=2**30)
+            vars['out_spool'] = tempfile.TemporaryFile()
             vars['archive'] = zipfile.ZipFile(vars['out_spool'], 'w', zipfile.ZIP_STORED)
             vars['data_file'] = tempfile.NamedTemporaryFile()
             vars['hashing_data_file'] = HashingFile(vars['data_file'], 'sha512')
             vars['compressed_data_file'] = lzma.open(vars['hashing_data_file'], "w")
 
         # write each case
-        for item in queryset:
+        for item in ordered_query_iterator(queryset):
             for format_name, vars in formats.items():
                 serializer = BulkCaseSerializer(item, context={'request': vars['fake_request']})
                 vars['compressed_data_file'].write(bytes(json.dumps(serializer.data), 'utf8'))
@@ -129,6 +130,7 @@ def export_queryset(queryset, dir_name, filter_item, public=False):
             zip_name = str(vars['internal_path']) + '.zip'
             case_export = CaseExport(public=public, filter_id=filter_item.pk, filter_type=filter_item.__class__.__name__.lower(), body_format=format_name, file_name=zip_name)
             case_export.file.save(zip_name, File(vars['out_spool']))
+            vars['out_spool'].close()
 
     finally:
         # in case of error, make sure anything opened was closed
