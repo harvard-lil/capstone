@@ -68,7 +68,7 @@ def check_exports(case, filter_item, tmpdir):
 
 
 @pytest.mark.django_db
-def test_bag_jurisdiction(case_xml, tmpdir):
+def test_bag_jurisdiction(case_xml, tmpdir, django_assert_num_queries):
     # setup
     case = case_xml.metadata
     jurisdiction = case.jurisdiction
@@ -76,7 +76,8 @@ def test_bag_jurisdiction(case_xml, tmpdir):
     jurisdiction.save()
 
     # bag the jurisdiction
-    fabfile.bag_jurisdiction(jurisdiction.name)
+    with django_assert_num_queries(select=4, insert=2):
+        fabfile.bag_jurisdiction(jurisdiction.name)
     check_exports(case, jurisdiction, tmpdir)
 
 
