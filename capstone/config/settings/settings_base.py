@@ -268,6 +268,12 @@ PIPELINE = {
             ),
             'output_filename': 'viz_details.js'
         },
+        'map_mouseovers': {
+            'source_filenames': (
+                'js/map-mouseovers.js',
+            ),
+            'output_filename': 'map_mouseovers.js'
+        },
     },
 
     # avoid compressing assets for now
