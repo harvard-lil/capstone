@@ -631,7 +631,7 @@ def fix_court_names(dry_run=False):
 
             # If there are no other similar courts, let's correct this name and cases
             else:
-                print("- Changing %s to %s" % (court.name, similar_court.name))
+                print("- Changing %s to %s" % (court.name, stripped_name))
                 if dry_run:
                     continue
 
