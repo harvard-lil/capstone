@@ -19,7 +19,7 @@
 
   &:hover, &:active {
     background-color: $color-blue;
-    color: $color-white;
+    color: $color-white !important;
   }
   &:focus {
     background-color: $color-yellow;

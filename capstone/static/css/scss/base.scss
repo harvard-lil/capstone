@@ -382,26 +382,32 @@ li.item-set {
 }
 
 .social {
+  span { float: left; }
   a {
     background-position-x: 0;
     border-bottom: none;
     display: block;
-    height: 40px;
-    width: 40px;
+    height: 30px;
+    width: 30px;
+    margin-right: 10px;
     &:hover, &:active, &:focus {
-      background-position-x: -40px !important;
+      background-position-x: -30px !important;
     }
   }
   .github > a {
     background: url('../../img/github-sprite.svg') no-repeat;
-    background-size: auto 40px;
+    background-size: auto 30px;
+  }
+  .website > a {
+    background: url('../../img/arrow-sprite.svg') no-repeat;
+    background-size: auto 30px;
   }
 }
 
 .inverse {
   .social {
-    .github > a {
-      background-position-x: -80px;
+    .github > a, .website > a {
+      background-position-x: -60px;
     }
   }
 }

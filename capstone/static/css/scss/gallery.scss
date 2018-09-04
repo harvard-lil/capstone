@@ -20,11 +20,18 @@
 
 .project-image {
   @include media-breakpoint-up(lg) {
-    > .img-fluid {
+    > .main-img {
       max-width: 80%;
     }
   }
-  > .img-fluid {
+   @include media-breakpoint-down(md) {
+     > .main-img {
+       @include make-col(12);
+       max-width: 200px;
+       margin: 0 auto;
+     }
+   }
+  > .main-img.rounded {
     border-radius: 50%;
   }
 }
@@ -35,6 +42,9 @@ footer {
     .lil-logo-item {
       fill: $color-black;
     }
+  }
+  @include media-breakpoint-down(md) {
+    .credits { color: $color-white; }
   }
 }
 
