@@ -50,7 +50,7 @@
 
 /* rest of nav */
 nav {
-  display: flex;
+  display: inline-block;
   flex-wrap: wrap;
   padding: 0;
   margin: 0;
@@ -84,12 +84,11 @@ nav {
 
 .nav-content {
   position: relative;
-  min-height: 100%;
-  display: block;
+  float: right;
+  display: inline-table;
   z-index: 1;
   > .nav {
     width: 100%;
-    height: 100%;
   }
 
   @include media-breakpoint-up(lg) {
