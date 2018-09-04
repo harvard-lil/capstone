@@ -24,7 +24,7 @@
     {% stylesheet "base" %}
     {% block extra_head %}{% endblock %}
   </head>
-  <body class="page-{{ page_name }}">
+  <body class="page-{{ page_name }} hamburger-menu-closed">
     {% include "includes/nav.html" %}
     <div class="main-content flex-xl-nowrap" id="main" role="main">
         {% block content %}{% endblock content %}

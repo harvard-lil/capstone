@@ -14,8 +14,11 @@ let setupDropdown = function () {
 };
 
 let setupBurgerAction = function() {
-  $("#burger-icon").click(function() {
-    this.classList.toggle("transform");
+  let body = 'body';
+  let burgericon = '#burger-icon';
+  $(burgericon).click(function() {
+    $(body).toggleClass("hamburger-menu-open")
+           .toggleClass("hamburger-menu-closed");
   });
 };
 

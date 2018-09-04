@@ -83,7 +83,6 @@ nav {
 }
 
 .nav-content {
-  position: relative;
   float: right;
   display: inline-table;
   z-index: 1;
@@ -97,13 +96,13 @@ nav {
   }
 
   @include media-breakpoint-down(md) {
+    position: absolute;
+    height: 100%;
+    width: 50%;
     //-webkit-box-shadow: 0px 0 5px $color-yellow;
     //-moz-box-shadow: 0px 0 5px $color-yellow;
     //box-shadow: 0px 0 5px $color-yellow;
     background-color: $color-black;
-    border-left: 0.5px solid $color-yellow;
-    width: 50%;
-    float: left;
   }
 
   .dropdown-menu {
@@ -120,12 +119,12 @@ nav {
     > a:last-child { border-bottom: 0 }
     background-color: $color-black;
     @include media-breakpoint-up(lg) {
-      border: 0.5px solid $color-yellow;
+      margin-top: 26px;
     }
     @include media-breakpoint-down(md) {
       > a:before {
         color: $color-violet;
-        content: "\0226B ";
+        content: "\0226B  ";
       }
     }
   }
@@ -162,9 +161,11 @@ li.nav-item.dropdown {
   display: block;
   color: $color-white;
   padding: 0.5rem;
-  &:hover, &:active, &:focus,   &.selected
- {
+  &:hover, &:active, &:focus {
     color: $color-yellow;
+  }
+  &.selected {
+    color: $color-blue;
   }
 }
 
@@ -174,14 +175,13 @@ li.nav-item.dropdown {
   z-index: 9999;
   display: inline-block;
   cursor: pointer;
-  position: fixed;
+  position: absolute;
   right: 10px;
   margin-top: 10px;
   background-color: $color-black;
   width: 34px;
   height: 30px;
   padding-left: 4px;
-  padding-top: 4px;
   &:focus, &:active {
     outline: 1px solid $color-yellow;
   }
@@ -199,44 +199,58 @@ li.nav-item.dropdown {
   border-radius: 3px;
 }
 
-#burger-icon.transform {
-  :nth-child(1) {
-    -webkit-transform: rotate(-45deg) translate(-3.5px, 3px);
-    transform: rotate(-45deg) translate(-3.5px, 3px);
+body.hamburger-menu-open {
+  #burger-icon {
+    :nth-child(1) {
+      -webkit-transform: rotate(-45deg) translate(-3.5px, 3px);
+      transform: rotate(-45deg) translate(-3.5px, 3px);
+    }
+    :nth-child(2) {
+      opacity: 0;
+    }
+    :nth-child(3) {
+      -webkit-transform: rotate(45deg) translate(-8px, -8px);
+      transform: rotate(45deg) translate(-8px, -8px);
+    }
+    > .burger-item {
+      background-color: $color-yellow;
+    }
   }
-  :nth-child(2) {
-    opacity: 0;
-  }
-  :nth-child(3) {
-    -webkit-transform: rotate(45deg) translate(-8px, -8px);
-    transform: rotate(45deg) translate(-8px, -8px);
-  }
-  > .burger-item { background-color: $color-yellow; }
 }
-
 
 /* sliding menu on small screen */
 
-#burger-icon ~ .nav-content {
-  @include media-breakpoint-down(md) {
-    height: 100%;
-    position: fixed;
+body.hamburger-menu-closed {
+  overflow-y: scroll;
+  .nav-content {
     right: -800px;
-    //background-color: $color-black;
-    //min-height: 100%;
-    padding: 20px;
-    transform: translateX(-200);
+    padding: 10px 20px;
+    transition: 0.3s;
+  }
+  .main-content {
+    position: relative;
+    left: 0;
+    transition: 0.5s;
+  }
+
+}
+
+body.hamburger-menu-open {
+  overflow-y: hidden;
+  .nav-link {
+    margin-left: 2rem;
+  }
+  .dropdown-item {
+    padding-left: 2rem;
+  }
+  .nav-content {
+      //margin-left: 0;
+      transition: 0.3s;
+      right: 0;
+  }
+  .main-content {
+    position: relative;
+    left: -200px;
     transition: 0.5s;
   }
 }
-
-#burger-icon.transform ~ .nav-content {
-  @include media-breakpoint-down(md) {
-    //margin-left: 0;
-    transition: 0.5s;
-    transform: translateX(200);
-    right: 0;
-  }
-}
-
-
