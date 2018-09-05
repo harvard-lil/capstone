@@ -21,11 +21,15 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='casemetadata',
             name='tsvector',
-            field=models.TextField(blank=True, null=True),
+            field=django.contrib.postgres.search.SearchVectorField(blank=True, null=True),
         ),
         migrations.AddField(
             model_name='casetext',
             name='metadata',
             field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='case_text', to='capdb.CaseMetadata'),
+        ),
+        migrations.AddIndex(
+            model_name='casemetadata',
+            index=django.contrib.postgres.indexes.GinIndex(fields=['tsvector'], name='capdb_casem_tsvecto_a0d06d_gin'),
         ),
     ]
