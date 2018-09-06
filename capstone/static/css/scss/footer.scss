@@ -1,0 +1,119 @@
+@import "variables";
+
+footer {
+  .footer-content {
+    margin: 0 auto;
+    @include media-breakpoint-up(md) {
+      @include make-col(11);
+    }
+    padding: 3rem 0;
+  }
+  a {
+    color: $color-black;
+    font-weight: 700;
+    border-bottom: 0;
+    &:hover, &:focus, &:active {
+      color: $color-blue;
+      border-bottom: 0;
+    }
+  }
+  a.lil-logo {
+    border-bottom: 0;
+  }
+  #lil-logo {
+    height: 100px;
+    @include media-breakpoint-down(sm) {
+      display: block;
+      margin: auto;
+    }
+  }
+  @include media-breakpoint-up(md) {
+    .credits {
+      text-align: right;
+    }
+  }
+  @include media-breakpoint-down(sm) {
+    .lil-logo-item {
+      fill: $color-yellow;
+    }
+    .links {
+      display: none;
+    }
+    .credits {
+      text-align: center;
+      color: $color-white;
+      &.copyright {
+        color: $color-white;
+        font-weight: $font-weight-semibold;
+      }
+    }
+  }
+
+  .return-to-top {
+    @include make-col(12);
+    font-weight: $font-weight-normal;
+    text-align: center;
+    a {
+      font-weight: $font-weight-normal;
+      border-bottom: 0;
+      &:hover, &:active, &:focus {
+        color: $color-yellow !important;
+        text-decoration: none;
+      }
+    }
+    .arrow {
+      font-size: 2rem;
+    }
+  }
+}
+
+.content-left, .content-right {
+  @include media-breakpoint-up(lg) {
+    @include make-col(6);
+  }
+  .content-right {
+    float: right;
+  }
+
+  @include media-breakpoint-down(md) {
+    width: 100%;
+    padding: 15px;
+  }
+}
+
+
+/* footer colors for different pages */
+
+.page-index {
+  footer {
+    background-color: $color-violet;
+    color: $color-white;
+    a { color: $color-white; }
+  }
+}
+
+.page-about {
+  footer {
+    background-color: $color-yellow;
+    #lil-logo {
+      .lil-logo-item {
+        fill: $color-black;
+      }
+    }
+  }
+}
+
+.page-tools {
+  footer {
+    background-color: $color-black;
+    color: $color-white;
+    a {
+      color: $color-blue;
+      &:hover, &:active, &:focus {
+        color: $color-yellow;
+      }
+    }
+  }
+}
+
+
