@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load pipeline %}
+{% load static %}
 {% block extra_head %}
   {% stylesheet 'case' %}
 {% endblock %}
@@ -8,7 +9,26 @@
 
 {% block content %}
   <div class="container header-margin">
+    <div id="citation_container" class="text-center">
+      <input title="official citation" readonly="readonly" class="center" type="input" id="citation_for_copy" name="citation" value="{{ citation }}">
+        <button data-toggle="tooltip" title="Copy Citation to Clipboard" id="citation_copy" onclick="copyCitation()">
+        <img src="{% static "img/copy_icon.png" %}" alt="clipboard icon to copy citation">
+        </button>
+    </div>
     <h1 class="text-center">{{ title }}</h1>
     {{ case_html|safe }}
   </div>
+  <script>
+    /*
+    This bit of script selects the citation input and copies it. It then informs the users that the citation was copied
+    by applying the citation_copied class.
+     */
+    function copyCitation() {
+      var citation_container = document.getElementById("citation_container");
+      var cite = document.getElementById("citation_for_copy");
+      cite.select();
+      document.execCommand("copy");
+      citation_container.classList.add("citation_copied");
+    }
+  </script>
 {% endblock %}

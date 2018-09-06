@@ -1,8 +1,10 @@
+import hashlib
 import shutil
 import re
+
+from django.db.models import Q
 from lxml import etree
 from pyquery import PyQuery
-from django.core.paginator import Paginator
 
 nsmap = {
     'duplicative': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body_Duplicative:v1',
@@ -210,18 +212,54 @@ def copy_file(from_path, to_path, from_storage=None, to_storage=None):
         with to_open(str(to_path), "wb") as out_file:
             shutil.copyfileobj(in_file, out_file)
 
+def ordered_query_iterator(queryset, chunk_size=1000):
+    """
+        Run query in chunks of chunk_size.
 
-def chunked_iterator(queryset, chunk_size=1000):
+        This requires that:
+            - the query have an order_by
+            - all ordering fields be null=False
+            - the final ordering field be unique=True
+
+        The benefit of this method is that it handles prefetch_related. If you're not using prefetch_related,
+        queryset.iterator(chunk_size) is probably preferable.
     """
-    Avoiding holding a ton of objects in memory by paginating, yielding smaller amount of objects instead
-    From https://stackoverflow.com/questions/4222176/why-is-iterating-through-a-large-django-queryset-consuming-massive-amounts-of-me/31525594#31525594
-    """
-    paginator = Paginator(queryset, chunk_size)
-    for page in range(1, paginator.num_pages + 1):
-        for obj in paginator.page(page).object_list:
+
+    def get_filter(order_by, obj):
+        """
+            Get filter to return all objects coming after obj in queryset. For example,
+            Given:   (('foo', 'gt'), ('bar', 'lt')), obj
+            Return:  Q(foo__gt=obj.foo) | (Q(foo=obj.foo) & Q(bar__gt=obj.bar))
+        """
+        key_pair, *rest = order_by
+        key, comparator = key_pair
+        value = getattr(obj, key)
+        filter = Q(**{'%s__%s' % (key, comparator): value})
+        if rest:
+            filter = filter | (Q(**{key: value}) & get_filter(rest, obj))
+        return filter
+
+    # get order_by fields from queryset and make sure they are valid
+    order_by = queryset.query.order_by
+    assert order_by, "Queryset must have a unique ordering"
+    meta = queryset.model._meta
+    for key in order_by:
+        assert not meta.get_field(key).null, "order_by field %s must be null=False" % key
+    assert meta.get_field(order_by[-1]).unique, "order_by field %s must be unique=True" % order_by[-1]
+    order_by = [(key[1:], 'lt') if key.startswith('-') else (key, 'gt') for key in order_by]
+
+    # yield each object in chunks, getting filter from final object of previous chunk
+    filter = Q()
+    while True:
+        obj = None
+        i = 0
+        for obj in queryset.filter(filter)[:chunk_size]:
             yield obj
-
-
+            i += 1
+        if i < chunk_size:
+            break
+        filter = get_filter(order_by, obj)
+            
 def extract_casebody(case_xml):
     # strip soft hyphens from line endings
     text = case_xml.replace(u'\xad', '')
@@ -293,3 +331,30 @@ def left_strip_text(el, text):
         # If new_val still has text, our string has stopped matching and we can stop.
         if new_val or not text:
             break
+
+
+class HashingFile:
+    """ File wrapper that stores a hash of the read or written data. """
+    def __init__(self, source, hash_name='md5'):
+        self._sig = hashlib.new(hash_name)
+        self._source = source
+        self.length = 0
+
+    def read(self, *args, **kwargs):
+        result = self._source.read(*args, **kwargs)
+        self.update_hash(result)
+        return result
+
+    def write(self, value, *args, **kwargs):
+        self.update_hash(value)
+        return self._source.write(value, *args, **kwargs)
+
+    def update_hash(self, value):
+        self._sig.update(value)
+        self.length += len(value)
+
+    def hexdigest(self):
+        return self._sig.hexdigest()
+
+    def __getattr__(self, attr):
+        return getattr(self._source, attr)

@@ -192,7 +192,7 @@
           contain both the word "insurance" and the word "Peoria":
           <ul>
               <li>
-                  <a href="/api/v1/cases/?search=insurance">
+                  <a href="/api/v1/cases/?search=insurance Peoria">
                       {{ request.build_absolute_uri }}api/v1/cases/?search=insurance Peoria</a>
               </li>
           </ul>
@@ -201,7 +201,7 @@
           prior search while limiting the query to the Illinois jurisdiction:
           <ul>
               <li>
-                  <a href="/api/v1/cases/?search=insurance">
+                  <a href="/api/v1/cases/?search=insurance Peoria&jurisdiction=ill">
                       {{ request.build_absolute_uri }}api/v1/cases/?search=insurance Peoria&jurisdiction=ill</a>
               </li>
           </ul>

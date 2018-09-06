@@ -25,12 +25,12 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Court, Jurisdiction
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Court, Jurisdiction, Reporter
 
 import capdb.tasks as tasks
 # from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
-    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export
+    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars
 from scripts.helpers import parse_xml, serialize_xml, court_name_strip, court_abbreviation_strip, copy_file, resolve_namespace
 
 
@@ -318,24 +318,30 @@ def add_test_case(*barcodes):
     ## update inventory files
     write_inventory_files()
 
+@task
+def bag_jurisdiction(name):
+    """ Write a BagIt package of all cases in a given jurisdiction. E.g. fab bag_jurisdiction:Ill. """
+    jurisdiction = Jurisdiction.objects.get(name=name)
+    export.export_cases_by_jurisdiction.delay(jurisdiction.pk)
 
 @task
-def bag_jurisdiction(name, zip_directory=".", zip_filename=None):
-    """
-    Write a BagIt package of all case XML files in a given jurisdiction.
-    """
-    out_path = export.bag_jurisdiction(name, zip_directory, zip_filename)
-    print("Exported jurisdiction %s to %s" % (name, out_path))
-
+def bag_reporter(name):
+    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
+    reporter = Reporter.objects.get(full_name=name)
+    export.export_cases_by_reporter.delay(reporter.pk)
 
 @task
-def bag_reporter(name, zip_directory=".", zip_filename=None):
+def bag_all_cases(before_date=None):
     """
-    Write a BagIt package of all case XML files in a given reporter.
+        Export cases for all jurisdictions and reporters.
+        If before_date is provided, only export targets where the export_date for the last export is less than before_date.
     """
-    out_path = export.bag_reporter(name, zip_directory, zip_filename)
-    print("Exported reporter %s to %s" % (name, out_path))
+    export.export_all(before_date)
 
+@task
+def bag_all_reporters(name):
+    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
+    export.export_cases_by_reporter.delay(name)
 
 @task
 def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test_data/inventory/data')):
@@ -579,7 +585,7 @@ def count_case_totals(write_to_file=True, min_year=1640):
         return results
 
 @task
-def fix_court_names():
+def fix_court_names(dry_run=False):
 
     def update_cases(old_court_entry, stripped_name, stripped_abbrev, new_court_entry = None):
         for case_metadata in old_court_entry.case_metadatas.all():
@@ -593,22 +599,26 @@ def fix_court_names():
             case.orig_xml = serialize_xml(parsed)
             case.save(create_or_update_metadata=False)
 
-
     for court in Court.objects.all():
+        print("Checking court: %s" % court.name)
         stripped_name = court_name_strip(court.name)
         stripped_abbrev = court_abbreviation_strip(court.name_abbreviation)
 
         if court.name != stripped_name or court.name_abbreviation != stripped_abbrev:
 
             # see if there are any entries which already have the correct court name/abbr/jur
-            similar_courts = Court.objects.order_by('slug')\
-                .prefetch_related('case_metadatas__case_xml')\
-                .filter(name=stripped_name, name_abbreviation=stripped_abbrev, jurisdiction=court.jurisdiction)
+            similar_court = Court.objects.order_by('slug')\
+                .filter(name=stripped_name, name_abbreviation=stripped_abbrev, jurisdiction=court.jurisdiction)\
+                .first()
 
             # if so, set the court entry this court's cases to the correct court, and delete this court
             # We are assuming that the first entry, organized by slug, is the correct one.
-            if similar_courts.count() > 0:
-                update_cases(court, stripped_name, stripped_abbrev, similar_courts[0])
+            if similar_court:
+                print("- Replacing %s with %s" % (court.name, similar_court.name))
+                if dry_run:
+                    continue
+
+                update_cases(court, stripped_name, stripped_abbrev, similar_court)
 
                 # we delete the court once we confirm that there are no more cases associated with it
                 if len(court.case_metadatas.all()) == 0:
@@ -616,14 +626,20 @@ def fix_court_names():
                 else:
                     raise Exception('{} case(s) not moved from court "{}" ("{}") to "{}" ("{}").'
                                     .format(court.case_metadatas.count(), court.name, court.name_abbreviation,
-                                            similar_courts[0].name, similar_courts[0].name_abbreviation))
+                                            similar_court.name, similar_court.name_abbreviation))
 
             # If there are no other similar courts, let's correct this name and cases
             else:
+                print("- Changing %s to %s" % (court.name, stripped_name))
+                if dry_run:
+                    continue
+
+                update_cases(court, stripped_name, stripped_abbrev)
+
+                # update court to match new cases
                 court.name = stripped_name
                 court.name_abbreviation = stripped_abbrev
                 court.save()
-                update_cases(court, stripped_name, stripped_abbrev)
 
 
 @task
@@ -725,3 +741,8 @@ def validate_captar_volumes():
 def create_case_text_for_all_cases(update_existing=False):
     update_existing = True if update_existing else False
     tasks.create_case_text_for_all_cases(update_existing=update_existing)
+
+@task
+def count_chars_in_all_cases(path="/tmp/counts"):
+    count_chars.count_chars_in_all_cases(path)
+

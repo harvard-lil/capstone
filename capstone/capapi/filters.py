@@ -108,6 +108,23 @@ class CaseFilter(filters.FilterSet):
         method='full_text_search_simple')
 
 
+    # These aren't really filters, but are used elsewhere in preparing the response.
+    # Included here so they'll show up in the UI.
+    full_case = filters.ChoiceFilter(
+        method='noop',
+        label='Include full case text or just metadata?',
+        choices=(('', 'Just metadata (default)'), ('true', 'Full case text')),
+    )
+    body_format = filters.ChoiceFilter(
+        method='noop',
+        label='Format for case text (applies only if including case text)',
+        choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML')),
+    )
+
+    def noop(self, qs, name, value):
+        """ Not really a filter -- do nothing. """
+        return qs
+
     def find_by_citation(self, qs, name, value):
         return qs.filter(citations__normalized_cite__exact=models.Citation.normalize_cite(value))
 
@@ -133,3 +150,22 @@ class CaseFilter(filters.FilterSet):
                   ]
 
 
+class CaseExportFilter(filters.FilterSet):
+    with_old = filters.ChoiceFilter(
+        field_name='with_old',
+        label='Include previous versions of files?',
+        choices=(('true', 'Include previous versions of files'), ('false', 'Only include newest version of each file')),
+        method='noop',  # handled by CaseExportViewSet.filter_queryset()
+    )
+
+    class Meta:
+        model = models.CaseExport
+        fields = {
+            'body_format': ['exact'],
+            'filter_type': ['exact'],
+            'filter_id': ['exact'],
+        }
+
+    def noop(self, qs, name, value):
+        """ Not really a filter -- do nothing. """
+        return qs

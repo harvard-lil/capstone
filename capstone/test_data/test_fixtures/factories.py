@@ -176,3 +176,16 @@ class PageXMLFactory(factory.DjangoModelFactory):
     ).read_text()
     s3_key = factory.Sequence(lambda n: '%08d' % n)
     volume = factory.SubFactory(VolumeXMLFactory)
+
+
+@register
+class CaseExportFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = CaseExport
+
+    file_name = 'Illinois.zip'
+    file = factory.django.FileField(data='fake zip content', filename='Illinois.zip')
+    body_format = 'xml'
+    public = True
+    filter_type = 'jurisdiction'
+    filter_id = factory.LazyAttribute(lambda o: JurisdictionFactory.create().pk)

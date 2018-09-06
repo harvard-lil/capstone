@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('capdb', '0046_court_denormalization'),
+        ('capdb', '0049_auto_20180829_1830'),
     ]
 
     operations = [

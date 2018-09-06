@@ -3,6 +3,7 @@ import re
 
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from rest_framework.serializers import ListSerializer
 
 from capapi.models import SiteLimits
@@ -156,10 +157,13 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
         fields = CaseSerializer.Meta.fields + ('casebody',)
         list_serializer_class = ListSerializerWithCaseAllowance
 
-    def get_casebody(self, case):
+    def get_casebody(self, case, check_permissions=True):
         # check permissions for full-text access to this case
         request = self.context.get('request')
-        casebody = get_single_casebody_permissions(request, case)
+        if check_permissions:
+            casebody = get_single_casebody_permissions(request, case)
+        else:
+            casebody = {'status': 'ok', 'data': None}
 
         if casebody['status'] == 'ok':
             # if status is 'ok', we've passed the perms check and have to load orig_xml into casebody['data']
@@ -193,6 +197,7 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
                     c = helpers.serialize_xml(casebody_pq)
                     data = re.sub(r"\s{2,}", " ", c.decode())
                 else:
+                    # serialize to json
                     casebody_pq = helpers.extract_casebody(orig_xml)
 
                     # For the plain text output, footnotes should keep their labels in the text, but we want to make sure
@@ -207,12 +212,25 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
                             new_text = re.sub(r'^(%s)(\S)' % re.escape(label), r'\1 \2', new_text)
                             footnote_paragraph.text(new_text)
 
-                    data = casebody_pq.text()
+                    # extract each opinion into a dictionary
+                    opinions = []
+                    for opinion in casebody_pq.items('casebody|opinion'):
+                        opinions.append({
+                            'type': opinion.attr('type'),
+                            'author': opinion('casebody|author').text() or None,
+                            'text': opinion.text(),
+                        })
 
-                casebody['judges'] = case.judges
-                casebody['attorneys'] = case.attorneys
-                casebody['opinions'] = case.opinions
-                casebody['parties'] = case.parties
+                        # remove opinion so it doesn't get included in head_matter below
+                        opinion.remove()
+
+                    data = {
+                        'head_matter': casebody_pq.text(),
+                        'judges': case.judges,
+                        'attorneys': case.attorneys,
+                        'parties': case.parties,
+                        'opinions': opinions
+                    }
 
             casebody['data'] = data
 
@@ -285,3 +303,53 @@ class CourtSerializer(serializers.ModelSerializer):
             'slug',
         )
 
+
+### BULK SERIALIZERS ###
+
+class CaseExportSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.CaseExport
+        fields = ('id', 'download_url', 'file_name', 'export_date', 'public', 'filter_type', 'filter_id', 'body_format')
+
+    def get_download_url(self, obj):
+        return reverse('caseexport-download', kwargs={'pk': obj.pk}, request=self.context.get('request'))
+
+
+# modified serializers for use by scripts/export.py
+
+class BulkJurisdictionSerializer(JurisdictionSerializer):
+    class Meta(JurisdictionSerializer.Meta):
+        fields = [field for field in JurisdictionSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCourtSerializer(CourtSerializer):
+    class Meta(CourtSerializer.Meta):
+        fields = [field for field in CourtSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCaseVolumeSerializer(CaseVolumeSerializer):
+    class Meta(CaseVolumeSerializer.Meta):
+        fields = [field for field in CaseVolumeSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCaseReporterSerializer(CaseReporterSerializer):
+    class Meta(CaseReporterSerializer.Meta):
+        fields = [field for field in CaseReporterSerializer.Meta.fields if field not in ('url',)]
+
+class BulkCaseSerializer(CaseSerializerWithCasebody):
+    court = BulkCourtSerializer(source='denormalized_court')
+    jurisdiction = BulkJurisdictionSerializer(source='denormalized_jurisdiction')
+    volume = BulkCaseVolumeSerializer()
+    reporter = BulkCaseReporterSerializer()
+
+    class Meta(CaseSerializerWithCasebody.Meta):
+        model = models.CaseMetadata
+        fields = [field for field in CaseSerializerWithCasebody.Meta.fields if field not in ('url',)]
+
+    def get_casebody(self, case):
+        """ Tell get_casebody not to check for case download permissions. """
+        return super().get_casebody(case, check_permissions=False)
+
+    @property
+    def data(self):
+        """ Skip tracking of download counts. """
+        return super(serializers.HyperlinkedModelSerializer, self).data

@@ -167,15 +167,18 @@ def create_case_text_for_all_cases(update_existing=False):
     """
         iterate through all volumes, call celery task for each volume
     """
-    query = CaseMetadata.objects.all()
+    jurisdictions = Jurisdiction.objects.all()
 
-    # if not updating existing, then only launch jobs for volumes with unindexed cases:
-    if not update_existing:
-        query = query.filter(case_text=None).distinct()
+    for jurisdiction in jurisdictions:
+        query = CaseMetadata.objects.filter(duplicative=False, jurisdiction=jurisdiction)
 
-    # launch a job for each volume:
-    for cmd_id in query.values_list('pk', flat=True):
-        create_case_text.delay(cmd_id, update_existing=update_existing)
+        # if not updating existing, then only launch jobs for volumes with unindexed cases:
+        if not update_existing:
+            query = query.filter(case_text=None).distinct()
+
+        # launch a job for each volume:
+        for cmd_id in query.values_list('pk', flat=True):
+            create_case_text.delay(cmd_id, update_existing=update_existing)
 
 
 @shared_task

@@ -4,6 +4,21 @@ h1{
   font-size: 2rem;
 }
 
+#citation_copy {
+  border-radius: 5px;
+  padding: 5px 5px 5px 5px;
+}
+
+#citation_copy > img {
+  height: 12px;
+  width: 12px;
+}
+
+.citation_copied:after {
+  content: "Citation Copied!";
+  font-size: .75em;
+}
+
 section.head-matter{
   p, aside{
     // on large screens, head matter goes into a narrower column

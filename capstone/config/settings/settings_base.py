@@ -302,6 +302,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'test_data/pdfs'),
         },
     },
+    'bulk_export_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/bulk-data'),
+        },
+    },
 }
 
 INVENTORY = {
@@ -331,7 +337,7 @@ API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
 API_DOCS_CASE_ID = 2
-API_COUNT_CACHE_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 1 day
+CACHED_COUNT_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 1 day
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
 

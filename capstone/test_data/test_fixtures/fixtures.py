@@ -202,6 +202,9 @@ def admin_client(db, admin_user):
     client.login(email=admin_user.email, password='password')
     return client
 
+@pytest.fixture()
+def private_case_export():
+    return CaseExportFactory.create(public=False)
 
 ### REDIS ###
 
