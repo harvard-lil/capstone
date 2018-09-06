@@ -36,6 +36,11 @@
 /* on index, display white background logo on small screens
   display black background logo in all other instances */
 .page-index {
+  .branding-standalone {
+    @include media-breakpoint-down(md) {
+      min-height: 90px;
+    }
+  }
   .branding.small-screen {
     @include media-breakpoint-down(md) {
       display: block;
@@ -250,7 +255,7 @@ body.hamburger-menu-open {
   }
   .main-content {
     position: relative;
-    left: -200px;
+    left: -185px;
     transition: 0.5s;
   }
 }
