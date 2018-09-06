@@ -6,6 +6,89 @@
   {% javascript 'base' %}
 {% endblock %}
 
-{% block content %}
+{% block title %} — Tools{% endblock %}
 
+{% block meta_description %}
+Caselaw Access Project Tools
+{% endblock %}
+
+{% block content %}
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <div class="page-title">
+          <h1>
+            <img alt="›" src='{% static "img/red-arrow-right.svg" %}'
+                 class="decorative-arrow"/>
+            Tools
+          </h1>
+        </div>
+
+      </div>
+      <div class="row">
+        {# ==============> MENU <============== #}
+        <div class="list-group sidebar-menu">
+          <a class="list-group-item" href="#overview">Overview</a>
+          <a class="list-group-item" href="#api">API</a>
+          <a class="list-group-item" href="#bulk">Bulk Data</a>
+        </div>
+        {# ==============> CONTENT <============== #}
+          <div class="content">
+
+            {# ==============> OVERVIEW <============== #}
+            <div class="page-section">
+              <p>
+               <img class="img-fluid"
+                 alt="Scanning reporters"
+                 src="{% static "img/vacuum-seal.jpg" %}">
+              </p>
+              <a name="overview"></a>
+              <p>
+                <span class="highlighted">
+                    Information is only useful if it's accessible.
+                </span>
+              </p>
+              <p>
+                The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
+                  and their associated metadata. We currently offer two ways to access the data: our
+                  <a href="#api">API</a>, and <a href="#bulk">bulk downloads</a>.
+              </p>
+            </div>
+            {# ==============> API  <============== #}
+            <div class="page-section">
+              <a name="api"></a>
+              <h4 class="subtitle">
+                  The API
+              </h4>
+                <p>
+
+                    <a href="/api" >Click for our API, and related documentation.</a>
+                </p>
+              <p>
+                  Our open-source API is the best option for anybody interested in programmatically accessing our
+                  metadata, full-text search, or individual cases.
+              </p>
+            </div>
+
+            {# ==============> BULK!! <============== #}
+            <div class="page-section">
+              <a name="bulk"></a>
+              <h4 class="subtitle">
+                  Bulk Downloads
+              </h4>
+                <p><a href="/bulk-access/">Click here for bulk data downloads.</a></p>
+              <p>
+                If you need a large collection of cases, you will probably be best served by our bulk data downloads.
+                  With no registration or formal agreements, we offer zip files containing all cases from Illinois and
+                  Arkansas, either in plain text, or marked up with XML. Non-commercial researchers who want a larger,
+                  or different subset of our cases should <a href="mailto:lil@law.harvard.edu">email us</a> for more
+                  information. Those interested in licensing this data case for commercial use should
+                  <a href="http://info.ravellaw.com/contact-us-form">contact Ravel Law</a> for more information.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
