@@ -67,7 +67,7 @@
 
       <li class="nav-item">
         {% if request.user.is_authenticated %}
-        <a class="nav-link" href="/user/details">
+        <a class="nav-link {%  if page_name == 'user-details' %}selected{% endif %}" href="/user/details">
           ACCOUNT
         </a>
         {% else %}
