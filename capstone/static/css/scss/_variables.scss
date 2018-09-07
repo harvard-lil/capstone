@@ -276,16 +276,6 @@ $font-sans-serif: "titillium", "Helvetica", sans-serif;
   margin-top: 20px;
 }
 
-.section-title {
-  @include media-breakpoint-up(lg) {
-    text-align: left;
-  }
-  @include media-breakpoint-only(md) {
-    text-align: right;
-  }
-}
-
-
 /* grid / layout */
 .col-centered {
   margin: 0 auto;
