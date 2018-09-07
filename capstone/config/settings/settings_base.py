@@ -195,7 +195,6 @@ PIPELINE = {
         'libsasscompiler.LibSassCompiler',
     ),
     'STYLESHEETS': {
-
         'base': {
             'source_filenames': (
                 'css/_normalize.css',
@@ -208,6 +207,12 @@ PIPELINE = {
                 'css/scss/gallery.scss',
             ),
             'output_filename': 'gallery.css'
+        },
+        'contact': {
+            'source_filenames': (
+                'css/scss/contact.scss',
+            ),
+            'output_filename': 'contact.css'
         },
         'docs': {
             'source_filenames': (
@@ -370,7 +375,7 @@ EMAIL_PORT = 25
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST_USER = 'user-secret'
 EMAIL_HOST_PASSWORD = 'secret-secret'
-
+EMAIL_ADDRESS = 'info@example.com'
 
 # redis
 REDIS_HOST = 'localhost'

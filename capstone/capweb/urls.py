@@ -1,7 +1,8 @@
-from django.urls import path, include
 
 from . import views
 from django.contrib.auth import views as auth_views
+from django.urls import path
+from django.conf.urls import include
 
 from capapi.views import user_views
 from capapi.forms import LoginForm
@@ -16,6 +17,8 @@ urlpatterns = [
 
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),
+
+    path('contact/',  views.contact, name='contact'),
 
     ### user account pages ###
 
