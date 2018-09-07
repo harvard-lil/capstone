@@ -28,15 +28,16 @@
   color: $color-black;
 }
 
+html, body {
+  height: 100%;
+}
 
 body {
   @extend .font-body;
-  height: 100%;
   /* push footer to bottom of screen if insufficient main-content to fill page */
   display: flex;
   flex-direction: column;
   color: $color-black;
-  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -103,12 +104,14 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
   border: 0;
 }
 
-.list-group-item {
-  border-radius: 0 !important;
+.main-content, footer {
+  //position: absolute;
+
+  //overflow: auto;
 }
 
-.main-content {
-  //padding: $header-margin-size 0;
+.list-group-item {
+  border-radius: 0 !important;
 }
 
 .basic-page {
