@@ -80,8 +80,10 @@ nav {
   nav {
     @include media-breakpoint-up(lg) {
       border-bottom: 0.5px solid $color-white;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      box-shadow: none;
     }
-
   }
 }
 
