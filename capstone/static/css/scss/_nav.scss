@@ -207,27 +207,19 @@ li.nav-item.dropdown {
 body.hamburger-menu-open {
   #burger-icon {
     :nth-child(1) {
-      -webkit-transform: rotate(-45deg) translate(-3.5px, 3px);
-      transform: rotate(-45deg) translate(-3.5px, 3px);
+      -webkit-transform: rotate(-45deg) translate(-3.5px, 6px);
+      transform: rotate(-45deg) translate(-3.5px, 6px);
     }
     :nth-child(2) {
       opacity: 0;
     }
     :nth-child(3) {
-      -webkit-transform: rotate(45deg) translate(-8px, -8px);
-      transform: rotate(45deg) translate(-8px, -8px);
+      -webkit-transform: rotate(45deg) translate(-5px, -8px);
+      transform: rotate(45deg) translate(-5px, -8px);
     }
     > .burger-item {
       background-color: $color-yellow;
     }
-  }
-}
-
-/* sliding menu on small screen */
-
-@include media-breakpoint-down(md) {
-  .nav-content {
-
   }
 }
 
@@ -265,5 +257,23 @@ body.hamburger-menu-open {
   }
   .dropdown-item {
     padding-left: 2rem;
+  }
+}
+
+.page-gallery,
+.page-gallery-limericks,
+.page-gallery-wordclouds {
+  @include media-breakpoint-down(md) {
+    #burger-icon {
+      background-color: $color-white;
+      .burger-item {
+        background-color: $color-black;
+      }
+    }
+    .dropdown-item {
+      background-color: $color-white;
+      color: $color-black !important;
+      border-bottom: 0.5px solid $color-black;
+    }
   }
 }

@@ -28,9 +28,13 @@ Caselaw Access Project gallery
       </div>
       <div class="row">
         {# ==============> MENU <============== #}
-        <div class="sidebar-menu"></div>
+        <div class="list-group sidebar-menu">
+          <a class="list-group-item" href="#wordclouds">Wordclouds</a>
+          <a class="list-group-item" href="#limericks">Limericks</a>
+        </div>
         {# ==============> CONTENT <============== #}
         <div class="content">
+
           {# ==============> OVERVIEW <============== #}
           <div class="page-section">
             <a name="overview"></a>
@@ -43,10 +47,12 @@ Caselaw Access Project gallery
             <a name="wordclouds"></a>
             <div class="row">
               <div class="project-image">
+                <a href="/gallery/wordclouds"
+                   aria-label="Go to wordclouds example">
                   <img class="main-img rounded"
                      alt="Wordcloud from 1930, California"
                      src="{% static "img/wordclouds-1933.png" %}">
-
+                </a>
               </div>
               <div class="project-description">
                 <h6 class="subtitle">Wordclouds</h6>
@@ -55,13 +61,14 @@ Caselaw Access Project gallery
                 </p>
                 <p class="social">
                   <span class="website">
-                    <!-- TODO: link to project's github-->
-                    <a href="#" target="_blank"></a>
+                    <a href="/gallery/wordclouds"
+                       aria-label="Go to wordclouds example"></a>
                   </span>
 
                   <span class="github">
                     <!-- TODO: link to project's github-->
-                    <a href="#" target="_blank"></a>
+                    <a href="#" target="_blank"
+                       aria-label="Go to wordclouds source code"></a>
                   </span>
 
                 </p>
@@ -72,25 +79,30 @@ Caselaw Access Project gallery
             <a name="limericks"></a>
             <div class="row">
               <div class="project-image">
-                <img class="main-img"
-                     alt="Wordcloud from 1930, California"
+                <a href="/gallery/limericks"
+                   aria-label="Go to limericks example">
+                  <img class="main-img"
+                     alt="Limericks out of caselaw text"
                      src="{% static "img/limerick-btn.png" %}">
-
+                </a>
               </div>
               <div class="project-description">
-                <h6 class="subtitle">Limericks</h6>
+                <h6 class="subtitle">
+                  Limericks
+                </h6>
                 <p>
                   Generate rhymes using caselaw!
                 </p>
                 <p class="social">
                   <span class="website">
-                    <!-- TODO: link to project's github-->
-                    <a href="#" target="_blank"></a>
+                    <a href="/gallery/limericks"
+                       aria-label="Go to limericks example"></a>
                   </span>
 
                   <span class="github">
                     <!-- TODO: link to project's github-->
-                    <a href="#" target="_blank"></a>
+                    <a href="#" target="_blank"
+                       aria-label="Go to limericks source code"></a>
                   </span>
                 </p>
               </div>

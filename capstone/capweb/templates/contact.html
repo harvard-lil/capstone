@@ -27,12 +27,13 @@ Caselaw Access Project contact
       </div>
       <div class="row">
         <div class="sidebar-menu">
-          Or email us at <a class="email-link" href="mailto:{{ email }}">{{ email }}</a>
+          Or email us at <a class="" href="mailto:{{ email }}">{{ email }}</a>
         </div>
         <div class="content">
           <form action="{% url 'contact' %}" method="post">
             {% csrf_token %}
             {{ form }}
+            <br/>
             <button type="submit" class="btn btn-default">Send</button>
           </form>
         </div>

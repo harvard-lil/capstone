@@ -19,18 +19,19 @@
 
 .project-image {
   @include media-breakpoint-up(lg) {
-    > .main-img {
+     .main-img {
       max-width: 80%;
     }
   }
    @include media-breakpoint-down(md) {
-     > .main-img {
-       @include make-col(12);
+     @include make-col(12);
+     margin-bottom: 1rem;
+     .main-img {
        max-width: 200px;
        margin: 0 auto;
      }
    }
-  > .main-img.rounded {
+  .main-img.rounded {
     border-radius: 50%;
   }
 }
@@ -48,3 +49,6 @@ footer {
 }
 
 
+.limerick-body {
+  font-body: $font-serif;
+}

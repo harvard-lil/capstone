@@ -258,6 +258,19 @@ PIPELINE = {
             ),
             'output_filename': 'base.js'
         },
+        'limericks': {
+            'source_filenames': (
+                'js/limerick_lines.json',
+                'js/generate_limericks.js',
+            ),
+            'output_filename': 'limericks.js'
+        },
+        'limerick_lines': {
+            'source_filenames': (
+              'js/limerick_lines.json',
+            ),
+            'output_filename': 'limerick_lines.json'
+        },
         'viz_totals': {
             'source_filenames': (
                 'js/chart.js',

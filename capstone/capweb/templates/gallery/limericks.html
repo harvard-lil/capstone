@@ -1,0 +1,42 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block extra_head %}
+  {% javascript 'base' %}
+  {% javascript 'limericks' %}
+  {% stylesheet 'gallery' %}
+{% endblock %}
+
+{% block title %} — Gallery{% endblock %}
+
+{% block meta_description %}
+Caselaw Access Project gallery
+{% endblock %}
+
+{% block content %}
+<div class="basic-page inverse">
+  <div class="full-content">
+    <div class="row">
+      <div class="page-title">
+        <h1>
+          <img alt="›" src='{% static "img/red-arrow-right.svg" %}'
+               class="decorative-arrow"/>
+          A Caselaw Limerick
+        </h1>
+      </div>
+    </div>
+    <div class="row">
+      {# ==============> CONTENT <============== #}
+      <div class="content">
+        <blockquote class="limerick-body">
+          <!-- limerick goes here -->
+        </blockquote>
+        <button class="btn btn-default" id="generate-limericks">
+          Create!
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -68,8 +68,8 @@ def gallery(request):
 
 
 def wordclouds(request):
-    return render(request, "gallery/wordclouds.html", {"page_name": "wordclouds"})
+    return render(request, "gallery/wordclouds.html", {"page_name": "gallery-wordclouds"})
 
 
 def limericks(request):
-    return render(request, "gallery/limericks.html", {"page_name": "limericks"})
+    return render(request, "gallery/limericks.html", {"page_name": "gallery-limericks"})
