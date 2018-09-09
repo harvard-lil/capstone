@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 from django.http import SimpleCookie
 from django.urls import reverse
@@ -15,7 +17,7 @@ from capapi.tests.helpers import is_cached
     ("register",            False,  False,  {}),
 
     # login-only pages are cached only for logged out (where they redirect)
-    ("user-details",        True,   False, {}),
+    ("user-details",        True,   False,   {}),
 
     # api views are cached for both logged in and logged out
     ("casemetadata-list",   True,   True,   {}),
@@ -25,7 +27,11 @@ from capapi.tests.helpers import is_cached
     ("casemetadata-list",   True,   False,  {"data": {"full_case": "true"}}),
 
     # bulk list cacheable only for logged-out users
-    ("bulk-data",        True,   False, {}),
+    ("bulk-data",           True,   False,  {}),
+
+    # bulk downloads are cached if public, or private requested by logged-out users
+    ("caseexport-download", True, True,     {"reverse_args": ["fixture_case_export"]}),
+    ("caseexport-download", True, False,    {"reverse_args": ["fixture_private_case_export"]}),
 ])
 @pytest.mark.parametrize("client_fixture_name", ["client", "auth_client"])
 def test_cache_headers(case, request, settings,
@@ -33,10 +39,18 @@ def test_cache_headers(case, request, settings,
                        view_name, cache_if_logged_out, cache_if_logged_in, get_kwargs):
 
     # set up variables
+    get_kwargs = deepcopy(get_kwargs)  # avoid modifying between tests
     settings.SET_CACHE_CONTROL_HEADER = True
-    url = reverse(view_name)
     client = request.getfuncargvalue(client_fixture_name)
     cache_expected = cache_if_logged_in if client._credentials else cache_if_logged_out
+
+    # Resolve reverse_args. For example, if we see "fixture_case_export" we will fetch the "case_export" fixture
+    # and insert its ID as an argument to reverse().
+    reverse_args = get_kwargs.pop('reverse_args', [])
+    for i, arg in enumerate(reverse_args):
+        if arg.startswith("fixture_"):
+            reverse_args[i] = request.getfuncargvalue(arg.split('_', 1)[1]).pk
+    url = reverse(view_name, args=reverse_args)
 
     # see if response is cached
     response = client.get(url, **get_kwargs)

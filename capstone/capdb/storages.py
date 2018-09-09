@@ -24,6 +24,15 @@ class CapStorageMixin(object):
             result = f.read()
         return result
 
+    def deconstruct(obj):
+        """
+            This is called by makemigrations when a FileField has storage= set.
+            Hardcoding a value ensures that changing storage backend for different
+            deployments doesn't result in a new migration.
+        """
+        return ("django.core.files.storage.FileSystemStorage", [], {})
+
+
 class CapS3Storage(CapStorageMixin, S3Boto3Storage):
     def _fix_path(self, path):
         return self._encode_name(self._normalize_name(self._clean_name(path)))
@@ -90,6 +99,7 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
             result = result.decode('utf8')
 
         return result
+
 
 class CapFileStorage(CapStorageMixin, FileSystemStorage):
 

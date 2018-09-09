@@ -9,9 +9,11 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 # when creating app, include any files with tasks outside of 'tasks.py', as they won't be found by autodiscover_tasks()
 app = Celery('config', include=[
+    'scripts.count_chars',
     'scripts.ingest_by_manifest',
     'scripts.validate_private_volumes',
     'scripts.compress_volumes',
+    'scripts.export',
 ])
 
 # Using a string here means the worker doesn't have to serialize
