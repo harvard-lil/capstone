@@ -1,6 +1,5 @@
 import csv
 import gzip
-import hashlib
 import json
 import logging
 import tarfile
@@ -22,7 +21,7 @@ from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 
 from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage, private_ingest_storage
-from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml
+from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile
 
 # logging
 # disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
@@ -68,31 +67,6 @@ def get_file_type(path):
         return 'volume'
     return None
 
-class HashingFile:
-    """ File wrapper that stores a hash of the read or written data. """
-    def __init__(self, source, hash_name='md5'):
-        self._sig = hashlib.new(hash_name)
-        self._source = source
-        self.length = 0
-
-    def read(self, *args, **kwargs):
-        result = self._source.read(*args, **kwargs)
-        self.update_hash(result)
-        return result
-
-    def write(self, value, *args, **kwargs):
-        self.update_hash(value)
-        return self._source.write(value, *args, **kwargs)
-
-    def update_hash(self, value):
-        self._sig.update(value)
-        self.length += len(value)
-
-    def hexdigest(self):
-        return self._sig.hexdigest()
-
-    def __getattr__(self, attr):
-        return getattr(self._source, attr)
 
 class LoggingTarFile(tarfile.TarFile):
     def addfile(self, tarinfo, fileobj=None):
