@@ -1,12 +1,10 @@
 from django.urls import path, re_path, include
 from django.views.generic import TemplateView
-from django.contrib.auth import views as auth_views
 from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from capapi.views import api_views, user_views, doc_views, viz_views
-from capapi.forms import LoginForm
+from capapi.views import api_views, user_views, viz_views
 
 
 router = routers.DefaultRouter()
