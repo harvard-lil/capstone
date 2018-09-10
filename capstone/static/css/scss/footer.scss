@@ -65,18 +65,25 @@ footer {
       font-size: 2rem;
     }
   }
-}
 
-.content-left, .content-right {
-  @include media-breakpoint-up(lg) {
-    @include make-col(6);
-  }
-  .content-right {
-    float: right;
+  .content-left, .content-right {
+    @include media-breakpoint-up(lg) {
+      @include make-col(6);
+    }
+    .content-right {
+      float: right;
+    }
+
+    @include media-breakpoint-down(md) {
+      width: 100%;
+      padding: 15px;
+      .lil-logo {
+        margin: 0 auto;
+      }
+    }
   }
 
-  @include media-breakpoint-down(md) {
-    width: 100%;
-    padding: 15px;
+  .lil-logo {
+    @extend .footer-lil-logo-white;
   }
 }

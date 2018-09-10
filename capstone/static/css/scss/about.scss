@@ -2,9 +2,7 @@
 
 footer {
   background-color: $color-yellow;
-  #lil-logo {
-    .lil-logo-item {
-      fill: $color-black;
-    }
+  .lil-logo {
+    @extend .footer-lil-logo-black;
   }
 }

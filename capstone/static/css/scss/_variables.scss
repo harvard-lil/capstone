@@ -355,7 +355,6 @@ strong, b {
   border-radius: 0;
 }
 
-/////////// alerts
 .alert {
   border: 0;
   background: $color-orange none;
@@ -364,6 +363,21 @@ strong, b {
   padding-right: 0;
 }
 
+/* logos */
+.footer-lil-logo {
+  width: 173px;
+  height: 90px;
+  display: block;
+}
 
+.footer-lil-logo-white {
+  @extend .footer-lil-logo;
+  background: url("../../img/lil-logo-white.png") no-repeat !important;
+  background-size: contain !important;
+}
 
-
+.footer-lil-logo-black {
+  @extend .footer-lil-logo;
+  background: url("../../img/lil-logo-black.png") no-repeat !important;
+  background-size: contain !important;
+}
