@@ -23,21 +23,31 @@
         <div class="content">
           <div class="user-information">
             <label for="user-email">Email:</label>
-            <input id="user-email" readonly value="{{ request.user.email }}">
+            <input id="user-email"
+                   readonly
+                   value="{{ request.user.email }}">
             <br/>
-            <label>API Key:</label>
-            <input readonly value="{{ request.user.get_api_key }}">
+            <label for="user-api-key">API Key:</label>
+            <input id="user-api-key"
+                   readonly
+                   value="{{ request.user.get_api_key }}">
             <br/>
             {% if unlimited %}
-              <label>Unlimited access until:</label>
-              <input readonly value="{{ request.user.unlimited_access_until }}">
+              <label for="user-unlimited-access-until">Unlimited access until:</label>
+              <input id="user-unlimited-access-until"
+                     readonly
+                     value="{{ request.user.unlimited_access_until }}">
               <br/>
             {% else %}
-              <label>Cases left to view today:</label>
-              <input readonly value="{{ request.user.case_allowance_remaining }}">
+              <label for="user-cases-left">Cases left to view today:</label>
+              <input id="user-cases-left"
+                     readonly
+                     value="{{ request.user.case_allowance_remaining }}">
               <br/>
-              <label>Case allowance (updated daily):</label>
-              <input class="user-information" value="{{ request.user.total_case_allowance }}">
+              <label for="user-case-allowance">Case allowance (updated daily):</label>
+              <input id="user-case-allowance"
+                     readonly
+                     value="{{ request.user.total_case_allowance }}">
               <br/>
             </div>
           {% endif %}
