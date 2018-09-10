@@ -13,6 +13,7 @@ urlpatterns = [
     path('about/', views.about, name='about'),
     path('tools/', views.tools, name='tools'),
     path('gallery/', views.gallery, name='gallery'),
+    path('api/', views.api, name='api'),
 
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),
