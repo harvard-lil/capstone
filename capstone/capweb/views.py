@@ -67,7 +67,6 @@ def gallery(request):
 def wordclouds(request):
     wordcloud_dir = os.path.join(settings.BASE_DIR, 'static/img/wordclouds')
     wordclouds = [w for w in os.listdir(wordcloud_dir) if w.endswith('.png')]
-    print(wordclouds)
     return render(request, "gallery/wordclouds.html", {
         "wordclouds": wordclouds,
     })
