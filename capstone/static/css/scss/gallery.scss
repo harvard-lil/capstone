@@ -25,6 +25,17 @@
   }
 }
 
+.page-section {
+  margin-bottom: 4rem !important;
+  @include media-breakpoint-down(md) {
+    border-bottom: 0.5px solid $color-white;
+    padding-bottom: 3rem;
+  }
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
 .project-image, .project-description {
   @include media-breakpoint-up(lg) {
     @include make-col(6);
@@ -34,15 +45,13 @@
 .project-image {
   @include media-breakpoint-up(lg) {
      .main-img {
-      max-width: 80%;
+      max-width: 70%;
     }
   }
    @include media-breakpoint-down(md) {
      @include make-col(12);
-     margin-bottom: 1rem;
      .main-img {
-       max-width: 200px;
-       margin: 0 auto;
+       display: none;
      }
    }
   .main-img.rounded {
