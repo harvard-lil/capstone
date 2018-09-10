@@ -69,7 +69,20 @@ footer {
   }
 }
 
+/* project specific style */
 
 .limerick-body {
   font-body: $font-serif;
+}
+
+.wordcloud-item {
+  max-width: 100px !important;
+  float: left;
+  margin-right: 1rem;
+  .year {
+    color: $color-yellow;
+    &:hover, &:active, &:focus {
+      color: $color-white;
+    }
+  }
 }
