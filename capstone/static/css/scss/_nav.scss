@@ -75,7 +75,6 @@ nav {
   }
 
   .dropdown-menu {
-    border-bottom: 0.5px solid $color-white;
     > a {
       font-weight: $font-weight-normal;
       color: $color-white;
@@ -90,6 +89,9 @@ nav {
     background-color: $color-black;
     @include media-breakpoint-up(lg) {
       margin-top: 26px;
+      border-left: 0.5px solid $color-white;
+      border-right: 0.5px solid $color-white;
+      border-bottom: 0.5px solid $color-white;
     }
     @include media-breakpoint-down(md) {
       > a:before {
