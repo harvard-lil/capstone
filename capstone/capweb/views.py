@@ -15,7 +15,6 @@ def index(request):
         "reporters": 627,
     }
     return render(request, "index.html", {
-        'page_name': 'index',
         'news': news[0:5],
         'numbers': numbers,
     })
@@ -45,7 +44,6 @@ def contact(request):
             initial_data['sender'] = request.user.email
         form = ContactForm(initial=initial_data)
         return render(request, "contact.html", {
-            "page_name": "contact",
             "form": form,
             "email": settings.EMAIL_ADDRESS,
         })
@@ -54,22 +52,20 @@ def contact(request):
         form = ContactForm(request.POST)
         if form.is_valid():
             send_contact(form.data)
-            return render(request, "contact_success.html", {
-                "page_name": "contact",
-            })
+            return render(request, "contact_success.html")
 
 
 def tools(request):
-    return render(request, "tools.html", {"page_name": "tools"})
+    return render(request, "tools.html")
 
 
 def gallery(request):
-    return render(request, "gallery.html", {"page_name": "gallery"})
+    return render(request, "gallery.html")
 
 
 def wordclouds(request):
-    return render(request, "gallery/wordclouds.html", {"page_name": "gallery-wordclouds"})
+    return render(request, "gallery/wordclouds.html")
 
 
 def limericks(request):
-    return render(request, "gallery/limericks.html", {"page_name": "gallery-limericks"})
+    return render(request, "gallery/limericks.html")

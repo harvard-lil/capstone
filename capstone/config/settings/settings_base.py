@@ -202,6 +202,24 @@ PIPELINE = {
             ),
             'output_filename': 'base.css'
         },
+        'index': {
+            'source_filenames': (
+                'css/scss/index.scss',
+            ),
+            'output_filename': 'index.css'
+        },
+        'about': {
+            'source_filenames': (
+                'css/scss/about.scss',
+            ),
+            'output_filename': 'about.css'
+        },
+        'tools': {
+            'source_filenames': (
+                'css/scss/tools.scss',
+            ),
+            'output_filename': 'tools.css'
+        },
         'gallery': {
             'source_filenames': (
                 'css/scss/gallery.scss',

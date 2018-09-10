@@ -33,27 +33,7 @@
 
 .branding.small-screen { display: none; }
 
-/* on index, display white background logo on small screens
-  display black background logo in all other instances */
-.page-index {
-  .branding-standalone {
-    @include media-breakpoint-down(md) {
-      min-height: 90px;
-    }
-  }
-  .branding.small-screen {
-    @include media-breakpoint-down(md) {
-      display: block;
-    }
-  }
-  .branding.large-screen {
-    @include media-breakpoint-down(md) {
-      display: none;
-    }
-  }
-}
 
-/* rest of nav */
 nav {
   display: inline-block;
   flex-wrap: wrap;
@@ -72,18 +52,6 @@ nav {
   }
   a {
     border-bottom: 0;
-  }
-}
-
-/* show light border in homepage */
-.page-index {
-  nav {
-    @include media-breakpoint-up(lg) {
-      border-bottom: 0.5px solid $color-white;
-      -webkit-box-shadow: none;
-      -moz-box-shadow: none;
-      box-shadow: none;
-    }
   }
 }
 
@@ -107,8 +75,6 @@ nav {
   }
 
   .dropdown-menu {
-    border-left: 0.5px solid $color-white;
-    border-right: 0.5px solid $color-white;
     border-bottom: 0.5px solid $color-white;
     > a {
       font-weight: $font-weight-normal;
@@ -257,23 +223,5 @@ body.hamburger-menu-open {
   }
   .dropdown-item {
     padding-left: 2rem;
-  }
-}
-
-.page-gallery,
-.page-gallery-limericks,
-.page-gallery-wordclouds {
-  @include media-breakpoint-down(md) {
-    #burger-icon {
-      background-color: $color-white;
-      .burger-item {
-        background-color: $color-black;
-      }
-    }
-    .dropdown-item {
-      background-color: $color-white;
-      color: $color-black !important;
-      border-bottom: 0.5px solid $color-black;
-    }
   }
 }

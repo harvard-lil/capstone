@@ -1,6 +1,20 @@
 @import 'variables';
 @import 'nav-inverse';
 
+@include media-breakpoint-down(md) {
+  #burger-icon {
+    background-color: $color-white;
+    .burger-item {
+      background-color: $color-black;
+    }
+  }
+  .dropdown-item {
+    background-color: $color-white;
+    color: $color-black !important;
+    border-bottom: 0.5px solid $color-black;
+  }
+}
+
 .basic-page.inverse .subtitle {
   font-family: $font-sans-serif;
   font-weight: $font-weight-semibold;

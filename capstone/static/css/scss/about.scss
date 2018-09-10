@@ -1,0 +1,10 @@
+@import 'variables';
+
+footer {
+  background-color: $color-yellow;
+  #lil-logo {
+    .lil-logo-item {
+      fill: $color-black;
+    }
+  }
+}
