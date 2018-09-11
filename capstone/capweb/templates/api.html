@@ -1,0 +1,781 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block extra_head %}
+  {% javascript 'base' %}
+{% endblock %}
+
+{% block title %} — API{% endblock %}
+
+{% block meta_description %}
+  Caselaw Access Project API
+{% endblock %}
+
+{% block content %}
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <div class="page-title">
+          <h1>
+            <img alt="›" src='{% static "img/red-arrow-right.svg" %}'
+                 class="decorative-arrow"/>
+            CAPAPI
+          </h1>
+        </div>
+
+      </div>
+      <div class="row">
+        {# ==============> MENU <============== #}
+        <div class="list-group sidebar-menu">
+          <a class="list-group-item" href="#overview">Overview</a>
+          <a class="list-group-item" href="#registration">Registration</a>
+          <a class="list-group-item" href="#beginners">What's an API?</a>
+          <a class="list-group-item" href="#web-browser">Using a Web Browser</a>
+          <a class="list-group-item" href="#endpoints">Endpoints and Example Queries</a>
+          <a class="list-group-item" href="#glossary">Glossary</a>
+        </div>
+        {# ==============> CONTENT <============== #}
+        <div class="content">
+
+          {# ==============> OVERVIEW <============== #}
+          <div class="page-section">
+            <p>
+              <img class="img-fluid"
+                   alt="Scanning reporters"
+                   src="{% static "img/vacuum-seal.jpg" %}">
+            </p>
+            <a name="overview"></a>
+            <p>
+              The Caselaw Access Project API, also known as CAPAPI, serves all official, published US
+              court cases, and
+              their related metadata, from 1658 to 2018. We digitized every case in this database during
+              the first
+              phase of the Caselaw Access Project, which we embarked upon in 2013. Before that, nearly
+              every case
+              was sitting in its original binding on Harvard Law Library shelves.
+              <a href="/">Click here to learn more about the project.</a>
+            </p>
+            <p>
+              CAPAPI is RESTful, and serves most of its data in JSON, but case text is also available in
+              plain
+              text, HTML, and XML. Though APIs are primarily useful to developers, anybody with a web
+              browser
+              can interact with it, though the interface is a bit clunky. (Perhaps, one day, some of you
+              ambitious software developers in the audience will make a lovely, open-source case browsing
+              application using this API. *nudge* *nudge*) <a href="#getting_started">Click here for some
+              usage examples.</a>
+            </p>
+            <p>
+              Our goal in undertaking this project was to make the data as open as possible. While there
+              are
+              restrictions that affect some users trying to access more than 500 cases per day, metadata
+              for every
+              case in every jurisdiction, and all cases from Illinois and Arkansas are available without
+              restriction; you don't even need to be logged in or use an API key. <a href="#restrictions">Click
+              here for more information on access restrictions, what type of users aren't subject to them,
+              and how
+              you can advocate to eliminate them in your legal jurisdiction.</a>
+            </p>
+          </div>
+          {# ==============> ENDPOINTS <============== #}
+          <div class="page-section">
+            <a name="endpoints"></a>
+            <h4 class="subtitle">
+              Endpoints
+            </h4>
+            <p>
+              <dl>
+
+                {# ==============> CASES <============== #}
+                <a name="endpoint-cases"></a>
+                <dt>
+                  Case Browse/Search Endpoint
+                </dt>
+                <dd>
+                  <a href="/api/v1/cases/">{{ request.build_absolute_uri }}api/v1/cases/</a>
+                </dd>
+                <dd>
+                  <p>
+                    This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the
+                    numeric ID of your case in our system, you can append it to the <a href="#def-path">path</a> to
+                    retrieve a <a href="#endpoint-case">single case</a>.
+                  </p>
+                  <ul>
+                    <lh>Endpoint Parameters:</lh>
+                    <li class="list-group-item">name_abbreviation</li>
+                    <li class="list-group-item">decision_date_min</li>
+                    <li class="list-group-item">decision_date_max</li>
+                    <li class="list-group-item">docket_number</li>
+                    <li class="list-group-item">citation</li>
+                    <li class="list-group-item">reporter</li>
+                    <li class="list-group-item">court</li>
+                    <li class="list-group-item">jurisdiction</li>
+                    <li class="list-group-item">search</li>
+                  </ul>
+                </dd>
+
+                <a name="endpoint-case"></a>
+                <dt>
+                  Single Case Endpoint
+                </dt>
+                <dd>
+                  <a href="/api/v1/cases/">{{ request.build_absolute_uri }}api/v1/cases/</a>
+                </dd>
+                <dd>
+                  <p>
+                    This is the way to retrieve a single case.
+                  </p>
+                  <ul>
+                    <lh>Endpoint Parameters:</lh>
+                    <li class="list-group-item"><code>full_case</code>: can be <code>true</code> or <code>false</code></li>
+                    <li class="list-group-item"><code>body_format</code>: can be <code>html</code> or <code>xml</code></li>
+                  </ul>
+                </dd>
+
+                {# ==============> reporters <============== #}
+                <a name="def-reporters"></a>
+                <dt>
+                  Reporters
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/reporters/">{{ request.build_absolute_uri }}api/v1/reporters/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+                {# ==============> jurisdictions <============== #}
+                <a name="def-jurisdictions"></a>
+                <dt>
+                  Jurisdictions
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/jurisdictions/">{{ request.build_absolute_uri }}api/v1/jurisdictions/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+                {# ==============> courts <============== #}
+                <a name="def-courts"></a>
+                <dt>
+                  Courts
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/courts/">{{ request.build_absolute_uri }}api/v1/courts/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+                            {# ==============> volumes <============== #}
+                <a name="def-volumes"></a>
+                <dt>
+                  Volumes
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/volumes/">{{ request.build_absolute_uri }}api/v1/volumes/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+                            {# ==============> reporters <============== #}
+                <a name="def-reporters"></a>
+                <dt>
+                  Reporters
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/reporters/">{{ request.build_absolute_uri }}api/v1/reporters/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+              </dl>
+            </p>
+          </div>
+          {# ==============> EXAMPLES <============== #}
+          <div class="page-section">
+            <a name="endpoints"></a>
+            <h4 class="subtitle">
+              Endpoints
+            </h4>
+            <p>
+              <dl>
+
+
+
+                {# ==============> CASES <============== #}
+                <a name="endpoint-cases"></a>
+                <dt>
+                  Cases Endpoint
+                </dt>
+                <dd>
+                  <div class="example-header">
+                    Endpoint Base
+                  </div>
+                  <pre><a href="/api/v1/cases/">{{ request.build_absolute_uri }}api/v1/cases/</a></pre>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+                <dd>
+                  <div class="example-header">
+                  A single case (metadata only):
+                  </div>
+                  <pre><a href="/api/v1/cases/{{ case_id }}/">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/</a></pre>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+
+                </dd>
+                <dd>
+                  <div class="example-header">
+                  One or more cases with the same citation:
+                  </div>
+                  <pre><a href="/api/v1/cases/?cite={{ case_metadata.citations.0.cite }}">{{ request.build_absolute_uri }}api/v1/cases/?cite={{ case_metadata.citations.0.cite }}</a></pre>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+
+            </dd>
+            <dd>
+              <div class="example-header">
+                  A request for full case text must include the query parameter <code>full_case=true</code>:
+              </div>
+                  <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/?full_case=true</a></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+
+            </dd>
+            <dd>
+              <div class="example-header">
+                  For cases not in <a href="#restrictions-and-whitelists-section">whitelisted</a> jurisdictions, include your <a href="#registration-section">API key</a> as an Authorization header:
+              </div>
+
+                  <pre><code>curl -H "Authorization: Token your-token-here" "{{ request.build_absolute_uri }}api/v1/cases/?limit=1&full_case=true"</code></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+            </dd>
+            <dd>
+              <div class="example-header">
+                  All cases under a certain jurisdiction:
+              </div>
+                  <pre><a href="/api/v1/cases/?jurisdiction=Ill.">{{ request.build_absolute_uri }}api/v1/cases/?jurisdiction=Ill.</a></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+
+            </dd>
+            <dd>
+              <div class="example-header">
+                  A specified number of cases:
+              </div>
+                  <pre><a href="/api/v1/cases/?limit=5">{{ request.build_absolute_uri }}api/v1/cases/?limit=5</a></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+
+            </dd>
+            <dd>
+              <div class="example-header">
+
+                  Using offset to page through results:
+              </div>
+                  <pre><a href="/api/v1/cases/?offset=10">{{ request.build_absolute_uri }}api/v1/cases/?offset=10</a></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+
+            </dd>
+            <dd>
+              <div class="example-header">
+                  Searching by earliest date (using format YYYY-MM-DD):
+              </div>
+                  <pre><a href="/api/v1/cases/?decision_date_min=2000-11-01">{{ request.build_absolute_uri }}api/v1/cases/?decision_date_min=2000-11-01</a></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+
+            </dd>
+            <dd>
+              <div class="example-header">
+                  Searching by earliest and latest dates (using format YYYY-MM-DD):
+              </div>
+                  <pre><a href="/api/v1/cases/?decision_date_min=1820-12-01&decision_date_max=1821-12-01">{{ request.build_absolute_uri }}api/v1/cases/?decision_date_min=1820-12-01&decision_date_max=1821-12-01</a></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+
+            </dd>
+            <dd>
+              <div class="example-header">
+                  Case text in HTML:
+              </div>
+                  <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true&body_format=html">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/?full_case=true&body_format=html</a></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+
+            </dd>
+            <dd>
+              <div class="example-header">
+                  Case text in XML:
+              </div>
+                  <pre><a href="/api/v1/cases/{{ case_id }}/?full_case=true&body_format=xml">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/?full_case=true&body_format=xml</a></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+            </dd>
+            <dd>
+
+              <div class="example-header">
+                  Here is an example of several of these query parameters together:
+              </div>
+                  <pre><a href="/api/v1/cases/?full_case=true&jurisdiction=Ill.&decision_date_min=1820-12-01&decision_date_max=1821-12-01&limit=1&body_format=xml">{{ request.build_absolute_uri }}api/v1/cases/?full_case=true&jurisdiction=Ill.&decision_date_min=1820-12-01&decision_date_max=1821-12-01&limit=1&body_format=xml</a></pre>
+              <div class="example-explanation">
+                This will return a list of cases, starting from the beginning.
+              </div>
+                  This request should return a single case with full text as XML.
+
+                </dd>
+
+                            {# ==============> reporters <============== #}
+                <a name="def-reporters"></a>
+                <dt>
+                  Reporters
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/reporters/">{{ request.build_absolute_uri }}api/v1/reporters/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+                            {# ==============> jurisdictions <============== #}
+                <a name="def-jurisdictions"></a>
+                <dt>
+                  Jurisdictions
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/jurisdictions/">{{ request.build_absolute_uri }}api/v1/jurisdictions/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+                            {# ==============> courts <============== #}
+                <a name="def-courts"></a>
+                <dt>
+                  Courts
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/courts/">{{ request.build_absolute_uri }}api/v1/courts/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+                            {# ==============> volumes <============== #}
+                <a name="def-volumes"></a>
+                <dt>
+                  Volumes
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/volumes/">{{ request.build_absolute_uri }}api/v1/volumes/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+                            {# ==============> reporters <============== #}
+                <a name="def-reporters"></a>
+                <dt>
+                  Reporters
+                </dt>
+                <dd>
+                  <div class="example-header">
+                  </div>
+                  <a href="/api/v1/reporters/">{{ request.build_absolute_uri }}api/v1/reporters/</a>
+                  <div class="example-explanation">
+                    This will return a list of cases, starting from the beginning.
+                  </div>
+                </dd>
+
+              </dl>
+            </p>
+          </div>
+          {# ==============> RESTRICTIONS <============== #}
+          <div class="page-section">
+            <a name="restrictions"></a>
+            <h4 class="subtitle">
+              Restrictions
+            </h4>
+            <p>
+              The agreement with our project partner, <a href="http://ravellaw.com">Ravel</a>, stipulates that only
+              bonafide <a href="#def-academic-user">academic researchers</a> can access more than 500 cases per day, so
+              all <a href="#def-registered-user">registered users</a> are subject to this restriction. However, this
+              stipulation does not apply to jurisdictions that make their cases freely available online in a citable,
+              machine-readable format. We call these <a href="#def-whitelisted">whitelisted</a> jurisdictions.
+              Currently, Illinois and Arkansas satisfy the requirements of the whitelist.
+
+            </p>
+            <p>
+              We encourage everybody to advocate for the expansion of that list! When a jurisdiction starts issuing
+              cases in a machine readable, citable format, we can whitelist a jurisdiction in the API, and offer its
+              cases to anonymous users in bulk. Please consider advocating for open access to the law in your
+              jurisdiction. You should probably just repeatedly call up every judge whose number you can find until they
+              cave. <b style="color: #FF0000; !important;"> TODO: give real advice. </b>
+            </p>
+            <p>
+              If you think you qualify as a bonafide <a href="#def-academic-user">academic researcher</a> and would like
+              unrestricted access to non-<a href="#def-whitelisted">whitelisted</a> cases, email us at
+              <a href="mailto:lil@law.harvard.edu">lil@law.harvard.edu</a>.
+            </p>
+            <p>
+              If you are interested in licensing this data for commercial use,
+              <a href="http://info.ravellaw.com/contact-us-form">Click here to contact Ravel for more information.</a>
+            </p>
+            <p>
+
+            </p>
+            <p>
+            <dl>
+              <a name="def-anonymous-user"></a>
+              <dt>
+                Anonymous Users
+              </dt>
+              <dd>
+                <ul>
+                  <li class="list-group-item">Access all metadata</li>
+                  <li class="list-group-item">Unlimited API access to all cases from
+                    <a href="#def-whitelisted"> whitelisted </a> jurisdictions
+                  </li>
+                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
+                    whitelisted </a> jurisdictions
+                  </li>
+                </ul>
+              </dd>
+
+              <a name="def-registered-user"></a>
+              <dt>
+                Registered Users
+              </dt>
+              <dd>
+                <ul>
+                  <li class="list-group-item">Access all metadata</li>
+                  <li class="list-group-item">Unlimited API access to all cases from <a
+                      href="#def-whitelisted"> whitelisted </a>
+                    jurisdictions
+                  </li>
+                  <li class="list-group-item">Access to 500 cases per day from non-<a
+                      href="#def-whitelisted">whitelisted</a> jurisdictions
+                  </li>
+                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
+                    whitelisted </a> jurisdictions
+                  </li>
+                </ul>
+              </dd>
+
+              <a name="def-academic-user"></a>
+              <dt>
+                Academic Users
+              </dt>
+              <dd>
+                <ul>
+                  <li class="list-group-item">Access all metadata</li>
+                  <li class="list-group-item">Unlimited API access to all cases</li>
+                  <li class="list-group-item">Bulk Downloads from all jurisdictions</li>
+                </ul>
+              </dd>
+
+              <a name="def-academic-user"></a>
+              <dt>
+                Commercial Users
+              </dt>
+              <dd>
+                <a href="http://info.ravellaw.com/contact-us-form">Click here to contact Ravel for more
+                  information.</a>
+              </dd>
+            </dl>
+            </p>
+          </div>
+          {# ==============> REGISTER  <============== #}
+          <div class="page-section">
+            <a name="register"></a>
+            <h4 class="subtitle">
+              Registration
+            </h4>
+            <p>
+              <a href="user/register/">Click here to register an account.</a>
+            </p>
+            <p>
+              Your account will give you access to 500 cases per day. <a href="#restrictions">Click
+              here for more information on access restrictions, what type of users and jurisdictions
+              aren't
+              subject to them, and how you can advocate to eliminate them in your legal jurisdiction.</a>
+            </p>
+
+          </div>
+          {# ==============> BEGINNERS <============== #}
+          <div class="page-section">
+            <a name="beginners"></a>
+            <h4 class="subtitle">
+              Beginner's Introduction
+            </h4>
+            <p>
+              Fundamentally, an API is no different from a regular website: A program on your computer sends a bit
+              of data to a server, the server processes that data, and then sends a response. If you know how to
+              read a URL, you can interact with web-based services in ways that aren't limited to clicking on the
+              links and buttons on the screen.
+            </p>
+            <p>
+              Consider the following <a href="#def-url">URL</a>, which will
+              <a href="https://www.google.com/search?q=CAP">perform a google search for the word "CAP."</a>
+            <pre><code>https://www.google.com/search?q=CAP</code></pre>
+            </p>
+            <p>
+              Let's break it down into its individual parts:
+            </p>
+            <pre><code>https://</code></pre>
+            <p>
+              This first part tells your web browser which protocol to use: this isn't very
+              important for our purposes, so we'll ignore it.
+            </p>
+            <pre><code>www.google.com</code></pre>
+            <p>
+              The next part is a list of words, separated by periods, between the initial double-slash, and before the
+              subsequent single slash. Many people refer to this as the domain, which is only partly true; the important
+              takeaway here is that it points to a specific server, which is just another computer on the internet.
+            </p>
+            <pre><code>/search</code></pre>
+            <p>
+              The next section, which is comprised of everything between the slash after the server name and the
+              question mark, is called the path. It's called a path because, in the earlier days of the web, it
+              was a path to a specific file on the web server. These days, it's more likely that the path will
+              point to a specific <a href="#def-endpoint">endpoint</a>.
+            </p>
+            <p>
+              You can think of an endpoint as a distinct part of a program, which could require specific inputs,
+              and/or provide different results. For example, the "login" endpoint on a website might accept a
+              valid username and a password for input, and return a message that you've successfully logged in. A
+              "register" endpoint might accept various bits of identifying information, and return a screen that
+              says your account was successfully registered.
+            </p>
+            <p>
+              Though there is only one part of this particular path, <code>search</code>, developers usually
+              organize paths into hierarchical lists separated by slashes. Hypothetically, if the developers at
+              Google decided that one generalized search endpoint wasn't sufficiently serving people who wanted to
+              search for books or locations, they could implement more specific endpoints such as
+              <code>/search/books</code> and <code>/search/locations</code>.
+            </p>
+            <pre><code>?q=CAP</code></pre>
+            <p>
+              The final section of the URL is where you'll find the parameters, and is comprised of everything
+              after the question mark. Parameters are a way of passing individual pieces of data, or values, to
+              the endpoint to help it perform its job. In this case, the parameter tells the <code>/search</code>
+              endpoint what to search for. Without this parameter, the response wouldn't be particularly useful.
+            </p>
+            <p>
+              A URL can contain many parameters, separated by ampersands, but in this instance, there is only one
+              parameter: the rather cryptically named "q," which is short for "query," that has a value of "CAP."
+              Parameter names are arbitrary— Google's developers could just as easily have set the parameter name
+              to <code>?query=CAP</code>, but decided that "q" would sufficiently communicate its purpose.
+            </p>
+            <p>
+              The Google developers designed their web search endpoint to accept other parameters, too. For
+              example, there is an even more cryptically named parameter, 'tbs' which will limit the age of the
+              documents returned in the search results. The parameters <code>?q=CAP&tbs=qdr:y</code> will perform
+              a web search for "CAP" and limit the results to documents less than a year old.
+            <p>
+
+          </div>
+          {# ==============> WEB BROWSER <============== #}
+          <div class="page-section">
+            <a name="web-browser"></a>
+            <h4 class="subtitle">
+              Using a Web Browser
+            </h4>
+            <p>
+              <a href="/api/v1">Click here to visit the API in your web browser.</a>
+            </p>
+            <p>
+              Though CAPAPI is primarily a designed for developers, you can access the API output using a
+              standard
+              web browser. Just click on the above link. If what you see there doesn't make any sense to
+              you,
+              <a href="#beginners">click here for a short API primer.</a>
+            </p>
+            <p>
+              To access cases that aren't in <a href="#def-whitelisted">whitelisted</a> jurisdictions,
+              you'll need
+              to be logged in.<a href="#endpoints">Click here to register.</a>
+            </p>
+            <p>
+              <a href="#endpoints">Click here to see the API's structure and data model.</a>
+            </p>
+
+          </div>
+          {# ==============> GLOSSARY <============== #}
+          <div class="page-section">
+            <a name="glossary"></a>
+            <h4 class="subtitle">
+              Glossary
+            </h4>
+            <p>
+              This is a list of technical or project-specific terms we use in this docuemntation. These are stub
+              definitions to help you get unstuck, but they should not be conisdered authoratative or complete. A quick
+              Google search should provide more context for any of these terms.
+            </p>
+            <p>
+            <dl>
+              <a name="def-jurisdiction"></a>
+              <dt>
+                Jurisdiction
+              </dt>
+              <dd>
+                For most cases, jurisdiction usually means its state, territory, or tribal area, or . For some volumes,
+                Jurisdiction the jurisid
+              </dd>
+
+              <a name="def-reporter"></a>
+              <dt>
+                Reporter
+              </dt>
+              <dd>
+                In this project, we use the term 'reporter' to refer to a reporter series. We'd consider F2d. a
+                reporter.
+              </dd>
+
+              <a name="def-whitelisted"></a>
+              <dt>
+                Whitelisted
+              </dt>
+              <dd>
+                While most cases in the database are subject to a 500 case per day access limit, jurisdictions that
+                publish their cases in a citable, machine-readable format are not subject to this limit.
+                <a href="#restrictions">Click here for more information on access restrictions, what type of users
+                  aren't subject to them, and how you can advocate to eliminate them in your legal jurisdiction.</a>
+              </dd>
+
+              <a name="def-curl"></a>
+              <dt>
+                curl
+              </dt>
+              <dd>
+                <a href="https://curl.haxx.se/">curl</a> is a simple <a href="#def-command-line">command line</a> tool
+                for retrieving data over the internet. It's similar to a web browser in that it will retrieve the
+                contents of a <a href="#def-url">url</a>, but it will dump the text contents to a terminal, rather than
+                show a rendered version in a graphical browser window.
+              </dd>
+
+              <a name="def-command-line"></a>
+              <dt>
+                Command Line
+              </dt>
+              <dd>
+                This is the textual interface for interacting with a computer. Rather than interacting with the system
+                through windows and mouse clicks, commands are typed and output is rendered in its textual form. On mac,
+                the default Command Line program is Terminal. On Windows, the program is cmd.exe.
+              </dd>
+
+              <a name="def-url"></a>
+              <dt>
+                URL
+              </dt>
+              <dd>
+                A URL, or Uniform Resource Locator, is an internet address that generally contains a communication
+                protocol, a server name, a path to a file or endpoint, and possibly parameters to pass to the endpoint.
+              </dd>
+
+              <a name="def-api"></a>
+              <dt>
+                API
+              </dt>
+              <dd>
+                API is an acronym for Application Programming Interface. Broadly, it is a way for one computer program
+                to transfer data to another computer program. CAPAPI is a <a href="#def-restful">RESTful</a> API
+                designed with the intent of distributing court case data.
+              </dd>
+
+              <a name="def-restful"></a>
+              <dt>
+                RESTful
+              </dt>
+              <dd>
+                A RESTful <a href="#def-api">API</a> is based on
+                <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a>, and makes use of its
+                built-in verbs(commands), such as GET and POST.
+              </dd>
+
+              <a name="def-server"></a>
+              <dt>
+                Server
+              </dt>
+              <dd>
+                A server is just a computer on the internet that was configured to respond to requests from other
+                computers. A web server will respond to requests from a web browser. An email server will respond to
+                requests from email programs, and or other email servers which are sending it messages.
+              </dd>
+
+              <a name="def-endpoint"></a>
+              <dt>
+                Endpoint
+              </dt>
+              <dd>
+                You can think of an endpoint as a distinct part of a program, which could require specific inputs,
+                and/or provide different results. For example, the "login" endpoint on a website might accept a valid
+                username and a password for input, and return a message that you've successfully logged in. A "register"
+                endpoint might accept various bits of identifying information, and return a screen that says your
+                account was successfully registered.
+              </dd>
+
+              <a name="def-parameter"></a>
+              <dt>
+                URL Parameter
+              </dt>
+              <dd>
+                For our purposes, a parameter is just a piece of data with a label that can be passed to an
+                <a href="#def-endpoint">endpoint</a> in a web request.
+              </dd>
+
+              <a name="def-parameter"></a>
+              <dt>
+                URL Path
+              </dt>
+              <dd>
+                TODO: do this
+                <a href="#def-endpoint">endpoint</a> in a web request.
+              </dd>
+            </dl>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+{% endblock %}
