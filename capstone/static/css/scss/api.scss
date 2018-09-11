@@ -1,6 +1,6 @@
-@import "_variables.scss";
-
-.navbar.navbar-static-top .container {
+@import "variables";
+@import "nav";
+nav {
   padding: 0;
   width: 100%;
 }

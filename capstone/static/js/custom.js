@@ -16,6 +16,8 @@ let setupDropdown = function () {
 let setupBurgerAction = function() {
   let body = 'body';
   let burgericon = '#burger-icon';
+  /* start with closed hamburger */
+  $(body).addClass('hamburger-menu-closed');
   $(burgericon).click(function() {
     $(body).toggleClass("hamburger-menu-open")
            .toggleClass("hamburger-menu-closed");

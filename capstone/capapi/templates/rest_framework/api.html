@@ -3,13 +3,9 @@
 {% load static %}
 {% block style %}
   {% stylesheet 'api' %}
+  {% javascript 'base' %}
 {% endblock %}
 
 {% block navbar %}
-  <div class="navbar navbar-static-top {% block bootstrap_navbar_variant %}navbar-inverse{% endblock %}"
-       role="navigation" aria-label="navbar">
-    <div class="container">
-      {% include "includes/header.html" %}
-    </div>
-  </div>
+  {% include "includes/nav.html" %}
 {% endblock %}
