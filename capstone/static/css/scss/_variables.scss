@@ -162,7 +162,12 @@ $color-violet-gray-dark: #474756;
 
 .bg-violet-light { background: $color-violet-light; }
 
-.color-white { color: white; }
+.bg-white-violet {
+  background-color: $color-white;
+  color: $color-violet;
+}
+
+.color-white { color: $color-white; }
 
 .color-violet { color: $color-violet; }
 
@@ -171,6 +176,8 @@ $color-violet-gray-dark: #474756;
 .color-yellow { color: $color-yellow; }
 
 .color-orange { color: $color-orange; }
+
+.color-black { color: $color-black; }
 
 @mixin diagonal_gradient($color1, $color2) {
   background: $color1; /* Old browsers */
@@ -208,9 +215,11 @@ $color-violet-gray-dark: #474756;
 
 $font-weight-semibold: 600;
 
+$font-weight-light: 200;
+$font-weight-extra-light: 100;
+
 $font-serif: "Libre Baskerville", "Baskerville", "Georgia", serif;
 $font-sans-serif: "titillium", "Helvetica", sans-serif;
-
 
 
 .section-symbol {
@@ -266,16 +275,6 @@ $font-sans-serif: "titillium", "Helvetica", sans-serif;
   margin-bottom: 1em;
   margin-top: 20px;
 }
-
-.section-title {
-  @include media-breakpoint-up(lg) {
-    text-align: left;
-  }
-  @include media-breakpoint-only(md) {
-    text-align: right;
-  }
-}
-
 
 /* grid / layout */
 .col-centered {
@@ -356,7 +355,6 @@ strong, b {
   border-radius: 0;
 }
 
-/////////// alerts
 .alert {
   border: 0;
   background: $color-orange none;
@@ -365,6 +363,21 @@ strong, b {
   padding-right: 0;
 }
 
+/* logos */
+.footer-lil-logo {
+  width: 173px;
+  height: 90px;
+  display: block;
+}
 
+.footer-lil-logo-white {
+  @extend .footer-lil-logo;
+  background: url("../../img/lil-logo-white.png") no-repeat !important;
+  background-size: contain !important;
+}
 
-
+.footer-lil-logo-black {
+  @extend .footer-lil-logo;
+  background: url("../../img/lil-logo-black.png") no-repeat !important;
+  background-size: contain !important;
+}

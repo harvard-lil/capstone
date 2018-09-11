@@ -3,15 +3,15 @@ import re
 import pytest
 from datetime import timedelta
 
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.utils import timezone
-
 from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
 
 from capapi.models import CapUser
-from capapi.tests.helpers import check_response, is_cached
+from capapi.tests.helpers import check_response
 
 
 ### register, verify email address, login ###
@@ -118,14 +118,15 @@ def test_view_user_details(auth_user, auth_client):
     """ User can see their API token """
     response = auth_client.get(reverse('user-details'))
     check_response(response)
-    assert b"user_api_key" in response.content
-    assert auth_user.get_api_key() in response.content.decode()
+    content = re.sub(r'\s+', ' ', response.content.decode()).strip()
+    soup = BeautifulSoup(content, 'html.parser')
+
+    assert soup.find(id="user-api-key").get('value') == auth_user.get_api_key()
 
     # normal user can see limit
-    content = re.sub(r'\s+', ' ', response.content.decode()).strip()
     assert "Unlimited access until" not in content
-    total_case_allowance_html = """<span class="user_total_case_allowance form-control form-control-sm"> 500 </span>"""
-    assert total_case_allowance_html in content
+
+    assert soup.find(id="user-case-allowance").get('value') == str(auth_user.total_case_allowance)
 
     # user can't see limit if they have unlimited access
     auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
@@ -133,64 +134,49 @@ def test_view_user_details(auth_user, auth_client):
     response = auth_client.get(reverse('user-details'))
     check_response(response)
     content = re.sub(r'\s+', ' ', response.content.decode()).strip()
-    assert total_case_allowance_html not in content
     assert "Unlimited access until" in content
 
 
 ### bulk downloads ###
 
+@pytest.mark.parametrize("client_fixture, can_see_private", [
+    ("client", False),
+    ("auth_client", False),
+    ("unlimited_auth_client", True)
+])
 @pytest.mark.django_db
-def test_bulk_data_logged_out_list(client):
+def test_bulk_data_list(request, case_export, private_case_export, client_fixture, can_see_private):
+    client = request.getfuncargvalue(client_fixture)
+    public_url = reverse('caseexport-download', args=[case_export.pk])
+    private_url = reverse('caseexport-download', args=[private_case_export.pk])
+
     response = client.get(reverse('bulk-data'))
     check_response(response)
     content = response.content.decode()
-    assert "Arkansas" in content
-    assert "Massachusetts" not in content
+    assert public_url in content
+    if can_see_private:
+        assert private_url in content
+    else:
+        assert private_url not in content
 
-@pytest.mark.django_db
-def test_bulk_data_logged_in_list(auth_client):
-    response = auth_client.get(reverse('bulk-data'))
-    check_response(response)
-    content = response.content.decode()
-    assert "Arkansas" in content
-    # logged in user still shouldn't see bulk data
-    assert "Massachusetts" not in content
-
-@pytest.mark.django_db
-def test_bulk_data_unlimited_list(unlimited_auth_client):
-    response = unlimited_auth_client.get(reverse('bulk-data'))
-    check_response(response)
-    content = response.content.decode()
-    assert "Arkansas" in content
-    assert "Massachusetts" in content
-
-private_zip_url = reverse('bulk-download', kwargs={'public_or_private': 'private', 'jur': 'Massachusetts', 'filename': 'Fake Massachusetts.zip'})
-public_zip_url = reverse('bulk-download', kwargs={'public_or_private': 'public', 'jur': 'Illinois', 'filename': 'Fake Illinois.zip'})
 def check_zip_response(response):
     check_response(response, content_type='application/zip')
-    assert b''.join(response.streaming_content) == b'fake zip content\n'
+    assert b''.join(response.streaming_content) == b'fake zip content'
 
+@pytest.mark.parametrize("client_fixture, export_fixture, status_code", [
+    ("client", "case_export", 200),
+    ("client", "private_case_export", 401),
+    ("auth_client", "case_export", 200),
+    ("auth_client", "private_case_export", 403),
+    ("unlimited_auth_client", "case_export", 200),
+    ("unlimited_auth_client", "private_case_export", 200),
+])
 @pytest.mark.django_db
-def test_bulk_data_logged_out_download(client):
-    response = client.get(public_zip_url)
-    check_zip_response(response)
-    assert is_cached(response)
-    response = client.get(private_zip_url)
-    check_response(response, status_code=403)
-
-@pytest.mark.django_db
-def test_bulk_data_logged_in_download(auth_client):
-    response = auth_client.get(public_zip_url)
-    check_zip_response(response)
-    assert is_cached(response)
-    response = auth_client.get(private_zip_url)
-    check_response(response, status_code=403)
-
-@pytest.mark.django_db
-def test_bulk_data_unlimited_download(unlimited_auth_client):
-    response = unlimited_auth_client.get(public_zip_url)
-    check_zip_response(response)
-    assert is_cached(response)
-    response = unlimited_auth_client.get(private_zip_url)
-    check_zip_response(response)
-    assert not is_cached(response)
+def test_case_export_download(request, client_fixture, export_fixture, status_code):
+    client = request.getfuncargvalue(client_fixture)
+    export = request.getfuncargvalue(export_fixture)
+    response = client.get(reverse('caseexport-download', args=[export.pk]))
+    if status_code == 200:
+        check_zip_response(response)
+    else:
+        check_response(response, status_code=status_code)

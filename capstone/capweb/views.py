@@ -1,12 +1,15 @@
+import os
 from collections import OrderedDict
+
 from django.shortcuts import render
 from django.conf import settings
 
-
+from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site
 
 from capdb.models import CaseMetadata, Jurisdiction
 from capapi import serializers
+from capweb.resources import send_contact
 
 def index(request):
     news = get_data_from_lil_site(section="news")
@@ -16,7 +19,6 @@ def index(request):
         "reporters": 627,
     }
     return render(request, "index.html", {
-        'page_name': 'index',
         'news': news[0:5],
         'numbers': numbers,
     })
@@ -39,20 +41,41 @@ def about(request):
     })
 
 
+def contact(request):
+    if request.method == 'GET':
+        initial_data = {}
+        if request.user.is_authenticated:
+            initial_data['sender'] = request.user.email
+        form = ContactForm(initial=initial_data)
+        return render(request, "contact.html", {
+            "form": form,
+            "email": settings.EMAIL_ADDRESS,
+        })
+
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            send_contact(form.data)
+            return render(request, "contact_success.html")
+
+
 def tools(request):
-    return render(request, "tools.html", {"page_name": "tools"})
+    return render(request, "tools.html")
 
 
 def gallery(request):
-    return render(request, "gallery.html", {"page_name": "gallery"})
+    return render(request, "gallery.html")
 
 
 def wordclouds(request):
-    return render(request, "gallery/wordclouds.html", {"page_name": "wordclouds"})
-
+    wordcloud_dir = os.path.join(settings.BASE_DIR, 'static/img/wordclouds')
+    wordclouds = [w for w in os.listdir(wordcloud_dir) if w.endswith('.png')]
+    return render(request, "gallery/wordclouds.html", {
+        "wordclouds": wordclouds,
+    })
 
 def limericks(request):
-    return render(request, "gallery/limericks.html", {"page_name": "limericks"})
+    return render(request, "gallery/limericks.html")
 
 def api(request):
     #TODO: Trim what we don't need here

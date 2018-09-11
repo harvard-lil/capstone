@@ -1,0 +1,43 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block extra_head %}
+  {% javascript 'base' %}
+  {% stylesheet 'contact' %}
+{% endblock %}
+
+{% block title %} — Contact{% endblock %}
+
+{% block meta_description %}
+Caselaw Access Project contact
+{% endblock %}
+{% block content %}
+  <div class="basic-page">
+      <div class="full-content">
+      <div class="row">
+        <div class="page-title">
+          <h1>
+            <img alt="›" src='{% static "img/red-arrow-right.svg" %}'
+                 class="decorative-arrow"/>
+            Contact
+          </h1>
+        </div>
+
+      </div>
+      <div class="row">
+        <div class="sidebar-menu"></div>
+        <div class="content">
+          <br/>
+          <br/>
+          <p>Thank you! We will be in touch shortly.</p>
+          <p>
+            <a href="/contact" class="btn btn-default">Back to contact form</a>
+            &nbsp;
+            <a href="/" class="btn btn-default">Home</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

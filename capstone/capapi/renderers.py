@@ -1,6 +1,7 @@
 import hashlib
 
 from django.conf import settings
+from django.http.response import HttpResponseBase
 from django.template import loader
 from rest_framework import renderers
 
@@ -47,8 +48,12 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 return generate_html_error("Not Authenticated <span style='font-family: monospace; font-style: normal;'>({})</span>".format(data['casebody']['status']), "You must be authenticated to view this case.")
             return generate_html_error("Could Not Load Case Body", data['casebody']['status'], data['first_page'], data['last_page'], data['name'])
 
+        official_cit_entries = [ citation['cite'] for citation in data['citations'] if citation['type'] == 'official' ]
+        official_citation = official_cit_entries[0] if len(official_cit_entries[0]) > 0 else None
+
         template = loader.get_template('case.html')
         context = {
+            'citation': official_citation,
             'title': data['casebody']['title'],
             'case_html': generate_html(data['casebody']['data']),
         }
@@ -58,10 +63,22 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
 class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
     @cache_func(
         key=lambda self, data, view, request: hashlib.md5(('filter-form:'+request.get_full_path()).encode('utf8')).hexdigest(),
-        timeout=settings.API_COUNT_CACHE_TIMEOUT,
+        timeout=settings.CACHED_COUNT_TIMEOUT,
     )
     def get_filter_form(self, data, view, request):
         return super().get_filter_form(data, view, request)
+
+
+class PassthroughRenderer(renderers.JSONRenderer):
+    """
+        Return data as-is. View should supply a Response.
+    """
+    media_type = 'application/json'  # used only for rendering errors
+    format = ''
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if isinstance(data, HttpResponseBase):
+            return data
+        return super().render(data, accepted_media_type, renderer_context)
 
 
 def generate_xml_error(error_text, message_text):

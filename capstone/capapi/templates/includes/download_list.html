@@ -1,11 +1,14 @@
-{% for jur, filelist in zips.items %}
-  <h3 class="section-title">{{ jur }}</h3>
-  <ul>
-  {% for filename, size in filelist %}
-    <li>
-      <a href="{% url "bulk-download" public_or_private=public_or_private jur=jur filename=filename %}">{{ filename }}</a> -
-      {{ size|filesizeformat }}
-    </li>
+{% for section_label, item_list in zips.items %}
+  <h3 class="section-title">By {{ section_label }}</h3>
+  {% for filter_item, exports in item_list.items %}
+    <div class="row">
+      <div class="col-2">{{ filter_item }}</div>
+      {% for export_type, export in exports.items %}
+        <div class="col-3">
+          <a href="{% url "caseexport-download" pk=export.pk %}">{{ export.file_name }}</a>
+          ({{ export.file.size|filesizeformat }})
+        </div>
+      {% endfor %}
+    </div>
   {% endfor %}
-  </ul>
 {% endfor %}

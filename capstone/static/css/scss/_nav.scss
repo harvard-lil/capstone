@@ -33,27 +33,7 @@
 
 .branding.small-screen { display: none; }
 
-/* on index, display white background logo on small screens
-  display black background logo in all other instances */
-.page-index {
-  .branding-standalone {
-    @include media-breakpoint-down(md) {
-      min-height: 90px;
-    }
-  }
-  .branding.small-screen {
-    @include media-breakpoint-down(md) {
-      display: block;
-    }
-  }
-  .branding.large-screen {
-    @include media-breakpoint-down(md) {
-      display: none;
-    }
-  }
-}
 
-/* rest of nav */
 nav {
   display: inline-block;
   flex-wrap: wrap;
@@ -62,7 +42,7 @@ nav {
   list-style: none;
   background-color: $color-black;
   color: $color-white;
-  font-weight: $font-weight-semibold;
+  font-weight: $font-weight-normal;
   letter-spacing: 0.1em;
   z-index: 1;
   @include media-breakpoint-up(lg) {
@@ -75,18 +55,6 @@ nav {
   }
 }
 
-/* show light border in homepage */
-.page-index {
-  nav {
-    @include media-breakpoint-up(lg) {
-      -webkit-box-shadow: 0 0.2px 5px rgba(255,255,255,0.1);
-      -moz-box-shadow: 0 0.2px 5px rgba(255,255,255,0.1);
-      box-shadow: 0 0.2px 5px rgba(255,255,255,0.1);
-    }
-
-  }
-}
-
 .nav-content {
   float: right;
   display: inline-table;
@@ -96,17 +64,13 @@ nav {
   }
 
   @include media-breakpoint-up(lg) {
-    //padding: $navbar-padding-y $navbar-padding-x;
     margin-left: auto;
   }
 
   @include media-breakpoint-down(md) {
-    position: absolute;
+    position: fixed;
     height: 100%;
-    width: 50%;
-    //-webkit-box-shadow: 0px 0 5px $color-yellow;
-    //-moz-box-shadow: 0px 0 5px $color-yellow;
-    //box-shadow: 0px 0 5px $color-yellow;
+    width: 260px;
     background-color: $color-black;
   }
 
@@ -114,7 +78,7 @@ nav {
     > a {
       font-weight: $font-weight-normal;
       color: $color-white;
-      border-bottom: 0.5px solid $color-yellow;
+      border-bottom: 0.5px solid $color-white;
       padding-bottom: 15px;
     }
     > a:hover, a:focus, a:active {
@@ -125,6 +89,9 @@ nav {
     background-color: $color-black;
     @include media-breakpoint-up(lg) {
       margin-top: 26px;
+      border-left: 0.5px solid $color-white;
+      border-right: 0.5px solid $color-white;
+      border-bottom: 0.5px solid $color-white;
     }
     @include media-breakpoint-down(md) {
       > a:before {
@@ -167,10 +134,10 @@ li.nav-item.dropdown {
   color: $color-white;
   padding: 0.5rem;
   &:hover, &:active, &:focus {
-    color: $color-yellow;
+    color: $color-yellow-bright;
   }
   &.selected {
-    color: $color-blue;
+    color: $color-yellow;
   }
 }
 
@@ -180,13 +147,14 @@ li.nav-item.dropdown {
   z-index: 9999;
   display: inline-block;
   cursor: pointer;
-  position: absolute;
+  position: relative;
   right: 10px;
   margin-top: 10px;
   background-color: $color-black;
   width: 34px;
   height: 30px;
   padding-left: 4px;
+  float: right;
   &:focus, &:active {
     outline: 1px solid $color-yellow;
   }
@@ -207,15 +175,15 @@ li.nav-item.dropdown {
 body.hamburger-menu-open {
   #burger-icon {
     :nth-child(1) {
-      -webkit-transform: rotate(-45deg) translate(-3.5px, 3px);
-      transform: rotate(-45deg) translate(-3.5px, 3px);
+      -webkit-transform: rotate(-45deg) translate(-3.5px, 6px);
+      transform: rotate(-45deg) translate(-3.5px, 6px);
     }
     :nth-child(2) {
       opacity: 0;
     }
     :nth-child(3) {
-      -webkit-transform: rotate(45deg) translate(-8px, -8px);
-      transform: rotate(45deg) translate(-8px, -8px);
+      -webkit-transform: rotate(45deg) translate(-5px, -8px);
+      transform: rotate(45deg) translate(-5px, -8px);
     }
     > .burger-item {
       background-color: $color-yellow;
@@ -223,39 +191,39 @@ body.hamburger-menu-open {
   }
 }
 
-/* sliding menu on small screen */
-
 body.hamburger-menu-closed {
   overflow-y: scroll;
   .nav-content {
-    right: -800px;
+    @include media-breakpoint-down(md) {
+      display: none;
+    }
     padding: 10px 20px;
-    transition: 0.3s;
+    right: -85%;
+    z-index: -1;
+    transition: height 0s .14s linear,visibility 0s .14s linear;
   }
   .main-content {
     position: relative;
     left: 0;
-    transition: 0.5s;
+    transition: transform .14s ease-in-out;
   }
-
 }
 
 body.hamburger-menu-open {
   overflow-y: hidden;
+  .nav-content {
+    right: 0;
+    transition: height 0s .14s linear,visibility 0s .14s linear;
+    z-index: 1;
+  }
+  .main-content {
+    position: relative;
+    transform: translatex(-260px) translatez(0);
+  }
   .nav-link {
     margin-left: 2rem;
   }
   .dropdown-item {
     padding-left: 2rem;
-  }
-  .nav-content {
-      //margin-left: 0;
-      transition: 0.3s;
-      right: 0;
-  }
-  .main-content {
-    position: relative;
-    left: -185px;
-    transition: 0.5s;
   }
 }

@@ -1,6 +1,20 @@
 @import 'variables';
 @import 'nav-inverse';
 
+@include media-breakpoint-down(md) {
+  #burger-icon {
+    background-color: $color-white;
+    .burger-item {
+      background-color: $color-black;
+    }
+  }
+  .dropdown-item {
+    background-color: $color-white;
+    color: $color-black !important;
+    border-bottom: 0.5px solid $color-black;
+  }
+}
+
 .basic-page.inverse .subtitle {
   font-family: $font-sans-serif;
   font-weight: $font-weight-semibold;
@@ -8,7 +22,17 @@
   &::before {
     margin-left: 0 !important;
     content: '' !important;
+  }
+}
 
+.page-section {
+  margin-bottom: 4rem !important;
+  @include media-breakpoint-down(md) {
+    border-bottom: 0.5px solid $color-white;
+    padding-bottom: 3rem;
+  }
+  &:last-child {
+    border-bottom: 0;
   }
 }
 
@@ -20,32 +44,45 @@
 
 .project-image {
   @include media-breakpoint-up(lg) {
-    > .main-img {
-      max-width: 80%;
+     .main-img {
+      max-width: 70%;
     }
   }
    @include media-breakpoint-down(md) {
-     > .main-img {
-       @include make-col(12);
-       max-width: 200px;
-       margin: 0 auto;
+     @include make-col(12);
+     .main-img {
+       display: none;
      }
    }
-  > .main-img.rounded {
+  .main-img.rounded {
     border-radius: 50%;
   }
 }
 
 footer {
   background-color: $color-red;
-  #lil-logo {
-    .lil-logo-item {
-      fill: $color-black;
-    }
+  .lil-logo {
+    @extend .footer-lil-logo-black;
   }
   @include media-breakpoint-down(md) {
     .credits { color: $color-white; }
   }
 }
 
+/* project specific style */
 
+.limerick-body {
+  font-body: $font-serif;
+}
+
+.wordcloud-item {
+  max-width: 100px !important;
+  float: left;
+  margin-right: 1rem;
+  .year {
+    color: $color-yellow;
+    &:hover, &:active, &:focus {
+      color: $color-white;
+    }
+  }
+}

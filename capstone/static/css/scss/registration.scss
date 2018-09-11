@@ -26,6 +26,21 @@ footer {
   }
 }
 
+label {
+  font-family: $font-serif;
+}
+.user-information {
+  label, input {
+    min-width: 100%;
+  }
+  input{
+    border: 0px;
+    color: $color-violet;
+    margin-bottom: 1rem;
+  }
+  margin-bottom: 2rem;
+}
+
 footer {
   background-color: $color-black;
   a {

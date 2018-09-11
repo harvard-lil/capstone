@@ -51,7 +51,7 @@
         </div>
       </li>
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle {% if page_name == 'gallery' %}selected{% endif %}"
+        <a class="nav-link dropdown-toggle {% if 'gallery' in page_name %}selected{% endif %}"
            href="#" id="navbar-dropdown"
            data-toggle="dropdown"
            aria-haspopup="true"
@@ -67,7 +67,7 @@
 
       <li class="nav-item">
         {% if request.user.is_authenticated %}
-        <a class="nav-link" href="/user/details">
+        <a class="nav-link {%  if page_name == 'user-details' %}selected{% endif %}" href="/user/details">
           ACCOUNT
         </a>
         {% else %}
@@ -76,6 +76,9 @@
           LOG IN
         </a>
         {% endif %}
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if page_name == 'contact' %}selected{% endif %}"" href="/contact">CONTACT</a>
       </li>
     </ul>
   </div>

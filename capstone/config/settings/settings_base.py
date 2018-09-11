@@ -195,7 +195,6 @@ PIPELINE = {
         'libsasscompiler.LibSassCompiler',
     ),
     'STYLESHEETS': {
-
         'base': {
             'source_filenames': (
                 'css/_normalize.css',
@@ -203,11 +202,35 @@ PIPELINE = {
             ),
             'output_filename': 'base.css'
         },
+        'index': {
+            'source_filenames': (
+                'css/scss/index.scss',
+            ),
+            'output_filename': 'index.css'
+        },
+        'about': {
+            'source_filenames': (
+                'css/scss/about.scss',
+            ),
+            'output_filename': 'about.css'
+        },
+        'tools': {
+            'source_filenames': (
+                'css/scss/tools.scss',
+            ),
+            'output_filename': 'tools.css'
+        },
         'gallery': {
             'source_filenames': (
                 'css/scss/gallery.scss',
             ),
             'output_filename': 'gallery.css'
+        },
+        'contact': {
+            'source_filenames': (
+                'css/scss/contact.scss',
+            ),
+            'output_filename': 'contact.css'
         },
         'docs': {
             'source_filenames': (
@@ -252,6 +275,19 @@ PIPELINE = {
                 'js/custom.js',
             ),
             'output_filename': 'base.js'
+        },
+        'limericks': {
+            'source_filenames': (
+                'js/limerick_lines.json',
+                'js/generate_limericks.js',
+            ),
+            'output_filename': 'limericks.js'
+        },
+        'limerick_lines': {
+            'source_filenames': (
+              'js/limerick_lines.json',
+            ),
+            'output_filename': 'limerick_lines.json'
         },
         'viz_totals': {
             'source_filenames': (
@@ -321,6 +357,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'test_data/pdfs'),
         },
     },
+    'bulk_export_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/bulk-data'),
+        },
+    },
 }
 
 INVENTORY = {
@@ -350,7 +392,7 @@ API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
 API_DOCS_CASE_ID = 2
-API_COUNT_CACHE_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 1 day
+CACHED_COUNT_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 1 day
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
 
@@ -370,7 +412,7 @@ EMAIL_PORT = 25
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST_USER = 'user-secret'
 EMAIL_HOST_PASSWORD = 'secret-secret'
-
+EMAIL_ADDRESS = 'info@example.com'
 
 # redis
 REDIS_HOST = 'localhost'

@@ -22,9 +22,10 @@
     <meta name="description" content="{% block meta_description %}Explore American Caselaw{% endblock meta_description %}">
 
     {% stylesheet "base" %}
+    {% javascript "base" %}
     {% block extra_head %}{% endblock %}
   </head>
-  <body class="page-{{ page_name }} hamburger-menu-closed">
+  <body class="hamburger-menu-closed">
     {% include "includes/nav.html" %}
     <div class="main-content flex-xl-nowrap" id="main" role="main">
         {% block content %}{% endblock content %}

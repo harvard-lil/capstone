@@ -1,12 +1,10 @@
 from django.urls import path, re_path, include
 from django.views.generic import TemplateView
-from django.contrib.auth import views as auth_views
 from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from capapi.views import api_views, user_views, doc_views, viz_views
-from capapi.forms import LoginForm
+from capapi.views import api_views, user_views, viz_views
 
 
 router = routers.DefaultRouter()
@@ -16,6 +14,7 @@ router.register('jurisdictions', api_views.JurisdictionViewSet)
 router.register('courts', api_views.CourtViewSet)
 router.register('volumes', api_views.VolumeViewSet)
 router.register('reporters', api_views.ReporterViewSet)
+router.register('bulk', api_views.CaseExportViewSet)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -52,6 +51,5 @@ urlpatterns = [
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
 
     ### bulk data ###
-    path('bulk-access/download/<str:public_or_private>/<str:jur>/<str:filename>', user_views.bulk_download, name='bulk-download'),
     path('bulk-access/', user_views.bulk, name='bulk-data'),
 ]

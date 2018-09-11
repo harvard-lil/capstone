@@ -65,55 +65,25 @@ footer {
       font-size: 2rem;
     }
   }
-}
 
-.content-left, .content-right {
-  @include media-breakpoint-up(lg) {
-    @include make-col(6);
-  }
-  .content-right {
-    float: right;
-  }
+  .content-left, .content-right {
+    @include media-breakpoint-up(lg) {
+      @include make-col(6);
+    }
+    .content-right {
+      float: right;
+    }
 
-  @include media-breakpoint-down(md) {
-    width: 100%;
-    padding: 15px;
-  }
-}
-
-
-/* footer colors for different pages */
-
-.page-index {
-  footer {
-    background-color: $color-violet;
-    color: $color-white;
-    a { color: $color-white; }
-  }
-}
-
-.page-about {
-  footer {
-    background-color: $color-yellow;
-    #lil-logo {
-      .lil-logo-item {
-        fill: $color-black;
+    @include media-breakpoint-down(md) {
+      width: 100%;
+      padding: 15px;
+      .lil-logo {
+        margin: 0 auto;
       }
     }
   }
-}
 
-.page-tools {
-  footer {
-    background-color: $color-black;
-    color: $color-white;
-    a {
-      color: $color-blue;
-      &:hover, &:active, &:focus {
-        color: $color-yellow;
-      }
-    }
+  .lil-logo {
+    @extend .footer-lil-logo-white;
   }
 }
-
-
