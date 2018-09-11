@@ -74,7 +74,9 @@ footer {
 /* project specific style */
 
 .limerick-body {
-  font-body: $font-serif;
+  font-size: 1.5rem;
+  font-weight: $font-weight-light;
+  font-style: italic;
 }
 
 .wordcloud-item {
