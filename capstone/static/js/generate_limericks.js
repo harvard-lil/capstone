@@ -12,10 +12,7 @@ function generate_limerick(){
             short_lines[1],
             long_lines[2]];
         return limerick;
-      })
-        .fail(function(){
-          console.log('failed');
-        });
+      });
 }
 
 function get_lines(emphasis_patterns, count){
@@ -71,7 +68,6 @@ function dict_random_sample(population, size){
 let generate = function() {
   $(".limerick-body").empty();
   generate_limerick().then(function(limerick){
-    console.log("limericks", limerick);
     for(l in limerick) {
       $(".limerick-body").append(limerick[l] + "<br/>");
     }
