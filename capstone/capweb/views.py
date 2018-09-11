@@ -6,6 +6,9 @@ from django.conf import settings
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site
+
+from capdb.models import CaseMetadata, Jurisdiction
+from capapi import serializers
 from capweb.resources import send_contact
 
 def index(request):
@@ -71,6 +74,26 @@ def wordclouds(request):
         "wordclouds": wordclouds,
     })
 
-
 def limericks(request):
     return render(request, "gallery/limericks.html")
+
+def api(request):
+    #TODO: Trim what we don't need here
+    try:
+        case = CaseMetadata.objects.get(id=settings.API_DOCS_CASE_ID)
+    except CaseMetadata.DoesNotExist:
+        case = CaseMetadata.objects.filter(duplicative=False).first()
+    reporter = case.reporter
+    reporter_metadata = serializers.ReporterSerializer(reporter, context={'request': request}).data
+    case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
+    whitelisted_jurisdictions = Jurisdiction.objects.filter(whitelisted=True).values('name_long', 'name')
+
+    return render(request, 'api.html', {
+        "page_name": True,
+        "case_metadata": case_metadata,
+        "case_id": case_metadata['id'],
+        "case_jurisdiction": case_metadata['jurisdiction'],
+        "reporter_id": reporter_metadata['id'],
+        "reporter_metadata": reporter_metadata,
+        "whitelisted_jurisdictions": whitelisted_jurisdictions,
+    })
