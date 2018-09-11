@@ -22,7 +22,14 @@ let setupBurgerAction = function() {
   });
 };
 
+let selectedNavStyling = function() {
+  let path = window.location.pathname.split('/')[1];
+  path = path.split('#')[0];
+  $('#nav-' + path).find('a').addClass('selected');
+};
+
 $(function() {
-    setupDropdown();
-    setupBurgerAction();
+  selectedNavStyling();
+  setupDropdown();
+  setupBurgerAction();
 });
