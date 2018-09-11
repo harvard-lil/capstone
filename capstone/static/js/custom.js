@@ -25,6 +25,8 @@ let setupBurgerAction = function() {
 let selectedNavStyling = function() {
   let path = window.location.pathname.split('/')[1];
   path = path.split('#')[0];
+  path = path === 'user' ? 'account': path;
+  path = path === 'bulk-access' || path === 'api' ? 'tools': path;
   $('#nav-' + path).find('a').addClass('selected');
 };
 
