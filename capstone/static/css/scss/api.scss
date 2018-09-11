@@ -1,3 +1,9 @@
+@import 'bootstrap/_functions.scss';
+@import 'bootstrap/_variables.scss';
+@import 'bootstrap/mixins';
+
+@import 'bootstrap/modal';
+
 @import "variables";
 @import "nav";
 nav {
