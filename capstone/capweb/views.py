@@ -52,7 +52,7 @@ def contact(request):
         return render(request, "contact_success.html")
 
     if request.user.is_authenticated:
-        form = ContactForm(initial={'sender': request.user.email})
+        form = ContactForm(initial={'email': request.user.email})
 
     return render(request, 'contact.html', {"form": form})
 
