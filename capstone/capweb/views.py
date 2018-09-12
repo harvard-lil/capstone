@@ -51,10 +51,13 @@ def contact(request):
         send_contact(form.data)
         return render(request, "contact_success.html")
 
-    if request.user.is_authenticated:
-        form = ContactForm(initial={'email': request.user.email})
+    email = request.user.email if request.user.is_authenticated else ""
 
-    return render(request, 'contact.html', {"form": form})
+    form = ContactForm(initial={"email": email})
+    return render(request, 'contact.html', {
+        "form": form,
+        "email": email,
+    })
 
 
 def tools(request):
