@@ -1,0 +1,46 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block extra_head %}
+  {% stylesheet 'gallery' %}
+{% endblock %}
+
+{% block title %} — Gallery{% endblock %}
+
+{% block meta_description %}
+Caselaw Access Project gallery
+{% endblock %}
+
+{% block content %}
+<div class="basic-page inverse">
+  <div class="full-content">
+    <div class="row">
+      <div class="page-title">
+        <h1>
+          <img alt=""
+               aria-hidden="true"
+               src='{% static "img/red-arrow-right.svg" %}'
+               class="decorative-arrow"/>
+          California Wordclouds
+        </h1>
+      </div>
+    </div>
+    <div class="row">
+      {# ==============> CONTENT <============== #}
+      <div class="content">
+        <ul class="list-inline">
+        {% for wordcloud in wordclouds %}
+          <li class="list-item-inline wordcloud-item">
+            <a href="{% static "" %}img/wordclouds/{{ wordcloud }}"><img class=""
+                    src="{% static "" %}img/wordclouds/{{ wordcloud }}"/>
+            <p class="year">{{ wordcloud|truncatechars:7}}</p>
+            </a>
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

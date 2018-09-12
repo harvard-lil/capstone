@@ -1,0 +1,73 @@
+{% load static %}
+<footer class="footer">
+  <div class="footer-content container-fluid">
+    <div class="row">
+      <div class="content-left">
+        <a href="https://lil.law.harvard.edu"
+           class="lil-logo"
+           alt="LIL logo"
+           target="_blank">
+        </a>
+      </div>
+      <div class="content-right">
+        <div class="text-right">
+          <ul class="list-inline links">
+            <li class="list-inline-item">
+              <a href="{% url "home" %}">HOME</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="{% url "about" %}">ABOUT</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="{% url "tools" %}">TOOLS</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="{% url "gallery" %}">GALLERY</a>
+            </li>
+            <li class="list-inline-item">
+              {% if request.user.is_authenticated %}
+              <a href="{% url "user-details" %}">
+                ACCOUNT
+              </a>
+              {% else %}
+              <a href="{% url "login" %}">
+                LOG IN
+              </a>
+              {% endif %}
+            </li>
+            <li class="list-inline-item">
+              <a href="{% url "contact" %}">CONTACT</a>
+            </li>
+          </ul>
+          <p class="credits copyright">
+            ©2017 The President and Fellows of Harvard University
+          </p>
+          <p class="credits">
+            The content on this site is covered under a
+            Creative Commons
+            <br/>
+            Attribution-ShareAlike 3.0 Unported license
+            unless otherwise noted
+          </p>
+        </div>
+      </div>
+      </div>
+      <div class="return-to-top">
+        <a id="return"
+            onclick="returnToTop()"
+            href="#">
+          <span class="arrow">&Uarr;</span>
+          <br/>
+          Return to top
+        </a>
+      </div>
+    </div>
+  </div>
+
+</footer>
+
+<script>
+  function returnToTop() {
+    window.scrollTo(0, 0);
+  }
+</script>

@@ -8,7 +8,6 @@ h3 {
 }
 
 h5.selected-jurisdiction {
-  font-family: $font-header-semibold;
   font-size: 1rem;
   padding-bottom: 2px;
   color: $color-black;
@@ -41,7 +40,6 @@ hr {
   padding-bottom: 7px;
   display: inherit;
   color: $color-black;
-  font-family: $font-header-bold;
   &:hover {
     border-bottom: 1px solid;
     color: $color-blue;
@@ -200,7 +198,6 @@ svg.us_territories {
 
 // viz - overview
 input[type="number"] {
-  font-family: $font-header-bold;
   font-size: 34px;
   border: 0;
   border-bottom: 1px solid $color-black;

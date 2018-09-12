@@ -1,0 +1,87 @@
+{% load static %}
+<!-- On small screens, show logo on its own row --->
+<div class="row branding-standalone">
+  <div class="branding small-screen">
+    <a class="nav-branding" href="{% url "home" %}"></a>
+  </div>
+</div>
+
+<nav role="navigation">
+    <div class="branding large-screen">
+      <a class="nav-branding" href="{% url "home" %}"></a>
+
+    </div>
+
+    <button id="burger-icon">
+      <div class="burger-item"></div>
+      <div class="burger-item"></div>
+      <div class="burger-item"></div>
+    </button>
+    </a>
+  <div class="nav-content">
+    <ul class="nav">
+      <li class="nav-item dropdown" id="nav-about">
+        <a class="nav-link dropdown-toggle "
+           href="#" id="navbar-dropdown"
+           data-toggle="dropdown"
+           aria-haspopup="true"
+           aria-expanded="false">
+          ABOUT
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
+          <a class="dropdown-item" href="{% url "about" %}">Overview</a>
+          <a class="dropdown-item" href="{% url "about" %}#data">What data?</a>
+          <a class="dropdown-item" href="{% url "about" %}#usage">Usage & access</a>
+          <a class="dropdown-item" href="{% url "about" %}#press">Press</a>
+          <a class="dropdown-item" href="{% url "about" %}#contributors">Contributors</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown" id="nav-tools">
+        <a class="nav-link dropdown-toggle "
+           href="#" id="navbar-dropdown"
+           data-toggle="dropdown"
+           aria-haspopup="true"
+           aria-expanded="false">
+          TOOLS
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
+          <a class="dropdown-item" href="{% url "tools" %}#overview">Overview</a>
+          <a class="dropdown-item" href="{% url "tools" %}#api">API</a>
+          <a class="dropdown-item" href="{% url "tools" %}#bulk">Bulk Data</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown" id="nav-gallery">
+        <a class="nav-link dropdown-toggle"
+           href="#" id="navbar-dropdown"
+           data-toggle="dropdown"
+           aria-haspopup="true"
+           aria-expanded="false">
+          GALLERY
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
+          <a class="dropdown-item" href="{% url "gallery" %}#overview">Overview</a>
+          <a class="dropdown-item" href="{% url "gallery" %}#h2o">H2O</a>
+          <a class="dropdown-item" href="{% url "gallery" %}#limericks">Limericks</a>
+          <a class="dropdown-item" href="{% url "gallery" %}#wordclouds">Wordclouds</a>
+        </div>
+      </li>
+
+      <li class="nav-item" id="nav-account">
+        {% if request.user.is_authenticated %}
+        <a class="nav-link" href="{% url "user-details" %}">
+          ACCOUNT
+        </a>
+        {% else %}
+        <a class="nav-link "
+           href="{% url "login" %}">
+          LOG IN
+        </a>
+        {% endif %}
+      </li>
+      <li class="nav-item" id="nav-contact">
+        <a class="nav-link" href="{% url "contact" %}">CONTACT</a>
+      </li>
+    </ul>
+  </div>
+
+</nav>

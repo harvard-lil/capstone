@@ -1,6 +1,29 @@
 {% extends "registration/base.html" %}
+{% load static %}
+
+{% block title %} — Logged out{% endblock %}
+
+{% block meta_description %}
+You have been logged out
+{% endblock %}
+
 
 {% block registration_content %}
-  <p>You have logged out.</p>
-  <p><a href="{% url 'login' %}">Log in again</a></p>
+   <h1>
+    <img alt=""
+         aria-hidden="true"
+         src='{% static "img/red-arrow-right.svg" %}'
+         class="decorative-arrow"/>
+    Logged out
+  </h1>
+  <div class="content">
+    <p>
+      You have logged out.
+    </p>
+    <p>
+      <a href="{% url 'login' %}">
+        Log in again
+      </a>
+    </p>
+  </div>
 {% endblock %}

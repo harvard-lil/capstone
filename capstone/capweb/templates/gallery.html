@@ -1,0 +1,164 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block extra_head %}
+  {% stylesheet 'gallery' %}
+{% endblock %}
+
+{% block title %} — Gallery{% endblock %}
+
+{% block meta_description %}
+Caselaw Access Project gallery
+{% endblock %}
+
+
+{% block content %}
+  <div class="basic-page inverse">
+    <div class="full-content">
+      <div class="row">
+        <div class="page-title">
+          <a name="overview"></a>
+          <h1>
+            <img alt=""
+                 aria-hidden="true"
+                 src='{% static "img/red-arrow-right.svg" %}'
+                 class="decorative-arrow"/>
+            Gallery
+          </h1>
+        </div>
+      </div>
+      <div class="row">
+        {# ==============> MENU <============== #}
+        <div class="list-group sidebar-menu">
+          <a class="list-group-item" href="#h2o">H2O</a>
+          <a class="list-group-item" href="#wordclouds">Wordclouds</a>
+          <a class="list-group-item" href="#limericks">Limericks</a>
+        </div>
+        {# ==============> CONTENT <============== #}
+        <div class="content">
+
+          {# ==============> OVERVIEW <============== #}
+          <div class="page-section">
+            <p>
+              Sky is the limit!
+              <br/> Here are some examples of what’s possible.
+            </p>
+          </div>
+          {# =============> H2O <============= #}
+          <div class="page-section">
+            <a name="h2o"></a>
+            <div class="row">
+              <div class="project-image">
+                <a href="https://opencasebook.org/"
+                   aria-label="Go to H2O homepage"
+                   title="H2O homepage"
+                   target="_blank">
+                  <img class="main-img rounded"
+                     alt="Wordcloud from 1930, California"
+                     src="{% static "img/h2o.png" %}">
+                </a>
+              </div>
+              <div class="project-description">
+                <h6 class="subtitle">H2O</h6>
+                <p>
+                  H2O uses the
+                  <a href="{% url "api" %}">
+                    CAP API
+                  </a>
+                  to provide free caselaw textbooks for anyone.
+                </p>
+                <p class="social">
+                  <span class="github">
+                    <a href="https://github.com/harvard-lil/h2o" target="_blank"
+                       title="H2O source code"
+                       aria-label="Go to wordclouds source code"></a>
+                  </span>
+
+                  <span class="website">
+                    <a href="https://opencasebook.org/"
+                       aria-label="Go to H2O homepage"
+                       title="H2O homepage"
+                       target="_blank">
+                    </a>
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {# =============> WORDCLOUDS <============= #}
+          <div class="page-section">
+            <a name="wordclouds"></a>
+            <div class="row">
+              <div class="project-image">
+                <a href="{% url "wordclouds" %}"
+                   title="Wordcloud homepage"
+                   aria-label="Go to wordclouds example">
+                  <img class="main-img rounded"
+                     alt="Wordcloud from 1930, California"
+                     src="{% static "img/wordclouds-1933.png" %}">
+                </a>
+              </div>
+              <div class="project-description">
+                <h6 class="subtitle">Wordclouds</h6>
+                <p>
+                  Most used words for every year of California caselaw from 1852 to 2015.
+                </p>
+                <p class="social">
+                  <span class="github">
+                    <a href="https://github.com/harvard-lil/cap-examples/blob/master/make_wordclouds.py" target="_blank"
+                       title="Wordcloud source code"
+                       aria-label="Go to wordclouds source code"></a>
+                  </span>
+                  <span class="website">
+                    <a href="{% url "wordclouds" %}"
+                       title="Wordcloud homepage"
+                       aria-label="Go to wordclouds example"></a>
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+          {# =============> LIMERICKS <============= #}
+          <div class="page-section">
+            <a name="limericks"></a>
+            <div class="row">
+              <div class="project-image">
+                <a href="{% url "limericks" %}"
+                   aria-label="Go to limericks example">
+                  <img class="main-img"
+                     alt="Limericks out of caselaw text"
+                     src="{% static "img/limerick.png" %}">
+                </a>
+              </div>
+              <div class="project-description">
+                <h6 class="subtitle">
+                  Limericks
+                </h6>
+                <p>
+                  Generate rhymes using caselaw!
+                </p>
+                <p class="social">
+                  <span class="github">
+                    <a href="https://github.com/harvard-lil/cap-examples/blob/master/generate_limerick.py" target="_blank"
+                       title="Limericks source code"
+                       aria-label="Go to limericks source code"></a>
+                  </span>
+
+                  <span class="website">
+                    <a href="{% url "limericks" %}"
+                       title="Limericks homepage"
+                       aria-label="Go to limericks example"></a>
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}

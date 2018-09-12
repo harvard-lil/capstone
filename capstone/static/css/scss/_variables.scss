@@ -1,265 +1,289 @@
-// Rajdhani
-@font-face {
-    font-family: 'rajdhanibold';
-    src: url('../../fonts/rajdhani-bold-webfont.woff2') format('woff2'),
-         url('../../fonts/rajdhani-bold-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
+@import 'bootstrap/_functions.scss';
+@import 'bootstrap/_variables.scss';
+@import 'bootstrap/mixins';
 
+// Titillium
 @font-face {
-    font-family: 'rajdhanilight';
-    src: url('../../fonts/rajdhani-light-webfont.woff2') format('woff2'),
-         url('../../fonts/rajdhani-light-webfont.woff') format('woff');
-    font-weight: normal;
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-black-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-black-webfont.woff') format('woff');
+    font-weight: 900;
     font-style: normal;
 }
 
 @font-face {
-    font-family: 'rajdhanimedium';
-    src: url('../../fonts/rajdhani-medium-webfont.woff2') format('woff2'),
-         url('../../fonts/rajdhani-medium-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'rajdhaniregular';
-    src: url('../../fonts/rajdhani-regular-webfont.woff2') format('woff2'),
-         url('../../fonts/rajdhani-regular-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'rajdhanisemibold';
-    src: url('../../fonts/rajdhani-semibold-webfont.woff2') format('woff2'),
-         url('../../fonts/rajdhani-semibold-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
-// Fira Sans
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-Light.eot');
-    src: local('Fira Sans Light'),
-         url('../../fonts/fira/eot/FiraSans-Light.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-Light.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-Light.ttf') format('truetype');
-    font-weight: 300;
-    font-style: normal;
-}
-
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-LightItalic.eot');
-    src: local('Fira Sans Light Italic'),
-         url('../../fonts/fira/eot/FiraSans-LightItalic.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-LightItalic.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-LightItalic.ttf') format('truetype');
-    font-weight: 300;
-    font-style: italic;
-}
-
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-Regular.eot');
-    src: local('Fira Sans Regular'),
-         url('../../fonts/fira/eot/FiraSans-Regular.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-Regular.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-Regular.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-}
-
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-Italic.eot');
-    src: local('Fira Sans Regular Italic'),
-         url('../../fonts/fira/eot/FiraSans-Italic.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-Italic.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-Italic.ttf') format('truetype');
-    font-weight: 400;
-    font-style: italic;
-}
-
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-Medium.eot');
-    src: local('Fira Sans Medium'),
-         url('../../fonts/fira/eot/FiraSans-Medium.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-Medium.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-Medium.ttf') format('truetype');
-    font-weight: 500;
-    font-style: normal;
-}
-
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-MediumItalic.eot');
-    src: local('Fira Sans Medium Italic'),
-         url('../../fonts/fira/eot/FiraSans-MediumItalic.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-MediumItalic.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-MediumItalic.ttf') format('truetype');
-    font-weight: 500;
-    font-style: italic;
-}
-
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-SemiBold.eot');
-    src: local('Fira Sans SemiBold'),
-         url('../../fonts/fira/eot/FiraSans-SemiBold.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-SemiBold.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-SemiBold.ttf') format('truetype');
-    font-weight: 600;
-    font-style: normal;
-}
-
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-SemiBoldItalic.eot');
-    src: local('Fira Sans SemiBold Italic'),
-         url('../../fonts/fira/eot/FiraSans-SemiBoldItalic.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-SemiBoldItalic.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-SemiBoldItalic.ttf') format('truetype');
-    font-weight: 600;
-    font-style: italic;
-}
-
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-Bold.eot');
-    src: local('Fira Sans Bold'),
-         url('../../fonts/fira/eot/FiraSans-Bold.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-Bold.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-Bold.ttf') format('truetype');
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-bold-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-bold-webfont.woff') format('woff');
     font-weight: 700;
     font-style: normal;
 }
 
-@font-face{
-    font-family: 'Fira Sans';
-    src: url('../../fonts/fira/eot/FiraSans-BoldItalic.eot');
-    src: local('Fira Sans Bold Italic'),
-         url('../../fonts/fira/eot/FiraSans-BoldItalic.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraSans-BoldItalic.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraSans-BoldItalic.ttf') format('truetype');
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-bolditalic-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-bolditalic-webfont.woff') format('woff');
     font-weight: 700;
     font-style: italic;
 }
 
-// Fira Mono
-@font-face{
-    font-family: 'Fira Mono';
-    src: url('../../fonts/fira/eot/FiraMono-Regular.eot');
-    src: local('Fira Mono'),
-         url('../../fonts/fira/eot/FiraMono-Regular.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraMono-Regular.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraMono-Regular.ttf') format('truetype');
-    font-weight: 400;
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-extralight-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-extralight-webfont.woff') format('woff');
+    font-weight: 200;
     font-style: normal;
 }
 
-@font-face{
-    font-family: 'Fira Mono';
-    src: url('../../fonts/fira/eot/FiraMono-Bold.eot');
-    src: local('Fira Mono Bold'),
-         url('../../fonts/fira/eot/FiraMono-Bold.eot') format('embedded-opentype'),
-         url('../../fonts/fira/woff/FiraMono-Bold.woff') format('woff'),
-         url('../../fonts/fira/ttf/FiraMono-Bold.ttf') format('truetype');
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-extralightitalic-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-extralightitalic-webfont.woff') format('woff');
+    font-weight: 200;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-italic-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-italic-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-light-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-light-webfont.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-lightitalic-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-lightitalic-webfont.woff') format('woff');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-regular-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-semibold-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-semibold-webfont.woff') format('woff');
     font-weight: 600;
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-semibolditalic-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-semibolditalic-webfont.woff') format('woff');
+    font-weight: 600;
+    font-style: italic;
+}
 
-// font
-$font-body: 'Fira Sans', Helvetica, Arial, sans-serif;
-$font-code: 'Fira Mono', monospace;
-$font-header-light: 'rajdhanilight', Helvetica, Arial, sans-serif;
-$font-header: 'rajdhaniregular', Helvetica, Arial, sans-serif;
-$font-header-semibold: 'rajdhanisemibold', Helvetica, Arial, sans-serif;
-$font-header-medium: 'rajdhanimedium', Helvetica, Arial, sans-serif;
-$font-header-bold: 'rajdhanibold', Helvetica, Arial, sans-serif;
 
-$section-subtitle-size: 20px;
+@font-face {
+    font-family: 'Libre Baskerville';
+    src: url('../../fonts/LibreBaskerville-Italic.woff') format('woff');
+    font-weight: 300;
+    font-style: italic;
+}
 
+
+@font-face {
+    font-family: 'Libre Baskerville';
+    src: url('../../fonts/LibreBaskerville-Regular.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+}
+
+
+
+// brand color
+$color-blue: #0075FF;
+
+// main colors
+$color-black: #2F2F2F;
+$color-violet: #6350FD;
+$color-red: #FF654D;
+$color-yellow: #FFD21B;
 
 // colors
+$color-white: white;
 $color-gray: #D9D9D9;
-$color-medium-gray: #686868;
-$color-tan: #F6F6F1;
+$color-medium-gray: #979797;
+$color-tan: #F7F6F2;
 $color-light-gray: #f7f7f9;
-$color-blue: #0075FF;
-$color-black: #2F2F2F;
 $color-medium-blue: #78B6FF;
 $color-light-blue: #D2E7FF;
 $color-dark-blue: #22349A;
 $color-orange: #EDA633;
+$color-yellow-bright: #FFFB00;
+
+
+//$color-yellow-light: #FFFDEA;
+$color-yellow-light: #EAEAFF;
+
+$color-violet-light: #6666CC;
+
+$color-violet-gray: #9797B0;
+$color-violet-gray-dark: #474756;
+
+.bg-black {
+  background: $color-black;
+  color: $color-white;
+  h1, .section-title, .section-subtitle {
+    color: $color-yellow;
+  }
+
+  .btn.btn-default {
+    background-color: white;
+    color: $color-black;
+    &:hover, &:active, &:focus {
+      background-color: $color-yellow;
+    }
+  }
+
+}
+
+.bg-yellow { background: $color-yellow; }
+
+.bg-tan { background: $color-tan; }
+
+.bg-violet-light { background: $color-violet-light; }
+
+.bg-white-violet {
+  background-color: $color-white;
+  color: $color-violet;
+}
+
+.color-white { color: $color-white; }
+
+.color-violet { color: $color-violet; }
+
+.color-red { color: $color-red; }
+
+.color-yellow { color: $color-yellow; }
+
+.color-orange { color: $color-orange; }
+
+.color-black { color: $color-black; }
+
+@mixin diagonal_gradient($color1, $color2) {
+  background: $color1; /* Old browsers */
+  background: -moz-linear-gradient(45deg, $color1 0%, $color2 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(45deg, $color1 0%,$color2 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(45deg, $color1 0%,$color2 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='$color1', endColorstr='$color2',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+.bg-gradient {
+  @include diagonal_gradient(#6350fd,#a559b3);
+  color: white;
+  /* in small screens, simply make background violet */
+  @include media-breakpoint-down(sm) {
+    background: $color-violet;
+  }
+}
 
 
 // mixins
 //////////// general
 .font-body {
-  font-family: $font-body;
-  font-size: 1rem;
+  font-family: 'titillium', Helvetica, Arial, sans-serif;
   font-weight: 300;
+  letter-spacing: 0.05em;
 }
 
-.font-body-bold {
-  @extend .font-body;
-  font-weight: 600;
-}
-
-.font-body-semibold {
-  @extend .font-body;
-  font-weight: 700;
-}
-
-.font-header {
-  font-family: $font-header;
-}
-
-.font-header-medium {
-  font-family: $font-header-medium;
-}
-
-.font-header-semibold {
-  font-family: $font-header-semibold;
-}
-
+.font-bold,
+.font-semibold,
+.font-body,
+.font-header,
 .font-header-bold {
-  font-family: $font-header-bold;
+  @extend .font-body;
 }
 
-.font-code {
-  font-family: $font-code;
+$font-weight-semibold: 600;
+
+$font-weight-light: 200;
+$font-weight-extra-light: 100;
+
+$font-serif: "Libre Baskerville", "Baskerville", "Georgia", serif;
+$font-sans-serif: "titillium", "Helvetica", sans-serif;
+
+
+.section-symbol {
+  top: -20px;
 }
 
-.font-code-bold {
-  font-family: $font-code;
-  font-weight: 700;
+// h6 starts at $base-font-size
+// headings grow from h6 to h1 by $heading-scale
+@include media-breakpoint-only(xl) {
+  $base-font-size: 20px;
+  $heading-scale: 8; // amount of px headings grow from h6 to h1
+  @for $i from 1 through 6 {
+  h#{$i} {
+    font-size: $base-font-size + $heading-scale * (6 - $i);
+  }
 }
 
-.inverse {
-  background-color: $color-black;
-  color: white;
-  strong, b, span {
-    color: white;
+}
+
+@include media-breakpoint-only(lg) {
+  $base-font-size: 18px;
+  $heading-scale: 8; // amount of px headings grow from h6 to h1
+  @for $i from 1 through 6 {
+    h#{$i} {
+      font-size: $base-font-size + $heading-scale * (6 - $i);
+    }
+  }
+
+}
+
+@include media-breakpoint-only(md) {
+  $base-font-size: 16px;
+  $heading-scale: 6; // amount of px headings grow from h6 to h1
+  @for $i from 1 through 6 {
+    h#{$i} {
+      font-size: $base-font-size + $heading-scale * (6 - $i);
+    }
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  $base-font-size: 14px;
+  $heading-scale: 4; // amount of px headings grow from h6 to h1
+  @for $i from 1 through 6 {
+    h#{$i} {
+      font-size: $base-font-size + $heading-scale * (6 - $i);
+    }
   }
 }
 
 
-//////////// grid / layout
+.section-subtitle {
+  margin-bottom: 1em;
+  margin-top: 20px;
+}
+
+/* grid / layout */
 .col-centered {
   margin: 0 auto;
   float: none;
 }
 
-.header-margin {
-  padding-top: 52px;
-}
+$header-margin-size: 4rem;
+
 
 .container-full {
   width: 100%;
@@ -276,11 +300,11 @@ $color-orange: #EDA633;
 }
 
 .bold-text {
-  @extend .font-body-bold;
+  @extend .font-bold;
 }
 
 .semibold-text {
-  @extend .font-body-semibold;
+  @extend .font-semibold;
 }
 
 .text-primary {
@@ -293,7 +317,7 @@ $color-orange: #EDA633;
 }
 
 strong, b {
-  @extend .font-body-semibold;
+  @extend .font-semibold;
 }
 
 /////////// buttons
@@ -331,7 +355,6 @@ strong, b {
   border-radius: 0;
 }
 
-/////////// alerts
 .alert {
   border: 0;
   background: $color-orange none;
@@ -340,3 +363,21 @@ strong, b {
   padding-right: 0;
 }
 
+/* logos */
+.footer-lil-logo {
+  width: 173px;
+  height: 90px;
+  display: block;
+}
+
+.footer-lil-logo-white {
+  @extend .footer-lil-logo;
+  background: url("../../img/lil-logo-white.png") no-repeat !important;
+  background-size: contain !important;
+}
+
+.footer-lil-logo-black {
+  @extend .footer-lil-logo;
+  background: url("../../img/lil-logo-black.png") no-repeat !important;
+  background-size: contain !important;
+}

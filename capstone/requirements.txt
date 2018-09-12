@@ -41,7 +41,6 @@ django-extensions==2.0.6
 django-filter==2.0.0
 django-libsass==0.7
 django-partial-index==0.4.0
-django-pipeline-compass==0.1.5
 django-pipeline==1.6.14
 django-redis==4.9.0
 django-simple-history==2.1.1
@@ -74,7 +73,8 @@ jsonpickle==0.9.6         # via aws-xray-sdk
 jsonpointer==1.14         # via flex
 jsonschema==2.6.0         # via swagger-spec-validator
 kombu==4.2.1              # via celery
-libsass==0.13.2           # via django-libsass
+libsass==0.14.5           # via django-libsass, libsasscompiler
+libsasscompiler==0.1.5
 lxml==3.7.3
 markupsafe==1.0           # via jinja2
 mccabe==0.6.1             # via flake8
@@ -103,7 +103,6 @@ pycurl==7.43.0
 pyflakes==1.5.0           # via flake8
 pynacl==1.2.1             # via paramiko
 pypdf2==1.26.0
-pyscss==1.3.5             # via django-pipeline-compass
 pytest-cov==2.5.1
 pytest-django==3.3.3
 pytest-factoryboy==2.0.1
@@ -123,7 +122,7 @@ rfc3987==1.3.7            # via flex
 rjsmin==1.0.12            # via django-compressor
 ruamel.yaml==0.15.37      # via drf-yasg
 s3transfer==0.1.10        # via boto3
-six==1.10.0               # via bcrypt, cryptography, django-extensions, docker, docker-pycreds, drf-yasg, fabric3, faker, flex, libsass, mock, more-itertools, moto, pathlib2, pip-tools, pynacl, pyscss, pytest, python-dateutil, python-jose, responses, swagger-spec-validator, websocket-client
+six==1.10.0               # via bcrypt, cryptography, django-extensions, docker, docker-pycreds, drf-yasg, fabric3, faker, flex, libsass, mock, more-itertools, moto, pathlib2, pip-tools, pynacl, pytest, python-dateutil, python-jose, responses, swagger-spec-validator, websocket-client
 strict-rfc3339==0.7       # via flex
 swagger-spec-validator==2.1.0
 tornado==5.0.2            # via flower

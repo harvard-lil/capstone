@@ -1,0 +1,46 @@
+@import 'variables';
+
+.basic-page {
+  background-color: $color-yellow;
+  .email-link {
+    color: $color-black;
+    border-bottom: 4px solid $color-blue;
+    &:hover, &:active, &:focus {
+      color: $color-blue;
+      border-bottom: 4px solid $color-blue;
+    }
+  }
+}
+
+input, textarea {
+  min-width: 100%;
+  margin-bottom: 10px;
+  padding: 5px;
+  border: 0;
+  outline: none;
+  @include media-breakpoint-down(md) {
+    max-width: 80%;
+    min-width: 80%;
+  }
+}
+
+.errorlist {
+  li {
+    color: $color-dark-blue;
+    font-size: 0.9rem;
+  }
+}
+
+.btn.btn-default {
+  border-bottom: 0;
+  &:active, &:focus {
+    background-color: $color-white;
+    color: $color-black !important;
+  }
+}
+
+footer {
+  .lil-logo {
+    @extend .footer-lil-logo-black;
+  }
+}

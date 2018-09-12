@@ -1,0 +1,37 @@
+@import 'variables';
+
+
+/* on index, display white background logo on small screens
+  display black background logo in all other instances */
+.branding-standalone {
+  @include media-breakpoint-down(md) {
+    min-height: 90px;
+  }
+}
+.branding.small-screen {
+  @include media-breakpoint-down(md) {
+    display: block;
+  }
+}
+.branding.large-screen {
+  @include media-breakpoint-down(md) {
+    display: none;
+  }
+}
+
+
+/* show light border in homepage */
+nav {
+  @include media-breakpoint-up(lg) {
+    border-bottom: 0.5px solid $color-white;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+  }
+}
+
+footer {
+  background-color: $color-violet;
+  color: $color-white;
+  a { color: $color-white; }
+}

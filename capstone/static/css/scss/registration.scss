@@ -1,0 +1,57 @@
+@import 'bootstrap/_functions.scss';
+@import 'bootstrap/_variables.scss';
+@import 'bootstrap/mixins';
+
+@import "bootstrap/variables";
+@import "bootstrap/forms";
+@import "variables";
+
+footer {
+  background-color: $color-violet;
+  color: $color-white;
+  a:hover, a:focus, a:active {
+    color: $color-yellow;
+  }
+}
+
+.content {
+  margin: 0 auto;
+  padding: 3rem 0;
+  @include make-col(9);
+  @include media-breakpoint-down(md) {
+    @include make-col(12);
+  }
+  a:hover, a:focus, a:active {
+    color: $color-blue;
+  }
+}
+
+label {
+  font-family: $font-serif;
+}
+.user-information {
+  label, input {
+    min-width: 100%;
+  }
+  input{
+    border: 0px;
+    color: $color-violet;
+    margin-bottom: 1rem;
+  }
+  margin-bottom: 2rem;
+}
+
+footer {
+  background-color: $color-black;
+  a {
+    color: $color-yellow;
+    &:hover, &:focus, &:active {
+      color: $color-blue;
+    }
+  }
+  #lil-logo {
+    .lil-logo-item {
+      fill: $color-yellow;
+    }
+  }
+}

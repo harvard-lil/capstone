@@ -1,0 +1,72 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block title %} — Your Account{% endblock %}
+{% block extra_head %}
+  {% javascript 'base' %}
+  {% stylesheet 'registration' %}
+{% endblock %}
+
+{% block content %}
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <div class="page-title">
+          <h1>
+            <img alt=""
+                 aria-hidden="true"
+                 src='{% static "img/red-arrow-right.svg" %}'
+                 class="decorative-arrow"/>
+            User details
+          </h1>
+        </div>
+        <div class="content">
+          <div class="user-information">
+            <label for="user-email">Email:</label>
+            <input id="user-email"
+                   readonly
+                   value="{{ request.user.email }}">
+            <br/>
+            <label for="user-api-key">API Key:</label>
+            <input id="user-api-key"
+                   readonly
+                   value="{{ request.user.get_api_key }}">
+            <br/>
+            {% if unlimited %}
+              <label for="user-unlimited-access-until">Unlimited access until:</label>
+              <input id="user-unlimited-access-until"
+                     readonly
+                     value="{{ request.user.unlimited_access_until }}">
+              <br/>
+            {% else %}
+              <label for="user-cases-left">Cases left to view today:</label>
+              <input id="user-cases-left"
+                     readonly
+                     value="{{ request.user.case_allowance_remaining }}">
+              <br/>
+              <label for="user-case-allowance">Case allowance (updated daily):</label>
+              <input id="user-case-allowance"
+                     readonly
+                     value="{{ request.user.total_case_allowance }}">
+              <br/>
+            </div>
+          {% endif %}
+        <div class="btn-group">
+          <a href="{% url "password_change" %}"
+            class="btn btn-default">
+            Change password
+          </a>
+          &nbsp;
+          <a href="{% url "logout" %}"
+            class="btn btn-default">
+            Log out
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+
+{% endblock content %}

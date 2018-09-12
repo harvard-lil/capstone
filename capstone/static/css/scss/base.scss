@@ -1,23 +1,76 @@
-@import '_variables.scss';
+@import 'bootstrap/_functions.scss';
+@import 'bootstrap/_variables.scss';
+@import 'bootstrap/mixins';
+
+@import "bootstrap/reboot";
+
+@import "bootstrap/type";
+@import 'bootstrap/grid';
+
+@import "bootstrap/utilities/spacing";
+@import "bootstrap/utilities/text";
+
+@import "bootstrap/list-group";
+
+@import 'variables';
+@import 'elements';
+@import 'dropdown';
+@import 'nav';
+@import 'footer';
+
+::selection {
+  background: $color-yellow-bright; /* WebKit/Blink Browsers */
+  color: $color-black;
+}
+
+::-moz-selection {
+  background: $color-yellow-bright; /* Gecko Browsers */
+  color: $color-black;
+}
+
+html, body {
+  height: 100%;
+}
 
 body {
   @extend .font-body;
-  height: 100%;
   /* push footer to bottom of screen if insufficient main-content to fill page */
   display: flex;
   flex-direction: column;
+  color: $color-black;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @extend .font-header-bold;
+  font-family: $font-serif;
 }
 
-a, button, .btn {
-  cursor: pointer;
+ul {
+  padding-left: 0;
+}
+
+li {
+  list-style: none;
+}
+
+section {
+  width: 100%;
+}
+
+table {
+  margin-bottom: 4rem;
+}
+
+table > tbody > tr {
+  line-height: 2.5rem;
+}
+
+table > tbody > tr > th {
+  font-family: $font-serif;
+  font-weight: $font-weight-normal;
+  min-width: 400px;
 }
 
 code {
-  @extend .font-code;
   background-color: $color-light-blue;
   color: $color-black;
   padding: 0 5px;
@@ -25,9 +78,7 @@ code {
 
 
 pre {
-  @extend .font-code;
   white-space: -moz-pre-wrap;
-  //white-space: -pre-wrap;
   white-space: -o-pre-wrap;
   white-space: pre-wrap;
   word-wrap: break-word; /* Internet Explorer 5.5+ */
@@ -35,247 +86,408 @@ pre {
 }
 
 a {
-  cursor: pointer;
-  border-bottom: 0;
-  color: $color-blue;
+  text-decoration: none;
+  color: $color-violet;
+  border-bottom: 4px solid $color-yellow-bright;
+
   &:hover, &:focus, &:active {
-    color: $color-black;
-    border-bottom: 0;
     text-decoration: none;
+    color: $color-blue;
   }
 }
 
-.btn {
-  font-size: 14px;
-  font-family: $font-body;
-  border-radius: 5px;
-  margin-bottom: 10px;
+a, button, .btn {
+  cursor: pointer;
+}
+
+button, .btn, .btn:hover, .btn:active, .btn:focus {
+  border: 0;
+}
+
+.main-content, footer {
+  //position: absolute;
+
+  //overflow: auto;
+}
+
+.list-group-item {
+  border-radius: 0 !important;
+}
+
+.basic-page {
+  padding: $header-margin-size 0;
+}
+
+.decorative-arrow {
+  margin-left: -2rem;
+  color: $color-red;
+  &.left { margin-left: 0.4rem; }
+  @include media-breakpoint-down(sm) {
+     display: none;
+  }
+}
+
+.row {
+  @extend .no-gutters;
 }
 
 .separator {
-  border-bottom: 1px solid $color-gray;
-  margin: 20px 0;
-}
-
-h1 {
-  letter-spacing: 1px;
-}
-
-
-.alpha-banner {
-  background-color: $color-black;
-  color: #fff;
-  padding: 10px;
-  a {
-    color: lighten($color-blue, 20%);
-    border-bottom: 1px solid lighten($color-blue, 20%);
+  border-bottom: 1px solid $color-medium-gray;
+  &.color-white {
+    border-bottom: 1px solid $color-white;
   }
 }
 
-.section-title {
-  font-size: 20px;
-  font-family: $font-header-semibold;
-  text-transform: uppercase;
-  letter-spacing: 0.8px; }
+.sidebar-menu {
+  @include make-col(4);
+  font-family: $font-serif;
+  padding-right: 15px;
+  .list-group-item {
+    border: 0;
+    color: $color-black;
 
-.header {
-  @extend .font-header-bold;
-  width: 100%;
-  position: fixed;
-  z-index: 10;
-  left: 0;
-  top: 0;
-  background-color: white;
-  border-bottom: 1px solid $color-gray;
-  .header-content {
-    padding: 0px 20px 10px 20px; }
-  .header-logo {
-    width: 24px;
-  }
-  .lil-logo {
-    padding-left: 15px;
-    width: 38px;
-  }
-  .header-text {
-    font-size: 14px;
-    left: 10px;
-    letter-spacing: 1.5px;
-    position: relative;
-    line-height: 26px;
-    &.cap-name {
-      color: $color-black;
+    &:hover, &:focus {
+      background-color: $color-yellow;
     }
-    &.alpha {
-      color: $color-blue;
-      margin-left: 3px;
-      font-size: 12px;
-    }
+  }
+  @include media-breakpoint-down(sm) {
+    display: none;
+  }
+}
 
-    span, a {
-      vertical-align: middle;
+/* Section styles */
+section {
+  padding-top: 5rem;
+  padding-bottom: 7rem;
+  @include media-breakpoint-down(sm) {
+    .section-title,
+    .section-subtitle {
+      color: $color-violet;
+    }
+    .section-subtitle {
+      font-weight: 300;
     }
   }
 }
 
-.main-content {
-  padding-left: 0;
-  padding-right: 0;
-  margin-bottom: 2em;
-  overflow-x: hidden;
-  /* push footer to bottom of screen if insufficient main-content to fill page */
-  flex: 1 0 auto;
-}
-
-.blue-button {
-  @extend .button;
-}
-
-.white-button {
-  @extend .button;
-  color: white;
-  background: transparent;
-  border: 1px solid white;
-}
-
-
-.remove-padding-left {
-  margin-left: 0;
-  left: -15px;
-  position: relative; }
-
-.alert .col-sm-4 {
-  padding-left: 0;
-  padding-right: 0; }
-.alert li {
-  list-style: none; }
-
-li {
-  list-style: none;
-}
-
-// SIDEBAR
-
-.nav-toc.sidebar {
-  @extend .font-header-medium;
-  background: $color-light-gray;
-  min-height: 100%;
-  padding-top: 60px;
-  padding-left: 15px;
-  li {
-    font-size: 16px;
-    letter-spacing: 0.5px;
-    color: $color-medium-gray;
-    text-align: right;
-    list-style: none;
-    padding: 10px 0;
-    background: transparent;
+section > .content {
+  margin: 0 auto;
+  @include make-col(10);
+  @include media-breakpoint-down(md) {
+    @include make-col(11);
   }
-  li a {
-    color: $color-medium-gray;
-    text-decoration: none;
-    &:hover, &:focus, &:active {
-      color: $color-blue;
-    }
+}
+
+section > .content > .row > .content-left {
+  @include media-breakpoint-only(xl) {
+    @include make-col(3);
   }
-  li.credits{
-    font-size: 12px;
+  @include media-breakpoint-only(lg) {
+    .decorative-arrow { margin-left: -2rem; }
+    @include make-col(4);
+  }
+  @include media-breakpoint-only(md) {
+    @include make-col(4);
+  }
+  @include media-breakpoint-down(sm) {
+    @include make-col(10);
+  }
+}
+
+section > .content > .row > .content-right {
+  /* usually includes subtitle, content */
+  h5, h6 { font-weight: $font-weight-semibold; }
+  @include media-breakpoint-only(xl) {
+    @include make-col(7);
+    @include make-col-offset(1);
+  }
+  @include media-breakpoint-only(lg) {
+    @include make-col(6);
+    @include make-col-offset(1);
+  }
+  @include media-breakpoint-only(md) {
     padding-left: 20px;
-    a {
-      color: $color-blue;
-      &:hover {
-        border-bottom: 1px solid $color-blue;
-      }
+    @include make-col(6);
+    @include make-col-offset(1);
+  }
+}
+
+/* show map only on medium sized devices and above */
+.content-right > .map {
+  margin-top: 3em;
+  margin-bottom: 3em;
+
+  @include media-breakpoint-down(sm) {
+    display: none;
+  }
+}
+
+#section-about > .content > .row {
+  .content-left,
+  .content-right {
+    @include media-breakpoint-down(sm) {
+      display: none;
+    }
+  }
+}
+
+#section-about {
+  @include media-breakpoint-down(sm) {
+    padding-top: 0;
+  }
+  .bg-white-violet {
+    padding: 1rem 2rem;
+    margin-bottom: 2rem;
+    min-width: 100%;
+  }
+}
+
+.content {
+  .numbers {
+    h1 { font-weight: $font-weight-bold; }
+  }
+}
+
+.content-right > .numbers-horizontal {
+  text-align: center;
+  @include media-breakpoint-down(lg) {
+    display: none;
+  }
+}
+
+.content-left > .numbers-vertical {
+  text-align: left;
+  @include media-breakpoint-only(xl) {
+    display: none;
+  }
+}
+
+.content-small-screen {
+  @include media-breakpoint-between(xs, sm) {
+    @include make-col(10);
+    margin: 0 auto;
+  }
+  @include media-breakpoint-up(md) {
+    display: none;
+  }
+  .small-screen-number-col {
+    @include make-col(6);
+    h1 { font-size: 5rem; }
+    h3 { font-size: 3rem; }
+    h4 { font-size: 1.8rem; }
+    h1, h3, h4, h5 {
+      font-family: $font-sans-serif;
+    }
+    @include media-breakpoint-only(sm) {
+      h1 { font-size: 7rem; }
+      h4 { font-size: 5rem; }
+      h3 { font-size: 4rem; }
+      h5 { font-size: 1.8rem; }
     }
   }
 
+  hr {
+    border-top: 2px solid $color-white;
+    width: 100%;
+  }
+
+  .row > .small-screen-number-col:nth-child(2) {
+    margin-top: 1rem;
+    border-top: 2px solid $color-white;
+    h4 {
+      margin-top: 1rem;
+    }
+  }
+
+  .row > .small-screen-number-col:nth-child(4) {
+    border-right: 2px solid $color-black;
+    max-width: 43%;
+    margin-right: 1rem;
+    color: $color-black;
+    > h3, h5 {
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  .border-white {
+    border-top: 2px solid $color-white;
+  }
+  .pages-scanned-number {
+    font-weight: $font-weight-light;
+  }
+  img {
+    float: right;
+    top: -20px;
+    position: relative;
+  }
+}
+
+section > .splash-quote {
+  margin: 0 auto;
+  text-align: center;
+  @include make-col(5);
+  @include media-breakpoint-down(md) {
+    @include make-col(8);
+    .decorative-arrow { display: none; }
+    > h3 {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+  }
+}
+
+li.item-set {
+  margin-bottom: 20px;
+  list-style: none;
+  a { font-weight: $font-weight-semibold; }
+  > .item-title {
+    margin-bottom: 0.5em;
+  }
+  > .item-origin {
+    color: $color-red;
+    font-weight: $font-weight-bold;
+  }
+  > .item-name {
+    //color: $color-violet;
+    font-weight: $font-weight-normal;
+  }
+  > .item-date {
+    color: $color-violet-gray;
+    padding-left: 0.5em;
+  }
+}
+
+
+.basic-page {
+  @extend .row;
+  h1 {
+    color: $color-black;
+  }
   ul {
-    min-width: 80%;
+    padding-left: 0;
   }
-}
+  li {
+    list-style: none;
+  }
+  img {
+    max-width: 100%;
+  }
+  .page-title {
+    @include media-breakpoint-up(md) {
+      @include make-col(6);
+    }
+  }
+  .subtitle {
+    color: $color-violet;
+  }
+  @include media-breakpoint-up(md) {
+    .subtitle:before {
+      content: "\00A7";
+      color: $color-yellow;
+      margin-left: -2.5rem;
+    }
+  }
 
-@media (min-width: 770px) {
-  .nav-toc.sidebar {
-    position: fixed;
-  }
-}
-
-footer {
-  width: 100%;
-  background-color: #0075ff;
-  margin-bottom: 0px;
-  hr.white-line {
-    color: white;
-  }
-  .credits {
-    width: 100%;
-    margin-bottom: 20px;
-  }
-  .credits p {
-    text-align: center;
-  }
-  .credits .name {
-    font-weight: 500;
-  }
-  .footer-content {
-    color: white;
-    width: 100%;
-    padding: 40px;
-    text-align: center;
-  }
-  .footer-content .cap-logo {
-    width: 54px;
-    height: 100px;
-    margin: 0 auto;
-    background-size: 54px 100px;
-    display: block;
-    text-indent: -9999px;
-  }
-  .footer-content .inline-link {
-    border-color: white;
-  }
-  a, a:hover, a:active {
-    padding-bottom: 3px;
-    border-bottom: 1px solid white;
-    text-decoration: none;
-    color: white;
-  }
-  h4.subheader {
-    margin-bottom: 40px;
-  }
-  h3.project-title {
+  .page-section {
     margin-bottom: 30px;
-    border-bottom: 0;
+    margin-top: 1rem;
   }
-  h3, h4, button {
-    margin-top: 10px;
+}
+
+.basic-page > .full-content {
+  margin: 0 auto;
+  @include make-col(10);
+  @include media-breakpoint-only(xl) {
+    @include make-col(6);
   }
-  h3 {
-    font-weight: 700;
-    font-size: 21px;
-    letter-spacing: 3px;
+  @include media-breakpoint-only(lg) {
+    @include make-col(8);
+  }
+}
+
+.basic-page {
+  .content {
+    @include media-breakpoint-up(md) {
+      @include make-col(8);
+    }
+  }
+  p {
+    margin-bottom: 2rem;
+  }
+}
+
+.basic-page.inverse {
+  background-color: $color-black;
+  color: $color-white;
+  a {
+    color: $color-white;
+  }
+  .page-title > h1 {
+    color: $color-white;
+  }
+  .list-group-item {
+    background-color: transparent;
+    color: $color-white;
+    &:focus, &:hover, &:active {
+      color: $color-black;
+      background-color: $color-yellow;
+    }
+  }
+  .subtitle {
+    color: $color-yellow;
+    border-bottom: 1px solid $color-yellow;
+  }
+  .sidebar-menu {
+    margin-left: -10px;
+    margin-right: 10px;
+    .list-group-item {
+      border-bottom: 0.5px solid $color-white;
+    }
+    .list-group-item:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+.github {
+  display: inline;
+}
+
+.social {
+  span { float: left; }
+  a {
+    background-position-x: 0;
+    border-bottom: none;
+    display: block;
+    height: 30px;
+    width: 30px;
+    margin-right: 10px;
+    &:hover, &:active, &:focus {
+      background-position-x: -30px !important;
+    }
+  }
+  .github > a {
+    background: url('../../img/github-sprite.svg') no-repeat;
+    background-size: auto 30px;
+  }
+  .website > a {
+    background: url('../../img/arrow-sprite.svg') no-repeat;
+    background-size: auto 30px;
   }
 }
 
 .inverse {
-  .form-control {
-    background-color: $color-black;
-    color: white;
-    border-radius: 0;
-  }
-  .form-control-sm {
-    border: 0px;
-    border-bottom: 1px solid $color-gray;
-    padding: 15px 0px;
-  }
-  label.col-form-label {
-    padding: 15px;
+  .social {
+    .github > a, .website > a {
+      background-position-x: -60px;
+    }
   }
 }
 
-//
-//// sidebar footer
-//.sidebar-footer {
-//  li.credits {
-//    max-width: 100px;
-//  }
-//}
+#usa-territories-white {
+  .state:hover {
+    fill: $color-yellow;
+    stroke: $color-yellow;
+    cursor: pointer;
+  }
+}

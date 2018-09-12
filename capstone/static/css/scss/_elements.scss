@@ -1,0 +1,51 @@
+@import '_variables.scss';
+
+// buttons
+.btn {
+  font-family: $font-sans-serif;
+  font-weight: $font-weight-normal;
+  font-size: 14px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  padding: 10px;
+  text-decoration: none !important;
+}
+
+.btn-default {
+  @extend .btn;
+  background-color: $color-violet;
+  color: $color-white;
+
+  &:hover, &:active {
+    background-color: $color-blue !important;
+    color: $color-white !important;
+  }
+  &:focus {
+    background-color: $color-yellow;
+    color: $color-black;
+  }
+}
+
+.btn-inverse {
+  @extend .btn;
+  border: 2px solid $color-black;
+  color: $color-black;
+  background: $color-white;
+  &:hover, &:focus, &:active {
+    background: $color-yellow;
+    border: 2px solid;
+    color: $color-black;
+  }
+}
+
+
+.highlighted {
+  color: $color-black;
+  background-color: $color-yellow-bright;
+}
+
+.decorative-arrow {
+  margin-left: -3rem;
+}
+

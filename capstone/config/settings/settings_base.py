@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
+    'compressor',
     'rest_framework_filters',
     'pipeline',
 
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     'tracking_tool',
     'capapi',
     'django_sql_trace',
+    'capweb',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
@@ -88,7 +90,8 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates')], # required by DRF for some reason
+        'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates'),
+                 os.path.join(BASE_DIR, 'capweb', 'templates')], # required by DRF for some reason
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -177,25 +180,57 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
     'pipeline.finders.PipelineFinder',
 )
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
 STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
 PIPELINE = {
     'COMPILERS': (
-        'pipeline_compass.compiler.CompassCompiler',
+        'libsasscompiler.LibSassCompiler',
     ),
     'STYLESHEETS': {
         'base': {
             'source_filenames': (
                 'css/_normalize.css',
-                'css/bootstrap.css',
                 'css/scss/base.scss',
             ),
             'output_filename': 'base.css'
+        },
+        'index': {
+            'source_filenames': (
+                'css/scss/index.scss',
+            ),
+            'output_filename': 'index.css'
+        },
+        'about': {
+            'source_filenames': (
+                'css/scss/about.scss',
+            ),
+            'output_filename': 'about.css'
+        },
+        'tools': {
+            'source_filenames': (
+                'css/scss/tools.scss',
+            ),
+            'output_filename': 'tools.css'
+        },
+        'gallery': {
+            'source_filenames': (
+                'css/scss/gallery.scss',
+            ),
+            'output_filename': 'gallery.css'
+        },
+        'contact': {
+            'source_filenames': (
+                'css/scss/contact.scss',
+            ),
+            'output_filename': 'contact.css'
         },
         'docs': {
             'source_filenames': (
@@ -203,16 +238,17 @@ PIPELINE = {
             ),
             'output_filename': 'docs.css'
         },
-        'login': {
+        'registration': {
             'source_filenames': (
-                'css/scss/login.scss',
+                'css/_normalize.css',
+                'css/scss/base.scss',
+                'css/scss/registration.scss',
             ),
-            'output_filename': 'login.css'
+            'output_filename': 'registration.css'
         },
         'api': {
             'source_filenames': (
                 'css/_normalize.css',
-                'css/bootstrap.css',
                 'css/scss/base.scss',
                 'css/scss/api.scss',
             ),
@@ -236,9 +272,22 @@ PIPELINE = {
         'base': {
             'source_filenames': (
                 'js/jquery-3.3.1.js',
-                'js/bootstrap.min.js',
+                'js/custom.js',
             ),
             'output_filename': 'base.js'
+        },
+        'limericks': {
+            'source_filenames': (
+                'js/limerick_lines.json',
+                'js/generate_limericks.js',
+            ),
+            'output_filename': 'limericks.js'
+        },
+        'limerick_lines': {
+            'source_filenames': (
+              'js/limerick_lines.json',
+            ),
+            'output_filename': 'limerick_lines.json'
         },
         'viz_totals': {
             'source_filenames': (
@@ -254,6 +303,12 @@ PIPELINE = {
                 'js/viz-details.js',
             ),
             'output_filename': 'viz_details.js'
+        },
+        'map_mouseovers': {
+            'source_filenames': (
+                'js/map-mouseovers.js',
+            ),
+            'output_filename': 'map_mouseovers.js'
         },
     },
 
@@ -357,7 +412,7 @@ EMAIL_PORT = 25
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST_USER = 'user-secret'
 EMAIL_HOST_PASSWORD = 'secret-secret'
-
+EMAIL_ADDRESS = 'info@example.com'
 
 # redis
 REDIS_HOST = 'localhost'
