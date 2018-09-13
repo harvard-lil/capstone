@@ -1,6 +1,7 @@
 {% extends "main_base.html" %}
 {% load static %}
 {% load pipeline %}
+{% load full_url %}
 
 {% block extra_head %}
   {% stylesheet 'tools' %}
@@ -96,7 +97,7 @@
                   Case Browse/Search Endpoint
                 </dt>
                 <dd>
-                  <a href="/api/v1/cases/">{{ request.build_absolute_uri }}api/v1/cases/</a>
+                  <a href="{% url "casemetadata-list" %}">{% full_url "casemetadata-list" %}</a>
                 </dd>
                 <dd>
                   <p>
