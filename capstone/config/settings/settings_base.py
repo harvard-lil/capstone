@@ -396,9 +396,6 @@ CACHED_COUNT_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
 
-# BULK DATA
-BULK_DATA_DIR = os.path.join(BASE_DIR, 'bulk-data')
-
 # DATA VISUALIZATION
 DATA_COUNT_DIR = '/tmp/count-data'
 
