@@ -143,12 +143,16 @@
 
           <h6>
             <span class="section-symbol color-red">&#167;</span>
-            <span class="color-violet">API</span>
+            <a href="{% url "api" %}">
+              API
+            </a>
           </h6>
           <p>The API allows users to browse and download cases using a few short commands.</p>
           <h6>
             <span class="section-symbol color-red">&#167;</span>
-            <span class="color-violet">Bulk data</span>
+            <a href="{% url "bulk-data" %}">
+              Bulk data
+            </a>
           </h6>
           <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
           <br/>
@@ -182,17 +186,22 @@
           </h5>
           <h6>
             <span class="section-symbol color-yellow">&#167;</span>
-            <span>Wordclouds</span>
+            <a class="color-white" href="{% url "wordclouds" %}">
+              Wordclouds
+            </a>
           </h6>
           <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
           <h6>
             <span class="section-symbol color-yellow">&#167;</span>
-            <span>Limericks</span>
+            <a class="color-white" href="{% url "limericks" %}">
+              Limericks
+            </a>
           </h6>
           <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
           <br/>
           <a class="btn btn-inverse"
-             href="/showcase#overview">See gallery</a>
+             href="{% url "gallery" %}">See gallery</a>
+
         </div>
       </div>
     </div>
