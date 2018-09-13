@@ -41,6 +41,7 @@
           <a class="list-group-item" href="#examples">Usage Examples</a>
           <a class="list-group-item" href="#endpoints">Endpoint Documentation</a>
           <a class="list-group-item" href="#limits">Access Limits</a>
+          <a class="list-group-item" href="#problems">Problems</a>
           <a class="list-group-item" href="#glossary">Glossary</a>
         </div>
         {# ==============> CONTENT <============== #}
@@ -55,24 +56,21 @@
             </p>
             <a id="overview"></a>
             <p>
-              The Caselaw Access Project API, also known as CAPAPI, serves all official, published US
-              court cases, and
-              their related metadata, from 1658 to 2018. We digitized every case in this database during
-              the first
-              phase of the Caselaw Access Project, which we embarked upon in 2013. Before that, nearly
-              every case
+              <a href="#usage">Click here for API usage instructions.</a><br>
+              <a href="#usage">Click here for endpoint documentation.</a>
+            </p>
+            <p>
+              The Caselaw Access Project API, also known as CAPAPI, serves all official, published US court cases, and
+              their related metadata, from 1658 to 2018. We digitized every case in this database during the first
+              phase of the Caselaw Access Project, which we embarked upon in 2013. Before that, nearly every case
               was sitting in its original binding on Harvard Law Library shelves.
               <a href="/">Click here to learn more about the project.</a>
             </p>
             <p>
-              CAPAPI is RESTful, and serves most of its data in JSON, but case text is also available in
-              plain
-              text, HTML, and XML. Though APIs are primarily useful to developers, anybody with a web
-              browser
-              can interact with it, though the interface is a bit clunky. (Perhaps, one day, some of you
-              ambitious software developers in the audience will make a lovely, open-source case browsing
-              application using this API. *nudge* *nudge*) <a href="#getting_started">Click here for some
-              usage examples.</a>
+              CAPAPI is <a href="#def-restful">RESTful</a> API, and serves most of its data in JSON, but case text is
+              also available in plain text, HTML, and XML. Though APIs are primarily useful to developers, anybody with
+              a web browser can interact with it, though the interface is a bit clunky. Want a better one? Know how to
+              code? Build your own project based on our data!
             </p>
             <p>
               Our goal in undertaking this project was to make the data as open as possible. While there
@@ -151,14 +149,15 @@
             </h4>
             <p>
               Are you a little lost in all the technical jargon? Here's a good place to start. This is by no means a
-              complete introduction to using APIs, but it might be just enough to help situate a technically inclined
-              person who's a bit outside of their comfort zone.
+              complete introduction to using <a href="#def-api">APIs</a>, but it might be just enough to help situate a
+              technically inclined person who's a bit outside of their comfort zone.
             </p>
             <p>
-              Fundamentally, an API is no different from a regular website: A program on your computer sends a bit
-              of data to a server, the server processes that data, and then sends a response. If you know how to
-              read a URL, you can interact with web-based services in ways that aren't limited to clicking on the
-              links and buttons on the screen.
+              Fundamentally, an API is no different from a regular website: A program on your computer, such as a web
+              browser or <a href="#def-curl">curl</a> sends a bit of data to a <a href="#def-server">server</a>, the
+              server processes that data, and then sends a response. If you know how to read a
+              <a href="#def-url">URL</a>, you can interact with web-based services in ways that aren't limited to
+              clicking on the links and buttons on the screen.
             </p>
             <p>
               Consider the following <a href="#def-url">URL</a>, which will
@@ -176,15 +175,17 @@
             <pre><code>www.google.com</code></pre>
             <p>
               The next part is a list of words, separated by periods, between the initial double-slash, and before the
-              subsequent single slash. Many people refer to this as the domain, which is only partly true; the important
-              takeaway here is that it points to a specific server, which is just another computer on the internet.
+              subsequent single slash. Many people generically refer to this as the domain, which is only partly true,
+              but the reason why that's not entirely true isn't really important for our purposes; the important
+              consideration here is that it points to a specific <a href="#def-server"server</a>, which is just another
+              computer on the internet.
             </p>
             <pre><code>/search</code></pre>
             <p>
               The next section, which is comprised of everything between the slash after the server name and the
-              question mark, is called the path. It's called a path because, in the earlier days of the web, it
-              was a path to a specific file on the web server. These days, it's more likely that the path will
-              point to a specific <a href="#def-endpoint">endpoint</a>.
+              question mark, is called the <a href="#def-path">path</a>. It's called a path because, in the earlier days
+              of the web, it was a 'path' through folders/directories to find a specific file on the web server. These
+              days, it's more likely that the path will point to a specific <a href="#def-endpoint">endpoint</a>.
             </p>
             <p>
               You can think of an endpoint as a distinct part of a program, which could require specific inputs,
@@ -202,14 +203,15 @@
             </p>
             <pre><code>?q=CAP</code></pre>
             <p>
-              The final section of the URL is where you'll find the parameters, and is comprised of everything
-              after the question mark. Parameters are a way of passing individual pieces of data, or values, to
-              the endpoint to help it perform its job. In this case, the parameter tells the <code>/search</code>
-              endpoint what to search for. Without this parameter, the response wouldn't be particularly useful.
+              The final section of the URL is where you'll find the <a href="#def-parameter">parameters</a>, and is
+              comprised of everything after the question mark. Parameters are a way of passing individual, labelled
+              pieces of information to the endpoint to help it perform its job. In this case, the parameter tells the
+              <code>/search</code> endpoint what to search for. Without this parameter, the response wouldn't be
+              particularly useful.
             </p>
             <p>
               A URL can contain many parameters, separated by ampersands, but in this instance, there is only one
-              parameter: the rather cryptically named "q," which is short for "query," that has a value of "CAP."
+              parameter: the rather cryptically named "q," which is short for "query," which has a value of "CAP."
               Parameter names are arbitrary— Google's developers could just as easily have set the parameter name
               to <code>?query=CAP</code>, but decided that "q" would sufficiently communicate its purpose.
             </p>
@@ -302,7 +304,7 @@
               {# ====> filter cases <==== #}
 
               <dt>
-                Retrieve a list of cases by citation
+                Retrieve a list of cases using a metadata filter
               </dt>
               <dd class="example-link">
                 <a href="{% url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}">
@@ -335,23 +337,61 @@
                       </li>
                     </ul>
                   </li>
+                </ul>
+              </dd>
+            </dl>
+            <dl>
+              {# ====> filter cases <==== #}
+              <dt>
+                Simple Full-Text Search
+              </dt>
+              <dd class="example-link">
+                <a href="{% url "casemetadata-list" %}?search=insurance">
+                  {% full_url "casemetadata-list" %}?search=insurance
+                </a>
+              </dd>
+              <dd>
+                <p class="example-description">
+                  This example performs a simple full-text case search which finds all cases containing the word
+                  "insurance."
+                </p>
+                <p>
+                  There are many parameters with which you can filter the cases result. Check the
+                  <a href="#endpoint-cases">cases</a> endpoint documentation for a complete list of the parameters, and
+                  what values they accept.
+                </p>
+                <lh>Modification with Parameters:</lh>
+                <ul class="parameter-list">
                   <li class="list-group-item">
-                    <lh>Raw original XML document, with METS data</lh>
+                    <lh>Add Search Term</lh>
                     <ul>
                       <li class="example-mod-url">
-                        <a href="{% url "casemetadata-list" %}{{ case_id }}/?full_case=true&body_format=xml">
-                          {% full_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=xml
+                        <a href="{% url "casemetadata-list" %}?search=insurance Peoria">
+                          {% full_url "casemetadata-list" %}?search=insurance Peoria
                         </a>
                       </li>
-                      <li class="example-mod-description">To get the document by itself, without the JSON enclosure and
-                        metadata, use the <code>format</code> parameter. Set it to HTML and get a display-ready,
-                        standalone HTML document.
+                      <li class="example-mod-description">You can narrow your search results by adding terms, separated
+                        by spaces. This search will only include cases that contain both "insurance" and Peoria.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh>Filter Search With Metadata</lh>
+                    <ul>
+                      <li class="example-mod-url">
+                        <a href="{% url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill">
+                          {% full_url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill
+                        </a>
+                      </li>
+                      <li class="example-mod-description">These queries can be filtered using other metadata fields.
+                        This query will perform the prior search while limiting the query to the Illinois jurisdiction.
                       </li>
                     </ul>
                   </li>
                 </ul>
               </dd>
             </dl>
+
 
             {# ====> Paginate <==== #}
             <dl>
@@ -884,7 +924,7 @@
               </dd>
             </dl>
           </div>
-          {# ==============> RESTRICTIONS <============== #}
+          {# ==============> ACCESS LIMITS <============== #}
           <div class="page-section">
             <a id="limits"></a>
             <h4 class="subtitle">
@@ -894,10 +934,10 @@
               The agreement with our project partner, <a href="http://ravellaw.com">Ravel</a>, stipulates that only
               bonafide <a href="#def-academic-user">academic researchers</a> can access more than 500 cases per day, so
               all <a href="#def-registered-user">registered users</a> are subject to this limitation. However, this
-              stipulation does not apply to jurisdictions with digital-first publishing, that is, they make their cases
-              freely available online in a citable, machine-readable format. We call these
-              <a href="#def-whitelisted">whitelisted</a> jurisdictions. Currently, Illinois and Arkansas are the only
-              whitelisted jurisdictions.
+              stipulation does not apply to <a href="#def-jurisdiction">jurisdictions</a> with digital-first publishing,
+              that is, they make their cases freely available online in a citable, machine-readable format. We call
+              these <a href="#def-whitelisted">whitelisted</a> jurisdictions. Currently, Illinois and Arkansas are the
+              only whitelisted jurisdictions.
             </p>
             <p>
               We would love to whitelist more jurisdictions! If you are involved in US case publishing, we'd love to
@@ -906,7 +946,8 @@
             </p>
             <p>
               If you think you qualify as a bonafide <a href="#def-academic-user">academic researcher</a> and would like
-              unrestricted access to non-<a href="#def-whitelisted">whitelisted</a> cases, email us at
+              unrestricted access to cases from non-<a href="#def-whitelisted">whitelisted</a>
+              <a href="#def-jurisdiction">jurisdictions</a>, email us at
               <a href="mailto:lil@law.harvard.edu">lil@law.harvard.edu</a>.
             </p>
             <p>
@@ -971,6 +1012,61 @@
                   information.</a>
               </dd>
             </dl>
+          </div>
+                    {# ==============> PROBLEMS <============== #}
+          <div class="page-section">
+            <a id="problems"></a>
+            <h4 class="subtitle">
+              Problems and Enhancement Requests
+            </h4>
+            <p>
+              <a href="https://github.com/harvard-lil/capstone#errata">Click here to see our data errata.</a><br>
+              <a href="https://github.com/harvard-lil/capstone">Click here to visit our Github repository</a><br>
+              We are serving an imperfect, living dataset through an API that will forever be a work-in-progress. We
+              work hard to hunt down and fix problems in both the API and the data, but a robust user base will uncover
+              problems more quickly than our small team could ever hope to. Here's the best way to report common types
+              of errors.
+            </p>
+            <dl>
+              <a href="https://github.com/harvard-lil/capstone#errata">errata</a>
+              <a href="https://github.com/harvard-lil/capstone/issues">issues</a>
+              <a href="https://github.com/harvard-lil/capstone">our Github repository</a>
+              <dt>
+                Jumbled or Misspelled Words in Case Text
+              </dt>
+              <dd>
+                For now, we're not accepting bug reports for <a href="#def-ocr">OCR</a> problems. While our data is
+                good quality for OCR'd text, we fully expect these errors in every case.  We're working on the best way
+                to tackle this.
+                </dd>
+
+              <dt>
+                Typos or Broken Links in Documentation or Website, API Error Messages or Performance Problems, and
+                Missing Features
+              </dt>
+              <dd>
+                First, please check our existing <a href="https://github.com/harvard-lil/capstone/issues">issues</a> to
+                see if someone has already reported the problem. If so, please feel free to comment on the issue to add
+                information. We'll update the issue when there's more information about the issue, so if you'd like
+                notifications, click on the "Subscribe" button on the right-hand side of the screen. If no issue exists,
+                create a new issue, and we'll get back to you as soon as we can.
+              </dd>
+
+              <dt>Incorrect Metadata or Improperly Labelled data in XML</dt>
+              <dd>
+                First, check our <a href="https://github.com/harvard-lil/capstone#errata">errata</a> to see if this is
+                a known issue. Then, check our existing
+                <a href="https://github.com/harvard-lil/capstone/issues">issues</a> to see if someone has already
+                reported the problem. If so, please feel free to comment on the issue to add context or additional
+                instances that the issue owner didn't report. We'll update the issue when there's more information about
+                the issue, so if you'd like notifications, click on the "Subscribe" button on the right-hand side of the
+                screen. If no issue exists, create a new issue and we'll get back to you as soon as we can.
+              </dd>
+
+            </dl>
+            <p>
+
+            </p>
           </div>
           {# ==============> GLOSSARY <============== #}
           <div class="page-section">
@@ -1052,6 +1148,16 @@
                 For most cases, jurisdiction usually means its state, territory, or tribal area, or . For some volumes,
                 Jurisdiction the jurisid
               </dd>
+
+              <dt>
+                <a id="def-ocr"></a>
+                OCR
+              </dt>
+              <dd>
+                OCR is a process in which a computer attempts to create text from an image of text. The text in our
+                cases is OCR-derived using scanned case reporter pages as source images.
+              </dd>
+
               <dt>
                 <a id="def-restful"></a>
                 RESTful
@@ -1120,9 +1226,8 @@
                 For our purposes, a parameter is just a piece of data with a label that can be passed to an
                 <a href="#def-endpoint">endpoint</a> in a web request.
               </dd>
-
               <dt>
-                <a id="def-parameter"></a>
+                <a id="def-path"></a>
                 URL Path
               </dt>
               <dd>
