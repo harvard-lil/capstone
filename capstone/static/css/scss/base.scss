@@ -414,7 +414,7 @@ li.item-set {
     .subtitle:before {
       content: "\00A7";
       color: $color-yellow;
-      margin-left: -2.5rem;
+      margin-left: -2rem;
     }
   }
 
@@ -466,6 +466,12 @@ li.item-set {
   .subtitle {
     color: $color-yellow;
     border-bottom: 1px solid $color-yellow;
+    a {
+      color: $color-yellow;
+      &:focus, &:hover, &:active {
+        color: $color-white;
+      }
+    }
   }
   .sidebar-menu {
     margin-left: -10px;
