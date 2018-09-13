@@ -23,8 +23,8 @@ User emails:
 
 %s
         """ % (site_limits.daily_downloads, site_limits.daily_signups, "\n".join(users_created_today)),
-        settings.API_EMAIL_ADDRESS,
-        [settings.API_EMAIL_ADDRESS],
+        settings.DEFAULT_FROM_EMAIL,
+        [settings.DEFAULT_FROM_EMAIL],
         fail_silently=False,
     )
 

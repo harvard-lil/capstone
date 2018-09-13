@@ -56,7 +56,7 @@ def contact(request):
 
     return render(request, 'contact.html', {
         "form": form,
-        "email": settings.EMAIL_ADDRESS
+        "email": settings.DEFAULT_FROM_EMAIL
     })
 
 

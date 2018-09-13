@@ -396,23 +396,21 @@ CACHED_COUNT_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
 
-# CAP API EMAIL #
-API_ADMIN_EMAIL_ADDRESS = 'main-email-address@example.com'
-API_EMAIL_ADDRESS = 'admin-email-address@example.com'
-
 # BULK DATA
 BULK_DATA_DIR = os.path.join(BASE_DIR, 'bulk-data')
 
 # DATA VISUALIZATION
 DATA_COUNT_DIR = '/tmp/count-data'
 
+# EMAIL
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST_USER = 'user-secret'
 EMAIL_HOST_PASSWORD = 'secret-secret'
-EMAIL_ADDRESS = 'info@example.com'
+DEFAULT_FROM_EMAIL = 'info@example.com'
+SERVER_EMAIL = 'info@example.com'
 
 # redis
 REDIS_HOST = 'localhost'
