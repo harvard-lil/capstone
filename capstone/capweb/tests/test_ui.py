@@ -10,7 +10,7 @@ from capapi.tests.helpers import check_response
 
 
 @pytest.mark.django_db
-def test_nav(client):
+def test_nav(client, case, reporter):
     """
     All our navigation links lead to somewhere 200 Ok
     """

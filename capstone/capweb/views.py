@@ -7,7 +7,7 @@ from django.conf import settings
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site
 
-from capdb.models import CaseMetadata, Jurisdiction
+from capdb.models import CaseMetadata, Jurisdiction, Reporter
 from capapi import serializers
 from capapi.resources import form_for_request
 
@@ -86,7 +86,7 @@ def api(request):
         case = CaseMetadata.objects.get(id=settings.API_DOCS_CASE_ID)
     except CaseMetadata.DoesNotExist:
         case = CaseMetadata.objects.filter(duplicative=False).first()
-    reporter = case.reporter
+    reporter = Reporter.objects.first()
     reporter_metadata = serializers.ReporterSerializer(reporter, context={'request': request}).data
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
     whitelisted_jurisdictions = Jurisdiction.objects.filter(whitelisted=True).values('name_long', 'name')
