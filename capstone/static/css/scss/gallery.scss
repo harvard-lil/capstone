@@ -43,6 +43,7 @@
 }
 
 .project-image {
+  > a { border-bottom: 0; }
   @include media-breakpoint-up(lg) {
      .main-img {
       max-width: 70%;
@@ -54,8 +55,9 @@
        display: none;
      }
    }
-  .main-img.rounded {
+  .main-img {
     border-radius: 50%;
+    border: 1px solid $color-violet;
   }
 }
 
@@ -72,7 +74,9 @@ footer {
 /* project specific style */
 
 .limerick-body {
-  font-body: $font-serif;
+  font-size: 1.5rem;
+  font-weight: $font-weight-light;
+  font-style: italic;
 }
 
 .wordcloud-item {

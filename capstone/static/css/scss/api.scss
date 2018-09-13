@@ -1,6 +1,12 @@
-@import "_variables.scss";
+@import 'bootstrap/_functions.scss';
+@import 'bootstrap/_variables.scss';
+@import 'bootstrap/mixins';
 
-.navbar.navbar-static-top .container {
+@import 'bootstrap/modal';
+
+@import "variables";
+@import "nav";
+nav {
   padding: 0;
   width: 100%;
 }

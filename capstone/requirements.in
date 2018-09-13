@@ -34,8 +34,6 @@ django-simple-history   # model versioning
 django-partial-index    # create partial postgres indexes
 django-redis        # use redis as Django cache backend
 
-libsasscompiler     # for compiling scss in pipeline
-
 # Admin stuff
 pip-tools           # freeze requirements.txt
 Fabric3             # project automation
@@ -51,12 +49,14 @@ factory-boy         # mocking
 pytest-factoryboy   # inject factory-boy factories into pytest fixtures
 bagit               # validate BagIt bag
 
+# SCSS
+libsasscompiler     # for compiling scss in pipeline
+
 # API
 beautifulsoup4
 django-extensions
 django-libsass
 django-pipeline
-django-pipeline-compass
 #djangorestframework-filters
 # switch back to next release post 8/1/18:
 -e git://github.com/philipn/django-rest-framework-filters.git@c5ffc8276431cf49dddbcebab322b142843de4ef#egg=djangorestframework-filters

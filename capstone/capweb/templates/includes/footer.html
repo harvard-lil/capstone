@@ -13,35 +13,34 @@
         <div class="text-right">
           <ul class="list-inline links">
             <li class="list-inline-item">
-              <a href="/">HOME</a>
+              <a href="{% url "home" %}">HOME</a>
             </li>
             <li class="list-inline-item">
-              <a href="/about">ABOUT</a>
+              <a href="{% url "about" %}">ABOUT</a>
             </li>
             <li class="list-inline-item">
-              <a href="/tools">TOOLS</a>
+              <a href="{% url "tools" %}">TOOLS</a>
             </li>
             <li class="list-inline-item">
-              <a href="/gallery">GALLERY</a>
+              <a href="{% url "gallery" %}">GALLERY</a>
             </li>
             <li class="list-inline-item">
               {% if request.user.is_authenticated %}
-              <a href="/user/details">
+              <a href="{% url "user-details" %}">
                 ACCOUNT
               </a>
               {% else %}
-              <a href="/user/login">
+              <a href="{% url "login" %}">
                 LOG IN
               </a>
               {% endif %}
             </li>
             <li class="list-inline-item">
-              <a href="/contact">CONTACT</a>
+              <a href="{% url "contact" %}">CONTACT</a>
             </li>
           </ul>
           <p class="credits copyright">
             ©2017 The President and Fellows of Harvard University
-            {#            {% include "includes/project_message.html" %}#}
           </p>
           <p class="credits">
             The content on this site is covered under a

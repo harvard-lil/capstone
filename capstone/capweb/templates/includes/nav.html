@@ -2,13 +2,13 @@
 <!-- On small screens, show logo on its own row --->
 <div class="row branding-standalone">
   <div class="branding small-screen">
-    <a class="nav-branding" href="/" alt="CAP logo"></a>
+    <a class="nav-branding" href="{% url "home" %}"></a>
   </div>
 </div>
 
 <nav role="navigation">
     <div class="branding large-screen">
-      <a class="nav-branding" href="/" alt="CAP logo"></a>
+      <a class="nav-branding" href="{% url "home" %}"></a>
 
     </div>
 
@@ -20,8 +20,8 @@
     </a>
   <div class="nav-content">
     <ul class="nav">
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle {% if page_name == 'about' %}selected{% endif %}"
+      <li class="nav-item dropdown" id="nav-about">
+        <a class="nav-link dropdown-toggle "
            href="#" id="navbar-dropdown"
            data-toggle="dropdown"
            aria-haspopup="true"
@@ -29,15 +29,15 @@
           ABOUT
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
-          <a class="dropdown-item" href="/about">Overview</a>
-          <a class="dropdown-item" href="/about#data">What data?</a>
-          <a class="dropdown-item" href="/about#usage">Usage & access</a>
-          <a class="dropdown-item" href="/about#press">Press</a>
-          <a class="dropdown-item" href="/about#contributors">Contributors</a>
+          <a class="dropdown-item" href="{% url "about" %}">Overview</a>
+          <a class="dropdown-item" href="{% url "about" %}#data">What data?</a>
+          <a class="dropdown-item" href="{% url "about" %}#usage">Usage & access</a>
+          <a class="dropdown-item" href="{% url "about" %}#press">Press</a>
+          <a class="dropdown-item" href="{% url "about" %}#contributors">Contributors</a>
         </div>
       </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle {% if page_name == 'tools' %}selected{% endif %}"
+      <li class="nav-item dropdown" id="nav-tools">
+        <a class="nav-link dropdown-toggle "
            href="#" id="navbar-dropdown"
            data-toggle="dropdown"
            aria-haspopup="true"
@@ -45,13 +45,13 @@
           TOOLS
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
-          <a class="dropdown-item" href="/tools#overview">Overview</a>
-          <a class="dropdown-item" href="/tools#api">API</a>
-          <a class="dropdown-item" href="/tools#bulk">Bulk Data</a>
+          <a class="dropdown-item" href="{% url "tools" %}#overview">Overview</a>
+          <a class="dropdown-item" href="{% url "tools" %}#api">API</a>
+          <a class="dropdown-item" href="{% url "tools" %}#bulk">Bulk Data</a>
         </div>
       </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle {% if 'gallery' in page_name %}selected{% endif %}"
+      <li class="nav-item dropdown" id="nav-gallery">
+        <a class="nav-link dropdown-toggle"
            href="#" id="navbar-dropdown"
            data-toggle="dropdown"
            aria-haspopup="true"
@@ -59,26 +59,27 @@
           GALLERY
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
-          <a class="dropdown-item" href="/gallery#overview">Overview</a>
-          <a class="dropdown-item" href="/gallery#limericks">Limericks</a>
-          <a class="dropdown-item" href="/gallery#wordclouds">Wordclouds</a>
+          <a class="dropdown-item" href="{% url "gallery" %}#overview">Overview</a>
+          <a class="dropdown-item" href="{% url "gallery" %}#h2o">H2O</a>
+          <a class="dropdown-item" href="{% url "gallery" %}#limericks">Limericks</a>
+          <a class="dropdown-item" href="{% url "gallery" %}#wordclouds">Wordclouds</a>
         </div>
       </li>
 
-      <li class="nav-item">
+      <li class="nav-item" id="nav-account">
         {% if request.user.is_authenticated %}
-        <a class="nav-link {%  if page_name == 'user-details' %}selected{% endif %}" href="/user/details">
+        <a class="nav-link" href="{% url "user-details" %}">
           ACCOUNT
         </a>
         {% else %}
-        <a class="nav-link {% if page_name == 'login' %}selected{% endif %}"
-           href="/user/login">
+        <a class="nav-link "
+           href="{% url "login" %}">
           LOG IN
         </a>
         {% endif %}
       </li>
-      <li class="nav-item">
-        <a class="nav-link {% if page_name == 'contact' %}selected{% endif %}"" href="/contact">CONTACT</a>
+      <li class="nav-item" id="nav-contact">
+        <a class="nav-link" href="{% url "contact" %}">CONTACT</a>
       </li>
     </ul>
   </div>

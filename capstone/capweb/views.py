@@ -9,7 +9,10 @@ from capweb.helpers import get_data_from_lil_site
 
 from capdb.models import CaseMetadata, Jurisdiction
 from capapi import serializers
+from capapi.resources import form_for_request
+
 from capweb.resources import send_contact
+
 
 def index(request):
     news = get_data_from_lil_site(section="news")
@@ -42,21 +45,19 @@ def about(request):
 
 
 def contact(request):
-    if request.method == 'GET':
-        initial_data = {}
-        if request.user.is_authenticated:
-            initial_data['sender'] = request.user.email
-        form = ContactForm(initial=initial_data)
-        return render(request, "contact.html", {
-            "form": form,
-            "email": settings.EMAIL_ADDRESS,
-        })
+    form = form_for_request(request, ContactForm)
 
-    if request.method == 'POST':
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            send_contact(form.data)
-            return render(request, "contact_success.html")
+    if request.method == 'POST' and form.is_valid():
+        send_contact(form.data)
+        return render(request, "contact_success.html")
+
+    email = request.user.email if request.user.is_authenticated else ""
+
+    form = ContactForm(initial={"email": email})
+    return render(request, 'contact.html', {
+        "form": form,
+        "email": email,
+    })
 
 
 def tools(request):
@@ -74,8 +75,10 @@ def wordclouds(request):
         "wordclouds": wordclouds,
     })
 
+
 def limericks(request):
     return render(request, "gallery/limericks.html")
+
 
 def api(request):
     #TODO: Trim what we don't need here

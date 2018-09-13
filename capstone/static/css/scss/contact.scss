@@ -1,21 +1,17 @@
 @import 'variables';
 
-.page-contact {
-  .basic-page {
-    background-color: $color-yellow;
-    .email-link {
-      color: $color-black;
+.basic-page {
+  background-color: $color-yellow;
+  .email-link {
+    color: $color-black;
+    border-bottom: 4px solid $color-blue;
+    &:hover, &:active, &:focus {
+      color: $color-blue;
       border-bottom: 4px solid $color-blue;
-      &:hover, &:active, &:focus {
-        color: $color-blue;
-        border-bottom: 4px solid $color-blue;
-      }
     }
   }
 }
-form {
-  //@include make-col(12);
-}
+
 input, textarea {
   min-width: 100%;
   margin-bottom: 10px;
@@ -44,9 +40,7 @@ input, textarea {
 }
 
 footer {
-   #lil-logo {
-    .lil-logo-item {
-      fill: $color-black;
-    }
+  .lil-logo {
+    @extend .footer-lil-logo-black;
   }
 }

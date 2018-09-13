@@ -419,6 +419,9 @@ li.item-set {
 .basic-page.inverse {
   background-color: $color-black;
   color: $color-white;
+  a {
+    color: $color-white;
+  }
   .page-title > h1 {
     color: $color-white;
   }
