@@ -110,3 +110,48 @@ nav {
 #get-form{
   display:none;
 }
+
+.param-label {
+  font-weight: bold;
+}
+
+.list-group-item > ul {
+  font-size: 12px;
+}
+
+.parameter-name {
+  margin-left: -10px;
+}
+
+li > code {
+  background-color: inherit;
+}
+
+.endpoint-link {
+  font-weight: bold;
+}
+
+dt {
+  font-size: 1.2em;
+  margin-left: -10px;
+}
+
+lh{
+  font-weight: bold;
+}
+
+.param-data-type::before {
+  font-weight: bold;
+  content: "data type: ";
+}
+
+.param-description::before {
+  font-weight: bold;
+  content: "description: ";
+}
+
+dt.example-explanation {
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 1em;
+}
