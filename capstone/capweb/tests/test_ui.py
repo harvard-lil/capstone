@@ -47,7 +47,7 @@ def test_contact(client, auth_client):
     response = client.get(reverse('contact'))
     soup = BeautifulSoup(response.content.decode(), 'html.parser')
     email = soup.find('a', {'class': 'contact_email'})
-    assert email.get('href').split("mailto:")[1] == settings.EMAIL_ADDRESS
+    assert email.get('href').split("mailto:")[1] == settings.DEFAULT_FROM_EMAIL
     assert not soup.find('input', {'id': 'id_email'}).get('value')
 
     response = auth_client.get(reverse('contact'))

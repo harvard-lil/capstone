@@ -10,7 +10,7 @@ def send_contact(data):
     subject = data.get('subject')
     message = data.get('message')
     email = data.get('email')
-    recipient_list = [settings.EMAIL_ADDRESS]
+    recipient_list = [settings.DEFAULT_FROM_EMAIL]
     send_mail(subject, message, email, recipient_list, fail_silently=False)
 
     logger.info("%s sent contact email" % email)

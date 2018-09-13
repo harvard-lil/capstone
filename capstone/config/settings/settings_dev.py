@@ -43,8 +43,6 @@ TEST_SLOW_QUERIES_DB_NAME = 'capstone_test_queries'
 # avoid test errors when running tests locally, since pytest-django sets DEBUG=False and staticfiles/ doesn't exist
 STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
-BULK_DATA_DIR = os.path.join(BASE_DIR, 'test_data/bulk-data')
-
 # django-debug-toolbar
 try:
     import debug_toolbar  # noqa
