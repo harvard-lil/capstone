@@ -6,7 +6,6 @@ from django.db.models import Q
 from lxml import etree
 from pyquery import PyQuery
 
-
 nsmap = {
     'duplicative': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body_Duplicative:v1',
     'mets': 'http://www.loc.gov/METS/',
@@ -192,7 +191,7 @@ def parse_xml(xml):
     # lxml requires byte string
     if type(xml) == str:
         xml = xml.encode('utf8')
-        
+
     return PyQuery(xml, parser='xml', namespaces=nsmap)
 
 
@@ -267,6 +266,7 @@ def extract_casebody(case_xml):
     case = parse_xml(text)
 
     return case('casebody|casebody')
+
 
 def court_name_strip(name_text):
     name_text = re.sub('\xa0', ' ', name_text)

@@ -9,10 +9,13 @@ from lxml import etree
 from model_utils import FieldTracker
 from partial_index import PartialIndex
 
+from django.contrib.postgres.indexes import GinIndex
+import django.contrib.postgres.search as pg_search
+
 from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, jurisdiction_translation_long_name)
+                             serialize_xml, jurisdiction_translation_long_name, extract_casebody)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -698,6 +701,8 @@ class CaseMetadata(models.Model):
     opinions = JSONField(null=True, blank=True)
     attorneys = JSONField(null=True, blank=True)
 
+
+    tsvector = pg_search.SearchVectorField(blank=True,null=True)
     docket_number = models.CharField(max_length=20000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
@@ -764,10 +769,13 @@ class CaseMetadata(models.Model):
             PartialIndex(fields=['jurisdiction_slug', 'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             PartialIndex(fields=['court',             'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             PartialIndex(fields=['reporter',          'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
+            # index for full text search
+            GinIndex(fields=['tsvector']),
         ]
 
     def full_cite(self):
         return "%s, %s (%s)" % (self.name_abbreviation, ", ".join(cite.cite for cite in self.citations.all()), self.decision_date.year)
+
 
 
 class CaseXML(BaseXMLModel):
@@ -782,14 +790,13 @@ class CaseXML(BaseXMLModel):
 
     @transaction.atomic(using='capdb')
     def save(self, update_related=True, *args, **kwargs):
-
         # allow disabling of create_or_update_metadata for testing
         create_or_update_metadata = kwargs.pop('create_or_update_metadata', True)
 
         if self.tracker.has_changed('orig_xml'):
             # prefetch data needed by create_or_update_metadata() and process_updated_xml()
             fetch_relations(self,
-                select_relations=['volume__metadata__reporter', 'metadata'],
+                select_relations=['volume__metadata__reporter', 'metadata__case_text'],
                 prefetch_relations=['metadata__citations'])
 
             # Create or update related CaseMetadata object
@@ -946,6 +953,7 @@ class CaseXML(BaseXMLModel):
 
         self.orig_xml = serialize_xml(parsed_updated_case)
 
+
     def create_or_update_metadata(self, update_existing=True, save_self=True):
         """
             creates or updates CaseMetadata object
@@ -963,6 +971,8 @@ class CaseXML(BaseXMLModel):
         else:
             case_metadata = CaseMetadata()
             metadata_created = True
+
+
 
         # set up data
         data = get_case_metadata(force_str(self.orig_xml))
@@ -1016,6 +1026,13 @@ class CaseXML(BaseXMLModel):
                     court.save()
 
         case_metadata.save()
+
+        # create case text and tsvector (which is created via a DB trigger)
+        if not hasattr(case_metadata, 'case_text'):
+            case_metadata.case_text = CaseText()
+
+        case_metadata.case_text.text = extract_casebody(force_str(self.orig_xml)).text()
+        case_metadata.case_text.save()
 
         ### Handle citations
 
@@ -1148,6 +1165,15 @@ class SlowQuery(models.Model):
     def __str__(self):
         return self.label or self.query
 
+class CaseText(models.Model):
+    """
+    This is nothing more than a plain-text rendition of a case and the metadata field it's connected
+    to. When this gets inserted or updated, a database trigger runs a function, both of which are
+    defined in scripts.set_up_postgres, that creates writes a tsvector to the casemetadata field.
+    """
+    text = models.TextField(blank=True, null=True)
+    metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_text',
+                                    on_delete=models.SET_NULL)
 
 class CaseExportQuerySet(models.QuerySet):
     """ Query methods for BaseXMLModel. """

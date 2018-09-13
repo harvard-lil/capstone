@@ -6,7 +6,6 @@ from test_data.test_fixtures.factories import *
 from scripts.process_metadata import parse_decision_date
 from capapi.tests.helpers import check_response
 
-
 @pytest.mark.django_db
 def test_flow(client, api_url, case):
     """user should be able to click through to get to different tables"""
@@ -363,10 +362,23 @@ def test_body_format_html(auth_client, case):
     data = get_casebody_data_with_format(auth_client, case, "html")
     assert "</h4>" in data
 
+@pytest.mark.django_db
+def test_full_text_search(api_url, client, ingest_case_xml):
+    # filtering case with full-text search
+    case_to_test = CaseXML.objects.get(metadata__case_id="32044057892259_0001").metadata
+    wrong_case = CaseXML.objects.get(metadata__duplicative=True).metadata
+    response = client.get("%scases/?search=%s" % (api_url, "insurance peoria"))
+    content = response.json()
+    assert [case_to_test.id] == [result['id'] for result in content['results']]
+    assert [wrong_case.id] != [result['id'] for result in content['results']]
+    response = client.get("%scases/?search=%s" % (api_url, "Punk in Drublic"))
+    content = response.json()
+    assert content == {'previous': None, 'count': 0, 'results': [], 'next': None}
 
 # FILTERING
 @pytest.mark.django_db
 def test_filter_case(api_url, client, three_cases, court, jurisdiction):
+
     # filtering case by court
     case_to_test = three_cases[2]
     case_to_test.court = court
@@ -433,6 +445,7 @@ def test_filter_case(api_url, client, three_cases, court, jurisdiction):
     content = response.json()
     result = content['results'][0]
     assert case_to_test.docket_number== result['docket_number']
+
 
 
 @pytest.mark.django_db

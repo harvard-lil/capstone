@@ -1,6 +1,7 @@
 from datetime import datetime
 from celery import shared_task
 from django.db import connections, transaction
+from scripts.helpers import extract_casebody
 
 from capdb.models import *
 
@@ -160,3 +161,38 @@ def get_court_count_for_jur(jurisdiction_id):
     }
 
     return results
+
+
+def create_case_text_for_all_cases(update_existing=False):
+    """
+        iterate through all volumes, call celery task for each volume
+    """
+    jurisdictions = Jurisdiction.objects.all()
+
+    for jurisdiction in jurisdictions:
+        query = CaseMetadata.objects.filter(duplicative=False, jurisdiction=jurisdiction)
+
+        # if not updating existing, then only launch jobs for volumes with unindexed cases:
+        if not update_existing:
+            query = query.filter(case_text=None).distinct()
+
+        # launch a job for each volume:
+        for cmd_id in query.values_list('pk', flat=True):
+            create_case_text.delay(cmd_id, update_existing=update_existing)
+
+
+@shared_task
+def create_case_text(case_id, update_existing=False):
+    """
+        create or update cases for each volume
+    """
+    case_metadata = CaseMetadata.objects.select_related('case_xml', 'case_text').get(pk=case_id)
+
+    if not hasattr(case_metadata, 'case_text'):
+        case_metadata.case_text = CaseText()
+    elif not update_existing:
+        return False
+
+    case_metadata.case_text.text = extract_casebody(case_metadata.case_xml.orig_xml).text()
+    case_metadata.case_text.save()
+
