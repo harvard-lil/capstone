@@ -104,7 +104,6 @@ nav {
 
 /* show symbols on expand and collapse of dropdowns */
 li.nav-item.dropdown {
-
   > a.nav-link:after {
     content: url('../../img/arrow-expand.svg');
   }

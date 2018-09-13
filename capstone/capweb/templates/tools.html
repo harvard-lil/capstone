@@ -32,8 +32,8 @@ Caselaw Access Project Tools
         {# ==============> MENU <============== #}
         <div class="list-group sidebar-menu">
           <a class="list-group-item" href="#overview">Overview</a>
-          <a class="list-group-item" href="#api">API</a>
-          <a class="list-group-item" href="#bulk">Bulk Data</a>
+          <a class="list-group-item" href="{% url "api" %}">API</a>
+          <a class="list-group-item" href="{% url "bulk-data" %}">Bulk Data</a>
         </div>
         {# ==============> CONTENT <============== #}
           <div class="content">
@@ -54,32 +54,30 @@ Caselaw Access Project Tools
               <p>
                 The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
                   and their associated metadata. We currently offer two ways to access the data: our
-                  <a href="#api">API</a>, and <a href="#bulk">bulk downloads</a>.
+                  <a href="{% url "api" %}">API</a>, and <a href="{% url "bulk-data" %}">bulk downloads</a>.
               </p>
             </div>
             {# ==============> API  <============== #}
             <div class="page-section">
               <a name="api"></a>
               <h4 class="subtitle">
-                  The API
+                <a href="{% url "api" %}">The API</a>
               </h4>
-                <p>
-
-                    <a href="/api" >Click for our API, and related documentation.</a>
-                </p>
               <p>
                   Our open-source API is the best option for anybody interested in programmatically accessing our
                   metadata, full-text search, or individual cases.
               </p>
+              <a class="btn btn-default"
+                 href="{% url "bulk-data" %}">See API</a>
+              <br/><br/>
             </div>
 
             {# ==============> BULK!! <============== #}
             <div class="page-section">
               <a name="bulk"></a>
               <h4 class="subtitle">
-                  Bulk Downloads
+                <a href="{% url "bulk-data" %}">Bulk Downloads</a>
               </h4>
-                <p><a href="/bulk-access/">Click here for bulk data downloads.</a></p>
               <p>
                 If you need a large collection of cases, you will probably be best served by our bulk data downloads.
                   With no registration or formal agreements, we offer zip files containing all cases from Illinois and
@@ -88,6 +86,8 @@ Caselaw Access Project Tools
                   information. Those interested in licensing this data case for commercial use should
                   <a href="http://info.ravellaw.com/contact-us-form">contact Ravel Law</a> for more information.
               </p>
+              <a class="btn btn-default"
+                 href="{% url "bulk-data" %}">See bulk downloads</a>
             </div>
           </div>
         </div>

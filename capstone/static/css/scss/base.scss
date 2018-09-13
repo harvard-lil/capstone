@@ -409,6 +409,9 @@ li.item-set {
   }
   .subtitle {
     color: $color-violet;
+    a {
+      border-bottom: 0;
+    }
   }
   @include media-breakpoint-up(md) {
     .subtitle:before {
