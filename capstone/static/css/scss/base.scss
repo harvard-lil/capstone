@@ -232,9 +232,6 @@ section > .content > .row > .content-right {
 }
 
 #section-about {
-  @include media-breakpoint-down(sm) {
-    padding-top: 0;
-  }
   .bg-white-violet {
     padding: 1rem 2rem;
     margin-bottom: 2rem;
@@ -325,6 +322,7 @@ section > .content > .row > .content-right {
 section > .splash-quote {
   margin: 0 auto;
   text-align: center;
+  padding-bottom: 3rem;
   @include make-col(5);
   @include media-breakpoint-down(md) {
     @include make-col(8);
@@ -334,6 +332,38 @@ section > .splash-quote {
       line-height: 2rem;
     }
   }
+}
+
+#section-quote {
+  padding-bottom: 0;
+  position: relative;
+  .decorative-mountains-red {
+    float: right;
+    bottom: -6px;
+    position: relative;
+  }
+
+  @include media-breakpoint-down(md) {
+    .decorative-mountains-purple,
+    .decorative-mountains-red {
+      display: none;
+    }
+  }
+}
+
+/* arrow shape */
+#section-quote:after {
+  top: 100%;
+  left: 50%;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border: 30px solid rgba(0, 0, 0, 0);
+  border-top-color: $color-black;
+  margin-left: -30px;
+  margin-top: -1px;
 }
 
 li.item-set {
