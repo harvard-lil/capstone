@@ -1,6 +1,7 @@
 {% extends "main_base.html" %}
 {% load static %}
 {% load pipeline %}
+{% load full_url %}
 
 {% block extra_head %}
   {% stylesheet 'tools' %}
@@ -39,7 +40,7 @@
           <a class="list-group-item" href="#beginners">Begginer's Introduction</a>
           <a class="list-group-item" href="#examples">Usage Examples</a>
           <a class="list-group-item" href="#endpoints">Endpoint Documentation</a>
-          <a class="list-group-item" href="#restrictions">Usage Restrictions</a>
+          <a class="list-group-item" href="#limits">Access Limits</a>
           <a class="list-group-item" href="#glossary">Glossary</a>
         </div>
         {# ==============> CONTENT <============== #}
@@ -76,11 +77,11 @@
             <p>
               Our goal in undertaking this project was to make the data as open as possible. While there
               are
-              restrictions that affect some users trying to access more than 500 cases per day, metadata
+              access limits that affect some users trying to access more than 500 cases per day, metadata
               for every
               case in every jurisdiction, and all cases from Illinois and Arkansas are available without
-              restriction; you don't even need to be logged in or use an API key. <a href="#restrictions">Click
-              here for more information on access restrictions, what type of users aren't subject to them,
+              access limits; you don't even need to be logged in or use an API key. <a href="#limits">Click
+              here for more information on access limits, what type of users aren't subject to them,
               and how
               you can advocate to eliminate them in your legal jurisdiction.</a>
             </p>
@@ -95,8 +96,8 @@
               <a href="user/register/">Click here to register an account.</a>
             </p>
             <p>
-              Your account will give you access to 500 cases per day. <a href="#restrictions">Click
-              here for more information on access restrictions, what type of users and jurisdictions
+              Your account will give you access to 500 cases per day. <a href="#limits">Click
+              here for more information on access limits, what type of users and jurisdictions
               aren't
               subject to them, and how you can advocate to eliminate them in your legal jurisdiction.</a>
             </p>
@@ -128,9 +129,10 @@
               <code>"Authorization: Token your-token-here"</code> header in your request. For example, if your
               authentication token is abcd12345, a curl command would look like this:
             </p>
-              <blockquote>
-                <code>curl -H "Authorization: abcd12345" "{{ request.build_absolute_uri }}api/v1/cases/?limit=1&full_case=true"</code>
-              </blockquote>
+            <blockquote>
+              <code>curl -H "Authorization: abcd12345"
+                "{% full_url "casemetadata-list" %}?limit=1&full_case=true"</code>
+            </blockquote>
 
             <p>
               The API defaults to returning one hundred items per response. If you want more than one hundred items, you
@@ -259,7 +261,8 @@
                 Retrieve a single case, by its ID
               </dt>
               <dd class="example-link">
-                <a href="/api/v1/cases/{{ case_id }}/">{{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/</a>
+                <a href="{% url "casemetadata-list" %}{{ case_id }}/">
+                  {% full_url "casemetadata-list" %}{{ case_id }}/</a>
               </dd>
               <dd>
                 <p class="example-description">
@@ -271,8 +274,8 @@
                   <li class="list-group-item">
                     <lh>With HTML-formatted Case Body and Metadata</lh>
                     <ul>
-                      <li class="example-mod-url"><a href="/api/v1/cases/{{ case_id }}/">
-                        {{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/</a>
+                      <li class="example-mod-url"><a href="{% url "casemetadata-list" %}{{ case_id }}/">
+                        {% full_url "casemetadata-list" %}{{ case_id }}/</a>
                       </li>
                       <li class="example-mod-description">To ingest a JSON object with both metadata and a field
                         containing an easily stylable HTML case body, set the <code>body_format</code> parameter to
@@ -284,8 +287,8 @@
                     <lh>Raw original XML document, with METS data</lh>
                     <ul>
                       <li class="example-mod-url">
-                        <a href="/api/v1/cases/{{ case_id }}/?full_case=true&body_format=xml">
-                          {{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/?full_case=true&format=xml
+                        <a href="{% url "casemetadata-list" %}{{ case_id }}/?full_case=true&body_format=xml">
+                          {% full_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=xml
                         </a>
                       </li>
                       <li class="example-mod-description">To get the document by itself, without the JSON enclosure and
@@ -302,8 +305,8 @@
                 Retrieve a list of cases by citation
               </dt>
               <dd class="example-link">
-                <a href="/api/v1/cases/?cite={{ case_metadata.citations.0.cite }}">
-                  {{ request.build_absolute_uri }}api/v1/cases/?cite={{ case_metadata.citations.0.cite }}
+                <a href="{% url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}">
+                  {% full_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}
                 </a>
               </dd>
               <dd>
@@ -322,8 +325,8 @@
                     <lh>Add a date range filter</lh>
                     <ul>
                       <li class="example-mod-url">
-                        <a href="/api/v1/cases/?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30">
-                          {{ request.build_absolute_uri }}api/v1/cases/?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-06-15
+                        <a href="{% url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30">
+                          {% full_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-06-15
                         </a>
                       </li>
                       <li class="example-mod-description">You can combine any of these parameters to refine your search.
@@ -336,8 +339,8 @@
                     <lh>Raw original XML document, with METS data</lh>
                     <ul>
                       <li class="example-mod-url">
-                        <a href="/api/v1/cases/{{ case_id }}/?full_case=true&body_format=xml">
-                          {{ request.build_absolute_uri }}api/v1/cases/{{ case_id }}/?full_case=true&format=xml
+                        <a href="{% url "casemetadata-list" %}{{ case_id }}/?full_case=true&body_format=xml">
+                          {% full_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=xml
                         </a>
                       </li>
                       <li class="example-mod-description">To get the document by itself, without the JSON enclosure and
@@ -351,11 +354,12 @@
             </dl>
 
             {# ====> Paginate <==== #}
+            <dl>
               <dt>
                 Traversing Pages of Results
               </dt>
               <dd class="example-link">
-                <a href="/api/v1/cases/?offset=100">{{ request.build_absolute_uri }}api/v1/cases/?offset=100</a>
+                <a href="{% url "casemetadata-list" %}?offset=100">{% full_url "casemetadata-list" %}?offset=100</a>
               </dd>
               <dd>
                 <p class="example-description">
@@ -369,8 +373,8 @@
                     <lh>Get smaller list of results</lh>
                     <ul>
                       <li class="example-mod-url">
-                        <a href="/api/v1/cases/?offset=10&limit=10">
-                          {{ request.build_absolute_uri }}api/v1/cases/?offset=20&limit=10
+                        <a href="{% url "casemetadata-list" %}?offset=10&limit=10">
+                          {% full_url "casemetadata-list" %}?offset=20&limit=10
                         </a>
                       </li>
                       <li class="example-mod-description">Combining the offset and limit parameters, you can get a
@@ -383,12 +387,14 @@
               </dd>
             </dl>
             {# ====> get reporters for a jurisdiction <==== #}
-            <dt>
+            <dl>
+              <dt>
                 Get all reporters in a jurisdiction
               </dt>
               <dd class="example-link">
-                <a href="/api/v1/reporters/?jurisdictions=ark">
-                  {{ request.build_absolute_uri }}/api/v1/reporters/?jurisdictions=ark</a>
+                <a href="{% url "reporter-list" %}?jurisdictions=ark">
+                  {% full_url "reporter-list" %}?jurisdictions=ark
+                </a>
               </dd>
               <dd>
                 <p class="example-description">
@@ -404,483 +410,490 @@
             <h4 class="subtitle">
               Endpoints
             </h4>
-            <p>
-              <dl>
+            <dl>
 
-                {# ==============> BASE <============== #}
-                <a id="endpoint-base"></a>
-                <dt>
-                 API Base
-                </dt>
-                <dd class="endpoint-link">
-                  <a href="/api/v1/">{{ request.build_absolute_uri }}api/v1/</a>
-                </dd>
-                <dd>
-                  <p class="endpoint-description">
-                    This is the base <a href="#def-endpoint">endpoint</a> of CAPAPI. It just lists all of the available
-                    <a href="#def-endpoint">endpoints</a>.
-                  </p>
-                </dd>
+              {# ==============> BASE <============== #}
+              <a id="endpoint-base"></a>
+              <dt>
+                API Base
+              </dt>
+              <dd class="endpoint-link">
+                <a href="/api/v1/">{{ request.build_absolute_uri }}v1/</a>
+              </dd>
+              <dd>
+                <p class="endpoint-description">
+                  This is the base <a href="#def-endpoint">endpoint</a> of CAPAPI. It just lists all of the available
+                  <a href="#def-endpoint">endpoints</a>.
+                </p>
+              </dd>
 
-                {# ==============> CASES <============== #}
-                <dt>
-                  <a id="endpoint-cases"></a>
-                  Case Browse/Search Endpoint
-                </dt>
-                <dd class="endpoint-link">
-                  <a href="/api/v1/cases/">{{ request.build_absolute_uri }}api/v1/cases/</a>
-                </dd>
-                <dd>
-                  <p class="endpoint-description">
-                    This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the
-                    numeric ID of your case in our system, you can append it to the <a href="#def-path">path</a> to
-                    retrieve a <a href="#endpoint-case">single case</a>.
-                  </p>
-                  <lh>Endpoint Parameters:</lh>
-                  <ul class="parameter-list">
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">name_abbreviation</code></lh>
-                      <ul>
-                        <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
-                        <li class="param-description"> e.g. <code>People v. Smith</code></li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">decision_date_min</code></lh>
-                      <ul>
-                        <li class="param-data-type"> <code>YYYY-MM-DD</code></li>
-                        <li class="param-description"> </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">decision_date_max</code></lh>
-                      <ul>
-                        <li class="param-data-type"> <code>YYYY-MM-DD</code></li>
-                        <li class="param-description"> </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">docket_number</code></lh>
-                      <ul>
-                        <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
-                        <li class="param-description"> </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">citation</code></lh>
-                      <ul>
-                        <li class="param-data-type"> e.g. <code>1 Ill. 21</code></li>
-                        <li class="param-description"> </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">reporter</code></lh>
-                      <ul>
-                        <li class="param-data-type"> integer</li>
-                        <li class="param-description"> a <a href="#endpoint-reporters">reporter</a> id </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">court</code></lh>
-                      <ul>
-                        <li class="param-data-type"> <a href="#def-slug">slug</a> </li>
-                        <li class="param-description"> a <a href="#endpoint-courts">court</a> <a href="#def-slug">slug</a> </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">jurisdiction</code></lh>
-                      <ul>
-                        <li class="param-data-type"> <a href="#def-slug">slug</a></li>
-                        <li class="param-description"> a <a href="#endpoint-jurisdictions">jurisdiction</a> <a href="#def-slug">slug</a> </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">search</code></lh>
-                      <ul>
-                        <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
-                        <li class="param-description"> A full-text search query</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">offset</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                          yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                          result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                        </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">limit</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                          than 100, the <code>limit</code> parameter will limit the number of results to your
-                          specification.
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
+              {# ==============> CASES <============== #}
+              <dt>
+                <a id="endpoint-cases"></a>
+                Case Browse/Search Endpoint
+              </dt>
+              <dd class="endpoint-link">
+                <a href="{% url "casemetadata-list" %}">{% full_url "casemetadata-list" %}</a>
+              </dd>
+              <dd>
+                <p class="endpoint-description">
+                  This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the
+                  numeric ID of your case in our system, you can append it to the <a href="#def-path">path</a> to
+                  retrieve a <a href="#endpoint-case">single case</a>.
+                </p>
+                <lh>Endpoint Parameters:</lh>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">name_abbreviation</code></lh>
+                    <ul>
+                      <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
+                      <li class="param-description"> e.g. <code>People v. Smith</code></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">decision_date_min</code></lh>
+                    <ul>
+                      <li class="param-data-type"><code>YYYY-MM-DD</code></li>
+                      <li class="param-description"></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">decision_date_max</code></lh>
+                    <ul>
+                      <li class="param-data-type"><code>YYYY-MM-DD</code></li>
+                      <li class="param-description"></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">docket_number</code></lh>
+                    <ul>
+                      <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
+                      <li class="param-description"></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">citation</code></lh>
+                    <ul>
+                      <li class="param-data-type"> e.g. <code>1 Ill. 21</code></li>
+                      <li class="param-description"></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">reporter</code></lh>
+                    <ul>
+                      <li class="param-data-type"> integer</li>
+                      <li class="param-description"> a <a href="#endpoint-reporters">reporter</a> id</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">court</code></lh>
+                    <ul>
+                      <li class="param-data-type"><a href="#def-slug">slug</a></li>
+                      <li class="param-description"> a <a href="#endpoint-courts">court</a> <a href="#def-slug">slug</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">jurisdiction</code></lh>
+                    <ul>
+                      <li class="param-data-type"><a href="#def-slug">slug</a></li>
+                      <li class="param-description"> a <a href="#endpoint-jurisdictions">jurisdiction</a> <a
+                          href="#def-slug">slug</a></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">search</code></lh>
+                    <ul>
+                      <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
+                      <li class="param-description"> A full-text search query</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">offset</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
+                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
+                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">limit</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
+                        than 100, the <code>limit</code> parameter will limit the number of results to your
+                        specification.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
 
 
-                </dd>
+              </dd>
 
-                {# ==============> CASE <============== #}
-                <dt>
-                  <a id="endpoint-case"></a>
-                  Single Case Endpoint
-                </dt>
-                <dd class="endpoint-link">
-                  <a href="/api/v1/cases/">{{ request.build_absolute_uri }}api/v1/cases/</a>
-                </dd>
-                <dd>
-                  <p class="endpoint-description">
-                    This is the way to retrieve a single case.
-                  </p>
-                  <lh>Endpoint Parameters:</lh>
-                  <ul class="parameter-list">
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">full_case</code></lh>
-                      <ul>
-                        <li class="param-data-type"> <code>true</code> or <code>false</code></li>
-                        <li class="param-description">  When set to <code>true</code>, this parameter loads the case body. It is
-                      required for setting both <code>body_format</code> and <code>format</code>.
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">body_format</code></lh>
-                      <ul>
-                        <li class="param-data-type"> <code>html</code> or <code>xml</code></li>
-                        <li class="param-description"> This will return a JSON enclosure with metadata, and a field containing the case in XML or HTML.</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">format</code></lh>
-                      <ul>
-                        <li class="param-data-type"> <code>html</code> or <code>xml</code></li>
-                        <li class="param-description"> This will return the case in HTML or its original XML with no JSON enclosure or
-                      Metadata</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">offset</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                          yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                          result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                        </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">limit</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                          than 100, the <code>limit</code> parameter will limit the number of results to your
-                          specification.
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </dd>
+              {# ==============> CASE <============== #}
+              <dt>
+                <a id="endpoint-case"></a>
+                Single Case Endpoint
+              </dt>
+              <dd class="endpoint-link">
+                <a href="{% url "casemetadata-list" %}">{% full_url "casemetadata-list" %}</a>
+              </dd>
+              <dd>
+                <p class="endpoint-description">
+                  This is the way to retrieve a single case.
+                </p>
+                <lh>Endpoint Parameters:</lh>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">full_case</code></lh>
+                    <ul>
+                      <li class="param-data-type"><code>true</code> or <code>false</code></li>
+                      <li class="param-description"> When set to <code>true</code>, this parameter loads the case body.
+                        It is
+                        required for setting both <code>body_format</code> and <code>format</code>.
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">body_format</code></lh>
+                    <ul>
+                      <li class="param-data-type"><code>html</code> or <code>xml</code></li>
+                      <li class="param-description"> This will return a JSON enclosure with metadata, and a field
+                        containing the case in XML or HTML.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">format</code></lh>
+                    <ul>
+                      <li class="param-data-type"><code>html</code> or <code>xml</code></li>
+                      <li class="param-description"> This will return the case in HTML or its original XML with no JSON
+                        enclosure or
+                        Metadata
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">offset</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
+                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
+                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">limit</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
+                        than 100, the <code>limit</code> parameter will limit the number of results to your
+                        specification.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
 
-                {# ==============> reporters <============== #}
-                <dt>
-                  <a id="endpoint-reporters"></a>
-                  Reporters
-                </dt>
-                <dd>
-                  <a href="/api/v1/reporters/">{{ request.build_absolute_uri }}api/v1/reporters/</a>
-                  <p class="endpoint-description">
-                    This will return a list of reporter series.
-                  </p>
-                  <lh>Endpoint Parameters:</lh>
-                  <ul class="parameter-list">
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">full_name</code></lh>
-                      <ul>
-                        <li class="param-data-type"> e.g. Illinois Appellate Court Reports</li>
-                        <li class="param-description"> the full reporter name</li>
-                      </ul>
-                    <li class="list-group-item">
+              {# ==============> reporters <============== #}
+              <dt>
+                <a id="endpoint-reporters"></a>
+                Reporters
+              </dt>
+              <dd>
+                <a href="{% url "reporter-list" %}">{% full_url "reporter-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a list of reporter series.
+                </p>
+                <lh>Endpoint Parameters:</lh>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">full_name</code></lh>
+                    <ul>
+                      <li class="param-data-type"> e.g. Illinois Appellate Court Reports</li>
+                      <li class="param-description"> the full reporter name</li>
+                    </ul>
+                  <li class="list-group-item">
                     <lh><code class="parameter-name">short_name</code></lh>
-                      <ul>
-                        <li class="param-data-type"> e.g. Ill. App.</li>
-                        <li class="param-description"> the abbreviated name for the reporter</li>
-                      </ul>
-                    <li class="list-group-item">
+                    <ul>
+                      <li class="param-data-type"> e.g. Ill. App.</li>
+                      <li class="param-description"> the abbreviated name for the reporter</li>
+                    </ul>
+                  <li class="list-group-item">
                     <lh><code class="parameter-name">start_year</code></lh>
-                      <ul>
-                        <li class="param-data-type"> YYYY</li>
-                        <li class="param-description"> the earliest year reported on in the series</li>
-                      </ul>
-                    <li class="list-group-item">
+                    <ul>
+                      <li class="param-data-type"> YYYY</li>
+                      <li class="param-description"> the earliest year reported on in the series</li>
+                    </ul>
+                  <li class="list-group-item">
                     <lh><code class="parameter-name">end_year</code></lh>
-                      <ul>
-                        <li class="param-data-type"> YYYY</li>
-                        <li class="param-description"> the latest year reported on in the series</li>
-                      </ul>
-                    <li class="list-group-item">
+                    <ul>
+                      <li class="param-data-type"> YYYY</li>
+                      <li class="param-description"> the latest year reported on in the series</li>
+                    </ul>
+                  <li class="list-group-item">
                     <lh><code class="parameter-name">volume_count</code></lh>
-                      <ul>
-                        <li class="param-data-type"> integer</li>
-                        <li class="param-description"> filter on the number of volumes in a reporter
-                        series</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">offset</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                          yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                          result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                        </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">limit</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                          than 100, the <code>limit</code> parameter will limit the number of results to your
-                          specification.
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </dd>
+                    <ul>
+                      <li class="param-data-type"> integer</li>
+                      <li class="param-description"> filter on the number of volumes in a reporter
+                        series
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">offset</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
+                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
+                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">limit</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
+                        than 100, the <code>limit</code> parameter will limit the number of results to your
+                        specification.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
 
-                {# ==============> jurisdictions <============== #}
-                <dt>
-                  <a id="endpoint-jurisdictions"></a>
-                  Jurisdictions
-                </dt>
-                <dd>
-                  <a href="/api/v1/jurisdictions/">{{ request.build_absolute_uri }}api/v1/jurisdictions/</a>
-                  <p class="endpoint-description">
-                    This will return a list of jurisdictions.
-                  </p>
-                  <lh>Endpoint Parameters:</lh>
-                  <ul class="parameter-list">
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">id</code></lh>
-                      <ul>
-                        <li class="param-data-type"> integer</li>
-                        <li class="param-description"> get jurisdiction by ID</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">name</code></lh>
-                      <ul>
-                        <li class="param-data-type"> e.g. <code>Ill.</code></li>
-                        <li class="param-description"> abbreviated jurisdiction name</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">name_long</code></lh>
-                      <ul>
-                        <li class="param-data-type"> e.g. <code>Illinois</code></li>
-                        <li class="param-description"> full jurisdiction name</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">whitelisted</code></lh>
-                      <ul>
-                        <li class="param-data-type"> <code>true</code> or <code>false</code></li>
-                        <li class="param-description"> filter for <a href="#def-whitelisted">whitelisted</a> cases</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">slug</code></lh>
-                      <ul>
-                        <li class="param-data-type"> a <a href="#def-slug">slug</a></li>
-                        <li class="param-description"> filter on the jurisdiction <a href="#def-slug">slug</a></li>
-                      </ul>
-                    </li>
-                     <li class="list-group-item">
-                       <lh><code class="parameter-name">offset</code></lh>
-                       <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                          yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                          result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                        </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">limit</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                          than 100, the <code>limit</code> parameter will limit the number of results to your
-                          specification.
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </dd>
+              {# ==============> jurisdictions <============== #}
+              <dt>
+                <a id="endpoint-jurisdictions"></a>
+                Jurisdictions
+              </dt>
+              <dd>
+                <a href="{% url "jurisdiction-list" %}">{% full_url "jurisdiction-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a list of jurisdictions.
+                </p>
+                <lh>Endpoint Parameters:</lh>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">id</code></lh>
+                    <ul>
+                      <li class="param-data-type"> integer</li>
+                      <li class="param-description"> get jurisdiction by ID</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">name</code></lh>
+                    <ul>
+                      <li class="param-data-type"> e.g. <code>Ill.</code></li>
+                      <li class="param-description"> abbreviated jurisdiction name</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">name_long</code></lh>
+                    <ul>
+                      <li class="param-data-type"> e.g. <code>Illinois</code></li>
+                      <li class="param-description"> full jurisdiction name</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">whitelisted</code></lh>
+                    <ul>
+                      <li class="param-data-type"><code>true</code> or <code>false</code></li>
+                      <li class="param-description"> filter for <a href="#def-whitelisted">whitelisted</a> cases</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">slug</code></lh>
+                    <ul>
+                      <li class="param-data-type"> a <a href="#def-slug">slug</a></li>
+                      <li class="param-description"> filter on the jurisdiction <a href="#def-slug">slug</a></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">offset</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
+                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
+                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">limit</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
+                        than 100, the <code>limit</code> parameter will limit the number of results to your
+                        specification.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
 
-                {# ==============> courts <============== #}
-                <dt>
-                  <a id="endpoint-courts"></a>
-                  Courts
-                </dt>
-                <dd>
-                  <a href="/api/v1/courts/">{{ request.build_absolute_uri }}api/v1/courts/</a>
-                  <p class="endpoint-description">
-                    This will return a list of courts.
-                  </p>
-                  <lh>Endpoint Parameters:</lh>
-                  <ul class="parameter-list">
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">slug</code></lh>
-                      <ul>
-                        <li class="param-data-type"> a <a href="#def-slug">slug</a></li>
-                        <li class="param-description"> filter on the court <a href="#def-slug">slug</a></li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">name</code></lh>
-                      <ul>
-                        <li class="param-data-type"> e.g. <code>Illinois Appellate Court</code></li>
-                        <li class="param-description"> full court name</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">name_abbreviation</code></lh>
-                      <ul>
-                        <li class="param-data-type">e.g. <code>Ill. App. Ct.</code></li>
-                        <li class="param-description"> abbreviated court name</li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">jurisdiction</code></lh>
-                      <ul>
-                        <li class="param-data-type"> <a href="#def-slug">slug</a></li>
-                        <li class="param-description"> <a href="#endpoint-jurisdictions">jurisdiction</a> <a href="#def-slug">slug</a></li>
-                      </ul>
-                    </li>
-                     <li class="list-group-item">
-                       <lh><code class="parameter-name">offset</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                          yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                          result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                        </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">limit</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                          than 100, the <code>limit</code> parameter will limit the number of results to your
-                          specification.
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </dd>
+              {# ==============> courts <============== #}
+              <dt>
+                <a id="endpoint-courts"></a>
+                Courts
+              </dt>
+              <dd>
+                <a href="{% url "court-list" %}">{% full_url "court-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a list of courts.
+                </p>
+                <lh>Endpoint Parameters:</lh>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">slug</code></lh>
+                    <ul>
+                      <li class="param-data-type"> a <a href="#def-slug">slug</a></li>
+                      <li class="param-description"> filter on the court <a href="#def-slug">slug</a></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">name</code></lh>
+                    <ul>
+                      <li class="param-data-type"> e.g. <code>Illinois Appellate Court</code></li>
+                      <li class="param-description"> full court name</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">name_abbreviation</code></lh>
+                    <ul>
+                      <li class="param-data-type">e.g. <code>Ill. App. Ct.</code></li>
+                      <li class="param-description"> abbreviated court name</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">jurisdiction</code></lh>
+                    <ul>
+                      <li class="param-data-type"><a href="#def-slug">slug</a></li>
+                      <li class="param-description"><a href="#endpoint-jurisdictions">jurisdiction</a> <a
+                          href="#def-slug">slug</a></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">offset</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
+                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
+                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">limit</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
+                        than 100, the <code>limit</code> parameter will limit the number of results to your
+                        specification.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
 
-                {# ==============> volumes <============== #}
-                <dt>
-                  <a id="endpoint-volumes"></a>
-                  Volumes
-                </dt>
-                <dd>
-                  <a href="/api/v1/volumes/">{{ request.build_absolute_uri }}api/v1/volumes/</a>
-                  <p class="endpoint-description">
-                    This will return a list of cases, starting from the beginning.
-                  </p>
-                  <lh>Endpoint Parameters:</lh>
-                  <ul class="parameter-list">
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">offset</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                          yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                          result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                        </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">limit</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                          than 100, the <code>limit</code> parameter will limit the number of results to your
-                          specification.
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </dd>
+              {# ==============> volumes <============== #}
+              <dt>
+                <a id="endpoint-volumes"></a>
+                Volumes
+              </dt>
+              <dd>
+                <a href="{% url "volumemetadata-list" %}">{% full_url "volumemetadata-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a complete list of volumes.
+                </p>
+                <lh>Endpoint Parameters:</lh>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">offset</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
+                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
+                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">limit</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
+                        than 100, the <code>limit</code> parameter will limit the number of results to your
+                        specification.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
 
-                <dt>
-                  <a id="endpoint-volumes"></a>
-                  Citations
-                </dt>
-                <dd>
-                  <a href="/api/v1/citations/">{{ request.build_absolute_uri }}api/v1/citations/</a>
-                  <p class="endpoint-description">
-                    This will return a list of citations.
-                  </p>
-                  <lh>Endpoint Parameters:</lh>
-                  <ul class="parameter-list">
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">offset</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                          yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                          result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                        </li>
-                      </ul>
-                    </li>
-                    <li class="list-group-item">
-                      <lh><code class="parameter-name">limit</code></lh>
-                      <ul>
-                        <li class="param-data-type">integer</li>
-                        <li class="param-description">
-                          The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                          than 100, the <code>limit</code> parameter will limit the number of results to your
-                          specification.
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </dd>
-              </dl>
-            </p>
+              <dt>
+                <a id="endpoint-volumes"></a>
+                Citations
+              </dt>
+              <dd>
+                <a href="{% url "citation-list" %}">{% full_url "citation-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a list of citations.
+                </p>
+                <lh>Endpoint Parameters:</lh>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">offset</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
+                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
+                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <lh><code class="parameter-name">limit</code></lh>
+                    <ul>
+                      <li class="param-data-type">integer</li>
+                      <li class="param-description">
+                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
+                        than 100, the <code>limit</code> parameter will limit the number of results to your
+                        specification.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+            </dl>
           </div>
           {# ==============> RESTRICTIONS <============== #}
           <div class="page-section">
-            <a id="restrictions"></a>
+            <a id="limits"></a>
             <h4 class="subtitle">
-              Restrictions
+              Access Limits
             </h4>
             <p>
               The agreement with our project partner, <a href="http://ravellaw.com">Ravel</a>, stipulates that only
               bonafide <a href="#def-academic-user">academic researchers</a> can access more than 500 cases per day, so
-              all <a href="#def-registered-user">registered users</a> are subject to this restriction. However, this
+              all <a href="#def-registered-user">registered users</a> are subject to this limitation. However, this
               stipulation does not apply to jurisdictions with digital-first publishing, that is, they make their cases
               freely available online in a citable, machine-readable format. We call these
               <a href="#def-whitelisted">whitelisted</a> jurisdictions. Currently, Illinois and Arkansas are the only
@@ -900,10 +913,6 @@
               If you are interested in licensing this data for commercial use,
               <a href="http://info.ravellaw.com/contact-us-form">Click here to contact Ravel for more information.</a>
             </p>
-            <p>
-
-            </p>
-            <p>
             <dl>
               <dt>
                 <a id="def-anonymous-user"></a>
@@ -962,7 +971,6 @@
                   information.</a>
               </dd>
             </dl>
-            </p>
           </div>
           {# ==============> GLOSSARY <============== #}
           <div class="page-section">
@@ -975,46 +983,32 @@
               definitions to help you get unstuck, but they should not be conisdered authoratative or complete. A quick
               Google search should provide more context for any of these terms.
             </p>
-            <p>
             <dl>
               <dt>
-                <a id="def-jurisdiction"></a>
-                Jurisdiction
+                <a id="def-api"></a>
+                API
               </dt>
               <dd>
-                For most cases, jurisdiction usually means its state, territory, or tribal area, or . For some volumes,
-                Jurisdiction the jurisid
+                API is an acronym for Application Programming Interface. Broadly, it is a way for one computer program
+                to transfer data to another computer program. CAPAPI is a <a href="#def-restful">RESTful</a> API
+                designed with the intent of distributing court case data.
               </dd>
 
-              <dt>
-                <a id="def-reporter"></a>
-                Reporter
-              </dt>
-              <dd>
-                In this project, we use the term 'reporter' to refer to a reporter series. We'd consider F2d. a
-                reporter.
-              </dd>
 
               <dt>
-                <a id="def-whitelisted"></a>
-                Whitelisted
+                <a id="def-character"></a>
+                <a id="def-special-character"></a>
+                Character
               </dt>
               <dd>
-                While most cases in the database are subject to a 500 case per day access limit, jurisdictions that
-                publish their cases in a citable, machine-readable format are not subject to this limit.
-                <a href="#restrictions">Click here for more information on access restrictions, what type of users
-                  aren't subject to them, and how you can advocate to eliminate them in your legal jurisdiction.</a>
+                A letter, number, space, or piece of punctuation. Multiple characters together make up a
+                <a href="#def-string">string</a>.
               </dd>
-
-              <dt>
-                <a id="def-curl"></a>
-                curl
-              </dt>
               <dd>
-                <a href="https://curl.haxx.se/">curl</a> is a simple <a href="#def-command-line">command line</a> tool
-                for retrieving data over the internet. It's similar to a web browser in that it will retrieve the
-                contents of a <a href="#def-url">url</a>, but it will dump the text contents to a terminal, rather than
-                show a rendered version in a graphical browser window.
+                Special characters are characters that have programmatic significance to a program. The "specialness"
+                of any given character is determined by the context in which it's used. For example, you can't add a
+                bare question mark to your path because they indicate to the server that everything after them is a
+                <a href="#def-parameter">parameter</a>.
               </dd>
 
               <dt>
@@ -1028,42 +1022,14 @@
               </dd>
 
               <dt>
-                <a id="def-url"></a>
-                URL
+                <a id="def-curl"></a>
+                curl
               </dt>
               <dd>
-                A URL, or Uniform Resource Locator, is an internet address that generally contains a communication
-                protocol, a server name, a path to a file or endpoint, and possibly parameters to pass to the endpoint.
-              </dd>
-
-              <dt>
-                <a id="def-api"></a>
-                API
-              </dt>
-              <dd>
-                API is an acronym for Application Programming Interface. Broadly, it is a way for one computer program
-                to transfer data to another computer program. CAPAPI is a <a href="#def-restful">RESTful</a> API
-                designed with the intent of distributing court case data.
-              </dd>
-
-              <dt>
-                <a id="def-restful"></a>
-                RESTful
-              </dt>
-              <dd>
-                A RESTful <a href="#def-api">API</a> is based on
-                <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a>, and makes use of its
-                built-in verbs(commands), such as GET and POST.
-              </dd>
-
-              <dt>
-                <a id="def-server"></a>
-                Server
-              </dt>
-              <dd>
-                A server is just a computer on the internet that was configured to respond to requests from other
-                computers. A web server will respond to requests from a web browser. An email server will respond to
-                requests from email programs, and or other email servers which are sending it messages.
+                <a href="https://curl.haxx.se/">curl</a> is a simple <a href="#def-command-line">command line</a> tool
+                for retrieving data over the internet. It's similar to a web browser in that it will retrieve the
+                contents of a <a href="#def-url">url</a>, but it will dump the text contents to a terminal, rather than
+                show a rendered version in a graphical browser window.
               </dd>
 
               <dt>
@@ -1079,6 +1045,74 @@
               </dd>
 
               <dt>
+                <a id="def-jurisdiction"></a>
+                Jurisdiction
+              </dt>
+              <dd>
+                For most cases, jurisdiction usually means its state, territory, or tribal area, or . For some volumes,
+                Jurisdiction the jurisid
+              </dd>
+              <dt>
+                <a id="def-restful"></a>
+                RESTful
+              </dt>
+              <dd>
+                A RESTful <a href="#def-api">API</a> is based on
+                <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a>, and makes use of its
+                built-in verbs(commands), such as GET and POST.
+              </dd>
+              <dt>
+                <a id="def-reporter"></a>
+                Reporter
+              </dt>
+              <dd>
+                In this project, we use the term 'reporter' to refer to a reporter series. We'd consider F2d. a
+                reporter.
+              </dd>
+              <dt>
+                <a id="def-server"></a>
+                Server
+              </dt>
+              <dd>
+                A server is just a computer on the internet that was configured to respond to requests from other
+                computers. A web server will respond to requests from a web browser. An email server will respond to
+                requests from email programs, and or other email servers which are sending it messages.
+              </dd>
+              <dt>
+                <a id="def-slug"></a>
+                Slug
+              </dt>
+              <dd>
+                A <a href="#def-string">string</a> with <a href="#def-special-character">special characters</a> removed
+                for ease of inclusion in a <a href="#def-url">URL</a>.
+              </dd>
+              <dt>
+                <a id="def-string"></a>
+                String
+              </dt>
+              <dd>
+                A string, as a type of data, just means an arbitrary list (or string) of
+                <a href="#def-character">characters</a>. A word is a string. This whole sentence is a string. "h3ll0.!"
+                is a string. This whole document is a string.
+              </dd>
+
+              <dt>
+                <a id="def-tld"></a>
+                Top-Level Domain
+              </dt>
+              <dd>
+                The suffix to a domain name, such as <code>.com</code>, <code>.edu</code> or <code>.co.uk</code>.
+              </dd>
+
+              <dt>
+                <a id="def-url"></a>
+                URL
+              </dt>
+              <dd>
+                A URL, or Uniform Resource Locator, is an internet address that generally contains a communication
+                protocol, a server name, a path to a file or endpoint, and possibly parameters to pass to the endpoint.
+              </dd>
+              <dt>
                 <a id="def-parameter"></a>
                 URL Parameter
               </dt>
@@ -1092,51 +1126,24 @@
                 URL Path
               </dt>
               <dd>
-                TODO: do this
-                <a href="#def-endpoint">endpoint</a> in a web request.
+                The URL path begins with the slash after the <a href="#def-tld">top-level domain</a> and ends with the
+                question mark that signals the beginning of the <a href="#def-parameter">parameters</a>. It was
+                originally intended to point to a file on the server's hard drive, but these days it's just as likely to
+                point to an application <a href="#def-endpoint">endpoint</a>.
               </dd>
-
               <dt>
-                <a id="def-string"></a>
-                String
+                <a id="def-whitelisted"></a>
+                Whitelisted
               </dt>
               <dd>
-                A string, as a type of data, just means an arbitrary (or string) of
-                <a href="#def-character">characters</a>. A word is a string. This whole sentence is a string. "h3ll0.!"
-                is a string.
+                While most cases in the database are subject to a 500 case per day access limit, jurisdictions that
+                publish their cases in a citable, machine-readable format are not subject to this limit.
+                <a href="#limits">Click here for more information on access limits, what type of users
+                  aren't subject to them, and how you can advocate to eliminate them in your legal jurisdiction.</a>
               </dd>
 
-              <dt>
-                <a id="def-character"></a>
-                Character
-              </dt>
-              <dd>
-                A letter, number, space, or piece of punctuation. Multiple characters together make up a
-                <a href="#def-string">string</a>.
-              </dd>
-
-              <dt>
-                <a id="def-special-character"></a>
-                Special Characters
-              </dt>
-              <dd>
-
-                <a href="#def-character">Characters</a> that have significance to a program. For example, URLs can't
-                contain certain pieces of punctuation. Whether any given character is deemed 'special' depends on the
-                context.
-              </dd>
-
-              <dt>
-                <a id="def-slug"></a>
-                Slug
-              </dt>
-              <dd>
-                A <a href="#def-string">string</a> with <a href="#def-special-character">special characters</a> removed
-                for ease of inclusion in a <a href="#def-url">URL</a>.
-              </dd>
 
             </dl>
-            </p>
           </div>
         </div>
       </div>

@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-  <section class="bg-black">
+  <section id="section-quote" class="bg-black">
     <div class="splash-quote">
       <h3>
         <img class="decorative-arrow"
@@ -22,23 +22,19 @@
              src='{% static "img/red-arrow-left.svg" %}'/>
       </h3>
     </div>
+      <img class="decorative-mountains-purple"
+           alt=""
+           aria-hidden="true"
+           src="{% static "img/purple-mountains.png" %}">
+      <img class="decorative-mountains-red"
+           alt=""
+           aria-hidden="true"
+           src="{% static "img/red-mountains.png" %}">
   </section>
 
   <!-- About -->
   <section id="section-about"
            class="bg-gradient section-purple">
-    <div class="content content-small-screen bg-white-violet">
-      <div class="content-left">
-        <h1 class="font-serif section-title">
-          What data do we have?
-        </h1>
-      </div>
-      <div class="content-right">
-        <h5>
-          Planning, scanning, digitizing, and enabling access since 2013
-        </h5>
-      </div>
-    </div>
     <div class="content">
       <div class="row">
         <div class="content-small-screen numbers">

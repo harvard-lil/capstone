@@ -47,7 +47,7 @@ def send_new_signup_email(request, user):
     send_mail(
         'CaseLaw Access Project: Verify your email address',
         "Please click here to verify your email address: \n\n%s \n\nIf you believe you have received this message in error, please ignore it." % token_url,
-        settings.API_EMAIL_ADDRESS,
+        settings.DEFAULT_FROM_EMAIL,
         [user.email],
         fail_silently=False, )
     logger.info("sent new_signup email for %s" % user.email)

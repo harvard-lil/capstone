@@ -46,7 +46,7 @@ def verify_user(request, user_id, activation_nonce):
             user.total_case_allowance = user.case_allowance_remaining = settings.API_CASE_DAILY_ALLOWANCE
             user.save()
     return render(request, 'registration/verified.html', {
-        'contact_email': settings.API_EMAIL_ADDRESS,
+        'contact_email': settings.DEFAULT_FROM_EMAIL,
         'error': error,
         'page_name': 'user-verify'
     })
@@ -71,7 +71,7 @@ def resend_verification(request):
                 'message': 'Thank you. Please check your email %s for a verification link.' % user.email
             })
     return render(request, 'registration/resend-nonce.html', {
-        'info_email': settings.API_EMAIL_ADDRESS,
+        'info_email': settings.DEFAULT_FROM_EMAIL,
         'form': form,
         'page_name': 'user-resend-verification'
     })

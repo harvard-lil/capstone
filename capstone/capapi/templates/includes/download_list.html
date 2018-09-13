@@ -2,9 +2,9 @@
   <h3 class="section-title">By {{ section_label }}</h3>
   {% for filter_item, exports in item_list.items %}
     <div class="row">
-      <div class="col-2">{{ filter_item }}</div>
+      <div class="col-3">{{ filter_item }}</div>
       {% for export_type, export in exports.items %}
-        <div class="col-3">
+        <div class="col-4 {% if not forloop.first %}offset-1{% endif %}">
           <a href="{% url "caseexport-download" pk=export.pk %}">{{ export.file_name }}</a>
           ({{ export.file.size|filesizeformat }})
         </div>

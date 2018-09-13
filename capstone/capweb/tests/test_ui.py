@@ -1,8 +1,9 @@
 import pytest
 
 from bs4 import BeautifulSoup
-
 from rest_framework.reverse import reverse
+
+from django.conf import settings
 
 from capapi.tests.helpers import check_response
 
@@ -41,3 +42,14 @@ def test_footer(client):
         check_response(res)
 
 
+@pytest.mark.django_db
+def test_contact(client, auth_client):
+    response = client.get(reverse('contact'))
+    soup = BeautifulSoup(response.content.decode(), 'html.parser')
+    email = soup.find('a', {'class': 'contact_email'})
+    assert email.get('href').split("mailto:")[1] == settings.DEFAULT_FROM_EMAIL
+    assert not soup.find('input', {'id': 'id_email'}).get('value')
+
+    response = auth_client.get(reverse('contact'))
+    soup = BeautifulSoup(response.content.decode(), 'html.parser')
+    assert soup.find('input', {'id': 'id_email'}).get('value') == auth_client.auth_user.email

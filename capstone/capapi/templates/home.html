@@ -177,6 +177,37 @@
         </ul>
 
         <p class="subsection">
+          Simple Full-Text Search
+        </p>
+        You can perform a simple full-text case search using our search endpoint. For example, to search for all cases
+          that contain the word "insurance," you would use the following URL:
+        <ul>
+          <li>
+            <a href="/api/v1/cases/?search=insurance">
+              {{ request.build_absolute_uri }}api/v1/cases/?search=insurance</a>
+          </li>
+        </ul>
+
+          Multiple search words can be separated by spaces. For example, the following URL would search for cases that
+          contain both the word "insurance" and the word "Peoria":
+          <ul>
+              <li>
+                  <a href="/api/v1/cases/?search=insurance Peoria">
+                      {{ request.build_absolute_uri }}api/v1/cases/?search=insurance Peoria</a>
+              </li>
+          </ul>
+
+          These queries can be filtered using other metadata fields. For example, the following URL will perform the
+          prior search while limiting the query to the Illinois jurisdiction:
+          <ul>
+              <li>
+                  <a href="/api/v1/cases/?search=insurance Peoria&jurisdiction=ill">
+                      {{ request.build_absolute_uri }}api/v1/cases/?search=insurance Peoria&jurisdiction=ill</a>
+              </li>
+          </ul>
+
+
+        <p class="subsection">
           Pagination
         </p>
         The API defaults to returning one hundred items per response.
