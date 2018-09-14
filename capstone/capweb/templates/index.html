@@ -39,26 +39,28 @@
       <div class="row">
         <div class="content-small-screen numbers">
           <div class="row">
-            <div class="small-screen-number-col">
+            <div class="col">
               <h1>{{ numbers.cases }}</h1>
             </div>
-            <div class="small-screen-number-col">
+            <div class="col mt-3">
               <h4 class="font-weight-bold">
                 Million
               </h4>
-              <img class="" alt="‹"
-                src='{% static "img/red-arrow-left.svg" %}'/>
-
+              <img
+                   alt=""
+                   aria-hidden="true"
+                   src='{% static "img/red-arrow-left.svg" %}'/>
               <h5>
-                Unique cases
+                <span class="color-yellow-bright">Unique</span> cases
               </h5>
             </div>
             <hr/>
-            <div class="small-screen-number-col">
-              <h3>{{ numbers.reporters }}</h3>
-              <h5>Reporters</h5>
+            <div class="col">
+              <h3 class="reporters-number">{{ numbers.reporters }}</h3>
+              <h5 class="color-yellow-bright">Reporters</h5>
             </div>
-            <div class="small-screen-number-col">
+            <div class="dotted-vr"></div>
+            <div class="col pl-1">
               <h3 class="pages-scanned-number">{{ numbers.pages_scanned }}M</h3>
               <h5>Pages scanned</h5>
             </div>
@@ -91,9 +93,6 @@
 
         </div>
         <div class="content-right">
-          <h5>
-            Planning, scanning, digitizing, and enabling access since 2013
-          </h5>
           <div class="map">
 
             {% include "includes/usa_territories_white.svg" %}
