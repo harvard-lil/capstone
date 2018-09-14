@@ -477,7 +477,7 @@ li.item-set {
     margin-left: -10px;
     margin-right: 10px;
     .list-group-item {
-      border-bottom: 0.5px solid $color-white;
+      border-bottom: $border-width solid $color-white;
     }
     .list-group-item:last-child {
       border-bottom: 0;
