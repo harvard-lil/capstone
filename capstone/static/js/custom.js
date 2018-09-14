@@ -8,19 +8,27 @@ let patchAnchorTagButtons = function () {
   })
 }
 
-let setupDropdown = function () {
-    let dropdown = ".dropdown";
-    $(dropdown).click(function(e) {
-        let showingDropdown = $(this).hasClass("show");
-        $(dropdown).removeClass("show");
-        showingDropdown ? $(this).removeClass("show") : $(this).addClass("show");
+const hideDropdown = function(dropdown) {
+  dropdown.removeClass("show");
+  dropdown.find("> a").attr("aria-expanded", "false");
+};
 
-        e.stopPropagation();
-    });
+const showDropdown = function(dropdown){
+  dropdown.addClass("show");
+  dropdown.find("> a").attr("aria-expanded", "true");
+};
 
-    $(document).click(function(){
-      $(dropdown).removeClass("show");
-    });
+const setupDropdown = function () {
+  const dropdowns = $(".dropdown");
+  dropdowns.click(function(e) {
+    const dropdown = $(this);
+    const showingDropdown = dropdown.hasClass("show");
+    hideDropdown(dropdowns);  // close other dropdowns
+    showingDropdown ? hideDropdown(dropdown) : showDropdown(dropdown);
+    e.stopPropagation();
+  });
+
+  $(document).click(function(){ hideDropdown(dropdowns) });
 };
 
 let setupBurgerAction = function() {
@@ -39,7 +47,7 @@ let selectedNavStyling = function() {
   path = path.split('#')[0];
   path = path === 'user' ? 'account': path;
   path = path === 'bulk-access' || path === 'api' ? 'tools': path;
-  $('#nav-' + path).find('a').addClass('selected');
+  $('#nav-' + path).find('a').addClass('selected').attr('aria-current', 'page');
 };
 
 $(function() {
