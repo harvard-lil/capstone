@@ -28,16 +28,14 @@
   color: $color-black;
 }
 
-html, body {
-  height: 100%;
-}
-
 body {
   @extend .font-body;
   /* push footer to bottom of screen if insufficient main-content to fill page */
   display: flex;
   flex-direction: column;
   color: $color-black;
+  font-size: 18px;
+  line-height: 29px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -74,6 +72,7 @@ code {
   background-color: $color-light-blue;
   color: $color-black;
   padding: 0 5px;
+  font-size: $font-size-base;
 }
 
 
@@ -104,18 +103,12 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
   border: 0;
 }
 
-.main-content, footer {
-  //position: absolute;
-
-  //overflow: auto;
-}
-
 .list-group-item {
   border-radius: 0 !important;
 }
 
 .basic-page {
-  padding: $header-margin-size 0;
+  padding: 6rem 0 4rem 0;
 }
 
 .decorative-arrow {
@@ -427,10 +420,7 @@ li.item-set {
 .basic-page > .full-content {
   margin: 0 auto;
   @include make-col(10);
-  @include media-breakpoint-only(xl) {
-    @include make-col(6);
-  }
-  @include media-breakpoint-only(lg) {
+  @include media-breakpoint-up(lg) {
     @include make-col(8);
   }
 }
