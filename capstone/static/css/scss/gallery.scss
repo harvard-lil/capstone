@@ -11,7 +11,7 @@
   .dropdown-item {
     background-color: $color-white;
     color: $color-black !important;
-    border-bottom: 0.5px solid $color-black;
+    border-bottom: $border-width solid $color-black;
   }
 }
 
@@ -28,7 +28,7 @@
 .page-section {
   margin-bottom: 4rem !important;
   @include media-breakpoint-down(md) {
-    border-bottom: 0.5px solid $color-white;
+    border-bottom: $border-width solid $color-white;
     padding-bottom: 3rem;
   }
   &:last-child {

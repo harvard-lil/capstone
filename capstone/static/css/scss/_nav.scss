@@ -78,7 +78,7 @@ nav {
     > a {
       font-weight: $font-weight-normal;
       color: $color-white;
-      border-bottom: 0.5px solid $color-white;
+      border-bottom: $border-width solid $color-white;
       padding-bottom: 15px;
     }
     > a:hover, a:focus, a:active {
@@ -89,9 +89,9 @@ nav {
     background-color: $color-black;
     @include media-breakpoint-up(lg) {
       margin-top: 26px;
-      border-left: 0.5px solid $color-white;
-      border-right: 0.5px solid $color-white;
-      border-bottom: 0.5px solid $color-white;
+      border-left: $border-width solid $color-white;
+      border-right: $border-width solid $color-white;
+      border-bottom: $border-width solid $color-white;
     }
     @include media-breakpoint-down(md) {
       > a:before {
