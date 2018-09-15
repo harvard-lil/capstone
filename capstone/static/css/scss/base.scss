@@ -14,6 +14,7 @@
 
 @import 'variables';
 @import 'elements';
+@import 'a11y';
 @import 'dropdown';
 @import 'nav';
 @import 'footer';
@@ -504,9 +505,16 @@ li.item-set {
 }
 
 #usa-territories-white {
-  .state:hover {
-    fill: $color-yellow;
-    stroke: $color-yellow;
+  .state-link {
+    pointer-events: all;
+    &:focus, &:active, &:hover {
+      fill: $color-yellow !important;
+      stroke: $color-yellow;
+      cursor: pointer;
+    }
+  }
+  .state {
     cursor: pointer;
+    pointer-events: all;
   }
 }

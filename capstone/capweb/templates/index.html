@@ -94,10 +94,11 @@
         </div>
         <div class="content-right">
           <div class="map">
-
+            <a href="#numbers"
+               class="skip">Skip map</a>
             {% include "includes/usa_territories_white.svg" %}
           </div>
-          <div class="numbers numbers-horizontal">
+          <div id="numbers" class="numbers numbers-horizontal">
             <div class="row">
               <div class="col-4">
                 <h1 class="num_cases">{{ numbers.cases }}M</h1>

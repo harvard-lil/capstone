@@ -107,8 +107,6 @@
     font-style: normal;
 }
 
-
-
 // brand color
 $color-blue: #0075FF;
 
@@ -175,6 +173,8 @@ $color-violet-gray-dark: #474756;
 
 .color-yellow { color: $color-yellow; }
 
+.color-yellow-bright { color: $color-yellow-bright; }
+
 .color-orange { color: $color-orange; }
 
 .color-black { color: $color-black; }
@@ -199,8 +199,16 @@ $color-violet-gray-dark: #474756;
 
 // mixins
 //////////// general
+$font-weight-semibold: 600;
+
+$font-weight-light: 200;
+$font-weight-extra-light: 100;
+
+$font-serif: "Libre Baskerville", "Baskerville", "Georgia", serif;
+$font-sans-serif: "titillium", "Helvetica", sans-serif;
+
 .font-body {
-  font-family: 'titillium', Helvetica, Arial, sans-serif;
+  font-family: $font-sans-serif;
   font-weight: 300;
   letter-spacing: 0.05em;
 }
@@ -213,13 +221,10 @@ $color-violet-gray-dark: #474756;
   @extend .font-body;
 }
 
-$font-weight-semibold: 600;
 
-$font-weight-light: 200;
-$font-weight-extra-light: 100;
-
-$font-serif: "Libre Baskerville", "Baskerville", "Georgia", serif;
-$font-sans-serif: "titillium", "Helvetica", sans-serif;
+.font-serif {
+  font-family: $font-serif !important;
+}
 
 
 .section-symbol {
