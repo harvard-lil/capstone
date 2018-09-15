@@ -304,11 +304,11 @@ PIPELINE = {
             ),
             'output_filename': 'viz_details.js'
         },
-        'map_mouseovers': {
+        'map_actions': {
             'source_filenames': (
-                'js/map-mouseovers.js',
+                'js/map-actions.js',
             ),
-            'output_filename': 'map_mouseovers.js'
+            'output_filename': 'map_actions.js'
         },
     },
 
