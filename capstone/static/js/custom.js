@@ -1,3 +1,13 @@
+// force link elements serving the role of buttons to respond correctly
+let patchAnchorTagButtons = function () {
+  document.querySelectorAll("a[role='button']").forEach(function(button){
+    // activate when the spacebar is pressed; the browser should not scroll (default behavior)
+    button.addEventListener('keypress', function(e){ if (e.key==' '||e.keyCode==32) { e.preventDefault(); this.click();}}, false);
+    // when activated, don't navigate/re-focus/scroll the browser, change the location bar, or alter your browsing history
+    button.addEventListener('click', function(e){ e.preventDefault(); }, false);
+  })
+}
+
 let setupDropdown = function () {
     let dropdown = ".dropdown";
     $(dropdown).click(function(e) {
@@ -36,4 +46,5 @@ $(function() {
   selectedNavStyling();
   setupDropdown();
   setupBurgerAction();
+  patchAnchorTagButtons();
 });
