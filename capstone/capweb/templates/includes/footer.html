@@ -54,7 +54,7 @@
       </div>
       <div class="return-to-top">
         <a id="return"
-            onclick="returnToTop()"
+            onclick="returnToTop(event)"
             href="#">
           <span class="arrow">&uarr;</span>
           <br/>
@@ -67,7 +67,11 @@
 </footer>
 
 <script>
-  function returnToTop() {
+  function returnToTop(e) {
+    // ensure viewport scrolls all the way up
+    e.preventDefault();
     window.scrollTo(0, 0);
+    // ensure keyboard focus is reset
+    document.body.focus();
   }
 </script>
