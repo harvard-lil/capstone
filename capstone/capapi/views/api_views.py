@@ -1,13 +1,11 @@
 import re
 import urllib
 
-from django.conf import settings
 from django.http import HttpResponseRedirect, FileResponse
 from django.utils.text import slugify
 
 from rest_framework import viewsets, renderers
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from capapi.middleware import add_cache_header
@@ -94,16 +92,6 @@ class CaseViewSet(BaseViewSet):
             return self.serializer_class
 
     def list(self, *args, **kwargs):
-        # limit offset= query parameter to settings.MAX_API_OFFSET
-        offset = self.request.query_params.get('offset', None)
-        try:
-            offset = int(offset)
-        except (TypeError, ValueError):
-            pass
-        else:
-            if offset > settings.MAX_API_OFFSET:
-                return Response({"error": "Maximum offset is %s." % settings.MAX_API_OFFSET})
-
         jur_value = self.request.query_params.get('jurisdiction', None)
         jur_slug = slugify(jur_value)
 
