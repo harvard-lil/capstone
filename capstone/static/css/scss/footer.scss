@@ -51,6 +51,9 @@ footer {
   nav {
     border-bottom: 0;
   }
+  .links li {
+    @extend .fix-list-item;
+  }
   .return-to-top {
     @include make-col(12);
     font-weight: $font-weight-normal;

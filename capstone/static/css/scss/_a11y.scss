@@ -16,3 +16,11 @@ a.skip:active,  a.skip:focus {
   z-index: 999;
   border-bottom: 0;
 }
+
+.fix-list-item {
+  /* Add zero-width space to work around Voiceover bug */
+  /* https://unfetteredthoughts.net/2017/09/26/voiceover-and-list-style-type-none/ */
+  &:before {
+    content: "\200B";
+  }
+}
