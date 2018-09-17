@@ -21,6 +21,7 @@ services:
         image: capstone
         volumes:
             - .:/app
+            - ../services:/services
         depends_on:
             - redis
             - db
@@ -33,6 +34,7 @@ services:
         image: capstone
         volumes:
             - .:/app
+            - ../services:/services
         depends_on:
             - redis
             - db
