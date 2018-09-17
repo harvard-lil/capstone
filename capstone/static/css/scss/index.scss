@@ -33,5 +33,10 @@ nav {
 footer {
   background-color: $color-violet;
   color: $color-white;
-  a { color: $color-white; }
+  a {
+    color: $color-white;
+    &:hover, &:focus, &:active {
+      color: $color-yellow-bright;
+    }
+  }
 }

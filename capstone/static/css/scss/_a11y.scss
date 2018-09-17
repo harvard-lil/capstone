@@ -1,0 +1,18 @@
+@import "variables";
+
+.skip {
+  position: absolute;
+  left: -999em;
+  background-color: $color-white;
+  font-weight: 700;
+  color: $color-blue;
+  padding: 34px;
+  border-bottom: 0;
+}
+
+a.skip:active,  a.skip:focus {
+  left: 0;
+  background-color: $color-white;
+  z-index: 999;
+  border-bottom: 0;
+}

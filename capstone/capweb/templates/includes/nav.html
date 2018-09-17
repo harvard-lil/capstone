@@ -1,4 +1,7 @@
 {% load static %}
+<a href="#main"
+   class="skip"
+   tabindex="0">Skip to main content</a>
 <!-- On small screens, show logo on its own row --->
 <div class="row branding-standalone">
   <div class="branding small-screen">
@@ -6,7 +9,7 @@
   </div>
 </div>
 
-<nav role="navigation">
+<nav>
     <div class="branding large-screen">
       <a class="nav-branding" href="{% url "home" %}"></a>
 
@@ -17,18 +20,17 @@
       <div class="burger-item"></div>
       <div class="burger-item"></div>
     </button>
-    </a>
   <div class="nav-content">
     <ul class="nav">
       <li class="nav-item dropdown" id="nav-about">
         <a class="nav-link dropdown-toggle "
-           href="#" id="navbar-dropdown"
+           href="#" id="navbar-dropdown-about"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
           ABOUT
         </a>
-        <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-about">
           <a class="dropdown-item" href="{% url "about" %}">Overview</a>
           <a class="dropdown-item" href="{% url "about" %}#data">What data?</a>
           <a class="dropdown-item" href="{% url "about" %}#usage">Usage & access</a>
@@ -38,13 +40,13 @@
       </li>
       <li class="nav-item dropdown" id="nav-tools">
         <a class="nav-link dropdown-toggle "
-           href="#" id="navbar-dropdown"
+           href="#" id="navbar-dropdown-tools"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
           TOOLS
         </a>
-        <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-tools">
           <a class="dropdown-item" href="{% url "tools" %}#overview">Overview</a>
           <a class="dropdown-item" href="{% url "api" %}">API</a>
           <a class="dropdown-item" href="{% url "bulk-data" %}">Bulk Data</a>
@@ -52,13 +54,13 @@
       </li>
       <li class="nav-item dropdown" id="nav-gallery">
         <a class="nav-link dropdown-toggle"
-           href="#" id="navbar-dropdown"
+           href="#" id="navbar-dropdown-gallery"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
           GALLERY
         </a>
-        <div class="dropdown-menu" aria-labelledby="navbar-dropdown">
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-gallery">
           <a class="dropdown-item" href="{% url "gallery" %}#overview">Overview</a>
           <a class="dropdown-item" href="{% url "gallery" %}#h2o">H2O</a>
           <a class="dropdown-item" href="{% url "gallery" %}#limericks">Limericks</a>

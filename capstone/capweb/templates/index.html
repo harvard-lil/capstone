@@ -4,7 +4,7 @@
 
 {% block extra_head %}
   {% stylesheet 'index' %}
-  {% javascript 'map_mouseovers' %}
+  {% javascript 'map_actions' %}
 {% endblock %}
 
 {% block content %}
@@ -39,26 +39,28 @@
       <div class="row">
         <div class="content-small-screen numbers">
           <div class="row">
-            <div class="small-screen-number-col">
+            <div class="col">
               <h1>{{ numbers.cases }}</h1>
             </div>
-            <div class="small-screen-number-col">
+            <div class="col mt-3">
               <h4 class="font-weight-bold">
                 Million
               </h4>
-              <img class="" alt="‹"
-                src='{% static "img/red-arrow-left.svg" %}'/>
-
+              <img
+                   alt=""
+                   aria-hidden="true"
+                   src='{% static "img/red-arrow-left.svg" %}'/>
               <h5>
-                Unique cases
+                <span class="color-yellow-bright">Unique</span> cases
               </h5>
             </div>
             <hr/>
-            <div class="small-screen-number-col">
-              <h3>{{ numbers.reporters }}</h3>
-              <h5>Reporters</h5>
+            <div class="col">
+              <h3 class="reporters-number">{{ numbers.reporters }}</h3>
+              <h5 class="color-yellow-bright">Reporters</h5>
             </div>
-            <div class="small-screen-number-col">
+            <div class="dotted-vr"></div>
+            <div class="col pl-1">
               <h3 class="pages-scanned-number">{{ numbers.pages_scanned }}M</h3>
               <h5>Pages scanned</h5>
             </div>
@@ -91,14 +93,12 @@
 
         </div>
         <div class="content-right">
-          <h5>
-            Planning, scanning, digitizing, and enabling access since 2013
-          </h5>
           <div class="map">
-
+            <a href="#numbers"
+               class="skip">Skip map</a>
             {% include "includes/usa_territories_white.svg" %}
           </div>
-          <div class="numbers numbers-horizontal">
+          <div id="numbers" class="numbers numbers-horizontal">
             <div class="row">
               <div class="col-4">
                 <h1 class="num_cases">{{ numbers.cases }}M</h1>
@@ -190,14 +190,14 @@
               Wordclouds
             </a>
           </h6>
-          <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
+          <p>Most used words for every year of California caselaw from 1852 to 2015.</p>
           <h6>
             <span class="section-symbol color-yellow">&#167;</span>
             <a class="color-white" href="{% url "limericks" %}">
               Limericks
             </a>
           </h6>
-          <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
+          <p>Generate rhymes using caselaw!</p>
           <br/>
           <a class="btn btn-inverse"
              href="{% url "gallery" %}">See gallery</a>

@@ -14,6 +14,7 @@
 
 @import 'variables';
 @import 'elements';
+@import 'a11y';
 @import 'dropdown';
 @import 'nav';
 @import 'footer';
@@ -28,16 +29,14 @@
   color: $color-black;
 }
 
-html, body {
-  height: 100%;
-}
-
 body {
   @extend .font-body;
   /* push footer to bottom of screen if insufficient main-content to fill page */
   display: flex;
   flex-direction: column;
   color: $color-black;
+  font-size: 18px;
+  line-height: 29px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -74,6 +73,7 @@ code {
   background-color: $color-light-blue;
   color: $color-black;
   padding: 0 5px;
+  font-size: $font-size-base;
 }
 
 
@@ -104,18 +104,12 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
   border: 0;
 }
 
-.main-content, footer {
-  //position: absolute;
-
-  //overflow: auto;
-}
-
 .list-group-item {
   border-radius: 0 !important;
 }
 
 .basic-page {
-  padding: $header-margin-size 0;
+  padding: 6rem 0 4rem 0;
 }
 
 .decorative-arrow {
@@ -267,50 +261,43 @@ section > .content > .row > .content-right {
   @include media-breakpoint-up(md) {
     display: none;
   }
-  .small-screen-number-col {
-    @include make-col(6);
-    h1 { font-size: 5rem; }
-    h3 { font-size: 3rem; }
-    h4 { font-size: 1.8rem; }
-    h1, h3, h4, h5 {
-      font-family: $font-sans-serif;
-    }
+  h1 { font-size: 5rem; }
+  h3 { font-size: 3rem; }
+  h4 { font-size: 1.8rem; }
+  h1, h3, h4, h5 {
+    font-family: $font-sans-serif;
     @include media-breakpoint-only(sm) {
-      h1 { font-size: 7rem; }
-      h4 { font-size: 5rem; }
-      h3 { font-size: 4rem; }
-      h5 { font-size: 1.8rem; }
+      h1 {
+        font-size: 7rem;
+      }
+      h4 {
+        font-size: 5rem;
+      }
+      h3 {
+        font-size: 4rem;
+      }
+      h5 {
+        font-size: 1.8rem;
+      }
     }
   }
-
   hr {
-    border-top: 2px solid $color-white;
+    border-top: 2px dotted $color-yellow-bright;
     width: 100%;
   }
-
-  .row > .small-screen-number-col:nth-child(2) {
-    margin-top: 1rem;
-    border-top: 2px solid $color-white;
-    h4 {
-      margin-top: 1rem;
-    }
+  .dotted-vr {
+    border-left: 2px dotted $color-yellow-bright;
+    min-height: 100%;
+    width: 10px;
+    margin-left: -10px;
+    margin-right: 10px;
   }
-
-  .row > .small-screen-number-col:nth-child(4) {
-    border-right: 2px solid $color-black;
-    max-width: 43%;
-    margin-right: 1rem;
-    color: $color-black;
-    > h3, h5 {
-      font-weight: $font-weight-bold;
-    }
-  }
-
-  .border-white {
-    border-top: 2px solid $color-white;
+  .reporters-number {
+    font-family: $font-serif;
   }
   .pages-scanned-number {
     font-weight: $font-weight-light;
+    color: $color-yellow-bright;
   }
   img {
     float: right;
@@ -427,10 +414,7 @@ li.item-set {
 .basic-page > .full-content {
   margin: 0 auto;
   @include make-col(10);
-  @include media-breakpoint-only(xl) {
-    @include make-col(6);
-  }
-  @include media-breakpoint-only(lg) {
+  @include media-breakpoint-up(lg) {
     @include make-col(8);
   }
 }
@@ -521,9 +505,16 @@ li.item-set {
 }
 
 #usa-territories-white {
-  .state:hover {
-    fill: $color-yellow;
-    stroke: $color-yellow;
+  .state-link {
+    pointer-events: all;
+    &:focus, &:active, &:hover {
+      fill: $color-yellow !important;
+      stroke: $color-yellow;
+      cursor: pointer;
+    }
+  }
+  .state {
     cursor: pointer;
+    pointer-events: all;
   }
 }
