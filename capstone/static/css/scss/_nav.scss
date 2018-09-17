@@ -34,7 +34,7 @@
 .branding.small-screen { display: none; }
 
 
-nav {
+nav[aria-label="main"] {
   display: inline-block;
   flex-wrap: wrap;
   padding: 0;

@@ -48,7 +48,9 @@ footer {
       }
     }
   }
-
+  nav {
+    border-bottom: 0;
+  }
   .return-to-top {
     @include make-col(12);
     font-weight: $font-weight-normal;
