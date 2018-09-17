@@ -1,7 +1,10 @@
 version: '2'
 services:
     db:
-        image: postgres:9.6
+        build:
+          context: ../services/docker
+          dockerfile: extended-postgres.dockerfile
+        image: extended-postgres
         environment:
             POSTGRES_PASSWORD: password
         volumes:
@@ -21,6 +24,7 @@ services:
         image: capstone
         volumes:
             - .:/app
+            - ../services:/services
         depends_on:
             - redis
             - db
@@ -33,6 +37,7 @@ services:
         image: capstone
         volumes:
             - .:/app
+            - ../services:/services
         depends_on:
             - redis
             - db
