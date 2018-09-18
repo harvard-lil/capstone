@@ -237,29 +237,27 @@ $font-sans-serif: "titillium", "Helvetica", sans-serif;
   $base-font-size: 20px;
   $heading-scale: 8; // amount of px headings grow from h6 to h1
   @for $i from 1 through 6 {
-  h#{$i} {
-    font-size: $base-font-size + $heading-scale * (6 - $i);
+    h#{$i}, .h#{$i} {
+      font-size: $base-font-size + $heading-scale * (6 - $i);
+    }
   }
-}
-
 }
 
 @include media-breakpoint-only(lg) {
   $base-font-size: 18px;
   $heading-scale: 8; // amount of px headings grow from h6 to h1
   @for $i from 1 through 6 {
-    h#{$i} {
+    h#{$i}, .h#{$i} {
       font-size: $base-font-size + $heading-scale * (6 - $i);
     }
   }
-
 }
 
 @include media-breakpoint-only(md) {
   $base-font-size: 16px;
   $heading-scale: 6; // amount of px headings grow from h6 to h1
   @for $i from 1 through 6 {
-    h#{$i} {
+    h#{$i}, .h#{$i} {
       font-size: $base-font-size + $heading-scale * (6 - $i);
     }
   }
@@ -269,7 +267,7 @@ $font-sans-serif: "titillium", "Helvetica", sans-serif;
   $base-font-size: 14px;
   $heading-scale: 4; // amount of px headings grow from h6 to h1
   @for $i from 1 through 6 {
-    h#{$i} {
+    h#{$i}, .h#{$i} {
       font-size: $base-font-size + $heading-scale * (6 - $i);
     }
   }
