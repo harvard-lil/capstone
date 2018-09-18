@@ -395,6 +395,7 @@ li.item-set {
     }
   }
   .subtitle {
+    @extend .h4;
     color: $color-violet;
   }
   @include media-breakpoint-up(md) {
