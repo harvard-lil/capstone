@@ -189,8 +189,6 @@ section > .content > .row > .content-left {
 }
 
 section > .content > .row > .content-right {
-  /* usually includes subtitle, content */
-  h5, h6 { font-weight: $font-weight-semibold; }
   @include media-breakpoint-only(xl) {
     @include make-col(7);
     @include make-col-offset(1);
@@ -233,12 +231,6 @@ section > .content > .row > .content-right {
   }
 }
 
-.content {
-  .numbers {
-    h1 { font-weight: $font-weight-bold; }
-  }
-}
-
 .content-right > .numbers-horizontal {
   text-align: center;
   @include media-breakpoint-down(lg) {
@@ -260,26 +252,6 @@ section > .content > .row > .content-right {
   }
   @include media-breakpoint-up(md) {
     display: none;
-  }
-  h1 { font-size: 5rem; }
-  h3 { font-size: 3rem; }
-  h4 { font-size: 1.8rem; }
-  h1, h3, h4, h5 {
-    font-family: $font-sans-serif;
-    @include media-breakpoint-only(sm) {
-      h1 {
-        font-size: 7rem;
-      }
-      h4 {
-        font-size: 5rem;
-      }
-      h3 {
-        font-size: 4rem;
-      }
-      h5 {
-        font-size: 1.8rem;
-      }
-    }
   }
   hr {
     border-top: 2px dotted $color-yellow-bright;
