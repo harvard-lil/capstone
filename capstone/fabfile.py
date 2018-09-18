@@ -394,7 +394,7 @@ def fix_md5_columns():
         tasks.fix_md5_column.delay(volume_id)
 
 @task
-def show_slow_queries():
+def show_slow_queries(server='capstone'):
     """
     Show slow queries for consumption by Slack bot.
     This requires
@@ -417,7 +417,8 @@ def show_slow_queries():
         cursor.execute(sql)
     try:
         rows = cursor.fetchall()
-        heading = "*capstone slow query report for %s*" % datetime.now().strftime("%Y-%m-%d")
+        today = datetime.now().strftime("%Y-%m-%d")
+        heading = "*slow query report for %s on %s*" % (server, today)
         queries = []
     except:
         print(json.dumps({'text': 'Could not get slow queries'}))
