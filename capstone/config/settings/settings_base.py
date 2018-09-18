@@ -47,7 +47,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
-    'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CachedCountLimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CapPagination',
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework_filters.backends.RestFrameworkFilterBackend',
     ),
@@ -63,7 +63,6 @@ REST_FRAMEWORK = {
         'capapi.renderers.BrowsableAPIRenderer',
     ),
 }
-MAX_API_OFFSET = 10000
 
 MIDDLEWARE = [
 
@@ -392,7 +391,7 @@ API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
 API_DOCS_CASE_ID = 2
-CACHED_COUNT_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 1 day
+CACHED_COUNT_TIMEOUT = 60*60*24*7  # 'count' value in API responses is cached for up to 7 days
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
 
