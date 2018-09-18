@@ -30,11 +30,13 @@
       </div>
       <div class="row">
         {# ==============> MENU <============== #}
-        <div class="list-group sidebar-menu">
-          <a class="list-group-item" href="#overview">Overview</a>
-          <a class="list-group-item" href="{% url "api" %}">API</a>
-          <a class="list-group-item" href="{% url "bulk-data" %}">Bulk Data</a>
-        </div>
+        <nav class="list-group sidebar-menu" aria-label="table of contents">
+          <ul>
+            <li><a class="list-group-item" href="#overview">Overview</a></li>
+            <li><a class="list-group-item" href="{% url "api" %}">API</a></li>
+            <li><a class="list-group-item" href="{% url "bulk-data" %}">Bulk Data</a></li>
+          </ul>
+        </nav>
         {# ==============> CONTENT <============== #}
           <div class="content">
 

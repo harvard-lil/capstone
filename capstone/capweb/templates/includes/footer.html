@@ -5,40 +5,42 @@
       <div class="content-left">
         <a href="https://lil.law.harvard.edu"
            class="lil-logo"
-           title="Library Innovation Lab"
+           aria-label="Library Innovation Lab"
            target="_blank">
         </a>
       </div>
       <div class="content-right">
         <div class="text-right">
-          <ul class="list-inline links">
-            <li class="list-inline-item">
-              <a href="{% url "home" %}">HOME</a>
-            </li>
-            <li class="list-inline-item">
-              <a href="{% url "about" %}">ABOUT</a>
-            </li>
-            <li class="list-inline-item">
-              <a href="{% url "tools" %}">TOOLS</a>
-            </li>
-            <li class="list-inline-item">
-              <a href="{% url "gallery" %}">GALLERY</a>
-            </li>
-            <li class="list-inline-item">
-              {% if request.user.is_authenticated %}
-              <a href="{% url "user-details" %}">
-                ACCOUNT
-              </a>
-              {% else %}
-              <a href="{% url "login" %}">
-                LOG IN
-              </a>
-              {% endif %}
-            </li>
-            <li class="list-inline-item">
-              <a href="{% url "contact" %}">CONTACT</a>
-            </li>
-          </ul>
+          <nav aria-label="footer">
+            <ul class="list-inline links">
+              <li class="list-inline-item">
+                <a href="{% url "home" %}">HOME</a>
+              </li>
+              <li class="list-inline-item">
+                <a href="{% url "about" %}">ABOUT</a>
+              </li>
+              <li class="list-inline-item">
+                <a href="{% url "tools" %}">TOOLS</a>
+              </li>
+              <li class="list-inline-item">
+                <a href="{% url "gallery" %}">GALLERY</a>
+              </li>
+              <li class="list-inline-item">
+                {% if request.user.is_authenticated %}
+                <a href="{% url "user-details" %}">
+                  ACCOUNT
+                </a>
+                {% else %}
+                <a href="{% url "login" %}">
+                  LOG IN
+                </a>
+                {% endif %}
+              </li>
+              <li class="list-inline-item">
+                <a href="{% url "contact" %}">CONTACT</a>
+              </li>
+            </ul>
+          </nav>
           <p class="credits copyright">
             ©2017 The President and Fellows of Harvard University
           </p>
@@ -54,9 +56,9 @@
       </div>
       <div class="return-to-top">
         <a id="return"
-            onclick="returnToTop()"
+            onclick="returnToTop(event)"
             href="#">
-          <span class="arrow">&uarr;</span>
+          <span class="arrow" aria-hidden="true">&uarr;</span>
           <br/>
           Return to top
         </a>
@@ -67,7 +69,11 @@
 </footer>
 
 <script>
-  function returnToTop() {
+  function returnToTop(e) {
+    // ensure viewport scrolls all the way up
+    e.preventDefault();
     window.scrollTo(0, 0);
+    // ensure keyboard focus is reset
+    document.body.focus();
   }
 </script>

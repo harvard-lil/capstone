@@ -1,15 +1,13 @@
 {% load static %}
-<a href="#main"
-   class="skip"
-   tabindex="0">Skip to main content</a>
-<!-- On small screens, show logo on its own row --->
+<a class="skip" href="#main">Skip to main content</a>
+<!-- On small screens, show logo on its own row -->
 <div class="row branding-standalone">
   <div class="branding small-screen">
     <a class="nav-branding" href="{% url "home" %}"></a>
   </div>
 </div>
 
-<nav>
+<nav aria-label="main">
     <div class="branding large-screen">
       <a class="nav-branding" href="{% url "home" %}"></a>
 
@@ -25,7 +23,7 @@
       <li class="nav-item dropdown" id="nav-about">
         <a class="nav-link dropdown-toggle "
            href="#" id="navbar-dropdown-about"
-           data-toggle="dropdown"
+           role="button"
            aria-haspopup="true"
            aria-expanded="false">
           ABOUT
@@ -41,7 +39,7 @@
       <li class="nav-item dropdown" id="nav-tools">
         <a class="nav-link dropdown-toggle "
            href="#" id="navbar-dropdown-tools"
-           data-toggle="dropdown"
+           role="button"
            aria-haspopup="true"
            aria-expanded="false">
           TOOLS
@@ -55,7 +53,7 @@
       <li class="nav-item dropdown" id="nav-gallery">
         <a class="nav-link dropdown-toggle"
            href="#" id="navbar-dropdown-gallery"
-           data-toggle="dropdown"
+           role="button"
            aria-haspopup="true"
            aria-expanded="false">
           GALLERY
