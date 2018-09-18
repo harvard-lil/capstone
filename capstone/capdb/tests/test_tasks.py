@@ -118,7 +118,7 @@ def test_show_slow_queries(capsys):
         fabfile.show_slow_queries()
         captured = capsys.readouterr()
         output = json.loads(captured.out)
-        assert "capstone slow query report" in output['text']
+        assert "slow query report" in output['text']
     except utils.OperationalError:
         pytest.skip("pg_stat_statements is not in shared_preload_libraries")
 
