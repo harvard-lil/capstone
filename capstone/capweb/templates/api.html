@@ -34,13 +34,18 @@
         <nav class="list-group sidebar-menu" aria-label="table of contents">
           <ul>
             <li><a class="list-group-item" href="#overview">Overview</a></li>
-            <li><a class="list-group-item" href="#registration">Registration</a></li>
             <li><a class="list-group-item" href="#usage">Using CAPAPI</a></li>
-            <li><a class="list-group-item" href="#beginners">Beginner's Introduction</a></li>
+            <ul>
+              <li><a class="list-group-item" href="#registration">Registration</a></li>
+              <li><a class="list-group-item" href="#authentication">Authentication</a></li>
+              <li><a class="list-group-item" href="#dataformats">Case Text Data Formats</a></li>
+              <li><a class="list-group-item" href="#pagination">Pagination</a></li>
+              <li><a class="list-group-item" href="#limits">Access Limits</a></li>
+            </ul>
             <li><a class="list-group-item" href="#examples">Usage Examples</a></li>
             <li><a class="list-group-item" href="#endpoints">Endpoint Documentation</a></li>
-            <li><a class="list-group-item" href="#limits">Access Limits</a></li>
-            <li><a class="list-group-item" href="#problems">Problems</a></li>
+            <li><a class="list-group-item" href="#beginners">Beginner's Introduction to APIs</a></li>
+            <li><a class="list-group-item" href="#problems">Reporting Problems</a></li>
             <li><a class="list-group-item" href="#glossary">Glossary</a></li>
           </ul>
         </nav>
@@ -55,197 +60,268 @@
                    src="{% static "img/vacuum-seal.jpg" %}">
             </p>
             <a id="overview"></a>
+            <p><a href="{% url "api-root" %}" class="font-weight-bold">Browse the API</a></p>
             <p>
-              <a href="#usage">Click here for API usage instructions.</a><br>
-              <a href="#usage">Click here for endpoint documentation.</a>
+              The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases
+              published in books from 1658 to 2018. The collection includes over six million cases scanned from
+              the Harvard Law Library shelves.
+              <a href="{% url "about" %}">Learn more about the project.</a>
             </p>
             <p>
-              The Caselaw Access Project API, also known as CAPAPI, serves all official, published US court cases, and
-              their related metadata, from 1658 to 2018. We digitized every case in this database during the first
-              phase of the Caselaw Access Project, which we embarked upon in 2013. Before that, nearly every case
-              was sitting in its original binding on Harvard Law Library shelves.
-              <a href="/">Click here to learn more about the project.</a>
+              CAPAPI includes an in-browser API viewer, but is primarily intended for software developers to access
+              caselaw programmatically, whether to run your own analysis or build tools for other users. API results are in JSON
+              format with case text available as structured XML, presentation HTML, or plain text.
             </p>
             <p>
-              CAPAPI is <a href="#def-restful">RESTful</a> API, and serves most of its data in JSON, but case text is
-              also available in plain text, HTML, and XML. Though APIs are primarily useful to developers, anybody with
-              a web browser can interact with it, though the interface is a bit clunky. Want a better one? Know how to
-              code? Build your own project based on our data!
-            </p>
+              To get started with the API, you can <a href="{%url "api-root" %}">explore it in your browser,</a>
+              or reach it from the command line. For example, here is a curl command to list cases from Illinois:</p>
+            <blockquote>
+              <code>
+                curl "{% full_url "casemetadata-list" %}?jurisdiction=ill"
+              </code>
+            </blockquote>
             <p>
-              Our goal in undertaking this project was to make the data as open as possible. While there
-              are
-              access limits that affect some users trying to access more than 500 cases per day, metadata
-              for every
-              case in every jurisdiction, and all cases from Illinois and Arkansas are available without
-              access limits; you don't even need to be logged in or use an API key. <a href="#limits">Click
-              here for more information on access limits, what type of users aren't subject to them,
-              and how
-              you can advocate to eliminate them in your legal jurisdiction.</a>
+              If you haven't used APIs before, you might want to jump down to our
+              <a href="#beginners">Beginner's Introduction to APIs</a>.
             </p>
           </div>
-          {# ==============> REGISTER  <============== #}
           <div class="page-section">
-            <a id="registration"></a>
-            <h4 class="subtitle">
-              Registration
-            </h4>
-            <p>
-              <a href="user/register/">Click here to register an account.</a>
-            </p>
-            <p>
-              Your account will give you access to 500 cases per day. <a href="#limits">Click
-              here for more information on access limits, what type of users and jurisdictions
-              aren't
-              subject to them, and how you can advocate to eliminate them in your legal jurisdiction.</a>
-            </p>
+            <a id="overview"></a>
+            <h2 class="subtitle">Overview</h2>
 
-          </div>
-          {# ==============> USING CAPAPI <============== #}
-          <div class="page-section">
-            <a id="usage"></a>
-            <h4 class="subtitle">
-              Basic CAPAPI Usage
-            </h4>
+            {# ==============> REGISTER  <============== #}
+            <a id="registration"></a>
+            <h3 class="subtitle">Registration (if you need it)</h3>
             <p>
-              <a href="/api/v1">Click here to visit the API in your web browser.</a>
+              We offer unlimited access to metadata about all cases without an API key, as well as unlimited access
+              to the text of cases from Illinois and Arkansas. To access the text of cases from other jurisdictions
+              you will need an API key. Most registered users can access up to 500 cases per day with an API key.
+              Academic researchers can access unlimited cases.
+            </p>
+            <ul>
+              <li><a href="{% url "register" %}">Register for an API key.</a></li>
+              <li><a href="#limits">Learn more about API limits.</a></li>
+            </ul>
+
+            {# ==============> AUTHENTICATION <============== #}
+            <a id="authentication"></a>
+            <h3 class="subtitle">Authentication</h3>
+            <p>
+              Most API requests do not need to be authenticated. However, if requests are not authenticated, you may see
+              this response in results from the case endpoint with <code>full_case=true</code>:
+            </p>
+              <pre>
+{
+  "results": [
+    {
+      "id": 1021505,
+      ...
+      "jurisdiction": {
+        ...
+        "whitelisted": false
+      },
+      "casebody": {
+        "data": null,
+        "status": "error_auth_required"
+      }
+    },
+  ]
+}
+              </pre>
+            <p>
+              In this example the response included a case from a non-whitelisted jurisdiction, and
+              <code>casebody.data</code> for the case is therefore blank, while <code>casebody.status</code> is
+              "error_auth_required".
             </p>
             <p>
-              CAPAPI is a <a href="#def-restful">RESTful</a> API based on
-              <a href="http://www.django-rest-framework.org/">Django Rest Framework.</a>. This means it can be accessed
-              with standard web tools, like <a href="#def-curl">curl</a>, http request libraries in your favorite
-              programming language, and even web browsers. If you're already feeling lost, you might want to pick up
-              some of the background information we've put into the <a href="#beginners">beginner's introduction</a>.
-            </p>
-            <p>
-              The return format for most of the data is JSON, but cases are available in HTML, and their original XML.
-              In addition, the cases are avaible with
-            </p>
-            <p>
-              Authenticating to retrieve non-<a href="#def-whitelisted">whitelisted</a> cases is simple. If you're using
-              a web browser, just log in to the site. Programmatically, or from the command line, just pass the
-              <code>"Authorization: Token your-token-here"</code> header in your request. For example, if your
-              authentication token is abcd12345, a curl command would look like this:
+              To authenticate the request from code or the command line, you can provide an <code>Authorization</code>
+              header:
             </p>
             <blockquote>
-              <code>curl -H "Authorization: abcd12345"
-                "{% full_url "casemetadata-list" %}?limit=1&full_case=true"</code>
+              <code>
+                curl -H "Authorization: Token abcd12345" "{% full_url "casemetadata-list" %}?full_case=true"
+              </code>
             </blockquote>
-
             <p>
-              The API defaults to returning one hundred items per response. If you want more than one hundred items, you
-              can page through subsequent items using the <i>offset</i> parameter. For example, if you want the second
-              page of one hundred items, set the offset value to 100. For convenience, the API response includes a
-              <i>next</i> key containing the URL to the next page of results.
+              While you are <a href="{% url "login" %}">logged into this website</a>, all requests through the API
+              browser will be authenticated automatically.
             </p>
 
-
-          </div>
-          {# ==============> BEGINNERS <============== #}
-          <div class="page-section">
-            <a id="beginners"></a>
-            <h4 class="subtitle">
-              Beginner's Introduction
+            {# ==============> DATA FORMATS <============== #}
+            <a id="dataformats"></a>
+            <h3 class="subtitle">Case Text Data Formats</h3>
+            <p>
+              CAPAPI returns case text in three formats: text (default), XML, or HTML. The choice of format is
+              controlled by the <code>body_format</code> parameter to the cases endpoint.
+            </p>
+            <h4>
+              Text format
+              (default)
+              (<code>body_format=text</code>)
+              (<a href="{% url "casemetadata-list" %}?jurisdiction=ill&full_case=true" %}">example query</a>)
             </h4>
             <p>
-              Are you a little lost in all the technical jargon? Here's a good place to start. This is by no means a
-              complete introduction to using <a href="#def-api">APIs</a>, but it might be just enough to help situate a
-              technically inclined person who's a bit outside of their comfort zone.
+              The default text format is best for natural language processing. Example response data:
+            </p>
+            <pre>
+"data": {
+      "head_matter": "Fifth District\n(No. 70-17;\nThe People of the State of Illinois ...",
+      "opinions": [
+          {
+              "author": "Mr. PRESIDING JUSTICE EBERSPACHER",
+              "text": "Mr. PRESIDING JUSTICE EBERSPACHER\ndelivered the opinion of the court: ...",
+              "type": "majority"
+          }
+      ],
+      "judges": [],
+      "parties": [
+          "The People of the State of Illinois, Plaintiff-Appellee, v. Danny Tobin, Defendant-Appellant."
+      ],
+      "attorneys": [
+          "John D. Shulleriberger, Morton Zwick, ...",
+          "Robert H. Rice, State’s Attorney, of Belleville, for the Peop ..."
+      ]
+  }
+}
+            </pre>
+            <p>
+              In this example, <code>"head_matter"</code> is a string representing all text printed in the volume before
+              the text prepared by judges. <code>"opinions"</code> is an array containing a dictionary for each opinion
+              in the case. <code>"judges"</code>, <code>"parties"</code>, and <code>"attorneys"</code> are
+              particular substrings from <code>"head_matter"</code> that we believe to refer to entities involved with the case.
+            </p>
+            <h4>
+              XML format
+              (<code>body_format=xml</code>)
+              (<a href="{% url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=xml" %}">example query</a>)
+            </h4>
+            <p>
+              The XML format is best if your analysis requires more information about pagination, formatting, or page
+              layout. It contains a superset of the information available from body_format=text, but requires parsing
+              XML data. Example response data:
+            </p>
+            <pre>{% filter force_escape %}
+"data": "<?xml version='1.0' encoding='utf-8'?>\n<casebody ..."
+            {% endfilter %}</pre>
+            <h4>
+              HTML format
+              (<code>body_format=html</code>)
+              (<a href="{% url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html" %}">example query</a>)
+            </h4>
+            <p>
+              The HTML format is best if you want to show readable, formatted caselaw to humans. It represents a
+              best-effort attempt to transform our XML-formatted data to semantic HTML ready for CSS formatting of your
+              choice. Example response data:
+            </p>
+            <pre>{% filter force_escape %}
+"data": "<section class=\"casebody\" data-firstpage=\"538\" data-lastpage=\"543\"> ..."
+            {% endfilter %}</pre>
+
+            <a id="pagination"></a>
+            <h3 class="subtitle">Pagination</h3>
+            <p>
+              CAPAPI returns 100 items per request. We use cursor-based pagination, meaning each page of responses
+              includes "next" and "previous" links to fetch the adjacent pages:
+            </p>
+            <pre>{% filter force_escape %}
+{
+  "count": 183149,
+  "next": "{% url "casemetadata-list" %}?body_format=html&cursor=cD0xODMyLTEyLTAx",
+  "previous": "{% url "casemetadata-list" %}?body_format=html&cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
+  ...
+}
+            {% endfilter %}</pre>
+
+            {# ==============> ACCESS LIMITS <============== #}
+            <a id="limits"></a>
+            <h3 class="subtitle">Access Limits</h3>
+            <p>
+              The agreement with our project partner, <a href="http://ravellaw.com">Ravel</a>, requires us to limit
+              access to the full text of cases to no more than 500 cases per person, per day. This limitation does not
+              apply to <a href="#def-academic-user">researchers</a> who agree to certain restrictions on use and redistribution.
+              Nor does this restriction apply to cases issued in <a href="#def-jurisdiction">jurisdictions</a> that make
+              their newly issued cases freely available online in a authoritative, citable, machine-readable format. We call
+              these <a href="#def-whitelisted">whitelisted</a> jurisdictions. Currently, Illinois and Arkansas are the
+              only whitelisted jurisdictions.
             </p>
             <p>
-              Fundamentally, an API is no different from a regular website: A program on your computer, such as a web
-              browser or <a href="#def-curl">curl</a> sends a bit of data to a <a href="#def-server">server</a>, the
-              server processes that data, and then sends a response. If you know how to read a
-              <a href="#def-url">URL</a>, you can interact with web-based services in ways that aren't limited to
-              clicking on the links and buttons on the screen.
+              We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal level, we'd love to
+              talk to you about making the transition to digital-first publishing. Please <a href="mailto:lil@law.harvard.edu">send us an email at
+              lil@law.harvard.edu</a> and introduce yourself!
             </p>
             <p>
-              Consider the following <a href="#def-url">URL</a>, which will
-              <a href="https://www.google.com/search?q=CAP">perform a google search for the word "CAP."</a>
-            </p>
-            <pre><code>https://www.google.com/search?q=CAP</code></pre>
-            <p>
-              Let's break it down into its individual parts:
-            </p>
-            <pre><code>https://</code></pre>
-            <p>
-              This first part tells your web browser which protocol to use: this isn't very
-              important for our purposes, so we'll ignore it.
-            </p>
-            <pre><code>www.google.com</code></pre>
-            <p>
-              The next part is a list of words, separated by periods, between the initial double-slash, and before the
-              subsequent single slash. Many people generically refer to this as the domain, which is only partly true,
-              but the reason why that's not entirely true isn't really important for our purposes; the important
-              consideration here is that it points to a specific <a href="#def-server"server</a>, which is just another
-              computer on the internet.
-            </p>
-            <pre><code>/search</code></pre>
-            <p>
-              The next section, which is comprised of everything between the slash after the server name and the
-              question mark, is called the <a href="#def-path">path</a>. It's called a path because, in the earlier days
-              of the web, it was a 'path' through folders/directories to find a specific file on the web server. These
-              days, it's more likely that the path will point to a specific <a href="#def-endpoint">endpoint</a>.
+              If you think you may qualify as <a href="#def-academic-user">researcher</a> and would like to explore
+              bulk access to cases from non-<a href="#def-whitelisted">whitelisted</a>
+              <a href="#def-jurisdiction">jurisdictions</a>, email us at
+              <a href="mailto:lil@law.harvard.edu">lil@law.harvard.edu</a>.
             </p>
             <p>
-              You can think of an endpoint as a distinct part of a program, which could require specific inputs,
-              and/or provide different results. For example, the "login" endpoint on a website might accept a
-              valid username and a password for input, and return a message that you've successfully logged in. A
-              "register" endpoint might accept various bits of identifying information, and return a screen that
-              says your account was successfully registered.
+              In addition, under our agreement with Ravel (now owned by Lexis-Nexis), Ravel must negotiate in good faith
+              to provide bulk access to anyone seeking to make commercial use of this data. If you are interested in
+              making commercial use of this data,
+              <a href="http://info.ravellaw.com/contact-us-form">click here to contact Ravel for more information</a> or contact us at
+              <a href="mailto:lil@law.harvard.edu">lil@law.harvard.edu</a> and we will put you in touch with Ravel.
             </p>
-            <p>
-              Though there is only one part of this particular path, <code>search</code>, developers usually
-              organize paths into hierarchical lists separated by slashes. Hypothetically, if the developers at
-              Google decided that one generalized search endpoint wasn't sufficiently serving people who wanted to
-              search for books or locations, they could implement more specific endpoints such as
-              <code>/search/books</code> and <code>/search/locations</code>.
-            </p>
-            <pre><code>?q=CAP</code></pre>
-            <p>
-              The final section of the URL is where you'll find the <a href="#def-parameter">parameters</a>, and is
-              comprised of everything after the question mark. Parameters are a way of passing individual, labelled
-              pieces of information to the endpoint to help it perform its job. In this case, the parameter tells the
-              <code>/search</code> endpoint what to search for. Without this parameter, the response wouldn't be
-              particularly useful.
-            </p>
-            <p>
-              A URL can contain many parameters, separated by ampersands, but in this instance, there is only one
-              parameter: the rather cryptically named "q," which is short for "query," which has a value of "CAP."
-              Parameter names are arbitrary— Google's developers could just as easily have set the parameter name
-              to <code>?query=CAP</code>, but decided that "q" would sufficiently communicate its purpose.
-            </p>
-            <p>
-              The Google developers designed their web search endpoint to accept other parameters, too. For
-              example, there is an even more cryptically named parameter, 'tbs' which will limit the age of the
-              documents returned in the search results. The parameters <code>?q=CAP&tbs=qdr:y</code> will perform
-              a web search for "CAP" and limit the results to documents less than a year old.
-            </p>
-            <p>
-              So when you're working with CAPAPI, the same principles apply. Rather than http://www.google.com, you'll
-              be using {{ request.build_absolute_uri }}. Rather than using the /search?q= endpoint and parameter, you'll
-              be using one of our <a href="#endpoints">endpoints and the parameters we've defined</a>. One important
-              difference is the purpose of the structured data we're returning, vs. the visual, browser-oriented data
-              that google is returning with their search engine.
-            </p>
-            <p>
-              When you perform a query in a web browser using our API, there are some links and buttons, but the data
-              itself is in a text-based format with lots of brackets and commas. This format is called JSON, or
-              JavaScript Object Notation. We use this format because software developers can easily utilize data in that
-              format in their own programs. We do intend to have a more user-friendly case browser at some point soon,
-              but we're not quite there yet.
-            </p>
-            <p>
-              OK! That about does it for our beginner's introduction to web-based APIs. Please check out our
-              <a href="#examples">usage examples</a> section to see some of the ways you can put these principles to
-              work in CAPAPI. If you have any suggestions for making this documentation better, we'd appreciate your
-              taking the time to let us know in an issue report
-              <a href="https://github.com/harvard-lil/capstone/issues">in our code repository on github.com</a>.
-            </p>
-            <p>
-              Thanks, and good luck!
-            </p>
+            <dl>
+              <dt>
+                <a id="def-unregistered-user"></a>
+                Unregistered Users
+              </dt>
+              <dd>
+                <ul>
+                  <li class="list-group-item">Access all metadata</li>
+                  <li class="list-group-item">Unlimited API access to all cases from
+                    <a href="#def-whitelisted"> whitelisted </a> jurisdictions
+                  </li>
+                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
+                    whitelisted </a> jurisdictions
+                  </li>
+                </ul>
+              </dd>
+
+              <dt>
+                <a id="def-registered-user"></a>
+                Registered Users
+              </dt>
+              <dd>
+                <ul>
+                  <li class="list-group-item">Access all metadata</li>
+                  <li class="list-group-item">Unlimited API access to all cases from <a
+                      href="#def-whitelisted"> whitelisted </a>
+                    jurisdictions
+                  </li>
+                  <li class="list-group-item">Access to 500 cases per day from non-<a
+                      href="#def-whitelisted">whitelisted</a> jurisdictions
+                  </li>
+                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
+                    whitelisted </a> jurisdictions
+                  </li>
+                </ul>
+              </dd>
+
+              <dt>
+                <a id="def-academic-user"></a>
+                Academic Users
+              </dt>
+              <dd>
+                <ul>
+                  <li class="list-group-item">Access all metadata</li>
+                  <li class="list-group-item">Unlimited API access to all cases</li>
+                  <li class="list-group-item">Bulk Downloads from all jurisdictions</li>
+                </ul>
+              </dd>
+
+              <dt>
+                <a id="def-academic-user"></a>
+                Commercial Users
+              </dt>
+              <dd>
+                <a href="http://info.ravellaw.com/contact-us-form">Click here to contact Ravel for more
+                  information.</a>
+              </dd>
+            </dl>
           </div>
+
           {# ==============> EXAMPLES <============== #}
           <div class="page-section">
             <a id="examples"></a>
@@ -447,9 +523,9 @@
           {# ==============> ENDPOINTS <============== #}
           <div class="page-section">
             <a id="endpoints"></a>
-            <h4 class="subtitle">
+            <h2 class="subtitle">
               Endpoints
-            </h4>
+            </h2>
             <dl>
 
               {# ==============> BASE <============== #}
@@ -458,7 +534,7 @@
                 API Base
               </dt>
               <dd class="endpoint-link">
-                <a href="/api/v1/">{{ request.build_absolute_uri }}v1/</a>
+                <a href="{%url "api-root" %}/">{{ request.build_absolute_uri }}v1/</a>
               </dd>
               <dd>
                 <p class="endpoint-description">
@@ -924,110 +1000,131 @@
               </dd>
             </dl>
           </div>
-          {# ==============> ACCESS LIMITS <============== #}
+
+          {# ==============> BEGINNERS <============== #}
           <div class="page-section">
-            <a id="limits"></a>
-            <h4 class="subtitle">
-              Access Limits
-            </h4>
+            <a id="beginners"></a>
+            <h2 class="subtitle">
+              Beginner's Introduction to APIs
+            </h2>
             <p>
-              The agreement with our project partner, <a href="http://ravellaw.com">Ravel</a>, requires us to limit access to the full text of cases to no more than 500 cases per person, per day. This limitation does not apply to <a href="#def-academic-user">researchers</a> who agree to certain restrictions on use and redistribution.
-              Nor does this restriction apply to cases issued in <a href="#def-jurisdiction">jurisdictions</a> that make their newly issued cases freely available online in a authoritative, citable, machine-readable format. We call
-              these <a href="#def-whitelisted">whitelisted</a> jurisdictions. Currently, Illinois and Arkansas are the
-              only whitelisted jurisdictions.
+              Are you a little lost in all the technical jargon? Here's a good place to start. This is by no means a
+              complete introduction to using <a href="#def-api">APIs</a>, but it might be just enough to help situate a
+              technically inclined person who's a bit outside of their comfort zone.
             </p>
             <p>
-              We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal level, we'd love to
-              talk to you about making the transition to digital-first publishing. Please <a href="mailto:lil@law.harvard.edu">send us an email at
-              lil@law.harvard.edu</a> and introduce yourself!
+              Fundamentally, an API is no different from a regular website: A program on your computer, such as a web
+              browser or <a href="#def-curl">curl</a> sends a bit of data to a <a href="#def-server">server</a>, the
+              server processes that data, and then sends a response. If you know how to read a
+              <a href="#def-url">URL</a>, you can interact with web-based services in ways that aren't limited to
+              clicking on the links and buttons on the screen.
             </p>
             <p>
-              If you think you may qualify as <a href="#def-academic-user">researcher</a> and would like to explore bulk access to cases from non-<a href="#def-whitelisted">whitelisted</a>
-              <a href="#def-jurisdiction">jurisdictions</a>, email us at
-              <a href="mailto:lil@law.harvard.edu">lil@law.harvard.edu</a>.
+              Consider the following <a href="#def-url">URL</a>, which will
+              <a href="https://www.google.com/search?q=CAP">perform a google search for the word "CAP."</a>
+            </p>
+            <pre><code>https://www.google.com/search?q=CAP</code></pre>
+            <p>
+              Let's break it down into its individual parts:
+            </p>
+            <pre><code>https://</code></pre>
+            <p>
+              This first part tells your web browser which protocol to use: this isn't very
+              important for our purposes, so we'll ignore it.
+            </p>
+            <pre><code>www.google.com</code></pre>
+            <p>
+              The next part is a list of words, separated by periods, between the initial double-slash, and before the
+              subsequent single slash. Many people generically refer to this as the domain, which is only partly true,
+              but the reason why that's not entirely true isn't really important for our purposes; the important
+              consideration here is that it points to a specific <a href="#def-server"server</a>, which is just another
+              computer on the internet.
+            </p>
+            <pre><code>/search</code></pre>
+            <p>
+              The next section, which is comprised of everything between the slash after the server name and the
+              question mark, is called the <a href="#def-path">path</a>. It's called a path because, in the earlier days
+              of the web, it was a 'path' through folders/directories to find a specific file on the web server. These
+              days, it's more likely that the path will point to a specific <a href="#def-endpoint">endpoint</a>.
             </p>
             <p>
-              In addition, under our agreement with Ravel (now owned by Lexis-Nexis), Ravel must negotiate in good faith to provide bulk access to anyone seeking to make commercial use of this data. If you are interested in make commercial use of this data,
-              <a href="http://info.ravellaw.com/contact-us-form">click here to contact Ravel for more information</a> or contact us at
-              <a href="mailto:lil@law.harvard.edu">lil@law.harvard.edu</a> and we will put you in touch with Ravel. 
+              You can think of an endpoint as a distinct part of a program, which could require specific inputs,
+              and/or provide different results. For example, the "login" endpoint on a website might accept a
+              valid username and a password for input, and return a message that you've successfully logged in. A
+              "register" endpoint might accept various bits of identifying information, and return a screen that
+              says your account was successfully registered.
             </p>
-            <dl>
-              <dt>
-                <a id="def-unregistered-user"></a>
-                Unregistered Users
-              </dt>
-              <dd>
-                <ul>
-                  <li class="list-group-item">Access all metadata</li>
-                  <li class="list-group-item">Unlimited API access to all cases from
-                    <a href="#def-whitelisted"> whitelisted </a> jurisdictions
-                  </li>
-                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
-                    whitelisted </a> jurisdictions
-                  </li>
-                </ul>
-              </dd>
-
-              <dt>
-                <a id="def-registered-user"></a>
-                Registered Users
-              </dt>
-              <dd>
-                <ul>
-                  <li class="list-group-item">Access all metadata</li>
-                  <li class="list-group-item">Unlimited API access to all cases from <a
-                      href="#def-whitelisted"> whitelisted </a>
-                    jurisdictions
-                  </li>
-                  <li class="list-group-item">Access to 500 cases per day from non-<a
-                      href="#def-whitelisted">whitelisted</a> jurisdictions
-                  </li>
-                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
-                    whitelisted </a> jurisdictions
-                  </li>
-                </ul>
-              </dd>
-
-              <dt>
-                <a id="def-academic-user"></a>
-                Academic Users
-              </dt>
-              <dd>
-                <ul>
-                  <li class="list-group-item">Access all metadata</li>
-                  <li class="list-group-item">Unlimited API access to all cases</li>
-                  <li class="list-group-item">Bulk Downloads from all jurisdictions</li>
-                </ul>
-              </dd>
-
-              <dt>
-                <a id="def-academic-user"></a>
-                Commercial Users
-              </dt>
-              <dd>
-                <a href="http://info.ravellaw.com/contact-us-form">Click here to contact Ravel for more
-                  information.</a>
-              </dd>
-            </dl>
+            <p>
+              Though there is only one part of this particular path, <code>search</code>, developers usually
+              organize paths into hierarchical lists separated by slashes. Hypothetically, if the developers at
+              Google decided that one generalized search endpoint wasn't sufficiently serving people who wanted to
+              search for books or locations, they could implement more specific endpoints such as
+              <code>/search/books</code> and <code>/search/locations</code>.
+            </p>
+            <pre><code>?q=CAP</code></pre>
+            <p>
+              The final section of the URL is where you'll find the <a href="#def-parameter">parameters</a>, and is
+              comprised of everything after the question mark. Parameters are a way of passing individual, labelled
+              pieces of information to the endpoint to help it perform its job. In this case, the parameter tells the
+              <code>/search</code> endpoint what to search for. Without this parameter, the response wouldn't be
+              particularly useful.
+            </p>
+            <p>
+              A URL can contain many parameters, separated by ampersands, but in this instance, there is only one
+              parameter: the rather cryptically named "q," which is short for "query," which has a value of "CAP."
+              Parameter names are arbitrary— Google's developers could just as easily have set the parameter name
+              to <code>?query=CAP</code>, but decided that "q" would sufficiently communicate its purpose.
+            </p>
+            <p>
+              The Google developers designed their web search endpoint to accept other parameters, too. For
+              example, there is an even more cryptically named parameter, 'tbs' which will limit the age of the
+              documents returned in the search results. The parameters <code>?q=CAP&tbs=qdr:y</code> will perform
+              a web search for "CAP" and limit the results to documents less than a year old.
+            </p>
+            <p>
+              So when you're working with CAPAPI, the same principles apply. Rather than http://www.google.com, you'll
+              be using {{ request.build_absolute_uri }}. Rather than using the /search?q= endpoint and parameter, you'll
+              be using one of our <a href="#endpoints">endpoints and the parameters we've defined</a>. One important
+              difference is the purpose of the structured data we're returning, vs. the visual, browser-oriented data
+              that google is returning with their search engine.
+            </p>
+            <p>
+              When you perform a query in a web browser using our API, there are some links and buttons, but the data
+              itself is in a text-based format with lots of brackets and commas. This format is called JSON, or
+              JavaScript Object Notation. We use this format because software developers can easily utilize data in that
+              format in their own programs. We do intend to have a more user-friendly case browser at some point soon,
+              but we're not quite there yet.
+            </p>
+            <p>
+              OK! That about does it for our beginner's introduction to web-based APIs. Please check out our
+              <a href="#examples">usage examples</a> section to see some of the ways you can put these principles to
+              work in CAPAPI. If you have any suggestions for making this documentation better, we'd appreciate your
+              taking the time to let us know in an issue report
+              <a href="https://github.com/harvard-lil/capstone/issues">in our code repository on github.com</a>.
+            </p>
+            <p>
+              Thanks, and good luck!
+            </p>
           </div>
-                    {# ==============> PROBLEMS <============== #}
+
+          {# ==============> PROBLEMS <============== #}
           <div class="page-section">
             <a id="problems"></a>
-            <h4 class="subtitle">
-              Problems and Enhancement Requests
-            </h4>
+            <h2 class="subtitle">
+              Reporting Problems and Enhancement Requests
+            </h2>
             <p>
-              <a href="https://github.com/harvard-lil/capstone#errata">Click here to see our data errata.</a><br>
-              <a href="https://github.com/harvard-lil/capstone">Click here to visit our Github repository</a><br>
               We are serving an imperfect, living dataset through an API that will forever be a work-in-progress. We
               work hard to hunt down and fix problems in both the API and the data, but a robust user base will uncover
               problems more quickly than our small team could ever hope to. Here's the best way to report common types
               of errors.
             </p>
             <dl>
-              <a href="https://github.com/harvard-lil/capstone#errata">errata</a>
-              <a href="https://github.com/harvard-lil/capstone/issues">issues</a>
-              <a href="https://github.com/harvard-lil/capstone">our Github repository</a>
+              <ul>
+                <li><a href="https://github.com/harvard-lil/capstone#errata">Our data errata</a></li>
+                <li><a href="https://github.com/harvard-lil/capstone/issues">Our issue tracker</a></li>
+                <li><a href="https://github.com/harvard-lil/capstone">Our Github repository</a></li>
+              </ul>
               <dt>
                 Jumbled or Misspelled Words in Case Text
               </dt>
@@ -1059,18 +1156,15 @@
                 the issue, so if you'd like notifications, click on the "Subscribe" button on the right-hand side of the
                 screen. If no issue exists, create a new issue and we'll get back to you as soon as we can.
               </dd>
-
             </dl>
-            <p>
-
-            </p>
           </div>
+
           {# ==============> GLOSSARY <============== #}
           <div class="page-section">
             <a id="glossary"></a>
-            <h4 class="subtitle">
+            <h2 class="subtitle">
               Glossary
-            </h4>
+            </h2>
             <p>
               This is a list of technical or project-specific terms we use in this docuemntation. These are stub
               definitions to help you get unstuck, but they should not be conisdered authoratative or complete. A quick
@@ -1084,7 +1178,7 @@
               <dd>
                 API is an acronym for Application Programming Interface. Broadly, it is a way for one computer program
                 to transfer data to another computer program. CAPAPI is a <a href="#def-restful">RESTful</a> API
-                designed with the intent of distributing court case data.
+                designed to distribute court case data.
               </dd>
 
 
@@ -1241,7 +1335,7 @@
                 While most cases in the database are subject to a 500 case per day access limit, jurisdictions that
                 publish their cases in a citable, machine-readable format are not subject to this limit.
                 <a href="#limits">Click here for more information on access limits, what type of users
-                  aren't subject to them, and how you can advocate to eliminate them in your legal jurisdiction.</a>
+                  aren't subject to them, and how you can eliminate them in your legal jurisdiction.</a>
               </dd>
 
 
