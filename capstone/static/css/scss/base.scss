@@ -366,9 +366,17 @@ li.item-set {
       @include make-col(6);
     }
   }
-  .subtitle {
+  h2.subtitle {
     @extend .h4;
     color: $color-violet;
+  }
+  h3.subtitle {
+    @extend .h5;
+    color: $color-violet;
+  }
+  h4, h5, h6 {
+    @extend .h6;
+    font-weight: $font-weight-bold;
   }
   @include media-breakpoint-up(md) {
     .subtitle:before {
