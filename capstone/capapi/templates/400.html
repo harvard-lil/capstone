@@ -2,11 +2,17 @@
 {% load pipeline %}
 
 {% block content %}
-  <div class="container header-margin">
-    <h3>Bad request</h3>
-    <p>
-      Your request resulted in a "400 Bad Request" response. If you see this error repeatedly,
-      please <a href="mailto:info@capapi.org">write to us</a> to let us know what's going wrong.
-    </p>
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <h1 class="h3">Bad request</h1>
+        <p>
+          Your request resulted in a "400 Bad Request" response. If you see this error repeatedly,
+          please <a href="mailto:info@capapi.org">write to us</a> to let us know what's going wrong.
+        </p>
+      </div>
+    </div>
   </div>
 {% endblock %}
+
+{% block footer %}{% endblock %}
