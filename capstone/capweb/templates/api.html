@@ -33,8 +33,7 @@
         {# ==============> MENU <============== #}
         <nav class="list-group sidebar-menu" aria-label="table of contents">
           <ul>
-            <li><a class="list-group-item" href="#overview">Overview</a></li>
-            <li><a class="list-group-item" href="#usage">Using CAPAPI</a></li>
+            <li><a class="list-group-item" href="#getting-started">Getting Started</a></li>
             <li>
               <ul>
                 <li><a class="list-group-item" href="#registration">Registration</a></li>
@@ -54,14 +53,15 @@
         {# ==============> CONTENT <============== #}
         <div class="content">
 
-          {# ==============> OVERVIEW <============== #}
+          {# ==============> GETTING STARTED <============== #}
           <div class="page-section">
+            <a id="getting-started"></a>
             <p>
               <img class="img-fluid"
                    alt="Scanning reporters"
                    src="{% static "img/vacuum-seal.jpg" %}">
             </p>
-            <a id="overview"></a>
+            <h2 class="subtitle">Getting Started</h2>
             <p><a href="{% url "api-root" %}" class="font-weight-bold">Browse the API</a></p>
             <p>
               The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases
@@ -88,9 +88,6 @@
             </p>
           </div>
           <div class="page-section">
-            <a id="overview"></a>
-            <h2 class="subtitle">Overview</h2>
-
             {# ==============> REGISTER  <============== #}
             <a id="registration"></a>
             <h3 class="subtitle">Registration (if you need it)</h3>
@@ -327,9 +324,9 @@
           {# ==============> EXAMPLES <============== #}
           <div class="page-section">
             <a id="examples"></a>
-            <h4 class="subtitle">
+            <h3 class="subtitle">
               Usage Examples
-            </h4>
+            </h3>
             <p>
               This is a non-exhaustive set of examples intended to orient new users. The
               <a href="#endpoints">endpoints</a> section contains more comprehensive documentation about the URLs and
