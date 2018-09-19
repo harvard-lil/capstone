@@ -4,7 +4,7 @@ from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from capapi.views import api_views, user_views, viz_views
+from capapi.views import api_views, viz_views
 
 
 router = routers.DefaultRouter()
