@@ -12,6 +12,14 @@
   }
 }
 
+.content {
+  width: 100%;
+}
+
+form {
+  width: 100%;
+}
+
 input, textarea {
   min-width: 100%;
   margin-bottom: 10px;
@@ -42,5 +50,8 @@ input, textarea {
 footer {
   .lil-logo {
     @extend .footer-lil-logo-black;
+  }
+  .credits {
+    color: $color-black !important;
   }
 }
