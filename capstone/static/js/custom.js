@@ -47,7 +47,7 @@ let selectedNavStyling = function() {
   path = path.split('#')[0];
   path = path === 'user' ? 'account': path;
   path = path === 'bulk-access' || path === 'api' ? 'tools': path;
-  $('#nav-' + path).find('a').addClass('selected').attr('aria-current', 'page');
+  $('#nav-' + path).find('a').addClass('selected');
 };
 
 $(function() {
