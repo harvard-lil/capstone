@@ -34,7 +34,9 @@
     </main>
 
     {% if not hide_footer %}
-      {% include "includes/footer.html" %}
+      {% block footer %}
+          {% include "includes/footer.html" %}
+      {% endblock %}
     {% endif %}
   </body>
 </html>

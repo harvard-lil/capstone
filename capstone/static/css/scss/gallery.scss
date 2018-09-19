@@ -16,6 +16,7 @@
 }
 
 .basic-page.inverse .subtitle {
+  @extend .h6;
   font-family: $font-sans-serif;
   font-weight: $font-weight-semibold;
   border-bottom: 0;

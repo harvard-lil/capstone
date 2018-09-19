@@ -1,5 +1,76 @@
 @import 'variables';
 
+h1 {
+  @include sr-only;
+}
+
+/*
+ * specialized lettering for index page
+ */
+
+ @mixin header-styles {
+  display: block;
+  font-family: $font-serif;
+  font-weight: $font-weight-bold;
+  line-height: $headings-line-height;
+  margin-bottom: $headings-margin-bottom;
+ }
+
+.splash-quote span {
+  @extend .h3;
+  @include header-styles;
+}
+
+.section-title {
+  @extend .h1;
+  @include header-styles;
+  font-weight: $font-weight-normal;
+}
+
+.section-subtitle {
+  @extend .h5;
+  @include header-styles;
+  margin-bottom: 1em;
+  margin-top: 20px;
+}
+
+.number {
+  @extend .h1;
+  @include header-styles;
+
+  .content-small-screen & {
+    font-family: $font-sans-serif;
+    font-size: 5rem;
+  }
+}
+
+.pages-scanned-number, .reporters-number {
+  @include header-styles;
+  font-size: 3rem;
+}
+
+.pages-scanned-number {
+  font-family: $font-sans-serif;
+}
+
+.label {
+  @extend .h5;
+  @include header-styles;
+  font-family: $font-sans-serif;
+  font-weight: 500; // is this in a variable somewhere?
+}
+
+.label-big {
+  @include header-styles;
+  font-size: 1.8rem;
+  font-family: $font-sans-serif;
+}
+
+.content-right h3 {
+  @extend .h6;
+  font-weight: $font-weight-bold;
+}
+
 
 /* on index, display white background logo on small screens
   display black background logo in all other instances */
