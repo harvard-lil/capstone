@@ -3,6 +3,7 @@ from . import views
 from django.contrib.auth import views as auth_views
 from django.urls import path
 from django.conf.urls import include
+from django.views.generic import TemplateView
 
 from capapi.views import user_views
 from capapi.forms import LoginForm
@@ -15,6 +16,13 @@ urlpatterns = [
     path('tools/', views.tools, name='tools'),
     path('gallery/', views.gallery, name='gallery'),
     path('api/', views.api, name='api'),
+
+    ### bulk data ###
+    path('bulk-access/', user_views.bulk, name='bulk-data'),
+
+    path('terms', TemplateView.as_view(template_name='terms-of-use.html',
+                                       extra_context={'hide_footer': True}),
+                                       name='terms'),
 
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),

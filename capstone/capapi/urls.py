@@ -32,7 +32,6 @@ schema_view = get_schema_view(
 urlpatterns = [
     ### pages ###
     # path('', doc_views.home, name='home'),
-    path('terms', TemplateView.as_view(template_name='terms-of-use.html', extra_context={'hide_footer': True}), name='terms'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots'),
 
     ### api ###
@@ -50,6 +49,4 @@ urlpatterns = [
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=None), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
 
-    ### bulk data ###
-    path('bulk-access/', user_views.bulk, name='bulk-data'),
 ]
