@@ -277,7 +277,7 @@ PIPELINE = {
         },
         'limericks': {
             'source_filenames': (
-                'js/limerick_lines.json',
+                'js/limerick_lines.js',
                 'js/generate_limericks.js',
             ),
             'output_filename': 'limericks.js'
