@@ -2,8 +2,14 @@
 {% load pipeline %}
 
 {% block content %}
-  <div class="container header-margin">
-    <h3>We didn't find the page you were looking for!</h3>
-    <p>Please <a href="mailto:info@capapi.org">write to us</a> if you think this is a mistake.</p>
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <h1 class="h3">We didn't find the page you were looking for!</h1>
+        <p>Please <a href="mailto:info@capapi.org">write to us</a> if you think this is a mistake.</p>
+      </div>
+    </div>
   </div>
 {% endblock %}
+
+{% block footer %}{% endblock %}

@@ -32,17 +32,17 @@
         <div class="content">
           {% if exports.public %}
             <div class="page-section">
-              <h4 class="subtitle">
+              <h2 class="subtitle">
                Public Bulk Data
-              </h4>
+              </h2>
               <p>Click a link to download.</p>
                 {% include "includes/download_list.html" with zips=exports.public %}
             </div>
           {% endif %}
           <div class="page-section">
-            <h4 class="subtitle">
+            <h2 class="subtitle">
               Bulk Data for Academic Research
-            </h4>
+            </h2>
             {% if exports.private %}
               <p>
                 The following jurisdictions are available for download under your academic research agreement.

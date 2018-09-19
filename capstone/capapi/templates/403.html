@@ -2,13 +2,19 @@
 {% load pipeline %}
 
 {% block content %}
-  <div class="container header-margin">
-    <h3>Permission denied</h3>
-    <p>
-      You don't have permission to access this page. You may need to <a href="{% url "login" %}">log in</a>.
-    </p>
-    <p>
-      Please <a href="mailto:info@capapi.org">write to us</a> if you think this is a mistake.
-    </p>
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <h1 class="h3">Permission denied</h1>
+        <p>
+          You don't have permission to access this page. You may need to <a href="{% url "login" %}">log in</a>.
+        </p>
+        <p>
+          Please <a href="mailto:info@capapi.org">write to us</a> if you think this is a mistake.
+        </p>
+      </div>
+    </div>
   </div>
 {% endblock %}
+
+{% block footer %}{% endblock %}
