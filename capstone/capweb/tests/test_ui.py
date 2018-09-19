@@ -1,12 +1,11 @@
 import pytest
 
 from bs4 import BeautifulSoup
-from rest_framework.reverse import reverse
 
 from django.conf import settings
 
 from capapi.tests.helpers import check_response
-
+from capweb.helpers import reverse
 
 
 @pytest.mark.django_db

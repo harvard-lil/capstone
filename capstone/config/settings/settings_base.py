@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'simple_history',   # model versioning
     'bootstrap4',   # bootstrap form rendering
     'drf_yasg',   # API specification
+    'django_hosts',     # subdomain routing
 ]
 
 REST_FRAMEWORK = {
@@ -69,6 +70,9 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
+    # docs say this should come "first", though we're not putting it quite that early
+    'django_hosts.middleware.HostsRequestMiddleware',
+
     # cache middleware should come before:
     # - CsrfViewMiddleware, to skip caching on views that use csrf
     # - SessionMiddleware, to skip caching on views that set session cookies
@@ -82,9 +86,20 @@ MIDDLEWARE = [
     'capapi.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # docs say this should come last
+    'django_hosts.middleware.HostsResponseMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
+
+# django_hosts settings
+ROOT_HOSTCONF = 'config.hosts'
+API_URLCONF = 'capapi.api_urls'  # solely so `./manage.py show_urls -c API_URLCONF` can work
+DEFAULT_HOST = 'default'
+PARENT_HOST = 'case.test:8000'
+
+SESSION_COOKIE_DOMAIN = '.case.test'
 
 TEMPLATES = [
     {
@@ -99,6 +114,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'builtins': [
+                'django_hosts.templatetags.hosts_override',
+            ]
         },
     },
 ]

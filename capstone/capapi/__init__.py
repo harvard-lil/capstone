@@ -1,7 +1,7 @@
 import rest_framework.request
+import rest_framework.reverse
 
-from capapi.resources import TrackingWrapper
-
+from capapi.resources import TrackingWrapper, api_reverse
 
 # Monkeypatch rest_framework.request.Request to track accesses to request.user attributes.
 # See capapi/middleware for rationale.
@@ -24,3 +24,7 @@ class CustomRequest(OriginalRequest):
 # make sure we only patch once if this module is re-imported
 if OriginalRequest.__name__ != "CustomRequest":
     rest_framework.request.Request = CustomRequest
+
+
+# Monkeypatch rest_framework.reverse._reverse to use our api_reverse function
+rest_framework.reverse._reverse = api_reverse
