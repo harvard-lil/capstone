@@ -20,21 +20,8 @@
 
   <div class="nav-content">
     <ul class="nav">
-      <li class="nav-item dropdown" id="nav-about">
-        <a class="nav-link dropdown-toggle"
-           href="#" id="navbar-dropdown-about"
-           role="button"
-           aria-haspopup="true"
-           aria-expanded="false">
-          ABOUT
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-about">
-          <a class="dropdown-item" href="{% url "about" %}">Overview</a>
-          <a class="dropdown-item" href="{% url "about" %}#data">What data?</a>
-          <a class="dropdown-item" href="{% url "about" %}#usage">Usage & access</a>
-          <a class="dropdown-item" href="{% url "about" %}#press">Press</a>
-          <a class="dropdown-item" href="{% url "about" %}#contributors">Contributors</a>
-        </div>
+      <li class="nav-item" id="nav-about">
+        <a class="nav-link" href="{% url "about" %}">ABOUT</a>
       </li>
       <li class="nav-item" id="nav-terms">
         <a class="nav-link" href="{% url "terms" %}">
@@ -51,7 +38,7 @@
           TOOLS
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown-tools">
-          <a class="dropdown-item" href="{% url "tools" %}#overview">Overview</a>
+          <a class="dropdown-item" href="{% url "tools" %}">Overview</a>
           <a class="dropdown-item" href="{% url "api" %}">API</a>
           <a class="dropdown-item" href="{% url "bulk-data" %}">Bulk Data</a>
         </div>
@@ -65,10 +52,9 @@
           GALLERY
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown-gallery">
-          <a class="dropdown-item" href="{% url "gallery" %}#overview">Overview</a>
-          <a class="dropdown-item" href="{% url "gallery" %}#h2o">H2O</a>
-          <a class="dropdown-item" href="{% url "limericks" %}">Limericks</a>
+          <a class="dropdown-item" href="{% url "gallery" %}">Overview</a>
           <a class="dropdown-item" href="{% url "wordclouds" %}">Wordclouds</a>
+          <a class="dropdown-item" href="{% url "limericks" %}">Limericks</a>
         </div>
       </li>
 
