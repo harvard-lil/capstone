@@ -61,7 +61,8 @@ def generate_html(case_xml, tag_map=tag_map):
             element_text_copy = element.getchildren()[0].text
 
         # for every attribute except id, turn it into an accepted data-* attribute
-        for attribute in element.attrib:
+        # use list(element.attrib) so we can safely mutate dictionary during iteration
+        for attribute in list(element.attrib):
             if attribute == 'id' or attribute.startswith('data-'):
                 continue
             element.attrib['data-' + attribute] = element.attrib[attribute]
@@ -115,14 +116,6 @@ def generate_html(case_xml, tag_map=tag_map):
         elif tag == "pagebreak":
             # point to the anchor in the headnote
             element.attrib['style'] = "page-break-before: always"
-
-    # change the properties of the casebody tag itself
-    casebody[0].tag = tag_map['casebody']
-    for attribute in casebody[0].attrib:
-        if attribute == 'class':
-            continue
-        casebody[0].attrib['data-' + attribute] = casebody[0].attrib[attribute]
-        casebody[0].attrib.pop(attribute)
 
     # get casebody as string with namespaces stripped
     casebody_str = re.sub(r' xmlns(:xlink)?="http://[^"]+"', '', str(casebody))
