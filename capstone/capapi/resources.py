@@ -14,7 +14,9 @@ from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.template.defaultfilters import slugify
 from django.http import FileResponse
-from rest_framework.reverse import reverse
+from django_hosts import reverse as django_hosts_reverse
+
+from capweb.helpers import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +45,7 @@ def create_download_response(filename='', content=[]):
 
 
 def send_new_signup_email(request, user):
-    token_url = reverse('verify-user', kwargs={'user_id':user.pk, 'activation_nonce': user.get_activation_nonce()}, request=request)
+    token_url = reverse('verify-user', kwargs={'user_id':user.pk, 'activation_nonce': user.get_activation_nonce()}, scheme="https")
     send_mail(
         'CaseLaw Access Project: Verify your email address',
         "Please click here to verify your email address: \n\n%s \n\nIf you believe you have received this message in error, please ignore it." % token_url,
@@ -113,3 +115,13 @@ class CachedCountQuerySet(QuerySet):
     )
     def count(self):
         return super().count()
+
+
+def api_reverse(viewname, args=None, kwargs=None, request=None, format=None, **extra):
+    """
+        Same as `django.urls.reverse`, but uses api_urls.py for routing, and includes full domain name.
+    """
+    if format is not None:
+        kwargs = kwargs or {}
+        kwargs['format'] = format
+    return django_hosts_reverse(viewname, args=args, kwargs=kwargs, host='api', scheme='http' if settings.DEBUG else 'https', **extra)

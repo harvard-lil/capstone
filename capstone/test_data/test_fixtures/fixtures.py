@@ -1,6 +1,7 @@
 import re
 from collections import defaultdict
 from contextlib import contextmanager
+from urllib.parse import urlparse
 
 import pytest
 from django.core.cache import cache as django_cache
@@ -139,15 +140,23 @@ def auth_user(token):
     token.user.save()
     return token.user
 
+class CapClient(APIClient):
+    def generic(self, method, path, *args, **kwargs):
+        # make test client use domain portion of path to set HTTP_HOST, so subdomain routing works
+        parsed = urlparse(str(path))
+        if parsed.netloc:
+            kwargs.setdefault('HTTP_HOST', parsed.netloc)
+        return super().generic(method, path, *args, **kwargs)
+
 @pytest.fixture
 def client():
-    return APIClient()
+    return CapClient()
 
 @pytest.fixture
 def auth_client(auth_user):
     """ Return client authenticated as auth_user. """
     # API auth
-    client = APIClient()
+    client = CapClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + auth_user.get_api_key())
     # Django auth
     client.force_login(user=auth_user)
@@ -161,10 +170,6 @@ def unlimited_auth_client(auth_client):
     user.unlimited_access_until = timezone.now() + timedelta(days=1)
     user.save()
     return auth_client
-
-@pytest.fixture
-def api_url():
-    return "http://testserver" + settings.API_FULL_URL + "/"
 
 @pytest.fixture
 def api_request_factory():

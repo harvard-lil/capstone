@@ -39,6 +39,7 @@ django-bulk-update==2.1.0
 django-compressor==2.1.1  # via django-libsass
 django-extensions==2.0.6
 django-filter==2.0.0
+django-hosts==3.0
 django-libsass==0.7
 django-partial-index==0.4.0
 django-pipeline==1.6.14
