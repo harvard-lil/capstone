@@ -1,17 +1,15 @@
-function generate_limerick(){
+function generate_limerick() {
     return $.getJSON("/static/js/limerick_lines.json")
       .then(function(json) {
         let line_types = json;
 
         let long_lines = get_lines(line_types['long'], 3);
         let short_lines = get_lines(line_types['short'], 2);
-        let limerick = [
-            long_lines[0],
-            long_lines[1],
-            short_lines[0],
-            short_lines[1],
-            long_lines[2]];
-        return limerick;
+        return [long_lines[0],
+                long_lines[1],
+                short_lines[0],
+                short_lines[1],
+                long_lines[2]];
       });
 }
 
@@ -20,7 +18,7 @@ function get_lines(emphasis_patterns, count){
   let last_tokens = dict_random_choice(last_syllables);
   let line_sets = dict_random_sample(last_tokens, count);
   let lines = [];
-  for(k in line_sets){
+  for(let k in line_sets){
     let index = Math.floor(Math.random() * (line_sets[k].length));
     let line = format_line(line_sets[k][index]);
     lines.push(line);
@@ -34,7 +32,7 @@ function format_line(line) {
 }
 
 function dict_random_choice(population) {
-    let keys = Object.keys(population)
+    let keys = Object.keys(population);
     let max = keys.length;
     // creating random choice key
     let index = Math.floor(Math.random() * max);
@@ -57,7 +55,7 @@ function dict_random_sample(population, size){
     }
     let keys = shuffled.slice(0, size);
     let lines = [];
-    for (idx in keys) {
+    for (let idx in keys) {
       let key = keys[idx];
       lines.push(population[key])
     }
@@ -68,7 +66,7 @@ function dict_random_sample(population, size){
 let generate = function() {
   $(".limerick-body").empty();
   generate_limerick().then(function(limerick){
-    for(l in limerick) {
+    for(let l in limerick) {
       $(".limerick-body").append(limerick[l] + "<br/>");
     }
   })
