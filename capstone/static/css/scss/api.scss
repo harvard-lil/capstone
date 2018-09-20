@@ -150,8 +150,49 @@ lh{
   content: "description: ";
 }
 
-dt.example-explanation {
+dt.example-description {
   margin-top: 20px;
   font-weight: bold;
   font-size: 1em;
+}
+
+pre.code-block {
+  font-size: 0.65em;
+  background-color: rgb(210, 231, 255);
+  font-weight: bold;
+  margin-top: -20px;
+  line-height: 1.5em;
+}
+
+.example-link {
+  font-size: 0.65em;
+}
+
+h5.list-header {
+  font-family: "titillium", "Helvetica", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  color: $color-black;
+}
+
+li > h5.list-header {
+  font-size: 0.9em;
+ }
+
+.example-mod-description {
+  font-size: 14px;
+}
+
+code {
+  font-size: 0.8em;
+}
+
+.json-data-type {
+  color: $blue;
+  font-style: italic;
+}
+
+.code-example-casebody-section {
+  color: $red;
 }
