@@ -93,13 +93,22 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
-# django_hosts settings
+### subdomain settings
 ROOT_HOSTCONF = 'config.hosts'
-API_URLCONF = 'capapi.api_urls'  # solely so `./manage.py show_urls -c API_URLCONF` can work
-DEFAULT_HOST = 'default'
 PARENT_HOST = 'case.test:8000'
-
-SESSION_COOKIE_DOMAIN = '.case.test'
+SESSION_COOKIE_DOMAIN = '.case.test'  # make sure cookies are visible from all hosts
+DEFAULT_HOST = 'default'  # which key from HOSTS is used by default if no host is specified for reverse()
+# used in config.hosts to set up our subdomains:
+HOSTS = {
+    'default': {
+        'subdomain': '',
+        'urlconf': 'config.urls',
+    },
+    'api': {
+        'subdomain': 'api',
+        'urlconf': 'capapi.api_urls',
+    },
+}
 
 TEMPLATES = [
     {
