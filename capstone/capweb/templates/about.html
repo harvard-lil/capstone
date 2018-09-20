@@ -60,23 +60,44 @@ About the Caselaw Access Project
                 The written decisions of state and federal courts in the U.S.
                 are not widely and freely accessible to the public online.
                 Instead, they’re maintained primarily in bound volumes and expensive databases that few can access.
-                We aim to intervene in this problem by making all published U.S. court decisions freely available to the public online.
+                We aim to intervene in this problem by making all published U.S. court decisions freely available to the
+                public online.
               </p>
             </div>
 
             {# ==============> DATA <============== #}
             <div class="page-section">
               <a name="data"></a>
-              <h4 class="subtitle">
-                What data do we have?
-              </h4>
-              <p>
-                Short blurb about what kind of data we have.
-                We took xyz reporters and stripped them of abc proprietary data. This is what we have. Voluptas maxime earum non et voluptatem nulla recusandae. Expedita ut esse sit voluptatem soluta rerum. Sit sapiente animi id necessitatibus ea accusamus. Nobis veritatis odit maxime.
-              </p>
-              <p>
-                Voluptas maxime earum non et voluptatem nulla recusandae. Expedita ut esse sit voluptatem soluta rerum. Sit sapiente animi id necessitatibus ea accusamus. Nobis veritatis odit maxime.
-              </p>
+                <p>So what data do we have so far? The short answer is that we've digitized all official, book-published US case law. It's not an
+                  exhaustive repository of all opinions— we don't have cases from lower courts, such as tax county and
+                  municipal courts, family courts and the like— but chances are if you want to cite it, we've got it.
+                </p>
+
+                <p>That includes data for all current state courts, federal courts, and territorial courts for American
+                  Samoa, Dakota Territory, Guam, Native American Courts, Navajo Nation, and the Northern Mariana
+                  Islands. Our earliest case is from 1658, and our most recent cases are from 2018. In cases where
+                  regional reporters were the official reporter for a state for some amount of time, we digitized those
+                  too, though we didn't perform the same error correction and metadata generation on non-official cases
+                  because they're duplicative. </p>
+
+                <p>
+                  Here are some tsv-formatted spreadsheets with specific counts from our collection, and links to view
+                  those cases in the API:
+                </p>
+                <p>
+                  <ul>
+                    <li>
+                      <a href="{% static "downloads/cases_by_reporter.tsv" %}">Case Count by Reporter Series</a>
+                    </li>
+                    <li>
+                      <a href="{% static "downloads/cases_by_jurisdiction.tsv" %}">Case Count by Jurisdiction</a>
+                    </li>
+                    <li>
+                      </lo><a href="{% static "downloads/cases_by_decision_date.tsv" %}">Case Count by Decision Date</a>
+                    </li>
+                </ul>
+                </p>
+
             </div>
 
             {# ==============> USAGE <============== #}
