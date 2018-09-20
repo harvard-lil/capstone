@@ -85,13 +85,13 @@ nav[aria-label="main"] {
     }
     a:hover, a:focus, a:active {
       background-color: $color-yellow;
-      color: $color-black;
+      color: $color-black !important;
     }
     a:last-child {
       border-bottom: 0;
     }
     @include media-breakpoint-up(lg) {
-      margin-top: 26px;
+      margin-top: 29px;
       border-left: $border-width solid $color-white;
       border-right: $border-width solid $color-white;
       border-bottom: $border-width solid $color-white;
@@ -113,10 +113,11 @@ li.nav-item.dropdown {
   > a.nav-link:after {
     content: url('../../img/arrow-expand.svg');
     display: inline-block;
+    transform: translateY(-2px);
   }
   &.show {
     > a:after {
-      transform: rotate(180deg);
+      transform: rotate(180deg) translateY(-5px);
     }
   }
 }

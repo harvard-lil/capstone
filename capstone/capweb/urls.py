@@ -16,13 +16,14 @@ urlpatterns = [
     path('tools/', views.tools, name='tools'),
     path('gallery/', views.gallery, name='gallery'),
     path('api/', views.api, name='api'),
+    path('robots.txt', TemplateView.as_view(template_name='robots.txt',
+                                            content_type='text/plain'), name='robots'),
 
     ### bulk data ###
     path('bulk-access/', user_views.bulk, name='bulk-data'),
 
     path('terms', TemplateView.as_view(template_name='terms-of-use.html',
-                                       extra_context={'hide_footer': True}),
-                                       name='terms'),
+                                       extra_context={'hide_footer': True}), name='terms'),
 
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),

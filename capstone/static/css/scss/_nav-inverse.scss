@@ -19,5 +19,25 @@ nav[aria-label="main"] {
   }
   .nav-content {
     background: $color-white;
+    a:active, a:focus, a:hover,
+    a.selected {
+      color: $color-violet;
+    }
+  }
+}
+
+.nav-link {
+  &:hover, &:active, &:focus {
+    color: $color-blue !important;
+  }
+  &.selected {
+    color: $color-violet !important;
+  }
+}
+
+/* show symbols on expand and collapse of dropdowns */
+li.nav-item.dropdown {
+  > a.nav-link:after {
+    content: url('../../img/arrow-expand-inverse.svg');
   }
 }
