@@ -2,11 +2,12 @@ import re
 
 import pytest
 from django.core import mail
-from rest_framework.reverse import reverse
 
+from capapi.resources import api_reverse
 from capapi.models import SiteLimits, CapUser
 from capapi.tasks import daily_site_limit_reset_and_report
 from capapi.tests.helpers import check_response
+from capweb.helpers import reverse
 
 
 @pytest.mark.django_db
@@ -33,7 +34,7 @@ def test_site_limits(client, auth_client, case, mailoutbox):
 
     # verify email address
     verify_email = mail.outbox[0].body
-    verify_url = re.findall(r'http://\S+', verify_email)[0]
+    verify_url = re.findall(r'https://\S+', verify_email)[0]
     response = client.get(verify_url)
     check_response(response, content_includes="Thank you for verifying")
     user.refresh_from_db()
@@ -50,12 +51,12 @@ def test_site_limits(client, auth_client, case, mailoutbox):
     case.jurisdiction.save()
 
     # can fetch one case
-    response = auth_client.get(reverse('casemetadata-detail', kwargs={'id': case.pk}), {'full_case':'true'})
+    response = auth_client.get(api_reverse('casemetadata-detail', args=[case.pk]), {'full_case':'true'})
     result = response.json()
     assert result['casebody']['status'] == 'ok'
 
     # cannot fetch second case
-    response = auth_client.get(reverse('casemetadata-detail', kwargs={'id': case.pk}), {'full_case':'true'})
+    response = auth_client.get(api_reverse('casemetadata-detail', args=[case.pk]), {'full_case':'true'})
     result = response.json()
     assert result['casebody']['status'] == 'error_sitewide_limit_exceeded'
 

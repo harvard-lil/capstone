@@ -21,7 +21,7 @@ services:
 ##        mem_limit: 128M
     worker:
         build: .
-        image: capstone
+        image: capstone:0.1
         volumes:
             - .:/app
             - ../services:/services
@@ -32,9 +32,12 @@ services:
         environment:
             # let Django load Docker-specific settings conditionally
             - DOCKERIZED=True
+        extra_hosts:
+          - "case.test:127.0.0.1"
+          - "api.case.test:127.0.0.1"
     web:
         build: .
-        image: capstone
+        image: capstone:0.1
         volumes:
             - .:/app
             - ../services:/services
@@ -45,6 +48,9 @@ services:
         environment:
             # let Django load Docker-specific settings conditionally
             - DOCKERIZED=True
+        extra_hosts:
+          - "case.test:127.0.0.1"
+          - "api.case.test:127.0.0.1"
         ports:
             - "8000:8000"
 #        mem_limit: 128M

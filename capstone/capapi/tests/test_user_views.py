@@ -8,10 +8,11 @@ from django.conf import settings
 from django.core import mail
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
-from rest_framework.reverse import reverse
 
+from capapi import api_reverse
 from capapi.models import CapUser
 from capapi.tests.helpers import check_response
+from capweb.helpers import reverse
 
 
 ### register, verify email address, login ###
@@ -48,7 +49,7 @@ def test_registration_flow(client, case):
 
     # can verify email address
     verify_email = mail.outbox[0].body
-    verify_url = re.findall(r'http://\S+', verify_email)[0]
+    verify_url = re.findall(r'https://\S+', verify_email)[0]
     response = client.get(verify_url)
     check_response(response, content_includes="Thank you for verifying")
     user.refresh_from_db()
@@ -66,7 +67,7 @@ def test_registration_flow(client, case):
     # can fetch blacklisted case
     case.jurisdiction.whitelisted = False
     case.jurisdiction.save()
-    response = client.get(reverse('casemetadata-detail', kwargs={'id': case.pk}), {'full_case':'true'})
+    response = client.get(api_reverse('casemetadata-detail', kwargs={'id': case.pk}), {'full_case':'true'})
     check_response(response, content_includes="ok")
 
     # can't register with similar email addresses
@@ -147,8 +148,8 @@ def test_view_user_details(auth_user, auth_client):
 @pytest.mark.django_db
 def test_bulk_data_list(request, case_export, private_case_export, client_fixture, can_see_private):
     client = request.getfuncargvalue(client_fixture)
-    public_url = reverse('caseexport-download', args=[case_export.pk])
-    private_url = reverse('caseexport-download', args=[private_case_export.pk])
+    public_url = api_reverse('caseexport-download', args=[case_export.pk])
+    private_url = api_reverse('caseexport-download', args=[private_case_export.pk])
 
     response = client.get(reverse('bulk-data'))
     check_response(response)
@@ -175,7 +176,7 @@ def check_zip_response(response):
 def test_case_export_download(request, client_fixture, export_fixture, status_code):
     client = request.getfuncargvalue(client_fixture)
     export = request.getfuncargvalue(export_fixture)
-    response = client.get(reverse('caseexport-download', args=[export.pk]))
+    response = client.get(api_reverse('caseexport-download', args=[export.pk]))
     if status_code == 200:
         check_zip_response(response)
     else:

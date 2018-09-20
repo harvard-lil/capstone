@@ -1,9 +1,9 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
-from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from capapi.models import CapUser
+from capweb.helpers import reverse
 
 
 class LoginForm(AuthenticationForm):

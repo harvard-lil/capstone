@@ -18,6 +18,7 @@ try:
 except Exception as e:
     print("WARNING: Can't configure Django -- tasks depending on Django will fail:\n%s" % e)
 
+from django.core import management
 from django.db import connections
 from django.utils.encoding import force_str
 from django.conf import settings
@@ -42,6 +43,14 @@ def run_django(port="127.0.0.1:8000"):
 def test():
     """ Run tests with coverage report. """
     local("pytest --fail-on-template-vars --cov --cov-report=")
+
+@task
+def show_urls():
+    """ Show routable URLs and their names, across all subdomains. """
+    for name, host in settings.HOSTS.items():
+        settings.URLCONF = host["urlconf"]
+        print("\nURLs for %s (%s):\n" % (name, host["urlconf"]))
+        management.call_command('show_urls', urlconf='URLCONF')
 
 @task
 def sync_with_s3():
