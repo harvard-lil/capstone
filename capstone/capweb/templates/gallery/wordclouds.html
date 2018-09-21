@@ -6,7 +6,7 @@
   {% stylesheet 'gallery' %}
 {% endblock %}
 
-{% block title %} — Gallery{% endblock %}
+{% block title %}Gallery | {% endblock %}
 
 {% block meta_description %}
 Caselaw Access Project gallery
@@ -32,9 +32,11 @@ Caselaw Access Project gallery
         <ul class="list-inline">
         {% for wordcloud in wordclouds %}
           <li class="list-item-inline wordcloud-item">
-            <a href="{% static "" %}img/wordclouds/{{ wordcloud }}"><img class=""
-                    src="{% static "" %}img/wordclouds/{{ wordcloud }}"/>
-            <p class="year">{{ wordcloud|truncatechars:7}}</p>
+            <a href="{% static "" %}img/wordclouds/{{ wordcloud }}">
+              <img class=""
+                   src="{% static "" %}img/wordclouds/{{ wordcloud }}"
+                   alt=""/>
+              <p class="year">{{ wordcloud|truncatechars:7}}</p>
             </a>
           </li>
         {% endfor %}

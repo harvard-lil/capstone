@@ -3,7 +3,7 @@
 {% load pipeline %}
 {% load api_url %}
 
-{% block title %} — API{% endblock %}
+{% block title %}API Docs — {% endblock %}
 
 {% block extra_head %}
   {% stylesheet 'tools' %}
@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block meta_description %}
-  Caselaw Access Project API
+  Caselaw Access Project API Docs
 {% endblock %}
 
 {% block content %}
@@ -33,7 +33,7 @@
         {# ==============> MENU <============== #}
         <nav class="list-group sidebar-menu" aria-label="table of contents">
           <ul>
-            <li><a class="list-group-item" href="#overview">Overview</a></li>
+            <li><a class="list-group-item" href="#getting-started">Getting Started</a></li>
             <li><a class="list-group-item" href="#registration">Registration</a></li>
             <li><a class="list-group-item" href="#authentication">Authentication</a></li>
             <li><a class="list-group-item" href="#dataformats">Case Text Data Formats</a></li>
@@ -343,7 +343,7 @@
               </dd>
 
               <dt>
-                <a id="def-academic-user"></a>
+                <a id="def-commerical-user"></a>
                 Commercial Users
               </dt>
               <dd>
@@ -634,7 +634,7 @@
                     </ul>
                   </li>
                   <li class="list-group-item">
-                    <h5 class="list-header"><code class="parameter-name">cursor</code></h5>
+                    <h5 id="def-cursor" class="list-header"><code class="parameter-name">cursor</code></h5>
                     <ul>
                       <li class="param-data-type"> An randomly generated <a href="#def-string">string</a></li>
                       <li class="param-description">

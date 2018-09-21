@@ -6,7 +6,7 @@
   {% stylesheet 'about' %}
 {% endblock %}
 
-{% block title %} — About{% endblock %}
+{% block title %}About | {% endblock %}
 
 {% block meta_description %}
 About the Caselaw Access Project
@@ -33,7 +33,10 @@ About the Caselaw Access Project
         <nav class="list-group sidebar-menu" aria-label="table of contents">
           <ul>
             <li><a class="list-group-item" href="#introduction">Introduction</a></li>
-            <li><a class="list-group-item" href="#data">What data?</a></li>
+            <li><a class="list-group-item" href="#data">What data do we have?</a></li>
+            <li><a class="list-group-item" href="#limits">Scope limits</a></li>
+            <li><a class="list-group-item" href="#numbers">By the numbers</a></li>
+            <li><a class="list-group-item" href="#data-quality">Data quality</a></li>
             <li><a class="list-group-item" href="#usage">Usage &amp; access</a></li>
             <li><a class="list-group-item" href="#press">Press</a></li>
             <li><a class="list-group-item" href="#contributors">Contributors</a></li>
@@ -53,15 +56,12 @@ About the Caselaw Access Project
               <h2 class="subtitle">Introduction</h2>
               <p>
                 <span class="highlighted">
-                  The Caselaw Access Project (&#8220;CAP&#8221;)
-                  is an effort to expand public access to U.S. law.
+                  The Caselaw Access Project (&#8220;CAP&#8221;) expands public access to U.S. law.
                 </span>
               </p>
               <p>
-                The written decisions of state and federal courts in the U.S. are not widely and freely accessible to
-                the public online. Instead, they’re maintained primarily in bound volumes and expensive databases that
-                few can access. We aim to intervene in this problem by making all published U.S. court decisions freely
-                available to the public online.
+                Our goal is to make all published U.S. court decisions freely available to the public online,
+                in a consistent format, digitized from the collection of the Harvard Law Library.
               </p>
             </div>
 
@@ -71,35 +71,97 @@ About the Caselaw Access Project
               <h2 class="subtitle">
                 What data do we have?
               </h2>
-                <p>The short answer is that we've digitized all official, book-published US case law. It's not an
-                  exhaustive repository of all opinions— we don't have cases from lower courts, such as tax county and
-                  municipal courts, family courts and the like— but chances are if you want to cite it, we've got it.
-                </p>
+              <p>
+                CAP includes all official, book-published United States case law — every volume designated as an official
+                report of decisions by a court within the United States.
+              </p>
+              <p>
+                Our scope includes all state courts, federal courts, and territorial courts for American
+                Samoa, Dakota Territory, Guam, Native American Courts, Navajo Nation, and the Northern Mariana
+                Islands. Our earliest case is from 1658, and our most recent cases are from 2018.
+              </p>
+              <p>
+                Each volume has been converted into structured, case-level data broken out by majority and dissenting
+                opinion, with human-checked metadata for party names, docket number, citation, and date.
+              </p>
+              <p>
+                We also plan to share (but have not yet published) page images and page-level OCR data for all volumes.
+              </p>
+            </div>
 
-                <p>That includes data for all current state courts, federal courts, and territorial courts for American
-                  Samoa, Dakota Territory, Guam, Native American Courts, Navajo Nation, and the Northern Mariana
-                  Islands. Our earliest case is from 1658, and our most recent cases are from 2018. In cases where
-                  regional reporters were the official reporter for a state for some amount of time, we digitized those
-                  too, though we didn't perform the same error correction and metadata generation on non-official cases
-                  because they're duplicative. </p>
+            {# ==============> LIMITS <============== #}
+            <div class="page-section">
+              <a name="limits"></a>
+              <h2 class="subtitle">
+                Scope limits
+              </h2>
+              <p>CAP does not include:</p>
+              <ul>
+                <li>
+                  New cases as they are published. We currently include volumes published through
+                  June, 2018, and may or may not include additional volumes in the future.
+                </li>
+                <li>
+                  Cases not designated as officially published, such as most lower court decisions.
+                </li>
+                <li>
+                  Non-published trial documents such as party filings, orders, and exhibits.
+                </li>
+                <li>
+                  Parallel versions of cases from regional reporters, unless those cases were
+                  designated by a court as official.
+                </li>
+              </ul>
+              <p>
+                Cases published after 1922 are redacted of potentially-copyrighted material added by publishers.
+              </p>
+            </div>
 
-                <p>
-                  Here are some tsv-formatted spreadsheets with specific counts from our collection, and links to view
-                  those cases in the API:
-                </p>
-                <p>
-                  <ul>
-                    <li>
-                      <a href="{% static "downloads/cases_by_reporter.tsv" %}">Case Count by Reporter Series</a>
-                    </li>
-                    <li>
-                      <a href="{% static "downloads/cases_by_jurisdiction.tsv" %}">Case Count by Jurisdiction</a>
-                    </li>
-                    <li>
-                      <a href="{% static "downloads/cases_by_decision_date.tsv" %}">Case Count by Decision Date</a>
-                    </li>
-                </ul>
-                </p>
+            {# ==============> NUMBERS <============== #}
+            <div class="page-section">
+              <a name="numbers"></a>
+              <h2 class="subtitle">
+                By the numbers
+              </h2>
+              <p>
+                Here are some tsv-formatted spreadsheets with specific counts from our collection, and links to view
+                those cases in the API:
+              </p>
+              <ul>
+                <li>
+                  <a href="{% static "downloads/cases_by_reporter.tsv" %}">Case Count by Reporter Series</a>
+                </li>
+                <li>
+                  <a href="{% static "downloads/cases_by_jurisdiction.tsv" %}">Case Count by Jurisdiction</a>
+                </li>
+                <li>
+                  <a href="{% static "downloads/cases_by_decision_date.tsv" %}">Case Count by Decision Date</a>
+                </li>
+              </ul>
+            </div>
+
+            {# ==============> DATA QUALITY <============== #}
+            <div class="page-section">
+              <a name="data-quality"></a>
+              <h2 class="subtitle">
+                Data quality
+              </h2>
+              <p>
+                Our data inevitably includes countless errors as part of the digitization process.
+                <span class="highlighted">The public launch of this project is only the start of discovering
+                errors, and we hope you will help us in finding and fixing them.</span>
+              </p>
+              <p>
+                Some parts of our data are higher quality than others. Case metadata, such as the party names, docket
+                number, citation, and date, has received human review. Case text and general head matter has been
+                generated by machine OCR and has not received human review.</p>
+              <p>
+                You can report errors of all kinds at
+                <a href="https://github.com/harvard-lil/capstone/labels/Data">our Github issue tracker</a>, where you
+                can also see currently known issues. We particularly welcome metadata corrections, feature requests,
+                and suggestions for large-scale algorithmic changes. We are not currently able to process individual
+                OCR corrections, but welcome general suggestions on the OCR correction process.
+              </p>
             </div>
 
             {# ==============> USAGE <============== #}
@@ -117,7 +179,7 @@ About the Caselaw Access Project
                 Full case text can be freely viewed or downloaded but
                 you must register for an account to do so, and currently you may
                 view or download no more than 500 cases per day. In addition,
-                researchers can qualify for bulk data access by agreeing to certain use and redistribution restrictions.
+                research scholars can qualify for bulk data access by agreeing to certain use and redistribution restrictions.
               </p>
               <p>
                 Access limitations on full text and bulk data are a component of Harvard’s
