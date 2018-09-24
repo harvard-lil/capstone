@@ -55,6 +55,14 @@ ol.alpha > li {
   list-style-type: lower-alpha;
   padding-left: 1rem;
 }
+
+ul.bullets {
+  padding-left: 1.5em !important;
+  li {
+    list-style-type: circle;
+  }
+}
+
 section {
   width: 100%;
 }
@@ -410,7 +418,7 @@ li.item-set {
       @include make-col(8);
     }
   }
-  p {
+  p, ul {
     margin-bottom: 2rem;
   }
 }
