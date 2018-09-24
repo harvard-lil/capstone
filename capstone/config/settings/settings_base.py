@@ -530,3 +530,6 @@ COMPRESS_VOLUMES_SKIP_EXISTING = True  # don't process volumes that already exis
 
 # override django-storages default
 AWS_DEFAULT_ACL = 'private'
+
+# set the default login
+LOGIN_URL = 'login'
