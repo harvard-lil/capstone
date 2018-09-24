@@ -20,15 +20,22 @@ from capweb.helpers import reverse
 @pytest.mark.django_db
 def test_registration_flow(client, case):
 
-    # can register
+    # can't register without agreeing to TOS
     email = 'new_user@gmail.com'
-    response = client.post(reverse('register'), {
+    register_kwargs = {
         'email': email,
         'first_name': 'First',
         'last_name': 'Last',
         'password1': 'Password2',
         'password2': 'Password2',
-    })
+        'agreed_to_tos': '',
+    }
+    response = client.post(reverse('register'), register_kwargs)
+    check_response(response, content_includes="This field is required.")
+
+    # can register
+    register_kwargs['agreed_to_tos'] = 'on'
+    response = client.post(reverse('register'), register_kwargs)
     check_response(response)
     user = CapUser.objects.get(email=email)
     assert user.first_name == "First"
@@ -98,6 +105,7 @@ def test_resend_verification(client, mailoutbox):
         'last_name': 'Last',
         'password1': 'Password2',
         'password2': 'Password2',
+        'agreed_to_tos': 'on',
     })
     check_response(response)
     assert len(mailoutbox) == 1
