@@ -29,6 +29,7 @@ def test_site_limits(client, auth_client, case, mailoutbox):
         'last_name': 'Last',
         'password1': 'Password2',
         'password2': 'Password2',
+        'agreed_to_tos': 'on',
     })
     user = CapUser.objects.get(email=email)
 

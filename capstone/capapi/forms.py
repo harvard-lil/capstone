@@ -22,9 +22,16 @@ class ResendVerificationForm(forms.Form):
 
 
 class RegisterUserForm(UserCreationForm):
+    agreed_to_tos = forms.BooleanField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # set label here because reverse() isn't ready when defining the class
+        self.fields['agreed_to_tos'].label = mark_safe("I have read and agree to the <a href='%s' target='_blank'>Terms of Use</a>." % reverse('terms'))
+
     class Meta:
         model = CapUser
-        fields = ["email", "first_name", "last_name"]
+        fields = ["email", "first_name", "last_name", "password1", "password2", "agreed_to_tos"]
 
     def clean_email(self):
         """ Ensure that email address doesn't match an existing CapUser.normalized_email. """

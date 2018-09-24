@@ -52,8 +52,8 @@ class CapUser(AbstractBaseUser):
     )
     normalized_email = models.CharField(max_length=255, help_text="Used to ensure that new emails are unique.")
 
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
     total_case_allowance = models.IntegerField(null=True, blank=True, default=0)
     case_allowance_remaining = models.IntegerField(null=False, blank=False, default=0)
     # when we last reset the user's case count:
@@ -68,6 +68,7 @@ class CapUser(AbstractBaseUser):
     nonce_expires = models.DateTimeField(null=True, blank=True)
 
     date_joined = models.DateTimeField(auto_now_add=True)
+    agreed_to_tos = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
 
