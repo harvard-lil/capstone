@@ -1,6 +1,7 @@
 {% extends "main_base.html" %}
 {% load static %}
 {% load pipeline %}
+{% load api_url %}
 
 {% block extra_head %}
   {% stylesheet 'tools' %}
@@ -50,14 +51,9 @@
               </p>
               <h2 class="subtitle">Introduction</h2>
               <p>
-                <span class="highlighted">
-                    Information is only useful if it's accessible.
-                </span>
-              </p>
-              <p>
                 The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
                   and their associated metadata. We currently offer two ways to access the data: our
-                  <a href="{% url "api" %}">API</a>, and <a href="{% url "bulk-data" %}">bulk downloads</a>.
+                  <a href="{% url "api" %}">API</a>, and <a href="{% url "bulk-docs" %}">bulk downloads</a>.
               </p>
             </div>
             {# ==============> API  <============== #}
@@ -70,16 +66,17 @@
                   Our open-source API is the best option for anybody interested in programmatically accessing our
                   metadata, full-text search, or individual cases.
               </p>
-              <a class="btn btn-default"
-                 href="{% url "api" %}">See API</a>
-              <br/><br/>
+              <ul>
+                <li><a href="{% api_url "api-root" %}">Browse the API</a></li>
+                <li><a href="{% url "api" %}">API docs</a></li>
+              </ul>
             </div>
 
             {# ==============> BULK!! <============== #}
             <div class="page-section">
               <a name="bulk"></a>
               <h2 class="subtitle">
-                <a href="{% url "bulk-data" %}">Bulk Downloads</a>
+                <a href="{% url "bulk-docs" %}">Bulk Downloads</a>
               </h2>
               <p>
                 If you need a large collection of cases, you will probably be best served by our bulk data downloads.
@@ -89,8 +86,10 @@
                   information. Those interested in licensing this data case for commercial use should
                   <a href="http://info.ravellaw.com/contact-us-form">contact Ravel Law</a> for more information.
               </p>
-              <a class="btn btn-default"
-                 href="{% url "bulk-data" %}">See bulk downloads</a>
+              <ul>
+                <li><a href="{% url "bulk-download" %}">Download bulk files</a></li>
+                <li><a href="{% url "bulk-docs" %}">Bulk file docs</a></li>
+              </ul>
             </div>
           </div>
         </div>

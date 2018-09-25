@@ -28,7 +28,7 @@ from capweb.helpers import reverse
     ("casemetadata-list",   True,   False,  {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
 
     # bulk list cacheable only for logged-out users
-    ("bulk-data",           True,   False,  {}),
+    ("bulk-download",           True,   False,  {}),
 
     # bulk downloads are cached if public, or private requested by logged-out users
     ("caseexport-download", True, True,     {"reverse_args": ["fixture_case_export"], "reverse_func": "api_reverse"}),
