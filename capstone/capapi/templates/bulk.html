@@ -21,7 +21,7 @@
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'
                  class="decorative-arrow"/>
-            Bulk Downloads
+            <span class="color-red">Bulk</span> Downloads
           </h1>
         </div>
       </div> <!-- row -->
@@ -30,6 +30,9 @@
         {# ==============> MENU <============== #}
         <div class="sidebar-menu"></div>
         <div class="content">
+          <div class="page-section">
+            See our <a href="{% url "bulk-docs" %}">bulk data docs</a> for an explanation of these files.
+          </div>
           {% if exports.public %}
             <div class="page-section">
               <h2 class="subtitle">

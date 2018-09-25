@@ -1,6 +1,7 @@
 {% extends "main_base.html" %}
 {% load static %}
 {% load pipeline %}
+{% load api_url %}
 
 {% block extra_head %}
   {% stylesheet 'index' %}
@@ -152,15 +153,16 @@
 
           <h3>
             <span class="section-symbol color-red" aria-hidden="true">&#167;</span>
-            <a href="{% url "bulk-data" %}">
+            <a href="{% url "bulk-docs" %}">
               Bulk data
             </a>
           </h3>
           <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
-          <br/>
-          <a href="/tools"
-             class="btn btn-default"
-             >Browse tools</a>
+          <p>
+            <a href="/tools"
+               class="btn btn-default"
+               >Browse tools</a>
+          </p>
         </div>
       </div>
     </div>

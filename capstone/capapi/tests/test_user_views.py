@@ -159,7 +159,7 @@ def test_bulk_data_list(request, case_export, private_case_export, client_fixtur
     public_url = api_reverse('caseexport-download', args=[case_export.pk])
     private_url = api_reverse('caseexport-download', args=[private_case_export.pk])
 
-    response = client.get(reverse('bulk-data'))
+    response = client.get(reverse('bulk-download'))
     check_response(response)
     content = response.content.decode()
     assert public_url in content

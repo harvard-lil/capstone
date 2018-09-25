@@ -27,8 +27,8 @@
             <span class="color-red">CAP</span> API
           </h1>
         </div>
-
       </div>
+
       <div class="row">
         {# ==============> MENU <============== #}
         <nav class="list-group sidebar-menu" aria-label="table of contents">
@@ -79,8 +79,9 @@
               <a href="#beginners">Beginner's Introduction to APIs</a>.
             </p>
           </div>
+
+          {# ==============> REGISTER  <============== #}
           <div class="page-section">
-            {# ==============> REGISTER  <============== #}
             <a id="registration"></a>
             <h3 class="subtitle">Registration</h3>
               <p>
@@ -92,9 +93,10 @@
               <a href="{% url "register" %}">Click here to register for an API key</a> if you need to access case text
               from non-<a href="#def-whitelisted">whitelisted</a> jurisdictions.
             </p>
+          </div>
 
+          {# ==============> AUTHENTICATION <============== #}
           <div class="page-section">
-            {# ==============> AUTHENTICATION <============== #}
             <a id="authentication"></a>
             <h3 class="subtitle">Authentication</h3>
             <p>
@@ -140,7 +142,7 @@
             </p>
           </div>
 
-                      {# ====> Paginate <==== #}
+          {# ====> PAGINATION <==== #}
           <div class="page-section">
             <a id="pagination"></a>
             <h3 class="subtitle">Pagination</h3>
@@ -159,11 +161,8 @@
 }{% endfilter %}</pre>
           </div>
 
-
-
-
+          {# ==============> DATA FORMATS <============== #}
           <div class="page-section">
-            {# ==============> DATA FORMATS <============== #}
             <a id="dataformats"></a>
             <h3 class="subtitle">Case Text Formats</h3>
             <p>
@@ -190,7 +189,7 @@
             <dl>
               <dt>Text Format (default)</dt>
               <dd class="example-link">
-                <a href="{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true" %}">
+                <a href="{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true">
                 {% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true"
                 </a>
               </dd>
@@ -244,7 +243,7 @@
 
               <dt>HTML Format</dt>
               <dd class="example-link">
-                <a href="{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html" %}">
+                <a href="{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html">
                 {% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html"
                 </a></dd>
               <dd>
@@ -257,13 +256,10 @@
     "data": "<section class=\"casebody\" data-firstpage=\"538\" data-lastpage=\"543\"> ..."{% endfilter %}</pre>
               </dd>
             </dl>
-
-
           </div>
 
+          {# ==============> ACCESS LIMITS <============== #}
           <div class="page-section">
-
-            {# ==============> ACCESS LIMITS <============== #}
             <a id="limits"></a>
             <h3 class="subtitle">Access Limits</h3>
             <p>
@@ -391,7 +387,8 @@
                       </li>
                     </ul>
                   </li>
-                  <ul class="parameter-list">
+                </ul>
+                <ul class="parameter-list">
                   <li class="list-group-item">
                     <h5 class="list-header">Plain Text Case in JSON container with metadata</h5>
                     <ul>
@@ -529,6 +526,7 @@
               </dd>
             </dl>
           </div>
+
           {# ==============> ENDPOINTS <============== #}
           <div class="page-section">
             <a id="endpoints"></a>
@@ -1021,7 +1019,7 @@
               The next part is a list of words, separated by periods, between the initial double-slash, and before the
               subsequent single slash. Many people generically refer to this as the domain, which is only partly true,
               but the reason why that's not entirely true isn't really important for our purposes; the important
-              consideration here is that it points to a specific <a href="#def-server"server</a>, which is just another
+              consideration here is that it points to a specific <a href="#def-server">server</a>, which is just another
               computer on the internet.
             </p>
             <pre><code>/search</code></pre>
@@ -1325,7 +1323,7 @@
 
             </dl>
           </div>
-        </p>
+        </div>
       </div>
     </div>
   </div>
