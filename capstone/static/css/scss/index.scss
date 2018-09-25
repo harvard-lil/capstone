@@ -1,4 +1,5 @@
 @import 'variables';
+@import 'footer/violet';
 
 h1 {
   @include sr-only;
@@ -98,16 +99,5 @@ nav {
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     box-shadow: none;
-  }
-}
-
-footer {
-  background-color: $color-violet;
-  color: $color-white;
-  a {
-    color: $color-white;
-    &:hover, &:focus, &:active {
-      color: $color-yellow-bright;
-    }
   }
 }

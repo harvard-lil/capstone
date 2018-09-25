@@ -1,0 +1,16 @@
+footer {
+  background-color: $color-black;
+  color: $color-white;
+  a {
+    color: $color-yellow;
+    &:hover, &:active, &:focus {
+      color: $color-white;
+    }
+  }
+  .social {
+    .github > a, .website > a, .twitter > a {
+      background-position-x: -60px;
+    }
+  }
+}
+

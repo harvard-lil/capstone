@@ -5,14 +5,7 @@
 @import "bootstrap/variables";
 @import "bootstrap/forms";
 @import "variables";
-
-footer {
-  background-color: $color-violet;
-  color: $color-white;
-  a:hover, a:focus, a:active {
-    color: $color-yellow;
-  }
-}
+@import "footer/black";
 
 .content {
   margin: 0 auto;
@@ -39,19 +32,4 @@ label {
     margin-bottom: 1rem;
   }
   margin-bottom: 2rem;
-}
-
-footer {
-  background-color: $color-black;
-  a {
-    color: $color-yellow;
-    &:hover, &:focus, &:active {
-      color: $color-blue;
-    }
-  }
-  #lil-logo {
-    .lil-logo-item {
-      fill: $color-yellow;
-    }
-  }
 }

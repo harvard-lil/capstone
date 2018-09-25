@@ -1,0 +1,18 @@
+footer {
+  background-color: $color-red;
+  .lil-logo {
+    @extend .footer-lil-logo-black;
+  }
+  @include media-breakpoint-down(md) {
+    .credits { color: $color-white; }
+  }
+  a {
+    color: $color-black;
+    font-weight: 700;
+    border-bottom: 0;
+    &:hover, &:focus, &:active {
+      color: $color-white;
+      border-bottom: 0;
+    }
+  }
+}

@@ -487,6 +487,10 @@ li.item-set {
     background: url('../../img/arrow-sprite.svg') no-repeat;
     background-size: auto 30px;
   }
+  .twitter > a {
+    background: url('../../img/twitter-sprite.svg') no-repeat;
+    margin-top: 6px;
+  }
 }
 
 .inverse {

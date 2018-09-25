@@ -1,8 +1,2 @@
 @import 'variables';
-
-footer {
-  background-color: $color-yellow;
-  .lil-logo {
-    @extend .footer-lil-logo-black;
-  }
-}
+@import 'footer/yellow';

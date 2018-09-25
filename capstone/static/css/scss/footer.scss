@@ -31,6 +31,9 @@ footer {
     .credits {
       text-align: right;
     }
+    .credits.copyright {
+      font-weight: $font-weight-semibold;
+    }
   }
   @include media-breakpoint-down(sm) {
     .lil-logo-item {
@@ -90,5 +93,8 @@ footer {
 
   .lil-logo {
     @extend .footer-lil-logo-white;
+  }
+  .social {
+    float: right;
   }
 }
