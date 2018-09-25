@@ -20,7 +20,8 @@ urlpatterns = [
                                             content_type='text/plain'), name='robots'),
 
     ### bulk data ###
-    path('bulk-access/', user_views.bulk, name='bulk-data'),
+    path('bulk/', TemplateView.as_view(template_name='bulk_docs.html'), name='bulk-docs'),
+    path('bulk/download/', user_views.bulk, name='bulk-download'),
 
     path('terms', TemplateView.as_view(template_name='terms-of-use.html',
                                        extra_context={'hide_footer': True}), name='terms'),

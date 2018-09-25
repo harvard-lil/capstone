@@ -56,7 +56,7 @@ ol.alpha > li {
   padding-left: 1rem;
 }
 
-ul.bullets {
+ul.bullets, ul.bullets ul {
   padding-left: 1.5em !important;
   li {
     list-style-type: circle;
