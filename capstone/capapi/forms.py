@@ -2,7 +2,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
 
-from capapi.models import CapUser
+from capapi.models import CapUser, ResearchRequest
 from capweb.helpers import reverse
 
 
@@ -44,3 +44,14 @@ class RegisterUserForm(UserCreationForm):
         user = super().save(commit)
         user.create_nonce()
         return user
+
+
+class ResearchRequestForm(forms.ModelForm):
+    name = forms.CharField(label='Name of researcher')
+    institution = forms.CharField(label='Educational or Research Institution')
+    title = forms.CharField(label='Title or Affiliation')
+    area_of_interest = forms.CharField(label='Research area of interest (optional)', widget=forms.Textarea)
+
+    class Meta:
+        model = ResearchRequest
+        fields = ["name", "email", "institution", "title", "area_of_interest"]

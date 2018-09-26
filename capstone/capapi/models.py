@@ -172,6 +172,23 @@ AnonymousUser.unlimited_access_until = None
 AnonymousUser.unlimited_access_in_effect = lambda self: False
 
 
+class ResearchRequest(models.Model):
+    user = models.ForeignKey(CapUser, on_delete=models.CASCADE, related_name='research_requests')
+    submitted_date = models.DateTimeField(auto_now_add=True)
+
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    institution = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    area_of_interest = models.TextField(blank=True, null=True)
+
+    status = models.CharField(max_length=20, default='pending', choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature')))
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-submitted_date']
+
+
 class SiteLimits(models.Model):
     """
         Singleton model to track sitewide values in a row with ID=1
