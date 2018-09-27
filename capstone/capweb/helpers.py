@@ -1,6 +1,8 @@
 import json
 import requests
 import django_hosts
+from django.urls import NoReverseMatch
+from django_hosts.resolvers import get_host_patterns
 
 
 def get_data_from_lil_site(section="news"):
@@ -15,6 +17,22 @@ def get_data_from_lil_site(section="news"):
     data = json.loads(content.strip()[start_index + 1:end_index])
     return data[section]
 
-# These functions are a direct passthrough to django_hosts.reverse for now, but kept as a wrapper so we can tweak as needed.
-reverse = django_hosts.reverse
-reverse_lazy = django_hosts.reverse_lazy
+def reverse(*args, **kwargs):
+    """
+        Wrap django_hosts.reverse() to try all known hosts.
+    """
+    # if host is provided, just use that
+    if 'host' in kwargs:
+        return django_hosts.reverse(*args, **kwargs)
+
+    # try each host
+    hosts = get_host_patterns()
+    for i, host in enumerate(reversed(hosts)):
+        kwargs['host'] = host.name
+        try:
+            return django_hosts.reverse(*args, **kwargs)
+        except NoReverseMatch:
+            # raise NoReverseMatch only after testing final host
+            if i == len(hosts)-1:
+                raise
+
