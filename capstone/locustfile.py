@@ -1,7 +1,7 @@
 import json
 import math
 from random import randint, choice
-from locust import HttpLocust, TaskSet, task
+from locust import HttpLocust, TaskSet, task as locust_task
 
 generated_user_first_name = "FAKE_USER_DELETE_ME_999"
 generated_user_last_name = "FAKE_USER_DELETE_ME_999"
@@ -144,18 +144,18 @@ class UserBehavior(TaskSet):
     ############## Tasks ##############
 
     ### STATIC PAGE AVAILABILITY ###
-    @task(10)
+    @locust_task(10)
     def index(self):
         self.client.get("/{}".format(choice(static_paths)))
 
     # Log in
-    @task(2)
+    @locust_task(2)
     def profile(self):
         self.login()
         self.client.get("/user/details").content
         self.logout()
 
-    @task(1)
+    @locust_task(1)
     def ten_individual_cases(self):
         list_page = self.random_endpoint_page(api_host, "cases", 100, {"jurisdiction": choice(["ark", "ill"])})
         counter = 0
@@ -168,21 +168,21 @@ class UserBehavior(TaskSet):
                 )
             )
 
-    @task(2)
+    @locust_task(2)
     def scroll_through_full_cases(self):
         parameters = {"jurisdiction": choice(["ark", "ill"]), "full_case": "true"}
-        list_page = self.random_endpoint_page(api_host, "cases", 100, parameters)
+        self.random_endpoint_page(api_host, "cases", 100, parameters)
 
-    @task(8)
+    @locust_task(8)
     def scroll_through_full_text_search(self):
         parameters = {"search": choice(search_terms)}
-        list_page = self.random_endpoint_page(api_host, "cases", 15, parameters)
+        self.random_endpoint_page(api_host, "cases", 15, parameters)
 
-    @task(10)
+    @locust_task(10)
     def scroll_random_endpoint(self):
         self.random_endpoint_page(api_host, choice(endpoints), 10000, {})
 
-    @task(3)
+    @locust_task(3)
     def register_user(self):
         attempts = 0
         registration = False
