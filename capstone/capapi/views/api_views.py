@@ -49,7 +49,7 @@ class CourtViewSet(BaseViewSet):
 
 class CitationViewSet(BaseViewSet):
     serializer_class = serializers.CitationWithCaseSerializer
-    queryset = models.Citation.objects.all()
+    queryset = models.Citation.objects.order_by('pk')
 
 
 class CaseViewSet(BaseViewSet):
