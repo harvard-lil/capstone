@@ -189,3 +189,31 @@ def test_case_export_download(request, client_fixture, export_fixture, status_co
         check_zip_response(response)
     else:
         check_response(response, status_code=status_code)
+
+
+### research access request ###
+
+@pytest.mark.django_db
+def test_research_access_request(auth_client, mailoutbox):
+    # can view form
+    response = auth_client.get(reverse('research-request'))
+    check_response(response)
+
+    # can submit form
+    values = {
+        'name': 'First Last',
+        'email': 'foo@example.com',
+        'institution': 'Institution',
+        'title': 'Title',
+        'area_of_interest': 'Area of Interest'
+    }
+    response = auth_client.post(reverse('research-request'), values)
+    check_response(response, status_code=302)
+    assert response.url == reverse('research-request-success')
+
+    # check created request and email message
+    research_request = auth_client.auth_user.research_requests.first()
+    message = mailoutbox[0].body
+    for k, v in values.items():
+        assert getattr(research_request, k) == v
+        assert v in message
