@@ -23,13 +23,13 @@ class BaseViewSet(viewsets.ReadOnlyModelViewSet):
 class JurisdictionViewSet(BaseViewSet):
     serializer_class = serializers.JurisdictionSerializer
     filterset_class = filters.JurisdictionFilter
-    queryset = models.Jurisdiction.objects.all()
+    queryset = models.Jurisdiction.objects.order_by('name', 'pk')
     lookup_field = 'slug'
 
 
 class VolumeViewSet(BaseViewSet):
     serializer_class = serializers.VolumeSerializer
-    queryset = models.VolumeMetadata.objects.all().select_related(
+    queryset = models.VolumeMetadata.objects.order_by('pk').select_related(
         'reporter'
     ).prefetch_related('reporter__jurisdictions')
 
@@ -37,13 +37,13 @@ class VolumeViewSet(BaseViewSet):
 class ReporterViewSet(BaseViewSet):
     serializer_class = serializers.ReporterSerializer
     filterset_class = filters.ReporterFilter
-    queryset = models.Reporter.objects.all().prefetch_related('jurisdictions')
+    queryset = models.Reporter.objects.order_by('full_name', 'pk').prefetch_related('jurisdictions')
 
 
 class CourtViewSet(BaseViewSet):
     serializer_class = serializers.CourtSerializer
     filterset_class = filters.CourtFilter
-    queryset = models.Court.objects.all().select_related('jurisdiction')
+    queryset = models.Court.objects.order_by('name', 'pk').select_related('jurisdiction')
     lookup_field = 'slug'
 
 
@@ -117,7 +117,7 @@ class CaseViewSet(BaseViewSet):
 
 class CaseExportViewSet(BaseViewSet):
     serializer_class = serializers.CaseExportSerializer
-    queryset = models.CaseExport.objects.all()
+    queryset = models.CaseExport.objects.order_by('pk')
     filterset_class = filters.CaseExportFilter
 
     def list(self, request, *args, **kwargs):
