@@ -65,6 +65,8 @@ def get_file_type(path):
         return 'md5'
     if path.endswith('METS.xml'):
         return 'volume'
+    if path.endswith('BOXES.xml'):
+        return 'boxes'
     return None
 
 
@@ -243,11 +245,13 @@ def write_xml_gz(xml, out_path):
             out_file: file wrapper with digest info
             out_path: out_path with new suffix
     """
+    if type(xml) != bytes:
+        xml = serialize_xml(xml)
     out_path = out_path.with_suffix('.xml.gz')
     with out_path.open('wb') as out_file:
         out_file = HashingFile(out_file)
         with gzip.GzipFile(fileobj=out_file) as gz_file:
-            gz_file.write(serialize_xml(xml))
+            gz_file.write(xml)
     return out_file, out_path
 
 ### FILE HANDLERS ###
@@ -362,6 +366,20 @@ def handle_mets_file(volume_file_path, tempdir, storage_name, new_file_info, rel
     out_file, out_path = write_xml_gz(mets_xml, out_path)
     return format_new_file_info(volume_file_path, out_path, out_file)
 
+def handle_boxes_file(volume_file_path, tempdir, storage_name):
+    """
+        Boxes file has "jp2" changed to "jpg", and is gzipped.
+    """
+    storage, out_path = single_file_setup(volume_file_path, tempdir, storage_name)
+
+    # replace jp2 with jpg
+    with storage.open(volume_file_path, "rb") as in_file:
+        boxes_xml = in_file.read()
+    boxes_xml = boxes_xml.replace(b'jp2', b'jpg')
+
+    # write out xml
+    write_xml_gz(boxes_xml, out_path)
+
 def handle_md5_file(volume_file_path, tempdir, storage_name, new_digest):
     storage, out_path = single_file_setup(volume_file_path, tempdir, storage_name)
 
@@ -436,8 +454,12 @@ def compress_volume(storage_name, volume_name):
         add_file_info(case_file_results)
         new_volume_info = handle_mets_file(volume_files_by_type['volume'][0], tempdir, storage_name, new_file_info)
 
-        # finally write volmets md5
+        # write volmets md5
         handle_md5_file(volume_files_by_type['md5'][0], tempdir, storage_name, new_volume_info[1]['digest'])
+
+        # write boxes file
+        if 'boxes' in volume_files_by_type:
+            handle_boxes_file(volume_files_by_type['boxes'][0], tempdir, storage_name)
 
         # tar volume
         info("tarring %s" % volume_path)
