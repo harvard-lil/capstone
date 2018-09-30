@@ -17,9 +17,9 @@
 {% block content %}
   <div class="basic-page">
     <div class="full-content">
-      <div class="row">
-        <div class="page-title">
-          <h1>
+      <div class="top-section bg-black">
+        <div class="title-section">
+          <h1 class="page-title" id="overview">
             <img alt=""
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'
@@ -27,44 +27,86 @@
             <span class="color-red">CAP</span> API
           </h1>
         </div>
-      </div>
-
-      <div class="row">
-        {# ==============> MENU <============== #}
-        <nav class="list-group sidebar-menu" aria-label="table of contents">
-          <ul>
-            <li><a class="list-group-item" href="#getting-started">Getting Started</a></li>
-            <li><a class="list-group-item" href="#registration">Registration</a></li>
-            <li><a class="list-group-item" href="#authentication">Authentication</a></li>
-            <li><a class="list-group-item" href="#dataformats">Case Text Data Formats</a></li>
-            <li><a class="list-group-item" href="#pagination">Pagination</a></li>
-            <li><a class="list-group-item" href="#limits">Access Limits</a></li>
-            <li><a class="list-group-item" href="#examples">Usage Examples</a></li>
-            <li><a class="list-group-item" href="#endpoints">Endpoint Documentation</a></li>
-            <li><a class="list-group-item" href="#beginners">Beginner's Introduction to APIs</a></li>
-            <li><a class="list-group-item" href="#problems">Reporting Problems</a></li>
-            <li><a class="list-group-item" href="#glossary">Glossary</a></li>
-          </ul>
-        </nav>
-        {# ==============> CONTENT <============== #}
-        <div class="content">
-
-          {# ==============> GETTING STARTED <============== #}
-          <div class="page-section">
-            <a id="getting-started"></a>
-            <p>
-              <img class="img-fluid"
-                   alt="Two volumes of caselaw labeled with identifying metadata and wrapped in air-tight plastic are cradled in a metal storage crate"
-                   src="{% static "img/vacuum-seal.jpg" %}">
-            </p>
-            <h2 class="subtitle">Getting Started</h2>
-            <p><a href="{% api_url "api-root" %}" class="font-weight-bold">Browse the API</a></p>
-            <p>
-              The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases
+        <div class="explainer-section">
+          <div class="content">
+             The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases
               published in books from 1658 to 2018. The collection includes over six million cases scanned from
               the Harvard Law Library shelves.
               <a href="{% url "about" %}">Learn more about the project.</a>
-            </p>
+          </div>
+        </div>
+
+      </div>
+      <div class="row below-the-fold">
+        {# ==============> MENU <============== #}
+        <nav id="sidebar-menu" aria-label="table of contents">
+          <div class="content">
+            <ul class="list-group">
+              <li>
+                <a class="list-group-item" href="#getting-started">
+                  <span class="text">Start Here</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#registration">
+                  <span class="text">Registration</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#authentication">
+                  <span class="text">Authentication</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#dataformats">
+                  <span class="text">Data Formats</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#pagination">
+                  <span class="text">Pagination</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#limits">
+                  <span class="text">Access Limits</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#examples">
+                  <span class="text">Examples</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#endpoints">
+                  <span class="text">Endpoints</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#beginners">
+                  <span class="text">Intro to APIs</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#problems">
+                  <span class="text">Report Problems</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#glossary">
+                  <span class="text">Glossary</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        {# ==============> CONTENT <============== #}
+        <div class="main-content">
+
+          {# ==============> GETTING STARTED <============== #}
+          <div class="page-section">
+            <h2 class="subtitle" id="getting-started">Getting Started</h2>
+            <p><a href="{% api_url "api-root" %}">Browse the API</a></p>
             <p>
               CAPAPI includes an in-browser API viewer, but is primarily intended for software developers to access
               caselaw programmatically, whether to run your own analysis or build tools for other users. API results are in JSON
@@ -82,8 +124,7 @@
 
           {# ==============> REGISTER  <============== #}
           <div class="page-section">
-            <a id="registration"></a>
-            <h3 class="subtitle">Registration</h3>
+            <h2 class="subtitle" id="registration">Registration</h2>
               <p>
                 <span class="highlighted"> Most API queries don't require registration: check our
                 <a href="#limits">access limits</a> section for more details.
@@ -97,8 +138,7 @@
 
           {# ==============> AUTHENTICATION <============== #}
           <div class="page-section">
-            <a id="authentication"></a>
-            <h3 class="subtitle">Authentication</h3>
+            <h2 class="subtitle" id="authentication">Authentication</h2>
             <p>
                 <span class="highlighted"> Most API queries don't require registration: check our
                   <a href="#limits">access limits</a> section for more details.
@@ -108,7 +148,7 @@
               Most API requests do not need to be authenticated. However, if requests are not authenticated, you may see
               this response in results from the case endpoint with <code>full_case=true</code>:
             </p>
-              <pre  class="code-block">
+            <pre class="code-block">
 {
   "results": [
     {
@@ -141,30 +181,9 @@
               browser will be authenticated automatically.
             </p>
           </div>
-
-          {# ====> PAGINATION <==== #}
-          <div class="page-section">
-            <a id="pagination"></a>
-            <h3 class="subtitle">Pagination</h3>
-
-            <p class="example-description">
-                  All queries in CAPAPI are limited to 100 results. We use <a href="#def-cursor">cursor</a>-based
-                  pagination, meaning we keep track of where you are in the results set on the server, and you can
-                  access each page of results by passing the provided value to the cursor parameter.
-            </p>
-            <pre class="code-block">{% filter force_escape %}
-{
-  "count": 183149,
-  "next": "{% api_url "casemetadata-list" %}?body_format=html&cursor=cD0xODMyLTEyLTAx",
-  "previous": "{% api_url "casemetadata-list" %}?body_format=html&cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
-  ...
-}{% endfilter %}</pre>
-          </div>
-
           {# ==============> DATA FORMATS <============== #}
           <div class="page-section">
-            <a id="dataformats"></a>
-            <h3 class="subtitle">Case Text Formats</h3>
+            <h2 class="subtitle" id="dataformats">Case Text Formats</h2>
             <p>
               <span class="highlighted">Both of these parameters must be used in conjunction with the
               <code>full_case=true</code>parameter.</span>
@@ -258,10 +277,27 @@
             </dl>
           </div>
 
+          {# ====> PAGINATION <==== #}
+          <div class="page-section">
+            <h2 class="subtitle" id="pagination">Pagination</h2>
+
+            <p class="example-description">
+                  All queries in CAPAPI are limited to 100 results. We use <a href="#def-cursor">cursor</a>-based
+                  pagination, meaning we keep track of where you are in the results set on the server, and you can
+                  access each page of results by passing the provided value to the cursor parameter.
+            </p>
+            <pre class="code-block">{% filter force_escape %}
+{
+  "count": 183149,
+  "next": "{% api_url "casemetadata-list" %}?body_format=html&cursor=cD0xODMyLTEyLTAx",
+  "previous": "{% api_url "casemetadata-list" %}?body_format=html&cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
+  ...
+}{% endfilter %}</pre>
+          </div>
+
           {# ==============> ACCESS LIMITS <============== #}
           <div class="page-section">
-            <a id="limits"></a>
-            <h3 class="subtitle">Access Limits</h3>
+            <h2 class="subtitle" id="limits">Access Limits</h2>
             <p>
               The agreement with our project partner, <a href="http://ravellaw.com">Ravel</a>, requires us to limit
               access to the full text of cases to no more than 500 cases per person, per day. This limitation does not
@@ -351,10 +387,9 @@
 
           {# ==============> EXAMPLES <============== #}
           <div class="page-section">
-            <a id="examples"></a>
-            <h3 class="subtitle">
+            <h2 class="subtitle" id="examples">
               Usage Examples
-            </h3>
+            </h2>
             <p>
               This is a non-exhaustive set of examples intended to orient new users. The
               <a href="#endpoints">endpoints</a> section contains more comprehensive documentation about the URLs and
@@ -529,10 +564,9 @@
 
           {# ==============> ENDPOINTS <============== #}
           <div class="page-section">
-            <a id="endpoints"></a>
-            <h3 class="subtitle">
+            <h2 class="subtitle" id="endpoints">
               Endpoints
-            </h3>
+            </h2>
             <dl>
 
               {# ==============> BASE <============== #}
@@ -985,10 +1019,9 @@
 
           {# ==============> BEGINNERS <============== #}
           <div class="page-section">
-            <a id="beginners"></a>
-            <h3 class="subtitle">
+            <h2 class="subtitle" id="beginners">
               Beginner's Introduction to APIs
-            </h3>
+            </h2>
             <p>
               Are you a little lost in all the technical jargon? Here's a good place to start. This is by no means a
               complete introduction to using <a href="#def-api">APIs</a>, but it might be just enough to help situate a
@@ -1091,10 +1124,9 @@
 
           {# ==============> PROBLEMS <============== #}
           <div class="page-section">
-            <a id="problems"></a>
-            <h3 class="subtitle">
+            <h2 class="subtitle" id="problems">
               Reporting Problems and Enhancement Requests
-            </h3>
+            </h2>
             <p>
               We are serving an imperfect, living dataset through an API that will forever be a work-in-progress. We
               work hard to hunt down and fix problems in both the API and the data, but a robust user base will uncover
@@ -1114,8 +1146,7 @@
                 For now, we're not accepting bug reports for <a href="#def-ocr">OCR</a> problems. While our data is
                 good quality for OCR'd text, we fully expect these errors in every case.  We're working on the best way
                 to tackle this.
-                </dd>
-
+              </dd>
               <dt>
                 Typos or Broken Links in Documentation or Website, API Error Messages or Performance Problems, and
                 Missing Features
@@ -1143,10 +1174,9 @@
 
           {# ==============> GLOSSARY <============== #}
           <div class="page-section">
-            <a id="glossary"></a>
-            <h3 class="subtitle">
+            <h2 class="subtitle" id="glossary">
               Glossary
-            </h3>
+            </h2>
             <p>
               This is a list of technical or project-specific terms we use in this docuemntation. These are stub
               definitions to help you get unstuck, but they should not be conisdered authoratative or complete. A quick
@@ -1326,5 +1356,4 @@
         </div>
       </div>
     </div>
-  </div>
 {% endblock %}
