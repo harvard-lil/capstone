@@ -79,13 +79,15 @@ h1 {
     padding: 0.5rem;
     min-height: 90px;
   }
-
-  .nav-branding {
-    background: url("../../img/logos/black.svg") no-repeat !important;
-    background-size: contain !important;
-    &:hover, &:focus, &:active {
-      background: url("../../img/logos/violet-black.svg") no-repeat !important;
-      background-size: contain !important;
+  
+  .branding {
+    .nav-branding {
+      background: url("../../img/logos/black.svg") no-repeat;
+      background-size: contain;
+      &:hover, &:focus, &:active {
+        background: url("../../img/logos/violet-black.svg") no-repeat;
+        background-size: contain;
+      }
     }
   }
 
