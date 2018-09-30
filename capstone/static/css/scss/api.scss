@@ -77,9 +77,6 @@ nav {
   }
 }
 
-nav {
-  margin-bottom: 15px;
-}
 
 .pager > .previous, .pager > .next {
   list-style: none;
@@ -182,4 +179,11 @@ li > h5.list-header {
 
 .code-example-casebody-section {
   color: $red;
+}
+
+#sidebar-menu {
+  background-color: $color-white;
+}
+.below-the-fold {
+  background-color: $color-tan;
 }
