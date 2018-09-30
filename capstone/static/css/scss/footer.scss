@@ -24,6 +24,9 @@ footer {
     }
   }
   @include media-breakpoint-down(xs) {
+    nav[aria-label="footer"] {
+      display: none;
+    }
     .col {
       @include make-col(12);
       text-align: center;
