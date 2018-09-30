@@ -1,0 +1,57 @@
+{% extends "main_base.html" %}
+{% load pipeline %}
+{% load static %}
+{% block title %}Bulk Access | {% endblock %}
+
+{% block extra_head %}
+  {% stylesheet 'tools' %}
+{% endblock %}
+
+{% block meta_description %}
+  Caselaw Access Project Bulk Access
+{% endblock %}
+
+{% block content %}
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="top-section compressed">
+        {% include "includes/page-title.html" with title="Bulk downloads" %}
+      </div> <!-- row -->
+
+      <div class="row">
+        {# ==============> MENU <============== #}
+        <div class="main-content">
+          <div class="page-section">
+            See our <a href="{% url "bulk-docs" %}">bulk data docs</a> for an explanation of these files.
+          </div>
+          {% if exports.public %}
+            <div class="page-section">
+              <h2 class="subtitle">
+                Public Bulk Data
+              </h2>
+              <p>Click a link to download.</p>
+              {% include "includes/download_list.html" with zips=exports.public %}
+            </div>
+          {% endif %}
+          <div class="page-section">
+            <h2 class="subtitle">
+              Bulk Data for Academic Research
+            </h2>
+            {% if exports.private %}
+              <p>
+                The following jurisdictions are available for download under your academic research agreement.
+                Click a link to download.
+              </p>
+              {% include "includes/download_list.html" with zips=exports.private %}
+            {% else %}
+              <p>
+                Bulk downloads of the remaining jurisdictions are freely available for academic research.
+                Please <a href="mailto:info@capapi.org">contact us</a> for access.
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
