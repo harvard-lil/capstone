@@ -1,14 +1,7 @@
 @import 'variables';
-@import 'nav-inverse';
 @import 'footer/red';
 
 @include media-breakpoint-down(md) {
-  #burger-icon {
-    background-color: $color-white;
-    .burger-item {
-      background-color: $color-black;
-    }
-  }
   .dropdown-item {
     background-color: $color-white;
     color: $color-black !important;

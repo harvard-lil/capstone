@@ -3,4 +3,9 @@ footer {
   .lil-logo {
     @extend .footer-lil-logo-black;
   }
+  a {
+    &:hover, &:active, &:focus {
+      color: $color-white !important;
+    }
+  }
 }

@@ -10,7 +10,6 @@ footer {
   }
   a {
     color: $color-black;
-    font-weight: 700;
     border-bottom: 0;
     &:hover, &:focus, &:active {
       color: $color-blue;
@@ -65,7 +64,7 @@ footer {
       font-weight: $font-weight-normal;
       border-bottom: 0;
       &:hover, &:active, &:focus {
-        color: $color-yellow !important;
+        color: $color-yellow;
         text-decoration: none;
       }
     }

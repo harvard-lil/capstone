@@ -1,5 +1,5 @@
 @import 'variables';
-@import 'footer/violet';
+@import 'footer/black';
 
 h1 {
   @include sr-only;
@@ -69,7 +69,6 @@ h1 {
 
 .content-right h3 {
   @extend .h6;
-  font-weight: $font-weight-bold;
 }
 
 

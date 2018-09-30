@@ -16,14 +16,16 @@
   @extend .btn;
   background-color: $color-violet;
   color: $color-white;
+  font-weight: $font-weight-semibold;
+  border: 2px solid $color-violet !important;
+  &:hover, &:active, &:focus {
+    background-color: $color-white;
+    color: $color-violet;
+    transition: none;
+    -webkit-transition : background-color 200ms ease-out;
+    -moz-transition : background-color 200ms ease-out;
+    -o-transition : background-color 200ms ease-out;
 
-  &:hover, &:active {
-    background-color: $color-blue !important;
-    color: $color-white !important;
-  }
-  &:focus {
-    background-color: $color-yellow;
-    color: $color-black;
   }
 }
 
@@ -39,13 +41,86 @@
   }
 }
 
-
 .highlighted {
-  color: $color-black;
-  background-color: $color-yellow-bright;
+  color: $color-magenta;
+  font-weight: $font-weight-semibold;
 }
 
 .decorative-arrow {
   margin-left: -3rem;
 }
 
+
+h1, .h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: $font-serif;
+}
+
+ul {
+  padding-left: 0;
+}
+
+li {
+  list-style: none;
+}
+
+ol.alpha > li {
+  list-style-type: lower-alpha;
+  padding-left: 1rem;
+}
+
+ul.bullets, ul.bullets ul {
+  padding-left: 1.5em !important;
+  li {
+    list-style-type: circle;
+  }
+}
+
+section {
+  width: 100%;
+}
+
+table {
+  margin-bottom: 4rem;
+}
+
+table > tbody > tr {
+  line-height: 2.5rem;
+}
+
+table > tbody > tr > th {
+  font-family: $font-serif;
+  font-weight: $font-weight-normal;
+  min-width: 400px;
+}
+
+code {
+  color: $color-violet;
+  padding: 0 5px;
+  font-size: $font-size-base;
+  font-family: Monospace;
+}
+
+
+pre {
+  white-space: -moz-pre-wrap;
+  white-space: -o-pre-wrap;
+  white-space: pre-wrap;
+  word-wrap: break-word; /* Internet Explorer 5.5+ */
+  border: 0;
+}
+
+a {
+  text-decoration: none;
+  color: $color-violet;
+  padding-bottom: 3px;
+  border-bottom: 3px solid $color-yellow-bright;
+
+  &:hover, &:focus, &:active {
+    text-decoration: none;
+    border-bottom: 3px solid $color-violet;
+    color: $color-violet;
+    -webkit-transition : border 300ms ease-out;
+    -moz-transition : border 300ms ease-out;
+    -o-transition : border 300ms ease-out;
+  }
+}

@@ -108,16 +108,35 @@
 }
 
 // brand color
-$color-blue: #0075FF;
+$color-blue: #009AFF;
 
-// main colors
+/* any black on site */
 $color-black: #2F2F2F;
-$color-violet: #6350FD;
-$color-red: #FF654D;
+
+/* preferred purple — harder to see when it's small */
+$color-violet-large-text: #6350FD;
+
+/* use for small text for more contrast */
+$color-violet: #4830FD;
+
+/* use as background (with black text)
+  for decorative purposes, or highlighting */
 $color-yellow: #FFD21B;
 
+
+/* use sparingly, or for decorative purposes.
+These colors are difficult for people to see */
+$color-red: #FF654D;
+//$color-magenta: #E878FF;
+$color-magenta: #BD10E0;
+
+
+/* colors on white */
+/* violet, */
+
 // colors
-$color-white: white;
+$color-yellow-bright: #FFF650;
+$color-white: #ffffff;
 $color-gray: #D9D9D9;
 $color-medium-gray: #979797;
 $color-tan: #F7F6F2;
@@ -126,7 +145,6 @@ $color-medium-blue: #78B6FF;
 $color-light-blue: #D2E7FF;
 $color-dark-blue: #22349A;
 $color-orange: #EDA633;
-$color-yellow-bright: #FFFB00;
 
 
 //$color-yellow-light: #FFFDEA;
@@ -137,22 +155,7 @@ $color-violet-light: #6666CC;
 $color-violet-gray: #9797B0;
 $color-violet-gray-dark: #474756;
 
-.bg-black {
-  background: $color-black;
-  color: $color-white;
-  h1, .section-title, .section-subtitle {
-    color: $color-yellow;
-  }
-
-  .btn.btn-default {
-    background-color: white;
-    color: $color-black;
-    &:hover, &:active, &:focus {
-      background-color: $color-yellow;
-    }
-  }
-
-}
+.bg-black { background: $color-black; }
 
 .bg-yellow { background: $color-yellow; }
 
@@ -186,13 +189,13 @@ $color-violet-gray-dark: #474756;
   background: linear-gradient(45deg, $color1 0%,$color2 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='$color1', endColorstr='$color2',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
 }
-
+//#a559b3
 .bg-gradient {
-  @include diagonal_gradient(#6350fd,#a559b3);
-  color: white;
+  @include diagonal_gradient($color-violet,$color-red);
+  color: $color-white;
   /* in small screens, simply make background violet */
   @include media-breakpoint-down(sm) {
-    background: $color-violet;
+    background: $color-violet-large-text;
   }
 }
 
@@ -220,7 +223,6 @@ $font-sans-serif: "titillium", "Helvetica", sans-serif;
 .font-header-bold {
   @extend .font-body;
 }
-
 
 .font-serif {
   font-family: $font-serif !important;
