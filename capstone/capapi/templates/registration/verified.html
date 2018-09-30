@@ -1,24 +1,30 @@
-{% extends "registration/base.html" %}
+{% extends "main_base.html" %}
 
 {% block title %}Verified! | {% endblock %}
 
 {% block meta_description %}
-You are a verified user of the Caselaw Access Project API guide
+  You are a verified user of the Caselaw Access Project API guide
 {% endblock %}
 
 {% block content %}
-<div class="login-form container-full inverse header-margin">
-  <div class="row row-centered">
-    <div class="col-6 col-centered">
-      {% if error %}
-        <div class="alert alert-warning">{{ error }}</div>
-      {% else %}
-        <h3>Thank you for verifying your email address. </h3>
-        <p>
-          You can now <a href="{% url "login" %}">log in</a>.
-        </p>
-      {% endif %}
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="top-section compressed">
+        {% include "includes/page-title.html" with title="Verified" %}
+      </div>
+      <div class="row">
+        <div id="sidebar-menu"></div>
+        <div class="main-content">
+          {% if error %}
+            <div class="alert alert-warning">{{ error }}</div>
+          {% else %}
+            <h4>Thank you for verifying your email address. </h4>
+            <p>
+              You can now <a href="{% url "login" %}">log in</a>.
+            </p>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
-</div>
 {% endblock content %}

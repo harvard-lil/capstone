@@ -18,15 +18,7 @@
   <div class="basic-page">
     <div class="full-content">
       <div class="top-section bg-black">
-        <div class="title-section">
-          <h1 class="page-title" id="overview">
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            <span class="color-red">CAP</span> API
-          </h1>
-        </div>
+        {% include "includes/page-title.html" with title="CAP API" %}
         <div class="explainer-section">
           <div class="content">
              The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases

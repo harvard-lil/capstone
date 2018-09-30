@@ -15,15 +15,7 @@
   <div class="basic-page">
     <div class="full-content bg-yellow">
       <div class="top-section compressed">
-        <div class="title-section">
-          <h1 class="page-title" id="overview">
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            Contact
-          </h1>
-        </div>
+        {% include "includes/page-title.html" with title="Contact" %}
       </div>
       <div class="row">
         <div id="sidebar-menu"></div>

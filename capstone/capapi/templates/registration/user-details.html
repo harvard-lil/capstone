@@ -11,17 +11,12 @@
 {% block content %}
   <div class="basic-page">
     <div class="full-content">
+      <div class="top-section compressed">
+        {% include "includes/page-title.html" with title="User details" %}
+      </div>
       <div class="row">
-        <div class="page-title">
-          <h1>
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            User details
-          </h1>
-        </div>
-        <div class="content">
+        <div id="sidebar-menu"></div>
+        <div class="main-content">
           <div class="user-information">
             <label for="user-email">Email:</label>
             <input id="user-email"
@@ -50,7 +45,9 @@
                      readonly
                      value="{{ request.user.total_case_allowance }}">
               <br/>
-              <a href="{% url "research-request" %}" class="btn btn-default">Request unlimited research access</a>
+              <a href="{% url "research-request" %}" class="btn btn-default">
+                Request unlimited research access
+              </a>
               {% with request.user.research_requests.first as research_request %}
                 {% if research_request %}
                   <p>
@@ -59,23 +56,25 @@
                   </p>
                 {% endif %}
               {% endwith %}
-            </div>
-          {% endif %}
-        <div class="btn-group">
-          <a href="{% url "password_change" %}"
-            class="btn btn-default">
-            Change password
-          </a>
-          &nbsp;
-          <a href="{% url "logout" %}"
-            class="btn btn-default">
-            Log out
-          </a>
+              </div>
+            {% endif %}
+          <br/>
+          <div class="btn-group">
+            <a href="{% url "password_change" %}"
+               class="btn btn-default">
+              Change password
+            </a>
+            &nbsp;
+            <a href="{% url "logout" %}"
+               class="btn btn-default">
+              Log out
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  </div>
+
 
 
 {% endblock content %}

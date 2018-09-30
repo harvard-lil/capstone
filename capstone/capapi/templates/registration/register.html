@@ -5,25 +5,23 @@
 {% block title %}Register | {% endblock %}
 
 {% block meta_description %}
-Register to the Caselaw Access Project
+  Register to the Caselaw Access Project
 {% endblock %}
 
 {% block registration_content %}
-  <h1>
-    <img alt=""
-         aria-hidden="true"
-         src='{% static "img/red-arrow-right.svg" %}'
-         class="decorative-arrow"/>
-    Register
-  </h1>
-  <div class="content">
-    <form class="form" method="post">
-      {% csrf_token %}
-      {% bootstrap_form form %}
-      <br/>
-      <button type="submit" class="btn btn-default">
-        Register
-      </button>
-    </form>
+  <div class="top-section compressed">
+    {% include "includes/page-title.html" with title="Register" %}
+  </div>
+  <div class="row">
+    <div id="sidebar-menu"></div>
+    <div class="main-content">
+      <form class="form" method="post">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        <button type="submit" class="btn btn-default">
+          Register
+        </button>
+      </form>
+    </div>
   </div>
 {% endblock %}

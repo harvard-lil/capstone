@@ -17,15 +17,7 @@
   <div class="basic-page">
     <div class="full-content">
       <div class="top-section">
-        <div class="title-section">
-          <h1 class="page-title" id="overview">
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            About the Project
-          </h1>
-        </div>
+        {% include "includes/page-title.html" with title="About the Project" %}
         <div class="explainer-section">
           <div class="content">
             The Caselaw Access Project (&#8220;CAP&#8221;) expands public access to U.S. law.

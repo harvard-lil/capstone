@@ -17,15 +17,7 @@ Caselaw Access Project gallery
   <div class="basic-page">
     <div class="full-content">
       <div class="top-section bg-violet">
-        <div class="title-section">
-          <h1 class="page-title" id="overview">
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            Gallery
-          </h1>
-        </div>
+        {% include "includes/page-title.html" with title="Gallery" %}
         <div class="explainer-section">
           <div class="content">
               Sky is the limit! Here are some examples of what’s possible.
