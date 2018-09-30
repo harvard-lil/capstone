@@ -298,6 +298,7 @@ PIPELINE = {
         'base': {
             'source_filenames': (
                 'js/jquery-3.3.1.js',
+                'js/utils.js',
                 'js/custom.js',
             ),
             'output_filename': 'base.js'
