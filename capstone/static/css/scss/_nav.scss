@@ -7,16 +7,16 @@
 
 .branding {
    .nav-branding {
-     background: url("../../img/cap-logo-black.png") no-repeat;
-     background-size: contain;
-     display: block;
-     width: 140px;
-     height: 50px;
-     background-position-x: 0;
+      background: url("../../img/cap-logo-black.png") no-repeat;
+      background-size: 187px auto;
+      width: 187px;
+      height: 72px;
+      display: block;
+      background-position-x: 0;
    }
   &.large-screen {
     .nav-branding {
-      background: url("../../img/cap-logo-white.png") no-repeat;
+      background: url("../../img/logos/cap-white.png") no-repeat;
       background-size: contain;
     }
   }
@@ -24,9 +24,9 @@
 
 .branding.large-screen {
   display: inline-block;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  margin-right: 1rem;
+  padding-top: 0.4rem;
+  margin-left: 0.4rem;
+  padding-bottom: 0;
   line-height: inherit;
   white-space: nowrap;
 }
@@ -37,15 +37,18 @@
 nav[aria-label="main"] {
   display: inline-block;
   flex-wrap: wrap;
-  padding: 0;
+  padding: 1.3rem;
   margin: 0;
   list-style: none;
   background-color: $color-black;
   color: $color-white;
   font-weight: $font-weight-normal;
   letter-spacing: 0.1em;
-  z-index: 1;
+  z-index: 999;
   user-select: none;
+  //border-bottom: 1px solid $color-gray;
+  border-bottom: 0;
+  font-size: 1.5rem;
   @include media-breakpoint-up(lg) {
     -webkit-box-shadow: 0 1px 5px $color-violet-gray-dark;
     -moz-box-shadow: 0 1px 5px $color-violet-gray-dark;
@@ -56,10 +59,47 @@ nav[aria-label="main"] {
   }
 }
 
+nav[aria-label="main"].sticky {
+    position: fixed;
+    width: 100%;
+    padding: 0;
+    font-size: 18px !important;
+    .nav-item {
+      padding-bottom: 0;
+      padding-top: 0;
+      position: relative;
+      top: -5px;
+    }
+    .branding {
+      padding-bottom: 0;
+    }
+    .nav-branding {
+      background: url("../../img/logos/long-white.png") no-repeat;
+      background-size: contain;
+      width: 200px;
+      height: 30px;
+      margin-top: 8px;
+    }
+    .dropdown-menu {
+      margin-top: 5px;
+    }
+  @include media-breakpoint-down(md) {
+    .nav-content {
+      margin-top: 0;
+    }
+  }
+}
+.main-content {
+  @include media-breakpoint-down(md) {
+
+  }
+}
 .nav-content {
   float: right;
   display: inline-table;
   z-index: 1;
+  margin-top: 0.4rem;
+  left: 0;
   > .nav {
     width: 100%;
   }
@@ -91,7 +131,7 @@ nav[aria-label="main"] {
       border-bottom: 0;
     }
     @include media-breakpoint-up(lg) {
-      margin-top: 29px;
+      margin-top: 37px;
       border-left: $border-width solid $color-white;
       border-right: $border-width solid $color-white;
       border-bottom: $border-width solid $color-white;
@@ -127,7 +167,7 @@ li.nav-item.dropdown {
   height: 100%;
   @include media-breakpoint-up(lg) {
     float: left;
-    padding: $navbar-padding-x $navbar-padding-y;
+    padding: 1rem 0.7rem;
   }
   @include make-col(4);
   @include media-breakpoint-down(md) {
@@ -208,6 +248,10 @@ body.hamburger-menu-open {
         opacity: 0;
         height: 0;
         overflow: hidden;
+        a {
+          pointer-events: none;
+          cursor: default;
+        }
       }
     }
 

@@ -26,14 +26,27 @@ nav[aria-label="main"] {
   }
 }
 
-.nav-link {
+.nav-content {
+
+  .dropdown-menu {
+    background-color: $color-white !important;
+    border: 1px solid $color-black;
+    a {
+      border-bottom: 1px solid $color-black;
+      color: $color-black;
+    }
+  }
+  .nav-link {
   &:hover, &:active, &:focus {
-    color: $color-blue !important;
+    color: $color-violet !important;
   }
   &.selected {
     color: $color-violet !important;
   }
 }
+
+}
+
 
 /* show symbols on expand and collapse of dropdowns */
 li.nav-item.dropdown {
