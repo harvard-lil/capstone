@@ -1,43 +1,36 @@
 @import 'variables';
 
 /* nav branding */
-.branding { padding: 20px; }
+.branding > a {
+  border-bottom: 0 !important;
+}
 
-.branding > a { border-bottom: 0 !important; }
+.branding-standalone {
+  display: none;
+}
 
 .branding {
-   .nav-branding {
-      background: url("../../img/cap-logo-black.png") no-repeat;
-      background-size: 187px auto;
-      width: 187px;
-      height: 72px;
-      display: block;
-      background-position-x: 0;
-   }
-  &.large-screen {
-    .nav-branding {
-      background: url("../../img/logos/cap-white.png") no-repeat;
+  display: inline-block;
+  line-height: inherit;
+  white-space: nowrap;
+  .nav-branding {
+    background: url("../../img/logos/white.svg") no-repeat;
+    background-size: contain;
+    width: 187px;
+    height: 72px;
+    display: block;
+    background-position-x: 0;
+    &:hover, &:focus, &:active {
+      background: url("../../img/logos/red-white.svg") no-repeat;
       background-size: contain;
     }
   }
 }
 
-.branding.large-screen {
-  display: inline-block;
-  padding-top: 0.4rem;
-  margin-left: 0.4rem;
-  padding-bottom: 0;
-  line-height: inherit;
-  white-space: nowrap;
-}
-
-.branding.small-screen { display: none; }
-
-
 nav[aria-label="main"] {
   display: inline-block;
   flex-wrap: wrap;
-  padding: 1.3rem;
+  padding: 0.5rem;
   margin: 0;
   list-style: none;
   background-color: $color-black;
@@ -51,43 +44,51 @@ nav[aria-label="main"] {
   a {
     border-bottom: 0;
   }
+  @include media-breakpoint-down(sm) {
+    font-size: 1.2rem;
+  }
 }
 
 nav[aria-label="main"].sticky {
-    position: fixed;
-    width: 100%;
-    padding: 0;
-    font-size: 18px !important;
-    .nav-item {
-      padding-bottom: 0;
-      padding-top: 0;
-      position: relative;
-      top: -5px;
-    }
-    .branding {
-      padding-bottom: 0;
-    }
-    .nav-branding {
-      background: url("../../img/logos/long-white.png") no-repeat;
+  position: fixed;
+  width: 100%;
+  padding: 0;
+  font-size: 18px;
+  .nav-item {
+    padding-bottom: 0;
+    padding-top: 0;
+    position: relative;
+    top: -5px;
+  }
+  .nav-branding {
+    background: url("../../img/logos/long-white.svg") no-repeat;
+    background-size: contain;
+    width: 200px;
+    height: 30px;
+    margin-top: 1.3rem;
+    margin-left: 1rem;
+    &:hover, &:focus, &:active {
+      background: url("../../img/logos/long-yellow.svg") no-repeat;
       background-size: contain;
-      width: 200px;
-      height: 30px;
-      margin-top: 8px;
     }
-    .dropdown-menu {
-      margin-top: 5px;
-    }
+
+  }
+  .dropdown-menu {
+    margin-top: 5px;
+  }
   @include media-breakpoint-down(md) {
     .nav-content {
       margin-top: 0;
     }
   }
 }
+
 .main-content {
   @include media-breakpoint-down(md) {
 
   }
 }
+
 .nav-content {
   float: right;
   display: inline-table;
@@ -125,7 +126,7 @@ nav[aria-label="main"].sticky {
       border-bottom: 0;
     }
     @include media-breakpoint-up(lg) {
-      margin-top: 37px;
+      margin-top: 27px;
       border-left: $border-width solid $color-white;
       border-right: $border-width solid $color-white;
       border-bottom: $border-width solid $color-white;
@@ -155,7 +156,6 @@ li.nav-item.dropdown {
     }
   }
 }
-
 
 .nav-item {
   height: 100%;
@@ -236,18 +236,18 @@ body.hamburger-menu-open {
 @include media-breakpoint-down(md) {
   body.hamburger-menu-closed {
     overflow-y: scroll;
-      .nav-content {
-        z-index: -1;
-        transition: visibility .2s ease-in-out;
-        opacity: 0;
-        height: 0;
-        overflow: hidden;
-        a {
-          pointer-events: none;
-          cursor: default;
-        }
+    .nav-content {
+      z-index: -1;
+      transition: visibility .2s ease-in-out;
+      opacity: 0;
+      height: 0;
+      overflow: hidden;
+      a {
+        pointer-events: none;
+        cursor: default;
       }
     }
+  }
 
   body.hamburger-menu-open {
     .nav-content {
