@@ -69,6 +69,7 @@
     }
   }
   .main-content {
+    padding-bottom: 3rem;
     @include media-breakpoint-up(lg) {
       @include make-col(8);
       padding-left: 60px;
@@ -83,7 +84,14 @@
     width: 30px;
     margin-top: -20px;
   }
+}
 
+
+/* In simple pages, where we don't have a sidebar, indent content */
+.row > .main-content {
+  @include media-breakpoint-up(lg) {
+    margin-left: 110px;
+  }
 }
 
 .full-content {
