@@ -2,7 +2,7 @@ footer {
   background-color: $color-black;
   color: $color-white;
   a {
-    color: $color-yellow;
+    color: $color-yellow !important;
     &:hover, &:active, &:focus {
       color: $color-white !important;
     }
@@ -12,5 +12,7 @@ footer {
       background-position-x: -60px;
     }
   }
+  .lil-logo {
+    @extend .footer-lil-logo-white;
+  }
 }
-

@@ -1,88 +1,83 @@
 {% load static %}
 <footer class="footer">
-  <div class="footer-content container-fluid">
-    <div class="row">
-      <div class="content-left">
-        <a href="https://lil.law.harvard.edu"
-           class="lil-logo"
-           aria-label="Library Innovation Lab"
-           target="_blank">
-        </a>
-      </div>
-      <div class="content-right">
-        <div class="social">
-          <span class="github">
-            <a href="https://github.com/capstone" target="_blank"
-               title="Caselaw Access Project Github"
-               aria-label="Caselaw Access Project Github"></a>
-          </span>
+  <div class="row footer-content">
+    <div class="col">
+      <a href="https://lil.law.harvard.edu"
+         class="lil-logo"
+         aria-label="Library Innovation Lab"
+         target="_blank">
+      </a>
+            <div class="social">
+        <span class="github">
+          <a href="https://github.com/capstone" target="_blank"
+             title="Caselaw Access Project Github"
+             aria-label="Caselaw Access Project Github"></a>
+        </span>
 
-          <span class="twitter">
-            <a href="https://twitter.com/caselawaccess" target="_blank"
-               title="Caselaw Access Project Twitter"
-               aria-label="Caselaw Access Project Twitter"></a>
-          </span>
-        </div>
-        <br/><br/>
-        <div class="text-right">
-          <nav aria-label="footer">
-            <ul class="list-inline links">
-              <li class="list-inline-item">
-                <a href="{% url "home" %}">HOME</a>
-              </li>
-              <li class="list-inline-item">
-                <a href="{% url "about" %}">ABOUT</a>
-              </li>
-              <li class="list-inline-item">
-                <a href="{% url "terms" %}">TERMS</a>
-              </li>
-              <li class="list-inline-item">
-                <a href="{% url "tools" %}">TOOLS</a>
-              </li>
-              <li class="list-inline-item">
-                <a href="{% url "gallery" %}">GALLERY</a>
-              </li>
-              <li class="list-inline-item">
-                {% if request.user.is_authenticated %}
-                <a href="{% url "user-details" %}">
-                  ACCOUNT
-                </a>
-                {% else %}
-                <a href="{% url "login" %}">
-                  LOG IN
-                </a>
-                {% endif %}
-              </li>
-              <li class="list-inline-item">
-                <a href="{% url "contact" %}">CONTACT</a>
-              </li>
-            </ul>
-          </nav>
-          <p class="credits copyright">
-            ©{% now 'Y' %} The President and Fellows of Harvard University
-          </p>
-          <p class="credits">
-            The content on this site is covered under a
-            Creative Commons
-            <br/>
-            Attribution-ShareAlike 3.0 Unported license
-            unless otherwise noted
-          </p>
-        </div>
+      <span class="twitter">
+          <a href="https://twitter.com/caselawaccess" target="_blank"
+             title="Caselaw Access Project Twitter"
+             aria-label="Caselaw Access Project Twitter"></a>
+        </span>
       </div>
-      </div>
-      <div class="return-to-top">
-        <a id="return"
-            onclick="returnToTop(event)"
-            href="#">
-          <span class="arrow" aria-hidden="true">&uarr;</span>
-          <br/>
-          Return to top
-        </a>
-      </div>
+
+    </div>
+    <div class="col">
+      <nav aria-label="footer">
+        <ul class="list-inline links">
+          <li class="list-inline-item">
+            <a href="{% url "home" %}">HOME</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="{% url "about" %}">ABOUT</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="{% url "terms" %}">TERMS</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="{% url "tools" %}">TOOLS</a>
+          </li>
+          <li class="list-inline-item">
+            <a href="{% url "gallery" %}">GALLERY</a>
+          </li>
+          <li class="list-inline-item">
+            {% if request.user.is_authenticated %}
+              <a href="{% url "user-details" %}">
+                ACCOUNT
+              </a>
+            {% else %}
+              <a href="{% url "login" %}">
+                LOG IN
+              </a>
+            {% endif %}
+          </li>
+          <li class="list-inline-item">
+            <a href="{% url "contact" %}">CONTACT</a>
+          </li>
+        </ul>
+      </nav>
+      <br/>
+      <p class="credits copyright">
+        ©{% now 'Y' %} The President and Fellows of Harvard University
+      </p>
+      <p class="credits">
+        The content on this site is covered under a
+        Creative Commons
+        <br/>
+        Attribution-ShareAlike 3.0 Unported license
+        unless otherwise noted
+      </p>
+    </div>
+    <div class="return-to-top">
+      <a id="return"
+         onclick="returnToTop(event)"
+         href="#">
+        <span class="arrow" aria-hidden="true">&uarr;</span>
+        <br/>
+        Return to top
+      </a>
     </div>
   </div>
-
 </footer>
 
 <script>

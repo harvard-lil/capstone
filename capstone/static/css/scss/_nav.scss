@@ -242,6 +242,7 @@ body.hamburger-menu-open {
       opacity: 0;
       height: 0;
       overflow: hidden;
+      display: none;
       a {
         pointer-events: none;
         cursor: default;
