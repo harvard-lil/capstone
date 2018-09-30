@@ -126,7 +126,7 @@ nav[aria-label="main"].sticky {
       border-bottom: 0;
     }
     @include media-breakpoint-up(lg) {
-      margin-top: 27px;
+      margin-top: 24px;
       border-left: $border-width solid $color-white;
       border-right: $border-width solid $color-white;
       border-bottom: $border-width solid $color-white;
