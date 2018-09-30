@@ -46,14 +46,8 @@ nav[aria-label="main"] {
   letter-spacing: 0.1em;
   z-index: 999;
   user-select: none;
-  //border-bottom: 1px solid $color-gray;
   border-bottom: 0;
   font-size: 1.5rem;
-  @include media-breakpoint-up(lg) {
-    -webkit-box-shadow: 0 1px 5px $color-violet-gray-dark;
-    -moz-box-shadow: 0 1px 5px $color-violet-gray-dark;
-    box-shadow: 0 1px 5px $color-violet-gray-dark;
-  }
   a {
     border-bottom: 0;
   }

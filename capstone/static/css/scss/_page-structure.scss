@@ -71,7 +71,7 @@
   .main-content {
     @include media-breakpoint-up(lg) {
       @include make-col(8);
-      margin-left: 60px;
+      padding-left: 60px;
 
     }
     @include media-breakpoint-down(md) {
@@ -92,7 +92,10 @@
   border: 2px solid rgba(247,246,242,0.8);
   box-shadow: 0 0 27px 0 rgba(222,222,230,0.46);
 
-
+  &.bg-yellow {
+    border: none;
+    box-shadow: none;
+  }
   @include make-col(10);
   @include media-breakpoint-up(lg) {
     @include make-col(11);
@@ -109,7 +112,16 @@
   padding-bottom: 8rem !important;
   padding-top: 8.5rem;
   border-bottom: 1px solid #E7E7ED;
+  &.compressed {
+    padding-top: 3rem;
+    padding-bottom: 1rem !important;
+    border-bottom: 0;
+    .page-title {
+      margin-bottom: 0;
+    }
+  }
 }
+
 .title-section {
   letter-spacing: 2.3px;
 }
@@ -215,6 +227,16 @@ p, ul {
   @include media-breakpoint-down(md) {
     display: none;
   }
+}
+
+.full-content.bg-yellow {
+  #sidebar-menu {
+    border-right:none;
+  }
+  .main-content {
+    padding-top: 1rem !important;
+  }
+
 }
 
 #sidebar-menu.sticky {

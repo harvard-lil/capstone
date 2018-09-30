@@ -92,11 +92,10 @@ h1 {
 
 
 /* show light border in homepage */
-nav {
-  @include media-breakpoint-up(lg) {
-    border-bottom: $border-width solid $color-white;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
+nav[aria-label="main"] {
+   @include media-breakpoint-up(lg) {
+    -webkit-box-shadow: 0 1px 5px $color-violet-gray-dark;
+    -moz-box-shadow: 0 1px 5px $color-violet-gray-dark;
+    box-shadow: 0 1px 5px $color-violet-gray-dark;
   }
 }
