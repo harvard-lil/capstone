@@ -23,12 +23,10 @@ class CapPagination(CursorPagination):
 
     def get_ordering(self, request, queryset, view):
         """ Derive ordering from queryset, rather than hardcoding as CursorPagination does. """
-        ordering = queryset.query.order_by
+        ordering = queryset.query.order_by or queryset.model._meta.ordering
 
-        assert isinstance(ordering, (str, list, tuple)), (
-            'Invalid ordering. Expected string or tuple, but got {type}'.format(
-                type=type(ordering).__name__
-            )
+        assert ordering and isinstance(ordering, (str, list, tuple)), (
+            'Invalid ordering. Expected string or tuple, but got %s' % (ordering,)
         )
 
         return ordering

@@ -56,16 +56,30 @@
                 </a>
               </li>
               <li>
+                <a class="list-group-item" href="#digitization">
+                  <span class="text">Digitization</span>
+                </a>
+              </li>
+              <li>
                 <a class="list-group-item" href="#data-quality">
                   <span class="text">Data quality</span>
                 </a>
               </li>
-              <li><a class="list-group-item" href="#usage">
-                <span class="text">Usage &amp; access</span></a></li>
-              <li><a class="list-group-item" href="#press">
-                <span class="text">Press</span></a></li>
-              <li><a class="list-group-item" href="#contributors">
-                <span class="text">Contributors</span></a></li>
+              <li>
+                <a class="list-group-item" href="#usage">
+                  <span class="text">Usage &amp; access</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#press">
+                  <span class="text">Press</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#contributors">
+                  <span class="text">Contributors</span>
+                </a>
+              </li>
             </ul>
           </div>
         </nav>
@@ -98,20 +112,23 @@
             <h2 class="subtitle" id="limits">Scope limits</h2>
             <p>CAP does not include:</p>
             <ul class="bullets">
-              <li>
-                New cases as they are published. We currently include volumes published through
-                June, 2018, and may or may not include additional volumes in the future.
-              </li>
-              <li>
-                Cases not designated as officially published, such as most lower court decisions.
-              </li>
-              <li>
-                Non-published trial documents such as party filings, orders, and exhibits.
-              </li>
-              <li>
-                Parallel versions of cases from regional reporters, unless those cases were
-                designated by a court as official.
-              </li>
+                <li>
+                  New cases as they are published. We currently include volumes published through
+                  June, 2018, and may or may not include additional volumes in the future.
+                </li>
+                <li>
+                  Cases not designated as officially published, such as most lower court decisions.
+                </li>
+                <li>
+                  Non-published trial documents such as party filings, orders, and exhibits.
+                </li>
+                <li>
+                  Parallel versions of cases from regional reporters, unless those cases were
+                  designated by a court as official.
+                </li>
+                <li>
+                  Cases officially published in digital form, such as recent cases from Illinois and Arkansas.
+                </li>
             </ul>
             <p>
               Cases published after 1922 are redacted of potentially-copyrighted material added by publishers.
@@ -137,7 +154,18 @@
               </li>
             </ul>
           </div>
-
+            {# ==============> DIGITIZATION PROCESS <============== #}
+          <div class="page-section">
+            <h2 class="subtitle" id="digitization">
+              Digitization Process
+            </h2>
+            <p>
+              We created this data by digitizing roughly 40 million pages of court decisions contained in roughly 40,000 bound volumes owned by the Harvard Law School Library.
+            </p>
+            <p>
+              Members of our team created metadata for each volume, including a unique barcode, reporter name, title, jurisdiction, publication date and other volume-level information. We then used a high-speed scanner to produce JP2 and TIF images of every page. A vendor then used OCR to extract the text of every case, creating case-level XML files. Key metadata fields, like case name, citation, court and decision date, were corrected for accuracy, while the text of each case was left as raw OCR output. In addition, for cases from volumes not yet in the public domain, our vendor redacted any headnotes.
+            </p>
+          </div>
           {# ==============> DATA QUALITY <============== #}
           <div class="page-section">
             <h2 class="subtitle" id="data-quality">Data quality</h2>
@@ -162,29 +190,30 @@
           {# ==============> USAGE <============== #}
           <div class="page-section">
             <h2 class="subtitle" id="usage">Usage &amp; access</h2>
-            <p>
-              <span class="highlighted">The CAP data is free for the public to use and access.</span>
-            </p>
-            <p>
-              Case metadata, such as the case name, citation, court, date, etc.,
-              is freely and openly accessible without limitation.
-              Full case text can be freely viewed or downloaded but
-              you must register for an account to do so, and currently you may
-              view or download no more than 500 cases per day. In addition,
-              research scholars can qualify for bulk data access by agreeing to certain use and redistribution
-              restrictions.
-            </p>
-            <p>
-              Access limitations on full text and bulk data are a component of Harvard’s
-              collaboration agreement with Ravel Law, Inc. (now part of Lexis-Nexis).
-              These limitations will end, at the latest, in March of 2024.
-              In addition, these limitations apply only to cases from
-              jurisdictions that continue to publish their official case law in print form.
-              Once a jurisdiction transitions from print-first publishing to digital-first publishing,
-              these limitations cease. Thus far, Illinois and Arkansas have made this important and positive
-              shift and, as a result, all historical cases from these jurisdictions are freely available to the public
-              without restriction. We hope many other jurisdictions will follow their example soon.
-            </p>
+              <p>
+                <span class="highlighted">The CAP data is free for the public to use and access.</span>
+              </p>
+              <p>
+                Case metadata, such as the case name, citation, court, date, etc.,
+                is freely and openly accessible without limitation.
+                Full case text can be freely viewed or downloaded but
+                you must register for an account to do so, and currently you may
+                view or download no more than 500 cases per day. In addition,
+                research scholars can qualify for bulk data access by agreeing to certain use and redistribution restrictions.
+                You can request a research agreement by <a href="{% url "register" %}">creating an account</a>
+                and then <a href="{% url "user-details" %}">visiting your account page</a>.
+              </p>
+              <p>
+                Access limitations on full text and bulk data are a component of Harvard’s
+                collaboration agreement with Ravel Law, Inc. (now part of Lexis-Nexis).
+                These limitations will end, at the latest, in March of 2024.
+                In addition, these limitations apply only to cases from
+                jurisdictions that continue to publish their official case law in print form.
+                Once a jurisdiction transitions from print-first publishing to digital-first publishing,
+                these limitations cease. Thus far, Illinois and Arkansas have made this important and positive
+                shift and, as a result, all historical cases from these jurisdictions are freely available to the public
+                without restriction. We hope many other jurisdictions will follow their example soon.
+              </p>
           </div>
 
           {# ==============> PRESS <============== #}

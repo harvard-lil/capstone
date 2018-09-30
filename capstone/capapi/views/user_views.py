@@ -3,13 +3,17 @@ from collections import OrderedDict
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.template import loader
 
 from capapi import resources
-from capapi.forms import RegisterUserForm, ResendVerificationForm
+from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchRequestForm
 from capapi.models import SiteLimits, CapUser
 from capapi.resources import form_for_request
 from capdb.models import CaseExport
+from capweb.helpers import reverse
 
 
 def register_user(request):
@@ -86,6 +90,26 @@ def user_details(request):
         'page_name': 'user-details'
     }
     return render(request, 'registration/user-details.html', context)
+
+
+@login_required
+def request_research_access(request):
+    name = "%s %s" % (request.user.first_name, request.user.last_name)
+    form = form_for_request(request, ResearchRequestForm, initial={'name': name, 'email': request.user.email})
+
+    if request.method == 'POST' and form.is_valid():
+        form.instance.user = request.user
+        form.save()
+        message = loader.get_template('research_request/research_request_email.txt').render(form.cleaned_data)
+        send_mail(
+            'Research access requested',
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.DEFAULT_FROM_EMAIL],
+            fail_silently=False)
+        return HttpResponseRedirect(reverse('research-request-success'))
+
+    return render(request, 'research_request/research_request.html', {'form': form})
 
 
 def bulk(request):

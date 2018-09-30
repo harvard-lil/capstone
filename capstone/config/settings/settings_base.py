@@ -533,4 +533,4 @@ COMPRESS_VOLUMES_SKIP_EXISTING = True  # don't process volumes that already exis
 AWS_DEFAULT_ACL = 'private'
 
 # set the default login
-LOGIN_URL = 'capweb.login'
+LOGIN_URL = 'login'

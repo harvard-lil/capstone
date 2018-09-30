@@ -50,6 +50,15 @@
                      readonly
                      value="{{ request.user.total_case_allowance }}">
               <br/>
+              <a href="{% url "research-request" %}" class="btn btn-default">Request unlimited research access</a>
+              {% with request.user.research_requests.first as research_request %}
+                {% if research_request %}
+                  <p>
+                    You requested research access on {{ research_request.submitted_date }}
+                    Your request is {{ research_request.status }}.
+                  </p>
+                {% endif %}
+              {% endwith %}
             </div>
           {% endif %}
         <div class="btn-group">

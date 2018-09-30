@@ -55,9 +55,9 @@ def send_new_signup_email(request, user):
     logger.info("sent new_signup email for %s" % user.email)
 
 
-def form_for_request(request, FormClass):
+def form_for_request(request, FormClass, *args, **kwargs):
     """ return FormClass loaded with request.POST data, if any """
-    return FormClass(request.POST if request.method == 'POST' else None)
+    return FormClass(request.POST if request.method == 'POST' else None, *args, **kwargs)
 
 
 class TrackingWrapper(wrapt.ObjectProxy):
