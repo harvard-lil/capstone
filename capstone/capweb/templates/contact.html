@@ -9,14 +9,14 @@
 {% block title %}Contact | {% endblock %}
 
 {% block meta_description %}
-Caselaw Access Project contact
+  Caselaw Access Project contact
 {% endblock %}
 {% block content %}
   <div class="basic-page">
-      <div class="full-content">
-      <div class="row">
-        <div class="page-title">
-          <h1>
+    <div class="full-content bg-yellow">
+      <div class="top-section compressed">
+        <div class="title-section">
+          <h1 class="page-title" id="overview">
             <img alt=""
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'
@@ -24,13 +24,12 @@ Caselaw Access Project contact
             Contact
           </h1>
         </div>
-
       </div>
       <div class="row">
-        <div class="sidebar-menu">
-          Or email us at <a class="contact_email" href="mailto:{{ email }}">{{ email }}</a>
-        </div>
-        <div class="content">
+        <div id="sidebar-menu"></div>
+        <div class="main-content">
+          Email us at <a class="contact_email" href="mailto:{{ email }}">{{ email }}</a> or fill out this form.
+          <br/><br/>
           <form action="{% url 'contact' %}" method="post">
             {% csrf_token %}
             {{ form }}

@@ -7,7 +7,7 @@
   </div>
 </div>
 
-<nav aria-label="main">
+<nav id="main-nav" aria-label="main">
   <div class="branding large-screen">
     <a class="nav-branding" href="{% url "home" %}" aria-label="Caselaw Access Project Home"></a>
   </div>
@@ -23,12 +23,6 @@
       <li class="nav-item" id="nav-about">
         <a class="nav-link" href="{% url "about" %}">ABOUT</a>
       </li>
-      <li class="nav-item" id="nav-terms">
-        <a class="nav-link" href="{% url "terms" %}">
-          TERMS
-        </a>
-      </li>
-
       <li class="nav-item dropdown" id="nav-tools">
         <a class="nav-link dropdown-toggle"
            href="#" id="navbar-dropdown-tools"
@@ -43,19 +37,11 @@
           <a class="dropdown-item" href="{% url "bulk-docs" %}">Bulk Data</a>
         </div>
       </li>
-      <li class="nav-item dropdown" id="nav-gallery">
-        <a class="nav-link dropdown-toggle"
-           href="#" id="navbar-dropdown-gallery"
-           role="button"
-           aria-haspopup="true"
-           aria-expanded="false">
+      <li class="nav-item" id="nav-gallery">
+        <a class="nav-link"
+           href="{% url "gallery" %}">
           GALLERY
         </a>
-        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-gallery">
-          <a class="dropdown-item" href="{% url "gallery" %}">Overview</a>
-          <a class="dropdown-item" href="{% url "wordclouds" %}">Wordclouds</a>
-          <a class="dropdown-item" href="{% url "limericks" %}">Limericks</a>
-        </div>
       </li>
 
       <li class="nav-item" id="nav-account">
