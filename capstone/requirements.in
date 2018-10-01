@@ -3,6 +3,7 @@
 # general
 tqdm                # script progress bars
 wrapt               # object proxying
+nltk                # tokenizing for ngrams
 
 # celery
 celery[redis,sqs]       # task queue

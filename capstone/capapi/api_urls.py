@@ -16,6 +16,8 @@ router.register('courts', api_views.CourtViewSet)
 router.register('volumes', api_views.VolumeViewSet)
 router.register('reporters', api_views.ReporterViewSet)
 router.register('bulk', api_views.CaseExportViewSet)
+if settings.NGRAMS_FEATURE:
+    router.register('ngrams', api_views.NgramViewSet)
 
 schema_view = get_schema_view(
     openapi.Info(

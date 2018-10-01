@@ -1221,3 +1221,52 @@ class CaseExport(models.Model):
         }
         for instance in instances:
             instance._filter_item_cache = lookups[instance.filter_type][instance.filter_id]
+
+
+class NgramWord(models.Model):
+    """
+        A single known token, simply mapping an ID to a text string.
+        We use this to avoid duplicating the same word in multiple ngrams.
+    """
+    word = models.CharField(max_length=10000, unique=True)
+
+    def __str__(self):
+        return self.word
+
+    _word_cache = None
+
+    @classmethod
+    def word_to_id(cls, word):
+        """
+            Return the ID for a given word, creating a new record if necessary. Use a cache to avoid duplicate queries.
+            This is currently intended only for use when indexing, not when searching.
+        """
+        if cls._word_cache is None:
+            cls._word_cache = dict(NgramWord.objects.all().values_list('word', 'pk'))
+            cls._word_cache[None] = None
+        if word not in cls._word_cache:
+            obj, created = cls.objects.get_or_create(word=word)
+            cls._word_cache[word] = obj.id
+        return cls._word_cache[word]
+
+
+class Ngram(models.Model):
+    """
+        A record for a trigram and the number of times it appeared in a particular year and jurisdiction.
+        Nulls in w2 and w3 indicate trigrams at the end of documents.
+    """
+    w1 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w1')
+    w2 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w2', null=True)
+    w3 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w3', null=True)
+    count = models.IntegerField()
+
+    jurisdiction = models.ForeignKey(Jurisdiction, to_field='slug', on_delete=models.CASCADE, related_name='ngrams')
+    year = models.IntegerField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['w1', 'w2', 'w3']),
+        ]
+
+    def __str__(self):
+        return " ".join(w.word for w in (self.w1, self.w2, self.w3) if w)

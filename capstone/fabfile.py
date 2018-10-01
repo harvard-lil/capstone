@@ -756,3 +756,8 @@ def create_case_text_for_all_cases(update_existing=False):
 def count_chars_in_all_cases(path="/tmp/counts"):
     count_chars.count_chars_in_all_cases(path)
 
+
+@task
+def ngram_jurisdictions():
+    from scripts.ngrams import ngram_jurisdictions
+    ngram_jurisdictions()

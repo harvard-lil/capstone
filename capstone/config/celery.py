@@ -14,6 +14,7 @@ app = Celery('config', include=[
     'scripts.validate_private_volumes',
     'scripts.compress_volumes',
     'scripts.export',
+    'scripts.ngrams',
 ])
 
 # Using a string here means the worker doesn't have to serialize
