@@ -33,7 +33,10 @@
     font-weight: 400;
     display: block;
     position: relative;
-
+    padding-top: 3.5rem;
+    &:first-child {
+      padding-top: 4.5rem;
+    }
   }
   h3.subtitle {
     @extend .h5;
@@ -59,7 +62,6 @@
   }
   .below-the-fold {
     #sidebar-menu, .main-content {
-      padding-top: 6rem;
       padding-bottom: 6rem;
     }
   }
@@ -162,6 +164,7 @@
   flex: 0 0 24%;
   max-width: 24%;
   position: static;
+  padding-top: 5.5rem;
   left: 0;
   top: 0;
   font-family: $font-serif;
@@ -206,6 +209,7 @@
 
 #sidebar-menu.sticky {
   top: 0;
+  padding-top: 4.5rem;
   .content {
     top: 80px;
     position: -webkit-sticky;
