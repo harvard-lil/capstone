@@ -18,6 +18,12 @@ jur_choices = lazy_choices(models.Jurisdiction.objects.all(), 'slug', 'name_long
 court_choices = lazy_choices(models.Court.objects.all(), 'slug', 'name')
 reporter_choices = lazy_choices(models.Reporter.objects.all(), 'id', 'full_name')
 
+class NoopMixin():
+    """
+        Mixin to allow method='noop' in filters.
+    """
+    def noop(self, qs, name, value):
+        return qs
 
 class JurisdictionFilter(filters.FilterSet):
     whitelisted = filters.BooleanFilter()
@@ -69,7 +75,7 @@ class CourtFilter(filters.FilterSet):
         ]
 
 
-class CaseFilter(filters.FilterSet):
+class CaseFilter(NoopMixin, filters.FilterSet):
     name_abbreviation = filters.CharFilter(
         field_name='name_abbreviation',
         label='Name Abbreviation (contains)',
@@ -107,7 +113,6 @@ class CaseFilter(filters.FilterSet):
         label='Full-Text Search',
         method='full_text_search_simple')
 
-
     # These aren't really filters, but are used elsewhere in preparing the response.
     # Included here so they'll show up in the UI.
     full_case = filters.ChoiceFilter(
@@ -120,10 +125,6 @@ class CaseFilter(filters.FilterSet):
         label='Format for case text (applies only if including case text)',
         choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML')),
     )
-
-    def noop(self, qs, name, value):
-        """ Not really a filter -- do nothing. """
-        return qs
 
     def find_by_citation(self, qs, name, value):
         return qs.filter(citations__normalized_cite__exact=models.Citation.normalize_cite(value))
@@ -150,7 +151,7 @@ class CaseFilter(filters.FilterSet):
                   ]
 
 
-class CaseExportFilter(filters.FilterSet):
+class CaseExportFilter(NoopMixin, filters.FilterSet):
     with_old = filters.ChoiceFilter(
         field_name='with_old',
         label='Include previous versions of files?',
@@ -166,6 +167,18 @@ class CaseExportFilter(filters.FilterSet):
             'filter_id': ['exact'],
         }
 
-    def noop(self, qs, name, value):
-        """ Not really a filter -- do nothing. """
-        return qs
+
+class NgramFilter(NoopMixin, filters.FilterSet):
+    jurisdiction = filters.ChoiceFilter(
+        field_name='jurisdiction',
+        label='Jurisdiction',
+        choices=jur_choices)
+    q = filters.CharFilter(
+        label='Words',
+        help_text='Up to three words separated by spaces',
+        method='noop',  # handled by NgramViewSet.filter_queryset()
+    )
+
+    class Meta:
+        model = models.Ngram
+        fields = ['jurisdiction', 'q']

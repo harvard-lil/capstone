@@ -56,3 +56,5 @@ try:
     INTERNAL_IPS = ['127.0.0.1']
 except ImportError:
     pass
+
+NGRAMS_FEATURE = True

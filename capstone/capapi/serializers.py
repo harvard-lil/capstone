@@ -304,6 +304,14 @@ class CourtSerializer(serializers.ModelSerializer):
         )
 
 
+class NgramSerializer(serializers.Serializer):
+    year = serializers.IntegerField()
+    count = serializers.IntegerField()
+
+    class Meta:
+        fields = ('year', 'count')
+
+
 ### BULK SERIALIZERS ###
 
 class CaseExportSerializer(serializers.ModelSerializer):

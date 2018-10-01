@@ -534,3 +534,8 @@ AWS_DEFAULT_ACL = 'private'
 
 # set the default login
 LOGIN_URL = 'login'
+
+# directories to search for nltk data
+NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
+# feature flag while we see if ngrams feature is fast enough to work
+NGRAMS_FEATURE = False

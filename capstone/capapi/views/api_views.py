@@ -1,6 +1,7 @@
 import re
 import urllib
 
+from django.db.models import Sum
 from django.http import HttpResponseRedirect, FileResponse
 from django.utils.text import slugify
 
@@ -14,6 +15,7 @@ from capdb import models
 from capapi import serializers, filters, permissions
 from capapi import renderers as capapi_renderers
 from capdb.models import Citation
+from scripts.ngrams import tokenize
 
 
 class BaseViewSet(viewsets.ReadOnlyModelViewSet):
@@ -156,4 +158,41 @@ class CaseExportViewSet(BaseViewSet):
             add_cache_header(response)
 
         return response
+
+
+class NgramViewSet(BaseViewSet):
+    serializer_class = serializers.NgramSerializer
+    queryset = models.Ngram.objects.order_by('year')
+    filterset_class = filters.NgramFilter
+
+    def filter_queryset(self, queryset):
+        """ Handle q= query parameter. """
+        queryset = super().filter_queryset(queryset)
+
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            # get first three tokens from q
+            words = list(tokenize(q.strip()))[:3]
+
+            # find IDs of those tokens in DB
+            word_objs = list(models.NgramWord.objects.filter(word__in=words))
+
+            if len(word_objs) < len(words):
+                # if all three tokens aren't in DB, no match
+                queryset = queryset.none()
+            else:
+                # Get the ngram counts for each year.
+                # This is basically the ORM equivalent of the following SQL
+                # (plus automatic handling of NULLs and jurisdiction filtering):
+                #   SELECT SUM(count) FROM capdb_ngram WHERE w1=words[1] AND w2=words[2] AND w3=words[3] GROUP BY year;
+                words_dict = {w.word: w for w in word_objs}
+                word_ids = [words_dict[w] for w in words]
+                keys = ['w1', 'w2', 'w3'][:len(words)]
+                queryset = queryset.filter(**dict(zip(keys, word_ids)))
+                queryset = queryset.values(*(keys+['year'])).annotate(count=Sum('count'))
+        else:
+            # without a query, return nothing
+            queryset = queryset.none()
+
+        return queryset
 

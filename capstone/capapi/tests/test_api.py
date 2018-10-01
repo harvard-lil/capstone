@@ -49,6 +49,7 @@ def test_jurisdiction_redirect(client, case, jurisdiction):
     ("reporter", "pk", "full_name"),
     ("volume_metadata", "pk", "title"),
     ("case_export", "pk", "file_name"),
+    ("citation", "pk", "cite"),
 ])
 def test_model_endpoint(request, client, fixture_name, detail_attr, comparison_attr):
     """ Generic test to kick the tires on -list and -detail for model endpoints. """
@@ -419,6 +420,26 @@ def test_filter_reporter(client, reporter):
     content = response.json()
     for result in content['results']:
         assert reporter_name_str in result['full_name']
+
+
+# NGRAMS
+
+@pytest.mark.django_db
+def test_ngrams(client, ingest_ngrams, jurisdiction):
+    # get individual ngram objects for comparison
+    words = [NgramWord.objects.get(word='this'), NgramWord.objects.get(word='case')]
+    ngram_objs = list(Ngram.objects.filter(w1=words[0], w2=words[1]))
+    assert ngram_objs
+
+    # check result counts when not filtering by jurisdiction
+    json = client.get(api_reverse('ngram-list'), {'q': 'this case'}).json()
+    assert sum(r['count'] for r in json['results']) == sum(n.count for n in ngram_objs)
+
+    # check result counts when filtering by jurisdiction
+    ngram_objs[0].jurisdiction = jurisdiction
+    ngram_objs[0].save()
+    json = client.get(api_reverse('ngram-list'), {'q': 'this case', 'jurisdiction': jurisdiction.slug}).json()
+    assert sum(r['count'] for r in json['results']) == ngram_objs[0].count
 
 
 # RESPONSE FORMATS
