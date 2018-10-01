@@ -21,6 +21,9 @@
   li {
     list-style: none;
   }
+  p, ul {
+    margin-bottom: 2rem;
+  }
   img {
     max-width: 100%;
   }
@@ -154,38 +157,6 @@
   }
 }
 
-
-p, ul {
-  margin-bottom: 2rem;
-}
-
-.basic-page.inverse {
-  background-color: $color-black;
-  color: $color-white;
-  a {
-    color: $color-white;
-  }
-  .list-group-item {
-    background-color: transparent;
-    color: $color-white;
-    &:focus, &:hover, &:active {
-      color: $color-black;
-      background-color: $color-yellow;
-    }
-  }
-  .subtitle {
-    color: $color-yellow;
-    border-bottom: 1px solid $color-yellow;
-    a {
-      color: $color-yellow;
-      &:focus, &:hover, &:active {
-        color: $color-white;
-      }
-    }
-  }
-}
-
-
 /* sidebar nav */
 #sidebar-menu {
   flex: 0 0 24%;
@@ -207,10 +178,13 @@ p, ul {
     position: static;
     margin: 0 auto;
   }
+  li {
+  }
   .list-group-item {
     border: 0;
     color: $color-black;
     background-color: transparent;
+
     &:hover, &:focus, &.selected {
       background-color: $color-yellow;
     }
@@ -229,15 +203,6 @@ p, ul {
   }
 }
 
-.full-content.bg-yellow {
-  #sidebar-menu {
-    border-right:none;
-  }
-  .main-content {
-    padding-top: 1rem !important;
-  }
-
-}
 
 #sidebar-menu.sticky {
   top: 0;
@@ -248,13 +213,26 @@ p, ul {
   }
 }
 
-.basic-page {
-  .bg-black, .bg-black.top-section {
+
+/* color variations */
+
+.top-section.bg-black {
+  border-top: 1px solid $color-white;
+  margin-top: 0;
+  color: $color-white;
+  .title-section > h1.page-title {
+    color: $color-white !important;
+  }
+  .explainer-section > .content {
     color: $color-white;
-    .title-section, .explainer-section {
-      .content {
-        color: $color-white;
-      }
-    }
+  }
+}
+
+.full-content.bg-yellow {
+  #sidebar-menu {
+    border-right:none;
+  }
+  .main-content {
+    padding-top: 1rem !important;
   }
 }
