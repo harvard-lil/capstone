@@ -11,7 +11,7 @@ footer {
     font-weight: 700;
     border-bottom: 0;
     &:hover, &:focus, &:active {
-      color: $color-white;
+      color: $color-white !important;
       border-bottom: 0;
     }
   }
