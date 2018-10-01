@@ -243,6 +243,7 @@ p, ul {
   top: 0;
   .content {
     top: 80px;
+    position: -webkit-sticky;
     position: sticky;
   }
 }
