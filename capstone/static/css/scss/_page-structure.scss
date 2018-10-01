@@ -21,6 +21,9 @@
   li {
     list-style: none;
   }
+  p, ul {
+    margin-bottom: 2rem;
+  }
   img {
     max-width: 100%;
   }
@@ -30,7 +33,10 @@
     font-weight: 400;
     display: block;
     position: relative;
-
+    padding-top: 3.5rem;
+    &:first-child {
+      padding-top: 4.5rem;
+    }
   }
   h3.subtitle {
     @extend .h5;
@@ -56,7 +62,6 @@
   }
   .below-the-fold {
     #sidebar-menu, .main-content {
-      padding-top: 6rem;
       padding-bottom: 6rem;
     }
   }
@@ -154,43 +159,12 @@
   }
 }
 
-
-p, ul {
-  margin-bottom: 2rem;
-}
-
-.basic-page.inverse {
-  background-color: $color-black;
-  color: $color-white;
-  a {
-    color: $color-white;
-  }
-  .list-group-item {
-    background-color: transparent;
-    color: $color-white;
-    &:focus, &:hover, &:active {
-      color: $color-black;
-      background-color: $color-yellow;
-    }
-  }
-  .subtitle {
-    color: $color-yellow;
-    border-bottom: 1px solid $color-yellow;
-    a {
-      color: $color-yellow;
-      &:focus, &:hover, &:active {
-        color: $color-white;
-      }
-    }
-  }
-}
-
-
 /* sidebar nav */
 #sidebar-menu {
   flex: 0 0 24%;
   max-width: 24%;
   position: static;
+  padding-top: 5.5rem;
   left: 0;
   top: 0;
   font-family: $font-serif;
@@ -207,11 +181,16 @@ p, ul {
     position: static;
     margin: 0 auto;
   }
+  li {
+  }
   .list-group-item {
     border: 0;
     color: $color-black;
     background-color: transparent;
-    &:hover, &:focus, &.selected {
+    &:hover, &:focus, &:active {
+      background-color: $color-yellow-bright;
+    }
+    &.selected {
       background-color: $color-yellow;
     }
     > span.text {
@@ -229,18 +208,10 @@ p, ul {
   }
 }
 
-.full-content.bg-yellow {
-  #sidebar-menu {
-    border-right:none;
-  }
-  .main-content {
-    padding-top: 1rem !important;
-  }
-
-}
 
 #sidebar-menu.sticky {
   top: 0;
+  padding-top: 4.5rem;
   .content {
     top: 80px;
     position: -webkit-sticky;
@@ -248,13 +219,26 @@ p, ul {
   }
 }
 
-.basic-page {
-  .bg-black, .bg-black.top-section {
+
+/* color variations */
+
+.top-section.bg-black {
+  border-top: 1px solid $color-white;
+  margin-top: 0;
+  color: $color-white;
+  .title-section > h1.page-title {
+    color: $color-white !important;
+  }
+  .explainer-section > .content {
     color: $color-white;
-    .title-section, .explainer-section {
-      .content {
-        color: $color-white;
-      }
-    }
+  }
+}
+
+.full-content.bg-yellow {
+  #sidebar-menu {
+    border-right:none;
+  }
+  .main-content {
+    padding-top: 1rem !important;
   }
 }

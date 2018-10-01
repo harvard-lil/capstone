@@ -74,7 +74,7 @@ nav[aria-label="main"].sticky {
 
   }
   .dropdown-menu {
-    margin-top: 5px;
+    margin-top: 12px;
   }
   @include media-breakpoint-down(md) {
     .nav-content {
@@ -127,9 +127,8 @@ nav[aria-label="main"].sticky {
     }
     @include media-breakpoint-up(lg) {
       margin-top: 24px;
-      border-left: $border-width solid $color-white;
-      border-right: $border-width solid $color-white;
-      border-bottom: $border-width solid $color-white;
+      border: $border-width solid $color-white;
+      border-top: none;
     }
     @include media-breakpoint-down(md) {
       a {
@@ -142,6 +141,8 @@ nav[aria-label="main"].sticky {
     }
   }
 }
+
+
 
 /* show symbols on expand and collapse of dropdowns */
 li.nav-item.dropdown {

@@ -38,7 +38,8 @@
   @include media-breakpoint-up(lg) {
     @include make-col(3);
      .main-img {
-      max-width: 80%;
+       max-width: 80%;
+       margin-top: 40%;
     }
   }
    @include media-breakpoint-down(md) {
