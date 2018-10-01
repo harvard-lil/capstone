@@ -17,54 +17,64 @@
 {% block content %}
   <div class="basic-page">
     <div class="full-content">
-      <div class="row">
-        <div class="page-title">
-          <h1>
+      <div class="top-section bg-black">
+        <div class="title-section">
+          <h1 class="page-title" id="overview">
             <img alt=""
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'
                  class="decorative-arrow"/>
-            <span class="color-red">Bulk</span> Downloads
+            Bulk Downloads
           </h1>
         </div>
-
-      </div>
-      <div class="row">
-        {# ==============> MENU <============== #}
-        <nav class="list-group sidebar-menu" aria-label="table of contents">
-          <ul>
-            <li><a class="list-group-item" href="#introduction">Introduction</a></li>
-            <li><a class="list-group-item" href="#requesting-access">Requesting Access</a></li>
-            <li><a class="list-group-item" href="#downloading">Downloading</a></li>
-            <li><a class="list-group-item" href="#api-equivalence">API Equivalence</a></li>
-            <li><a class="list-group-item" href="#data-format">Data Format</a></li>
-            <li><a class="list-group-item" href="#examples">Using Bulk Data</a></li>
-          </ul>
-        </nav>
-        {# ==============> CONTENT <============== #}
-        <div class="content">
-
-          {# ==============> INTRODUCTION <============== #}
-          <div class="page-section">
-            <a id="introduction"></a>
-            <p>
-              <img class="img-fluid"
-                   alt="Two volumes of caselaw labeled with identifying metadata and wrapped in air-tight plastic are cradled in a metal storage crate"
-                   src="{% static "img/reporters.jpg" %}">
-            </p>
-            <h2 class="subtitle">Introduction</h2>
-            <p>
+        <div class="explainer-section">
+          <div class="content">
               Our <a href="{% url "bulk-download" %}">bulk data files</a> contain the same information that is available
               via <a href="{% url "api" %}">our API</a>,
               but are much faster to download if you want to interact with a large number of cases. Each file contains
               all of the cases from a single jurisdiction or reporter.
-            </p>
           </div>
-
+        </div>
+      </div>
+      <div class="row below-the-fold">
+        {# ==============> MENU <============== #}
+        <nav id="sidebar-menu" aria-label="table of contents">
+          <div class="content">
+            <ul class="list-group">
+              <li>
+                <a class="list-group-item" href="#requesting-access">
+                  <span class="text">Requesting Access</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#downloading">
+                  <span class="text">Downloading</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#api-equivalence">
+                  <span class="text">API Equivalence</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#data-format">
+                  <span class="text">Data Format</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#examples">
+                  <span class="text">Using Bulk Data</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        {# ==============> CONTENT <============== #}
+        <div class="main-content">
           {# ==============> REQUESTING  <============== #}
           <div class="page-section">
             <a id="requesting-access"></a>
-            <h3 class="subtitle">Requesting Access</h3>
+            <h2 class="subtitle">Requesting Access</h2>
             <p>
               Bulk data files for our whitelisted jurisdictions (currently Illinois and Arkansas) are
               <a href="{% url "bulk-download" %}">available to everyone</a>
@@ -82,8 +92,7 @@
 
           {# ==============> GETTING  <============== #}
           <div class="page-section">
-            <a id="downloading"></a>
-            <h3 class="subtitle">Downloading</h3>
+            <h2 class="subtitle" id="downloading">Downloading</h2>
             <p>
               You can download bulk data <a href="{% url "bulk-download" %}">manually from our website</a>, or
               <a href="{% api_url "caseexport-list" %}">use the API</a> if you are fetching many files at once.
@@ -98,8 +107,7 @@
 
           {# ==============> API EQUIVALENCE  <============== #}
           <div class="page-section">
-            <a id="api-equivalence"></a>
-            <h3 class="subtitle">API Equivalence</h3>
+            <h2 class="subtitle" id="api-equivalence">API Equivalence</h2>
             <p>
               Each file that we offer for download is equivalent to a particular query to our API. For example, the file
               "Illinois-20180829-text.zip" contains all cases that would be returned by
@@ -116,8 +124,7 @@
 
           {# ==============> FORMAT  <============== #}
           <div class="page-section">
-            <a id="data-format"></a>
-            <h3 class="subtitle">Data Format</h3>
+            <h2 class="subtitle" id="data-format">Data Format</h2>
             <p>
               Bulk data files are provided as zipped directories. Each directory is in
               <a href="https://en.wikipedia.org/wiki/BagIt">BagIt format</a>, with a layout like this:
@@ -150,8 +157,7 @@
 
           {# ==============> USING DATA  <============== #}
           <div class="page-section">
-            <a id="examples"></a>
-            <h3 class="subtitle">Using Bulk Data</h3>
+            <h2 class="subtitle" id="examples">Using Bulk Data</h2>
             <p>
               The <code>data.jsonl.xz</code> file can be unzipped using third-party GUI programs like
               <a href="https://theunarchiver.com/">The Unarchiver</a> (Mac) or

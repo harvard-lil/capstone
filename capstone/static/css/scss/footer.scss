@@ -1,55 +1,51 @@
 @import "variables";
 
 footer {
-  .footer-content {
-    margin: 0 auto;
-    @include media-breakpoint-up(md) {
-      @include make-col(11);
+  z-index: 999;
+  font-size: 18px;
+}
+
+.footer-content > :nth-child(2) {
+  text-align: right;
+}
+
+.footer-content {
+  margin: 0 auto;
+  padding: 3rem 0;
+  @include make-col(11);
+  nav[aria-label="footer"] {
+    text-align: right;
+  }
+  .social {
+    margin-top: 2rem;
+    width: 200px;
+    span {
+      margin-left: 0.2rem;
     }
-    padding: 3rem 0;
+  }
+  @include media-breakpoint-down(xs) {
+    nav[aria-label="footer"] {
+      display: none;
+    }
+    .col {
+      @include make-col(12);
+      text-align: center;
+    }
+    .lil-logo {
+      margin: 0 auto;
+    }
+    .social {
+      margin: 2rem auto;
+      width: 90px;
+    }
   }
   a {
     color: $color-black;
-    font-weight: 700;
     border-bottom: 0;
     &:hover, &:focus, &:active {
       color: $color-blue;
       border-bottom: 0;
     }
-  }
-  a.lil-logo {
-    border-bottom: 0;
-  }
-  #lil-logo {
-    height: 100px;
-    @include media-breakpoint-down(sm) {
-      display: block;
-      margin: auto;
-    }
-  }
-  @include media-breakpoint-up(md) {
-    .credits {
-      text-align: right;
-    }
-  }
-  @include media-breakpoint-down(sm) {
-    .lil-logo-item {
-      fill: $color-yellow;
-    }
-    .links {
-      display: none;
-    }
-    .credits {
-      text-align: center;
-      color: $color-white;
-      &.copyright {
-        color: $color-white;
-        font-weight: $font-weight-semibold;
-      }
-    }
-  }
-  nav {
-    border-bottom: 0;
   }
   .links li {
     @extend .fix-list-item;
@@ -62,33 +58,12 @@ footer {
       font-weight: $font-weight-normal;
       border-bottom: 0;
       &:hover, &:active, &:focus {
-        color: $color-yellow !important;
+        color: $color-yellow;
         text-decoration: none;
       }
     }
     .arrow {
       font-size: 2rem;
     }
-  }
-
-  .content-left, .content-right {
-    @include media-breakpoint-up(lg) {
-      @include make-col(6);
-    }
-    .content-right {
-      float: right;
-    }
-
-    @include media-breakpoint-down(md) {
-      width: 100%;
-      padding: 15px;
-      .lil-logo {
-        margin: 0 auto;
-      }
-    }
-  }
-
-  .lil-logo {
-    @extend .footer-lil-logo-white;
   }
 }

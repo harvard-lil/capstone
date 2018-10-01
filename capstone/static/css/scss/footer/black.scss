@@ -1,0 +1,18 @@
+footer {
+  background-color: $color-black;
+  color: $color-white;
+  a {
+    color: $color-yellow !important;
+    &:hover, &:active, &:focus {
+      color: $color-white !important;
+    }
+  }
+  .social {
+    .github > a, .website > a, .twitter > a {
+      background-position-x: -60px;
+    }
+  }
+  .lil-logo {
+    @extend .footer-lil-logo-white;
+  }
+}

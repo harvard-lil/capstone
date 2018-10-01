@@ -77,9 +77,6 @@ nav {
   }
 }
 
-nav {
-  margin-bottom: 15px;
-}
 
 .pager > .previous, .pager > .next {
   list-style: none;
@@ -116,7 +113,7 @@ nav {
 }
 
 .list-group-item > ul {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .parameter-name {
@@ -132,8 +129,7 @@ li > code {
 }
 
 dt {
-  font-size: 1.2em;
-  margin-left: -10px;
+  margin-top: 2rem;
 }
 
 lh{
@@ -156,14 +152,6 @@ dt.example-description {
   font-size: 1em;
 }
 
-pre.code-block {
-  font-size: 0.65em;
-  background-color: rgb(210, 231, 255);
-  font-weight: bold;
-  margin-top: -20px;
-  line-height: 1.5em;
-}
-
 .example-link {
   font-size: 0.65em;
 }
@@ -184,10 +172,6 @@ li > h5.list-header {
   font-size: 14px;
 }
 
-code {
-  font-size: 0.8em;
-}
-
 .json-data-type {
   color: $blue;
   font-style: italic;
@@ -195,4 +179,11 @@ code {
 
 .code-example-casebody-section {
   color: $red;
+}
+
+#sidebar-menu {
+  background-color: $color-white;
+}
+.below-the-fold {
+  background-color: $color-tan;
 }

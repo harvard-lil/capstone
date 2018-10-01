@@ -16,10 +16,9 @@
 {% block content %}
   <div class="basic-page">
     <div class="full-content">
-      <div class="row">
-        <a name="overview"></a>
-        <div class="page-title">
-          <h1>
+      <div class="top-section bg-black">
+        <div class="title-section">
+          <h1 class="page-title" id="overview">
             <img alt=""
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'
@@ -27,39 +26,39 @@
             Tools
           </h1>
         </div>
+        <div class="explainer-section">
+          <div class="content">
+             The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
+             and their associated metadata. We currently offer two ways to access the data: our
+             <a href="{% url "api" %}">API</a>, and <a href="{% url "bulk-docs" %}">bulk downloads</a>.
+
+          </div>
+        </div>
 
       </div>
-      <div class="row">
+      <div class="row below-the-fold">
         {# ==============> MENU <============== #}
-        <nav class="list-group sidebar-menu" aria-label="table of contents">
-          <ul>
-            <li><a class="list-group-item" href="#introduction">Introduction</a></li>
-            <li><a class="list-group-item" href="#api">API</a></li>
-            <li><a class="list-group-item" href="#bulk">Bulk Data</a></li>
-          </ul>
+        <nav id="sidebar-menu" aria-label="table of contents">
+          <div class="content">
+            <ul class="list-group">
+              <li>
+                <a class="list-group-item" href="#api">
+                  <span class="text">API</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#bulk">
+                  <span class="text">Bulk Data</span>
+                </a>
+              </li>
+            </ul>
+          </div>
         </nav>
         {# ==============> CONTENT <============== #}
-          <div class="content">
-
-            {# ==============> INTRODUCTION <============== #}
-            <div class="page-section">
-              <a name="introduction"></a>
-              <p>
-               <img class="img-fluid"
-                 alt="Scanning reporters"
-                 src="{% static "img/vacuum-seal.jpg" %}">
-              </p>
-              <h2 class="subtitle">Introduction</h2>
-              <p>
-                The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
-                  and their associated metadata. We currently offer two ways to access the data: our
-                  <a href="{% url "api" %}">API</a>, and <a href="{% url "bulk-docs" %}">bulk downloads</a>.
-              </p>
-            </div>
+        <div class="main-content">
             {# ==============> API  <============== #}
             <div class="page-section">
-              <a name="api"></a>
-              <h2 class="subtitle">
+              <h2 class="subtitle" id="api">
                 <a href="{% url "api" %}">The API</a>
               </h2>
               <p>
@@ -74,8 +73,7 @@
 
             {# ==============> BULK!! <============== #}
             <div class="page-section">
-              <a name="bulk"></a>
-              <h2 class="subtitle">
+              <h2 class="subtitle" id="bulk">
                 <a href="{% url "bulk-docs" %}">Bulk Downloads</a>
               </h2>
               <p>
@@ -95,5 +93,4 @@
         </div>
       </div>
     </div>
-  </div>
 {% endblock %}

@@ -1,12 +1,2 @@
 @import 'variables';
-
-footer {
-  background-color: $color-black;
-  color: $color-white;
-  a {
-    color: $color-blue;
-    &:hover, &:active, &:focus {
-      color: $color-yellow;
-    }
-  }
-}
+@import 'footer/black';

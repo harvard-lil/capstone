@@ -4,26 +4,23 @@
 {% block title %}Logged out | {% endblock %}
 
 {% block meta_description %}
-You have been logged out
+  You have been logged out
 {% endblock %}
 
-
 {% block registration_content %}
-   <h1>
-    <img alt=""
-         aria-hidden="true"
-         src='{% static "img/red-arrow-right.svg" %}'
-         class="decorative-arrow"/>
-    Logged out
-  </h1>
-  <div class="content">
-    <p>
-      You have logged out.
-    </p>
-    <p>
-      <a href="{% url 'login' %}">
-        Log in again
-      </a>
-    </p>
+  <div class="top-section compressed">
+    {% include "includes/page-title.html" with title="Logged out" %}
+  </div>
+  <div class="row">
+    <div class="main-content">
+      <p>
+        You have signed out.
+      </p>
+      <p>
+        <a href="{% url 'login' %}">
+          Log in again
+        </a>
+      </p>
+    </div>
   </div>
 {% endblock %}

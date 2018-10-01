@@ -18,6 +18,7 @@
 @import 'dropdown';
 @import 'nav';
 @import 'footer';
+@import 'page-structure';
 
 ::selection {
   background: $color-yellow-bright; /* WebKit/Blink Browsers */
@@ -29,83 +30,18 @@
   color: $color-black;
 }
 
+
 body {
   @extend .font-body;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
   /* push footer to bottom of screen if insufficient main-content to fill page */
   display: flex;
   flex-direction: column;
   color: $color-black;
-  font-size: 18px;
+  font-size: 24px;
   line-height: 29px;
-}
-
-h1, .h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-  font-family: $font-serif;
-}
-
-ul {
-  padding-left: 0;
-}
-
-li {
-  list-style: none;
-}
-
-ol.alpha > li {
-  list-style-type: lower-alpha;
-  padding-left: 1rem;
-}
-
-ul.bullets, ul.bullets ul {
-  padding-left: 1.5em !important;
-  li {
-    list-style-type: circle;
-  }
-}
-
-section {
-  width: 100%;
-}
-
-table {
-  margin-bottom: 4rem;
-}
-
-table > tbody > tr {
-  line-height: 2.5rem;
-}
-
-table > tbody > tr > th {
-  font-family: $font-serif;
-  font-weight: $font-weight-normal;
-  min-width: 400px;
-}
-
-code {
-  background-color: $color-light-blue;
-  color: $color-black;
-  padding: 0 5px;
-  font-size: $font-size-base;
-}
-
-
-pre {
-  white-space: -moz-pre-wrap;
-  white-space: -o-pre-wrap;
-  white-space: pre-wrap;
-  word-wrap: break-word; /* Internet Explorer 5.5+ */
-  border: 0;
-}
-
-a {
-  text-decoration: none;
-  color: $color-violet;
-  border-bottom: 4px solid $color-yellow-bright;
-
-  &:hover, &:focus, &:active {
-    text-decoration: none;
-    color: $color-blue;
-  }
+  font-weight: 400;
 }
 
 a, button, .btn {
@@ -116,13 +52,26 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
   border: 0;
 }
 
+.code-block {
+  font-size: 0.65em;
+  margin-top: -20px;
+  line-height: 1.5em;
+  background-color: $color-light-gray;
+  padding: 1rem;
+}
+
+code {
+  font-weight: $font-weight-normal;
+  background-color: $color-light-gray;
+  padding: 2px;
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
 .list-group-item {
   border-radius: 0 !important;
 }
 
-.basic-page {
-  padding: 6rem 0 4rem 0;
-}
 
 .decorative-arrow {
   margin-left: -2rem;
@@ -144,35 +93,23 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
   }
 }
 
-.sidebar-menu {
-  @include make-col(4);
-  font-family: $font-serif;
-  padding-right: 15px;
-  .list-group-item {
-    border: 0;
-    color: $color-black;
-
-    &:hover, &:focus {
-      background-color: $color-yellow;
-    }
-  }
-  @include media-breakpoint-down(sm) {
-    display: none;
-  }
+form {
+  margin-bottom: 3rem;
 }
-
 /* Section styles */
 section {
   padding-top: 5rem;
   padding-bottom: 7rem;
   @include media-breakpoint-down(sm) {
-    .section-title,
-    .section-subtitle {
+    .section-title {
       color: $color-violet;
     }
     .section-subtitle {
-      font-weight: 300;
+      color: $color-black;
     }
+  }
+  .section-subtitle {
+    font-weight: 300;
   }
 }
 
@@ -345,8 +282,7 @@ li.item-set {
     margin-bottom: 0.5em;
   }
   > .item-origin {
-    color: $color-red;
-    font-weight: $font-weight-bold;
+    color: $color-black;
   }
   > .item-name {
     //color: $color-violet;
@@ -356,109 +292,8 @@ li.item-set {
     color: $color-violet-gray;
     padding-left: 0.5em;
   }
-}
-
-
-.basic-page {
-  @extend .row;
-  h1 {
-    color: $color-black;
-  }
-  ul {
-    padding-left: 0;
-  }
-  li {
-    list-style: none;
-  }
-  img {
-    max-width: 100%;
-  }
-  .page-title {
-    @include media-breakpoint-up(md) {
-      @include make-col(6);
-    }
-  }
-  h2.subtitle {
-    @extend .h4;
-    color: $color-violet;
-  }
-  h3.subtitle {
-    @extend .h5;
-    color: $color-violet;
-  }
-  h4, h5, h6 {
-    @extend .h6;
-    font-weight: $font-weight-bold;
-  }
-  @include media-breakpoint-up(md) {
-    .subtitle:before {
-      content: "\00A7";
-      color: $color-yellow;
-      margin-left: -2rem;
-    }
-  }
-
-  .page-section {
-    margin-bottom: 30px;
-    margin-top: 1rem;
-  }
-}
-
-.basic-page > .full-content {
-  margin: 0 auto;
-  @include make-col(10);
-  @include media-breakpoint-up(lg) {
-    @include make-col(8);
-  }
-}
-
-.basic-page {
-  .content {
-    @include media-breakpoint-up(md) {
-      @include make-col(8);
-    }
-  }
-  p, ul {
-    margin-bottom: 2rem;
-  }
-}
-
-.basic-page.inverse {
-  background-color: $color-black;
-  color: $color-white;
-  a {
-    color: $color-white;
-  }
-  .page-title > h1 {
-    color: $color-white;
-  }
-  .list-group-item {
-    background-color: transparent;
-    color: $color-white;
-    &:focus, &:hover, &:active {
-      color: $color-black;
-      background-color: $color-yellow;
-    }
-  }
-  .subtitle {
-    color: $color-yellow;
-    border-bottom: 1px solid $color-yellow;
-    a {
-      color: $color-yellow;
-      &:focus, &:hover, &:active {
-        color: $color-white;
-      }
-    }
-  }
-  .sidebar-menu {
-    margin-left: -10px;
-    margin-right: 10px;
-    .list-group-item {
-      border-bottom: $border-width solid $color-white;
-    }
-    li:last-child .list-group-item {
-      border-bottom: 0;
-    }
+  > .bullet {
+    color: $color-red;
   }
 }
 
@@ -480,11 +315,15 @@ li.item-set {
     }
   }
   .github > a {
-    background: url('../../img/github-sprite.svg') no-repeat;
-    background-size: auto 30px;
+    background: url('../../img/logos/github-sprite.svg') no-repeat;
+    background-size: auto 29px;
   }
   .website > a {
     background: url('../../img/arrow-sprite.svg') no-repeat;
+    background-size: auto 30px;
+  }
+  .twitter > a {
+    background: url('../../img/logos/twitter-sprite.svg') no-repeat;
     background-size: auto 30px;
   }
 }
@@ -497,6 +336,44 @@ li.item-set {
   }
 }
 
+
+.bg-black, .inverse {
+  color: $color-white;
+  h1, .section-title {
+    color: $color-yellow !important;
+  }
+  .btn.btn-default {
+    background-color: $color-white;
+    color: $color-black;
+    &:hover, &:active, &:focus {
+      background-color: $color-yellow;
+    }
+  }
+
+  a {
+    color: $color-white;
+    &:hover, &:focus, &:active {
+      border-bottom: 3px solid $color-white;
+    }
+  }
+  .section-subtitle {
+    @include media-breakpoint-down(md) {
+      color: $color-white;
+    }
+  }
+}
+
+.bg-violet {
+  @extend .bg-black;
+  background-color: $color-violet;
+  color: $color-white;
+  h1, .section-title {
+    color: $color-white !important;
+  }
+}
+
+/* map styles */
+
 #usa-territories-white {
   .state-link {
     pointer-events: all;
@@ -507,6 +384,7 @@ li.item-set {
     }
   }
   .state {
+    stroke: $color-white;
     cursor: pointer;
     pointer-events: all;
   }

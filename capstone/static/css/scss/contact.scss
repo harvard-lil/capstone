@@ -1,4 +1,5 @@
 @import 'variables';
+@import 'footer/black';
 
 .basic-page {
   background-color: $color-yellow;
@@ -43,15 +44,6 @@ input, textarea {
   border-bottom: 0;
   &:active, &:focus {
     background-color: $color-white;
-    color: $color-black !important;
-  }
-}
-
-footer {
-  .lil-logo {
-    @extend .footer-lil-logo-black;
-  }
-  .credits {
     color: $color-black !important;
   }
 }
