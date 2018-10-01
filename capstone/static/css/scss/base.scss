@@ -39,7 +39,7 @@ body {
   display: flex;
   flex-direction: column;
   color: $color-black;
-  font-size: 24px;
+  font-size: 20px;
   line-height: 29px;
   font-weight: 400;
 }
@@ -340,18 +340,20 @@ li.item-set {
   h1, .section-title {
     color: $color-yellow !important;
   }
-  .btn.btn-default {
-    background-color: $color-white;
-    color: $color-black;
-    &:hover, &:active, &:focus {
-      background-color: $color-yellow;
-    }
-  }
 
   a {
     color: $color-white;
     &:hover, &:focus, &:active {
       border-bottom: 3px solid $color-white;
+    }
+  }
+  .btn, .btn-default, .btn-inverse {
+    background-color: $color-white;
+    color: $color-black;
+    font-weight: $font-weight-semibold;
+    &:hover, &:active, &:focus {
+      background-color: $color-yellow;
+      border-bottom: none;
     }
   }
   .section-subtitle {

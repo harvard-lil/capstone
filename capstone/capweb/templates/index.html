@@ -139,12 +139,11 @@
         </div>
         <div class="content-right">
           <!-- section subtitle -->
-          <span class=" section-subtitle">
+          <span class="section-subtitle">
             Start exploring the data! Here are some tools you can use to check it out.
           </span>
 
           <h3>
-            <span class="section-symbol color-red" aria-hidden="true">&#167;</span>
             <a href="{% url "api" %}">
               API
             </a>
@@ -152,7 +151,6 @@
           <p>The API allows users to browse and download cases using a few short commands.</p>
 
           <h3>
-            <span class="section-symbol color-red" aria-hidden="true">&#167;</span>
             <a href="{% url "bulk-docs" %}">
               Bulk data
             </a>
@@ -190,14 +188,12 @@
             Sky’s the limit. See some early experiments made possible by the opening up of caselaw data.
           </span>
           <h3>
-            <span class="section-symbol color-yellow" aria-hidden="true">&#167;</span>
             <a href="{% url "wordclouds" %}">
               Wordclouds
             </a>
           </h3>
           <p>Most used words for every year of California caselaw from 1852 to 2015.</p>
           <h3>
-            <span class="section-symbol color-yellow" aria-hidden="true">&#167;</span>
             <a href="{% url "limericks" %}">
               Limericks
             </a>
@@ -238,7 +234,7 @@
                 <p class="item-title">
                   <a href="{{ news_item.url }}"
                      title="Go to {{ news_item.publication }} to read {{ news_item.title }}"
-                     target="_blank">{{ news_item.title }}</a>
+                     target="_blank">{{ news_item.title|truncatechars:60 }}</a>
                 </p>
                 <span class="item-origin">
                 {{ news_item.publication }}

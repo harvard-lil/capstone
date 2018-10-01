@@ -69,6 +69,7 @@ h1 {
 
 .content-right h3 {
   @extend .h5;
+  font-family: $font-sans-serif;
 }
 
 /* on index, display white background logo on small screens
