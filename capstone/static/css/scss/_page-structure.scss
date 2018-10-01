@@ -187,8 +187,10 @@
     border: 0;
     color: $color-black;
     background-color: transparent;
-
-    &:hover, &:focus, &.selected {
+    &:hover, &:focus, &:active {
+      background-color: $color-yellow-bright;
+    }
+    &.selected {
       background-color: $color-yellow;
     }
     > span.text {
