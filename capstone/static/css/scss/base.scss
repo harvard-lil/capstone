@@ -277,7 +277,6 @@ section > .splash-quote {
 li.item-set {
   margin-bottom: 20px;
   list-style: none;
-  a { font-weight: $font-weight-semibold; }
   > .item-title {
     margin-bottom: 0.5em;
   }
@@ -285,7 +284,6 @@ li.item-set {
     color: $color-black;
   }
   > .item-name {
-    //color: $color-violet;
     font-weight: $font-weight-normal;
   }
   > .item-date {
@@ -365,7 +363,7 @@ li.item-set {
 
 .bg-violet {
   @extend .bg-black;
-  background-color: $color-violet;
+  background-color: $color-violet-large-text;
   color: $color-white;
   h1, .section-title {
     color: $color-white !important;

@@ -67,6 +67,13 @@ li {
   list-style: none;
 }
 
+ol.spacious-list,
+ul.spacious-list {
+  li {
+    margin-bottom: 1.2rem;
+  }
+}
+
 ol.alpha > li {
   list-style-type: lower-alpha;
   padding-left: 1rem;
@@ -115,15 +122,15 @@ pre {
 
 a {
   text-decoration: none;
-  color: $color-violet;
-  border-bottom: 3px solid $color-yellow-bright;
-
+  color: $color-magenta;
+  border-bottom: 2px solid $color-magenta;
+  font-weight: $font-weight-regular;
   &:hover, &:focus, &:active {
     text-decoration: none;
-    border-bottom: 3px solid $color-violet;
+    border-bottom: 2px solid $color-violet;
     color: $color-violet;
-    -webkit-transition : border 300ms ease-out;
-    -moz-transition : border 300ms ease-out;
-    -o-transition : border 300ms ease-out;
+    -webkit-transition : border,color 300ms ease-out;
+    -moz-transition : border,color 300ms ease-out;
+    -o-transition : border,color 300ms ease-out;
   }
 }
