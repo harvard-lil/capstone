@@ -37,6 +37,13 @@
     &:first-child {
       padding-top: 4.5rem;
     }
+    > a {
+      color: $color-violet-large-text;
+      &:hover, &:active, &:focus {
+        color: $color-violet-large-text;
+        border-bottom: 3px solid $color-violet-large-text;
+      }
+    }
   }
   h3.subtitle {
     @extend .h5;
@@ -180,8 +187,6 @@
   .content {
     position: static;
     margin: 0 auto;
-  }
-  li {
   }
   .list-group-item {
     border: 0;

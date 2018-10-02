@@ -39,7 +39,7 @@ body {
   display: flex;
   flex-direction: column;
   color: $color-black;
-  font-size: 24px;
+  font-size: 20px;
   line-height: 29px;
   font-weight: 400;
 }
@@ -277,7 +277,6 @@ section > .splash-quote {
 li.item-set {
   margin-bottom: 20px;
   list-style: none;
-  a { font-weight: $font-weight-semibold; }
   > .item-title {
     margin-bottom: 0.5em;
   }
@@ -285,7 +284,6 @@ li.item-set {
     color: $color-black;
   }
   > .item-name {
-    //color: $color-violet;
     font-weight: $font-weight-normal;
   }
   > .item-date {
@@ -342,18 +340,20 @@ li.item-set {
   h1, .section-title {
     color: $color-yellow !important;
   }
-  .btn.btn-default {
-    background-color: $color-white;
-    color: $color-black;
-    &:hover, &:active, &:focus {
-      background-color: $color-yellow;
-    }
-  }
 
   a {
     color: $color-white;
     &:hover, &:focus, &:active {
       border-bottom: 3px solid $color-white;
+    }
+  }
+  .btn, .btn-default, .btn-inverse {
+    background-color: $color-white;
+    color: $color-black;
+    font-weight: $font-weight-semibold;
+    &:hover, &:active, &:focus {
+      background-color: $color-yellow;
+      border-bottom: none;
     }
   }
   .section-subtitle {
@@ -365,7 +365,7 @@ li.item-set {
 
 .bg-violet {
   @extend .bg-black;
-  background-color: $color-violet;
+  background-color: $color-violet-large-text;
   color: $color-white;
   h1, .section-title {
     color: $color-white !important;
