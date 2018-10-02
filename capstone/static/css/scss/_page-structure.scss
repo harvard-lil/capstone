@@ -91,6 +91,10 @@
     @include media-breakpoint-down(md) {
       @include make-col(10);
     }
+    &.simple {
+      width: 100%;
+      padding-left: 15px;
+    }
   }
   .decorative-arrow {
     width: 30px;
@@ -101,8 +105,8 @@
 .full-content {
   margin: -2px auto 0 auto;
   background: $color-white;
-  border: 2px solid rgba(247,246,242,0.8);
-  box-shadow: 0 0 27px 0 rgba(222,222,230,0.46);
+  border: 2px solid rgba(247, 246, 242, 0.8);
+  box-shadow: 0 0 27px 0 rgba(222, 222, 230, 0.46);
 
   &.bg-yellow {
     border: none;
@@ -139,7 +143,8 @@
 }
 
 .title-section,
-.explainer-section {
+.explainer-section,
+.main-content.simple {
   @include make-col(9);
   margin-left: 9.5rem;
   @include media-breakpoint-down(md) {
@@ -213,7 +218,6 @@
   }
 }
 
-
 #sidebar-menu.sticky {
   top: 0;
   padding-top: 4.5rem;
@@ -223,7 +227,6 @@
     position: sticky;
   }
 }
-
 
 /* color variations */
 
@@ -241,9 +244,22 @@
 
 .full-content.bg-yellow {
   #sidebar-menu {
-    border-right:none;
+    border-right: none;
   }
   .main-content {
     padding-top: 1rem !important;
+  }
+  a {
+    color: $color-violet;
+    border-bottom: 3px solid $color-violet;
+    &:hover, &:active, &:focus {
+      color: $color-black;
+      border-bottom: 3px solid $color-black;
+    }
+  }
+  .btn {
+    &:hover, &:active, &:focus {
+      background-color: $color-yellow;
+    }
   }
 }
