@@ -63,13 +63,17 @@
 }
 
 .wordcloud-item {
-  max-width: 100px !important;
+  width: 200px !important;
   float: left;
   margin-right: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid $color-magenta;
+  &:hover, &:active, &:focus {
+    border: 1px solid $color-violet;
+  }
   .year {
-    color: $color-yellow;
-    &:hover, &:active, &:focus {
-      color: $color-white;
-    }
+    font-weight: $font-weight-semibold;
+    margin-top: 1rem;
+    text-align: center;
   }
 }
