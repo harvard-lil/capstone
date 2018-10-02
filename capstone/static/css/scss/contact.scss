@@ -22,16 +22,9 @@ form {
 }
 
 input, textarea {
-  min-width: 100%;
-  margin-bottom: 10px;
-  padding: 5px;
   border: 0;
-  outline: none;
-  @include media-breakpoint-down(md) {
-    max-width: 80%;
-    min-width: 80%;
-  }
 }
+
 
 .errorlist {
   li {
