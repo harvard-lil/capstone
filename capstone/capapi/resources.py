@@ -103,6 +103,14 @@ def cache_func(key, timeout=None, cache_name='default'):
         return decorated
     return decorator
 
+def query_count_cache_key(qs):
+    """ Stringify queryset for use in caching counts """
+
+    # special case -- all empty queries have count 0 (and throw an error if serialized as below)
+    if qs.query.is_empty():
+        return 'query-count:0'
+
+    return 'query-count:' + hashlib.md5(str(qs.query).encode('utf8')).hexdigest()
 
 class CachedCountQuerySet(QuerySet):
     """
@@ -110,7 +118,7 @@ class CachedCountQuerySet(QuerySet):
         Usage: queryset.__class__ = CachedCountQuerySet
     """
     @cache_func(
-        key=lambda queryset:'query-count:' + hashlib.md5(str(queryset.query).encode('utf8')).hexdigest(),
+        key=query_count_cache_key,
         timeout=settings.CACHED_COUNT_TIMEOUT,
     )
     def count(self):
