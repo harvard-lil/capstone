@@ -420,9 +420,12 @@ API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
 API_DOCS_CASE_ID = 2
-CACHED_COUNT_TIMEOUT = 60*60*24*7  # 'count' value in API responses is cached for up to 7 days
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
+
+# CACHES
+CACHED_COUNT_TIMEOUT = 60*60*24*7  # 'count' value in API responses is cached for up to 7 days
+CACHED_LIL_DATA_TIMEOUT = 60*60*24  # news and contributor data from LIL site is cached once a day
 
 # DATA VISUALIZATION
 DATA_COUNT_DIR = '/tmp/count-data'
