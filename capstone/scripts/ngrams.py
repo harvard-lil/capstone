@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 
-from capdb.models import NgramWord, CaseXML, Ngram, Jurisdiction
+from capdb.models import NgramWord, CaseXML, Ngram, Jurisdiction, CaseMetadata
 from scripts.helpers import extract_casebody, ordered_query_iterator
 
 
@@ -37,12 +37,12 @@ def ngrams(text, n=3):
 def words_to_ids(ngram):
     return tuple(NgramWord.word_to_id(word) for word in ngram)
 
-def ngram_jurisdictions():
+def ngram_jurisdictions(replace_existing=False):
     for jurisdiction in Jurisdiction.objects.all():
-        ngram_jurisdiction.delay(jurisdiction.pk)
+        ngram_jurisdiction.delay(jurisdiction.pk, replace_existing)
 
 @shared_task
-def ngram_jurisdiction(jurisdiction_id):
+def ngram_jurisdiction(jurisdiction_id, replace_existing=False):
     # get jurisdiction
     jurisdiction = Jurisdiction.objects.get(pk=jurisdiction_id)
     print("Ngramming %s" % jurisdiction)
@@ -50,12 +50,21 @@ def ngram_jurisdiction(jurisdiction_id):
         return  # no cases for jurisdiction
 
     # clear out non-existent years (which would be caused by case date change)
-    first_year = jurisdiction.case_metadatas.order_by('decision_date').first().decision_date.year
-    last_year = jurisdiction.case_metadatas.order_by('-decision_date').first().decision_date.year
+    case_query = CaseMetadata.objects.in_scope().filter(jurisdiction=jurisdiction)
+    first_year = case_query.order_by('decision_date', 'id').first().decision_date.year
+    last_year = case_query.order_by('-decision_date', '-id').first().decision_date.year
     jurisdiction.ngrams.filter(Q(year__lt=first_year) | Q(year__gt=last_year)).delete()
+
+    # optionally skip reindexing this jurisdiction if final year already has ngrams
+    if not replace_existing and Ngram.objects.filter(jurisdiction=jurisdiction, year=last_year).exists():
+        return
 
     # ngram each year
     for year in range(first_year, last_year+1):
+
+        # optionally skip reindexing jurisdiction-year combinations that already have ngrams
+        if not replace_existing and Ngram.objects.filter(jurisdiction=jurisdiction, year=year).exists():
+            continue
 
         # count words for each case
         # TODO: use CaseText table
@@ -69,7 +78,8 @@ def ngram_jurisdiction(jurisdiction_id):
         with transaction.atomic():
             jurisdiction.ngrams.filter(year=year).delete()
             if counter:
-                Ngram.objects.bulk_create(
+                ngram_objs = (
                     Ngram(w1_id=ngram[0], w2_id=ngram[1], w3_id=ngram[2], count=count, jurisdiction=jurisdiction, year=year)
                     for ngram, count in counter.items()
                 )
+                Ngram.objects.bulk_create(ngram_objs, batch_size=1000)

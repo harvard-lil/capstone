@@ -758,6 +758,7 @@ def count_chars_in_all_cases(path="/tmp/counts"):
 
 
 @task
-def ngram_jurisdictions():
+def ngram_jurisdictions(replace_existing=False):
+    """ Generate ngrams for all jurisdictions. If replace_existing is False (default), only jurisdiction-years without existing ngrams will be indexed. """
     from scripts.ngrams import ngram_jurisdictions
-    ngram_jurisdictions()
+    ngram_jurisdictions(replace_existing=bool(replace_existing))
