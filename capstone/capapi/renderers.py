@@ -5,7 +5,7 @@ from django.http.response import HttpResponseBase
 from django.template import loader
 from rest_framework import renderers
 
-from capapi.resources import cache_func
+from capweb.helpers import cache_func
 from scripts.generate_case_html import generate_html
 
 
