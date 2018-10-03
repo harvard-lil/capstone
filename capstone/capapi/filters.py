@@ -4,9 +4,12 @@ from django.utils.functional import SimpleLazyObject
 from django.contrib.postgres.search import SearchQuery
 
 import rest_framework_filters as filters
+from rest_framework.exceptions import ValidationError
 
 from capdb import models
 
+
+### HELPERS ###
 
 # lazy load and cache choices so we don't get an error if this file is imported when database tables don't exist yet
 def lazy_choices(queryset, id_attr, label_attr):
@@ -24,6 +27,18 @@ class NoopMixin():
     """
     def noop(self, qs, name, value):
         return qs
+
+class MinLengthCharFilter(filters.CharFilter):
+    def __init__(self, *args, **kwargs):
+        self.min_length = kwargs.pop('min_length', 0)
+        super().__init__(*args, **kwargs)
+
+    def filter(self, qs, value):
+        if value and len(value) < self.min_length:
+            raise ValidationError({self.field_name: "Minimum query length is %s characters." % self.min_length})
+        return super().filter(qs, value)
+
+### FILTERS ###
 
 class JurisdictionFilter(filters.FilterSet):
     whitelisted = filters.BooleanFilter()
@@ -76,10 +91,11 @@ class CourtFilter(filters.FilterSet):
 
 
 class CaseFilter(NoopMixin, filters.FilterSet):
-    name_abbreviation = filters.CharFilter(
+    name_abbreviation = MinLengthCharFilter(
         field_name='name_abbreviation',
         label='Name Abbreviation (contains)',
-        lookup_expr='icontains')
+        lookup_expr='icontains',
+        min_length=3)
     cite = filters.CharFilter(
         field_name='cite',
         label='Citation',
@@ -104,13 +120,15 @@ class CaseFilter(NoopMixin, filters.FilterSet):
         label='Date Max (Format YYYY-MM-DD)',
         field_name='decision_date_max',
         method='find_by_date')
-    docket_number = filters.CharFilter(
+    docket_number = MinLengthCharFilter(
         field_name='docket_number',
         label='Docket Number (contains)',
-        lookup_expr='icontains')
+        lookup_expr='icontains',
+        min_length=3)
     search = filters.CharFilter(
         field_name='tsvector',
         label='Full-Text Search',
+        help_text='Search for words separated by spaces. All words are required in results. Words less than 3 characters are ignored.',
         method='full_text_search_simple')
 
     # These aren't really filters, but are used elsewhere in preparing the response.
@@ -136,7 +154,12 @@ class CaseFilter(NoopMixin, filters.FilterSet):
             return qs.filter(decision_date__lte=value)
 
     def full_text_search_simple(self, qs, name, value):
-        return qs.filter(tsvector=SearchQuery(value))
+        value = value.strip()
+        value = " ".join(part for part in value.split() if len(part) > 2)
+        if value:
+            return qs.filter(tsvector=SearchQuery(value))
+        else:
+            return qs
 
     class Meta:
         model = models.CaseMetadata
