@@ -690,6 +690,15 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
 case_metadata_partial_index_where = "jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative"
 
 
+
+class CaseMetadataQuerySet(models.QuerySet):
+    def in_scope(self):
+        """
+            Return cases accessible from API
+        """
+        return self.filter(duplicative=False, jurisdiction__isnull=False, court__isnull=False)
+
+
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
@@ -758,6 +767,8 @@ class CaseMetadata(models.Model):
             name_abbreviation=self.court_name_abbreviation,
         )
 
+    objects = CaseMetadataQuerySet.as_manager()
+
     def __str__(self):
         return self.case_id
 
@@ -775,7 +786,6 @@ class CaseMetadata(models.Model):
 
     def full_cite(self):
         return "%s, %s (%s)" % (self.name_abbreviation, ", ".join(cite.cite for cite in self.citations.all()), self.decision_date.year)
-
 
 
 class CaseXML(BaseXMLModel):

@@ -56,11 +56,7 @@ class CitationViewSet(BaseViewSet):
 
 class CaseViewSet(BaseViewSet):
     serializer_class = serializers.CaseSerializer
-    queryset = models.CaseMetadata.objects.filter(
-        duplicative=False,
-        jurisdiction__isnull=False,
-        court__isnull=False,
-    ).select_related(
+    queryset = models.CaseMetadata.objects.in_scope().select_related(
         'volume',
         'reporter',
     ).prefetch_related(
