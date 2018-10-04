@@ -12,3 +12,5 @@ _paq.push(['enableLinkTracking']);
   g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
 })();
 /* end Matomo */
+// get _paq back outside the scope django-pipeline puts it in
+window._paq = _paq;
