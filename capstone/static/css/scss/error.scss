@@ -1,0 +1,42 @@
+@import 'variables';
+@import 'footer/violet';
+
+
+.top-section {
+  padding-top: 40px;
+}
+.basic-page h1.page-title {
+  margin-bottom: 48px;
+}
+
+#error_top {
+  padding-top: 5rem;
+  padding-bottom: 0px;
+}
+
+.middle-text {
+  font-size: 2.5rem;
+}
+
+.bottom-text {
+  line-height: 2rem;
+  margin-top: 1rem;
+}
+
+.action-text {
+  line-height: 1.5rem;
+  color: $color-yellow-bright;
+  width: 100%;
+  font-weight: $font-weight-bold;
+  font-family: $font-sans-serif;
+  margin-top: 2.5rem;
+}
+
+.emoji {
+  height: 2em;
+}
+
+a {
+  font-weight: $font-weight-bold;
+  color: $color-light-blue !important;
+}

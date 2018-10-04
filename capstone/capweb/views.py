@@ -67,6 +67,15 @@ def tools(request):
 def gallery(request):
     return render(request, "gallery.html")
 
+def maintenance_mode(request):
+    return render(request, "error_page.html", {
+        "type": "Maintenance",
+        "title": "Well this isn't ideal...",
+        "middle": "You've caught us at a bad time.",
+        "bottom": "We're performing some critical maintenance that just couldn't wait, and we needed to take the site "
+                  "down to do it.",
+        "action": "Please bear with us! We are working on getting the site back up and running as quickly as we can.",
+    })
 
 def wordclouds(request):
     wordcloud_dir = os.path.join(settings.BASE_DIR, 'static/img/wordclouds')
