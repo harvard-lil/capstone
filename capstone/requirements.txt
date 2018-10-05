@@ -8,6 +8,7 @@
 -e git+git://github.com/philipn/django-rest-framework-filters.git@c5ffc8276431cf49dddbcebab322b142843de4ef#egg=djangorestframework-filters
 -e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
 -e git+git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
+-e git+git://github.com/zTrix/webpage2html.git@9df878a#egg=webpage2html
 amqp==2.2.2               # via kombu
 apipkg==1.4               # via execnet
 asn1crypto==0.22.0        # via cryptography
@@ -32,7 +33,7 @@ coreapi==2.3.3            # via drf-yasg, openapi-codec
 coreschema==0.0.4         # via coreapi, drf-yasg
 coverage==4.4.1           # via pytest-cov
 cryptography==2.3         # via moto, paramiko
-cssselect==1.0.1
+cssselect==1.0.1          # via mincss
 django-appconf==1.0.2     # via django-compressor
 django-bootstrap4==0.0.6
 django-bulk-update==2.1.0
@@ -79,6 +80,7 @@ libsasscompiler==0.1.5
 lxml==3.7.3
 markupsafe==1.0           # via jinja2
 mccabe==0.6.1             # via flake8
+mincss==0.11.6
 mirakuru==0.8.2           # via pytest-redis
 mock==2.0.0               # via moto
 more-itertools==4.3.0     # via pytest
@@ -127,6 +129,7 @@ s3transfer==0.1.10        # via boto3
 six==1.10.0               # via bcrypt, cryptography, django-extensions, docker, docker-pycreds, drf-yasg, fabric3, faker, flex, libsass, mock, more-itertools, moto, nltk, pathlib2, pip-tools, pynacl, pytest, python-dateutil, python-jose, responses, swagger-spec-validator, websocket-client
 strict-rfc3339==0.7       # via flex
 swagger-spec-validator==2.1.0
+termcolor==1.1.0
 tornado==5.0.2            # via flower
 tqdm==4.11.2
 uritemplate==3.0.0        # via coreapi, drf-yasg

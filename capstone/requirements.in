@@ -73,3 +73,8 @@ swagger_spec_validator  # by drf-yasg
 PyPDF2
 reportlab
 img2pdf
+
+# maintenance page
+-e git://github.com/zTrix/webpage2html.git@9df878a#egg=webpage2html     # save target page as string
+termcolor   # required by webpage2html
+mincss      # remove unused css styles
