@@ -68,3 +68,12 @@ def reverse(*args, **kwargs):
             # raise NoReverseMatch only after testing final host
             if i == len(hosts)-1:
                 raise
+
+
+def show_toolbar_callback(request):
+    """
+        Whether to show django-debug-toolbar.
+        This adds an optout for urls with ?no_toolbar
+    """
+    from debug_toolbar.middleware import show_toolbar
+    return False if 'no_toolbar' in request.GET else show_toolbar(request)

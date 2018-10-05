@@ -53,6 +53,9 @@ try:
         MIDDLEWARE.index('django_hosts.middleware.HostsRequestMiddleware')+1,
         'debug_toolbar.middleware.DebugToolbarMiddleware'
     )
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': 'capweb.helpers.show_toolbar_callback'
+    }
     INTERNAL_IPS = ['127.0.0.1']
 except ImportError:
     pass

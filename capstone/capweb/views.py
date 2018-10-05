@@ -70,11 +70,10 @@ def gallery(request):
 def maintenance_mode(request):
     return render(request, "error_page.html", {
         "type": "Maintenance",
-        "title": "Well this isn't ideal...",
-        "middle": "You've caught us at a bad time.",
-        "bottom": "We're performing some critical maintenance that just couldn't wait, and we needed to take the site "
-                  "down to do it.",
-        "action": "Please bear with us! We are working on getting the site back up and running as quickly as we can.",
+        "title": "${title}",
+        "middle": "${middle}",
+        "bottom": "${bottom}",
+        "action": "${action}",
     })
 
 def wordclouds(request):
