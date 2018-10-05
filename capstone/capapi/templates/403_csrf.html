@@ -1,15 +1,23 @@
 {% extends "main_base.html" %}
 {% load pipeline %}
 
+{% block title %}CSRF verification failed | {% endblock %}
+
 {% block content %}
-  <div class="container header-margin">
-    <h3>CSRF verification failed</h3>
-    <p>
-      This usually means you submitted an out-of-date form or have an issue with your browser cookies.
-    </p>
-    <p>
-      Please try going back to the previous page, refreshing, and submitting again. If that doesn't work, try
-      deleting your browser cookies for this site, or <a href="mailto:info@capapi.org">contact us</a>.
-    </p>
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <h1 class="h3">CSRF verification failed</h1>
+        <p>
+          This usually means you submitted an out-of-date form or have an issue with your browser cookies.
+        </p>
+        <p>
+          Please try going back to the previous page, refreshing, and submitting again. If that doesn't work, try
+          deleting your browser cookies for this site, or <a href="mailto:info@capapi.org">contact us</a>.
+        </p>
+      </div>
+    </div>
   </div>
 {% endblock %}
+
+{% block footer %}{% endblock %}

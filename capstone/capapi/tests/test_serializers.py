@@ -1,16 +1,14 @@
-import os
-
 import pytest
 from rest_framework.request import Request
 
 from capapi import serializers
+from capapi.resources import api_reverse
 
 
 @pytest.mark.django_db
-def test_CaseSerializerWithCasebody(api_url, api_request_factory, case, three_cases):
+def test_CaseSerializerWithCasebody(api_request_factory, case, three_cases):
     # can get single case data
-    url = os.path.join(api_url, "cases")
-    request = api_request_factory.get(url)
+    request = api_request_factory.get(api_reverse("casemetadata-list"))
     serializer_context = {'request': Request(request)}
 
     serialized = serializers.CaseSerializerWithCasebody(case, context=serializer_context)

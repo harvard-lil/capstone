@@ -14,6 +14,7 @@ This repository contains Capstone and CAPAPI, the applications written by the Ha
 - [The Capstone Application](#the-capstone-application)
 - [CAPAPI](#capapi)
 - [Installing Capstone and CAPAPI](#installing-capstone-and-capapi)
+  - [Hosts Setup](#hosts-setup)
   - [Manual Local Setup](#manual-local-setup)
     - [Install global system requirements](#install-global-system-requirements)
     - [Clone the repository](#clone-the-repository)
@@ -80,7 +81,14 @@ CAPAPI is the API with which users can access CAP data.
 ## Installing Capstone and CAPAPI <a id="installing-capstone-and-capapi"></a>
 - [Manual Local Setup](#manual-local-setup)
 - [Docker Setup](#docker-setup)
- 
+
+### Hosts Setup <a id="hosts-setup"></a>
+
+Add the following to `/etc/hosts`:
+
+    127.0.0.1       case.test
+    127.0.0.1       api.case.test
+
 ### Manual Local Setup <a id="manual-local-setup"></a>
 1. [Install global system requirements](#install-global-system-requirements)
 2. [Clone the repository](#clone-the-repository)

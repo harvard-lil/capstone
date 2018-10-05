@@ -1,9 +1,9 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
-from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from capapi.models import CapUser
+from capapi.models import CapUser, ResearchRequest
+from capweb.helpers import reverse
 
 
 class LoginForm(AuthenticationForm):
@@ -22,9 +22,16 @@ class ResendVerificationForm(forms.Form):
 
 
 class RegisterUserForm(UserCreationForm):
+    agreed_to_tos = forms.BooleanField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # set label here because reverse() isn't ready when defining the class
+        self.fields['agreed_to_tos'].label = mark_safe("I have read and agree to the <a href='%s' target='_blank'>Terms of Use</a>." % reverse('terms'))
+
     class Meta:
         model = CapUser
-        fields = ["email", "first_name", "last_name"]
+        fields = ["email", "first_name", "last_name", "password1", "password2", "agreed_to_tos"]
 
     def clean_email(self):
         """ Ensure that email address doesn't match an existing CapUser.normalized_email. """
@@ -37,3 +44,14 @@ class RegisterUserForm(UserCreationForm):
         user = super().save(commit)
         user.create_nonce()
         return user
+
+
+class ResearchRequestForm(forms.ModelForm):
+    name = forms.CharField(label='Name of researcher')
+    institution = forms.CharField(label='Educational or Research Institution')
+    title = forms.CharField(label='Title or Affiliation')
+    area_of_interest = forms.CharField(label='Research area of interest (optional)', widget=forms.Textarea)
+
+    class Meta:
+        model = ResearchRequest
+        fields = ["name", "email", "institution", "title", "area_of_interest"]

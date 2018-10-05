@@ -8,10 +8,11 @@ from django.conf import settings
 from django.core import mail
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
-from rest_framework.reverse import reverse
 
+from capapi import api_reverse
 from capapi.models import CapUser
 from capapi.tests.helpers import check_response
+from capweb.helpers import reverse
 
 
 ### register, verify email address, login ###
@@ -19,15 +20,22 @@ from capapi.tests.helpers import check_response
 @pytest.mark.django_db
 def test_registration_flow(client, case):
 
-    # can register
+    # can't register without agreeing to TOS
     email = 'new_user@gmail.com'
-    response = client.post(reverse('register'), {
+    register_kwargs = {
         'email': email,
         'first_name': 'First',
         'last_name': 'Last',
         'password1': 'Password2',
         'password2': 'Password2',
-    })
+        'agreed_to_tos': '',
+    }
+    response = client.post(reverse('register'), register_kwargs)
+    check_response(response, content_includes="This field is required.")
+
+    # can register
+    register_kwargs['agreed_to_tos'] = 'on'
+    response = client.post(reverse('register'), register_kwargs)
     check_response(response)
     user = CapUser.objects.get(email=email)
     assert user.first_name == "First"
@@ -48,7 +56,7 @@ def test_registration_flow(client, case):
 
     # can verify email address
     verify_email = mail.outbox[0].body
-    verify_url = re.findall(r'http://\S+', verify_email)[0]
+    verify_url = re.findall(r'https://\S+', verify_email)[0]
     response = client.get(verify_url)
     check_response(response, content_includes="Thank you for verifying")
     user.refresh_from_db()
@@ -66,7 +74,7 @@ def test_registration_flow(client, case):
     # can fetch blacklisted case
     case.jurisdiction.whitelisted = False
     case.jurisdiction.save()
-    response = client.get(reverse('casemetadata-detail', kwargs={'id': case.pk}), {'full_case':'true'})
+    response = client.get(api_reverse('casemetadata-detail', kwargs={'id': case.pk}), {'full_case':'true'})
     check_response(response, content_includes="ok")
 
     # can't register with similar email addresses
@@ -97,6 +105,7 @@ def test_resend_verification(client, mailoutbox):
         'last_name': 'Last',
         'password1': 'Password2',
         'password2': 'Password2',
+        'agreed_to_tos': 'on',
     })
     check_response(response)
     assert len(mailoutbox) == 1
@@ -147,10 +156,10 @@ def test_view_user_details(auth_user, auth_client):
 @pytest.mark.django_db
 def test_bulk_data_list(request, case_export, private_case_export, client_fixture, can_see_private):
     client = request.getfuncargvalue(client_fixture)
-    public_url = reverse('caseexport-download', args=[case_export.pk])
-    private_url = reverse('caseexport-download', args=[private_case_export.pk])
+    public_url = api_reverse('caseexport-download', args=[case_export.pk])
+    private_url = api_reverse('caseexport-download', args=[private_case_export.pk])
 
-    response = client.get(reverse('bulk-data'))
+    response = client.get(reverse('bulk-download'))
     check_response(response)
     content = response.content.decode()
     assert public_url in content
@@ -175,8 +184,36 @@ def check_zip_response(response):
 def test_case_export_download(request, client_fixture, export_fixture, status_code):
     client = request.getfuncargvalue(client_fixture)
     export = request.getfuncargvalue(export_fixture)
-    response = client.get(reverse('caseexport-download', args=[export.pk]))
+    response = client.get(api_reverse('caseexport-download', args=[export.pk]))
     if status_code == 200:
         check_zip_response(response)
     else:
         check_response(response, status_code=status_code)
+
+
+### research access request ###
+
+@pytest.mark.django_db
+def test_research_access_request(auth_client, mailoutbox):
+    # can view form
+    response = auth_client.get(reverse('research-request'))
+    check_response(response)
+
+    # can submit form
+    values = {
+        'name': 'First Last',
+        'email': 'foo@example.com',
+        'institution': 'Institution',
+        'title': 'Title',
+        'area_of_interest': 'Area of Interest'
+    }
+    response = auth_client.post(reverse('research-request'), values)
+    check_response(response, status_code=302)
+    assert response.url == reverse('research-request-success')
+
+    # check created request and email message
+    research_request = auth_client.auth_user.research_requests.first()
+    message = mailoutbox[0].body
+    for k, v in values.items():
+        assert getattr(research_request, k) == v
+        assert v in message

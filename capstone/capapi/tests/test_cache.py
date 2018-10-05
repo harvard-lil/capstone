@@ -2,9 +2,10 @@ from copy import deepcopy
 
 import pytest
 from django.http import SimpleCookie
-from django.urls import reverse
 
+from capapi.resources import api_reverse  # noqa -- this is dynamically used by test_cache_headers
 from capapi.tests.helpers import is_cached
+from capweb.helpers import reverse
 
 
 @pytest.mark.django_db
@@ -20,18 +21,18 @@ from capapi.tests.helpers import is_cached
     ("user-details",        True,   False,   {}),
 
     # api views are cached for both logged in and logged out
-    ("casemetadata-list",   True,   True,   {}),
-    ("casemetadata-list",   True,   True,   {"HTTP_ACCEPT": "text/html"}),
+    ("casemetadata-list",   True,   True,   {"reverse_func": "api_reverse"}),
+    ("casemetadata-list",   True,   True,   {"HTTP_ACCEPT": "text/html", "reverse_func": "api_reverse"}),
 
     # api views that depend on the user account are cached only for logged out
-    ("casemetadata-list",   True,   False,  {"data": {"full_case": "true"}}),
+    ("casemetadata-list",   True,   False,  {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
 
     # bulk list cacheable only for logged-out users
-    ("bulk-data",           True,   False,  {}),
+    ("bulk-download",           True,   False,  {}),
 
     # bulk downloads are cached if public, or private requested by logged-out users
-    ("caseexport-download", True, True,     {"reverse_args": ["fixture_case_export"]}),
-    ("caseexport-download", True, False,    {"reverse_args": ["fixture_private_case_export"]}),
+    ("caseexport-download", True, True,     {"reverse_args": ["fixture_case_export"], "reverse_func": "api_reverse"}),
+    ("caseexport-download", True, False,    {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
 ])
 @pytest.mark.parametrize("client_fixture_name", ["client", "auth_client"])
 def test_cache_headers(case, request, settings,
@@ -50,7 +51,11 @@ def test_cache_headers(case, request, settings,
     for i, arg in enumerate(reverse_args):
         if arg.startswith("fixture_"):
             reverse_args[i] = request.getfuncargvalue(arg.split('_', 1)[1]).pk
-    url = reverse(view_name, args=reverse_args)
+
+    # reverse from the view name, using get_kwargs['reverse_func'] or reverse() by default
+    reverse_func = get_kwargs.pop('reverse_func', 'reverse')
+    reverse_func = globals()[reverse_func]
+    url = reverse_func(view_name, args=reverse_args)
 
     # see if response is cached
     response = client.get(url, **get_kwargs)

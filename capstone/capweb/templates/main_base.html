@@ -1,6 +1,8 @@
 {% load static %}
 {% load pipeline %}
-<html>
+
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -17,7 +19,7 @@
     <meta name="msapplication-TileImage" content="{% static "img/favicon/mstile-150x150.png" %}">
     <meta name="theme-color" content="#ffffff">
 
-    <title>Caselaw Access Project{% block title %}{% endblock title %}</title>
+    <title>{% block title %}{% endblock title %}Caselaw Access Project</title>
     <meta name="robots" content="noindex">
     <meta name="description" content="{% block meta_description %}Explore American Caselaw{% endblock meta_description %}">
 
@@ -25,14 +27,16 @@
     {% javascript "base" %}
     {% block extra_head %}{% endblock %}
   </head>
-  <body class="hamburger-menu-closed">
+  <body class="hamburger-menu-closed" tabindex="-1">
     {% include "includes/nav.html" %}
-    <div class="main-content flex-xl-nowrap" id="main" role="main">
-        {% block content %}{% endblock content %}
-    </div>
+    <main class="main-content flex-xl-nowrap" id="main">
+      {% block content %}{% endblock content %}
+    </main>
 
     {% if not hide_footer %}
-      {% include "includes/footer.html" %}
+      {% block footer %}
+          {% include "includes/footer.html" %}
+      {% endblock %}
     {% endif %}
   </body>
 </html>

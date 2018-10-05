@@ -17,6 +17,7 @@ def authenticate_user(modeladmin, request, queryset):
 authenticate_user.short_description = "Authenticate selected Users"
 
 
+@admin.register(models.CapUser)
 class CapUserAdmin(admin.ModelAdmin):
     readonly_fields = ('date_joined', 'api_key', 'unlimited_access')
     list_display = (
@@ -43,4 +44,8 @@ class CapUserAdmin(admin.ModelAdmin):
     unlimited_access.short_description = "Unlimited Access"
 
 
-admin.site.register(models.CapUser, CapUserAdmin)
+@admin.register(models.ResearchRequest)
+class ResearchRequestAdmin(admin.ModelAdmin):
+    list_display = ('user', 'submitted_date', 'status', 'name', 'email', 'institution', 'title')
+    raw_id_fields = ('user',)
+    list_filter = ('status',)

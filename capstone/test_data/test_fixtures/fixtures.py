@@ -1,6 +1,7 @@
 import re
 from collections import defaultdict
 from contextlib import contextmanager
+from urllib.parse import urlparse
 
 import pytest
 from django.core.cache import cache as django_cache
@@ -139,15 +140,23 @@ def auth_user(token):
     token.user.save()
     return token.user
 
+class CapClient(APIClient):
+    def generic(self, method, path, *args, **kwargs):
+        # make test client use domain portion of path to set HTTP_HOST, so subdomain routing works
+        parsed = urlparse(str(path))
+        if parsed.netloc:
+            kwargs.setdefault('HTTP_HOST', parsed.netloc)
+        return super().generic(method, path, *args, **kwargs)
+
 @pytest.fixture
 def client():
-    return APIClient()
+    return CapClient()
 
 @pytest.fixture
 def auth_client(auth_user):
     """ Return client authenticated as auth_user. """
     # API auth
-    client = APIClient()
+    client = CapClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + auth_user.get_api_key())
     # Django auth
     client.force_login(user=auth_user)
@@ -161,10 +170,6 @@ def unlimited_auth_client(auth_client):
     user.unlimited_access_until = timezone.now() + timedelta(days=1)
     user.save()
     return auth_client
-
-@pytest.fixture
-def api_url():
-    return "http://testserver" + settings.API_FULL_URL + "/"
 
 @pytest.fixture
 def api_request_factory():
@@ -244,6 +249,11 @@ def ingest_duplicative_case_xml(ingest_volumes):
     return CaseXML.objects.get(metadata__case_id='32044061407086_0001')
 
 @pytest.fixture
+def ingest_ngrams(ingest_volumes):
+    import scripts.ngrams
+    scripts.ngrams.ngram_jurisdictions()
+
+@pytest.fixture
 def valid_mass_casebody_tag_rename():
     return [{"caseid":"32044057892259_0001","id":"b15-13","barcode":"32044057892259","content":"Appeal from the Circuit Court of Woodford County; the lion. T. M. Shaw, Judge, presiding."},
             {"caseid":"32044057891608_0001","id":"b17-14","barcode":"32044057891608","content":"* Justice Browne having decided this cause in the court below, gave no opinion."}]
@@ -253,3 +263,4 @@ def invalid_mass_casebody_tag_rename():
     return [{"caseid":"32044057892259_0001","id":"b15-13","barcode":"32044057892259","content":"Appeal from the Circuit Court of Woodford County; the lion. T. M. Shaw, Judge, presiding."},
             {"caseid":"32044057891608_0001","id":"b17-14","barcode":"32044057891608","content":"* Justice Browne having decided this cause in the court below, gave no opinion."},
             {"caseid":"32044061407086_0001","id":"b178-7","barcode":"32044061407086","content":"Before ALDRICH, Chief Judge, Mc­ENTEE and COFFIN, Circuit Judges."}]
+

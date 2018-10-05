@@ -1,13 +1,12 @@
 import re
 import urllib
 
-from django.conf import settings
+from django.db.models import Sum
 from django.http import HttpResponseRedirect, FileResponse
 from django.utils.text import slugify
 
 from rest_framework import viewsets, renderers
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from capapi.middleware import add_cache_header
@@ -16,6 +15,7 @@ from capdb import models
 from capapi import serializers, filters, permissions
 from capapi import renderers as capapi_renderers
 from capdb.models import Citation
+from scripts.ngrams import tokenize
 
 
 class BaseViewSet(viewsets.ReadOnlyModelViewSet):
@@ -25,13 +25,13 @@ class BaseViewSet(viewsets.ReadOnlyModelViewSet):
 class JurisdictionViewSet(BaseViewSet):
     serializer_class = serializers.JurisdictionSerializer
     filterset_class = filters.JurisdictionFilter
-    queryset = models.Jurisdiction.objects.all()
+    queryset = models.Jurisdiction.objects.order_by('name', 'pk')
     lookup_field = 'slug'
 
 
 class VolumeViewSet(BaseViewSet):
     serializer_class = serializers.VolumeSerializer
-    queryset = models.VolumeMetadata.objects.all().select_related(
+    queryset = models.VolumeMetadata.objects.order_by('pk').select_related(
         'reporter'
     ).prefetch_related('reporter__jurisdictions')
 
@@ -39,28 +39,24 @@ class VolumeViewSet(BaseViewSet):
 class ReporterViewSet(BaseViewSet):
     serializer_class = serializers.ReporterSerializer
     filterset_class = filters.ReporterFilter
-    queryset = models.Reporter.objects.all().prefetch_related('jurisdictions')
+    queryset = models.Reporter.objects.order_by('full_name', 'pk').prefetch_related('jurisdictions')
 
 
 class CourtViewSet(BaseViewSet):
     serializer_class = serializers.CourtSerializer
     filterset_class = filters.CourtFilter
-    queryset = models.Court.objects.all().select_related('jurisdiction')
+    queryset = models.Court.objects.order_by('name', 'pk').select_related('jurisdiction')
     lookup_field = 'slug'
 
 
 class CitationViewSet(BaseViewSet):
     serializer_class = serializers.CitationWithCaseSerializer
-    queryset = models.Citation.objects.all()
+    queryset = models.Citation.objects.order_by('pk')
 
 
 class CaseViewSet(BaseViewSet):
     serializer_class = serializers.CaseSerializer
-    queryset = models.CaseMetadata.objects.filter(
-        duplicative=False,
-        jurisdiction__isnull=False,
-        court__isnull=False,
-    ).select_related(
+    queryset = models.CaseMetadata.objects.in_scope().select_related(
         'volume',
         'reporter',
     ).prefetch_related(
@@ -94,16 +90,6 @@ class CaseViewSet(BaseViewSet):
             return self.serializer_class
 
     def list(self, *args, **kwargs):
-        # limit offset= query parameter to settings.MAX_API_OFFSET
-        offset = self.request.query_params.get('offset', None)
-        try:
-            offset = int(offset)
-        except (TypeError, ValueError):
-            pass
-        else:
-            if offset > settings.MAX_API_OFFSET:
-                return Response({"error": "Maximum offset is %s." % settings.MAX_API_OFFSET})
-
         jur_value = self.request.query_params.get('jurisdiction', None)
         jur_slug = slugify(jur_value)
 
@@ -129,7 +115,7 @@ class CaseViewSet(BaseViewSet):
 
 class CaseExportViewSet(BaseViewSet):
     serializer_class = serializers.CaseExportSerializer
-    queryset = models.CaseExport.objects.all()
+    queryset = models.CaseExport.objects.order_by('pk')
     filterset_class = filters.CaseExportFilter
 
     def list(self, request, *args, **kwargs):
@@ -168,4 +154,41 @@ class CaseExportViewSet(BaseViewSet):
             add_cache_header(response)
 
         return response
+
+
+class NgramViewSet(BaseViewSet):
+    serializer_class = serializers.NgramSerializer
+    queryset = models.Ngram.objects.order_by('year')
+    filterset_class = filters.NgramFilter
+
+    def filter_queryset(self, queryset):
+        """ Handle q= query parameter. """
+        queryset = super().filter_queryset(queryset)
+
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            # get first three tokens from q
+            words = list(tokenize(q.strip()))[:3]
+
+            # find IDs of those tokens in DB
+            word_objs = list(models.NgramWord.objects.filter(word__in=words))
+
+            if len(word_objs) < len(words):
+                # if all three tokens aren't in DB, no match
+                queryset = queryset.none()
+            else:
+                # Get the ngram counts for each year.
+                # This is basically the ORM equivalent of the following SQL
+                # (plus automatic handling of NULLs and jurisdiction filtering):
+                #   SELECT SUM(count) FROM capdb_ngram WHERE w1=words[1] AND w2=words[2] AND w3=words[3] GROUP BY year;
+                words_dict = {w.word: w for w in word_objs}
+                word_ids = [words_dict[w] for w in words]
+                keys = ['w1', 'w2', 'w3'][:len(words)]
+                queryset = queryset.filter(**dict(zip(keys, word_ids)))
+                queryset = queryset.values(*(keys+['year'])).annotate(count=Sum('count'))
+        else:
+            # without a query, return nothing
+            queryset = queryset.none()
+
+        return queryset
 

@@ -18,6 +18,7 @@ try:
 except Exception as e:
     print("WARNING: Can't configure Django -- tasks depending on Django will fail:\n%s" % e)
 
+from django.core import management
 from django.db import connections
 from django.utils.encoding import force_str
 from django.conf import settings
@@ -42,6 +43,14 @@ def run_django(port="127.0.0.1:8000"):
 def test():
     """ Run tests with coverage report. """
     local("pytest --fail-on-template-vars --cov --cov-report=")
+
+@task
+def show_urls():
+    """ Show routable URLs and their names, across all subdomains. """
+    for name, host in settings.HOSTS.items():
+        settings.URLCONF = host["urlconf"]
+        print("\nURLs for %s (%s):\n" % (name, host["urlconf"]))
+        management.call_command('show_urls', urlconf='URLCONF')
 
 @task
 def sync_with_s3():
@@ -394,7 +403,7 @@ def fix_md5_columns():
         tasks.fix_md5_column.delay(volume_id)
 
 @task
-def show_slow_queries():
+def show_slow_queries(server='capstone'):
     """
     Show slow queries for consumption by Slack bot.
     This requires
@@ -417,7 +426,8 @@ def show_slow_queries():
         cursor.execute(sql)
     try:
         rows = cursor.fetchall()
-        heading = "*capstone slow query report for %s*" % datetime.now().strftime("%Y-%m-%d")
+        today = datetime.now().strftime("%Y-%m-%d")
+        heading = "*slow query report for %s on %s*" % (server, today)
         queries = []
     except:
         print(json.dumps({'text': 'Could not get slow queries'}))
@@ -746,3 +756,9 @@ def create_case_text_for_all_cases(update_existing=False):
 def count_chars_in_all_cases(path="/tmp/counts"):
     count_chars.count_chars_in_all_cases(path)
 
+
+@task
+def ngram_jurisdictions(replace_existing=False):
+    """ Generate ngrams for all jurisdictions. If replace_existing is False (default), only jurisdiction-years without existing ngrams will be indexed. """
+    from scripts.ngrams import ngram_jurisdictions
+    ngram_jurisdictions(replace_existing=bool(replace_existing))

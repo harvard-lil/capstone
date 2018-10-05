@@ -77,9 +77,6 @@ nav {
   }
 }
 
-nav {
-  margin-bottom: 15px;
-}
 
 .pager > .previous, .pager > .next {
   list-style: none;
@@ -116,7 +113,7 @@ nav {
 }
 
 .list-group-item > ul {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .parameter-name {
@@ -132,8 +129,7 @@ li > code {
 }
 
 dt {
-  font-size: 1.2em;
-  margin-left: -10px;
+  margin-top: 2rem;
 }
 
 lh{
@@ -150,8 +146,44 @@ lh{
   content: "description: ";
 }
 
-dt.example-explanation {
+dt.example-description {
   margin-top: 20px;
   font-weight: bold;
   font-size: 1em;
+}
+
+.example-link {
+  font-size: 0.65em;
+}
+
+h5.list-header {
+  font-family: "titillium", "Helvetica", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  color: $color-black;
+}
+
+li > h5.list-header {
+  font-size: 0.9em;
+ }
+
+.example-mod-description {
+  font-size: 14px;
+}
+
+.json-data-type {
+  color: $blue;
+  font-style: italic;
+}
+
+.code-example-casebody-section {
+  color: $red;
+}
+
+#sidebar-menu {
+  background-color: $color-white;
+}
+.below-the-fold {
+  background-color: $color-tan;
 }

@@ -2,55 +2,54 @@
 {% load bootstrap4 %}
 {% load static %}
 
-{% block title %} | Sign In{% endblock %}
+{% block title %}Sign In | {% endblock %}
 
 {% block meta_description %}
-Sign in to the Caselaw Access Project
+  Sign in to Caselaw Access Project
 {% endblock %}
 
 {% block registration_content %}
-  <h1>
-    <img alt=""
-         aria-hidden="true"
-         src='{% static "img/red-arrow-right.svg" %}'
-         class="decorative-arrow"/>
-    Log in
-  </h1>
-  <div class="content">
-    {% if next %}
-      {% if user.is_authenticated %}
-        <div class="alert alert-warning">
-          Your account doesn't have access to this page. To proceed,
-          please login with an account that has access.
-        </div>
-      {% else %}
-        <div class="alert alert-warning">
-          Please login to see this page.
-        </div>
+  <div class="top-section compressed">
+    {% include "includes/page-title.html" with title="Log in" %}
+  </div>
+  <div class="row">
+    <div id="sidebar-menu"></div>
+    <div class="main-content">
+      {% if next %}
+        {% if user.is_authenticated %}
+          <div class="alert alert-warning">
+            Your account doesn't have access to this page. To proceed,
+            please login with an account that has access.
+          </div>
+        {% else %}
+          <div class="alert alert-warning">
+            Please login to see this page.
+          </div>
+        {% endif %}
       {% endif %}
-    {% endif %}
 
-    <form class="form" method="post" action="{% url 'login' %}">
-      {% csrf_token %}
-      {% bootstrap_form form %}
-      <br/>
-      <button type="submit"
-              class="btn btn-default">
-        Log in
-      </button>
-      <input type="hidden" name="next" value="{{ next }}" />
-    </form>
-    <p>
-      Don't have an account?
-      <a href="{%  url 'register'  %}"
-         class="">Sign up</a>
-    </p>
-    <p>
-      Lost your password?
-      <a href="{% url 'password_reset' %}"
-        class="">
-        Reset password
-      </a>
-    </p>
+      <form class="form" method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        <br/>
+        <button type="submit"
+                class="btn btn-default">
+          Log in
+        </button>
+        <input type="hidden" name="next" value="{{ next }}" />
+      </form>
+      <p>
+        Don't have an account?
+        <a href="{%  url 'register'  %}"
+           class="">Sign up</a>
+      </p>
+      <p>
+        Lost your password?
+        <a href="{% url 'password_reset' %}"
+           class="">
+          Reset password
+        </a>
+      </p>
+    </div>
   </div>
 {% endblock %}

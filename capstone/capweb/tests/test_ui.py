@@ -1,12 +1,11 @@
 import pytest
 
 from bs4 import BeautifulSoup
-from rest_framework.reverse import reverse
 
 from django.conf import settings
 
 from capapi.tests.helpers import check_response
-
+from capweb.helpers import reverse
 
 
 @pytest.mark.django_db
@@ -38,8 +37,10 @@ def test_footer(client):
     soup = BeautifulSoup(response.content.decode(), 'html.parser')
     anchors = soup.find('footer').find_all('a')
     for a in anchors:
-        res = client.get(a.get('href'))
-        check_response(res)
+        url = a.get('href')
+        if settings.PARENT_HOST in url:
+            res = client.get(url)
+            check_response(res)
 
 
 @pytest.mark.django_db

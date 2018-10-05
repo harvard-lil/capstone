@@ -5,7 +5,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SERVICES_DIR = os.path.join(os.path.dirname(BASE_DIR), 'services')
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test']
 
 ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
 
@@ -43,11 +43,12 @@ INSTALLED_APPS = [
     'simple_history',   # model versioning
     'bootstrap4',   # bootstrap form rendering
     'drf_yasg',   # API specification
+    'django_hosts',     # subdomain routing
 ]
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
-    'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CachedCountLimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CapPagination',
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework_filters.backends.RestFrameworkFilterBackend',
     ),
@@ -63,12 +64,14 @@ REST_FRAMEWORK = {
         'capapi.renderers.BrowsableAPIRenderer',
     ),
 }
-MAX_API_OFFSET = 10000
 
 MIDDLEWARE = [
 
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+
+    # docs say this should come "first", though we're not putting it quite that early
+    'django_hosts.middleware.HostsRequestMiddleware',
 
     # cache middleware should come before:
     # - CsrfViewMiddleware, to skip caching on views that use csrf
@@ -83,9 +86,29 @@ MIDDLEWARE = [
     'capapi.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # docs say this should come last
+    'django_hosts.middleware.HostsResponseMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
+
+### subdomain settings
+ROOT_HOSTCONF = 'config.hosts'
+PARENT_HOST = 'case.test:8000'
+SESSION_COOKIE_DOMAIN = '.case.test'  # make sure cookies are visible from all hosts
+DEFAULT_HOST = 'default'  # which key from HOSTS is used by default if no host is specified for reverse()
+# used in config.hosts to set up our subdomains:
+HOSTS = {
+    'default': {
+        'subdomain': '',
+        'urlconf': 'config.urls',
+    },
+    'api': {
+        'subdomain': 'api',
+        'urlconf': 'capapi.api_urls',
+    },
+}
 
 TEMPLATES = [
     {
@@ -100,6 +123,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'builtins': [
+                'django_hosts.templatetags.hosts_override',
+            ]
         },
     },
 ]
@@ -272,13 +298,15 @@ PIPELINE = {
         'base': {
             'source_filenames': (
                 'js/jquery-3.3.1.js',
+                'js/utils.js',
                 'js/custom.js',
+                'js/analytics.js',
             ),
             'output_filename': 'base.js'
         },
         'limericks': {
             'source_filenames': (
-                'js/limerick_lines.json',
+                'js/limerick_lines.js',
                 'js/generate_limericks.js',
             ),
             'output_filename': 'limericks.js'
@@ -304,11 +332,11 @@ PIPELINE = {
             ),
             'output_filename': 'viz_details.js'
         },
-        'map_mouseovers': {
+        'map_actions': {
             'source_filenames': (
-                'js/map-mouseovers.js',
+                'js/map-actions.js',
             ),
-            'output_filename': 'map_mouseovers.js'
+            'output_filename': 'map_actions.js'
         },
     },
 
@@ -392,9 +420,12 @@ API_CASE_EXPIRE_HOURS = 24
 API_BASE_URL_ROUTE = '/api'
 API_VERSION = 'v1'
 API_DOCS_CASE_ID = 2
-CACHED_COUNT_TIMEOUT = 60*60*24  # 'count' value in API responses is cached for 1 day
 API_FULL_URL = os.path.join(API_BASE_URL_ROUTE, API_VERSION)
 API_CASE_FILE_TYPE = '.xml'
+
+# CACHES
+CACHED_COUNT_TIMEOUT = 60*60*24*7  # 'count' value in API responses is cached for up to 7 days
+CACHED_LIL_DATA_TIMEOUT = 60*60*24  # news and contributor data from LIL site is cached once a day
 
 # DATA VISUALIZATION
 DATA_COUNT_DIR = '/tmp/count-data'
@@ -504,3 +535,11 @@ COMPRESS_VOLUMES_SKIP_EXISTING = True  # don't process volumes that already exis
 
 # override django-storages default
 AWS_DEFAULT_ACL = 'private'
+
+# set the default login
+LOGIN_URL = 'login'
+
+# directories to search for nltk data
+NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
+# feature flag while we see if ngrams feature is fast enough to work
+NGRAMS_FEATURE = False

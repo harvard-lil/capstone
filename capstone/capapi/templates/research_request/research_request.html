@@ -1,0 +1,33 @@
+{% extends "registration/base.html" %}
+{% load bootstrap4 %}
+{% load static %}
+
+{% block title %}Request Research Access | {% endblock %}
+
+{% block meta_description %}
+Request unlimited research access to the Caselaw Access Project
+{% endblock %}
+
+{% block registration_content %}
+  <h1>
+    <img alt=""
+         aria-hidden="true"
+         src='{% static "img/red-arrow-right.svg" %}'
+         class="decorative-arrow"/>
+    Request Research Access
+  </h1>
+  <div class="content">
+    <p>
+      For bulk access to caselaw data, please fill out the following details. Our partners at LexisNexis will send a
+      research agreement shortly via Docusign. Please <a href="{% url "contact" %}">contact us</a> with any questions.
+    </p>
+    <form class="form" method="post">
+      {% csrf_token %}
+      {% bootstrap_form form %}
+      <br/>
+      <button type="submit" class="btn btn-default">
+        Request Research Access
+      </button>
+    </form>
+  </div>
+{% endblock %}

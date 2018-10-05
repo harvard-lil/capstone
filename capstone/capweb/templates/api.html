@@ -1,152 +1,1018 @@
 {% extends "main_base.html" %}
 {% load static %}
 {% load pipeline %}
-{% load full_url %}
+{% load api_url %}
+
+{% block title %}API Docs — {% endblock %}
 
 {% block extra_head %}
   {% stylesheet 'tools' %}
-  {% javascript 'base' %}
   {% stylesheet 'api' %}
-  {% stylesheet 'tools' %}
 {% endblock %}
 
-{% block title %} — API{% endblock %}
-
 {% block meta_description %}
-  Caselaw Access Project API
+  Caselaw Access Project API Docs
 {% endblock %}
 
 {% block content %}
   <div class="basic-page">
     <div class="full-content">
-      <div class="row">
-        <div class="page-title">
-          <h1>
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            <span class="color-red">CAP</span> API
-          </h1>
+      <div class="top-section bg-black">
+        {% include "includes/page-title.html" with title="CAP API" %}
+        <div class="explainer-section">
+          <div class="content">
+             The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases
+              published in books from 1658 to 2018. The collection includes over six million cases scanned from
+              the Harvard Law Library shelves.
+              <a href="{% url "about" %}">Learn more about the project.</a>
+          </div>
         </div>
 
       </div>
-      <div class="row">
+      <div class="row below-the-fold">
         {# ==============> MENU <============== #}
-        <div class="list-group sidebar-menu">
-          <a class="list-group-item" href="#overview">Overview</a>
-          <a class="list-group-item" href="#registration">Registration</a>
-          <a class="list-group-item" href="#usage">Using CAPAPI</a>
-          <a class="list-group-item" href="#beginners">Begginer's Introduction</a>
-          <a class="list-group-item" href="#examples">Usage Examples</a>
-          <a class="list-group-item" href="#endpoints">Endpoint Documentation</a>
-          <a class="list-group-item" href="#limits">Access Limits</a>
-          <a class="list-group-item" href="#problems">Problems</a>
-          <a class="list-group-item" href="#glossary">Glossary</a>
-        </div>
+        <nav id="sidebar-menu" aria-label="table of contents">
+          <div class="content">
+            <ul class="list-group">
+              <li>
+                <a class="list-group-item" href="#getting-started">
+                  <span class="text">Start Here</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#registration">
+                  <span class="text">Registration</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#authentication">
+                  <span class="text">Authentication</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#dataformats">
+                  <span class="text">Data Formats</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#pagination">
+                  <span class="text">Pagination</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#limits">
+                  <span class="text">Access Limits</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#examples">
+                  <span class="text">Examples</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#endpoints">
+                  <span class="text">Endpoints</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#beginners">
+                  <span class="text">Intro to APIs</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#problems">
+                  <span class="text">Report Issues</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#glossary">
+                  <span class="text">Glossary</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
         {# ==============> CONTENT <============== #}
-        <div class="content">
+        <div class="main-content">
 
-          {# ==============> OVERVIEW <============== #}
+          {# ==============> GETTING STARTED <============== #}
           <div class="page-section">
+            <h2 class="subtitle" id="getting-started">Getting Started</h2>
+            <p><a href="{% api_url "api-root" %}">Browse the API</a></p>
             <p>
-              <img class="img-fluid"
-                   alt="Scanning reporters"
-                   src="{% static "img/vacuum-seal.jpg" %}">
-            </p>
-            <a id="overview"></a>
-            <p>
-              <a href="#usage">Click here for API usage instructions.</a><br>
-              <a href="#usage">Click here for endpoint documentation.</a>
+              CAPAPI includes an in-browser API viewer, but is primarily intended for software developers to access
+              caselaw programmatically, whether to run your own analysis or build tools for other users. API results are in JSON
+              format with case text available as structured XML, presentation HTML, or plain text.
             </p>
             <p>
-              The Caselaw Access Project API, also known as CAPAPI, serves all official, published US court cases, and
-              their related metadata, from 1658 to 2018. We digitized every case in this database during the first
-              phase of the Caselaw Access Project, which we embarked upon in 2013. Before that, nearly every case
-              was sitting in its original binding on Harvard Law Library shelves.
-              <a href="/">Click here to learn more about the project.</a>
-            </p>
+              To get started with the API, you can <a href="{% api_url "api-root" %}">explore it in your browser,</a>
+              or reach it from the command line. For example, here is a curl command to list cases from Illinois:</p>
+            <pre class="code-block">curl "{% api_url "casemetadata-list" %}?jurisdiction=ill"</pre>
             <p>
-              CAPAPI is <a href="#def-restful">RESTful</a> API, and serves most of its data in JSON, but case text is
-              also available in plain text, HTML, and XML. Though APIs are primarily useful to developers, anybody with
-              a web browser can interact with it, though the interface is a bit clunky. Want a better one? Know how to
-              code? Build your own project based on our data!
-            </p>
-            <p>
-              Our goal in undertaking this project was to make the data as open as possible. While there
-              are
-              access limits that affect some users trying to access more than 500 cases per day, metadata
-              for every
-              case in every jurisdiction, and all cases from Illinois and Arkansas are available without
-              access limits; you don't even need to be logged in or use an API key. <a href="#limits">Click
-              here for more information on access limits, what type of users aren't subject to them,
-              and how
-              you can advocate to eliminate them in your legal jurisdiction.</a>
+              If you haven't used APIs before, you might want to jump down to our
+              <a href="#beginners">Beginner's Introduction to APIs</a>.
             </p>
           </div>
+
           {# ==============> REGISTER  <============== #}
           <div class="page-section">
-            <a id="registration"></a>
-            <h4 class="subtitle">
-              Registration
-            </h4>
+            <h2 class="subtitle" id="registration">Registration</h2>
+              <p>
+                <span class="highlighted"> Most API queries don't require registration: check our
+                <a href="#limits">access limits</a> section for more details.
+                </span>
+              </p>
             <p>
-              <a href="user/register/">Click here to register an account.</a>
+              <a href="{% url "register" %}">Click here to register for an API key</a> if you need to access case text
+              from non-<a href="#def-whitelisted">whitelisted</a> jurisdictions.
             </p>
-            <p>
-              Your account will give you access to 500 cases per day. <a href="#limits">Click
-              here for more information on access limits, what type of users and jurisdictions
-              aren't
-              subject to them, and how you can advocate to eliminate them in your legal jurisdiction.</a>
-            </p>
-
           </div>
-          {# ==============> USING CAPAPI <============== #}
+
+          {# ==============> AUTHENTICATION <============== #}
           <div class="page-section">
-            <a id="usage"></a>
-            <h4 class="subtitle">
-              Basic CAPAPI Usage
-            </h4>
+            <h2 class="subtitle" id="authentication">Authentication</h2>
             <p>
-              <a href="/api/v1">Click here to visit the API in your web browser.</a>
+                <span class="highlighted"> Most API queries don't require registration: check our
+                  <a href="#limits">access limits</a> section for more details.
+                </span>
             </p>
             <p>
-              CAPAPI is a <a href="#def-restful">RESTful</a> API based on
-              <a href="http://www.django-rest-framework.org/">Django Rest Framework.</a>. This means it can be accessed
-              with standard web tools, like <a href="#def-curl">curl</a>, http request libraries in your favorite
-              programming language, and even web browsers. If you're already feeling lost, you might want to pick up
-              some of the background information we've put into the <a href="#beginners">beginner's introduction</a>.
+              Most API requests do not need to be authenticated. However, if requests are not authenticated, you may see
+              this response in results from the case endpoint with <code>full_case=true</code>:
+            </p>
+            <pre class="code-block">
+{
+  "results": [
+    {
+      "id": 1021505,
+      ...
+      "jurisdiction": {
+        ...
+        "whitelisted": false
+      },
+      "casebody": {
+        "data": null,
+        "status": "error_auth_required"
+      }
+    },
+  ]
+}</pre>
+            <p>
+              In this example the response included a case from a non-whitelisted jurisdiction, and
+              <code>casebody.data</code> for the case is therefore blank, while <code>casebody.status</code> is
+              "error_auth_required".
             </p>
             <p>
-              The return format for most of the data is JSON, but cases are available in HTML, and their original XML.
-              In addition, the cases are avaible with
+              To authenticate the request from code or the command line, you can provide an <code>Authorization</code>
+              header:
             </p>
-            <p>
-              Authenticating to retrieve non-<a href="#def-whitelisted">whitelisted</a> cases is simple. If you're using
-              a web browser, just log in to the site. Programmatically, or from the command line, just pass the
-              <code>"Authorization: Token your-token-here"</code> header in your request. For example, if your
-              authentication token is abcd12345, a curl command would look like this:
-            </p>
-            <blockquote>
-              <code>curl -H "Authorization: abcd12345"
-                "{% full_url "casemetadata-list" %}?limit=1&full_case=true"</code>
-            </blockquote>
 
+            <pre class="code-block">curl -H "Authorization: Token abcd12345" "{% api_url "casemetadata-list" %}?full_case=true"</pre>
             <p>
-              The API defaults to returning one hundred items per response. If you want more than one hundred items, you
-              can page through subsequent items using the <i>offset</i> parameter. For example, if you want the second
-              page of one hundred items, set the offset value to 100. For convenience, the API response includes a
-              <i>next</i> key containing the URL to the next page of results.
+              While you are <a href="{% url "login" %}">logged into this website</a>, all requests through the API
+              browser will be authenticated automatically.
             </p>
-
-
           </div>
+          {# ==============> DATA FORMATS <============== #}
+          <div class="page-section">
+            <h2 class="subtitle" id="dataformats">Case Text Formats</h2>
+            <p>
+              <span class="highlighted">Both of these parameters must be used in conjunction with the
+              <code>full_case=true</code>parameter.</span>
+            </p>
+            <p>
+              CAPAPI returns case text in three formats: text (default), XML, or HTML. The choice of format is either
+              controlled by the <code>body_format</code>, which will return the body and metadata in a JSON container,
+              or the <code>format</code> parameter which will return the case by itself. Only one of these parameters
+              should be specified at a time.
+            </p>
+            <p>
+              The non-default behavior, and simpler of the two is the <code>format</code> parameter, which accepts a
+              value of either <code>html</code> or <code>xml</code>. If you specify <code>html</code>, CAPAPI returns a
+              lightly styled, standalone HTML page. If you specify <code>xml</code> CAPAPI returns the entire original
+              XML document with intact METS, PREMIS and structural metadata.
+            </p>
+
+            <p>
+            This is what you can expect from different format specifications using the <code>body_format</code>
+            parameter.
+            </p>
+            <dl>
+              <dt>Text Format (default)</dt>
+              <dd class="example-link">
+                <a href="{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true">
+                {% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true"
+                </a>
+              </dd>
+              <dd>
+                <p class="example-description">
+                  The default text format is best for natural language processing. Example response data:
+                </p>
+                <pre class="code-block">
+"data": {
+      "head_matter": "Fifth District\n(No. 70-17;\nThe People of the State of Illinois ...",
+      "opinions": [
+          {
+              "author": "Mr. PRESIDING JUSTICE EBERSPACHER",
+              "text": "Mr. PRESIDING JUSTICE EBERSPACHER\ndelivered the opinion of the court: ...",
+              "type": "majority"
+          }
+      ],
+      "judges": [],
+      "parties": [
+          "The People of the State of Illinois, Plaintiff-Appellee, v. Danny Tobin, Defendant-Appellant."
+      ],
+      "attorneys": [
+          "John D. Shulleriberger, Morton Zwick, ...",
+          "Robert H. Rice, State’s Attorney, of Belleville, for the Peop ..."
+      ]
+  }
+}</pre>
+                <p class="example-description">
+                  In this example, <code>"head_matter"</code> is a string representing all text printed in the volume before
+                  the text prepared by judges. <code>"opinions"</code> is an array containing a dictionary for each opinion
+                  in the case. <code>"judges"</code>, <code>"parties"</code>, and <code>"attorneys"</code> are
+                  particular substrings from <code>"head_matter"</code> that we believe to refer to entities involved with the case.
+                </p>
+              </dd>
+
+              <dt>XML Format</dt>
+                <dd class="example-link">
+                  <a href="{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=xml" %}">
+                  {% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=xml"
+                </a>
+              </dd>
+              <dd>
+                <p class="example-description">
+                  The XML format is best if your analysis requires more information about pagination, formatting, or
+                  page layout. It contains a superset of the information available from body_format=text, but requires
+                  parsing XML data. Example response data:
+                </p>
+                <pre class="code-block">{% filter force_escape %}
+"data": "<?xml version='1.0' encoding='utf-8'?>\n<casebody ..."{% endfilter %}</pre>
+              </dd>
+
+              <dt>HTML Format</dt>
+              <dd class="example-link">
+                <a href="{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html">
+                {% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html"
+                </a></dd>
+              <dd>
+                <p class="example-description">
+                  The HTML format is best if you want to show readable, formatted caselaw to humans. It represents a
+                  best-effort attempt to transform our XML-formatted data to semantic HTML ready for CSS formatting of your
+                  choice. Example response data:
+                </p>
+                <pre class="code-block">{% filter force_escape %}
+    "data": "<section class=\"casebody\" data-firstpage=\"538\" data-lastpage=\"543\"> ..."{% endfilter %}</pre>
+              </dd>
+            </dl>
+          </div>
+
+          {# ====> PAGINATION <==== #}
+          <div class="page-section">
+            <h2 class="subtitle" id="pagination">Pagination</h2>
+
+            <p class="example-description">
+                  All queries in CAPAPI are limited to 100 results. We use <a href="#def-cursor">cursor</a>-based
+                  pagination, meaning we keep track of where you are in the results set on the server, and you can
+                  access each page of results by passing the provided value to the cursor parameter.
+            </p>
+            <pre class="code-block">{% filter force_escape %}
+{
+  "count": 183149,
+  "next": "{% api_url "casemetadata-list" %}?body_format=html&cursor=cD0xODMyLTEyLTAx",
+  "previous": "{% api_url "casemetadata-list" %}?body_format=html&cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
+  ...
+}{% endfilter %}</pre>
+          </div>
+
+          {# ==============> ACCESS LIMITS <============== #}
+          <div class="page-section">
+            <h2 class="subtitle" id="limits">Access Limits</h2>
+            <p>
+              The agreement with our project partner, <a href="http://ravellaw.com">Ravel</a>, requires us to limit
+              access to the full text of cases to no more than 500 cases per person, per day. This limitation does not
+              apply to <a href="#def-academic-user">researchers</a> who agree to certain restrictions on use and redistribution.
+              Nor does this restriction apply to cases issued in <a href="#def-jurisdiction">jurisdictions</a> that make
+              their newly issued cases freely available online in an authoritative, citable, machine-readable format. We call
+              these <a href="#def-whitelisted">whitelisted</a> jurisdictions. Currently, Illinois and Arkansas are the
+              only whitelisted jurisdictions.
+            </p>
+            <p>
+              We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal level, we'd love to
+              talk to you about making the transition to digital-first publishing. Please <a href="mailto:lil@law.harvard.edu">send us an email at
+              lil@law.harvard.edu</a> and introduce yourself!
+            </p>
+            <p>
+              If you qualify for unlimited access as a research scholar, you can request a research agreement by
+              <a href="{% url "register" %}">creating an account</a>
+              and then <a href="{% url "user-details" %}">visiting your account page</a>.
+            </p>
+            <p>
+              In addition, under our agreement with Ravel (now owned by Lexis-Nexis), Ravel must negotiate in good faith
+              to provide bulk access to anyone seeking to make commercial use of this data. If you are interested in
+              making commercial use of this data,
+              <a href="http://info.ravellaw.com/contact-us-form">click here to contact Ravel for more information</a> or contact us at
+              <a href="mailto:lil@law.harvard.edu">lil@law.harvard.edu</a> and we will put you in touch with Ravel.
+            </p>
+            <dl>
+              <dt>
+                <a id="def-unregistered-user"></a>
+                Unregistered Users
+              </dt>
+              <dd>
+                <ul>
+                  <li class="list-group-item">Access all metadata</li>
+                  <li class="list-group-item">Unlimited API access to all cases from
+                    <a href="#def-whitelisted"> whitelisted </a> jurisdictions
+                  </li>
+                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
+                    whitelisted </a> jurisdictions
+                  </li>
+                </ul>
+              </dd>
+
+              <dt>
+                <a id="def-registered-user"></a>
+                Registered Users
+              </dt>
+              <dd>
+                <ul>
+                  <li class="list-group-item">Access all metadata</li>
+                  <li class="list-group-item">Unlimited API access to all cases from <a
+                      href="#def-whitelisted"> whitelisted </a>
+                    jurisdictions
+                  </li>
+                  <li class="list-group-item">Access to 500 cases per day from non-<a
+                      href="#def-whitelisted">whitelisted</a> jurisdictions
+                  </li>
+                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
+                    whitelisted </a> jurisdictions
+                  </li>
+                </ul>
+              </dd>
+
+              <dt>
+                <a id="def-academic-user"></a>
+                Academic Users
+              </dt>
+              <dd>
+                <ul>
+                  <li class="list-group-item">Access all metadata</li>
+                  <li class="list-group-item">Unlimited API access to all cases</li>
+                  <li class="list-group-item">Bulk Downloads from all jurisdictions</li>
+                </ul>
+              </dd>
+
+              <dt>
+                <a id="def-commerical-user"></a>
+                Commercial Users
+              </dt>
+              <dd>
+                <a href="http://info.ravellaw.com/contact-us-form">Click here to contact Ravel for more
+                  information.</a>
+              </dd>
+            </dl>
+          </div>
+
+          {# ==============> EXAMPLES <============== #}
+          <div class="page-section">
+            <h2 class="subtitle" id="examples">
+              Usage Examples
+            </h2>
+            <p>
+              This is a non-exhaustive set of examples intended to orient new users. The
+              <a href="#endpoints">endpoints</a> section contains more comprehensive documentation about the URLs and
+              their parameters.
+            </p>
+            <dl>
+              {# ====> single case <==== #}
+              <dt>
+                Retrieve a single case, by its ID
+              </dt>
+              <dd class="example-link">
+                <a href="{% api_url "casemetadata-list" %}{{ case_id }}/">
+                  {% api_url "casemetadata-list" %}{{ case_id }}/</a>
+              </dd>
+              <dd>
+                <p class="example-description">
+                  This example uses the <a href="#endpoint-case">single case</a> endpoint, and will retrieve the
+                  metadata for a single case.
+                </p>
+                <h5 class="list-header">Modification with Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header">Standalone HTML-formatted Case</h5>
+                    <ul>
+                      <li class="example-mod-url"><a href="{% api_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=html">
+                        {% api_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=html</a>
+                      </li>
+                      <li class="example-mod-description">This will return a lightly styled, standalone HTML
+                        representation of the case with no accompanying metadata.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header">Plain Text Case in JSON container with metadata</h5>
+                    <ul>
+                      <li class="example-mod-url"><a href="{% api_url "casemetadata-list" %}{{ case_id }}/">
+                        {% api_url "casemetadata-list" %}{{ case_id }}/</a>
+                      </li>
+                      <li class="example-mod-description">This will return a lightly styled, standalone HTML
+                        representation of the case with no accompanying metadata.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header">Raw original XML document, with METS data</h5>
+                    <ul>
+                      <li class="example-mod-url">
+                        <a href="{% api_url "casemetadata-list" %}{{ case_id }}/?full_case=true&body_format=xml">
+                          {% api_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=xml
+                        </a>
+                      </li>
+                      <li class="example-mod-description">To get the document by itself, without the JSON enclosure and
+                        metadata, use the <code>format</code> parameter. Set it to HTML and get a display-ready,
+                        standalone HTML document.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+              {# ====> filter cases <==== #}
+
+              <dt>
+                Retrieve a list of cases using a metadata filter
+              </dt>
+              <dd class="example-link">
+                <a href="{% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}">
+                  {% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}
+                </a>
+              </dd>
+              <dd>
+                <p class="example-description">
+                  This example uses the <a href="#endpoint-cases">cases</a> endpoint, and will retrieve every case with
+                  the citation {{ case_metadata.citations.0.cite }}.
+                </p>
+                <p>
+                  There are many parameters with which you can filter the cases result. Check the
+                  <a href="#endpoint-cases">cases</a> endpoint documentation for a complete list of the parameters, and
+                  what values they accept.
+                </p>
+                <h5 class="list-header">Modification with Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header">Add a date range filter</h5>
+                    <ul>
+                      <li class="example-mod-url">
+                        <a href="{% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30">
+                          {% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-06-15
+                        </a>
+                      </li>
+                      <li class="example-mod-description">You can combine any of these parameters to refine your search.
+                        Here, we have the same search as in the first example, but will only recieve results from within
+                        the specified dates.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+            </dl>
+            <dl>
+              {# ====> filter cases <==== #}
+              <dt>
+                Simple Full-Text Search
+              </dt>
+              <dd class="example-link">
+                <a href="{% api_url "casemetadata-list" %}?search=insurance">
+                  {% api_url "casemetadata-list" %}?search=insurance
+                </a>
+              </dd>
+              <dd>
+                <p class="example-description">
+                  This example performs a simple full-text case search which finds all cases containing the word
+                  "insurance."
+                </p>
+                <p>
+                  There are many parameters with which you can filter the cases result. Check the
+                  <a href="#endpoint-cases">cases</a> endpoint documentation for a complete list of the parameters, and
+                  what values they accept.
+                </p>
+                <h5 class="list-header">Modification with Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header">Add Search Term</h5>
+                    <ul>
+                      <li class="example-mod-url">
+                        <a href="{% api_url "casemetadata-list" %}?search=insurance Peoria">
+                          {% api_url "casemetadata-list" %}?search=insurance Peoria
+                        </a>
+                      </li>
+                      <li class="example-mod-description">You can narrow your search results by adding terms, separated
+                        by spaces. This search will only include cases that contain both "insurance" and Peoria.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header">Filter Search With Metadata</h5>
+                    <ul>
+                      <li class="example-mod-url">
+                        <a href="{% api_url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill">
+                          {% api_url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill
+                        </a>
+                      </li>
+                      <li class="example-mod-description">These queries can be filtered using other metadata fields.
+                        This query will perform the prior search while limiting the query to the Illinois jurisdiction.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+            </dl>
+
+
+            {# ====> get reporters for a jurisdiction <==== #}
+            <dl>
+              <dt>
+                Get all reporters in a jurisdiction
+              </dt>
+              <dd class="example-link">
+                <a href="{% api_url "reporter-list" %}?jurisdictions=ark">
+                  {% api_url "reporter-list" %}?jurisdictions=ark
+                </a>
+              </dd>
+              <dd>
+                <p class="example-description">
+                  This example uses the <a href="#endpoint-reporters">reporter</a> endpoint, and will retrieve all
+                  reporters in Arkansas.
+                </p>
+              </dd>
+            </dl>
+          </div>
+
+          {# ==============> ENDPOINTS <============== #}
+          <div class="page-section">
+            <h2 class="subtitle" id="endpoints">
+              Endpoints
+            </h2>
+            <dl>
+
+              {# ==============> BASE <============== #}
+              <a id="endpoint-base"></a>
+              <dt>
+                API Base
+              </dt>
+              <dd class="endpoint-link">
+                <a class="endpoint-link" href="{% api_url "api-root" %}/">{{ request.build_absolute_uri }}v1/</a>
+              </dd>
+              <dd>
+                <p class="endpoint-description">
+                  This is the base <a href="#def-endpoint">endpoint</a> of CAPAPI. It just lists all of the available
+                  <a href="#def-endpoint">endpoints</a>.
+                </p>
+              </dd>
+
+              {# ==============> CASES <============== #}
+              <dt>
+                <a id="endpoint-cases"></a>
+                Case Browse/Search Endpoint
+              </dt>
+              <dd class="endpoint-link">
+                <a href="{% api_url "casemetadata-list" %}">{% api_url "casemetadata-list" %}</a>
+              </dd>
+              <dd>
+                <p class="endpoint-description">
+                  This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the
+                  numeric ID of your case in our system, you can append it to the <a href="#def-path">path</a> to
+                  retrieve a <a href="#endpoint-case">single case</a>.
+                </p>
+                <h5 class="list-header">Endpoint Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">name_abbreviation</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
+                      <li class="param-description"> e.g. <code>People v. Smith</code></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">decision_date_min</code></h5>
+                    <ul>
+                      <li class="param-data-type"><code>YYYY-MM-DD</code></li>
+                      <li class="param-description"></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">decision_date_max</code></h5>
+                    <ul>
+                      <li class="param-data-type"><code>YYYY-MM-DD</code></li>
+                      <li class="param-description"></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">docket_number</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
+                      <li class="param-description"></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">citation</code></h5>
+                    <ul>
+                      <li class="param-data-type"> e.g. <code>1 Ill. 21</code></li>
+                      <li class="param-description"></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">reporter</code></h5>
+                    <ul>
+                      <li class="param-data-type"> integer</li>
+                      <li class="param-description"> a <a href="#endpoint-reporters">reporter</a> id</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">court</code></h5>
+                    <ul>
+                      <li class="param-data-type"><a href="#def-slug">slug</a></li>
+                      <li class="param-description"> a <a href="#endpoint-courts">court</a> <a href="#def-slug">slug</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">jurisdiction</code></h5>
+                    <ul>
+                      <li class="param-data-type"><a href="#def-slug">slug</a></li>
+                      <li class="param-description"> a <a href="#endpoint-jurisdictions">jurisdiction</a> <a
+                          href="#def-slug">slug</a></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">search</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
+                      <li class="param-description"> A full-text search query</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 id="def-cursor" class="list-header"><code class="parameter-name">cursor</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An randomly generated <a href="#def-string">string</a></li>
+                      <li class="param-description">
+                        This field contains a value that we generate which will bring you to a specific page of results.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+
+
+              </dd>
+
+              {# ==============> CASE <============== #}
+              <dt>
+                <a id="endpoint-case"></a>
+                Single Case Endpoint
+              </dt>
+              <dd class="endpoint-link">
+                <a href="{% api_url "casemetadata-list" %}">{% api_url "casemetadata-list" %}</a>
+              </dd>
+              <dd>
+                <p class="endpoint-description">
+                  This is the way to retrieve a single case.
+                </p>
+                <h5 class="list-header">Endpoint Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">full_case</code></h5>
+                    <ul>
+                      <li class="param-data-type"><code>true</code> or <code>false</code></li>
+                      <li class="param-description"> When set to <code>true</code>, this parameter loads the case body.
+                        It is
+                        required for setting both <code>body_format</code> and <code>format</code>.
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">body_format</code></h5>
+                    <ul>
+                      <li class="param-data-type"><code>html</code> or <code>xml</code></li>
+                      <li class="param-description"> This will return a JSON enclosure with metadata, and a field
+                        containing the case in XML or HTML.
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">format</code></h5>
+                    <ul>
+                      <li class="param-data-type"><code>html</code> or <code>xml</code></li>
+                      <li class="param-description"> This will return the case in HTML or its original XML with no JSON
+                        enclosure or
+                        Metadata
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">cursor</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An randomly generated <a href="#def-string">string</a></li>
+                      <li class="param-description">
+                        This field contains a value that we generate which will bring you to a specific page of results.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+              <p>
+                Here's what you can expect when you request a single case. Everything under
+                <code><span class="code-example-casebody-section">casebody</span></code> is only returned if
+                <code>full_case=true</code> is set. In the <a href="#endpoint-cases">cases</a> endpoint, you'd get a
+                list of these in a JSON object which also included pagination information and result counts.
+              </p>
+              <pre class="code-block">{
+    "id": <span class="json-data-type">integer</span>
+    "url": <span class="json-data-type"><a href="#def-url">url</a></span>,
+    "name": <span class="json-data-type"><a href="#def-string">string</a></span>,
+    "name_abbreviation": <span class="json-data-type"><a href="#def-string">string</a></span>,
+    "decision_date": <span class="json-data-type">YYYY-MM-DD</span>,
+    "docket_number": <span class="json-data-type"><a href="#def-string">string</a></span>,
+    "first_page": <span class="json-data-type"><a href="#def-string">string</a> (generally a number)</span>,
+    "last_page": <span class="json-data-type"><a href="#def-string">string</a> (generally a number)</span>,
+    "citations": [
+        {
+            "type": <span class="json-data-type">"official" or "parallel"</span>,
+            "cite": <span class="json-data-type"><a href="#def-string">string</a></span>
+        }
+    ],
+    "volume": {
+        "url": <span class="json-data-type"><a href="#def-url">url</a></span>,
+        "volume_number": <span class="json-data-type"><a href="#def-string">string</a> (generally a number)</span>
+    },
+    "reporter": {
+        "url": <span class="json-data-type"><a href="#def-url">url</a></span>,
+        "full_name": <span class="json-data-type"><a href="#def-string">string</a></span>
+    },
+    "court": {
+        "url": <span class="json-data-type"><a href="#def-url">url</a></span>,
+        "id": <span class="json-data-type">integer</span>,
+        "slug": <span class="json-data-type"><a href="#def-slug">slug</a></span>,
+        "name": <span class="json-data-type"><a href="#def-string">string</a></span>,
+        "name_abbreviation": <span class="json-data-type"><a href="#def-string">string</a></span>
+    },
+    "jurisdiction": {
+        "url": <span class="json-data-type"><a href="#def-url">url</a></span>,
+        "id": <span class="json-data-type">integer</span>,
+        "slug": <span class="json-data-type"><a href="#def-slug">slug</a></span>,
+        "name": <span class="json-data-type"><a href="#def-string">string</a></span>,
+        "name_long": <span class="json-data-type"><a href="#def-string">string</a></span>,
+        "whitelisted": <span class="json-data-type">"true" or "false"</span>
+    },
+    <span class="code-example-casebody-section">
+    "casebody": {
+        "data": {
+            "judges": [],
+            "head_matter": <span class="json-data-type"><a href="#def-string">string</a></span>
+            "attorneys": [
+              <span class="json-data-type"><a href="#def-string">string</a></span>
+            ],
+            "opinions": [
+                {
+                    "type": <span class="json-data-type"><a href="#def-string">string</a></span>,
+                    "author": <span class="json-data-type"><a href="#def-string">string</a></span>,
+                    "text": <span class="json-data-type"><a href="#def-string">string</a></span>
+                }
+            ],
+            "parties": [
+                <span class="json-data-type"><a href="#def-string">string</a></span>
+            ]
+        },
+        "status": <span class="json-data-type">should be "ok"</span>
+    }
+    </span>
+}</pre>
+              {# ==============> reporters <============== #}
+              <dt>
+                <a id="endpoint-reporters"></a>
+                Reporters
+              </dt>
+              <dd>
+                <a class="endpoint-link" href="{% api_url "reporter-list" %}">{% api_url "reporter-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a list of reporter series.
+                </p>
+                <h5 class="list-header">Endpoint Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">full_name</code></h5>
+                    <ul>
+                      <li class="param-data-type"> e.g. Illinois Appellate Court Reports</li>
+                      <li class="param-description"> the full reporter name</li>
+                    </ul>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">short_name</code></h5>
+                    <ul>
+                      <li class="param-data-type"> e.g. Ill. App.</li>
+                      <li class="param-description"> the abbreviated name for the reporter</li>
+                    </ul>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">start_year</code></h5>
+                    <ul>
+                      <li class="param-data-type"> YYYY</li>
+                      <li class="param-description"> the earliest year reported on in the series</li>
+                    </ul>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">end_year</code></h5>
+                    <ul>
+                      <li class="param-data-type"> YYYY</li>
+                      <li class="param-description"> the latest year reported on in the series</li>
+                    </ul>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">volume_count</code></h5>
+                    <ul>
+                      <li class="param-data-type"> integer</li>
+                      <li class="param-description"> filter on the number of volumes in a reporter
+                        series
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">cursor</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An randomly generated <a href="#def-string">string</a></li>
+                      <li class="param-description">
+                        This field contains a value that we generate which will bring you to a specific page of results.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+
+              {# ==============> jurisdictions <============== #}
+              <dt>
+                <a id="endpoint-jurisdictions"></a>
+                Jurisdictions
+              </dt>
+              <dd>
+                <a class="endpoint-link" href="{% api_url "jurisdiction-list" %}">{% api_url "jurisdiction-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a list of jurisdictions.
+                </p>
+                <h5 class="list-header">Endpoint Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">id</code></h5>
+                    <ul>
+                      <li class="param-data-type"> integer</li>
+                      <li class="param-description"> get jurisdiction by ID</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">name</code></h5>
+                    <ul>
+                      <li class="param-data-type"> e.g. <code>Ill.</code></li>
+                      <li class="param-description"> abbreviated jurisdiction name</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">name_long</code></h5>
+                    <ul>
+                      <li class="param-data-type"> e.g. <code>Illinois</code></li>
+                      <li class="param-description"> full jurisdiction name</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">whitelisted</code></h5>
+                    <ul>
+                      <li class="param-data-type"><code>true</code> or <code>false</code></li>
+                      <li class="param-description"> filter for <a href="#def-whitelisted">whitelisted</a> cases</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">slug</code></h5>
+                    <ul>
+                      <li class="param-data-type"> a <a href="#def-slug">slug</a></li>
+                      <li class="param-description"> filter on the jurisdiction <a href="#def-slug">slug</a></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">cursor</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An randomly generated <a href="#def-string">string</a></li>
+                      <li class="param-description">
+                        This field contains a value that we generate which will bring you to a specific page of results.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+
+              {# ==============> courts <============== #}
+              <dt>
+                <a id="endpoint-courts"></a>
+                Courts
+              </dt>
+              <dd>
+                <a class="endpoint-link" href="{% api_url "court-list" %}">{% api_url "court-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a list of courts.
+                </p>
+                <h5 class="list-header">Endpoint Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">slug</code></h5>
+                    <ul>
+                      <li class="param-data-type"> a <a href="#def-slug">slug</a></li>
+                      <li class="param-description"> filter on the court <a href="#def-slug">slug</a></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">name</code></h5>
+                    <ul>
+                      <li class="param-data-type"> e.g. <code>Illinois Appellate Court</code></li>
+                      <li class="param-description"> full court name</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">name_abbreviation</code></h5>
+                    <ul>
+                      <li class="param-data-type">e.g. <code>Ill. App. Ct.</code></li>
+                      <li class="param-description"> abbreviated court name</li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">jurisdiction</code></h5>
+                    <ul>
+                      <li class="param-data-type"><a href="#def-slug">slug</a></li>
+                      <li class="param-description"><a href="#endpoint-jurisdictions">jurisdiction</a> <a
+                          href="#def-slug">slug</a></li>
+                    </ul>
+                  </li>
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">cursor</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An randomly generated <a href="#def-string">string</a></li>
+                      <li class="param-description">
+                        This field contains a value that we generate which will bring you to a specific page of results.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+
+              {# ==============> volumes <============== #}
+              <dt>
+                <a id="endpoint-volumes"></a>
+                Volumes
+              </dt>
+              <dd>
+                <a class="endpoint-link" href="{% api_url "volumemetadata-list" %}">{% api_url "volumemetadata-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a complete list of volumes.
+                </p>
+                <h5 class="list-header">Endpoint Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">cursor</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An randomly generated <a href="#def-string">string</a></li>
+                      <li class="param-description">
+                        This field contains a value that we generate which will bring you to a specific page of results.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+
+              <dt>
+                <a id="endpoint-volumes"></a>
+                Citations
+              </dt>
+              <dd>
+                <a class="endpoint-link" href="{% api_url "citation-list" %}">{% api_url "citation-list" %}</a>
+                <p class="endpoint-description">
+                  This will return a list of citations.
+                </p>
+                <h5 class="list-header">Endpoint Parameters:</h5>
+                <ul class="parameter-list">
+                  <li class="list-group-item">
+                    <h5 class="list-header"><code class="parameter-name">cursor</code></h5>
+                    <ul>
+                      <li class="param-data-type"> An randomly generated <a href="#def-string">string</a></li>
+                      <li class="param-description">
+                        This field contains a value that we generate which will bring you to a specific page of results.
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </dd>
+            </dl>
+          </div>
+
           {# ==============> BEGINNERS <============== #}
           <div class="page-section">
-            <a id="beginners"></a>
-            <h4 class="subtitle">
-              Beginner's Introduction
-            </h4>
+            <h2 class="subtitle" id="beginners">
+              Beginner's Introduction to APIs
+            </h2>
             <p>
               Are you a little lost in all the technical jargon? Here's a good place to start. This is by no means a
               complete introduction to using <a href="#def-api">APIs</a>, but it might be just enough to help situate a
@@ -177,7 +1043,7 @@
               The next part is a list of words, separated by periods, between the initial double-slash, and before the
               subsequent single slash. Many people generically refer to this as the domain, which is only partly true,
               but the reason why that's not entirely true isn't really important for our purposes; the important
-              consideration here is that it points to a specific <a href="#def-server"server</a>, which is just another
+              consideration here is that it points to a specific <a href="#def-server">server</a>, which is just another
               computer on the internet.
             </p>
             <pre><code>/search</code></pre>
@@ -246,791 +1112,24 @@
               Thanks, and good luck!
             </p>
           </div>
-          {# ==============> EXAMPLES <============== #}
+
+          {# ==============> PROBLEMS <============== #}
           <div class="page-section">
-            <a id="examples"></a>
-            <h4 class="subtitle">
-              Usage Examples
-            </h4>
+            <h2 class="subtitle" id="problems">
+              Reporting Problems and Enhancement Requests
+            </h2>
             <p>
-              This is a non-exhaustive set of examples intended to orient new users. The
-              <a href="#endpoints">endpoints</a> section contains more comprehensive documentation about the URLs and
-              their parameters.
-            </p>
-            <dl>
-              {# ====> single case <==== #}
-              <dt>
-                Retrieve a single case, by its ID
-              </dt>
-              <dd class="example-link">
-                <a href="{% url "casemetadata-list" %}{{ case_id }}/">
-                  {% full_url "casemetadata-list" %}{{ case_id }}/</a>
-              </dd>
-              <dd>
-                <p class="example-description">
-                  This example uses the <a href="#endpoint-case">single case</a> endpoint, and will retrieve the
-                  metadata for a single case.
-                </p>
-                <lh>Modification with Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh>With HTML-formatted Case Body and Metadata</lh>
-                    <ul>
-                      <li class="example-mod-url"><a href="{% url "casemetadata-list" %}{{ case_id }}/">
-                        {% full_url "casemetadata-list" %}{{ case_id }}/</a>
-                      </li>
-                      <li class="example-mod-description">To ingest a JSON object with both metadata and a field
-                        containing an easily stylable HTML case body, set the <code>body_format</code> parameter to
-                        <code>html</code>. Set it to <code>xml</code> to get the case body with its original markup.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh>Raw original XML document, with METS data</lh>
-                    <ul>
-                      <li class="example-mod-url">
-                        <a href="{% url "casemetadata-list" %}{{ case_id }}/?full_case=true&body_format=xml">
-                          {% full_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=xml
-                        </a>
-                      </li>
-                      <li class="example-mod-description">To get the document by itself, without the JSON enclosure and
-                        metadata, use the <code>format</code> parameter. Set it to HTML and get a display-ready,
-                        standalone HTML document.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-              {# ====> filter cases <==== #}
-
-              <dt>
-                Retrieve a list of cases using a metadata filter
-              </dt>
-              <dd class="example-link">
-                <a href="{% url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}">
-                  {% full_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}
-                </a>
-              </dd>
-              <dd>
-                <p class="example-description">
-                  This example uses the <a href="#endpoint-cases">cases</a> endpoint, and will retrieve every case with
-                  the citation {{ case_metadata.citations.0.cite }}.
-                </p>
-                <p>
-                  There are many parameters with which you can filter the cases result. Check the
-                  <a href="#endpoint-cases">cases</a> endpoint documentation for a complete list of the parameters, and
-                  what values they accept.
-                </p>
-                <lh>Modification with Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh>Add a date range filter</lh>
-                    <ul>
-                      <li class="example-mod-url">
-                        <a href="{% url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30">
-                          {% full_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-06-15
-                        </a>
-                      </li>
-                      <li class="example-mod-description">You can combine any of these parameters to refine your search.
-                        Here, we have the same search as in the first example, but will only recieve results from within
-                        the specified dates.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-            </dl>
-            <dl>
-              {# ====> filter cases <==== #}
-              <dt>
-                Simple Full-Text Search
-              </dt>
-              <dd class="example-link">
-                <a href="{% url "casemetadata-list" %}?search=insurance">
-                  {% full_url "casemetadata-list" %}?search=insurance
-                </a>
-              </dd>
-              <dd>
-                <p class="example-description">
-                  This example performs a simple full-text case search which finds all cases containing the word
-                  "insurance."
-                </p>
-                <p>
-                  There are many parameters with which you can filter the cases result. Check the
-                  <a href="#endpoint-cases">cases</a> endpoint documentation for a complete list of the parameters, and
-                  what values they accept.
-                </p>
-                <lh>Modification with Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh>Add Search Term</lh>
-                    <ul>
-                      <li class="example-mod-url">
-                        <a href="{% url "casemetadata-list" %}?search=insurance Peoria">
-                          {% full_url "casemetadata-list" %}?search=insurance Peoria
-                        </a>
-                      </li>
-                      <li class="example-mod-description">You can narrow your search results by adding terms, separated
-                        by spaces. This search will only include cases that contain both "insurance" and Peoria.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh>Filter Search With Metadata</lh>
-                    <ul>
-                      <li class="example-mod-url">
-                        <a href="{% url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill">
-                          {% full_url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill
-                        </a>
-                      </li>
-                      <li class="example-mod-description">These queries can be filtered using other metadata fields.
-                        This query will perform the prior search while limiting the query to the Illinois jurisdiction.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-            </dl>
-
-
-            {# ====> Paginate <==== #}
-            <dl>
-              <dt>
-                Traversing Pages of Results
-              </dt>
-              <dd class="example-link">
-                <a href="{% url "casemetadata-list" %}?offset=100">{% full_url "casemetadata-list" %}?offset=100</a>
-              </dd>
-              <dd>
-                <p class="example-description">
-                  All queries in CAPAPI default to, and are limited to 100 results. This query will still return 100
-                  results, but it will skip 100, so you'll start at 101 rather than 1, and get the subsequent 100
-                  results.
-                </p>
-                <lh>Modification with Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh>Get smaller list of results</lh>
-                    <ul>
-                      <li class="example-mod-url">
-                        <a href="{% url "casemetadata-list" %}?offset=10&limit=10">
-                          {% full_url "casemetadata-list" %}?offset=20&limit=10
-                        </a>
-                      </li>
-                      <li class="example-mod-description">Combining the offset and limit parameters, you can get a
-                        customize your pagination to fit your needs. This URL will recieve 10 results starting at the
-                        20th result.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-            </dl>
-            {# ====> get reporters for a jurisdiction <==== #}
-            <dl>
-              <dt>
-                Get all reporters in a jurisdiction
-              </dt>
-              <dd class="example-link">
-                <a href="{% url "reporter-list" %}?jurisdictions=ark">
-                  {% full_url "reporter-list" %}?jurisdictions=ark
-                </a>
-              </dd>
-              <dd>
-                <p class="example-description">
-                  This example uses the <a href="#endpoint-reporters">reporter</a> endpoint, and will retrieve all
-                  reporters in Arkansas.
-                </p>
-              </dd>
-            </dl>
-          </div>
-          {# ==============> ENDPOINTS <============== #}
-          <div class="page-section">
-            <a id="endpoints"></a>
-            <h4 class="subtitle">
-              Endpoints
-            </h4>
-            <dl>
-
-              {# ==============> BASE <============== #}
-              <a id="endpoint-base"></a>
-              <dt>
-                API Base
-              </dt>
-              <dd class="endpoint-link">
-                <a href="/api/v1/">{{ request.build_absolute_uri }}v1/</a>
-              </dd>
-              <dd>
-                <p class="endpoint-description">
-                  This is the base <a href="#def-endpoint">endpoint</a> of CAPAPI. It just lists all of the available
-                  <a href="#def-endpoint">endpoints</a>.
-                </p>
-              </dd>
-
-              {# ==============> CASES <============== #}
-              <dt>
-                <a id="endpoint-cases"></a>
-                Case Browse/Search Endpoint
-              </dt>
-              <dd class="endpoint-link">
-                <a href="{% url "casemetadata-list" %}">{% full_url "casemetadata-list" %}</a>
-              </dd>
-              <dd>
-                <p class="endpoint-description">
-                  This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the
-                  numeric ID of your case in our system, you can append it to the <a href="#def-path">path</a> to
-                  retrieve a <a href="#endpoint-case">single case</a>.
-                </p>
-                <lh>Endpoint Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">name_abbreviation</code></lh>
-                    <ul>
-                      <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
-                      <li class="param-description"> e.g. <code>People v. Smith</code></li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">decision_date_min</code></lh>
-                    <ul>
-                      <li class="param-data-type"><code>YYYY-MM-DD</code></li>
-                      <li class="param-description"></li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">decision_date_max</code></lh>
-                    <ul>
-                      <li class="param-data-type"><code>YYYY-MM-DD</code></li>
-                      <li class="param-description"></li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">docket_number</code></lh>
-                    <ul>
-                      <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
-                      <li class="param-description"></li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">citation</code></lh>
-                    <ul>
-                      <li class="param-data-type"> e.g. <code>1 Ill. 21</code></li>
-                      <li class="param-description"></li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">reporter</code></lh>
-                    <ul>
-                      <li class="param-data-type"> integer</li>
-                      <li class="param-description"> a <a href="#endpoint-reporters">reporter</a> id</li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">court</code></lh>
-                    <ul>
-                      <li class="param-data-type"><a href="#def-slug">slug</a></li>
-                      <li class="param-description"> a <a href="#endpoint-courts">court</a> <a href="#def-slug">slug</a>
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">jurisdiction</code></lh>
-                    <ul>
-                      <li class="param-data-type"><a href="#def-slug">slug</a></li>
-                      <li class="param-description"> a <a href="#endpoint-jurisdictions">jurisdiction</a> <a
-                          href="#def-slug">slug</a></li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">search</code></lh>
-                    <ul>
-                      <li class="param-data-type"> An arbitrary <a href="#def-string">string</a></li>
-                      <li class="param-description"> A full-text search query</li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">offset</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">limit</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                        than 100, the <code>limit</code> parameter will limit the number of results to your
-                        specification.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-
-
-              </dd>
-
-              {# ==============> CASE <============== #}
-              <dt>
-                <a id="endpoint-case"></a>
-                Single Case Endpoint
-              </dt>
-              <dd class="endpoint-link">
-                <a href="{% url "casemetadata-list" %}">{% full_url "casemetadata-list" %}</a>
-              </dd>
-              <dd>
-                <p class="endpoint-description">
-                  This is the way to retrieve a single case.
-                </p>
-                <lh>Endpoint Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">full_case</code></lh>
-                    <ul>
-                      <li class="param-data-type"><code>true</code> or <code>false</code></li>
-                      <li class="param-description"> When set to <code>true</code>, this parameter loads the case body.
-                        It is
-                        required for setting both <code>body_format</code> and <code>format</code>.
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">body_format</code></lh>
-                    <ul>
-                      <li class="param-data-type"><code>html</code> or <code>xml</code></li>
-                      <li class="param-description"> This will return a JSON enclosure with metadata, and a field
-                        containing the case in XML or HTML.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">format</code></lh>
-                    <ul>
-                      <li class="param-data-type"><code>html</code> or <code>xml</code></li>
-                      <li class="param-description"> This will return the case in HTML or its original XML with no JSON
-                        enclosure or
-                        Metadata
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">offset</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">limit</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                        than 100, the <code>limit</code> parameter will limit the number of results to your
-                        specification.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-
-              {# ==============> reporters <============== #}
-              <dt>
-                <a id="endpoint-reporters"></a>
-                Reporters
-              </dt>
-              <dd>
-                <a href="{% url "reporter-list" %}">{% full_url "reporter-list" %}</a>
-                <p class="endpoint-description">
-                  This will return a list of reporter series.
-                </p>
-                <lh>Endpoint Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">full_name</code></lh>
-                    <ul>
-                      <li class="param-data-type"> e.g. Illinois Appellate Court Reports</li>
-                      <li class="param-description"> the full reporter name</li>
-                    </ul>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">short_name</code></lh>
-                    <ul>
-                      <li class="param-data-type"> e.g. Ill. App.</li>
-                      <li class="param-description"> the abbreviated name for the reporter</li>
-                    </ul>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">start_year</code></lh>
-                    <ul>
-                      <li class="param-data-type"> YYYY</li>
-                      <li class="param-description"> the earliest year reported on in the series</li>
-                    </ul>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">end_year</code></lh>
-                    <ul>
-                      <li class="param-data-type"> YYYY</li>
-                      <li class="param-description"> the latest year reported on in the series</li>
-                    </ul>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">volume_count</code></lh>
-                    <ul>
-                      <li class="param-data-type"> integer</li>
-                      <li class="param-description"> filter on the number of volumes in a reporter
-                        series
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">offset</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">limit</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                        than 100, the <code>limit</code> parameter will limit the number of results to your
-                        specification.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-
-              {# ==============> jurisdictions <============== #}
-              <dt>
-                <a id="endpoint-jurisdictions"></a>
-                Jurisdictions
-              </dt>
-              <dd>
-                <a href="{% url "jurisdiction-list" %}">{% full_url "jurisdiction-list" %}</a>
-                <p class="endpoint-description">
-                  This will return a list of jurisdictions.
-                </p>
-                <lh>Endpoint Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">id</code></lh>
-                    <ul>
-                      <li class="param-data-type"> integer</li>
-                      <li class="param-description"> get jurisdiction by ID</li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">name</code></lh>
-                    <ul>
-                      <li class="param-data-type"> e.g. <code>Ill.</code></li>
-                      <li class="param-description"> abbreviated jurisdiction name</li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">name_long</code></lh>
-                    <ul>
-                      <li class="param-data-type"> e.g. <code>Illinois</code></li>
-                      <li class="param-description"> full jurisdiction name</li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">whitelisted</code></lh>
-                    <ul>
-                      <li class="param-data-type"><code>true</code> or <code>false</code></li>
-                      <li class="param-description"> filter for <a href="#def-whitelisted">whitelisted</a> cases</li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">slug</code></lh>
-                    <ul>
-                      <li class="param-data-type"> a <a href="#def-slug">slug</a></li>
-                      <li class="param-description"> filter on the jurisdiction <a href="#def-slug">slug</a></li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">offset</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">limit</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                        than 100, the <code>limit</code> parameter will limit the number of results to your
-                        specification.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-
-              {# ==============> courts <============== #}
-              <dt>
-                <a id="endpoint-courts"></a>
-                Courts
-              </dt>
-              <dd>
-                <a href="{% url "court-list" %}">{% full_url "court-list" %}</a>
-                <p class="endpoint-description">
-                  This will return a list of courts.
-                </p>
-                <lh>Endpoint Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">slug</code></lh>
-                    <ul>
-                      <li class="param-data-type"> a <a href="#def-slug">slug</a></li>
-                      <li class="param-description"> filter on the court <a href="#def-slug">slug</a></li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">name</code></lh>
-                    <ul>
-                      <li class="param-data-type"> e.g. <code>Illinois Appellate Court</code></li>
-                      <li class="param-description"> full court name</li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">name_abbreviation</code></lh>
-                    <ul>
-                      <li class="param-data-type">e.g. <code>Ill. App. Ct.</code></li>
-                      <li class="param-description"> abbreviated court name</li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">jurisdiction</code></lh>
-                    <ul>
-                      <li class="param-data-type"><a href="#def-slug">slug</a></li>
-                      <li class="param-description"><a href="#endpoint-jurisdictions">jurisdiction</a> <a
-                          href="#def-slug">slug</a></li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">offset</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">limit</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                        than 100, the <code>limit</code> parameter will limit the number of results to your
-                        specification.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-
-              {# ==============> volumes <============== #}
-              <dt>
-                <a id="endpoint-volumes"></a>
-                Volumes
-              </dt>
-              <dd>
-                <a href="{% url "volumemetadata-list" %}">{% full_url "volumemetadata-list" %}</a>
-                <p class="endpoint-description">
-                  This will return a complete list of volumes.
-                </p>
-                <lh>Endpoint Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">offset</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">limit</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                        than 100, the <code>limit</code> parameter will limit the number of results to your
-                        specification.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-
-              <dt>
-                <a id="endpoint-volumes"></a>
-                Citations
-              </dt>
-              <dd>
-                <a href="{% url "citation-list" %}">{% full_url "citation-list" %}</a>
-                <p class="endpoint-description">
-                  This will return a list of citations.
-                </p>
-                <lh>Endpoint Parameters:</lh>
-                <ul class="parameter-list">
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">offset</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If your query
-                        yielded 500 results and the <code>offset</code> parameter was not set, your code would return
-                        result 1-101. If you set <code>offset=100</code> then you would get the second set of 100.
-                      </li>
-                    </ul>
-                  </li>
-                  <li class="list-group-item">
-                    <lh><code class="parameter-name">limit</code></lh>
-                    <ul>
-                      <li class="param-data-type">integer</li>
-                      <li class="param-description">
-                        The result offset. By default, CAPAPI will return 100 results for your query. If set lower
-                        than 100, the <code>limit</code> parameter will limit the number of results to your
-                        specification.
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </dd>
-            </dl>
-          </div>
-          {# ==============> ACCESS LIMITS <============== #}
-          <div class="page-section">
-            <a id="limits"></a>
-            <h4 class="subtitle">
-              Access Limits
-            </h4>
-            <p>
-              The agreement with our project partner, <a href="http://ravellaw.com">Ravel</a>, stipulates that only
-              bonafide <a href="#def-academic-user">academic researchers</a> can access more than 500 cases per day, so
-              all <a href="#def-registered-user">registered users</a> are subject to this limitation. However, this
-              stipulation does not apply to <a href="#def-jurisdiction">jurisdictions</a> with digital-first publishing,
-              that is, they make their cases freely available online in a citable, machine-readable format. We call
-              these <a href="#def-whitelisted">whitelisted</a> jurisdictions. Currently, Illinois and Arkansas are the
-              only whitelisted jurisdictions.
-            </p>
-            <p>
-              We would love to whitelist more jurisdictions! If you are involved in US case publishing, we'd love to
-              talk to you about going digital-first. Please <a href="mailto:lil@law.harvard.edu">send us an email at
-              lil@law.harvard.edu</a> and introduce yourself!
-            </p>
-            <p>
-              If you think you qualify as a bonafide <a href="#def-academic-user">academic researcher</a> and would like
-              unrestricted access to cases from non-<a href="#def-whitelisted">whitelisted</a>
-              <a href="#def-jurisdiction">jurisdictions</a>, email us at
-              <a href="mailto:lil@law.harvard.edu">lil@law.harvard.edu</a>.
-            </p>
-            <p>
-              If you are interested in licensing this data for commercial use,
-              <a href="http://info.ravellaw.com/contact-us-form">Click here to contact Ravel for more information.</a>
-            </p>
-            <dl>
-              <dt>
-                <a id="def-anonymous-user"></a>
-                Anonymous Users
-              </dt>
-              <dd>
-                <ul>
-                  <li class="list-group-item">Access all metadata</li>
-                  <li class="list-group-item">Unlimited API access to all cases from
-                    <a href="#def-whitelisted"> whitelisted </a> jurisdictions
-                  </li>
-                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
-                    whitelisted </a> jurisdictions
-                  </li>
-                </ul>
-              </dd>
-
-              <dt>
-                <a id="def-registered-user"></a>
-                Registered Users
-              </dt>
-              <dd>
-                <ul>
-                  <li class="list-group-item">Access all metadata</li>
-                  <li class="list-group-item">Unlimited API access to all cases from <a
-                      href="#def-whitelisted"> whitelisted </a>
-                    jurisdictions
-                  </li>
-                  <li class="list-group-item">Access to 500 cases per day from non-<a
-                      href="#def-whitelisted">whitelisted</a> jurisdictions
-                  </li>
-                  <li class="list-group-item">Bulk Download all cases from <a href="#def-whitelisted">
-                    whitelisted </a> jurisdictions
-                  </li>
-                </ul>
-              </dd>
-
-              <dt>
-                <a id="def-academic-user"></a>
-                Academic Users
-              </dt>
-              <dd>
-                <ul>
-                  <li class="list-group-item">Access all metadata</li>
-                  <li class="list-group-item">Unlimited API access to all cases</li>
-                  <li class="list-group-item">Bulk Downloads from all jurisdictions</li>
-                </ul>
-              </dd>
-
-              <dt>
-                <a id="def-academic-user"></a>
-                Commercial Users
-              </dt>
-              <dd>
-                <a href="http://info.ravellaw.com/contact-us-form">Click here to contact Ravel for more
-                  information.</a>
-              </dd>
-            </dl>
-          </div>
-                    {# ==============> PROBLEMS <============== #}
-          <div class="page-section">
-            <a id="problems"></a>
-            <h4 class="subtitle">
-              Problems and Enhancement Requests
-            </h4>
-            <p>
-              <a href="https://github.com/harvard-lil/capstone#errata">Click here to see our data errata.</a><br>
-              <a href="https://github.com/harvard-lil/capstone">Click here to visit our Github repository</a><br>
               We are serving an imperfect, living dataset through an API that will forever be a work-in-progress. We
               work hard to hunt down and fix problems in both the API and the data, but a robust user base will uncover
               problems more quickly than our small team could ever hope to. Here's the best way to report common types
               of errors.
             </p>
             <dl>
-              <a href="https://github.com/harvard-lil/capstone#errata">errata</a>
-              <a href="https://github.com/harvard-lil/capstone/issues">issues</a>
-              <a href="https://github.com/harvard-lil/capstone">our Github repository</a>
+              <ul>
+                <li><a href="https://github.com/harvard-lil/capstone#errata">Our data errata</a></li>
+                <li><a href="https://github.com/harvard-lil/capstone/issues">Our issue tracker</a></li>
+                <li><a href="https://github.com/harvard-lil/capstone">Our Github repository</a></li>
+              </ul>
               <dt>
                 Jumbled or Misspelled Words in Case Text
               </dt>
@@ -1038,8 +1137,7 @@
                 For now, we're not accepting bug reports for <a href="#def-ocr">OCR</a> problems. While our data is
                 good quality for OCR'd text, we fully expect these errors in every case.  We're working on the best way
                 to tackle this.
-                </dd>
-
+              </dd>
               <dt>
                 Typos or Broken Links in Documentation or Website, API Error Messages or Performance Problems, and
                 Missing Features
@@ -1062,18 +1160,14 @@
                 the issue, so if you'd like notifications, click on the "Subscribe" button on the right-hand side of the
                 screen. If no issue exists, create a new issue and we'll get back to you as soon as we can.
               </dd>
-
             </dl>
-            <p>
-
-            </p>
           </div>
+
           {# ==============> GLOSSARY <============== #}
           <div class="page-section">
-            <a id="glossary"></a>
-            <h4 class="subtitle">
+            <h2 class="subtitle" id="glossary">
               Glossary
-            </h4>
+            </h2>
             <p>
               This is a list of technical or project-specific terms we use in this docuemntation. These are stub
               definitions to help you get unstuck, but they should not be conisdered authoratative or complete. A quick
@@ -1087,7 +1181,7 @@
               <dd>
                 API is an acronym for Application Programming Interface. Broadly, it is a way for one computer program
                 to transfer data to another computer program. CAPAPI is a <a href="#def-restful">RESTful</a> API
-                designed with the intent of distributing court case data.
+                designed to distribute court case data.
               </dd>
 
 
@@ -1244,7 +1338,7 @@
                 While most cases in the database are subject to a 500 case per day access limit, jurisdictions that
                 publish their cases in a citable, machine-readable format are not subject to this limit.
                 <a href="#limits">Click here for more information on access limits, what type of users
-                  aren't subject to them, and how you can advocate to eliminate them in your legal jurisdiction.</a>
+                  aren't subject to them, and how you can eliminate them in your legal jurisdiction.</a>
               </dd>
 
 
@@ -1253,5 +1347,4 @@
         </div>
       </div>
     </div>
-  </div>
 {% endblock %}

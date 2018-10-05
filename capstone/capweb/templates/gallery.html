@@ -6,7 +6,7 @@
   {% stylesheet 'gallery' %}
 {% endblock %}
 
-{% block title %} — Gallery{% endblock %}
+{% block title %}Gallery | {% endblock %}
 
 {% block meta_description %}
 Caselaw Access Project gallery
@@ -14,57 +14,61 @@ Caselaw Access Project gallery
 
 
 {% block content %}
-  <div class="basic-page inverse">
+  <div class="basic-page">
     <div class="full-content">
-      <div class="row">
-        <div class="page-title">
-          <a name="overview"></a>
-          <h1>
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            Gallery
-          </h1>
+      <div class="top-section bg-violet">
+        {% include "includes/page-title.html" with title="Gallery" %}
+        <div class="explainer-section">
+          <div class="content">
+              Sky is the limit! Here are some examples of what’s possible.
+          </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row below-the-fold">
         {# ==============> MENU <============== #}
-        <div class="list-group sidebar-menu">
-          <a class="list-group-item" href="#h2o">H2O</a>
-          <a class="list-group-item" href="#wordclouds">Wordclouds</a>
-          <a class="list-group-item" href="#limericks">Limericks</a>
-        </div>
-        {# ==============> CONTENT <============== #}
-        <div class="content">
-
-          {# ==============> OVERVIEW <============== #}
-          <div class="page-section">
-            <p>
-              Sky is the limit!
-              <br/> Here are some examples of what’s possible.
-            </p>
+        <nav id="sidebar-menu" aria-label="table of contents">
+          <div class="content">
+            <ul class="list-group">
+              <li>
+                <a class="list-group-item" href="#h2o">
+                  <span class="text">H2O</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#wordclouds">
+                  <span class="text">Wordclouds</span>
+                </a>
+              </li>
+              <li>
+                <a class="list-group-item" href="#limericks">
+                  <span class="text">Limericks</span>
+                </a>
+              </li>
+            </ul>
           </div>
+        </nav>
+        {# ==============> CONTENT <============== #}
+        <div class="main-content">
           {# =============> H2O <============= #}
           <div class="page-section">
-            <a name="h2o"></a>
             <div class="row">
               <div class="project-image">
                 <a href="https://opencasebook.org/"
-                   aria-label="Go to H2O homepage"
+                   aria-label="H2O homepage"
                    title="H2O homepage"
+                   id="h2o"
                    target="_blank">
                   <img class="main-img rounded"
-                     alt="Wordcloud from 1930, California"
+                     alt=""
                      src="{% static "img/h2o.png" %}">
                 </a>
               </div>
               <div class="project-description">
-                <h6 class="subtitle">
+                <h2 class="subtitle simple-subtitle" id="h2o">
                   <a href="https://opencasebook.org/">
                     H2O
                   </a>
-                </h6>
+                </h2>
                 <p>
                   H2O uses the
                   <a href="{% url "api" %}">
@@ -75,13 +79,13 @@ Caselaw Access Project gallery
                 <p class="social">
                   <span class="github">
                     <a href="https://github.com/harvard-lil/h2o" target="_blank"
-                       title="H2O source code"
-                       aria-label="Go to wordclouds source code"></a>
+                       title="H2O source code on Github"
+                       aria-label="H2O source code on Github"></a>
                   </span>
 
                   <span class="website">
                     <a href="https://opencasebook.org/"
-                       aria-label="Go to H2O homepage"
+                       aria-label="H2O homepage"
                        title="H2O homepage"
                        target="_blank">
                     </a>
@@ -93,36 +97,36 @@ Caselaw Access Project gallery
 
           {# =============> WORDCLOUDS <============= #}
           <div class="page-section">
-            <a name="wordclouds"></a>
             <div class="row">
               <div class="project-image">
                 <a href="{% url "wordclouds" %}"
                    title="Wordcloud homepage"
-                   aria-label="Go to wordclouds example">
+                   id="wordclouds"
+                   aria-label="Wordcloud homepage">
                   <img class="main-img rounded"
-                     alt="Wordcloud from 1930, California"
+                     alt=""
                      src="{% static "img/wordclouds-1933.png" %}">
                 </a>
               </div>
               <div class="project-description">
-                <h6 class="subtitle">
+                <h2 class="subtitle simple-subtitle" id="wordclouds">
                   <a href="{% url "wordclouds" %}">
                     Wordclouds
                   </a>
-                </h6>
+                </h2>
                 <p>
-                  Most used words for every year of California caselaw from 1852 to 2015.
+                  Graphics showcasing the most-used words in California caselaw each year between 1852 and 2015.
                 </p>
                 <p class="social">
                   <span class="github">
                     <a href="https://github.com/harvard-lil/cap-examples/blob/master/make_wordclouds.py" target="_blank"
-                       title="Wordcloud source code"
-                       aria-label="Go to wordclouds source code"></a>
+                       title="Wordcloud source code on Github"
+                       aria-label="Wordcloud source code on Github"></a>
                   </span>
                   <span class="website">
                     <a href="{% url "wordclouds" %}"
                        title="Wordcloud homepage"
-                       aria-label="Go to wordclouds example"></a>
+                       aria-label="Wordcloud homepage"></a>
                   </span>
                 </p>
               </div>
@@ -130,36 +134,36 @@ Caselaw Access Project gallery
           </div>
           {# =============> LIMERICKS <============= #}
           <div class="page-section">
-            <a name="limericks"></a>
             <div class="row">
               <div class="project-image">
                 <a href="{% url "limericks" %}"
-                   aria-label="Go to limericks example">
+                   id="limericks"
+                   aria-label="Limericks homepage">
                   <img class="main-img"
-                     alt="Limericks out of caselaw text"
+                     alt=""
                      src="{% static "img/limerick.png" %}">
                 </a>
               </div>
               <div class="project-description">
-                <h6 class="subtitle">
+                <h2 class="subtitle simple-subtitle" id="limericks">
                   <a href="{% url "limericks" %}">
                     Limericks
                   </a>
-                </h6>
+                </h2>
                 <p>
                   Generate rhymes using caselaw!
                 </p>
                 <p class="social">
                   <span class="github">
                     <a href="https://github.com/harvard-lil/cap-examples/blob/master/generate_limerick.py" target="_blank"
-                       title="Limericks source code"
-                       aria-label="Go to limericks source code"></a>
+                       title="Limericks source code on Github"
+                       aria-label="Limericks source code on Github"></a>
                   </span>
 
                   <span class="website">
                     <a href="{% url "limericks" %}"
                        title="Limericks homepage"
-                       aria-label="Go to limericks example"></a>
+                       aria-label="Limericks homepage"></a>
                   </span>
                 </p>
               </div>

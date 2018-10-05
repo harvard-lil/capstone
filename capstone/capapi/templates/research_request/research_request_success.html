@@ -1,0 +1,23 @@
+{% extends "registration/base.html" %}
+{% load bootstrap4 %}
+{% load static %}
+
+{% block title %}Request Research Access | {% endblock %}
+
+{% block meta_description %}
+Register to the Caselaw Access Project
+{% endblock %}
+
+{% block registration_content %}
+  <h1>
+    <img alt=""
+         aria-hidden="true"
+         src='{% static "img/red-arrow-right.svg" %}'
+         class="decorative-arrow"/>
+    Request Research Access
+  </h1>
+  <div class="content">
+    <p>Thanks! We'll get back to you via email as soon as possible.</p>
+    <p><a href="{% url "user-details" %}">Back to your account page.</a></p>
+  </div>
+{% endblock %}

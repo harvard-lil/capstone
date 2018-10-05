@@ -1,0 +1,213 @@
+{% extends "main_base.html" %}
+{% load pipeline %}
+{% load static %}
+{% block extra_head %}
+{% endblock %}
+
+
+{% block title %}Terms of Service | {% endblock %}
+
+{% block meta_description %}
+  Caselaw Access Project Terms of Use
+{% endblock %}
+
+{% block content %}
+  <div class="basic-page">
+    <div class="full-content">
+    <div class="top-section">
+      <div class="title-section">
+        <h1 class="page-title" id="overview">
+          <img alt=""
+               aria-hidden="true"
+               src='{% static "img/red-arrow-right.svg" %}'
+               class="decorative-arrow"/>
+          Terms of Use
+        </h1>
+      </div>
+      <div class="explainer-section">
+        <div class="content">
+          <p>
+            Effective: <span class="highlighted">September 21, 2018</span>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="row below-the-fold">
+      {# ==============> MENU <============== #}
+        <nav id="sidebar-menu" aria-label="table of contents">`
+          <div class="content">
+            <ul class="list-group">
+              <li><a class="list-group-item" href="#about">About the API</a></li>
+              <li><a class="list-group-item" href="#access">Access to the API</a></li>
+              <li><a class="list-group-item" href="#compliance">Compliance with Laws</a></li>
+              <li><a class="list-group-item" href="#token">Authentication Token</a></li>
+              <li><a class="list-group-item" href="#disclaimer">Disclaimer of Warranty</a></li>
+              <li><a class="list-group-item" href="#release">Limitation of Liability</a></li>
+              <li><a class="list-group-item" href="#indemnity">Hold Harmless and Indemnify</a></li>
+              <li><a class="list-group-item" href="#integration">Severability and Integration</a></li>
+              <li><a class="list-group-item" href="#modifications">Modifications</a></li>
+            </ul>
+          </div>
+        </nav>
+
+        {# ==============> CONTENT <============== #}
+        <div class="main-content">
+          <div class="page-section">
+            <p>
+              Caselaw Access Project is operated by the President and Fellows of
+              Harvard College (“Harvard”) in support of its mission to educate and
+              disseminate knowledge and information. As used in these Terms of Use, “CAP”
+              refers to the Caselaw Access Project and to Harvard more generally.
+            </p>
+            <p>
+              These Terms of Use constitute an agreement between you
+              (either an individual or an entity, referred to herein as “you”)
+              and CAP and governs your access to and use of the API.
+            </p>
+          </div>
+
+          <div class="page-section">
+            <h2 class="subtitle" id="about">About the API</h2>
+            <p>
+              CAP provides an application programmer interface (API) as a tool
+              for accessing data and digital files made available through the digitization
+              of portions of the collection of the Harvard Law School Library.
+            </p>
+            <p>Use of the API is contingent on agreeing to the API terms of use.</p>
+          </div>
+
+          <div class="page-section">
+            <h2 class="subtitle" id="access">Access to API</h2>
+            <p>CAP reserves the right to limit access or to eliminate access to the API to anyone for any reason.<p>
+            <p><span class="highlighted">You shall:</span></p>
+            <ol class="alpha">
+              <li>
+                Comply with the API Terms of Use.
+              </li>
+              <li>
+                Comply with any and all legal requirements and restrictions pertaining to the usage of content available through CAP.
+              </li>
+            </ol>
+            <br/>
+
+            <p><span class="highlighted">You shall not:</span></p>
+            <ol class="alpha">
+              <li>Misrepresent or conceal your identity or your application’s identity when using or requesting authorization to use the API.</li>
+              <li>Use the API for any illegal purpose, including, but not limited to, piracy and other violations of intellectual property rights.</li>
+              <li>Use an unreasonable amount of bandwidth.</li>
+              <li>Make an unreasonable amount of calls to the API.</li>
+              <li>Seek to circumvent limits placed on your token pursuant to these terms by creating additional tokens.</li>
+              <li>Use the API in a manner that adversely impacts the stability of CAP servers or other applications using the API.</li>
+              <li>Use the API in connection with spyware, malware, or other malicious programs or code.</li>
+              <li>Sell, lease or sublicense the API, the API key or access thereto.</li>
+              <li>Falsely indicate the endorsement by CAP or Harvard of your project by any means.</li>
+            </ol>
+          </div>
+          <div class="page-section">
+            <h2 class="subtitle" id="compliance">Compliance with Laws</h2>
+            <p>
+              You are responsible for complying with all applicable laws,
+              rules, regulations and third-party rights in conjunction with your use of the API.
+            </p>
+          </div>
+          <div class="page-section">
+            <h2 class="subtitle" id="token">Authentication Tokens</h2>
+            <p>Certain uses of the API may require you to apply for an
+              <strong>Authentication Token</strong>.
+              An Authentication Token is a type of credential similar to a
+              username/password that indicates a user
+              is entitled to a certain set of permissions.
+            </p>
+            <p>By applying for an Authentication Token you warrant the
+              information you supply is true and correct. Your use of an
+              Authentication Token
+              is subject to the terms of this agreement.
+            </p>
+          </div>
+          <div class="page-section">
+            <h2 class="subtitle" id="disclaimer">Disclaimer of Any Warranty</h2>
+            <p>By using the API, you agree that the API is provided “as is”
+              and your use of the API is solely at your own discretion and risk.
+              You agree that you will be solely responsible for any damage that
+              results from your use of the API. You agree that CAP is not responsible for
+              providing any support for your use of the API.
+            </p>
+            <p>
+              CAP may discontinue the availability of some or all of the API,
+              its features, or its services at any time for any reason.
+            </p>
+            <p>
+              Some of the CAP API may be experimental and not tested in any manner.
+              CAP makes no representations or warranties, express or implied, regarding the
+              operation of the CAP API or the content available through the CAP API.
+            </p>
+            <p>
+              To the extent permitted by law, CAP disclaims any and all warranties, including
+              but not limited to the warranties of merchantability, fitness
+              for a particular purpose, warranties regarding security, accuracy, timeliness, and
+              performance of the API and the content accessed through the CAP website.
+            </p>
+          </div>
+          <div class="page-section">
+            <h2 class="subtitle" id="release">Release, Waiver, and Limitation of Liability</h2>
+            <p>
+              To the maximum extent permitted by applicable law,
+              you release and waive all claims against CAP, its subsidiaries,
+              affiliates and agents from any and all liability for claims, damages,
+              costs and expenses arising from or related to your use of the CAP API.
+            </p>
+            <p>
+              CAP shall not, under any circumstances, be liable to
+              you for any indirect, incidental, consequential, special, or
+              exemplary damages arising out of or in connection with the use of the API,
+              whether based on breach of contract, breach of warranty, tort, or any other
+              pecuniary loss, whether or not CAP has been advised of the possibility of such
+              damages.
+            </p>
+            <p>
+              Under no circumstances shall CAP be liable to you for any amount.
+            </p>
+          </div>
+          <div class="page-section">
+            <h2 class="subtitle" id="indemnity">Hold Harmless and Indemnify</h2>
+            <p>
+              You agree that CAP will have no liability whatsoever
+              with regard to any third-party claims related to your use
+              of the API. To the maximum extent permitted by applicable law,
+              you agree to hold harmless and indemnify CAP, its subsidiaries,
+              affiliates and agents from any third-party claims, damages, liabilities,
+              costs and fees (including attorney fees) arising from or related to your
+              use of the API.
+            </p>
+          </div>
+          <div class="page-section">
+            <h2 class="subtitle" id="integration">Severability and Integration</h2>
+            <p>
+              If any part of the API Terms of Use is found unenforceable,
+              the rest of the API Terms of Use shall remain enforceable to the
+              maximum extend of the law.
+            </p>
+            <p>
+              The API Terms of Use constitute the entire agreement
+              between CAP and you with respect to the use of the API.
+              The section headings and subheadings contained in the API
+              Terms of Use are included for convenience only, and shall not
+              limit or otherwise affect the API Terms of Use.
+            </p>
+          </div>
+          <div class="page-section">
+            <h2 class="subtitle" id="modifications">Modifications</h2>
+            <p>
+              CAP reserves the right to change these API Terms of Use at any time,
+              at its sole discretion.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+{% endblock %}
+

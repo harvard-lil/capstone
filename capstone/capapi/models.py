@@ -52,8 +52,8 @@ class CapUser(AbstractBaseUser):
     )
     normalized_email = models.CharField(max_length=255, help_text="Used to ensure that new emails are unique.")
 
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
     total_case_allowance = models.IntegerField(null=True, blank=True, default=0)
     case_allowance_remaining = models.IntegerField(null=False, blank=False, default=0)
     # when we last reset the user's case count:
@@ -68,6 +68,7 @@ class CapUser(AbstractBaseUser):
     nonce_expires = models.DateTimeField(null=True, blank=True)
 
     date_joined = models.DateTimeField(auto_now_add=True)
+    agreed_to_tos = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
 
@@ -169,6 +170,23 @@ class CapUser(AbstractBaseUser):
 # make AnonymousUser API conform with CapUser API
 AnonymousUser.unlimited_access_until = None
 AnonymousUser.unlimited_access_in_effect = lambda self: False
+
+
+class ResearchRequest(models.Model):
+    user = models.ForeignKey(CapUser, on_delete=models.CASCADE, related_name='research_requests')
+    submitted_date = models.DateTimeField(auto_now_add=True)
+
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    institution = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    area_of_interest = models.TextField(blank=True, null=True)
+
+    status = models.CharField(max_length=20, default='pending', choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature')))
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-submitted_date']
 
 
 class SiteLimits(models.Model):

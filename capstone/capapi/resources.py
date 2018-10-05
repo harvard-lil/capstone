@@ -4,17 +4,17 @@ from datetime import datetime
 import logging
 import zipfile
 import tempfile
-from functools import wraps
 from wsgiref.util import FileWrapper
 import wrapt
 
 from django.conf import settings
-from django.core.cache import caches
 from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.template.defaultfilters import slugify
 from django.http import FileResponse
-from rest_framework.reverse import reverse
+from django_hosts import reverse as django_hosts_reverse
+
+from capweb.helpers import reverse, cache_func
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ def create_download_response(filename='', content=[]):
 
 
 def send_new_signup_email(request, user):
-    token_url = reverse('verify-user', kwargs={'user_id':user.pk, 'activation_nonce': user.get_activation_nonce()}, request=request)
+    token_url = reverse('verify-user', kwargs={'user_id':user.pk, 'activation_nonce': user.get_activation_nonce()}, scheme="https")
     send_mail(
         'CaseLaw Access Project: Verify your email address',
         "Please click here to verify your email address: \n\n%s \n\nIf you believe you have received this message in error, please ignore it." % token_url,
@@ -53,9 +53,9 @@ def send_new_signup_email(request, user):
     logger.info("sent new_signup email for %s" % user.email)
 
 
-def form_for_request(request, FormClass):
+def form_for_request(request, FormClass, *args, **kwargs):
     """ return FormClass loaded with request.POST data, if any """
-    return FormClass(request.POST if request.method == 'POST' else None)
+    return FormClass(request.POST if request.method == 'POST' else None, *args, **kwargs)
 
 
 class TrackingWrapper(wrapt.ObjectProxy):
@@ -76,31 +76,14 @@ class TrackingWrapper(wrapt.ObjectProxy):
         return super().__getattr__(item)
 
 
-def cache_func(key, timeout=None, cache_name='default'):
-    """
-        Decorator to cache decorated function's output according to a custom key.
-        `key` should be a lambda that takes the decorated function's arguments and returns a cache key.
-    """
-    cache = caches[cache_name]
-    def decorator(func):
-        @wraps(func)
-        def decorated(*args, **kwargs):
-            cache_key = key(*args, **kwargs)
+def query_count_cache_key(qs):
+    """ Stringify queryset for use in caching counts """
 
-            # return existing value, if any
-            value = cache.get(cache_key)
-            if value is not None:
-                print("Got existing for", cache_key)
-                return value
-            print("Making new for", cache_key)
+    # special case -- all empty queries have count 0 (and throw an error if serialized as below)
+    if qs.query.is_empty():
+        return 'query-count:0'
 
-            # cache new value
-            value = func(*args, **kwargs)
-            cache.set(cache_key, value, timeout)
-            return value
-        return decorated
-    return decorator
-
+    return 'query-count:' + hashlib.md5(str(qs.query).encode('utf8')).hexdigest()
 
 class CachedCountQuerySet(QuerySet):
     """
@@ -108,8 +91,18 @@ class CachedCountQuerySet(QuerySet):
         Usage: queryset.__class__ = CachedCountQuerySet
     """
     @cache_func(
-        key=lambda queryset:'query-count:' + hashlib.md5(str(queryset.query).encode('utf8')).hexdigest(),
+        key=query_count_cache_key,
         timeout=settings.CACHED_COUNT_TIMEOUT,
     )
     def count(self):
         return super().count()
+
+
+def api_reverse(viewname, args=None, kwargs=None, request=None, format=None, **extra):
+    """
+        Same as `django.urls.reverse`, but uses api_urls.py for routing, and includes full domain name.
+    """
+    if format is not None:
+        kwargs = kwargs or {}
+        kwargs['format'] = format
+    return django_hosts_reverse(viewname, args=args, kwargs=kwargs, host='api', scheme='http' if settings.DEBUG else 'https', **extra)

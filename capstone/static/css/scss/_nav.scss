@@ -1,57 +1,91 @@
 @import 'variables';
 
 /* nav branding */
-.branding { padding: 20px; }
+.branding > a {
+  border-bottom: 0 !important;
+}
 
-.branding > a { border-bottom: 0 !important; }
+.branding-standalone {
+  display: none;
+}
 
 .branding {
-   .nav-branding {
-     background: url("../../img/cap-logo-black.png") no-repeat;
-     background-size: contain;
-     display: block;
-     width: 140px;
-     height: 50px;
-     background-position-x: 0;
-   }
-  &.large-screen {
-    .nav-branding {
-      background: url("../../img/cap-logo-white.png") no-repeat;
+  display: inline-block;
+  line-height: inherit;
+  white-space: nowrap;
+  .nav-branding {
+    background: url("../../img/logos/white.svg") no-repeat;
+    background-size: contain;
+    width: 187px;
+    height: 72px;
+    display: block;
+    background-position-x: 0;
+    &:hover, &:focus, &:active {
+      background: url("../../img/logos/red-white.svg") no-repeat;
       background-size: contain;
     }
   }
 }
 
-.branding.large-screen {
-  display: inline-block;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  margin-right: 1rem;
-  line-height: inherit;
-  white-space: nowrap;
-}
-
-.branding.small-screen { display: none; }
-
-
-nav {
+nav[aria-label="main"] {
   display: inline-block;
   flex-wrap: wrap;
-  padding: 0;
+  padding: 0.5rem;
   margin: 0;
   list-style: none;
   background-color: $color-black;
   color: $color-white;
   font-weight: $font-weight-normal;
   letter-spacing: 0.1em;
-  z-index: 1;
-  @include media-breakpoint-up(lg) {
-    -webkit-box-shadow: 0 1px 5px $color-violet-gray-dark;
-    -moz-box-shadow: 0 1px 5px $color-violet-gray-dark;
-    box-shadow: 0 1px 5px $color-violet-gray-dark;
-  }
+  z-index: 999;
+  user-select: none;
+  border-bottom: 0;
+  font-size: 1.5rem;
   a {
     border-bottom: 0;
+  }
+  @include media-breakpoint-down(sm) {
+    font-size: 1.2rem;
+  }
+}
+
+nav[aria-label="main"].sticky {
+  position: fixed;
+  width: 100%;
+  padding: 0;
+  font-size: 18px;
+  .nav-item {
+    padding-bottom: 0;
+    padding-top: 0;
+    position: relative;
+    top: -5px;
+  }
+  .nav-branding {
+    background: url("../../img/logos/long-white.svg") no-repeat;
+    background-size: contain;
+    width: 200px;
+    height: 30px;
+    margin-top: 1.3rem;
+    margin-left: 1rem;
+    &:hover, &:focus, &:active {
+      background: url("../../img/logos/long-yellow.svg") no-repeat;
+      background-size: contain;
+    }
+
+  }
+  .dropdown-menu {
+    margin-top: 12px;
+  }
+  @include media-breakpoint-down(md) {
+    .nav-content {
+      margin-top: 0;
+    }
+  }
+}
+
+.main-content {
+  @include media-breakpoint-down(md) {
+
   }
 }
 
@@ -59,6 +93,8 @@ nav {
   float: right;
   display: inline-table;
   z-index: 1;
+  margin-top: 0.4rem;
+  left: 0;
   > .nav {
     width: 100%;
   }
@@ -68,33 +104,37 @@ nav {
   }
 
   @include media-breakpoint-down(md) {
-    position: fixed;
-    height: 100%;
-    width: 260px;
+    position: absolute;
+    width: 100%;
     background-color: $color-black;
+    border-bottom: 1px $color-white solid;
   }
 
   .dropdown-menu {
-    > a {
+    background-color: $color-black;
+    a {
       font-weight: $font-weight-normal;
       color: $color-white;
       border-bottom: $border-width solid $color-white;
       padding-bottom: 15px;
     }
-    > a:hover, a:focus, a:active {
+    a:hover, a:focus, a:active {
       background-color: $color-yellow;
-      color: $color-black;
+      color: $color-black !important;
     }
-    > a:last-child { border-bottom: 0 }
-    background-color: $color-black;
+    a:last-child {
+      border-bottom: 0;
+    }
     @include media-breakpoint-up(lg) {
-      margin-top: 26px;
-      border-left: $border-width solid $color-white;
-      border-right: $border-width solid $color-white;
-      border-bottom: $border-width solid $color-white;
+      margin-top: 24px;
+      border: $border-width solid $color-white;
+      border-top: none;
     }
     @include media-breakpoint-down(md) {
-      > a:before {
+      a {
+        border: none;
+      }
+      a:before {
         color: $color-violet;
         content: "\0226B  ";
       }
@@ -102,24 +142,27 @@ nav {
   }
 }
 
+
+
 /* show symbols on expand and collapse of dropdowns */
 li.nav-item.dropdown {
   > a.nav-link:after {
     content: url('../../img/arrow-expand.svg');
+    display: inline-block;
+    transform: translateY(-2px);
   }
   &.show {
     > a:after {
-      content: "\02212";
+      transform: rotate(180deg) translateY(-5px);
     }
   }
 }
-
 
 .nav-item {
   height: 100%;
   @include media-breakpoint-up(lg) {
     float: left;
-    padding: $navbar-padding-x $navbar-padding-y;
+    padding: 1rem 0.7rem;
   }
   @include make-col(4);
   @include media-breakpoint-down(md) {
@@ -134,10 +177,10 @@ li.nav-item.dropdown {
   color: $color-white;
   padding: 0.5rem;
   &:hover, &:active, &:focus {
-    color: $color-yellow-bright;
+    color: $color-yellow-bright !important;
   }
   &.selected {
-    color: $color-yellow;
+    color: $color-yellow !important;
   }
 }
 
@@ -191,39 +234,37 @@ body.hamburger-menu-open {
   }
 }
 
-body.hamburger-menu-closed {
-  overflow-y: scroll;
-  .nav-content {
-    @include media-breakpoint-down(md) {
+@include media-breakpoint-down(md) {
+  body.hamburger-menu-closed {
+    overflow-y: scroll;
+    .nav-content {
+      z-index: -1;
+      transition: visibility .2s ease-in-out;
+      opacity: 0;
+      height: 0;
+      overflow: hidden;
       display: none;
+      a {
+        pointer-events: none;
+        cursor: default;
+      }
     }
-    padding: 10px 20px;
-    right: -85%;
-    z-index: -1;
-    transition: height 0s .14s linear,visibility 0s .14s linear;
   }
-  .main-content {
-    position: relative;
-    left: 0;
-    transition: transform .14s ease-in-out;
-  }
-}
 
-body.hamburger-menu-open {
-  overflow-y: hidden;
-  .nav-content {
-    right: 0;
-    transition: height 0s .14s linear,visibility 0s .14s linear;
-    z-index: 1;
-  }
-  .main-content {
-    position: relative;
-    transform: translatex(-260px) translatez(0);
-  }
-  .nav-link {
-    margin-left: 2rem;
-  }
-  .dropdown-item {
-    padding-left: 2rem;
+  body.hamburger-menu-open {
+    .nav-content {
+      right: 0;
+      transition: visibility .2s ease-in-out;
+      z-index: 1;
+      overflow: scroll;
+      opacity: 1;
+      height: auto;
+    }
+    .nav-link {
+      margin-left: 2rem;
+    }
+    .dropdown-item {
+      padding-left: 3rem;
+    }
   }
 }

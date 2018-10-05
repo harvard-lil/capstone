@@ -1,0 +1,11 @@
+footer {
+  background-color: $color-yellow;
+  .lil-logo {
+    @extend .footer-lil-logo-black;
+  }
+  a {
+    &:hover, &:active, &:focus {
+      color: $color-violet !important;
+    }
+  }
+}

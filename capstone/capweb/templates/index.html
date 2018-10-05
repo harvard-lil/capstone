@@ -1,16 +1,18 @@
 {% extends "main_base.html" %}
 {% load static %}
 {% load pipeline %}
+{% load api_url %}
 
 {% block extra_head %}
   {% stylesheet 'index' %}
-  {% javascript 'map_mouseovers' %}
+  {% javascript 'map_actions' %}
 {% endblock %}
 
 {% block content %}
+  <h1>Caselaw Access Project</h1>
   <section id="section-quote" class="bg-black">
     <div class="splash-quote">
-      <h3>
+      <span>
         <img class="decorative-arrow"
              alt=""
              aria-hidden="true"
@@ -20,70 +22,72 @@
              alt=""
              aria-hidden="true"
              src='{% static "img/red-arrow-left.svg" %}'/>
-      </h3>
+      </span>
     </div>
-      <img class="decorative-mountains-purple"
-           alt=""
-           aria-hidden="true"
-           src="{% static "img/purple-mountains.png" %}">
-      <img class="decorative-mountains-red"
-           alt=""
-           aria-hidden="true"
-           src="{% static "img/red-mountains.png" %}">
+    <img class="decorative-mountains-purple"
+         alt=""
+         aria-hidden="true"
+         src="{% static "img/purple-mountains.png" %}">
+    <img class="decorative-mountains-red"
+         alt=""
+         aria-hidden="true"
+         src="{% static "img/red-mountains.png" %}">
   </section>
 
   <!-- About -->
   <section id="section-about"
-           class="bg-gradient section-purple">
+           class="bg-gradient">
     <div class="content">
       <div class="row">
         <div class="content-small-screen numbers">
           <div class="row">
-            <div class="small-screen-number-col">
-              <h1>{{ numbers.cases }}</h1>
+            <div class="col">
+              <span class="number">{{ numbers.cases }}</span>
             </div>
-            <div class="small-screen-number-col">
-              <h4 class="font-weight-bold">
+            <div class="col mt-3">
+              <span class="label-big">
                 Million
-              </h4>
-              <img class="" alt="‹"
-                src='{% static "img/red-arrow-left.svg" %}'/>
-
-              <h5>
-                Unique cases
-              </h5>
+              </span>
+              <img
+                      alt=""
+                      aria-hidden="true"
+                      src='{% static "img/red-arrow-left.svg" %}'/>
+              <span class="label">
+                <span class="color-yellow-bright">Unique</span> cases
+              </span>
             </div>
             <hr/>
-            <div class="small-screen-number-col">
-              <h3>{{ numbers.reporters }}</h3>
-              <h5>Reporters</h5>
+            <div class="col">
+              <span class="reporters-number">{{ numbers.reporters }}</span>
+              <span class="label color-yellow-bright">Reporters</span>
             </div>
-            <div class="small-screen-number-col">
-              <h3 class="pages-scanned-number">{{ numbers.pages_scanned }}M</h3>
-              <h5>Pages scanned</h5>
+            <div class="dotted-vr"></div>
+            <div class="col pl-1">
+              <span class="pages-scanned-number">{{ numbers.pages_scanned }}M</span>
+              <span class="label">Pages scanned</span>
             </div>
           </div>
         </div>
         <div class="content-left">
-          <h1 class="font-serif section-title">
+          <h2 class="section-title">
             <img class="decorative-arrow"
                  alt=""
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'>
-              What data do we have?
-          </h1>
+            What data do we have?
+          </h2>
           <div class="numbers numbers-vertical">
             <ul>
               <li class="item-set">
-                <h1 class="num_cases">{{ numbers.cases }}M</h1>
+                <span class="number num_cases">{{ numbers.cases }}M</span>
                 <p>Unique cases</p>
               </li>
               <li class="item-set">
-                <h1 class="num_reporters">{{ numbers.reporters }}</h1>
+                <span class="number num_reporters">{{ numbers.reporters }}</span>
                 <p>Reporters</p>
               </li>
               <li class="item-set">
-                <h1 class="num_pages">{{ numbers.pages_scanned }}M</h1>
+                <span class="number num_pages">{{ numbers.pages_scanned }}M</span>
                 <p>Pages scanned</p>
               </li>
             </ul>
@@ -91,25 +95,23 @@
 
         </div>
         <div class="content-right">
-          <h5>
-            Planning, scanning, digitizing, and enabling access since 2013
-          </h5>
           <div class="map">
-
+            <a href="#numbers"
+               class="skip">Skip map</a>
             {% include "includes/usa_territories_white.svg" %}
           </div>
-          <div class="numbers numbers-horizontal">
+          <div id="numbers" class="numbers numbers-horizontal">
             <div class="row">
               <div class="col-4">
-                <h1 class="num_cases">{{ numbers.cases }}M</h1>
+                <span class="number num_cases">{{ numbers.cases }}M</span>
                 <p>Unique cases</p>
               </div>
               <div class="col-4">
-                <h1 class="num_reporters">{{ numbers.reporters }}</h1>
+                <span class="number num_reporters">{{ numbers.reporters }}</span>
                 <p>Reporters</p>
               </div>
               <div class="col-4">
-                <h1 class="num_pages">{{ numbers.pages_scanned }}M</h1>
+                <span class="number num_pages">{{ numbers.pages_scanned }}M</span>
                 <p>Pages scanned</p>
               </div>
             </div>
@@ -127,38 +129,39 @@
       <div class="row">
         <div class="content-left">
           <!-- section title -->
-          <h1 class="font-serif section-title">
+          <h2 class="section-title">
             <img class="decorative-arrow"
                  alt=""
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'>
-              Dive in!
-          </h1>
+            Dive in!
+          </h2>
         </div>
         <div class="content-right">
           <!-- section subtitle -->
-          <h5 class=" section-subtitle">
+          <span class="section-subtitle">
             Start exploring the data! Here are some tools you can use to check it out.
-          </h5>
+          </span>
 
-          <h6>
-            <span class="section-symbol color-red">&#167;</span>
+          <h3>
             <a href="{% url "api" %}">
               API
             </a>
-          </h6>
+          </h3>
           <p>The API allows users to browse and download cases using a few short commands.</p>
-          <h6>
-            <span class="section-symbol color-red">&#167;</span>
-            <a href="{% url "bulk-data" %}">
+
+          <h3>
+            <a href="{% url "bulk-docs" %}">
               Bulk data
             </a>
-          </h6>
+          </h3>
           <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
-          <br/>
-          <a href="/tools"
-             class="btn btn-default"
-             >Browse tools</a>
+          <p>
+            <a href="{% url "tools" %}"
+               class="btn btn-default">
+              Browse tools
+            </a>
+          </p>
         </div>
       </div>
     </div>
@@ -171,33 +174,31 @@
       <div class="row">
         <div class="content-left">
           <!-- section title -->
-          <h1 class="font-serif section-title">
+          <h2 class="section-title">
             <img class="decorative-arrow"
                  alt=""
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'>
-              Gallery
-          </h1>
+            Gallery
+          </h2>
         </div>
         <div class="content-right">
           <!-- section subtitle -->
-          <h5 class="section-subtitle">
+          <span class="section-subtitle">
             Sky’s the limit. See some early experiments made possible by the opening up of caselaw data.
-          </h5>
-          <h6>
-            <span class="section-symbol color-yellow">&#167;</span>
-            <a class="color-white" href="{% url "wordclouds" %}">
+          </span>
+          <h3>
+            <a href="{% url "wordclouds" %}">
               Wordclouds
             </a>
-          </h6>
-          <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
-          <h6>
-            <span class="section-symbol color-yellow">&#167;</span>
-            <a class="color-white" href="{% url "limericks" %}">
+          </h3>
+          <p>Most used words for every year of California caselaw from 1852 to 2015.</p>
+          <h3>
+            <a href="{% url "limericks" %}">
               Limericks
             </a>
-          </h6>
-          <p>Atque quo omnis veritatis. Quia occaecati consequatur suscipit eum debitis perspiciatis amet tempora.</p>
+          </h3>
+          <p>Generate rhymes using caselaw!</p>
           <br/>
           <a class="btn btn-inverse"
              href="{% url "gallery" %}">See gallery</a>
@@ -210,47 +211,47 @@
 
   <!-- Links -->
   <section id="section-links" class="section-default">
-     <div class="content">
+    <div class="content">
       <div class="row">
         <div class="content-left">
           <!-- section title -->
-          <h1 class="font-serif section-title">
+          <h2 class="section-title">
             <img class="decorative-arrow"
                  alt=""
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'>
-              Links &amp; press
-          </h1>
+            Links &amp; press
+          </h2>
         </div>
         <div class="content-right">
           <!-- section subtitle -->
-          <h5 class=" section-subtitle">
+          <span class="section-subtitle">
             What's been written about Caselaw Access Project around the web
-          </h5>
+          </span>
           <ul>
-          {% for news_item in news %}
-            <li class="item-set">
-              <p class="item-title">
-                <a href="{{ news_item.url }}"
-                   title="Go to {{ news_item.publication }} to read {{ news_item.title }}"
-                   target="_blank">{{ news_item.title }}</a>
-              </p>
-              <span class="item-origin">
+            {% for news_item in news %}
+              <li class="item-set">
+                <p class="item-title">
+                  <a href="{{ news_item.url }}"
+                     title="Go to {{ news_item.publication }} to read {{ news_item.title }}"
+                     target="_blank">{{ news_item.title|truncatechars:60 }}</a>
+                </p>
+                <span class="item-origin">
                 {{ news_item.publication }}
               </span>
-              <span class="item-date">
+                <span class="item-date">
                 {{ news_item.date }}
               </span>
-            </li>
-          {% endfor %}
+              </li>
+            {% endfor %}
           </ul>
           <br/>
-          <a href="/about#press"
+          <a href="{% url "about" %}#press"
              title="Read more Caselaw Access Project press"
              class="btn btn-default">See more</a>
         </div>
       </div>
-     </div>
+    </div>
   </section>
   <!-- /Links -->
 

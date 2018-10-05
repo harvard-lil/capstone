@@ -1,0 +1,8 @@
+A user has requested research access.
+
+Name: {{ name }}
+Email: {{ email }}
+Institution: {{ institution }}
+Title: {{ title }}
+Research area:
+{{ area_of_interest }}

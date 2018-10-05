@@ -1,12 +1,20 @@
 {% extends "main_base.html" %}
 {% load pipeline %}
 
+{% block title %}500 Internal Server Error | {% endblock %}
+
 {% block content %}
-  <div class="container header-margin">
-    <h3>Oops! Something's gone wrong</h3>
-    <p>
-      We experienced a server error. We've logged the error and will look into it. If you see this error repeatedly,
-      please <a href="mailto:info@capapi.org">write to us</a> to let us know what's going wrong.
-    </p>
+  <div class="basic-page">
+    <div class="full-content">
+      <div class="row">
+        <h1 class="h3">Oops! Something's gone wrong</h1>
+        <p>
+          We experienced a server error. We've logged the error and will look into it. If you see this error repeatedly,
+          please <a href="mailto:info@capapi.org">write to us</a> to let us know what's going wrong.
+        </p>
+      </div>
+    </div>
   </div>
 {% endblock %}
+
+{% block footer %}{% endblock %}
