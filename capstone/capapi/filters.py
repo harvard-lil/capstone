@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.functional import SimpleLazyObject
 from django.contrib.postgres.search import SearchQuery
 
@@ -148,10 +149,13 @@ class CaseFilter(NoopMixin, filters.FilterSet):
         return qs.filter(citations__normalized_cite__exact=models.Citation.normalize_cite(value))
 
     def find_by_date(self, qs, name, value):
-        if '_min' in name:
-            return qs.filter(decision_date__gte=value)
-        else:
-            return qs.filter(decision_date__lte=value)
+        try:
+            if '_min' in name:
+                return qs.filter(decision_date__gte=value)
+            else:
+                return qs.filter(decision_date__lte=value)
+        except DjangoValidationError:
+            raise ValidationError({name: "Invalid date format. Expected YYYY-MM-DD format."})
 
     def full_text_search_simple(self, qs, name, value):
         value = value.strip()
