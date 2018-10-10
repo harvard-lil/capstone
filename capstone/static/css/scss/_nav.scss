@@ -49,6 +49,11 @@ nav[aria-label="main"] {
   }
 }
 
+
+.extra-padding {
+  display: none;
+}
+
 nav[aria-label="main"].sticky {
   position: fixed;
   width: 100%;
@@ -83,11 +88,14 @@ nav[aria-label="main"].sticky {
   }
 }
 
-.main-content {
-  @include media-breakpoint-down(md) {
 
-  }
+/* add extra padding when main nav collapses */
+nav[aria-label="main"].sticky ~ .extra-padding {
+  display: block;
+  padding: 40px;
+  width: 100%;
 }
+
 
 .nav-content {
   float: right;
