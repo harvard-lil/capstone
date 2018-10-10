@@ -176,10 +176,10 @@ function set_original_value(element) {
 }
 
 function addJurHrefs() {
-    statelinks = document.getElementsByClassName('state-link');
+    let statelinks = document.getElementsByClassName('state-link');
     Array.from(statelinks).forEach(function(el) {
         Array.from(el.childNodes).forEach(function(child) {
-            if (child.classList && child.classList.value.substring("state") != -1) {
+            if (child.classList && child.classList.value.substring("state") !== -1) {
                el.setAttribute("href", apiUrl + "/cases/?jurisdiction=" + jurisdiction_translation[child.id]['slug']);
                el.setAttribute("target", "_blank");
             }
