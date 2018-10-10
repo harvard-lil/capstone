@@ -29,6 +29,8 @@
 
 nav[aria-label="main"] {
   display: inline-block;
+  position: fixed;
+  width: 100%;
   flex-wrap: wrap;
   padding: 0.5rem;
   margin: 0;
@@ -39,7 +41,7 @@ nav[aria-label="main"] {
   letter-spacing: 0.1em;
   z-index: 999;
   user-select: none;
-  border-bottom: 0;
+  border-bottom: 1px solid $color-white;
   font-size: 1.5rem;
   a {
     border-bottom: 0;
@@ -83,15 +85,6 @@ nav[aria-label="main"].sticky {
     }
   }
 }
-
-
-/* add extra padding when main nav collapses */
-nav[aria-label="main"].sticky ~ .extra-padding {
-  display: block;
-  padding: 40px;
-  width: 100%;
-}
-
 
 .nav-content {
   float: right;
