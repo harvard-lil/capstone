@@ -1,4 +1,5 @@
 @import 'variables';
+@import 'map';
 @import 'footer/black';
 
 h1 {
@@ -11,8 +12,8 @@ h1 {
 
 @mixin header-styles {
   display: block;
-  font-family: $font-serif;
-  font-weight: $font-weight-bold;
+  font-family: $font-sans-serif;
+  font-weight: $font-weight-semibold;
   line-height: $headings-line-height;
   margin-bottom: $headings-margin-bottom;
 }
@@ -20,12 +21,16 @@ h1 {
 .splash-quote span {
   @extend .h3;
   @include header-styles;
+  font-family: $font-serif;
+  font-weight: normal;
 }
 
 .section-title {
   @extend .h1;
   @include header-styles;
-  font-weight: $font-weight-normal;
+  .decorative-arrow {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .section-subtitle {
@@ -36,13 +41,22 @@ h1 {
 }
 
 .number {
-  @extend .h1;
+  @extend .h5;
   @include header-styles;
-
+  margin-bottom: 0;
+  font-family: $font-serif;
   .content-small-screen & {
     font-family: $font-sans-serif;
     font-size: 5rem;
   }
+}
+
+.number.jur_name {
+  padding: 0;
+  max-height: 100px;
+  margin-bottom: 1rem;
+  padding-bottom: .2rem;
+  border-bottom: 1px solid $color-white;
 }
 
 .pages-scanned-number, .reporters-number {
@@ -104,7 +118,22 @@ h1 {
   }
 }
 
-/* show light border in homepage */
-nav[aria-label="main"] {
-  border-bottom: 1px solid $color-white;
+
+
+.content-left > .numbers-vertical {
+  background-color: $color-black;
+  margin-top: 20px;
+  text-align: left;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  -webkit-box-shadow: 1px 1px 2px $color-black;
+  -moz-box-shadow: 1px 1px 2px $color-black;
+  box-shadow: 1px 1px 2px $color-black;
+  li.item-set {
+    margin-bottom: 0;
+  }
+  ul {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
 }

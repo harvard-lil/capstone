@@ -1,0 +1,27 @@
+#usa-territories-white {
+  .state-link {
+    pointer-events: all;
+    &:focus, &:active, &:hover {
+      fill: $color-yellow !important;
+      stroke: $color-yellow;
+      cursor: pointer;
+    }
+  }
+  .state {
+    stroke: $color-white;
+    cursor: pointer;
+    pointer-events: all;
+  }
+  .state-pointer {
+    fill: $color-white;
+    > .no-fill {
+      fill: none;
+    }
+    &:focus, &:active, &:hover {
+      fill: $color-violet !important;
+      > .no-fill {
+        fill: $color-yellow !important;
+      }
+    }
+  }
+}

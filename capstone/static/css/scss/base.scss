@@ -194,20 +194,6 @@ section > .content > .row > .content-right {
   }
 }
 
-.content-right > .numbers-horizontal {
-  text-align: center;
-  @include media-breakpoint-down(lg) {
-    display: none;
-  }
-}
-
-.content-left > .numbers-vertical {
-  text-align: left;
-  @include media-breakpoint-only(xl) {
-    display: none;
-  }
-}
-
 .content-small-screen {
   @include media-breakpoint-between(xs, sm) {
     @include make-col(10);
@@ -383,23 +369,5 @@ li.item-set {
   color: $color-white;
   h1, .section-title {
     color: $color-white !important;
-  }
-}
-
-/* map styles */
-
-#usa-territories-white {
-  .state-link {
-    pointer-events: all;
-    &:focus, &:active, &:hover {
-      fill: $color-yellow !important;
-      stroke: $color-yellow;
-      cursor: pointer;
-    }
-  }
-  .state {
-    stroke: $color-white;
-    cursor: pointer;
-    pointer-events: all;
   }
 }

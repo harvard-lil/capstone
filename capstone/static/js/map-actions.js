@@ -1,19 +1,20 @@
+let apiUrl = "https://api.case.law/v1";
+
 /*
     This bit of JS enables the mouseover effects with the map on the homepage
  */
 
-
 let jurisdiction_translation = {
-  "Regional": "regional", "Dakota Territory": "dakota-territory", "Native American": "native-american",
-  "Navajo Nation": "navajo-nation", "GU": "guam", "U.S.": "U.S.", "MP": "n-mar-i", "PR": "pr", "AS": "am-samoa",
-  "VI": "vi", "US-NV": "nev", "US-DC": "dc", "US-NC": "nc", "US-NH": "nh", "US-PA": "pa", "US-MT": "mont",
-  "US-IN": "ind", "US-LA": "la", "US-WI": "wis", "US-NJ": "nj", "US-GA": "ga", "US-SD": "sd", "US-MA": "mass",
-  "US-MS": "miss", "US-CA": "cal", "US-OK": "okla", "US-ND": "nd", "US-VT": "vt", "US-AZ": "ariz", "US-WV": "w-va",
-  "US-MI": "mich", "US-UT": "utah", "US-ID": "idaho", "US-WY": "wyo", "US-CO": "colo", "US-NY": "ny", "US-KY": "ky",
-  "US-KS": "kan", "US-AK": "alaska", "US-FL": "fla", "US-OR": "or", "US-TN": "tenn", "US-MD": "md", "US-IL": "ill",
-  "US-OH": "ohio", "US-AL": "ala", "US-SC": "sc", "US-AR": "", "US-RI": "ri", "US-MN": "minn", "US-NE": "neb",
-  "US-CT": "conn", "US-ME": "me", "US-IA": "iowa", "US-TX": "tex", "US-DE": "del", "US-MO": "mont", "US-HI": "haw",
-  "US-NM": "nm", "US-WA": "wa", "US-VA": "va"
+  "Regional": {slug: "regional", name: "Regional"}, "Dakota-Territory": {slug: "dakota-territory", name: "Dakota Territory"}, "Native-American": {slug: "native-american", name: "Native American"},
+  "Navajo-Nation": {slug: "navajo-nation", name: "Navajo Nation"}, "GU": {slug: "guam", name: "Guam"}, "US": {slug: "U.S.", name: "United States"}, "MP": {slug: "n-mar-i", name: "Northern Marian Island"}, "PR": {slug: "pr", name: "Puerto Rico"}, "AS": {slug: "am-samoa", name: "American Samoa"},
+  "VI": {slug: "vi", name: "Virgin Islands"}, "US-NV": {slug: "nev", name: "Nevada"}, "US-DC": {slug: "dc", name: "Washington D.C."}, "US-NC": {slug: "nc", name: "North Carolina"}, "US-NH": {slug: "nh", name: "New Hampshire"}, "US-PA": {slug: "pa", name: "Pennsylvania"}, "US-MT": {slug: "mont", name: "Montana"},
+  "US-IN": {slug: "ind", name: "Indiana"}, "US-LA": {slug: "la", name: "Louisiana"}, "US-WI": {slug: "wis", name: "Wisconsin"}, "US-NJ": {slug: "nj", name: "New Jersey"}, "US-GA": {slug: "ga", name: "Georgia"}, "US-SD": {slug: "sd", name: "South Dakota"}, "US-MA": {slug: "mass", name: "Massachusetts"},
+  "US-MS": {slug: "miss", name: "Mississippi"}, "US-CA": {slug: "cal", name: "California"}, "US-OK": {slug: "okla", name: "Oklahoma"}, "US-ND": {slug: "nd", name: "North Dakota"}, "US-VT": {slug: "vt", name: "Vermont"}, "US-AZ": {slug: "ariz", name: "Arizona"}, "US-WV": {slug: "w-va", name:"West Virginia"},
+  "US-MI": {slug: "mich", name: "Michigan"}, "US-UT": {slug: "utah", name: "Utah"}, "US-ID": {slug: "idaho", name: "Idaho"}, "US-WY": {slug: "wyo", name: "Wyoming"}, "US-CO": {slug: "colo", name: "Colorado"}, "US-NY": {slug: "ny", name: "New York"}, "US-KY": {slug: "ky", name: "Kentucky"},
+  "US-KS": {slug: "kan", name: "Kansas"}, "US-AK": {slug: "alaska", name: "Alaska"}, "US-FL": {slug: "fla", name: "Florida"}, "US-OR": {slug: "or", name: "Oregon"}, "US-TN": {slug: "tenn", name: "Tennessee"}, "US-MD": {slug: "md", name: "Maryland"}, "US-IL": {slug: "ill", name: "Illinois"},
+  "US-OH": {slug: "ohio", name: "Ohio"}, "US-AL": {slug: "ala", name: "Alabama"}, "US-SC": {slug: "sc", name: "South Carolina"}, "US-AR": {slug: "", name: "Arkansas"}, "US-RI": {slug: "ri", name: "Rhode Island"}, "US-MN": {slug: "minn", name: "Minnesota"}, "US-NE": {slug: "neb", name: "Nebraska"},
+  "US-CT": {slug: "conn", name: "Connecticut"}, "US-ME": {slug: "me", name: "Maine"}, "US-IA": {slug: "iowa", name: "Iowa"}, "US-TX": {slug: "tex", name: "Texas"}, "US-DE": {slug: "del", name: "Delaware"}, "US-MO": {slug: "mont", name: "Montana"}, "US-HI": {slug: "haw", name: "Hawaii"},
+  "US-NM": {slug: "nm", name: "New Mexico"}, "US-WA": {slug: "wa", name: "Washington"}, "US-VA": {slug: "va", name: "Virginia"}
 };
 
 let map_data = {
@@ -22,11 +23,11 @@ let map_data = {
     "WF": {"page_count": 0, "reporter_count": 0, "case_count": 0},
     "FM": {"page_count": 0, "reporter_count": 0, "case_count": 0},
     "Regional": {"page_count": 8727621, "reporter_count": 19, "case_count": 2111123},
-    "Dakota Territory": {"page_count": 3368, "reporter_count": 1, "case_count": 310},
+    "Dakota-Territory": {"page_count": 3368, "reporter_count": 1, "case_count": 310},
     "Native American": {"page_count": 11939, "reporter_count": 1, "case_count": 1951},
-    "Navajo Nation": {"page_count": 4387, "reporter_count": 1, "case_count": 695},
+    "Navajo-Nation": {"page_count": 4387, "reporter_count": 1, "case_count": 695},
     "GU": {"page_count": 942, "reporter_count": 1, "case_count": 278},
-    "U.S.": {"page_count": 9547364, "reporter_count": 32, "case_count": 1693904},
+    "US": {"page_count": 9547364, "reporter_count": 32, "case_count": 1693904},
     "MP": {"page_count": 6102, "reporter_count": 2, "case_count": 542},
     "PR": {"page_count": 323204, "reporter_count": 4, "case_count": 45488},
     "AS": {"page_count": 12978, "reporter_count": 3, "case_count": 2171},
@@ -88,6 +89,9 @@ let map_data = {
 function addMapMouseovers() {
     let svgmap = document.getElementById("usa_territories_white");
     //This puts the original value of each count element in an attribute called data-original-value
+     Array.from(document.getElementsByClassName("jur_name")).forEach(function (element) {
+        set_original_value(element)
+     });
      Array.from(document.getElementsByClassName("num_cases")).forEach(function (element) {
         set_original_value(element)
      });
@@ -100,6 +104,9 @@ function addMapMouseovers() {
 
     //This sets the mouseout event for the map, which resets the count elements to their original value
     svgmap.addEventListener('mouseout', function (mouseout_event) {
+        Array.from(document.getElementsByClassName("jur_name")).forEach(function (element) {
+            element.innerHTML = element.getAttribute("data-original-value")
+        });
         Array.from(document.getElementsByClassName("num_cases")).forEach(function (element) {
             element.innerHTML = element.getAttribute("data-original-value")
         });
@@ -112,6 +119,9 @@ function addMapMouseovers() {
     });
 
     svgmap.addEventListener('focusout', function (mouseout_event) {
+        Array.from(document.getElementsByClassName("jur_name")).forEach(function (element) {
+            element.innerHTML = element.getAttribute("data-original-value")
+        });
         Array.from(document.getElementsByClassName("num_cases")).forEach(function (element) {
             element.innerHTML = element.getAttribute("data-original-value")
         });
@@ -138,6 +148,10 @@ function addMapMouseovers() {
 
 function add_event_to_jur(event, el, jurname) {
     el.addEventListener(event, function (e) {
+        Array.from(document.getElementsByClassName("jur_name")).forEach(function (el) {
+            el.innerHTML = jurisdiction_translation[jurname]['name'];
+        });
+
         Array.from(document.getElementsByClassName("num_cases")).forEach(function (el) {
             el.innerHTML =
                 map_data[jurname]['case_count'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -161,11 +175,23 @@ function set_original_value(element) {
     element.setAttributeNode(orig_attr);
 }
 
+function addJurHrefs() {
+    statelinks = document.getElementsByClassName('state-link');
+    Array.from(statelinks).forEach(function(el) {
+        Array.from(el.childNodes).forEach(function(child) {
+            if (child.classList && child.classList.value.substring("state") != -1) {
+               el.setAttribute("href", apiUrl + "/cases/?jurisdiction=" + jurisdiction_translation[child.id]['slug']);
+               el.setAttribute("target", "_blank");
+            }
+      });
+  });
+}
 
 /*
     got this code from:
     https://www.sitepoint.com/jquery-document-ready-plain-javascript/
  */
+
 if (
     document.readyState === "complete" ||
     (document.readyState !== "loading" && !document.documentElement.doScroll)
@@ -173,4 +199,5 @@ if (
   addMapMouseovers();
 } else {
   document.addEventListener("DOMContentLoaded", addMapMouseovers);
+  document.addEventListener("DOMContentLoaded", addJurHrefs);
 }

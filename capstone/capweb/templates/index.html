@@ -74,10 +74,13 @@
                  alt=""
                  aria-hidden="true"
                  src='{% static "img/red-arrow-right.svg" %}'>
-            What data do we have?
+            Our data
           </h2>
           <div class="numbers numbers-vertical">
             <ul>
+              <li class="item-set">
+                <span class="number jur_name">Overall</span>
+              </li>
               <li class="item-set">
                 <span class="number num_cases">{{ numbers.cases }}M</span>
                 <p>Unique cases</p>
@@ -96,25 +99,9 @@
         </div>
         <div class="content-right">
           <div class="map">
-            <a href="#numbers"
+            <a href="#section-dive-in"
                class="skip">Skip map</a>
             {% include "includes/usa_territories_white.svg" %}
-          </div>
-          <div id="numbers" class="numbers numbers-horizontal">
-            <div class="row">
-              <div class="col-4">
-                <span class="number num_cases">{{ numbers.cases }}M</span>
-                <p>Unique cases</p>
-              </div>
-              <div class="col-4">
-                <span class="number num_reporters">{{ numbers.reporters }}</span>
-                <p>Reporters</p>
-              </div>
-              <div class="col-4">
-                <span class="number num_pages">{{ numbers.pages_scanned }}M</span>
-                <p>Pages scanned</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
