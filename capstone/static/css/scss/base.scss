@@ -1,17 +1,12 @@
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
-
 @import "bootstrap/reboot";
-
 @import "bootstrap/type";
 @import 'bootstrap/grid';
-
 @import "bootstrap/utilities/spacing";
 @import "bootstrap/utilities/text";
-
 @import "bootstrap/list-group";
-
 @import 'variables';
 @import 'elements';
 @import 'a11y';
@@ -29,7 +24,6 @@
   background: $color-yellow-bright; /* Gecko Browsers */
   color: $color-black;
 }
-
 
 body {
   @extend .font-body;
@@ -76,13 +70,14 @@ code {
   border-radius: 0 !important;
 }
 
-
 .decorative-arrow {
   margin-left: -2rem;
   color: $color-red;
-  &.left { margin-left: 0.4rem; }
+  &.left {
+    margin-left: 0.4rem;
+  }
   @include media-breakpoint-down(sm) {
-     display: none;
+    display: none;
   }
 }
 
@@ -108,7 +103,6 @@ input.form-control, input, textarea {
   outline: none;
   border-radius: 0;
 }
-
 
 /* Section styles */
 section {
@@ -140,7 +134,9 @@ section > .content > .row > .content-left {
     @include make-col(3);
   }
   @include media-breakpoint-only(lg) {
-    .decorative-arrow { margin-left: -2rem; }
+    .decorative-arrow {
+      margin-left: -2rem;
+    }
     @include make-col(4);
   }
   @include media-breakpoint-only(md) {
@@ -234,7 +230,9 @@ section > .splash-quote {
   @include make-col(5);
   @include media-breakpoint-down(md) {
     @include make-col(8);
-    .decorative-arrow { display: none; }
+    .decorative-arrow {
+      display: none;
+    }
     > h3 {
       font-size: 1.5rem;
       line-height: 2rem;
@@ -300,7 +298,9 @@ li.item-set {
 }
 
 .social {
-  span { float: left; }
+  span {
+    float: left;
+  }
   a {
     background-position-x: 0;
     border-bottom: none;
@@ -312,6 +312,11 @@ li.item-set {
       background-position-x: -30px !important;
     }
   }
+  .email > a {
+    background: url('../../img/logos/mail-sprite.svg') no-repeat;
+    background-size: auto 30px;
+  }
+  /* github is not a perfect circle */
   .github > a {
     background: url('../../img/logos/github-sprite.svg') no-repeat;
     background-size: auto 29px;
@@ -326,6 +331,21 @@ li.item-set {
   }
 }
 
+.social.big {
+  .twitter > a, .github > a, .email > a {
+    background-size: auto 60px;
+    height: 60px;
+    width: 60px;
+    &:hover, &:active, &:focus {
+      background-position-x: -60px !important;
+    }
+  }
+  /* github is not a perfect circle */
+  .github > a {
+    background-size: auto 58px;
+  }
+}
+
 .inverse {
   .social {
     .github > a, .website > a {
@@ -333,7 +353,6 @@ li.item-set {
     }
   }
 }
-
 
 .bg-black, .inverse {
   color: $color-white;

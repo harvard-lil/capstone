@@ -241,6 +241,42 @@
     </div>
   </section>
   <!-- /Links -->
+  <section id="section-follow" class="bg-yellow">
+    <div class="content">
+      <div class="row">
+        <div class="content-left">
+          <!-- section title -->
+          <h2 class="section-title">
+            <img class="decorative-arrow"
+                 alt=""
+                 aria-hidden="true"
+                 src='{% static "img/red-arrow-right.svg" %}'>
+            Keep in touch!
+          </h2>
+        </div>
+        <div class="content-right">
+          <div class="social big">
+            <span class="twitter">
+              <a href="https://twitter.com/caselawaccess" target="_blank"
+                 title="Caselaw Access Project Twitter"
+                 aria-label="Caselaw Access Project Twitter">
+              </a>
+             </span>
+            <span class="github">
+              <a href="https://github.com/harvard-lil/capstone" target="_blank"
+                 title="Caselaw Access Project Github"
+                 aria-label="Caselaw Access Project Github"></a>
+            </span>
+            <span class="email">
+              <a href="{% url "contact" %}"
+                 title="Caselaw Access Project contact form"
+                 aria-label="Caselaw Access Project contact form"></a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
 {% endblock %}
 

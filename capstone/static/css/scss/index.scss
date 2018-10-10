@@ -139,3 +139,20 @@ h1 {
 #section-about {
   padding-bottom: 0;
 }
+
+#section-follow {
+  .social {
+    margin-top: 40px;
+    span {
+      margin-left: 1rem;
+    }
+  }
+}
+
+
+/* hide social in footer since we have a section dedicated to it */
+footer {
+  .social {
+    display: none;
+  }
+}
