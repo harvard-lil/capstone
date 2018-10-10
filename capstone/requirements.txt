@@ -88,7 +88,7 @@ moto==1.3.4
 mysqlclient==1.3.10
 nltk==3.3.0
 openapi-codec==1.3.2      # via drf-yasg
-paramiko==2.4.1           # via fabric3
+paramiko==2.4.2           # via fabric3
 pathlib2==2.3.2           # via pytest
 pbr==4.2.0                # via mock
 pillow==5.2.0             # via img2pdf, reportlab
