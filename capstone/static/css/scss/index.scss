@@ -118,8 +118,6 @@ h1 {
   }
 }
 
-
-
 .content-left > .numbers-vertical {
   background-color: $color-black;
   margin-top: 20px;
@@ -136,4 +134,8 @@ h1 {
     padding-left: 15px;
     padding-right: 15px;
   }
+}
+
+#section-about {
+  padding-bottom: 0;
 }
