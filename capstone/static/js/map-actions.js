@@ -197,6 +197,7 @@ if (
     (document.readyState !== "loading" && !document.documentElement.doScroll)
 ) {
   addMapMouseovers();
+  addJurHrefs();
 } else {
   document.addEventListener("DOMContentLoaded", addMapMouseovers);
   document.addEventListener("DOMContentLoaded", addJurHrefs);
