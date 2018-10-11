@@ -40,7 +40,8 @@ def about(request):
     return render(request, "about.html", {
         "page_name": "about",
         "contributors": sorted_contributors,
-        "news": news
+        "news": news,
+        "email": settings.DEFAULT_FROM_EMAIL,
     })
 
 
