@@ -1,35 +1,21 @@
-{% extends "main_base.html" %}
-{% load static %}
+{% extends "layouts/narrow.html" %}
 {% load pipeline %}
 
 {% block extra_head %}
   {% stylesheet 'contact' %}
 {% endblock %}
 
-{% block title %}Contact | {% endblock %}
+{% block title %}Contact{% endblock %}
+{% block meta_description %}Caselaw Access Project contact{% endblock %}
+{% block full_content_style %}bg-yellow{% endblock %}
 
-{% block meta_description %}
-  Caselaw Access Project contact
-{% endblock %}
-{% block content %}
-  <div class="basic-page">
-    <div class="full-content bg-yellow">
-      <div class="top-section compressed">
-        {% include "includes/page-title.html" with title="Contact" %}
-      </div>
-      <div class="row">
-        <div id="sidebar-menu"></div>
-        <div class="main-content">
-          Email us at <a class="contact_email" href="mailto:{{ email }}">{{ email }}</a> or fill out this form.
-          <br/><br/>
-          <form action="{% url 'contact' %}" method="post">
-            {% csrf_token %}
-            {{ form }}
-            <br/>
-            <button type="submit" class="btn btn-default">Send</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+{% block main_content %}
+  Email us at <a class="contact_email" href="mailto:{{ email }}">{{ email }}</a> or fill out this form.
+  <br/><br/>
+  <form action="{% url 'contact' %}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <br/>
+    <button type="submit" class="btn btn-default">Send</button>
+  </form>
 {% endblock %}

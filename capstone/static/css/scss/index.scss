@@ -1,4 +1,5 @@
 @import 'variables';
+@import 'map';
 @import 'footer/black';
 
 h1 {
@@ -11,8 +12,8 @@ h1 {
 
 @mixin header-styles {
   display: block;
-  font-family: $font-serif;
-  font-weight: $font-weight-bold;
+  font-family: $font-sans-serif;
+  font-weight: $font-weight-semibold;
   line-height: $headings-line-height;
   margin-bottom: $headings-margin-bottom;
 }
@@ -20,12 +21,16 @@ h1 {
 .splash-quote span {
   @extend .h3;
   @include header-styles;
+  font-family: $font-serif;
+  font-weight: normal;
 }
 
 .section-title {
   @extend .h1;
   @include header-styles;
-  font-weight: $font-weight-normal;
+  .decorative-arrow {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .section-subtitle {
@@ -36,13 +41,22 @@ h1 {
 }
 
 .number {
-  @extend .h1;
+  @extend .h5;
   @include header-styles;
-
+  margin-bottom: 0;
+  font-family: $font-serif;
   .content-small-screen & {
     font-family: $font-sans-serif;
     font-size: 5rem;
   }
+}
+
+.number.jur_name {
+  padding: 0;
+  max-height: 100px;
+  margin-bottom: 1rem;
+  padding-bottom: .2rem;
+  border-bottom: 1px solid $color-white;
 }
 
 .pages-scanned-number, .reporters-number {
@@ -72,7 +86,7 @@ h1 {
   font-family: $font-sans-serif;
 }
 
-/* on index, display white background logo on small screens
+/* display white background logo on small screens
   display black background logo in all other instances */
 @include media-breakpoint-down(sm) {
   .branding-standalone {
@@ -104,7 +118,155 @@ h1 {
   }
 }
 
-/* show light border in homepage */
-nav[aria-label="main"] {
-  border-bottom: 1px solid $color-white;
+.content-left > .numbers-vertical {
+  background-color: $color-black;
+  margin-top: 20px;
+  text-align: left;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  -webkit-box-shadow: 1px 1px 2px $color-black;
+  -moz-box-shadow: 1px 1px 2px $color-black;
+  box-shadow: 1px 1px 2px $color-black;
+  li.item-set {
+    margin-bottom: 0;
+  }
+  ul {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+
+/* show map only on medium sized devices and above */
+.content-right > .map {
+  margin-top: 3em;
+  margin-bottom: 3em;
+
+  @include media-breakpoint-down(sm) {
+    display: none;
+  }
+}
+
+#section-about > .content > .row {
+  .content-left,
+  .content-right {
+    @include media-breakpoint-down(sm) {
+      display: none;
+    }
+  }
+}
+
+#section-about {
+  .bg-white-violet {
+    padding: 1rem 2rem;
+    margin-bottom: 2rem;
+    min-width: 100%;
+  }
+}
+
+#section-about {
+  padding-bottom: 0;
+  @include media-breakpoint-down(md) {
+    padding-bottom: 60px;
+  }
+}
+
+#section-follow {
+  .social {
+    margin-top: 40px;
+    span {
+      margin-left: 1rem;
+    }
+  }
+}
+
+
+.content-small-screen {
+  @include media-breakpoint-between(xs, sm) {
+    @include make-col(10);
+    margin: 0 auto;
+  }
+  @include media-breakpoint-up(md) {
+    display: none;
+  }
+  hr {
+    border-top: 2px dotted $color-yellow-bright;
+    width: 100%;
+  }
+  .dotted-vr {
+    border-left: 2px dotted $color-yellow-bright;
+    min-height: 100%;
+    width: 10px;
+    margin-left: -10px;
+    margin-right: 10px;
+  }
+  .reporters-number {
+    font-family: $font-serif;
+  }
+  .pages-scanned-number {
+    font-weight: $font-weight-light;
+    color: $color-yellow-bright;
+  }
+  img {
+    float: right;
+    top: -20px;
+    position: relative;
+  }
+}
+
+section > .splash-quote {
+  margin: 0 auto;
+  text-align: center;
+  padding-bottom: 3rem;
+  @include make-col(5);
+  @include media-breakpoint-down(md) {
+    @include make-col(8);
+    .decorative-arrow {
+      display: none;
+    }
+    > h3 {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+  }
+}
+
+#section-quote {
+  padding-bottom: 0;
+  position: relative;
+  .decorative-mountains-red {
+    float: right;
+    bottom: -6px;
+    position: relative;
+  }
+
+  @include media-breakpoint-down(md) {
+    .decorative-mountains-purple,
+    .decorative-mountains-red {
+      display: none;
+    }
+  }
+}
+
+/* arrow shape */
+#section-quote:after {
+  top: 100%;
+  left: 50%;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border: 30px solid rgba(0, 0, 0, 0);
+  border-top-color: $color-black;
+  margin-left: -30px;
+  margin-top: -1px;
+}
+
+
+/* hide social in footer since we have a section dedicated to it */
+footer {
+  .social {
+    display: none;
+  }
 }

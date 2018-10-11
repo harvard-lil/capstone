@@ -1,15 +1,13 @@
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
-
 @import "bootstrap/reboot";
-
 @import "bootstrap/type";
 @import 'bootstrap/grid';
-
 @import "bootstrap/utilities/spacing";
 @import "bootstrap/utilities/text";
-
+@import "bootstrap/utilities/display";
+@import "bootstrap/utilities/flex";
 @import "bootstrap/list-group";
 
 @import 'variables';
@@ -30,7 +28,6 @@
   color: $color-black;
 }
 
-
 body {
   @extend .font-body;
   -moz-osx-font-smoothing: grayscale;
@@ -42,6 +39,11 @@ body {
   font-size: 20px;
   line-height: 29px;
   font-weight: 400;
+
+  // push footer to bottom on short pages
+  @extend .d-flex;
+  @extend .flex-column;
+  min-height: 100vh;
 }
 
 a, button, .btn {
@@ -50,6 +52,18 @@ a, button, .btn {
 
 button, .btn, .btn:hover, .btn:active, .btn:focus {
   border: 0;
+}
+
+main {
+  padding-top: 90px;
+
+  // push footer to bottom on short pages
+  @extend .flex-fill;
+  @extend .d-flex;
+  @extend .flex-column;
+  > *{
+    @extend .flex-fill;
+  }
 }
 
 .code-block {
@@ -72,13 +86,14 @@ code {
   border-radius: 0 !important;
 }
 
-
 .decorative-arrow {
   margin-left: -2rem;
   color: $color-red;
-  &.left { margin-left: 0.4rem; }
+  &.left {
+    margin-left: 0.4rem;
+  }
   @include media-breakpoint-down(sm) {
-     display: none;
+    display: none;
   }
 }
 
@@ -96,6 +111,15 @@ code {
 form {
   margin-bottom: 3rem;
 }
+
+input.form-control, input, textarea {
+  min-width: 100%;
+  margin-bottom: 10px;
+  padding: 5px;
+  outline: none;
+  border-radius: 0;
+}
+
 /* Section styles */
 section {
   padding-top: 5rem;
@@ -126,7 +150,9 @@ section > .content > .row > .content-left {
     @include make-col(3);
   }
   @include media-breakpoint-only(lg) {
-    .decorative-arrow { margin-left: -2rem; }
+    .decorative-arrow {
+      margin-left: -2rem;
+    }
     @include make-col(4);
   }
   @include media-breakpoint-only(md) {
@@ -151,127 +177,6 @@ section > .content > .row > .content-right {
     @include make-col(6);
     @include make-col-offset(1);
   }
-}
-
-/* show map only on medium sized devices and above */
-.content-right > .map {
-  margin-top: 3em;
-  margin-bottom: 3em;
-
-  @include media-breakpoint-down(sm) {
-    display: none;
-  }
-}
-
-#section-about > .content > .row {
-  .content-left,
-  .content-right {
-    @include media-breakpoint-down(sm) {
-      display: none;
-    }
-  }
-}
-
-#section-about {
-  .bg-white-violet {
-    padding: 1rem 2rem;
-    margin-bottom: 2rem;
-    min-width: 100%;
-  }
-}
-
-.content-right > .numbers-horizontal {
-  text-align: center;
-  @include media-breakpoint-down(lg) {
-    display: none;
-  }
-}
-
-.content-left > .numbers-vertical {
-  text-align: left;
-  @include media-breakpoint-only(xl) {
-    display: none;
-  }
-}
-
-.content-small-screen {
-  @include media-breakpoint-between(xs, sm) {
-    @include make-col(10);
-    margin: 0 auto;
-  }
-  @include media-breakpoint-up(md) {
-    display: none;
-  }
-  hr {
-    border-top: 2px dotted $color-yellow-bright;
-    width: 100%;
-  }
-  .dotted-vr {
-    border-left: 2px dotted $color-yellow-bright;
-    min-height: 100%;
-    width: 10px;
-    margin-left: -10px;
-    margin-right: 10px;
-  }
-  .reporters-number {
-    font-family: $font-serif;
-  }
-  .pages-scanned-number {
-    font-weight: $font-weight-light;
-    color: $color-yellow-bright;
-  }
-  img {
-    float: right;
-    top: -20px;
-    position: relative;
-  }
-}
-
-section > .splash-quote {
-  margin: 0 auto;
-  text-align: center;
-  padding-bottom: 3rem;
-  @include make-col(5);
-  @include media-breakpoint-down(md) {
-    @include make-col(8);
-    .decorative-arrow { display: none; }
-    > h3 {
-      font-size: 1.5rem;
-      line-height: 2rem;
-    }
-  }
-}
-
-#section-quote {
-  padding-bottom: 0;
-  position: relative;
-  .decorative-mountains-red {
-    float: right;
-    bottom: -6px;
-    position: relative;
-  }
-
-  @include media-breakpoint-down(md) {
-    .decorative-mountains-purple,
-    .decorative-mountains-red {
-      display: none;
-    }
-  }
-}
-
-/* arrow shape */
-#section-quote:after {
-  top: 100%;
-  left: 50%;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
-  border: 30px solid rgba(0, 0, 0, 0);
-  border-top-color: $color-black;
-  margin-left: -30px;
-  margin-top: -1px;
 }
 
 li.item-set {
@@ -300,7 +205,9 @@ li.item-set {
 }
 
 .social {
-  span { float: left; }
+  span {
+    float: left;
+  }
   a {
     background-position-x: 0;
     border-bottom: none;
@@ -312,6 +219,11 @@ li.item-set {
       background-position-x: -30px !important;
     }
   }
+  .email > a {
+    background: url('../../img/logos/mail-sprite.svg') no-repeat;
+    background-size: auto 30px;
+  }
+  /* github is not a perfect circle */
   .github > a {
     background: url('../../img/logos/github-sprite.svg') no-repeat;
     background-size: auto 29px;
@@ -326,6 +238,21 @@ li.item-set {
   }
 }
 
+.social.big {
+  .twitter > a, .github > a, .email > a {
+    background-size: auto 60px;
+    height: 60px;
+    width: 60px;
+    &:hover, &:active, &:focus {
+      background-position-x: -60px !important;
+    }
+  }
+  /* github is not a perfect circle */
+  .github > a {
+    background-size: auto 58px;
+  }
+}
+
 .inverse {
   .social {
     .github > a, .website > a {
@@ -333,7 +260,6 @@ li.item-set {
     }
   }
 }
-
 
 .bg-black, .inverse {
   color: $color-white;
@@ -369,23 +295,5 @@ li.item-set {
   color: $color-white;
   h1, .section-title {
     color: $color-white !important;
-  }
-}
-
-/* map styles */
-
-#usa-territories-white {
-  .state-link {
-    pointer-events: all;
-    &:focus, &:active, &:hover {
-      fill: $color-yellow !important;
-      stroke: $color-yellow;
-      cursor: pointer;
-    }
-  }
-  .state {
-    stroke: $color-white;
-    cursor: pointer;
-    pointer-events: all;
   }
 }

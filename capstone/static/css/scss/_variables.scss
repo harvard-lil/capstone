@@ -213,6 +213,10 @@ $font-weight-extra-light: 200;
 $font-serif: "Libre Baskerville", "Baskerville", "Georgia", serif;
 $font-sans-serif: "titillium", "Helvetica", sans-serif;
 
+.font-italic {
+  font-style: italic
+}
+
 .font-body {
   font-family: $font-sans-serif;
   font-weight: 300;

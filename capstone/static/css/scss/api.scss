@@ -15,6 +15,19 @@ nav {
   letter-spacing: 1px;
 }
 
+/* give container closest to nav some padding */
+nav[aria-label="main"] ~ .container {
+  padding-top: 90px;
+}
+
+ul.pager > li.previous > a, ul.pager > li.next > a {
+  border-bottom: 0;
+  &:hover, &:focus, &:active {
+    background-color: $color-violet;
+    border: 0;
+  }
+}
+
 .prettyprint {
   font-size: 13px;
   border-radius: 0;

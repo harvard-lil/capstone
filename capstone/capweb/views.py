@@ -1,17 +1,18 @@
 import os
 from collections import OrderedDict
 
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.conf import settings
 
 from capweb.forms import ContactForm
-from capweb.helpers import get_data_from_lil_site
+from capweb.helpers import get_data_from_lil_site, reverse
+from capweb.resources import send_contact
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter
 from capapi import serializers
 from capapi.resources import form_for_request
 
-from capweb.resources import send_contact
 
 
 def index(request):
@@ -40,7 +41,8 @@ def about(request):
     return render(request, "about.html", {
         "page_name": "about",
         "contributors": sorted_contributors,
-        "news": news
+        "news": news,
+        "email": settings.DEFAULT_FROM_EMAIL,
     })
 
 
@@ -49,10 +51,10 @@ def contact(request):
 
     if request.method == 'POST' and form.is_valid():
         send_contact(form.data)
-        return render(request, "contact_success.html")
+        return HttpResponseRedirect(reverse('contact-success'))
 
-    email = request.user.email if request.user.is_authenticated else ""
-    form.initial = {"email": email}
+    email_from = request.user.email if request.user.is_authenticated else ""
+    form.initial = {"email": email_from}
 
     return render(request, 'contact.html', {
         "form": form,
@@ -70,11 +72,10 @@ def gallery(request):
 def maintenance_mode(request):
     return render(request, "error_page.html", {
         "type": "Maintenance",
-        "title": "Well this isn't ideal...",
-        "middle": "You've caught us at a bad time.",
-        "bottom": "We're performing some critical maintenance that just couldn't wait, and we needed to take the site "
-                  "down to do it.",
-        "action": "Please bear with us! We are working on getting the site back up and running as quickly as we can.",
+        "title": "${title}",
+        "middle": "${middle}",
+        "bottom": "${bottom}",
+        "action": "${action}",
     })
 
 def wordclouds(request):

@@ -19,8 +19,7 @@
     <meta name="msapplication-TileImage" content="{% static "img/favicon/mstile-150x150.png" %}">
     <meta name="theme-color" content="#ffffff">
 
-    <title>{% block title %}{% endblock title %}Caselaw Access Project</title>
-    <meta name="robots" content="noindex">
+    <title>{% block title %}{% if title %}{{ title }}{% endif %}{% endblock title %}{% block title_suffix %} | Caselaw Access Project{% endblock title_suffix %}</title>
     <meta name="description" content="{% block meta_description %}Explore American Caselaw{% endblock meta_description %}">
 
     {% stylesheet "base" %}

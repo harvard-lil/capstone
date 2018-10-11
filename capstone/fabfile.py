@@ -3,6 +3,7 @@ import glob
 import gzip
 import hashlib
 import os
+import pathlib
 from datetime import datetime
 import django
 import json
@@ -762,3 +763,32 @@ def ngram_jurisdictions(replace_existing=False):
     """ Generate ngrams for all jurisdictions. If replace_existing is False (default), only jurisdiction-years without existing ngrams will be indexed. """
     from scripts.ngrams import ngram_jurisdictions
     ngram_jurisdictions(replace_existing=bool(replace_existing))
+
+
+@task
+def url_to_js_string(target_url="http://case.test:8000/maintenance/?no_toolbar", out_path="maintenance.html", new_domain="case.law"):
+    """ Save target URL and all assets as a single Javascript-endoded HTML string. """
+    import webpage2html
+    from urllib.parse import urljoin, urlparse
+    from mincss.processor import Processor
+    import re
+    from django.utils.html import escapejs
+
+    # prefill webpage2html with reduced css files from mincss, removing unused styles
+    p = Processor()
+    p.process_url(target_url)
+    p.process()
+    for asset in p.links:
+        href = urljoin(target_url, asset.href)
+        content = asset.after
+        content = re.sub(r'/\*.*?\*/', '', content, flags=re.S)  # remove css comments
+        webpage2html.webpage2html_cache[href] = content
+
+    # use webpage2html to capture target_url as single string
+    data = webpage2html.generate(target_url)
+    data = data.replace("\n", "")   # remove linebreaks
+    if new_domain:
+        # replace case.test:8000 with case.law
+        data = data.replace(urlparse(target_url).netloc, new_domain)
+    data = escapejs(data)           # encode for storage in javascript
+    pathlib.Path(out_path).write_text(data)

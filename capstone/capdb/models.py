@@ -14,6 +14,7 @@ import django.contrib.postgres.search as pg_search
 
 from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
+from capweb.helpers import reverse
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name, extract_casebody)
 from scripts.process_metadata import get_case_metadata
@@ -455,6 +456,8 @@ class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
     def case_exports(self):
         return CaseExport.objects.filter(filter_type='jurisdiction', filter_id=self.pk)
 
+    def get_absolute_url(self):
+        return reverse('jurisdiction-detail', args=[self.slug], scheme="https")
 
 class Reporter(models.Model):
     jurisdictions = models.ManyToManyField(Jurisdiction)
@@ -478,6 +481,9 @@ class Reporter(models.Model):
     @property
     def case_exports(self):
         return CaseExport.objects.filter(filter_type='reporter', filter_id=self.pk)
+
+    def get_absolute_url(self):
+        return reverse('reporter-detail', args=[self.id], scheme="https")
 
 
 class VolumeMetadata(models.Model):
@@ -566,6 +572,9 @@ class VolumeMetadata(models.Model):
     def set_xml_checksums_need_update(self, value=True):
         self.xml_checksums_need_update = value
         self.save(update_fields=['xml_checksums_need_update'])
+
+    def get_absolute_url(self):
+        return reverse('volumemetadata-detail', args=[self.pk], scheme="https")
 
 
 class TrackingToolLog(models.Model):
@@ -685,6 +694,9 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
     def get_slug(self):
         return self.name_abbreviation or self.name
 
+    def get_absolute_url(self):
+        return reverse('court-detail', args=[self.pk], scheme="https")
+
 
 # where clause for creating DB indexes used by the api /cases/ endpoint
 case_metadata_partial_index_where = "jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative"
@@ -786,6 +798,9 @@ class CaseMetadata(models.Model):
 
     def full_cite(self):
         return "%s, %s (%s)" % (self.name_abbreviation, ", ".join(cite.cite for cite in self.citations.all()), self.decision_date.year)
+
+    def get_absolute_url(self):
+        return reverse('casemetadata-detail', args=[self.id], scheme="https")
 
 
 class CaseXML(BaseXMLModel):

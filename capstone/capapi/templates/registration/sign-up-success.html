@@ -1,36 +1,13 @@
 {% extends "registration/base.html" %}
-{% load static %}
-{% block title %}Registration success | {% endblock %}
 
-{% block meta_description %}
-  You have successfully registered to use the Caselaw Access Project API
+{% block title %}Registration {{ status|default:"success" }}{% endblock %}
+{% block meta_description %}You have successfully registered to use the Caselaw Access Project API{% endblock %}
+
+{% block main_content %}
+  {% if message %}
+    {{ message }}
+  {% else  %}
+    <p>Uh oh. Something went wrong.</p>
+    <a href="{% url "home" %}">Go back</a>
+  {% endif %}
 {% endblock %}
-
-{% block content %}
-  <div class="basic-page">
-    <div class="full-content">
-      <div class="top-section compressed">
-        <div class="title-section">
-          <h1 class="page-title">
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            Registration {% if status %}{{ status }}{% endif %}
-          </h1>
-        </div>
-      </div>
-      <div class="row">
-        <div id="sidebar-menu"></div>
-        <div class="main-content">
-          {% if message %}
-            {{ message }}
-          {% else  %}
-            <p>Uh oh. Something went wrong.</p>
-            <a href="{% url "home" %}">Go back</a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-{% endblock content %}

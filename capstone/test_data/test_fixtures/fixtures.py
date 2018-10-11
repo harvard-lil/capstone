@@ -1,9 +1,10 @@
-import re
 from collections import defaultdict
 from contextlib import contextmanager
 from urllib.parse import urlparse
+from time import time
 
 import pytest
+from django.core.signals import request_started, request_finished
 from django.core.cache import cache as django_cache
 from django.core.management import call_command
 from django.db import connections
@@ -108,6 +109,38 @@ def django_assert_num_queries(pytestconfig):
 
     return _assert_num_queries
 
+@pytest.fixture
+def benchmark_requests():
+    """
+        Context manager to get a report of the time taken to process each request inside the block.
+        This is better than measuring the time directly because it doesn't include time used by the test client.
+        Example:
+
+            @pytest.mark.django_db
+            def test_profile_cases(client, benchmark_requests):
+                url = api_reverse('casemetadata-list')
+                with benchmark_requests() as times:
+                    for i in range(50):
+                        client.get(url)
+                print("Average: %s" % (sum(times)/len(times)))
+                print("Min: %s" % min(times))
+    """
+    @contextmanager
+    def do_benchmark():
+        start_times = []
+        times = []
+        def handle_started(*args, **kwargs):
+            start_times.append(time())
+        def handle_finished(*args, **kwargs):
+            times.append(time() - start_times[-1])
+        request_started.connect(handle_started)
+        request_finished.connect(handle_finished)
+        try:
+            yield times
+        finally:
+            request_started.disconnect(handle_started)
+            request_finished.disconnect(handle_finished)
+    return do_benchmark
 
 ### file contents ###
 

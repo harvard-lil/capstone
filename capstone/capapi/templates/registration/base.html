@@ -1,17 +1,6 @@
-{% extends "main_base.html" %}
+{% extends "layouts/narrow.html" %}
 {% load pipeline %}
-
-{% block title %}{{ title }} | {% endblock %}
 
 {% block extra_head %}
   {% stylesheet 'registration' %}
 {% endblock %}
-
-{% block content %}
-  <div class="basic-page">
-    <div class="full-content">
-      {% block registration_content %}{% endblock %}
-    </div>
-  </div>
-{% endblock %}
-
