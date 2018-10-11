@@ -1,17 +1,18 @@
 import os
 from collections import OrderedDict
 
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.conf import settings
 
 from capweb.forms import ContactForm
-from capweb.helpers import get_data_from_lil_site
+from capweb.helpers import get_data_from_lil_site, reverse
+from capweb.resources import send_contact
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter
 from capapi import serializers
 from capapi.resources import form_for_request
 
-from capweb.resources import send_contact
 
 
 def index(request):
@@ -50,7 +51,7 @@ def contact(request):
 
     if request.method == 'POST' and form.is_valid():
         send_contact(form.data)
-        return render(request, "contact_success.html")
+        return HttpResponseRedirect(reverse('contact-success'))
 
     email_from = request.user.email if request.user.is_authenticated else ""
     form.initial = {"email": email_from}

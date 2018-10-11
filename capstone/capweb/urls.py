@@ -1,7 +1,7 @@
-
 from . import views
 from django.contrib.auth import views as auth_views
 from django.urls import path
+from django.conf import settings
 from django.conf.urls import include
 from django.views.generic import TemplateView
 
@@ -32,7 +32,8 @@ urlpatterns = [
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),
 
-    path('contact/',  views.contact, name='contact'),
+    path('contact/', views.contact, name='contact'),
+    path('contact-success/', TemplateView.as_view(template_name='contact_success.html'), name='contact-success'),
 
     ### user account pages ###
 
@@ -48,7 +49,6 @@ urlpatterns = [
     path('user/resend-verification/', user_views.resend_verification, name='resend-verification'),
 
     path('maintenance/', views.maintenance_mode , name='maintenance_mode'),
-
 ]
 
 if settings.DEBUG:
