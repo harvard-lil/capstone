@@ -1,0 +1,69 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+
+{% block extra_head %}
+  {% stylesheet 'browse_case' %}
+{% endblock %}
+
+{% block title %} {{ case_id }}| {% endblock %}
+
+{% block meta_description %}
+  About the Caselaw Access Project
+{% endblock %}
+
+
+{% block content %}
+  <div class="basic-page">
+    <div id="app"  class="full-content">
+      <div class="top-section">
+          <div class="title-section">
+            <h1 class="page-title" id="overview">
+              <img alt="" aria-hidden="true" src='{% static "img/red-arrow-right.svg" %}' class="decorative-arrow"/>
+              [[ title ]]
+            </h1>
+          </div>
+
+      <div class="row below-the-fold">
+        <div class="main-content">
+            <div class="content">
+              <ul>
+                <li id="citation">[[ citation ]]</li>
+                <li id="reporter">[[ reporter ]]</li>
+                <li id="vol">[[ vol_no ]]</li>
+                <li id="pages">[[ pages ]]</li>
+              </ul>
+              [[ message ]]
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+  <script>
+  var app = new Vue({
+    el: '#app',
+      data: {
+        title: "woka woka woka",
+          citation: "woka woka woka",
+          reporter: "woka woka woka",
+          vol_no: "woka woka woka",
+          pages: "woka woka woka",
+          message: "woka woka woka",
+    },
+    methods:{
+     getCase: function() {
+        const response = await fetch('https://api.com/values/1');
+        const json = await response.json();
+        console.log(json)
+     }
+    },
+    beforeMount() {
+      this.getCase()
+    },
+    delimiters: ['[[', ']]'],
+});
+  </script>
+{% endblock %}

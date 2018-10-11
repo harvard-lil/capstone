@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include('capweb.urls')),
     url(r'^', include('capapi.urls')),
+    url(r'^', include('capbrowse.urls')),
 ]
 
 # use django-debug-toolbar if installed
