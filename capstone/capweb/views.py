@@ -40,7 +40,8 @@ def about(request):
     return render(request, "about.html", {
         "page_name": "about",
         "contributors": sorted_contributors,
-        "news": news
+        "news": news,
+        "email": settings.DEFAULT_FROM_EMAIL,
     })
 
 
@@ -51,8 +52,8 @@ def contact(request):
         send_contact(form.data)
         return render(request, "contact_success.html")
 
-    email = request.user.email if request.user.is_authenticated else ""
-    form.initial = {"email": email}
+    email_from = request.user.email if request.user.is_authenticated else ""
+    form.initial = {"email": email_from}
 
     return render(request, 'contact.html', {
         "form": form,
