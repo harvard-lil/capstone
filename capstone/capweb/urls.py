@@ -51,3 +51,11 @@ urlpatterns = [
 
 ]
 
+if settings.DEBUG:
+    # debugging routes to see error pages
+    # for example, https://case.test:8000/404.html shows 404 page
+    urlpatterns += [
+        path(error_page, TemplateView.as_view(template_name=error_page), name=error_page)
+        for error_page in ('400.html', '403.html', '403_csrf.html', '404.html', '500.html', '503.html')
+    ]
+
