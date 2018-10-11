@@ -114,7 +114,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates'),
-                 os.path.join(BASE_DIR, 'capweb', 'templates')], # required by DRF for some reason
+                 os.path.join(BASE_DIR, 'capweb', 'templates'), # required by DRF for some reason
+                 os.path.join(BASE_DIR, 'capbrowse', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -292,6 +293,12 @@ PIPELINE = {
                 'css/scss/case.scss',
             },
             'output_filename': 'case.css'
+        },
+        'browse_case': {
+            'source_filenames': {
+                'css/scss/browse_case.scss',
+            },
+            'output_filename': 'browse_case.css'
         }
     },
     'JAVASCRIPT': {
