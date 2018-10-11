@@ -1,5 +1,4 @@
-{% extends "main_base.html" %}
-{% load static %}
+{% extends "layouts/wide.html" %}
 {% load pipeline %}
 
 {% block extra_head %}
@@ -7,29 +6,14 @@
   {% stylesheet 'gallery' %}
 {% endblock %}
 
-{% block title %}Gallery | {% endblock %}
+{% block title %}A Caselaw Limerick{% endblock %}
+{% block meta_description %}Caselaw Access Project limericks{% endblock %}
 
-{% block meta_description %}
-  Caselaw Access Project gallery
-{% endblock %}
-
-{% block content %}
-  <div class="basic-page">
-    <div class="full-content">
-      <div class="top-section compressed">
-        {% include "includes/page-title.html" with title="A Caselaw Limerick" %}
-      </div>
-      <div class="row">
-        {# ==============> CONTENT <============== #}
-        <div class="main-content simple">
-          <blockquote class="limerick-body">
-            <!-- limerick goes here -->
-          </blockquote>
-          <button class="btn btn-default" id="generate-limericks">
-            New rhyme!
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+{% block main_content %}
+  <blockquote class="limerick-body">
+    <!-- limerick goes here -->
+  </blockquote>
+  <button class="btn btn-default" id="generate-limericks">
+    New rhyme!
+  </button>
 {% endblock %}

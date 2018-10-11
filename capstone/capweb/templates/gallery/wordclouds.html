@@ -1,4 +1,4 @@
-{% extends "main_base.html" %}
+{% extends "layouts/wide.html" %}
 {% load static %}
 {% load pipeline %}
 {% load substring %}
@@ -7,41 +7,22 @@
   {% stylesheet 'gallery' %}
 {% endblock %}
 
-{% block title %}Gallery | {% endblock %}
+{% block title %}California Wordclouds{% endblock %}
+{% block meta_description %}Caselaw Access Project California Wordclouds{% endblock %}
+{% block explainer %}Most used words in California caselaw from 1853 to 2015{% endblock %}
 
-{% block meta_description %}
-  Caselaw Access Project gallery
-{% endblock %}
-
-{% block content %}
-  <div class="basic-page">
-    <div class="full-content">
-      <div class="top-section compressed">
-        {% include "includes/page-title.html" with title="California Wordclouds" %}
-        <div class="explainer-section">
-          <div class="content">
-            Most used words in California caselaw from 1853 to 2015
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        {# ==============> CONTENT <============== #}
-        <div class="main-content simple">
-          <ul class="list-inline">
-            {% for wordcloud in wordclouds %}
-              <a class="wordcloud-item"
-                 title="{% substring full_string=wordcloud start_idx=0 end_idx=4 %}"
-                 href="{% static "" %}img/wordclouds/{{ wordcloud }}">
-                <li class="list-item-inline">
-                  <img src="{% static "" %}img/wordclouds/{{ wordcloud }}"
-                       alt=""/>
-                  <p class="year">{% substring full_string=wordcloud start_idx=0 end_idx=4 %}</p>
-                </li>
-              </a>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
+{% block main_content %}
+  <ul class="list-inline">
+    {% for wordcloud in wordclouds %}
+      <a class="wordcloud-item"
+         title="{% substring full_string=wordcloud start_idx=0 end_idx=4 %}"
+         href="{% static "" %}img/wordclouds/{{ wordcloud }}">
+        <li class="list-item-inline">
+          <img src="{% static "" %}img/wordclouds/{{ wordcloud }}"
+               alt=""/>
+          <p class="year">{% substring full_string=wordcloud start_idx=0 end_idx=4 %}</p>
+        </li>
+      </a>
+    {% endfor %}
+  </ul>
 {% endblock %}

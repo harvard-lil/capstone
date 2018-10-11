@@ -6,7 +6,10 @@
 @import 'bootstrap/grid';
 @import "bootstrap/utilities/spacing";
 @import "bootstrap/utilities/text";
+@import "bootstrap/utilities/display";
+@import "bootstrap/utilities/flex";
 @import "bootstrap/list-group";
+
 @import 'variables';
 @import 'elements';
 @import 'a11y';
@@ -36,6 +39,11 @@ body {
   font-size: 20px;
   line-height: 29px;
   font-weight: 400;
+
+  // push footer to bottom on short pages
+  @extend .d-flex;
+  @extend .flex-column;
+  min-height: 100vh;
 }
 
 a, button, .btn {
@@ -48,6 +56,14 @@ button, .btn, .btn:hover, .btn:active, .btn:focus {
 
 main {
   padding-top: 90px;
+
+  // push footer to bottom on short pages
+  @extend .flex-fill;
+  @extend .d-flex;
+  @extend .flex-column;
+  > *{
+    @extend .flex-fill;
+  }
 }
 
 .code-block {

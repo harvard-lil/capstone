@@ -1,7 +1,7 @@
-
 from . import views
 from django.contrib.auth import views as auth_views
 from django.urls import path
+from django.conf import settings
 from django.conf.urls import include
 from django.views.generic import TemplateView
 
@@ -32,7 +32,8 @@ urlpatterns = [
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),
 
-    path('contact/',  views.contact, name='contact'),
+    path('contact/', views.contact, name='contact'),
+    path('contact-success/', TemplateView.as_view(template_name='contact_success.html'), name='contact-success'),
 
     ### user account pages ###
 
@@ -48,6 +49,13 @@ urlpatterns = [
     path('user/resend-verification/', user_views.resend_verification, name='resend-verification'),
 
     path('maintenance/', views.maintenance_mode , name='maintenance_mode'),
-
 ]
+
+if settings.DEBUG:
+    # debugging routes to see error pages
+    # for example, https://case.test:8000/404.html shows 404 page
+    urlpatterns += [
+        path(error_page, TemplateView.as_view(template_name=error_page), name=error_page)
+        for error_page in ('400.html', '403.html', '403_csrf.html', '404.html', '500.html', '503.html')
+    ]
 

@@ -1,0 +1,27 @@
+{% extends "main_base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="basic-page">
+    <div class="full-content {% block full_content_style %}{% endblock %}">
+      <div class="top-section {% block top_section_style %}{% endblock %}">
+        <div class="title-section">
+          <h1 class="page-title" id="overview">
+            <img alt=""
+                 aria-hidden="true"
+                 src='{% static "img/red-arrow-right.svg" %}'
+                 class="decorative-arrow"/>
+            {% block content_title %}{% block title %}{% if title %}{{ title }}{% endif %}{% endblock %}{% endblock %}
+          </h1>
+        </div>
+        <div class="explainer-section">
+          <div class="content">{% block explainer %}{% endblock %}</div>
+        </div>
+      </div>
+      <div class="row {% block row_style %}{% endblock %}">
+        {% block sidebar_menu %}{% endblock %}
+        <div class="main-content {% block main_content_style %}{% endblock %}">{% block main_content %}{% endblock %}</div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

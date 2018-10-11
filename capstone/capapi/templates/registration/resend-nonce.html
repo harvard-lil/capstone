@@ -1,37 +1,21 @@
 {% extends "registration/base.html" %}
 {% load bootstrap4 %}
-{% load static %}
 
-{% block title %}Verify Your Email | {% endblock %}
+{% block title %}Resend verification{% endblock %}
+{% block meta_description %}Verify your email address{% endblock %}
 
-{% block meta_description %}
-  Verify your email address
-{% endblock %}
-
-{% block content %}
-  <div class="basic-page">
-    <div class="full-content">
-      <div class="top-section compressed">
-        {% include "includes/page-title.html" with title="Resend verification" %}
-      </div>
-      <div class="row">
-        <div class="main-content">
-          {% if error %}
-            <div class="alert alert-warning">{{ error }}</div>
-          {% else %}
-            <form action="{% url "resend-verification" %}" method="POST">
-              {% csrf_token %}
-              {% bootstrap_form form %}
-              <br/>
-              <button type="submit"
-                      class="btn btn-default">
-                Resend verification email
-              </button>
-            </form>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-
+{% block main_content %}
+  {% if error %}
+    <div class="alert alert-warning">{{ error }}</div>
+  {% else %}
+    <form method="POST">
+      {% csrf_token %}
+      {% bootstrap_form form %}
+      <br/>
+      <button type="submit"
+              class="btn btn-default">
+        Resend verification email
+      </button>
+    </form>
+  {% endif %}
 {% endblock %}

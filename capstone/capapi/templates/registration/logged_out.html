@@ -1,26 +1,15 @@
 {% extends "registration/base.html" %}
-{% load static %}
 
-{% block title %}Logged out | {% endblock %}
+{% block title %}Logged out{% endblock %}
+{% block meta_description %}You have been logged out{% endblock %}
 
-{% block meta_description %}
-  You have been logged out
-{% endblock %}
-
-{% block registration_content %}
-  <div class="top-section compressed">
-    {% include "includes/page-title.html" with title="Logged out" %}
-  </div>
-  <div class="row">
-    <div class="main-content">
-      <p>
-        You have signed out.
-      </p>
-      <p>
-        <a href="{% url 'login' %}">
-          Log in again
-        </a>
-      </p>
-    </div>
-  </div>
+{% block main_content %}
+  <p>
+    You have signed out.
+  </p>
+  <p>
+    <a href="{% url 'login' %}">
+      Log in again
+    </a>
+  </p>
 {% endblock %}
