@@ -112,7 +112,10 @@ form {
   margin-bottom: 3rem;
 }
 
-input.form-control, input, textarea {
+input.form-control[type="text"],
+input[type="text"],
+input[type="email"],
+textarea {
   width: 100%;
   margin-bottom: 10px;
   padding: 5px;
