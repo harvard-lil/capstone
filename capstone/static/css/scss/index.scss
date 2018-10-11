@@ -6,6 +6,7 @@ h1 {
   @include sr-only;
 }
 
+
 /*
  * specialized lettering for index page
  */
@@ -86,9 +87,16 @@ h1 {
   font-family: $font-sans-serif;
 }
 
-/* display white background logo on small screens
-  display black background logo in all other instances */
+/* on small screens:
+  - display white background logo
+  - change fixed positioning of nav bar
+*/
+
 @include media-breakpoint-down(sm) {
+  #main.main-content {
+    padding-top: 0;
+  }
+
   .branding-standalone {
     display: inline-block;
     padding: 0.5rem;
@@ -107,6 +115,7 @@ h1 {
   }
 
   nav[aria-label="main"] {
+    position: relative;
     .branding {
       display: none;
     }
