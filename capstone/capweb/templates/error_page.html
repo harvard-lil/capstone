@@ -1,5 +1,4 @@
-{% extends "main_base.html" %}
-{% load static %}
+{% extends "layouts/wide.html" %}
 {% load pipeline %}
 
 {% block extra_head %}
@@ -7,37 +6,16 @@
 {% endblock %}
 
 {% block title %} {{ type }} | {{ title }}{% endblock %}
+{% block content_title %}{{ title }}{% endblock %}
+{% block meta_description %}Caselaw Access Project {{ type }}{% endblock %}
+{% block top_section_style %}bg-black{% endblock %}
 
-{% block meta_description %}
-Caselaw Access Project {{ type }}
-{% endblock %}
-
-
-{% block content %}
-    <div class="basic-page">
-    <div class="full-content">
-      <div class="top-section bg-black">
-        <div class="title-section">
-          <h1 class="page-title" id="overview">
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            {{ title }}
-          </h1>
-        </div>
-        <div class="explainer-section">
-          <div class="content">
-            <div class="middle-text">{{ middle }}</div>
-            <div class="bottom-text">
-              {{ bottom }}
-            </div>
-            <div class="action-text">
-              {{ action }}
-            <div>
-          </div>
-        </div>
-      </div>
-      </div>
-    </div>
+{% block explainer %}
+  <div class="middle-text">{{ middle }}</div>
+  <div class="bottom-text">
+    {{ bottom }}
+  </div>
+  <div class="action-text">
+    {{ action }}
+  <div>
 {% endblock %}

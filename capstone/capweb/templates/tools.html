@@ -1,5 +1,4 @@
-{% extends "main_base.html" %}
-{% load static %}
+{% extends "layouts/full.html" %}
 {% load pipeline %}
 {% load api_url %}
 
@@ -7,90 +6,67 @@
   {% stylesheet 'tools' %}
 {% endblock %}
 
-{% block title %}Tools | {% endblock %}
+{% block title %}Tools{% endblock %}
+{% block meta_description %}Caselaw Access Project Tools{% endblock %}
+{% block top_section_style %}bg-black{% endblock %}
 
-{% block meta_description %}
-  Caselaw Access Project Tools
+{% block explainer %}
+  The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
+  and their associated metadata. We currently offer two ways to access the data: our
+  <a href="{% url "api" %}">API</a>, and <a href="{% url "bulk-docs" %}">bulk downloads</a>.
 {% endblock %}
 
-{% block content %}
-  <div class="basic-page">
-    <div class="full-content">
-      <div class="top-section bg-black">
-        <div class="title-section">
-          <h1 class="page-title" id="overview">
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            Tools
-          </h1>
-        </div>
-        <div class="explainer-section">
-          <div class="content">
-             The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
-             and their associated metadata. We currently offer two ways to access the data: our
-             <a href="{% url "api" %}">API</a>, and <a href="{% url "bulk-docs" %}">bulk downloads</a>.
-
-          </div>
-        </div>
-
-      </div>
-      <div class="row below-the-fold">
-        {# ==============> MENU <============== #}
-        <nav id="sidebar-menu" aria-label="table of contents">
-          <div class="content">
-            <ul class="list-group">
-              <li>
-                <a class="list-group-item" href="#api">
-                  <span class="text">API</span>
-                </a>
-              </li>
-              <li>
-                <a class="list-group-item" href="#bulk">
-                  <span class="text">Bulk Data</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </nav>
-        {# ==============> CONTENT <============== #}
-        <div class="main-content">
-            {# ==============> API  <============== #}
-            <div class="page-section">
-              <h2 class="subtitle" id="api">
-                <a href="{% url "api" %}">The API</a>
-              </h2>
-              <p>
-                  Our open-source API is the best option for anybody interested in programmatically accessing our
-                  metadata, full-text search, or individual cases.
-              </p>
-              <ul>
-                <li><a href="{% api_url "api-root" %}">Browse the API</a></li>
-                <li><a href="{% url "api" %}">API docs</a></li>
-              </ul>
-            </div>
-
-            {# ==============> BULK!! <============== #}
-            <div class="page-section">
-              <h2 class="subtitle" id="bulk">
-                <a href="{% url "bulk-docs" %}">Bulk Downloads</a>
-              </h2>
-              <p>
-                If you need a large collection of cases, you will probably be best served by our bulk data downloads.
-                  With no registration or formal agreements, we offer zip files containing all cases from Illinois and
-                  Arkansas, either in plain text, or marked up with XML. Non-commercial researchers who want a larger,
-                  or different subset of our cases should <a href="mailto:lil@law.harvard.edu">email us</a> for more
-                  information. Those interested in licensing this data case for commercial use should
-                  <a href="http://info.ravellaw.com/contact-us-form">contact Ravel Law</a> for more information.
-              </p>
-              <ul>
-                <li><a href="{% url "bulk-download" %}">Download bulk files</a></li>
-                <li><a href="{% url "bulk-docs" %}">Bulk file docs</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
+{% block sidebar_menu %}
+  <nav id="sidebar-menu" aria-label="table of contents">
+    <div class="content">
+      <ul class="list-group">
+        <li>
+          <a class="list-group-item" href="#api">
+            <span class="text">API</span>
+          </a>
+        </li>
+        <li>
+          <a class="list-group-item" href="#bulk">
+            <span class="text">Bulk Data</span>
+          </a>
+        </li>
+      </ul>
     </div>
+  </nav>
+{% endblock %}
+
+{% block main_content %}
+  {# ==============> API  <============== #}
+  <div class="page-section">
+    <h2 class="subtitle" id="api">
+      <a href="{% url "api" %}">The API</a>
+    </h2>
+    <p>
+        Our open-source API is the best option for anybody interested in programmatically accessing our
+        metadata, full-text search, or individual cases.
+    </p>
+    <ul>
+      <li><a href="{% api_url "api-root" %}">Browse the API</a></li>
+      <li><a href="{% url "api" %}">API docs</a></li>
+    </ul>
+  </div>
+
+  {# ==============> BULK!! <============== #}
+  <div class="page-section">
+    <h2 class="subtitle" id="bulk">
+      <a href="{% url "bulk-docs" %}">Bulk Downloads</a>
+    </h2>
+    <p>
+      If you need a large collection of cases, you will probably be best served by our bulk data downloads.
+        With no registration or formal agreements, we offer zip files containing all cases from Illinois and
+        Arkansas, either in plain text, or marked up with XML. Non-commercial researchers who want a larger,
+        or different subset of our cases should <a href="mailto:lil@law.harvard.edu">email us</a> for more
+        information. Those interested in licensing this data case for commercial use should
+        <a href="http://info.ravellaw.com/contact-us-form">contact Ravel Law</a> for more information.
+    </p>
+    <ul>
+      <li><a href="{% url "bulk-download" %}">Download bulk files</a></li>
+      <li><a href="{% url "bulk-docs" %}">Bulk file docs</a></li>
+    </ul>
+  </div>
 {% endblock %}

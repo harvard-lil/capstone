@@ -1,80 +1,59 @@
-{% extends "main_base.html" %}
-{% load static %}
-{% load pipeline %}
+{% extends "registration/base.html" %}
 
-{% block title %}Your Account | {% endblock %}
-{% block extra_head %}
-  {% javascript 'base' %}
-  {% stylesheet 'registration' %}
-{% endblock %}
+{% block title %}User details{% endblock %}
 
-{% block content %}
-  <div class="basic-page">
-    <div class="full-content">
-      <div class="top-section compressed">
-        {% include "includes/page-title.html" with title="User details" %}
+{% block main_content %}
+  <div class="user-information">
+    <label for="user-email">Email:</label>
+    <input id="user-email"
+           readonly
+           value="{{ request.user.email }}">
+    <br/>
+    <label for="user-api-key">API Key:</label>
+    <input id="user-api-key"
+           readonly
+           value="{{ request.user.get_api_key }}">
+    <br/>
+    {% if unlimited %}
+      <label for="user-unlimited-access-until">Unlimited access until:</label>
+      <input id="user-unlimited-access-until"
+             readonly
+             value="{{ request.user.unlimited_access_until }}">
+      <br/>
+    {% else %}
+      <label for="user-cases-left">Cases left to view today:</label>
+      <input id="user-cases-left"
+             readonly
+             value="{{ request.user.case_allowance_remaining }}">
+      <br/>
+      <label for="user-case-allowance">Case allowance (updated daily):</label>
+      <input id="user-case-allowance"
+             readonly
+             value="{{ request.user.total_case_allowance }}">
+      <br/>
+      <a href="{% url "research-request" %}" class="btn btn-default">
+        Request unlimited research access
+      </a>
+      {% with request.user.research_requests.first as research_request %}
+        {% if research_request %}
+          <p>
+            You requested research access on {{ research_request.submitted_date }}
+            Your request is {{ research_request.status }}.
+          </p>
+        {% endif %}
+      {% endwith %}
       </div>
-      <div class="row">
-        <div id="sidebar-menu"></div>
-        <div class="main-content">
-          <div class="user-information">
-            <label for="user-email">Email:</label>
-            <input id="user-email"
-                   readonly
-                   value="{{ request.user.email }}">
-            <br/>
-            <label for="user-api-key">API Key:</label>
-            <input id="user-api-key"
-                   readonly
-                   value="{{ request.user.get_api_key }}">
-            <br/>
-            {% if unlimited %}
-              <label for="user-unlimited-access-until">Unlimited access until:</label>
-              <input id="user-unlimited-access-until"
-                     readonly
-                     value="{{ request.user.unlimited_access_until }}">
-              <br/>
-            {% else %}
-              <label for="user-cases-left">Cases left to view today:</label>
-              <input id="user-cases-left"
-                     readonly
-                     value="{{ request.user.case_allowance_remaining }}">
-              <br/>
-              <label for="user-case-allowance">Case allowance (updated daily):</label>
-              <input id="user-case-allowance"
-                     readonly
-                     value="{{ request.user.total_case_allowance }}">
-              <br/>
-              <a href="{% url "research-request" %}" class="btn btn-default">
-                Request unlimited research access
-              </a>
-              {% with request.user.research_requests.first as research_request %}
-                {% if research_request %}
-                  <p>
-                    You requested research access on {{ research_request.submitted_date }}
-                    Your request is {{ research_request.status }}.
-                  </p>
-                {% endif %}
-              {% endwith %}
-              </div>
-            {% endif %}
-          <br/>
-          <div class="btn-group">
-            <a href="{% url "password_change" %}"
-               class="btn btn-default">
-              Change password
-            </a>
-            &nbsp;
-            <a href="{% url "logout" %}"
-               class="btn btn-default">
-              Log out
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+    {% endif %}
+  <br/>
+  <div class="btn-group">
+    <a href="{% url "password_change" %}"
+       class="btn btn-default">
+      Change password
+    </a>
+    &nbsp;
+    <a href="{% url "logout" %}"
+       class="btn btn-default">
+      Log out
+    </a>
   </div>
-
-
-
-{% endblock content %}
+{% endblock %}
