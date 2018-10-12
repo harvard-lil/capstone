@@ -82,7 +82,7 @@ def make_pdf(volume_name, show_words=False, missing_pages=0):
 
         # read page info from database
         parsed_alto = page.get_parsed_xml()
-        tif_file = Path('images', parsed_alto('alto|fileName').text()).with_suffix('.png')
+        tif_file = Path('images', parsed_alto('alto|fileName').text()).with_suffix('.tif')
         page_number = int(parsed_alto('alto|Page').attr('PHYSICAL_IMG_NR'))
 
         ### create image page
@@ -98,54 +98,58 @@ def make_pdf(volume_name, show_words=False, missing_pages=0):
 
         ### create text page
 
-        # text_pdf_page is created using reportlab library, which is good at placing words on a page
-        text_pdf_buffer = BytesIO()
-        text_pdf = canvas.Canvas(text_pdf_buffer, pagesize=(width, height))
+        alto_strings = parsed_alto('alto|String')
+        if alto_strings:
 
-        # get styles
-        styles = {}
-        for style in parsed_alto('alto|TextStyle'):
-            # style looks like <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="6.00" FONTTYPE="bold italic" FONTWIDTH="proportional" ID="Style_1"/>
-            font_types = frozenset(i for i in style.get('FONTTYPE').split(' ') if i in known_font_types)
-            font_family = style.get('FONTFAMILY')
-            font_name, metrics_font = font_lookup.get((font_family, font_types)) or font_lookup.get((font_family, None)) or font_lookup.get(("Times New Roman", None))
-            styles[style.get('ID')] = {
-                'font_name': font_name,
-                'metrics_font': metrics_font,
-                'size': float(style.get('FONTSIZE')),
-            }
+            # text_pdf_page is created using reportlab library, which is good at placing words on a page
+            text_pdf_buffer = BytesIO()
+            text_pdf = canvas.Canvas(text_pdf_buffer, pagesize=(width, height))
 
-        # collect position, contents, and style for each word on the page
-        words = []
-        for s in parsed_alto('alto|String'):
-            # s looks like <String CONTENT="DECISIONS" HEIGHT="42" HPOS="415" ID="ST_17.1.1.1" STYLEREFS="Style_8" VPOS="390" WIDTH="501" WC="0.30" CC="000000000" TAGREFS=""/>
-            style = styles[s.get('STYLEREFS')]
-            text = s.get('CONTENT')
-            baseline_offset = get_baseline_offset(text, style['metrics_font'], style['size'])
-            words.append([
-                int(s.get('HPOS')) * pixels_to_points,                                      # offset from left side of page, in pts
-                height + baseline_offset - (int(s.get('VPOS')) + int(s.get('HEIGHT'))) * pixels_to_points,    # offset from bottom of page, in pts
-                s.get('CONTENT'),
-                style,
-            ])
+            # get styles
+            styles = {}
+            for style in parsed_alto('alto|TextStyle'):
+                # style looks like <TextStyle FONTFAMILY="Times New Roman" FONTSIZE="6.00" FONTTYPE="bold italic" FONTWIDTH="proportional" ID="Style_1"/>
+                font_types = frozenset(i for i in style.get('FONTTYPE').split(' ') if i in known_font_types)
+                font_family = style.get('FONTFAMILY')
+                font_name, metrics_font = font_lookup.get((font_family, font_types)) or font_lookup.get((font_family, None)) or font_lookup.get(("Times New Roman", None))
+                styles[style.get('ID')] = {
+                    'font_name': font_name,
+                    'metrics_font': metrics_font,
+                    'size': float(style.get('FONTSIZE')),
+                }
 
-        # sort words vertically and then horizontally so text selection works
-        words.sort(key=lambda word: (-word[1], word[0]))
+            # collect position, contents, and style for each word on the page
+            words = []
+            for s in alto_strings:
+                # s looks like <String CONTENT="DECISIONS" HEIGHT="42" HPOS="415" ID="ST_17.1.1.1" STYLEREFS="Style_8" VPOS="390" WIDTH="501" WC="0.30" CC="000000000" TAGREFS=""/>
+                style = styles[s.get('STYLEREFS')]
+                text = s.get('CONTENT')
+                baseline_offset = get_baseline_offset(text, style['metrics_font'], style['size'])
+                words.append([
+                    int(s.get('HPOS')) * pixels_to_points,                                      # offset from left side of page, in pts
+                    height + baseline_offset - (int(s.get('VPOS')) + int(s.get('HEIGHT'))) * pixels_to_points,    # offset from bottom of page, in pts
+                    s.get('CONTENT'),
+                    style,
+                ])
 
-        # draw words to PDF, changing styles as necessary
-        old_style = None
-        for x, y, text, style in words:
-            if not old_style or style['font_name'] != old_style['font_name'] or style['size'] != old_style['size']:
-                text_pdf.setFont(style['font_name'], style['size'])
-                old_style = style
-            text_pdf.drawString(x, y, text, mode=None if show_words else 3)
+            # sort words vertically and then horizontally so text selection works
+            words.sort(key=lambda word: (-word[1], word[0]))
 
-        text_pdf.save()
+            # draw words to PDF, changing styles as necessary
+            old_style = None
+            for x, y, text, style in words:
+                if not old_style or style['font_name'] != old_style['font_name'] or style['size'] != old_style['size']:
+                    text_pdf.setFont(style['font_name'], style['size'])
+                    old_style = style
+                text_pdf.drawString(x, y, text, mode=None if show_words else 3)
 
-        ### combine image page and text page and append to pdf
+            text_pdf.save()
 
-        text_pdf_page = PdfFileReader(BytesIO(text_pdf_buffer.getvalue())).getPage(0)
-        image_pdf_page.mergePage(text_pdf_page)
+            ### combine image page and text page
+            text_pdf_page = PdfFileReader(BytesIO(text_pdf_buffer.getvalue())).getPage(0)
+            image_pdf_page.mergePage(text_pdf_page)
+
+        # append to pdf
         pdf.addPage(image_pdf_page)
 
         ### add bookmarks
