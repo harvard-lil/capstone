@@ -76,7 +76,7 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
         if "Instance" in context['name'] and context['response'].status_code == 200:
             try:
                 parsed_response = json.loads(context['content'].decode())
-                context['page_url'] = parsed_response['name']
+                context['page_url'] = parsed_response['url']
 
                 if context['name'] == "Case Instance":
                     context['page_title'] = parsed_response['name_abbreviation']
