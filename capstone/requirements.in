@@ -4,7 +4,6 @@
 tqdm                # script progress bars
 wrapt               # object proxying
 nltk                # tokenizing for ngrams
-django-fullurl
 
 # celery
 celery[redis,sqs]       # task queue
