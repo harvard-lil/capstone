@@ -1,5 +1,5 @@
 {% load static %}
-<a class="skip" href="#main">Skip to main content</a>
+<a class="skip" href="#{{ skip_target | default:'main'}}">Skip to main content</a>
 <!-- On small screens, show logo on its own row -->
 <div class="row branding-standalone">
   <div class="branding">
