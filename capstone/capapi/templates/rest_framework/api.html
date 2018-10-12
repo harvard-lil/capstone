@@ -1,7 +1,6 @@
 {% extends "rest_framework/base.html" %}
 {% load pipeline %}
-{% load static %}
-{% load fullurl %}
+{% load capweb_static %}
 {% block style %}
   {% stylesheet 'api' %}
   {% javascript 'base' %}
@@ -10,8 +9,8 @@
 {% block meta %}
     {{ block.super }}
     {# social #}
-    <meta name="twitter:image" content="{% fullstatic "img/og_images/api.jpg" %}">
-    <meta property="og:image"  content="{% fullstatic "img/og_images/api.jpg" %}">
+    <meta name="twitter:image" content="{% capweb_static "img/og_image/api.jpg" %}">
+    <meta property="og:image"  content="{% capweb_static "img/og_image/api.jpg" %}">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:site" content="@caselawaccess">
     <meta name="twitter:creator" content="@HarvardLIL">

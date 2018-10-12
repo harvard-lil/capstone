@@ -1,6 +1,8 @@
 {% load static %}
 {% load fullurl %}
 {% load pipeline %}
+{% load capweb_static %}
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -12,11 +14,11 @@
     {# social #}
     {% if page_image %}
       <meta name="twitter:card" content="summary_large_image">
-      <meta name="twitter:image" content="{% fullstatic page_image %}">
-      <meta property="og:image"  content="{% fullstatic page_image %}">
+      <meta name="twitter:image" content="{% capweb_static page_image %}">
+      <meta property="og:image"  content="{% capweb_static page_image %}">
     {% else %}
-      <meta name="twitter:image" content="{% fullstatic "img/og_images/api.jpg" %}">
-      <meta property="og:image"  content="{% fullstatic "img/og_images/api.jpg" %}">
+      <meta name="twitter:image" content="{% capweb_static "img/og_images/api.jpg" %}">
+      <meta property="og:image"  content="{% capweb_static "img/og_images/api.jpg" %}">
       <meta name="twitter:card" content="summary">
     {% endif %}
 
