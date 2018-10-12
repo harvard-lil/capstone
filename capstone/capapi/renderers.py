@@ -1,4 +1,5 @@
 import hashlib
+import json
 
 from django.conf import settings
 from django.http.response import HttpResponseBase
@@ -56,8 +57,10 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             'citation': official_citation,
             'title': data['casebody']['title'],
             'case_html': generate_html(data['casebody']['data']),
+            'page_description': data['name'],
+            'page_title': data['name_abbreviation'],
         }
-        return template.render(context)
+        return template.render(context, renderer_context['request'])
 
 
 class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
@@ -68,6 +71,38 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
     def get_filter_form(self, data, view, request):
         return super().get_filter_form(data, view, request)
 
+    def get_context(self, *args, **kwargs):
+        context = super().get_context(*args, **kwargs)
+        if "Instance" in context['name'] and context['response'].status_code == 200:
+            try:
+                parsed_response = json.loads(context['content'].decode())
+                context['page_url'] = parsed_response['name']
+
+                if context['name'] == "Case Instance":
+                    context['page_title'] = parsed_response['name_abbreviation']
+                    context['page_description'] = parsed_response['name']
+
+                if context['name'] == "Jurisdiction Instance":
+                    context['page_title'] = "Jurisdiction: {}".format(parsed_response['name'])
+                    context['page_description'] = "The CAPAPI Jurisdiction Entry for {}".format(parsed_response['name_long'])
+
+                if context['name'] == "Court Instance":
+                    context['page_title'] = parsed_response['name']
+                    context['page_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['name_long'])
+
+                if context['name'] == "Volume Instance":
+                    context['page_title'] = "{} v.{} ({})".format(parsed_response['reporter'], parsed_response['volume'], parsed_response['publication_year'])
+                    context['page_description'] = "The CAPAPI Volume Entry for {} v. {} ({})".format(parsed_response['reporter'], parsed_response['volume'], parsed_response['publication_year'])
+
+                if context['name'] == "Reporter Instance":
+                    context['page_title'] = parsed_response['short_name']
+                    context['page_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['full_name'])
+            except:
+                return context
+        else:
+            context['page_title'] = context['name']
+            context['page_description'] = "CAPAPI: The Caselaw Access Project API"
+        return context
 
 class PassthroughRenderer(renderers.JSONRenderer):
     """
@@ -79,6 +114,7 @@ class PassthroughRenderer(renderers.JSONRenderer):
         if isinstance(data, HttpResponseBase):
             return data
         return super().render(data, accepted_media_type, renderer_context)
+
 
 
 def generate_xml_error(error_text, message_text):
