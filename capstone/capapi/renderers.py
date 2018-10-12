@@ -87,16 +87,17 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
                     context['page_description'] = "The CAPAPI Jurisdiction Entry for {}".format(parsed_response['name_long'])
 
                 if context['name'] == "Court Instance":
-                    context['page_title'] = parsed_response['name']
-                    context['page_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['name_long'])
+                    context['page_title'] = parsed_response['name_abbreviation']
+                    context['page_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['name'])
 
                 if context['name'] == "Volume Instance":
-                    context['page_title'] = "{} v.{} ({})".format(parsed_response['reporter'], parsed_response['volume'], parsed_response['publication_year'])
-                    context['page_description'] = "The CAPAPI Volume Entry for {} v. {} ({})".format(parsed_response['reporter'], parsed_response['volume'], parsed_response['publication_year'])
+                    context['page_title'] = "{} v.{} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
+                    context['page_description'] = "The CAPAPI Volume Entry for {} v. {} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
 
                 if context['name'] == "Reporter Instance":
                     context['page_title'] = parsed_response['short_name']
                     context['page_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['full_name'])
+
             except:
                 return context
         else:
