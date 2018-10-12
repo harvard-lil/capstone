@@ -9,7 +9,6 @@
 
 .content {
   margin: 0 auto;
-  padding: 3rem 0;
   @include make-col(9);
   @include media-breakpoint-down(md) {
     @include make-col(12);
@@ -23,11 +22,8 @@ label {
   font-family: $font-serif;
 }
 .user-information {
-  label, input {
-    min-width: 100%;
-  }
   input{
-    border: 0px;
+    border: 0;
     color: $color-violet;
     margin-bottom: 1rem;
   }
