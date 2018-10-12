@@ -77,6 +77,10 @@ ol.alpha > li {
   padding-left: 1rem;
 }
 
+ol.num > li {
+  list-style-type: decimal;
+}
+
 ul.bullets, ul.bullets ul {
   padding-left: 1.5em !important;
   li {
