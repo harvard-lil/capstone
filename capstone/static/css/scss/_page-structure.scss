@@ -2,6 +2,7 @@
   //padding: 4rem 0 4rem 0;
   font-size: 20px;
   line-height: 1.6em;
+  word-wrap: break-word;
   @extend .row;
 
   h1 {
@@ -35,7 +36,9 @@
     position: relative;
     padding-top: 3.5rem;
     &:first-child {
-      padding-top: 4.5rem;
+      @include media-breakpoint-down(md) {
+        padding-top: 1rem;
+      }
     }
     > a {
       color: $color-violet-large-text;
@@ -79,6 +82,9 @@
     p {
       margin-top: 20px;
     }
+    @include media-breakpoint-up(md) {
+      padding-left: 15px;
+    }
   }
   .main-content {
     padding-bottom: 3rem;
@@ -93,7 +99,7 @@
     }
     &.simple {
       width: 100%;
-      padding-left: 15px;
+      padding-left: 5px;
     }
   }
   .decorative-arrow {
@@ -104,7 +110,6 @@
 
 .full-content {
   margin: -2px auto 0 auto;
-  background: $color-white;
   border: 2px solid rgba(247, 246, 242, 0.8);
   box-shadow: 0 0 27px 0 rgba(222, 222, 230, 0.46);
 
@@ -125,16 +130,21 @@
 
 .top-section {
   @extend .row;
-  padding-bottom: 8rem !important;
-  padding-top: 8.5rem;
+  padding-bottom: 8rem;
+  padding-top: 4rem;
   border-bottom: 1px solid #E7E7ED;
   &.compressed {
-    padding-top: 3rem;
-    padding-bottom: 1rem !important;
     border-bottom: 0;
+    padding-top: 4rem;
+    padding-bottom: 3rem;
     .page-title {
       margin-bottom: 0;
     }
+  }
+  @include media-breakpoint-down(xs) {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    border-bottom: 0;
   }
 }
 
@@ -167,6 +177,8 @@
       border: none;
       box-shadow: none;
       margin-left: 0;
+      font-size: 22px;
+      line-height: 35px;
     }
   }
 }
@@ -245,11 +257,7 @@
   #sidebar-menu {
     border-right: none;
   }
-  .main-content {
-    padding-top: 1rem !important;
-  }
   a {
-    color: $color-violet;
     border-bottom: 3px solid $color-violet;
     &:hover, &:active, &:focus {
       color: $color-black;
