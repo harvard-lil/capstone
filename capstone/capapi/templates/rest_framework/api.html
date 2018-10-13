@@ -2,8 +2,8 @@
 {% load pipeline %}
 {% load static %}
 {% block style %}
-  {% stylesheet 'api' %}
   {% javascript 'base' %}
+  {% stylesheet 'api' %}
 {% endblock %}
 
 {% block title %}{% if name == "Api Root" %}Root | {% elif name %}{{ name }} | {% endif %}API | Caselaw Access Project{% endblock %}
