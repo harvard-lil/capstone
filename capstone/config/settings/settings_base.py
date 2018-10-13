@@ -260,24 +260,18 @@ PIPELINE = {
         },
         'docs': {
             'source_filenames': (
-                'css/_normalize.css',
-                'css/scss/base.scss',
                 'css/scss/docs.scss',
             ),
             'output_filename': 'docs.css'
         },
         'registration': {
             'source_filenames': (
-                'css/_normalize.css',
-                'css/scss/base.scss',
                 'css/scss/registration.scss',
             ),
             'output_filename': 'registration.css'
         },
         'api': {
             'source_filenames': (
-                'css/_normalize.css',
-                'css/scss/base.scss',
                 'css/scss/api.scss',
             ),
             'output_filename': 'api.css'
