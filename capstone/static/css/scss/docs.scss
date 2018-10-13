@@ -1,41 +1,100 @@
-@import "_variables.scss";
+@import 'bootstrap/_functions.scss';
+@import 'bootstrap/_variables.scss';
+@import 'bootstrap/mixins';
 
-section {
-  padding: 15px;
+@import "variables";
+@import "nav";
+nav {
+  padding: 0;
+  width: 100%;
 }
 
-ul li {
-    list-style-type: '- ';
-  &.simple-list-item {
-    list-style-type: none;
-  }
+.page-header h1 {
+  letter-spacing: 1px;
 }
 
-
-.reading-body {
-  margin-left: auto;
-  float: none;
-  p {
-    max-width: 85%;
-  }
+/* give container closest to nav some padding */
+nav[aria-label="main"] ~ .container {
+  padding-top: 90px;
 }
 
-.anchor-offset {
-  display: block;
-  position: relative;
-  top: -90px;
-  visibility: hidden;
+.param-label {
+  font-weight: bold;
 }
 
-.subsection {
-  @extend .font-body;
-  line-height: 3rem;
-  margin-bottom: 0;
-  font-weight: 400;
+.list-group-item > ul {
+  font-size: 14px;
 }
 
-.json-response {
-  border: 1px solid $color-black;
-  padding: 10px;
+.parameter-name {
+  margin-left: -10px;
 }
 
+li > code {
+  background-color: inherit;
+}
+
+.endpoint-link {
+  font-weight: bold;
+}
+
+dt {
+  margin-top: 2rem;
+}
+
+lh{
+  font-weight: bold;
+}
+
+.param-data-type::before {
+  font-weight: bold;
+  content: "data type: ";
+}
+
+.param-description::before {
+  font-weight: bold;
+  content: "description: ";
+}
+
+dt.example-description {
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 1em;
+}
+
+.example-link {
+  font-size: 0.65em;
+}
+
+h5.list-header {
+  font-family: "titillium", "Helvetica", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  color: $color-black;
+}
+
+li > h5.list-header {
+  font-size: 0.9em;
+ }
+
+.example-mod-description {
+  font-size: 14px;
+}
+
+.json-data-type {
+  color: $blue;
+  font-style: italic;
+}
+
+.code-example-casebody-section {
+  color: $red;
+}
+
+#sidebar-menu {
+  background-color: $color-white;
+}
+
+.below-the-fold {
+  background-color: $color-tan;
+}
