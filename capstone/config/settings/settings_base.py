@@ -260,6 +260,8 @@ PIPELINE = {
         },
         'docs': {
             'source_filenames': (
+                'css/_normalize.css',
+                'css/scss/base.scss',
                 'css/scss/docs.scss',
             ),
             'output_filename': 'docs.css'
