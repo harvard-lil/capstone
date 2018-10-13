@@ -68,7 +68,7 @@ def contact(request):
         "email": settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/contact.png',
         'page_title': 'Contact Caselaw Access Project',
-        'page_description': 'Email us at info@example.com or fill out this form. '
+        'page_description': 'Email us at %s or fill out this form. ' % settings.DEFAULT_FROM_EMAIL,
     })
 
 
