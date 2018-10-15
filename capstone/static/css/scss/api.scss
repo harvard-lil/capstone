@@ -1,6 +1,7 @@
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
+@import 'bootstrap/tooltip';
 @import 'bootstrap/modal';
 @import "variables";
 
@@ -17,6 +18,8 @@ nav[aria-label="main"] ~ .container {
 button, .btn {
   background-color: $color-violet;
   color: $color-white;
+  border: 2px solid $color-violet;
+  font-weight: $font-weight-semibold;
   &:hover, &:focus, &:active {
     background-color: $color-white;
     color: $color-violet;
@@ -35,12 +38,32 @@ button, .btn {
     @extend .h2;
   }
 
-  ul.pager > li.previous > a, ul.pager > li.next > a {
-    border-bottom: 0;
-    &:hover, &:focus, &:active {
-      background-color: $color-violet;
-      border: 0;
+  .pager > .previous,
+  .pager > .next {
+    list-style: none;
+    float: left;
+    text-align: center;
+    border-radius: 3px;
+    margin-left: 5px;
+    background: $color-violet;
+    color: $color-white;
+    font-size: 14px;
+    padding: 3px 7px;
+    cursor: pointer;
+    border: 2px solid $color-violet;
+     > a {
+      border-bottom: 0;
+      color: $color-white;
+      font-weight: $font-weight-semibold;
     }
+    &:hover, &:focus, &:active {
+      border: 2px solid $color-violet;
+      background-color: $color-white;
+      > a {
+        color: $color-violet;
+      }
+    }
+
   }
 
   .prettyprint {
@@ -83,31 +106,6 @@ button, .btn {
     ul::after {
       display: block;
       clear: both;
-    }
-  }
-
-  .pager > .previous, .pager > .next {
-    list-style: none;
-    border: 1px solid $color-blue;
-    float: left;
-    text-align: center;
-    border-radius: 3px;
-    margin-left: 5px;
-    background: $color-blue;
-    color: white;
-    font-size: 14px;
-    padding: 3px 7px;
-    cursor: pointer;
-    a {
-      color: white;
-      text-decoration: none;
-      &:hover {
-        color: $color-blue;
-      }
-    }
-    &:hover {
-      background: $color-light-blue;
-      color: $color-blue;
     }
   }
 
