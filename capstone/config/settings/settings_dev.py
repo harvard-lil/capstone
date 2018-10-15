@@ -46,6 +46,8 @@ TEST_SLOW_QUERIES_DB_NAME = 'capstone_test_queries'
 # avoid test errors when running tests locally, since pytest-django sets DEBUG=False and staticfiles/ doesn't exist
 STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
+
+
 # django-debug-toolbar
 try:
     import debug_toolbar  # noqa
@@ -62,5 +64,9 @@ try:
     INTERNAL_IPS = ['127.0.0.1']
 except ImportError:
     pass
+
+INSTALLED_APPS += ( 'corsheaders', )
+MIDDLEWARE += ('corsheaders.middleware.CorsMiddleware',)
+
 
 NGRAMS_FEATURE = True

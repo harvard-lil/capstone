@@ -22,7 +22,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
 
     'django_filters',
     'django_extensions',
@@ -69,7 +68,6 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
 
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
     # docs say this should come "first", though we're not putting it quite that early
