@@ -13,13 +13,15 @@ info = print
 
 def make_edits(dry_run=True):
     reporter = Reporter.objects.get(full_name="West's American Tribal Law Reporter")
+    old_jurisdiction = Jurisdiction.objects.get(name_long="United States")
     new_jurisdiction = Jurisdiction.objects.get(name_long="Tribal Jurisdictions")
-    courts = Court.objects.filter(case_metadatas__reporter=reporter).distinct()
+    courts = Court.objects.filter(case_metadatas__reporter=reporter, jurisdiction=old_jurisdiction).distinct()
+
     for court in courts:
 
         # Skip courts that have cases belonging to multiple reporters. These are federal courts
         # rather than tribal courts, which only appear in West's American Tribal Law Reporter
-        if Reporter.objects.filter(case_metadatas__court=court).distinct().count() > 1:
+        if court.case_metadatas.values('reporter_id').distinct().count() > 1:
             info("Skipping %s, has multiple reporters" % court)
             continue
 
