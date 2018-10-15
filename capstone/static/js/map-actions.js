@@ -13,7 +13,7 @@ let jurisdiction_translation = {
   "US-MI": {slug: "mich", name: "Michigan"}, "US-UT": {slug: "utah", name: "Utah"}, "US-ID": {slug: "idaho", name: "Idaho"}, "US-WY": {slug: "wyo", name: "Wyoming"}, "US-CO": {slug: "colo", name: "Colorado"}, "US-NY": {slug: "ny", name: "New York"}, "US-KY": {slug: "ky", name: "Kentucky"},
   "US-KS": {slug: "kan", name: "Kansas"}, "US-AK": {slug: "alaska", name: "Alaska"}, "US-FL": {slug: "fla", name: "Florida"}, "US-OR": {slug: "or", name: "Oregon"}, "US-TN": {slug: "tenn", name: "Tennessee"}, "US-MD": {slug: "md", name: "Maryland"}, "US-IL": {slug: "ill", name: "Illinois"},
   "US-OH": {slug: "ohio", name: "Ohio"}, "US-AL": {slug: "ala", name: "Alabama"}, "US-SC": {slug: "sc", name: "South Carolina"}, "US-AR": {slug: "", name: "Arkansas"}, "US-RI": {slug: "ri", name: "Rhode Island"}, "US-MN": {slug: "minn", name: "Minnesota"}, "US-NE": {slug: "neb", name: "Nebraska"},
-  "US-CT": {slug: "conn", name: "Connecticut"}, "US-ME": {slug: "me", name: "Maine"}, "US-IA": {slug: "iowa", name: "Iowa"}, "US-TX": {slug: "tex", name: "Texas"}, "US-DE": {slug: "del", name: "Delaware"}, "US-MO": {slug: "mont", name: "Montana"}, "US-HI": {slug: "haw", name: "Hawaii"},
+  "US-CT": {slug: "conn", name: "Connecticut"}, "US-ME": {slug: "me", name: "Maine"}, "US-IA": {slug: "iowa", name: "Iowa"}, "US-TX": {slug: "tex", name: "Texas"}, "US-DE": {slug: "del", name: "Delaware"}, "US-MO": {slug: "mo", name: "Missouri"}, "US-HI": {slug: "haw", name: "Hawaii"},
   "US-NM": {slug: "nm", name: "New Mexico"}, "US-WA": {slug: "wa", name: "Washington"}, "US-VA": {slug: "va", name: "Virginia"}
 };
 
