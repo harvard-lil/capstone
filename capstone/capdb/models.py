@@ -2,6 +2,7 @@ import hashlib
 import re
 
 from django.contrib.postgres.fields import JSONField, ArrayField
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
@@ -103,7 +104,10 @@ def fetch_relations(instance, select_relations=None, prefetch_relations=None):
 
     # copy over select_related fields
     for field_name in select_field_names:
-        setattr(instance, field_name, getattr(new_instance, field_name))
+        try:
+            setattr(instance, field_name, getattr(new_instance, field_name))
+        except ObjectDoesNotExist:
+            pass  # empty one-to-one field -- just leave it empty
 
     # copy over prefetch_relations caches into appropriate models
     if prefetch_relations:
