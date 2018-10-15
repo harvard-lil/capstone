@@ -7,6 +7,8 @@ import scripts.edits.tribal_jurisdiction
 def test_tribal_jurisdiction(ingest_case_xml):
     # set up conditions for edit
     case = ingest_case_xml.metadata
+    case.jurisdiction.name_long = "United States"
+    case.jurisdiction.save()
     case.reporter.full_name = "West's American Tribal Law Reporter"
     case.reporter.save()
 
