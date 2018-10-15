@@ -499,7 +499,7 @@
                     </polygon>
                 </a>
             </g>
-            <g transform="translate(107, 153)">
+            <!--<g transform="translate(107, 153)">
                 <title>Navajo Nation</title>
                 <a aria-label="Navajo Nation" class="state-link"
                    href="#">
@@ -512,7 +512,7 @@
                         </path>
                     </g>
                 </a>
-            </g>
+            </g>-->
         </g>
     </g>
 </svg>
