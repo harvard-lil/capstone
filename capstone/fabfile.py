@@ -792,3 +792,27 @@ def url_to_js_string(target_url="http://case.test:8000/maintenance/?no_toolbar",
         data = data.replace(urlparse(target_url).netloc, new_domain)
     data = escapejs(data)           # encode for storage in javascript
     pathlib.Path(out_path).write_text(data)
+
+
+@task
+def run_edit_script(script=None, dry_run='true', **kwargs):
+    """
+        Run any of the scripts in scripts/edits. Usage: fab run_edit_script:script_name,dry_run=false. dry_run defaults to true.
+    """
+    from django.utils.module_loading import import_string
+
+    # print list of scripts if no script name is provided
+    if not script:
+        options = Path(settings.BASE_DIR, 'scripts/edits').glob('*.py')
+        print("Usage: run_edit_script:script, where script is one of:\n- %s" % ("\n- ".join(o.stem for o in options)))
+        return
+
+    # call provided script
+    dry_run = dry_run != 'false'
+    import_path = 'scripts.edits.%s.make_edits' % script
+    try:
+        method = import_string(import_path)
+    except ImportError:
+        print("Script not found. Attempted to import %s" % import_path)
+    else:
+        method(dry_run=dry_run, **kwargs)
