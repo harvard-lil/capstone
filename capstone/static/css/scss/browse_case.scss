@@ -1,3 +1,5 @@
+@import "variables";
+
 //*** head matter
 
 h1{
@@ -127,4 +129,53 @@ section.head-matter{
   &:target {
     background-color: #BFEFFF;
   }
+}
+
+
+#loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background-color: rgba(0,0,0,0.7); /*dim the background*/
+  text-align: center;
+}
+
+.loading-gif {
+  position: relative;
+  display: block;
+  margin-top: 20%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loading-text {
+  color: white;
+}
+
+#metadata-vol:before {
+  content: "v.";
+}
+
+#metadata-pages:before {
+  content: "pp.";
+}
+
+.metadata-citation {
+  font-weight: bold;
+}
+
+.metadata-citation-type {
+  font-size: .8rem;
+}
+
+#citation_list {
+  font-size: 2.5rem;
+  color: $color-violet;
+}
+
+.top-section {
+  padding-bottom: 2rem;
 }

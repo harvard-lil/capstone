@@ -5,7 +5,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SERVICES_DIR = os.path.join(os.path.dirname(BASE_DIR), 'services')
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test', '0.0.0.0']
 
 ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
 
@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 
     'django_filters',
     'django_extensions',
@@ -68,6 +69,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
 
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
     # docs say this should come "first", though we're not putting it quite that early
