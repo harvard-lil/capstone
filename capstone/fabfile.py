@@ -27,13 +27,12 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Court, Jurisdiction, Reporter
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter
 
 import capdb.tasks as tasks
-# from process_ingested_xml import fill_case_page_join_table
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
     validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars
-from scripts.helpers import parse_xml, serialize_xml, court_name_strip, court_abbreviation_strip, copy_file, resolve_namespace
+from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace
 
 
 @task(alias='run')
@@ -594,63 +593,6 @@ def count_case_totals(write_to_file=True, min_year=1640):
             json.dump(results, f)
     else:
         return results
-
-@task
-def fix_court_names(dry_run=False):
-
-    def update_cases(old_court_entry, stripped_name, stripped_abbrev, new_court_entry = None):
-        for case_metadata in old_court_entry.case_metadatas.all():
-            case = case_metadata.case_xml
-            parsed = parse_xml(case.orig_xml)
-            parsed('case|court')[0].set("abbreviation", stripped_abbrev)
-            parsed('case|court')[0].text = stripped_name
-            if new_court_entry is not None:
-                case_metadata.court = new_court_entry
-                case_metadata.save()
-            case.orig_xml = serialize_xml(parsed)
-            case.save(create_or_update_metadata=False)
-
-    for court in Court.objects.all():
-        print("Checking court: %s" % court.name)
-        stripped_name = court_name_strip(court.name)
-        stripped_abbrev = court_abbreviation_strip(court.name_abbreviation)
-
-        if court.name != stripped_name or court.name_abbreviation != stripped_abbrev:
-
-            # see if there are any entries which already have the correct court name/abbr/jur
-            similar_court = Court.objects.order_by('slug')\
-                .filter(name=stripped_name, name_abbreviation=stripped_abbrev, jurisdiction=court.jurisdiction)\
-                .first()
-
-            # if so, set the court entry this court's cases to the correct court, and delete this court
-            # We are assuming that the first entry, organized by slug, is the correct one.
-            if similar_court:
-                print("- Replacing %s with %s" % (court.name, similar_court.name))
-                if dry_run:
-                    continue
-
-                update_cases(court, stripped_name, stripped_abbrev, similar_court)
-
-                # we delete the court once we confirm that there are no more cases associated with it
-                if len(court.case_metadatas.all()) == 0:
-                    court.delete()
-                else:
-                    raise Exception('{} case(s) not moved from court "{}" ("{}") to "{}" ("{}").'
-                                    .format(court.case_metadatas.count(), court.name, court.name_abbreviation,
-                                            similar_court.name, similar_court.name_abbreviation))
-
-            # If there are no other similar courts, let's correct this name and cases
-            else:
-                print("- Changing %s to %s" % (court.name, stripped_name))
-                if dry_run:
-                    continue
-
-                update_cases(court, stripped_name, stripped_abbrev)
-
-                # update court to match new cases
-                court.name = stripped_name
-                court.name_abbreviation = stripped_abbrev
-                court.save()
 
 
 @task
