@@ -70,14 +70,13 @@ nav[aria-label="main"].sticky {
     padding-bottom: 0;
     padding-top: 0;
     position: relative;
-    top: -5px;
   }
   .nav-branding {
     background: url("../../img/logos/long-white.svg") no-repeat;
     background-size: contain;
     width: 200px;
     height: 30px;
-    margin-top: 1.3rem;
+    margin-top: 1.5rem;
     margin-left: 1rem;
     &:hover, &:focus, &:active {
       background: url("../../img/logos/long-yellow.svg") no-repeat;
