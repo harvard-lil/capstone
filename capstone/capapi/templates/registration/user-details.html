@@ -12,6 +12,7 @@
     <label for="user-api-key">API Key:</label>
     <input id="user-api-key"
            readonly
+           type="text"
            value="{{ request.user.get_api_key }}">
     <br/>
     {% if unlimited %}
