@@ -1,5 +1,7 @@
 import logging
 
+from django.db import transaction
+
 from capdb.models import Reporter, Court, Jurisdiction
 from scripts.helpers import parse_xml, serialize_xml
 
@@ -11,6 +13,7 @@ info = print
 # "Tribal Jurisdictions".
 # See https://github.com/harvard-lil/capstone/issues/592
 
+@transaction.atomic(using='capdb')
 def make_edits(dry_run=True):
     reporter = Reporter.objects.get(full_name="West's American Tribal Law Reporter")
     old_jurisdiction = Jurisdiction.objects.get(name_long="United States")
