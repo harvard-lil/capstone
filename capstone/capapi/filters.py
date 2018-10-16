@@ -163,7 +163,7 @@ class CaseFilter(NoopMixin, filters.FilterSet):
         value = value.strip()
         value = " ".join(part for part in value.split() if len(part) > 2)
         if value:
-            return qs.annotate(search=SearchVector('case_text__text')).filter(search=value).exclude(case_text=None)
+            return qs.annotate(search=SearchVector('case_text__text', config='english')).filter(search=value).exclude(case_text=None)
         else:
             return qs
 
