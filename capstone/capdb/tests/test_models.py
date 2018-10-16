@@ -160,24 +160,6 @@ def test_denormalized_fields(case):
     case.refresh_from_db()
     assert case.court_name == court.name
 
-### Case Full Text Search ###
-@pytest.mark.django_db
-def test_fts_create_index(ingest_case_xml, django_assert_num_queries):
-
-    parsed_case_xml = parse_xml(ingest_case_xml.orig_xml)
-
-    assert '4rgUm3nt' not in ingest_case_xml.metadata.tsvector
-    # change a word in the case XML
-    updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
-    parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
-    ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    with django_assert_num_queries(select=6, update=5):
-        ingest_case_xml.save()
-
-    # make sure the change was saved in the case_xml
-    ingest_case_xml.metadata.refresh_from_db()
-    assert '4rgUm3nt' not in ingest_case_xml.metadata.tsvector
-
 ### CaseXML ###
 
 @pytest.mark.django_db

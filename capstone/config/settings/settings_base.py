@@ -537,5 +537,7 @@ LOGIN_URL = 'login'
 
 # directories to search for nltk data
 NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
-# feature flag while we see if ngrams feature is fast enough to work
+
+# feature flags
 NGRAMS_FEATURE = False
+FULL_TEXT_FEATURE = True

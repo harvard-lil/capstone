@@ -22,7 +22,7 @@ def get_case_metadata(case_xml):
             'duplicative': True,
             'first_page': first_page,
             'last_page': last_page,
-        })
+        }), parsed
 
     citation_entries = parsed('case|case').find('case|citation')
     citations = [{
@@ -75,7 +75,7 @@ def get_case_metadata(case_xml):
         'attorneys': attorneys,
         'parties': parties,
         'opinions': opinions
-    })
+    }), parsed
 
 
 def parse_decision_date(decision_date_text):
