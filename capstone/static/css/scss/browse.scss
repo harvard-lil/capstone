@@ -1,0 +1,127 @@
+@import "variables";
+
+//*** head matter
+
+h1{
+  font-size: 2rem;
+}
+
+
+#loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background-color: rgba(0,0,0,0.7); /*dim the background*/
+  text-align: center;
+}
+
+.loading-gif {
+  position: relative;
+  display: block;
+  margin-top: 20%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loading-text {
+  color: white;
+}
+
+.top-section {
+  padding-bottom: 2rem;
+}
+
+.search-title {
+  font-size: 1.6rem;
+}
+.result-first_row{
+  margin-left: 1rem;
+}
+.result-second_row{
+  margin-left: 1rem;
+}
+
+.result-first-row-left{
+  display: inline-block;
+}
+
+.result-citation {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.result-first-row-right {
+  display: inline-block;
+
+}
+
+.result-second-row-middle {
+  display: inline-block;
+
+}
+
+.result-court-name {
+  display: inline-block;
+}
+
+.result-volume-number {
+  display: inline-block;
+
+}
+
+.result-dec-date {
+  display: inline-block;
+  text-align: right;
+  font-weight: bold;
+
+}
+
+.result-citation-type {
+  font-size: .75rem;
+  font-weight: normal;
+}
+
+.citation-list .basic-page p, .basic-page ul {
+  margin-bottom: 0px;
+}
+
+.citation-entry {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.queryfield input.form-control[type="text"], input[type="text"], input[type="email"], textarea {
+  display: inline-block;
+  width: 50%;
+}
+
+.querybutton {
+  border-radius: 100%;
+
+}
+
+#loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background-color: rgba(0,0,0,0.7); /*dim the background*/
+  text-align: center;
+}
+
+.loading-gif {
+  position: relative;
+  display: block;
+  margin-top: 20%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loading-text {
+  color: white;
+}

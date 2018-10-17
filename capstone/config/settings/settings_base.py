@@ -294,6 +294,12 @@ PIPELINE = {
             },
             'output_filename': 'case.css'
         },
+        'browse': {
+            'source_filenames': {
+                'css/scss/browse.scss',
+            },
+            'output_filename': 'browse.css'
+        },
         'browse_case': {
             'source_filenames': {
                 'css/scss/browse_case.scss',

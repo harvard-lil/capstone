@@ -1,0 +1,54 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% load pipeline %}
+{% load api_url %}
+
+{% block extra_head %}
+  {% stylesheet 'browse' %}
+{% endblock %}
+
+{% block title %}Caselaw Access Project| View Case {% endblock %}
+
+{% block meta_description %}
+  About the Caselaw Access Project
+{% endblock %}
+
+
+{% block content %}
+    <div id="loading-overlay" style="display: none">
+        <img alt="" aria-hidden="true" src='{% static "img/loading.gif" %}' class="loading-gif"/>
+        <div class="loading-text">Loading</div>
+    </div>
+  <div class="basic-page">
+    <div id="app"  class="full-content">
+      <div class="top-section">
+          <div class="title-section">
+            <h1 class="page-title" id="overview">
+              <img alt="" aria-hidden="true" src='{% static "img/red-arrow-right.svg" %}' class="decorative-arrow"/>
+                <span v-text="title"></span>
+            </h1>
+            <search></search>
+          </div>
+      </div>
+      <div class="row below-the-fold">
+        <div class="main-content">
+            <div class="content">
+              <result-list></result-list>
+              <ul >
+
+              </ul>
+            </div>
+
+          </div>
+        </div>
+    </div>
+  </div>
+  <script>
+
+  const search_url = '{% api_url "api-root" %}' + "v1/"
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+  <script src="{% static "js/search.js" %}"></script>
+
+
+{% endblock %}
