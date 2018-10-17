@@ -1,8 +1,6 @@
 import pytest
 
-from django.utils.encoding import force_bytes
-
-from scripts.helpers import parse_xml, serialize_xml, nsmap
+from scripts.helpers import nsmap
 from test_data.test_fixtures.factories import *
 
 
@@ -159,6 +157,20 @@ def test_denormalized_fields(case):
     court.save()
     case.refresh_from_db()
     assert case.court_name == court.name
+
+### Case Full Text Search ###
+@pytest.mark.django_db
+def test_fts_create_index(ingest_case_xml, django_assert_num_queries):
+    case_text = ingest_case_xml.metadata.case_text
+
+    assert '4rgum3nt' not in case_text.tsv
+    # change a word in the case XML
+    ingest_case_xml.orig_xml = ingest_case_xml.orig_xml.replace('argument', '4rgum3nt')
+    ingest_case_xml.save()
+
+    # make sure the change was saved in the case_xml
+    case_text.refresh_from_db()
+    assert '4rgum3nt' in case_text.tsv
 
 ### CaseXML ###
 

@@ -2,6 +2,7 @@ import hashlib
 import re
 
 from django.contrib.postgres.fields import JSONField, ArrayField
+import django.contrib.postgres.search as pg_search
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
@@ -1203,6 +1204,7 @@ class CaseText(models.Model):
     """
     text = models.TextField(blank=True, null=True)
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_text', on_delete=models.SET_NULL)
+    tsv = pg_search.SearchVectorField(blank=True,null=True)
 
 
 class CaseExportQuerySet(models.QuerySet):
