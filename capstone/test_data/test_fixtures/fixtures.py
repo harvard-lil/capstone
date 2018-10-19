@@ -87,7 +87,7 @@ def django_assert_num_queries(pytestconfig):
             query_counts = defaultdict(int)
             for q in context.captured_queries:
                 query_type = q['sql'].split(" ",1)[0].lower()
-                if query_type not in ('savepoint', 'release'):
+                if query_type not in ('savepoint', 'release', 'set', 'show'):
                     query_counts[query_type] += 1
             if expected_counts != query_counts:
                 msg = "Unexpected queries: expected %s, got %s" % (expected_counts, dict(query_counts))

@@ -2,14 +2,18 @@ from datetime import timedelta
 
 from celery import shared_task
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
+from django.db import connections
 from django.utils import timezone
 
-from capapi.models import SiteLimits, CapUser
+from capweb.helpers import statement_timeout, StatementTimeout
 
 
 @shared_task
 def daily_site_limit_reset_and_report():
+    from capapi.models import SiteLimits, CapUser  # import here to avoid circular import
+
     site_limits = SiteLimits.get()
 
     # send admin email
@@ -33,3 +37,14 @@ User emails:
 
     # reset limits
     SiteLimits.reset()
+
+@shared_task
+def cache_query_count(sql, cache_key):
+    """ Cache the result of a count() sql query, because it didn't return quickly enough the first time. """
+    try:
+        with connections["capdb"].cursor() as cursor, statement_timeout(settings.TASK_COUNT_TIME_LIMIT, "capdb"):
+            cursor.execute(sql)
+            result = cursor.fetchone()
+            cache.set(cache_key, result[0], settings.CACHED_COUNT_TIMEOUT)
+    except StatementTimeout:
+        pass  # this count takes too long to calculate -- move on

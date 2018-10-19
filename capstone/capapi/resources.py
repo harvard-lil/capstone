@@ -8,13 +8,17 @@ from wsgiref.util import FileWrapper
 import wrapt
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
+from django.db import connections
 from django.db.models import QuerySet
 from django.template.defaultfilters import slugify
 from django.http import FileResponse
+from django.test.utils import CaptureQueriesContext
 from django_hosts import reverse as django_hosts_reverse
 
-from capweb.helpers import reverse, cache_func
+from capapi.tasks import cache_query_count
+from capweb.helpers import reverse, statement_timeout, StatementTimeout
 
 logger = logging.getLogger(__name__)
 
@@ -76,26 +80,44 @@ class TrackingWrapper(wrapt.ObjectProxy):
         return super().__getattr__(item)
 
 
-def query_count_cache_key(qs):
-    """ Stringify queryset for use in caching counts """
-
-    # special case -- all empty queries have count 0 (and throw an error if serialized as below)
-    if qs.query.is_empty():
-        return 'query-count:0'
-
-    return 'query-count:' + hashlib.md5(str(qs.query).encode('utf8')).hexdigest()
-
 class CachedCountQuerySet(QuerySet):
     """
         Queryset that caches counts based on generated SQL.
         Usage: queryset.__class__ = CachedCountQuerySet
+
+        We take a few seconds to attempt to fetch the count live. If it does not return in time, we return None.
+        We also cache a value of "IN_PROGRESS", and start a background job with cache_query_count.delay() to
+        determine the real value.
     """
-    @cache_func(
-        key=query_count_cache_key,
-        timeout=settings.CACHED_COUNT_TIMEOUT,
-    )
     def count(self):
-        return super().count()
+        if self.query.is_empty():
+            return 0
+
+        cache_key = 'query-count:' + hashlib.md5(str(self.query).encode('utf8')).hexdigest()
+
+        # return existing value if any
+        value = cache.get(cache_key)
+        if value == "IN_PROGRESS":
+            return None
+        elif value is not None:
+            return value
+
+        # cache new value
+        conn = connections["capdb"]
+        queries = None
+        try:
+            with statement_timeout(settings.LIVE_COUNT_TIME_LIMIT, "capdb"), CaptureQueriesContext(conn) as queries:
+                value = super().count()
+                # for testing:
+                # conn.cursor().execute("SELECT pg_sleep(2);")
+        except StatementTimeout:
+            count_sql = queries.captured_queries[0]['sql']
+            cache.set(cache_key, "IN_PROGRESS", 60*10)
+            cache_query_count.delay(count_sql, cache_key)
+            return None
+        else:
+            cache.set(cache_key, value, settings.CACHED_COUNT_TIMEOUT)
+            return value
 
 
 def api_reverse(viewname, args=None, kwargs=None, request=None, format=None, **extra):
