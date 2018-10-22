@@ -125,3 +125,13 @@ h1{
 .loading-text {
   color: white;
 }
+
+.result {
+  margin-bottom: 20px;
+}
+
+.hitcount {
+  font-weight: bold;
+  margin-bottom: 20px;
+  columns: $color-violet;
+}

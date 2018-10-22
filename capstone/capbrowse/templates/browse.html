@@ -27,16 +27,13 @@
               <img alt="" aria-hidden="true" src='{% static "img/red-arrow-right.svg" %}' class="decorative-arrow"/>
                 <span v-text="title"></span>
             </h1>
-            <search></search>
           </div>
       </div>
       <div class="row below-the-fold">
         <div class="main-content">
             <div class="content">
-              <result-list></result-list>
-              <ul >
-
-              </ul>
+              <search-form v-on:new-search="newSearch"></search-form>
+              <result-list :results="results" :endpoint="endpoint" :hitcount="hitcount"></result-list>
             </div>
 
           </div>
@@ -44,11 +41,11 @@
     </div>
   </div>
   <script>
+  const case_browse_url_template = "{% url 'browse_case' 987654321 %}";
+  const search_url = '{% api_url "api-root" %}' + "v1/";
 
-  const search_url = '{% api_url "api-root" %}' + "v1/"
   </script>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="{% static "js/search.js" %}"></script>
-
 
 {% endblock %}
