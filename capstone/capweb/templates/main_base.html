@@ -1,12 +1,47 @@
-{% load static %}
-{% load pipeline %}
-
-<!DOCTYPE html>
+{% load static %}{% load pipeline %}{% load capweb_static %}<!DOCTYPE html>
 <html lang="en">
-  <head>
+  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {# social #}
+    {% if page_image %}
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:image" content="{% capweb_static page_image %}">
+      <meta property="og:image"  content="{% capweb_static page_image %}">
+    {% else %}
+      <meta name="twitter:image" content="{% capweb_static "img/og_image/api.jpg" %}">
+      <meta property="og:image"  content="{% capweb_static "img/og_image/api.jpg" %}">
+      <meta name="twitter:card" content="summary">
+    {% endif %}
+
+    <meta name="twitter:site" content="@caselawaccess">
+    <meta name="twitter:creator" content="@HarvardLIL">
+
+    {% if page_title %}
+      <meta property="og:title" content="{{ page_title }}">
+      <meta name="twitter:title" content="{{ page_title }}">
+    {% else %}
+      <meta property="og:title" content="Caselaw Access Project">
+      <meta name="twitter:title" content="Caselaw Access Project">
+    {% endif %}
+
+    {% if page_description %}
+      <meta property="og:description" content="{{ page_description }}">
+      <meta name="twitter:description" content="{{ page_description }}">
+    {% else %}
+      <meta property="og:description" content="Explore American Caselaw">
+      <meta name="twitter:description" content="Explore American Caselaw">
+    {% endif %}
+
+    {% if page_url %}
+      <meta property="og:url" content="{{ page_url }}">
+    {% else %}
+      <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    {% endif %}
+
+    <meta property="og:type" content="article">
 
     {# favicon #}
     <link rel="apple-touch-icon" sizes="152x152" href="{% static "img/favicon/apple-touch-icon.png" %}">
@@ -27,6 +62,7 @@
     {% block extra_head %}{% endblock %}
   </head>
   <body class="hamburger-menu-closed" tabindex="-1">
+
     {% include "includes/nav.html" %}
     <main class="main-content flex-xl-nowrap" id="main">
       {% block content %}{% endblock content %}

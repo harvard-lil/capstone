@@ -1,6 +1,13 @@
 footer {
   z-index: 999;
   font-size: 18px;
+  background-color: $color-yellow;
+}
+
+footer {
+  .lil-logo {
+    @extend .footer-lil-logo-black;
+  }
 }
 
 .footer-content > :nth-child(2) {

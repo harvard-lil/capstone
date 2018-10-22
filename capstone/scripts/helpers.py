@@ -1,6 +1,5 @@
 import hashlib
 import shutil
-import re
 
 from django.db.models import Q
 from lxml import etree
@@ -93,6 +92,7 @@ jurisdiction_translation = {
     'South Dakota': 'S.D.',
     'Tennessee': 'Tenn.',
     'Texas': 'Tex.',
+    'Tribal Jurisdictions': 'Tribal',
     'U. S.': 'U.S.',
     'United States': 'U.S.',
     'United Statess': 'U.S.',
@@ -157,6 +157,7 @@ jurisdiction_translation_long_name = {
     'S.D.': 'South Dakota',
     'Tenn.': 'Tennessee',
     'Tex.': 'Texas',
+    'Tribal': 'Tribal Jurisdictions',
     'U.S.': 'United States',
     'Utah': 'Utah',
     'Vt.': 'Vermont',
@@ -267,27 +268,6 @@ def extract_casebody(case_xml):
 
     return case('casebody|casebody')
 
-
-def court_name_strip(name_text):
-    name_text = re.sub('\xa0', ' ', name_text)
-    name_text = re.sub('\'|’', u"\u2019", name_text)
-    name_text = re.sub('\\\\', '', name_text)
-    name_text = re.sub('\+', '', name_text)
-    name_text = re.sub('`', '', name_text)
-    name_text = re.sub(']', '', name_text)
-    name_text = re.sub('0-9', '', name_text)
-    name_text = re.sub('Court for The', 'Court for the', name_text)
-    name_text = re.sub('Appeals[A-Za-z]', 'Appeals', name_text)
-    name_text = re.sub('Pennsylvania[A-Za-z0-9\.].', 'Pennsylvania', name_text)
-    return name_text
-
-def court_abbreviation_strip(name_abbreviation_text):
-    name_abbreviation_text = re.sub('\xa0', ' ', name_abbreviation_text)
-    name_abbreviation_text = re.sub('\n', ' ', name_abbreviation_text)
-    name_abbreviation_text = re.sub('\'|’', u"\u2019", name_abbreviation_text)
-    name_abbreviation_text = re.sub('`', '', name_abbreviation_text)
-    name_abbreviation_text = re.sub('^ ', '', name_abbreviation_text)
-    return name_abbreviation_text
 
 def element_text_iter(el, with_tail=False):
     """

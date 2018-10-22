@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
 
     'django_filters',
     'django_extensions',
@@ -267,16 +268,12 @@ PIPELINE = {
         },
         'registration': {
             'source_filenames': (
-                'css/_normalize.css',
-                'css/scss/base.scss',
                 'css/scss/registration.scss',
             ),
             'output_filename': 'registration.css'
         },
         'api': {
             'source_filenames': (
-                'css/_normalize.css',
-                'css/scss/base.scss',
                 'css/scss/api.scss',
             ),
             'output_filename': 'api.css'
@@ -439,6 +436,8 @@ API_CASE_FILE_TYPE = '.xml'
 # CACHES
 CACHED_COUNT_TIMEOUT = 60*60*24*7  # 'count' value in API responses is cached for up to 7 days
 CACHED_LIL_DATA_TIMEOUT = 60*60*24  # news and contributor data from LIL site is cached once a day
+LIVE_COUNT_TIME_LIMIT = 2  # number of seconds to try to generate a count while preparing an API response
+TASK_COUNT_TIME_LIMIT = 120  # number of seconds to try to generate a count in background task
 
 # DATA VISUALIZATION
 DATA_COUNT_DIR = '/tmp/count-data'
@@ -554,5 +553,7 @@ LOGIN_URL = 'login'
 
 # directories to search for nltk data
 NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
-# feature flag while we see if ngrams feature is fast enough to work
+
+# feature flags
 NGRAMS_FEATURE = False
+FULL_TEXT_FEATURE = True

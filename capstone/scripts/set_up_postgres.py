@@ -15,6 +15,17 @@ def run_sql_file(cursor, file_name):
     """ Run a sql file in the postgres/ folder """
     cursor.execute(Path(settings.BASE_DIR, "../services/postgres", file_name).read_text())
 
+def extension_installed(cursor, ext_name):
+    cursor.execute("select * from pg_extension where extname='%s';" % ext_name)
+    return len(cursor.fetchall()) > 0
+
+def extension_available(cursor, ext_name):
+    cursor.execute("select * from pg_available_extensions where name='%s';" % ext_name)
+    return len(cursor.fetchall()) > 0
+
+def create_extension(cursor, ext_name):
+    cursor.execute("CREATE EXTENSION %s;" % ext_name)
+
 def update_postgres_env(db='capdb'):
     """
         Write or replace stored functions and triggers in postgres. This makes sure that the postgres environment matches
@@ -35,17 +46,28 @@ def update_postgres_env(db='capdb'):
         """ % namespaces)
 
 
+        ### Full text search ###
+        set_case_search_trigger()
+        # install rum for full text indexing
+        if not extension_installed(cursor, 'rum'):
+            if extension_available(cursor, 'rum'):
+                create_extension(cursor, 'rum')
+            else:
+                print("WARNING: rum extension not available; full text search queries will fail")
+
         ### Versioning ###
 
         # make sure the versioning() function exists in postgres
         # note: versioning can be done with a C extension that we check for, or with a fallback PL/pgSQL function.
         # if both of these turn out not to work, we could also try a plv8 version -- see
         # https://github.com/harvard-lil/capstone/blob/219b5e45d004b607e16b7eb0711b0b30f7ed464f/capstone/scripts/set_up_postgres.py#L27
-        cursor.execute("select * from pg_extension where extname='temporal_tables';")
-        if len(cursor.fetchall()) == 0:
-            # if the temporal tables extension is not active, install a pure postgres version
-            print("WARNING: temporal_tables extension is not installed. Versioning will be slower. See https://pgxn.org/dist/temporal_tables/")
-            run_sql_file(cursor, "versioning_function.sql")
+        if not extension_installed(cursor, 'temporal_tables'):
+            if extension_available(cursor, 'temporal_tables'):
+                create_extension(cursor, 'temporal_tables')
+            else:
+                # if the temporal tables extension is not available, install a pure postgres version
+                print("WARNING: temporal_tables extension is not installed. Versioning will be slower. See https://pgxn.org/dist/temporal_tables/")
+                run_sql_file(cursor, "versioning_function.sql")
 
         # set up versioning for versioned tables
         for model in django.apps.apps.get_models():
@@ -122,9 +144,6 @@ def update_postgres_env(db='capdb'):
                 table=source_table,
                 placeholders=", ".join(["%s"] * len(params))
             ), params)
-    define_case_search_update()
-    set_case_search_trigger()
-
 
 def get_denormalization_triggers():
     """
@@ -219,26 +238,11 @@ def initialize_denormalization_fields(*args, **kwargs):
             ))
 
 
-def define_case_search_update():
-    with connections['capdb'].cursor() as cursor:
-        cursor.execute("""
-            CREATE OR REPLACE FUNCTION update_case_search() RETURNS TRIGGER AS
-            $BODY$
-            BEGIN
-                UPDATE capdb_casemetadata
-                      SET tsvector = to_tsvector('english', NEW.text)
-                      WHERE id=NEW.metadata_id;
-                      RETURN new;
-            END;
-            $BODY$
-            language plpgsql;
-        """)
-
 def set_case_search_trigger():
     with connections['capdb'].cursor() as cursor:
         cursor.execute("""
             DROP TRIGGER IF EXISTS case_search_update_trigger ON capdb_casetext;
             CREATE TRIGGER case_search_update_trigger
             BEFORE INSERT OR UPDATE ON capdb_casetext
-            FOR EACH ROW EXECUTE PROCEDURE update_case_search();
+            FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('tsv', 'pg_catalog.english', 'text');
         """)

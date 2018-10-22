@@ -2,15 +2,14 @@ import hashlib
 import re
 
 from django.contrib.postgres.fields import JSONField, ArrayField
+import django.contrib.postgres.search as pg_search
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from lxml import etree
 from model_utils import FieldTracker
 from partial_index import PartialIndex
-
-from django.contrib.postgres.indexes import GinIndex
-import django.contrib.postgres.search as pg_search
 
 from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
@@ -103,7 +102,10 @@ def fetch_relations(instance, select_relations=None, prefetch_relations=None):
 
     # copy over select_related fields
     for field_name in select_field_names:
-        setattr(instance, field_name, getattr(new_instance, field_name))
+        try:
+            setattr(instance, field_name, getattr(new_instance, field_name))
+        except ObjectDoesNotExist:
+            pass  # empty one-to-one field -- just leave it empty
 
     # copy over prefetch_relations caches into appropriate models
     if prefetch_relations:
@@ -722,8 +724,6 @@ class CaseMetadata(models.Model):
     opinions = JSONField(null=True, blank=True)
     attorneys = JSONField(null=True, blank=True)
 
-
-    tsvector = pg_search.SearchVectorField(blank=True,null=True)
     docket_number = models.CharField(max_length=20000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
@@ -792,8 +792,6 @@ class CaseMetadata(models.Model):
             PartialIndex(fields=['jurisdiction_slug', 'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             PartialIndex(fields=['court_slug',        'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
             PartialIndex(fields=['reporter',          'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
-            # index for full text search
-            GinIndex(fields=['tsvector']),
         ]
 
     def full_cite(self):
@@ -801,6 +799,20 @@ class CaseMetadata(models.Model):
 
     def get_absolute_url(self):
         return reverse('casemetadata-detail', args=[self.id], scheme="https")
+
+    def create_or_update_case_text(self, new_text=None):
+        """ Create or update the related case_text object for this case_metadata. """
+        if hasattr(self, 'case_text'):
+            case_text = self.case_text
+        else:
+            case_text = CaseText(metadata=self)
+
+        if new_text is None:
+            new_text = extract_casebody(self.case_xml.orig_xml).text()
+
+        if new_text != case_text.text:
+            case_text.text = new_text
+            case_text.save()
 
 
 class CaseXML(BaseXMLModel):
@@ -821,7 +833,7 @@ class CaseXML(BaseXMLModel):
         if self.tracker.has_changed('orig_xml'):
             # prefetch data needed by create_or_update_metadata() and process_updated_xml()
             fetch_relations(self,
-                select_relations=['volume__metadata__reporter', 'metadata__case_text'],
+                select_relations=['volume__metadata__reporter'],
                 prefetch_relations=['metadata__citations'])
 
             # Create or update related CaseMetadata object
@@ -978,7 +990,6 @@ class CaseXML(BaseXMLModel):
 
         self.orig_xml = serialize_xml(parsed_updated_case)
 
-
     def create_or_update_metadata(self, update_existing=True, save_self=True):
         """
             creates or updates CaseMetadata object
@@ -997,10 +1008,8 @@ class CaseXML(BaseXMLModel):
             case_metadata = CaseMetadata()
             metadata_created = True
 
-
-
         # set up data
-        data = get_case_metadata(force_str(self.orig_xml))
+        data, parsed = get_case_metadata(force_str(self.orig_xml))
         duplicative_case = data['duplicative']
         volume_metadata = self.volume.metadata
         reporter = volume_metadata.reporter
@@ -1052,12 +1061,10 @@ class CaseXML(BaseXMLModel):
 
         case_metadata.save()
 
-        # create case text and tsvector (which is created via a DB trigger)
-        if not hasattr(case_metadata, 'case_text'):
-            case_metadata.case_text = CaseText()
+        ### handle case_text
 
-        case_metadata.case_text.text = extract_casebody(force_str(self.orig_xml)).text()
-        case_metadata.case_text.save()
+        if not duplicative_case:
+            case_metadata.create_or_update_case_text(new_text=parsed("casebody|casebody").text())
 
         ### Handle citations
 
@@ -1190,15 +1197,15 @@ class SlowQuery(models.Model):
     def __str__(self):
         return self.label or self.query
 
+
 class CaseText(models.Model):
     """
-    This is nothing more than a plain-text rendition of a case and the metadata field it's connected
-    to. When this gets inserted or updated, a database trigger runs a function, both of which are
-    defined in scripts.set_up_postgres, that creates writes a tsvector to the casemetadata field.
+    Plain-text rendition of a case for full-text search. Function-based Gin index is created by manual migrations.
     """
     text = models.TextField(blank=True, null=True)
-    metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_text',
-                                    on_delete=models.SET_NULL)
+    metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_text', on_delete=models.SET_NULL)
+    tsv = pg_search.SearchVectorField(blank=True,null=True)
+
 
 class CaseExportQuerySet(models.QuerySet):
     """ Query methods for BaseXMLModel. """

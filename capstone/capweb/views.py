@@ -25,6 +25,8 @@ def index(request):
     return render(request, "index.html", {
         'news': news[0:5],
         'numbers': numbers,
+        'page_image': 'img/og_image/index.png',
+        'page_name': 'home'
     })
 
 
@@ -43,6 +45,11 @@ def about(request):
         "contributors": sorted_contributors,
         "news": news,
         "email": settings.DEFAULT_FROM_EMAIL,
+        'page_image': 'img/og_image/about.png',
+        'page_title': 'About the Caselaw Access Project',
+        'page_description': 'The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make' 
+                            'all published U.S. court decisions freely available to the public online, in a consistent '
+                            'format, digitized from the collection of the Harvard Law Library.',
     })
 
 
@@ -58,16 +65,29 @@ def contact(request):
 
     return render(request, 'contact.html', {
         "form": form,
-        "email": settings.DEFAULT_FROM_EMAIL
+        "email": settings.DEFAULT_FROM_EMAIL,
+        'page_image': 'img/og_image/contact.png',
+        'page_title': 'Contact Caselaw Access Project',
+        'page_description': 'Email us at %s or fill out this form. ' % settings.DEFAULT_FROM_EMAIL,
     })
 
 
 def tools(request):
-    return render(request, "tools.html")
+    return render(request, 'tools.html', {
+        'page_image': 'img/og_image/tools.png',
+        'page_title': 'Caselaw Access Project Tools',
+        'page_description': 'The capstone of the Caselaw Access Project is a robust set of tools which facilitate access'
+                            ' to the cases and their associated metadata. We currently offer two ways to access the '
+                            'data: our API, and bulk downloads.'
+    })
 
 
 def gallery(request):
-    return render(request, "gallery.html")
+    return render(request, 'gallery.html', {
+        'page_image': 'img/og_image/gallery.png',
+        'page_title': 'Caselaw Access Project Project Gallery',
+        'page_description': 'Sky is the limit! Here are some examples of what’s possible.'
+    })
 
 def maintenance_mode(request):
     return render(request, "error_page.html", {
@@ -76,6 +96,9 @@ def maintenance_mode(request):
         "middle": "${middle}",
         "bottom": "${bottom}",
         "action": "${action}",
+        'page_image': 'img/og_image/api.png',
+        'page_title': 'Caselaw Access Project: Error',
+        'page_description': 'This page is broken. Let us know if this should be working.'
     })
 
 def wordclouds(request):
@@ -83,11 +106,18 @@ def wordclouds(request):
     wordclouds = [w for w in os.listdir(wordcloud_dir) if w.endswith('.png')]
     return render(request, "gallery/wordclouds.html", {
         "wordclouds": wordclouds,
+        'page_image': 'img/og_image/wordclouds.png',
+        'page_title': 'Caselaw Access Project Project California Wordclouds',
+        'page_description': 'Most used words in California caselaw from 1853 to 2015'
     })
 
 
 def limericks(request):
-    return render(request, "gallery/limericks.html")
+    return render(request, 'gallery/limericks.html', {
+        'page_image': 'img/og_image/limericks.png',
+        'page_title': 'Caselaw Access Project Project Limericks!',
+        'page_description': 'Generate rhymes using caselaw!'
+    })
 
 
 def api(request):
@@ -109,4 +139,8 @@ def api(request):
         "reporter_id": reporter_metadata['id'],
         "reporter_metadata": reporter_metadata,
         "whitelisted_jurisdictions": whitelisted_jurisdictions,
+        'page_image': 'img/og_image/tools_api.png',
+        'page_title': 'Caselaw Access Project API Documentation',
+        'page_description': 'To get started with the API, you can explore it in your browser, or reach it from the '
+                            'command line.'
     })

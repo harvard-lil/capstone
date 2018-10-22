@@ -7,7 +7,7 @@ from scripts import process_metadata
 
 @pytest.mark.django_db
 def test_get_single_case_metadata(ingest_case_xml):
-    case = process_metadata.get_case_metadata(ingest_case_xml.orig_xml)
+    case, parsed = process_metadata.get_case_metadata(ingest_case_xml.orig_xml)
 
     assert case['duplicative'] is False
 
@@ -26,7 +26,7 @@ def test_get_case_metadata():
         for fname in files:
             if "_redacted_CASEMETS" in fname:
                 case_xml = read_file("%s/%s" % (root, fname))
-                case_metadata = process_metadata.get_case_metadata(case_xml)
+                case_metadata, parsed = process_metadata.get_case_metadata(case_xml)
                 assert len(case_metadata["volume_barcode"]) > 0
 
                 if not case_metadata['duplicative']:
@@ -43,13 +43,13 @@ def test_case_metadata_opinion():
     # test case with no opinion author
     casemets_file = "test_data/from_vendor/32044057891608_redacted/casemets/32044057891608_redacted_CASEMETS_0001.xml"
     case_xml = read_file(casemets_file)
-    case_metadata = dict(process_metadata.get_case_metadata(case_xml))
+    case_metadata, parsed = process_metadata.get_case_metadata(case_xml)
     assert type(case_metadata["parties"]) is list
     assert case_metadata["opinions"][0] == {"type": "majority", "author": None}
 
     # test case with opinion author
     casemets_file = "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml"
     case_xml = read_file(casemets_file)
-    case_metadata = dict(process_metadata.get_case_metadata(case_xml))
+    case_metadata, parsed = process_metadata.get_case_metadata(case_xml)
     assert case_metadata["opinions"][0] == {"type": "majority", "author": "Lacey, J."}
 

@@ -2,6 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
+import django.contrib.postgres.indexes
 
 
 class Migration(migrations.Migration):

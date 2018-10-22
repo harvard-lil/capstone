@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.functional import SimpleLazyObject
 from django.contrib.postgres.search import SearchQuery
@@ -126,11 +127,12 @@ class CaseFilter(NoopMixin, filters.FilterSet):
         label='Docket Number (contains)',
         lookup_expr='icontains',
         min_length=3)
-    search = filters.CharFilter(
-        field_name='tsvector',
-        label='Full-Text Search',
-        help_text='Search for words separated by spaces. All words are required in results. Words less than 3 characters are ignored.',
-        method='full_text_search_simple')
+
+    if settings.FULL_TEXT_FEATURE:
+        search = filters.CharFilter(
+            label='Full-Text Search',
+            help_text='Search for words separated by spaces. All words are required in results. Words less than 3 characters are ignored.',
+            method='full_text_search_simple')
 
     # These aren't really filters, but are used elsewhere in preparing the response.
     # Included here so they'll show up in the UI.
@@ -161,7 +163,16 @@ class CaseFilter(NoopMixin, filters.FilterSet):
         value = value.strip()
         value = " ".join(part for part in value.split() if len(part) > 2)
         if value:
-            return qs.filter(tsvector=SearchQuery(value))
+            return qs.filter(
+                case_text__tsv=SearchQuery(value)
+            ).exclude(
+                case_text=None  # ensure inner join
+            ).extra(
+                # For full-text search to be indexed properly, using the rum index, we have to order by the rum
+                # operator that compares metadata_id to 0. Name the result 'fts_order' so we can order by it later.
+                # See https://github.com/postgrespro/rum/issues/15#issuecomment-349690826
+                select={'fts_order': 'capdb_casetext.metadata_id <=> 0'}
+            ).order_by('fts_order')
         else:
             return qs
 

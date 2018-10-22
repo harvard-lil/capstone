@@ -1,10 +1,12 @@
 import json
+from contextlib import contextmanager
 from functools import wraps
 
 import requests
 import django_hosts
 from django.conf import settings
 from django.core.cache import caches
+from django.db import transaction, connections, OperationalError
 from django.urls import NoReverseMatch
 from django_hosts.resolvers import get_host_patterns
 
@@ -77,3 +79,27 @@ def show_toolbar_callback(request):
     """
     from debug_toolbar.middleware import show_toolbar
     return False if 'no_toolbar' in request.GET else show_toolbar(request)
+
+
+class StatementTimeout(Exception):
+    pass
+
+@contextmanager
+def statement_timeout(timeout, db="default"):
+    """
+        Context manager to kill queries if they take longer than `timeout` seconds.
+        Timed-out queries will raise StatementTimeout.
+    """
+    with transaction.atomic(using=db):
+        with connections[db].cursor() as cursor:
+            cursor.execute("SHOW statement_timeout")
+            original_timeout = cursor.fetchone()[0]
+            cursor.execute("SET LOCAL statement_timeout = '%ss'" % timeout)
+            try:
+                yield
+            except OperationalError as e:
+                if e.args[0] == 'canceling statement due to statement timeout\n':
+                    raise StatementTimeout()
+                raise
+            # reset to default, in case we're in a nested transaction
+            cursor.execute("SET LOCAL statement_timeout = %s", [original_timeout])

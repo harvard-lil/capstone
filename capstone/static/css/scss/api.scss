@@ -1,18 +1,13 @@
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
-
+@import 'bootstrap/tooltip';
 @import 'bootstrap/modal';
-
 @import "variables";
-@import "nav";
+
 nav {
   padding: 0;
   width: 100%;
-}
-
-.page-header h1 {
-  letter-spacing: 1px;
 }
 
 /* give container closest to nav some padding */
@@ -20,30 +15,117 @@ nav[aria-label="main"] ~ .container {
   padding-top: 90px;
 }
 
-ul.pager > li.previous > a, ul.pager > li.next > a {
-  border-bottom: 0;
+button, .btn {
+  background-color: $color-violet;
+  color: $color-white;
+  border: 2px solid $color-violet;
+  font-weight: $font-weight-semibold;
   &:hover, &:focus, &:active {
-    background-color: $color-violet;
-    border: 0;
+    background-color: $color-white;
+    color: $color-violet;
+    border: 2px solid $color-violet;
   }
 }
 
-.prettyprint {
-  font-size: 13px;
-  border-radius: 0;
-  border: 0 !important;
-  span.str {
-    color: $color-black;
+.container {
+  letter-spacing: 0.03em;
+  ul, li, a, .prettyprint {
+    font-size: 16px;
   }
-  a span.str {
-    color: $color-blue;
+
+  .page-header h1 {
+    letter-spacing: 1px;
+    @extend .h2;
   }
-  span.lit {
-    color: $color-dark-blue;
+
+  .pager > .previous,
+  .pager > .next {
+    list-style: none;
+    float: left;
+    text-align: center;
+    border-radius: 3px;
+    margin-left: 5px;
+    background: $color-violet;
+    color: $color-white;
+    font-size: 14px;
+    padding: 3px 7px;
+    cursor: pointer;
+    border: 2px solid $color-violet;
+     > a {
+      border-bottom: 0;
+      color: $color-white;
+      font-weight: $font-weight-semibold;
+    }
+    &:hover, &:focus, &:active {
+      border: 2px solid $color-violet;
+      background-color: $color-white;
+      > a {
+        color: $color-violet;
+      }
+    }
+
   }
-  span.kwd {
-    color: $color-orange;
+
+  .prettyprint {
+    border-radius: 0;
+    border: 0 !important;
+    span.str {
+      color: $color-black;
+    }
+    a span.str {
+      color: $color-magenta;
+      border-bottom: 2px solid $color-magenta;
+      &:hover, &:focus, &:active {
+        color: $color-violet;
+        border-bottom: 2px solid $color-violet;
+      }
+    }
+    span.lit {
+      color: $color-dark-blue;
+    }
+    span.kwd {
+      color: $color-red;
+    }
   }
+
+  .breadcrumb {
+    margin-top: 60px;
+    font-size: 14px;
+    li {
+      float: left;
+      &:last-child {
+        float: none;
+      }
+    }
+    li::after {
+      display: inline-block;
+      content: '\00bb';
+      margin: 0 .6em;
+      color: $color-medium-gray;
+    }
+    ul::after {
+      display: block;
+      clear: both;
+    }
+  }
+
+}
+
+// hide "Get" button -- button itself doesn't do anything, and dropdown is broken from including bootstrap 4 instead of 3
+#get-form {
+  display: none;
+}
+
+.param-label {
+  font-weight: bold;
+}
+
+.list-group-item > ul {
+  font-size: 14px;
+}
+
+li > code {
+  background-color: inherit;
 }
 
 ///////////// modal
@@ -52,6 +134,7 @@ ul.pager > li.previous > a, ul.pager > li.next > a {
 .fade.in {
   opacity: 1;
 }
+
 .modal.in .modal-dialog {
   -webkit-transform: translate(0, 0);
   transform: translate(0, 0);
@@ -67,136 +150,33 @@ ul.pager > li.previous > a, ul.pager > li.next > a {
 
 .modal-content {
   font-size: 1rem;
+  button.btn:hover,
+  button.btn:focus,
+  button.btn:active {
+    padding: 4px 8px;
+  }
+  button.close {
+    background-color: transparent;
+    color: $color-magenta;
+    font-weight: $font-weight-bold;
+    font-size: 20px;
+    &:hover, &:active, &:focus {
+      border: 0;
+      color: $color-violet;
+    }
+  }
   input, select {
     width: 100%;
+    outline: none;
+    border: 1px solid;
+    box-shadow: none;
   }
   select {
-    padding: 2px;
+    padding: 0.5rem;
+    cursor: pointer;
   }
   label {
     text-transform: capitalize;
   }
 }
 
-
-.breadcrumb {
-  margin-top: 60px;
-  font-size: 14px;
-  li::after {
-    display: inline-block;
-    content: '\00bb';
-    margin: 0 .6em;
-    color: #959fa5;
-  }
-}
-
-
-.pager > .previous, .pager > .next {
-  list-style: none;
-  border: 1px solid $color-blue;
-  float: left;
-  text-align: center;
-  border-radius: 3px;
-  margin-left: 5px;
-  background: $color-blue;
-  color: white;
-  font-size: 14px;
-  padding: 3px 7px;
-  cursor: pointer;
-  a {
-    color: white;
-    text-decoration: none;
-    &:hover {
-      color: $color-blue;
-    }
-  }
-  &:hover {
-    background: $color-light-blue;
-    color: $color-blue;
-  }
-}
-
-// hide "Get" button -- button itself doesn't do anything, and dropdown is broken from including bootstrap 4 instead of 3
-#get-form{
-  display:none;
-}
-
-.param-label {
-  font-weight: bold;
-}
-
-.list-group-item > ul {
-  font-size: 14px;
-}
-
-.parameter-name {
-  margin-left: -10px;
-}
-
-li > code {
-  background-color: inherit;
-}
-
-.endpoint-link {
-  font-weight: bold;
-}
-
-dt {
-  margin-top: 2rem;
-}
-
-lh{
-  font-weight: bold;
-}
-
-.param-data-type::before {
-  font-weight: bold;
-  content: "data type: ";
-}
-
-.param-description::before {
-  font-weight: bold;
-  content: "description: ";
-}
-
-dt.example-description {
-  margin-top: 20px;
-  font-weight: bold;
-  font-size: 1em;
-}
-
-.example-link {
-  font-size: 0.65em;
-}
-
-h5.list-header {
-  font-family: "titillium", "Helvetica", sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.9px;
-  color: $color-black;
-}
-
-li > h5.list-header {
-  font-size: 0.9em;
- }
-
-.example-mod-description {
-  font-size: 14px;
-}
-
-.json-data-type {
-  color: $blue;
-  font-style: italic;
-}
-
-.code-example-casebody-section {
-  color: $red;
-}
-
-#sidebar-menu {
-  background-color: $color-white;
-}
-.below-the-fold {
-  background-color: $color-tan;
-}
