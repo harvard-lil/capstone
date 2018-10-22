@@ -106,6 +106,9 @@ class CapPagination(FTSPagination):
     # but not too much larger to avoid allowing needlessly expensive queries.
     offset_cutoff = 10000
 
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
     def paginate_queryset(self, queryset, *args, **kwargs):
         # cache result counts to save on expensive count queries
         if hasattr(queryset, 'count'):

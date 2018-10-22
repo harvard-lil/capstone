@@ -45,7 +45,7 @@
         </li>
         <li>
           <a class="list-group-item" href="#pagination">
-            <span class="text">Pagination</span>
+            <span class="text">Pagination and Counts</span>
           </a>
         </li>
         <li>
@@ -95,8 +95,8 @@
     </p>
     <p>
       To get started with the API, you can <a href="{% api_url "api-root" %}">explore it in your browser,</a>
-      or reach it from the command line. For example, here is a curl command to list cases from Illinois:</p>
-    <pre class="code-block">curl "{% api_url "casemetadata-list" %}?jurisdiction=ill"</pre>
+      or reach it from the command line. For example, here is a curl command to request a single case from Illinois:</p>
+    <pre class="code-block">curl "{% api_url "casemetadata-list" %}?jurisdiction=ill&page_size=1"</pre>
     <p>
       If you haven't used APIs before, you might want to jump down to our
       <a href="#beginners">Beginner's Introduction to APIs</a>.
@@ -194,7 +194,7 @@
         </a>
       </dd>
       <dd>
-        <p class="example-description">
+        <p>
           The default text format is best for natural language processing. Example response data:
         </p>
         <pre class="code-block">
@@ -217,7 +217,7 @@
       ]
   }
 }</pre>
-        <p class="example-description">
+        <p>
           In this example, <code>"head_matter"</code> is a string representing all text printed in the volume before
           the text prepared by judges. <code>"opinions"</code> is an array containing a dictionary for each opinion
           in the case. <code>"judges"</code>, <code>"parties"</code>, and <code>"attorneys"</code> are
@@ -232,7 +232,7 @@
         </a>
       </dd>
       <dd>
-        <p class="example-description">
+        <p>
           The XML format is best if your analysis requires more information about pagination, formatting, or
           page layout. It contains a superset of the information available from body_format=text, but requires
           parsing XML data. Example response data:
@@ -247,7 +247,7 @@
         {% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html"
         </a></dd>
       <dd>
-        <p class="example-description">
+        <p>
           The HTML format is best if you want to show readable, formatted caselaw to humans. It represents a
           best-effort attempt to transform our XML-formatted data to semantic HTML ready for CSS formatting of your
           choice. Example response data:
@@ -260,20 +260,28 @@
 
   {# ====> PAGINATION <==== #}
   <div class="page-section">
-    <h2 class="subtitle" id="pagination">Pagination</h2>
-
-    <p class="example-description">
-          All queries in CAPAPI are limited to 100 results. We use <a href="#def-cursor">cursor</a>-based
-          pagination, meaning we keep track of where you are in the results set on the server, and you can
-          access each page of results by passing the provided value to the cursor parameter.
+    <h2 class="subtitle" id="pagination">Pagination and Counts</h2>
+    <p>
+      Queries by default return 100 results per page, but you may request a smaller number using the
+      <code>page_size</code> parameter:
+    </p>
+    <pre class="code-block">curl "{% api_url "casemetadata-list" %}?jurisdiction=ill&page_size=1"</pre>
+    <p>
+      We use <a href="#def-cursor">cursor</a>-based pagination, meaning we keep track of where you are in the
+      results set on the server, and you can access each page of results by using the link in the
+      <code>"previous"</code> and <code>"next"</code> keys of the response:
     </p>
     <pre class="code-block">{% filter force_escape %}
 {
   "count": 183149,
-  "next": "{% api_url "casemetadata-list" %}?body_format=html&cursor=cD0xODMyLTEyLTAx",
-  "previous": "{% api_url "casemetadata-list" %}?body_format=html&cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
+  "next": "{% api_url "casemetadata-list" %}?cursor=cD0xODMyLTEyLTAx",
+  "previous": "{% api_url "casemetadata-list" %}?cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
   ...
 }{% endfilter %}</pre>
+    <p>
+      Responses also include a <code>"count"</code> key. Occasionally this may show <code>"count": null</code>,
+      indicating that the total count for a particular query has not yet been calculated.
+    </p>
   </div>
 
   {# ==============> ACCESS LIMITS <============== #}
@@ -384,7 +392,7 @@
           {% api_url "casemetadata-list" %}{{ case_id }}/</a>
       </dd>
       <dd>
-        <p class="example-description">
+        <p>
           This example uses the <a href="#endpoint-case">single case</a> endpoint, and will retrieve the
           metadata for a single case.
         </p>
@@ -441,7 +449,7 @@
         </a>
       </dd>
       <dd>
-        <p class="example-description">
+        <p>
           This example uses the <a href="#endpoint-cases">cases</a> endpoint, and will retrieve every case with
           the citation {{ case_metadata.citations.0.cite }}.
         </p>
@@ -480,7 +488,7 @@
         </a>
       </dd>
       <dd>
-        <p class="example-description">
+        <p>
           This example performs a simple full-text case search which finds all cases containing the word
           "insurance."
         </p>
@@ -533,7 +541,7 @@
         </a>
       </dd>
       <dd>
-        <p class="example-description">
+        <p>
           This example uses the <a href="#endpoint-reporters">reporter</a> endpoint, and will retrieve all
           reporters in Arkansas.
         </p>

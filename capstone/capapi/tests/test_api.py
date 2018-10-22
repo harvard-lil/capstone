@@ -486,3 +486,27 @@ def test_swagger(client, url, content_type):
 def test_redoc(client):
     response = client.get(api_reverse("schema-redoc"))
     check_response(response, content_type="text/html")
+
+
+# PAGINATION
+@pytest.mark.django_db
+def test_pagination(client, three_cases):
+    ids = []
+
+    response = client.get(api_reverse("casemetadata-list"), {"page_size": 1})
+    content = response.json()
+    assert len(content['results']) == 1
+    ids.append(content['results'][0]['id'])
+
+    response = client.get(content['next'])
+    content = response.json()
+    assert len(content['results']) == 1
+    ids.append(content['results'][0]['id'])
+
+    response = client.get(content['next'])
+    content = response.json()
+    assert len(content['results']) == 1
+    ids.append(content['results'][0]['id'])
+    assert content['next'] is None
+
+    assert set(ids) == set(case.id for case in three_cases)
