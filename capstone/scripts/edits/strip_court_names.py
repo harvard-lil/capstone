@@ -3,7 +3,7 @@ import re
 from django.db import transaction
 
 from capdb.models import Court
-from scripts.helpers import parse_xml, serialize_xml
+from scripts.helpers import parse_xml, serialize_xml, ordered_query_iterator
 
 
 # This task applies a variety of basic normalizations to our court names -- see court_name_strip and
@@ -12,8 +12,9 @@ from scripts.helpers import parse_xml, serialize_xml
 
 def make_edits(dry_run=True):
 
-    def update_cases(old_court_entry, stripped_name, stripped_abbrev, new_court_entry = None):
-        for case_metadata in old_court_entry.case_metadatas.all():
+    def update_cases(old_court_entry, stripped_name, stripped_abbrev, new_court_entry=None):
+        query = old_court_entry.case_metadatas.order_by('id').select_related('case_xml')
+        for case_metadata in ordered_query_iterator(query):
             case = case_metadata.case_xml
             parsed = parse_xml(case.orig_xml)
             parsed('case|court')[0].set("abbreviation", stripped_abbrev)
@@ -31,6 +32,14 @@ def make_edits(dry_run=True):
 
         if court.name != stripped_name or court.name_abbreviation != stripped_abbrev:
 
+            # for reporting
+            diffs = []
+            if court.name != stripped_name:
+                diffs.append("%s -> %s" % (court.name, stripped_name))
+            if court.name_abbreviation != stripped_abbrev:
+                diffs.append("%s -> %s" % (court.name_abbreviation, stripped_abbrev))
+            diffs = ", ".join(diffs)
+
             # fix each court in a transaction -- fine to start over after some courts are done
             with transaction.atomic(using='capdb'):
 
@@ -42,7 +51,7 @@ def make_edits(dry_run=True):
                 # if so, set the court entry this court's cases to the correct court, and delete this court
                 # We are assuming that the first entry, organized by slug, is the correct one.
                 if similar_court:
-                    print("- Replacing %s with %s" % (court.name, similar_court.name))
+                    print("- Replacing court ID %s with %s: %s" % (court.id, similar_court.id, diffs))
                     if dry_run:
                         print("DRY RUN: Would update %s cases" % court.case_metadatas.count())
                         continue
@@ -59,7 +68,7 @@ def make_edits(dry_run=True):
 
                 # If there are no other similar courts, let's correct this name and cases
                 else:
-                    print("- Changing %s to %s" % (court.name, stripped_name))
+                    print("- Changing court ID %s: %s" % (court.id, diffs))
                     if dry_run:
                         print("DRY RUN: Would update %s cases" % court.case_metadatas.count())
                         continue
@@ -71,25 +80,23 @@ def make_edits(dry_run=True):
                     court.name_abbreviation = stripped_abbrev
                     court.save()
 
+def normalize_whitespace(text):
+    return re.sub(r'\s+', ' ', text).strip()
+
+def normalize_quotes(text):
+    return text.replace("’", "'")
 
 def court_name_strip(name_text):
-    name_text = re.sub('\xa0', ' ', name_text)
-    name_text = re.sub('\'|’', u"\u2019", name_text)
-    name_text = re.sub('\\\\', '', name_text)
-    name_text = re.sub('\+', '', name_text)
-    name_text = re.sub('`', '', name_text)
-    name_text = re.sub(']', '', name_text)
-    name_text = re.sub('0-9', '', name_text)
+    name_text = normalize_whitespace(name_text)
+    name_text = normalize_quotes(name_text)
+    name_text = re.sub(r'[\\+`\]]', '', name_text)
     name_text = re.sub('Court for The', 'Court for the', name_text)
     name_text = re.sub('Appeals[A-Za-z]', 'Appeals', name_text)
-    name_text = re.sub('Pennsylvania[A-Za-z0-9\.].', 'Pennsylvania', name_text)
+    name_text = re.sub('Pennsylvania[A-Za-z0-9\.]', 'Pennsylvania', name_text)
     return name_text
 
-
 def court_abbreviation_strip(name_abbreviation_text):
-    name_abbreviation_text = re.sub('\xa0', ' ', name_abbreviation_text)
-    name_abbreviation_text = re.sub('\n', ' ', name_abbreviation_text)
-    name_abbreviation_text = re.sub('\'|’', u"\u2019", name_abbreviation_text)
+    name_abbreviation_text = normalize_whitespace(name_abbreviation_text)
+    name_abbreviation_text = normalize_quotes(name_abbreviation_text)
     name_abbreviation_text = re.sub('`', '', name_abbreviation_text)
-    name_abbreviation_text = re.sub('^ ', '', name_abbreviation_text)
     return name_abbreviation_text
