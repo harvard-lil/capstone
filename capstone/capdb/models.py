@@ -13,7 +13,7 @@ from partial_index import PartialIndex
 
 from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
-from capweb.helpers import reverse
+from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name, extract_casebody)
 from scripts.process_metadata import get_case_metadata
@@ -155,14 +155,7 @@ class AutoSlugMixin:
                     slug += "-%s" % count
                 self.slug = slug
                 try:
-                    # if we are running in a transaction, we have to run this save in a sub-transaction
-                    # to recover from expected IntegrityErrors:
-                    if transaction.get_connection().in_atomic_block:
-                        with transaction.atomic(using='capdb'):
-                            return super(AutoSlugMixin, self).save(*args, **kwargs)
-
-                    # otherwise we run with no transaction for speed:
-                    else:
+                    with transaction_safe_exceptions(using='capdb'):
                         return super(AutoSlugMixin, self).save(*args, **kwargs)
                 except IntegrityError as e:
                     if 'Key (slug)' not in e.args[0]:
@@ -225,8 +218,10 @@ class CachedLookupMixin:
         if value in cls._lookup_tables[keys]:
             return cls._lookup_tables[keys][value]
 
-        # if not in cache, attempt to fetch item from DB (raises cls.DoesNotExist if not found):
-        obj = cls.objects.get(**kwargs)
+        # if not in cache, attempt to fetch item from DB (raises cls.DoesNotExist if not found).
+        # wrap in transaction_safe_exceptions so callers can catch the DoesNotExist if they want.
+        with transaction_safe_exceptions(using='capdb'):
+            obj = cls.objects.get(**kwargs)
 
         # update cache with newly found obj:
         cls._cached_objects.append(obj)
