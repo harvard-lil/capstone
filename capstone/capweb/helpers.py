@@ -103,3 +103,24 @@ def statement_timeout(timeout, db="default"):
                 raise
             # reset to default, in case we're in a nested transaction
             cursor.execute("SET LOCAL statement_timeout = %s", [original_timeout])
+
+@contextmanager
+def transaction_safe_exceptions(using=None):
+    """
+        If we are in a transaction, then it doesn't work to catch ORM errors like DoesNotExist or IntegrityError,
+        as they abort the transaction. This context manager starts a sub-transaction to catch the errors, only
+        if necessary. Example:
+
+            with transaction.atomic(using='capstone'):
+                try:
+                    with transaction_safe_exceptions():
+                        Foo.objects.get(id=1)
+                except Foo.DoesNotExist:
+                    pass
+                    # ORM queries here will still work thanks to calling transaction_safe_exceptions()
+    """
+    if transaction.get_connection(using=using).in_atomic_block:
+        with transaction.atomic(using=using):
+            yield
+    else:
+        yield
