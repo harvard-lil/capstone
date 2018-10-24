@@ -231,9 +231,11 @@ def ingest_volume_from_s3(volume_barcode):
     """
     # find latest volume folder based on barcode
     volume_folders = ingest_storage.iter_files(volume_barcode, partial_path=True)
+    volume_folders = sorted(volume_folders, reverse=True)
     if not volume_folders:
         VolumeMetadata.objects.filter(barcode=volume_barcode).update(ingest_status='error', ingest_errors={"missing_from_s3": volume_barcode})
-    volume_folder = sorted(volume_folders, reverse=True)[0]
+        return
+    volume_folder = volume_folders[0]
 
     # fetch all items in folder
     s3_items = ((path.split(volume_folder, 1)[1], etag) for path, etag in ingest_storage.iter_files_recursive(volume_folder, with_md5=True))
