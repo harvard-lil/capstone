@@ -1,4 +1,5 @@
 import json
+from collections import namedtuple
 from contextlib import contextmanager
 from functools import wraps
 
@@ -124,3 +125,9 @@ def transaction_safe_exceptions(using=None):
             yield
     else:
         yield
+
+def select_raw_sql(sql, args=None, using=None):
+    with connections[using].cursor() as cursor:
+        cursor.execute(sql, args)
+        nt_result = namedtuple('Result', [col[0] for col in cursor.description])
+        return [nt_result(*row) for row in cursor.fetchall()]
