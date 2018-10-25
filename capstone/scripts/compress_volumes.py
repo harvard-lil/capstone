@@ -491,41 +491,53 @@ def compress_volume(storage_name, volume_name):
 
 
 @shared_task
-def validate_volume(volume_name):
+def validate_volume(volume_path):
+    """
+        Perform basic sanity checks on captar archives, and write "ok" or an error into `validation` folder.
+
+        Relative to captar_storage:
+            volume_path looks like 'redacted/32044031754302_redacted'
+            output file looks like 'validation/redacted/32044031754302_redacted.txt'
+    """
+
+    # helpers
+    top_level_file_sets = {("METS.md5", "METS.xml.gz"), ("BOXES.xml.gz", "METS.md5", "METS.xml.gz")}
     class ValidationResult(Exception):
         pass
 
     # check last result
-    result_path = str(Path('validation', volume_name).with_suffix('.txt'))
+    result_path = str(Path('validation', volume_path).with_suffix('.txt'))
     if captar_storage.exists(result_path):
         last_result = json.loads(captar_storage.contents(result_path))
         if last_result[0] == "ok":
-            print("Volume %s already validated; skipping." % volume_name)
+            print("Volume %s already validated; skipping." % volume_path)
             return
 
     temp_dir = TemporaryDirectory()
     try:
         # copy captar from S3 to disk if necessary
         if isinstance(captar_storage, CapS3Storage):
-            Path(temp_dir.name, volume_name).mkdir(parents=True)
-            for path in captar_storage.iter_files(volume_name):
+            Path(temp_dir.name, volume_path).mkdir(parents=True)
+            for path in captar_storage.iter_files(volume_path):
                 copy_file(path, Path(temp_dir.name, path), from_storage=captar_storage)
             local_storage = CapFileStorage(temp_dir.name)
         else:
             local_storage = captar_storage
 
         # load tar file as a storage wrapper and get list of items
-        volume_storage = CaptarStorage(local_storage, volume_name)
-        if not volume_storage.index:
-            raise ValidationResult("index_missing", "Failed to load index from %s" % volume_storage.index_path)
+        try:
+            volume_storage = CaptarStorage(local_storage, volume_path)
+            assert volume_storage.index
+        except (FileNotFoundError, AssertionError):
+            raise ValidationResult("index_missing", "Failed to load index for %s" % volume_path)
         tar_items = set(volume_storage.iter_files_recursive(with_md5=True))
 
-        # volmets_path is shortest path with no slashes, ending in .xml.gz
-        volmets_path = next((item for item in tar_items if item[0].count("/") == 0 and item[0].endswith(".xml.gz")), None)
+        # volmets_path is path with no slashes ending in METS.xml.gz
+        volmets_path = next((item for item in tar_items if item[0].count("/") == 0 and item[0].endswith("METS.xml.gz")), None)
 
         # check for missing volmets
         if not volmets_path:
-            raise ValidationResult("volmets_missing", volume_name)
+            raise ValidationResult("volmets_missing", volume_path)
 
         # check md5 of volmets
         md5_path = next((item[0] for item in tar_items if item[0].count("/") == 0 and item[0].endswith(".md5")), None)
@@ -553,8 +565,8 @@ def validate_volume(volume_name):
             raise ValidationResult("only_in_mets", only_in_mets)
 
         # check that all files only_in_tar are expected (should be one volmets and one volmets md5)
-        only_in_tar = sorted(item[0] for item in tar_items - volmets_files)
-        if not len(only_in_tar) == 2 and only_in_tar[0].endswith("_METS.md5") and only_in_tar[1].endswith("_METS.xml.gz"):
+        only_in_tar = tuple(sorted(item[0].rsplit('_',1)[-1] for item in tar_items - volmets_files))
+        if only_in_tar not in top_level_file_sets:
             raise ValidationResult("only_in_tar", only_in_tar)
 
         # count suffixes
