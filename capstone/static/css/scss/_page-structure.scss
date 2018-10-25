@@ -208,14 +208,12 @@
     border: 0;
     color: $color-black;
     background-color: transparent;
+    padding-left: 15%;
     &:hover, &:focus, &:active {
       background-color: $color-yellow-bright;
     }
     &.selected {
       background-color: $color-yellow;
-    }
-    > span.text {
-      margin-left: 30px;
     }
   }
 
