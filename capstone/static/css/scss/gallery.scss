@@ -9,6 +9,15 @@
   }
 }
 
+#sidebar-menu {
+  border-right: $color-violet-light 1px solid;
+}
+
+.full-content {
+  border-right: $color-violet-light 1px solid;
+  border-left: $color-violet-light 1px solid;
+}
+
 .subtitle.simple-subtitle {
   &:before {
     content: "";
@@ -18,7 +27,7 @@
 
 .page-section {
   margin-bottom: 4rem !important;
-  border-bottom: $border-width solid $color-gray;
+  border-bottom: 1px solid $color-violet-light;
   padding-bottom: 3rem;
   &:last-child {
     border-bottom: 0;
