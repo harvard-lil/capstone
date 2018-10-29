@@ -49,3 +49,8 @@ class ResearchRequestAdmin(admin.ModelAdmin):
     list_display = ('user', 'submitted_date', 'status', 'name', 'email', 'institution', 'title')
     raw_id_fields = ('user',)
     list_filter = ('status',)
+
+
+@admin.register(models.SiteLimits)
+class SiteLimitsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'daily_signup_limit', 'daily_signups', 'daily_download_limit', 'daily_downloads')
