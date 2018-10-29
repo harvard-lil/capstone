@@ -221,6 +221,7 @@ STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 PIPELINE = {
     'COMPILERS': (
         'libsasscompiler.LibSassCompiler',
+        'pipeline.compilers.es6.ES6Compiler'
     ),
     'STYLESHEETS': {
         'base': {
@@ -348,13 +349,18 @@ PIPELINE = {
             ),
             'output_filename': 'map_actions.js'
         },
+        'search_vue': {
+            'source_filenames': (
+                'js/search-source.es6',
+            ),
+            'output_filename': 'search.js'
+        },
     },
 
     # avoid compressing assets for now
     'CSS_COMPRESSOR': None,
     'JS_COMPRESSOR': None,
 }
-
 # define storages
 # each of these can be imported from capdb.storages, e.g. `from capdb.storages import ingest_storage`
 
