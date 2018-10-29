@@ -154,7 +154,7 @@ li.nav-item.dropdown {
   > a.nav-link:after {
     content: url('../../img/arrow-expand.svg');
     display: inline-block;
-    transform: translateY(-2px);
+    transform: translateY(-5px);
   }
   &.show {
     > a:after {
