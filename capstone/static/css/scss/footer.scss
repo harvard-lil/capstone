@@ -17,6 +17,10 @@ footer {
 .footer-content {
   margin: 0 auto;
   padding: 3rem 0;
+  .list-inline-item {
+    margin-right: 0;
+    margin-left: 0.5rem;
+  }
   @include make-col(11);
   nav[aria-label="footer"] {
     text-align: right;
@@ -72,3 +76,4 @@ footer {
     }
   }
 }
+
