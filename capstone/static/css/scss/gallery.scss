@@ -9,16 +9,25 @@
   }
 }
 
+#sidebar-menu {
+  border-right: $color-violet-light 1px solid;
+}
+
+.full-content {
+  border-right: $color-violet-light 1px solid;
+  border-left: $color-violet-light 1px solid;
+}
+
 .subtitle.simple-subtitle {
   &:before {
     content: "";
-    margin-left: 0;
+    margin: 0;
   }
 }
 
 .page-section {
   margin-bottom: 4rem !important;
-  border-bottom: $border-width solid $color-gray;
+  border-bottom: 1px solid $color-violet-light;
   padding-bottom: 3rem;
   &:last-child {
     border-bottom: 0;
@@ -39,7 +48,7 @@
     @include make-col(3);
      .main-img {
        max-width: 80%;
-       margin-top: 40%;
+       margin-top: 25%;
     }
   }
    @include media-breakpoint-down(md) {
