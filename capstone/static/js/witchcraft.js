@@ -69,6 +69,12 @@ let setupEventsOnHover = function (id, jurname, info) {
   });
 };
 
+let setupClickEvent = function () {
+  $('.state').click(function(e){
+    $('.state').off('mouseover');
+  });
+};
+
 let parseWitchcraft = function () {
   for (jur in jurisdiction_translation) {
     let slug = jurisdiction_translation[jur].slug;
@@ -93,4 +99,5 @@ $(function () {
   markupWithExtraInfo();
   parseWitchcraft();
   showRandomCase();
+  setupClickEvent();
 });
