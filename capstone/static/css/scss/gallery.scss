@@ -34,20 +34,22 @@
 }
 
 .project-image {
-  > a { border-bottom: 0; }
+  > a {
+    border-bottom: 0;
+  }
   @include media-breakpoint-up(lg) {
     @include make-col(3);
-     .main-img {
-       max-width: 80%;
-       margin-top: 40%;
+    .main-img {
+      max-width: 80%;
+      margin-top: 40%;
     }
   }
-   @include media-breakpoint-down(md) {
-     @include make-col(12);
-     .main-img {
-       display: none;
-     }
-   }
+  @include media-breakpoint-down(md) {
+    @include make-col(12);
+    .main-img {
+      display: none;
+    }
+  }
   .main-img {
     border-radius: 50%;
     border: 1px solid $color-gray;
@@ -78,3 +80,53 @@
   }
 }
 
+.witchcraft-info-box {
+
+  .title {
+    font-family: $font-serif;
+    line-height: 1.2;
+    margin-bottom: 0;
+    color: $color-yellow;
+  }
+  li.item-set {
+    margin-bottom: 0;
+    &:first-child {
+      margin-bottom: 1rem;
+    }
+  }
+  ul {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .jur_name {
+    padding: 0 0 .2rem;
+    border-bottom: 1px solid $color-yellow;
+    font-size: 20px;
+    line-height: 3rem;
+  }
+  .api-list-link {
+    margin-top: 2rem;
+    margin-left: 15px;
+    font-size: 14px;
+  }
+}
+
+.excerpt-box {
+  overflow-y: scroll;
+  background-color: $color-black;
+  margin-top: 20px;
+  text-align: left;
+  padding: 15px;
+  border: 1px solid $color-white;
+  height: 300px;
+  margin-right: 20px;
+  margin-left: 15px;
+  .excerpt-number {
+    font-family: $font-serif;
+    color: $color-yellow;
+  }
+  .excerpt-item {
+    font-size: 16px;
+    line-height: 1.4rem;
+  }
+}
