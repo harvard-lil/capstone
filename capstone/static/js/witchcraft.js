@@ -57,8 +57,11 @@ let showRandomCase = function() {
 };
 
 let setupEventsOnHover = function (id, jurname, info) {
+  let selected_class = 'state-selected';
   $(id).on("click mouseover", function (e) {
     showCase(jurname, info);
+    $('.state').removeClass(selected_class);
+    $(id).addClass(selected_class);
     e.preventDefault();
   });
 
