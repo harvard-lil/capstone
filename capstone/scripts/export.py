@@ -82,7 +82,7 @@ def export_queryset(queryset, dir_name, filter_item, public=False):
                 "Source-Organization: Harvard Law School Library Innovation Lab\n"
                 "Organization-Address: 1545 Massachusetts Avenue, Cambridge, MA 02138\n"
                 "Contact-Name: Library Innovation Lab\n"
-                "Contact-Email: lil@law.harvard.edu\n"
+                "Contact-Email: info@case.law\n"
                 "External-Description: Cases for %s\n"
                 "Bagging-Date: %s\n"
             ) % (filter_item, timezone.now().strftime("%Y-%m-%d"))
