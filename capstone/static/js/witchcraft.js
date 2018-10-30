@@ -32,18 +32,19 @@ let showCase = function (jurname, info) {
   for (let i = 0; i < info.length; i++) {
     let excerpt_number = i + 1;
     let a_tag = "<a href='" + info[i].url + "'>" + info[i].name_abbreviation + "</a>";
+    let decision_date = "<span class='excerpt-date'> " + info[i].decision_date + " </span>"
     excerpts.append("<p class='excerpt-item'>" +
         "<span class='excerpt-number'>" + excerpt_number + ") </span>" +
-        "\"..." + info[i].context + "...\" " + a_tag + "</p>")
+        "\"..." + info[i].context + "...\" " + a_tag + decision_date + "</p>")
   }
   api_list_link.attr("href", info.url);
 };
 
-let getRandomNum = function(min, max) {
+let getRandomNum = function (min, max) {
   return Math.round(Math.random() * (max - min) + min);
 };
 
-let showRandomCase = function() {
+let showRandomCase = function () {
   let allJurs = Object.keys(witchcraft_results);
   let randJur = allJurs[getRandomNum(0, allJurs.length)];
   for (jur in jurisdiction_translation) {
@@ -73,23 +74,25 @@ let setupEventsOnHover = function (id, jurname, info) {
 };
 
 let setupClickEvent = function () {
-  $('.state').click(function(e){
+  $('.state').click(function (e) {
     $('.state').off('mouseover');
   });
 };
 
 let parseWitchcraft = function () {
   for (jur in jurisdiction_translation) {
-    let slug = jurisdiction_translation[jur].slug;
-    if (slug && slug in witchcraft_results) {
-      //  assign results to map
-      let jurid = "#" + jur;
-      let new_opacity = witchcraft_results[slug].total_appearances / 100;
-      $(jurid)
-          .css('fill', 'orange')
-          .css('fill-opacity', new_opacity);
-      let jurname = jurisdiction_translation[jur].name;
-      setupEventsOnHover(jurid, jurname, witchcraft_results[slug]);
+    if (jurisdiction_translation.hasOwnProperty(jur)) {
+      let slug = jurisdiction_translation[jur].slug;
+      if (slug && slug in witchcraft_results) {
+        //  assign results to map
+        let jurid = "#" + jur;
+        let new_opacity = witchcraft_results[slug].total_appearances / 100;
+        $(jurid)
+            .css('fill', 'orange')
+            .css('fill-opacity', new_opacity);
+        let jurname = jurisdiction_translation[jur].name;
+        setupEventsOnHover(jurid, jurname, witchcraft_results[slug]);
+      }
     }
   }
 };
