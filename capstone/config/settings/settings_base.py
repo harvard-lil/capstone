@@ -7,7 +7,7 @@ SERVICES_DIR = os.path.join(os.path.dirname(BASE_DIR), 'services')
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test']
 
-ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
+ADMINS = [('Caselaw Access Project', 'info@case.law')]
 
 AUTH_USER_MODEL = 'capapi.CapUser'
 LOGIN_REDIRECT_URL = '/'

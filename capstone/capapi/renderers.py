@@ -65,7 +65,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
 
 class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
     @cache_func(
-        key=lambda self, data, view, request: hashlib.md5(('filter-form:'+request.get_full_path()).encode('utf8')).hexdigest(),
+        key=lambda self, data, view, request: 'filter-form:'+hashlib.md5((request.get_full_path()).encode('utf8')).hexdigest(),
         timeout=settings.CACHED_COUNT_TIMEOUT,
     )
     def get_filter_form(self, data, view, request):
