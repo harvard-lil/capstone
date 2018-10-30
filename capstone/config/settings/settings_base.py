@@ -336,14 +336,13 @@ PIPELINE = {
             ),
             'output_filename': 'map_actions.js'
         },
-        'witchcraft': {
+        'witchcraft_bundle': {
             'source_filenames': (
                 'js/map-data.js',
                 'js/witchcraft-data.js',
                 'js/witchcraft.js',
             ),
-            'output_filename': 'witchcraft.js'
-
+            'output_filename': 'witchcraft_bundle.js'
         }
     },
 
