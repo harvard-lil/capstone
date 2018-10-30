@@ -46,21 +46,22 @@
   > a {
     border-bottom: 0;
   }
+  .main-img {
+    border-radius: 50%;
+    border: 1px solid $color-gray;
+  }
+
   @include media-breakpoint-up(lg) {
     @include make-col(3);
     .main-img {
       max-width: 80%;
       margin-top: 25%;
     }
-    @include media-breakpoint-down(md) {
-      @include make-col(12);
-      .main-img {
-        display: none;
-      }
-    }
+  }
+  @include media-breakpoint-down(md) {
+    @include make-col(12);
     .main-img {
-      border-radius: 50%;
-      border: 1px solid $color-gray;
+      display: none;
     }
   }
 }
