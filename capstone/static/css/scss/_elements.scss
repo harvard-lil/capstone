@@ -20,9 +20,9 @@
     background-color: $color-white;
     color: $color-violet;
     transition: none;
-    -webkit-transition : background-color 200ms ease-out;
-    -moz-transition : background-color 200ms ease-out;
-    -o-transition : background-color 200ms ease-out;
+    -webkit-transition: background-color 200ms ease-out;
+    -moz-transition: background-color 200ms ease-out;
+    -o-transition: background-color 200ms ease-out;
 
   }
 }
@@ -52,9 +52,11 @@
   margin-left: -3rem;
 }
 
-
 h1, .h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   font-family: $font-serif;
+  @include media-breakpoint-down(md) {
+    font-size: 20%;
+  }
 }
 
 ul {
@@ -113,7 +115,6 @@ code {
   font-family: Monospace;
 }
 
-
 pre {
   white-space: -moz-pre-wrap;
   white-space: -o-pre-wrap;
@@ -131,8 +132,8 @@ a {
     text-decoration: none;
     border-bottom: 2px solid $color-violet;
     color: $color-violet;
-    -webkit-transition : border,color 300ms ease-out;
-    -moz-transition : border,color 300ms ease-out;
-    -o-transition : border,color 300ms ease-out;
+    -webkit-transition: border, color 300ms ease-out;
+    -moz-transition: border, color 300ms ease-out;
+    -o-transition: border, color 300ms ease-out;
   }
 }
