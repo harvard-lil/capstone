@@ -11,7 +11,7 @@ generated_user_email_template = "fake_user_{}@{}.{}"
 confirmed_test_user_email = "tester_999_joe@case.test"
 confirmed_test_user_password = ""
 
-api_host = "api.capapi.org"
+api_host = "api.case.law"
 
 endpoints = ["cases"]
 
