@@ -33,6 +33,11 @@
             <span class="text">Limericks</span>
           </a>
         </li>
+        <li>
+          <a class="list-group-item" href="#witchcraft">
+            <span class="text">Witchcraft</span>
+          </a>
+        </li>
       </ul>
     </div>
   </nav>
@@ -154,6 +159,43 @@
             <a href="{% url "limericks" %}"
                title="Limericks homepage"
                aria-label="Limericks homepage"></a>
+          </span>
+        </p>
+      </div>
+    </div>
+  </div>
+  {# =============> WITCHCRAFT <============= #}
+  <div class="page-section">
+    <div class="row">
+      <div class="project-image">
+        <a href="{% url "witchcraft" %}"
+           id="limericks"
+           aria-label="Limericks homepage">
+          <img class="main-img"
+             alt=""
+             src="{% static "img/witchcraft.png" %}">
+        </a>
+      </div>
+      <div class="project-description">
+        <h2 class="subtitle simple-subtitle" id="witchcraft">
+          <a href="{% url "witchcraft" %}">
+            Witchcraft in Caselaw
+          </a>
+        </h2>
+        <p>
+          See all instances of "witchcraft" charted out on the U.S. map.
+        </p>
+        <p class="social">
+          <span class="github">
+            <a href="https://github.com/harvard-lil/capstone/blob/master/capweb/gallery/witchcraft.py" target="_blank"
+               title="Witchcraft source code on Github"
+               aria-label="Witchcraft source code on Github"></a>
+          </span>
+
+          <span class="website">
+            <a href="{% url "witchcraft" %}"
+               title="Witchcraft homepage"
+               aria-label="Witchcraft homepage"></a>
           </span>
         </p>
       </div>
