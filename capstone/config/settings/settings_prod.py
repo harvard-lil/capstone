@@ -60,7 +60,7 @@ DATABASES['tracking_tool'] = {
 }
 
 ### API
-API_DOCS_CASE_ID = '11301409' # Brown v. Board
+API_DOCS_CASE_ID = '435800' # Random Illinois case
 
 ### SECURITY
 
