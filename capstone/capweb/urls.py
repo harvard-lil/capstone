@@ -29,6 +29,7 @@ urlpatterns = [
 
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),
+    path('gallery/witchcraft', TemplateView.as_view(template_name='gallery/witchcraft.html'), name='witchcraft'),
 
     path('contact/', views.contact, name='contact'),
     path('contact-success/', TemplateView.as_view(template_name='contact_success.html'), name='contact-success'),

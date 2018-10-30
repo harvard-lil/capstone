@@ -331,10 +331,20 @@ PIPELINE = {
         },
         'map_actions': {
             'source_filenames': (
+                'js/map-data.js',
                 'js/map-actions.js',
             ),
             'output_filename': 'map_actions.js'
         },
+        'witchcraft': {
+            'source_filenames': (
+                'js/map-data.js',
+                'js/witchcraft-data.js',
+                'js/witchcraft.js',
+            ),
+            'output_filename': 'witchcraft.js'
+
+        }
     },
 
     # avoid compressing assets for now
