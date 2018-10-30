@@ -39,6 +39,10 @@ body {
   font-size: 20px;
   line-height: 29px;
   font-weight: 400;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
 
   // push footer to bottom on short pages
   @extend .d-flex;
