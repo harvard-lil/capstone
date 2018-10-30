@@ -244,7 +244,7 @@ $font-sans-serif: "titillium", "Helvetica", sans-serif;
 // headings grow from h6 to h1 by $heading-scale
 @include media-breakpoint-only(xl) {
   $base-font-size: 20px;
-  $heading-scale: 8; // amount of px headings grow from h6 to h1
+  $heading-scale: 10; // amount of px headings grow from h6 to h1
   @for $i from 1 through 6 {
     h#{$i}, .h#{$i} {
       font-size: $base-font-size + $heading-scale * (6 - $i);

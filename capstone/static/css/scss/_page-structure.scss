@@ -1,5 +1,4 @@
 .basic-page {
-  //padding: 4rem 0 4rem 0;
   font-size: 20px;
   line-height: 1.6em;
   word-wrap: break-word;
@@ -10,11 +9,14 @@
   }
   h1.page-title {
     margin-bottom: 3rem;
-    font-size: 72px;
     font-family: $font-sans-serif;
     color: #4A4A4A;
     font-weight: $font-weight-semibold;
     letter-spacing: 1.44px;
+    @include media-breakpoint-down(md) {
+      margin-bottom: 1rem;
+    }
+
   }
   ul {
     padding-left: 0;
@@ -140,8 +142,12 @@
     .page-title {
       margin-bottom: 0;
     }
+    @include media-breakpoint-down(md) {
+      padding-top: 2rem;
+      padding-bottom: 1rem;
+    }
   }
-  @include media-breakpoint-down(xs) {
+  @include media-breakpoint-down(md) {
     padding-top: 3rem;
     padding-bottom: 3rem;
     border-bottom: 0;
