@@ -1,3 +1,4 @@
+import logging
 import os
 from collections import OrderedDict
 
@@ -6,13 +7,13 @@ from django.shortcuts import render
 from django.conf import settings
 
 from capweb.forms import ContactForm
-from capweb.helpers import get_data_from_lil_site, reverse
-from capweb.resources import send_contact
+from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter
 from capapi import serializers
 from capapi.resources import form_for_request
 
+logger = logging.getLogger(__name__)
 
 
 def index(request):
@@ -57,7 +58,9 @@ def contact(request):
     form = form_for_request(request, ContactForm)
 
     if request.method == 'POST' and form.is_valid():
-        send_contact(form.data)
+        data = form.data
+        send_contact_email(data.get('subject'), data.get('message'), data.get('email'))
+        logger.info("sent contact email: %s" % data)
         return HttpResponseRedirect(reverse('contact-success'))
 
     email_from = request.user.email if request.user.is_authenticated else ""
