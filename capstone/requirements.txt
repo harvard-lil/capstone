@@ -84,7 +84,7 @@ mincss==0.11.6
 mirakuru==0.8.2           # via pytest-redis
 mock==2.0.0               # via moto
 more-itertools==4.3.0     # via pytest
-moto==1.3.4
+moto==1.3.6
 mysqlclient==1.3.10
 nltk==3.3.0
 openapi-codec==1.3.2      # via drf-yasg
@@ -120,7 +120,7 @@ pyyaml==3.12              # via flex, pyaml
 rcssmin==1.0.6            # via django-compressor
 redis==2.10.6
 reportlab==3.5.2
-requests==2.16.4          # via aws-xray-sdk, coreapi, docker, flex, moto, responses
+requests==2.20.0          # via aws-xray-sdk, coreapi, docker, flex, moto, responses
 responses==0.9.0          # via moto
 rfc3987==1.3.7            # via flex
 rjsmin==1.0.12            # via django-compressor
