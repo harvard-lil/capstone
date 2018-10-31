@@ -86,7 +86,7 @@ let parseWitchcraft = function () {
       if (slug && slug in witchcraft_results) {
         //  assign results to map
         let jurid = "#" + jur;
-        let new_opacity = witchcraft_results[slug].total_appearances / 100;
+        let new_opacity = witchcraft_results[slug].total_appearances / 45;
         $(jurid)
             .css('fill', 'orange')
             .css('fill-opacity', new_opacity);
