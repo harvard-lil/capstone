@@ -3,7 +3,6 @@ from collections import OrderedDict
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template import loader
@@ -13,7 +12,7 @@ from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchReque
 from capapi.models import SiteLimits, CapUser
 from capapi.resources import form_for_request
 from capdb.models import CaseExport
-from capweb.helpers import reverse
+from capweb.helpers import reverse, send_contact_email
 
 
 def register_user(request):
@@ -101,12 +100,7 @@ def request_research_access(request):
         form.instance.user = request.user
         form.save()
         message = loader.get_template('research_request/research_request_email.txt').render(form.cleaned_data)
-        send_mail(
-            'Research access requested',
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [settings.DEFAULT_FROM_EMAIL],
-            fail_silently=False)
+        send_contact_email('Research access requested', message, request.user.email)
         return HttpResponseRedirect(reverse('research-request-success'))
 
     return render(request, 'research_request/research_request.html', {'form': form})

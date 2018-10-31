@@ -50,7 +50,7 @@ class ResearchRequestForm(forms.ModelForm):
     name = forms.CharField(label='Name of researcher')
     institution = forms.CharField(label='Educational or Research Institution')
     title = forms.CharField(label='Title or Affiliation')
-    area_of_interest = forms.CharField(label='Research area of interest (optional)', widget=forms.Textarea)
+    area_of_interest = forms.CharField(label='Research area of interest (optional)', widget=forms.Textarea, required=False)
 
     class Meta:
         model = ResearchRequest

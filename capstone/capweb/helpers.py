@@ -7,6 +7,7 @@ import requests
 import django_hosts
 from django.conf import settings
 from django.core.cache import caches
+from django.core.mail import EmailMessage
 from django.db import transaction, connections, OperationalError
 from django.urls import NoReverseMatch
 from django_hosts.resolvers import get_host_patterns
@@ -131,3 +132,16 @@ def select_raw_sql(sql, args=None, using=None):
         cursor.execute(sql, args)
         nt_result = namedtuple('Result', [col[0] for col in cursor.description])
         return [nt_result(*row) for row in cursor.fetchall()]
+
+def send_contact_email(title, content, from_address):
+    """
+        Send a message on behalf of a user to our contact email.
+        Use reply-to for the user address so we can use email services that require authenticated from addresses.
+    """
+    EmailMessage(
+        title,
+        content,
+        settings.DEFAULT_FROM_EMAIL,
+        [settings.DEFAULT_FROM_EMAIL],
+        headers={'Reply-To': from_address}
+    ).send(fail_silently=False)
