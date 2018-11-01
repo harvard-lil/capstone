@@ -3,7 +3,6 @@ import re
 import pytest
 from datetime import timedelta
 
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.utils import timezone
@@ -128,22 +127,18 @@ def test_view_user_details(auth_user, auth_client):
     response = auth_client.get(reverse('user-details'))
     check_response(response)
     content = re.sub(r'\s+', ' ', response.content.decode()).strip()
-    soup = BeautifulSoup(content, 'html.parser')
-
-    assert soup.find(id="user-api-key").get('value') == auth_user.get_api_key()
-
-    # normal user can see limit
-    assert "Unlimited access until" not in content
-
-    assert soup.find(id="user-case-allowance").get('value') == str(auth_user.total_case_allowance)
+    assert auth_user.get_api_key() in content
+    assert "Unlimited access:" not in content
+    assert str(auth_user.total_case_allowance) in content
 
     # user can't see limit if they have unlimited access
+    auth_user.unlimited_access = True
     auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
     auth_user.save()
     response = auth_client.get(reverse('user-details'))
     check_response(response)
     content = re.sub(r'\s+', ' ', response.content.decode()).strip()
-    assert "Unlimited access until" in content
+    assert "Unlimited access:" in content
 
 
 ### bulk downloads ###

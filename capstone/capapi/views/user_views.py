@@ -85,7 +85,6 @@ def user_details(request):
     """ Show user details """
     request.user.update_case_allowance()
     context = {
-        'unlimited': request.user.unlimited_access_in_effect(),
         'page_name': 'user-details'
     }
     return render(request, 'registration/user-details.html', context)
