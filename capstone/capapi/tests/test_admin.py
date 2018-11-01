@@ -1,5 +1,4 @@
 import pytest
-from capapi.models import CapUser
 from capapi.permissions import staff_level_permissions
 
 from django.contrib.auth.models import Permission
@@ -8,20 +7,6 @@ from django.contrib.auth.models import Permission
 def test_admin_view(admin_client):
     response = admin_client.get('/admin/')
     assert response.status_code == 200
-
-
-def test_admin_user_create(admin_client):
-    data = {
-        "email": "bob_lawblaw@example.com",
-        "first_name": "Bob",
-        "last_name": "Lawblaw",
-        "total_case_allowance": 500,
-        "case_allowance_remaining": 500,
-    }
-    response = admin_client.post('/admin/capapi/capuser/add/', data, follow=True)
-    assert response.status_code == 200
-    user = CapUser.objects.get(email=data['email'])
-    assert user
 
 
 @pytest.mark.django_db

@@ -174,6 +174,7 @@ def test_authenticated_full_case_blacklisted(auth_user, auth_client, case):
 def test_unlimited_access(auth_user, auth_client, case):
     ### user with unlimited access should not have blacklisted cases count against them
     auth_user.total_case_allowance = 500
+    auth_user.unlimited_access = True
     auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
     auth_user.save()
     case.jurisdiction.whitelisted = False
@@ -188,6 +189,7 @@ def test_unlimited_access(auth_user, auth_client, case):
     # total_case_allowance shouldn't matter if unlimited access is in effect
     auth_user.total_case_allowance = 0
     auth_user.case_allowance_remaining = 0
+    auth_user.unlimited_access_until = None
     auth_user.save()
     response = auth_client.get(case_url, {"full_case": "true"})
     check_response(response)

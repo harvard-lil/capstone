@@ -200,6 +200,7 @@ def auth_client(auth_user):
 @pytest.fixture
 def unlimited_auth_client(auth_client):
     user = auth_client.auth_user
+    user.unlimited_access = True
     user.unlimited_access_until = timezone.now() + timedelta(days=1)
     user.save()
     return auth_client

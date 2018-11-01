@@ -58,6 +58,7 @@ class CapUser(AbstractBaseUser):
     case_allowance_remaining = models.IntegerField(null=False, blank=False, default=0)
     # when we last reset the user's case count:
     case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
+    unlimited_access = models.BooleanField(default=False)
     unlimited_access_until = models.DateTimeField(null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -85,9 +86,7 @@ class CapUser(AbstractBaseUser):
         return self.activation_nonce
 
     def unlimited_access_in_effect(self):
-        if not self.unlimited_access_until:
-            return False
-        return self.unlimited_access_until > timezone.now()
+        return self.unlimited_access and (self.unlimited_access_until is None or self.unlimited_access_until > timezone.now())
 
     def update_case_allowance(self, case_count=0, save=True):
         if self.unlimited_access_in_effect():
@@ -182,7 +181,8 @@ class ResearchRequest(models.Model):
     title = models.CharField(max_length=255)
     area_of_interest = models.TextField(blank=True, null=True)
 
-    status = models.CharField(max_length=20, default='pending', choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature')))
+    status = models.CharField(max_length=20, default='pending', verbose_name="research request status",
+                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature')))
     notes = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -197,6 +197,9 @@ class SiteLimits(models.Model):
     daily_signups = models.IntegerField(default=0)
     daily_download_limit = models.IntegerField(default=50000)
     daily_downloads = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "Site limits"
 
     @classmethod
     def create(cls):
