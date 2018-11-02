@@ -1,4 +1,4 @@
-FROM python:3.6-stretch
+FROM python:3.5-stretch
 ENV PYTHONUNBUFFERED 1
 
 # pip
