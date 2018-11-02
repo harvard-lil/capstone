@@ -50,6 +50,7 @@ let showRandomCase = function () {
   for (jur in jurisdiction_translation) {
     if (jurisdiction_translation.hasOwnProperty(jur)) {
       if (jurisdiction_translation[jur].slug === randJur) {
+        $('#' + jur).addClass('state-selected');
         showCase(jurisdiction_translation[jur].name, witchcraft_results[randJur]);
         return
       }
