@@ -561,7 +561,7 @@
         API Base
       </dt>
       <dd class="endpoint-link">
-        <a class="endpoint-link" href="{% api_url "api-root" %}/">{{ request.build_absolute_uri }}v1/</a>
+        <a class="endpoint-link" href="{% api_url "api-root" %}">{% api_url "api-root" %}v1/</a>
       </dd>
       <dd>
         <p class="endpoint-description">
@@ -1084,7 +1084,7 @@
     </p>
     <p>
       So when you're working with CAPAPI, the same principles apply. Rather than http://www.google.com, you'll
-      be using {{ request.build_absolute_uri }}. Rather than using the /search?q= endpoint and parameter, you'll
+      be using {% api_url "api-root" %}. Rather than using the /search?q= endpoint and parameter, you'll
       be using one of our <a href="#endpoints">endpoints and the parameters we've defined</a>. One important
       difference is the purpose of the structured data we're returning, vs. the visual, browser-oriented data
       that google is returning with their search engine.
