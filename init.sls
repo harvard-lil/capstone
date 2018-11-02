@@ -10,7 +10,7 @@ postgres-pkgs:
   pkg.installed:
     - fromrepo: jessie-backports
     - pkgs:
-      - postgresql-9.6
+      - postgresql-10
       - libpq-dev
 
 stretch:
@@ -21,7 +21,7 @@ plv8-pkgs:
   pkg.installed:
     - fromrepo: stretch
     - pkgs:
-      - postgresql-9.6-plv8
+      - postgresql-10-plv8
     - require:
       - pkg: postgres-pkgs
 
