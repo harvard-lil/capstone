@@ -2,6 +2,7 @@ footer {
   z-index: 999;
   font-size: 18px;
   background-color: $color-yellow;
+  hyphens: none;
 }
 
 footer {
@@ -77,3 +78,13 @@ footer {
   }
 }
 
+.footer-copyright {
+  margin: 0 auto;
+  @include make-col(11);
+  p {
+    text-align: right;
+  }
+  span {
+    display: inline-block;
+  }
+}

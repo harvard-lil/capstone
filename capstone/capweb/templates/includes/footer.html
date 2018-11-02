@@ -1,7 +1,7 @@
 {% load static %}
 <footer class="footer">
   <div class="row footer-content">
-    <div class="col">
+    <div class="col-4">
       <a href="https://lil.law.harvard.edu"
          class="lil-logo"
          aria-label="Library Innovation Lab"
@@ -60,36 +60,17 @@
           </li>
         </ul>
       </nav>
-      <br/>
-      <p class="credits copyright">
-        &#169;{% now 'Y' %} The President and Fellows of Harvard University
-      </p>
-      <p class="credits">
-        The content on this site is covered under a
-        Creative Commons
-        <br/>
-        Attribution-ShareAlike 3.0 Unported license
-        unless otherwise noted
-      </p>
     </div>
-    <div class="return-to-top">
-      <a id="return"
-         onclick="returnToTop(event)"
-         href="#">
-        <span class="arrow" aria-hidden="true">&uarr;</span>
-        <br/>
-        Return to top
-      </a>
+  </div>
+  <div class="row footer-copyright small">
+    <div class="col">
+      <p>
+        {# spans stop text from breaking within sentences if avoidable #}
+        <span>&#169;{% now 'Y' %} The President and Fellows of Harvard University.</span>
+        <span>Site text is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</span>
+        <span><a href="https://github.com/harvard-lil/capstone">Source code</a> is MIT licensed.</span>
+        <span>Harvard asserts no copyright in caselaw retrieved from this site.</span>
+      </p>
     </div>
   </div>
 </footer>
-
-<script>
-  function returnToTop(e) {
-    // ensure viewport scrolls all the way up
-    e.preventDefault();
-    window.scrollTo(0, 0);
-    // ensure keyboard focus is reset
-    document.body.focus();
-  }
-</script>
