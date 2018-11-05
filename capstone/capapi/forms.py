@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
@@ -7,6 +9,11 @@ from capweb.helpers import reverse
 
 
 class LoginForm(AuthenticationForm):
+    username = forms.EmailField(
+        max_length=254,
+        widget=forms.EmailInput(attrs={'autofocus': True}),
+    )
+
     def confirm_login_allowed(self, user):
         """ Override AuthenticationForm to block login with unverified email address. """
         if not user.email_verified:
@@ -36,6 +43,8 @@ class RegisterUserForm(UserCreationForm):
     def clean_email(self):
         """ Ensure that email address doesn't match an existing CapUser.normalized_email. """
         email = self.cleaned_data.get("email")
+        if re.search(r'\s', email):
+            raise forms.ValidationError("Email address may not contain spaces.")
         if CapUser.objects.filter(normalized_email=CapUser.normalize_email(email)).exists():
             raise forms.ValidationError("A user with the same email address has already registered.")
         return email
