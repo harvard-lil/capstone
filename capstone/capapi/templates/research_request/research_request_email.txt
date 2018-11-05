@@ -1,4 +1,4 @@
-A user has requested research access.
+A user has requested special access to the full-text of all cases in the CAP database.
 
 Name: {{ name }}
 Email: {{ email }}
