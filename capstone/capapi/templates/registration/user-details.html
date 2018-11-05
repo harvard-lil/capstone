@@ -34,15 +34,15 @@
         <div class="col-sm-8">{{ request.user.case_allowance_remaining }}</div>
       </div>
       <div class="row">
-        <div class="h6 col-sm-4">Bulk access request:</div>
+        <div class="h6 col-sm-4">Special access request:</div>
         <div class="col-sm-8">
           {% with request.user.research_requests.first as research_request %}
             {% if research_request %}
-              You requested bulk access on {{ research_request.submitted_date }}
+              You requested special full-text access on {{ research_request.submitted_date }}
               Your request is {{ research_request.status }}.
             {% else %}
               <a href="{% url "research-request" %}">
-                Request bulk access for research scholars
+                Request special full-text access for research scholars
               </a>
             {% endif %}
           {% endwith %}
