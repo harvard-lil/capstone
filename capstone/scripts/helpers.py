@@ -222,8 +222,10 @@ def ordered_query_iterator(queryset, chunk_size=1000):
             - all ordering fields be null=False
             - the final ordering field be unique=True
 
-        The benefit of this method is that it handles prefetch_related. If you're not using prefetch_related,
-        queryset.iterator(chunk_size) is probably preferable.
+        Alternatively you may want to use the builtin queryset.iterator(chunk_size). This function is preferable if:
+            - you need prefetch_related, or
+            - your database backend doesn't support server-side cursors 
+             (see https://docs.djangoproject.com/en/2.1/ref/models/querysets/#iterator)
     """
 
     def get_filter(order_by, obj):
