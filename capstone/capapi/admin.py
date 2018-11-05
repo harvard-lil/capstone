@@ -51,6 +51,9 @@ class CapUserAdmin(UserAdmin):
                 'is_staff',
                 'is_active',
                 'email_verified',
+                'is_superuser',
+                'groups',
+                'user_permissions',
             )
         }),
         ('Access limits', {

@@ -3,7 +3,7 @@ import uuid
 import logging
 
 import email_normalize
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AnonymousUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AnonymousUser, PermissionsMixin
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.utils import timezone
@@ -43,7 +43,7 @@ class CapUserManager(BaseUserManager):
         return self.create_user(email=email, password=password, **kwargs)
 
 
-class CapUser(AbstractBaseUser):
+class CapUser(PermissionsMixin, AbstractBaseUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
