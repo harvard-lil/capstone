@@ -35,7 +35,7 @@ This repository contains Capstone and CAPAPI, the applications written by the Ha
 - [Documentation](#documentation)
 
 ## Project Background <a id="project-background"></a>
-The Caselaw Access Project is a large-scale digitization project hosted by the Harvard Law School [Library Innovation Lab.](http://lil.law.harvard.edu "LIL Website") Visit https://case.law.harvard.edu for more details.
+The Caselaw Access Project is a large-scale digitization project hosted by the Harvard Law School [Library Innovation Lab.](http://lil.law.harvard.edu "LIL Website") Visit [case.law](https://case.law/) for more details.
 
 ## The Data <a id="the-data"></a>
 1. [Format Documentation and Samples](#documentation-and-samples)
@@ -52,7 +52,7 @@ The output of the project consists of page images, marked up case XML files, ALT
 ### Obtaining Real Data <a id="obtaining-real-data"></a>
 This data, with some temporary restrictions, is available to all. Please see our project site with more information about how to access the API, or get bulk access to the data:
 
-https://case.law.harvard.edu/
+https://case.law/
 
 
 ### Reporting Data Errors <a id="reporting-data-errors"></a>
