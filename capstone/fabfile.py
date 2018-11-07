@@ -139,14 +139,23 @@ def rename_tags_from_json_id_list(json_path, tag=None):
     mass_update.rename_casebody_tags_from_json_id_list(parsed_json, tag)
 
 @task
-def init_db():
+def init_dev_db():
     """
         Set up new dev database.
     """
+    from django.contrib.auth.models import Group
+
     migrate()
 
-    print("Creating DEV admin user:")
-    CapUser.objects.create_superuser('admin@example.com', 'admin')
+    # fixtures
+    if input("Create DEV admin user and fixtures on %s? (y/n) " % settings.DATABASES["default"]["HOST"]) == "y":
+        CapUser.objects.create_superuser('admin@example.com', 'Password2')
+
+        # create contract_approvers group and user
+        approvers_group = Group(name='contract_approvers')
+        approvers_group.save()
+        approver = CapUser.objects.create_user('approver@example.com', 'Password2', first_name='Contract', last_name='Approver', email_verified=True)
+        approver.groups.add(approvers_group)
 
 @task
 def migrate():
@@ -458,7 +467,7 @@ def create_fixtures_db_for_benchmarking():
     """
     try:
         local('psql -c "CREATE DATABASE %s;"' % settings.TEST_SLOW_QUERIES_DB_NAME)
-        init_db()
+        init_dev_db()
     except:
         # Exception is thrown if test db has already been created
         pass
