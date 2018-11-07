@@ -3,6 +3,7 @@
 @import 'bootstrap/mixins';
 
 @import "bootstrap/variables";
+@import "bootstrap/buttons";
 @import "bootstrap/forms";
 @import "variables";
 @import "footer/black";
@@ -27,4 +28,16 @@ label {
     color: $color-violet;
     margin-bottom: 1rem;
   }
+}
+
+.approval-contract {
+  .col {
+    padding: 1em !important;
+    margin: 1em;
+  }
+}
+.approval-contract-text{
+  height: 15em;
+  overflow: scroll;
+  border: 1px black solid;
 }

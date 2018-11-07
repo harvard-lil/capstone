@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from time import time
 
 import pytest
+from django.contrib.auth.models import Group
 from django.core.signals import request_started, request_finished
 from django.core.cache import cache as django_cache
 from django.core.management import call_command
@@ -204,6 +205,15 @@ def unlimited_auth_client(auth_client):
     user.unlimited_access_until = timezone.now() + timedelta(days=1)
     user.save()
     return auth_client
+
+@pytest.fixture
+def contract_approver_auth_client():
+    client = CapClient()
+    user = CapUserFactory(email_verified=True)
+    client.force_login(user)
+    client.auth_user = user
+    user.groups.add(Group.objects.get_or_create(name='contract_approvers')[0])
+    return client
 
 @pytest.fixture
 def api_request_factory():

@@ -1,4 +1,5 @@
 import json
+import re
 from collections import namedtuple
 from contextlib import contextmanager
 from functools import wraps
@@ -6,6 +7,7 @@ from functools import wraps
 import requests
 import django_hosts
 from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
 from django.core.cache import caches
 from django.core.mail import EmailMessage
 from django.db import transaction, connections, OperationalError
@@ -145,3 +147,15 @@ def send_contact_email(title, content, from_address):
         [settings.DEFAULT_FROM_EMAIL],
         headers={'Reply-To': from_address}
     ).send(fail_silently=False)
+
+
+def user_has_harvard_email(failure_url='non-harvard-email'):
+    """
+        Decorator to forward user if they don't have Harvard email. E.g.:
+
+        @user_has_harvard_email()
+        def my_view(request):
+    """
+    return user_passes_test(
+        test_func=lambda u: bool(re.search(r'[.@]harvard.edu$', u.email)),
+        login_url=failure_url)

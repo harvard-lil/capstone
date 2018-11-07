@@ -2,7 +2,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
 
-from capapi.models import CapUser, ResearchRequest
+from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract
 from capweb.helpers import reverse
 
 
@@ -55,3 +55,24 @@ class ResearchRequestForm(forms.ModelForm):
     class Meta:
         model = ResearchRequest
         fields = ["name", "email", "institution", "title", "area_of_interest"]
+
+
+class ResearchContractForm(forms.ModelForm):
+    name = forms.CharField(label='Full name of researcher')
+    institution = forms.CharField(label='Academic or non-profit research institution')
+    title = forms.CharField(label='Title or Affiliation')
+    area_of_interest = forms.CharField(label='Research area of interest (optional and non-binding)', widget=forms.Textarea, required=False)
+
+    class Meta:
+        model = ResearchContract
+        fields = ["name", "email", "institution", "title", "area_of_interest"]
+
+
+class HarvardContractForm(forms.ModelForm):
+    name = forms.CharField(label='Your full name')
+    title = forms.CharField(label='Your current title or affiliation at Harvard')
+    area_of_interest = forms.CharField(label='Research area of interest (optional and non-binding)', widget=forms.Textarea, required=False)
+
+    class Meta:
+        model = HarvardContract
+        fields = ["name", "title", "area_of_interest"]
