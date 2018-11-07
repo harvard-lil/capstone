@@ -31,6 +31,8 @@
         Click a link to download.
       </p>
       {% include "includes/download_list.html" with zips=exports.private %}
+    {% elif request.user.harvard_access and not request.user.harvard_ip %}
+      <p>You will have access to bulk data when accessing this page from a Harvard IP address.</p>
     {% else %}
       <p>
         Bulk downloads of the remaining jurisdictions are freely available to research scholars.

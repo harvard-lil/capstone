@@ -51,6 +51,9 @@ class CapUserAdmin(UserAdmin):
                 'is_staff',
                 'is_active',
                 'email_verified',
+                'is_superuser',
+                'groups',
+                'user_permissions',
             )
         }),
         ('Access limits', {
@@ -60,6 +63,7 @@ class CapUserAdmin(UserAdmin):
                            'how many cases they have downloaded today.',
             'fields': (
                 'unlimited_access',
+                'harvard_access',
                 'unlimited_access_until',
                 'total_case_allowance',
                 'case_allowance_remaining',
@@ -67,25 +71,22 @@ class CapUserAdmin(UserAdmin):
         }),
     )
     search_fields = ('email', 'last_name', 'first_name')
-    list_filter = ('research_requests__status', 'is_staff', 'unlimited_access')
+    list_filter = ('research_requests__status', 'research_contracts__status', 'is_staff', 'unlimited_access')
     actions = [authenticate_user]
     inlines = (
+        new_class('ResearchContractInline', admin.StackedInline, model=models.ResearchContract, fk_name='user', raw_id_fields=['approver']),
+        new_class('HarvardContractInline', admin.StackedInline, model=models.HarvardContract),
         new_class('ResearchRequestInline', admin.StackedInline, model=models.ResearchRequest),
     )
 
     def unlimited_access_in_effect(self, instance):
+        instance._is_harvard_ip = True  # show unlimited access if user would have access given Harvard IP
         return instance.unlimited_access_in_effect()
-    unlimited_access_in_effect.short_description = "Unlimited Access"
+    unlimited_access_in_effect.short_description = "Unmetered Access"
 
     def has_add_permission(self, request, obj=None):
         """ We don't currently support adding users via admin -- see Perma code for hints on doing this. """
         return False
-
-@admin.register(models.ResearchRequest)
-class ResearchRequestAdmin(admin.ModelAdmin):
-    list_display = ('user', 'submitted_date', 'status', 'name', 'email', 'institution', 'title')
-    raw_id_fields = ('user',)
-    list_filter = ('status',)
 
 
 @admin.register(models.SiteLimits)

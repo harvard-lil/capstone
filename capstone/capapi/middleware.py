@@ -90,4 +90,5 @@ class AuthenticationMiddleware(DjangoAuthenticationMiddleware):
     def process_request(self, request):
         super().process_request(request)
         request.user = TrackingWrapper(request.user)
+        request.user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')  # used by user IP auth checks
 
