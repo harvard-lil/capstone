@@ -5,17 +5,17 @@
 {% block main_content %}
   <div class="user-information">
     <div class="row">
-      <div class="h6 col-sm-4">Email:</div>
-      <div class="col-sm-8">{{ request.user.email }}</div>
+      <div class="h6 col-sm-5">Email:</div>
+      <div class="col-sm-7">{{ request.user.email }}</div>
     </div>
     <div class="row">
-      <div class="h6 col-sm-4">API Key:</div>
-      <div class="col-sm-8">{{ request.user.get_api_key }}</div>
+      <div class="h6 col-sm-5">API Key:</div>
+      <div class="col-sm-7">{{ request.user.get_api_key }}</div>
     </div>
     {% if request.user.unlimited_access or request.user.harvard_access %}
       <div class="row">
-        <div class="h6 col-sm-4">Unmetered access:</div>
-        <div class="col-sm-8">
+        <div class="h6 col-sm-5">Unmetered access:</div>
+        <div class="col-sm-7">
           {% if request.user.unlimited_access_until %}
             {% if request.user.unlimited_access_in_effect %}expires{% else %}expired{% endif %}
             {{ request.user.unlimited_access_until }}
@@ -32,16 +32,16 @@
       </div>
     {% else %}
       <div class="row">
-        <div class="h6 col-sm-4">Case allowance per day:</div>
-        <div class="col-sm-8">{{ request.user.total_case_allowance }}</div>
+        <div class="h6 col-sm-5">Case allowance per day:</div>
+        <div class="col-sm-7">{{ request.user.total_case_allowance }}</div>
       </div>
       <div class="row">
-        <div class="h6 col-sm-4">Cases left to view today:</div>
-        <div class="col-sm-8">{{ request.user.case_allowance_remaining }}</div>
+        <div class="h6 col-sm-5">Cases left to view today:</div>
+        <div class="col-sm-7">{{ request.user.case_allowance_remaining }}</div>
       </div>
       <div class="row">
-        <div class="h6 col-sm-4">Unmetered access request:</div>
-        <div class="col-sm-8">
+        <div class="h6 col-sm-5">Unmetered access request:</div>
+        <div class="col-sm-7">
           {% if research_contract %}
             You submitted an application for unmetered access on {{ research_contract.user_signature_date|date:"F j, Y" }}.
             {% if research_contract.status == "denied" %}
