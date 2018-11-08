@@ -11,8 +11,8 @@ from django.template import loader
 from django.utils import timezone
 
 from capapi import resources
-from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchRequestForm, ResearchContractForm, \
-    HarvardContractForm
+from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContractForm, \
+    HarvardContractForm, UnaffiliatedResearchRequestForm, ResearchRequestForm
 from capapi.models import SiteLimits, CapUser, ResearchContract
 from capapi.resources import form_for_request
 from capdb.models import CaseExport
@@ -125,11 +125,10 @@ def request_harvard_research_access(request):
 
         # send notice emails
         message = loader.get_template('research_request/emails/harvard_contract_email.html').render({
-            'email': request.user.email,
             'contract_html': contract.contract_html,
-            'signing_date': contract.user_signature_date,
+            'signed_date': contract.user_signature_date,
         })
-        msg = EmailMessage('CAP Harvard contract completed', message, settings.DEFAULT_FROM_EMAIL, [settings.DEFAULT_FROM_EMAIL], reply_to=[request.user.email])
+        msg = EmailMessage('CAP Bulk Access Agreement', message, settings.DEFAULT_FROM_EMAIL, [settings.DEFAULT_FROM_EMAIL, request.user.email])
         msg.content_subtype = "html"  # Main content is text/html
         msg.send()
 
@@ -139,10 +138,35 @@ def request_harvard_research_access(request):
 
 
 @login_required
-def request_unaffiliated_research_access(request):
+def request_legacy_research_access(request):
     """ Submit request for unaffiliated research access """
     name = "%s %s" % (request.user.first_name, request.user.last_name)
     form = form_for_request(request, ResearchRequestForm, initial={'name': name, 'email': request.user.email})
+
+    if request.method == 'POST' and form.is_valid():
+        # save request object
+        form.instance.user = request.user
+        form.save()
+
+        # send notice emails
+        message = loader.get_template('research_request/emails/legacy_request_email.txt').render({
+            'data': form.cleaned_data,
+        })
+        send_contact_email('CAP research scholar application', message, request.user.email)
+
+        return HttpResponseRedirect(reverse('unaffiliated-research-request-success'))
+
+    return render(request, 'research_request/unaffiliated_research_request.html', {
+        'form': form,
+        'NEW_RESEARCHER_FEATURE': settings.NEW_RESEARCHER_FEATURE,
+    })
+
+
+@login_required
+def request_unaffiliated_research_access(request):
+    """ Submit request for unaffiliated research access """
+    name = "%s %s" % (request.user.first_name, request.user.last_name)
+    form = form_for_request(request, UnaffiliatedResearchRequestForm, initial={'name': name, 'email': request.user.email})
 
     if request.method == 'POST' and form.is_valid():
         # save request object
@@ -182,9 +206,9 @@ def request_affiliated_research_access(request):
             'data': form.cleaned_data,
             'approval_url': reverse('research-approval', scheme='https'),
         })
-        send_contact_email('CAP research contract application', message, request.user.email)
-        approver_emails = [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
-        send_mail('CAP research contract application', message, settings.DEFAULT_FROM_EMAIL, approver_emails)
+        emails = [settings.DEFAULT_FROM_EMAIL] + \
+                 [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
+        send_mail('CAP research contract application', message, settings.DEFAULT_FROM_EMAIL, emails)
 
         return HttpResponseRedirect(reverse('affiliated-research-request-success'))
 
@@ -211,26 +235,41 @@ def approve_research_access(request):
                 contract.user.unlimited_access = True
                 contract.user.save()
 
-                # send notice emails
+                # send contract email
                 # we send this as html-only so we can use the same HTML in the contract signing page and the
                 # resulting rendered contract
                 message = loader.get_template('research_request/emails/contract_approved_email.html').render({
                     'signed_date': contract.user_signature_date,
                     'contract_html': contract.contract_html,
-                    'contact_url': reverse('contact', scheme='https'),
+                    'name': contract.name,
                 })
                 emails = [contract.user.email, settings.DEFAULT_FROM_EMAIL] + \
                          [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
-                msg = EmailMessage('CAP research contract approved', message, settings.DEFAULT_FROM_EMAIL, emails)
+                msg = EmailMessage('CAP Bulk Access Agreement', message, settings.DEFAULT_FROM_EMAIL, emails)
                 msg.content_subtype = "html"  # Main content is text/html
                 msg.send()
 
+                # send welcome email
+                message = loader.get_template('research_request/emails/contract_welcome_email.html').render({
+                    'contact_url': reverse('contact', scheme='https'),
+                })
+                send_mail('Your CAP unmetered access application is approved!', message, settings.DEFAULT_FROM_EMAIL, [contract.user.email])
+
                 # show status message
                 approver_message = "Research access for %s approved" % contract.name
+
         elif request.POST.get('deny') == "true":
             # update contract
             contract.status = 'denied'
             contract.save()
+
+            # send notice email
+            message = loader.get_template('research_request/emails/contract_denied_email.html').render({
+                'name': contract.name,
+            })
+            emails = [contract.user.email, settings.DEFAULT_FROM_EMAIL] + \
+                     [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
+            send_mail('Your CAP unmetered access application has been denied', message, settings.DEFAULT_FROM_EMAIL, emails)
 
             # show status message
             approver_message = "Research access for %s denied" % contract.name
