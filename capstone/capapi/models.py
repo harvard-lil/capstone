@@ -200,8 +200,8 @@ class ResearchRequest(models.Model):
 
     name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255)
-    institution = models.CharField(max_length=255)
-    title = models.CharField(max_length=255)
+    institution = models.CharField(max_length=255, blank=True, null=True)
+    title = models.CharField(max_length=255, blank=True, null=True)
     area_of_interest = models.TextField(blank=True, null=True)
 
     status = models.CharField(max_length=20, default='pending', verbose_name="research request status",

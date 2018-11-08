@@ -11,7 +11,7 @@
       $('button[name="deny"]').on('click', function(){
         var notes = this.form.elements.approver_notes;
         if(!notes.value) {
-          alert("Please add a note to explain this denial");
+          alert("Please add an internal note to document the reason for this denial");
           return false;
         }
         return confirm("Really deny application?");
@@ -41,7 +41,7 @@
             <button type="submit" name="approve" value="true" class="btn btn-primary">Approve application</button>
             <button type="submit" name="deny" value="true" class="btn btn-warning">Deny application</button>
             <div class="form-group">
-              <label for="denial-reason">Notes:</label>
+              <label for="denial-reason">Internal notes:</label>
               <textarea name="approver_notes" class="form-control" id="denial-reason"></textarea>
             </div>
           </form>

@@ -1,10 +1,15 @@
 {% extends "registration/base.html" %}
 {% load bootstrap4 %}
 
-{% block title %}Research Scholar Application{% endblock %}
+{% block title %}Research Scholar Agreement{% endblock %}
 {% block meta_description %}Request unmetered access to the cases made available by the Caselaw Access Project{% endblock %}
 
 {% block main_content %}
+  <div class="alert alert-info">
+    The following agreement is your application for unmetered CAP access as an educational or non-profit-affiliated
+    research scholar. Please read the contract carefully before signing. Your application will be reviewed and approved
+    by LexisNexis.
+  </div>
   <form class="form" method="post">
     {% csrf_token %}
     {% include "research_request/contracts/affiliated.html" %}

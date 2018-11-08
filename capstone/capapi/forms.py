@@ -66,6 +66,15 @@ class ResearchRequestForm(forms.ModelForm):
         fields = ["name", "email", "institution", "title", "area_of_interest"]
 
 
+class UnaffiliatedResearchRequestForm(forms.ModelForm):
+    name = forms.CharField(label='Full name of research scholar')
+    area_of_interest = forms.CharField(label='Your qualifications and intended uses of CAP data as an independent research scholar', widget=forms.Textarea, required=False)
+
+    class Meta:
+        model = ResearchRequest
+        fields = ["name", "email", "area_of_interest"]
+
+
 class ResearchContractForm(forms.ModelForm):
     name = forms.CharField(label='Full name of researcher')
     institution = forms.CharField(label='Academic or non-profit research institution')

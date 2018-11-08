@@ -198,8 +198,6 @@ def test_unaffiliated_research_access_request(auth_client, mailoutbox):
     values = {
         'name': 'First Last',
         'email': 'foo@example.com',
-        'institution': 'Foo Institution',
-        'title': 'Foo Title',
         'area_of_interest': 'Foo Area of Interest'
     }
     response = auth_client.post(reverse('unaffiliated-research-request'), values)
@@ -286,6 +284,8 @@ def test_affiliated_research_access_request(auth_client, contract_approver_auth_
     assert contract.status == 'denied'
     user.refresh_from_db()
     assert not user.unlimited_access_in_effect()
+    message = mailoutbox[1].body
+    assert "has been denied" in message
 
     # can approve contract
     contract.status = 'pending'
@@ -303,7 +303,7 @@ def test_affiliated_research_access_request(auth_client, contract_approver_auth_
     assert user.unlimited_access_in_effect()
 
     # check created contract and email message
-    message = mailoutbox[1].body
+    message = mailoutbox[2].body
     for k, v in values.items():
         assert getattr(contract, k) == v
         assert v in message
