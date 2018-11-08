@@ -12,6 +12,7 @@ from django.core.cache import caches
 from django.core.mail import EmailMessage
 from django.db import transaction, connections, OperationalError
 from django.urls import NoReverseMatch
+from django.utils.functional import lazy
 from django_hosts.resolvers import get_host_patterns
 
 
@@ -75,6 +76,7 @@ def reverse(*args, **kwargs):
             if i == len(hosts)-1:
                 raise
 
+reverse_lazy = lazy(reverse, str)
 
 def show_toolbar_callback(request):
     """
