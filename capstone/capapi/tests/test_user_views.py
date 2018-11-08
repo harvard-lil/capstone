@@ -257,7 +257,7 @@ def test_affiliated_research_access_request(auth_client, contract_approver_auth_
     # can submit form
     values = {
         'name': 'First Last',
-        'email': 'foo@example.com',
+        'email': 'will_be_ignored@example.com',
         'institution': 'Foo Institution',
         'title': 'Foo Title',
         'area_of_interest': 'Foo Area of Interest'
@@ -304,6 +304,7 @@ def test_affiliated_research_access_request(auth_client, contract_approver_auth_
 
     # check created contract and email message
     message = mailoutbox[2].body
+    values['email'] = user.email
     for k, v in values.items():
         assert getattr(contract, k) == v
         assert v in message
