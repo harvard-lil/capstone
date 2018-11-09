@@ -1016,9 +1016,9 @@
     <p>
       Fundamentally, an API is no different from a regular website: A program on your computer, such as a web
       browser or <a href="#def-curl">curl</a> sends a bit of data to a <a href="#def-server">server</a>, the
-      server processes that data, and then sends a response. If you know how to read a
-      <a href="#def-url">URL</a>, you can interact with web-based services in ways that aren't limited to
-      clicking on the links and buttons on the screen.
+      server processes that data, and then sends a response. 
+    </p>
+    <p>Because the CAPAPI is a <a href="#def-restful">RESTful</a> API, it uses the same protocol as a standward web browser <a href="#def-url">URL</a>, so understanding URLs will help explain how to use the CAPAPI.
     </p>
     <p>
       Consider the following <a href="#def-url">URL</a>, which will
@@ -1037,69 +1037,54 @@
     <p>
       The next part is a list of words, separated by periods, between the initial double-slash, and before the
       subsequent single slash. Many people generically refer to this as the domain, which is only partly true,
-      but the reason why that's not entirely true isn't really important for our purposes; the important
-      consideration here is that it points to a specific <a href="#def-server">server</a>, which is just another
-      computer on the internet.
+      but the important consideration here is that it points to a specific <a href="#def-server">server</a>, which is just
+      another computer on the internet.
     </p>
     <pre><code>/search</code></pre>
     <p>
       The next section, which is comprised of everything between the slash after the server name and the
       question mark, is called the <a href="#def-path">path</a>. It's called a path because, in the earlier days
       of the web, it was a 'path' through folders/directories to find a specific file on the web server. These
-      days, it's more likely that the path will point to a specific <a href="#def-endpoint">endpoint</a>.
+      days, it's more often a 'path' that points to a specific <a href="#def-endpoint">endpoint</a>. Google used only
+      <code>/search</code> for this path, though a developer can make their paths to endpoints more specific by using
+      slashes, for example <code>/search/books</code> and <code>/search/locations</code>.
     </p>
     <p>
-      You can think of an endpoint as a distinct part of a program, which could require specific inputs,
-      and/or provide different results. For example, the "login" endpoint on a website might accept a
+      You can think of an endpoint as a specific function in a program that has multiple functions. Endpoints often require
+      specific inputs to get the result(s) you want. For example, the "login" endpoint on a website might accept a
       valid username and a password for input, and return a message that you've successfully logged in. A
       "register" endpoint might accept various bits of identifying information, and return a screen that
       says your account was successfully registered.
     </p>
-    <p>
-      Though there is only one part of this particular path, <code>search</code>, developers usually
-      organize paths into hierarchical lists separated by slashes. Hypothetically, if the developers at
-      Google decided that one generalized search endpoint wasn't sufficiently serving people who wanted to
-      search for books or locations, they could implement more specific endpoints such as
-      <code>/search/books</code> and <code>/search/locations</code>.
-    </p>
     <pre><code>?q=CAP</code></pre>
     <p>
-      The final section of the URL is where you'll find the <a href="#def-parameter">parameters</a>, and is
-      comprised of everything after the question mark. Parameters are a way of passing individual, labelled
-      pieces of information to the endpoint to help it perform its job. In this case, the parameter tells the
-      <code>/search</code> endpoint what to search for. Without this parameter, the response wouldn't be
-      particularly useful.
+      The final section of the URL, comprised of everything after the question mark, is where you'll find the <a href="#def
+      parameter">parameters</a> - the aforementioned inputs. Parameters are a way of passing individual, labelled
+      pieces of information to the endpoint to help it know exactly what you want it to do. In this case, the parameter tells
+      the <code>/search</code> endpoint what to search for (the word "CAP").
     </p>
     <p>
-      A URL can contain many parameters, separated by ampersands, but in this instance, there is only one
-      parameter: the rather cryptically named "q," which is short for "query," which has a value of "CAP."
-      Parameter names are arbitrary— Google's developers could just as easily have set the parameter name
-      to <code>?query=CAP</code>, but decided that "q" would sufficiently communicate its purpose.
-    </p>
-    <p>
-      The Google developers designed their web search endpoint to accept other parameters, too. For
-      example, there is an even more cryptically named parameter, 'tbs' which will limit the age of the
-      documents returned in the search results. The parameters <code>?q=CAP&tbs=qdr:y</code> will perform
-      a web search for "CAP" and limit the results to documents less than a year old.
+      A URL can contain many parameters, separated by ampersands, but in this instance, there is only one: “q“ - short for
+      "query" - which has a value of "CAP." Parameters can be named whatever the developers want; in this case Google chose
+      “q” to represent “query.” Another of Google’s parameters is “tbs”, which limits the age of the documents returned in
+      the search results. 
     </p>
     <p>
       So when you're working with CAPAPI, the same principles apply. Rather than http://www.google.com, you'll
-      be using {% api_url "api-root" %}. Rather than using the /search?q= endpoint and parameter, you'll
-      be using one of our <a href="#endpoints">endpoints and the parameters we've defined</a>. One important
-      difference is the purpose of the structured data we're returning, vs. the visual, browser-oriented data
-      that google is returning with their search engine.
+      be using {% api_url "api-root" %}, and rather than Google's <code>/search?q=</code> endpoint and parameter, you'll
+      be using one of the <a href="#endpoints">endpoints and the parameters we've defined</a>.
     </p>
     <p>
-      When you perform a query in a web browser using our API, there are some links and buttons, but the data
-      itself is in a text-based format with lots of brackets and commas. This format is called JSON, or
-      JavaScript Object Notation. We use this format because software developers can easily utilize data in that
-      format in their own programs. We do intend to have a more user-friendly case browser at some point soon,
-      but we're not quite there yet.
+      One important difference is the format (and purpose) of the structured data we're returning, vs. the visual, browser-oriented data
+      that Google returns with their search engine. When you perform a query using our API, the data itself is in a text-based format with lots of brackets and commas. This format is
+      called JSON, or JavaScript Object Notation. We use this format because software developers can easily utilize data in 
+      that format in their own programs. We do intend to have a more user-friendly case browser soon, but we're
+      not quite there yet.
     </p>
     <p>
-      OK! That about does it for our beginner's introduction to web-based APIs. Please check out our
+      OK! That about does it for our beginner's introduction to web-based APIs. Check out our
       <a href="#examples">usage examples</a> section to see some of the ways you can put these principles to
-      work in CAPAPI. If you have any suggestions for making this documentation better, we'd appreciate your
+      work in CAPAPI. If you have any suggestions for making this documentation better, we'd appreciate you
       taking the time to let us know in an issue report
       <a href="https://github.com/harvard-lil/capstone/issues">in our code repository on github.com</a>.
     </p>
@@ -1164,8 +1149,8 @@
       Glossary
     </h2>
     <p>
-      This is a list of technical or project-specific terms we use in this docuemntation. These are stub
-      definitions to help you get unstuck, but they should not be conisdered authoratative or complete. A quick
+      This is a list of technical or project-specific terms we use in this documentation. These are stub
+      definitions to help you get unstuck, but they should not be conisdered authoritative or complete. A quick
       Google search should provide more context for any of these terms.
     </p>
     <dl>
@@ -1222,11 +1207,11 @@
         Endpoint
       </dt>
       <dd>
-        You can think of an endpoint as a distinct part of a program, which could require specific inputs,
-        and/or provide different results. For example, the "login" endpoint on a website might accept a valid
-        username and a password for input, and return a message that you've successfully logged in. A "register"
-        endpoint might accept various bits of identifying information, and return a screen that says your
-        account was successfully registered.
+ You can think of an endpoint as a specific function in a program that has multiple functions. Endpoints often require
+      specific inputs to get the result(s) you want. For example, the "login" endpoint on a website might accept a
+      valid username and a password for input, and return a message that you've successfully logged in. A
+      "register" endpoint might accept various bits of identifying information, and return a screen that
+      says your account was successfully registered.
       </dd>
 
       <dt>
@@ -1245,7 +1230,7 @@
         OCR
       </dt>
       <dd>
-        OCR is a process in which a computer attempts to create text from an image of text. The text in our
+        OCR an acronym for Optical Character Recognition. It is a process in which a computer attempts to create text from an image of text. The text in our
         cases is OCR-derived using scanned case reporter pages as source images.
       </dd>
 
@@ -1263,7 +1248,7 @@
         Reporter
       </dt>
       <dd>
-        In this project, we use the term 'reporter' to refer to a reporter series. We'd consider F2d. a
+        In this project, we use the term 'reporter' to refer to a reporter series: a series of books that contain judicial opinions from a court or set of courts. We'd consider F2d. a
         reporter.
       </dd>
       <dt>
@@ -1273,7 +1258,7 @@
       <dd>
         A server is just a computer on the internet that was configured to respond to requests from other
         computers. A web server will respond to requests from a web browser. An email server will respond to
-        requests from email programs, and or other email servers which are sending it messages.
+        requests from email programs, and/or other email servers sending it messages.
       </dd>
       <dt>
         <a id="def-slug"></a>
@@ -1288,7 +1273,7 @@
         String
       </dt>
       <dd>
-        A string, as a type of data, just means an arbitrary list (or string) of
+        A string, as a type of data, just means an arbitrary sequence of
         <a href="#def-character">characters</a>. A word is a string. This whole sentence is a string. "h3ll0.!"
         is a string. This whole document is a string.
       </dd>
@@ -1322,10 +1307,8 @@
         URL Path
       </dt>
       <dd>
-        The URL path begins with the slash after the <a href="#def-tld">top-level domain</a> and ends with the
-        question mark that signals the beginning of the <a href="#def-parameter">parameters</a>. It was
-        originally intended to point to a file on the server's hard drive, but these days it's just as likely to
-        point to an application <a href="#def-endpoint">endpoint</a>.
+        A portion of a URL that originally was intended to point to a file on a server's hard drive, but these days often points to a specific endpoint. The URL path begins with the slash after the <a href="#def-tld">top-level domain</a> and ends with the
+        question mark that signals the beginning of the <a href="#def-parameter">parameters</a>.
       </dd>
       <dt>
         <a id="def-whitelisted"></a>
