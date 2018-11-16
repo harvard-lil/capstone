@@ -2,10 +2,11 @@
 {% load static %}
 {% load pipeline %}
 {% load api_url %}
+{% load render_bundle from webpack_loader %}
 
 {% block extra_head %}
   {% stylesheet 'index' %}
-  {% javascript 'map_actions' %}
+  {% render_bundle 'map' %}
 {% endblock %}
 
 {% block title_suffix %}Caselaw Access Project{% endblock title_suffix %}

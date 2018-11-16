@@ -17,19 +17,32 @@ addons:
 
 cache:
   pip: true
+  directories:
+    - capstone/node_modules
 
 before_install:
+  # travis django settings
   - cd capstone
   - cp config/settings/settings_travis.py config/settings/settings.py
+
+  # set up postgres
   - sudo sh -c "echo shared_preload_libraries = 'pg_stat_statements' >> /etc/postgresql/9.6/main/postgresql.conf"
   - sudo apt-get install postgresql-9.6-plv8
   - sudo /etc/init.d/postgresql restart
   - sudo rm -f /etc/boto.cfg
 
+  # set up node
+  - nvm install stable
+  - nvm use stable
+
 install:
+  # python packages
   - pip install -U pip wheel
   - pip install -r requirements.txt
   - pip install coveralls
+
+  # node packages
+  - npm install
 
 before_script:
   - python manage.py collectstatic --noinput
@@ -46,3 +59,6 @@ after_success:
     export DEPLOY_SIG="sha1=`echo -n "$DEPLOY_CONTENT" | openssl sha1 -hmac $DEPLOY_KEY | sed 's/^.* //'`" ;
     curl -X POST "$DEPLOY_URL" --data "$DEPLOY_CONTENT" -H "Content-Type: application/json" -H "X-Travis-Signature: $DEPLOY_SIG" ;
     fi
+
+after_failure:
+  - git diff

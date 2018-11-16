@@ -1,4 +1,4 @@
-witchcraft_results = {
+export const witchcraft_results = {
   "nj": [{
     "id": 153819,
     "name_abbreviation": "In re the Adoption of a Child by W.P. ",
