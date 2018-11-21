@@ -12,5 +12,9 @@
     "key" : "inventory/data/2.csv.gz",
     "size" : 12814993,
     "MD5checksum" : "268091431c9c1f5c0e35a7d5603c9a43"
+  },{
+    "key" : "inventory/data/3.csv.gz",
+    "size" : 12814993,
+    "MD5checksum" : "75250e9db8188972be6172878a950045"
   } ]
 }

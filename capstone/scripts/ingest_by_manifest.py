@@ -149,22 +149,31 @@ def read_inventory_file(inventory_file, field_names, storage_name):
     info("Processing manifest file: %s" % inventory_file)
 
     inventory_storage = get_storage(storage_name)
-    volume_regex = re.compile(r'from_vendor/([A-Za-z0-9]+_(?:un)?redacted[^/]*)(/.+)')
+    digitized_volume_regex = re.compile(r'from_vendor/([A-Za-z0-9]+_(?:un)?redacted[^/]*)(/.+)')
+    born_digital_volume_regex = re.compile(r'from_vendor/([A-Za-z]+_\d+_(?:un)?redacted[^/]*)(/.+)')
     files_grouped_by_volume = defaultdict(list)
 
     # read inventory file, grouping relevant files by volume name
     for file_entry in get_inventory_file_entries(inventory_file, field_names, inventory_storage):
         # extract volume_folder name and file_name relative to volume folder
-        m = volume_regex.search(file_entry['Key'])
-        if m:
-            volume_folder, file_name = m.groups()
+        dm = digitized_volume_regex.search(file_entry['Key'])
+        bdm = born_digital_volume_regex.search(file_entry['Key'])
 
-            # filter out irrelevant files
-            if file_name.endswith('md5') or file_name.endswith('/'):
-                continue
+        if dm:
+            m = dm
+        elif bdm:
+            m = bdm
+        else:
+            continue
 
-            # store tuple of (file_name, etag) grouped by volume_folder
-            files_grouped_by_volume[volume_folder].append([file_name, file_entry['ETag']])
+        volume_folder, file_name = m.groups()
+
+        # filter out irrelevant files
+        if file_name.endswith('md5') or file_name.endswith('/'):
+            continue
+
+        # store tuple of (file_name, etag) grouped by volume_folder
+        files_grouped_by_volume[volume_folder].append([file_name, file_entry['ETag']])
 
     # Add group of files for each volume to volume:<volume_folder> queue.
     # Note that all files for a volume are added as a single queue item, tab and newline delimited.
@@ -195,12 +204,6 @@ def ingest_volumes(full_sync):
             clear_redis_volume(volume_folder)
             continue
 
-        # report error if S3 barcode isn't in VolumeMetadata db
-        if barcode not in all_db_volumes:
-            clear_redis_volume(volume_folder)
-            store_error("missing_volume_metadata", barcode)
-            continue
-
         filtered_volume_folders.append(volume_folder)
 
     # Mark volumes that are in DB but not in S3.
@@ -218,7 +221,6 @@ def ingest_volume_from_redis(volume_folder):
     """
         Celery task to ingest a single volume folder.
     """
-
     info("Processing volume: %s" % volume_folder)
     volume_folder = force_str(volume_folder)
     s3_items_by_type = get_s3_items_by_type_from_queue(volume_folder)
@@ -248,15 +250,13 @@ def ingest_volume(volume_folder, s3_items_by_type):
     try:
 
         ### import volume
-
         # find VolumeMetadata entry for this barcode:
-        volume_barcode = volume_folder.split('_', 1)[0]
+        volume_barcode = extract_barcode_from_folder(volume_folder)
         try:
             volume_metadata = VolumeMetadata.objects.select_related('volume_xml').defer('volume_xml__orig_xml').get(
                 barcode=volume_barcode)
         except VolumeMetadata.DoesNotExist:
-            # this shouldn't happen because we filter these out in ingest_volumes()
-            return False
+            volume_metadata = VolumeMetadata()
 
         needs_file_match_check = volume_metadata.ingest_errors and bool(volume_metadata.ingest_errors.get("nonmatching_files"))
         volume_metadata.ingest_errors = None
@@ -295,8 +295,8 @@ def ingest_volume(volume_folder, s3_items_by_type):
         existing_cases = {c.metadata.case_id: c for c in
                           volume.case_xmls.select_related('metadata').defer('orig_xml')}
         for case_s3_key, case_md5 in s3_items_by_type['casemets']:
-            case_barcode = volume_barcode + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
 
+            case_barcode = volume_barcode + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
             case = existing_cases.pop(case_barcode, None)
 
             # handle existing case
@@ -360,6 +360,7 @@ def ingest_volume(volume_folder, s3_items_by_type):
             volume_metadata.save()
 
     except (IntegrityError, DatabaseError) as e:
+        print("dingle popper")
         store_error("database_error", [volume_folder, str(e)], volume_metadata=volume_metadata)
 
 
@@ -383,7 +384,7 @@ def get_unique_volumes_from_queue():
     previous_barcode = None
     for volume_folder in volume_folders:
         volume_folder = force_str(volume_folder)
-        barcode = volume_folder.split('_', 1)[0]
+        barcode = extract_barcode_from_folder(volume_folder)
 
         # duplicate volume (earlier, superseded)
         if barcode == previous_barcode:
@@ -497,3 +498,8 @@ def get_file_type(path):
     if path.endswith('METS.xml'):
         return 'volmets'
     return None
+
+
+def extract_barcode_from_folder(folder):
+    folder_breakdown = re.match(r'([A-Za-z0-9_]+)_(un)?redacted([0-9_]*)', folder)
+    return folder_breakdown.group(1)
