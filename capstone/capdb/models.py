@@ -485,7 +485,7 @@ class Reporter(models.Model):
 
 class VolumeMetadata(models.Model):
     barcode = models.CharField(unique=True, max_length=64, primary_key=True)
-    hollis_number = models.CharField(max_length=9, help_text="Identifier in the Harvard cataloging system, HOLLIS")
+    hollis_number = models.CharField(max_length=9, null=True, help_text="Identifier in the Harvard cataloging system, HOLLIS")
     volume_number = models.CharField(max_length=64, blank=True, null=True)
     publisher = models.CharField(max_length=255, blank=True, null=True)
     publication_year = models.IntegerField(blank=True, null=True)
@@ -507,7 +507,7 @@ class VolumeMetadata(models.Model):
                                   help_text="Historical and Special Collections Review")
     needs_repair = models.CharField(max_length=9, blank=True, null=True, choices=choices('No', 'Complete', 'Yes'))
     missing_text_pages = models.TextField(blank=True, null=True, help_text="Pages damaged enough to have lost text.")
-    created_by = models.ForeignKey(TrackingToolUser, on_delete=models.DO_NOTHING)
+    created_by = models.ForeignKey(TrackingToolUser, blank=True, null=True, on_delete=models.DO_NOTHING)
     bibliographic_review = models.CharField(max_length=7, blank=True, null=True,
                                             choices=choices('No', 'Complete', 'Yes'))
     analyst_page_count = models.IntegerField(blank=True, null=True,
@@ -610,7 +610,7 @@ class VolumeXML(BaseXMLModel):
     @transaction.atomic(using='capdb')
     def save(self, update_related=True, *args, **kwargs):
 
-        if self.tracker.has_changed('orig_xml') and update_related:
+        if (self.tracker.has_changed('orig_xml') and update_related) or self.metadata is None:
             self.update_metadata()
 
         super().save(*args, **kwargs)
@@ -621,6 +621,8 @@ class VolumeXML(BaseXMLModel):
         """
         parsed_xml = parse_xml(self.orig_xml)
 
+        if self.metadata is None:
+            self.metadata = VolumeMetadata()
         metadata = self.metadata
 
         metadata.xml_start_year = parsed_xml('volume|voldate > volume|start').text() or None
@@ -638,8 +640,34 @@ class VolumeXML(BaseXMLModel):
         metadata.xml_reporter_short_name = parsed_xml('volume|reporter').attr.abbreviation or None
         metadata.xml_reporter_full_name = parsed_xml('volume|reporter').text() or None
 
+        if metadata.reporter_id is None:
+            reporter = Reporter.objects.filter(short_name=metadata.xml_reporter_short_name).all()
+            if reporter.count() > 1:
+                reporter = Reporter.objects.filter(short_name=metadata.xml_reporter_short_name,
+                                                   full_name=metadata.xml_reporter_full_name).all()
+            if reporter.count() > 1:
+                raise Exception("Ambiguous Reporter: short name: '{}', full name: {}").format(
+                    metadata.xml_reporter_short_name, metadata.xml_reporter_full_name)
+            metadata.reporter = reporter[0]
+
+        if metadata.barcode is None or metadata.barcode is '':
+            metadata.barcode = self.s3_key.split('/')[0].split('_redacted')[0]
+        if metadata.volume_number is None:
+            metadata.volume_number = metadata.xml_volume_number
+        if metadata.publisher is None:
+            metadata.publisher = metadata.xml_publisher
+        if metadata.publication_year is None:
+            metadata.publication_year = metadata.xml_publication_year
+        if metadata.start_year is None:
+            metadata.start_year = metadata.xml_start_year
+        if metadata.end_year is None:
+            metadata.end_year = metadata.xml_end_year
+        if metadata.image_count is None:
+            metadata.publication_city = metadata.xml_publication_city
+
         if metadata.tracker.changed():
             metadata.save()
+            self.metadata_id = metadata.pk
 
     def update_checksums(self):
         """
