@@ -1,3 +1,5 @@
+import { jurisdiction_translation } from './map-data.js'
+
 let apiUrl = "https://api.case.law/v1";
 
 /*
@@ -89,7 +91,7 @@ function addMapMouseovers() {
      });
 
     //This sets the mouseout event for the map, which resets the count elements to their original value
-    svgmap.addEventListener('mouseout', function (mouseout_event) {
+    svgmap.addEventListener('mouseout', function () {
         Array.from(document.getElementsByClassName("jur_name")).forEach(function (element) {
             element.innerHTML = element.getAttribute("data-original-value")
         });
@@ -104,7 +106,7 @@ function addMapMouseovers() {
         })
     });
 
-    svgmap.addEventListener('focusout', function (mouseout_event) {
+    svgmap.addEventListener('focusout', function () {
         Array.from(document.getElementsByClassName("jur_name")).forEach(function (element) {
             element.innerHTML = element.getAttribute("data-original-value")
         });
@@ -121,7 +123,7 @@ function addMapMouseovers() {
 
     // This loops through the elements of the map and sets the mouseover events
 
-    let statelinks = document.getElementsByClassName('state-link'), i;
+    let statelinks = document.getElementsByClassName('state-link');
 
     Array.from(statelinks).forEach(function (element){
         let jur_el = element.childNodes[1];
@@ -133,7 +135,7 @@ function addMapMouseovers() {
 }
 
 function add_event_to_jur(event, el, jurname) {
-    el.addEventListener(event, function (e) {
+    el.addEventListener(event, function () {
         Array.from(document.getElementsByClassName("jur_name")).forEach(function (el) {
             el.innerHTML = jurisdiction_translation[jurname]['name'];
         });
@@ -156,7 +158,7 @@ function add_event_to_jur(event, el, jurname) {
 
 // Too dry? maybe.
 function set_original_value(element) {
-    orig_attr = document.createAttribute("data-original-value");
+    const orig_attr = document.createAttribute("data-original-value");
     orig_attr.value = element.innerHTML;
     element.setAttributeNode(orig_attr);
 }

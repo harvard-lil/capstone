@@ -1,3 +1,6 @@
+import $ from "jquery"
+import { limericks } from './limerick_lines.js'
+
 function generate_limerick() {
   let line_types = limericks;
 
