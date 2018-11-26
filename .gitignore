@@ -21,3 +21,5 @@ capstone/test_data/pdfs/
 capstone/test_data/bulk-data/
 
 *.ipynb*
+
+node_modules/

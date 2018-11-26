@@ -1,8 +1,9 @@
 {% extends "layouts/wide.html" %}
 {% load pipeline %}
+{% load render_bundle from webpack_loader %}
 
 {% block extra_head %}
-  {% javascript 'limericks' %}
+  {% render_bundle 'limericks' %}
   {% stylesheet 'gallery' %}
 {% endblock %}
 

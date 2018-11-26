@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'bootstrap4',   # bootstrap form rendering
     'drf_yasg',   # API specification
     'django_hosts',     # subdomain routing
+    'webpack_loader',   # webpack assets
 ]
 
 REST_FRAMEWORK = {
@@ -224,7 +225,6 @@ PIPELINE = {
     'STYLESHEETS': {
         'base': {
             'source_filenames': (
-                'css/_normalize.css',
                 'css/scss/base.scss',
             ),
             'output_filename': 'base.css'
@@ -291,60 +291,24 @@ PIPELINE = {
             'output_filename': 'case.css'
         }
     },
-    'JAVASCRIPT': {
-        'base': {
-            'source_filenames': (
-                'js/jquery-3.3.1.js',
-                'js/utils.js',
-                'js/custom.js',
-                'js/analytics.js',
-            ),
-            'output_filename': 'base.js'
-        },
-        'limericks': {
-            'source_filenames': (
-                'js/limerick_lines.js',
-                'js/generate_limericks.js',
-            ),
-            'output_filename': 'limericks.js'
-        },
-        'limerick_lines': {
-            'source_filenames': (
-              'js/limerick_lines.json',
-            ),
-            'output_filename': 'limerick_lines.json'
-        },
-        'viz_totals': {
-            'source_filenames': (
-                'js/chart.js',
-                'js/color-blend.js',
-                'js/viz-totals.js',
-            ),
-            'output_filename': 'viz_totals.js'
-        },
-        'viz_details': {
-            'source_filenames': (
-                'js/chart.js',
-                'js/viz-details.js',
-            ),
-            'output_filename': 'viz_details.js'
-        },
-        'map_actions': {
-            'source_filenames': (
-                'js/map-data.js',
-                'js/map-actions.js',
-            ),
-            'output_filename': 'map_actions.js'
-        },
-        'witchcraft_bundle': {
-            'source_filenames': (
-                'js/map-data.js',
-                'js/witchcraft-data.js',
-                'js/witchcraft.js',
-            ),
-            'output_filename': 'witchcraft_bundle.js'
-        }
-    },
+    # These are not yet converted to vue/webpack:
+    # 'JAVASCRIPT': {
+    #     'viz_totals': {
+    #         'source_filenames': (
+    #             'js/chart.js',
+    #             'js/color-blend.js',
+    #             'js/viz-totals.js',
+    #         ),
+    #         'output_filename': 'viz_totals.js'
+    #     },
+    #     'viz_details': {
+    #         'source_filenames': (
+    #             'js/chart.js',
+    #             'js/viz-details.js',
+    #         ),
+    #         'output_filename': 'viz_details.js'
+    #     },
+    # },
 
     # avoid compressing assets for now
     'CSS_COMPRESSOR': None,
@@ -575,5 +539,9 @@ HARVARD_IP_RANGES = """
     206.253.200.0/21
 """.split()
 
-# TODO:
-# - admin views
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'dist/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
+    }
+}

@@ -1,4 +1,4 @@
-{% load static %}{% load pipeline %}{% load capweb_static %}<!DOCTYPE html>
+{% load static %}{% load pipeline %}{% load capweb_static %}{% load render_bundle from webpack_loader %}<!DOCTYPE html>
 <html lang="en">
   <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
     <meta charset="utf-8">
@@ -58,7 +58,8 @@
     <meta name="description" content="{% block meta_description %}Explore American Caselaw{% endblock meta_description %}">
 
     {% stylesheet "base" %}
-    {% javascript "base" %}
+    {% render_bundle 'chunk-vendors' %}
+    {% render_bundle 'base' %}
     {% block extra_head %}{% endblock %}
   </head>
   <body class="hamburger-menu-closed" tabindex="-1">

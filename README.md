@@ -32,6 +32,7 @@ This repository contains Capstone and CAPAPI, the applications written by the Ha
   - [Local debugging tools](#local-debugging-tools)
   - [Download real data locally](#download-real-data-locally )
   - [Model versioning](#model-versioning)
+  - [Working with javascript](#working-with-javascript)
 - [Documentation](#documentation)
 
 ## Project Background <a id="project-background"></a>
@@ -245,6 +246,35 @@ run the fab command `fab add_test_case` with a volume barcode
 (like `fab add_test_case:32044057891608_0001`)
 - In settings.py, you will need to point DATABASES['tracking_tool'] to the real tracking tool db
 - You will also need to point STORAGES['ingest_storage'] to real harvard-ftl-shared
+
+### Working with javascript <a id="working-with-javascript"></a>
+
+We use [Vue CLI 3](https://cli.vuejs.org/) to compile javascript files, so you can use modern javascript and it will be
+transpiled to support the browsers listed in package.json. New javascript entrypoints can be added to vue.config.js and
+included in templates with `{% render_bundle %}`.
+
+If you want to edit javascript files, you will need to install `node` and the package.json javascript packages:
+
+    $ brew install node
+    $ npm install
+
+You can then run the local javascript development server in a separate terminal window, or in the background:
+
+    $ npm run serve
+
+This will cause javascript files to be loaded live from http://127.0.0.1:8080/ and recompiled on save.
+
+*Important:* Any time you run `npm run serve`, before committing, you must then run
+
+    $ npm run build
+
+to compile the production assets and recreate webpack-stats.json, or else tests will fail when you send a pull request.
+(If you don't change anything, you could also just undo the changes to webpack-stats.json.)
+
+Installing node and running `npm run serve` is not necessary unless you are editing javascript. On a clean checkout, or
+after shutting down `npm run serve` and running `npm run build`, the local dev server will use the compiled production
+assets. (Under the hood, use of the local dev server vs. production assets is controlled by the contents of
+`webpack-stats.json`.)
 
 ## Documentation <a id="documentation"></a>
 This readme, code comments, and the API usage docs are the only docs we have. If you want something documented more thoroughly, file an issue and we'll get back to you.
