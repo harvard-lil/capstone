@@ -13,12 +13,11 @@ from scripts.helpers import parse_xml, serialize_xml
 ])
 @pytest.mark.django_db
 def test_versioning(versioned_fixture_name, request):
-    import ipdb
-    ipdb.set_trace()
     # load initial volume_xml/case_xml/page_xml
     versioned_instance = request.getfuncargvalue(versioned_fixture_name)
     original_instance = deepcopy(versioned_instance)
 
+    print(original_instance.pk)
     # starts with no history
     assert versioned_instance.history.count() == 0
 
