@@ -305,3 +305,8 @@ li.item-set {
     color: $color-white !important;
   }
 }
+
+.bg-violet-dark {
+  @extend .bg-black;
+  background-color: #3b2668;
+}
