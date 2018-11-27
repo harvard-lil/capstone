@@ -33,6 +33,7 @@ This repository contains Capstone and CAPAPI, the applications written by the Ha
   - [Download real data locally](#download-real-data-locally )
   - [Model versioning](#model-versioning)
 - [Documentation](#documentation)
+- [Examples](#examples)
 
 ## Project Background <a id="project-background"></a>
 The Caselaw Access Project is a large-scale digitization project hosted by the Harvard Law School [Library Innovation Lab.](http://lil.law.harvard.edu "LIL Website") Visit [case.law](https://case.law/) for more details.
@@ -249,3 +250,5 @@ run the fab command `fab add_test_case` with a volume barcode
 ## Documentation <a id="documentation"></a>
 This readme, code comments, and the API usage docs are the only docs we have. If you want something documented more thoroughly, file an issue and we'll get back to you.
 
+## Examples <a id="examples"></a>
+See the [CAP examples repo](https://github.com/harvard-lil/cap-examples) for some ideas about getting started with this data.
