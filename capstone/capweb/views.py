@@ -48,7 +48,7 @@ def about(request):
         "email": settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/about.png',
         'page_title': 'About the Caselaw Access Project',
-        'page_description': 'The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make' 
+        'page_description': 'The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make'
                             'all published U.S. court decisions freely available to the public online, in a consistent '
                             'format, digitized from the collection of the Harvard Law Library.',
     })
@@ -87,10 +87,12 @@ def tools(request):
 
 def gallery(request):
     return render(request, 'gallery.html', {
+        'email': settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/gallery.png',
         'page_title': 'Caselaw Access Project Project Gallery',
         'page_description': 'Sky is the limit! Here are some examples of what’s possible.'
     })
+
 
 def maintenance_mode(request):
     return render(request, "error_page.html", {
@@ -103,6 +105,7 @@ def maintenance_mode(request):
         'page_title': 'Caselaw Access Project: Error',
         'page_description': 'This page is broken. Let us know if this should be working.'
     })
+
 
 def wordclouds(request):
     wordcloud_dir = os.path.join(settings.BASE_DIR, 'static/img/wordclouds')
@@ -124,7 +127,7 @@ def limericks(request):
 
 
 def api(request):
-    #TODO: Trim what we don't need here
+    # TODO: Trim what we don't need here
     try:
         case = CaseMetadata.objects.get(id=settings.API_DOCS_CASE_ID)
     except CaseMetadata.DoesNotExist:
