@@ -16,7 +16,8 @@ from django.utils.encoding import force_str
 
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
 from capdb.storages import get_storage, ingest_storage, redis_ingest_client as r
-from scripts.helpers import resolve_namespace, parse_xml
+from scripts.helpers import (resolve_namespace, parse_xml, volume_barcode_from_folder,
+    id_from_s3_key)
 from scripts.process_ingested_xml import build_case_page_join_table
 
 logger = get_task_logger(__name__)
@@ -187,7 +188,6 @@ def ingest_volumes(full_sync):
     """
         Start a celery task to ingest each valid volume folder, returning when all tasks are complete.
     """
-
     # Fetch lists of VolumeMetadata entries from the database.
     already_ingested_db_volumes = set(VolumeMetadata.objects.filter(ingest_status='ingested').values_list('barcode', flat=True))
     not_ingested_db_volumes = set(VolumeMetadata.objects.filter(ingest_status__in=['to_ingest', 'error']).values_list('barcode', flat=True))
@@ -251,7 +251,7 @@ def ingest_volume(volume_folder, s3_items_by_type):
 
         ### import volume
         # find VolumeMetadata entry for this barcode:
-        volume_barcode = extract_barcode_from_folder(volume_folder)
+        volume_barcode = volume_barcode_from_folder(volume_folder)
         try:
             volume_metadata = VolumeMetadata.objects.select_related('volume_xml').defer('volume_xml__orig_xml').get(
                 barcode=volume_barcode)
@@ -284,7 +284,6 @@ def ingest_volume(volume_folder, s3_items_by_type):
             if mismatched_files:
                 store_error("nonmatching_files", {'s3_key': volume_folder, 'files': mismatched_files}, volume_metadata=volume_metadata)
                 return False
-
         volume.s3_key = volmets_path
         if volume.tracker.changed():
             volume.save()
@@ -296,8 +295,7 @@ def ingest_volume(volume_folder, s3_items_by_type):
                           volume.case_xmls.select_related('metadata').defer('orig_xml')}
         for case_s3_key, case_md5 in s3_items_by_type['casemets']:
 
-            case_barcode = volume_barcode + "_" + case_s3_key.split('.xml', 1)[0].rsplit('_', 1)[-1]
-            case = existing_cases.pop(case_barcode, None)
+            case = existing_cases.pop(id_from_s3_key(case_s3_key), None)
 
             # handle existing case
             if case:
@@ -320,7 +318,7 @@ def ingest_volume(volume_folder, s3_items_by_type):
 
         existing_pages = {p.barcode: p for p in volume.page_xmls.defer('orig_xml')}
         for page_s3_key, page_md5 in s3_items_by_type['alto']:
-            alto_barcode = volume_barcode + "_" + page_s3_key.split('.xml', 1)[0].rsplit('_ALTO_', 1)[-1]
+            alto_barcode = id_from_s3_key(page_s3_key)
 
             page = existing_pages.pop(alto_barcode, None)
 
@@ -360,7 +358,6 @@ def ingest_volume(volume_folder, s3_items_by_type):
             volume_metadata.save()
 
     except (IntegrityError, DatabaseError) as e:
-        print("dingle popper")
         store_error("database_error", [volume_folder, str(e)], volume_metadata=volume_metadata)
 
 
@@ -384,7 +381,7 @@ def get_unique_volumes_from_queue():
     previous_barcode = None
     for volume_folder in volume_folders:
         volume_folder = force_str(volume_folder)
-        barcode = extract_barcode_from_folder(volume_folder)
+        barcode = volume_barcode_from_folder(volume_folder)
 
         # duplicate volume (earlier, superseded)
         if barcode == previous_barcode:
@@ -500,6 +497,3 @@ def get_file_type(path):
     return None
 
 
-def extract_barcode_from_folder(folder):
-    folder_breakdown = re.match(r'([A-Za-z0-9_]+)_(un)?redacted([0-9_]*)', folder)
-    return folder_breakdown.group(1)
