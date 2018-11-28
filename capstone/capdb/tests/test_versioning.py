@@ -17,7 +17,6 @@ def test_versioning(versioned_fixture_name, request):
     versioned_instance = request.getfuncargvalue(versioned_fixture_name)
     original_instance = deepcopy(versioned_instance)
 
-    print(original_instance.pk)
     # starts with no history
     assert versioned_instance.history.count() == 0
 
