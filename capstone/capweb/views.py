@@ -150,3 +150,7 @@ def api(request):
         'page_description': 'To get started with the API, you can explore it in your browser, or reach it from the '
                             'command line.'
     })
+
+def snippet(request, label):
+    snippet = get_object_or_404(Snippet, label=label).contents
+    return HttpResponse(snippet, content_type=snippet.format)
