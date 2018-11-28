@@ -8,6 +8,7 @@ from scripts.merge_alto_style import generate_styled_case_xml
 from scripts.compare_alto_case import validate
 from capdb.models import CaseXML
 
+
 def test_serialize_xml_should_not_modify_input_xml(unaltered_alto_xml):
     parsed = parse_xml(unaltered_alto_xml)
 
@@ -87,15 +88,8 @@ def test_generate_pagebreak(ingest_case_xml):
     for case in CaseXML.objects.all():
 
         # this test logic is too stupid to handle pagebreaks where multiple pages of footnotes
-        # are at the end of the opinion. The case logic does work.
-        if case.volume.metadata.barcode == "WnApp_199":
-            print(case.metadata.case_id)
-            print(case.metadata.case_id)
-            print(case.metadata.case_id)
-            print(case.metadata.case_id)
-            print(case.metadata.case_id)
-            print(case.metadata.case_id)
-            print(case.metadata.case_id)
+        # at the end of the opinion. The actual logic does work.
+        if case.metadata.case_id.startswith("WnApp"):
             continue
 
         parsed_case_xml = parse_xml(case.orig_xml)
