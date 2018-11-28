@@ -56,6 +56,8 @@ def get_file_type(path):
             return 'jp2'
         if path.endswith('.tif'):
             return 'tif'
+        if path.endswith('.pdf'):
+            return 'pdf'
         return None
     if '/casemets/' in path:
         if path.endswith('.xml'):
@@ -441,6 +443,7 @@ def compress_volume(storage_name, volume_name):
         # use this if compressing tiff -> png
         # tif_file_results = file_map(handle_image_file, volume_files_by_type.get('tif', []), '.png', tif_to_png)
         file_map(handle_simple_file, volume_files_by_type.get('tif', []))
+        file_map(handle_simple_file, volume_files_by_type.get('pdf', []))
         color_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jpg', jp2_to_jpg_slow)
         # use this if compressing jp2 -> jp2
         # color_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jp2', compress_jp2)
@@ -573,7 +576,8 @@ def validate_volume(volume_path):
         suffix_counts = defaultdict(int)
         for item in volmets_files:
             suffix_counts[item[0].split('.', 1)[1]] += 1
-        if suffix_counts['jpg'] == 0 or suffix_counts['jpg'] != suffix_counts['tif'] or suffix_counts['xml.gz'] < suffix_counts['jpg']:
+        color_image_count = suffix_counts['jpg'] or suffix_counts['pdf']
+        if color_image_count == 0 or color_image_count != suffix_counts['tif'] or suffix_counts['xml.gz'] <= color_image_count:
             raise ValidationResult("unexpected_suffix_counts", suffix_counts)
 
         raise ValidationResult("ok")
