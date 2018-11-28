@@ -17,7 +17,7 @@ from django.utils.encoding import force_str
 from capdb.models import VolumeXML, PageXML, CaseXML, VolumeMetadata
 from capdb.storages import get_storage, ingest_storage, redis_ingest_client as r
 from scripts.helpers import (resolve_namespace, parse_xml, volume_barcode_from_folder,
-    id_from_s3_key)
+                             case_or_page_barcode_from_s3_key)
 from scripts.process_ingested_xml import build_case_page_join_table
 
 logger = get_task_logger(__name__)
@@ -295,7 +295,7 @@ def ingest_volume(volume_folder, s3_items_by_type):
                           volume.case_xmls.select_related('metadata').defer('orig_xml')}
         for case_s3_key, case_md5 in s3_items_by_type['casemets']:
 
-            case = existing_cases.pop(id_from_s3_key(case_s3_key), None)
+            case = existing_cases.pop(case_or_page_barcode_from_s3_key(case_s3_key), None)
 
             # handle existing case
             if case:
@@ -318,7 +318,7 @@ def ingest_volume(volume_folder, s3_items_by_type):
 
         existing_pages = {p.barcode: p for p in volume.page_xmls.defer('orig_xml')}
         for page_s3_key, page_md5 in s3_items_by_type['alto']:
-            alto_barcode = id_from_s3_key(page_s3_key)
+            alto_barcode = case_or_page_barcode_from_s3_key(page_s3_key)
 
             page = existing_pages.pop(alto_barcode, None)
 
