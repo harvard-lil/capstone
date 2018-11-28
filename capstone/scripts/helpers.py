@@ -340,3 +340,43 @@ class HashingFile:
 
     def __getattr__(self, attr):
         return getattr(self._source, attr)
+
+def id_from_s3_key(s3_key):
+    return s3_key.split('/')[-1].split('.')[0]\
+        .replace('unredacted', 'redacted')\
+        .replace('_redacted', '')\
+        .replace('_ALTO', '')\
+        .replace('CASEMETS', '')
+
+def short_id_from_s3_key(input):
+    """Gives you a short ID from an ALTO or CASEMETS s3_key"""
+    if ('CASEMETS' in input or 'ALTO' in input) and input.endswith("xml"):
+        return input.split('/')[-1].split('.')[0].split('redacted_')[1].lower()
+    raise Exception("Not an ALTO or CASEMETS s3_key")
+
+def alto_barcode_from_s3_key(input):
+    """Gives you a short ID from an ALTO or CASEMETS s3_key"""
+    if ('CASEMETS' in input or 'ALTO' in input) and input.endswith("xml"):
+        return input.split('/')[-1].split('.')[0].split('redacted_')[1].lower()
+    raise Exception("Not an ALTO or CASEMETS s3_key")
+
+def short_id_from_alto_barcode(barcode):
+    """Gives you a short ID from an s3_key"""
+    if len(barcode.split('_')) == 3:
+        return "alto_" + barcode.split('_', 1)[1]
+    elif len(barcode.split('_')) == 4:
+        return "alto_" + barcode.split('_', 2)[2]
+    raise Exception("Unknown ALTO ID Format: {}".format(barcode))
+
+def short_id_from_case_id(case_id):
+    """Gives you a short ID from an s3_key"""
+    """ ID of this case as referred to by volume xml file. """
+    if len(case_id.split('_')) == 2:
+        return "casemets_" + case_id.split('_', 1)[1]
+    elif len(case_id.split('_')) == 3:
+        return "casemets_" + case_id.split('_', 2)[2]
+    else:
+        raise Exception("Unknown Case ID Format: {}".format(case_id))
+
+def volume_barcode_from_folder(folder):
+    return folder.replace('unredacted', 'redacted').replace("_redacted","")

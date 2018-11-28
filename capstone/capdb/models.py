@@ -15,7 +15,8 @@ from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, jurisdiction_translation_long_name, extract_casebody)
+                             serialize_xml, jurisdiction_translation_long_name, extract_casebody,
+                             short_id_from_s3_key)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -641,14 +642,15 @@ class VolumeXML(BaseXMLModel):
         metadata.xml_reporter_full_name = parsed_xml('volume|reporter').text() or None
 
         if metadata.reporter_id is None:
-            reporter = Reporter.objects.filter(short_name=metadata.xml_reporter_short_name).all()
-            if reporter.count() > 1:
-                reporter = Reporter.objects.filter(short_name=metadata.xml_reporter_short_name,
-                                                   full_name=metadata.xml_reporter_full_name).all()
-            if reporter.count() > 1:
-                raise Exception("Ambiguous Reporter: short name: '{}', full name: {}").format(
-                    metadata.xml_reporter_short_name, metadata.xml_reporter_full_name)
-            metadata.reporter = reporter[0]
+            try:
+                metadata.reporter = Reporter.objects.get(short_name=metadata.xml_reporter_short_name)
+            except Reporter.DoesNotExist:
+                raise Exception("Cannot Find Reporter with Short Name: {} in {}. "
+                                "There are {} reporters in the database.".format(
+                    metadata.xml_reporter_short_name, self.s3_key, Reporter.objects.count()))
+            except Reporter.MultipleObjectsReturned:
+                raise Exception("Ambiguous Short Reporter Name: {} in {}".format(
+                    metadata.xml_reporter_short_name, self.s3_key))
 
         if metadata.barcode is None or metadata.barcode is '':
             metadata.barcode = self.s3_key.split('/')[0].split('_redacted')[0]
@@ -1133,8 +1135,7 @@ class CaseXML(BaseXMLModel):
     @property
     def short_id(self):
         """ ID of this case as referred to by volume xml file. """
-        return "casemets_" + self.metadata.case_id.split('_', 1)[1]
-
+        return short_id_from_s3_key(self.s3_key)
 
 class Citation(models.Model):
     type = models.CharField(max_length=100,
@@ -1187,7 +1188,8 @@ class PageXML(BaseXMLModel):
     @property
     def short_id(self):
         """ ID of this page as referred to by volume xml file. """
-        return "alto_" + self.barcode.split('_', 1)[1]
+        return short_id_from_s3_key(self.s3_key)
+
 
 
 class DataMigration(models.Model):
