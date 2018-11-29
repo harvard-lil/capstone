@@ -3,6 +3,7 @@ import json
 from scripts import count_chars
 from os import walk, rmdir, remove
 from os.path import isdir
+from capdb.models import CaseXML
 
 @pytest.mark.django_db
 def test_counts_as_written_to_files(ingest_case_xml):
@@ -21,7 +22,7 @@ def test_counts_as_written_to_files(ingest_case_xml):
     count_chars.count_chars_in_all_cases(path)
 
     for directory, subdirs, files in walk(path):
-        assert len(files) == 3
+        assert len(files) == CaseXML.objects.count()
         for i in files:
             filepath = "{}/{}".format(path, i)
             json_file_handle = open(filepath, mode="r")

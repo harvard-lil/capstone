@@ -63,8 +63,7 @@ def validate(case_xml, consecutive_bad_word_limit=2):
     # get the alto files associated with the case in the DB
     alto_files = {}
     for alto in case_xml.pages.all():
-        alto_fileid = "_".join((["alto"] + alto.barcode.split('_')[1:3]))
-        alto_files[alto_fileid] = parse_xml(alto.orig_xml)
+        alto_files[alto.short_id] = parse_xml(alto.orig_xml)
 
     # The strategy here is to loop over each casebody element, then each alto
     # page associated with each element, then each String in the alto file,
