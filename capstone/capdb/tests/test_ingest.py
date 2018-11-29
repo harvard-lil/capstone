@@ -25,6 +25,13 @@ def test_ingested_xml(ingest_volume_xml):
     assert '<name abbreviation="Home Insurance Co. of New York v. Kirk">' in case_xml.orig_xml
     assert case_xml.pages.count() == 6
 
+    # new style barcode
+    new_style_vol = VolumeMetadata.objects.get(pk="WnApp_199")
+    assert new_style_vol.rare is False
+    assert new_style_vol.reporter.full_name == 'Washington Appellate Reports'
+    assert new_style_vol.volume_xml.page_xmls.count() == 6
+    assert new_style_vol.volume_xml.case_xmls.count() == 1
+
     # duplicative case
     ingest_duplicative_case_xml = CaseXML.objects.get(metadata__case_id='32044061407086_0001')
     assert ingest_duplicative_case_xml.metadata.duplicative is True
@@ -65,7 +72,6 @@ def test_update_dup_checking(ingest_volume_xml, ingest_case_xml):
 
     assert 'Inversion' not in ingest_case_xml.orig_xml
     assert 'Inversion' not in page_xml.orig_xml
-
 
 @pytest.mark.django_db
 def test_sync_metadata(ingest_metadata):

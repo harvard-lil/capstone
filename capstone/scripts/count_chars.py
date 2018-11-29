@@ -14,12 +14,13 @@ def count_chars_in_all_cases(path):
 
     # if not updating existing, then only launch jobs for volumes with unindexed cases:
 
-    print("😃😀😃😃😃😀😃😃\n\nThis will dump a json file for each case in the {} directory, which ".format(path), end="")
+    # This will dump a json file for each case in the directory specified in path
     try:
         mkdir(path)
-        print("I just created.\n\n😃😀😃😃😃😀😃😃")
     except FileExistsError:
-        print("already exists.\nNote: this will overwrite existing data, but unless the cases or script have changed, it should be the same data.\n\n😃😀😃😃😃😀😃😃")
+        pass
+        # already exists. this will overwrite existing data, but unless the cases or script
+        # have changed, it should be the same data.
 
     # launch a job for each volume:
     for cmd_id in query.values_list('pk', flat=True):

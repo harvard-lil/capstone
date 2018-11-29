@@ -2,7 +2,7 @@ import pytest
 
 from scripts.helpers import nsmap
 from test_data.test_fixtures.factories import *
-
+from capdb.models import VolumeMetadata, CaseMetadata
 
 ### helpers ###
 
@@ -55,7 +55,7 @@ def test_database_should_not_modify_xml(volume_xml, unaltered_alto_xml):
 ### VolumeXML ###
 
 @pytest.mark.django_db
-def test_volumexml_update_metadata(volume_xml):
+def test_volumexml_update_metadata(volume_xml, ingest_volume_xml):
     # metadata is extracted during initial save:
     assert int(volume_xml.metadata.xml_start_year) == 1877
     assert int(volume_xml.metadata.xml_end_year) == 1887
@@ -66,51 +66,68 @@ def test_volumexml_update_metadata(volume_xml):
     assert volume_xml.metadata.xml_reporter_short_name == "Ill. App."
     assert volume_xml.metadata.xml_reporter_full_name == "Illinois Appellate Court Reports"
 
+
+
     # metadata is extracted during update:
     volume_xml.orig_xml = volume_xml.orig_xml.replace('1888', '1999')
     volume_xml.save()
     volume_xml.metadata.refresh_from_db()
     assert volume_xml.metadata.xml_publication_year == 1999
 
+    # with new style barcode/volume
+    new_style_vol = VolumeMetadata.objects.get(pk="WnApp_199")
+    new_style_vol.xml_publication_year = 1200
+    new_style_vol.save()
+    new_style_vol.refresh_from_db()
+    assert new_style_vol.xml_publication_year == 1200
+
+    new_style_vol.volume_xml.orig_xml = new_style_vol.volume_xml.orig_xml.replace("2018", "3018")
+    new_style_vol.volume_xml.save()
+    new_style_vol.refresh_from_db()
+    assert new_style_vol.xml_publication_year == 3018
+
+
 
 ### CaseMetadata ###
 
 @pytest.mark.django_db
 def test_create_or_update_metadata(ingest_case_xml):
-    # fetch current metadata
-    case_metadata = ingest_case_xml.metadata
-    # change xml
-    parsed = parse_xml(ingest_case_xml.orig_xml)
-    parsed('case|citation[category="official"]').text('123 Test 456')
+    cases = [ingest_case_xml, CaseMetadata.objects.get(case_id="WnApp_199_0036").case_xml]
+    for case in cases:
+        # fetch current metadata
+        case_metadata = case.metadata
+        # change xml
+        parsed = parse_xml(case.orig_xml)
+        parsed('case|citation[category="official"]').text('123 Test 456')
 
-    ingest_case_xml.orig_xml = serialize_xml(parsed)
-    ingest_case_xml.save()
+        case.orig_xml = serialize_xml(parsed)
+        case.save()
 
-    # fetch new metadata
-    new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
-    new_citations = list(new_case_metadata.citations.all())
+        # fetch new metadata
+        new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
+        new_citations = list(new_case_metadata.citations.all())
 
-    # case_metadata should have been updated, not duplicated
-    assert new_case_metadata.pk == case_metadata.pk
+        # case_metadata should have been updated, not duplicated
+        assert new_case_metadata.pk == case_metadata.pk
 
-    # citations should have been replaced
-    assert len(new_citations) == 1
-    assert new_citations[0].cite == '123 Test 456'
+        # citations should have been replaced
+        assert len(new_citations) == 1
+        assert new_citations[0].cite == '123 Test 456'
 
-    # test update author
-    new_author = "Lacey, John"
-    parsed('casebody|author').text(new_author)
-    ingest_case_xml.orig_xml = serialize_xml(parsed)
-    ingest_case_xml.save()
-    # fetch new metadata
-    new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
-    assert new_case_metadata.opinions == [{"type": "majority", "author": new_author}]
+        # test update author
+        new_author = "Lacey, John"
+        parsed('casebody|author').text(new_author)
+        case.orig_xml = serialize_xml(parsed)
+        case.save()
+        # fetch new metadata
+        new_case_metadata = CaseMetadata.objects.get(pk=case_metadata.pk)
+        assert new_case_metadata.opinions == [{"type": "majority", "author": new_author}]
 
-    # strip soft dashes
-    ingest_case_xml.orig_xml = ingest_case_xml.orig_xml.replace(new_author, new_author + '\xad')
-    ingest_case_xml.save()
-    ingest_case_xml.metadata.refresh_from_db()
-    assert ingest_case_xml.metadata.opinions[0]['author'] == new_author
+        # strip soft dashes
+        case.orig_xml = case.orig_xml.replace(new_author, new_author + '\xad')
+        case.save()
+        case.metadata.refresh_from_db()
+        assert case.metadata.opinions[0]['author'] == new_author
 
 @pytest.mark.django_db
 def test_denormalized_fields(case):

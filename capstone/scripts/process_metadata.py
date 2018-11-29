@@ -1,13 +1,14 @@
 from datetime import datetime
 from scripts.helpers import parse_xml, resolve_namespace
-
+import re
 
 def get_case_metadata(case_xml):
     parsed = parse_xml(case_xml.replace('\xad', ''))
 
     # duplicative cases won't have a case section, so rather than using case.caseid we get the volume barcode from the
     # first alto file entry, and the case number from the casebody:
-    volume_barcode = parsed('mets|fileGrp[USE="alto"] mets|FLocat')[0].attrib[resolve_namespace('xlink|href')].split('/')[-1].split('_')[0]
+    alto_name = parsed('mets|fileGrp[USE="alto"] mets|FLocat')[0].attrib[resolve_namespace('xlink|href')].split('/')[-1]
+    volume_barcode = re.match(r'([A-Za-z0-9_]+)_(un)?redacted([0-9_]*)', alto_name).group(1)
     case_number = parsed('mets|fileGrp[USE="casebody"] > mets|file').attr["ID"].split('_')[1]
     case_id = "%s_%s" % (volume_barcode, case_number)
 

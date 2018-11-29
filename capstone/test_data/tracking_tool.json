@@ -1640,6 +1640,27 @@
   }
 },
 {
+  "model": "tracking_tool.reporters",
+  "pk": 477,
+  "fields": {
+    "state": "Wash.",
+    "reporter": "Washington Appellate Reports",
+    "short": "Wash. App.",
+    "start_date": 1969,
+    "end_date": 2013,
+    "volumes": 173,
+    "created_at": "2013-12-17T23:00:33Z",
+    "updated_at": "2016-09-12T20:03:18Z",
+    "notes": "",
+    "original_volumes": null,
+    "original_start_date": null,
+    "original_end_date": null,
+    "observed_start_date": 1969,
+    "observed_end_date": 2013,
+    "observed_volumes": 173
+  }
+},
+{
   "model": "tracking_tool.eventloggers",
   "pk": 217935,
   "fields": {
