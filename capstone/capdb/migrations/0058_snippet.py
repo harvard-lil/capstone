@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('capdb', '0056_casetext_tsv'),
+        ('capdb', '0057_auto_20181115_1834'),
     ]
 
     operations = [
