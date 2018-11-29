@@ -21,7 +21,8 @@ from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 
 from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage, private_ingest_storage
-from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile
+from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile, \
+    volume_barcode_from_folder
 
 # logging
 # disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
@@ -623,7 +624,7 @@ def sample_images(count=100):
         current_vol = next(volumes, "")
         while current_vol:
             next_vol = next(volumes, "")
-            if current_vol.split("_", 1)[0] != next_vol.split("_", 1)[0]:
+            if volume_barcode_from_folder(current_vol) != volume_barcode_from_folder(next_vol):
                 yield current_vol
             current_vol = next_vol
 
@@ -631,7 +632,7 @@ def sample_images(count=100):
     volumes = list(get_volumes())
     for vol in random.sample(volumes, min(len(volumes), count)):
         print("Sampling", vol)
-        id = vol.split('_', 1)[0]
+        id = volume_barcode_from_folder(vol)
         for i in [0,1]:
             img_name = "%s_00050_%s.tif" % (id, i)
             copy_file(
