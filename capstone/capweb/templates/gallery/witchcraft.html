@@ -1,9 +1,10 @@
 {% extends "layouts/wide.html" %}
 {% load pipeline %}
+{% load render_bundle from webpack_loader %}
 
 {% block extra_head %}
   {% stylesheet 'gallery' %}
-  {% javascript 'witchcraft_bundle' %}
+  {% render_bundle 'witchcraft' %}
 {% endblock %}
 
 {% block title %}Witchcraft in Law{% endblock %}

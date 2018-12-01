@@ -1,0 +1,497 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mets xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.loc.gov/METS/">
+  <dmdSec ID="case">
+    <mdWrap MDTYPE="OTHER" OTHERMDTYPE="HLS-CASELAW-CASEXML">
+      <xmlData>
+        <case xmlns="http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case:v1" caseid="WnApp_199_0036" publicationstatus="published">
+          <court abbreviation="Wash. Ct. App." jurisdiction="Washington">Washington Court of Appeals</court>
+          <name abbreviation="In re the Marriage of Lyle">In the Matter of the Marriage of Christy Lyle, Respondent, and Keith Lyle, Appellant</name>
+          <docketnumber>No. 33971-8-III</docketnumber>
+          <citation category="official" type="bluebook">199 Wash. App. 629</citation>
+          <decisiondate>2017-07-11</decisiondate>
+        </case>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  <amdSec ID="amd0001">
+    <digiprovMD ID="digi001">
+      <mdWrap MDTYPE="PREMIS">
+        <xmlData>
+          <event xmlns="info:lc/xmlns/premis-v2">
+            <eventIdentifier>
+              <eventIdentifierType>Local</eventIdentifierType>
+              <eventIdentifierValue>ocr0001</eventIdentifierValue>
+            </eventIdentifier>
+            <eventType>transcription</eventType>
+            <eventDateTime>2018-09-15T18:46:37Z</eventDateTime>
+            <eventDetail>Transcription event</eventDetail>
+          </event>
+          <agent xmlns="info:lc/xmlns/premis-v2">
+            <agentIdentifier>
+              <agentIdentifierType>Local</agentIdentifierType>
+              <agentIdentifierValue>dsrs</agentIdentifierValue>
+            </agentIdentifier>
+            <agentName>Innodata DSRS, ABBYY FineReader</agentName>
+            <agentType>software</agentType>
+            <agentNote>Version 10</agentNote>
+          </agent>
+        </xmlData>
+      </mdWrap>
+    </digiprovMD>
+    <digiprovMD ID="digi002">
+      <mdWrap MDTYPE="PREMIS">
+        <xmlData>
+          <event xmlns="info:lc/xmlns/premis-v2">
+            <eventIdentifier>
+              <eventIdentifierType>Local</eventIdentifierType>
+              <eventIdentifierValue>crt0001</eventIdentifierValue>
+            </eventIdentifier>
+            <eventType>METScreation</eventType>
+            <eventDateTime>2018-10-19T11:35:26Z</eventDateTime>
+            <eventDetail>Creation of digital artifact described by this METS file</eventDetail>
+          </event>
+          <agent xmlns="info:lc/xmlns/premis-v2">
+            <agentIdentifier>
+              <agentIdentifierType>Local</agentIdentifierType>
+              <agentIdentifierValue>redrli</agentIdentifierValue>
+            </agentIdentifier>
+            <agentName>Innodata R.E.D. Workbench/RLI tool</agentName>
+            <agentType>software</agentType>
+            <agentNote>Version 20180921.12</agentNote>
+          </agent>
+        </xmlData>
+      </mdWrap>
+    </digiprovMD>
+    <digiprovMD ID="digi003">
+      <mdWrap MDTYPE="PREMIS">
+        <xmlData>
+          <event xmlns="info:lc/xmlns/premis-v2">
+            <eventIdentifier>
+              <eventIdentifierType>Local</eventIdentifierType>
+              <eventIdentifierValue>red0001</eventIdentifierValue>
+            </eventIdentifier>
+            <eventType>redaction</eventType>
+            <eventDateTime>2018-10-19T11:35:33Z</eventDateTime>
+            <eventDetail>Redaction step</eventDetail>
+          </event>
+          <agent xmlns="info:lc/xmlns/premis-v2">
+            <agentIdentifier>
+              <agentIdentifierType>Local</agentIdentifierType>
+              <agentIdentifierValue>redravel-redactor</agentIdentifierValue>
+            </agentIdentifier>
+            <agentName>Innodata R.E.D. Workbench/RLI tool</agentName>
+            <agentType>software</agentType>
+            <agentNote>Version 20180921.12</agentNote>
+          </agent>
+        </xmlData>
+      </mdWrap>
+    </digiprovMD>
+  </amdSec>
+  <fileSec>
+    <fileGrp USE="tiff">
+      <file ID="tiff_19900331_1" MIMETYPE="image/tiff" CHECKSUM="995e0a74e67aa5f026d92e758b4a8d2b" CHECKSUMTYPE="MD5" SIZE="4864">
+        <FLocat LOCTYPE="URL" xlink:href="../images/WnApp_199_19900331_1.tif"/>
+      </file>
+      <file ID="tiff_19900332_0" MIMETYPE="image/tiff" CHECKSUM="d4bf4a8144724c5b8e49a9d50441f93d" CHECKSUMTYPE="MD5" SIZE="27342">
+        <FLocat LOCTYPE="URL" xlink:href="../images/WnApp_199_19900332_0.tif"/>
+      </file>
+      <file ID="tiff_19900332_1" MIMETYPE="image/tiff" CHECKSUM="c90ccb415ee888d0d4b6c58cde9fb107" CHECKSUMTYPE="MD5" SIZE="44634">
+        <FLocat LOCTYPE="URL" xlink:href="../images/WnApp_199_19900332_1.tif"/>
+      </file>
+      <file ID="tiff_19900333_0" MIMETYPE="image/tiff" CHECKSUM="c9cfee3880b250a0fceb3ac8297828f6" CHECKSUMTYPE="MD5" SIZE="50448">
+        <FLocat LOCTYPE="URL" xlink:href="../images/WnApp_199_19900333_0.tif"/>
+      </file>
+      <file ID="tiff_19900333_1" MIMETYPE="image/tiff" CHECKSUM="de623b636e9b4012a6f531e171d7b9e6" CHECKSUMTYPE="MD5" SIZE="49048">
+        <FLocat LOCTYPE="URL" xlink:href="../images/WnApp_199_19900333_1.tif"/>
+      </file>
+      <file ID="tiff_19900334_0" MIMETYPE="image/tiff" CHECKSUM="8bcb99c57044f15e7cebc65fe659d6d3" CHECKSUMTYPE="MD5" SIZE="20342">
+        <FLocat LOCTYPE="URL" xlink:href="../images/WnApp_199_19900334_0.tif"/>
+      </file>
+    </fileGrp>
+    <fileGrp USE="alto">
+      <file ID="alto_19900331_1" MIMETYPE="text/xml" CHECKSUM="bd9c33b9bea129bcadc9ec4493810c95" CHECKSUMTYPE="MD5" SIZE="7261">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/WnApp_199_redacted_ALTO_19900331_1.xml"/>
+      </file>
+      <file ID="alto_19900332_0" MIMETYPE="text/xml" CHECKSUM="3773f32d93d3b8df6a5a398640a748d1" CHECKSUMTYPE="MD5" SIZE="45329">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/WnApp_199_redacted_ALTO_19900332_0.xml"/>
+      </file>
+      <file ID="alto_19900332_1" MIMETYPE="text/xml" CHECKSUM="03ebb2ee883cdfff9678e400ac5c3259" CHECKSUMTYPE="MD5" SIZE="69447">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/WnApp_199_redacted_ALTO_19900332_1.xml"/>
+      </file>
+      <file ID="alto_19900333_0" MIMETYPE="text/xml" CHECKSUM="f04bb3ad76aa54fd389ad77f2a7ec3d8" CHECKSUMTYPE="MD5" SIZE="90050">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/WnApp_199_redacted_ALTO_19900333_0.xml"/>
+      </file>
+      <file ID="alto_19900333_1" MIMETYPE="text/xml" CHECKSUM="fabcec7d8bce4e29c93922836439c979" CHECKSUMTYPE="MD5" SIZE="80367">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/WnApp_199_redacted_ALTO_19900333_1.xml"/>
+      </file>
+      <file ID="alto_19900334_0" MIMETYPE="text/xml" CHECKSUM="5894e1256b8b86006b98681002103429" CHECKSUMTYPE="MD5" SIZE="32505">
+        <FLocat LOCTYPE="URL" xlink:href="../alto/WnApp_199_redacted_ALTO_19900334_0.xml"/>
+      </file>
+    </fileGrp>
+    <fileGrp USE="casebody">
+      <file ID="casebody_0036" MIMETYPE="text/xml">
+        <FContent>
+          <xmlData>
+            <casebody xmlns="http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1" firstpage="629" lastpage="634">
+              <court id="A59YW" pgmap="662">Division Three.</court>
+              <docketnumber id="b662-4" pgmap="662">[No. 33971-8-III.</docketnumber>
+              <parties id="b662-5" pgmap="662">In the Matter of the Marriage of Christy Lyle, Respondent, and Keith Lyle, Appellant.</parties>
+              <decisiondate id="A2Oq" pgmap="662">July 11, 2017.]</decisiondate>
+              <judges id="b667-6" pgmap="667">Fearing, C.J., and Korsmo, J., concur.</judges>
+              <attorneys id="b663-5" pgmap="663">Matthew J. Dudley, for appellant.</attorneys>
+              <attorneys id="b663-6" pgmap="663">Camerina I. Brokaw-Zorrozua (of Maxey Law Office PS), for respondent.</attorneys>
+              <opinion type="majority">
+                <author id="ANi" pgmap="663">Pennell, J.</author>
+                <p id="AjgO" pgmap="663">
+                   ¶1 Superior court judges are autho­rized to review court commissioner decisions through a motion for revision. Although new evidence may not be considered, a judge acting on a motion for revision other­wise has plenary authority over the matter and may issue any findings or decisions that could have been entered by the commissioner.</p>
+                <p id="b663-10" pgmap="663">¶2 The broad authority conferred on superior court judges warranted the actions taken by the judge in this case. After Christy Lyle filed a motion to revise a commis­sioner’s decision dismissing her petition to modify child support, the superior court judge was not restricted to either affirming or reversing the commissioner’s order. Instead, on finding dismissal unwarranted, the judge was empowered to enter a child support award as had been requested by Ms. Lyle in her petition. The decision of the superior court judge is therefore affirmed.</p>
+                <p id="b663-11" pgmap="663">FACTS</p>
+                <p id="b663-12" pgmap="663(21) 664(56)">¶3 In 2014, Christy Lyle filed a petition to modify a 2009 child support order. Ms. Lyle asserted various grounds for modification under RCW 26.09.170. The petition was sup­ported by declarations, as well as financial and other docu­mentation. Ms. Lyle’s former husband, Keith Lyle, opposed modification. He contended Ms. Lyle had not established a change of circumstances that would warrant revisiting the 2009 order. Mr. Lyle also submitted declarations and docu­mentation supporting his position.</p>
+                <p id="b664-4" pgmap="664">¶4 A superior court commissioner heard argument on the petition after reviewing the parties’ voluminous filings. No testimony was taken. The commissioner dismissed the petition for the reasons argued by Mr. Lyle, finding that Ms. Lyle had not shown a substantial change in circumstances or severe economic hardship as required for modification under RCW 26.09.170.</p>
+                <p id="b664-5" pgmap="664">¶5 Ms. Lyle filed a motion for revision of the commis­sioner’s decision. A superior court judge heard oral argu­ment on the motion and considered the materials that had been previously filed in support of and opposition to the petition to modify, together with a transcript of the commis­sioner’s hearing. The judge ultimately granted Ms. Lyle’s motion for revision and petition for modification, finding that she had established the following circumstances under RCW 26.09.170(5), (6), and (7): (1) a substantial change in circumstances based on the children entering into a new age category and their significantly increased expenses, (2) severe economic hardship, and (3) change in income. The judge also adopted Ms. Lyle’s proposed child support work sheet. Mr. Lyle appeals.</p>
+                <p id="b664-6" pgmap="664">ANALYSIS</p>
+                <p id="b664-7" pgmap="664(57) 665(24)">¶6 Mr. Lyle does not challenge the superior court judge’s decision to revise the court commissioner. His complaint goes to the scope of the judge’s order on revision. According to Mr. Lyle, once the superior court judge decided to revise the commissioner’s ruling on whether there were grounds for modification, the matter should have been remanded to the commissioner for an assessment of applicable child support. We disagree with this restricted view of the supe­rior court judge’s power of revision.</p>
+                <p id="b665-4" pgmap="665">
+                   ¶7 Court commissioners play an important role in our state’s court system. They help alleviate the large caseloads facing superior court judges and facilitate the efficient administration of justice. State v. Smith, 117 Wn.2d 263, 280, 814 P.2d 652 (1991). Superior court com­missioners derive their powers from our state’s constitution and statute. Wash. Const, art. IV, § 23; ch. 2.24 RCW. They are conferred with most of the powers of a superior court judge but may not preside over jury trials. Wash. Const, art. IV, § 23.<footnotemark>1</footnotemark> While superior court commissioners operate largely like their judicial counterparts, they are not subject to affidavits of prejudice under RCW 4.12.050. State v. Espinoza, 112 Wn.2d 819, 829, 774 P.2d 1177 (1989). In­stead, a party dissatisfied with a commissioner’s ruling can seek relief through a motion for revision. Smith, 117 Wn.2d at 280. The right to seek revision permits a litigant appear­ing before a commissioner to be treated similarly to one appearing before a superior court judge. Id. at 276.</p>
+                <p id="b665-5" pgmap="665(116) 666(78)">
+                   ¶8 When a superior court judge receives a case through a motion for revision, the judge takes “jurisdiction of the entire case as heard before the commissioner.” State ex rel. Biddinger v. Griffiths, 137 Wash. 448, 451, 242 P. 969 (1926). Although the superior court judge cannot accept new evidence, RCW 2.24.050, a motion on revision is in all other respects equal to any other matter on the court’s docket. The judge reviews the law and evidence de novo. State v. Ramer, 151 Wn.2d 106, 113, 116-17, 86 P.3d 132 (2004) (de novo standard applied even when commissioner heard live testimony). Should the judge disagree with the commissioner’s disposition, the judge may issue his or her own independent factual findings and legal conclusions. Id. at 113; Iturribarria Perez v. Bazaldua Garcia, 148 Wn. App. 131, 138, 198 P.3d 539 (2009); Grieco v. Wilson, 144 Wn. App. 865, 877, 184 P.3d 668 (2008), aff’d in part sub nom. In re Custody of E.A.T.W., 168 Wn.2d 335, 227 P.3d 1284 (2010). Any subsequent appeal to this court is one that reviews the decision of the superior court judge, not the commissioner. Ramer, 151 Wn.2d at 113.</p>
+                <p id="b666-4" pgmap="666">
+                   ¶9 Given the foregoing analysis, it is apparent the superior court judge had authority not only to reverse the commissioner’s decision regarding whether Ms. Lyle had established grounds for modification but also to provide an appropriate remedy. The judge could have remanded the case to the commissioner had the factual record been incomplete. In re Marriage of Moody, 137 Wn.2d 979, 992, 976 P.2d 1240 (1999). But doing so was not required. Because the factual record was complete, the superior court judge had full jurisdiction to decide Ms. Lyle’s child support modification petition in its entirety. By exercising complete authority over the matter, the judge appropriately placed Ms. Lyle on equal footing with litigants whose cases are handled by superior court judges in their entirety. Remand to the commissioner for entry of child support orders would have been inefficient and contrary to the fundamental goals of the court commissioner process.</p>
+                <p id="b666-5" pgmap="666(91) 667(44)">¶10 Mr. Lyle complains that the superior court judge’s determination deprived him of an opportunity to argue for a deviation from the standard child support schedule. We are unpersuaded. The ultimate issue before both the com­missioner and the judge was Ms. Lyle’s request for child support payments based on her proposed child support work sheet.<footnotemark>2</footnotemark> Mr. Lyle was provided ample opportunity to resist Ms. Lyle’s request in its entirety. Yet he never specifically requested a deviation. Instead, he focused on the foundational issue of whether Ms. Lyle had presented a sufficient basis for modification. The fact that Mr. Lyle’s litigation strategy ultimately proved unsuccessful does not now require that he receive a new hearing. The procedure employed by the superior court judge was appropriate, and the court’s decision on revision is affirmed in full.</p>
+                <p id="b667-4" pgmap="667">APPELLATE ATTORNEY FEES</p>
+                <p id="b667-5" pgmap="667">
+                   ¶ 11 Ms. Lyle requests a discretionary award of attor­ney fees under RCW 26.09.140. She has filed a financial declaration in compliance with RAP 18.1, indicating her monthly expenses exceed her net income. Mr. Lyle has not filed an answer to the financial declaration. Based on Ms. Lyle’s successful defense of this appeal, her limited income, and the parties’ disparate resources, we award reasonable costs and fees for this appeal to Ms. Lyle, provided she complies with RAP 18.1(d).</p>
+                <footnote label="1">
+                  <p id="b665-6" pgmap="665">1 The constitution states commissioners are empowered to “perform like duties as a judge of the superior court at chambers.’’ Wash. Const, art. IV, § 23. The powers of a judge “at chambers’’ extend to all matters not requiring a jury trial. See State ex rel. Lockhart v. Claypool, 132 Wash. 374, 375, 232 P. 351 (1925); In re Habeas Corpus of Olson, 12 Wn. App. 682, 685-87, 531 P.2d 508 (1975).</p>
+                </footnote>
+                <footnote label="2">
+                  <p id="b666-6" pgmap="666">2 Prior to modification, neither parent had been obliged to make support payments, as the parents had entered into a shared parenting plan.</p>
+                </footnote>
+              </opinion>
+            </casebody>
+          </xmlData>
+        </FContent>
+      </file>
+    </fileGrp>
+  </fileSec>
+  <structMap TYPE="physical">
+    <div TYPE="volume">
+      <div ORDER="662" ORDERLABEL="629" TYPE="page">
+        <fptr FILEID="tiff_19900331_1"/>
+        <fptr FILEID="alto_19900331_1"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_662.2" BETYPE="IDREF" FILEID="alto_19900331_1"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="663" ORDERLABEL="630" TYPE="page">
+        <fptr FILEID="tiff_19900332_0"/>
+        <fptr FILEID="alto_19900332_0"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_663.2" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="664" ORDERLABEL="631" TYPE="page">
+        <fptr FILEID="tiff_19900332_1"/>
+        <fptr FILEID="alto_19900332_1"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_664.3" BETYPE="IDREF" FILEID="alto_19900332_1"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="665" ORDERLABEL="632" TYPE="page">
+        <fptr FILEID="tiff_19900333_0"/>
+        <fptr FILEID="alto_19900333_0"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_665.2" BETYPE="IDREF" FILEID="alto_19900333_0"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="666" ORDERLABEL="633" TYPE="page">
+        <fptr FILEID="tiff_19900333_1"/>
+        <fptr FILEID="alto_19900333_1"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_666.3" BETYPE="IDREF" FILEID="alto_19900333_1"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+      <div ORDER="667" ORDERLABEL="634" TYPE="page">
+        <fptr FILEID="tiff_19900334_0"/>
+        <fptr FILEID="alto_19900334_0"/>
+        <div TYPE="pagelabel">
+          <fptr>
+            <seq>
+              <area BEGIN="BL_667.2" BETYPE="IDREF" FILEID="alto_19900334_0"/>
+            </seq>
+          </fptr>
+        </div>
+      </div>
+    </div>
+  </structMap>
+  <structMap TYPE="xref">
+    <div TYPE="blocks">
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="A59YW" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_662.4" BETYPE="IDREF" FILEID="alto_19900331_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b662-4" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_662.3" BETYPE="IDREF" FILEID="alto_19900331_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b662-5" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_662.6" BETYPE="IDREF" FILEID="alto_19900331_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="A2Oq" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_662.5" BETYPE="IDREF" FILEID="alto_19900331_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b667-6" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_667.6" BETYPE="IDREF" FILEID="alto_19900334_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b663-5" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_663.5" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b663-6" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_663.6" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="ANi" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_663.10" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="AjgO" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_663.11" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+            <area BEGIN="BL_663.12" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+            <area BEGIN="BL_663.13" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b663-10" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_663.14" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b663-11" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_663.15" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b663-12" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_663.16" BETYPE="IDREF" FILEID="alto_19900332_0"/>
+            <area BEGIN="BL_664.1" BETYPE="IDREF" FILEID="alto_19900332_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b664-4" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_664.4" BETYPE="IDREF" FILEID="alto_19900332_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b664-5" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_664.5" BETYPE="IDREF" FILEID="alto_19900332_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b664-6" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_664.6" BETYPE="IDREF" FILEID="alto_19900332_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b664-7" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_664.7" BETYPE="IDREF" FILEID="alto_19900332_1"/>
+            <area BEGIN="BL_665.1" BETYPE="IDREF" FILEID="alto_19900333_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b665-4" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_665.4" BETYPE="IDREF" FILEID="alto_19900333_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b665-5" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_665.5" BETYPE="IDREF" FILEID="alto_19900333_0"/>
+            <area BEGIN="BL_666.1" BETYPE="IDREF" FILEID="alto_19900333_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b666-4" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_666.4" BETYPE="IDREF" FILEID="alto_19900333_1"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b666-5" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_666.5" BETYPE="IDREF" FILEID="alto_19900333_1"/>
+            <area BEGIN="BL_667.1" BETYPE="IDREF" FILEID="alto_19900334_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b667-4" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_667.4" BETYPE="IDREF" FILEID="alto_19900334_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b667-5" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_667.5" BETYPE="IDREF" FILEID="alto_19900334_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b665-6" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_665.6" BETYPE="IDREF" FILEID="alto_19900333_0"/>
+          </seq>
+        </fptr>
+      </div>
+      <div TYPE="element">
+        <fptr>
+          <area BEGIN="b666-6" BETYPE="IDREF" FILEID="casebody_0036"/>
+        </fptr>
+        <fptr>
+          <seq>
+            <area BEGIN="BL_666.6" BETYPE="IDREF" FILEID="alto_19900333_1"/>
+          </seq>
+        </fptr>
+      </div>
+    </div>
+  </structMap>
+</mets>

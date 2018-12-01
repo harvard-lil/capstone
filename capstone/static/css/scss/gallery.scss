@@ -19,6 +19,7 @@
 }
 
 .subtitle.simple-subtitle {
+  @extend .h4;
   &:before {
     content: "";
     margin: 0;
@@ -26,8 +27,6 @@
 }
 
 .page-section {
-  margin-bottom: 4rem !important;
-  border-bottom: 1px solid $color-violet-light;
   padding-bottom: 3rem;
   &:last-child {
     border-bottom: 0;

@@ -3,7 +3,7 @@ from django.forms.widgets import Textarea
 from django.utils.text import normalize_newlines
 from simple_history.admin import SimpleHistoryAdmin
 
-from capapi.resources import CachedCountQuerySet
+from capapi.resources import CachedCountDefaultQuerySet
 from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, \
     TrackingToolUser, SlowQuery, Jurisdiction, CaseMetadata, CaseExport, Citation
 
@@ -39,10 +39,13 @@ class ReadonlyInlineMixin(object):
 
 
 class CachedCountMixin(object):
-    """ Mixin for ModelAdmin to use cached .count() queries. """
+    """
+        Mixin for ModelAdmin to use cached .count() queries.
+        Admin will report 1000000 entries if the real number is not available.
+    """
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        qs.__class__ = CachedCountQuerySet
+        qs.__class__ = CachedCountDefaultQuerySet
         return qs
 
 

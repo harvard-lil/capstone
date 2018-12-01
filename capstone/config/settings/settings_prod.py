@@ -46,6 +46,7 @@ INVENTORY = {
 }
 
 USE_TEST_TRACKING_TOOL_DB = False
+DATABASES = DATABASES.copy()
 DATABASES['tracking_tool'] = {
     'ENGINE': 'django.db.backends.mysql',
     'NAME': 'ftl_tt',

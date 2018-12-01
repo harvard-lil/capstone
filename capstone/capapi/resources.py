@@ -120,6 +120,13 @@ class CachedCountQuerySet(QuerySet):
             return value
 
 
+class CachedCountDefaultQuerySet(CachedCountQuerySet):
+    """ Like CachedCountQuerySet, but returns default_count if counting times out. """
+    default_count = 1000000
+    def count(self):
+        return super().count() or self.default_count
+
+
 def api_reverse(viewname, args=None, kwargs=None, request=None, format=None, **extra):
     """
         Same as `django.urls.reverse`, but uses api_urls.py for routing, and includes full domain name.

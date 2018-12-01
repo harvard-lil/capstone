@@ -18,6 +18,8 @@ from capdb.models import VolumeMetadata, Citation, PageXML
 from capdb.storages import CaptarStorage, captar_storage, pdf_storage
 
 # multiplier to convert pixel dimensions to point dimensions used by PDF, assuming 300 PPI
+from scripts.helpers import volume_barcode_from_folder
+
 pixels_to_points = 1 / 300 * inch
 
 # lookup table used to turn fonts in alto, like <TextStyle FONTFAMILY="Times New Roman" FONTTYPE="bold italic">,
@@ -46,7 +48,7 @@ def get_baseline_offset(text, ttf_name, font_size):
     font = get_pil_font(ttf_name, font_size)
     return font.getsize(text)[1] - font.font.ascent
 
-def make_pdf(volume_name, show_words=False, missing_pages=0):
+def make_pdf(volume_folder, show_words=False, missing_pages=0):
     """
         Given a volume folder like "32044057891608_redacted", read image and alto files from
         captar_storage/redacted/<volume> and write a pdf to pdf_storage/<volume cite>.pdf.
@@ -57,7 +59,7 @@ def make_pdf(volume_name, show_words=False, missing_pages=0):
     """
 
     # read volume metadata
-    volume_metadata = VolumeMetadata.objects.select_related('reporter').get(pk=volume_name.split('_')[0])
+    volume_metadata = VolumeMetadata.objects.select_related('reporter').get(pk=volume_barcode_from_folder(volume_folder))
 
     # read case metadata to add bookmarks to PDF
     bookmarks = defaultdict(list)
@@ -70,7 +72,7 @@ def make_pdf(volume_name, show_words=False, missing_pages=0):
             bookmarks[page].append(cite.cite)
 
     # read list of files from captar
-    volume_storage = CaptarStorage(captar_storage, Path("redacted", volume_name))
+    volume_storage = CaptarStorage(captar_storage, Path("redacted", volume_folder))
 
     # set up PDF
     pdf = PdfFileWriter()
