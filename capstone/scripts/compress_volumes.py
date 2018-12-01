@@ -21,7 +21,8 @@ from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 
 from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage, private_ingest_storage
-from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile
+from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile, \
+    volume_barcode_from_folder
 
 # logging
 # disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
@@ -56,6 +57,8 @@ def get_file_type(path):
             return 'jp2'
         if path.endswith('.tif'):
             return 'tif'
+        if path.endswith('.pdf'):
+            return 'pdf'
         return None
     if '/casemets/' in path:
         if path.endswith('.xml'):
@@ -441,6 +444,7 @@ def compress_volume(storage_name, volume_name):
         # use this if compressing tiff -> png
         # tif_file_results = file_map(handle_image_file, volume_files_by_type.get('tif', []), '.png', tif_to_png)
         file_map(handle_simple_file, volume_files_by_type.get('tif', []))
+        file_map(handle_simple_file, volume_files_by_type.get('pdf', []))
         color_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jpg', jp2_to_jpg_slow)
         # use this if compressing jp2 -> jp2
         # color_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jp2', compress_jp2)
@@ -573,7 +577,8 @@ def validate_volume(volume_path):
         suffix_counts = defaultdict(int)
         for item in volmets_files:
             suffix_counts[item[0].split('.', 1)[1]] += 1
-        if suffix_counts['jpg'] == 0 or suffix_counts['jpg'] != suffix_counts['tif'] or suffix_counts['xml.gz'] < suffix_counts['jpg']:
+        color_image_count = suffix_counts['jpg'] or suffix_counts['pdf']
+        if color_image_count == 0 or color_image_count != suffix_counts['tif'] or suffix_counts['xml.gz'] <= color_image_count:
             raise ValidationResult("unexpected_suffix_counts", suffix_counts)
 
         raise ValidationResult("ok")
@@ -619,7 +624,7 @@ def sample_images(count=100):
         current_vol = next(volumes, "")
         while current_vol:
             next_vol = next(volumes, "")
-            if current_vol.split("_", 1)[0] != next_vol.split("_", 1)[0]:
+            if volume_barcode_from_folder(current_vol) != volume_barcode_from_folder(next_vol):
                 yield current_vol
             current_vol = next_vol
 
@@ -627,7 +632,7 @@ def sample_images(count=100):
     volumes = list(get_volumes())
     for vol in random.sample(volumes, min(len(volumes), count)):
         print("Sampling", vol)
-        id = vol.split('_', 1)[0]
+        id = volume_barcode_from_folder(vol)
         for i in [0,1]:
             img_name = "%s_00050_%s.tif" % (id, i)
             copy_file(

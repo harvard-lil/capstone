@@ -1,4 +1,4 @@
-let jurisdiction_translation = {
+export const jurisdiction_translation = {
   "Regional": {slug: "regional", name: "Regional"}, "Dakota-Territory": {slug: "dakota-territory", name: "Dakota Territory"}, "Native-American": {slug: "native-american", name: "Native American"},
   "Navajo-Nation": {slug: "navajo-nation", name: "Navajo Nation"}, "GU": {slug: "guam", name: "Guam"}, "US": {slug: "U.S.", name: "United States"}, "MP": {slug: "n-mar-i", name: "Northern Mariana Islands"}, "PR": {slug: "pr", name: "Puerto Rico"}, "AS": {slug: "am-samoa", name: "American Samoa"},
   "VI": {slug: "vi", name: "Virgin Islands"}, "US-NV": {slug: "nev", name: "Nevada"}, "US-DC": {slug: "dc", name: "Washington D.C."}, "US-NC": {slug: "nc", name: "North Carolina"}, "US-NH": {slug: "nh", name: "New Hampshire"}, "US-PA": {slug: "pa", name: "Pennsylvania"}, "US-MT": {slug: "mont", name: "Montana"},

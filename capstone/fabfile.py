@@ -32,7 +32,7 @@ from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdic
 import capdb.tasks as tasks
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
     validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars
-from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace
+from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace, volume_barcode_from_folder
 
 
 @task(alias='run')
@@ -235,7 +235,7 @@ def add_test_case(*barcodes):
 
         print("Writing data for", barcode)
 
-        volume_barcode, case_number = barcode.split('_')
+        volume_barcode, case_number = barcode.rsplit('_', 1)
 
         # get volume dir
         source_volume_dirs = list(ingest_storage.iter_files(volume_barcode, partial_path=True))
@@ -290,8 +290,10 @@ def add_test_case(*barcodes):
 
     to_serialize = set()
     user_ids = set()
-    volume_barcodes = [os.path.basename(d).split('_')[0] for d in
-                glob.glob(os.path.join(settings.BASE_DIR, 'test_data/from_vendor/*'))]
+    volume_barcodes = [
+        volume_barcode_from_folder(os.path.basename(d)) for d in
+        glob.glob(os.path.join(settings.BASE_DIR, 'test_data/from_vendor/*'))
+    ]
 
     for volume_barcode in volume_barcodes:
 
@@ -672,7 +674,7 @@ def compress_volumes(*barcodes, storage_name='ingest_storage', max_volumes=10):
             current_vol = next(volumes, "")
             while current_vol:
                 next_vol = next(volumes, "")
-                if current_vol.split("_", 1)[0] != next_vol.split("_", 1)[0]:
+                if volume_barcode_from_folder(current_vol) != volume_barcode_from_folder(next_vol):
                     yield storage_name, current_vol
                 current_vol = next_vol
 

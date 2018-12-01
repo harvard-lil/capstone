@@ -1,7 +1,11 @@
+import $ from "jquery"
+import { jurisdiction_translation } from './map-data.js'
+import { witchcraft_results } from './witchcraft-data.js'
+
 let apiUrl = "https://api.case.law/v1";
 
 let markupWithExtraInfo = function () {
-  for (jur in witchcraft_results) {
+  for (const jur in witchcraft_results) {
     let jurcases = witchcraft_results[jur];
     let jurtotal = 0;
     for (let i = 0; i < jurcases.length; i++) {
@@ -9,9 +13,9 @@ let markupWithExtraInfo = function () {
         jurtotal += jurcases[i].times_appeared;
       }
     }
-    witchcraft_results[jur].total_appearances = jurtotal;
-    witchcraft_results[jur].total_cases = jurcases.length;
-    witchcraft_results[jur].url = apiUrl + "/cases/?jurisdiction=" + jur + "&search=witchcraft";
+    jurcases.total_appearances = jurtotal;
+    jurcases.total_cases = jurcases.length;
+    jurcases.url = apiUrl + "/cases/?jurisdiction=" + jur + "&search=witchcraft";
   }
 };
 
@@ -47,7 +51,7 @@ let getRandomNum = function (min, max) {
 let showRandomCase = function () {
   let allJurs = Object.keys(witchcraft_results);
   let randJur = allJurs[getRandomNum(0, allJurs.length)];
-  for (jur in jurisdiction_translation) {
+  for (const jur in jurisdiction_translation) {
     if (jurisdiction_translation.hasOwnProperty(jur)) {
       if (jurisdiction_translation[jur].slug === randJur) {
         $('#' + jur).addClass('state-selected');
@@ -75,13 +79,13 @@ let setupEventsOnHover = function (id, jurname, info) {
 };
 
 let setupClickEvent = function () {
-  $('.state').click(function (e) {
+  $('.state').click(function () {
     $('.state').off('mouseover');
   });
 };
 
 let parseWitchcraft = function () {
-  for (jur in jurisdiction_translation) {
+  for (const jur in jurisdiction_translation) {
     if (jurisdiction_translation.hasOwnProperty(jur)) {
       let slug = jurisdiction_translation[jur].slug;
       if (slug && slug in witchcraft_results) {
