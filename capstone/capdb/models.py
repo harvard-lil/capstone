@@ -1158,6 +1158,14 @@ class Citation(models.Model):
     def normalize_cite(cite):
         return re.sub(r'[^0-9a-z]', '', cite.lower())
 
+class CitedBy(models.Model):
+    url = models.TextField(blank=True, null=True)
+    pages = ArrayField(models.IntegerField())
+
+class DoesCite(models.Model):
+    url = models.TextField(blank=True, null=True)
+    pages = ArrayField(models.IntegerField())
+      
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
     volume = models.ForeignKey(VolumeXML, related_name='page_xmls',
