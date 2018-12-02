@@ -70,6 +70,9 @@ class CaseReporterSerializer(serializers.ModelSerializer):
 
 # TODO (https://github.com/harvard-lil/capstone/pull/709): Finalize fields for serialization
 class CrossCaseCitation(serializers.ModelSerializer):
+    url = ''
+    pages = []
+
     class Meta:
         model = models.CrossCaseCitation
         fields = (
