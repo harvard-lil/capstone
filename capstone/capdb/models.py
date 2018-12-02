@@ -1158,13 +1158,12 @@ class Citation(models.Model):
     def normalize_cite(cite):
         return re.sub(r'[^0-9a-z]', '', cite.lower())
 
-class CitedBy(models.Model):
-    url = models.TextField(blank=True, null=True)
-    pages = ArrayField(models.IntegerField())
-
-class DoesCite(models.Model):
-    url = models.TextField(blank=True, null=True)
-    pages = ArrayField(models.IntegerField())
+class CrossCaseCitation(models.Model):
+    src_case = models.TextField()
+    src_page = models.IntegerField()
+    dst_case = models.TextField()
+    dst_page = models.IntegerField()
+    count = models.IntegerField()
       
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
