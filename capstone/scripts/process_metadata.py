@@ -59,6 +59,10 @@ def get_case_metadata(case_xml):
         }
         for opinion in parsed.items('casebody|opinion')
     ]
+    
+    # TODO (https://github.com/harvard-lil/capstone/pull/709): Use courtlistener to parse this info
+    cited_by = []
+    does_cite = []
 
     return dict(metadata, **{
         'name': name,
@@ -75,7 +79,9 @@ def get_case_metadata(case_xml):
         'judges': judges,
         'attorneys': attorneys,
         'parties': parties,
-        'opinions': opinions
+        'opinions': opinions,
+        'cited_by': cited_by,
+        'does_cite': does_cite
     }), parsed
 
 
