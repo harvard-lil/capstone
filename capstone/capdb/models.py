@@ -1158,6 +1158,7 @@ class Citation(models.Model):
     def normalize_cite(cite):
         return re.sub(r'[^0-9a-z]', '', cite.lower())
 
+# TODO (https://github.com/harvard-lil/capstone/pull/709): Properly link case objects w/ Foreign Key
 class CrossCaseCitation(models.Model):
     src_case = models.TextField()
     src_page = models.IntegerField()
