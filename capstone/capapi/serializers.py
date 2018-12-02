@@ -90,8 +90,6 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     volume = CaseVolumeSerializer()
     reporter = CaseReporterSerializer()
     decision_date = serializers.DateField(source='decision_date_original')
-    cited_by = CaseCitedBySerializer(many=True)
-    does_cite = CaseDoesCiteSerializer(many=True)
 
     class Meta:
         model = models.CaseMetadata
@@ -109,8 +107,6 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'reporter',
             'court',
             'jurisdiction',
-            'cited_by',
-            'does_cite',
         )
 
 
