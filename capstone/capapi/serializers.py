@@ -68,11 +68,8 @@ class CaseReporterSerializer(serializers.ModelSerializer):
             'full_name',
         )
 
-# TODO (https://github.com/harvard-lil/capstone/pull/709): Finalize fields for serialization
 class CrossCaseCitation(serializers.ModelSerializer):
-    url = ''
-    pages = []
-
+    # TODO (https://github.com/harvard-lil/capstone/pull/709): Finalize fields for serialization
     class Meta:
         model = models.CrossCaseCitation
         fields = (
