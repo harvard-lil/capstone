@@ -69,10 +69,6 @@ class CaseReporterSerializer(serializers.ModelSerializer):
         )
 
 class CaseCitedBySerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
-        view_name="cited-by-detail",
-        lookup_field='slug')
-
     class Meta:
         model = models.CitedBy
         fields = (
@@ -81,10 +77,6 @@ class CaseCitedBySerializer(serializers.ModelSerializer):
         )
 
 class CaseDoesCiteSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
-        view_name="does-cite-detail",
-        lookup_field='slug')
-
     class Meta:
         model = models.DoesCite
         fields = (
