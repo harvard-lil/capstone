@@ -789,9 +789,6 @@ class CaseMetadata(models.Model):
     court_name = models.CharField(blank=True, null=True, max_length=255)
     court_name_abbreviation = models.CharField(blank=True, null=True, max_length=100)
     court_slug = models.CharField(blank=True, null=True, max_length=255)
-    
-    cited_by = models.ManyToManyField(CrossCaseCitation)
-    does_cite = models.ManyToManyField(CrossCaseCitation)
 
     @property
     def denormalized_jurisdiction(self):
