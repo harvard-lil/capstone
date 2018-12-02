@@ -1,8 +1,6 @@
 # TODO (https://github.com/harvard-lil/capstone/pull/709): Finalize fields for actualization
 
 from django.db import migrations, models
-import django.db.models.deletion
-
 
 class Migration(migrations.Migration):
 
