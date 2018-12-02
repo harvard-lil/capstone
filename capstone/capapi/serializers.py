@@ -70,7 +70,7 @@ class CaseReporterSerializer(serializers.ModelSerializer):
 
 class CaseCitedBySerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.CitedBy
+        model = models.CrossCaseCitation
         fields = (
             'url',
             'pages',
@@ -78,7 +78,7 @@ class CaseCitedBySerializer(serializers.ModelSerializer):
 
 class CaseDoesCiteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.DoesCite
+        model = models.CrossCaseCitation
         fields = (
             'url',
             'pages',
