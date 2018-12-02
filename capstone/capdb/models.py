@@ -1167,7 +1167,7 @@ class Citation(models.Model):
     @staticmethod
     def normalize_cite(cite):
         return re.sub(r'[^0-9a-z]', '', cite.lower())
-      
+
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
     volume = models.ForeignKey(VolumeXML, related_name='page_xmls',
