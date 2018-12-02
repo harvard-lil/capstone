@@ -68,7 +68,24 @@ class CaseReporterSerializer(serializers.ModelSerializer):
             'full_name',
         )
 
+class CaseCitedBySerializer(serializers.ModelSerializer):
+    """ Abbreviated version of CaseSerializer for embedding in CaseSerializer. """
+    class Meta:
+        model = models.CitedBy
+        fields = (
+            'url',
+            'pages',
+        )
 
+class CaseDoesCiteSerializer(serializers.ModelSerializer):
+    """ Abbreviated version of CaseSerializer for embedding in CaseSerializer. """
+    class Meta:
+        model = models.DoesCite
+        fields = (
+            'url',
+            'pages',
+        )
+        
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="casemetadata-detail", lookup_field="id")
@@ -78,6 +95,8 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     volume = CaseVolumeSerializer()
     reporter = CaseReporterSerializer()
     decision_date = serializers.DateField(source='decision_date_original')
+    cited_by = CaseCitedBySerializer()
+    does_cite = CaseDoesCiteSerializer()
 
     class Meta:
         model = models.CaseMetadata
@@ -95,6 +114,8 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'reporter',
             'court',
             'jurisdiction',
+            'cited_by',
+            'does_cite',
         )
 
 
