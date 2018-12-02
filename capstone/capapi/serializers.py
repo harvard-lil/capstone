@@ -109,6 +109,8 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'reporter',
             'court',
             'jurisdiction',
+            'cited_by',
+            'does_cite',
         )
 
 
