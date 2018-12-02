@@ -38,6 +38,8 @@ def test_get_case_metadata():
                     assert type(case_metadata["attorneys"]) is list
                     assert type(case_metadata["judges"]) is list
                     assert type(case_metadata["parties"]) is list
+                    assert type(case_metadata["cited_by"]) is list
+                    assert type(case_metadata["does_cite"]) is list
 
 def test_case_metadata_opinion():
     # test case with no opinion author
