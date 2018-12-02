@@ -737,6 +737,13 @@ class CaseMetadataQuerySet(models.QuerySet):
         """
         return self.filter(duplicative=False, jurisdiction__isnull=False, court__isnull=False)
 
+# TODO (https://github.com/harvard-lil/capstone/pull/709): Properly link case objects w/ Foreign Key
+class CrossCaseCitation(models.Model):
+    src_case = models.TextField()
+    src_page = models.IntegerField()
+    dst_case = models.TextField()
+    dst_page = models.IntegerField()
+    count = models.IntegerField()
 
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
@@ -1160,14 +1167,6 @@ class Citation(models.Model):
     @staticmethod
     def normalize_cite(cite):
         return re.sub(r'[^0-9a-z]', '', cite.lower())
-
-# TODO (https://github.com/harvard-lil/capstone/pull/709): Properly link case objects w/ Foreign Key
-class CrossCaseCitation(models.Model):
-    src_case = models.TextField()
-    src_page = models.IntegerField()
-    dst_case = models.TextField()
-    dst_page = models.IntegerField()
-    count = models.IntegerField()
       
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
