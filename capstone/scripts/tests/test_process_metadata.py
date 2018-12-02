@@ -20,7 +20,7 @@ def test_get_single_case_metadata(ingest_case_xml):
 
     assert case['jurisdiction'] == 'Illinois'
     
-    // TODO (arichiv): Add data to test
+    # TODO (https://github.com/harvard-lil/capstone/pull/709): Add data to test
     assert case_metadata["cited_by"] == []
     assert case_metadata["does_cite"] == []
 
