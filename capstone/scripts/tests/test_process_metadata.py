@@ -19,6 +19,10 @@ def test_get_single_case_metadata(ingest_case_xml):
     assert type(case['decision_date_original']) is str
 
     assert case['jurisdiction'] == 'Illinois'
+    
+    // TODO (arichiv): Add data to test
+    assert case_metadata["cited_by"] == []
+    assert case_metadata["does_cite"] == []
 
 def test_get_case_metadata():
     casemets_test_dir = "test_data/from_vendor"
