@@ -77,9 +77,11 @@ class CrossCaseCitation(serializers.ModelSerializer):
             'pages',
         )
 
-class CaseCitedBySerializer(CrossCaseCitation): pass
+class CaseCitedBySerializer(CrossCaseCitation):
+    pass
 
-class CaseDoesCiteSerializer(CrossCaseCitation): pass
+class CaseDoesCiteSerializer(CrossCaseCitation):
+    pass
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
