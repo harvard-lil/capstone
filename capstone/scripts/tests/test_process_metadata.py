@@ -21,8 +21,8 @@ def test_get_single_case_metadata(ingest_case_xml):
     assert case['jurisdiction'] == 'Illinois'
     
     # TODO (https://github.com/harvard-lil/capstone/pull/709): Add data to test
-    assert case_metadata["cited_by"] == []
-    assert case_metadata["does_cite"] == []
+    assert case["cited_by"] == []
+    assert case["does_cite"] == []
 
 def test_get_case_metadata():
     casemets_test_dir = "test_data/from_vendor"
