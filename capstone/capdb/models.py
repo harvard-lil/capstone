@@ -761,10 +761,6 @@ class CaseMetadata(models.Model):
                                  on_delete=models.DO_NOTHING)
     date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
     duplicative = models.BooleanField(default=False)
-    cited_by = models.ForeignKey('CrossCaseCitation', related_name='case_metadatas',
-                                 on_delete=models.DO_NOTHING)
-    does_cite = models.ForeignKey('CrossCaseCitation', related_name='case_metadatas',
-                                 on_delete=models.DO_NOTHING)
 
     # denormalized fields -
     # these should not be set directly, but are automatically copied from self.jurisdiction by database triggers
