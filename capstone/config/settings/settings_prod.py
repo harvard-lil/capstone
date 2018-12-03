@@ -37,6 +37,13 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'bulk-data'),
         },
     },
+    'transfer_storage': {
+        'class': 'CapS3Storage',
+        'kwargs': {
+            'location': 'to_vendor',
+            'bucket_name': 'hlsldigilab-xfer',
+        }
+    },
 }
 
 INVENTORY = {
