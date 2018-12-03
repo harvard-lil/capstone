@@ -8,9 +8,9 @@ from capweb.templatetags.api_url import api_url
 
 def update_all():
     update_map_numbers()
-    cases_by_jurisdiction_tsv()
-    cases_by_reporter_tsv()
-    cases_by_decision_date()
+    #cases_by_jurisdiction_tsv()
+    #cases_by_reporter_tsv()
+    #cases_by_decision_date()
 
 def cases_by_decision_date():
     """
@@ -38,7 +38,7 @@ def cases_by_decision_date():
 
     write_update(label, snippet_format, output.getvalue())
 
-def cases_by_reporter_tsv():
+def cases_by_jurisdiction_tsv():
     """
         iterate through all reporters, tally each case, output TSV
     """
@@ -62,7 +62,7 @@ def cases_by_reporter_tsv():
     write_update(label, snippet_format, output.getvalue())
 
 
-def cases_by_jurisdiction_tsv():
+def cases_by_reporter_tsv():
     """
         iterate through all jurisdictions, tally each case, output TSV
     """
@@ -97,9 +97,11 @@ def update_map_numbers(chunk_size=1000):
         move onto next chunk
         write results to snippets model
     """
+
     label="map_numbers"
     snippet_format="application/json"
-    results = map_volume_tally.chunks([ (vol, ) for vol in VolumeMetadata.objects.values_list('pk', flat=True)], chunk_size)\
+    results = map_volume_tally.chunks([ (vol, ) for vol in VolumeMetadata.objects
+        .values_list('pk', flat=True)], chunk_size)\
         .group()\
         .apply_async()
 
@@ -116,8 +118,6 @@ def update_map_numbers(chunk_size=1000):
                         'volume_count': 0
                     }
                 for count in result[map_id]:
-                    if count == 'reporter_list':
-                        continue
                     output[map_id][count] += result[map_id][count]
 
     write_update(label, snippet_format, json.dumps(output))
@@ -126,90 +126,37 @@ def update_map_numbers(chunk_size=1000):
 @shared_task
 def map_volume_tally(volume_barcode):
     """
-        create or update cases for each volume. It's in a dict keyed by MAP IDs (jurisdiction essentially) because
-        some volumes might contain multiple jurisdictions.
+        create or update counts for each volume. It's in a dict keyed by MAP IDs (jurisdiction essentially) because,
+        which correspond to the map SVG on the homepage. We have to count this per-volume because some volumes might
+        contain multiple jurisdictions. This method does result in one single regional volume being added to the count
+        for every jurisdiction that has (non-duplicative) cases in that region. Same with pages.
     """
-    jurisdictions = {
-        "regional": {"label": "Regional", "map_id": "Regional"},
-        "dakota-territory": {"label": "Dakota Territory", "map_id": "Dakota-Territory"},
-        "native-american": { "label": "Native American", "map_id": "Native American"},
-        "navajo-nation": {"label": "nameo", "map_id": "Navajo-Nation"},
-        "guam": { "label": "Guam", "map_id": "GU"},
-        "us": { "label": "Federal", "map_id": "US"},
-        "n-mar-i": { "label": "Northern Mariana Islands", "map_id": "MP"},
-        "pr": { "label": "Puerto Rico", "map_id": "PR"},
-        "am-samoa": { "label": "American Samoa", "map_id": "AS"},
-        "vi": { "label": "Virgin Islands", "map_id": "VI"},
-        "nev": { "label": "Nevada", "map_id": "US-NV"},
-        "dc": { "label": "Washington D.C.", "map_id": "US-DC"},
-        "nc": { "label": "North Carolina", "map_id": "US-NC"},
-        "nh": { "label": "New Hampshire", "map_id": "US-NH"},
-        "pa": { "label": "Pennsylvania", "map_id": "US-PA"},
-        "mont": { "label": "Montana", "map_id": "US-MT"},
-        "ind": { "label": "Indiana", "map_id": "US-IN"},
-        "la": { "label": "Louisiana", "map_id": "US-LA"},
-        "wis": { "label": "Wisconsin", "map_id": "US-WI"},
-        "nj": { "label": "New Jersey", "map_id": "US-NJ"},
-        "ga": { "label": "Georgia", "map_id": "US-GA"},
-        "sd": { "label": "South Dakota", "map_id": "US-SD"},
-        "mass": { "label": "Massachusetts", "map_id": "US-MA"},
-        "miss": { "label": "Mississippi", "map_id": "US-MS"},
-        "cal": { "label": "California", "map_id": "US-CA"},
-        "okla": { "label": "Oklahoma", "map_id": "US-OK"},
-        "nd": { "label": "North Dakota", "map_id": "US-ND"},
-        "vt": { "label": "Vermont", "map_id": "US-VT"},
-        "ariz": { "label": "Arizona", "map_id": "US-AZ"},
-        "w-va": { "label": "West Virginia", "map_id": "US-WV"},
-        "mich": { "label": "Michigan", "map_id": "US-MI"},
-        "utah": { "label": "Utah", "map_id": "US-UT"},
-        "idaho": { "label": "Idaho", "map_id": "US-ID"},
-        "wyo": { "label": "Wyoming", "map_id": "US-WY"},
-        "colo": { "label": "Colorado", "map_id": "US-CO"},
-        "ny": { "label": "New York", "map_id": "US-NY"},
-        "ky": { "label": "Kentucky", "map_id": "US-KY"},
-        "kan": { "label": "Kansas", "map_id": "US-KS"},
-        "alaska": { "label": "Alaska", "map_id": "US-AK"},
-        "fla": { "label": "Florida", "map_id": "US-FL"},
-        "or": { "label": "Oregon", "map_id": "US-OR"},
-        "tenn": { "label": "Tennessee", "map_id": "US-TN"},
-        "md": { "label": "Maryland", "map_id": "US-MD"},
-        "ill": { "label": "Illinois", "map_id": "US-IL"},
-        "ohio": { "label": "Ohio", "map_id": "US-OH"},
-        "ala": { "label": "Alabama", "map_id": "US-AL"},
-        "sc": { "label": "South Carolina", "map_id": "US-SC"},
-        "ar": { "label": "Arkansas", "map_id": "US-AR"},
-        "ri": { "label": "Rhode Island", "map_id": "US-RI"},
-        "minn": { "label": "Minnesota", "map_id": "US-MN"},
-        "neb": { "label": "Nebraska", "map_id": "US-NE"},
-        "conn": { "label": "Connecticut", "map_id": "US-CT"},
-        "me": { "label": "Maine", "map_id": "US-ME"},
-        "iowa": { "label": "Iowa", "map_id": "US-IA"},
-        "tex": { "label": "Texas", "map_id": "US-TX"},
-        "del": { "label": "Delaware", "map_id": "US-DE"},
-        "mo": { "label": "Missouri", "map_id": "US-MO"},
-        "haw": { "label": "Hawaii", "map_id": "US-HI"},
-        "nm": { "label": "New Mexico", "map_id": "US-NM"},
-        "wash": { "label": "Washington", "map_id": "US-WA"},
-        "va": { "label": "Virginia", "map_id": "US-VA"}
+    jurisdiction_translate = {
+        "regional":"Regional", "dakota-territory":"Dakota-Territory", "native-american":"Native American",
+        "navajo-nation":"Navajo-Nation", "guam":"GU", "us":"US", "n-mar-i":"MP", "pr":"PR", "am-samoa":"AS",
+        "vi":"VI", "nev":"US-NV", "dc":"US-DC", "nc":"US-NC", "nh":"US-NH", "pa":"US-PA", "mont":"US-MT",
+        "ind":"US-IN", "la":"US-LA", "wis":"US-WI", "nj":"US-NJ", "ga":"US-GA", "sd":"US-SD", "mass":"US-MA",
+        "miss":"US-MS", "cal":"US-CA", "okla":"US-OK", "nd":"US-ND", "vt":"US-VT", "ariz":"US-AZ", "w-va":"US-WV",
+        "mich":"US-MI", "utah":"US-UT", "idaho":"US-ID", "wyo":"US-WY", "colo":"US-CO", "ny":"US-NY",
+        "ky":"US-KY", "kan":"US-KS", "alaska":"US-AK", "fla":"US-FL", "or":"US-OR", "tenn":"US-TN", "md":"US-MD",
+        "ill":"US-IL", "ohio":"US-OH", "ala":"US-AL", "sc":"US-SC", "ar":"US-AR", "ri":"US-RI", "minn":"US-MN",
+        "neb":"US-NE", "conn":"US-CT", "me":"US-ME", "iowa":"US-IA", "tex":"US-TX", "del":"US-DE", "mo":"US-MO",
+        "haw":"US-HI", "nm":"US-NM", "wash":"US-WA", "va":"US-VA"
     }
     tally = {}
     volume = VolumeMetadata.objects.get(pk=volume_barcode)
-    for case in volume.case_metadatas.all():
+    # just loop through the cases
+    for case in volume.case_metadatas.prefetch_related('case_xml__pages').all():
         if case.jurisdiction:
-            map_id = jurisdictions[case.jurisdiction.slug]['map_id']
+            map_id = jurisdiction_translate[case.jurisdiction.slug]
             if map_id not in tally:
                 tally[map_id] = {}
                 tally[map_id]['case_count'] = 0
-                tally[map_id]['volume_count'] = 0
+                tally[map_id]['volume_count'] = 1
                 tally[map_id]['page_count'] = 0
-                tally[map_id]['reporter_list'] = []
-                tally[map_id]['reporter_count'] = 0
-
-            tally[map_id]['case_count'] += volume.case_metadatas.count()
-            tally[map_id]['volume_count'] += 1
-            tally[map_id]['page_count'] += volume.volume_xml.page_xmls.count()
-            tally[map_id]['reporter_list'].append(volume.reporter.pk)
-            tally[map_id]['reporter_count'] = len(set(tally[map_id]['reporter_list']))
+                tally[map_id]['reporter_count'] = 1
+            tally[map_id]['case_count'] += 1
+            tally[map_id]['page_count'] += case.case_xml.pages.count()
     return tally
 
 
