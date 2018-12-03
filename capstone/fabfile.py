@@ -27,11 +27,12 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter, Snippet
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
-    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars
+    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars, \
+    update_snippets
 from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace
 
 
@@ -134,7 +135,7 @@ def create_or_update_case_metadata(update_existing=False):
 
 @task
 def rename_tags_from_json_id_list(json_path, tag=None):
-    with open(os.path.abspath(os.path.expanduser(json_path))) as data_file:    
+    with open(os.path.abspath(os.path.expanduser(json_path))) as data_file:
         parsed_json = json.load(data_file)
     mass_update.rename_casebody_tags_from_json_id_list(parsed_json, tag)
 
@@ -805,105 +806,6 @@ def report_multiple_jurisdictions(out_path="court_jurisdictions.csv"):
                 url = "https://api.case.law/v1/cases/?court=%s&jurisdiction=%s" % (row.court_slug, row.jurisdiction_slug)
                 csv_writer.writerow([row.jurisdiction_slug, row.count, url])
 
-
 @task
-def update_map_numbers():
-    label = "map_numbers"
-    jurisdictions = {
-        "regional": {"label": "Regional", "map_id": "Regional"},
-        "dakota-territory": {"label": "Dakota Territory", "map_id": "Dakota-Territory"},
-        "native-american": { "label": "Native American", "map_id": "Native American"},
-        "navajo-nation": {"label": "nameo", "map_id": "Navajo-Nation"},
-        "guam": { "label": "Guam", "map_id": "GU"},
-        "us": { "label": "Federal", "map_id": "US"},
-        "n-mar-i": { "label": "Northern Mariana Islands", "map_id": "MP"},
-        "pr": { "label": "Puerto Rico", "map_id": "PR"},
-        "am-samoa": { "label": "American Samoa", "map_id": "AS"},
-        "vi": { "label": "Virgin Islands", "map_id": "VI"},
-        "nev": { "label": "Nevada", "map_id": "US-NV"},
-        "dc": { "label": "Washington D.C.", "map_id": "US-DC"},
-        "nc": { "label": "North Carolina", "map_id": "US-NC"},
-        "nh": { "label": "New Hampshire", "map_id": "US-NH"},
-        "pa": { "label": "Pennsylvania", "map_id": "US-PA"},
-        "mont": { "label": "Montana", "map_id": "US-MT"},
-        "ind": { "label": "Indiana", "map_id": "US-IN"},
-        "la": { "label": "Louisiana", "map_id": "US-LA"},
-        "wis": { "label": "Wisconsin", "map_id": "US-WI"},
-        "nj": { "label": "New Jersey", "map_id": "US-NJ"},
-        "ga": { "label": "Georgia", "map_id": "US-GA"},
-        "sd": { "label": "South Dakota", "map_id": "US-SD"},
-        "mass": { "label": "Massachusetts", "map_id": "US-MA"},
-        "miss": { "label": "Mississippi", "map_id": "US-MS"},
-        "cal": { "label": "California", "map_id": "US-CA"},
-        "okla": { "label": "Oklahoma", "map_id": "US-OK"},
-        "nd": { "label": "North Dakota", "map_id": "US-ND"},
-        "vt": { "label": "Vermont", "map_id": "US-VT"},
-        "ariz": { "label": "Arizona", "map_id": "US-AZ"},
-        "w-va": { "label": "West Virginia", "map_id": "US-WV"},
-        "mich": { "label": "Michigan", "map_id": "US-MI"},
-        "utah": { "label": "Utah", "map_id": "US-UT"},
-        "idaho": { "label": "Idaho", "map_id": "US-ID"},
-        "wyo": { "label": "Wyoming", "map_id": "US-WY"},
-        "colo": { "label": "Colorado", "map_id": "US-CO"},
-        "ny": { "label": "New York", "map_id": "US-NY"},
-        "ky": { "label": "Kentucky", "map_id": "US-KY"},
-        "kan": { "label": "Kansas", "map_id": "US-KS"},
-        "alaska": { "label": "Alaska", "map_id": "US-AK"},
-        "fla": { "label": "Florida", "map_id": "US-FL"},
-        "or": { "label": "Oregon", "map_id": "US-OR"},
-        "tenn": { "label": "Tennessee", "map_id": "US-TN"},
-        "md": { "label": "Maryland", "map_id": "US-MD"},
-        "ill": { "label": "Illinois", "map_id": "US-IL"},
-        "ohio": { "label": "Ohio", "map_id": "US-OH"},
-        "ala": { "label": "Alabama", "map_id": "US-AL"},
-        "sc": { "label": "South Carolina", "map_id": "US-SC"},
-        "ar": { "label": "Arkansas", "map_id": "US-AR"},
-        "ri": { "label": "Rhode Island", "map_id": "US-RI"},
-        "minn": { "label": "Minnesota", "map_id": "US-MN"},
-        "neb": { "label": "Nebraska", "map_id": "US-NE"},
-        "conn": { "label": "Connecticut", "map_id": "US-CT"},
-        "me": { "label": "Maine", "map_id": "US-ME"},
-        "iowa": { "label": "Iowa", "map_id": "US-IA"},
-        "tex": { "label": "Texas", "map_id": "US-TX"},
-        "del": { "label": "Delaware", "map_id": "US-DE"},
-        "mo": { "label": "Missouri", "map_id": "US-MO"},
-        "haw": { "label": "Hawaii", "map_id": "US-HI"},
-        "nm": { "label": "New Mexico", "map_id": "US-NM"},
-        "wash": { "label": "Washington", "map_id": "US-WA"},
-        "va": { "label": "Virginia", "map_id": "US-VA"}
-    }
-
-    tally = {}
-    for volume in VolumeMetadata.objects.prefetch_related("case_metadatas__jurisdiction", 'volume_xml__page_xmls').all():
-        for case in volume.case_metadatas.all():
-            if case.jurisdiction:
-                map_id = jurisdictions[case.jurisdiction.slug]['map_id']
-                if map_id not in tally:
-                    tally[map_id] = {}
-                    tally[map_id]['case_count'] = 0
-                    tally[map_id]['volume_count'] = 0
-                    tally[map_id]['page_count'] = 0
-                    tally[map_id]['reporter_list'] = []
-                    tally[map_id]['reporter_count'] = 0
-
-                tally[map_id]['case_count'] += volume.case_metadatas.count()
-                tally[map_id]['volume_count'] += 1
-                tally[map_id]['page_count'] += volume.volume_xml.page_xmls.count()
-                tally[map_id]['reporter_list'].append(volume.reporter.pk)
-                tally[map_id]['reporter_count'] = len(set(tally[map_id]['reporter_list']))
-    try:
-        snippet = Snippet.objects.get(label=label)
-    except Snippet.DoesNotExist:
-        snippet = Snippet()
-        snippet.label=label
-        snippet.format="application/json"
-
-    snippet.contents = json.dumps(tally)
-    snippet.save()
-
-
-
-
-@task
-def update_snippets():
-    update_map_numbers()
+def update_all_snippets():
+    update_snippets.update_all()
