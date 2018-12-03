@@ -1,6 +1,6 @@
 import io
 import csv
-from django.db.models import Count
+from django.db.models import Count, Case, When, IntegerField
 from celery import shared_task
 from capdb.models import VolumeMetadata, Reporter, Jurisdiction, CaseMetadata, Snippet
 import json
@@ -8,11 +8,11 @@ from capweb.templatetags.api_url import api_url
 
 def update_all():
     update_map_numbers()
-    #cases_by_jurisdiction_tsv()
-    #cases_by_reporter_tsv()
-    #cases_by_decision_date()
+    cases_by_jurisdiction_tsv()
+    cases_by_reporter_tsv()
+    cases_by_decision_date_tsv()
 
-def cases_by_decision_date():
+def cases_by_decision_date_tsv():
     """
         count of all cases, grouped by decision date
     """
@@ -70,7 +70,10 @@ def cases_by_reporter_tsv():
     snippet_format="text/tab-separated-values"
     output = io.StringIO()
     writer = csv.writer(output, delimiter='\t',quoting=csv.QUOTE_NONNUMERIC)
-    for reporter in Reporter.objects.annotate(case_count=Count('case_metadatas')):
+    for reporter in Reporter.objects.annotate(case_count=Count(
+            Case(When(case_metadatas__duplicative=False, then=1), output_field=IntegerField()))):
+        if reporter.case_count == 0:
+            continue
         writer.writerow(
             [
                 reporter.short_name,
