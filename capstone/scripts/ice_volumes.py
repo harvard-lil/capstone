@@ -1,6 +1,6 @@
 import logging
 from celery import shared_task
-from capdb.storages import ingest_storage, private_ingest_storage, transfer_storage
+from capdb.storages import transfer_storage
 
 # logging
 # disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
