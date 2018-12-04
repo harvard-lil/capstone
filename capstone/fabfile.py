@@ -809,11 +809,13 @@ def report_multiple_jurisdictions(out_path="court_jurisdictions.csv"):
 
 
 @task
-def ice_volumes():
+def ice_volumes(dry_run='true'):
     """
     For each captar'd volume that validated OK, tag the matching objects
     in the shared or private bucket for transfer to glacier and delete matching
     objects from the transfer bucket.
+
+    Set dry_run to 'false' to run in earnest.
     """
     from capdb.storages import captar_storage
     from scripts.ice_volumes import recursively_tag
@@ -843,14 +845,14 @@ def ice_volumes():
                 valid = False
             elif valid:
                 # tag this volume and go on to the next
-                recursively_tag(storage_name, volume_path)
+                recursively_tag(storage_name, volume_path, dry_run=dry_run)
                 continue
             else:
                 pass
             try:
                 if validation[volume_path]:
                     # tag this and all until barcode changes
-                    recursively_tag(storage_name, volume_path)
+                    recursively_tag(storage_name, volume_path, dry_run=dry_run)
                     valid = True
             except KeyError:
                 # we don't have a validation

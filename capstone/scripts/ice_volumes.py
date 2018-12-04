@@ -16,11 +16,13 @@ info = print
 
 
 @shared_task
-def recursively_tag(storage_name, volume, key='captar', value='ok'):
+def recursively_tag(storage_name, volume, dry_run, key='captar', value='ok'):
     """
     Tag for move to Glacier and delete from transfer bucket
     """
-    info("Tagging objects in %s" % volume)
+    dry_run = dry_run != 'false'
+
+    info("%sTagging objects in %s" % 'DRY RUN: ' if dry_run else '', volume)
     # get all etags for objects matching this volume's barcode
     xfer_manifest = {}
     volume_barcode = volume_barcode_from_folder(volume)
@@ -32,9 +34,13 @@ def recursively_tag(storage_name, volume, key='captar', value='ok'):
     storage = storage_lookup[storage_name][0]
     for (object_path, object_etag) in storage.iter_files_recursive(path=volume,
                                                                    with_md5=True):
-        if storage.tag_file(object_path, key, value):
+        # assume in the case of a dry run that tagging would have succeeded...
+        tagged = dry_run or storage.tag_file(object_path, key, value)
+        if tagged:
             if object_etag in xfer_manifest:
                 for xfer_object in xfer_manifest[object_etag]:
-                    transfer_storage.delete_file(xfer_object)
+                    deleted = dry_run or transfer_storage.delete_file(xfer_object)
+                    if not deleted:
+                        info("Failed to delete %s" % xfer_object)
         else:
             info("Failed to tag %s" % object_path)
