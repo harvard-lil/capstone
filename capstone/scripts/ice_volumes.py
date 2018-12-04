@@ -1,7 +1,7 @@
 import logging
 from celery import shared_task
 from capdb.storages import transfer_storage
-from scripts.helpers import storage_lookup
+from scripts.helpers import storage_lookup, volume_barcode_from_folder
 
 # logging
 # disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
@@ -18,25 +18,23 @@ info = print
 @shared_task
 def recursively_tag(storage_name, volume, key='captar', value='ok'):
     """
-    Tag for move to Glacier
+    Tag for move to Glacier and delete from transfer bucket
     """
+    info("Tagging objects in %s" % volume)
+    # get all etags for objects matching this volume's barcode
+    xfer_manifest = {}
+    volume_barcode = volume_barcode_from_folder(volume)
+    for folder in transfer_storage.iter_files(volume_barcode, partial_path=True):
+        for (path, etag) in transfer_storage.iter_files_recursive(folder,
+                                                                  with_md5=True):
+            xfer_manifest[etag] = [path] + xfer_manifest.get(etag, [])
+    # iterate through objects in this volume
     storage = storage_lookup[storage_name][0]
-    for (object_path, object_etag) in storage.iter_files_recursive(path=volume, with_md5=True):
+    for (object_path, object_etag) in storage.iter_files_recursive(path=volume,
+                                                                   with_md5=True):
         if storage.tag_file(object_path, key, value):
-            info("tagged %s" % object_path)
-            storage.delete_from_xfer(object_path, object_etag)
+            if object_etag in xfer_manifest:
+                for xfer_object in xfer_manifest[object_etag]:
+                    transfer_storage.delete_file(xfer_object)
         else:
-            info("failed to tag %s" % object_path)
-
-
-def delete_from_xfer(object_path, object_etag, storage=transfer_storage):
-    """
-    Delete from xfer bucket when etags match
-    """
-    for (xfer_path, xfer_etag) in storage.iter_files_recursive(path=object_path, with_md5=True):
-        if xfer_etag == object_etag:
-            target = "%s from %s" % xfer_path, storage
-            if storage.delete_file(xfer_path):
-                info("deleted %s" % target)
-            else:
-                info("failed to delete %s" % target)
+            info("Failed to tag %s" % object_path)
