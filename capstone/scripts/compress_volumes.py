@@ -20,7 +20,7 @@ import copy
 from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 
-from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage, private_ingest_storage
+from capdb.storages import captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage
 from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile, \
     volume_barcode_from_folder, storage_lookup
 

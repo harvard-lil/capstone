@@ -815,7 +815,7 @@ def ice_volumes():
     in the shared or private bucket for transfer to glacier and delete matching
     objects from the transfer bucket.
     """
-    from capdb.storages import captar_storage, ingest_storage, private_ingest_storage
+    from capdb.storages import captar_storage
     from scripts.ice_volumes import recursively_tag
     from scripts.helpers import storage_lookup
 
