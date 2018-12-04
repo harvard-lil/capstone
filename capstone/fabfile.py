@@ -817,6 +817,7 @@ def ice_volumes():
     """
     from capdb.storages import captar_storage, ingest_storage, private_ingest_storage
     from scripts.ice_volumes import recursively_tag
+    from scripts.helpers import storage_lookup
 
     # prepare validation hash
     validation = {}
@@ -831,7 +832,8 @@ def ice_volumes():
     # iterate through volumes in both storages, in reverse order,
     # alphabetically, tracking current barcode and tagging matching
     # volumes once a valid CAPTAR has been seen
-    for storage in [ingest_storage, private_ingest_storage]:
+    for storage_name in ['ingest_storage', 'private_ingest_storage']:
+        storage = storage_lookup[storage_name][0]
         last_barcode = None
         valid = False
         for volume_path in reversed(list(storage.iter_files())):
@@ -841,14 +843,14 @@ def ice_volumes():
                 valid = False
             elif valid:
                 # tag this volume and go on to the next
-                recursively_tag(storage, volume_path)
+                recursively_tag(storage_name, volume_path)
                 continue
             else:
                 pass
             try:
                 if validation[volume_path]:
                     # tag this and all until barcode changes
-                    recursively_tag(storage, volume_path)
+                    recursively_tag(storage_name, volume_path)
                     valid = True
             except KeyError:
                 # we don't have a validation

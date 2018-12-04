@@ -22,7 +22,7 @@ from django.template.defaultfilters import filesizeformat
 
 from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage, private_ingest_storage
 from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile, \
-    volume_barcode_from_folder
+    volume_barcode_from_folder, storage_lookup
 
 # logging
 # disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
@@ -40,11 +40,6 @@ info = print
 # encryption?
 
 ### HELPERS ###
-
-storage_lookup = {
-    'ingest_storage': (ingest_storage, 'redacted'),
-    'private_ingest_storage': (private_ingest_storage, 'unredacted'),
-}
 
 def get_file_type(path):
     """ Sort volume files by type. """
