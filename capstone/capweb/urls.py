@@ -29,6 +29,7 @@ urlpatterns = [
 
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),
+    path('gallery/witchcraft', TemplateView.as_view(template_name='gallery/witchcraft.html'), name='witchcraft'),
 
     path('contact/', views.contact, name='contact'),
     path('contact-success/', TemplateView.as_view(template_name='contact_success.html'), name='contact-success'),
@@ -42,9 +43,26 @@ urlpatterns = [
     # override default Django login view to use custom LoginForm
     path('user/', include('django.contrib.auth.urls')),  # logout, password change, password reset
     path('user/details', user_views.user_details, name='user-details'),
-    path('user/research-request', user_views.request_research_access, name='research-request'),
-    path('user/research-request-success', TemplateView.as_view(template_name='research_request/research_request_success.html'), name='research-request-success'),
     path('user/resend-verification/', user_views.resend_verification, name='resend-verification'),
+
+    # research access requests
+    ]+([
+        path('user/research/', TemplateView.as_view(template_name='research_request/index.html', extra_context={'HARVARD_RESEARCHER_FEATURE': settings.HARVARD_RESEARCHER_FEATURE}), name='research-options'),
+        path('user/research/approve/', user_views.approve_research_access, name='research-approval'),
+        path('user/research/affiliated/', user_views.request_affiliated_research_access, name='affiliated-research-request'),
+        path('user/research/affiliated-success/', TemplateView.as_view(template_name='research_request/affiliated_research_request_success.html'), name='affiliated-research-request-success'),
+        path('user/research/unaffiliated/', user_views.request_unaffiliated_research_access, name='unaffiliated-research-request'),
+        path('user/research/unaffiliated-success/', TemplateView.as_view(template_name='research_request/unaffiliated_research_request_success.html'), name='unaffiliated-research-request-success'),
+        ]+([
+            path('user/research/harvard-intro/', user_views.request_harvard_research_access_intro, name='harvard-research-request-intro'),
+            path('user/research/non-harvard-email/', TemplateView.as_view(template_name='research_request/non_harvard_email.html'), name='non-harvard-email'),
+            path('user/research/harvard/', user_views.request_harvard_research_access, name='harvard-research-request'),
+            path('user/research/harvard-success/', TemplateView.as_view(template_name='research_request/harvard_research_request_success.html'), name='harvard-research-request-success'),
+        ] if settings.HARVARD_RESEARCHER_FEATURE else [])+[
+    ] if settings.NEW_RESEARCHER_FEATURE else [
+        path('user/research/', user_views.request_legacy_research_access, name='unaffiliated-research-request'),
+        path('user/research/success/', TemplateView.as_view(template_name='research_request/unaffiliated_research_request_success.html'), name='unaffiliated-research-request-success'),
+    ])+[
 
     path('maintenance/', views.maintenance_mode , name='maintenance_mode'),
 ]

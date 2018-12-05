@@ -1,0 +1,59 @@
+{% extends "layouts/wide.html" %}
+{% load pipeline %}
+{% load render_bundle from webpack_loader %}
+
+{% block extra_head %}
+  {% stylesheet 'gallery' %}
+  {% render_bundle 'witchcraft' %}
+{% endblock %}
+
+{% block title %}Witchcraft in Law{% endblock %}
+{% block meta_description %}
+  Caselaw Access Project exploration of witchcraft
+{% endblock %}
+{% block full_content_style %}bg-black{% endblock %}
+{% block explainer %}
+  <span class="color-white">
+  A mapping of the appearance of the word &ldquo;witchcraft&rdquo; in caselaw.
+  <br/><a href="https://lil.law.harvard.edu/blog/2018/10/31/witchcraft-in-u-s-caselaw/"
+          target="_blank">
+    Read more about it.
+  </a>
+  </span>
+{% endblock %}
+{% block main_content %}
+  <div class="row witchcraft-content">
+    <div class="col-md-3 col-sm-12 col-xs-12">
+      <div class="witchcraft-info-box">
+        <ul class="witchcraft-figures">
+          <li class="item-set">
+            <span class="title jur_name">Overall</span>
+          </li>
+          <li class="item-set">
+            <span class="title num_appearances"></span> appearances
+          </li>
+
+          <li class="item-set">
+            in <span class="title num_cases"></span> cases
+          </li>
+
+        </ul>
+        <ul class="excerpt-box">
+          <li class="item-set excerpts">
+            Excerpts:
+          </li>
+        </ul>
+        <a class="btn btn-inverse api-list-link"
+           target="_blank"
+           href=""><span class="jur_name_small"></span> in API</a>
+      </div>
+    </div>
+
+    <div class="col-md-9 col-sm-12 col-xs-12">
+      {% include "includes/usa_territories_white.svg" %}
+    </div>
+
+
+  </div>
+
+{% endblock %}

@@ -1,9 +1,12 @@
+@import '../_normalize.css';
+
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
 @import "bootstrap/reboot";
 @import "bootstrap/type";
 @import 'bootstrap/grid';
+@import 'bootstrap/alert';
 @import "bootstrap/utilities/spacing";
 @import "bootstrap/utilities/text";
 @import "bootstrap/utilities/display";
@@ -39,6 +42,10 @@ body {
   font-size: 20px;
   line-height: 29px;
   font-weight: 400;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
 
   // push footer to bottom on short pages
   @extend .d-flex;
@@ -299,4 +306,9 @@ li.item-set {
   h1, .section-title {
     color: $color-white !important;
   }
+}
+
+.bg-violet-dark {
+  @extend .bg-black;
+  background-color: #3b2668;
 }

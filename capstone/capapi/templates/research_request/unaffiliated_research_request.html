@@ -1,0 +1,33 @@
+{% extends "registration/base.html" %}
+{% load bootstrap4 %}
+
+{% block title %}Research Scholar Application{% endblock %}
+{% block meta_description %}Request unmetered access to the cases made available by the Caselaw Access Project{% endblock %}
+
+{% block main_content %}
+  {% if NEW_RESEARCHER_FEATURE %}
+    <p>
+      Please explain your project as an independent research scholar.
+    </p>
+    <form class="form" method="post">
+      {% csrf_token %}
+      {% bootstrap_form form %}
+      <button type="submit" class="btn btn-default">
+        Request Unmetered Access
+      </button>
+    </form>
+  {% else %}
+    <p>If you are a research scholar and your work requires access to the full text of more than 500 cases per day, you may apply for unmetered access to the full text of all cases made available by the Caselaw Access Project.</p>
+    <p>To be eligible for unmetered access to the full text of all cases, you must demonstrate that you are a research scholar and you must enter into a special bulk access agreement with LexisNexis, which prohibits you from (1) using the cases for non-research purposes and (2) sharing the cases with others.</p>
+    <p>If you wish to apply for unmetered access, please complete the form below. If your eligibility is clear, LexisNexis will send send you a special bulk access agreement via Docusign. If there are any questions about your eligibility, then someone will be in touch with additional information. Please note that if you are an independent researcher unaffiliated with any academic or non-profit research institution, you should be especially detailed in your description of your work and research interest. This will better enable LexisNexis to evaluate your request.</p>
+    <p>Please <a href="{% url "contact" %}">contact us</a> with any questions.</p>
+    <form class="form" method="post">
+      {% csrf_token %}
+      {% bootstrap_form form %}
+      <br/>
+      <button type="submit" class="btn btn-default">
+        Request Unmetered Access
+      </button>
+    </form>
+  {% endif %}
+{% endblock %}

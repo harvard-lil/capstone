@@ -222,8 +222,10 @@ def ordered_query_iterator(queryset, chunk_size=1000):
             - all ordering fields be null=False
             - the final ordering field be unique=True
 
-        The benefit of this method is that it handles prefetch_related. If you're not using prefetch_related,
-        queryset.iterator(chunk_size) is probably preferable.
+        Alternatively you may want to use the builtin queryset.iterator(chunk_size). This function is preferable if:
+            - you need prefetch_related, or
+            - your database backend doesn't support server-side cursors 
+             (see https://docs.djangoproject.com/en/2.1/ref/models/querysets/#iterator)
     """
 
     def get_filter(order_by, obj):
@@ -338,3 +340,34 @@ class HashingFile:
 
     def __getattr__(self, attr):
         return getattr(self._source, attr)
+
+def case_or_page_barcode_from_s3_key(input):
+    """
+        Transform s3 keys to case or page barcodes:
+            32044142600386_redacted/alto/32044142600386_redacted_ALTO_00009_0.xml  ->  32044142600386_00009_0
+            32044142600386_redacted/casemets/32044142600386_redacted_CASEMETS_0001.xml  -> 32044142600386_0001
+    """
+    if ('CASEMETS' in input or 'ALTO' in input) and input.endswith("xml"):
+        return input.split('/')[-1].split('.')[0]\
+            .replace('unredacted', 'redacted')\
+            .replace('_redacted_ALTO', '')\
+            .replace('_redacted_CASEMETS', '')
+    raise Exception("Not an ALTO or CASEMETS s3_key")
+
+def short_id_from_s3_key(input):
+    """
+        Transform s3 keys to case or page short IDs used by volume XML:
+            32044142600386_redacted/alto/32044142600386_redacted_ALTO_00009_0.xml  ->  alto_00009_0
+            32044142600386_redacted/casemets/32044142600386_redacted_CASEMETS_0001.xml  -> casemets_0001
+    """
+    if ('CASEMETS' in input or 'ALTO' in input) and input.endswith("xml"):
+        return input.split('/')[-1].split('.')[0].split('redacted_')[1].lower()
+    raise Exception("Not an ALTO or CASEMETS s3_key")
+
+def volume_barcode_from_folder(folder):
+    """
+        Transform folder name to barcode:
+            Cal4th_063_redacted  ->  Cal4th_063
+            32044032501660_unredacted_2018_10_18_06.26.00  ->  32044032501660
+    """
+    return folder.replace('unredacted', 'redacted').split("_redacted", 1)[0]

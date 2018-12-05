@@ -3,11 +3,13 @@ import uuid
 import logging
 
 import email_normalize
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AnonymousUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AnonymousUser, PermissionsMixin
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.utils import timezone
 from django.conf import settings
+from netaddr import IPAddress, AddrFormatError, IPNetwork
+
 from capapi.permissions import staff_level_permissions
 
 from model_utils import FieldTracker
@@ -43,7 +45,7 @@ class CapUserManager(BaseUserManager):
         return self.create_user(email=email, password=password, **kwargs)
 
 
-class CapUser(AbstractBaseUser):
+class CapUser(PermissionsMixin, AbstractBaseUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
@@ -58,6 +60,8 @@ class CapUser(AbstractBaseUser):
     case_allowance_remaining = models.IntegerField(null=False, blank=False, default=0)
     # when we last reset the user's case count:
     case_allowance_last_updated = models.DateTimeField(auto_now_add=True)
+    unlimited_access = models.BooleanField(default=False)
+    harvard_access = models.BooleanField(default=False)
     unlimited_access_until = models.DateTimeField(null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -85,9 +89,26 @@ class CapUser(AbstractBaseUser):
         return self.activation_nonce
 
     def unlimited_access_in_effect(self):
-        if not self.unlimited_access_until:
-            return False
-        return self.unlimited_access_until > timezone.now()
+        return (
+            (
+                self.unlimited_access or
+                (self.harvard_access and self.harvard_ip())
+            ) and (
+                self.unlimited_access_until is None or
+                self.unlimited_access_until > timezone.now()
+            )
+        )
+
+    def harvard_ip(self):
+        """ Return True if X-Forwarded-For header is a Harvard IP address. """
+        if not hasattr(self, '_is_harvard_ip'):
+            try:
+                ip = IPAddress(getattr(self, 'ip_address'))  # set by AuthenticationMiddleware
+            except AddrFormatError:
+                self._is_harvard_ip = False
+            else:
+                self._is_harvard_ip = any(IPAddress(ip) in IPNetwork(ip_range) for ip_range in settings.HARVARD_IP_RANGES)
+        return self._is_harvard_ip
 
     def update_case_allowance(self, case_count=0, save=True):
         if self.unlimited_access_in_effect():
@@ -173,8 +194,28 @@ AnonymousUser.unlimited_access_in_effect = lambda self: False
 
 
 class ResearchRequest(models.Model):
+    """ Request for research access submitted by an unaffiliated user. """
     user = models.ForeignKey(CapUser, on_delete=models.CASCADE, related_name='research_requests')
     submitted_date = models.DateTimeField(auto_now_add=True)
+
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    institution = models.CharField(max_length=255, blank=True, null=True)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    area_of_interest = models.TextField(blank=True, null=True)
+
+    status = models.CharField(max_length=20, default='pending', verbose_name="research request status",
+                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature')))
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-submitted_date']
+
+
+class ResearchContract(models.Model):
+    """ Signed application for access submitted by an affiliated researcher. """
+    user = models.ForeignKey(CapUser, on_delete=models.CASCADE, related_name='research_contracts')
+    user_signature_date = models.DateTimeField(auto_now_add=True)
 
     name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255)
@@ -182,11 +223,35 @@ class ResearchRequest(models.Model):
     title = models.CharField(max_length=255)
     area_of_interest = models.TextField(blank=True, null=True)
 
-    status = models.CharField(max_length=20, default='pending', choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature')))
+    contract_html = models.TextField(blank=True, null=True)
+
+    approver = models.ForeignKey(CapUser, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='approved_contracts')
+    approver_signature_date = models.DateTimeField(blank=True, null=True)
+    status = models.CharField(max_length=20, default='pending', verbose_name="research contract status",
+                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied')))
+    approver_notes = models.TextField(blank=True, null=True)
+
     notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        ordering = ['-submitted_date']
+        ordering = ['-user_signature_date']
+
+
+class HarvardContract(models.Model):
+    """ Signed access contract submitted by a Harvard user. """
+    user = models.ForeignKey(CapUser, on_delete=models.CASCADE, related_name='harvard_contracts')
+    user_signature_date = models.DateTimeField(auto_now_add=True)
+
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    title = models.CharField(max_length=255)
+    area_of_interest = models.TextField(blank=True, null=True)
+
+    contract_html = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-user_signature_date']
+
 
 
 class SiteLimits(models.Model):
@@ -197,6 +262,9 @@ class SiteLimits(models.Model):
     daily_signups = models.IntegerField(default=0)
     daily_download_limit = models.IntegerField(default=50000)
     daily_downloads = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "Site limits"
 
     @classmethod
     def create(cls):

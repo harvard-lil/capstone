@@ -1,0 +1,15 @@
+{% extends "registration/base.html" %}
+{% load bootstrap4 %}
+
+{% block title %}Harvard Community Member Application{% endblock %}
+{% block meta_description %}Request unmetered access to the cases made available by the Caselaw Access Project{% endblock %}
+
+{% block main_content %}
+  <form class="form" method="post">
+    {% csrf_token %}
+    {% include "research_request/contracts/affiliated.html" %}
+    <button type="submit" class="btn btn-default">
+      Sign Agreement
+    </button>
+  </form>
+{% endblock %}

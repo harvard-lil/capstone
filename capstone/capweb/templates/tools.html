@@ -6,7 +6,7 @@
   {% stylesheet 'tools' %}
 {% endblock %}
 
-{% block title %}Tools{% endblock %}
+{% block title %}Tools for Accessing Caselaw{% endblock %}
 {% block meta_description %}Caselaw Access Project Tools{% endblock %}
 {% block top_section_style %}bg-black{% endblock %}
 
@@ -58,15 +58,11 @@
     </h2>
     <p>
       If you need a large collection of cases, you will probably be best served by our bulk data downloads.
-        With no registration or formal agreements, we offer zip files containing all cases from Illinois and
-        Arkansas, either in plain text, or marked up with XML. Non-commercial researchers who want a larger,
-        or different subset of our cases should <a href="mailto:lil@law.harvard.edu">email us</a> for more
-        information. Those interested in licensing this data case for commercial use should
-        <a href="http://info.ravellaw.com/contact-us-form">contact Ravel Law</a> for more information.
+      Bulk downloads for Illinois and Arkansas are available without a login, and unlimited bulk files are available to
+      research scholars.
     </p>
     <ul>
-      <li><a href="{% url "bulk-download" %}">Download bulk files</a></li>
-      <li><a href="{% url "bulk-docs" %}">Bulk file docs</a></li>
+      <li><a href="{% url "bulk-docs" %}">Bulk file documentation</a></li>
     </ul>
   </div>
 {% endblock %}

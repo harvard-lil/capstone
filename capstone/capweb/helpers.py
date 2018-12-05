@@ -1,13 +1,18 @@
 import json
+import re
+from collections import namedtuple
 from contextlib import contextmanager
 from functools import wraps
 
 import requests
 import django_hosts
 from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
 from django.core.cache import caches
+from django.core.mail import EmailMessage
 from django.db import transaction, connections, OperationalError
 from django.urls import NoReverseMatch
+from django.utils.functional import lazy
 from django_hosts.resolvers import get_host_patterns
 
 
@@ -71,6 +76,7 @@ def reverse(*args, **kwargs):
             if i == len(hosts)-1:
                 raise
 
+reverse_lazy = lazy(reverse, str)
 
 def show_toolbar_callback(request):
     """
@@ -103,3 +109,55 @@ def statement_timeout(timeout, db="default"):
                 raise
             # reset to default, in case we're in a nested transaction
             cursor.execute("SET LOCAL statement_timeout = %s", [original_timeout])
+
+@contextmanager
+def transaction_safe_exceptions(using=None):
+    """
+        If we are in a transaction, then it doesn't work to catch ORM errors like DoesNotExist or IntegrityError,
+        as they abort the transaction. This context manager starts a sub-transaction to catch the errors, only
+        if necessary. Example:
+
+            with transaction.atomic(using='capstone'):
+                try:
+                    with transaction_safe_exceptions():
+                        Foo.objects.get(id=1)
+                except Foo.DoesNotExist:
+                    pass
+                    # ORM queries here will still work thanks to calling transaction_safe_exceptions()
+    """
+    if transaction.get_connection(using=using).in_atomic_block:
+        with transaction.atomic(using=using):
+            yield
+    else:
+        yield
+
+def select_raw_sql(sql, args=None, using=None):
+    with connections[using].cursor() as cursor:
+        cursor.execute(sql, args)
+        nt_result = namedtuple('Result', [col[0] for col in cursor.description])
+        return [nt_result(*row) for row in cursor.fetchall()]
+
+def send_contact_email(title, content, from_address):
+    """
+        Send a message on behalf of a user to our contact email.
+        Use reply-to for the user address so we can use email services that require authenticated from addresses.
+    """
+    EmailMessage(
+        title,
+        content,
+        settings.DEFAULT_FROM_EMAIL,
+        [settings.DEFAULT_FROM_EMAIL],
+        headers={'Reply-To': from_address}
+    ).send(fail_silently=False)
+
+
+def user_has_harvard_email(failure_url='non-harvard-email'):
+    """
+        Decorator to forward user if they don't have Harvard email. E.g.:
+
+        @user_has_harvard_email()
+        def my_view(request):
+    """
+    return user_passes_test(
+        test_func=lambda u: bool(re.search(r'[.@]harvard.edu$', u.email)),
+        login_url=failure_url)

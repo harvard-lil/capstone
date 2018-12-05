@@ -4,57 +4,71 @@
 
 {% block main_content %}
   <div class="user-information">
-    <label for="user-email">Email:</label>
-    <input id="user-email"
-           readonly
-           value="{{ request.user.email }}">
-    <br/>
-    <label for="user-api-key">API Key:</label>
-    <input id="user-api-key"
-           readonly
-           type="text"
-           value="{{ request.user.get_api_key }}">
-    <br/>
-    {% if unlimited %}
-      <label for="user-unlimited-access-until">Unlimited access until:</label>
-      <input id="user-unlimited-access-until"
-             readonly
-             value="{{ request.user.unlimited_access_until }}">
-      <br/>
+    <div class="row">
+      <div class="h6 col-sm-5">Email:</div>
+      <div class="col-sm-7">{{ request.user.email }}</div>
+    </div>
+    <div class="row">
+      <div class="h6 col-sm-5">API Key:</div>
+      <div class="col-sm-7">{{ request.user.get_api_key }}</div>
+    </div>
+    {% if request.user.unlimited_access or request.user.harvard_access %}
+      <div class="row">
+        <div class="h6 col-sm-5">Unmetered access:</div>
+        <div class="col-sm-7">
+          {% if request.user.unlimited_access_until %}
+            {% if request.user.unlimited_access_in_effect %}expires{% else %}expired{% endif %}
+            {{ request.user.unlimited_access_until }}
+          {% else %}
+            <strong>approved</strong>
+          {% endif %}
+          {% if request.user.harvard_access and not request.user.harvard_ip %}
+            <div>
+              Your Harvard unmetered access will only work when accessing this website from a Harvard IP address.
+              Your current IP address of {{ request.user.ip_address }} is not a Harvard IP address.
+            </div>
+          {% endif %}
+        </div>
+      </div>
     {% else %}
-      <label for="user-cases-left">Cases left to view today:</label>
-      <input id="user-cases-left"
-             readonly
-             value="{{ request.user.case_allowance_remaining }}">
-      <br/>
-      <label for="user-case-allowance">Case allowance (updated daily):</label>
-      <input id="user-case-allowance"
-             readonly
-             value="{{ request.user.total_case_allowance }}">
-      <br/>
-      <a href="{% url "research-request" %}" class="btn btn-default">
-        Request unlimited research access
-      </a>
-      {% with request.user.research_requests.first as research_request %}
-        {% if research_request %}
-          <p>
-            You requested research access on {{ research_request.submitted_date }}
-            Your request is {{ research_request.status }}.
-          </p>
-        {% endif %}
-      {% endwith %}
+      <div class="row">
+        <div class="h6 col-sm-5">Case allowance per day:</div>
+        <div class="col-sm-7">{{ request.user.total_case_allowance }}</div>
+      </div>
+      <div class="row">
+        <div class="h6 col-sm-5">Cases left to view today:</div>
+        <div class="col-sm-7">{{ request.user.case_allowance_remaining }}</div>
+      </div>
+      <div class="row">
+        <div class="h6 col-sm-5">Unmetered access request:</div>
+        <div class="col-sm-7">
+          {% if research_contract %}
+            You submitted an application for unmetered access on {{ research_contract.user_signature_date|date:"F j, Y" }}.
+            {% if research_contract.status == "denied" %}
+              Your application was denied by LexisNexis. Please contact us if you would like to discuss further options.
+            {% else %}
+              Your application is pending.
+            {% endif %}
+          {% elif research_request %}
+            You submitted a request for unmetered access on {{ research_request.submitted_date }}
+          {% else %}
+            <a href="{% if NEW_RESEARCHER_FEATURE %}{% url "research-options" %}{% else %}{% url "unaffiliated-research-request" %}{% endif %}">
+              Request unmetered full-text access for research scholars
+            </a>
+          {% endif %}
+        </div>
       </div>
     {% endif %}
-  <br/>
-  <div class="btn-group">
-    <a href="{% url "password_change" %}"
-       class="btn btn-default">
-      Change password
-    </a>
-    &nbsp;
-    <a href="{% url "logout" %}"
-       class="btn btn-default">
-      Log out
-    </a>
+    <div class="btn-group">
+      <a href="{% url "password_change" %}"
+         class="btn btn-default">
+        Change password
+      </a>
+      &nbsp;
+      <a href="{% url "logout" %}"
+         class="btn btn-default">
+        Log out
+      </a>
+    </div>
   </div>
 {% endblock %}

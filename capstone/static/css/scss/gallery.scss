@@ -9,16 +9,24 @@
   }
 }
 
+#sidebar-menu {
+  border-right: $color-violet-light 1px solid;
+}
+
+.full-content {
+  border-right: $color-violet-light 1px solid;
+  border-left: $color-violet-light 1px solid;
+}
+
 .subtitle.simple-subtitle {
+  @extend .h4;
   &:before {
     content: "";
-    margin-left: 0;
+    margin: 0;
   }
 }
 
 .page-section {
-  margin-bottom: 4rem !important;
-  border-bottom: $border-width solid $color-gray;
   padding-bottom: 3rem;
   &:last-child {
     border-bottom: 0;
@@ -34,23 +42,26 @@
 }
 
 .project-image {
-  > a { border-bottom: 0; }
-  @include media-breakpoint-up(lg) {
-    @include make-col(3);
-     .main-img {
-       max-width: 80%;
-       margin-top: 40%;
-    }
+  > a {
+    border-bottom: 0;
   }
-   @include media-breakpoint-down(md) {
-     @include make-col(12);
-     .main-img {
-       display: none;
-     }
-   }
   .main-img {
     border-radius: 50%;
     border: 1px solid $color-gray;
+  }
+
+  @include media-breakpoint-up(lg) {
+    @include make-col(3);
+    .main-img {
+      max-width: 80%;
+      margin-top: 25%;
+    }
+  }
+  @include media-breakpoint-down(md) {
+    @include make-col(12);
+    .main-img {
+      display: none;
+    }
   }
 }
 
@@ -75,6 +86,82 @@
     font-weight: $font-weight-semibold;
     margin-top: 1rem;
     text-align: center;
+  }
+}
+
+/* witchcraft */
+.witchcraft-content {
+  .witchcraft-info-box {
+    .title {
+      font-family: $font-serif;
+      line-height: 1.2;
+      margin-bottom: 0;
+      color: $color-yellow;
+    }
+    li.item-set {
+      margin-bottom: 0;
+      &:first-child {
+        margin-bottom: 1rem;
+      }
+    }
+    ul {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+    .jur_name {
+      padding: 0 0 .2rem;
+      border-bottom: 1px solid $color-yellow;
+      font-size: 20px;
+      line-height: 3rem;
+    }
+    .api-list-link {
+      margin-top: 2rem;
+      margin-left: 15px;
+      font-size: 14px;
+    }
+  }
+
+  .excerpt-box {
+    overflow-y: scroll;
+    background-color: $color-black;
+    margin-top: 20px;
+    text-align: left;
+    padding: 15px;
+    border: 1px solid $color-white;
+    height: 300px;
+    margin-right: 20px;
+    margin-left: 15px;
+    .excerpt-number {
+      font-family: $font-serif;
+      color: $color-yellow;
+    }
+    .excerpt-item {
+      font-size: 16px;
+      line-height: 1.4rem;
+    }
+    .excerpt-date {
+      font-size: 13px;
+      color: $color-yellow;
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  .state.state-selected {
+    fill: $color-magenta !important;
+  }
+
+  @include media-breakpoint-down(md) {
+    ul.witchcraft-figures {
+      padding: 0;
+    }
+    .api-list-link {
+      margin-left: 0;
+    }
+    .excerpt-box {
+      margin-left: 0;
+      margin-right: 0;
+    }
   }
 }
 

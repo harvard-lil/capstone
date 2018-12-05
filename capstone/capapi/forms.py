@@ -1,12 +1,20 @@
+import re
+
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
+from django.utils.translation import string_concat
 
-from capapi.models import CapUser, ResearchRequest
-from capweb.helpers import reverse
+from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract
+from capweb.helpers import reverse, reverse_lazy
 
 
 class LoginForm(AuthenticationForm):
+    username = forms.EmailField(
+        max_length=254,
+        widget=forms.EmailInput(attrs={'autofocus': True}),
+    )
+
     def confirm_login_allowed(self, user):
         """ Override AuthenticationForm to block login with unverified email address. """
         if not user.email_verified:
@@ -36,6 +44,8 @@ class RegisterUserForm(UserCreationForm):
     def clean_email(self):
         """ Ensure that email address doesn't match an existing CapUser.normalized_email. """
         email = self.cleaned_data.get("email")
+        if re.search(r'\s', email):
+            raise forms.ValidationError("Email address may not contain spaces.")
         if CapUser.objects.filter(normalized_email=CapUser.normalize_email(email)).exists():
             raise forms.ValidationError("A user with the same email address has already registered.")
         return email
@@ -47,11 +57,48 @@ class RegisterUserForm(UserCreationForm):
 
 
 class ResearchRequestForm(forms.ModelForm):
-    name = forms.CharField(label='Name of researcher')
-    institution = forms.CharField(label='Educational or Research Institution')
+    name = forms.CharField(label='Full name of researcher')
+    institution = forms.CharField(label='Academic or non-profit research institution')
     title = forms.CharField(label='Title or Affiliation')
-    area_of_interest = forms.CharField(label='Research area of interest (optional)', widget=forms.Textarea)
+    area_of_interest = forms.CharField(label='Research area of interest (optional)', widget=forms.Textarea, required=False)
 
     class Meta:
         model = ResearchRequest
         fields = ["name", "email", "institution", "title", "area_of_interest"]
+
+
+class UnaffiliatedResearchRequestForm(forms.ModelForm):
+    name = forms.CharField(label='Full name of research scholar')
+    area_of_interest = forms.CharField(label='Your qualifications and intended uses of CAP data as an independent research scholar', widget=forms.Textarea, required=False)
+
+    class Meta:
+        model = ResearchRequest
+        fields = ["name", "email", "area_of_interest"]
+
+
+class ResearchContractForm(forms.ModelForm):
+    name = forms.CharField(label='Full name of researcher')
+    email = forms.EmailField(
+        disabled=True,  # any email submitted by user will be ignored
+        help_text=string_concat(
+            "For faster approval, make sure you are applying from a CAP account with an email address "
+            "provided by your institution. If this is the wrong email address, <a href='",
+            reverse_lazy('register'),
+            "'>create an account</a> with the correct address before applying."))
+    institution = forms.CharField(label='Academic or non-profit research institution')
+    title = forms.CharField(label='Title or Affiliation')
+    area_of_interest = forms.CharField(label='Research area of interest (optional and non-binding)', widget=forms.Textarea, required=False)
+
+    class Meta:
+        model = ResearchContract
+        fields = ["name", "email", "institution", "title", "area_of_interest"]
+
+
+class HarvardContractForm(forms.ModelForm):
+    name = forms.CharField(label='Your full name')
+    title = forms.CharField(label='Your current title or affiliation at Harvard')
+    area_of_interest = forms.CharField(label='Research area of interest (optional and non-binding)', widget=forms.Textarea, required=False)
+
+    class Meta:
+        model = HarvardContract
+        fields = ["name", "title", "area_of_interest"]

@@ -217,7 +217,7 @@
         you must register for an account to do so, and currently you may
         view or download no more than 500 cases per day. In addition,
         research scholars can qualify for bulk data access by agreeing to certain use and redistribution restrictions.
-        You can request a research agreement by <a href="{% url "register" %}">creating an account</a>
+        You can request a bulk access agreement by <a href="{% url "register" %}">creating an account</a>
         and then <a href="{% url "user-details" %}">visiting your account page</a>.
       </p>
       <p>
@@ -240,7 +240,7 @@
       {% for news_item in news %}
         <li class="item-set">
           <p class="item-title">
-            <a href="{{ news_item.url }}" target="_blank">{{ news_item.title }}</a>
+            <a href="{{ news_item.url }}">{{ news_item.title }}</a>
           </p>
           <span class="item-origin">
               {{ news_item.publication }}
@@ -263,7 +263,7 @@
     <ul>
       <li class="item-set">
         <span class="item-name">
-          <a href="https://lil.law.harvard.edu/" target="_blank">
+          <a href="https://lil.law.harvard.edu/">
             LIL
           </a>
         </span>
@@ -274,7 +274,7 @@
       </li>
       <li class="item-set">
         <span class="item-name">
-          <a href="https://law.harvard.edu/library" target="_blank">
+          <a href="https://law.harvard.edu/library">
             Harvard Law School Library
           </a>
         </span>
@@ -286,7 +286,7 @@
 
       <li class="item-set">
         <span class="item-name">
-          <a href="https://cyber.law.harvard.edu" target="_blank">
+          <a href="https://cyber.law.harvard.edu">
             Berkman-Klein Center
           </a>
         </span>
@@ -298,19 +298,22 @@
 
       <li class="item-set">
         <span class="item-name">
-          <a href="www.ravellaw.com/" target="_blank">
+          <a href="https://www.ravellaw.com/">
             Ravel Law
           </a>
         </span>
         <span class="color-red">&bull;</span>
         <span>
-          Ravel has partnered with the Harvard Law Library and LIL since the beginning of the Caselaw Access Project. Ravel funded the digitization effort and now offers free public access to the entire corpus through their search interface at <a href="https://home.ravellaw.com" target="_blank">https://home.ravellaw.com</a> and their non-commercial API at <a href="https://home.ravellaw.com/api" target="_blank">https://home.ravellaw.com/api</a>.
+          Ravel has partnered with the Harvard Law Library and LIL since the beginning of the Caselaw Access Project.
+          Ravel funded the digitization effort and now offers free public access to the entire corpus through their
+          <a href="https://home.ravellaw.com">search interface</a> and their
+          <a href="https://home.ravellaw.com/api">non-commercial API</a>.
         </span>
       </li>
 
       <li class="item-set">
         <span class="item-name">
-          <a href="https://www.classaction.org/" target="_blank">
+          <a href="https://www.classaction.org/">
             ClassAction.org
           </a>
         </span>
@@ -322,7 +325,7 @@
 
       <li class="item-set">
         <span class="item-name">
-          <a href="https://www.cloudflare.com/" target="_blank">
+          <a href="https://www.cloudflare.com/">
             Cloudflare
           </a>
         </span>
@@ -344,7 +347,7 @@
           <li class="item-set">
                 <span class="item-name">
                   {% if contributor.hash %}
-                    <a href="https://lil.law.harvard.edu/about/#{{ contributor.hash }}" target="_blank">
+                    <a href="https://lil.law.harvard.edu/about/#{{ contributor.hash }}">
                       {{ contributor.name }}
                     </a>
                   {% else %}

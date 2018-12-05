@@ -21,7 +21,8 @@ from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 
 from capdb.storages import ingest_storage, captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage, private_ingest_storage
-from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile
+from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile, \
+    volume_barcode_from_folder
 
 # logging
 # disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
@@ -56,6 +57,8 @@ def get_file_type(path):
             return 'jp2'
         if path.endswith('.tif'):
             return 'tif'
+        if path.endswith('.pdf'):
+            return 'pdf'
         return None
     if '/casemets/' in path:
         if path.endswith('.xml'):
@@ -441,6 +444,7 @@ def compress_volume(storage_name, volume_name):
         # use this if compressing tiff -> png
         # tif_file_results = file_map(handle_image_file, volume_files_by_type.get('tif', []), '.png', tif_to_png)
         file_map(handle_simple_file, volume_files_by_type.get('tif', []))
+        file_map(handle_simple_file, volume_files_by_type.get('pdf', []))
         color_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jpg', jp2_to_jpg_slow)
         # use this if compressing jp2 -> jp2
         # color_file_results = file_map(handle_image_file, volume_files_by_type.get('jp2', []), '.jp2', compress_jp2)
@@ -491,41 +495,53 @@ def compress_volume(storage_name, volume_name):
 
 
 @shared_task
-def validate_volume(volume_name):
+def validate_volume(volume_path):
+    """
+        Perform basic sanity checks on captar archives, and write "ok" or an error into `validation` folder.
+
+        Relative to captar_storage:
+            volume_path looks like 'redacted/32044031754302_redacted'
+            output file looks like 'validation/redacted/32044031754302_redacted.txt'
+    """
+
+    # helpers
+    top_level_file_sets = {("METS.md5", "METS.xml.gz"), ("BOXES.xml.gz", "METS.md5", "METS.xml.gz")}
     class ValidationResult(Exception):
         pass
 
     # check last result
-    result_path = str(Path('validation', volume_name).with_suffix('.txt'))
+    result_path = str(Path('validation', volume_path).with_suffix('.txt'))
     if captar_storage.exists(result_path):
         last_result = json.loads(captar_storage.contents(result_path))
         if last_result[0] == "ok":
-            print("Volume %s already validated; skipping." % volume_name)
+            print("Volume %s already validated; skipping." % volume_path)
             return
 
     temp_dir = TemporaryDirectory()
     try:
         # copy captar from S3 to disk if necessary
         if isinstance(captar_storage, CapS3Storage):
-            Path(temp_dir.name, volume_name).mkdir(parents=True)
-            for path in captar_storage.iter_files(volume_name):
+            Path(temp_dir.name, volume_path).mkdir(parents=True)
+            for path in captar_storage.iter_files(volume_path):
                 copy_file(path, Path(temp_dir.name, path), from_storage=captar_storage)
             local_storage = CapFileStorage(temp_dir.name)
         else:
             local_storage = captar_storage
 
         # load tar file as a storage wrapper and get list of items
-        volume_storage = CaptarStorage(local_storage, volume_name)
-        if not volume_storage.index:
-            raise ValidationResult("index_missing", "Failed to load index from %s" % volume_storage.index_path)
+        try:
+            volume_storage = CaptarStorage(local_storage, volume_path)
+            assert volume_storage.index
+        except (FileNotFoundError, AssertionError):
+            raise ValidationResult("index_missing", "Failed to load index for %s" % volume_path)
         tar_items = set(volume_storage.iter_files_recursive(with_md5=True))
 
-        # volmets_path is shortest path with no slashes, ending in .xml.gz
-        volmets_path = next((item for item in tar_items if item[0].count("/") == 0 and item[0].endswith(".xml.gz")), None)
+        # volmets_path is path with no slashes ending in METS.xml.gz
+        volmets_path = next((item for item in tar_items if item[0].count("/") == 0 and item[0].endswith("METS.xml.gz")), None)
 
         # check for missing volmets
         if not volmets_path:
-            raise ValidationResult("volmets_missing", volume_name)
+            raise ValidationResult("volmets_missing", volume_path)
 
         # check md5 of volmets
         md5_path = next((item[0] for item in tar_items if item[0].count("/") == 0 and item[0].endswith(".md5")), None)
@@ -553,15 +569,16 @@ def validate_volume(volume_name):
             raise ValidationResult("only_in_mets", only_in_mets)
 
         # check that all files only_in_tar are expected (should be one volmets and one volmets md5)
-        only_in_tar = sorted(item[0] for item in tar_items - volmets_files)
-        if not len(only_in_tar) == 2 and only_in_tar[0].endswith("_METS.md5") and only_in_tar[1].endswith("_METS.xml.gz"):
+        only_in_tar = tuple(sorted(item[0].rsplit('_',1)[-1] for item in tar_items - volmets_files))
+        if only_in_tar not in top_level_file_sets:
             raise ValidationResult("only_in_tar", only_in_tar)
 
         # count suffixes
         suffix_counts = defaultdict(int)
         for item in volmets_files:
             suffix_counts[item[0].split('.', 1)[1]] += 1
-        if suffix_counts['jpg'] == 0 or suffix_counts['jpg'] != suffix_counts['tif'] or suffix_counts['xml.gz'] < suffix_counts['jpg']:
+        color_image_count = suffix_counts['jpg'] or suffix_counts['pdf']
+        if color_image_count == 0 or color_image_count != suffix_counts['tif'] or suffix_counts['xml.gz'] <= color_image_count:
             raise ValidationResult("unexpected_suffix_counts", suffix_counts)
 
         raise ValidationResult("ok")
@@ -607,7 +624,7 @@ def sample_images(count=100):
         current_vol = next(volumes, "")
         while current_vol:
             next_vol = next(volumes, "")
-            if current_vol.split("_", 1)[0] != next_vol.split("_", 1)[0]:
+            if volume_barcode_from_folder(current_vol) != volume_barcode_from_folder(next_vol):
                 yield current_vol
             current_vol = next_vol
 
@@ -615,7 +632,7 @@ def sample_images(count=100):
     volumes = list(get_volumes())
     for vol in random.sample(volumes, min(len(volumes), count)):
         print("Sampling", vol)
-        id = vol.split('_', 1)[0]
+        id = volume_barcode_from_folder(vol)
         for i in [0,1]:
             img_name = "%s_00050_%s.tif" % (id, i)
             copy_file(

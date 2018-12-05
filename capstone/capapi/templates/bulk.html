@@ -27,14 +27,21 @@
     </h2>
     {% if exports.private %}
       <p>
-        The following jurisdictions are available for download under your academic research agreement.
+        The following jurisdictions are available for download under your scholarly research agreement.
         Click a link to download.
       </p>
       {% include "includes/download_list.html" with zips=exports.private %}
+    {% elif request.user.harvard_access and not request.user.harvard_ip %}
+      <p>You will have access to bulk data when accessing this page from a Harvard IP address.</p>
     {% else %}
       <p>
-        Bulk downloads of the remaining jurisdictions are freely available for academic research.
-        Please <a href="mailto:info@capapi.org">contact us</a> for access.
+        Bulk downloads of the remaining jurisdictions are freely available to research scholars.
+        To request access, please log in, visit your <a href="{% url "user-details" %}">account page</a>,
+        and click "Request unlimited research access."
+      </p>
+      <p>
+        For more information about our access limits, or details on requesting bulk data for commercial use, see the
+        <a href="{% url "api" %}">Access Limits section of our API documentation</a>.
       </p>
     {% endif %}
   </div>

@@ -1,0 +1,9 @@
+{% extends "research_request/contracts/affiliated.html" %}
+
+{% block user_info %}
+  <p>
+    {{ form.name.label }}: {{ form.cleaned_data.name }}<br>
+    {{ form.title.label }}: {{ form.cleaned_data.title }}<br>
+    {{ form.area_of_interest.label }}: {{ form.cleaned_data.area_of_interest }}
+  </p>
+{% endblock %}

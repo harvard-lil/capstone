@@ -297,9 +297,9 @@
       only whitelisted jurisdictions.
     </p>
     <p>
-      We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal level, we'd love to
-      talk to you about making the transition to digital-first publishing. Please <a href="mailto:lil@law.harvard.edu">send us an email at
-      lil@law.harvard.edu</a> and introduce yourself!
+      We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal
+      level, we'd love to talk to you about making the transition to digital-first publishing. Please
+      <a href="{% url "contact" %}">contact us</a> and introduce yourself!
     </p>
     <p>
       If you qualify for unlimited access as a research scholar, you can request a research agreement by
@@ -308,10 +308,9 @@
     </p>
     <p>
       In addition, under our agreement with Ravel (now owned by Lexis-Nexis), Ravel must negotiate in good faith
-      to provide bulk access to anyone seeking to make commercial use of this data. If you are interested in
-      making commercial use of this data,
-      <a href="http://info.ravellaw.com/contact-us-form">click here to contact Ravel for more information</a> or contact us at
-      <a href="mailto:lil@law.harvard.edu">lil@law.harvard.edu</a> and we will put you in touch with Ravel.
+      to provide bulk access to anyone seeking to make commercial use of this data.
+      <a href="http://info.ravellaw.com/contact-us-form">Click here to contact Ravel for more information</a>,
+      or <a href="{% url "contact" %}">contact us</a> and we will put you in touch with Ravel.
     </p>
     <dl>
       <dt>
@@ -385,11 +384,11 @@
     <dl>
       {# ====> single case <==== #}
       <dt>
-        Retrieve a single case, by its ID
+        Retrieve a single case by ID
       </dt>
       <dd class="example-link">
-        <a href="{% api_url "casemetadata-list" %}{{ case_id }}/">
-          {% api_url "casemetadata-list" %}{{ case_id }}/</a>
+        <a href="{% api_url "casemetadata-detail" case_id %}">
+          {% api_url "casemetadata-detail" case_id %}</a>
       </dd>
       <dd>
         <p>
@@ -401,8 +400,8 @@
           <li class="list-group-item">
             <h5 class="list-header">Standalone HTML-formatted Case</h5>
             <ul>
-              <li class="example-mod-url"><a href="{% api_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=html">
-                {% api_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=html</a>
+              <li class="example-mod-url"><a href="{% api_url "casemetadata-detail" case_id %}?full_case=true&format=html">
+                {% api_url "casemetadata-detail" case_id %}?full_case=true&format=html</a>
               </li>
               <li class="example-mod-description">This will return a lightly styled, standalone HTML
                 representation of the case with no accompanying metadata.
@@ -414,8 +413,8 @@
           <li class="list-group-item">
             <h5 class="list-header">Plain Text Case in JSON container with metadata</h5>
             <ul>
-              <li class="example-mod-url"><a href="{% api_url "casemetadata-list" %}{{ case_id }}/">
-                {% api_url "casemetadata-list" %}{{ case_id }}/</a>
+              <li class="example-mod-url"><a href="{% api_url "casemetadata-detail" case_id %}">
+                {% api_url "casemetadata-detail" case_id %}</a>
               </li>
               <li class="example-mod-description">This will return a lightly styled, standalone HTML
                 representation of the case with no accompanying metadata.
@@ -426,8 +425,8 @@
             <h5 class="list-header">Raw original XML document, with METS data</h5>
             <ul>
               <li class="example-mod-url">
-                <a href="{% api_url "casemetadata-list" %}{{ case_id }}/?full_case=true&body_format=xml">
-                  {% api_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=xml
+                <a href="{% api_url "casemetadata-detail" case_id %}?full_case=true&body_format=xml">
+                  {% api_url "casemetadata-detail" case_id %}?full_case=true&format=xml
                 </a>
               </li>
               <li class="example-mod-description">To get the document by itself, without the JSON enclosure and
@@ -469,7 +468,7 @@
                 </a>
               </li>
               <li class="example-mod-description">You can combine any of these parameters to refine your search.
-                Here, we have the same search as in the first example, but will only recieve results from within
+                Here, we have the same search as in the first example, but will only receive results from within
                 the specified dates.
               </li>
             </ul>
@@ -562,7 +561,7 @@
         API Base
       </dt>
       <dd class="endpoint-link">
-        <a class="endpoint-link" href="{% api_url "api-root" %}/">{{ request.build_absolute_uri }}v1/</a>
+        <a class="endpoint-link" href="{% api_url "api-root" %}">{% api_url "api-root" %}v1/</a>
       </dd>
       <dd>
         <p class="endpoint-description">
@@ -672,7 +671,7 @@
         Single Case Endpoint
       </dt>
       <dd class="endpoint-link">
-        <a href="{% api_url "casemetadata-list" %}">{% api_url "casemetadata-list" %}</a>
+        <a href="{% api_url "casemetadata-detail" case_id %}">{% api_url "casemetadata-detail" case_id %}</a>
       </dd>
       <dd>
         <p class="endpoint-description">
@@ -684,17 +683,18 @@
             <h5 class="list-header"><code class="parameter-name">full_case</code></h5>
             <ul>
               <li class="param-data-type"><code>true</code> or <code>false</code></li>
-              <li class="param-description"> When set to <code>true</code>, this parameter loads the case body.
-                It is
-                required for setting both <code>body_format</code> and <code>format</code>.
+              <li class="param-description">
+                When set to <code>true</code>, this parameter loads the case body.
+                It is required for setting both <code>body_format</code> and <code>format</code>.
+              </li>
             </ul>
           </li>
           <li class="list-group-item">
             <h5 class="list-header"><code class="parameter-name">body_format</code></h5>
             <ul>
               <li class="param-data-type"><code>html</code> or <code>xml</code></li>
-              <li class="param-description"> This will return a JSON enclosure with metadata, and a field
-                containing the case in XML or HTML.
+              <li class="param-description">
+                This will return a JSON enclosure with metadata, and a field containing the case in XML or HTML.
               </li>
             </ul>
           </li>
@@ -702,9 +702,8 @@
             <h5 class="list-header"><code class="parameter-name">format</code></h5>
             <ul>
               <li class="param-data-type"><code>html</code> or <code>xml</code></li>
-              <li class="param-description"> This will return the case in HTML or its original XML with no JSON
-                enclosure or
-                Metadata
+              <li class="param-description">
+                This will return the case in HTML or its original XML with no JSON enclosure or metadata.
               </li>
             </ul>
           </li>
@@ -1085,7 +1084,7 @@
     </p>
     <p>
       So when you're working with CAPAPI, the same principles apply. Rather than http://www.google.com, you'll
-      be using {{ request.build_absolute_uri }}. Rather than using the /search?q= endpoint and parameter, you'll
+      be using {% api_url "api-root" %}. Rather than using the /search?q= endpoint and parameter, you'll
       be using one of our <a href="#endpoints">endpoints and the parameters we've defined</a>. One important
       difference is the purpose of the structured data we're returning, vs. the visual, browser-oriented data
       that google is returning with their search engine.
@@ -1165,8 +1164,8 @@
       Glossary
     </h2>
     <p>
-      This is a list of technical or project-specific terms we use in this docuemntation. These are stub
-      definitions to help you get unstuck, but they should not be conisdered authoratative or complete. A quick
+      This is a list of technical or project-specific terms we use in this documentation. These are stub
+      definitions to help you get unstuck, but they should not be considered authoritative or complete. A quick
       Google search should provide more context for any of these terms.
     </p>
     <dl>

@@ -8,10 +8,17 @@
 
 {% block title %}Gallery{% endblock %}
 {% block meta_description %}Caselaw Access Project gallery{% endblock %}
-{% block top_section_style %}bg-violet{% endblock %}
+{% block top_section_style %}bg-violet-dark{% endblock %}
 
 {% block explainer %}
-  Sky is the limit! Here are some examples of what’s possible.
+  The sky's the limit! Here are some examples of what's possible.
+  <br/>
+  Want to have your project featured on this site?
+  Email us  <a class="contact_email" href="mailto:{{ email }}">{{ email }}</a>,
+  or send us a
+  <a href="https://github.com/harvard-lil/capstone/pulls" target="_blank">pull request.</a>
+  Thinking of adding a small code example? Consider contributing to our
+  <a href="https://github.com/harvard-lil/cap-examples" target="_blank">cap-examples repo</a>.
 {% endblock %}
 
 {% block sidebar_menu %}
@@ -33,6 +40,16 @@
             <span class="text">Limericks</span>
           </a>
         </li>
+        <li>
+          <a class="list-group-item" href="#witchcraft">
+            <span class="text">Witchcraft</span>
+          </a>
+        </li>
+        <li>
+          <a class="list-group-item" href="#examples">
+            <span class="text">Code Examples</span>
+          </a>
+        </li>
       </ul>
     </div>
   </nav>
@@ -49,8 +66,8 @@
            id="h2o"
            target="_blank">
           <img class="main-img rounded"
-             alt=""
-             src="{% static "img/h2o.png" %}">
+               alt=""
+               src="{% static "img/h2o.png" %}">
         </a>
       </div>
       <div class="project-description">
@@ -94,8 +111,8 @@
            id="wordclouds"
            aria-label="Wordcloud homepage">
           <img class="main-img rounded"
-             alt=""
-             src="{% static "img/wordclouds-1933.png" %}">
+               alt=""
+               src="{% static "img/wordclouds-1933.png" %}">
         </a>
       </div>
       <div class="project-description">
@@ -109,7 +126,7 @@
         </p>
         <p class="social">
           <span class="github">
-            <a href="https://github.com/harvard-lil/cap-examples/blob/master/make_wordclouds.py" target="_blank"
+            <a href="https://github.com/harvard-lil/cap-examples-old/blob/master/make_wordclouds.py" target="_blank"
                title="Wordcloud source code on Github"
                aria-label="Wordcloud source code on Github"></a>
           </span>
@@ -129,9 +146,9 @@
         <a href="{% url "limericks" %}"
            id="limericks"
            aria-label="Limericks homepage">
-          <img class="main-img"
-             alt=""
-             src="{% static "img/limerick.png" %}">
+          <img class="main-img rounded"
+               alt=""
+               src="{% static "img/limerick.png" %}">
         </a>
       </div>
       <div class="project-description">
@@ -145,7 +162,7 @@
         </p>
         <p class="social">
           <span class="github">
-            <a href="https://github.com/harvard-lil/cap-examples/blob/master/generate_limerick.py" target="_blank"
+            <a href="https://github.com/harvard-lil/cap-examples-old/blob/master/generate_limerick.py" target="_blank"
                title="Limericks source code on Github"
                aria-label="Limericks source code on Github"></a>
           </span>
@@ -154,6 +171,77 @@
             <a href="{% url "limericks" %}"
                title="Limericks homepage"
                aria-label="Limericks homepage"></a>
+          </span>
+        </p>
+      </div>
+    </div>
+  </div>
+  {# =============> WITCHCRAFT <============= #}
+  <div class="page-section">
+    <div class="row">
+      <div class="project-image">
+        <a href="{% url "witchcraft" %}"
+           id="limericks"
+           aria-label="Limericks homepage">
+          <img class="main-img"
+               alt=""
+               src="{% static "img/witchcraft.png" %}">
+        </a>
+      </div>
+      <div class="project-description">
+        <h2 class="subtitle simple-subtitle" id="witchcraft">
+          <a href="{% url "witchcraft" %}">
+            Witchcraft in Caselaw
+          </a>
+        </h2>
+        <p>
+          See all instances of "witchcraft" charted out on the U.S. map.
+        </p>
+        <p class="color-violet">Happy Halloween!</p>
+        <p class="social">
+          <span class="github">
+            <a href="https://github.com/harvard-lil/cap-examples/blob/master/api_wordsearch/wordsearch.py"
+               target="_blank"
+               title="Witchcraft source code on Github"
+               aria-label="Witchcraft source code on Github"></a>
+          </span>
+
+          <span class="website">
+            <a href="{% url "witchcraft" %}"
+               title="Witchcraft homepage"
+               aria-label="Witchcraft homepage"></a>
+          </span>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="page-section">
+    <div class="row">
+      <div class="project-image">
+        <a href="https://github.com/harvard-lil/cap-examples"
+           id="limericks"
+           aria-label="Limericks homepage">
+          <img class="main-img"
+               alt=""
+               src="{% static "img/examples.png" %}">
+        </a>
+      </div>
+
+      <div class="project-description">
+        <h2 class="subtitle simple-subtitle" id="examples">
+          <a href="https://github.com/harvard-lil/cap-examples">
+            Code examples
+          </a>
+        </h2>
+        <p>
+          See some ways of getting started with the data! Examples are written in Python.
+        </p>
+        <p class="social">
+          <span class="github">
+            <a href="https://github.com/harvard-lil/cap-examples"
+               target="_blank"
+               title="Examples source code on Github"
+               aria-label="Examples source code on Github"></a>
           </span>
         </p>
       </div>

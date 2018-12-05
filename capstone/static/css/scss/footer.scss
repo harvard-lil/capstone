@@ -2,6 +2,7 @@ footer {
   z-index: 999;
   font-size: 18px;
   background-color: $color-yellow;
+  hyphens: none;
 }
 
 footer {
@@ -17,6 +18,10 @@ footer {
 .footer-content {
   margin: 0 auto;
   padding: 3rem 0;
+  .list-inline-item {
+    margin-right: 0;
+    margin-left: 0.5rem;
+  }
   @include make-col(11);
   nav[aria-label="footer"] {
     text-align: right;
@@ -70,5 +75,16 @@ footer {
     .arrow {
       font-size: 2rem;
     }
+  }
+}
+
+.footer-copyright {
+  margin: 0 auto;
+  @include make-col(11);
+  p {
+    text-align: right;
+  }
+  span {
+    display: inline-block;
   }
 }

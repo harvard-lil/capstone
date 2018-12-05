@@ -13,9 +13,10 @@ from partial_index import PartialIndex
 
 from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
-from capweb.helpers import reverse
+from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, jurisdiction_translation_long_name, extract_casebody)
+                             serialize_xml, jurisdiction_translation_long_name, extract_casebody,
+                             short_id_from_s3_key)
 from scripts.process_metadata import get_case_metadata
 
 
@@ -155,14 +156,7 @@ class AutoSlugMixin:
                     slug += "-%s" % count
                 self.slug = slug
                 try:
-                    # if we are running in a transaction, we have to run this save in a sub-transaction
-                    # to recover from expected IntegrityErrors:
-                    if transaction.get_connection().in_atomic_block:
-                        with transaction.atomic(using='capdb'):
-                            return super(AutoSlugMixin, self).save(*args, **kwargs)
-
-                    # otherwise we run with no transaction for speed:
-                    else:
+                    with transaction_safe_exceptions(using='capdb'):
                         return super(AutoSlugMixin, self).save(*args, **kwargs)
                 except IntegrityError as e:
                     if 'Key (slug)' not in e.args[0]:
@@ -225,8 +219,10 @@ class CachedLookupMixin:
         if value in cls._lookup_tables[keys]:
             return cls._lookup_tables[keys][value]
 
-        # if not in cache, attempt to fetch item from DB (raises cls.DoesNotExist if not found):
-        obj = cls.objects.get(**kwargs)
+        # if not in cache, attempt to fetch item from DB (raises cls.DoesNotExist if not found).
+        # wrap in transaction_safe_exceptions so callers can catch the DoesNotExist if they want.
+        with transaction_safe_exceptions(using='capdb'):
+            obj = cls.objects.get(**kwargs)
 
         # update cache with newly found obj:
         cls._cached_objects.append(obj)
@@ -490,7 +486,7 @@ class Reporter(models.Model):
 
 class VolumeMetadata(models.Model):
     barcode = models.CharField(unique=True, max_length=64, primary_key=True)
-    hollis_number = models.CharField(max_length=9, help_text="Identifier in the Harvard cataloging system, HOLLIS")
+    hollis_number = models.CharField(max_length=9, null=True, help_text="Identifier in the Harvard cataloging system, HOLLIS")
     volume_number = models.CharField(max_length=64, blank=True, null=True)
     publisher = models.CharField(max_length=255, blank=True, null=True)
     publication_year = models.IntegerField(blank=True, null=True)
@@ -512,7 +508,7 @@ class VolumeMetadata(models.Model):
                                   help_text="Historical and Special Collections Review")
     needs_repair = models.CharField(max_length=9, blank=True, null=True, choices=choices('No', 'Complete', 'Yes'))
     missing_text_pages = models.TextField(blank=True, null=True, help_text="Pages damaged enough to have lost text.")
-    created_by = models.ForeignKey(TrackingToolUser, on_delete=models.DO_NOTHING)
+    created_by = models.ForeignKey(TrackingToolUser, blank=True, null=True, on_delete=models.DO_NOTHING)
     bibliographic_review = models.CharField(max_length=7, blank=True, null=True,
                                             choices=choices('No', 'Complete', 'Yes'))
     analyst_page_count = models.IntegerField(blank=True, null=True,
@@ -615,7 +611,7 @@ class VolumeXML(BaseXMLModel):
     @transaction.atomic(using='capdb')
     def save(self, update_related=True, *args, **kwargs):
 
-        if self.tracker.has_changed('orig_xml') and update_related:
+        if (self.tracker.has_changed('orig_xml') and update_related) or self.metadata is None:
             self.update_metadata()
 
         super().save(*args, **kwargs)
@@ -626,6 +622,8 @@ class VolumeXML(BaseXMLModel):
         """
         parsed_xml = parse_xml(self.orig_xml)
 
+        if self.metadata is None:
+            self.metadata = VolumeMetadata()
         metadata = self.metadata
 
         metadata.xml_start_year = parsed_xml('volume|voldate > volume|start').text() or None
@@ -643,8 +641,35 @@ class VolumeXML(BaseXMLModel):
         metadata.xml_reporter_short_name = parsed_xml('volume|reporter').attr.abbreviation or None
         metadata.xml_reporter_full_name = parsed_xml('volume|reporter').text() or None
 
+        if metadata.reporter_id is None:
+            try:
+                metadata.reporter = Reporter.objects.get(short_name=metadata.xml_reporter_short_name)
+            except Reporter.DoesNotExist:
+                raise Exception("Cannot Find Reporter with Short Name: {} in {}. "
+                                "There are {} reporters in the database.".format(
+                    metadata.xml_reporter_short_name, self.s3_key, Reporter.objects.count()))
+            except Reporter.MultipleObjectsReturned:
+                raise Exception("Ambiguous Short Reporter Name: {} in {}".format(
+                    metadata.xml_reporter_short_name, self.s3_key))
+
+        if metadata.barcode is None or metadata.barcode is '':
+            metadata.barcode = self.s3_key.split('/')[0].split('_redacted')[0]
+        if metadata.volume_number is None:
+            metadata.volume_number = metadata.xml_volume_number
+        if metadata.publisher is None:
+            metadata.publisher = metadata.xml_publisher
+        if metadata.publication_year is None:
+            metadata.publication_year = metadata.xml_publication_year
+        if metadata.start_year is None:
+            metadata.start_year = metadata.xml_start_year
+        if metadata.end_year is None:
+            metadata.end_year = metadata.xml_end_year
+        if metadata.image_count is None:
+            metadata.publication_city = metadata.xml_publication_city
+
         if metadata.tracker.changed():
             metadata.save()
+            self.metadata_id = metadata.pk
 
     def update_checksums(self):
         """
@@ -1110,8 +1135,7 @@ class CaseXML(BaseXMLModel):
     @property
     def short_id(self):
         """ ID of this case as referred to by volume xml file. """
-        return "casemets_" + self.metadata.case_id.split('_', 1)[1]
-
+        return short_id_from_s3_key(self.s3_key)
 
 class Citation(models.Model):
     type = models.CharField(max_length=100,
@@ -1164,7 +1188,8 @@ class PageXML(BaseXMLModel):
     @property
     def short_id(self):
         """ ID of this page as referred to by volume xml file. """
-        return "alto_" + self.barcode.split('_', 1)[1]
+        return short_id_from_s3_key(self.s3_key)
+
 
 
 class DataMigration(models.Model):

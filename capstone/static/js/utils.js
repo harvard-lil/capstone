@@ -1,5 +1,7 @@
+import $ from "jquery"
+
 /* helper function found in https://stackoverflow.com/questions/487073/check-if-element-is-visible-after-scrolling/488073#488073 */
-function isScrolledIntoView(elem) {
+export function isScrolledIntoView(elem) {
   let docViewTop = $(window).scrollTop() - $('nav').height();
 
   /* checking if element is in the top half of the window */

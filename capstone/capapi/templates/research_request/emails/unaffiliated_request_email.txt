@@ -1,0 +1,6 @@
+An unaffiliated user has requested access to the full text of all cases in the CAP database.
+
+Name: {{ data.name }}
+Email: {{ data.email }}
+Research area:
+{{ data.area_of_interest }}

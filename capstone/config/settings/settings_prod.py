@@ -46,6 +46,7 @@ INVENTORY = {
 }
 
 USE_TEST_TRACKING_TOOL_DB = False
+DATABASES = DATABASES.copy()
 DATABASES['tracking_tool'] = {
     'ENGINE': 'django.db.backends.mysql',
     'NAME': 'ftl_tt',
@@ -60,7 +61,7 @@ DATABASES['tracking_tool'] = {
 }
 
 ### API
-API_DOCS_CASE_ID = '11301409' # Brown v. Board
+API_DOCS_CASE_ID = '435800' # Random Illinois case
 
 ### SECURITY
 

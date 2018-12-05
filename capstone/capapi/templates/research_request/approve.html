@@ -1,0 +1,52 @@
+{% extends "registration/base.html" %}
+{% load bootstrap4 %}
+
+{% block title %}Approve Research Scholar Applications{% endblock %}
+
+{% block extra_head %}
+  {{ block.super }}
+  <script>
+    $(function(){
+      // confirm denials
+      $('button[name="deny"]').on('click', function(){
+        var notes = this.form.elements.approver_notes;
+        if(!notes.value) {
+          alert("Please add an internal note to document the reason for this denial");
+          return false;
+        }
+        return confirm("Really deny application?");
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block main_content %}
+  {% if approver_message %}
+    <div class="alert alert-primary" role="alert">
+      {{ approver_message }}
+    </div>
+  {% endif %}
+
+  {% for contract in contracts %}
+    <div class="approval-contract">
+      <h2 class="h4">{{ contract.name }} submitted on {{ contract.user_signature_date }}</h2>
+      <div class="row">
+        <div class="col approval-contract-text">
+          {{ contract.contract_html|safe }}
+        </div>
+        <div class="col col-3">
+          <form class="form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="contract_id" value="{{ contract.id }}">
+            <button type="submit" name="approve" value="true" class="btn btn-primary">Approve application</button>
+            <button type="submit" name="deny" value="true" class="btn btn-warning">Deny application</button>
+            <div class="form-group">
+              <label for="denial-reason">Internal notes:</label>
+              <textarea name="approver_notes" class="form-control" id="denial-reason"></textarea>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}

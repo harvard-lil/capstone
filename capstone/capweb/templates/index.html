@@ -2,10 +2,11 @@
 {% load static %}
 {% load pipeline %}
 {% load api_url %}
+{% load render_bundle from webpack_loader %}
 
 {% block extra_head %}
   {% stylesheet 'index' %}
-  {% javascript 'map_actions' %}
+  {% render_bundle 'map' %}
 {% endblock %}
 
 {% block title_suffix %}Caselaw Access Project{% endblock title_suffix %}
@@ -61,7 +62,7 @@
             <hr/>
             <div class="col">
               <span class="reporters-number">{{ numbers.reporters }}</span>
-              <span class="label color-yellow-bright">Reporters</span>
+              <span class="label color-yellow-bright">Reporter{{ numbers.reporters|pluralize }}</span>
             </div>
             <div class="dotted-vr"></div>
             <div class="col pl-1">
@@ -256,6 +257,10 @@
           </h2>
         </div>
         <div class="content-right">
+          <span class="section-subtitle">
+            Follow our progress, contribute code, or just say hi!
+          </span>
+
           <div class="social big">
             <span class="twitter">
               <a href="https://twitter.com/caselawaccess" target="_blank"

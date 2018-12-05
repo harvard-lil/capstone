@@ -1,0 +1,13 @@
+An educational or nonprofit researcher has submitted a signed application for unmetered access to the CAP database.
+
+Name: {{ data.name }}
+Email: {{ data.email }}
+Institution: {{ data.institution }}
+Title: {{ data.title }}
+Research area:
+{{ data.area_of_interest }}
+
+Please approve or deny this application at {{ approval_url }}
+
+Thanks!
+The CAP Team

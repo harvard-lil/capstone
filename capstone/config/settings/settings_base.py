@@ -5,9 +5,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SERVICES_DIR = os.path.join(os.path.dirname(BASE_DIR), 'services')
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test', '0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test']
 
-ADMINS = [('Caselaw Access Project', 'info@capapi.org')]
+ADMINS = [('Caselaw Access Project', 'info@case.law')]
 
 AUTH_USER_MODEL = 'capapi.CapUser'
 LOGIN_REDIRECT_URL = '/'
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'bootstrap4',   # bootstrap form rendering
     'drf_yasg',   # API specification
     'django_hosts',     # subdomain routing
+    'webpack_loader',   # webpack assets
 ]
 
 REST_FRAMEWORK = {
@@ -115,8 +116,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates'),
-                 os.path.join(BASE_DIR, 'capweb', 'templates'), # required by DRF for some reason
-                 os.path.join(BASE_DIR, 'capbrowse', 'templates')],
+                 os.path.join(BASE_DIR, 'capweb', 'templates'),
+                 os.path.join(BASE_DIR, 'capbrowse', 'templates')], # required by DRF for some reason
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -221,12 +222,10 @@ STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 PIPELINE = {
     'COMPILERS': (
         'libsasscompiler.LibSassCompiler',
-        'pipeline.compilers.es6.ES6Compiler'
     ),
     'STYLESHEETS': {
         'base': {
             'source_filenames': (
-                'css/_normalize.css',
                 'css/scss/base.scss',
             ),
             'output_filename': 'base.css'
@@ -291,76 +290,32 @@ PIPELINE = {
                 'css/scss/case.scss',
             },
             'output_filename': 'case.css'
-        },
-        'browse': {
-            'source_filenames': {
-                'css/scss/browse.scss',
-            },
-            'output_filename': 'browse.css'
-        },
-        'browse_case': {
-            'source_filenames': {
-                'css/scss/browse_case.scss',
-            },
-            'output_filename': 'browse_case.css'
         }
     },
-    'JAVASCRIPT': {
-        'base': {
-            'source_filenames': (
-                'js/jquery-3.3.1.js',
-                'js/utils.js',
-                'js/custom.js',
-                'js/analytics.js',
-            ),
-            'output_filename': 'base.js'
-        },
-        'limericks': {
-            'source_filenames': (
-                'js/limerick_lines.js',
-                'js/generate_limericks.js',
-            ),
-            'output_filename': 'limericks.js'
-        },
-        'limerick_lines': {
-            'source_filenames': (
-              'js/limerick_lines.json',
-            ),
-            'output_filename': 'limerick_lines.json'
-        },
-        'viz_totals': {
-            'source_filenames': (
-                'js/chart.js',
-                'js/color-blend.js',
-                'js/viz-totals.js',
-            ),
-            'output_filename': 'viz_totals.js'
-        },
-        'viz_details': {
-            'source_filenames': (
-                'js/chart.js',
-                'js/viz-details.js',
-            ),
-            'output_filename': 'viz_details.js'
-        },
-        'map_actions': {
-            'source_filenames': (
-                'js/map-actions.js',
-            ),
-            'output_filename': 'map_actions.js'
-        },
-        'search_vue': {
-            'source_filenames': (
-                'js/search-source.es6',
-            ),
-            'output_filename': 'search.js'
-        },
-    },
+    # These are not yet converted to vue/webpack:
+    # 'JAVASCRIPT': {
+    #     'viz_totals': {
+    #         'source_filenames': (
+    #             'js/chart.js',
+    #             'js/color-blend.js',
+    #             'js/viz-totals.js',
+    #         ),
+    #         'output_filename': 'viz_totals.js'
+    #     },
+    #     'viz_details': {
+    #         'source_filenames': (
+    #             'js/chart.js',
+    #             'js/viz-details.js',
+    #         ),
+    #         'output_filename': 'viz_details.js'
+    #     },
+    # },
 
     # avoid compressing assets for now
     'CSS_COMPRESSOR': None,
     'JS_COMPRESSOR': None,
 }
+
 # define storages
 # each of these can be imported from capdb.storages, e.g. `from capdb.storages import ingest_storage`
 
@@ -563,3 +518,31 @@ NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
 # feature flags
 NGRAMS_FEATURE = False
 FULL_TEXT_FEATURE = True
+NEW_RESEARCHER_FEATURE = True
+HARVARD_RESEARCHER_FEATURE = True
+
+HARVARD_IP_RANGES = """
+    12.0.48.0/20 
+    12.6.208.0/20 
+    65.112.0.0/20 
+    67.134.204.0/22 
+    128.103.0.0/16 
+    134.174.0.0/16 
+    140.247.0.0/16 
+    192.5.66.0/24 
+    192.54.223.0/24 
+    192.131.102.0/24 
+    199.94.0.0/19 
+    199.94.32.0/20 
+    199.94.48.0/24 
+    199.94.60.0/22 
+    206.191.184.0/21 
+    206.253.200.0/21
+""".split()
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'dist/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
+    }
+}

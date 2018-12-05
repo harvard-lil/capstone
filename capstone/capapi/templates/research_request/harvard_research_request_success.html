@@ -1,0 +1,12 @@
+{% extends "registration/base.html" %}
+
+{% block title %}Harvard Community Member Application{% endblock %}
+{% block meta_description %}Request unmetered access to the cases made available by the Caselaw Access Project{% endblock %}
+
+{% block main_content %}
+  <p>
+    Your account is approved for unmetered access as a current member of the Harvard community. Unmetered access
+    requires that you access this site from a Harvard IP address.
+  </p>
+  <p><a href="{% url "user-details" %}">Back to your account page.</a></p>
+{% endblock %}
