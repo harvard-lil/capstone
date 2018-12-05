@@ -2,11 +2,10 @@
 {% load static %}
 {% load pipeline %}
 {% load api_url %}
-
+{% load render_bundle from webpack_loader %}
 {% block extra_head %}
   {% stylesheet 'browse' %}
 {% endblock %}
-
 {% block title %}Caselaw Access Project| View Case {% endblock %}
 
 {% block meta_description %}
@@ -50,6 +49,5 @@
 
   </script>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-  <script src="{% static "js/search.js" %}"></script>
-
+  {% render_bundle 'search' %}
 {% endblock %}

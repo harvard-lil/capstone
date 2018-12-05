@@ -290,6 +290,12 @@ PIPELINE = {
                 'css/scss/case.scss',
             },
             'output_filename': 'case.css'
+        },
+        'browse': {
+            'source_filenames': {
+                'css/scss/browse.scss',
+            },
+            'output_filename': 'browse.css'
         }
     },
     # These are not yet converted to vue/webpack:
