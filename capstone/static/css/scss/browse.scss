@@ -135,3 +135,20 @@ h1{
   margin-bottom: 20px;
   columns: $color-violet;
 }
+
+.field_label_container {
+}
+
+.field_label_container > select {
+  max-width: 100%;
+}
+
+.field_row_container {
+}
+
+.field_value_container {
+}
+
+.field_value_container > input {
+          width: 100%;
+        }
