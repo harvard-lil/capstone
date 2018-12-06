@@ -24,15 +24,15 @@
           <div class="title-section">
             <h1 class="page-title" id="overview">
               <img alt="" aria-hidden="true" src='{% static "img/red-arrow-right.svg" %}' class="decorative-arrow"/>
-                <span v-text="title"></span>
+                <span>Browse or Search [[ endpoint.charAt(0).toUpperCase() + endpoint.slice(1) ]]</span>
             </h1>
           </div>
       </div>
       <div class="row below-the-fold">
         <div class="main-content">
             <div class="content">
-              <search-form v-on:change-endpoint="resetForm" v-on:new-search="newSearch"></search-form>
-              <result-list v-on:next-page="nextPage" v-on:prev-page="prevPage" :last_page="last_page" :first_page="first_page" :page="page" :results="results" :endpoint="endpoint" :hitcount="hitcount"></result-list>
+              <search-form ref="searchform" v-on:change-endpoint="resetForm" v-on:new-search="newSearch"></search-form>
+              <result-list v-on:see-cases="seeCases" v-on:next-page="nextPage" v-on:prev-page="prevPage" :last_page="last_page" :first_page="first_page" :page="page" :results="results" :endpoint="endpoint" :hitcount="hitcount"></result-list>
             </div>
           </div>
         </div>
