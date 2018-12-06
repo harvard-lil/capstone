@@ -149,7 +149,8 @@ def map_volume_tally(volume_barcode):
     tally = {}
     volume = VolumeMetadata.objects.get(pk=volume_barcode)
     # just loop through the cases
-    for case in volume.case_metadatas.prefetch_related('case_xml__pages').all():
+    for case in volume.case_metadatas.select_related("jurisdiction").all():
+
         if case.jurisdiction:
             map_id = jurisdiction_translate[case.jurisdiction.slug]
             if map_id not in tally:
@@ -159,7 +160,7 @@ def map_volume_tally(volume_barcode):
                 tally[map_id]['page_count'] = 0
                 tally[map_id]['reporter_count'] = 1
             tally[map_id]['case_count'] += 1
-            tally[map_id]['page_count'] += case.case_xml.pages.count()
+            tally[map_id]['page_count'] += int(case.last_page) - int(case.first_page) + 1
     return tally
 
 

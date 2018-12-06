@@ -4,9 +4,9 @@ from scripts import update_snippets
 from capdb.models import Snippet
 
 @pytest.mark.django_db
-def test_map_numbers(ingest_case_xml):
-
-    update_snippets.update_map_numbers()
+def test_map_numbers(ingest_case_xml, django_assert_num_queries):
+    with django_assert_num_queries(select=10, insert=1):
+        update_snippets.update_map_numbers()
     snippet = Snippet.objects.get(label="map_numbers")
     parsed = json.loads(snippet.contents)
     assert len(parsed) == 2
