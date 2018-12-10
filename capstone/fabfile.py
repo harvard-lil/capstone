@@ -823,7 +823,7 @@ def ice_volumes(scope='all', dry_run='true'):
 
     # prepare validation hash
     validation = {}
-    for validation_path in captar_storage.iter_files_recursive(path='captar/validation/'):
+    for validation_path in captar_storage.iter_files_recursive(path='validation/'):
         if validation_path.endswith('.txt'):
             volume = validation_path.split('/')[-1][:-4]
             validation[volume] = False
