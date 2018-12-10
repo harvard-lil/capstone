@@ -36,11 +36,15 @@ def recursively_tag(storage_name, volume, dry_run, key='captar', value='ok'):
                                                                    with_md5=True):
         # assume in the case of a dry run that tagging would have succeeded...
         tagged = dry_run or storage.tag_file(object_path, key, value)
+        if dry_run:
+            info("DRY RUN: tagging %s" % object_path)
         if tagged:
             if object_etag in xfer_manifest:
                 for xfer_object in xfer_manifest[object_etag]:
                     deleted = dry_run or transfer_storage.delete_file(xfer_object)
                     if not deleted:
                         info("Failed to delete %s" % xfer_object)
+                    if dry_run:
+                        info("DRY RUN: deleting %s" % xfer_object)
         else:
             info("Failed to tag %s" % object_path)
