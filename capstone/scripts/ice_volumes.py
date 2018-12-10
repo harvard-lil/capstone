@@ -22,7 +22,7 @@ def recursively_tag(storage_name, volume, dry_run, key='captar', value='ok'):
     """
     dry_run = dry_run != 'false'
 
-    info("%sTagging objects in %s" % 'DRY RUN: ' if dry_run else '', volume)
+    info("%sTagging objects in %s" % ('DRY RUN: ' if dry_run else '', volume))
     # get all etags for objects matching this volume's barcode
     xfer_manifest = {}
     volume_barcode = volume_barcode_from_folder(volume)
