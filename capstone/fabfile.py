@@ -821,9 +821,11 @@ def ice_volumes(scope='all', dry_run='true'):
     from scripts.ice_volumes import recursively_tag
     from scripts.helpers import storage_lookup
 
+    from tqdm import tqdm
+
     # prepare validation hash
     validation = {}
-    for validation_path in captar_storage.iter_files_recursive(path='validation/'):
+    for validation_path in tqdm(captar_storage.iter_files_recursive(path='validation/')):
         if validation_path.endswith('.txt'):
             volume = validation_path.split('/')[-1][:-4]
             validation[volume] = False
@@ -838,7 +840,7 @@ def ice_volumes(scope='all', dry_run='true'):
         storage = storage_lookup[storage_name][0]
         last_barcode = None
         valid = False
-        for volume_path in reversed(list(storage.iter_files())):
+        for volume_path in tqdm(reversed(list(storage.iter_files()))):
             barcode = volume_barcode_from_folder(volume_path)
             if barcode != last_barcode:
                 last_barcode = barcode
