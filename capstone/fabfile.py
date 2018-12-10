@@ -806,3 +806,56 @@ def report_multiple_jurisdictions(out_path="court_jurisdictions.csv"):
             for row in rows:
                 url = "https://api.case.law/v1/cases/?court=%s&jurisdiction=%s" % (row.court_slug, row.jurisdiction_slug)
                 csv_writer.writerow([row.jurisdiction_slug, row.count, url])
+
+
+@task
+def ice_volumes(scope='all', dry_run='true'):
+    """
+    For each captar'd volume that validated OK, tag the matching objects
+    in the shared or private bucket for transfer to glacier and delete matching
+    objects from the transfer bucket.
+
+    Set dry_run to 'false' to run in earnest.
+    """
+    from capdb.storages import captar_storage
+    from scripts.ice_volumes import recursively_tag
+    from scripts.helpers import storage_lookup
+
+    # prepare validation hash
+    validation = {}
+    for validation_path in captar_storage.iter_files_recursive(path='captar/validation/'):
+        if validation_path.endswith('.txt'):
+            volume = validation_path.split('/')[-1][:-4]
+            validation[volume] = False
+            result = json.loads(captar_storage.contents(validation_path))
+            if result[0] == "ok":
+                validation[volume] = True
+
+    # iterate through volumes in both storages, in reverse order,
+    # alphabetically, tracking current barcode and tagging matching
+    # volumes once a valid CAPTAR has been seen
+    for storage_name in ['ingest_storage', 'private_ingest_storage']:
+        storage = storage_lookup[storage_name][0]
+        last_barcode = None
+        valid = False
+        for volume_path in reversed(list(storage.iter_files())):
+            barcode = volume_barcode_from_folder(volume_path)
+            if barcode != last_barcode:
+                last_barcode = barcode
+                valid = False
+            elif valid:
+                # tag this volume and go on to the next
+                if scope == 'all' or scope == volume_path:
+                    recursively_tag(storage_name, volume_path, dry_run=dry_run)
+                continue
+            else:
+                pass
+            try:
+                if validation[volume_path]:
+                    # tag this and all until barcode changes
+                    if scope == 'all' or scope == volume_path:
+                        recursively_tag(storage_name, volume_path, dry_run=dry_run)
+                    valid = True
+            except KeyError:
+                # we don't have a validation
+                pass
