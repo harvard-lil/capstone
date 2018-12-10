@@ -809,7 +809,7 @@ def report_multiple_jurisdictions(out_path="court_jurisdictions.csv"):
 
 
 @task
-def ice_volumes(volume='all', dry_run='true'):
+def ice_volumes(scope='all', dry_run='true'):
     """
     For each captar'd volume that validated OK, tag the matching objects
     in the shared or private bucket for transfer to glacier and delete matching
@@ -845,7 +845,7 @@ def ice_volumes(volume='all', dry_run='true'):
                 valid = False
             elif valid:
                 # tag this volume and go on to the next
-                if volume == 'all' or volume == volume_path:
+                if scope == 'all' or scope == volume_path:
                     recursively_tag(storage_name, volume_path, dry_run=dry_run)
                 continue
             else:
@@ -853,7 +853,7 @@ def ice_volumes(volume='all', dry_run='true'):
             try:
                 if validation[volume_path]:
                     # tag this and all until barcode changes
-                    if volume == 'all' or volume == volume_path:
+                    if scope == 'all' or scope == volume_path:
                         recursively_tag(storage_name, volume_path, dry_run=dry_run)
                     valid = True
             except KeyError:
