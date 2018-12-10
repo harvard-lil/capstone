@@ -821,31 +821,36 @@ def ice_volumes(scope='all', dry_run='true'):
     from scripts.ice_volumes import recursively_tag
     from scripts.helpers import storage_lookup
 
-    # prepare validation hash
+    from tqdm import tqdm
+
+    print("Preparing validation hash...")
     validation = {}
-    for validation_path in captar_storage.iter_files_recursive(path='captar/validation/'):
+    for validation_path in tqdm(captar_storage.iter_files_recursive(path='validation/')):
         if validation_path.endswith('.txt'):
-            volume = validation_path.split('/')[-1][:-4]
-            validation[volume] = False
-            result = json.loads(captar_storage.contents(validation_path))
-            if result[0] == "ok":
-                validation[volume] = True
+            validation_barcode = volume_barcode_from_folder(validation_path[:-4])
+            if scope == 'all' or scope in validation_barcode:
+                validation[validation_barcode] = False
+                result = json.loads(captar_storage.contents(validation_path))
+                if result[0] == "ok":
+                    validation[validation_barcode] = True
+    print("Done.")
 
     # iterate through volumes in both storages, in reverse order,
     # alphabetically, tracking current barcode and tagging matching
     # volumes once a valid CAPTAR has been seen
     for storage_name in ['ingest_storage', 'private_ingest_storage']:
+        print("Checking %s..." % storage_name)
         storage = storage_lookup[storage_name][0]
         last_barcode = None
         valid = False
-        for volume_path in reversed(list(storage.iter_files())):
+        for volume_path in tqdm(reversed(list(storage.iter_files()))):
             barcode = volume_barcode_from_folder(volume_path)
             if barcode != last_barcode:
                 last_barcode = barcode
                 valid = False
             elif valid:
                 # tag this volume and go on to the next
-                if scope == 'all' or scope == volume_path:
+                if scope == 'all' or scope in volume_path:
                     recursively_tag(storage_name, volume_path, dry_run=dry_run)
                 continue
             else:
@@ -853,7 +858,7 @@ def ice_volumes(scope='all', dry_run='true'):
             try:
                 if validation[volume_path]:
                     # tag this and all until barcode changes
-                    if scope == 'all' or scope == volume_path:
+                    if scope == 'all' or scope in volume_path:
                         recursively_tag(storage_name, volume_path, dry_run=dry_run)
                     valid = True
             except KeyError:
