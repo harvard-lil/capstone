@@ -854,7 +854,7 @@ def ice_volumes(scope='all', dry_run='true'):
             elif valid:
                 # tag this volume and go on to the next
                 if scope == 'all' or scope in volume_path:
-                    recursively_tag(storage_name, volume_path, dry_run=dry_run)
+                    recursively_tag.delay(storage_name, volume_path, dry_run=dry_run)
                 continue
             else:
                 pass
@@ -862,7 +862,7 @@ def ice_volumes(scope='all', dry_run='true'):
                 if validation[redaction][barcode]:
                     # tag this and all until barcode changes
                     if scope == 'all' or scope in volume_path:
-                        recursively_tag(storage_name, volume_path, dry_run=dry_run)
+                        recursively_tag.delay(storage_name, volume_path, dry_run=dry_run)
                     valid = True
             except KeyError:
                 # we don't have a validation
