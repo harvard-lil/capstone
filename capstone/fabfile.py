@@ -825,22 +825,21 @@ def ice_volumes(scope='all', dry_run='true'):
 
     print("Preparing validation hash...")
     # validation paths look like 'validation/redacted/barcode[_datetime].txt'
-    validation = { 'redacted': {}, 'unredacted': {} }
+    validation = {}
     for validation_path in tqdm(captar_storage.iter_files_recursive(path='validation/')):
         if validation_path.endswith('.txt'):
-            validation_barcode = validation_path.split('/')[2][:-4].replace('unredacted', 'redacted').split("_redacted", 1)[0]
-            if scope == 'all' or scope in validation_barcode:
-                redaction = validation_path.split('/')[1]
-                validation[redaction][validation_barcode] = False
+            validation_folder = validation_path.split('/')[2][:-4]
+            if scope == 'all' or scope in validation_folder:
+                validation[validation_folder] = False
                 result = json.loads(captar_storage.contents(validation_path))
                 if result[0] == "ok":
-                    validation[redaction][validation_barcode] = True
+                    validation[validation_folder] = True
     print("Done.")
 
     # iterate through volumes in both storages, in reverse order,
     # alphabetically, tracking current barcode and tagging matching
     # volumes once a valid CAPTAR has been seen
-    for (storage_name, redaction) in [('ingest_storage', 'redacted'), ('private_ingest_storage', 'unredacted')]:
+    for storage_name in ['ingest_storage', 'private_ingest_storage']:
         print("Checking %s..." % storage_name)
         storage = storage_lookup[storage_name][0]
         last_barcode = None
@@ -859,7 +858,7 @@ def ice_volumes(scope='all', dry_run='true'):
             else:
                 pass
             try:
-                if validation[redaction][barcode]:
+                if validation[volume_path.rstrip('/')]:
                     # tag this and all until barcode changes
                     if scope == 'all' or scope in volume_path:
                         recursively_tag.delay(storage_name, volume_path, dry_run=dry_run)
