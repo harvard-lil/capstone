@@ -866,3 +866,35 @@ def ice_volumes(scope='all', dry_run='true'):
             except KeyError:
                 # we don't have a validation
                 pass
+
+
+@task
+def sample_captar_images(output_folder='samples'):
+    """
+        Extract 100th image from each captar volume and store in captar_storage/samples.
+    """
+    from capdb.storages import CaptarStorage, captar_storage
+    from io import BytesIO
+    import random
+
+    print("Getting list of existing sampled volumes to skip.")
+    existing_barcodes = set(i.split('/', 1)[1].rsplit('_', 2)[0] for i in captar_storage.iter_files_recursive(output_folder))
+
+    for folder in ('redacted', 'unredacted'):
+        volume_folders = list(captar_storage.iter_files(folder))
+        random.shuffle(volume_folders)
+        for volume_folder in volume_folders:
+            if volume_barcode_from_folder(volume_folder) in existing_barcodes:
+                print("Skipping %s, already exists" % volume_folder)
+                continue
+            print("Checking %s" % volume_folder)
+            volume_storage = CaptarStorage(captar_storage, volume_folder)
+            images = sorted(i for i in volume_storage.iter_files('images') if i.endswith('.jpg'))
+            if images:
+                image = images[:100][-1]
+                out_path = str(Path(output_folder, folder, Path(image).name))
+                print("- Saving %s" % out_path)
+                captar_storage.save(
+                    out_path,
+                    BytesIO(volume_storage.contents(image, 'rb'))  # passing file handle directly doesn't work because S3 storage strips file wrappers
+                )
