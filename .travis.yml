@@ -44,6 +44,10 @@ install:
   # node packages
   - npm install
 
+  # court listener
+  - git clone https://github.com/freelawproject/courtlistener.git ../courtlistener
+  - pip install -r ../courtlistener/requirements.txt
+
 before_script:
   - python manage.py collectstatic --noinput
   
