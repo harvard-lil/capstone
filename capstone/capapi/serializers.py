@@ -68,20 +68,11 @@ class CaseReporterSerializer(serializers.ModelSerializer):
             'full_name',
         )
 
-class CrossCaseCitation(serializers.ModelSerializer):
+class CitationGraphSerializer(serializers.ModelSerializer):
     # TODO (https://github.com/harvard-lil/capstone/pull/709): Finalize fields for serialization
     class Meta:
-        model = models.CrossCaseCitation
-        fields = (
-            'url',
-            'pages',
-        )
-
-class CaseCitedBySerializer(CrossCaseCitation):
-    pass
-
-class CaseDoesCiteSerializer(CrossCaseCitation):
-    pass
+        model = models.CitationGraph
+        fields = ()
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
