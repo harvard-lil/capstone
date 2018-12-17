@@ -100,6 +100,15 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
 
         return result
 
+    def delete_file(self, path):
+        """ Delete S3 item at path. NEVER USE THIS. """
+        results = self.connection.meta.client.delete_object(
+            Bucket=self.bucket_name,
+            Key=path
+        )
+        # boto3 should return 'versionID': (version id) if successful, this will return True or False
+        return 'VersionId' in results
+
 
 class CapFileStorage(CapStorageMixin, FileSystemStorage):
 

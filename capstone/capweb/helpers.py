@@ -43,7 +43,7 @@ def cache_func(key, timeout=None, cache_name='default'):
 
 @cache_func(
     key=lambda section: 'get_data_from_lil_site:%s' % section,
-    timeout=settings.CACHED_COUNT_TIMEOUT
+    timeout=settings.CACHED_LIL_DATA_TIMEOUT
 )
 def get_data_from_lil_site(section="news"):
     response = requests.get("https://lil.law.harvard.edu/api/%s/caselaw-access-project/" % section)
