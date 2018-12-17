@@ -70,7 +70,6 @@ class CaseReporterSerializer(serializers.ModelSerializer):
 
 class CitationGraphNodeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.CitationGraphNode
         fields = ('url')
 
 class CitationGraphSerializer(serializers.ModelSerializer):
