@@ -738,11 +738,9 @@ class CaseMetadataQuerySet(models.QuerySet):
         return self.filter(duplicative=False, jurisdiction__isnull=False, court__isnull=False)
 
 # TODO (https://github.com/harvard-lil/capstone/pull/709): Properly link case objects w/ Foreign Key
-class CrossCaseCitation(models.Model):
+class CitationGraph(models.Model):
     src_case = models.TextField()
-    src_page = models.IntegerField()
     dst_case = models.TextField()
-    dst_page = models.IntegerField()
     count = models.IntegerField()
 
 class CaseMetadata(models.Model):
