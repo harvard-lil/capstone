@@ -68,11 +68,17 @@ class CaseReporterSerializer(serializers.ModelSerializer):
             'full_name',
         )
 
+class CitationGraphNodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CitationGraphNode
+        fields = ('url')
+
 class CitationGraphSerializer(serializers.ModelSerializer):
-    # TODO (https://github.com/harvard-lil/capstone/pull/709): Finalize fields for serialization
+    incoming = CitationGraphNodeSerializer(many=True)
+    outgoing = CitationGraphNodeSerializer(many=True)
     class Meta:
         model = models.CitationGraph
-        fields = ()
+        fields = ('incoming', 'outgoing')
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
@@ -83,6 +89,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
     volume = CaseVolumeSerializer()
     reporter = CaseReporterSerializer()
     decision_date = serializers.DateField(source='decision_date_original')
+    citation_graph = CitationGraphSerializer()
 
     class Meta:
         model = models.CaseMetadata
@@ -100,6 +107,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'reporter',
             'court',
             'jurisdiction',
+            'citation_graph',
         )
 
 
