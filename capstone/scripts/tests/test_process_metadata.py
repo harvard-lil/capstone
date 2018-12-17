@@ -20,7 +20,6 @@ def test_get_single_case_metadata(ingest_case_xml):
 
     assert case['jurisdiction'] == 'Illinois'
     
-    # TODO (https://github.com/harvard-lil/capstone/pull/709): Add data to tests
     assert case["citation_graph"] == {
         'incoming': [],
         'outgoing': [],
