@@ -21,7 +21,7 @@ def test_get_single_case_metadata(ingest_case_xml):
     assert case['jurisdiction'] == 'Illinois'
     
     # TODO (https://github.com/harvard-lil/capstone/pull/709): Add data to tests
-    assert case["citation_graph"] == []
+    assert case["citation_graph"] == {}
 
 def test_get_case_metadata():
     casemets_test_dir = "test_data/from_vendor"
@@ -41,7 +41,7 @@ def test_get_case_metadata():
                     assert type(case_metadata["attorneys"]) is list
                     assert type(case_metadata["judges"]) is list
                     assert type(case_metadata["parties"]) is list
-                    assert type(case_metadata["citation_graph"]) is list
+                    assert type(case_metadata["citation_graph"]) is dict
 
 def test_case_metadata_opinion():
     # test case with no opinion author
