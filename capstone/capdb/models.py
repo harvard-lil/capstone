@@ -751,7 +751,6 @@ class CaseMetadata(models.Model):
     parties = JSONField(null=True, blank=True)
     opinions = JSONField(null=True, blank=True)
     attorneys = JSONField(null=True, blank=True)
-    citation_graph = JSONField(null=False, blank=False)
 
     docket_number = models.CharField(max_length=20000, blank=True)
     decision_date = models.DateField(null=True, blank=True)
