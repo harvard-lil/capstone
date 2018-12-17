@@ -61,8 +61,7 @@ def get_case_metadata(case_xml):
     ]
     
     # TODO (https://github.com/harvard-lil/capstone/pull/709): Use courtlistener to parse this info
-    cited_by = []
-    does_cite = []
+    citation_graph = {}
 
     return dict(metadata, **{
         'name': name,
@@ -80,8 +79,7 @@ def get_case_metadata(case_xml):
         'attorneys': attorneys,
         'parties': parties,
         'opinions': opinions,
-        'cited_by': cited_by,
-        'does_cite': does_cite
+        'citation_graph': citation_graph,
     }), parsed
 
 
