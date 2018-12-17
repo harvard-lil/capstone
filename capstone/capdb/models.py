@@ -737,11 +737,14 @@ class CaseMetadataQuerySet(models.QuerySet):
         """
         return self.filter(duplicative=False, jurisdiction__isnull=False, court__isnull=False)
 
-# TODO (https://github.com/harvard-lil/capstone/pull/709): Properly link case objects w/ Foreign Key
+class CitationGraphNode(models.Model):
+    pass
+      
 class CitationGraph(models.Model):
-    src_case = models.TextField()
-    dst_case = models.TextField()
-    count = models.IntegerField()
+    src_case = models.ForeignKey('Case', null=False, related_name='case_metadatas', on_delete=models.Cascade)
+    dst_case = models.ForeignKey('Case', null=False, related_name='case_metadatas', on_delete=models.Cascade)
+    incoming = CitationGraphNode(many=true)
+    outgoing = CitationGraphNode(many=true)
 
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
