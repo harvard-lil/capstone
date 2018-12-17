@@ -12,8 +12,8 @@ class Migration(migrations.Migration):
             name='CitationGraph',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('src_case', models.ForeignKey(null=False, on_delete=models.deletion.CASCADE, related_name='case_metadatas', to='capdb.Case')),
-                ('dst_case', models.ForeignKey(null=False, on_delete=models.deletion.CASCADE, related_name='case_metadatas', to='capdb.Case')),
+                ('src_case', models.ForeignKey(null=False, on_delete=models.deletion.CASCADE, related_name='case_metadatas', to='capdb.CaseMetadata')),
+                ('dst_case', models.ForeignKey(null=False, on_delete=models.deletion.CASCADE, related_name='case_metadatas', to='capdb.CaseMetadata')),
             ],
         ),
     ]
