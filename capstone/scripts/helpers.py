@@ -5,6 +5,8 @@ from django.db.models import Q
 from lxml import etree
 from pyquery import PyQuery
 
+from capdb.storages import ingest_storage, private_ingest_storage
+
 nsmap = {
     'duplicative': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body_Duplicative:v1',
     'mets': 'http://www.loc.gov/METS/',
@@ -173,6 +175,11 @@ special_jurisdiction_cases = {
     '32044078495512': 'Ohio',
     '32044078495546': 'Ohio',
     '32044078601119': 'Cal.'
+}
+
+storage_lookup = {
+    'ingest_storage': (ingest_storage, 'redacted'),
+    'private_ingest_storage': (private_ingest_storage, 'unredacted'),
 }
 
 

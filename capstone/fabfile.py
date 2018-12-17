@@ -806,3 +806,95 @@ def report_multiple_jurisdictions(out_path="court_jurisdictions.csv"):
             for row in rows:
                 url = "https://api.case.law/v1/cases/?court=%s&jurisdiction=%s" % (row.court_slug, row.jurisdiction_slug)
                 csv_writer.writerow([row.jurisdiction_slug, row.count, url])
+
+
+@task
+def ice_volumes(scope='all', dry_run='true'):
+    """
+    For each captar'd volume that validated OK, tag the matching objects
+    in the shared or private bucket for transfer to glacier and delete matching
+    objects from the transfer bucket.
+
+    Set dry_run to 'false' to run in earnest.
+    """
+    from capdb.storages import captar_storage
+    from scripts.ice_volumes import recursively_tag
+    from scripts.helpers import storage_lookup
+
+    from tqdm import tqdm
+
+    print("Preparing validation hash...")
+    # validation paths look like 'validation/redacted/barcode[_datetime].txt'
+    validation = {}
+    for validation_path in tqdm(captar_storage.iter_files_recursive(path='validation/')):
+        if validation_path.endswith('.txt'):
+            validation_folder = validation_path.split('/')[2][:-4]
+            if scope == 'all' or scope in validation_folder:
+                validation[validation_folder] = False
+                result = json.loads(captar_storage.contents(validation_path))
+                if result[0] == "ok":
+                    validation[validation_folder] = True
+    print("Done.")
+
+    # iterate through volumes in both storages, in reverse order,
+    # alphabetically, tracking current barcode and tagging matching
+    # volumes once a valid CAPTAR has been seen
+    for storage_name in ['ingest_storage', 'private_ingest_storage']:
+        print("Checking %s..." % storage_name)
+        storage = storage_lookup[storage_name][0]
+        last_barcode = None
+        valid = False
+        # volume paths look like 'barcode_[un]redacted/' or 'barcode_[un]redacted_datetime/'
+        for volume_path in tqdm(reversed(list(storage.iter_files()))):
+            barcode = volume_barcode_from_folder(volume_path)
+            if barcode != last_barcode:
+                last_barcode = barcode
+                valid = False
+            elif valid:
+                # tag this volume and go on to the next
+                if scope == 'all' or scope in volume_path:
+                    recursively_tag.delay(storage_name, volume_path, dry_run=dry_run)
+                continue
+            else:
+                pass
+            try:
+                if validation[volume_path.rstrip('/')]:
+                    # tag this and all until barcode changes
+                    if scope == 'all' or scope in volume_path:
+                        recursively_tag.delay(storage_name, volume_path, dry_run=dry_run)
+                    valid = True
+            except KeyError:
+                # we don't have a validation
+                pass
+
+
+@task
+def sample_captar_images(output_folder='samples'):
+    """
+        Extract 100th image from each captar volume and store in captar_storage/samples.
+    """
+    from capdb.storages import CaptarStorage, captar_storage
+    from io import BytesIO
+    import random
+
+    print("Getting list of existing sampled volumes to skip.")
+    existing_barcodes = set(i.split('/', 1)[1].rsplit('_', 2)[0] for i in captar_storage.iter_files_recursive(output_folder))
+
+    for folder in ('redacted', 'unredacted'):
+        volume_folders = list(captar_storage.iter_files(folder))
+        random.shuffle(volume_folders)
+        for volume_folder in volume_folders:
+            if volume_barcode_from_folder(volume_folder) in existing_barcodes:
+                print("Skipping %s, already exists" % volume_folder)
+                continue
+            print("Checking %s" % volume_folder)
+            volume_storage = CaptarStorage(captar_storage, volume_folder)
+            images = sorted(i for i in volume_storage.iter_files('images') if i.endswith('.jpg'))
+            if images:
+                image = images[:100][-1]
+                out_path = str(Path(output_folder, folder, Path(image).name))
+                print("- Saving %s" % out_path)
+                captar_storage.save(
+                    out_path,
+                    BytesIO(volume_storage.contents(image, 'rb'))  # passing file handle directly doesn't work because S3 storage strips file wrappers
+                )
