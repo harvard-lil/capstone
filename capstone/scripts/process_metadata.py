@@ -61,7 +61,10 @@ def get_case_metadata(case_xml):
     ]
     
     # TODO (https://github.com/harvard-lil/capstone/pull/709): Use courtlistener to parse this info
-    citation_graph = {}
+    citation_graph = {
+        'incoming': [],
+        'outgoing': [],
+    }
 
     return dict(metadata, **{
         'name': name,
