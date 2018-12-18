@@ -179,7 +179,6 @@ var app = new Vue({
         page: 0,
         results: [],
         api_url: search_url,
-        endpoint: 'cases', // only used in the title in browse.html. The working endpoint is in the searchform component
         page_size: 2,
         last_page: true,
         first_page: true,
@@ -189,7 +188,6 @@ var app = new Vue({
         // Each time a new search is queued up
         newSearch: function (fields, endpoint) {
             // use all the fields and endpoint to build the query url
-            this.endpoint = endpoint;
             this.resetForm();
             var query_url = this.api_url + endpoint + "/?";
             if (fields.length > 0) {
@@ -377,7 +375,6 @@ var app = new Vue({
             },
             methods: {
                 changeEndpoint: function (new_endpoint, new_fields=[]) {
-                    this.$parent.endpoint = new_endpoint // to update title
                     this.endpoint = new_endpoint;
                     this.fields = new_fields;
                     this.$emit('change-endpoint');
