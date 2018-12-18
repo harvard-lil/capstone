@@ -48,7 +48,7 @@ before_script:
   - python manage.py collectstatic --noinput
   
 script:
-  - bash scripts/test_courtlistener.sh
+  - bash scripts/tests/test_courtlistener.sh
   - fab test
 
 after_success:
