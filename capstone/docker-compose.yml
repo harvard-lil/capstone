@@ -8,7 +8,7 @@ services:
         environment:
             POSTGRES_PASSWORD: password
         volumes:
-          - db_data:/var/lib/postgresql/data
+          - db_data:/var/lib/postgresql/data:delegated
     redis:
         image: redis:4
 #    rabbit:
@@ -21,10 +21,20 @@ services:
 ##        mem_limit: 128M
     worker:
         build: .
-        image: capstone:0.1
+        image: capstone:0.2
         volumes:
             - .:/app
             - ../services:/services
+            # NAMED VOLUMES
+            # Use a named, persistent volume so that the node_modules directory,
+            # which is created during the image's build process, and which our
+            # code presently expects to be nested inside the /app directory,
+            # isn't wiped out when mounting our code in ./app code to
+            # the container. We can consider restructuring the project instead.
+            - node_modules:/app/node_modules:delegated
+            # Use a delegated volume for this instance's redis (used by tests)
+            # to hopefully smooth I/O performance issues
+            - test_redis:/var/lib/redis:delegated
         depends_on:
             - redis
             - db
@@ -37,7 +47,7 @@ services:
           - "api.case.test:127.0.0.1"
     web:
         build: .
-        image: capstone:0.1
+        image: capstone:0.2
         volumes:
             - .:/app
             - ../services:/services
@@ -57,3 +67,5 @@ services:
 
 volumes:
     db_data:
+    node_modules:
+    test_redis:
