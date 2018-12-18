@@ -36,8 +36,8 @@ def view_court(request, court_id):
         'title': court.name_abbreviation
     })
 
-def browse(request):
-    return render(request, "browse.html")
+def search(request):
+    return render(request, "search.html")
 
 def jurisdiction_list(request):
     return JsonResponse({ jurisdiction.slug: jurisdiction.name_long for jurisdiction in Jurisdiction.objects.all() if jurisdiction.slug != 'regional' and jurisdiction.slug != 'tribal' })

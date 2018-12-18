@@ -291,11 +291,11 @@ PIPELINE = {
             },
             'output_filename': 'case.css'
         },
-        'browse': {
+        'search': {
             'source_filenames': {
-                'css/scss/browse.scss',
+                'css/scss/search.scss',
             },
-            'output_filename': 'browse.css'
+            'output_filename': 'search.css'
         },
         'view_case': {
             'source_filenames': {

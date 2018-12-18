@@ -172,14 +172,14 @@ const endpoint_list = {
 var app = new Vue({
     el: '#app',
     data: {
-        title: "Browse or Search",
+        title: "Search",
         hitcount: null,
         next_page_url: null,
         prev_page_url: null,
         page: 0,
         results: [],
         api_url: search_url,
-        endpoint: 'cases', // only used in the title in browse.html. The working endpoint is in the searchform component
+        endpoint: 'cases', // only used in the title in search.html. The working endpoint is in the searchform component
         page_size: 10,
         last_page: true,
         first_page: true,
@@ -249,7 +249,7 @@ var app = new Vue({
                 })
         },
         resetForm: function () {
-            this.title = "Browse or Search"
+            this.title = "Search"
             this.hitcount = null;
             this.next_page_url = null;
             this.prev_page_url = null;
@@ -356,12 +356,7 @@ var app = new Vue({
                         </div>\
                         <div class="search-button-row row">\
                             <div class="col-11 text-right">\
-                                <template v-if="fields.length > 0">\
-                                    <input @click="$emit(\'new-search\', fields, endpoint)" type="submit" value="Search">\
-                                </template>\
-                                <template v-else>\
-                                    <input @click="$emit(\'new-search\', fields, endpoint)" type="submit" value="Browse All">\
-                                </template>\
+                                <input @click="$emit(\'new-search\', fields, endpoint)" type="submit" value="Search">\
                             </div>\
                         </div>\
                     </form>\
