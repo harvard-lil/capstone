@@ -6,7 +6,7 @@ const endpoint_list = {
             value: "",
             label: "Full-Text Search",
             default: true,
-            format: "e.g. \'insurance\'illinois",
+            format: "e.g. \'insurance\' illinois",
             info: ""
         },
         {
@@ -33,7 +33,7 @@ const endpoint_list = {
             name: "docket_number",
             value: "",
             label: "Docket Number",
-            format: "(string)",
+            format: "e.g. Civ. No. 74-289",
             info: "the docket number assigned by the court"
         },
         {
@@ -179,7 +179,8 @@ var app = new Vue({
         page: 0,
         results: [],
         api_url: search_url,
-        page_size: 2,
+        endpoint: 'cases', // only used in the title in browse.html. The working endpoint is in the searchform component
+        page_size: 10,
         last_page: true,
         first_page: true,
         choices: {}
@@ -188,6 +189,7 @@ var app = new Vue({
         // Each time a new search is queued up
         newSearch: function (fields, endpoint) {
             // use all the fields and endpoint to build the query url
+            this.endpoint = endpoint;
             this.resetForm();
             var query_url = this.api_url + endpoint + "/?";
             if (fields.length > 0) {
@@ -375,6 +377,7 @@ var app = new Vue({
             },
             methods: {
                 changeEndpoint: function (new_endpoint, new_fields=[]) {
+                    this.$parent.endpoint = new_endpoint // to update title
                     this.endpoint = new_endpoint;
                     this.fields = new_fields;
                     this.$emit('change-endpoint');
