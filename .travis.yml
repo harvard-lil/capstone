@@ -44,13 +44,14 @@ install:
   # node packages
   - npm install
 
-  # court listener
-
 before_script:
   - python manage.py collectstatic --noinput
   
 script:
   - fab test
+
+  # court listener
+  - ./courtlistener/manage.py test courtlistener/cl/citations/
 
 after_success:
   - coveralls
