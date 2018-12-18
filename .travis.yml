@@ -37,7 +37,7 @@ before_install:
 
 install:
   # python packages
-  - pip install -U pip wheel 2to3 coveralls
+  - pip install -U pip wheel coveralls
   - pip install -r requirements.txt
 
   # node packages
