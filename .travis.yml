@@ -14,9 +14,6 @@ addons:
   postgresql: "9.6"
   apt:
     update: true
-    packages:
-    - python2.7
-    - python-pip
 
 cache:
   pip: true
@@ -40,8 +37,9 @@ before_install:
 
 install:
   # python packages
-  - pip install -U pip wheel coveralls
+  - pip install -U pip wheel
   - pip install -r requirements.txt
+  - pip install coveralls
 
   # node packages
   - npm install
@@ -50,7 +48,6 @@ before_script:
   - python manage.py collectstatic --noinput
   
 script:
-  - bash scripts/tests/test_courtlistener.sh
   - fab test
 
 after_success:
