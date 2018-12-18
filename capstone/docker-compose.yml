@@ -29,11 +29,10 @@ services:
             # Use a named, persistent volume so that the node_modules directory,
             # which is created during the image's build process, and which our
             # code presently expects to be nested inside the /app directory,
-            # isn't wiped out when mounting our code in ./app code to
-            # the container. We can consider restructuring the project instead.
+            # isn't wiped out when mounting our code.
             - node_modules:/app/node_modules:delegated
             # Use a delegated volume for this instance's redis (used by tests)
-            # to hopefully smooth I/O performance issues
+            # to hopefully smooth I/O performance issues. Necessary?
             - test_redis:/var/lib/redis:delegated
         depends_on:
             - redis
