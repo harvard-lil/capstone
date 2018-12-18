@@ -1,4 +1,5 @@
 import logging
+import re
 import os
 
 from django.conf import settings
@@ -94,35 +95,81 @@ class AuthenticationMiddleware(DjangoAuthenticationMiddleware):
         request.user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')  # used by user IP auth checks
 
 
-# from https://stackoverflow.com/a/35928017 and https://docs.djangoproject.com/en/2.0/topics/http/middleware/
-
+# see https://stackoverflow.com/a/35928017
+#     https://docs.djangoproject.com/en/2.0/topics/http/middleware/
+#     https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35
 class RangeRequestMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         response = self.get_response(request)
+
+        # is this request eligible for a range request?
         if response.status_code != 200 or not hasattr(response, 'file_to_stream'):
             return response
+
+        # parse the range(s) -- at the moment, we're only responding to the
+        # first range, but we coalesce adjacent and overlapping ranges below
         http_range = request.META.get('HTTP_RANGE')
-        if not (http_range and http_range.startswith('bytes=') and http_range.count('-') == 1):
+        units = "bytes="
+        if http_range.startswith(units):
+            ranges = []
+            matches = re.finditer(r"(\d*)-(\d*),?", http_range[len(units):])
+            if matches:
+                # treat the response as a file so we can see how big it is
+                f = response.file_to_stream
+                response_size = os.fstat(f.fileno()).st_size
+            for match in matches:
+                start = match.group(1)
+                end = match.group(2)
+                # the case where both ends of the range are empty
+                if not start and not end:
+                    continue
+                # the case where start is empty
+                if not start:
+                    start = max(0, response_size - int(end))
+                else:
+                    start = int(start)
+                # this handles the case where end is empty and where it isn't
+                end = int(end or response_size - 1)
+                if start >= response_size or start > end:
+                    response.status_code = 416
+                    response['Content-Range'] = 'bytes */%d' % response_size
+                    return response
+                end = min(end, response_size - 1)
+                ranges.append((start, end))
+        else:
             return response
+
+        # we're not really handling If-Range headers; if present and ill-formed,
+        # return the whole content
         if_range = request.META.get('HTTP_IF_RANGE')
         if if_range and if_range != response.get('Last-Modified') and if_range != response.get('ETag'):
             return response
-        f = response.file_to_stream
-        statobj = os.fstat(f.fileno())
-        start, end = http_range.split('=')[1].split('-')
-        if not start:  # requesting the last N bytes
-            start = max(0, statobj.st_size - int(end))
-            end = ''
-        start, end = int(start or 0), int(end or statobj.st_size - 1)
-        assert 0 <= start < statobj.st_size, (start, statobj.st_size)
-        end = min(end, statobj.st_size - 1)
-        f.seek(start)
-        old_read = f.read
-        f.read = lambda n: old_read(min(n, end + 1 - f.tell()))
-        response.status_code = 206
-        response['Content-Length'] = end + 1 - start
-        response['Content-Range'] = 'bytes %d-%d/%d' % (start, end, statobj.st_size)
+
+        # coalesce adjacent and overlapping ranges
+        newranges = []
+        for cur in ranges:
+            if len(newranges) == 0:
+                newranges.append(cur)
+            else:
+                prev = newranges.pop()
+                if cur[0] - 1 <= prev[1]:
+                    newranges.append((prev[0], max(prev[1], cur[1])))
+                else:
+                    newranges.append(prev)
+                    newranges.append(cur)
+        ranges = newranges
+
+        # to handle more than the first range, we'd need to produce a
+        # multipart response...
+        if len(ranges) > 0:
+            (start, end) = ranges[0]
+            f.seek(start)
+            old_read = f.read
+            f.read = lambda n: old_read(min(n, end + 1 - f.tell()))
+            response.status_code = 206
+            response['Content-Length'] = end + 1 - start
+            response['Content-Range'] = 'bytes %d-%d/%d' % (start, end, response_size)
         return response
