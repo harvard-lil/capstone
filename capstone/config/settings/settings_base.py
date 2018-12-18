@@ -426,7 +426,6 @@ REDIS_DEFAULT_DB = 0
 REDIS_INGEST_DB = 1         # database for temporary data created during the S3 ingest process
 REDIS_DJANGO_CACHE_DB = 2   # database for django's cache framework
 
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -527,21 +526,21 @@ NEW_RESEARCHER_FEATURE = True
 HARVARD_RESEARCHER_FEATURE = True
 
 HARVARD_IP_RANGES = """
-    12.0.48.0/20 
-    12.6.208.0/20 
-    65.112.0.0/20 
-    67.134.204.0/22 
-    128.103.0.0/16 
-    134.174.0.0/16 
-    140.247.0.0/16 
-    192.5.66.0/24 
-    192.54.223.0/24 
-    192.131.102.0/24 
-    199.94.0.0/19 
-    199.94.32.0/20 
-    199.94.48.0/24 
-    199.94.60.0/22 
-    206.191.184.0/21 
+    12.0.48.0/20
+    12.6.208.0/20
+    65.112.0.0/20
+    67.134.204.0/22
+    128.103.0.0/16
+    134.174.0.0/16
+    140.247.0.0/16
+    192.5.66.0/24
+    192.54.223.0/24
+    192.131.102.0/24
+    199.94.0.0/19
+    199.94.32.0/20
+    199.94.48.0/24
+    199.94.60.0/22
+    206.191.184.0/21
     206.253.200.0/21
 """.split()
 
