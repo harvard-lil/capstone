@@ -17,8 +17,10 @@ RUN pip install -U pip \
 
 # nodejs
 RUN curl -sL https://deb.nodesource.com/setup_11.x | bash -
+COPY package.json /app
 COPY package-lock.json /app
 RUN apt-get update \
     && apt-get install -y nodejs \
     && npm install \
+    && rm package.json \
     && rm package-lock.json
