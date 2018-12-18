@@ -49,9 +49,7 @@ before_script:
   
 script:
   - fab test
-
-  # court listener
-  - ./courtlistener/manage.py test courtlistener/cl/citations/
+  - python courtlistener/manage.py test courtlistener/cl/citations/
 
 after_success:
   - coveralls
