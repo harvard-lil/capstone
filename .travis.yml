@@ -15,6 +15,7 @@ addons:
     update: true
     packages:
     - postgresql-9.6-plv8
+    - libgnutls28-dev
 cache:
   pip: true
   directories:
