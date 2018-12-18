@@ -48,8 +48,8 @@ before_script:
   - python manage.py collectstatic --noinput
   
 script:
+  - python ../courtlistener/manage.py test ../courtlistener/cl/citations/
   - fab test
-  - python courtlistener/manage.py test courtlistener/cl/citations/
 
 after_success:
   - coveralls
