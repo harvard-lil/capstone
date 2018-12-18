@@ -6,6 +6,43 @@ h1{
   font-size: 2rem;
 }
 
+div#app {
+  @import "bootstrap/_nav";
+  @import "bootstrap/_navbar";
+  .dropdown-item {
+    height: 2em;
+    background-color: $color-light-gray;
+    border-bottom: thin solid $color-medium-gray;
+    padding: 0.5em;
+  }
+  .dropdown-item:hover {
+    background-color: $color-medium-gray;
+  }
+
+  .dropdown-menu {
+    min-width: 100%;
+    z-index: 1000;
+    border-left: thin solid $color-medium-gray;
+    border-right: thin solid $color-medium-gray;
+  }
+  #searchform {
+    margin-top: 3rem;
+  }
+  .nav-link{
+    background-color: $color-light-gray;
+    margin-right: .5rem;
+  }
+
+  .nav-link.active {
+    border-bottom: 0 !important;
+  }
+  .nav {
+    border-bottom: 0;
+  }
+  .row {
+    display: revert;
+  }
+}
 
 #loading-overlay {
   position: absolute;
@@ -32,56 +69,7 @@ h1{
 
 .top-section {
   padding-bottom: 2rem;
-}
-
-.search-title {
-  font-size: 1.6rem;
-}
-.result-first_row{
-  margin-left: 1rem;
-}
-.result-second_row{
-  margin-left: 1rem;
-}
-
-.result-first-row-left{
-  display: inline-block;
-}
-
-.result-citation {
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-.result-first-row-right {
-  display: inline-block;
-
-}
-
-.result-second-row-middle {
-  display: inline-block;
-
-}
-
-.result-court-name {
-  display: inline-block;
-}
-
-.result-volume-number {
-  display: inline-block;
-
-}
-
-.result-dec-date {
-  display: inline-block;
-  text-align: right;
-  font-weight: bold;
-
-}
-
-.result-citation-type {
-  font-size: .75rem;
-  font-weight: normal;
+  border-bottom: none !important;
 }
 
 .citation-list .basic-page p, .basic-page ul {
@@ -98,9 +86,29 @@ h1{
   width: 50%;
 }
 
-.querybutton {
-  border-radius: 100%;
+.addfield {
+  width: 100%;
+}
 
+.remfield {
+  display: inline-block;
+}
+
+.field-button{
+  background-color: $color-black;
+  color: $color-orange;
+  border-radius: 100%;
+}
+
+.add-field-button{
+  background-color: $color-black;
+  color: $color-orange;
+  width: 100%;
+}
+
+.disabled {
+  background-color: $color-gray;
+  color: $color-light-gray;
 }
 
 #loading-overlay {
@@ -126,10 +134,6 @@ h1{
   color: white;
 }
 
-.result {
-  margin-bottom: 20px;
-}
-
 .hitcount {
   font-weight: bold;
   margin-bottom: 20px;
@@ -143,12 +147,40 @@ h1{
   max-width: 100%;
 }
 
-.field_row_container {
-}
-
 .field_value_container {
 }
 
 .field_value_container > input {
-          width: 100%;
-        }
+  width: 100%;
+}
+
+.search-button-row {
+  margin-top: 1rem;
+}
+
+.result {
+  margin-bottom: 1.5rem;
+  .result-title {
+    font-weight: bold;
+    color: $color-violet-gray-dark;
+    font-size: 1.75rem;
+  }
+  .result-data {
+    font-size: 0.9rem;
+  }
+  .result-data-label {
+    font-weight: bold;
+  }
+  .page-button {
+  }
+  .result-name {
+    overflow: scroll;
+  }
+  .result-citation-type {
+    font-weight: bold;
+  }
+}
+
+.result:nth-child(even) {
+  background-color: $color-light-gray;
+}

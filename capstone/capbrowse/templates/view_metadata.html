@@ -1,0 +1,22 @@
+{% extends "layouts/narrow.html" %}
+{% load static %}
+{% load pipeline %}
+{% load api_url %}
+
+{% block extra_head %}
+  {% stylesheet 'view_metadata' %}
+{% endblock %}
+
+{% block title %}{{ type.capitalize }}: {{ title }}{% endblock %}
+
+{% block main_content %}
+  <br/><br/>
+  <ul>
+    {% for fieldname, field in fields.items %}
+      <li class="row data-row">
+        <div class="col-sm">{{ fieldname }}</div>
+        <div class="col-lg">{{ field }}</div>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

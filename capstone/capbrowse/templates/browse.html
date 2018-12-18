@@ -44,9 +44,9 @@
       'jurisdiction': "{% url 'jurisdiction_list' %}",
       'reporter': "{% url 'reporter_list' %}"
   }
-  const case_browse_url_template = "{% url 'browse_case' 987654321 %}";
+  const case_view_url_template = "{% url 'view_case' 987654321 %}";
   const search_url = '{% api_url "api-root" %}' + "v1/";
-
+  const bullet_url = '{% static "img/red-arrow-right.svg" %}';
   </script>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   {% render_bundle 'search' %}

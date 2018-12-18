@@ -2,6 +2,14 @@
 const endpoint_list = {
     cases: [
         {
+            name: "search",
+            value: "",
+            label: "Full-Text Search",
+            default: true,
+            format: "e.g. \'insurance\'illinois",
+            info: ""
+        },
+        {
             name: "name_abbreviation",
             label: "Case Name Abbreviation",
             value: "",
@@ -56,21 +64,13 @@ const endpoint_list = {
             choices: 'jurisdiction',
             format: "e.g. ill-app-ct",
             info: ""
-        },
-        {
-            name: "search",
-            value: "",
-            label: "Full-Text Search",
-            default: true,
-            format: "e.g. \'insurance\'illinois",
-            info: ""
         }
     ],
     courts: [
         {
             name: "slug",
             value: "",
-            label: "Name",
+            label: "Slug",
             format: "e.g. ill-app-ct",
             info: "A slug is a unique alphanumeric identifier which is more readable than a numeric ID."
         },
@@ -128,7 +128,6 @@ const endpoint_list = {
             info: "Whitelisted cases are not subject to the 500 case per day access limitation."
         }
     ],
-    volumes: [],
     reporters: [
         {
             name: "full_name",
@@ -181,7 +180,7 @@ var app = new Vue({
         results: [],
         api_url: search_url,
         endpoint: 'cases', // only used in the title in browse.html. The working endpoint is in the searchform component
-        page_size: 10,
+        page_size: 2,
         last_page: true,
         first_page: true,
         choices: {}
@@ -189,7 +188,6 @@ var app = new Vue({
     methods: {
         // Each time a new search is queued up
         newSearch: function (fields, endpoint) {
-            console.log(fields)
             // use all the fields and endpoint to build the query url
             this.endpoint = endpoint;
             this.resetForm();
@@ -229,7 +227,6 @@ var app = new Vue({
         },
         getResultsPage: function (query_url) {
             this.startLoading();
-            console.log(query_url)
             return fetch(query_url)
                 .then(function (response) {
                     if (response.ok) {
@@ -239,7 +236,7 @@ var app = new Vue({
                         document.getElementById("loading-overlay").style.display = 'none';
                         //TODO
                     }
-                    console.log(response.status, response.statusText, query_url)
+                    //console.log(response.status, response.statusText, query_url)
                 })
                 .then(function (results_json) {
                     app.hitcount = results_json.count;
@@ -296,71 +293,79 @@ var app = new Vue({
                     query: [],
                     newfield: null,
                     endpoint: 'cases',
-                    fields: [{
-                        name: "search",
-                        label: "Full-Text Search",
-                        format:"e.g. \'insurance illinois\'",
-                        value: ""
-                    }],
+                    fields: [endpoint_list['cases'][0]],
                     endpoints: endpoint_list
                 }
             },
             template: '<form v-on:submit.prevent>\
-                <div class="row">\
-                    <template v-for="(current_fields, current_endpoint) in endpoints">\
-                        <div class="col">\
-                            <input type="radio" :id="current_endpoint" :value="current_endpoint" @change="changeEndpoint(endpoint)" v-model="endpoint">\
-                            <label :for="current_endpoint" v-text="current_endpoint"></label>\
+                    <div class="row">\
+                        <div class="col-12">\
+                            <ul class="nav nav-tabs">\
+                                <li class="search-tab" v-for="(current_fields, current_endpoint) in endpoints">\
+                                    <a v-if="current_endpoint == endpoint" @click="changeEndpoint(current_endpoint)" class="nav-link active">{{ current_endpoint }}</a>\
+                                    <a v-else="current_endpoint == endpoint" @click="changeEndpoint(current_endpoint)" class="nav-link">{{ current_endpoint }}</a>\
+                                </li>\
+                            </ul>\
                         </div>\
-                    </template>\
-                </div>\
-                <div>\
-                    <div v-for="field in fields">\
-                        <div class="row field_row_container">\
-                            <div class="col-4 field_label_container">\
-                                <label class="querylabel" :for="field[\'name\']">{{ field["label"] }}</label><br>\
-                            </div>\
-                            <div class="col-7 field_value_container">\
-                                <template v-if="field[\'choices\']">\
-                                    <select v-model=\'field["value"]\' :id=\'field["name"]\'>\
-                                        <option v-for="(label, value) in choiceLoader(field[\'choices\'])" :value="value">{{ label }}</option> \
-                                    </select>\
-                                </template>\
-                                <template v-else-if="field[\'format\']">\
-                                    <input v-model=\'field["value"]\' class="queryfield" :id=\'field["name"]\' type="text" :placeholder=\'field["format"]\'>\
-                                </template>\
-                                <template v-else>\
-                                    <input v-model=\'field["value"]\' class="queryfield" :id=\'field["name"]\' type="text">\
-                                </template>\
-                            </div>\
-                            <div class="col-1">\
-                                <button class="querybutton" v-if="fields.length > 1" @click="removeField(field[\'name\'])">&ndash;</button>\
+                    </div> \
+                    <div id="searchform">\
+                        <div v-for="field in fields">\
+                            <div class="row field_row_container">\
+                                <div class="col-4 field_label_container">\
+                                    <label class="querylabel" :for="field[\'name\']">{{ field["label"] }}</label><br>\
+                                </div>\
+                                <div class="col-7 field_value_container">\
+                                    <template v-if="field[\'choices\']">\
+                                        <select v-model=\'field["value"]\' :id=\'field["name"]\'>\
+                                            <option v-for="(label, value) in choiceLoader(field[\'choices\'])" :value="value">{{ label }}</option> \
+                                        </select>\
+                                    </template>\
+                                    <template v-else-if="field[\'format\']">\
+                                        <input v-model=\'field["value"]\' class="queryfield" :id=\'field["name"]\' type="text" :placeholder=\'field["format"]\'>\
+                                    </template>\
+                                    <template v-else>\
+                                        <input v-model=\'field["value"]\' class="queryfield" :id=\'field["name"]\' type="text">\
+                                    </template>\
+                                </div>\
+                                <div class="col-1">\
+                                    <div class="remfield">\
+                                        <button v-if="fields.length > 1" class="field-button" @click="removeField(field[\'name\'])">&ndash;</button>\
+                                        <button v-if="fields.length <= 1" class="field-button disabled">&ndash;</button>\
+                                    </div>\
+                                </div>\
                             </div>\
                         </div>\
                     </div>\
-                    <template v-if="fields.length > 0">\
-                        <div>\
                         <div class="row field_row_container">\
                             <div class="col-4 field_label_container">\
-                                <select v-model="newfield" @change="fields.push(newfield)">\
-                                    <option v-for="newfield in endpoints[endpoint]" v-bind:value="newfield">{{ newfield["label"] }}</option>\
-                                    <option value="" disabled selected>Add a field</option>\
-                                </select>\
                             </div>\
-                            <div class="col-7 field_value_container">\
-                                <input type="text" class="queryfield" placeholder = "add a new field" disabled>\
+                                <div class="col-7 field_value_container">\
+                                    <template v-if="fields.length > 0">\
+                                        <div class="dropdown addfield">\
+                                            <button class="dropdown-toggle add-field-button btn-block" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Add Field</button>\
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">\
+                                                <a class="dropdown-item" v-for="newfield in currentFields(endpoint)" @click="addField(newfield)" href="#">{{ newfield["label"] }}</a>\
+                                            </div>\
+                                        </div>\
+                                    </template>\
+                                </div>\
+                            <div class="col-1">\
+                                <div class="remfield">\
+                                </div>\
                             </div>\
                         </div>\
+                        <div class="search-button-row row">\
+                            <div class="col-11 text-right">\
+                                <template v-if="fields.length > 0">\
+                                    <input @click="$emit(\'new-search\', fields, endpoint)" type="submit" value="Search">\
+                                </template>\
+                                <template v-else>\
+                                    <input @click="$emit(\'new-search\', fields, endpoint)" type="submit" value="Browse All">\
+                                </template>\
+                            </div>\
                         </div>\
-                    </template>\
-                </div>\
-                <template v-if="fields.length > 0">\
-                    <input @click="$emit(\'new-search\', fields, endpoint)" type="submit">\
-                </template>\
-                <template v-else>\
-                    <input @click="$emit(\'new-search\', fields, endpoint)" type="submit" value="Browse All">\
-                </template>\
-             </form>',
+                    </form>\
+                ',
             beforeMount() {
                 for (endpoint in endpoint_list) {
                     for (field in endpoint_list[endpoint]){
@@ -384,7 +389,6 @@ var app = new Vue({
                         }
                     }
                 },
-
                 removeField: function (field_to_remove) {
                     for (var i = this.fields.length - 1; i >= 0; i--) {
                         if (this.fields[i]['name'] === field_to_remove) {
@@ -400,7 +404,6 @@ var app = new Vue({
                     }
                     this.fields.push(field_to_add);
                 },
-
                 choiceLoader: function (choice) {
                     component = null;
                     if (app){
@@ -432,7 +435,16 @@ var app = new Vue({
                         .then(function () {
                             component.stopLoading();
                         })
+                    },
+                currentFields: function (endpoint) {
+                    return_list = []
+                    for (field in endpoint_list[endpoint]) {
+                        if (!this.fields.includes(endpoint_list[endpoint][field])) {
+                            return_list.push(endpoint_list[endpoint][field])
+                        }
                     }
+                    return return_list
+                }
             }
         },
         'result-list': {
@@ -446,16 +458,31 @@ var app = new Vue({
             ],
             template: '<div>\
                 <div class="hitcount" v-if="hitcount">Results: {{ hitcount }}</div>\
-                <button v-if="first_page !== true" @click="$emit(\'prev-page\')">&lt;&lt;Page {{ page }} </button>\
-                <button v-if="last_page !== true" @click="$emit(\'next-page\')">Page {{ page + 2 }}&gt;&gt;</button>\
                 <ul class="results-list">\
                     <case-result v-if=\"endpoint == \'cases\'\" v-for="result in results[page]" :result="result" :key="result.id"></case-result>\
                     <court-result v-if=\"endpoint == \'courts\'\" v-for="result in results[page]" :result="result" :key="result.id"></court-result>\
                     <jurisdiction-result v-if=\"endpoint == \'jurisdictions\'\" v-for="result in results[page]" :result="result" :key="result.id"></jurisdiction-result>\
-                    <volume-result v-if=\"endpoint == \'volumes\'\" v-for="result in results[page]" :result="result" :key="result.id"></volume-result>\
                     <reporter-result v-if=\"endpoint == \'reporters\'\" v-for="result in results[page]" :result="result" :key="result.id"></reporter-result>\
                 </ul>\
-             </div>',
+                <div v-if="this.$parent.results.length != 0" class="row">\
+                    <div class="col-6">\
+                        <button class="btn btn-sm" v-if="first_page !== true" @click="$emit(\'prev-page\')">&lt;&lt; Prev Page {{ page }} </button>\
+                        <button class="btn btn-sm disabled" v-else disabled>&lt;&lt; Prev Page</button>\
+                    </div>\
+                    <div class="col-6 text-right">\
+                        <button class="btn btn-sm" v-if="last_page !== true" @click="$emit(\'next-page\')">Next Page {{ page + 2 }}&gt;&gt;</button>\
+                        <button class="btn btn-sm disabled" v-else disabled>Next Page &gt;&gt;</button>\
+                    </div>\
+                </div>\
+            </div>',
+            methods: {
+                case_view_url: function (case_id) {
+                    return case_view_url_template.replace('987654321', case_id)
+                },
+                metadata_view_url: function (endpoint, id) {
+                    return case_view_url_template.replace('987654321', id).replace('/case/', "/" + endpoint + "/")
+                },
+            },
             components: {
                 'case-result': {
                     props: [
@@ -463,92 +490,112 @@ var app = new Vue({
                     ],
                     template: '\
                 <li class="result">\
-                  <div class="search-title">\
-                    <a target="_blank" v-text="result.name_abbreviation" :href="case_browse_url(result.id)"></a>\
-                  </div>\
-                  <div class="search-data">\
-                    <div class="result-first-row">\
-                      <div class="result-first-row-left">\
-                        <ul class="citation-list">\
-                            <li class="citation-entry" v-for="citation in result.citations">\
-                                <span class="result-citation-type">{{  citation.type  }}</span>\
-                                <span class="result-citation">{{ citation.cite }} </span>\
-                            </li>\
-                        </ul>\
-                      </div>\
+                    <div class="result-title row">\
+                        <div class="row">\
+                            <a target="_blank" v-text="result.name_abbreviation" :href="$parent.case_view_url(result.id)"></a>\
+                        </div>\
                     </div>\
-                    <div class="result-second-row">\
-                      <div class="result-dec-date">{{ result.decision_date }}</div>\
-                      <div v-if="result.court" class="result-court-name">{{ result.court.name }}</div>\
-                      <div v-if="result.volume" class="result-volume-number">v. {{ result.volume.volume_number }}</div>\
+                    <div class="result-data">\
+                        <div class="row">\
+                            <div class = "col-12">\
+                                <ul class="citation-list">\
+                                    <li class="citation-entry" v-for="citation in result.citations">\
+                                        <span class="result-citation-type">{{  citation.type  }}</span>\
+                                        <span class="result-citation">{{ citation.cite }} </span>\
+                                    </li>\
+                                </ul>\
+                            </div>\
+                        </div>\
+                        <div class="row">\
+                            <div class="col-3">{{ result.decision_date }}</div>\
+                            <div class="col-4" v-if="result.court" >{{ result.court.name }}, volume {{ result.jurisdiction.volume_number }}</div>\
+                        </div>\
+                        <div class="row">\
+                            <div v-text="result.name" class="full-name col-12">\</div>\
+                        </div>\
                     </div>\
-                  </div>\
-                </li>',
-                    methods: {
-                        case_browse_url: function (case_id) {
-                            return case_browse_url_template.replace('987654321', case_id)
-                        },
-                    }
+                </li>'
                 },
                 'court-result': {
                     props: [
                         'result'
                     ],
                     template: '\
-                    <li class="result">\
-                        <div class="search-title"><a v-text="result.name" @click="$parent.$emit(\'see-cases\', \'court\', result.slug)"></a></div>\
-                        <div class="search-data">\
-                            <div class="result-first-row">\
-                                <div class="result-first-row-left">{{ result.jurisdiction }}</div>\
-                                <div class="result-first-row-left">{{ result.name_abbreviation }}</div>\
+                        <li class="result">\
+                            <div class="result-title row">\
+                                <div class="row">\
+                                    <div class="result-title col-12">\
+                                        <a target="_blank" v-text="result.name_abbreviation" :href="$parent.metadata_view_url(\'court\', result.id)"></a>\
+                                    </div>\
+                                </div>\
                             </div>\
-                        </div>\
-                    </li>',
-                },
-                'volume-result': {
-                    props: [
-                        'result'
-                    ],
-                    template: '\
-                    <li class="result">\
-                        <div class="search-title"><a :href="result.url">{{ result.reporter }} v. {{ result.volume_number }}</a></div>\
-                        <div class="search-data">\
-                            <div class="result-first-row">\
-                                <div class="result-first-row-left">{{ result.publication_year }}</div>\
-                                <div class="result-first-row-left">{{ result.jurisdiction }}</div>\
+                            <div class="result-data">\
+                                <div class="row">\
+                                    <div class="col-6">\
+                                        <span class="result-data-label">Abbreviation:</span> {{ result.name_abbreviation }}\
+                                    </div>\
+                                    <div class = "col-3">\
+                                        <span class="result-data-label">Jurisdiction:</span> {{ result.jurisdiction }}\
+                                    </div>\
+                                    <div class="col-3 text-right"> \
+                                        <button @click="$parent.$emit(\'see-cases\', \'court\', result.slug)">Cases</button>\ \
+                                    </div>\
+                                </div>\
                             </div>\
-                        </div>\
-                    </li>'
+                        </li>'
                 },
                 'jurisdiction-result': {
                     props: [
                         'result'
                     ],
                     template: '\
-                    <li class="result">\
-                        <div class="search-title"><a v-text="" @click="$parent.$emit(\'see-cases\', \'jurisdiction\', result.slug)">{{result.name_long}} ({{ result.name }})</a></div>\
-                        <div class="search-data">\
-                            <div class="result-first-row">\
-                                Slug: <div class="result-first-row-left">{{ result.slug }}</div>\
-                                Abbr: <div class="result-first-row-left">{{ result.name_abbreviation }}</div>\
+                        <li class="result">\
+                            <div class="result-title row">\
+                                <div class="row">\
+                                    <div class="result-title col-12">\
+                                        <a target="_blank" v-text="result.name_long" :href="$parent.metadata_view_url(\'jurisdiction\', result.id)"></a>\
+                                    </div>\
+                                </div>\
                             </div>\
-                        </div>\
-                    </li>'
+                            <div class="result-data">\
+                                <div class="row">\
+                                    <div class="col-6">\
+                                        <span class="result-data-label">Abbreviation:</span> {{ result.name }}\
+                                    </div>\
+                                    <div class = "col-4">\
+                                        <span class="result-data-label">Slug:</span> {{ result.slug }}\
+                                    </div>\
+                                    <div class="col-2 text-right"> \
+                                        <button @click="$parent.$emit(\'see-cases\', \'jurisdiction\', result.slug)">Cases</button>\ \
+                                    </div>\
+                                </div>\
+                            </div>\
+                        </li>'
                 },
                 'reporter-result': {
                     props: [
                         'result'
                     ],
                     template: '\
-                    <li class="result">\
-                        <div class="search-title"><a v-text="result.full_name" @click="$parent.$emit(\'see-cases\', \'reporter\', result.id)"></a></div>\
-                        <div class="search-data">\
-                            <div class="result-first-row">\
-                                <div class="result-first-row-left"><a :href="result.url">Browse Cases</a></div>\
-                                <div class="result-first-row-left">{{ result.short_name }}</div>\
+                        <li class="result">\
+                            <div class="result-title row">\
+                                <div class="row">\
+                                    <div class="result-title col-12">\
+                                        <a target="_blank" v-text="result.full_name" :href="$parent.metadata_view_url(\'reporter\', result.id)"></a>\
+                                    </div>\
+                                </div>\
                             </div>\
-                        </div>\
-                    </li>'
+                            <div class="result-data">\
+                                <div class="row">\
+                                    <div class="col-9">\
+                                        <span class="result-data-label">Abbreviation:</span> {{ result.short_name }}\
+                                    </div>\
+                                    <div class="col-3 text-right"> \
+                                        <button @click="$parent.$emit(\'see-cases\', \'reporter\', result.id)">Cases</button>\ \
+                                    </div>\
+                                </div>\
+                            </div>\
+                        </li>'
                 },
             }
         }
