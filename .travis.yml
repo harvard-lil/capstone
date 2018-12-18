@@ -48,7 +48,7 @@ before_script:
   - python manage.py collectstatic --noinput
   
 script:
-  - bash scripts/tests/test_courtlistener.sh
+  - bash /home/travis/build/harvard-lil/capstone/capstone/scripts/tests/test_courtlistener.sh
   - fab test
 
 after_success:
