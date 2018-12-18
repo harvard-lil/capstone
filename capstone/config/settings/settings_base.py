@@ -361,6 +361,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'test_data/bulk-data'),
         },
     },
+    'transfer_storage': {
+        'class': 'CapS3Storage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/xfer'),
+        }
+    },
 }
 
 INVENTORY = {
