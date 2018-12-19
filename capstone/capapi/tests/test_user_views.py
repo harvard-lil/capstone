@@ -186,6 +186,23 @@ def test_case_export_download(request, client_fixture, export_fixture, status_co
         check_response(response, status_code=status_code)
 
 
+@pytest.mark.parametrize("client_fixture, export_fixture, range_header, status_code, size, content", [
+    ("client", "case_export", "bytes=5-6", 206, 2, "zi"),
+])
+@pytest.mark.django_db
+def test_ranged_case_export_download(request, client_fixture, export_fixture, range_header, status_code, size, content):
+    client = request.getfuncargvalue(client_fixture)
+    export = request.getfuncargvalue(export_fixture)
+    response = client.get(api_reverse('caseexport-download', args=[export.pk]),
+                          HTTP_RANGE=range_header)
+    response_content = list(response.streaming_content)
+    if status_code == 200:
+        check_zip_response(response)
+    else:
+        assert response.status_code == status_code
+        assert len(response_content) == size
+        assert b''.join(response_content) == bytes(content, 'utf8')
+
 ### research access request ###
 
 @pytest.mark.django_db

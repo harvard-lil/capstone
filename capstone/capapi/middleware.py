@@ -1,6 +1,5 @@
 import logging
 import re
-import os
 
 from django.conf import settings
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
@@ -113,13 +112,14 @@ class RangeRequestMiddleware:
         # first range, but we coalesce adjacent and overlapping ranges below
         http_range = request.META.get('HTTP_RANGE')
         units = "bytes="
-        if http_range.startswith(units):
+        if http_range and http_range.startswith(units):
             ranges = []
             matches = re.finditer(r"(\d*)-(\d*),?", http_range[len(units):])
             if matches:
                 # treat the response as a file so we can see how big it is
                 f = response.file_to_stream
-                response_size = os.fstat(f.fileno()).st_size
+                # response_size = os.fstat(f.fileno()).st_size
+                response_size = f.size
             for match in matches:
                 start = match.group(1)
                 end = match.group(2)
@@ -149,26 +149,37 @@ class RangeRequestMiddleware:
             return response
 
         # coalesce adjacent and overlapping ranges
-        newranges = []
-        for cur in ranges:
-            if len(newranges) == 0:
-                newranges.append(cur)
+        collapsed_ranges = []
+        for cur in sorted(ranges):
+            if len(collapsed_ranges) == 0:
+                collapsed_ranges.append(cur)
             else:
-                prev = newranges.pop()
+                prev = collapsed_ranges.pop()
                 if cur[0] - 1 <= prev[1]:
-                    newranges.append((prev[0], max(prev[1], cur[1])))
+                    collapsed_ranges.append((prev[0], max(prev[1], cur[1])))
                 else:
-                    newranges.append(prev)
-                    newranges.append(cur)
-        ranges = newranges
+                    collapsed_ranges.append(prev)
+                    collapsed_ranges.append(cur)
+        ranges = collapsed_ranges
 
         # to handle more than the first range, we'd need to produce a
         # multipart response...
         if len(ranges) > 0:
             (start, end) = ranges[0]
-            f.seek(start)
-            old_read = f.read
-            f.read = lambda n: old_read(min(n, end + 1 - f.tell()))
+
+            # iterator for range of file
+            def fchunks(start, end):
+                counter = 0
+                for chunk in f.chunks(chunk_size=1):
+                    if counter < start:
+                        pass
+                    elif start <= counter and counter <= end:
+                        yield chunk
+                    elif counter > end:
+                        return
+                    counter = counter + 1
+
+            response.streaming_content = fchunks(start, end)
             response.status_code = 206
             response['Content-Length'] = end + 1 - start
             response['Content-Range'] = 'bytes %d-%d/%d' % (start, end, response_size)
