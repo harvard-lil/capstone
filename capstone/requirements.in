@@ -23,6 +23,9 @@ psycopg2            # postgres connector
 mysqlclient         # mysql connector
 redis               # redis connector
 
+# freelaw project imports
+reporters_db
+
 # Django stuff
 Django
 django-storages     # abstract file access
