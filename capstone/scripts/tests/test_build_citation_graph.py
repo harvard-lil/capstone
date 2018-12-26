@@ -4,6 +4,7 @@ from scripts import build_citation_graph
 
 @pytest.mark.parametrize("casebody, expected_citations", [
     ("", []),
+    pytest.param(0, [], marks=pytest.mark.xfail),
 ])
 def test_extract_potential_citations_from_casebody(casebody, expected_citations):
-    assert extract_potential_citations_from_casebody(casebody) == expected_citations
+    assert build_citation_graph.extract_potential_citations_from_casebody(casebody) == expected_citations
