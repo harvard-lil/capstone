@@ -1,4 +1,15 @@
-""" Extracts, validates, and stores citations from a Case object """
+"""
+  Extracts, validates, and stores citations from a Case object. Inspired (with permission) by
+  https://github.com/freelawproject/courtlistener/blob/master/cl/citations/reporter_tokenizer.py
+"""
+import re
+
+from reporters_db import EDITIONS, VARIATIONS_ONLY
+
+REGEX_LIST = EDITIONS.keys() + VARIATIONS_ONLY.keys()
+REGEX_LIST.sort(key=len, reverse=True)
+REGEX_STR = '|'.join(map(re.escape, REGEX_LIST))
+REPORTER_RE = re.compile("\s(%s)\s" % REGEX_STR)
 
 def extract_potential_citations_from_casebody(casebody):
     """ Turns a casebody string into a list of potential citations """
