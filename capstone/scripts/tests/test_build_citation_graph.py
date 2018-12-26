@@ -5,7 +5,8 @@ from scripts import build_citation_graph
 @pytest.mark.parametrize("casebody, expected_citations", [
     ("", []),
     pytest.param(0, [], marks=pytest.mark.xfail),
-    ("379 U.S. 241", ["379 U.S. 241"])
+    ("379 U. S. 241", ["379 U. S. 241"]),
+    ("In Evans v. Laurel Links, Inc., 261 F. Supp. 474, 477 (ED Va. 1966), a class action brought", ["261 F. Supp. 474"]),
 ])
 def test_extract_potential_citations_from_casebody(casebody, expected_citations):
     actual_citations = build_citation_graph.extract_potential_citations_from_casebody(casebody)
