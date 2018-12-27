@@ -18,4 +18,7 @@ def extract_potential_citations_from_casebody(casebody):
     if len(casebody) == 0:
         return citation_graph
     citation_graph.append(casebody)
+    # TODO(https://github.com/harvard-lil/capstone/pull/709): Support `Id.` extraction
+    # TODO(https://github.com/harvard-lil/capstone/pull/709): Support specific page citations
+    # TODO(https://github.com/harvard-lil/capstone/pull/709): Support reporter normalization
     return REPORTER_RE.findall(casebody)
