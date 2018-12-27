@@ -14,15 +14,14 @@ flower              # monitoring
 # xml
 lxml
 xmltodict
-pyquery
+#pyquery
+# use this until https://github.com/gawel/pyquery/pull/183 lands:
+-e git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
 
 # database
 psycopg2            # postgres connector
 mysqlclient         # mysql connector
 redis               # redis connector
-
-# freelaw project
-reporters_db
 
 # Django stuff
 Django
@@ -30,7 +29,9 @@ django-storages     # abstract file access
 boto3               # for django-storages to talk to s3
 django-bulk-update  # bulk update of models
 whitenoise          # serve static assets
--e git://github.com/jazzband/django-model-utils.git@6b88c888d3e39aa1ebd72f834d08f44dd6997515#egg=django-model-utils # remove pinned version once a new version is released (noted: 12/26/18)
+#django-model-utils  # FieldTracker for tracking changed fields on model instances
+# upgrade to master is blocking on https://github.com/jazzband/django-model-utils/issues/331
+-e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
 django-simple-history   # model versioning
 django-partial-index    # create partial postgres indexes
 django-redis        # use redis as Django cache backend
@@ -60,13 +61,15 @@ beautifulsoup4
 django-extensions
 django-libsass
 django-pipeline
-djangorestframework-filters==1.0.0.dev0 # remove pinned version once 1.0.0 is released (noted: 12/26/18)
+#djangorestframework-filters
+# switch back to next release post 8/1/18:
+-e git://github.com/philipn/django-rest-framework-filters.git@c5ffc8276431cf49dddbcebab322b142843de4ef#egg=djangorestframework-filters
 djangorestframework
 django-bootstrap4   # render bootstrap forms in django templates
 drf-yasg            # expose API specification
 flex                    # both used for spec validation
 swagger_spec_validator  # by drf-yasg
-email-normalize
+-e git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
 
 # pdf generation
 PyPDF2
@@ -74,6 +77,9 @@ reportlab
 img2pdf
 
 # maintenance page
-webpage2html     # save target page as string
+-e git://github.com/zTrix/webpage2html.git@9df878a#egg=webpage2html     # save target page as string
 termcolor   # required by webpage2html
 mincss      # remove unused css styles
+
+# freelaw project
+reporters_db
