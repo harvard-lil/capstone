@@ -260,7 +260,7 @@ def private_case_export():
 @pytest.fixture
 def redis_patch(request):
     import pytest_redis.factories
-    with pytest.warns(pytest.warning_types.RemovedInPytest4Warning):
+    with pytest.warns(pytest.RemovedInPytest4Warning):
         capdb.storages.redis_client = pytest_redis.factories.redisdb('redis_proc', db=settings.REDIS_DEFAULT_DB)(request)
         capdb.storages.redis_ingest_client = pytest_redis.factories.redisdb('redis_proc', db=settings.REDIS_INGEST_DB)(request)
     return capdb.storages.redis_client, capdb.storages.redis_ingest_client
