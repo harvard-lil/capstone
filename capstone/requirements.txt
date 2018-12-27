@@ -6,6 +6,7 @@
 #
 -e git+git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
 -e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
+-e git+git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
 amqp==2.3.2               # via kombu
 apipkg==1.5               # via execnet
 asn1crypto==0.24.0        # via cryptography
@@ -30,7 +31,7 @@ coreapi==2.3.3            # via drf-yasg, openapi-codec
 coreschema==0.0.4         # via coreapi, drf-yasg
 coverage==4.5.2           # via pytest-cov
 cryptography==2.4.2       # via moto, paramiko
-cssselect==1.0.3          # via mincss, pyquery
+cssselect==1.0.3          # via mincss
 django-appconf==1.0.2     # via django-compressor
 django-bootstrap4==0.0.6
 django-bulk-update==2.1.0
@@ -107,7 +108,6 @@ pycurl==7.43.0
 pyflakes==1.5.0           # via flake8
 pynacl==1.3.0             # via paramiko
 pypdf2==1.26.0
-pyquery==1.4.0
 pytest-cov==2.5.1
 pytest-django==3.3.3
 pytest-factoryboy==2.0.1
