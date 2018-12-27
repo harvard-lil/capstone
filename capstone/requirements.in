@@ -54,17 +54,17 @@ bagit==1.6.4 # validate BagIt bag
 libsasscompiler # for compiling scss in pipeline
 
 # API
-beautifulsoup4==4.6.0
-django-extensions==2.0.6
-django-libsass==0.7
-django-pipeline==1.6.14
+beautifulsoup4
+django-extensions
+django-libsass
+django-pipeline
 djangorestframework-filters==1.0.0.dev0 # Remove pinned version on next release (noted 12/26/18)
-djangorestframework==3.8.2
-django-bootstrap4==0.0.6 # render bootstrap forms in django templates
-drf-yasg==1.7.1 # expose API specification
-flex==6.13.1 # both used for spec validation
-swagger-spec-validator==2.1.0 # by drf-yasg
--e git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
+djangorestframework
+django-bootstrap4 # render bootstrap forms in django templates
+drf-yasg # expose API specification
+flex # both used for spec validation
+swagger-spec-validator # by drf-yasg
+-e git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize # Fix issues related to https://github.com/gmr/email-normalize/pull/3 (https://github.com/harvard-lil/capstone/issues/745)
 
 # pdf generation
 pypdf2
