@@ -17,6 +17,7 @@ def extract_potential_citations_from_casebody(casebody):
     citation_graph = []
     if len(casebody) == 0:
         return citation_graph
+    # TODO(https://github.com/harvard-lil/capstone/pull/709): Optimize (too many string operations)
     found_reporters = set(REPORTER_RE.findall(casebody))
     for found_reporter in found_reporters:
         found_reporter_re = re.compile("([0-9]+\s%s\s[0-9]+)" % found_reporter)
