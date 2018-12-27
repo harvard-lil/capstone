@@ -1,82 +1,78 @@
 # After updating this file, run `pip-compile` to update requirements.txt.
 
 # general
-tqdm                # script progress bars
-wrapt               # object proxying
-nltk                # tokenizing for ngrams
-netaddr             # checking IP address in range
+tqdm==4.11.2 # script progress bars
+wrapt==1.10.11 # object proxying
+nltk==3.3.0 # tokenizing for ngrams
+netaddr==0.7.19 # checking IP address in range
 
 # celery
-celery[redis,sqs]       # task queue
-pycurl              # let celery talk to SQS queue
-flower              # monitoring
+celery[redis,sqs]==4.2.0 # task queue
+pycurl==7.43.0 # let celery talk to SQS queue
+flower==0.9.2 # monitoring
 
 # xml
-lxml
-xmltodict
-#pyquery
-# use this until https://github.com/gawel/pyquery/pull/183 lands:
--e git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
+lxml==3.7.3
+xmltodict==0.11.0
+pyquery
 
 # database
-psycopg2            # postgres connector
-mysqlclient         # mysql connector
-redis               # redis connector
+psycopg2==2.7.1 # postgres connector
+mysqlclient==1.3.10 # mysql connector
+redis==2.10.6 # redis connector
 
 # Django stuff
-Django
-django-storages     # abstract file access
-boto3               # for django-storages to talk to s3
-django-bulk-update  # bulk update of models
-whitenoise          # serve static assets
+django==2.0.8
+django-storages==1.6.6 # abstract file access
+boto3==1.7.48 # for django-storages to talk to s3
+django-bulk-update==2.1.0 # bulk update of models
+whitenoise==3.3.1 # serve static assets
 #django-model-utils  # FieldTracker for tracking changed fields on model instances
 # upgrade to master is blocking on https://github.com/jazzband/django-model-utils/issues/331
 -e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
-django-simple-history   # model versioning
-django-partial-index    # create partial postgres indexes
-django-redis        # use redis as Django cache backend
-django-hosts        # URL routing across subdomains
-django-webpack-loader   # include assets from webpack
+django-simple-history==2.1.1 # model versioning
+django-partial-index==0.4.0 # create partial postgres indexes
+django-redis==4.9.0 # use redis as Django cache backend
+django-hosts==3.0 # URL routing across subdomains
+django-webpack-loader==0.6.0 # include assets from webpack
 
 # Admin stuff
-pip-tools           # freeze requirements.txt
-Fabric3             # project automation
+pip-tools==2.0.1 # freeze requirements.txt
+fabric3==1.14.post1 # project automation
 
 # Testing
-pytest-django       # testing
-pytest-xdist        # run tests in parallel with pytest -n
-pytest-cov          # record code coverage
-pytest-redis        # redisdb fixture
-moto                # mocking s3 access
-flake8              # linting
-factory-boy         # mocking
-pytest-factoryboy   # inject factory-boy factories into pytest fixtures
-bagit               # validate BagIt bag
+pytest-django==3.3.3 # testing
+pytest-xdist==1.16.0 # run tests in parallel with pytest -n
+pytest-cov==2.5.1 # record code coverage
+pytest-redis==1.3.2 # redisdb fixture
+moto==1.3.6 # mocking s3 access
+flake8==3.4.1 # linting
+factory-boy==2.11.1 # mocking
+pytest-factoryboy==2.0.1 # inject factory-boy factories into pytest fixtures
+bagit==1.6.4 # validate BagIt bag
 
 # SCSS
-libsasscompiler     # for compiling scss in pipeline
+libsasscompiler==0.1.5 # for compiling scss in pipeline
 
 # API
-beautifulsoup4
-django-extensions
-django-libsass
-django-pipeline
-#djangorestframework-filters
-# switch back to next release post 8/1/18:
--e git://github.com/philipn/django-rest-framework-filters.git@c5ffc8276431cf49dddbcebab322b142843de4ef#egg=djangorestframework-filters
-djangorestframework
-django-bootstrap4   # render bootstrap forms in django templates
-drf-yasg            # expose API specification
-flex                    # both used for spec validation
-swagger_spec_validator  # by drf-yasg
+beautifulsoup4==4.6.0
+django-extensions==2.0.6
+django-libsass==0.7
+django-pipeline==1.6.14
+djangorestframework-filters==1.0.0.dev0 # Remove pinned version on next release (noted 12/26/18)
+djangorestframework==3.8.2
+django-bootstrap4==0.0.6 # render bootstrap forms in django templates
+drf-yasg==1.7.1 # expose API specification
+flex==6.13.1 # both used for spec validation
+swagger-spec-validator==2.1.0 # by drf-yasg
 -e git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
 
 # pdf generation
-PyPDF2
-reportlab
-img2pdf
+pypdf2==1.26.0
+reportlab==3.5.2
+img2pdf==0.3.0
 
 # maintenance page
--e git://github.com/zTrix/webpage2html.git@9df878a#egg=webpage2html     # save target page as string
-termcolor   # required by webpage2html
-mincss      # remove unused css styles
+webpage2html # save target page as string
+termcolor==1.1.0 # required by webpage2html
+mincss==0.11.6 # remove unused css styles
