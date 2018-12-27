@@ -69,11 +69,10 @@ swagger-spec-validator==2.1.0 # by drf-yasg
 -e git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
 
 # pdf generation
-pypdf2==1.26.0
-reportlab==3.5.2
-img2pdf==0.3.0
+pypdf2
+reportlab
+img2pdf
 
 # maintenance page
 webpage2html # save target page as string
-termcolor==1.1.0 # required by webpage2html
-mincss==0.11.6 # remove unused css styles
+mincss       # remove unused css styles
