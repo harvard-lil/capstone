@@ -45,7 +45,7 @@ pytest-xdist # run tests in parallel with pytest -n
 pytest-cov # record code coverage
 pytest-redis # redisdb fixture
 moto # mocking s3 access
-flake8 # linting
+flake8==3.5 # Fix issues related to 3.6 branch (https://github.com/harvard-lil/capstone/issues/745)
 factory-boy # mocking
 pytest-factoryboy # inject factory-boy factories into pytest fixtures
 bagit # validate BagIt bag
