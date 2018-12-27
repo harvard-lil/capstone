@@ -113,7 +113,7 @@ pytest-django==3.3.3
 pytest-factoryboy==2.0.1
 pytest-redis==1.3.2
 pytest-xdist==1.16.0
-pytest==4.0.2             # via pytest-cov, pytest-django, pytest-factoryboy, pytest-redis, pytest-xdist
+pytest==3.7.0
 python-dateutil==2.7.5    # via botocore, faker, moto
 python-jose==2.0.2        # via moto
 pytz==2018.7              # via babel, celery, django, flower, moto
