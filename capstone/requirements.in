@@ -12,14 +12,14 @@ pycurl # let celery talk to SQS queue
 flower # monitoring
 
 # xml
-lxml==3.7.3
-xmltodict==0.11.0
+lxml
+xmltodict
 -e git://github.com/jcushman/pyquery.git@115173a#egg=pyquery # Fix issues related to 1.4.x branch (https://github.com/harvard-lil/capstone/issues/745)
 
 # database
-psycopg2==2.7.1 # postgres connector
-mysqlclient==1.3.10 # mysql connector
-redis==2.10.6 # redis connector
+psycopg2 # postgres connector
+mysqlclient # mysql connector
+redis # redis connector
 
 # Django stuff
 django==2.0.8
