@@ -42,7 +42,7 @@ def test_cache_headers(case, request, settings,
     # set up variables
     get_kwargs = deepcopy(get_kwargs)  # avoid modifying between tests
     settings.SET_CACHE_CONTROL_HEADER = True
-    client = request.getfuncargvalue(client_fixture_name)
+    client = request.getfixturevalue(client_fixture_name)
     cache_expected = cache_if_logged_in if client._credentials else cache_if_logged_out
 
     # Resolve reverse_args. For example, if we see "fixture_case_export" we will fetch the "case_export" fixture
@@ -50,7 +50,7 @@ def test_cache_headers(case, request, settings,
     reverse_args = get_kwargs.pop('reverse_args', [])
     for i, arg in enumerate(reverse_args):
         if arg.startswith("fixture_"):
-            reverse_args[i] = request.getfuncargvalue(arg.split('_', 1)[1]).pk
+            reverse_args[i] = request.getfixturevalue(arg.split('_', 1)[1]).pk
 
     # reverse from the view name, using get_kwargs['reverse_func'] or reverse() by default
     reverse_func = get_kwargs.pop('reverse_func', 'reverse')
