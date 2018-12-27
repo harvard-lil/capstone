@@ -57,7 +57,7 @@ beautifulsoup4
 django-extensions
 django-libsass
 django-pipeline
-djangorestframework-filters==1.0.0.dev0 #remove pinned version once 1.0.0 is released (12/26/18)
+djangorestframework-filters==1.0.0.dev0 # remove pinned version once 1.0.0 is released (noted: 12/26/18)
 djangorestframework
 django-bootstrap4   # render bootstrap forms in django templates
 drf-yasg            # expose API specification
