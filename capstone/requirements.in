@@ -44,7 +44,7 @@ pytest-django # testing
 pytest-xdist # run tests in parallel with pytest -n
 pytest-cov # record code coverage
 pytest-redis # redisdb fixture
-moto # mocking s3 access
+moto==1.3.6 # Fix issues related to boto3 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
 flake8==3.4.1 # Fix issues related to 3.6 branch (https://github.com/harvard-lil/capstone/issues/745)
 factory-boy # mocking
 pytest-factoryboy # inject factory-boy factories into pytest fixtures
