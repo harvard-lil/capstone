@@ -20,7 +20,7 @@ def extract_potential_citations_from_casebody(casebody):
     reporters = REPORTER_RE.findall(casebody)
     for reporter in reporters:
         found_reporter_re = re.compile("([0-9]+\s%s\s[0-9]+)" % reporter)
-        citation_graph.append(found_reporter_re.findall(casebody))
+        citation_graph += found_reporter_re.findall(casebody)
     # TODO(https://github.com/harvard-lil/capstone/pull/709): Normalize reporter
     # TODO(https://github.com/harvard-lil/capstone/pull/709): Support Id. citation extraction (Id.)
     # TODO(https://github.com/harvard-lil/capstone/pull/709): Support exact page extraction (... at 666)
