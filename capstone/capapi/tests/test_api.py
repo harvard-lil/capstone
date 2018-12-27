@@ -55,7 +55,7 @@ def test_jurisdiction_redirect(client, case, jurisdiction):
 ])
 def test_model_endpoint(request, client, fixture_name, detail_attr, comparison_attr):
     """ Generic test to kick the tires on -list and -detail for model endpoints. """
-    instance = request.getfuncargvalue(fixture_name)
+    instance = request.getfixturevalue(fixture_name)
     model = instance.__class__
     resource_name = model.__name__.lower()
 
