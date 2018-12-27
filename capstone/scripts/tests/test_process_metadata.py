@@ -19,11 +19,6 @@ def test_get_single_case_metadata(ingest_case_xml):
     assert type(case['decision_date_original']) is str
 
     assert case['jurisdiction'] == 'Illinois'
-    
-    assert case["citation_graph"] == {
-        'incoming': [],
-        'outgoing': [],
-    }
 
 def test_get_case_metadata():
     casemets_test_dir = "test_data/from_vendor"
@@ -43,9 +38,6 @@ def test_get_case_metadata():
                     assert type(case_metadata["attorneys"]) is list
                     assert type(case_metadata["judges"]) is list
                     assert type(case_metadata["parties"]) is list
-                    assert type(case_metadata["citation_graph"]) is dict
-                    assert type(case_metadata["citation_graph"]["incoming"]) is list
-                    assert type(case_metadata["citation_graph"]["outgoing"]) is list
 
 def test_case_metadata_opinion():
     # test case with no opinion author
