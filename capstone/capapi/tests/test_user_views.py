@@ -150,7 +150,7 @@ def test_view_user_details(auth_user, auth_client):
 ])
 @pytest.mark.django_db
 def test_bulk_data_list(request, case_export, private_case_export, client_fixture, can_see_private):
-    client = request.getfuncargvalue(client_fixture)
+    client = request.getfixturevalue(client_fixture)
     public_url = api_reverse('caseexport-download', args=[case_export.pk])
     private_url = api_reverse('caseexport-download', args=[private_case_export.pk])
 
@@ -177,8 +177,8 @@ def check_zip_response(response):
 ])
 @pytest.mark.django_db
 def test_case_export_download(request, client_fixture, export_fixture, status_code):
-    client = request.getfuncargvalue(client_fixture)
-    export = request.getfuncargvalue(export_fixture)
+    client = request.getfixturevalue(client_fixture)
+    export = request.getfixturevalue(export_fixture)
     response = client.get(api_reverse('caseexport-download', args=[export.pk]))
     if status_code == 200:
         check_zip_response(response)
