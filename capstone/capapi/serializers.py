@@ -68,17 +68,6 @@ class CaseReporterSerializer(serializers.ModelSerializer):
             'full_name',
         )
 
-class CitationGraphNodeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.CaseMetadata
-        fields = ('url')
-
-class CitationGraphSerializer(serializers.ModelSerializer):
-    incoming = CitationGraphNodeSerializer(many=True)
-    outgoing = CitationGraphNodeSerializer(many=True)
-    class Meta:
-        model = models.CitationGraph
-        fields = ('incoming', 'outgoing')
 
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
