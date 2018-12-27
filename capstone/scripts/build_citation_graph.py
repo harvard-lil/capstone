@@ -20,9 +20,14 @@ def extract_potential_citations_from_casebody(casebody):
     # TODO(https://github.com/harvard-lil/capstone/pull/709): Optimize (too many string operations)
     found_reporters = set(REPORTER_RE.findall(casebody))
     for found_reporter in found_reporters:
-        found_reporter_re = re.compile("([0-9]+\s%s\s[0-9]+)" % found_reporter)
-        citation_graph += found_reporter_re.findall(casebody)
-    # TODO(https://github.com/harvard-lil/capstone/pull/709): Normalize reporter
+        if corrected_reporter in VARIATIONS_ONLY.keys():
+            corrected_reporter = VARIATIONS_ONLY[found_reporter][0]
+            corrected_casebody = casebody.replace(found_reporter, corrected_reporter)
+        else:
+            corrected_reporter = found_reporter
+            corrected_casebody = casebody
+        corrected_reporter_re = re.compile("([0-9]+\s%s\s[0-9]+)" % corrected_reporter)
+        citation_graph += corrected_reporter_re.findall(corrected_casebody)
     # TODO(https://github.com/harvard-lil/capstone/pull/709): Support Id. citation extraction (Id.)
     # TODO(https://github.com/harvard-lil/capstone/pull/709): Support exact page extraction (... at 666)
     # TODO(https://github.com/harvard-lil/capstone/pull/709): Support signal and index extraction (see also ...; cf. ...)
