@@ -737,6 +737,7 @@ class CaseMetadataQuerySet(models.QuerySet):
         """
         return self.filter(duplicative=False, jurisdiction__isnull=False, court__isnull=False)
 
+
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
