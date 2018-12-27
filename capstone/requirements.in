@@ -14,9 +14,7 @@ flower              # monitoring
 # xml
 lxml
 xmltodict
-#pyquery
-# use this until https://github.com/gawel/pyquery/pull/183 lands:
--e git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
+pyquery
 
 # database
 psycopg2            # postgres connector
