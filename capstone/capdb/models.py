@@ -736,10 +736,6 @@ class CaseMetadataQuerySet(models.QuerySet):
             Return cases accessible from API
         """
         return self.filter(duplicative=False, jurisdiction__isnull=False, court__isnull=False)
-      
-class CitationGraph(models.Model):
-    src_case = models.ForeignKey('CaseMetadata', null=False, related_name='case_metadatas', on_delete=models.CASCADE)
-    dst_case = models.ForeignKey('CaseMetadata', null=False, related_name='case_metadatas', on_delete=models.CASCADE)
 
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
