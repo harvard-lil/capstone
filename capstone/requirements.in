@@ -30,7 +30,7 @@ django-storages     # abstract file access
 boto3               # for django-storages to talk to s3
 django-bulk-update  # bulk update of models
 whitenoise          # serve static assets
-django-model-utils  # FieldTracker for tracking changed fields on model instances
+-e git://github.com/jazzband/django-model-utils.git@6b88c888d3e39aa1ebd72f834d08f44dd6997515#egg=django-model-utils # remove pinned version once a new version is released (noted: 12/26/18)
 django-simple-history   # model versioning
 django-partial-index    # create partial postgres indexes
 django-redis        # use redis as Django cache backend
