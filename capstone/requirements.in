@@ -41,6 +41,7 @@ pip-tools==2.0.1 # freeze requirements.txt
 fabric3==1.14.post1 # project automation
 
 # Testing
+pytest==3.7.0 # Fix issues related to 4.x branch (https://github.com/harvard-lil/capstone/issues/745)
 pytest-django==3.3.3 # testing
 pytest-xdist==1.16.0 # run tests in parallel with pytest -n
 pytest-cov==2.5.1 # record code coverage
