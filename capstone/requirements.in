@@ -27,9 +27,7 @@ django-storages==1.6.6 # abstract file access
 boto3==1.7.48 # for django-storages to talk to s3
 django-bulk-update==2.1.0 # bulk update of models
 whitenoise==3.3.1 # serve static assets
-#django-model-utils  # FieldTracker for tracking changed fields on model instances
-# upgrade to master is blocking on https://github.com/jazzband/django-model-utils/issues/331
--e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
+-e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils # Fix issues related to https://github.com/jazzband/django-model-utils/issues/331 (https://github.com/harvard-lil/capstone/issues/745)
 django-simple-history==2.1.1 # model versioning
 django-partial-index==0.4.0 # create partial postgres indexes
 django-redis==4.9.0 # use redis as Django cache backend
@@ -37,8 +35,8 @@ django-hosts==3.0 # URL routing across subdomains
 django-webpack-loader==0.6.0 # include assets from webpack
 
 # Admin stuff
-pip-tools==2.0.1 # freeze requirements.txt
-fabric3==1.14.post1 # project automation
+pip-tools # freeze requirements.txt
+fabric3 # project automation
 
 # Testing
 pytest==3.7.0 # Fix issues related to 4.x branch (https://github.com/harvard-lil/capstone/issues/745)
@@ -53,7 +51,7 @@ pytest-factoryboy==2.0.1 # inject factory-boy factories into pytest fixtures
 bagit==1.6.4 # validate BagIt bag
 
 # SCSS
-libsasscompiler==0.1.5 # for compiling scss in pipeline
+libsasscompiler # for compiling scss in pipeline
 
 # API
 beautifulsoup4==4.6.0
