@@ -219,6 +219,28 @@ def contract_approver_auth_client():
 def api_request_factory():
     return APIRequestFactory()
 
+
+@pytest.fixture()
+def admin_user(db, django_user_model, django_username_field):
+    """A Django admin user.
+    This uses an existing user with username "admin", or creates a new one with
+    password "password".
+    """
+    UserModel = django_user_model
+    username_field = django_username_field
+
+    try:
+        user = UserModel._default_manager.get(**{username_field: "admin"})
+    except UserModel.DoesNotExist:
+        extra_fields = {}
+        if username_field != "username":
+            extra_fields[username_field] = "admin"
+        user = UserModel._default_manager.create_superuser(
+            "admin", "admin@example.com", "password", **extra_fields
+        )
+    return user
+
+
 @pytest.fixture()
 def staff_user(cap_user):
     cap_user.is_staff = True
