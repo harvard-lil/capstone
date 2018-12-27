@@ -4,6 +4,7 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
+-e git+git://github.com/jazzband/django-model-utils.git@6b88c888d3e39aa1ebd72f834d08f44dd6997515#egg=django-model-utils
 amqp==2.3.2               # via kombu
 apipkg==1.5               # via execnet
 asn1crypto==0.24.0        # via cryptography
@@ -36,7 +37,6 @@ django-extensions==2.1.4
 django-filter==2.0.0      # via djangorestframework-filters
 django-hosts==3.0
 django-libsass==0.7
-django-model-utils==3.1.2
 django-partial-index==0.5.2
 django-pipeline==1.6.14
 django-redis==4.10.0
