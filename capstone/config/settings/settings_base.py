@@ -364,7 +364,7 @@ STORAGES = {
     'transfer_storage': {
         'class': 'CapS3Storage',
         'kwargs': {
-            'location': os.path.join(BASE_DIR, 'test_data/xfer'),
+            'location': os.path.join(BASE_DIR, 'test_data/xfer').lstrip('/'),
         }
     },
 }
