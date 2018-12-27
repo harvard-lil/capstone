@@ -24,7 +24,7 @@ redis # redis connector
 # Django stuff
 django==2.0.8
 django-storages==1.6.6 # Fix issues related to 1.7.x branch (https://github.com/harvard-lil/capstone/issues/745)
-boto3 # for django-storages to talk to s3
+boto3==1.8.9 # Fix issues related to 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
 django-bulk-update # bulk update of models
 whitenoise # serve static assets
 -e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils # Fix issues related to https://github.com/jazzband/django-model-utils/issues/331 (https://github.com/harvard-lil/capstone/issues/745)
@@ -45,7 +45,7 @@ pytest-xdist # run tests in parallel with pytest -n
 pytest-cov # record code coverage
 pytest-redis # redisdb fixture
 moto # mocking s3 access
-flake8==3.5 # Fix issues related to 3.6 branch (https://github.com/harvard-lil/capstone/issues/745)
+flake8==3.4.1 # Fix issues related to 3.6 branch (https://github.com/harvard-lil/capstone/issues/745)
 factory-boy # mocking
 pytest-factoryboy # inject factory-boy factories into pytest fixtures
 bagit # validate BagIt bag
