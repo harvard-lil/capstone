@@ -20,7 +20,7 @@ def extract_potential_citations_from_casebody(casebody):
     # TODO(https://github.com/harvard-lil/capstone/pull/709): Optimize (too many string operations)
     found_reporters = set(REPORTER_RE.findall(casebody))
     for found_reporter in found_reporters:
-        if corrected_reporter in VARIATIONS_ONLY.keys():
+        if found_reporter in VARIATIONS_ONLY.keys():
             corrected_reporter = VARIATIONS_ONLY[found_reporter][0]
             corrected_casebody = casebody.replace(found_reporter, corrected_reporter)
         else:
