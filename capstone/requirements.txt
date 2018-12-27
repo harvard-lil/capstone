@@ -33,7 +33,7 @@ django-bootstrap4==0.0.7
 django-bulk-update==2.2.0
 django-compressor==2.2    # via django-libsass
 django-extensions==2.1.4
-django-filter==1.1.0      # via djangorestframework-filters
+django-filter==2.0.0      # via djangorestframework-filters
 django-hosts==3.0
 django-libsass==0.7
 django-model-utils==3.1.2
@@ -44,7 +44,7 @@ django-simple-history==2.6.0
 django-storages==1.7.1
 django-webpack-loader==0.6.0
 django==2.1.4
-djangorestframework-filters==0.10.2.post0
+djangorestframework-filters==1.0.0.dev0
 djangorestframework==3.9.0
 dnspython==1.16.0         # via email-normalize
 docker-pycreds==0.4.0     # via docker
@@ -141,4 +141,6 @@ vine==1.1.4               # via amqp
 webpage2html==0.3.6
 websocket-client==0.54.0  # via docker
 werkzeug==0.14.1          # via moto
-whitenoise==4.1.
+whitenoise==4.1.2
+wrapt==1.10.11
+xmltodict==0.11.0
