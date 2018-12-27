@@ -11,6 +11,4 @@ from scripts import build_citation_graph
 ])
 def test_extract_potential_citations_from_casebody(casebody, expected_citations):
     actual_citations = build_citation_graph.extract_potential_citations_from_casebody(casebody)
-    assert len(actual_citations) == len(expected_citations)
-    for idx, _ in enumerate(actual_citations):
-        assert actual_citations[idx] == expected_citations[idx]
+    assert set(actual_citations) == set(expected_citations)
