@@ -3,7 +3,7 @@ import re
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
-from django.utils.translation import format_lazy
+from django.utils.text import format_lazy
 
 from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract
 from capweb.helpers import reverse, reverse_lazy
