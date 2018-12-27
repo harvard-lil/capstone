@@ -22,7 +22,7 @@ mysqlclient # mysql connector
 redis # redis connector
 
 # Django stuff
-django
+django==2.0.8 # Fix issues related to 2.1.x branch (https://github.com/harvard-lil/capstone/issues/745)
 django-storages==1.6.6 # Fix issues related to 1.7.x branch (https://github.com/harvard-lil/capstone/issues/745)
 boto3==1.7.84 # Fix issues related to 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
 django-bulk-update # bulk update of models
