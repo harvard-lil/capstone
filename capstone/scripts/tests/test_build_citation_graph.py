@@ -1,6 +1,6 @@
 """ Tests ../build_citation_graph.py using content from https://supreme.justia.com/cases/federal/us/532/661/ """
 import pytest
-from scripts.build_citation_graph import __CasebodyToken, __tokenize_casebody, extract_potential_citations_from_casebody
+from scripts.build_citation_graph import __CasebodyToken, __find_citations_in_tokens, __tokenize_casebody, extract_potential_citations_from_casebody
 
 @pytest.mark.parametrize("casebody, expected_tokens", [
     (
@@ -18,6 +18,31 @@ from scripts.build_citation_graph import __CasebodyToken, __tokenize_casebody, e
 ])
 def test_tokenize_casebody(casebody, expected_tokens):
     assert __tokenize_casebody(casebody) == expected_tokens
+
+@pytest.mark.parametrize("tokens, expected_citations", [
+    (
+        [],
+        [],
+    ),
+    (
+        [("379", __CasebodyToken.NUMBER), ("U.S.", __CasebodyToken.REPORTER), ("241", __CasebodyToken.NUMBER)],
+        ["379 U.S. 241"],
+    ),
+    (
+        [("0", __CasebodyToken.NUMBER), ("379", __CasebodyToken.NUMBER), ("U.S.", __CasebodyToken.REPORTER), ("241", __CasebodyToken.NUMBER)],
+        ["379 U.S. 241"],
+    ),
+    (
+        [("379", __CasebodyToken.NUMBER), ("379", __CasebodyToken.NUMBER), ("U.S.", __CasebodyToken.REPORTER), ("U.S.", __CasebodyToken.REPORTER), ("241", __CasebodyToken.NUMBER)],
+        [],
+    ),
+    (
+        [("379", __CasebodyToken.NUMBER), ("U.S.", __CasebodyToken.REPORTER), ("aaa", __CasebodyToken.NOOP)],
+        [],
+    ),
+])
+def test_find_citations_in_tokens(tokens, expected_citations):
+    assert __find_citations_in_tokens(tokens) == expected_citations
 
 @pytest.mark.parametrize("casebody, expected_citations", [
     (
