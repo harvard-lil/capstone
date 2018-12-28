@@ -1,6 +1,6 @@
 """ Tests ../build_citation_graph.py using content from https://supreme.justia.com/cases/federal/us/532/661/ """
 import pytest
-from scripts import build_citation_graph
+from scripts.build_citation_graph import __CasebodyToken, __tokenize_casebody, extract_potential_citations_from_casebody
 
 @pytest.mark.parametrize("casebody, expected_citations", [
     (
@@ -26,5 +26,23 @@ from scripts import build_citation_graph
     ),
 ])
 def test_extract_potential_citations_from_casebody(casebody, expected_citations):
-    actual_citations = build_citation_graph.extract_potential_citations_from_casebody(casebody)
+    actual_citations = extract_potential_citations_from_casebody(casebody)
     assert set(actual_citations) == set(expected_citations)
+
+@pytest.mark.parametrize("casebody, expected_tokens", [
+    (
+        "",
+        [],
+    ),
+    (
+        "379 U. S. 241",
+        [("379", __CasebodyToken.NUMBER), ("U.S.", __CasebodyToken.REPORTER), ("241", __CasebodyToken.NUMBER)],
+    ),
+    (
+        "In Evans v. Laurel Links, Inc.,",
+        [("In", __CasebodyToken.NOOP), ("Evans", __CasebodyToken.NOOP), ("v", __CasebodyToken.NOOP), ("Laurel", __CasebodyToken.NOOP), ("Links", __CasebodyToken.REPORTER), ("Inc", __CasebodyToken.NUMBER)],
+    ),
+])
+def test_extract_potential_citations_from_casebody(casebody, expected_citations):
+    actual_tokens = __tokenize_casebody(casebody)
+    assert set(actual_tokens) == set(expected_citations)
