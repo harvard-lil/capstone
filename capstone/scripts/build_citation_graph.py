@@ -42,13 +42,39 @@ def __tokenize_casebody(casebody):
                     tokens.append((spacing_split_token, __CasebodyToken.NOOP))
     return tokens
 
+def __find_citations_in_tokens(tokens):
+    """Finds citations within tokens returned by `__tokenize_casebody`"""
+    # TODO(https://github.com/harvard-lil/capstone/pull/709): Support Id. citation extraction (Id.)
+    # TODO(https://github.com/harvard-lil/capstone/pull/709): Support exact page extraction (... at 666)
+    # TODO(https://github.com/harvard-lil/capstone/pull/709): Support signal and index extraction (see also ...; cf. ...)
+    citations = []
+    idx = 0
+    while idx < len(tokens):
+        token_a = tokens[idx]
+        idx += 1
+        if token_a[1] != __CasebodyToken.NUMBER:
+            continue
+        if idx == len(tokens):
+            break
+        token_b = tokens[idx]
+        if token_b[1] != __CasebodyToken.REPORTER:
+            continue
+        idx += 1
+        if idx == len(tokens):
+            break
+        token_c = tokens[idx]
+        if token_c[1] != __CasebodyToken.NUMBER:
+            continue
+        idx += 1
+        citations.append(" ".join([token_a[0], token_b[0], token_c[0]]))
+    return citations
+
 def extract_potential_citations_from_casebody(casebody):
     """Extracts an ordered list of potential citations from the casebody"""
     assert isinstance(casebody, str), 'casebody must be a string'
     citation_graph = []
     if len(casebody) == 0:
         return citation_graph
-    # TODO(https://github.com/harvard-lil/capstone/pull/709): Optimize (too many string operations)
     found_reporters = set(REPORTER_RE.findall(casebody))
     for found_reporter in found_reporters:
         if found_reporter in VARIATIONS_ONLY.keys():
@@ -59,7 +85,4 @@ def extract_potential_citations_from_casebody(casebody):
             corrected_casebody = casebody
         corrected_reporter_re = re.compile("([0-9]+\s%s\s[0-9]+)" % corrected_reporter)
         citation_graph += corrected_reporter_re.findall(corrected_casebody)
-    # TODO(https://github.com/harvard-lil/capstone/pull/709): Support Id. citation extraction (Id.)
-    # TODO(https://github.com/harvard-lil/capstone/pull/709): Support exact page extraction (... at 666)
-    # TODO(https://github.com/harvard-lil/capstone/pull/709): Support signal and index extraction (see also ...; cf. ...)
     return citation_graph
