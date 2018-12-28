@@ -16,9 +16,9 @@ from scripts.build_citation_graph import __CasebodyToken, __tokenize_casebody, e
         [("In", __CasebodyToken.NOOP), ("Evans", __CasebodyToken.NOOP), ("v", __CasebodyToken.NOOP), ("Laurel", __CasebodyToken.NOOP), ("Links", __CasebodyToken.REPORTER), ("Inc", __CasebodyToken.NUMBER)],
     ),
 ])
-def test_extract_potential_citations_from_casebody(casebody, expected_citations):
+def test_tokenize_casebody(casebody, expected_tokens):
     actual_tokens = __tokenize_casebody(casebody)
-    assert set(actual_tokens) == set(expected_citations)
+    assert set(actual_tokens) == set(expected_tokens)
 
 @pytest.mark.parametrize("casebody, expected_citations", [
     (
