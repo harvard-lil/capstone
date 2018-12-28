@@ -72,17 +72,5 @@ def __find_citations_in_tokens(tokens):
 def extract_potential_citations_from_casebody(casebody):
     """Extracts an ordered list of potential citations from the casebody"""
     assert isinstance(casebody, str), 'casebody must be a string'
-    citation_graph = []
-    if len(casebody) == 0:
-        return citation_graph
-    found_reporters = set(REPORTER_RE.findall(casebody))
-    for found_reporter in found_reporters:
-        if found_reporter in VARIATIONS_ONLY.keys():
-            corrected_reporter = VARIATIONS_ONLY[found_reporter][0]
-            corrected_casebody = casebody.replace(found_reporter, corrected_reporter)
-        else:
-            corrected_reporter = found_reporter
-            corrected_casebody = casebody
-        corrected_reporter_re = re.compile("([0-9]+\s%s\s[0-9]+)" % corrected_reporter)
-        citation_graph += corrected_reporter_re.findall(corrected_casebody)
-    return citation_graph
+    tokens = __tokenize_casebody(casebody)
+    return __find_citations_in_tokens(tokens)
