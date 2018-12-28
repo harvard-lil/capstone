@@ -3,7 +3,7 @@
   https://github.com/freelawproject/courtlistener/blob/master/cl/citations/reporter_tokenizer.py
 """
 import re
-from enum import Enum, auto, unique
+from enum import Enum, unique
 
 from reporters_db import EDITIONS, VARIATIONS_ONLY
 
@@ -16,9 +16,9 @@ SPACING_RE = re.compile("[\s,;:.()[\]{}]+")
 
 @unique
 class __CasebodyToken(Enum):
-    NOOP = auto()
-    NUMBER = auto()
-    REPORTER = auto()
+    NOOP = 0
+    NUMBER = 1
+    REPORTER = 2
 
 def __tokenize_casebody(casebody):
     tokens = []
