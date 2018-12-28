@@ -3,13 +3,41 @@
   https://github.com/freelawproject/courtlistener/blob/master/cl/citations/reporter_tokenizer.py
 """
 import re
+from enum import Enum, auto, unique
 
 from reporters_db import EDITIONS, VARIATIONS_ONLY
 
-REGEX_LIST = list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())
-REGEX_LIST.sort(key=len, reverse=True)
-REGEX_STR = '|'.join(map(re.escape, REGEX_LIST))
-REPORTER_RE = re.compile("\s(%s)\s" % REGEX_STR)
+REPORTER_LIST = list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())
+REPORTER_LIST.sort(key=len, reverse=True)
+REPORTER_SET = set(REPORTER_LIST)
+REPORTER_STR = '|'.join(map(re.escape, REPORTER_LIST))
+REPORTER_RE = re.compile("\s(%s)\s" % REPORTER_STR)
+SPACING_RE = re.compile("[\s,;:.()[\]{}]+")
+
+@unique
+class __CasebodyToken(Enum):
+    NOOP = auto()
+    NUMBER = auto()
+    REPORTER = auto()
+
+def __tokenize_casebody(casebody):
+    tokens = []
+    reporter_split_tokens = REPORTER_RE.split(casebody)
+    for reporter_split_token in reporter_split_tokens:
+        if reporter_split_token in REPORTER_SET:
+            if reporter_split_token in VARIATIONS_ONLY.keys():
+                corrected_reporter = VARIATIONS_ONLY[reporter_split_token][0]
+            else:
+                corrected_reporter = reporter_split_token
+            tokens.append((corrected_reporter, __CasebodyToken.REPORTER))
+        else:
+            spacing_split_tokens = SPACING_RE.split(reporter_split_token)
+            for spacing_split_token in spacing_split_tokens:
+                if spacing_split_token.isdigit():
+                    tokens.append((spacing_split_token, __CasebodyToken.NUMBER))
+                else:
+                    tokens.append((spacing_split_token, __CasebodyToken.NOOP))
+    return tokens
 
 def extract_potential_citations_from_casebody(casebody):
     """ Turns a casebody string into a list of potential citations """
