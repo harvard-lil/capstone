@@ -13,7 +13,7 @@ from scripts.build_citation_graph import __CasebodyToken, __tokenize_casebody, e
     ),
     (
         "In Evans v. Laurel Links, Inc.,",
-        [("In", __CasebodyToken.NOOP), ("Evans", __CasebodyToken.NOOP), ("v", __CasebodyToken.NOOP), ("Laurel", __CasebodyToken.NOOP), ("Links", __CasebodyToken.REPORTER), ("Inc", __CasebodyToken.NUMBER)],
+        [("In", __CasebodyToken.NOOP), ("Evans", __CasebodyToken.NOOP), ("v", __CasebodyToken.NOOP), ("Laurel", __CasebodyToken.NOOP), ("Links", __CasebodyToken.NOOP), ("Inc", __CasebodyToken.NOOP)],
     ),
 ])
 def test_tokenize_casebody(casebody, expected_tokens):
