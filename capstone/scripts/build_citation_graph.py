@@ -16,11 +16,12 @@ SPACING_RE = re.compile("[\s,;:.()[\]{}]+")
 
 @unique
 class __CasebodyToken(Enum):
-    NOOP = 0
-    NUMBER = 1
-    REPORTER = 2
+    NOOP = 0 # Token used only to break up patterns
+    NUMBER = 1 # [0-9]+
+    REPORTER = 2 # Can be found in `REPORTER_SET`
 
 def __tokenize_casebody(casebody):
+    """Splits casebody into components and pairs them with `CasebodyToken`s"""
     tokens = []
     reporter_split_tokens = REPORTER_RE.split(casebody)
     for reporter_split_token in reporter_split_tokens:
@@ -42,7 +43,7 @@ def __tokenize_casebody(casebody):
     return tokens
 
 def extract_potential_citations_from_casebody(casebody):
-    """ Turns a casebody string into a list of potential citations """
+    """Extracts an ordered list of potential citations from the casebody"""
     assert isinstance(casebody, str), 'casebody must be a string'
     citation_graph = []
     if len(casebody) == 0:
