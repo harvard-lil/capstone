@@ -35,6 +35,8 @@ def __tokenize_casebody(casebody):
             for spacing_split_token in spacing_split_tokens:
                 if spacing_split_token.isdigit():
                     tokens.append((spacing_split_token, __CasebodyToken.NUMBER))
+                elif spacing_split_token == "":
+                    continue
                 else:
                     tokens.append((spacing_split_token, __CasebodyToken.NOOP))
     return tokens
