@@ -129,6 +129,7 @@ class RangeRequestMiddleware:
                 # the case where start is empty
                 if not start:
                     start = max(0, response_size - int(end))
+                    end = response_size - 1
                 else:
                     start = int(start)
                 # this handles the case where end is empty and where it isn't
@@ -166,6 +167,10 @@ class RangeRequestMiddleware:
         # multipart response...
         if len(ranges) > 0:
             (start, end) = ranges[0]
+
+            # if the range encompasses the whole response, return 200 --
+            if start == 0 and end >= (response_size - 1):
+                return response
 
             # iterator for range of file
             def fchunks(start, end):
