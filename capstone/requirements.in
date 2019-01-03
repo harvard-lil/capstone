@@ -1,15 +1,15 @@
 # After updating this file, run `pip-compile` to update requirements.txt.
 
 # general
-tqdm # script progress bars
-wrapt # object proxying
-nltk # tokenizing for ngrams
+tqdm    # script progress bars
+wrapt   # object proxying
+nltk    # tokenizing for ngrams
 netaddr # checking IP address in range
 
 # celery
 celery[redis,sqs] # task queue
-pycurl # let celery talk to SQS queue
-flower # monitoring
+pycurl            # let celery talk to SQS queue
+flower            # monitoring
 
 # xml
 lxml
@@ -17,38 +17,38 @@ xmltodict
 -e git://github.com/jcushman/pyquery.git@115173a#egg=pyquery # Fix issues related to 1.4.x branch (https://github.com/harvard-lil/capstone/issues/745)
 
 # database
-psycopg2 # postgres connector
+psycopg2    # postgres connector
 mysqlclient # mysql connector
-redis # redis connector
+redis       # redis connector
 
 # Django stuff
-django==2.0.8 # Fix issues related to 2.1.x branch (https://github.com/harvard-lil/capstone/issues/745)
+django==2.0.8          # Fix issues related to 2.1.x branch (https://github.com/harvard-lil/capstone/issues/745)
 django-storages==1.6.6 # Fix issues related to 1.7.x branch (https://github.com/harvard-lil/capstone/issues/745)
-boto3==1.7.84 # Fix issues related to 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
-django-bulk-update # bulk update of models
-whitenoise # serve static assets
+boto3==1.7.84          # Fix issues related to 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
+django-bulk-update     # bulk update of models
+whitenoise             # serve static assets
 -e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils # Fix issues related to https://github.com/jazzband/django-model-utils/issues/331 (https://github.com/harvard-lil/capstone/issues/745)
-django-simple-history # model versioning
-django-partial-index # create partial postgres indexes
-django-redis # use redis as Django cache backend
-django-hosts # URL routing across subdomains
-django-webpack-loader # include assets from webpack
+django-simple-history  # model versioning
+django-partial-index   # create partial postgres indexes
+django-redis           # use redis as Django cache backend
+django-hosts           # URL routing across subdomains
+django-webpack-loader  # include assets from webpack
 
 # Admin stuff
 pip-tools # freeze requirements.txt
-fabric3 # project automation
+fabric3   # project automation
 
 # Testing
-pytest==3.7.0 # Fix issues related to 4.x branch (https://github.com/harvard-lil/capstone/issues/745)
-pytest-django # testing
-pytest-xdist # run tests in parallel with pytest -n
-pytest-cov # record code coverage
-pytest-redis # redisdb fixture
-moto==1.3.6 # Fix issues related to boto3 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
-flake8==3.4.1 # Fix issues related to 3.6 branch (https://github.com/harvard-lil/capstone/issues/745)
-factory-boy # mocking
+pytest==3.7.0     # Fix issues related to 4.x branch (https://github.com/harvard-lil/capstone/issues/745)
+pytest-django     # testing
+pytest-xdist      # run tests in parallel with pytest -n
+pytest-cov        # record code coverage
+pytest-redis      # redisdb fixture
+moto==1.3.6       # Fix issues related to boto3 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
+flake8==3.4.1     # Fix issues related to 3.6 branch (https://github.com/harvard-lil/capstone/issues/745)
+factory-boy       # mocking
 pytest-factoryboy # inject factory-boy factories into pytest fixtures
-bagit # validate BagIt bag
+bagit             # validate BagIt bag
 
 # SCSS
 libsasscompiler # for compiling scss in pipeline
@@ -60,9 +60,9 @@ django-libsass
 django-pipeline
 djangorestframework-filters==1.0.0.dev0 # Remove pinned version on next release (https://github.com/harvard-lil/capstone/issues/745)
 djangorestframework
-django-bootstrap4 # render bootstrap forms in django templates
-drf-yasg # expose API specification
-flex # both used for spec validation
+django-bootstrap4      # render bootstrap forms in django templates
+drf-yasg               # expose API specification
+flex                   # both used for spec validation
 swagger_spec_validator # by drf-yasg
 -e git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize # Fix issues related to https://github.com/gmr/email-normalize/pull/3 (https://github.com/harvard-lil/capstone/issues/745)
 
@@ -73,4 +73,4 @@ img2pdf
 
 # maintenance page
 webpage2html # save target page as string
-mincss # remove unused css styles
+mincss       # remove unused css styles
