@@ -16,7 +16,7 @@ aws-xray-sdk==0.95        # via moto
 babel==2.6.0              # via flower
 bagit==1.7.0
 bcrypt==3.1.5             # via paramiko
-beautifulsoup4==4.6.3
+beautifulsoup4==4.7.0
 billiard==3.5.0.5         # via celery
 boto3==1.7.84
 boto==2.49.0              # via moto
@@ -53,7 +53,7 @@ dnspython==1.16.0
 docker-pycreds==0.4.0     # via docker
 docker==3.6.0             # via moto
 docutils==0.14            # via botocore
-drf-yasg==1.12.0
+drf-yasg==1.12.1
 ecdsa==0.13               # via python-jose
 execnet==1.5.0            # via pytest-xdist
 fabric3==1.14.post1
@@ -73,16 +73,16 @@ jsondiff==1.1.1           # via moto
 jsonpickle==1.0           # via aws-xray-sdk
 jsonpointer==1.14         # via flex
 jsonschema==2.6.0         # via swagger-spec-validator
-kombu==4.2.2              # via celery
+kombu==4.2.2.post1        # via celery
 libsass==0.16.1           # via django-libsass, libsasscompiler
 libsasscompiler==0.1.5
-lxml==4.2.5
+lxml==4.2.6
 markupsafe==1.1.0         # via jinja2
 mccabe==0.6.1             # via flake8
 mincss==0.11.6
 mirakuru==1.1.0           # via pytest-redis
 mock==2.0.0               # via moto
-more-itertools==4.3.0     # via pytest
+more-itertools==5.0.0     # via pytest
 moto==1.3.6
 mysqlclient==1.3.14
 netaddr==0.7.19
@@ -90,7 +90,7 @@ nltk==3.4
 paramiko==2.4.2           # via fabric3
 pathlib2==2.3.3           # via pytest
 pbr==5.1.1                # via mock
-pillow==5.3.0             # via img2pdf, reportlab
+pillow==5.4.0             # via img2pdf, reportlab
 pip-tools==3.2.0
 pluggy==0.8.0             # via pytest
 port-for==0.4             # via pytest-redis
@@ -98,7 +98,7 @@ psutil==5.4.8             # via mirakuru
 psycopg2==2.7.6.1
 py==1.7.0                 # via pytest
 pyaml==18.11.0            # via moto
-pyasn1==0.4.4             # via paramiko
+pyasn1==0.4.5             # via paramiko
 pycodestyle==2.3.1        # via flake8
 pycparser==2.19           # via cffi
 pycryptodome==3.7.2       # via python-jose
@@ -124,10 +124,11 @@ requests==2.21.0          # via aws-xray-sdk, coreapi, docker, flex, moto, respo
 responses==0.10.5         # via moto
 rfc3987==1.3.8            # via flex
 rjsmin==1.0.12            # via django-compressor
-ruamel.yaml==0.15.81      # via drf-yasg
+ruamel.yaml==0.15.83      # via drf-yasg
 s3transfer==0.1.13        # via boto3
 singledispatch==3.4.0.3   # via nltk
 six==1.12.0               # via bcrypt, cryptography, django-extensions, docker, docker-pycreds, drf-yasg, fabric3, faker, flex, libsass, mock, more-itertools, moto, nltk, pathlib2, pip-tools, pynacl, pytest, pytest-xdist, python-dateutil, python-jose, responses, singledispatch, swagger-spec-validator, websocket-client
+soupsieve==1.6.1          # via beautifulsoup4
 strict-rfc3339==0.7       # via flex
 swagger-spec-validator==2.4.1
 text-unidecode==1.2       # via faker
