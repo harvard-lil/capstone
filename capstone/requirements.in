@@ -27,7 +27,6 @@ redis               # redis connector
 django==2.0.8          # Fix issues related to 2.1.x branch (https://github.com/harvard-lil/capstone/issues/745)
 django-storages==1.6.6 # Fix issues related to 1.7.x branch (https://github.com/harvard-lil/capstone/issues/745)
 boto3==1.7.84          # Fix issues related to 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
-django-bulk-update     # bulk update of models
 whitenoise             # serve static assets
 -e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils # Fix issues related to https://github.com/jazzband/django-model-utils/issues/331 (https://github.com/harvard-lil/capstone/issues/745)
 django-simple-history  # model versioning
