@@ -46,9 +46,10 @@
             <span class="text">Using Bulk Data</span>
           </a>
         </li>
+            <li>
         <a class="list-group-item" href="#visit-us">
           <span class="text">Visit Us</span>
-        <li>
+              </a>
         </li>
       </ul>
     </div>
@@ -140,9 +141,8 @@
   </div>
 
   {# ==============> USING DATA  <============== #}
-  <div class="page-section">
-<h2 class="subtitle" id="examples">Using Bulk Data</h2>
-   
+<div class="page-section">
+  <h2 class="subtitle" id="examples">Using Bulk Data</h2>
     <p>
       The <code>data.jsonl.xz</code> file can be unzipped using third-party GUI programs like
       <a href="https://theunarchiver.com/">The Unarchiver</a> (Mac) or
@@ -169,7 +169,7 @@
       You can also interact directly with the compressed files from code. The following example prints
       the name of each case using Python:
     </p>
-<pre class="code-block">
+    <pre class="code-block">
 import lzma, json
 
 with lzma.open("data/data.jsonl.xz") as in_file:
@@ -177,10 +177,11 @@ for line in in_file:
 case = json.loads(str(line, 'utf8'))
 print(case['name'])</pre>
   </div>
-{% endblock %}
 
   {# ==============> VISIT US  <============== #}
-     <div class="page-section">
-     <h2 class="subtitle" id="visit-us">Visit Us</h2>    
-     <p>Explore our Illinois Public Bulk Data on <a href="https://dataverse.harvard.edu/dataverse/caselawaccess" target="_blank">Harvard Dataverse</a> and <a href="https://www.kaggle.com/harvardlil/caselaw-dataset-illinois" target="_blank">Kaggle</a>.
-     </p>
+  <div class="page-section">
+    <h2 class="subtitle" id="visit-us">Visit Us</h2>    
+    <p>Explore our Illinois Public Bulk Data on <a href="https://dataverse.harvard.edu/dataverse/caselawaccess" target="_blank">Harvard Dataverse</a> and <a href="https://www.kaggle.com/harvardlil/caselaw-dataset-illinois" target="_blank">Kaggle</a>.
+    </p>
+  </div>
+{% endblock %}
