@@ -1,3 +1,4 @@
+
 // This is essentially each endpoint with its API interface
 const endpoint_list = {
     cases: [
@@ -372,6 +373,7 @@ var app = new Vue({
             },
             methods: {
                 changeEndpoint: function (new_endpoint, new_fields=[]) {
+                    this.$router.params.endpoint = new_endpoint
                     this.$parent.endpoint = new_endpoint // to update title
                     this.endpoint = new_endpoint;
                     this.fields = new_fields;
