@@ -39,7 +39,7 @@ let vueConfig = {
     map: 'static/js/map-actions.js',
     limericks: 'static/js/generate_limericks.js',
     witchcraft: 'static/js/witchcraft.js',
-    search: 'static/js/search-source.es6',
+    search: 'static/js/search/main.vue',
   },
 
   configureWebpack: {
