@@ -46,6 +46,11 @@
             <span class="text">Using Bulk Data</span>
           </a>
         </li>
+        <li>
+          <a class="list-group-item" href="#visit-us">
+            <span class="text">Visit Us</span>
+          </a>
+        </li>
       </ul>
     </div>
   </nav>
@@ -171,5 +176,12 @@ with lzma.open("data/data.jsonl.xz") as in_file:
 for line in in_file:
 case = json.loads(str(line, 'utf8'))
 print(case['name'])</pre>
+  </div>
+
+  {# ==============> VISIT US  <============== #}
+  <div class="page-section">
+    <h2 class="subtitle" id="visit-us">Visit Us</h2>    
+    <p>Explore our Illinois Public Bulk Data on <a href="https://dataverse.harvard.edu/dataverse/caselawaccess" target="_blank">Harvard Dataverse</a> and <a href="https://www.kaggle.com/harvardlil/caselaw-dataset-illinois" target="_blank">Kaggle</a>.
+    </p>
   </div>
 {% endblock %}
