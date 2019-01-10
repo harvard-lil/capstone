@@ -6,7 +6,7 @@ h1{
   font-size: 2rem;
 }
 
-div#app {
+.main-content {
   @import "bootstrap/_nav";
   @import "bootstrap/_navbar";
   .dropdown-item {
