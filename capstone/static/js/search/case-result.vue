@@ -9,7 +9,7 @@
       <div class="row">
         <div class="col-12">
           <ul class="citation-list">
-            <li class="citation-entry" v-for="citation in result.citations">
+            <li class="citation-entry" v-for="citation in result.citations" v-bind:key="citation.cite">
               <span class="result-citation-type">{{  citation.type  }}</span>
               <span class="result-citation">{{ citation.cite }} </span>
             </li>

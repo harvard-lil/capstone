@@ -34,6 +34,11 @@
 
 
 <script>
+    import ReporterResult from './reporter-result.vue'
+    import CaseResult from './case-result.vue'
+    import CourtResult from './court-result.vue'
+    import JurisdictionResult from './jurisdiction-result.vue'
+
     export default {
         props: [
             'results',
@@ -41,14 +46,22 @@
             'hitcount',
             'page',
             'first_page',
-            'last_page'
+            'last_page',
+            'case_view_url_template'
         ],
+        components: {
+            'reporter-result': ReporterResult,
+            'case-result': CaseResult,
+            'court-result': CourtResult,
+            'jurisdiction-result': JurisdictionResult,
+
+        },
         methods: {
             case_view_url: function (case_id) {
-                return case_view_url_template.replace('987654321', case_id)
+                return this.case_view_url_template.replace('987654321', case_id)
             },
             metadata_view_url: function (endpoint, id) {
-                return case_view_url_template.replace('987654321', id).replace('/case/', "/" + endpoint + "/")
+                return this.case_view_url_template.replace('987654321', id).replace('/case/', "/" + endpoint + "/")
             }
 
         }
