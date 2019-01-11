@@ -2,7 +2,7 @@ import io
 import csv
 from django.db.models import Count, Case, When, IntegerField
 from celery import shared_task
-from capdb.models import VolumeMetadata, Reporter, Jurisdiction, CaseMetadata, Snippet
+from capdb.models import VolumeMetadata, Reporter, Jurisdiction, CaseMetadata, Snippet, Court
 import json
 from capweb.templatetags.api_url import api_url
 
@@ -11,6 +11,9 @@ def update_all():
     cases_by_jurisdiction_tsv()
     cases_by_reporter_tsv()
     cases_by_decision_date_tsv()
+    search_reporter_list()
+    search_court_list()
+    search_jurisdiction_list()
 
 def cases_by_decision_date_tsv():
     """
@@ -164,6 +167,29 @@ def map_volume_tally(volume_barcode):
     return tally
 
 
+def search_jurisdiction_list():
+    write_update(
+        "search_jurisdiction_list",
+        "application/json",
+        json.dumps({jurisdiction.slug: jurisdiction.name_long for jurisdiction in Jurisdiction.objects.all()
+         if jurisdiction.slug != 'regional' and jurisdiction.slug != 'tribal'})
+    )
+
+def search_court_list():
+    write_update(
+        "search_court_list",
+        "application/json",
+        json.dumps({court.slug: "{}: {}".format(court.jurisdiction, court.name) for court in Court.objects.all()})
+    )
+
+def search_reporter_list():
+    write_update(
+        "search_reporter_list",
+        "application/json",
+        json.dumps({reporter.id: "{}- {}".format(reporter.short_name, reporter.full_name) for reporter
+         in Reporter.objects.all()})
+    )
+
 def write_update(label, snippet_format, contents):
     try:
         snippet = Snippet.objects.get(label=label)
@@ -173,3 +199,5 @@ def write_update(label, snippet_format, contents):
         snippet.format=snippet_format
     snippet.contents = contents
     snippet.save()
+
+

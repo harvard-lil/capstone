@@ -42,3 +42,29 @@ def test_cases_by_reporter(ingest_case_xml):
     assert rows[0].split("\t")[2] == '1'
     assert rows[0].split("\t")[1] == '"Illinois Appellate Court Reports"'
 
+@pytest.mark.django_db
+def test_search_jurisdiction_list(ingest_case_xml):
+    update_snippets.search_jurisdiction_list()
+    jurisdictions = Snippet.objects.get(label='search_jurisdiction_list')
+    parsed = json.loads(jurisdictions.contents)
+    assert parsed['wash'] == 'Washington'
+    assert parsed['ill'] == 'Illinois'
+
+@pytest.mark.django_db
+def test_search_court_list(ingest_case_xml):
+    update_snippets.search_court_list()
+    courts = Snippet.objects.get(label='search_court_list')
+    parsed = json.loads(courts.contents)
+    assert parsed['wash-ct-app'] == 'Washington: Washington Court of Appeals'
+    assert parsed['ill-app-ct'] == 'Illinois: Illinois Appellate Court'
+    assert parsed['ill'] == 'Illinois: Illinois Supreme Court'
+
+@pytest.mark.django_db
+def test_search_reporter_list(ingest_case_xml):
+    update_snippets.search_reporter_list()
+    reporters = Snippet.objects.get(label='search_reporter_list')
+    parsed = json.loads(reporters.contents)
+    assert parsed['477'] == 'Wash. App.- Washington Appellate Reports'
+    assert parsed['1058'] == 'Ill. (Breese)- Illinois Reports'
+    assert parsed['892'] == 'N.W. 2d- North Western Reporter 2d'
+    assert parsed['315'] == 'Ill. App.- Illinois Appellate Court Reports'
