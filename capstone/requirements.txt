@@ -135,7 +135,7 @@ termcolor==1.1.0
 tornado==5.0.2            # via flower
 tqdm==4.11.2
 uritemplate==3.0.0        # via coreapi, drf-yasg
-urllib3==1.21.1           # via requests
+urllib3==1.24.1           # via requests
 validate-email==1.3       # via flex
 vine==1.1.4               # via amqp
 websocket-client==0.48.0  # via docker

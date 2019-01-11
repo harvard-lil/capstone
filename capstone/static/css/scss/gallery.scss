@@ -24,6 +24,12 @@
     content: "";
     margin: 0;
   }
+  a {
+    border-bottom: 2px solid $color-violet;
+    &:hover, &:focus {
+      border-bottom: 3px solid $color-magenta !important;
+    }
+  }
 }
 
 .page-section {

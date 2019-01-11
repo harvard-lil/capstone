@@ -13,6 +13,7 @@ app = Celery('config', include=[
     'scripts.ingest_by_manifest',
     'scripts.validate_private_volumes',
     'scripts.compress_volumes',
+    'scripts.ice_volumes',
     'scripts.export',
     'scripts.ngrams',
 ])

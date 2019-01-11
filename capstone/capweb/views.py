@@ -21,7 +21,7 @@ def index(request):
     news = get_data_from_lil_site(section="news")
     numbers = {
         "pages_scanned": 40,
-        "cases": 6.4,
+        "cases": 6.7,
         "reporters": 627,
     }
     return render(request, "index.html", {
