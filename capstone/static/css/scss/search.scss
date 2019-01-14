@@ -1,11 +1,11 @@
+@import "bootstrap/functions";
+@import "bootstrap/variables";
+@import "bootstrap/mixins";
+
+@import "bootstrap/dropdown";
 @import "variables";
 
 //*** head matter
-
-h1{
-  font-size: 2rem;
-}
-
 .main-content {
   @import "bootstrap/_nav";
   @import "bootstrap/_navbar";
@@ -64,7 +64,7 @@ h1{
 }
 
 .loading-text {
-  color: white;
+  color: $color-white;
 }
 
 .top-section {
@@ -131,7 +131,7 @@ h1{
 }
 
 .loading-text {
-  color: white;
+  color: $color-white;
 }
 
 .hitcount {

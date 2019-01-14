@@ -1,4 +1,4 @@
-{% extends "main_base.html" %}
+{% extends "layouts/wide.html" %}
 {% load static %}
 {% load pipeline %}
 {% load api_url %}
@@ -6,48 +6,32 @@
 {% block extra_head %}
   {% stylesheet 'search' %}
 {% endblock %}
-{% block title %}Caselaw Access Project| View Case {% endblock %}
 
+
+{% block title %}Search{% endblock %}
 {% block meta_description %}
   About the Caselaw Access Project
 {% endblock %}
 
-
-{% block content %}
-    <div id="loading-overlay" style="display: none">
-        <img alt="" aria-hidden="true" src='{% static "img/loading.gif" %}' class="loading-gif"/>
-        <div class="loading-text">Loading</div>
-    </div>
-  <div class="basic-page">
-    <div class="full-content">
-      <div class="top-section">
-          <div class="title-section">
-            <h1 class="page-title" id="overview">
-              <img alt="" aria-hidden="true" src='{% static "img/red-arrow-right.svg" %}' class="decorative-arrow"/>
-                <span>Search</span>
-            </h1>
-          </div>
-      </div>
-      <div class="row below-the-fold">
-        <div class="main-content">
-            <div id="app" class="content">
-            </div>
-          </div>
-        </div>
-    </div>
+{% block main_content %}
+  <div id="loading-overlay" style="display: none">
+    <img alt="" aria-hidden="true" src='{% static "img/loading.gif" %}' class="loading-gif"/>
+    <div class="loading-text">Loading</div>
   </div>
+  <div id="app" class="content"></div>
+
   <script>
-// This is essentially each endpoint with its API interface
-// eslint-disable-next-line
-  app = document.getElementById("app");
-  const choice_source = {
+    // This is essentially each endpoint with its API interface
+    // eslint-disable-next-line
+    app = document.getElementById("app");
+    const choice_source = {
       'court': "{% url 'court_list' %}",
       'jurisdiction': "{% url 'jurisdiction_list' %}",
       'reporter': "{% url 'reporter_list' %}"
-  }
-  const case_view_url_template = "{% url 'view_case' 987654321 %}";
-  const search_url = '{% api_url "api-root" %}' + "v1/";
-  const bullet_url = '{% static "img/red-arrow-right.svg" %}';
+    };
+    const case_view_url_template = "{% url 'view_case' 987654321 %}";
+    const search_url = '{% api_url "api-root" %}' + "v1/";
+    const bullet_url = '{% static "img/red-arrow-right.svg" %}';
 
   </script>
   {% render_bundle 'search' %}
