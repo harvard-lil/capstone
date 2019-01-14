@@ -2,8 +2,9 @@
   <form v-on:submit.prevent>
     <div class="row">
       <div class="col-12">
-        <div class="dropdown">
-          <span class="fancy-for">for</span> <a class="btn btn-secondary dropdown-toggle"
+        <div class="dropdown dropdown-search-routes">
+          <span class="fancy-for">for</span>
+          <a class="btn btn-secondary dropdown-toggle dropdown-title"
              href="#" role="button" id="dropdownMenuLink"
              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{endpoint}}
@@ -42,7 +43,6 @@
 
       </div>
     </div>
-    </div>
     <div id="searchform">
       <div v-for="field in fields" v-bind:key="field['name']">
         <div class="row field_row_container">
@@ -58,21 +58,24 @@
                 </option>
               </select>
             </template>
+
             <template v-else-if="field['format']">
               <input v-model='field["value"]' class="queryfield" :id='field["name"]' type="text"
                      :placeholder='field["format"]'>
+              <span class="remfield rounded-circle">
+                <button v-if="fields.length > 1"
+                        class="field-button"
+                        @click="removeField(field['name'])">
+                  &ndash;
+                </button>
+                <button v-if="fields.length <= 1" class="field-button disabled">&ndash;</button>
+              </span>
+
             </template>
             <template v-else>
               <input v-model='field["value"]' class="queryfield" :id='field["name"]' type="text">\
+
             </template>
-          </div>
-          <div class="col-1">
-            <div class="remfield">
-              <button v-if="fields.length > 1" class="field-button" @click="removeField(field['name'])">
-                &ndash;
-              </button>
-              <button v-if="fields.length <= 1" class="field-button disabled">&ndash;</button>
-            </div>
           </div>
         </div>
       </div>
@@ -93,10 +96,6 @@
             </div>
           </div>
         </template>
-      </div>
-      <div class="col-1">
-        <div class="remfield">
-        </div>
       </div>
     </div>
     <div class="search-button-row row">

@@ -1,46 +1,69 @@
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
-
 @import "bootstrap/dropdown";
 @import "variables";
 
 //*** head matter
-.main-content {
-  @import "bootstrap/_nav";
-  @import "bootstrap/_navbar";
-  .dropdown-item {
-    height: 2em;
-    background-color: $color-light-gray;
-    border-bottom: thin solid $color-medium-gray;
-    padding: 0.5em;
-  }
-  .dropdown-item:hover {
-    background-color: $color-medium-gray;
-  }
+.dropdown-search-routes {
+}
 
-  .dropdown-menu {
-    min-width: 100%;
-    z-index: 1000;
-    border-left: thin solid $color-medium-gray;
-    border-right: thin solid $color-medium-gray;
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+.dropdown-search-routes > .dropdown-title {
+  @extend h3;
+  display: inline-block;
+  margin-left: 10px;
+  border-bottom: 2px solid $color-violet;
+  border-radius: 0;
+  color: $color-violet;
+  font-weight: $font-weight-semibold;
+  text-transform: capitalize;
+  width: 90%;
+  padding-left: 0;
+  padding-bottom: 20px;
+  &:after {
+    float: right;
   }
+}
+
+.dropdown-search-routes > .fancy-for {
+  font-family: $font-serif;
+  font-style: italic;
+  font-size: 24px;
+}
+
+.dropdown-search-routes > .dropdown-menu {
+  width: 100%;
+}
+
+.main-content {
   #searchform {
     margin-top: 3rem;
   }
-  .nav-link{
-    background-color: $color-light-gray;
-    margin-right: .5rem;
-  }
 
-  .nav-link.active {
-    border-bottom: 0 !important;
-  }
-  .nav {
-    border-bottom: 0;
-  }
   .row {
     display: revert;
+  }
+}
+
+// search fields
+
+.field_label_container {
+  text-align: right;
+  margin-right: 10px;
+}
+
+
+.field_value_container > .queryfield {
+  width: 90%;
+  border: 1px solid $color-violet;
+  outline: 0;
+  &:focus, &:active {
+    border: 1px solid $color-blue;
   }
 }
 
@@ -51,7 +74,7 @@
   width: 100%;
   height: 100%;
   z-index: 10;
-  background-color: rgba(0,0,0,0.7); /*dim the background*/
+  background-color: rgba(0, 0, 0, 0.7); /*dim the background*/
   text-align: center;
 }
 
@@ -94,13 +117,13 @@
   display: inline-block;
 }
 
-.field-button{
+.field-button {
   background-color: $color-black;
   color: $color-orange;
   border-radius: 100%;
 }
 
-.add-field-button{
+.add-field-button {
   background-color: $color-black;
   color: $color-orange;
   width: 100%;
@@ -118,7 +141,7 @@
   width: 100%;
   height: 100%;
   z-index: 10;
-  background-color: rgba(0,0,0,0.7); /*dim the background*/
+  background-color: rgba(0, 0, 0, 0.7); /*dim the background*/
   text-align: center;
 }
 
