@@ -147,6 +147,8 @@ function add_event_to_jur(event, el, jurname) {
         Array.from(document.getElementsByClassName("num_reporters")).forEach(function (el) {
             el.innerHTML =
                 map_data[jurname]['reporter_count']
+            // Pluralize "Reporters" text if there is more than one
+            el.nextElementSibling.innerHTML = map_data[jurname]['reporter_count'] > 1 ?  "Reporters" : "Reporter";
         });
         Array.from(document.getElementsByClassName("num_pages")).forEach(function (el) {
             el.innerHTML =
