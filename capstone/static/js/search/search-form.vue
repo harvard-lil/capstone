@@ -92,7 +92,7 @@
                     default: true,
                     format: "e.g. 'insurance' illinois",
                     info: ""
-                }], // just the default
+                }],
                 endpoints: {
                     cases: [
                         {
@@ -261,17 +261,54 @@
                         }
                     ]
                 }
+
             }
         },
         props: [
-            'choice_source',
+            'choice_source'
         ],
         beforeMount() {
+            if (window.location.hash) {
+                let hash = window.location.hash.substr(1);
+                if (!hasOwnProperty.call(this.endpoints, hash.split('filters')[0].split("/")[0])) {
+                    return;
+                }
+                let endpoint = hash.split('filters')[0].split("/")[0];
+                this.changeEndpoint(endpoint, this.fields);
+                this.cursor = decodeURIComponent(hash.split('filters')[0].split("/")[1]);
+                this.page = decodeURIComponent(hash.split('filters')[0].split("/")[2]);
+            }
             for (let endpoint in this.endpoints) {
                 for (let field in this.endpoints[endpoint]) {
                     if ('choices' in this.endpoints[endpoint][field]) {
                         this.choiceLoader(this.endpoints[endpoint][field].choices);
                     }
+                }
+            }
+        },
+        mounted: function() {
+            // This processes search info in the hash
+            if (window.location.hash) {
+                let hash = window.location.hash.substr(1);
+                if (hash.split("filters")[1].includes(':')) {
+                    this.fields = [];
+                    this.removeField(this.fields[0]);
+                    let filters = hash.split("filters")[1].split('/');
+                    let me = this;
+                    filters.forEach(function (string_pair) {
+                        if (!string_pair.includes(':')) {
+                            return;
+                        }
+                        let field_name = string_pair.split(':')[0];
+                        let value = string_pair.split(':')[1];
+
+                        let new_field = me.getFieldEntry(field_name, me.endpoint)
+                        if (!new_field) {
+                            return;
+                        }
+                        new_field['value'] = value;
+                        me.addField(new_field)
+                    })
                 }
             }
         },
@@ -303,6 +340,13 @@
                     }
                 }
                 this.fields.push(field_to_add);
+            },
+            getFieldEntry: function (field_name, endpoint) {
+                for (let i = this.endpoints[endpoint].length - 1; i >= 0; i--) {
+                    if (this.endpoints[endpoint][i]['name'] === field_name) {
+                        return this.endpoints[endpoint][i];
+                    }
+                }
             },
             choiceLoader: function (choice) {
                 let component = this.$parent;

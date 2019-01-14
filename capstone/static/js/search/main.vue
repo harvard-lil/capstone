@@ -14,8 +14,8 @@
 <script>
     import SearchForm from './search-form.vue'
     import ResultList from './result-list.vue'
-    export default
-    {
+
+    export default {
         beforeMount: function () {
             // eslint-disable-next-line
             this.choice_source = choice_source;
@@ -26,6 +26,7 @@
             // eslint-disable-next-line
             this.bullet_url = bullet_url;
         },
+
         components: {
             'search-form': SearchForm,
             'result-list': ResultList
@@ -45,7 +46,8 @@
                 choices: {},
                 choice_source: null,
                 case_view_url_template: null,
-                search_url: null
+                search_url: null,
+                cursor: null
             }
         },
         methods: {
