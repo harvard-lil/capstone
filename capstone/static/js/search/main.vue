@@ -59,8 +59,6 @@
             return {
                 title: "Search",
                 hitcount: null,
-                next_page_url: null,
-                prev_page_url: null,
                 page: 0,
                 results: [],
                 cursors: [],
@@ -76,46 +74,42 @@
         },
 
         methods: {
-            // Each time a new search is queued up
             newSearch: function (fields, endpoint, loaded_from_url=false) {
-                // use all the fields and endpoint to build the query url
-                this.endpoint = endpoint;
-                var query_url = this.search_url + endpoint + "/?";
+                 /*
+                  Sets us up for a new search.
 
-                // if we have a cursor specified in the URL, add that to the request
-                if (loaded_from_url && this.cursors[this.page]) {
-                    query_url += "cursor=" + this.cursors[this.page] + "&";
-                } else {
+                  Side Effects:
+                    - Sets the correct endpoint and changes the visible fields
+                    - Resets any existing results via resetResults()
+                    - Calls triggers the actual search via nextPage()
+                 */
+
+                this.endpoint = endpoint;
+                this.fields = fields;
+
+                if (!loaded_from_url) {
                     this.resetResults();
                 }
 
-                // build the query parameters using the form fields
-                if (fields.length > 0) {
-                    for (var i = fields.length - 1; i >= 0; i--) {
-                        if (i !== fields.length - 1) {
-                            query_url += "&";
-                        }
-                        if (fields[i]['value']) {
-                            query_url += (fields[i]['name'] + "=" + fields[i]['value']);
-                        }
-                    }
-                    query_url += "&page_size=" + this.page_size;
-                } else {
-                    query_url += "page_size=" + this.page_size;
-                }
-
                 // nextPage actually triggers the search
-                this.next_page_url = query_url;
                 this.nextPage(true);
             },
+
             nextPage: function (new_search=false) {
                 /*
                   Gets the next (or first) page of results. If we've already loaded it, we pull it from memory
                   rather than getting it from the API twice
+
+                  Side Effects:
+                    - Updates URL hash via updateUrlHash()
+                    - Sets last page/first page flags via lastFirstCheck()
+                    - Changes the results page, which will change the list of visible cases in result-list
+                    - Gets 1 page of API results (and therefore changes lots of other stuff) with getResultsPage()
                  */
                 if (new_search) {
                     let self = this;
-                    this.getResultsPage(this.next_page_url).then(function () {
+                    let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page], this.page_size, this.fields);
+                    this.getResultsPage(url).then(function () {
                         self.updateUrlHash();
                         self.lastFirstCheck();
                     });
@@ -126,7 +120,8 @@
                 }  else if (this.cursors[this.page + 1]) {
                     this.page++;
                     let self = this;
-                    this.getResultsPage(this.next_page_url).then(function () {
+                    let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page], this.page_size, this.fields);
+                    this.getResultsPage(url).then(function () {
                         self.updateUrlHash();
                         self.lastFirstCheck();
                     });
@@ -137,6 +132,12 @@
                 /*
                   Gets the previous page of results. If we've already loaded it, we pull it from memory
                   rather than getting it from the API twice
+
+                  Side Effects:
+                    - Updates URL hash via updateUrlHash()
+                    - Sets last page/first page flags via lastFirstCheck()
+                    - Changes the results page, which will change the list of visible cases in result-list
+                    - Gets 1 page of results (and therefore changes lots of other stuff) with getResultsPage()
                  */
                 if (this.results[this.page - 1]) {
                     this.page--;
@@ -144,8 +145,9 @@
                     this.lastFirstCheck();
                 } else if (this.cursors[this.page - 1]) {
                     this.page--;
+                    let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page], this.page_size, this.fields);
                     let self = this;
-                    this.getResultsPage(this.prev_page_url, "prev").then(function () {
+                    this.getResultsPage(url).then(function () {
                         self.updateUrlHash();
                         self.lastFirstCheck();
                     });
@@ -155,6 +157,10 @@
                 /*
                   This just checks to see if it's the last or first set of results, and sets two flags accordingly.
                   I tried using a computed variable for this, but it never seemed to be updated when I needed it.
+
+                  Side Effects:
+                    - just sets the last_page and first_page flags, which are used to determine prev/next button status
+
                  */
               if (this.cursors[this.page + 1]) {
                   this.last_page = false;
@@ -172,6 +178,13 @@
             getResultsPage: function (query_url) {
                 /*
                   This actually performs the search, and it puts the cursors and results in their respective arrays
+
+                  Side Effects:
+                    - Enables and disables the loading screen overlay
+                    - Retrieves an API page, updates the current page's entry in the this.results
+                    - Gets the current and previous cursors with output from getCursorFromUrl using the next page url,
+                      and previous page url and updates this.cursors if necessary
+                    - Updates error messages for forms or fields
                  */
                 let self = this;
                 this.startLoading();
@@ -187,33 +200,37 @@
                     })
                     .then(function (results_json) {
                         self.hitcount = results_json.count;
-                        self.next_page_url = results_json.next;
-                        self.prev_page_url = results_json.previous;
+                        let next_page_url = results_json.next;
+                        let prev_page_url = results_json.previous;
+
 
                         if (!self.cursors[self.page]) {
                             self.cursors[self.page] = self.getCursorFromUrl(query_url);
                         }
 
-                        if (!self.cursors[self.page - 1] && self.prev_page_url) {
-                            self.cursors[self.page - 1] = self.getCursorFromUrl(self.prev_page_url);
+                        if (!self.cursors[self.page - 1] && prev_page_url) {
+                            self.cursors[self.page - 1] = self.getCursorFromUrl(prev_page_url);
                         }
 
-                        if (!self.cursors[self.page + 1] && self.next_page_url) {
-                            self.cursors[self.page + 1] = self.getCursorFromUrl(self.next_page_url);
+                        if (!self.cursors[self.page + 1] && next_page_url) {
+                            self.cursors[self.page + 1] = self.getCursorFromUrl(next_page_url);
                         }
 
                         self.results[self.page] = results_json.results;
-
                     })
                     .then(function () {
                         self.stopLoading();
                     })
             },
             resetResults: function () {
+                 /*
+                  Resets the search variables
+
+                  Side Effects:
+                    - 'resets' the following variables.
+                 */
                 this.title = "Search"
                 this.hitcount = null;
-                this.next_page_url = null;
-                this.prev_page_url = null;
                 this.page = 0;
                 this.results = [];
                 this.cursors = [];
@@ -232,19 +249,23 @@
                 /*
                  A user has a "see cases" button on search hits in non-case endppints, which starts a new case search
                  filtering for the specified court/etc.
+
+                 Side Effects:
+                 - Resets the fields variable changes the endpoint, and starts a new search via newSearch()
                  */
-                //document.getElementById("loading-overlay").style.display = 'none';
                 let fields = [{"label": parameter, "name": parameter, "value": value}]
                 this.newSearch(fields, "cases")
                 this.$refs.searchform.changeEndpoint("cases", fields);
             },
             getHashEndpoint: function (hash) {
+                 /* Gets endpoint from URL hash, validating it against this.$refs.searchform.endpoints, */
                 if (!hasOwnProperty.call(this.$refs.searchform.endpoints, hash.split('filters')[0].split("/")[0])) {
                     return;
                 }
                 return hash.split('filters')[0].split("/")[0];
             },
             getHashParams: function (hash) {
+                /* Gets the parameters (not including search terms/filters) from the URL hash */
                 let param_chunks = hash.split("filters")[0].split('/');
 
                 return param_chunks.reduce(function (obj, chunk) {
@@ -257,6 +278,7 @@
                 }, {});
             },
             getHashFilterFields: function (hash) {
+                /* Gets the search terms/filters from URL hash, and gets field objects via searchform.getFieldEntry() */
                 let filters = hash.split("filters")[1].split('/');
                 let searchform = this.$refs.searchform;
                 return filters.reduce(function (arr, chunk) {
@@ -264,7 +286,7 @@
                         return arr;
                     }
                     let [fld, val] = chunk.split(':');
-                    let new_field = searchform.getFieldEntry(fld, searchform.endpoint)
+                    let new_field = searchform.getFieldEntry(fld, searchform.endpoint);
                     if (!new_field) {
                         return arr;
                     }
@@ -276,7 +298,11 @@
             updateUrlHash: function () {
                 /*
                   updates the URL based on the fields/endpoint/etc
+
+                  Side Effects:
+                    - Changes URL Hash
                  */
+
                 let params;
                 if (this.cursors[this.page]) {
                   params = {
@@ -303,10 +329,37 @@
                 window.location.hash = new_url_hash;
             },
             getCursorFromUrl: function (url) {
+                /* extracts and returns cursor from given url */
                 if (!url || !url.includes('cursor=')) {
                     return;
                 }
                 return url.split('cursor=')[1].split('&')[0];
+            },
+            assembleUrl: function (search_url, endpoint, cursor = null, page_size, fields) {
+                /* assembles and returns URL */
+
+                var query_url = search_url + endpoint + "/?";
+
+                if (cursor) {
+                    query_url += "cursor=" + cursor + "&";
+                }
+
+                // build the query parameters using the form fields
+                if (fields.length > 0) {
+                    for (var i = fields.length - 1; i >= 0; i--) {
+                        if (i !== fields.length - 1) {
+                            query_url += "&";
+                        }
+                        if (fields[i]['value']) {
+                            query_url += (fields[i]['name'] + "=" + fields[i]['value']);
+                        }
+                    }
+                    query_url += "page_size=" + page_size;
+                } else {
+                    query_url += "&page_size=" + page_size;
+                }
+
+                return query_url;
             }
         }
     }
