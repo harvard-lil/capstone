@@ -39,15 +39,6 @@ def view_court(request, court_id):
 def search(request):
     return render(request, "search.html")
 
-def jurisdiction_list(request):
-    return JsonResponse({ jurisdiction.slug: jurisdiction.name_long for jurisdiction in Jurisdiction.objects.all() if jurisdiction.slug != 'regional' and jurisdiction.slug != 'tribal' })
-
-def court_list(request):
-    return JsonResponse({ court.slug: "{}: {}".format(court.jurisdiction, court.name) for court in Court.objects.all() })
-
-def reporter_list(request):
-    return JsonResponse({ reporter.id: "{}- {}".format(reporter.short_name, reporter.full_name) for reporter in Reporter.objects.all() })
-
 def _get_fields(object):
     fields = OrderedDict()
     for field in object._meta.get_fields():

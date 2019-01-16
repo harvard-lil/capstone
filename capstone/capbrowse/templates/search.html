@@ -40,14 +40,36 @@
 // This is essentially each endpoint with its API interface
 // eslint-disable-next-line
   app = document.getElementById("app");
-  const choice_source = {
-      'court': "{% url 'court_list' %}",
-      'jurisdiction': "{% url 'jurisdiction_list' %}",
-      'reporter': "{% url 'reporter_list' %}"
-  }
   const case_view_url_template = "{% url 'view_case' 987654321 %}";
   const search_url = '{% api_url "api-root" %}' + "v1/";
   const bullet_url = '{% static "img/red-arrow-right.svg" %}';
+
+  const choices = {
+      "jurisdiction": {"ill": "Illinois", "wash": "Washington"},
+      "court": {
+          "wash-ct-app": "Washington: Washington Court of Appeals",
+          "ill": "Illinois: Illinois Supreme Court",
+          "ill-app-ct": "Illinois: Illinois Appellate Court"
+      },
+      "reporter": {
+          "1058": "Ill. (Breese)- Illinois Reports",
+          "315": "Ill. App.- Illinois Appellate Court Reports",
+          "892": "N.W. 2d- North Western Reporter 2d",
+          "477": "Wash. App.- Washington Appellate Reports"
+      },
+      "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
+  }
+
+  {% comment %}
+    // this is for when snippets are integrated...
+    const choices = {
+      "jurisdiction_list": {% snippet 'search_jurisdiction_list' %},
+      "const court_list": {% snippet 'search_court_list' %},
+      "reporter_list": {% snippet 'search_reporter_list' %},
+      "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
+    }
+  {% endcomment %}
+
   </script>
   {% render_bundle 'search' %}
 {% endblock %}

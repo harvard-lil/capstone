@@ -8,8 +8,5 @@ urlpatterns = [
     path('view/reporter/<int:reporter_id>/', views.view_reporter, name='view_reporter'),
     path('view/jurisdiction/<int:jurisdiction_id>/', views.view_jurisdiction, name='view_jurisdiction'),
     path('search/', views.search, name='search'),
-    path('search_data/jurisdiction_list', views.jurisdiction_list, name='jurisdiction_list'),
-    path('search_data/court_list', views.court_list, name='court_list'),
-    path('search_data/reporter_list', views.reporter_list, name='reporter_list'),
 ]
 

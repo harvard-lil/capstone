@@ -22,7 +22,7 @@
           <div class="col-7 field_value_container">
             <template v-if="field['choices']">
               <select v-model='field["value"]' :id='field["name"]'>
-                <option v-for="(label, value) in choiceLoader(field['choices'])" :value="value" v-bind:key="label">{{
+                <option v-for="(label, value) in choices[field['choices']]" :value="value" v-bind:key="label">{{
                   label
                   }}
                 </option>
@@ -79,12 +79,12 @@
 <script>
 
     export default {
-
         data: function () {
             return {
                 query: [],
                 newfield: null,
                 endpoint: 'cases',
+                page_size: 10,
                 fields: [{
                     name: "search",
                     value: "",
@@ -141,13 +141,14 @@
                             name: "reporter",
                             value: "",
                             label: "Reporter",
-                            format: "e.g. ill-app-ct",
+                            choices: 'reporter',
                             info: ""
                         },
                         {
                             name: "court",
                             value: "",
                             label: "Court",
+                            choices: 'court',
                             format: "e.g. ill-app-ct",
                             info: ""
                         },
@@ -156,7 +157,6 @@
                             value: "",
                             label: "Jurisdiction",
                             choices: 'jurisdiction',
-                            format: "e.g. ill-app-ct",
                             info: ""
                         }
                     ],
@@ -265,59 +265,13 @@
             }
         },
         props: [
-            'choice_source'
+            'choices'
         ],
-        beforeMount() {
-            if (window.location.hash) {
-                let hash = window.location.hash.substr(1);
-                if (!hasOwnProperty.call(this.endpoints, hash.split('filters')[0].split("/")[0])) {
-                    return;
-                }
-                let endpoint = hash.split('filters')[0].split("/")[0];
-                this.changeEndpoint(endpoint, this.fields);
-                this.cursor = decodeURIComponent(hash.split('filters')[0].split("/")[1]);
-                this.page = decodeURIComponent(hash.split('filters')[0].split("/")[2]);
-            }
-            for (let endpoint in this.endpoints) {
-                for (let field in this.endpoints[endpoint]) {
-                    if ('choices' in this.endpoints[endpoint][field]) {
-                        this.choiceLoader(this.endpoints[endpoint][field].choices);
-                    }
-                }
-            }
-        },
-        mounted: function() {
-            // This processes search info in the hash
-            if (window.location.hash) {
-                let hash = window.location.hash.substr(1);
-                if (hash.split("filters")[1].includes(':')) {
-                    this.fields = [];
-                    this.removeField(this.fields[0]);
-                    let filters = hash.split("filters")[1].split('/');
-                    let me = this;
-                    filters.forEach(function (string_pair) {
-                        if (!string_pair.includes(':')) {
-                            return;
-                        }
-                        let field_name = string_pair.split(':')[0];
-                        let value = string_pair.split(':')[1];
-
-                        let new_field = me.getFieldEntry(field_name, me.endpoint)
-                        if (!new_field) {
-                            return;
-                        }
-                        new_field['value'] = value;
-                        me.addField(new_field)
-                    })
-                }
-            }
-        },
         methods: {
             changeEndpoint: function (new_endpoint, new_fields = []) {
                 this.$parent.endpoint = new_endpoint // to update title
                 this.endpoint = new_endpoint;
                 this.fields = new_fields;
-                this.$emit('change-endpoint');
                 if (new_fields.length === 0) {
                     for (let i = this.endpoints[new_endpoint].length - 1; i >= 0; i--) {
                         if (this.endpoints[new_endpoint][i]['default']) {
@@ -347,33 +301,6 @@
                         return this.endpoints[endpoint][i];
                     }
                 }
-            },
-            choiceLoader: function (choice) {
-                let component = this.$parent;
-
-                if (choice in component.choices) {
-                    return component.choices[choice];
-                }
-                if (choice == "whitelisted") {
-                    return {"true": "Whitelisted", "false": "Not Whitelisted"}
-                }
-                component.startLoading();
-                return fetch(this.choice_source[choice])
-                    .then(function (response) {
-                        if (response.ok) {
-                            return response.json();
-                        }
-                        if (response.status === 500) {
-                            document.getElementById("loading-overlay").style.display = 'none';
-                            //TODO Set up some kind of error condition
-                        }
-                    })
-                    .then(function (results_json) {
-                        component.choices[choice] = results_json;
-                    })
-                    .then(function () {
-                        component.stopLoading();
-                    })
             },
             currentFields: function (endpoint) {
                 let return_list = []
