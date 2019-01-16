@@ -27,7 +27,7 @@
             // eslint-disable-next-line
             this.choices = choices;
         },
-        mounted: function() {
+        mounted: function () {
             if (window.location.hash) {
                 /*
                     Here we're processing the info in the URL parameters
@@ -37,7 +37,7 @@
                 let fields = this.getHashFilterFields(hash);
                 let params = this.getHashParams(hash);
                 if (params.hasOwnProperty("page")) {
-                    this.page = params['page'] -1;
+                    this.page = params['page'] - 1;
                 }
                 if (params.hasOwnProperty("cursor")) {
                     this.cursors[this.page] = params['cursor'];
@@ -74,15 +74,15 @@
         },
 
         methods: {
-            newSearch: function (fields, endpoint, loaded_from_url=false) {
-                 /*
-                  Sets us up for a new search.
+            newSearch: function (fields, endpoint, loaded_from_url = false) {
+                /*
+                 Sets us up for a new search.
 
-                  Side Effects:
-                    - Sets the correct endpoint and changes the visible fields
-                    - Resets any existing results via resetResults()
-                    - Calls triggers the actual search via nextPage()
-                 */
+                 Side Effects:
+                   - Sets the correct endpoint and changes the visible fields
+                   - Resets any existing results via resetResults()
+                   - Calls triggers the actual search via nextPage()
+                */
 
                 this.endpoint = endpoint;
                 this.fields = fields;
@@ -95,34 +95,40 @@
                 this.nextPage(true);
             },
 
-            nextPage: function (new_search=false) {
+            nextPage: function (new_search = false) {
                 /*
                   Gets the next (or first) page of results. If we've already loaded it, we pull it from memory
                   rather than getting it from the API twice
 
                   Side Effects:
-                    - Updates URL hash via updateUrlHash()
+                    - Updates URL hash with output from generateUrlHash()
                     - Sets last page/first page flags via lastFirstCheck()
                     - Changes the results page, which will change the list of visible cases in result-list
                     - Gets 1 page of API results (and therefore changes lots of other stuff) with getResultsPage()
                  */
                 if (new_search) {
                     let self = this;
-                    let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page], this.page_size, this.fields);
+                    let url = this.assembleUrl(this.search_url, this.endpoint,
+                        this.cursors[this.page], this.page_size, this.fields);
                     this.getResultsPage(url).then(function () {
-                        self.updateUrlHash();
+                        // eslint-disable-next-line
+                        window.location.hash = self.generateUrlHash(self.endpoint, self.cursors, self.page,
+                            self.page_size, self.$refs.searchform.fields);
                         self.lastFirstCheck();
                     });
                 } else if (this.results[this.page + 1]) {
                     this.page++;
-                    this.updateUrlHash();
+                    window.location.hash = this.generateUrlHash(this.endpoint, this.cursors, this.page,
+                        this.page_size, this.$refs.searchform.fields);
                     this.lastFirstCheck();
-                }  else if (this.cursors[this.page + 1]) {
+                } else if (this.cursors[this.page + 1]) {
                     this.page++;
                     let self = this;
-                    let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page], this.page_size, this.fields);
+                    let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page],
+                        this.page_size, this.fields);
                     this.getResultsPage(url).then(function () {
-                        self.updateUrlHash();
+                        window.location.hash = self.generateUrlHash(self.endpoint, self.cursors, self.page,
+                            self.page_size, self.$refs.searchform.fields);
                         self.lastFirstCheck();
                     });
                 }
@@ -139,21 +145,25 @@
                     - Changes the results page, which will change the list of visible cases in result-list
                     - Gets 1 page of results (and therefore changes lots of other stuff) with getResultsPage()
                  */
+                //
                 if (this.results[this.page - 1]) {
                     this.page--;
-                    this.updateUrlHash();
+                    window.location.hash = this.generateUrlHash(this.endpoint, this.cursors, this.page,
+                        this.page_size, this.$refs.searchform.fields);
                     this.lastFirstCheck();
                 } else if (this.cursors[this.page - 1]) {
                     this.page--;
-                    let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page], this.page_size, this.fields);
+                    let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page],
+                        this.page_size, this.fields);
                     let self = this;
                     this.getResultsPage(url).then(function () {
-                        self.updateUrlHash();
+                        window.location.hash = self.generateUrlHash(self.endpoint, self.cursors, self.page,
+                            self.page_size, self.$refs.searchform.fields);
                         self.lastFirstCheck();
                     });
                 }
             },
-            lastFirstCheck: function() {
+            lastFirstCheck: function () {
                 /*
                   This just checks to see if it's the last or first set of results, and sets two flags accordingly.
                   I tried using a computed variable for this, but it never seemed to be updated when I needed it.
@@ -162,17 +172,17 @@
                     - just sets the last_page and first_page flags, which are used to determine prev/next button status
 
                  */
-              if (this.cursors[this.page + 1]) {
-                  this.last_page = false;
-              } else {
-                  this.last_page = true;
-              }
+                if (this.cursors[this.page + 1]) {
+                    this.last_page = false;
+                } else {
+                    this.last_page = true;
+                }
 
-              if (this.page == 0){
-                  this.first_page = true;
-              } else {
-                  this.first_page = false;
-              }
+                if (this.page == 0) {
+                    this.first_page = true;
+                } else {
+                    this.first_page = false;
+                }
 
             },
             getResultsPage: function (query_url) {
@@ -223,19 +233,19 @@
                     })
             },
             resetResults: function () {
-                 /*
-                  Resets the search variables
+                /*
+                 Resets the search variables
 
-                  Side Effects:
-                    - 'resets' the following variables.
-                 */
+                 Side Effects:
+                   - 'resets' the following variables.
+                */
                 this.title = "Search"
                 this.hitcount = null;
                 this.page = 0;
                 this.results = [];
                 this.cursors = [];
-                this.last_page= true;
-                this.first_page= true;
+                this.last_page = true;
+                this.first_page = true;
             },
             startLoading: function () {
                 /* shows the loading screen and throbber */
@@ -258,7 +268,7 @@
                 this.$refs.searchform.changeEndpoint("cases", fields);
             },
             getHashEndpoint: function (hash) {
-                 /* Gets endpoint from URL hash, validating it against this.$refs.searchform.endpoints, */
+                /* Gets endpoint from URL hash, validating it against this.$refs.searchform.endpoints, */
                 if (!hasOwnProperty.call(this.$refs.searchform.endpoints, hash.split('filters')[0].split("/")[0])) {
                     return;
                 }
@@ -295,38 +305,33 @@
                     return arr;
                 }, []);
             },
-            updateUrlHash: function () {
-                /*
-                  updates the URL based on the fields/endpoint/etc
-
-                  Side Effects:
-                    - Changes URL Hash
-                 */
-
+            generateUrlHash: function (endpoint, cursors, page, page_size, fields) {
+                /* returns new URL hash */
                 let params;
-                if (this.cursors[this.page]) {
-                  params = {
-                      'page': this.page + 1,
-                      'cursor': this.cursors[this.page],
-                      'page_size': this.page_size
-                  }
+                if (cursors[page]) {
+                    params = {
+                        'page': page + 1,
+                        'cursor': cursors[page],
+                        'page_size': page_size
+                    }
                 } else {
-                  params = {
-                      'page': this.page + 1,
-                      'page_size': this.page_size
-                  }
+                    params = {
+                        'page': page + 1,
+                        'page_size': page_size
+                    }
                 }
                 let param_string = Object.keys(params).reduce(function (str, param_name) {
                     return str + param_name + ":" + params[param_name] + "/"
                 }, '');
 
-                let filters_string = this.$refs.searchform.fields.reduce(function (string_accumulator, chunk) {
+                let filters_string = fields.reduce(function (string_accumulator, chunk) {
                     string_accumulator += encodeURIComponent(chunk['name']) + ":" + encodeURIComponent(chunk['value']) + "/";
                     return string_accumulator;
                 }, '');
 
-                let new_url_hash = "#" + this.endpoint + "/" + param_string + "filters/" + filters_string;
-                window.location.hash = new_url_hash;
+                let new_url_hash = "#" + endpoint + "/" + param_string + "filters/" + filters_string;
+                return new_url_hash;
+
             },
             getCursorFromUrl: function (url) {
                 /* extracts and returns cursor from given url */
