@@ -41,8 +41,6 @@
                 }
                 if (params.hasOwnProperty("cursor")) {
                     this.cursors[this.page] = params['cursor'];
-                    //eslint-disable-next-line
-                    console.log("top", this.page, this.cursors[this.page], params['cursor'])
                 }
                 if (params.hasOwnProperty("page_size")) {
                     this.page_size = params['page_size'];
@@ -50,8 +48,6 @@
                 if (this.$refs.searchform.endpoint != endpoint) {
                     this.$refs.searchform.changeEndpoint(endpoint, fields);
                 }
-                //eslint-disable-next-line
-                console.log("bottom", this.page, this.cursors[this.page], params['cursor'])
                 this.newSearch(fields, endpoint, true);
             }
         },
@@ -160,8 +156,6 @@
                   This just checks to see if it's the last or first set of results, and sets two flags accordingly.
                   I tried using a computed variable for this, but it never seemed to be updated when I needed it.
                  */
-              // eslint-disable-next-line
-              console.log("last_forst", this.cursors[this.page + 1]);
               if (this.cursors[this.page + 1]) {
                   this.last_page = false;
               } else {
@@ -190,7 +184,6 @@
                             document.getElementById("loading-overlay").style.display = 'none';
                             //TODO
                         }
-                        //console.log(response.status, response.statusText, query_url)
                     })
                     .then(function (results_json) {
                         self.hitcount = results_json.count;
