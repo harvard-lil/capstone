@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.http import JsonResponse
 from capdb.models import Jurisdiction, Court, Reporter
 from collections import OrderedDict
 
