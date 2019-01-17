@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail, EmailMessage
 from django.db import transaction
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import loader
 from django.utils import timezone
 
@@ -313,3 +313,30 @@ def bulk(request):
     return render(request, 'bulk.html', {
         'exports': sorted_exports,
     })
+
+def reset_api_key(request):
+    """ Create new user """
+    if request.method == 'POST' and request.user.is_active and request.user.email_verified:
+        old_key = request.user.get_api_key()
+
+        request.user.reset_api_key()
+        request.user.save()
+
+        message = ("Dear {} {},\nYou\'ve reset your Case.law API key. Your new key, {}, is now active. "
+        "Your old key, {}, will no longer work. This cannot be undone. Please reset your password and contact us "
+        "if you did not initiate this change.\n\nWarmest Regards,\nThe Caselaw Access Project Team\nHarvard Law "
+        "School Library Innovation Lab")
+
+        send_mail(
+            'Case.law: API Key Reset',
+            message.format(
+                request.user.first_name,
+                request.user.last_name,
+                request.user.get_api_key(),
+                old_key), # formats message
+            settings.DEFAULT_FROM_EMAIL, # from email
+            [ settings.DEFAULT_FROM_EMAIL, request.user.email ], #to email, (sends a copy to us)
+            fail_silently=False
+        )
+        return redirect('user-details')
+    return render(request, 'registration/reset_api_key.html')
