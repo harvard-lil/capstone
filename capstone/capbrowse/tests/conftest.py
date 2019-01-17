@@ -1,1 +1,0 @@
-from test_data.test_fixtures.fixtures import *
