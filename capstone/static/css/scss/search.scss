@@ -4,6 +4,9 @@
 @import "bootstrap/dropdown";
 @import "variables";
 
+.basic-page {
+  background-color: $color-tan;
+}
 //*** head matter
 .dropdown-search-routes {
 }
@@ -115,6 +118,7 @@
 
 .remfield {
   display: inline-block;
+  margin-left: 10px;
 }
 
 .field-button {
