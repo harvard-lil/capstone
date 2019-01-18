@@ -36,13 +36,13 @@
     <div v-if="this.$parent.results.length !== 0" class="row">
       <div class="col-6">
         <button class="btn btn-sm" v-if="first_page !== true" @click="$emit('prev-page')">
-          &lt;&lt; Prev Page {{ page }}
+          Prev Page {{ page }}
         </button>
-        <button class="btn btn-sm disabled" v-else disabled>&lt;&lt; Prev Page</button>
+        <button class="btn btn-sm disabled" v-else disabled>Prev Page</button>
       </div>
       <div class="col-6 text-right">
-        <button class="btn btn-sm" v-if="last_page !== true" @click="$emit('next-page')">Next Page {{ page + 2 }}&gt;&gt;</button>
-        <button class="btn btn-sm disabled" v-else disabled>Next Page &gt;&gt;</button>
+        <button class="btn btn-sm" v-if="last_page !== true" @click="$emit('next-page')">Next Page {{ page + 2 }}</button>
+        <button class="btn btn-sm disabled" v-else disabled>Next Page</button>
       </div>
     </div>
   </div>
