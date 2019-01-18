@@ -314,6 +314,7 @@ def bulk(request):
         'exports': sorted_exports,
     })
 
+@login_required()
 def reset_api_key(request):
     """ Create new user """
     if request.method == 'POST' and request.user.is_active and request.user.email_verified:
@@ -322,7 +323,7 @@ def reset_api_key(request):
         request.user.reset_api_key()
         request.user.save()
 
-        message = ("Dear {} {},\nYou\'ve reset your Case.law API key. Your new key, {}, is now active. "
+        message = ("Dear {} {},\nYour Case.law API key reset is complete. Your new key, {}, is now active. "
         "Your old key, {}, will no longer work. This cannot be undone. Please reset your password and contact us "
         "if you did not initiate this change.\n\nWarmest Regards,\nThe Caselaw Access Project Team\nHarvard Law "
         "School Library Innovation Lab")
