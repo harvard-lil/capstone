@@ -316,7 +316,10 @@ def bulk(request):
 
 @login_required()
 def reset_api_key(request):
-    """ Create new user """
+    """
+        If it's a GET request, it will return the reset_api_key instructions/warnings/confirmation type page.
+        If it's a POST request, it will reset the API key, and send out a confirmation email.
+    """
     if request.method == 'POST' and request.user.is_active and request.user.email_verified:
         old_key = request.user.get_api_key()
 
