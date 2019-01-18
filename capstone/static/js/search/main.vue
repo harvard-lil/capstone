@@ -4,6 +4,7 @@
     <search-form ref="searchform"
                  v-on:change-endpoint="resetResults"
                  v-on:new-search="newSearch"
+                 class="bg-tan"
                  :choices="choices">
     </search-form>
     <result-list v-on:see-cases="seeCases"

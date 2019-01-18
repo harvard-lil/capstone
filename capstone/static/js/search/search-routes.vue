@@ -18,6 +18,7 @@
              aria-labelledby="dropdownMenuLink">
           <ul>
             <li class="search-tab"
+                v-bind:key="current_endpoint"
                 v-for="current_endpoint in endpoints">
               <a v-if="current_endpoint===endpoint"
                  @click="changeEndpoint(current_endpoint)"
@@ -69,8 +70,9 @@
       }
     },
     methods: {
-      changeEndpoint: function (new_endpoint) {
+      changeEndpoint: function (new_endpoint, fields=[]) {
         this.$parent.endpoint = new_endpoint;
+        this.$parent.fields = fields;
       },
     }
   }

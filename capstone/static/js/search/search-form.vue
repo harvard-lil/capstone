@@ -1,5 +1,6 @@
 <template>
   <form v-on:submit.prevent>
+    <div class="search-form-container col-centered">
     <searchroutes :endpoint="endpoint"></searchroutes>
 
     <div id="searchform">
@@ -24,14 +25,13 @@
             <template v-else>
               <input v-model='field["value"]' class="queryfield" :id='field["name"]' type="text">\
             </template>
-          </div>
-          <div class="col-1">
             <div class="remfield">
               <button v-if="fields.length > 1" class="field-button" @click="removeField(field['name'])">
                 &ndash;
               </button>
               <button v-if="fields.length <= 1" class="field-button disabled">&ndash;</button>
             </div>
+
           </div>
         </div>
       </div>
@@ -58,11 +58,14 @@
         </div>
       </div>
     </div>
-    <div class="search-button-row row">
+    <div class="search-button-row">
       <div class="col-11 text-right">
-        <input @click="$emit('new-search', fields, endpoint)" type="submit" value="Search">
+        <input @click="$emit('new-search', fields, endpoint)"
+               type="submit"
+               value="Search">
       </div>
     </div>
+      </div>
   </form>
 </template>
 <script>
@@ -72,7 +75,7 @@
     components: {searchroutes},
     data: function () {
       return {
-        endpoint: "Cases",
+        endpoint: "cases",
         query: [],
         newfield: null,
         page_size: 10,
@@ -257,14 +260,12 @@
     },
     watch: {
       endpoint: {
-        handler: function (newval, oldval) {
+        handler: function (newval) {
           this.updateFields(newval)
         }
       }
     },
-    props: [
-      'choices'
-    ],
+    props: ['choices'],
     methods: {
       updateFields(new_endpoint) {
         this.fields = [];
@@ -297,7 +298,7 @@
         }
       },
       currentFields(endpoint) {
-        let return_list = []
+        let return_list = [];
         for (let field in this.endpoints[endpoint]) {
           if (!this.fields.includes(this.endpoints[endpoint][field])) {
             return_list.push(this.endpoints[endpoint][field])

@@ -4,13 +4,16 @@
 @import "bootstrap/dropdown";
 @import "variables";
 
-.basic-page {
-  background-color: $color-tan;
+.main-content {
+  margin: 0 !important;
+  min-width: 100%;
+  padding-left: 0 !important;
 }
+
+
 //*** head matter
 .dropdown-search-routes {
 }
-
 
 .dropdown-toggle::after {
   display: none;
@@ -41,6 +44,13 @@
 
 .dropdown-search-routes > .dropdown-menu {
   width: 100%;
+  padding: 0;
+  .dropdown-item {
+    &:hover,
+    &:active {
+      border-bottom: 0 !important;
+    }
+  }
 }
 
 .main-content {
@@ -53,13 +63,27 @@
   }
 }
 
+// SEARCH AND RESULTS CONTAINERS
+@include media-breakpoint-up(lg) {
+  .search-form-container,
+  .results-list-container {
+    @include make-col(9)
+  }
+}
+
+@include media-breakpoint-down(md) {
+   .search-form-container,
+   .results-list-container {
+    @include make-col(10)
+  }
+}
+
 // search fields
 
 .field_label_container {
   text-align: right;
   margin-right: 10px;
 }
-
 
 .field_value_container > .queryfield {
   width: 90%;
@@ -162,7 +186,7 @@
 }
 
 .hitcount {
-  font-weight: bold;
+  color: $color-medium-gray;
   margin-bottom: 20px;
   columns: $color-violet;
 }
@@ -184,6 +208,8 @@
 .search-button-row {
   margin-top: 1rem;
 }
+
+/* RESULTS */
 
 .result {
   margin-bottom: 1.5rem;

@@ -1,5 +1,4 @@
 @import '../_normalize.css';
-
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
@@ -12,7 +11,6 @@
 @import "bootstrap/utilities/display";
 @import "bootstrap/utilities/flex";
 @import "bootstrap/list-group";
-
 @import 'variables';
 @import 'elements';
 @import 'a11y';
@@ -68,7 +66,7 @@ main {
   @extend .flex-fill;
   @extend .d-flex;
   @extend .flex-column;
-  > *{
+  > * {
     @extend .flex-fill;
   }
 }
@@ -102,6 +100,11 @@ code {
   @include media-breakpoint-down(sm) {
     display: none;
   }
+}
+
+.col-centered {
+  float: none;
+  margin: 0 auto;
 }
 
 .row {
