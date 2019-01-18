@@ -136,7 +136,7 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
             raise PermissionDenied
 
     def reset_api_key(self):
-        if self.get_api_key() is not None and self.email_verified == True:
+        if self.get_api_key() and self.email_verified:
             Token.objects.get(user=self).delete()
             Token.objects.create(user=self)
             self.save()
