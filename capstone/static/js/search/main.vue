@@ -1,12 +1,22 @@
 <template>
-  <div>
+  <div class="search-page">
 
-    <search-form ref="searchform" v-on:change-endpoint="resetResults" v-on:new-search="newSearch"
-                 :choices="choices"></search-form>
-    <result-list v-on:see-cases="seeCases" v-on:next-page="nextPage"
-                 v-on:prev-page="prevPage" :last_page="last_page" :first_page="first_page" :page="page"
-                 :results="results" :endpoint="endpoint" :hitcount="hitcount"
-                 :case_view_url_template="case_view_url_template"></result-list>
+    <search-form ref="searchform"
+                 v-on:change-endpoint="resetResults"
+                 v-on:new-search="newSearch"
+                 :choices="choices">
+    </search-form>
+    <result-list v-on:see-cases="seeCases"
+                 v-on:next-page="nextPage"
+                 v-on:prev-page="prevPage"
+                 :last_page="last_page"
+                 :first_page="first_page"
+                 :page="page"
+                 :results="results"
+                 :endpoint="endpoint"
+                 :hitcount="hitcount"
+                 :case_view_url_template="case_view_url_template">
+    </result-list>
   </div>
 </template>
 
@@ -45,9 +55,10 @@
         if (params.hasOwnProperty("page_size")) {
           this.page_size = params['page_size'];
         }
-        if (this.$refs.searchform.endpoint != endpoint) {
-          this.$refs.searchform.changeEndpoint(endpoint, fields);
-        }
+        // if (this.$refs.searchform.endpoint != endpoint) {
+        //   console.log("needing to pass in , fields", fields)
+        //   this.$refs.searchform.endpoint = endpoint;
+        // }
         this.newSearch(fields, endpoint, true);
       }
     },
@@ -75,6 +86,7 @@
 
     methods: {
       newSearch: function (fields, endpoint, loaded_from_url = false) {
+        console.log("newSearch", fields, endpoint)
         /*
          Sets us up for a new search.
 
@@ -172,17 +184,9 @@
             - just sets the last_page and first_page flags, which are used to determine prev/next button status
 
          */
-        if (this.cursors[this.page + 1]) {
-          this.last_page = false;
-        } else {
-          this.last_page = true;
-        }
+        this.last_page = !this.cursors[this.page + 1];
 
-        if (this.page == 0) {
-          this.first_page = true;
-        } else {
-          this.first_page = false;
-        }
+        this.first_page = this.page === 0;
 
       },
       getResultsPage: function (query_url) {
@@ -239,7 +243,7 @@
          Side Effects:
            - 'resets' the following variables.
         */
-        this.title = "Search"
+        this.title = "Search";
         this.hitcount = null;
         this.page = 0;
         this.results = [];
@@ -343,7 +347,7 @@
       assembleUrl: function (search_url, endpoint, cursor = null, page_size, fields) {
         /* assembles and returns URL */
 
-        var query_url = search_url + endpoint + "/?";
+        let query_url = search_url + endpoint + "/?";
 
         if (cursor) {
           query_url += "cursor=" + cursor + "&";
@@ -351,7 +355,7 @@
 
         // build the query parameters using the form fields
         if (fields.length > 0) {
-          for (var i = fields.length - 1; i >= 0; i--) {
+          for (let i = fields.length - 1; i >= 0; i--) {
             if (i !== fields.length - 1) {
               query_url += "&";
             }
