@@ -175,8 +175,11 @@ def test_change_api_key(auth_user, auth_client, client, mailoutbox):
     assert "Your new key, {}".format(auth_user.get_api_key()) in message
     assert "Your old key, {}".format(original_token) in message
 
-    import ipdb
-    ipdb.set_trace()
+    # Make sure auth is in place
+    unauth_response = client.post(reverse('reset-api-key'))
+    assert unauth_response.status_code == 302
+    assert "/user/login/" in unauth_response.url
+
 ### bulk downloads ###
 
 @pytest.mark.parametrize("client_fixture, can_see_private", [
