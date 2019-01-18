@@ -55,13 +55,19 @@ a, button, .btn {
   cursor: pointer;
 }
 
-button, .btn, .btn:hover, .btn:active, .btn:focus {
-  border: 0;
+button, .btn-white-violet {
+  @extend .btn;
+  border: 2px solid $color-violet;
+  background: $color-white;
+  color: $color-violet;
+  &:hover, &:focus, &:active {
+    background: $color-violet;
+    color: $color-white;
+  }
 }
 
 main {
   padding-top: 90px;
-
   // push footer to bottom on short pages
   @extend .flex-fill;
   @extend .d-flex;
