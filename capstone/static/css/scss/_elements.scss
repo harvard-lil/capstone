@@ -1,13 +1,22 @@
 // buttons
 .btn {
   font-family: $font-sans-serif;
-  font-weight: $font-weight-normal;
+  font-weight: $font-weight-bold;
   font-size: 14px;
-  border-radius: 5px;
+  line-height: 25px;
+  border-radius: 0;
   margin-bottom: 2rem;
   letter-spacing: 1px;
   text-decoration: none !important;
-  padding: 10px 10px;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  &:hover, &:active, &:focus {
+    transition: none;
+    -webkit-transition: background-color 200ms ease-out;
+    -moz-transition: background-color 200ms ease-out;
+    -o-transition: background-color 200ms ease-out;
+
+  }
 }
 
 .btn-default {
@@ -19,11 +28,6 @@
   &:hover, &:active, &:focus {
     background-color: $color-white;
     color: $color-violet;
-    transition: none;
-    -webkit-transition: background-color 200ms ease-out;
-    -moz-transition: background-color 200ms ease-out;
-    -o-transition: background-color 200ms ease-out;
-
   }
 }
 
@@ -41,6 +45,27 @@
     border: 2px solid;
     color: $color-black;
   }
+}
+
+.inverse button:hover,
+.inverse button:active,
+.inverse button:focus {
+  background-color: $color-light-blue;
+  color: $color-black;
+  border: $color-black;
+}
+
+.inverse a:focus,
+.inverse a:active,
+.inverse a:hover {
+  color: $color-light-blue;
+}
+
+.inverse .alert {
+  background-color: transparent;
+  color: $color-orange;
+  border-bottom: 1px solid $color-orange;
+  border-radius: 0;
 }
 
 .highlighted {

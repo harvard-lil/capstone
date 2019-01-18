@@ -2,10 +2,12 @@ from django.shortcuts import render
 from capdb.models import Jurisdiction, Court, Reporter
 from collections import OrderedDict
 
+
 # Create your views here.
 
 def view_case(request, case_id):
-    return render(request, "view_case.html", {'case_id':case_id})
+    return render(request, "view_case.html", {'case_id': case_id})
+
 
 def view_jurisdiction(request, jurisdiction_id):
     jurisdiction = Jurisdiction.objects.get(pk=jurisdiction_id)
@@ -16,6 +18,7 @@ def view_jurisdiction(request, jurisdiction_id):
         'title': jurisdiction.name
     })
 
+
 def view_reporter(request, reporter_id):
     reporter = Reporter.objects.get(pk=reporter_id)
     fields = _get_fields(reporter)
@@ -24,6 +27,7 @@ def view_reporter(request, reporter_id):
         'type': 'reporter',
         'title': reporter.short_name
     })
+
 
 def view_court(request, court_id):
     court = Court.objects.get(pk=court_id)
@@ -35,8 +39,10 @@ def view_court(request, court_id):
         'title': court.name_abbreviation
     })
 
+
 def search(request):
     return render(request, "search.html")
+
 
 def _get_fields(object):
     fields = OrderedDict()
