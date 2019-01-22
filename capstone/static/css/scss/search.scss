@@ -30,6 +30,7 @@
   width: 90%;
   padding-left: 0;
   padding-bottom: 20px;
+  margin-bottom: 0;
   &:after {
     float: right;
   }
@@ -87,7 +88,6 @@
     padding-left: 100px;
   }
 }
-
 
 // search fields
 
@@ -153,13 +153,30 @@
 
 .remfield {
   display: inline-block;
-  margin-left: 10px;
+  margin-left: 5px;
+  background: transparent;
+  vertical-align: middle;
+  height: 100%;
 }
 
 .field-button {
-  background-color: $color-black;
-  color: $color-orange;
-  border-radius: 100%;
+  border: 0;
+  background: transparent url("../../img/search/remove-circle-sprite.svg") no-repeat;
+  background-size: auto 26px;
+  width: 26px;
+  height: 26px;
+  margin-bottom: 0;
+  &.active {
+    &:hover, &:active, &:focus {
+      background-position-x: -26px !important;
+    }
+  }
+  &.disabled {
+    background-color: transparent;
+    background-size: auto 26px;
+    background-position-x: -52px;
+    cursor: default;
+  }
 }
 
 .add-field-button {

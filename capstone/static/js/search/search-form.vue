@@ -23,13 +23,20 @@
                        :placeholder='field["format"]'>
               </template>
               <template v-else>
-                <input v-model='field["value"]' class="queryfield" :id='field["name"]' type="text">\
+                <input v-model='field["value"]'
+                       class="queryfield"
+                       :id='field["name"]'
+                       type="text">
               </template>
               <div class="remfield">
-                <button v-if="fields.length > 1" class="field-button" @click="removeField(field['name'])">
-                  &ndash;
+                <button v-if="fields.length > 1"
+                        class="field-button active"
+                        @click="removeField(field['name'])">
                 </button>
-                <button v-if="fields.length <= 1" class="field-button disabled">&ndash;</button>
+                <button v-if="fields.length <= 1"
+                        class="field-button disabled"
+                        disabled>
+                </button>
               </div>
 
             </div>
@@ -37,12 +44,10 @@
         </div>
       </div>
       <div class="row field_row_container">
-        <div class="col-4 field_label_container">
-        </div>
-        <div class="field_value_container">
+        <div class="col-11 text-right">
           <template v-if="fields.length > 0">
             <div class="dropdown addfield">
-              <button class="dropdown-toggle add-field-button btn-white-violet"
+               <button class="dropdown-toggle add-field-button btn-white-violet"
                       type="button"
                       id="dropdownMenuButton"
                       data-toggle="dropdown"
