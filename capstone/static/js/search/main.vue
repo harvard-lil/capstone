@@ -25,6 +25,7 @@
 <script>
   import SearchForm from './search-form.vue'
   import ResultList from './result-list.vue'
+  import EventBus from '../event-bus'
 
   export default {
     beforeMount: function () {
@@ -87,7 +88,6 @@
 
     methods: {
       newSearch: function (fields, endpoint, loaded_from_url = false) {
-        console.log("newSearch", fields, endpoint)
         /*
          Sets us up for a new search.
 
@@ -268,9 +268,9 @@
          Side Effects:
          - Resets the fields variable changes the endpoint, and starts a new search via newSearch()
          */
-        let fields = [{"label": parameter, "name": parameter, "value": value}]
-        this.newSearch(fields, "cases")
-        this.$refs.searchform.changeEndpoint("cases", fields);
+        let fields = [{"label": parameter, "name": parameter, "value": value}];
+        this.newSearch(fields, "cases");
+        // EventBus.$emit("change-endpoint", ["cases", fields]);
       },
       getHashEndpoint: function (hash) {
         /* Gets endpoint from URL hash, validating it against this.$refs.searchform.endpoints, */
@@ -347,7 +347,6 @@
       },
       assembleUrl: function (search_url, endpoint, cursor = null, page_size, fields) {
         /* assembles and returns URL */
-
         let query_url = search_url + endpoint + "/?";
 
         if (cursor) {
@@ -357,19 +356,13 @@
         // build the query parameters using the form fields
         if (fields.length > 0) {
           for (let i = fields.length - 1; i >= 0; i--) {
-            if (i !== fields.length - 1) {
-              query_url += "&";
-            }
             if (fields[i]['value']) {
-              query_url += (fields[i]['name'] + "=" + fields[i]['value']);
+              query_url += (fields[i]['name'] + "=" + fields[i]['value']) + "&";
             }
           }
           query_url += "page_size=" + page_size;
-        } else {
-          query_url += "&page_size=" + page_size;
+          return query_url;
         }
-
-        return query_url;
       }
     }
   }
