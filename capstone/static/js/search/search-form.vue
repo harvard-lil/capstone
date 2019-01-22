@@ -1,80 +1,95 @@
 <template>
   <form v-on:submit.prevent>
     <div class="search-form-container col-centered">
-      <searchroutes :endpoint="endpoint"></searchroutes>
-
-      <div id="searchform">
-        <div v-for="field in fields" v-bind:key="field['name']">
-          <div class="row field_row_container">
-            <div class="col-4 field_label_container">
-              <label class="querylabel" :for="field['name']">{{ field["label"] }}</label><br>
-            </div>
-            <div class="col-7 field_value_container">
-              <template v-if="field['choices']">
-                <select v-model='field["value"]' :id='field["name"]'>
-                  <option v-for="(label, value) in choices[field['choices']]"
-                          :value="value" v-bind:key="label">
-                    {{label}}
-                  </option>
-                </select>
-              </template>
-              <template v-else-if="field['format']">
-                <input v-model='field["value"]' class="queryfield" :id='field["name"]' type="text"
-                       :placeholder='field["format"]'>
-              </template>
-              <template v-else>
-                <input v-model='field["value"]'
-                       class="queryfield"
-                       :id='field["name"]'
-                       type="text">
-              </template>
-              <div class="remfield">
-                <button v-if="fields.length > 1"
-                        class="field-button active"
-                        @click="removeField(field['name'])">
-                </button>
-                <button v-if="fields.length <= 1"
-                        class="field-button disabled"
-                        disabled>
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row field_row_container">
-        <div class="col-11 text-right">
-          <template v-if="fields.length > 0">
-            <div class="dropdown addfield">
-               <button class="dropdown-toggle add-field-button btn-white-violet"
-                      type="button"
-                      id="dropdownMenuButton"
-                      data-toggle="dropdown"
-                      aria-haspopup="true"
-                      aria-expanded="false">
-                Add Field
+      <searchroutes :endpoint="endpoint">
+      </searchroutes>
+      <!-- Table showing search fields. Also includes add field and search buttons. -->
+      <table class="table field-table">
+        <tr class="field_row_container col-12"
+            v-for="field in fields"
+            v-bind:key="field['name']">
+          <td class="col-4 field_label_container">
+            <label class="querylabel" :for="field['name']">
+              {{ field["label"] }}
+            </label>
+          </td>
+          <td class="col-7">
+            <template v-if="field['choices']">
+              <select v-model='field["value"]'
+                      :id='field["name"]'>
+                <option v-for="(label, value) in choices[field['choices']]"
+                        :value="value" v-bind:key="label">
+                  {{label}}
+                </option>
+              </select>
+            </template>
+            <template v-else-if="field['format']">
+              <input v-model='field["value"]'
+                     class="queryfield"
+                     type="text"
+                     :id='field["name"]'
+                     :placeholder='field["format"]'>
+            </template>
+            <template v-else>
+              <input v-model='field["value"]'
+                     class="queryfield"
+                     :id='field["name"]'
+                     type="text">
+            </template>
+          </td>
+          <td class="col-1">
+            <div class="remfield">
+              <button v-if="fields.length > 1"
+                      class="field-button active"
+                      @click="removeField(field['name'])">
               </button>
-              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" v-for="newfield in currentFields(endpoint)"
-                   @click="addField(newfield)" v-bind:key="newfield['label']"
-                   href="#">{{ newfield["label"] }}</a>
-              </div>
+              <button v-if="fields.length <= 1"
+                      class="field-button disabled"
+                      disabled>
+              </button>
             </div>
-          </template>
-        </div>
-        <!--<div class="col-1">-->
-        <!--<div class="remfield">-->
-        <!--</div>-->
-        <!--</div>-->
-      </div>
-      <div class="search-button-row">
-        <div class="col-11 text-right">
-          <input class="btn-default" @click="$emit('new-search', fields, endpoint)"
-                 type="submit"
-                 value="Search">
-        </div>
-      </div>
+
+          </td>
+        </tr>
+        <!--Add field row-->
+        <tr>
+          <td class="col-4"></td>
+          <td class="col-7">
+            <template v-if="fields.length > 0">
+              <div class="dropdown addfield">
+                <button class="dropdown-toggle add-field-button btn-white-violet"
+                        type="button"
+                        id="dropdownMenuButton"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false">
+                  Add Field
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" v-for="newfield in currentFields(endpoint)"
+                     @click="addField(newfield)" v-bind:key="newfield['label']"
+                     href="#">{{ newfield["label"] }}</a>
+                </div>
+              </div>
+            </template>
+
+          </td>
+          <td class="col-1"></td>
+        </tr>
+        <!--Submit row-->
+        <tr>
+          <td class="col-4"></td>
+          <td class="col-7">
+            <input class="btn-default btn-submit"
+                   @click="$emit('new-search', fields, endpoint)"
+                   type="submit"
+                   value="Search">
+          </td>
+          <td class="col-1"></td>
+        </tr>
+      </table>
+
+
     </div>
   </form>
 </template>
