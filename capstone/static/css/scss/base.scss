@@ -60,10 +60,6 @@ button, .btn-white-violet {
   border: 2px solid $color-violet;
   background: $color-white;
   color: $color-violet;
-  &:hover, &:focus, &:active {
-    background: $color-violet;
-    color: $color-white;
-  }
 }
 
 main {
