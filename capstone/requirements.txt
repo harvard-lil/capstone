@@ -4,9 +4,9 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
--e git+git://github.com/jazzband/pip-tools.git@e41456d#egg=pip-tools
 -e git+git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
 -e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
+-e git+git://github.com/jazzband/pip-tools.git@e41456d#egg=pip-tools
 -e git+git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
 amqp==2.4.0               # via kombu
 apipkg==1.5               # via execnet
@@ -26,7 +26,7 @@ celery[redis,sqs]==4.2.1
 certifi==2018.11.29       # via requests
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
-click==6.7                # via flex, pip-tools
+click==6.7                # via flex
 cookies==2.2.1            # via moto
 coreapi==2.3.3            # via drf-yasg
 coreschema==0.0.4         # via coreapi, drf-yasg
@@ -126,7 +126,7 @@ rjsmin==1.0.12            # via django-compressor
 ruamel.yaml==0.15.87      # via drf-yasg
 s3transfer==0.1.13        # via boto3
 singledispatch==3.4.0.3   # via nltk
-six==1.12.0               # via bcrypt, cryptography, django-extensions, docker, docker-pycreds, drf-yasg, fabric3, faker, flex, libsass, mock, more-itertools, moto, nltk, pathlib2, pip-tools, pynacl, pytest, pytest-xdist, python-dateutil, python-jose, responses, singledispatch, swagger-spec-validator, websocket-client
+six==1.12.0               # via bcrypt, cryptography, django-extensions, docker, docker-pycreds, drf-yasg, fabric3, faker, flex, libsass, mock, more-itertools, moto, nltk, pathlib2, pynacl, pytest, pytest-xdist, python-dateutil, python-jose, responses, singledispatch, swagger-spec-validator, websocket-client
 soupsieve==1.7.3          # via beautifulsoup4
 strict-rfc3339==0.7       # via flex
 swagger-spec-validator==2.4.3
