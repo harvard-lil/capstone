@@ -2,7 +2,6 @@
   <div class="search-page">
 
     <search-form ref="searchform"
-                 v-on:change-endpoint="resetResults"
                  v-on:new-search="newSearch"
                  class="bg-tan"
                  :choices="choices">
@@ -25,7 +24,6 @@
 <script>
   import SearchForm from './search-form.vue'
   import ResultList from './result-list.vue'
-  import EventBus from '../event-bus'
 
   export default {
     beforeMount: function () {
@@ -57,12 +55,13 @@
         if (params.hasOwnProperty("page_size")) {
           this.page_size = params['page_size'];
         }
-        if (this.$refs.searchform.endpoint != endpoint) {
+        if (this.$refs.searchform.endpoint !== endpoint) {
           console.log("needing to pass in , fields", fields)
           this.$refs.searchform.endpoint = endpoint;
         }
         this.newSearch(fields, endpoint, true);
       }
+
     },
     components: {
       'search-form': SearchForm,
@@ -85,7 +84,6 @@
         first_page: true
       }
     },
-
     methods: {
       newSearch: function (fields, endpoint, loaded_from_url = false) {
         /*
@@ -270,7 +268,6 @@
          */
         let fields = [{"label": parameter, "name": parameter, "value": value}];
         this.newSearch(fields, "cases");
-        // EventBus.$emit("change-endpoint", ["cases", fields]);
       },
       getHashEndpoint: function (hash) {
         /* Gets endpoint from URL hash, validating it against this.$refs.searchform.endpoints, */

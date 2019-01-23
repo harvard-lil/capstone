@@ -10,14 +10,15 @@
     </div>
     <div class="result-data">
       <div class="row">
-        <div class="col-6">
+        <div>
           <span class="result-data-label">Abbreviation:</span> {{ result.name_abbreviation }}
-        </div>
-        <div class="col-3">
+          <br/>
           <span class="result-data-label">Jurisdiction:</span> {{ result.jurisdiction }}
         </div>
-        <div class="col-3 text-right">
-          <button @click="$parent.$emit('see-cases', 'court', result.slug)">Cases</button>
+        <div>
+          <a href="#"
+             class="see-cases"
+             @click="$parent.$emit('see-cases', 'court', result.slug)">See cases</a>
         </div>
       </div>
     </div>
@@ -25,9 +26,9 @@
 </template>
 
 <script>
-    module.exports = {
-        props: [
-            'result'
-        ],
-    }
+  module.exports = {
+    props: [
+      'result'
+    ],
+  }
 </script>
