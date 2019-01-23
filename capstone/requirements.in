@@ -36,7 +36,7 @@ django-hosts           # URL routing across subdomains
 django-webpack-loader  # include assets from webpack
 
 # Admin stuff
-pip-tools           # freeze requirements.txt
+-e git://github.com/jazzband/pip-tools/commit/e41456db434d7819696eb0307482b7da29d061bb#egg=pip-tools # Fix issues related to https://github.com/jazzband/pip-tools/pull/715 (https://github.com/harvard-lil/capstone/issues/745)
 Fabric3             # project automation
 
 # Testing
