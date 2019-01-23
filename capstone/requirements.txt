@@ -4,10 +4,10 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
+-e git+git://github.com/jazzband/pip-tools.git@e41456d#egg=pip-tools
 -e git+git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
 -e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
 -e git+git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
--e git+git://github.com/jazzband/pip-tools.git@e41456d#egg=pip-tools
 amqp==2.4.0               # via kombu
 apipkg==1.5               # via execnet
 asn1crypto==0.24.0        # via cryptography
