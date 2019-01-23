@@ -27,27 +27,35 @@
   color: $color-violet;
   font-weight: $font-weight-semibold;
   text-transform: capitalize;
-  width: 90%;
+  width: 91%;
   padding-left: 0;
   padding-bottom: 20px;
+  margin-bottom: 0;
   &:after {
     float: right;
   }
 }
 
-.dropdown-search-routes > .fancy-for {
+.fancy-for {
   font-family: $font-serif;
   font-style: italic;
   font-size: 24px;
+  float: right;
 }
 
 .dropdown-search-routes > .dropdown-menu {
-  width: 100%;
+  width: 91%;
+  margin-left: 10px;
   padding: 0;
+  border-radius: 0;
+  border: 1px solid $color-violet;
   .dropdown-item {
-    &:hover,
-    &:active {
-      border-bottom: 0 !important;
+    color: $color-violet;
+    border-bottom: 1px solid $color-gray;
+    text-transform: capitalize;
+
+    &:hover, &:active, &:focus, &.active {
+      background-color: $color-yellow;
     }
   }
 }
@@ -88,16 +96,18 @@
   }
 }
 
-
 // search fields
+
+.field-table {
+  margin-top: 36px;
+}
 
 .field_label_container {
   text-align: right;
-  margin-right: 10px;
+  padding-right: 10px !important;
 }
 
-.field_value_container > .queryfield {
-  width: 90%;
+.queryfield {
   border: 1px solid $color-violet;
   outline: 0;
   &:focus, &:active {
@@ -144,22 +154,76 @@
 
 .queryfield input.form-control[type="text"], input[type="text"], input[type="email"], textarea {
   display: inline-block;
-  width: 50%;
+  width: 100%;
+}
+
+select {
+  width: 100%;
+  border: 1px solid $color-violet;
+}
+
+.btn-submit {
+  float: right;
+  border: 1px solid $color-violet !important;
+  width: 100px;
+  font-weight: $font-weight-semibold;
 }
 
 .addfield {
   width: 100%;
+  button {
+    float: right;
+    border: 1px solid $color-violet;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    width: 100px;
+    &:active, &:hover, &:focus {
+      background-color: $color-yellow;
+    }
+  }
+  .dropdown-menu {
+    right: 0;
+    top: 44px;
+    border-radius: 0;
+    border: 1px solid $color-violet;
+    position: absolute !important;
+    .dropdown-item {
+      border-bottom: 1px solid $color-gray;
+      color: $color-violet;
+      &:hover, &:active, &:focus {
+        background-color: $color-yellow;
+      }
+    }
+  }
 }
 
 .remfield {
-  display: inline-block;
-  margin-left: 10px;
+  display: grid;
+  margin-left: 5px;
+  background: transparent;
+  vertical-align: middle;
+  height: 100%;
 }
 
 .field-button {
-  background-color: $color-black;
-  color: $color-orange;
-  border-radius: 100%;
+  border: 0;
+  background: transparent url("../../img/search/remove-circle-sprite.svg") no-repeat;
+  background-size: auto 26px;
+  width: 26px;
+  height: 26px;
+  margin-bottom: 10px;
+  &.active {
+    &:hover, &:active, &:focus {
+      background-position-x: -26px !important;
+    }
+  }
+  &.disabled {
+    background-color: transparent;
+    background-size: auto 26px;
+    background-position-x: -52px;
+    cursor: default;
+    border: 0;
+  }
 }
 
 .add-field-button {

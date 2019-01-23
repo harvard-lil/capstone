@@ -15,7 +15,12 @@
     -webkit-transition: background-color 200ms ease-out;
     -moz-transition: background-color 200ms ease-out;
     -o-transition: background-color 200ms ease-out;
-
+  }
+  &:disabled {
+    background-color: $color-gray;
+    color: $color-medium-gray;
+    border: 2px solid $color-gray;
+    cursor: default;
   }
 }
 
