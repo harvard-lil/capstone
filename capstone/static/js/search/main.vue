@@ -57,10 +57,10 @@
         if (params.hasOwnProperty("page_size")) {
           this.page_size = params['page_size'];
         }
-        // if (this.$refs.searchform.endpoint != endpoint) {
-        //   console.log("needing to pass in , fields", fields)
-        //   this.$refs.searchform.endpoint = endpoint;
-        // }
+        if (this.$refs.searchform.endpoint != endpoint) {
+          console.log("needing to pass in , fields", fields)
+          this.$refs.searchform.endpoint = endpoint;
+        }
         this.newSearch(fields, endpoint, true);
       }
     },
@@ -281,19 +281,20 @@
       },
       getHashParams: function (hash) {
         /* Gets the parameters (not including search terms/filters) from the URL hash */
+
         let param_chunks = hash.split("filters")[0].split('/');
 
         return param_chunks.reduce(function (obj, chunk) {
           if (!chunk.includes(':')) {
             return obj;
           }
-          let [prm, val] = chunk.split(':')
+          let [prm, val] = chunk.split(':');
           obj[prm] = val;
           return obj;
         }, {});
       },
       getHashFilterFields: function (hash) {
-        /* Gets the search terms/filters from URL hash, and gets field objects via searchform.getFieldEntry() */
+        /* Gets the search terms/filters from  URL hash, and gets field objects via searchform.getFieldEntry() */
         let filters = hash.split("filters")[1].split('/');
         let searchform = this.$refs.searchform;
         return filters.reduce(function (arr, chunk) {
@@ -347,6 +348,7 @@
       },
       assembleUrl: function (search_url, endpoint, cursor = null, page_size, fields) {
         /* assembles and returns URL */
+
         let query_url = search_url + endpoint + "/?";
 
         if (cursor) {
@@ -360,9 +362,9 @@
               query_url += (fields[i]['name'] + "=" + fields[i]['value']) + "&";
             }
           }
-          query_url += "page_size=" + page_size;
-          return query_url;
         }
+        query_url += "page_size=" + page_size;
+        return query_url;
       }
     }
   }
