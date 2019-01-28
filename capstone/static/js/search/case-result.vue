@@ -1,7 +1,7 @@
 <template>
   <li class="result">
     <div class="result-title row"
-         v-for="citation in result.citations">
+         v-for="citation in result.citations" v-bind:key="citation.cite">
       <a target="_blank"
          :href="$parent.case_view_url(result.id)">
         {{result.name_abbreviation}}

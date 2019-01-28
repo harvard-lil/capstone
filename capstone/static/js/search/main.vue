@@ -56,6 +56,7 @@
           this.page_size = params['page_size'];
         }
         if (this.$refs.searchform.endpoint !== endpoint) {
+             // eslint-disable-next-line
           console.log("needing to pass in , fields", fields)
           this.$refs.searchform.endpoint = endpoint;
         }
