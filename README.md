@@ -263,7 +263,8 @@ You can then run the local javascript development server in a separate terminal 
 
     $ npm run serve
 
-This will cause javascript files to be loaded live from http://127.0.0.1:8080/ and recompiled on save.
+This will cause javascript files to be loaded live from http://127.0.0.1:8080/ and recompiled on save in the background.
+Your changes should be present at http://127.0.0.1:8000.
 
 *Important:* Any time you run `npm run serve`, before committing, you must then run
 
