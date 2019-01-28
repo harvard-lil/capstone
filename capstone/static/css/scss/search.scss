@@ -1,7 +1,7 @@
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
-@import "bootstrap/dropdown";
+@import "dropdown";
 @import "variables";
 
 .main-content {
@@ -43,6 +43,17 @@
   float: right;
 }
 
+.dropdown-search-routes.dropdown,
+.addfield.dropdown {
+  .dropdown-menu {
+    max-height: 300px;
+    overflow-y: scroll;
+  }
+  .dropdown-item {
+    background-color: $color-white;
+  }
+}
+
 .dropdown-search-routes > .dropdown-menu {
   width: 91%;
   margin-left: 10px;
@@ -53,7 +64,6 @@
     color: $color-violet;
     border-bottom: 1px solid $color-gray;
     text-transform: capitalize;
-
     &:hover, &:active, &:focus, &.active {
       background-color: $color-yellow;
     }
@@ -284,28 +294,52 @@ select {
 /* RESULTS */
 
 .result {
+  @extend h6;
   margin-bottom: 1.5rem;
+  .row {
+    margin-bottom: 5px;
+    @include media-breakpoint-down(sm) {
+      div {
+        @include make-col(12);
+
+      }
+    }
+    /* Make every first div larger
+    and every second div text-align right */
+    @include media-breakpoint-up(md) {
+      div:first-child {
+        @include make-col(8);
+      }
+      div:nth-child(2) {
+        @include make-col(4);
+        text-align: right;
+      }
+    }
+  }
+  .result-data-label {
+    color: $color-violet-gray;
+    font-weight: $font-weight-semibold;
+  }
   .result-title {
-    @extend h4;
+    @extend h5;
+    line-height: 1.5em;
     a {
       color: $color-violet;
       border-bottom: 0;
     }
     .result-citation {
-      margin-left: 1rem;
       color: $color-violet-gray;
     }
   }
-  .result-data {
-    font-size: 0.9rem;
-  }
-  .result-data-label {
-    font-weight: bold;
-  }
-  .page-button {
+  .decision-date, .volume {
+    color: $color-violet-gray;
   }
   .result-name {
     overflow: scroll;
+  }
+  .see-cases {
+    color: $color-violet;
+    border-bottom: 2px solid $color-violet;
   }
 }
 
