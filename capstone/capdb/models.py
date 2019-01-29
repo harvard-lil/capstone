@@ -1327,3 +1327,17 @@ class Ngram(models.Model):
 
     def __str__(self):
         return " ".join(w.word for w in (self.w1, self.w2, self.w3) if w)
+
+
+class Snippet(models.Model):
+    """
+        Data snippets for use on the website. It's just a cache for data that is both static enough, and resource-
+        intensive enough to generate that periodic updates would suit it best.
+    """
+    contents = models.TextField(null=False, blank=True, help_text="Contents in string, JSON, etc.")
+    label = models.CharField(max_length=24, null=False, unique=True, help_text="Label")
+    format = models.CharField(max_length=128, null=False, help_text="Data Format",
+                              choices=choices("application/json", "text/tab-separated-values", "text/plain"))
+
+    def __str__(self):
+        return self.label
