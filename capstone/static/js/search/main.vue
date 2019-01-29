@@ -60,6 +60,7 @@
           console.log("needing to pass in , fields", fields)
           this.$refs.searchform.endpoint = endpoint;
         }
+
         this.newSearch(fields, endpoint, true);
       }
 
@@ -76,7 +77,7 @@
         results: [],
         cursors: [],
         endpoint: 'cases', // only used in the title in search.html. The working endpoint is in the searchform component
-        page_size: 1,
+        page_size: 10,
         choices: {},
         case_view_url_template: null,
         search_url: null,
@@ -96,11 +97,13 @@
            - Calls triggers the actual search via nextPage()
         */
 
+        if (this.$refs.searchform.fields != fields && fields.length > 0) {
+          this.$refs.searchform.replaceFields(fields);
+        }
         this.endpoint = endpoint;
-        this.fields = fields;
-
         if (!loaded_from_url) {
           this.resetResults();
+          this.updateUrlHash();
         }
 
         // nextPage actually triggers the search
@@ -121,27 +124,22 @@
         if (new_search) {
           let self = this;
           let url = this.assembleUrl(this.search_url, this.endpoint,
-              this.cursors[this.page], this.page_size, this.fields);
+              this.cursors[this.page], this.page_size, this.$refs.searchform.fields);
           this.getResultsPage(url).then(function () {
-            // eslint-disable-next-line
-            window.location.hash = self.generateUrlHash(self.endpoint, self.cursors, self.page,
-                self.page_size, self.$refs.searchform.fields);
-            self.lastFirstCheck();
+              self.lastFirstCheck();
           });
         } else if (this.results[this.page + 1]) {
           this.page++;
-          window.location.hash = this.generateUrlHash(this.endpoint, this.cursors, this.page,
-              this.page_size, this.$refs.searchform.fields);
+          this.updateUrlHash();
           this.lastFirstCheck();
         } else if (this.cursors[this.page + 1]) {
           this.page++;
           let self = this;
           let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page],
-              this.page_size, this.fields);
+              this.page_size, this.$refs.searchform.fields);
           this.getResultsPage(url).then(function () {
-            window.location.hash = self.generateUrlHash(self.endpoint, self.cursors, self.page,
-                self.page_size, self.$refs.searchform.fields);
-            self.lastFirstCheck();
+              self.updateUrlHash();
+              self.lastFirstCheck();
           });
         }
 
@@ -166,7 +164,7 @@
         } else if (this.cursors[this.page - 1]) {
           this.page--;
           let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page],
-              this.page_size, this.fields);
+              this.page_size, this.$refs.searchform.fields);
           let self = this;
           this.getResultsPage(url).then(function () {
             window.location.hash = self.generateUrlHash(self.endpoint, self.cursors, self.page,
@@ -235,6 +233,20 @@
             .then(function () {
               self.stopLoading();
             })
+      },
+      updateUrlHash: function () {
+        /*
+         Updates the URL with the value of component-scoped variables.
+
+         Side Effects:
+           - changes the URL hash
+        */
+        window.location.hash = this.generateUrlHash(
+            this.endpoint,
+            this.cursors,
+            this.page,
+            this.page_size,
+            this.$refs.searchform.fields);
       },
       resetResults: function () {
         /*

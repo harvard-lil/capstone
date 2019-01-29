@@ -300,6 +300,9 @@
           }
         }
       },
+      replaceFields(new_fields) {
+        this.fields = new_fields;
+      },
       removeField(field_to_remove) {
         for (let i = this.fields.length - 1; i >= 0; i--) {
           if (this.fields[i]['name'] === field_to_remove) {
