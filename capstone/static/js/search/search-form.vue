@@ -67,8 +67,8 @@
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <a class="dropdown-item" v-for="newfield in currentFields(endpoint)"
-                     @click="addField(newfield)" v-bind:key="newfield['label']"
-                     href="#">{{ newfield["label"] }}</a>
+                     @click="addField(newfield)" v-bind:key="newfield['label']">
+                    {{ newfield["label"] }}</a>
                 </div>
               </div>
             </template>
@@ -309,6 +309,7 @@
             this.fields.splice(i, 1);
           }
         }
+        this.$parent.updateUrlHash();
       },
       addField(field_to_add) {
         for (let i = this.fields.length - 1; i >= 0; i--) {
@@ -317,6 +318,7 @@
           }
         }
         this.fields.push(field_to_add);
+        this.$parent.updateUrlHash();
       },
       getFieldEntry(field_name, endpoint) {
         for (let i = this.endpoints[endpoint].length - 1; i >= 0; i--) {

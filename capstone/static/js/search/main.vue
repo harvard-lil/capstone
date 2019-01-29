@@ -365,9 +365,11 @@
         // build the query parameters using the form fields
         if (fields.length > 0) {
           for (let i = fields.length - 1; i >= 0; i--) {
-            if (fields[i]['value']) {
-              query_url += (fields[i]['name'] + "=" + fields[i]['value']) + "&";
+            let value = fields[i]['value'];
+            if (value == undefined || value == null) {
+              value='';
             }
+            query_url += (fields[i]['name'] + "=" + value + "&");
           }
         }
         query_url += "page_size=" + page_size;
