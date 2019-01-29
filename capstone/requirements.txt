@@ -48,7 +48,7 @@ django-redis==4.9.0
 django-simple-history==2.1.1
 django-storages==1.6.6
 django-webpack-loader==0.6.0
-django==2.0.8
+django==2.1.5
 djangorestframework==3.8.2
 dnspython==1.15.0
 docker-pycreds==0.3.0     # via docker
