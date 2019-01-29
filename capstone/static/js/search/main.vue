@@ -142,7 +142,6 @@
               self.lastFirstCheck();
           });
         }
-
       },
       prevPage: function () {
         /*
@@ -158,8 +157,7 @@
         //
         if (this.results[this.page - 1]) {
           this.page--;
-          window.location.hash = this.generateUrlHash(this.endpoint, this.cursors, this.page,
-              this.page_size, this.$refs.searchform.fields);
+          this.updateUrlHash()
           this.lastFirstCheck();
         } else if (this.cursors[this.page - 1]) {
           this.page--;
@@ -167,8 +165,7 @@
               this.page_size, this.$refs.searchform.fields);
           let self = this;
           this.getResultsPage(url).then(function () {
-            window.location.hash = self.generateUrlHash(self.endpoint, self.cursors, self.page,
-                self.page_size, self.$refs.searchform.fields);
+            self.updateUrlHash()
             self.lastFirstCheck();
           });
         }
