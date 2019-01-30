@@ -163,6 +163,7 @@
               choices: 'reporter',
               info: ""
             },
+              /*
             {
               name: "court",
               value: "",
@@ -171,6 +172,7 @@
               format: "e.g. ill-app-ct",
               info: ""
             },
+            */
             {
               name: "jurisdiction",
               value: "",

@@ -271,7 +271,7 @@
       seeCases: function (parameter, value) {
         /*
          A user has a "see cases" button on search hits in non-case endppints, which starts a new case search
-         filtering for the specified court/etc.
+         filtering for the specified jurisdiction/etc.
 
          Side Effects:
          - Resets the fields variable changes the endpoint, and starts a new search via newSearch()

@@ -2,6 +2,7 @@
 {% load static %}
 {% load pipeline %}
 {% load api_url %}
+{% load snippet %}
 {% load render_bundle from webpack_loader %}
 {% block extra_head %}
   {% stylesheet 'search' %}
@@ -28,31 +29,22 @@
   const search_url = '{% api_url "api-root" %}' + "v1/";
   const bullet_url = '{% static "img/red-arrow-right.svg" %}';
 
-  const choices = {
-      "jurisdiction": {"ill": "Illinois", "wash": "Washington"},
-      "court": {
-          "wash-ct-app": "Washington: Washington Court of Appeals",
-          "ill": "Illinois: Illinois Supreme Court",
-          "ill-app-ct": "Illinois: Illinois Appellate Court"
-      },
-      "reporter": {
-          "10 58": "Ill. (Breese)- Illinois Reports",
-          "315": "Ill. App.- Illinois Appellate Court Reports",
-          "892": "N.W. 2d- North Western Reporter 2d",
-          "477": "Wash. App.- Washington Appellate Reports"
-      },
-      "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
-  };
-
-  {% comment %}
-    // this is for when snippets are integrated...
+{% autoescape off %}
     const choices = {
-      "jurisdiction_list": {% snippet 'search_jurisdiction_list' %},
-      "const court_list": {% snippet 'search_court_list' %},
-      "reporter_list": {% snippet 'search_reporter_list' %},
+      "jurisdiction": {% snippet 'search_jurisdiction_list' %},
+      "reporter": {% snippet 'search_reporter_list' %},
       "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
     };
-  {% endcomment %}
+{% comment %}
+       const choices = {
+      "jurisdiction": {% snippet 'search_jurisdiction_list' %},
+      "court": {% snippet 'search_court_list' %},
+      "reporter": {% snippet 'search_reporter_list' %},
+      "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
+    };
+{% endcomment %}
+
+{% endautoescape %}
 
   </script>
   {% render_bundle 'search' %}
