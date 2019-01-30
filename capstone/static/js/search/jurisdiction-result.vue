@@ -18,8 +18,7 @@
           {{ result.slug }}
         </div>
         <div>
-          <a href="#"
-             class="see-cases"
+          <a class="see-cases"
              @click="$parent.$emit('see-cases', 'jurisdiction', result.slug)">
             See cases
           </a>

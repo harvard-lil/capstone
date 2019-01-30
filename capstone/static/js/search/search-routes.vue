@@ -8,7 +8,6 @@
         <div class="col-11">
           <div class="dropdown dropdown-search-routes">
             <a class="btn btn-secondary dropdown-toggle dropdown-title"
-               href="#"
                role="button"
                id="dropdownMenuLink"
                data-toggle="dropdown"
@@ -26,10 +25,8 @@
                     v-for="current_endpoint in endpoints">
                   <a v-if="current_endpoint===endpoint"
                      @click="changeEndpoint(current_endpoint)"
-                     href="#"
                      class="dropdown-item active">{{current_endpoint}}</a>
-                  <a v-else href="#"
-                     @click="changeEndpoint(current_endpoint)"
+                  <a v-else @click="changeEndpoint(current_endpoint)"
                      class="dropdown-item">
                     {{current_endpoint}}</a>
                 </li>

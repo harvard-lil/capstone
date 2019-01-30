@@ -11,8 +11,7 @@
           <span class="result-data-label">Abbreviation:</span> {{ result.short_name }}
         </div>
         <div>
-          <a href="#"
-             class="see-cases"
+          <a class="see-cases"
              @click="$parent.$emit('see-cases', 'reporter', result.id)">
             See cases
           </a>

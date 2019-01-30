@@ -16,8 +16,7 @@
           <span class="result-data-label">Jurisdiction:</span> {{ result.jurisdiction }}
         </div>
         <div>
-          <a href="#"
-             class="see-cases"
+          <a class="see-cases"
              @click="$parent.$emit('see-cases', 'court', result.slug)">See cases</a>
         </div>
       </div>
