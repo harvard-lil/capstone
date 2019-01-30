@@ -4,8 +4,10 @@
     <search-form ref="searchform"
                  v-on:new-search="newSearch"
                  class="bg-tan"
+                 :field_errors="field_errors"
                  :choices="choices">
     </search-form>
+    <a id="results_list"></a>
     <result-list v-on:see-cases="seeCases"
                  v-on:next-page="nextPage"
                  v-on:prev-page="prevPage"
@@ -17,6 +19,11 @@
                  :hitcount="hitcount"
                  :case_view_url_template="case_view_url_template">
     </result-list>
+    <div v-if="search_error"
+         v-html="search_error"
+         class="alert alert-danger"
+         role="alert">
+    </div>
   </div>
 </template>
 
@@ -83,7 +90,9 @@
         search_url: null,
         cursor: null,
         last_page: true,
-        first_page: true
+        first_page: true,
+        field_errors: {},
+        search_error: null
       }
     },
     methods: {
@@ -142,6 +151,9 @@
               self.lastFirstCheck();
           });
         }
+        if (this.field_errors.length == 0) {
+            this.scrollToResults();
+        }
       },
       prevPage: function () {
         /*
@@ -169,6 +181,7 @@
             self.lastFirstCheck();
           });
         }
+        this.scrollToResults();
       },
       lastFirstCheck: function () {
         /*
@@ -202,9 +215,15 @@
               if (response.ok) {
                 return response.json();
               }
-              if (response.status === 500) {
-                document.getElementById("loading-overlay").style.display = 'none';
-                //TODO
+              if (response.status === 400) {
+                  response.json().then(function(object) {
+                      self.field_errors = object;
+                      self.stopLoading();
+                  })
+              } else if (response.status !== 200) {
+                  self.search_error = "Search error: API returned " +
+                      response.status + " for the query " + query_url
+                  self.scrollToResults();
               }
             })
             .then(function (results_json) {
@@ -352,6 +371,11 @@
           return;
         }
         return url.split('cursor=')[1].split('&')[0];
+      },
+      scrollToResults: function() {
+          /* scrolls to the results area */
+          let elmnt = document.getElementById("results_list");
+          elmnt.scrollIntoView();
       },
       assembleUrl: function (search_url, endpoint, cursor = null, page_size, fields) {
         /* assembles and returns URL */

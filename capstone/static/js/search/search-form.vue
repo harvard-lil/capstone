@@ -4,10 +4,23 @@
       <searchroutes :endpoint="endpoint">
       </searchroutes>
       <!-- Table showing search fields. Also includes add field and search buttons. -->
+      <template v-if="field_errors">
+        <div v-for="(error, name) in field_errors"
+            v-bind:key="'error' + name" class="alert alert-danger">
+          <strong>
+            <span v-text="getFieldEntry(name, endpoint).label + ':'"></span>
+          </strong>&nbsp;
+          <small>
+            <span v-text="error"></span>
+          </small>
+        </div>
+      </template>
       <table class="table field-table">
+
         <tr class="field_row_container col-12"
             v-for="field in fields"
-            v-bind:key="field['name']">
+            v-bind:key="field['name']"
+            v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }">
           <td class="col-4 field_label_container">
             <label class="querylabel" :for="field['name']">
               {{ field["label"] }}
@@ -292,7 +305,7 @@
         }
       }
     },
-    props: ['choices'],
+    props: ['choices', 'field_errors'],
     methods: {
       updateFields(new_endpoint) {
         this.fields = [];
