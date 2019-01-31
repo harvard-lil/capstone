@@ -102,6 +102,7 @@
         </tr>
       </table>
 
+      For help using this tool, check out our <a :href="docs_url">Search Docs</a>.
 
     </div>
   </form>
@@ -167,6 +168,7 @@
               value: "",
               label: "Citation",
               format: "e.g. 1 Ill. 17",
+              default: true,
               info: "the case citation"
             },
             {
@@ -305,7 +307,7 @@
         }
       }
     },
-    props: ['choices', 'field_errors'],
+    props: ['choices', 'field_errors', 'docs_url'],
     methods: {
       updateFields(new_endpoint) {
         this.fields = [];

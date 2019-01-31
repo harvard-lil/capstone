@@ -15,11 +15,14 @@
 {% endblock %}
 
 {% block main_content %}
+
   <div id="loading-overlay" style="display: none">
     <img alt="" aria-hidden="true" src='{% static "img/loading.gif" %}' class="loading-gif"/>
     <div class="loading-text">Loading</div>
   </div>
   <div id="app" class="content"></div>
+
+
 
   <script>
 // This is essentially each endpoint with its API interface
@@ -28,6 +31,7 @@
   const case_view_url_template = "{% url 'view_case' 987654321 %}";
   const search_url = '{% api_url "api-root" %}' + "v1/";
   const bullet_url = '{% static "img/red-arrow-right.svg" %}';
+  const docs_url = '{% url 'search-docs' %}';
   // {% api_url "casemetadata-detail" 987654321 %};
 
 {% autoescape off %}

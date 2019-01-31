@@ -1,11 +1,11 @@
 <template>
   <div class="search-page">
-
     <search-form ref="searchform"
                  v-on:new-search="newSearch"
                  class="bg-tan"
                  :field_errors="field_errors"
-                 :choices="choices">
+                 :choices="choices"
+                 :docs_url="docs_url">
     </search-form>
     <a id="results_list"></a>
     <result-list v-on:see-cases="seeCases"
@@ -37,6 +37,8 @@
       /*
         Here we get a number of variables defined in the django template
        */
+      // eslint-disable-next-line
+      this.docs_url = docs_url;
       // eslint-disable-next-line
       this.case_view_url_template = case_view_url_template;
       // eslint-disable-next-line
