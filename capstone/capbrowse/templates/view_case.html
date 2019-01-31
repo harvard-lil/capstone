@@ -15,6 +15,16 @@
 
 
 {% block content %}
+
+  <noscript>
+    <div style="height: 100%; padding: 20%;">
+      This case viewer requires javascript, but you can view a simple HTML version of the case through our API.
+      <a href="{% api_url "casemetadata-list" %}{{ case_id }}/?full_case=true&format=html">Click here to view the case
+      HTML in our API.</a> If that link returns "Error: Not Authenticated," log in using the link in the nav bar on this
+      page, and revisit the case link. If you need help, visit the contact page to see how you can get in touch.
+    </div>
+  </noscript>
+
     <div id="loading-overlay">
         <img alt="" aria-hidden="true" src='{% static "img/loading.gif" %}' class="loading-gif"/>
         <div class="loading-text">Loading</div>
@@ -145,4 +155,6 @@
     delimiters: ['[[', ']]'],
 });
   </script>
+
+
 {% endblock %}

@@ -28,6 +28,7 @@
   const case_view_url_template = "{% url 'view_case' 987654321 %}";
   const search_url = '{% api_url "api-root" %}' + "v1/";
   const bullet_url = '{% static "img/red-arrow-right.svg" %}';
+  // {% api_url "casemetadata-detail" 987654321 %};
 
 {% autoescape off %}
     const choices = {
@@ -36,16 +37,23 @@
       "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
     };
 {% comment %}
+    /*
        const choices = {
       "jurisdiction": {% snippet 'search_jurisdiction_list' %},
       "court": {% snippet 'search_court_list' %},
       "reporter": {% snippet 'search_reporter_list' %},
       "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
     };
+    */
 {% endcomment %}
 
 {% endautoescape %}
 
   </script>
+<noscript>
+  This search interface requires javascript, even for basic functionality. If you can not or will not use
+  javascript, your best bet is to directly use <a href="{% api_url "api-root" %}">the API this search interface
+  queries.</a> There is no data available in this search interface that is not available through the API.
+</noscript>
   {% render_bundle 'search' %}
 {% endblock %}
