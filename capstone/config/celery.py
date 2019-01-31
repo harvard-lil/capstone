@@ -16,6 +16,7 @@ app = Celery('config', include=[
     'scripts.ice_volumes',
     'scripts.export',
     'scripts.ngrams',
+    'scripts.update_snippets',
 ])
 
 # Using a string here means the worker doesn't have to serialize
