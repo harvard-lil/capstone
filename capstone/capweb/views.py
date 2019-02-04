@@ -2,14 +2,15 @@ import logging
 import os
 from collections import OrderedDict
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email
 
-from capdb.models import CaseMetadata, Jurisdiction, Reporter
+from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
 from capapi import serializers
 from capapi.resources import form_for_request
 
@@ -150,3 +151,7 @@ def api(request):
         'page_description': 'To get started with the API, you can explore it in your browser, or reach it from the '
                             'command line.'
     })
+
+def snippet(request, label):
+    snippet = get_object_or_404(Snippet, label=label).contents
+    return HttpResponse(snippet, content_type=snippet.format)

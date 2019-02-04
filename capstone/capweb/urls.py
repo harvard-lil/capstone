@@ -66,6 +66,7 @@ urlpatterns = [
     ])+[
 
     path('maintenance/', views.maintenance_mode , name='maintenance_mode'),
+    path('data/<str:label>', views.snippet, name='data_snippet'),
 ]
 
 if settings.DEBUG:
