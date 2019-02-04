@@ -321,23 +321,18 @@ def reset_api_key(request):
         If it's a POST request, it will reset the API key, and send out a confirmation email.
     """
     if request.method == 'POST' and request.user.is_active and request.user.email_verified:
-        old_key = request.user.get_api_key()
 
         request.user.reset_api_key()
         request.user.save()
 
-        message = ("Dear {} {},\nYour Case.law API key reset is complete. Your new key, {}, is now active. "
-        "Your old key, {}, will no longer work. This cannot be undone. Please reset your password and contact us "
-        "if you did not initiate this change.\n\nWarmest Regards,\nThe Caselaw Access Project Team\nHarvard Law "
+        message = ("Dear {} {},\nYour Case.law API key reset is complete. Your old key will no longer work; this cannot"
+        " be undone. If you did not initiate this change, please reset your password and contact us, immediately."
+        ".\n\nWarmest Regards,\nThe Caselaw Access Project Team\nHarvard Law "
         "School Library Innovation Lab")
 
         send_mail(
             'Case.law: API Key Reset',
-            message.format(
-                request.user.first_name,
-                request.user.last_name,
-                request.user.get_api_key(),
-                old_key), # formats message
+            message.format(request.user.first_name, request.user.last_name),
             settings.DEFAULT_FROM_EMAIL, # from email
             [ settings.DEFAULT_FROM_EMAIL, request.user.email ], #to email, (sends a copy to us)
             fail_silently=False

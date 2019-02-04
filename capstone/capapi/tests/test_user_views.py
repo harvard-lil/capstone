@@ -172,8 +172,7 @@ def test_change_api_key(auth_user, auth_client, client, mailoutbox):
 
     # Make sure mail is sent and contains the correct new and old API keys
     message = mailoutbox[0].body
-    assert "Your new key, {}".format(auth_user.get_api_key()) in message
-    assert "Your old key, {}".format(original_token) in message
+    assert "Your Case.law API key reset is complete" in message
 
     # Make sure auth is in place
     unauth_response = client.post(reverse('reset-api-key'))
