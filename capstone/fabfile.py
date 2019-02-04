@@ -31,7 +31,8 @@ from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdic
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
-    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars
+    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars, \
+    update_snippets
 from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace, volume_barcode_from_folder
 
 
@@ -134,7 +135,7 @@ def create_or_update_case_metadata(update_existing=False):
 
 @task
 def rename_tags_from_json_id_list(json_path, tag=None):
-    with open(os.path.abspath(os.path.expanduser(json_path))) as data_file:    
+    with open(os.path.abspath(os.path.expanduser(json_path))) as data_file:
         parsed_json = json.load(data_file)
     mass_update.rename_casebody_tags_from_json_id_list(parsed_json, tag)
 
@@ -807,6 +808,9 @@ def report_multiple_jurisdictions(out_path="court_jurisdictions.csv"):
                 url = "https://api.case.law/v1/cases/?court=%s&jurisdiction=%s" % (row.court_slug, row.jurisdiction_slug)
                 csv_writer.writerow([row.jurisdiction_slug, row.count, url])
 
+@task
+def update_all_snippets():
+    update_snippets.update_all()
 
 @task
 def ice_volumes(scope='all', dry_run='true'):
