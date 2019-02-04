@@ -295,7 +295,7 @@ select {
 
 .result {
   @extend h6;
-  margin-bottom: 1.5rem;
+  margin-bottom: 3rem;
   .row {
     margin-bottom: 5px;
     @include media-breakpoint-down(sm) {
@@ -341,8 +341,4 @@ select {
     color: $color-violet;
     border-bottom: 2px solid $color-violet;
   }
-}
-
-.result:nth-child(even) {
-  background-color: $color-light-gray;
 }
