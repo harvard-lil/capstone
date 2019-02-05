@@ -3,12 +3,6 @@ from capdb.models import Jurisdiction, Court, Reporter
 from collections import OrderedDict
 
 
-# Create your views here.
-
-def view_case(request, case_id):
-    return render(request, "view_case.html", {'case_id': case_id})
-
-
 def view_jurisdiction(request, jurisdiction_id):
     jurisdiction = Jurisdiction.objects.get(pk=jurisdiction_id)
     fields = _get_fields(jurisdiction)
