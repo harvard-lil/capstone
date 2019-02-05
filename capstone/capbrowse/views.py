@@ -1,20 +1,20 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from capdb.models import Jurisdiction, Court, Reporter
 from collections import OrderedDict
 
 
 def view_jurisdiction(request, jurisdiction_id):
-    jurisdiction = Jurisdiction.objects.get(pk=jurisdiction_id)
+    jurisdiction = get_object_or_404(Jurisdiction, pk=jurisdiction_id)
     fields = _get_fields(jurisdiction)
     return render(request, "view_metadata.html", {
         'fields': fields,
-        'type': 'court',
+        'type': 'jurisdiction',
         'title': jurisdiction.name
     })
 
 
 def view_reporter(request, reporter_id):
-    reporter = Reporter.objects.get(pk=reporter_id)
+    reporter = get_object_or_404(Reporter, pk=reporter_id)
     fields = _get_fields(reporter)
     return render(request, "view_metadata.html", {
         'fields': fields,
@@ -24,7 +24,7 @@ def view_reporter(request, reporter_id):
 
 
 def view_court(request, court_id):
-    court = Court.objects.get(pk=court_id)
+    court = get_object_or_404(Court, pk=court_id)
     fields = _get_fields(court)
 
     return render(request, "view_metadata.html", {
