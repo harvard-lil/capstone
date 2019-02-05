@@ -63,7 +63,8 @@
       'page',
       'first_page',
       'last_page',
-      'case_view_url_template'
+      'case_view_url_template',
+      'metadata_view_url_template'
     ],
     components: {
       'reporter-result': ReporterResult,
@@ -77,7 +78,7 @@
         return this.case_view_url_template.replace('987654321', case_id)
       },
       metadata_view_url: function (endpoint, id) {
-        return this.case_view_url_template.replace('987654321', id).replace('/case/', "/" + endpoint + "/")
+        return this.metadata_view_url_template.replace('987654321', id).replace('/court/', "/" + endpoint + "/")
       }
 
     }

@@ -17,6 +17,7 @@
                  :results="results"
                  :endpoint="endpoint"
                  :hitcount="hitcount"
+                 :metadata_view_url_template="metadata_view_url_template"
                  :case_view_url_template="case_view_url_template">
     </result-list>
     <div v-if="search_error"
@@ -41,6 +42,8 @@
       this.docs_url = docs_url;
       // eslint-disable-next-line
       this.case_view_url_template = case_view_url_template;
+      // eslint-disable-next-line
+      this.metadata_view_url_template = metadata_view_url_template;
       // eslint-disable-next-line
       this.search_url = search_url;
       // eslint-disable-next-line
