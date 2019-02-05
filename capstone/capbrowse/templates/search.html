@@ -27,7 +27,6 @@
   <script>
 // This is essentially each endpoint with its API interface
 // eslint-disable-next-line
-  app = document.getElementById("app");
   const case_view_url_template = "{% api_url "casemetadata-detail" 987654321 %}" + "?full_case=true&format=html";
   const metadata_view_url_template = "{% url 'view_court' 987654321 %}";
   const search_url = '{% api_url "api-root" %}' + "v1/";
