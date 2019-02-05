@@ -36,6 +36,7 @@ django-simple-history   # model versioning
 django-partial-index    # create partial postgres indexes
 django-redis        # use redis as Django cache backend
 django-hosts        # URL routing across subdomains
+django_cors_headers # enables CORS for testing locally 
 django-webpack-loader   # include assets from webpack
 
 # Admin stuff

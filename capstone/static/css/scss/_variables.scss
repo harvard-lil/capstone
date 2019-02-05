@@ -337,40 +337,8 @@ strong, b {
   @extend .font-semibold;
 }
 
-/////////// buttons
-.button {
-  @extend .font-header-bold;
-  color: $color-blue;
-  background: white;
-  border: 1px solid $color-blue;
-  letter-spacing: 2px;
-  height: 35px;
-  text-transform: uppercase;
-    &:hover {
-    background-color: $color-light-blue;
-    border: 1px solid $color-blue;
-  }
-}
 
-.inverse button:hover,
-.inverse button:active,
-.inverse button:focus {
-    background-color: $color-light-blue;
-    color: $color-black;
-    border: $color-black;
-}
-.inverse a:focus,
-.inverse a:active,
-.inverse a:hover {
-    color: $color-light-blue;
-}
 
-.inverse .alert {
-  background-color: transparent;
-  color: $color-orange;
-  border-bottom: 1px solid $color-orange;
-  border-radius: 0;
-}
 
 /* logos */
 .footer-lil-logo {

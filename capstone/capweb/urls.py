@@ -17,6 +17,7 @@ urlpatterns = [
     path('tools/', views.tools, name='tools'),
     path('gallery/', views.gallery, name='gallery'),
     path('api/', views.api, name='api'),
+    path('search-docs/', views.search_docs, name='search-docs'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt',
                                             content_type='text/plain'), name='robots'),
 
