@@ -6,9 +6,6 @@ SECRET_KEY = 'k2#@_q=1$(__n7#(zax6#46fu)x=3&^lz&bwb8ol-_097k_rj5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# add CORS headers to make the case browser work
-CORS_ORIGIN_ALLOW_ALL = True
-
 # don't require celery listener
 CELERY_TASK_ALWAYS_EAGER = True
 # propagate exceptions
@@ -64,9 +61,5 @@ try:
     INTERNAL_IPS = ['127.0.0.1']
 except ImportError:
     pass
-
-INSTALLED_APPS += ( 'corsheaders', )
-MIDDLEWARE += ('corsheaders.middleware.CorsMiddleware',)
-
 
 NGRAMS_FEATURE = True
