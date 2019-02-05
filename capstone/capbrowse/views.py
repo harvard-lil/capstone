@@ -5,27 +5,46 @@ from collections import OrderedDict
 
 def view_jurisdiction(request, jurisdiction_id):
     jurisdiction = get_object_or_404(Jurisdiction, pk=jurisdiction_id)
-    fields = _get_fields(jurisdiction)
+
+    fields = OrderedDict([
+        ("ID", jurisdiction.id),
+        ("Name", jurisdiction.name),
+        ("Long Name", jurisdiction.name_long),
+        ("Slug", jurisdiction.slug),
+        ("whitelisted", jurisdiction.whitelisted),
+    ])
     return render(request, "view_metadata.html", {
         'fields': fields,
         'type': 'jurisdiction',
         'title': jurisdiction.name
     })
 
-
 def view_reporter(request, reporter_id):
     reporter = get_object_or_404(Reporter, pk=reporter_id)
-    fields = _get_fields(reporter)
+    fields = OrderedDict([
+        ("ID", reporter.id),
+        ("Full Name", reporter.full_name),
+        ("Short Name", reporter.short_name),
+        ("Start Year", reporter.start_year),
+        ("End Year", reporter.end_year),
+        ("Volume Count", reporter.volume_count),
+    ])
+
     return render(request, "view_metadata.html", {
         'fields': fields,
         'type': 'reporter',
         'title': reporter.short_name
     })
 
-
 def view_court(request, court_id):
     court = get_object_or_404(Court, pk=court_id)
-    fields = _get_fields(court)
+    fields = OrderedDict([
+        ("ID", court.id),
+        ("Name", court.name),
+        ("Name Abbreviation", court.name_abbreviation),
+        ("Jurisdiction", court.jurisdiction.name),
+        ("Slug", court.slug),
+    ])
 
     return render(request, "view_metadata.html", {
         'fields': fields,
@@ -37,15 +56,3 @@ def view_court(request, court_id):
 def search(request):
     return render(request, "search.html")
 
-
-def _get_fields(object):
-    fields = OrderedDict()
-    for field in object._meta.get_fields():
-        print(field.name, field.get_internal_type())
-        if field.get_internal_type() == "ManyToManyField" or field.get_internal_type() == "ForeignKey":
-            continue
-        try:
-            fields[field.name.replace("_", " ").title()] = getattr(object, field.name)
-        except AttributeError as e:
-            print(e)
-    return fields
