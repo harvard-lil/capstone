@@ -1,5 +1,6 @@
 import logging
 import re
+from werkzeug.http import parse_range_header
 
 from django.conf import settings
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
@@ -103,44 +104,11 @@ class RangeRequestMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
+        f = response.file_to_stream
+        response_size = f.size
 
         # is this request eligible for a range request?
         if response.status_code != 200 or not hasattr(response, 'file_to_stream'):
-            return response
-
-        # parse the range(s) -- at the moment, we're only responding to the
-        # first range, but we coalesce adjacent and overlapping ranges below
-        http_range = request.META.get('HTTP_RANGE')
-        units = "bytes="
-        if http_range and http_range.startswith(units):
-            ranges = []
-            matches = re.finditer(r"(\d*)-(\d*),?", http_range[len(units):])
-            if matches:
-                # treat the response as a file so we can see how big it is
-                f = response.file_to_stream
-                # response_size = os.fstat(f.fileno()).st_size
-                response_size = f.size
-            for match in matches:
-                start = match.group(1)
-                end = match.group(2)
-                # the case where both ends of the range are empty
-                if not start and not end:
-                    continue
-                # the case where start is empty
-                if not start:
-                    start = max(0, response_size - int(end))
-                    end = response_size - 1
-                else:
-                    start = int(start)
-                # this handles the case where end is empty and where it isn't
-                end = int(end or response_size - 1)
-                if start >= response_size or start > end:
-                    response.status_code = 416
-                    response['Content-Range'] = 'bytes */%d' % response_size
-                    return response
-                end = min(end, response_size - 1)
-                ranges.append((start, end))
-        else:
             return response
 
         # we're not really handling If-Range headers; if present and ill-formed,
@@ -149,40 +117,36 @@ class RangeRequestMiddleware:
         if if_range and if_range != response.get('Last-Modified') and if_range != response.get('ETag'):
             return response
 
-        # coalesce adjacent and overlapping ranges
-        collapsed_ranges = []
-        for cur in sorted(ranges):
-            if len(collapsed_ranges) == 0:
-                collapsed_ranges.append(cur)
-            else:
-                prev = collapsed_ranges.pop()
-                if cur[0] - 1 <= prev[1]:
-                    collapsed_ranges.append((prev[0], max(prev[1], cur[1])))
-                else:
-                    collapsed_ranges.append(prev)
-                    collapsed_ranges.append(cur)
-        ranges = collapsed_ranges
+        # parse the range(s) -- at the moment, we're only responding to the
+        # first range, but we coalesce adjacent and overlapping ranges below
+        if request.META.get('HTTP_RANGE'):
+            ranges = parse_range_header(request.META.get('HTTP_RANGE'))
+            if not ranges:
+                 return response
 
-        # to handle more than the first range, we'd need to produce a
-        # multipart response...
-        if len(ranges) > 0:
-            (start, end) = ranges[0]
+            # to handle more than the first range, we'd need to produce a
+            # multipart response...
+            try:
+                (start, end) = ranges.range_for_length(f.size)
+            except TypeError:
+                response.status_code = 416
+                response['Content-Range'] = 'bytes */%d' % response_size
+                return response
 
             # if the range encompasses the whole response, return 200 --
-            if start == 0 and end >= (response_size - 1):
+            if start == 0 and end > (response_size - 1):
                 return response
 
             # iterator for range of file
             def fchunks(start, end):
-                counter = 0
-                for chunk in f.chunks(chunk_size=1):
-                    if counter < start:
-                        pass
-                    elif start <= counter and counter <= end:
-                        yield chunk
-                    elif counter > end:
-                        return
-                    counter = counter + 1
+                remaining = end - start
+                f.seek(start)
+                while remaining > 0:
+                    chunk = f.read(min(remaining, 2**20))
+                    if not chunk:
+                        break
+                    yield chunk
+                    remaining -= len(chunk)
 
             response.streaming_content = fchunks(start, end)
             response.status_code = 206
