@@ -1,5 +1,4 @@
 import logging
-import re
 from werkzeug.http import parse_range_header
 
 from django.conf import settings
@@ -104,8 +103,6 @@ class RangeRequestMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        f = response.file_to_stream
-        response_size = f.size
 
         # is this request eligible for a range request?
         if response.status_code != 200 or not hasattr(response, 'file_to_stream'):
@@ -122,8 +119,9 @@ class RangeRequestMiddleware:
         if request.META.get('HTTP_RANGE'):
             ranges = parse_range_header(request.META.get('HTTP_RANGE'))
             if not ranges:
-                 return response
-
+                return response
+            f = response.file_to_stream
+            response_size = f.size
             # to handle more than the first range, we'd need to produce a
             # multipart response...
             try:
