@@ -135,6 +135,14 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
         else:
             raise PermissionDenied
 
+    def reset_api_key(self):
+        if self.get_api_key() and self.email_verified:
+            Token.objects.get(user=self).delete()
+            Token.objects.create(user=self)
+            self.save()
+        else:
+            raise PermissionDenied
+
     def create_nonce(self):
         self.activation_nonce = self.generate_nonce_timestamp()
         self.nonce_expires = timezone.now()

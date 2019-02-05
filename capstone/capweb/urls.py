@@ -41,7 +41,8 @@ urlpatterns = [
     path('user/login/', auth_views.LoginView.as_view(form_class=LoginForm), name='login'),
     path('user/register/', user_views.register_user, name='register'),
     path('user/verify-user/<int:user_id>/<activation_nonce>/', user_views.verify_user, name='verify-user'),
-    # override default Django login view to use custom LoginForm/
+    path('user/reset-api-key/', user_views.reset_api_key, name='reset-api-key'),
+    # override default Django login view to use custom LoginForm
     path('user/', include('django.contrib.auth.urls')),  # logout, password change, password reset
     path('user/details', user_views.user_details, name='user-details'),
     path('user/resend-verification/', user_views.resend_verification, name='resend-verification'),

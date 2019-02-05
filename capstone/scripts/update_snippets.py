@@ -5,6 +5,8 @@ from celery import shared_task
 from capdb.models import VolumeMetadata, Reporter, Jurisdiction, CaseMetadata, Snippet, Court
 import json
 from capweb.templatetags.api_url import api_url
+from tqdm import tqdm
+
 
 def update_all():
     update_map_numbers()
@@ -24,7 +26,7 @@ def cases_by_decision_date_tsv():
     snippet_format="text/tab-separated-values"
     output = io.StringIO()
     writer = csv.writer(output, delimiter='\t',quoting=csv.QUOTE_NONNUMERIC)
-    for group in by_date:
+    for group in tqdm(by_date):
         if group['decision_date__count'] == 0:
             continue
         writer.writerow(
@@ -49,7 +51,7 @@ def cases_by_jurisdiction_tsv():
     snippet_format="text/tab-separated-values"
     output = io.StringIO()
     writer = csv.writer(output, delimiter='\t',quoting=csv.QUOTE_NONNUMERIC)
-    for jurisdiction in Jurisdiction.objects.annotate(case_count=Count('case_metadatas')):
+    for jurisdiction in tqdm(Jurisdiction.objects.annotate(case_count=Count('case_metadatas'))):
         if jurisdiction.case_count == 0:
             continue
         writer.writerow(
@@ -73,8 +75,8 @@ def cases_by_reporter_tsv():
     snippet_format="text/tab-separated-values"
     output = io.StringIO()
     writer = csv.writer(output, delimiter='\t',quoting=csv.QUOTE_NONNUMERIC)
-    for reporter in Reporter.objects.annotate(case_count=Count(
-            Case(When(case_metadatas__duplicative=False, then=1), output_field=IntegerField()))):
+    for reporter in tqdm(Reporter.objects.annotate(case_count=Count(
+            Case(When(case_metadatas__duplicative=False, then=1), output_field=IntegerField())))):
         if reporter.case_count == 0:
             continue
         writer.writerow(
@@ -113,9 +115,9 @@ def update_map_numbers(chunk_size=1000):
 
 
     output = {}
-    for result_set in results.get():
-        for result in result_set:
-            for map_id in result.keys():
+    for result_set in tqdm(results.get()):
+        for result in tqdm(result_set):
+            for map_id in tqdm(result.keys()):
                 if map_id not in output:
                     output[map_id] = {
                         'case_count': 0,
@@ -123,7 +125,7 @@ def update_map_numbers(chunk_size=1000):
                         'reporter_count': 0,
                         'volume_count': 0
                     }
-                for count in result[map_id]:
+                for count in tqdm(result[map_id]):
                     output[map_id][count] += result[map_id][count]
 
     write_update(label, snippet_format, json.dumps(output))
@@ -152,7 +154,7 @@ def map_volume_tally(volume_barcode):
     tally = {}
     volume = VolumeMetadata.objects.get(pk=volume_barcode)
     # just loop through the cases
-    for case in volume.case_metadatas.select_related("jurisdiction").all():
+    for case in tqdm(volume.case_metadatas.select_related("jurisdiction").all()):
 
         if case.jurisdiction:
             map_id = jurisdiction_translate[case.jurisdiction.slug]
