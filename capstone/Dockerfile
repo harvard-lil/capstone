@@ -24,3 +24,7 @@ RUN apt-get update \
     && npm install \
     && rm package.json \
     && rm package-lock.json
+
+# psql for manage.py dbshell
+RUN apt-get update \
+    && apt-get install -y postgresql-client

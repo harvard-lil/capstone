@@ -140,6 +140,44 @@ def test_view_user_details(auth_user, auth_client):
     content = re.sub(r'\s+', ' ', response.content.decode()).strip()
     assert "Unmetered access:" in content
 
+### test reset api key ###
+
+@pytest.mark.django_db
+def test_change_api_key(auth_user, auth_client, client, mailoutbox):
+    # Check/store original API key as visible to user
+    original_token = auth_user.get_api_key()
+    response = auth_client.get(reverse('user-details'))
+    check_response(response)
+    content = re.sub(r'\s+', ' ', response.content.decode()).strip()
+    assert original_token in content
+
+    # Make sure warning/confirmation template is rendered on get request
+    response = auth_client.get(reverse('reset-api-key'))
+    check_response(response)
+    content = re.sub(r'\s+', ' ', response.content.decode()).strip()
+    assert "This change takes place immediately and cannot be undone." in content
+
+    # Change API key through web request
+    response = auth_client.post(reverse('reset-api-key'))
+    assert response.status_code == 302
+    assert response.url.endswith('/user/details')
+
+    # Make sure new API key is in place and immediately visible to user
+    auth_user.refresh_from_db()
+    response = auth_client.get(reverse('user-details'))
+    check_response(response)
+    content = re.sub(r'\s+', ' ', response.content.decode()).strip()
+    assert auth_user.get_api_key() in content
+    assert original_token not in content
+
+    # Make sure mail is sent and contains the correct new and old API keys
+    message = mailoutbox[0].body
+    assert "Your Case.law API key reset is complete" in message
+
+    # Make sure auth is in place
+    unauth_response = client.post(reverse('reset-api-key'))
+    assert unauth_response.status_code == 302
+    assert "/user/login/" in unauth_response.url
 
 ### bulk downloads ###
 
@@ -184,7 +222,6 @@ def test_case_export_download(request, client_fixture, export_fixture, status_co
         check_zip_response(response)
     else:
         check_response(response, status_code=status_code)
-
 
 @pytest.mark.parametrize("client_fixture, export_fixture, range_header, status_code, size, content", [
     ("client", "case_export", "bytes=5-6", 206, 2, "zi"),
