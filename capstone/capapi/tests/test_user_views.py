@@ -242,7 +242,8 @@ def test_case_export_download(request, client_fixture, export_fixture, status_co
     ("client", "case_export", "hello=world", 200, 16, "fake zip content"),
 ])
 @pytest.mark.django_db
-def test_ranged_case_export_download(request, client_fixture, export_fixture, range_header, status_code, size, content):
+def test_ranged_case_export_download(request, client_fixture, export_fixture, range_header, status_code, size, content, settings):
+    settings.RANGE_REQUEST_FEATURE = True
     client = request.getfuncargvalue(client_fixture)
     export = request.getfuncargvalue(export_fixture)
     response = client.get(api_reverse('caseexport-download', args=[export.pk]),

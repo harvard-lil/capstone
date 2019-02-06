@@ -104,6 +104,9 @@ class RangeRequestMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
 
+        if not settings.RANGE_REQUEST_FEATURE:
+            return response
+
         # is this request eligible for a range request?
         if response.status_code != 200 or not hasattr(response, 'file_to_stream'):
             return response
