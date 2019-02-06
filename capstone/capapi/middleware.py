@@ -1,4 +1,5 @@
 import logging
+from werkzeug.http import parse_range_header
 
 from django.conf import settings
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
@@ -95,6 +96,67 @@ class AuthenticationMiddleware(DjangoAuthenticationMiddleware):
         request.user = TrackingWrapper(request.user)
         request.user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')  # used by user IP auth checks
 
+
+# see https://stackoverflow.com/a/35928017
+#     https://docs.djangoproject.com/en/2.0/topics/http/middleware/
+#     https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35
+class RangeRequestMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        if not settings.RANGE_REQUEST_FEATURE:
+            return response
+
+        # is this request eligible for a range request?
+        if response.status_code != 200 or not hasattr(response, 'file_to_stream'):
+            return response
+
+        # we're not really handling If-Range headers; if present and ill-formed,
+        # return the whole content
+        if_range = request.META.get('HTTP_IF_RANGE')
+        if if_range and if_range != response.get('Last-Modified') and if_range != response.get('ETag'):
+            return response
+
+        # parse the range(s) -- at the moment, we're only responding to the
+        # first range, but we coalesce adjacent and overlapping ranges below
+        if request.META.get('HTTP_RANGE'):
+            ranges = parse_range_header(request.META.get('HTTP_RANGE'))
+            if not ranges:
+                return response
+            f = response.file_to_stream
+            response_size = f.size
+            # to handle more than the first range, we'd need to produce a
+            # multipart response...
+            try:
+                (start, end) = ranges.range_for_length(f.size)
+            except TypeError:
+                response.status_code = 416
+                response['Content-Range'] = 'bytes */%d' % response_size
+                return response
+
+            # if the range encompasses the whole response, return 200 --
+            if start == 0 and end > (response_size - 1):
+                return response
+
+            # iterator for range of file
+            def fchunks(start, end):
+                remaining = end - start
+                f.seek(start)
+                while remaining > 0:
+                    chunk = f.read(min(remaining, 2**20))
+                    if not chunk:
+                        break
+                    yield chunk
+                    remaining -= len(chunk)
+
+            response.streaming_content = fchunks(start, end)
+            response.status_code = 206
+            response['Content-Length'] = end + 1 - start
+            response['Content-Range'] = 'bytes %d-%d/%d' % (start, end, response_size)
+        return response
 
 ### access control header middleware ###
 
