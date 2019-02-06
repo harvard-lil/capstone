@@ -45,6 +45,7 @@ def cache_header_middleware(get_response):
             return response
 
         # To cache this response, all of these must be true:
+        # - Response status code is 200 (we're conservative here for now)
         # - The user is undefined or anonymous or has not accessed any user-specific attributes.
         # - The request method is GET, HEAD, or OPTIONS.
         # - The Cache-Control header was not already set.
@@ -52,6 +53,7 @@ def cache_header_middleware(get_response):
         # - CSRF protection is not being used for this view.
         # - No cookies are set by this view.
         view_tests = {
+            'response_status': response.status_code == 200,
             'user_safe': (
                 (
                     # if user failed to authenticate, we can only cache if they
@@ -82,6 +84,7 @@ def cache_header_middleware(get_response):
         return response
 
     return middleware
+
 
 # To decide on caching we have to wrap request.user in TrackingWrapper so we can check what user data is accessed
 # by the view. That's done here, and also in capapi/__init__.py as a monkeypatch to DRF.

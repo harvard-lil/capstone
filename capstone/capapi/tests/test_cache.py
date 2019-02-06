@@ -17,8 +17,8 @@ from capweb.helpers import reverse
     ("login",               False,  False,  {}),
     ("register",            False,  False,  {}),
 
-    # login-only pages are cached only for logged out (where they redirect)
-    ("user-details",        True,   False,   {}),
+    # login-only pages are not cached for either (because we don't cache redirects for logged-out user)
+    ("user-details",        False,   False,   {}),
 
     # api views are cached for both logged in and logged out
     ("casemetadata-list",   True,   True,   {"reverse_func": "api_reverse"}),
@@ -30,9 +30,10 @@ from capweb.helpers import reverse
     # bulk list cacheable only for logged-out users
     ("bulk-download",           True,   False,  {}),
 
-    # bulk downloads are cached if public, or private requested by logged-out users
+    # bulk downloads are cached if public
     ("caseexport-download", True, True,     {"reverse_args": ["fixture_case_export"], "reverse_func": "api_reverse"}),
-    ("caseexport-download", True, False,    {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
+    # bulk downloads are not cached if private
+    ("caseexport-download", False, False,    {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
 ])
 @pytest.mark.parametrize("client_fixture_name", ["client", "auth_client"])
 def test_cache_headers(case, request, settings,
