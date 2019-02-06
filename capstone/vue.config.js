@@ -39,6 +39,7 @@ let vueConfig = {
     map: 'static/js/map-actions.js',
     limericks: 'static/js/generate_limericks.js',
     witchcraft: 'static/js/witchcraft.js',
+    search: 'static/js/search.js',
   },
 
   configureWebpack: {
@@ -46,6 +47,11 @@ let vueConfig = {
       // output location of bundles so they can be found by django
       new RelativeBundleTracker({filename: './webpack-stats.json'}),
     ],
+    resolve: {
+      alias: {
+        'vue$': 'vue/dist/vue.esm.js'
+      }
+    }
   },
 
   devServer: {

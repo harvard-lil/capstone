@@ -1,0 +1,63 @@
+{% extends "layouts/full.html" %}
+{% load static %}
+{% load pipeline %}
+{% load api_url %}
+{% load snippet %}
+{% load render_bundle from webpack_loader %}
+{% block extra_head %}
+  {% stylesheet 'search' %}
+{% endblock %}
+
+{% block top_section_style %}bg-tan{% endblock %}
+{% block title %}Search{% endblock %}
+{% block meta_description %}
+  About the Caselaw Access Project
+{% endblock %}
+
+{% block main_content %}
+
+  <div id="loading-overlay" style="display: none">
+    <img alt="" aria-hidden="true" src='{% static "img/loading.gif" %}' class="loading-gif"/>
+    <div class="loading-text">Loading</div>
+  </div>
+  <div id="app" class="content"></div>
+
+
+
+  <script>
+// This is essentially each endpoint with its API interface
+// eslint-disable-next-line
+  const case_view_url_template = "{% api_url "casemetadata-detail" 987654321 %}" + "?full_case=true&format=html";
+  const metadata_view_url_template = "{% url 'view_court' 987654321 %}";
+  const search_url = '{% api_url "api-root" %}' + "v1/";
+  const bullet_url = '{% static "img/red-arrow-right.svg" %}';
+  const docs_url = '{% url 'search-docs' %}';
+  // {% api_url "casemetadata-detail" 987654321 %};
+
+{% autoescape off %}
+    const choices = {
+      "jurisdiction": {% snippet 'search_jurisdiction_list' %},
+      "reporter": {% snippet 'search_reporter_list' %},
+      "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
+    };
+{% comment %}
+    /*
+       const choices = {
+      "jurisdiction": {% snippet 'search_jurisdiction_list' %},
+      "court": {% snippet 'search_court_list' %},
+      "reporter": {% snippet 'search_reporter_list' %},
+      "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
+    };
+    */
+{% endcomment %}
+
+{% endautoescape %}
+
+  </script>
+<noscript>
+  This search interface requires javascript, even for basic functionality. If you can not or will not use
+  javascript, your best bet is to directly use <a href="{% api_url "api-root" %}">the API this search interface
+  queries.</a> There is no data available in this search interface that is not available through the API.
+</noscript>
+  {% render_bundle 'search' %}
+{% endblock %}

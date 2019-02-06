@@ -6,13 +6,17 @@ from django.conf import settings
 
 from capapi.tests.helpers import check_response
 from capweb.helpers import reverse
+from scripts import update_snippets
 
 
 @pytest.mark.django_db
-def test_nav(client, case, reporter):
+def test_nav(client, ingest_case_xml, reporter):
     """
     All our navigation links lead to somewhere 200 Ok
     """
+    # this is necessary because some routes need specific snippets now
+    update_snippets.update_all()
+
     response = client.get(reverse('home'))
     check_response(response)
     soup = BeautifulSoup(response.content.decode(), 'html.parser')

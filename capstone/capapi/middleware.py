@@ -151,3 +151,16 @@ class RangeRequestMiddleware:
             response['Content-Length'] = end + 1 - start
             response['Content-Range'] = 'bytes %d-%d/%d' % (start, end, response_size)
         return response
+
+### access control header middleware ###
+
+def access_control_middleware(get_response):
+    """
+        Set `Access-Control-Allow-Origin: *` for API responses.
+    """
+    def middleware(request):
+        response = get_response(request)
+        if request.host.name == 'api':
+            response["Access-Control-Allow-Origin"] = "*"
+        return response
+    return middleware

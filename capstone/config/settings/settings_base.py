@@ -87,6 +87,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'capapi.middleware.AuthenticationMiddleware',
     'capapi.middleware.RangeRequestMiddleware',
+    'capapi.middleware.access_control_middleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
@@ -117,7 +118,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates'),
-                 os.path.join(BASE_DIR, 'capweb', 'templates')], # required by DRF for some reason
+                 os.path.join(BASE_DIR, 'capweb', 'templates'),
+                 os.path.join(BASE_DIR, 'capbrowse', 'templates')], # required by DRF for some reason
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -290,6 +292,24 @@ PIPELINE = {
                 'css/scss/case.scss',
             },
             'output_filename': 'case.css'
+        },
+        'search': {
+            'source_filenames': {
+                'css/scss/search.scss',
+            },
+            'output_filename': 'search.css'
+        },
+        'view_case': {
+            'source_filenames': {
+                'css/scss/view_case.scss',
+            },
+            'output_filename': 'view_case.css'
+        },
+        'view_metadata': {
+            'source_filenames': {
+                'css/scss/view_metadata.scss',
+            },
+            'output_filename': 'view_metadata.css'
         }
     },
     # These are not yet converted to vue/webpack:
