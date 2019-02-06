@@ -43,6 +43,8 @@ TEST_SLOW_QUERIES_DB_NAME = 'capstone_test_queries'
 # avoid test errors when running tests locally, since pytest-django sets DEBUG=False and staticfiles/ doesn't exist
 STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
+
+
 # django-debug-toolbar
 try:
     import debug_toolbar  # noqa
@@ -51,7 +53,7 @@ try:
     )
     MIDDLEWARE.insert(
         MIDDLEWARE.index('django_hosts.middleware.HostsRequestMiddleware')+1,
-        'debug_toolbar.middleware.DebugToolbarMiddleware'
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
     DEBUG_TOOLBAR_CONFIG = {
         'SHOW_TOOLBAR_CALLBACK': 'capweb.helpers.show_toolbar_callback'

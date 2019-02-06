@@ -152,6 +152,10 @@ def api(request):
                             'command line.'
     })
 
+def search_docs(request):
+    return render(request, 'search_docs.html')
+
+
 def snippet(request, label):
     snippet = get_object_or_404(Snippet, label=label).contents
     return HttpResponse(snippet, content_type=snippet.format)

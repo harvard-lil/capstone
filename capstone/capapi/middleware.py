@@ -92,3 +92,16 @@ class AuthenticationMiddleware(DjangoAuthenticationMiddleware):
         request.user = TrackingWrapper(request.user)
         request.user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')  # used by user IP auth checks
 
+
+### access control header middleware ###
+
+def access_control_middleware(get_response):
+    """
+        Set `Access-Control-Allow-Origin: *` for API responses.
+    """
+    def middleware(request):
+        response = get_response(request)
+        if request.host.name == 'api':
+            response["Access-Control-Allow-Origin"] = "*"
+        return response
+    return middleware

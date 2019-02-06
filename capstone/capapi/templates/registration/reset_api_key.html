@@ -1,0 +1,20 @@
+{% extends "registration/base.html" %}
+
+{% block title %}Reset Your API Key{% endblock %}
+{% block meta_description %}Reset Your API Key{% endblock %}
+
+{% block main_content %}
+  <p>You can reset your API key at any time. Your old key will immediately be inactivated, and your new key will be
+    immediately available on your account screen. Your access limits will not change. We will send you an email
+    confirmation.
+  </p>
+  <p class="alert alert-danger">
+    There is no confirmation prompt after clicking the button! This change takes place immediately and cannot be undone.
+  </p>
+  <p>
+    <form action="{% url "reset-api-key" %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">RESET API KEY</button>
+    </form>
+  </p>
+{% endblock %}

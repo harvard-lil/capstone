@@ -17,6 +17,7 @@ urlpatterns = [
     path('tools/', views.tools, name='tools'),
     path('gallery/', views.gallery, name='gallery'),
     path('api/', views.api, name='api'),
+    path('search-docs/', views.search_docs, name='search-docs'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt',
                                             content_type='text/plain'), name='robots'),
 
@@ -40,6 +41,7 @@ urlpatterns = [
     path('user/login/', auth_views.LoginView.as_view(form_class=LoginForm), name='login'),
     path('user/register/', user_views.register_user, name='register'),
     path('user/verify-user/<int:user_id>/<activation_nonce>/', user_views.verify_user, name='verify-user'),
+    path('user/reset-api-key/', user_views.reset_api_key, name='reset-api-key'),
     # override default Django login view to use custom LoginForm
     path('user/', include('django.contrib.auth.urls')),  # logout, password change, password reset
     path('user/details', user_views.user_details, name='user-details'),
