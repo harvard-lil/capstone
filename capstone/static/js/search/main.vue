@@ -141,11 +141,13 @@
               this.cursors[this.page], this.page_size, this.$refs.searchform.fields);
           this.getResultsPage(url).then(function () {
               self.lastFirstCheck();
+              self.scrollToResults();
           });
         } else if (this.results[this.page + 1]) {
           this.page++;
           this.updateUrlHash();
           this.lastFirstCheck();
+          this.scrollToResults();
         } else if (this.cursors[this.page + 1]) {
           this.page++;
           let self = this;
@@ -154,10 +156,8 @@
           this.getResultsPage(url).then(function () {
               self.updateUrlHash();
               self.lastFirstCheck();
+              self.scrollToResults();
           });
-        }
-        if (this.field_errors.length == 0) {
-            document.getElementById("results_list").scrollToResults();
         }
       },
       prevPage: function () {
