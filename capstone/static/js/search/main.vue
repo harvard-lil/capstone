@@ -157,7 +157,7 @@
           });
         }
         if (this.field_errors.length == 0) {
-            this.scrollToResults();
+            document.getElementById("results_list").scrollToResults();
         }
       },
       prevPage: function () {
@@ -213,29 +213,37 @@
               and previous page url and updates this.cursors if necessary
             - Updates error messages for forms or fields
          */
+        this.search_error = ""
+        this.field_errors = {}
         let self = this;
         this.startLoading();
         return fetch(query_url)
             .then(function (response) {
-              if (response.ok) {
-                return response.json();
-              }
-              if (response.status === 400) {
-                  response.json().then(function(object) {
+              //catch-all for bad responses
+              if (!response.ok)  {
+
+                  // specifically handle field errors
+                  if (response.status === 400 &&  self.field_errors) {
+                    return response.json().then(function(object) {
                       self.field_errors = object;
                       self.stopLoading();
-                  })
-              } else if (response.status !== 200) {
+                    });
+                  }
+
+                  // handle non-field errors
                   self.search_error = "Search error: API returned " +
-                      response.status + " for the query " + query_url
+                  response.status + " for the query " + query_url
                   self.scrollToResults();
+                  return false;
               }
+
+              return response.json();
+
             })
             .then(function (results_json) {
               self.hitcount = results_json.count;
               let next_page_url = results_json.next;
               let prev_page_url = results_json.previous;
-
 
               if (!self.cursors[self.page]) {
                 self.cursors[self.page] = self.getCursorFromUrl(query_url);
