@@ -18,9 +18,9 @@
         </template>
         <div class="col-12">
           <div class="row field_row_container"
-              v-for="field in fields"
-              v-bind:key="field['name']"
-              v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }">
+               v-for="field in fields"
+               v-bind:key="field['name']"
+               v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }">
             <div class="col-4 field_label_container">
               <label class="querylabel" :for="field['name']">
                 {{ field["label"] }}
@@ -101,8 +101,9 @@
             <div class="col-1"></div>
           </div>
         </div>
-
-        For help using this tool, check out our <a :href="docs_url">Search Docs</a>.
+        <div class="col-12 text-center">
+          For help using this tool, check out our <a :href="docs_url">Search Docs</a>.
+        </div>
       </div>
     </div>
   </form>
