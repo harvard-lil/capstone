@@ -55,8 +55,8 @@ REST_FRAMEWORK = {
         'rest_framework_filters.backends.RestFrameworkFilterBackend',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'capapi.authentication.TokenAuthentication',
+        'capapi.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'capapi.permissions.IsSafeMethodsUser',

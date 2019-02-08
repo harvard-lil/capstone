@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
 from django.utils.cache import patch_cache_control
 
-from capapi import TrackingWrapper
+from .resources import wrap_user
 
 logger = logging.getLogger(__name__)
 
@@ -87,14 +87,13 @@ def cache_header_middleware(get_response):
     return middleware
 
 
-# To decide on caching we have to wrap request.user in TrackingWrapper so we can check what user data is accessed
-# by the view. That's done here, and also in capapi/__init__.py as a monkeypatch to DRF.
+# Override Django's AuthenticationMiddleware to call wrap_user() on the user object
+# This is also done in capapi.authentication to handle user objects created by DRF.
 
 class AuthenticationMiddleware(DjangoAuthenticationMiddleware):
     def process_request(self, request):
         super().process_request(request)
-        request.user = TrackingWrapper(request.user)
-        request.user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')  # used by user IP auth checks
+        request.user = wrap_user(request, request.user)
 
 
 # see https://stackoverflow.com/a/35928017

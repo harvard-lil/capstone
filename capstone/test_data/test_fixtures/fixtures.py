@@ -188,12 +188,18 @@ def client():
 
 @pytest.fixture
 def auth_client(auth_user):
-    """ Return client authenticated as auth_user. """
-    # API auth
+    """ Return client authenticated as auth_user, via Django session. """
+    client = CapClient()
+    client.force_login(user=auth_user)
+    # make user available to tests
+    client.auth_user = auth_user
+    return client
+
+@pytest.fixture
+def token_auth_client(auth_user):
+    """ Return client authenticated as auth_user, via token. """
     client = CapClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + auth_user.get_api_key())
-    # Django auth
-    client.force_login(user=auth_user)
     # make user available to tests
     client.auth_user = auth_user
     return client

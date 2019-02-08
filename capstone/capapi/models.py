@@ -103,7 +103,7 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
         """ Return True if X-Forwarded-For header is a Harvard IP address. """
         if not hasattr(self, '_is_harvard_ip'):
             try:
-                ip = IPAddress(getattr(self, 'ip_address'))  # set by AuthenticationMiddleware
+                ip = IPAddress(self.ip_address)  # set by AuthenticationMiddleware
             except AddrFormatError:
                 self._is_harvard_ip = False
             else:
