@@ -1,56 +1,52 @@
 <template>
   <div class="row">
-    <div class="col-12">
-      <div class="row">
-        <div class="col-1">
-          <span class="fancy-for">for</span>
-        </div>
-        <div class="col-11">
-          <div class="dropdown dropdown-search-routes">
-            <a class="btn btn-secondary dropdown-toggle dropdown-title"
-               role="button"
-               id="dropdownMenuLink"
-               data-toggle="dropdown"
-               aria-haspopup="true"
-               aria-expanded="false">
-              {{endpoint}}
-            </a>
+    <div class="col-1 fancy-for">
+      for
+    </div>
+    <div class="col-11">
+      <div class="dropdown dropdown-search-routes">
+        <a class="btn btn-secondary dropdown-toggle dropdown-title"
+           role="button"
+           id="search-routes-dropdown"
+           data-toggle="dropdown"
+           aria-haspopup="true"
+           aria-expanded="false">
+          {{endpoint}}
+        </a>
 
-            <div class="dropdown-menu"
-                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                 aria-labelledby="dropdownMenuLink">
-              <ul>
-                <li class="search-tab"
-                    v-bind:key="current_endpoint"
-                    v-for="current_endpoint in endpoints">
-                  <a v-if="current_endpoint===endpoint"
-                     @click="changeEndpoint(current_endpoint)"
-                     class="dropdown-item active">{{current_endpoint}}</a>
-                  <a v-else @click="changeEndpoint(current_endpoint)"
-                     class="dropdown-item">
-                    {{current_endpoint}}</a>
-                </li>
-              </ul>
-            </div>
-          </div>
+        <div class="dropdown-menu"
+             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+             aria-labelledby="search-routes-dropdown">
+          <ul>
+            <li class="search-tab"
+                v-bind:key="current_endpoint"
+                v-for="current_endpoint in endpoints">
+              <a v-if="current_endpoint===endpoint"
+                 @click="changeEndpoint(current_endpoint)"
+                 class="dropdown-item active">{{current_endpoint}}</a>
+              <a v-else @click="changeEndpoint(current_endpoint)"
+                 class="dropdown-item">
+                {{current_endpoint}}</a>
+            </li>
+          </ul>
         </div>
       </div>
-    </div>
-    <div class="endpoint-dropdown dropdown-menu"
-         aria-labelledby="dropdownMenuButton">
-      <ul>
-        <li class="search-tab"
-            v-for="current_endpoint in endpoints"
-            v-bind:key="current_endpoint">
-          <a v-if="current_endpoint===endpoint"
-             @click="changeEndpoint(current_endpoint)"
-             class="nav-link active">{{ current_endpoint }}</a>
-          <a v-else
-             @click="changeEndpoint(current_endpoint)"
-             class="nav-link">
-            {{current_endpoint }}</a>
-        </li>
-      </ul>
+      <div class="endpoint-dropdown dropdown-menu"
+           aria-labelledby="dropdownMenuButton">
+        <ul>
+          <li class="search-tab"
+              v-for="current_endpoint in endpoints"
+              v-bind:key="current_endpoint">
+            <a v-if="current_endpoint===endpoint"
+               @click="changeEndpoint(current_endpoint)"
+               class="nav-link active">{{ current_endpoint }}</a>
+            <a v-else
+               @click="changeEndpoint(current_endpoint)"
+               class="nav-link">
+              {{current_endpoint }}</a>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
