@@ -55,8 +55,8 @@ REST_FRAMEWORK = {
         'rest_framework_filters.backends.RestFrameworkFilterBackend',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'capapi.authentication.TokenAuthentication',
+        'capapi.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'capapi.permissions.IsSafeMethodsUser',
@@ -86,6 +86,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'capapi.middleware.AuthenticationMiddleware',
+    'capapi.middleware.RangeRequestMiddleware',
+    'capapi.middleware.access_control_middleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
@@ -543,6 +545,7 @@ NGRAMS_FEATURE = False
 FULL_TEXT_FEATURE = True
 NEW_RESEARCHER_FEATURE = True
 HARVARD_RESEARCHER_FEATURE = True
+RANGE_REQUEST_FEATURE = False
 
 HARVARD_IP_RANGES = """
     12.0.48.0/20

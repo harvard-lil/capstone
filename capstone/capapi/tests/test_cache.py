@@ -9,41 +9,41 @@ from capweb.helpers import reverse
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("view_name, cache_if_logged_out, cache_if_logged_in, get_kwargs", [
-    # docs pages are cached for both logged in and logged out
-    ("home",                True,   True,  {}),
+@pytest.mark.parametrize("view_name, cache_clients, get_kwargs", [
+    # docs pages are cached for both logged in and logged out, but not for token auth
+    ("home",                ["client", "auth_client"],                        {}),
 
     # pages with csrf tokens are not cached for logged out or logged in
-    ("login",               False,  False,  {}),
-    ("register",            False,  False,  {}),
+    ("login",               [],                                               {}),
+    ("register",            [],                                               {}),
 
-    # login-only pages are cached only for logged out (where they redirect)
-    ("user-details",        True,   False,   {}),
+    # login-only pages are not cached for either (because we don't cache redirects for logged-out user)
+    ("user-details",        [],                                               {}),
 
     # api views are cached for both logged in and logged out
-    ("casemetadata-list",   True,   True,   {"reverse_func": "api_reverse"}),
-    ("casemetadata-list",   True,   True,   {"HTTP_ACCEPT": "text/html", "reverse_func": "api_reverse"}),
+    ("casemetadata-list",   ["client", "auth_client", "token_auth_client"],   {"reverse_func": "api_reverse"}),
+    ("casemetadata-list",   ["client", "auth_client", "token_auth_client"],   {"HTTP_ACCEPT": "text/html", "reverse_func": "api_reverse"}),
 
     # api views that depend on the user account are cached only for logged out
-    ("casemetadata-list",   True,   False,  {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
+    ("casemetadata-list",   ["client"],                                       {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
 
     # bulk list cacheable only for logged-out users
-    ("bulk-download",           True,   False,  {}),
+    ("bulk-download",       ["client"],                                       {}),
 
-    # bulk downloads are cached if public, or private requested by logged-out users
-    ("caseexport-download", True, True,     {"reverse_args": ["fixture_case_export"], "reverse_func": "api_reverse"}),
-    ("caseexport-download", True, False,    {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
+    # bulk downloads are cached if public
+    ("caseexport-download", ["client", "auth_client", "token_auth_client"],   {"reverse_args": ["fixture_case_export"], "reverse_func": "api_reverse"}),
+    # bulk downloads are not cached if private
+    ("caseexport-download", [],                                               {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
 ])
-@pytest.mark.parametrize("client_fixture_name", ["client", "auth_client"])
+@pytest.mark.parametrize("client_fixture_name", ["client", "auth_client", "token_auth_client"])
 def test_cache_headers(case, request, settings,
                        client_fixture_name,
-                       view_name, cache_if_logged_out, cache_if_logged_in, get_kwargs):
+                       view_name, cache_clients, get_kwargs):
 
     # set up variables
     get_kwargs = deepcopy(get_kwargs)  # avoid modifying between tests
     settings.SET_CACHE_CONTROL_HEADER = True
     client = request.getfuncargvalue(client_fixture_name)
-    cache_expected = cache_if_logged_in if client._credentials else cache_if_logged_out
 
     # Resolve reverse_args. For example, if we see "fixture_case_export" we will fetch the "case_export" fixture
     # and insert its ID as an argument to reverse().
@@ -61,6 +61,7 @@ def test_cache_headers(case, request, settings,
     response = client.get(url, **get_kwargs)
     cache_actual = is_cached(response)
 
+    cache_expected = client_fixture_name in cache_clients
     assert cache_actual == cache_expected, "Checking %s with %s, expected %scached but found %scached." % (
         url,
         client_fixture_name,

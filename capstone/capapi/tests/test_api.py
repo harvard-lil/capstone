@@ -211,6 +211,46 @@ def test_unlimited_access(auth_user, auth_client, case):
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("client_fixture_name", ["auth_client", "token_auth_client"])
+def test_harvard_access(request, case, client_fixture_name):
+    ### user with harvard access can download from harvard IPs, even without case allowance
+    client = request.getfuncargvalue(client_fixture_name)
+    user = client.auth_user
+    user.harvard_access = True
+    user.case_allowance_remaining = 1
+    user.save()
+    case.jurisdiction.whitelisted = False
+    case.jurisdiction.save()
+    case_url = api_reverse("casemetadata-detail", args=[case.id])
+
+    # request works when IP address provided
+    response = client.get(case_url, {"full_case": "true"}, HTTP_X_FORWARDED_FOR='128.103.1.1')
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
+
+    # no case allowance used
+    user.refresh_from_db()
+    assert user.case_allowance_remaining == 1
+
+    # request succeeds when IP address is wrong, using case allowance
+    response = client.get(case_url, {"full_case": "true"}, HTTP_X_FORWARDED_FOR='1.1.1.1')
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
+
+    # case allowance used
+    user.refresh_from_db()
+    assert user.case_allowance_remaining == 0
+
+    # request fails when case allowance exhausted
+    response = client.get(case_url, {"full_case": "true"}, HTTP_X_FORWARDED_FOR='1.1.1.1')
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] != 'ok'
+
+
+@pytest.mark.django_db
 def test_authenticated_multiple_full_cases(auth_user, auth_client, three_cases, jurisdiction, django_assert_num_queries):
     ### mixed requests should be counted only for blacklisted cases
 

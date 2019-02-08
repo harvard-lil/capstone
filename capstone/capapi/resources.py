@@ -80,6 +80,19 @@ class TrackingWrapper(wrapt.ObjectProxy):
         return super().__getattr__(item)
 
 
+def wrap_user(request, user):
+    """
+        Prepare a user object for use in our stack. This does two things:
+        - wrap the user object in TrackingWrapper, so we can tell what attributes are accessed
+          by checking user._self_accessed_attrs
+        - set user.ip_address, so we can check the user's IP address
+        This intentionally re-wraps the user object if called twice, so the tracking is reset.
+    """
+    user = TrackingWrapper(user)
+    user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
+    return user
+
+
 class CachedCountQuerySet(QuerySet):
     """
         Queryset that caches counts based on generated SQL.
@@ -135,3 +148,4 @@ def api_reverse(viewname, args=None, kwargs=None, request=None, format=None, **e
         kwargs = kwargs or {}
         kwargs['format'] = format
     return django_hosts_reverse(viewname, args=args, kwargs=kwargs, host='api', scheme='http' if settings.DEBUG else 'https', **extra)
+
