@@ -11,7 +11,7 @@ from scripts.helpers import parse_xml, serialize_xml
     'case_xml',
     'page_xml'
 ])
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_versioning(versioned_fixture_name, request):
     # load initial volume_xml/case_xml/page_xml
     versioned_instance = request.getfuncargvalue(versioned_fixture_name)
@@ -21,8 +21,11 @@ def test_versioning(versioned_fixture_name, request):
     assert versioned_instance.history.count() == 0
 
     # versions are only created once per transaction.
-    # since tests run in transactions, run an initial sub-transaction to make sure our
-    # next save causes a new version to be created:
+    # since tests run in transactions, run an initial sub-transaction to
+    # make sure our next save causes a new version to be created.
+    # note that this is not sufficient when using the temporal_tables
+    # extension, which additionally requires (transaction=True) as an
+    # argument to the pytest.mark.django_db decorator
     with transaction.atomic(using='capdb'):
         versioned_instance.save()
 
