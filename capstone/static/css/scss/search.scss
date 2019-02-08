@@ -4,6 +4,12 @@
 @import "dropdown";
 @import "variables";
 
+.alert-danger {
+  padding: 10px 0;
+  margin: 10px 0;
+}
+
+/* end safari rounding bug hack */
 .main-content {
   margin: 0 !important;
   min-width: 100%;
@@ -40,7 +46,10 @@
   font-family: $font-serif;
   font-style: italic;
   font-size: 24px;
-  float: right;
+  text-align: right;
+  @include media-breakpoint-down(sm) {
+    font-size: 20px;
+  }
 }
 
 .dropdown-search-routes.dropdown,
@@ -75,9 +84,6 @@
     margin-top: 3rem;
   }
 
-  .row {
-    display: revert;
-  }
 }
 
 .search-form-container,
@@ -208,7 +214,6 @@ select {
 }
 
 .remfield {
-  display: grid;
   margin-left: 5px;
   background: transparent;
   vertical-align: middle;
