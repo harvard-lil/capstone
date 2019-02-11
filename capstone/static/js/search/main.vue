@@ -5,7 +5,8 @@
                  class="bg-tan"
                  :field_errors="field_errors"
                  :choices="choices"
-                 :docs_url="docs_url">
+                 :docs_url="docs_url"
+                 :scope_url="scope_url">
     </search-form>
     <a id="results_list"></a>
     <result-list v-on:see-cases="seeCases"
@@ -40,6 +41,8 @@
        */
       // eslint-disable-next-line
       this.docs_url = docs_url;
+      // eslint-disable-next-line
+      this.scope_url = scope_url;
       // eslint-disable-next-line
       this.case_view_url_template = case_view_url_template;
       // eslint-disable-next-line

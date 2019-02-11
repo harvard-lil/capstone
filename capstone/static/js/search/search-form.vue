@@ -101,8 +101,21 @@
             <div class="col-1"></div>
           </div>
         </div>
-        <div class="col-12 text-center">
-          For help using this tool, check out our <a :href="docs_url">Search Docs</a>.
+        <div class="col-12">
+          This page searches the Caselaw Access Project API,
+            containing U.S. case law published through
+            mid-2018. Please read more <a :href="scope_url">about the
+            scope</a> of the project.  For help using this tool, check
+            out our <a :href="docs_url">search documentation</a>.
+        </div>
+        <div class="col-12">
+          For help with legal research, please see the <a
+            href="https://guides.library.harvard.edu/law">HLS Research
+            Guides</a> or the equivalent at your institution or public
+            law library. If you require legal assistance, please see
+            the links in the answer to <a
+            href="https://asklib.law.harvard.edu/faq/115265">this
+            frequently asked question</a>.
         </div>
       </div>
     </div>
@@ -124,7 +137,7 @@
           value: "",
           label: "Full-Text Search",
           default: true,
-          format: "e.g. 'insurance' illinois",
+          format: "e.g. insurance illinois",
           info: ""
         }],
         endpoints: {
@@ -134,7 +147,7 @@
               value: "",
               label: "Full-Text Search",
               default: true,
-              format: "e.g. 'insurance' illinois",
+              format: "e.g. insurance illinois",
               info: ""
             },
             {
@@ -308,7 +321,7 @@
         }
       }
     },
-    props: ['choices', 'field_errors', 'docs_url'],
+    props: ['choices', 'field_errors', 'docs_url', 'scope_url'],
     methods: {
       updateFields(new_endpoint) {
         this.fields = [];
