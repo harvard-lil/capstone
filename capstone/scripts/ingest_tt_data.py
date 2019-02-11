@@ -126,6 +126,8 @@ def populate_jurisdiction():
     reporters = Reporters.objects.values('state').distinct()
     for jurisdiction in reporters:
         Jurisdiction.objects.get_or_create(name=jurisdiction['state'])
+    # hard-coded jurisdictions not present in tracking tool
+    Jurisdiction.objects.get_or_create(name='Tribal', name_long='Tribal Jurisdictions', slug='tribal')
 
 def relink_reporter_jurisdiction():
     for tt_reporter in Reporters.objects.all():
