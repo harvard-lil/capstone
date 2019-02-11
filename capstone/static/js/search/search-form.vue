@@ -38,6 +38,7 @@
               </template>
               <template v-else-if="field['format']">
                 <input v-model='field["value"]'
+                       v-on:keyup.enter="$emit('new-search', fields, endpoint)"
                        class="queryfield"
                        type="text"
                        :id='field["name"]'
@@ -45,6 +46,7 @@
               </template>
               <template v-else>
                 <input v-model='field["value"]'
+                       v-on:keyup.enter="$emit('new-search', fields, endpoint)"
                        class="queryfield"
                        :id='field["name"]'
                        type="text">
