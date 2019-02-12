@@ -45,7 +45,7 @@ django-redis==4.10.0
 django-simple-history==2.7.0
 django-storages==1.6.6
 django-webpack-loader==0.6.0
-django==2.0.12
+django==2.0.13
 djangorestframework-filters==1.0.0.dev0
 djangorestframework==3.9.1
 dnspython==1.16.0
