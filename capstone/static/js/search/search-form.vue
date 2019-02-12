@@ -1,5 +1,5 @@
 <template>
-  <form v-on:submit.prevent>
+  <form @submit.prevent="$emit('new-search', fields, endpoint)">
     <div class="search-form-container col-centered">
       <searchroutes :endpoint="endpoint"></searchroutes>
       <br/>
@@ -52,13 +52,10 @@
             </div>
             <div class="col-1">
               <div class="remfield">
-                <button v-if="fields.length > 1"
-                        class="field-button active"
+                <button type="button"
+                        :class="[fields.length <= 1 ? 'disabled' : 'active', 'field-button']"
+                        :disabled="fields.length <= 1"
                         @click="removeField(field['name'])">
-                </button>
-                <button v-if="fields.length <= 1"
-                        class="field-button disabled"
-                        disabled>
                 </button>
               </div>
 
@@ -94,7 +91,6 @@
             <div class="col-4"></div>
             <div class="col-7">
               <input class="btn-default btn-submit"
-                     @click="$emit('new-search', fields, endpoint)"
                      type="submit"
                      value="Search">
             </div>
