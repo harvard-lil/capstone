@@ -5,17 +5,21 @@
       <br/>
       <!-- Table showing search fields. Also includes add field and search buttons. -->
       <div class="row">
-        <template v-if="field_errors">
-          <div v-for="(error, name) in field_errors"
-               v-bind:key="'error' + name" class="col-12 alert alert-danger">
-            <strong>
-              <span v-text="getFieldEntry(name, endpoint).label + ':'"></span>
-            </strong>&nbsp;
-            <small>
-              <span v-text="error"></span>
-            </small>
-          </div>
-        </template>
+        <div v-if="search_error"
+             role="alert"
+             class="alert alert-danger">
+          {{search_error}}
+        </div>
+        <div v-if="Object.keys(field_errors).length"
+             role="alert"
+             class="alert alert-danger">
+          <ul>
+            <li v-for="(error, name) in field_errors"
+                :key="'error' + name">
+              <strong>{{getFieldEntry(name, endpoint).label}}:</strong> {{error}}
+            </li>
+          </ul>
+        </div>
         <div class="col-12">
           <div class="row field_row_container"
                v-for="field in fields"
@@ -317,7 +321,7 @@
         }
       }
     },
-    props: ['choices', 'field_errors', 'docs_url', 'scope_url'],
+    props: ['choices', 'search_error', 'field_errors', 'docs_url', 'scope_url'],
     methods: {
       updateFields(new_endpoint) {
         this.fields = [];
