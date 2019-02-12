@@ -4,6 +4,7 @@
                  v-on:new-search="newSearch"
                  class="bg-tan"
                  :field_errors="field_errors"
+                 :search_error="search_error"
                  :choices="choices"
                  :docs_url="docs_url"
                  :scope_url="scope_url">
@@ -21,11 +22,6 @@
                  :metadata_view_url_template="metadata_view_url_template"
                  :case_view_url_template="case_view_url_template">
     </result-list>
-    <div v-if="search_error"
-         v-html="search_error"
-         class="alert alert-danger"
-         role="alert">
-    </div>
   </div>
 </template>
 
@@ -142,10 +138,7 @@
           let self = this;
           let url = this.assembleUrl(this.search_url, this.endpoint,
               this.cursors[this.page], this.page_size, this.$refs.searchform.fields);
-          this.getResultsPage(url).then(function () {
-              self.lastFirstCheck();
-              self.scrollToResults();
-          });
+          this.getResultsPage(url).then(self.lastFirstCheck);
         } else if (this.results[this.page + 1]) {
           this.page++;
           this.updateUrlHash();
@@ -216,32 +209,14 @@
               and previous page url and updates this.cursors if necessary
             - Updates error messages for forms or fields
          */
-        this.search_error = ""
-        this.field_errors = {}
+        this.search_error = "";
+        this.field_errors = {};
         let self = this;
         this.startLoading();
         return fetch(query_url)
             .then(function (response) {
-              //catch-all for bad responses
-              if (!response.ok)  {
-
-                  // specifically handle field errors
-                  if (response.status === 400 &&  self.field_errors) {
-                    return response.json().then(function(object) {
-                      self.field_errors = object;
-                      self.stopLoading();
-                    });
-                  }
-
-                  // handle non-field errors
-                  self.search_error = "Search error: API returned " +
-                  response.status + " for the query " + query_url
-                  self.scrollToResults();
-                  return false;
-              }
-
+              if (!response.ok) { throw response }
               return response.json();
-
             })
             .then(function (results_json) {
               self.hitcount = results_json.count;
@@ -261,6 +236,21 @@
               }
 
               self.results[self.page] = results_json.results;
+            })
+            .catch(function (response){
+              if (response.status === 400 &&  self.field_errors) {
+                // handle field errors
+                return response.json().then(function(object) {
+                  self.field_errors = object;
+                });
+              } else if (response.status) {
+                // handle non-field API errors
+                self.search_error = "Search error: API returned " +
+                response.status + " for the query " + query_url;
+              } else {
+                // handle connection errors
+                self.search_error = "Search error: failed to load results from " + query_url;
+              }
             })
             .then(function () {
               self.stopLoading();
