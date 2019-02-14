@@ -138,10 +138,7 @@
           let self = this;
           let url = this.assembleUrl(this.search_url, this.endpoint,
               this.cursors[this.page], this.page_size, this.$refs.searchform.fields);
-          this.getResultsPage(url).then( function () {
-              self.lastFirstCheck();
-              self.scrollToResults();
-          });
+          this.getResultsPage(url).then(self.lastFirstCheck);
         } else if (this.results[this.page + 1]) {
           this.page++;
           this.updateUrlHash();
@@ -155,7 +152,6 @@
           this.getResultsPage(url).then(function () {
               self.updateUrlHash();
               self.lastFirstCheck();
-              self.scrollToResults();
           });
         }
       },
@@ -240,6 +236,7 @@
 
               self.results[self.page] = results_json.results;
             })
+            .then(self.scrollToResults)
             .catch(function (response){
               if (response.status === 400 &&  self.field_errors) {
                 // handle field errors
@@ -255,9 +252,8 @@
                 self.search_error = "Search error: failed to load results from " + query_url;
               }
             })
-            .then(function () {
-              self.stopLoading();
-            })
+            .then(self.stopLoading)
+
       },
       updateUrlHash: function () {
         /*
