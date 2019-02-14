@@ -152,7 +152,6 @@
           this.getResultsPage(url).then(function () {
               self.updateUrlHash();
               self.lastFirstCheck();
-              self.scrollToResults();
           });
         }
       },
@@ -237,6 +236,7 @@
 
               self.results[self.page] = results_json.results;
             })
+            .then(self.scrollToResults)
             .catch(function (response){
               if (response.status === 400 &&  self.field_errors) {
                 // handle field errors
@@ -252,9 +252,8 @@
                 self.search_error = "Search error: failed to load results from " + query_url;
               }
             })
-            .then(function () {
-              self.stopLoading();
-            })
+            .then(self.stopLoading)
+
       },
       updateUrlHash: function () {
         /*
