@@ -138,7 +138,10 @@
           let self = this;
           let url = this.assembleUrl(this.search_url, this.endpoint,
               this.cursors[this.page], this.page_size, this.$refs.searchform.fields);
-          this.getResultsPage(url).then(self.lastFirstCheck);
+          this.getResultsPage(url).then( function () {
+              self.lastFirstCheck;
+              self.scrollToResults();
+          });
         } else if (this.results[this.page + 1]) {
           this.page++;
           this.updateUrlHash();
