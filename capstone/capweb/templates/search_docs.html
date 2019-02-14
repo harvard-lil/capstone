@@ -29,6 +29,11 @@
           </a>
         </li>
         <li>
+          <a class="list-group-item" href="#scope">
+            <span class="text">What's included?</span>
+          </a>
+        </li>
+        <li>
           <a class="list-group-item" href="#searching">
             <span class="text">Searching</span>
           </a>
@@ -40,7 +45,7 @@
         </li>
         <li>
           <a class="list-group-item" href="#research">
-            <span class="text">Research Help</span>
+            <span class="text">Getting Legal Help</span>
           </a>
         </li>
       </ul>
@@ -55,7 +60,7 @@
     <p><a href="{% url "search" %}">Search CAP</a></p>
     <p>
        With this tool, we aim to provide a simple interface for locating and viewing the cases and metadata in the CAP
-      repository.Right now, this tool is fairly basic. You can use it to search through our cases and some of our
+      repository. Right now, this tool is fairly basic. You can use it to search through our cases and some of our
       metadata tables, but there are no advanced tools. If you have any feature suggestions, we'd appreciate your taking
       the time to let us know either in an issue report <a href="https://github.com/harvard-lil/capstone/issues">in our
       code repository on github.com</a>, or through our <a href="{% url 'contact' %}">contact page</a>.
@@ -63,6 +68,14 @@
     <p>
       If you're a developer, you might be more interested in directly accessing our <a href="{% url "api" %}">API</a> or
       <a href="{% url "bulk-docs" %}">Bulk Data</a>.
+    </p>
+  </div>
+  {# ==============> SCOPE <============== #}
+  <div class="page-section">
+    <h2 class="subtitle" id="about">What's included?</h2>
+    <p>
+      The CAP search tool searches everything included in the <a href="{% url 'api' %}">CAP API</a>. See
+      <a href="{% url 'about' %}#data">our About page</a> for more details on the materials included.
     </p>
   </div>
   {# ==============> SEARCHING <============== #}
@@ -153,13 +166,17 @@
 
   {# ==============> TIPS <============== #}
   <div class="page-section">
-    <h2 class="subtitle" id="research">Research Help</h2>
+    <h2 class="subtitle" id="research">Getting Legal Help</h2>
     <div>
         <p>
-          We on the Caselaw Access Project team cannot field research help requests. If you have access to a legal
-          library, its librarians should be able to help you with legal research. The Harvard Law School Library
-          Reference Desk may also be able to offer assistance through their
-          <a href="https://asklib.law.harvard.edu/">Ask a Librarian</a> service.
+          Our caselaw search tool is not kept up to date. It currently has caselaw through
+          mid-2018, but may contain many mistakes as well. It is not intended for use in legal proceedings, and we
+          cannot provide individual assistance with legal research.
+        </p>
+        <p>
+          To find an attorney, get help with legal research skills, or find up-to-date databases for use in legal
+          proceedings, please see the <a href="{% url "about" %}#legal-help">"Getting Legal Help" section of our About
+          page</a>.
         </p>
     </div>
   </div>
