@@ -101,21 +101,18 @@
             <div class="col-1"></div>
           </div>
         </div>
-        <div class="col-12">
-          This page searches the Caselaw Access Project API,
-            containing U.S. case law published through
-            mid-2018. Please read more <a :href="scope_url">about the
-            scope</a> of the project.  For help using this tool, check
-            out our <a :href="docs_url">search documentation</a>.
-        </div>
-        <div class="col-12">
-          For help with legal research, please see the <a
-            href="https://guides.library.harvard.edu/law">HLS Research
-            Guides</a> or the equivalent at your institution or public
-            law library. If you require legal assistance, please see
-            the links in the answer to <a
-            href="https://asklib.law.harvard.edu/faq/115265">this
-            frequently asked question</a>.
+        <!--Docs links-->
+        <div class="row">
+          <div class="col-12">
+            <p>
+              This page searches U.S. caselaw published through mid-2018.
+              See <a :href="docs_url">our documentation</a> for what's included and how to find it.
+            </p>
+            <p>
+              <strong>Need legal advice?</strong> This is not your best option! Please read about
+              <a :href="docs_url + '#research'">our limitations and alternatives</a>.
+            </p>
+          </div>
         </div>
       </div>
     </div>
