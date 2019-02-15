@@ -65,7 +65,7 @@
   <body class="hamburger-menu-closed" tabindex="-1">
 
     {% include "includes/nav.html" %}
-    <main class="main-content flex-xl-nowrap" id="main">
+    <main class="all-content flex-xl-nowrap {% block all_content_style %}{% endblock %}" id="main">
       {% block content %}{% endblock content %}
     </main>
 
