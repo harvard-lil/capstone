@@ -1,44 +1,93 @@
-//*** head matter
+@import "base";
 
-h1{
-  font-size: 2rem;
+.case-title-container {
+  border-bottom: 1px solid $color-tan;
+}
+
+.case-title {
+  padding-bottom: 20px;
+  font-family: $font-serif;
+  text-align: center;
+  color: $color-violet-gray-dark;
+  letter-spacing: 0.03em;
+}
+
+h4 {
+  line-height: 1.4em;
+  letter-spacing: 0;
+}
+
+#citation_container {
+  @include make-col(6);
+  @extend .col-centered;
+}
+
+#citation_for_copy {
+  padding-left: 8px;
+  color: $color-violet;
+  border: 1px solid $color-violet;
 }
 
 #citation_copy {
-  border-radius: 5px;
-  padding: 5px 5px 5px 5px;
+  padding: 4px 10px 3px;
+  border: 1px solid $color-violet;
+  position: relative;
+  top: -2px;
 }
 
 #citation_copy > img {
   height: 12px;
   width: 12px;
+  margin-top: -7px;
+  margin-left: -2px;
+  cursor: pointer;
 }
 
 .citation_copied:after {
+  display: block;
+  color: $color-violet;
   content: "Citation Copied!";
   font-size: .75em;
+  margin-bottom: 1em;
+  margin-top: -10px;
 }
 
-section.head-matter{
-  p, aside{
+section {
+  padding-top: 1em;
+}
+
+section.head-matter {
+  padding-bottom: 0;
+  p, aside {
+    position: relative;
     // on large screens, head matter goes into a narrower column
-    margin-left: 10em;
-    margin-right: 10em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    &.summary, &.history, &.headnotes {
+      margin-top: 0;
+      margin-bottom: 0;
 
-    // on small screens, don't make head matter narrow
-    @media (max-width: 767.98px) {
-      margin-left: 6em;
-      margin-right: 0;
+      margin-left: 10em;
+      // on small screens, don't make head matter narrow
+      @media (max-width: 767.98px) {
+        margin-left: 6em;
+      }
     }
-
-    position:relative;
+    &.decisiondate, &.attorneys {
+      font-family: $font-serif;
+      letter-spacing: 0;
+      margin-bottom: 0.5em;
+    }
+    &.attorneys {
+      margin-top: 0;
+    }
   }
 }
 
-@mixin head-matter-label{
+@mixin head-matter-label {
   font-weight: bold;
-  color: #888;
-  word-break: break-word;
+  color: $color-violet-gray;
+  word-break: break-all;
   position: absolute;
 
   // on large screens, label is right-aligned to left of paragraph
@@ -54,26 +103,29 @@ section.head-matter{
   }
 }
 
-.parties{
+.parties {
   text-align: center;
 }
 
-.decisiondate, .attorneys, .judges{
+.decisiondate, .attorneys, .judges {
   text-align: center;
   font-size: 1.25rem;
 }
 
-.author{
+.author {
   font-size: 1.25rem;
 }
+
 .headnotes:before {
   @include head-matter-label;
   content: "Headnote: ";
 }
+
 .summary:before {
   @include head-matter-label;
   content: "Summary: ";
 }
+
 .history:before {
   @include head-matter-label;
   content: "History: ";
@@ -95,7 +147,7 @@ section.head-matter{
   content: "Author: ";
 }
 
-.opinion{
+.opinion {
   padding-top: 2em;
 
   &:before {
@@ -108,19 +160,30 @@ section.head-matter{
   }
 }
 
-.footnote{
-  padding: .3em;
+.footnotemark {
+  border-bottom: 0;
+  font-weight: $font-weight-semibold;
+  margin-bottom: 5px;
+}
+
+.footnote {
 
   > p {
-    font-size: 0.75rem;
+    font-size: $font-size-sm;
     margin-bottom: 8px;
     margin-left: 2em;
+    line-height: $line-height-sm;
   }
 
   // footnote number
   > a {
     float: left;
-    font-size: 0.75rem;
+    font-size: $font-size-sm;
+    border-bottom: 0;
+    font-weight: $font-weight-semibold;
+    line-height: $line-height-sm;
+    width: 20px;
+    text-align: center;
   }
 
   // highlight selected footnote

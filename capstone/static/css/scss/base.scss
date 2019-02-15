@@ -29,6 +29,7 @@
   color: $color-black;
 }
 
+
 body {
   @extend .font-body;
   -moz-osx-font-smoothing: grayscale;
@@ -55,12 +56,17 @@ a, button, .btn {
   cursor: pointer;
 }
 
+button {
+  @extend .btn;
+}
+
 button, .btn-white-violet {
   @extend .btn;
   border: 2px solid $color-violet;
   background: $color-white;
   color: $color-violet;
 }
+
 
 main {
   padding-top: 90px;
