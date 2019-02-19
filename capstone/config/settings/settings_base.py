@@ -299,12 +299,6 @@ PIPELINE = {
             },
             'output_filename': 'search.css'
         },
-        'view_case': {
-            'source_filenames': {
-                'css/scss/view_case.scss',
-            },
-            'output_filename': 'view_case.css'
-        },
         'view_metadata': {
             'source_filenames': {
                 'css/scss/view_metadata.scss',
