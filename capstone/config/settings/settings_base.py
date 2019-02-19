@@ -382,6 +382,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'test_data/xfer'),
         }
     },
+    'ngram_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/ngrams'),
+        }
+    },
 }
 
 INVENTORY = {

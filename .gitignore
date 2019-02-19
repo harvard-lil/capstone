@@ -19,6 +19,7 @@ capstone/bulk-data/
 capstone/test_data/zips/
 capstone/test_data/pdfs/
 capstone/test_data/bulk-data/
+capstone/test_data/ngrams/
 
 *.ipynb*
 
