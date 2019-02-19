@@ -3,7 +3,8 @@ from functools import lru_cache
 from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.functional import SimpleLazyObject
-from django.contrib.postgres.search import SearchQuery
+#from django.contrib.postgres.search import SearchQuery
+from scripts.fts_temp import SearchQueryTemp
 
 import rest_framework_filters as filters
 from rest_framework.exceptions import ValidationError
@@ -164,7 +165,7 @@ class CaseFilter(NoopMixin, filters.FilterSet):
         value = " ".join(part for part in value.split() if len(part) > 2)
         if value:
             return qs.filter(
-                case_text__tsv=SearchQuery(value)
+                case_text__tsv=SearchQueryTemp(value, search_type="phrase")
             ).exclude(
                 case_text=None  # ensure inner join
             ).extra(
