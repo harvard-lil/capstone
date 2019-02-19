@@ -8,6 +8,8 @@ from rest_framework import renderers
 
 from capweb.helpers import cache_func
 from scripts.generate_case_html import generate_html
+from scripts.process_metadata import parse_decision_date
+
 
 
 class XMLRenderer(renderers.BaseRenderer):
@@ -56,7 +58,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             'metadata': {
                 "name": data["name"],
                 "name_abbreviation": data["name_abbreviation"],
-                "decision_date": data["decision_date"],
+                "decision_date": parse_decision_date(data["decision_date"]),
                 "docket_number": data["docket_number"],
                 "first_page": data["first_page"],
                 "last_page": data["last_page"],
