@@ -37,11 +37,12 @@ p.small-text {
 .reporter-and-volume {
   font-family: $font-serif;
   color: $color-violet-gray-dark;
-  letter-spacing: 0.03em;
+
 }
 
 .case-viewing-error {
-  @extend .reporter-and-volume;
+  font-family: $font-serif;
+  color: $color-violet-gray-dark;
   padding-bottom: 10px;
   padding-top: 10px;
 }
