@@ -56,14 +56,14 @@ def get_writer_for_path(out_path):
         out_raw.seek(0)
         ngram_storage.save(out_path, out_raw)
 
-def ngram_jurisdictions(name=None, replace_existing=False):
+def ngram_jurisdictions(slug=None, replace_existing=False):
     """
         Call ngram_jurisdiction() for jurisdiction with given name, or all jurisdictions if name not provided.
         If replace_existing is true, will overwrite existing ngram files.
     """
     jurisdictions = Jurisdiction.objects.all()
-    if name:
-        jurisdictions = jurisdictions.filter(name=name)
+    if slug:
+        jurisdictions = jurisdictions.filter(slug=slug)
     for jurisdiction in jurisdictions:
         ngram_jurisdiction.delay(jurisdiction.pk, replace_existing)
 
@@ -93,7 +93,7 @@ def ngram_jurisdiction(jurisdiction_id, replace_existing=False, max_n=3):
         return  # no cases for jurisdiction
 
     # get year range
-    case_query = CaseMetadata.objects.in_scope().filter(jurisdiction=jurisdiction)
+    case_query = CaseMetadata.objects.in_scope().filter(jurisdiction_slug=jurisdiction.slug)
     first_year = case_query.order_by('decision_date', 'id').first().decision_date.year
     last_year = case_query.order_by('-decision_date', '-id').first().decision_date.year
 
@@ -172,19 +172,20 @@ def merge_files(paths, out_path):
 
         # read sorted lines in merged order
         for line in tqdm(merge(*files)):
-            print(line)
 
             gram, instances, documents = line[:-1].split(b'\t')
+            instances = int(instances)
+            documents = int(documents)
 
             # if line has same gram as previous line, merge into previous counts and move on
             if gram == last_gram:
-                last_instances = int(last_instances) + int(instances)
-                last_documents = int(last_documents) + int(documents)
+                last_instances = last_instances + instances
+                last_documents = last_documents + documents
                 continue
 
             # write out previous line
             if last_gram:
-                out.write(last_gram+b"\t"+bytes(last_instances)+b"\t"+bytes(last_documents)+b"\n")
+                out.write(last_gram+b"\t"+bytes(str(last_instances), 'utf8')+b"\t"+bytes(str(last_documents), 'utf8')+b"\n")
 
             # start accumulating current line
             last_gram = gram
@@ -192,7 +193,7 @@ def merge_files(paths, out_path):
             last_documents = documents
 
         # write out final line (which may have been accumulated but not written)
-        out.write(last_gram+b"\t"+bytes(last_instances)+b"\t"+bytes(last_documents)+b"\n")
+        out.write(last_gram+b"\t"+bytes(str(last_instances), 'utf8')+b"\t"+bytes(str(last_documents), 'utf8')+b"\n")
 
     # add totals to totals.json file
     totals = json.loads(ngram_storage.contents('totals.json'))
