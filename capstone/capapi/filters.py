@@ -165,7 +165,7 @@ class CaseFilter(NoopMixin, filters.FilterSet):
         value = " ".join(part for part in value.split() if len(part) > 2)
         if value:
             return qs.filter(
-                case_text__tsv=SearchQueryTemp(value, search_type="phrase")
+                case_text__tsv= parse_phrase_search(value)
             ).exclude(
                 case_text=None  # ensure inner join
             ).extra(
@@ -176,6 +176,8 @@ class CaseFilter(NoopMixin, filters.FilterSet):
             ).order_by('fts_order')
         else:
             return qs
+
+
 
     class Meta:
         model = models.CaseMetadata
@@ -221,3 +223,32 @@ class NgramFilter(NoopMixin, filters.FilterSet):
     class Meta:
         model = models.Ngram
         fields = ['jurisdiction', 'q']
+
+
+def parse_phrase_search(search_term):
+    results = SearchQueryTemp("")
+    normalized = search_term.replace('“', '"').replace('”', '"').replace('"', ' " ')
+
+    # balance out uneven quotes by killing the last one
+    if normalized.count('"') % 2 != 0:
+        last_comma_index = normalized.rfind('"')
+        normalized = "{} {}".format(normalized[:last_comma_index], normalized[last_comma_index + 1:])
+
+    # I used this loop because my regex solution was harder to read, and just as much code
+    current_phrase = []
+    in_a_phrase = False
+    for word in normalized.split(" "):
+        if word == '':
+            continue
+        elif word == '"' and in_a_phrase == False:
+            in_a_phrase = True
+        elif word == '"' and in_a_phrase == True:
+            in_a_phrase = False
+            results &= SearchQueryTemp(" ".join(current_phrase), search_type="phrase")
+            current_phrase = []
+        elif in_a_phrase == True:
+            current_phrase.append(word)
+        else:
+            results &= SearchQueryTemp(word, search_type="plain")
+
+    return results
