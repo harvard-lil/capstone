@@ -240,13 +240,13 @@ def parse_phrase_search(search_term):
     for word in normalized.split(" "):
         if word == '':
             continue
-        elif word == '"' and in_a_phrase == False:
+        elif word == '"' and not in_a_phrase:
             in_a_phrase = True
-        elif word == '"' and in_a_phrase == True:
+        elif word == '"' and in_a_phrase:
             in_a_phrase = False
             results &= SearchQueryTemp(" ".join(current_phrase), search_type="phrase")
             current_phrase = []
-        elif in_a_phrase == True:
+        elif in_a_phrase:
             current_phrase.append(word)
         else:
             results &= SearchQueryTemp(word, search_type="plain")
