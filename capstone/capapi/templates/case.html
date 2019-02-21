@@ -4,22 +4,85 @@
 {% block extra_head %}
   {% stylesheet 'case' %}
 {% endblock %}
-
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ citation_full }}{% endblock %}
 
 {% block content %}
   <div class="case-container header-margin">
-    <div id="citation_container" class="text-center">
-      <input title="official citation" readonly="readonly" class="center" type="input" id="citation_for_copy" name="citation" value="{{ citation }}">
-        <button data-toggle="tooltip" title="Copy Citation to Clipboard" id="citation_copy" onclick="copyCitation()">
-          <img src="{% static "img/copy_icon.png" %}" alt="Copy Citation to Clipboard">
-        </button>
+    <div class="metadata">
+      <div id="citation_container" class="text-center">
+        <p title="official citation" class="center" id="citation_for_copy"
+           name="citation">{{ citation_full }}
+          <!--<button data-toggle="tooltip" title="Copy Citation to Clipboard" id="citation_copy"
+              onclick="CopyToClipboard('citation_for_copy')">
+        <img src="{% static "img/copy_icon.png" %}" alt="Copy Citation to Clipboard">
+      </button>-->
+        </p>
+      </div>
+      <div class="text-center court">
+        <p class="">
+          <!--<a href="{{ metadata.court.url }}">{{ metadata.court.name }}</a>-->
+          {{ metadata.court.name }}
+        </p>
+        <p>
+          {{ metadata.decision_date }}
+        </p>
+      </div>
+
+      <div class="text-center reporter">
+        <p>
+          <!--<a href="{{ metadata.reporter.url }}">
+            {{ metadata.reporter.full_name }}</a>,
+          No.<a href="{{ metadata.volume.url }}">
+          {{ metadata.volume.volume_number }}.</a>-->
+          {{ metadata.reporter.full_name }}, No. {{ metadata.volume.volume_number }}.
+          <span class="pages">p.{{ metadata.first_page }}&ndash;{{ metadata.last_page }}.</span>
+        </p>
+      </div>
+
+      {% if metadata.docket_number %}
+        <div class="text-center docket">
+          {{ metadata.docket_number }}
+        </div>
+      {% endif %}
+
+
     </div>
-    <div class="case-title-container">
-      <h6 class="case-title">{{ title }}</h6>
-    </div>
-    {{ case_html|safe }}
-  </div>
+    {% if reason == 'error_auth_required' %}
+      <section class="name">
+        <h4 class="text-center">{{ metadata.name }}</h4>
+        <br/>
+        <div class="alert-warning text-center">
+          <h6 class="case-viewing-error">
+            You must be signed in to see the full case.
+          </h6>
+        </div>
+      </section>
+    {% elif reason == 'full_case_param_missing' %}
+      <section class="name text-center">
+        <h4>{{ metadata.name }}</h4>
+        <br/>
+        <div class="alert-warning text-center">
+          <h6 class="case-viewing-error">
+            Full case parameter is missing in HTML request.</h6>
+        </div>
+        <p>
+          To retrieve the full case body, you must specify <span style='font-family: monospace; font-style: normal;'>full_case=true</span>
+          in the URL.
+        </p>
+        <p>If you only want metadata you must specify
+          <span style='font-family: monospace; font-style: normal;'>format=json</span>
+          in the URL.</p>
+        <p>We only serve standalone metadata in JSON format.")</p>
+      </section>
+    {% elif reason == 'other' %}
+      <div class="alert-warning text-center">
+        <h6 class="case-viewing-error">
+          Could not load case body</h6>
+      </div>
+      </div>
+    {% else %}
+      {{ case_html|safe }}
+    {% endif %}
 
   <script>
     /*

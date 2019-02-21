@@ -8,6 +8,8 @@ from rest_framework import renderers
 
 from capweb.helpers import cache_func
 from scripts.generate_case_html import generate_html
+from scripts.process_metadata import parse_decision_date
+
 
 
 class XMLRenderer(renderers.BaseRenderer):
@@ -37,29 +39,47 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
     def render(self, data, media_type=None, renderer_context=None):
         if 'detail' in data:
             if data['detail'] == "Not found.":
-                return generate_html_error("Case Not Found.", "The case specified by the URL does not exist in our database.")
+                template = loader.get_template('case_404.html')
+                return template.render({}, renderer_context['request'])
             return generate_html_error("Authentication Error", data['detail'])
 
-        # if user requested format=html without requesting full casebody
-        if 'casebody' not in data:
-            return generate_html_error("Full Case Parameter Missing in Non-JSON Request", "To retrieve the full case body, you must specify <span style='font-family: monospace; font-style: normal;'>full_case=true</span> in the URL. If you only want metadata you must specify <span style='font-family: monospace; font-style: normal;'>format=json</span> in the URL. We only serve standalone metadata in JSON format.")
-
-        if data['casebody']['status'] != 'ok':
-            if data['casebody']['status'] == 'error_auth_required':
-                return generate_html_error("Not Authenticated <span style='font-family: monospace; font-style: normal;'>({})</span>".format(data['casebody']['status']), "You must be authenticated to view this case.")
-            return generate_html_error("Could Not Load Case Body", data['casebody']['status'], data['first_page'], data['last_page'], data['name'])
-
-        official_cit_entries = [ citation['cite'] for citation in data['citations'] if citation['type'] == 'official' ]
+        official_cit_entries = [citation['cite'] for citation in data['citations'] if citation['type'] == 'official']
         official_citation = official_cit_entries[0] if len(official_cit_entries[0]) > 0 else None
-
         template = loader.get_template('case.html')
         context = {
             'citation': official_citation,
-            'title': data['casebody']['title'],
-            'case_html': generate_html(data['casebody']['data']),
             'page_description': data['name'],
             'page_title': data['name_abbreviation'],
+            'metadata': {
+                "name": data["name"],
+                "name_abbreviation": data["name_abbreviation"],
+                "decision_date": parse_decision_date(data["decision_date"]),
+                "docket_number": data["docket_number"],
+                "first_page": data["first_page"],
+                "last_page": data["last_page"],
+                "citations": data["citations"],
+                "volume": data["volume"],
+                "reporter": data["reporter"],
+                "court": data["court"],
+                "jurisdiction": data["jurisdiction"]},
+            'citation_full': data["name_abbreviation"] + ", " + official_citation + " (" + data["decision_date"][                                                                                   0:4] + ")"
         }
+
+        # if user requested format=html without requesting full casebody
+        if 'casebody' not in data:
+            context['reason'] = "full_case_param_missing"
+            return template.render(context, renderer_context['request'])
+
+        if data['casebody']['status'] != 'ok':
+            if data['casebody']['status'] == 'error_auth_required':
+                context['reason'] = data['casebody']['status']
+                return template.render(context, renderer_context['request'])
+            context['reason'] = 'other'
+            return template.render(context, renderer_context['request'])
+
+        context['case_html'] = generate_html(data['casebody']['data'])
+        context['title'] = data['casebody']['title']
+
         return template.render(context, renderer_context['request'])
 
 

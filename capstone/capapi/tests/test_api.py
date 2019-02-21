@@ -131,7 +131,7 @@ def test_unauthenticated_full_case(case, jurisdiction, client):
     check_response(response, content_type="application/xml", content_includes='error_auth_required')
 
     response = client.get(case_url, {"full_case": "true", "format": "html"})
-    check_response(response, content_type="text/html", content_includes='<h1>Error: Not Authenticated')
+    check_response(response, content_type="text/html", content_includes='You must be signed in to see the full case')
 
 
 @pytest.mark.django_db

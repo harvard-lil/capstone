@@ -1,15 +1,54 @@
 @import "base.scss";
+section, article {
+  @include make-col(11);
+  @extend .col-centered;
+  @include media-breakpoint-up(lg) {
+    @include make-col(10);
+  }
+  padding-top: 1em;
 
-.case-title-container {
-  border-bottom: 1px solid $color-tan;
 }
 
-.case-title {
-  padding-bottom: 20px;
+p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.metadata {
   font-family: $font-serif;
+  font-size: 16px;
   text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid $color-tan;
+  a {
+    border-bottom: 0;
+  }
+}
+
+.case-container {
+  padding-bottom: 100px !important;
+}
+
+p.small-text {
+  font-size: 14px;
+  font-weight: $font-weight-semibold;
+}
+
+.docket {
+  color: $color-violet-gray;
+}
+
+.reporter-and-volume {
+  font-family: $font-serif;
   color: $color-violet-gray-dark;
-  letter-spacing: 0.03em;
+
+}
+
+.case-viewing-error {
+  font-family: $font-serif;
+  color: $color-violet-gray-dark;
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
 
 h4 {
@@ -18,14 +57,16 @@ h4 {
 }
 
 #citation_container {
-  @include make-col(6);
+  //@include make-col(6);
   @extend .col-centered;
 }
 
 #citation_for_copy {
+  font-weight: normal;
+  text-align: center;
   padding-left: 8px;
-  color: $color-violet;
-  border: 1px solid $color-violet;
+  border: 0;
+  outline: none;
 }
 
 #citation_copy {
@@ -33,6 +74,7 @@ h4 {
   border: 1px solid $color-violet;
   position: relative;
   top: -2px;
+  margin-bottom: 0;
 }
 
 #citation_copy > img {
@@ -41,19 +83,6 @@ h4 {
   margin-top: -7px;
   margin-left: -2px;
   cursor: pointer;
-}
-
-.citation_copied:after {
-  display: block;
-  color: $color-violet;
-  content: "Citation Copied!";
-  font-size: .75em;
-  margin-bottom: 1em;
-  margin-top: -10px;
-}
-
-section {
-  padding-top: 1em;
 }
 
 section.head-matter {
@@ -105,6 +134,7 @@ section.head-matter {
 
 .parties {
   text-align: center;
+  padding-bottom: 20px;
 }
 
 .decisiondate, .attorneys, .judges {
@@ -149,7 +179,6 @@ section.head-matter {
 
 .opinion {
   padding-top: 2em;
-
   &:before {
     content: "Opinion";
     font-weight: bold;
