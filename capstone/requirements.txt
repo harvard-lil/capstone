@@ -112,6 +112,7 @@ pytest-xdist==1.26.0
 pytest==3.7.0
 python-dateutil==2.7.5    # via botocore, faker, moto
 python-jose==2.0.2        # via moto
+python-redis-lock==3.3.1
 pytz==2018.9              # via babel, celery, django, flower, moto
 pyyaml==4.2b4
 rcssmin==1.0.6            # via django-compressor

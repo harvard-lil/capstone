@@ -1,22 +1,5 @@
 from io import BytesIO
-import pytest
-from moto import mock_s3
 
-from ..storages import CapS3Storage, CapFileStorage
-
-
-@pytest.fixture
-def s3_storage():
-    with mock_s3():
-        yield CapS3Storage(
-            auto_create_bucket=True,
-            bucket_name='bucket',
-            location='subdir',
-        )
-
-@pytest.fixture
-def file_storage(tmpdir):
-    return CapFileStorage(location=str(tmpdir))
 
 def test_iter_files_s3_storage(s3_storage):
     base_test_iter_files(s3_storage)

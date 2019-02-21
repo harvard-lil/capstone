@@ -1,3 +1,4 @@
+import wrapt
 from collections import defaultdict
 from contextlib import contextmanager
 from urllib.parse import urlparse
@@ -10,11 +11,19 @@ from django.core.cache import cache as django_cache
 from django.core.management import call_command
 from django.db import connections
 import django.apps
+from django.utils.functional import SimpleLazyObject
+from moto import mock_s3
 from rest_framework.test import APIRequestFactory, APIClient
 
-import fabfile
+# Before importing any of our code, mock capdb.storages redis clients.
+# Do this here so anything that gets imported later will get the mocked versions.
 import capdb.storages
+def raise_not_implemented(): raise NotImplementedError("Cannot access redis client outside of test")
+capdb.storages.redis_client = SimpleLazyObject(raise_not_implemented)
+capdb.storages.redis_ingest_client = SimpleLazyObject(raise_not_implemented)
 
+# our packages
+import fabfile
 from .factories import *
 
 ### Database setup ###
@@ -40,8 +49,14 @@ def django_db_setup(django_db_setup, django_db_blocker, redis_proc):
 
 
 @pytest.fixture(autouse=True)
-def clear_caches():
+def clear_caches(request):
     """ Clear any caches that might affect later tests. """
+
+    # patch redis clients to point to test-specific redis mock
+    import pytest_redis.factories
+    capdb.storages.redis_client._wrapped = SimpleLazyObject(lambda: pytest_redis.factories.redisdb('redis_proc', db=settings.REDIS_DEFAULT_DB)(request))
+    capdb.storages.redis_ingest_client._wrapped = SimpleLazyObject(lambda: pytest_redis.factories.redisdb('redis_proc', db=settings.REDIS_INGEST_DB)(request))
+
     try:
         yield
     finally:
@@ -151,6 +166,18 @@ def unaltered_alto_xml():
     with open(os.path.join(settings.BASE_DIR, 'test_data/unaltered_32044057891608_redacted_ALTO_00009_1.xml'), 'rb') as in_file:
         return in_file.read()
 
+@pytest.fixture
+def s3_storage():
+    with mock_s3():
+        yield capdb.storages.CapS3Storage(
+            auto_create_bucket=True,
+            bucket_name='bucket',
+            location='subdir',
+        )
+
+@pytest.fixture
+def file_storage(tmpdir):
+    return capdb.storages.CapFileStorage(location=str(tmpdir))
 
 ### Django json fixtures ###
 
@@ -261,16 +288,6 @@ def admin_client(db, admin_user):
 def private_case_export():
     return CaseExportFactory.create(public=False)
 
-### REDIS ###
-
-@pytest.fixture
-def redis_patch(request):
-    import pytest_redis.factories
-
-    capdb.storages.redis_client = pytest_redis.factories.redisdb('redis_proc', db=settings.REDIS_DEFAULT_DB)(request)
-    capdb.storages.redis_ingest_client = pytest_redis.factories.redisdb('redis_proc', db=settings.REDIS_INGEST_DB)(request)
-    return capdb.storages.redis_client, capdb.storages.redis_ingest_client
-
 
 ### DATA INGEST FIXTURES ###
 
@@ -279,11 +296,7 @@ def ingest_metadata(load_tracking_tool_database):
     fabfile.ingest_metadata()
 
 @pytest.fixture
-def ingest_volumes(ingest_metadata, redis_patch):
-    # patch redis client used by ingest_by_manifest
-    import scripts.ingest_by_manifest
-    scripts.ingest_by_manifest.redis_client, scripts.ingest_by_manifest.r = redis_patch
-
+def ingest_volumes(ingest_metadata):
     fabfile.total_sync_with_s3()
 
 @pytest.fixture
