@@ -1,16 +1,13 @@
 <template>
   <li class="result">
-    <div class="result-title row"
-         v-for="citation in result.citations" v-bind:key="citation.cite">
+    <div class="result-title row">
       <a target="_blank"
          :href="$parent.case_view_url(result.id)">
         {{result.name_abbreviation}}
       </a>
-      &nbsp; &nbsp;
-      <span v-if="citation.type === 'official'"
-            class="result-citation">
-          {{ citation.cite }}
-        </span>
+      <span v-for="(citation, index) in result.citations" v-bind:key="citation.cite" class="result-citation">
+        {{ citation.cite }}<span v-if="index+1 < result.citations.length">, </span>
+      </span>
     </div>
 
     <div class="row">

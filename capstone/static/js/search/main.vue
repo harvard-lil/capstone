@@ -234,7 +234,8 @@
                 self.cursors[self.page + 1] = self.getCursorFromUrl(next_page_url);
               }
 
-              self.results[self.page] = results_json.results;
+              // use self.$set to set array value with reactivity -- see https://vuejs.org/v2/guide/list.html#Caveats
+              self.$set(self.results, self.page, results_json.results);
             })
             .then(self.scrollToResults)
             .catch(function (response){
@@ -243,7 +244,9 @@
                 return response.json().then(function(object) {
                   self.field_errors = object;
                 });
-              } else if (response.status) {
+              }
+
+              if (response.status) {
                 // handle non-field API errors
                 self.search_error = "Search error: API returned " +
                 response.status + " for the query " + query_url;
@@ -251,6 +254,7 @@
                 // handle connection errors
                 self.search_error = "Search error: failed to load results from " + query_url;
               }
+              console.log("Search error:", response);
             })
             .then(self.stopLoading)
 
@@ -382,27 +386,31 @@
           let elmnt = document.getElementById("results_list");
           elmnt.scrollIntoView();
       },
+      encodeQueryData: function(data) {
+        /* encodes data as a query parameter string */
+        // this could be replaced by a URL object once the polyfill lands -- see https://github.com/zloirock/core-js/issues/117
+        return Object.keys(data).map(function(key) {
+            return [key, data[key]].map(encodeURIComponent).join("=");
+        }).join("&");
+      },
       assembleUrl: function (search_url, endpoint, cursor = null, page_size, fields) {
         /* assembles and returns URL */
 
-        let query_url = search_url + endpoint + "/?";
-
+        const params = {
+          page_size: page_size,
+        };
         if (cursor) {
-          query_url += "cursor=" + cursor + "&";
+          params.cursor = cursor;
         }
 
         // build the query parameters using the form fields
-        if (fields.length > 0) {
-          for (let i = fields.length - 1; i >= 0; i--) {
-            let value = fields[i]['value'];
-            if (value == undefined || value == null) {
-              value='';
-            }
-            query_url += (fields[i]['name'] + "=" + value + "&");
+        fields.forEach((field)=> {
+          if (field['value']) {
+            params[field['name']] = field['value'];
           }
-        }
-        query_url += "page_size=" + page_size;
-        return query_url;
+        });
+
+        return `${search_url}${endpoint}/?${this.encodeQueryData(params)}`;
       }
     }
   }
