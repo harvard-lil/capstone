@@ -1,6 +1,9 @@
 from django.contrib.postgres.search import SearchQuery, SearchQueryField
 from django.db.models.expressions import Value
 
+# This file pulls forward the SearchQuery implementation from Django 2.2.
+# Once we upgrade to Django 2.2, this can be deleted.
+
 class SearchQueryTemp(SearchQuery, Value):
     output_field = SearchQueryField()
     SEARCH_TYPES = {
