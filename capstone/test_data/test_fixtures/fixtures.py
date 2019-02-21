@@ -10,6 +10,7 @@ from django.core.cache import cache as django_cache
 from django.core.management import call_command
 from django.db import connections
 import django.apps
+from moto import mock_s3
 from rest_framework.test import APIRequestFactory, APIClient
 
 import fabfile
@@ -151,6 +152,18 @@ def unaltered_alto_xml():
     with open(os.path.join(settings.BASE_DIR, 'test_data/unaltered_32044057891608_redacted_ALTO_00009_1.xml'), 'rb') as in_file:
         return in_file.read()
 
+@pytest.fixture
+def s3_storage():
+    with mock_s3():
+        yield capdb.storages.CapS3Storage(
+            auto_create_bucket=True,
+            bucket_name='bucket',
+            location='subdir',
+        )
+
+@pytest.fixture
+def file_storage(tmpdir):
+    return capdb.storages.CapFileStorage(location=str(tmpdir))
 
 ### Django json fixtures ###
 
