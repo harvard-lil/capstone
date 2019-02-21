@@ -22,6 +22,7 @@ xmltodict
 psycopg2            # postgres connector
 mysqlclient         # mysql connector
 redis               # redis connector
+python-redis-lock   # cross-process locks
 
 # Django stuff
 django<2.1             # Fix issues related to 2.1.x branch (https://github.com/harvard-lil/capstone/issues/745)
