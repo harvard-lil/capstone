@@ -39,14 +39,9 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
     def render(self, data, media_type=None, renderer_context=None):
         if 'detail' in data:
             if data['detail'] == "Not found.":
-                return generate_html_error("Case Not Found.",
-                                           "The case specified by the URL does not exist in our database.")
+                template = loader.get_template('case_404.html')
+                return template.render({}, renderer_context['request'])
             return generate_html_error("Authentication Error", data['detail'])
-
-        # if user requested format=html without requesting full casebody
-        if 'casebody' not in data:
-            return generate_html_error("Full Case Parameter Missing in Non-JSON Request",
-                                       "To retrieve the full case body, you must specify <span style='font-family: monospace; font-style: normal;'>full_case=true</span> in the URL. If you only want metadata you must specify <span style='font-family: monospace; font-style: normal;'>format=json</span> in the URL. We only serve standalone metadata in JSON format.")
 
         official_cit_entries = [citation['cite'] for citation in data['citations'] if citation['type'] == 'official']
         official_citation = official_cit_entries[0] if len(official_cit_entries[0]) > 0 else None
@@ -69,6 +64,11 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 "jurisdiction": data["jurisdiction"]},
             'citation_full': data["name_abbreviation"] + ", " + official_citation + " (" + data["decision_date"][                                                                                   0:4] + ")"
         }
+
+        # if user requested format=html without requesting full casebody
+        if 'casebody' not in data:
+            context['reason'] = "full_case_param_missing"
+            return template.render(context, renderer_context['request'])
 
         if data['casebody']['status'] != 'ok':
             if data['casebody']['status'] == 'error_auth_required':
