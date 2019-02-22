@@ -129,14 +129,7 @@
         query: [],
         newfield: null,
         page_size: 10,
-        fields: [{
-          name: "search",
-          value: "",
-          label: "Full-Text Search",
-          default: true,
-          format: "e.g. insurance illinois",
-          info: ""
-        }],
+        fields: [],
         endpoints: {
           cases: [
             {
@@ -179,7 +172,6 @@
               value: "",
               label: "Citation",
               format: "e.g. 1 Ill. 17",
-              default: true,
               info: "the case citation"
             },
             {
@@ -311,22 +303,20 @@
 
       }
     },
+    beforeMount () {
+      this.updateFields();
+    },
     watch: {
       endpoint: {
-        handler: function (newval) {
-          this.updateFields(newval)
+        handler: function () {
+          this.updateFields()
         }
       }
     },
     props: ['choices', 'search_error', 'field_errors', 'docs_url', 'scope_url'],
     methods: {
-      updateFields(new_endpoint) {
-        this.fields = [];
-        for (let i = this.endpoints[new_endpoint].length - 1; i >= 0; i--) {
-          if (this.endpoints[new_endpoint][i]['default']) {
-            this.fields.push(this.endpoints[new_endpoint][i]);
-          }
-        }
+      updateFields() {
+        this.fields = this.endpoints[this.endpoint].filter(endpoint => endpoint.default);
       },
       replaceFields(new_fields) {
         this.fields = new_fields;
