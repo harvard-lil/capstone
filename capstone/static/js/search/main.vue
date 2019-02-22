@@ -348,31 +348,23 @@
       },
       generateUrlHash: function (endpoint, cursors, page, page_size, fields) {
         /* returns new URL hash */
-        let params;
-        if (cursors[page]) {
-          params = {
-            'page': page + 1,
-            'cursor': cursors[page],
-            'page_size': page_size
-          }
-        } else {
-          params = {
-            'page': page + 1,
-            'page_size': page_size
-          }
-        }
-        let param_string = Object.keys(params).reduce(function (str, param_name) {
-          return str + param_name + ":" + params[param_name] + "/"
-        }, '');
+        let params = {
+          'page': page + 1,
+          'page_size': page_size
+        };
+        if (cursors[page])
+          params.cursor = cursors[page];
 
-        let filters_string = fields.reduce(function (string_accumulator, chunk) {
-          string_accumulator += encodeURIComponent(chunk['name']) + ":" + encodeURIComponent(chunk['value']) + "/";
-          return string_accumulator;
-        }, '');
+        let param_string = Object.keys(params)
+          .map(param_name => `${param_name}:${params[param_name]}/`)
+          .join('');
 
-        let new_url_hash = "#" + endpoint + "/" + param_string + "filters/" + filters_string;
-        return new_url_hash;
+        let filters_string = fields
+          .filter(field => field['value'])  // remove fields with non-truthy value
+          .map(field => `${encodeURIComponent(field['name'])}:${encodeURIComponent(field['value'])}/`)
+          .join('');
 
+        return `#${endpoint}/${param_string}filters/${filters_string}`;
       },
       getCursorFromUrl: function (url) {
         /* extracts and returns cursor from given url */
