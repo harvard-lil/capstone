@@ -341,7 +341,7 @@
           if (!new_field) {
             return arr;
           }
-          new_field['value'] = val;
+          new_field['value'] = decodeURIComponent(val);
           arr.push(new_field);
           return arr;
         }, []);
