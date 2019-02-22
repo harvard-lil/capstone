@@ -1,3 +1,6 @@
+import 'bootstrap/js/dist/util'
+import 'bootstrap/js/dist/dropdown'
+
 import $ from "jquery"
 import * as utils from './utils.js'
 import './analytics.js'

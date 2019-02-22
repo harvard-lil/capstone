@@ -80,9 +80,11 @@
                     Add Field
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" v-for="newfield in currentFields(endpoint)"
-                       @click="addField(newfield)" v-bind:key="newfield['label']">
-                      {{ newfield["label"] }}</a>
+                    <button class="dropdown-item" type="button"
+                            v-for="newfield in currentFields(endpoint)" :key="newfield['label']"
+                            @click="addField(newfield)">
+                      {{ newfield["label"] }}
+                    </button>
                   </div>
                 </div>
               </template>

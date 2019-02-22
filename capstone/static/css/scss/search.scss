@@ -1,7 +1,6 @@
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
-@import "dropdown";
 @import "variables";
 
 .row.alert-danger {
@@ -17,29 +16,9 @@
 }
 
 //*** head matter
-.dropdown-search-routes {
-}
 
 .dropdown-toggle::after {
   display: none;
-}
-
-.dropdown-search-routes > .dropdown-title {
-  @extend h3;
-  display: inline-block;
-  margin-left: 10px;
-  border-bottom: 2px solid $color-violet;
-  border-radius: 0;
-  color: $color-violet;
-  font-weight: $font-weight-semibold;
-  text-transform: capitalize;
-  width: 91%;
-  padding-left: 0;
-  padding-bottom: 20px;
-  margin-bottom: 0;
-  &:after {
-    float: right;
-  }
 }
 
 .fancy-for {
@@ -52,6 +31,46 @@
   }
 }
 
+.dropdown-search-routes{
+  > .dropdown-title {
+    @extend h3;
+    display: inline-block;
+    margin-left: 10px;
+    border-bottom: 2px solid $color-violet;
+    border-radius: 0;
+    color: inherit;
+    background-color: inherit;
+    font-weight: $font-weight-semibold;
+    text-align: left;
+    text-transform: capitalize;
+    width: 91%;
+    padding-left: 0;
+    padding-bottom: 20px;
+    margin-bottom: 0;
+    &:after {
+      float: right;
+    }
+  }
+
+  > .dropdown-menu {
+    width: 91%;
+    margin-left: 10px;
+    padding: 0;
+    border-radius: 0;
+    border: 1px solid $color-violet;
+    .dropdown-item {
+      color: $color-violet;
+      border-bottom: 1px solid $color-gray;
+      text-transform: capitalize;
+      font-size: inherit;
+      font-weight: inherit;
+      &:hover, &:active, &:focus, &.active {
+        background-color: $color-yellow;
+      }
+    }
+  }
+}
+
 .dropdown-search-routes.dropdown,
 .addfield.dropdown {
   .dropdown-menu {
@@ -60,22 +79,6 @@
   }
   .dropdown-item {
     background-color: $color-white;
-  }
-}
-
-.dropdown-search-routes > .dropdown-menu {
-  width: 91%;
-  margin-left: 10px;
-  padding: 0;
-  border-radius: 0;
-  border: 1px solid $color-violet;
-  .dropdown-item {
-    color: $color-violet;
-    border-bottom: 1px solid $color-gray;
-    text-transform: capitalize;
-    &:hover, &:active, &:focus, &.active {
-      background-color: $color-yellow;
-    }
   }
 }
 
@@ -187,7 +190,7 @@ select {
 
 .addfield {
   width: 100%;
-  button {
+  > button {
     float: right;
     border: 1px solid $color-violet;
     margin-bottom: 10px;
@@ -206,6 +209,9 @@ select {
     .dropdown-item {
       border-bottom: 1px solid $color-gray;
       color: $color-violet;
+      font-size: inherit;
+      text-transform: capitalize;
+      font-weight: inherit;
       &:hover, &:active, &:focus {
         background-color: $color-yellow;
       }
