@@ -5,30 +5,22 @@
     </div>
     <div class="col-11">
       <div class="dropdown dropdown-search-routes">
-        <a class="btn btn-secondary dropdown-toggle dropdown-title"
-           role="button"
+        <button class="btn dropdown-toggle dropdown-title"
+           type="button"
            id="search-routes-dropdown"
            data-toggle="dropdown"
            aria-haspopup="true"
            aria-expanded="false">
           {{endpoint}}
-        </a>
+        </button>
 
-        <div class="dropdown-menu"
-             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-             aria-labelledby="search-routes-dropdown">
-          <ul>
-            <li class="search-tab"
-                v-bind:key="current_endpoint"
-                v-for="current_endpoint in endpoints">
-              <a v-if="current_endpoint===endpoint"
-                 @click="changeEndpoint(current_endpoint)"
-                 class="dropdown-item active">{{current_endpoint}}</a>
-              <a v-else @click="changeEndpoint(current_endpoint)"
-                 class="dropdown-item">
-                {{current_endpoint}}</a>
-            </li>
-          </ul>
+        <div class="dropdown-menu" aria-labelledby="search-routes-dropdown">
+          <button type="button"
+                  v-for="current_endpoint in endpoints" :key="current_endpoint"
+                  @click="changeEndpoint(current_endpoint)"
+                  :class="['dropdown-item', 'search-tab', current_endpoint===endpoint ? 'active' : '']">
+            {{current_endpoint}}
+          </button>
         </div>
       </div>
       <div class="endpoint-dropdown dropdown-menu"

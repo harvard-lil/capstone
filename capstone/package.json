@@ -16,9 +16,12 @@
     "@vue/cli-plugin-eslint": "^3.1.5",
     "@vue/cli-service": "^3.1.4",
     "babel-eslint": "^10.0.1",
+    "bootstrap": "^4.3.1",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0-0",
+    "exports-loader": "^0.7.0",
     "node-sass": "^4.10.0",
+    "popper.js": "^1.14.7",
     "sass-loader": "^7.1.0",
     "vue-template-compiler": "^2.5.17",
     "webpack-bundle-tracker": "^0.4.2-beta"

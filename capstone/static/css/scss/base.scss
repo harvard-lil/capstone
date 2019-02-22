@@ -2,15 +2,18 @@
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
-@import "bootstrap/reboot";
-@import "bootstrap/type";
-@import 'bootstrap/grid';
-@import 'bootstrap/alert';
+
 @import "bootstrap/utilities/spacing";
 @import "bootstrap/utilities/text";
 @import "bootstrap/utilities/display";
 @import "bootstrap/utilities/flex";
+@import 'bootstrap/alert';
+@import 'bootstrap/buttons';
+@import 'bootstrap/grid';
 @import "bootstrap/list-group";
+@import "bootstrap/reboot";
+@import "bootstrap/type";
+
 @import 'variables';
 @import 'elements';
 @import 'a11y';
