@@ -30,7 +30,6 @@
 <script>
   import SearchForm from './search-form.vue'
   import ResultList from './result-list.vue'
-  import * as VueScrollTo from 'vue-scrollto'
   import 'url-polyfill'  // can be removed when core-js upgraded to 3.0
 
   export default {
