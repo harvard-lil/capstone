@@ -5,13 +5,13 @@
     <div class="loading-text">Loading results ...</div>
   </div>
   <div v-else-if="results.length" class="results-list-container col-centered">
-    <div class="hitcount">
+    <p class="hitcount" id="results_count_focus" tabindex="-1">
       <span v-if="!results[page] || !results[page].length">No results</span>
       <span v-else>
         {{ first_result_number !== last_result_number ? `Results ${first_result_number} to ${last_result_number}` : `Result ${first_result_number}` }}
         of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
       </span>
-    </div>
+    </p>
     <ul class="results-list">
       <li v-if="endpoint==='cases'">
         <case-result v-for="result in results[page]"
