@@ -69,26 +69,23 @@
           <div class="row">
             <div class="col-4"></div>
             <div class="col-7">
-              <template v-if="fields.length > 0">
-                <div class="dropdown addfield">
-                  <button class="dropdown-toggle add-field-button btn-white-violet"
-                          type="button"
-                          id="dropdownMenuButton"
-                          data-toggle="dropdown"
-                          aria-haspopup="true"
-                          aria-expanded="false">
-                    Add Field
+              <div v-if="fields.length > 0" class="dropdown addfield">
+                <button class="dropdown-toggle add-field-button btn-white-violet"
+                        type="button"
+                        id="dropdownMenuButton"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false">
+                  Add Field
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <button class="dropdown-item" type="button"
+                          v-for="newfield in currentFields(endpoint)" :key="newfield['label']"
+                          @click="addField(newfield)">
+                    {{ newfield["label"] }}
                   </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <button class="dropdown-item" type="button"
-                            v-for="newfield in currentFields(endpoint)" :key="newfield['label']"
-                            @click="addField(newfield)">
-                      {{ newfield["label"] }}
-                    </button>
-                  </div>
                 </div>
-              </template>
-
+              </div>
             </div>
             <div class="col-1"></div>
           </div>
@@ -107,12 +104,9 @@
         <div class="row">
           <div class="col-12">
             <p>
-              This page searches U.S. caselaw published through mid-2018.
-              See <a :href="docs_url">our documentation</a> for what's included and how to find it.
-            </p>
-            <p>
-              <strong>Need legal advice?</strong> This is not your best option! Please read about
-              <a :href="docs_url + '#research'">our limitations and alternatives</a>.
+              Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
+              <strong>Need legal advice?</strong> This is not your best option! Read about
+              <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
             </p>
           </div>
         </div>
@@ -315,7 +309,7 @@
         }
       }
     },
-    props: ['choices', 'search_error', 'field_errors', 'docs_url', 'scope_url'],
+    props: ['choices', 'search_error', 'field_errors', 'urls'],
     methods: {
       updateFields() {
         this.fields = this.endpoints[this.endpoint].filter(endpoint => endpoint.default);

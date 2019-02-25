@@ -5,9 +5,8 @@
                  class="bg-tan"
                  :field_errors="field_errors"
                  :search_error="search_error"
-                 :choices="choices"
-                 :docs_url="docs_url"
-                 :scope_url="scope_url">
+                 :urls="urls"
+                 :choices="choices">
     </search-form>
     <a id="results_list"></a>
     <result-list v-on:see-cases="seeCases"
@@ -17,10 +16,12 @@
                  :first_page="first_page"
                  :page="page"
                  :results="results"
+                 :first_result_number="first_result_number"
+                 :last_result_number="last_result_number"
+                 :show_loading="show_loading"
                  :endpoint="endpoint"
                  :hitcount="hitcount"
-                 :metadata_view_url_template="metadata_view_url_template"
-                 :case_view_url_template="case_view_url_template">
+                 :urls="urls">
     </result-list>
   </div>
 </template>
@@ -29,6 +30,8 @@
 <script>
   import SearchForm from './search-form.vue'
   import ResultList from './result-list.vue'
+  import * as VueScrollTo from 'vue-scrollto'
+  import 'url-polyfill'  // can be removed when core-js upgraded to 3.0
 
   export default {
     beforeMount: function () {
@@ -36,15 +39,7 @@
         Here we get a number of variables defined in the django template
        */
       // eslint-disable-next-line
-      this.docs_url = docs_url;
-      // eslint-disable-next-line
-      this.scope_url = scope_url;
-      // eslint-disable-next-line
-      this.case_view_url_template = case_view_url_template;
-      // eslint-disable-next-line
-      this.metadata_view_url_template = metadata_view_url_template;
-      // eslint-disable-next-line
-      this.search_url = search_url;
+      this.urls = urls;
       // eslint-disable-next-line
       this.choices = choices;
     },
@@ -86,12 +81,13 @@
         hitcount: null,
         page: 0,
         results: [],
+        first_result_number: null,
+        last_result_number: null,
+        show_loading: false,
         cursors: [],
         endpoint: 'cases', // only used in the title in search.html. The working endpoint is in the searchform component
         page_size: 10,
         choices: {},
-        case_view_url_template: null,
-        search_url: null,
         cursor: null,
         last_page: true,
         first_page: true,
@@ -116,88 +112,37 @@
         this.endpoint = endpoint;
         if (!loaded_from_url) {
           this.resetResults();
-          this.updateUrlHash();
         }
-
-        // nextPage actually triggers the search
-        this.nextPage(true);
+        this.goToPage(this.page);
       },
 
-      nextPage: function (new_search = false) {
+      nextPage() { this.goToPage(this.page + 1) },
+      prevPage() { this.goToPage(this.page - 1) },
+      goToPage: function(page) {
         /*
-          Gets the next (or first) page of results. If we've already loaded it, we pull it from memory
-          rather than getting it from the API twice
-
-          Side Effects:
-            - Updates URL hash with output from generateUrlHash()
-            - Sets last page/first page flags via lastFirstCheck()
-            - Changes the results page, which will change the list of visible cases in result-list
-            - Gets 1 page of API results (and therefore changes lots of other stuff) with getResultsPage()
-         */
-        if (new_search) {
-          let self = this;
-          let url = this.assembleUrl(this.search_url, this.endpoint,
-              this.cursors[this.page], this.page_size, this.$refs.searchform.fields);
-          this.getResultsPage(url).then(self.lastFirstCheck);
-        } else if (this.results[this.page + 1]) {
-          this.page++;
-          this.updateUrlHash();
-          this.lastFirstCheck();
-          this.scrollToResults();
-        } else if (this.cursors[this.page + 1]) {
-          this.page++;
-          let self = this;
-          let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page],
-              this.page_size, this.$refs.searchform.fields);
-          this.getResultsPage(url).then(function () {
-              self.updateUrlHash();
-              self.lastFirstCheck();
-          });
-        }
-      },
-      prevPage: function () {
-        /*
-          Gets the previous page of results. If we've already loaded it, we pull it from memory
+          Gets the given page of results. If we've already loaded it, we pull it from memory
           rather than getting it from the API twice
 
           Side Effects:
             - Updates URL hash via updateUrlHash()
-            - Sets last page/first page flags via lastFirstCheck()
+            - Sets last page/first page flags
             - Changes the results page, which will change the list of visible cases in result-list
             - Gets 1 page of results (and therefore changes lots of other stuff) with getResultsPage()
          */
-        //
-        if (this.results[this.page - 1]) {
-          this.page--;
-          this.updateUrlHash()
-          this.lastFirstCheck();
-        } else if (this.cursors[this.page - 1]) {
-          this.page--;
-          let url = this.assembleUrl(this.search_url, this.endpoint, this.cursors[this.page],
-              this.page_size, this.$refs.searchform.fields);
-          let self = this;
-          this.getResultsPage(url).then(function () {
-            self.updateUrlHash()
-            self.lastFirstCheck();
+        // we can load the requested page if it is the first page, or we have results cached, or we have a cursor cached
+        if (page === 0 || this.results[page] || this.cursors[page]) {
+          this.page = page;
+          this.updateUrlHash();
+          this.getResultsPage().then(()=>{
+            // set variables for pagination display -- result count and back and next buttons
+            this.last_page = !this.cursors[this.page + 1];
+            this.first_page = this.page === 0;
+            this.first_result_number = 1 + this.page_size * this.page;
+            this.last_result_number = this.first_result_number + this.results[this.page].length - 1;
           });
         }
-        this.scrollToResults();
       },
-      lastFirstCheck: function () {
-        /*
-          This just checks to see if it's the last or first set of results, and sets two flags accordingly.
-          I tried using a computed variable for this, but it never seemed to be updated when I needed it.
-
-          Side Effects:
-            - just sets the last_page and first_page flags, which are used to determine prev/next button status
-
-         */
-        this.last_page = !this.cursors[this.page + 1];
-
-        this.first_page = this.page === 0;
-
-      },
-      getResultsPage: function (query_url) {
+      getResultsPage: function () {
         /*
           This actually performs the search, and it puts the cursors and results in their respective arrays
 
@@ -208,55 +153,75 @@
               and previous page url and updates this.cursors if necessary
             - Updates error messages for forms or fields
          */
+        // if we already have the page in cache, return immediately
+        if (this.results[this.page]){
+          return Promise.resolve();
+        }
+
+        const query_url = this.assembleUrl();
         this.search_error = "";
         this.field_errors = {};
-        let self = this;
+        // Track current fetch operation, so we can throw away results if a fetch comes back after a new one has been
+        // submitted by the user.
+        const currentFetchID = Math.random();
+        this.currentFetchID = currentFetchID;
         this.startLoading();
         return fetch(query_url)
-            .then(function (response) {
-              if (!response.ok) { throw response }
-              return response.json();
-            })
-            .then(function (results_json) {
-              self.hitcount = results_json.count;
-              let next_page_url = results_json.next;
-              let prev_page_url = results_json.previous;
+          .then((response)=>{
+            if (currentFetchID !== this.currentFetchID) { throw "canceled" }
+            if (!response.ok) { throw response }
+            return response.json();
+          })
+          .then((results_json)=>{
+            this.hitcount = results_json.count;
+            let next_page_url = results_json.next;
+            let prev_page_url = results_json.previous;
 
-              if (!self.cursors[self.page]) {
-                self.cursors[self.page] = self.getCursorFromUrl(query_url);
-              }
+            if (!this.cursors[this.page]) {
+              this.cursors[this.page] = this.getCursorFromUrl(query_url);
+            }
 
-              if (!self.cursors[self.page - 1] && prev_page_url) {
-                self.cursors[self.page - 1] = self.getCursorFromUrl(prev_page_url);
-              }
+            if (!this.cursors[this.page - 1] && prev_page_url) {
+              this.cursors[this.page - 1] = this.getCursorFromUrl(prev_page_url);
+            }
 
-              if (!self.cursors[self.page + 1] && next_page_url) {
-                self.cursors[self.page + 1] = self.getCursorFromUrl(next_page_url);
-              }
+            if (!this.cursors[this.page + 1] && next_page_url) {
+              this.cursors[this.page + 1] = this.getCursorFromUrl(next_page_url);
+            }
 
-              // use self.$set to set array value with reactivity -- see https://vuejs.org/v2/guide/list.html#Caveats
-              self.$set(self.results, self.page, results_json.results);
-            })
-            .then(self.scrollToResults)
-            .catch(function (response){
-              if (response.status === 400 &&  self.field_errors) {
-                // handle field errors
-                return response.json().then(function(object) {
-                  self.field_errors = object;
-                });
-              }
+            // use this.$set to set array value with reactivity -- see https://vuejs.org/v2/guide/list.html#Caveats
+            this.$set(this.results, this.page, results_json.results);
+            this.stopLoading();
+          })
+          .catch((response)=>{
+            if (response === "canceled"){
+              return;
+            }
 
-              if (response.status) {
-                // handle non-field API errors
-                self.search_error = "Search error: API returned " +
-                response.status + " for the query " + query_url;
-              } else {
-                // handle connection errors
-                self.search_error = "Search error: failed to load results from " + query_url;
-              }
-              console.log("Search error:", response);
-            })
-            .then(self.stopLoading)
+            // scroll up to show error message
+            this.stopLoading();
+            this.scrollToSearchForm();
+
+            if (response.status === 400 && this.field_errors) {
+              // handle field errors
+              return response.json().then((object)=>{
+                this.field_errors = object;
+                throw response;
+              });
+            }
+
+            if (response.status) {
+              // handle non-field API errors
+              this.search_error = "Search error: API returned " +
+              response.status + " for the query " + query_url;
+            } else {
+              // handle connection errors
+              this.search_error = "Search error: failed to load results from " + query_url;
+            }
+
+            console.log("Search error:", response);
+            throw response;  // in case callers want to do further error handling
+          });
 
       },
       updateUrlHash: function () {
@@ -284,17 +249,20 @@
         this.hitcount = null;
         this.page = 0;
         this.results = [];
+        this.first_result_number = null;
+        this.last_result_number = null;
         this.cursors = [];
         this.last_page = true;
         this.first_page = true;
       },
       startLoading: function () {
         /* shows the loading screen and throbber */
-        document.getElementById("loading-overlay").style.display = 'block';
+        this.scrollToResults();
+        this.show_loading = true;
       },
       stopLoading: function () {
         /* hides the loading screen and throbber */
-        document.getElementById("loading-overlay").style.display = 'none';
+        this.show_loading = false;
       },
       seeCases: function (parameter, value) {
         /*
@@ -367,42 +335,46 @@
         return `#${endpoint}/${param_string}filters/${filters_string}`;
       },
       getCursorFromUrl: function (url) {
-        /* extracts and returns cursor from given url */
-        if (!url || !url.includes('cursor=')) {
-          return;
+        /* Extracts and returns cursor from given url. Return null if url is malformed or doesn't contain a cursor. */
+        try {
+          return new URL(url).searchParams.get("cursor");
+        }catch{
+          return null;
         }
-        return url.split('cursor=')[1].split('&')[0];
       },
-      scrollToResults: function() {
-          /* scrolls to the results area */
-          let elmnt = document.getElementById("results_list");
-          elmnt.scrollIntoView();
+
+      scrollToResults() { this.scrollTo('#results_list') },
+      scrollToSearchForm() { this.scrollTo('.search-page') },
+      scrollTo: function(selector){
+        /* Scroll to first element with target selector, taking into account offset for navbar. */
+        VueScrollTo.scrollTo(document.querySelector(selector), 500, {
+          offset: -document.getElementById('main-nav').offsetHeight
+        });
       },
+
       encodeQueryData: function(data) {
         /* encodes data as a query parameter string */
-        // this could be replaced by a URL object once the polyfill lands -- see https://github.com/zloirock/core-js/issues/117
-        return Object.keys(data).map(function(key) {
-            return [key, data[key]].map(encodeURIComponent).join("=");
-        }).join("&");
+        const searchParams = new URLSearchParams();
+        Object.keys(data).forEach(key => searchParams.append(key, data[key]));
+        return searchParams.toString();
       },
-      assembleUrl: function (search_url, endpoint, cursor = null, page_size, fields) {
+      assembleUrl: function () {
         /* assembles and returns URL */
-
         const params = {
-          page_size: page_size,
+          page_size: this.page_size,
         };
-        if (cursor) {
-          params.cursor = cursor;
+        if (this.cursors[this.page]) {
+          params.cursor = this.cursors[this.page];
         }
 
         // build the query parameters using the form fields
-        fields.forEach((field)=> {
+        this.$refs.searchform.fields.forEach((field)=> {
           if (field['value']) {
             params[field['name']] = field['value'];
           }
         });
 
-        return `${search_url}${endpoint}/?${this.encodeQueryData(params)}`;
+        return `${this.urls.api_root}${this.endpoint}/?${this.encodeQueryData(params)}`;
       }
     }
   }

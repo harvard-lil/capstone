@@ -1,11 +1,16 @@
 <template>
 
-  <div class="results-list-container col-centered">
-
-    <div class="hitcount" v-if="hitcount">
-      <span v-if="hitcount > 1">{{hitcount}} results</span>
-      <span v-else-if="hitcount===1">{{hitcount}} result</span>
-      <span v-else>No results</span>
+  <div v-if="show_loading" class="results-loading-container col-centered">
+    <img alt="" aria-hidden="true" :src='`${urls.static}img/loading.gif`' class="loading-gif"/>
+    <div class="loading-text">Loading results ...</div>
+  </div>
+  <div v-else-if="results.length" class="results-list-container col-centered">
+    <div class="hitcount">
+      <span v-if="!results[page] || !results[page].length">No results</span>
+      <span v-else>
+        {{ first_result_number !== last_result_number ? `Results ${first_result_number} to ${last_result_number}` : `Result ${first_result_number}` }}
+        of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
+      </span>
     </div>
     <ul class="results-list">
       <li v-if="endpoint==='cases'">
@@ -33,7 +38,7 @@
         </reporter-result>
       </li>
     </ul>
-    <div v-if="this.$parent.results.length !== 0" class="row">
+    <div class="row">
       <div class="col-6">
         <button class="btn btn-sm" v-if="first_page !== true" @click="$emit('prev-page')">
           Back
@@ -58,29 +63,29 @@
   export default {
     props: [
       'results',
+      'first_result_number',
+      'last_result_number',
+      'show_loading',
       'endpoint',
       'hitcount',
       'page',
       'first_page',
       'last_page',
-      'case_view_url_template',
-      'metadata_view_url_template'
+      'urls'
     ],
     components: {
       'reporter-result': ReporterResult,
       'case-result': CaseResult,
       'court-result': CourtResult,
       'jurisdiction-result': JurisdictionResult,
-
     },
     methods: {
       case_view_url: function (case_id) {
-        return this.case_view_url_template.replace('987654321', case_id)
+        return this.urls.casemetadata_detail.replace('987654321', case_id)
       },
       metadata_view_url: function (endpoint, id) {
-        return this.metadata_view_url_template.replace('987654321', id).replace('/court/', "/" + endpoint + "/")
+        return this.urls.view_court.replace('987654321', id).replace('/court/', "/" + endpoint + "/")
       }
-
     }
   }
 </script>

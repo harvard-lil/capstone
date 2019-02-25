@@ -15,25 +15,18 @@
 {% endblock %}
 
 {% block main_content %}
-
-  <div id="loading-overlay" style="display: none">
-    <img alt="" aria-hidden="true" src='{% static "img/loading.gif" %}' class="loading-gif"/>
-    <div class="loading-text">Loading</div>
-  </div>
   <div id="app" class="content"></div>
-
-
 
   <script>
 // This is essentially each endpoint with its API interface
 // eslint-disable-next-line
-  const case_view_url_template = "{% api_url "casemetadata-detail" 987654321 %}" + "?full_case=true&format=html";
-  const metadata_view_url_template = "{% url 'view_court' 987654321 %}";
-  const search_url = '{% api_url "api-root" %}' + "v1/";
-  const bullet_url = '{% static "img/red-arrow-right.svg" %}';
-  const docs_url = '{% url 'search-docs' %}';
-  const scope_url = '{% url 'about' %}';
-  // {% api_url "casemetadata-detail" 987654321 %};
+  const urls = {
+    casemetadata_detail: "{% api_url "casemetadata-detail" 987654321 %}?full_case=true&format=html",
+    view_court: "{% url 'view_court' 987654321 %}",
+    api_root: "{% api_url "api-root" %}v1/",
+    static: "{% static "" %}",
+    search_docs: "{% url 'search-docs' %}"
+  };
 
 {% autoescape off %}
     const choices = {
