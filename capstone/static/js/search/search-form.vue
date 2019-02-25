@@ -8,15 +8,19 @@
         <div v-if="search_error"
              role="alert"
              class="alert alert-danger">
-          {{search_error}}
+          <p>{{search_error}}</p>
+          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">{{search_error}}</h2>
         </div>
         <div v-if="Object.keys(field_errors).length"
              role="alert"
              class="alert alert-danger">
-          <ul>
+          <!--<p>Please correct the following <strong>2 error(s)</strong>: </p>-->
+          <p>Please correct the following {{ Object.keys(field_errors).length }} error(s):</p>
+          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">Please correct the following {{ Object.keys(field_errors).length }} error(s)</h2>
+          <ul class="bullets">
             <li v-for="(error, name) in field_errors"
                 :key="'error' + name">
-              <strong>{{getFieldEntry(name, endpoint).label}}:</strong> {{error}}
+              <a :href="'#'+name">{{getFieldEntry(name, endpoint).label}}:</a> {{error}}
             </li>
           </ul>
         </div>
@@ -40,18 +44,16 @@
                   </option>
                 </select>
               </template>
-              <template v-else-if="field['format']">
+              <template>
                 <input v-model='field["value"]'
-                       class="queryfield"
+                       :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '']"
                        type="text"
                        :id='field["name"]'
-                       :placeholder='field["format"]'>
-              </template>
-              <template v-else>
-                <input v-model='field["value"]'
-                       class="queryfield"
-                       :id='field["name"]'
-                       type="text">
+                       :placeholder='field["format"] || false'
+                >
+                <div vif="field_errors[field.name]" class="invalid-feedback">
+                  {{ field_errors[field.name] }}
+                </div>
               </template>
             </div>
             <div class="col-1">
@@ -93,9 +95,13 @@
           <div class="row">
             <div class="col-4"></div>
             <div class="col-7">
-              <input class="btn-default btn-submit"
+              <button class="btn-default btn-submit"
                      type="submit"
                      value="Search">
+                Search
+                <span v-if="show_loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </button>
+              <span v-if="show_loading" id="searching-focus" class="sr-only" tabindex="-1">Searching&nbsp;</span>
             </div>
             <div class="col-1"></div>
           </div>
@@ -309,7 +315,7 @@
         }
       }
     },
-    props: ['choices', 'search_error', 'field_errors', 'urls'],
+    props: ['choices', 'search_error', 'field_errors', 'urls', 'show_loading'],
     methods: {
       updateFields() {
         this.fields = this.endpoints[this.endpoint].filter(endpoint => endpoint.default);

@@ -5,10 +5,10 @@
                  class="bg-tan"
                  :field_errors="field_errors"
                  :search_error="search_error"
+                 :show_loading="show_loading"
                  :urls="urls"
                  :choices="choices">
     </search-form>
-    <a id="results_list"></a>
     <result-list v-on:see-cases="seeCases"
                  v-on:next-page="nextPage"
                  v-on:prev-page="prevPage"
@@ -30,7 +30,6 @@
 <script>
   import SearchForm from './search-form.vue'
   import ResultList from './result-list.vue'
-  import * as VueScrollTo from 'vue-scrollto'
   import 'url-polyfill'  // can be removed when core-js upgraded to 3.0
 
   export default {
@@ -134,6 +133,8 @@
           this.page = page;
           this.updateUrlHash();
           this.getResultsPage().then(()=>{
+            this.scrollToResults();
+
             // set variables for pagination display -- result count and back and next buttons
             this.last_page = !this.cursors[this.page + 1];
             this.first_page = this.page === 0;
@@ -257,7 +258,7 @@
       },
       startLoading: function () {
         /* shows the loading screen and throbber */
-        this.scrollToResults();
+        setTimeout(()=>{document.querySelector('#searching-focus').focus()});  // "Searching" message for screenreaders
         this.show_loading = true;
       },
       stopLoading: function () {
@@ -343,12 +344,15 @@
         }
       },
 
-      scrollToResults() { this.scrollTo('#results_list') },
-      scrollToSearchForm() { this.scrollTo('.search-page') },
+      scrollToResults() { this.scrollTo('#results_count_focus') },
+      scrollToSearchForm() { this.scrollTo('#form-errors-heading') },
       scrollTo: function(selector){
-        /* Scroll to first element with target selector, taking into account offset for navbar. */
-        VueScrollTo.scrollTo(document.querySelector(selector), 500, {
-          offset: -document.getElementById('main-nav').offsetHeight
+        /* Scroll to first element with target selector. */
+        // use setTimeout to make sure element exists -- it may not have appeared yet if we just changed template vars
+        setTimeout(()=> {
+          const el = document.querySelector(selector);
+          el.focus({preventScroll: true}); // set focus for screenreaders
+          el.scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});
         });
       },
 
