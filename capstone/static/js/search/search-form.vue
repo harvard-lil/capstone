@@ -26,8 +26,7 @@
         </div>
         <div class="col-12">
           <div class="row field_row_container"
-               v-for="field in fields"
-               v-bind:key="field['name']"
+               v-for="field in fields" :key="field.name"
                v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }">
             <div class="col-4 field_label_container">
               <label class="querylabel" :for="field['name']">
@@ -61,7 +60,7 @@
                 <button type="button"
                         :class="[fields.length <= 1 ? 'disabled' : 'active', 'field-button']"
                         :disabled="fields.length <= 1"
-                        @click="removeField(field['name'])">
+                        @click="removeField(field.name)">
                 </button>
               </div>
 
@@ -82,9 +81,9 @@
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <button class="dropdown-item" type="button"
-                          v-for="newfield in availableFields()" :key="newfield['label']"
+                          v-for="newfield in availableFields()" :key="newfield.name"
                           @click="addField(newfield)">
-                    {{ newfield["label"] }}
+                    {{ newfield.label }}
                   </button>
                 </div>
               </div>
@@ -307,10 +306,8 @@
       removeField(field_name) {
         this.fields = this.fields.filter(field => field.name !== field_name);
       },
-      addField(field_name) {
-        const field = this.getFieldByName(field_name);
-        if (field)
-          this.fields.push(field);
+      addField(field) {
+        this.fields.push(field);
       },
       getFieldByName(field_name) {
         return this.endpoints[this.endpoint].find(field => field.name === field_name);
