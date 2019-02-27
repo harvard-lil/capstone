@@ -43,13 +43,11 @@
     },
     mounted: function () {
       /* Read url state when first loaded. */
-        console.log("ROUTE LOADED", arguments);
       this.handleRouteUpdate(this.$route);
     },
     watch: {
       /* Read url state on change. */
       '$route': function (route, oldRoute) {
-        console.log("ROUTE UPDATED", arguments);
         this.handleRouteUpdate(route, oldRoute);
       },
     },
