@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="$emit('new-search', fields, endpoint)">
     <div class="search-form-container col-centered">
-      <searchroutes :endpoint="endpoint"></searchroutes>
+      <searchroutes :endpoint="endpoint" :endpoints="endpoints"></searchroutes>
       <br/>
       <!-- Table showing search fields. Also includes add field and search buttons. -->
       <div class="row">
@@ -20,7 +20,7 @@
           <ul class="bullets">
             <li v-for="(error, name) in field_errors"
                 :key="'error' + name">
-              <a :href="'#'+name">{{getFieldEntry(name, endpoint).label}}:</a> {{error}}
+              <a :href="'#'+name">{{getFieldByName(name).label}}:</a> {{error}}
             </li>
           </ul>
         </div>
@@ -44,7 +44,7 @@
                   </option>
                 </select>
               </template>
-              <template>
+              <template v-else>
                 <input v-model='field["value"]'
                        :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '']"
                        type="text"
@@ -82,7 +82,7 @@
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <button class="dropdown-item" type="button"
-                          v-for="newfield in currentFields(endpoint)" :key="newfield['label']"
+                          v-for="newfield in availableFields()" :key="newfield['label']"
                           @click="addField(newfield)">
                     {{ newfield["label"] }}
                   </button>
@@ -127,7 +127,6 @@
     components: {searchroutes},
     data: function () {
       return {
-        endpoint: "cases",
         query: [],
         newfield: null,
         page_size: 10,
@@ -183,16 +182,14 @@
               choices: 'reporter',
               info: ""
             },
-            /*
-          {
-            name: "court",
-            value: "",
-            label: "Court",
-            choices: 'court',
-            format: "e.g. ill-app-ct",
-            info: ""
-          },
-          */
+            {
+              name: "court",
+              value: "",
+              label: "Court",
+              format: "e.g. ill-app-ct",
+              info: "",
+              hidden: true,
+            },
             {
               name: "jurisdiction",
               value: "",
@@ -305,56 +302,25 @@
 
       }
     },
-    beforeMount () {
-      this.updateFields();
-    },
-    watch: {
-      endpoint: {
-        handler: function () {
-          this.updateFields()
-        }
-      }
-    },
-    props: ['choices', 'search_error', 'field_errors', 'urls', 'show_loading'],
+    props: ['choices', 'search_error', 'field_errors', 'urls', 'show_loading', 'endpoint'],
     methods: {
-      updateFields() {
-        this.fields = this.endpoints[this.endpoint].filter(endpoint => endpoint.default);
+      removeField(field_name) {
+        this.fields = this.fields.filter(field => field.name !== field_name);
       },
-      replaceFields(new_fields) {
-        this.fields = new_fields;
+      addField(field_name) {
+        const field = this.getFieldByName(field_name);
+        if (field)
+          this.fields.push(field);
       },
-      removeField(field_to_remove) {
-        for (let i = this.fields.length - 1; i >= 0; i--) {
-          if (this.fields[i]['name'] === field_to_remove) {
-            this.fields.splice(i, 1);
-          }
-        }
-        this.$parent.updateUrlHash();
+      getFieldByName(field_name) {
+        return this.endpoints[this.endpoint].find(field => field.name === field_name);
       },
-      addField(field_to_add) {
-        for (let i = this.fields.length - 1; i >= 0; i--) {
-          if (this.fields[i]['name'] === field_to_add['name']) {
-            return false;
-          }
-        }
-        this.fields.push(field_to_add);
-        this.$parent.updateUrlHash();
-      },
-      getFieldEntry(field_name, endpoint) {
-        for (let i = this.endpoints[endpoint].length - 1; i >= 0; i--) {
-          if (this.endpoints[endpoint][i]['name'] === field_name) {
-            return this.endpoints[endpoint][i];
-          }
-        }
-      },
-      currentFields(endpoint) {
-        let return_list = [];
-        for (let field in this.endpoints[endpoint]) {
-          if (!this.fields.includes(this.endpoints[endpoint][field])) {
-            return_list.push(this.endpoints[endpoint][field])
-          }
-        }
-        return return_list
+      availableFields() {
+        /*
+          Return list of fields that can be added for current endpoint, and aren't yet included.
+          Fields with hidden=true are excluded.
+        */
+        return this.endpoints[this.endpoint].filter(field => !field.hidden && !this.fields.includes(field));
       }
     }
   }

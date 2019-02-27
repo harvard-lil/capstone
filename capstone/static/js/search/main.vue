@@ -6,6 +6,7 @@
                  :field_errors="field_errors"
                  :search_error="search_error"
                  :show_loading="show_loading"
+                 :endpoint="endpoint"
                  :urls="urls"
                  :choices="choices">
     </search-form>
@@ -37,38 +38,20 @@
       /*
         Here we get a number of variables defined in the django template
        */
-      // eslint-disable-next-line
-      this.urls = urls;
-      // eslint-disable-next-line
-      this.choices = choices;
+      this.urls = urls;  // eslint-disable-line
+      this.choices = choices;  // eslint-disable-line
     },
     mounted: function () {
-      if (window.location.hash) {
-        /*
-            Here we're processing the info in the URL parameters
-         */
-        let hash = window.location.hash.substr(1);
-        let endpoint = this.getHashEndpoint(hash);
-        let fields = this.getHashFilterFields(hash);
-        let params = this.getHashParams(hash);
-        if (params.hasOwnProperty("page")) {
-          this.page = params['page'] - 1;
-        }
-        if (params.hasOwnProperty("cursor")) {
-          this.cursors[this.page] = params['cursor'];
-        }
-        if (params.hasOwnProperty("page_size")) {
-          this.page_size = params['page_size'];
-        }
-        if (this.$refs.searchform.endpoint !== endpoint) {
-             // eslint-disable-next-line
-          console.log("needing to pass in , fields", fields)
-          this.$refs.searchform.endpoint = endpoint;
-        }
-
-        this.newSearch(fields, endpoint, true);
-      }
-
+      /* Read url state when first loaded. */
+        console.log("ROUTE LOADED", arguments);
+      this.handleRouteUpdate(this.$route);
+    },
+    watch: {
+      /* Read url state on change. */
+      '$route': function (route, oldRoute) {
+        console.log("ROUTE UPDATED", arguments);
+        this.handleRouteUpdate(route, oldRoute);
+      },
     },
     components: {
       'search-form': SearchForm,
@@ -95,55 +78,97 @@
       }
     },
     methods: {
-      newSearch: function (fields, endpoint, loaded_from_url = false) {
+      routeComparisonString(route) {
+        /* Construct a stable comparison string for the given route, ignoring pagination parameters */
+        if (!route)
+          return '';
+        const ignoreKeys = {cursor: true, page: true};
+        const query = route.query;
+        const queryKeys = Object.keys(query).filter(key => !ignoreKeys[key]);
+        queryKeys.sort();
+        return route.params.endpoint + '|' + queryKeys.map(key => `${key}:${query[key]}`).join('|');
+      },
+      handleRouteUpdate(route, oldRoute) {
         /*
-         Sets us up for a new search.
-
-         Side Effects:
-           - Sets the correct endpoint and changes the visible fields
-           - Resets any existing results via resetResults()
-           - Calls triggers the actual search via nextPage()
+          When the URL hash changes, update all state as appropriate:
+          - set current endpoint
+          - show appropriate fields
+          - reset state variables if endpoint/fields have changed
+          - show search results
         */
+        const query = route.query;
+        const searchform = this.$refs.searchform;
 
-        if (this.$refs.searchform.fields != fields && fields.length > 0) {
-          this.$refs.searchform.replaceFields(fields);
-        }
-        this.endpoint = endpoint;
-        if (!loaded_from_url) {
+        // if route changes (other than pagination), reset state, set endpoint and fields
+        if (this.routeComparisonString(route) !== this.routeComparisonString(oldRoute)) {
           this.resetResults();
+          this.endpoint = route.params.endpoint;
+
+          // load search fields and values from query params
+          let fields = [];
+          let blankFields = searchform.endpoints[this.endpoint];
+          for (const field of blankFields) {
+            if (query[field.name]) {
+              field.value = query[field.name];
+              fields.push(field);
+            }
+          }
+
+          // if no search fields included in query, show default fields
+          if (!fields.length)
+            fields = blankFields.filter(endpoint => endpoint.default);
+
+          searchform.fields = fields;
         }
-        this.goToPage(this.page);
+
+        // handle page=n parameter: if it is 1 or greater, we show the requested search result page
+        const newPage = query.page ? parseInt(query.page) - 1 : undefined;
+        if (newPage >= 0) {
+          this.page = newPage;
+          if (query.cursor)
+            this.cursors[this.page] = query.cursor;
+
+          // render results if we have enough information to do so:
+          if (this.page === 0 || this.results[this.page] || this.cursors[this.page]) {
+            this.getResultsPage().then(()=>{
+              this.scrollToResults();
+
+              // set variables for pagination display -- result count and back and next buttons
+              this.last_page = !this.cursors[this.page + 1];
+              this.first_page = this.page === 0;
+              this.first_result_number = 1 + this.page_size * this.page;
+              this.last_result_number = this.first_result_number + this.results[this.page].length - 1;
+            });
+          }
+        }
       },
 
+      newSearch() { this.goToPage(0) },
       nextPage() { this.goToPage(this.page + 1) },
       prevPage() { this.goToPage(this.page - 1) },
       goToPage: function(page) {
-        /*
-          Gets the given page of results. If we've already loaded it, we pull it from memory
-          rather than getting it from the API twice
+        /* Update URL hash to show the requested search result page. */
+        this.page = page;
 
-          Side Effects:
-            - Updates URL hash via updateUrlHash()
-            - Sets last page/first page flags
-            - Changes the results page, which will change the list of visible cases in result-list
-            - Gets 1 page of results (and therefore changes lots of other stuff) with getResultsPage()
-         */
-        // we can load the requested page if it is the first page, or we have results cached, or we have a cursor cached
-        if (page === 0 || this.results[page] || this.cursors[page]) {
-          this.page = page;
-          this.updateUrlHash();
-          this.getResultsPage().then(()=>{
-            this.scrollToResults();
+        // calculate query string from search fields and pagination variables
+        const query = {
+          page: this.page + 1
+        };
+        if (this.cursors[this.page])
+          query.cursor = this.cursors[this.page];
+        for (const field of this.$refs.searchform.fields)
+          if (field.value)
+            query[field.name] = field.value;
 
-            // set variables for pagination display -- result count and back and next buttons
-            this.last_page = !this.cursors[this.page + 1];
-            this.first_page = this.page === 0;
-            this.first_result_number = 1 + this.page_size * this.page;
-            this.last_result_number = this.first_result_number + this.results[this.page].length - 1;
-          });
-        }
+        // push new route
+        this.$router.push({
+          name: 'endpoint',
+          params: { endpoint: this.endpoint },
+          query: query,
+        });
       },
-      getResultsPage: function () {
+
+      getResultsPage() {
         /*
           This actually performs the search, and it puts the cursors and results in their respective arrays
 
@@ -175,20 +200,14 @@
           })
           .then((results_json)=>{
             this.hitcount = results_json.count;
+
+            // extract cursors
             let next_page_url = results_json.next;
             let prev_page_url = results_json.previous;
-
-            if (!this.cursors[this.page]) {
-              this.cursors[this.page] = this.getCursorFromUrl(query_url);
-            }
-
-            if (!this.cursors[this.page - 1] && prev_page_url) {
+            if (this.page > 1 && !this.cursors[this.page - 1] && prev_page_url)
               this.cursors[this.page - 1] = this.getCursorFromUrl(prev_page_url);
-            }
-
-            if (!this.cursors[this.page + 1] && next_page_url) {
+            if (!this.cursors[this.page + 1] && next_page_url)
               this.cursors[this.page + 1] = this.getCursorFromUrl(next_page_url);
-            }
 
             // use this.$set to set array value with reactivity -- see https://vuejs.org/v2/guide/list.html#Caveats
             this.$set(this.results, this.page, results_json.results);
@@ -220,24 +239,10 @@
               this.search_error = "Search error: failed to load results from " + query_url;
             }
 
-            console.log("Search error:", response);
+            console.log("Search error:", response);  // eslint-disable-line
             throw response;  // in case callers want to do further error handling
           });
 
-      },
-      updateUrlHash: function () {
-        /*
-         Updates the URL with the value of component-scoped variables.
-
-         Side Effects:
-           - changes the URL hash
-        */
-        window.location.hash = this.generateUrlHash(
-            this.endpoint,
-            this.cursors,
-            this.page,
-            this.page_size,
-            this.$refs.searchform.fields);
       },
       resetResults: function () {
         /*
@@ -267,73 +272,17 @@
       },
       seeCases: function (parameter, value) {
         /*
-         A user has a "see cases" button on search hits in non-case endppints, which starts a new case search
+         A user has a "see cases" button on search hits in non-case endpoints, which starts a new case search
          filtering for the specified jurisdiction/etc.
 
          Side Effects:
-         - Resets the fields variable changes the endpoint, and starts a new search via newSearch()
+         - Set URL hash for new search
          */
-        let fields = [{"label": parameter, "name": parameter, "value": value}];
-        this.newSearch(fields, "cases");
-      },
-      getHashEndpoint: function (hash) {
-        /* Gets endpoint from URL hash, validating it against this.$refs.searchform.endpoints, */
-        if (!hasOwnProperty.call(this.$refs.searchform.endpoints, hash.split('filters')[0].split("/")[0])) {
-          return;
-        }
-        return hash.split('filters')[0].split("/")[0];
-      },
-      getHashParams: function (hash) {
-        /* Gets the parameters (not including search terms/filters) from the URL hash */
-
-        let param_chunks = hash.split("filters")[0].split('/');
-
-        return param_chunks.reduce(function (obj, chunk) {
-          if (!chunk.includes(':')) {
-            return obj;
-          }
-          let [prm, val] = chunk.split(':');
-          obj[prm] = val;
-          return obj;
-        }, {});
-      },
-      getHashFilterFields: function (hash) {
-        /* Gets the search terms/filters from  URL hash, and gets field objects via searchform.getFieldEntry() */
-        let filters = hash.split("filters")[1].split('/');
-        let searchform = this.$refs.searchform;
-        return filters.reduce(function (arr, chunk) {
-          if (!chunk.includes(':')) {
-            return arr;
-          }
-          let [fld, val] = chunk.split(':');
-          let new_field = searchform.getFieldEntry(fld, searchform.endpoint);
-          if (!new_field) {
-            return arr;
-          }
-          new_field['value'] = decodeURIComponent(val);
-          arr.push(new_field);
-          return arr;
-        }, []);
-      },
-      generateUrlHash: function (endpoint, cursors, page, page_size, fields) {
-        /* returns new URL hash */
-        let params = {
-          'page': page + 1,
-          'page_size': page_size
-        };
-        if (cursors[page])
-          params.cursor = cursors[page];
-
-        let param_string = Object.keys(params)
-          .map(param_name => `${param_name}:${params[param_name]}/`)
-          .join('');
-
-        let filters_string = fields
-          .filter(field => field['value'])  // remove fields with non-truthy value
-          .map(field => `${encodeURIComponent(field['name'])}:${encodeURIComponent(field['value'])}/`)
-          .join('');
-
-        return `#${endpoint}/${param_string}filters/${filters_string}`;
+        this.$router.push({
+          name: 'endpoint',
+          params: { endpoint: 'cases' },
+          query: { [parameter]: value, page: 1 },
+        });
       },
       getCursorFromUrl: function (url) {
         /* Extracts and returns cursor from given url. Return null if url is malformed or doesn't contain a cursor. */

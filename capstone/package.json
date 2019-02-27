@@ -24,6 +24,7 @@
     "popper.js": "^1.14.7",
     "sass-loader": "^7.1.0",
     "url-polyfill": "^1.1.3",
+    "vue-router": "^3.0.2",
     "vue-template-compiler": "^2.5.17",
     "webpack-bundle-tracker": "^0.4.2-beta"
   },
