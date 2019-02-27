@@ -113,6 +113,9 @@ HOSTS = {
         'urlconf': 'capapi.api_urls',
     },
 }
+API_HOST_OVERRIDE = None
+# useful for pointing dev JS at prod API for testing. E.g., add this to settings.py:
+# API_HOST_OVERRIDE = 'https://api.case.law'
 
 TEMPLATES = [
     {
