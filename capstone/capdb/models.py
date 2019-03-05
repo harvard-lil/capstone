@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 import django.contrib.postgres.search as pg_search
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
+from django.db.models import Q
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from lxml import etree
@@ -124,6 +125,14 @@ def fetch_relations(instance, select_relations=None, prefetch_relations=None):
             if not hasattr(sub_instance, '_prefetched_objects_cache'):
                 sub_instance._prefetched_objects_cache = {}
             sub_instance._prefetched_objects_cache[sub_field_name] = sub_new_instance._prefetched_objects_cache[sub_field_name]
+
+
+class SmallForeignKey(models.ForeignKey):
+    """
+        Foreign keys are usually the same size as the related column. This forces the foreign key to be a smallint instead.
+    """
+    def db_type(self, connection):
+        return 'smallint'
 
 
 class AutoSlugMixin:
@@ -1285,40 +1294,20 @@ class NgramWord(models.Model):
         A single known token, simply mapping an ID to a text string.
         We use this to avoid duplicating the same word in multiple ngrams.
     """
-    word = models.CharField(max_length=10000, unique=True)
+    word = models.CharField(max_length=10000, unique=True, db_index=True)
 
     def __str__(self):
         return self.word
 
-    _word_cache = None
-
-    @classmethod
-    def word_to_id(cls, word):
-        """
-            Return the ID for a given word, creating a new record if necessary. Use a cache to avoid duplicate queries.
-            This is currently intended only for use when indexing, not when searching.
-        """
-        if cls._word_cache is None:
-            cls._word_cache = dict(NgramWord.objects.all().values_list('word', 'pk'))
-            cls._word_cache[None] = None
-        if word not in cls._word_cache:
-            obj, created = cls.objects.get_or_create(word=word)
-            cls._word_cache[word] = obj.id
-        return cls._word_cache[word]
-
 
 class Ngram(models.Model):
     """
-        A record for a trigram and the number of times it appeared in a particular year and jurisdiction.
-        Nulls in w2 and w3 indicate trigrams at the end of documents.
+        A record for a 1-gram, 2-gram, or 3-gram.
+        Nulls in w2 and w3 indicate 1-grams and 2-grams.
     """
     w1 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w1')
     w2 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w2', null=True)
     w3 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w3', null=True)
-    count = models.IntegerField()
-
-    jurisdiction = models.ForeignKey(Jurisdiction, to_field='slug', on_delete=models.CASCADE, related_name='ngrams')
-    year = models.IntegerField()
 
     class Meta:
         indexes = [
@@ -1327,6 +1316,39 @@ class Ngram(models.Model):
 
     def __str__(self):
         return " ".join(w.word for w in (self.w1, self.w2, self.w3) if w)
+
+
+class NgramObservationQuerySet(models.QuerySet):
+    def from_string(self, s):
+        """ Search for ngrams by string. """
+        parts = s.split()
+        parts += [None] * (3-len(parts))
+        query = Q()
+        for i, part in enumerate(parts):
+            if part:
+                query &= Q(**{"ngram__w%s__word" % (i+1): part})
+            else:
+                query &= Q(**{"ngram__w%s" % (i+1): None})
+        return self.filter(query)
+
+
+class NgramObservation(models.Model):
+    """
+        A single data point of counts for an ngram for a given jurisdiction and year.
+        jurisdiction=Null indicates total count for a given year.
+        jurisdiction=Null, year=Null indicates total count across all years.
+    """
+    id = models.BigAutoField(primary_key=True)
+    ngram = models.ForeignKey(Ngram, on_delete=models.CASCADE, related_name='observations')
+    instance_count = models.IntegerField()
+    document_count = models.IntegerField()
+    year = models.SmallIntegerField(null=True)
+    jurisdiction = SmallForeignKey(Jurisdiction, null=True, on_delete=models.CASCADE, related_name='ngrams')
+
+    objects = NgramObservationQuerySet.as_manager()
+
+    def __str__(self):
+        return " ".join(str(i) for i in [self.ngram, self.jurisdiction or "all jurisdictions", self.year or "all years"])
 
 
 class Snippet(models.Model):
