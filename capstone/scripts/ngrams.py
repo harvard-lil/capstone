@@ -1,6 +1,9 @@
 import copy
+import csv
+import itertools
 import json
 import lzma
+import re
 import tempfile
 from contextlib import ExitStack, contextmanager
 from heapq import merge
@@ -10,14 +13,18 @@ import redis_lock
 import unicodedata
 from celery import shared_task
 from django.conf import settings
+from django.core.management.color import no_style
+from django.db import connections, router
+from django.db.models import Q
 from tqdm import tqdm
 
-from capdb.models import Jurisdiction, CaseMetadata, CaseText
+from capdb.models import Jurisdiction, CaseMetadata, CaseText, NgramObservation, Ngram, NgramWord
 from scripts.helpers import ordered_query_iterator
 from capdb.storages import ngram_storage, redis_client
 
 nltk.data.path = settings.NLTK_PATH
 unicode_translate_table = dict((ord(a), ord(b)) for a, b in zip(u'\u201c\u201d\u2018\u2019', u'""\'\''))
+ingest_threshold = 10  # minimum gram occurrences across dataset to be loaded into database
 
 # custom tokenizer to disable separating contractions and possessives into separate words
 tokenizer = copy.copy(nltk.tokenize._treebank_word_tokenizer)
@@ -186,6 +193,25 @@ def ngram_jurisdiction(jurisdiction_id, replace_existing=False, max_n=3):
             with read_write_totals() as totals:
                 totals[out_path] = {'grams': counts['total_tokens'], 'documents': counts['total_documents']}
 
+@contextmanager
+def read_xz(path):
+    """
+        Open ngram xz from ngram_storage.
+        File should be a .tsv.xz with the header "gram\tinstances\tdocuments".
+        Header will be removed before file handle is returned.
+    """
+    with ngram_storage.open(path, 'rb') as in_raw, lzma.open(in_raw) as in_file:
+        next(in_file)
+        yield in_file
+
+@contextmanager
+def read_xzs(paths):
+    """
+        Return read_xz(path) for all paths.
+    """
+    with ExitStack() as stack:
+        # Wrap in iter() so merge() will work
+        yield [iter(stack.enter_context(read_xz(path))) for path in paths]
 
 def merge_files(paths, out_path):
     """
@@ -195,20 +221,7 @@ def merge_files(paths, out_path):
     """
 
     # open output file for writing
-    with get_writer_for_path(out_path) as out, ExitStack() as stack:
-
-        # open all input files for reading, with lzma to remove xzip compression
-        files = [
-            iter(
-                stack.enter_context(
-                    lzma.open(
-                        stack.enter_context(
-                            ngram_storage.open(filename, 'rb')
-            )))) for filename in paths]
-
-        # skip header line of each input file
-        for f in files:
-            next(f)
+    with get_writer_for_path(out_path) as out, read_xzs(paths) as files:
 
         # track value of each previous line so we can combine counts
         last_gram = last_instances = last_documents = None
@@ -294,3 +307,203 @@ def merge_total():
         print("Merging %s files into %s" % (len(paths), out_path))
         merge_files(paths, out_path)
 
+def conn_for_model(model):
+    """ Return database connection for a given model. """
+    return connections[router.db_for_write(model)]
+
+def truncate(model):
+    """
+        DELETE all data for given model and ALL TABLES WITH FOREIGN KEYS TO IT.
+        PLEASE THINK THREE TIMES BEFORE USING THIS FUNCTION.
+    """
+    conn_for_model(model).cursor().execute('TRUNCATE TABLE "{0}" CASCADE'.format(model._meta.db_table))
+
+def postgres_copy(model, fields, rows):
+    """
+        Write data to a temp CSV and send to postgres using the COPY command.
+    """
+    # prepare csv to write to postgres
+    with tempfile.SpooledTemporaryFile(max_size=2**30, mode='w') as tmp:
+        tmp_csv = csv.writer(tmp)
+        tmp_csv.writerow(fields)
+        tmp_csv.writerows(rows)
+        tmp.flush()
+        tmp.seek(0)
+
+        # send csv
+        connection = conn_for_model(model)
+        cursor = connection.cursor()
+        sql = "COPY %s (%s) FROM STDIN ENCODING 'UTF8' CSV HEADER" % (model._meta.db_table, ", ".join(fields))
+        cursor.copy_expert(sql, tmp)
+
+        # update auto-increment sequences
+        connection.ops.sequence_reset_sql(no_style(), [model])
+
+def load_database():
+    """
+        Load all ngram data from ngram_storage into the NgramWord, Ngram, and NgramObservation tables.
+    """
+
+    # wipe everything
+    truncate(NgramObservation)
+    truncate(Ngram)
+    truncate(NgramWord)
+
+    ### populate NgramWord ###
+    # use the total-1.tsv.xz file to populate NgramWord each word that we know about
+    print("Ingesting NgramWords")
+    with read_xz('total/total-1.tsv.xz') as in_file:
+        words = ([line.split(b'\t', 1)[0].decode('utf8')] for line in in_file)
+        postgres_copy(NgramWord, ['word'], words)
+
+    ### populate Ngram ###
+    # Use total-1.tsv.xz, total-2.tsv.xz, and total-3.tsv.xz to populate Ngram with each distinct ngram we know about
+    # Filter out those with frequency below ingest_total
+    print("Ingesting Ngram")
+    word_lookup = {bytes(word, 'utf8'): id for word, id in NgramWord.objects.values_list('word', 'pk')}
+    def ngrams_iter():
+        """ Yield [<wordID>, <wordID>, <wordID>] for each gram in each totals file, padding with None for shorter grams. """
+        for i in range(1, 4):
+            with read_xz('total/total-%s.tsv.xz' % i) as in_file:
+                for line in tqdm(in_file):
+                    gram, instances, documents = line.split(b'\t')
+                    if int(instances) < ingest_threshold:
+                        # when filtering out 1-grams, also remove them from word_lookup so we can skip them when
+                        # ingesting single observations later
+                        if i == 1:
+                            del word_lookup[gram]
+                        continue
+                    # look up word IDs from word_lookup
+                    word_ids = [word_lookup[word] for word in line.split(b'\t', 1)[0].split(b' ')]
+                    # pad shorter grams with None
+                    word_ids += [None] * (3-i)
+                    yield word_ids
+    postgres_copy(Ngram, ['w1_id', 'w2_id', 'w3_id'], ngrams_iter())
+
+    ### populate NgramObservation ###
+    print("Ingesting NgramObservation")
+
+    # First we build up a list of all files in ngram_storage that have ngrams in them, along with their year
+    # (or None if no year) and jurisdiction (or None if no jurisdiction). Data is parsed out of the filenames.
+    path_year_jurs = []
+    jurisdiction_lookup = dict(Jurisdiction.objects.values_list('slug', 'pk'))
+    for path in ngram_storage.iter_files_recursive():
+        # handle "jurisdiction_year/ill_1887-1.tsv.xz"
+        m = re.match(r'jurisdiction_year/([^/]+)_(\d{4})-[123]\.tsv\.xz', path)
+        if m:
+            path_year_jurs.append([path, int(m.group(2)), jurisdiction_lookup[m.group(1)]])
+            continue
+
+        # handle "year/1887-1.tsv.xz"
+        m = re.match(r'year/(\d{4})-[123]\.tsv\.xz', path)
+        if m:
+            path_year_jurs.append([path, int(m.group(1)), None])
+            continue
+
+        # handle "total/total-1.tsv.xz"
+        m = re.match(r'total/total-[123].tsv.xz', path)
+        if m:
+            path_year_jurs.append([path, None, None])
+
+    # Next we're going to read all files together, merging lines in alphabetical order so we can handle all observations
+    # for a given gram at the same time. This reduces queries on the Ngram table as we go along.
+
+    # Open all files:
+    with read_xzs(p[0] for p in path_year_jurs) as files:
+
+        # turn each file handle into an iterator to yield its index in path_year_jurs and line
+        def iter_with_n(iter, n):
+            for item in iter:
+                yield item, n
+        file_iters = [iter_with_n(f, path_index) for path_index, f in enumerate(files)]
+
+        # merge all files alphabetically
+        extra = []
+        batch_size = 100000
+        line_iter = tqdm(merge(*file_iters))
+
+        # Run this loop for each batch of batch_size lines. We're going to read the lines; group them by gram;
+        # efficiently fetch Ngram IDs for all grams in the batch; and then write all observations from the batch
+        # with a postgres COPY.
+        while True:
+
+            # fetch a batch of lines
+            lines = extra + list(itertools.islice(line_iter, batch_size))
+            if not lines:
+                break
+
+            # peel off last gram and save for next batch, so we don't split up grams.
+            # this makes sure that it's safe to filter out grams that fall below ingest_threshold
+            extra = [lines.pop()]
+            last_gram = extra[0][0].split(b'\t', 1)[0]
+            while lines and lines[-1][0].split(b'\t', 1)[0] == last_gram:
+                extra.append(lines.pop())
+            if not lines:
+                lines = extra
+                extra = []
+
+            # organize all lines from this chunk into a data structure like
+            # grams = {
+            #      (<wordID>, <wordID>, <wordID>): {
+            #           'count': <total instances>,
+            #           'entries': [
+            #                [<instance count>, <document count>, <year>, <jurisdictionID],
+            #           ]})}
+            grams = defaultdict(lambda: {'count': 0, 'entries': []})
+            for line, path_index in lines:
+
+                gram, instances, documents = line.split(b'\t')
+                instances = int(instances)
+                documents = int(documents)
+
+                # look up word IDs
+                try:
+                    words = tuple(word_lookup[word] for word in gram.split(b' '))
+                except KeyError:
+                    # gram has a word below the threshold -- skip
+                    continue
+
+                # pad with None for 1- or 2-grams
+                words += (None,) * (3-len(words))
+
+                # add to grams dict
+                year, jur = path_year_jurs[path_index][1:]
+                if year and jur:
+                    grams[words]['count'] += instances
+                grams[words]['entries'].append([instances, documents, year, jur])
+
+            # filter out grams that fall below threshold
+            grams = {k:v for k,v in grams.items() if v['count'] >= ingest_threshold}
+
+            # build tree of word IDs in this batch, like
+            # tree = {
+            #   <w1>: {
+            #       <w2>: [<w3>, <w3>]
+            # }}
+            tree = defaultdict(lambda: defaultdict(list))
+            for gram in grams.keys():
+                tree[gram[0]][gram[1]].append(gram[2])
+
+            # build SQL query from tree, like
+            #   WHERE (w1 = <id> AND (w2 = <id> AND (w3 IN (<id>, <id>)))) OR (w1 = <id> AND ...)
+            query = Q()
+            for w1, w2s in tree.items():
+                q2 = Q()
+                for w2, w3s in w2s.items():
+                    if w2:
+                        w3s_no_null = [w for w in w3s if w]
+                        q3 = Q(w3__in=w3s_no_null)
+                        if len(w3s_no_null) < len(w3s):
+                            q3 |= Q(w3=None)
+                        q2 |= Q(w2=w2) & q3
+                    else:
+                        q2 |= Q(w2=None)
+                query |= Q(w1=w1) & q2
+
+            # use tree to create lookup table of Ngram IDs
+            gram_lookup = {(w1, w2, w3): pk for w1, w2, w3, pk in Ngram.objects.filter(query).values_list('w1_id', 'w2_id', 'w3_id', 'pk')}
+
+            # save all grams
+            fields = ['ngram_id', 'instance_count', 'document_count', 'year', 'jurisdiction_id']
+            rows = ([gram_lookup[words]]+entry for words, gram in grams.items() for entry in gram['entries'])
+            postgres_copy(NgramObservation, fields, rows)
