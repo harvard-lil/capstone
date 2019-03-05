@@ -6,8 +6,8 @@ from .helpers import parse_xml, left_strip_text
 tag_map = {"author": "p", "opinion": "article", "casebody": "section",
            "citation": "p", "correction": "aside", "court": "p",
            "decisiondate": "p", "disposition": "p", "docketnumber": "p",
-           "headnotes": "aside", "history": "p", "otherdate": "p",
-           "parties": "h4", "seealso": "aside", "summary": "aside",
+           "headnotes": "p", "history": "p", "otherdate": "p",
+           "parties": "h4", "seealso": "aside", "summary": "p",
            "syllabus": "p", "footnote": "aside", "attorneys": "p",
            "judges": "p", "bracketnum": "a", "footnotemark": "a",
            "pagebreak": "br"}
