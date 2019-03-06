@@ -41,6 +41,20 @@ def generate_html(case_xml, tag_map=tag_map):
     # traverse the casebody tree and convert elements
     for element in casebody_tree.iter():
 
+        # specify which actual printed book pages these elements are on
+        if 'pgmap' in element.attrib:
+            pages = element.attrib['pgmap'].split(" ")
+            if len(pages) > 1:
+                # the parsed_xml line gets the actual page number from the structMap section
+                book_pages = [
+                    parsed_xml('mets|div[ORDER="{}"]'.format(page.split("(")[0]))[0].attrib['ORDERLABEL']
+                    for page in pages
+                ]
+                element.attrib['printedpagenumber'] = " ".join(book_pages)
+            else:
+                book_pages = parsed_xml('mets|div[ORDER="{}"]'.format(element.attrib['pgmap']))[0].attrib['ORDERLABEL']
+                element.attrib['printedpagenumber'] = book_pages
+
         # skip any anchor tags we generated
         if 'class' in element.attrib:
             if element.attrib['class'] == 'footnote_anchor' or element.attrib['class'] == 'headnote_anchor':
