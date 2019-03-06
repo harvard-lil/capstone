@@ -7,7 +7,7 @@ import re
 import tempfile
 from contextlib import ExitStack, contextmanager
 from heapq import merge
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, OrderedDict
 import nltk
 import redis_lock
 import unicodedata
@@ -323,7 +323,7 @@ def postgres_copy(model, fields, rows):
         Write data to a temp CSV and send to postgres using the COPY command.
     """
     # prepare csv to write to postgres
-    with tempfile.SpooledTemporaryFile(max_size=2**30, mode='w') as tmp:
+    with tempfile.SpooledTemporaryFile(max_size=2**30, mode='w+') as tmp:
         tmp_csv = csv.writer(tmp)
         tmp_csv.writerow(fields)
         tmp_csv.writerows(rows)
@@ -345,40 +345,47 @@ def load_database():
     """
 
     # wipe everything
-    truncate(NgramObservation)
-    truncate(Ngram)
-    truncate(NgramWord)
+    # truncate(NgramObservation)
+    # truncate(Ngram)
+    # truncate(NgramWord)
 
     ### populate NgramWord ###
     # use the total-1.tsv.xz file to populate NgramWord each word that we know about
     print("Ingesting NgramWords")
-    with read_xz('total/total-1.tsv.xz') as in_file:
-        words = ([line.split(b'\t', 1)[0].decode('utf8')] for line in in_file)
-        postgres_copy(NgramWord, ['word'], words)
+    if NgramWord.objects.exists():
+        print(" - Skipping; NgramWord objects already exist")
+    else:
+        with read_xz('total/total-1.tsv.xz') as in_file:
+            words = ([line.split(b'\t', 1)[0].decode('utf8')] for line in in_file)
+            postgres_copy(NgramWord, ['word'], words)
 
     ### populate Ngram ###
     # Use total-1.tsv.xz, total-2.tsv.xz, and total-3.tsv.xz to populate Ngram with each distinct ngram we know about
     # Filter out those with frequency below ingest_total
     print("Ingesting Ngram")
-    word_lookup = {bytes(word, 'utf8'): id for word, id in NgramWord.objects.values_list('word', 'pk')}
-    def ngrams_iter():
-        """ Yield [<wordID>, <wordID>, <wordID>] for each gram in each totals file, padding with None for shorter grams. """
-        for i in range(1, 4):
-            with read_xz('total/total-%s.tsv.xz' % i) as in_file:
-                for line in tqdm(in_file):
-                    gram, instances, documents = line.split(b'\t')
-                    if int(instances) < ingest_threshold:
-                        # when filtering out 1-grams, also remove them from word_lookup so we can skip them when
-                        # ingesting single observations later
-                        if i == 1:
-                            del word_lookup[gram]
-                        continue
-                    # look up word IDs from word_lookup
-                    word_ids = [word_lookup[word] for word in line.split(b'\t', 1)[0].split(b' ')]
-                    # pad shorter grams with None
-                    word_ids += [None] * (3-i)
-                    yield word_ids
-    postgres_copy(Ngram, ['w1_id', 'w2_id', 'w3_id'], ngrams_iter())
+    if Ngram.objects.exists():
+        print(" - Skipping; Ngram objects already eixst")
+        word_lookup = {bytes(word, 'utf8'): id for word, id in NgramWord.objects.exclude(w1=None).values_list('word', 'pk')}
+    else:
+        word_lookup = {bytes(word, 'utf8'): id for word, id in NgramWord.objects.values_list('word', 'pk')}
+        def ngrams_iter():
+            """ Yield [<wordID>, <wordID>, <wordID>] for each gram in each totals file, padding with None for shorter grams. """
+            for i in range(1, 4):
+                with read_xz('total/total-%s.tsv.xz' % i) as in_file:
+                    for line in tqdm(in_file):
+                        gram, instances, documents = line.split(b'\t')
+                        if int(instances) < ingest_threshold:
+                            # when filtering out 1-grams, also remove them from word_lookup so we can skip them when
+                            # ingesting single observations later
+                            if i == 1:
+                                del word_lookup[gram]
+                            continue
+                        # look up word IDs from word_lookup
+                        word_ids = [word_lookup[word] for word in line.split(b'\t', 1)[0].split(b' ')]
+                        # pad shorter grams with None
+                        word_ids += [None] * (3-i)
+                        yield word_ids
+        postgres_copy(Ngram, ['w1_id', 'w2_id', 'w3_id'], ngrams_iter())
 
     ### populate NgramObservation ###
     print("Ingesting NgramObservation")
@@ -422,6 +429,17 @@ def load_database():
         batch_size = 100000
         line_iter = tqdm(merge(*file_iters))
 
+        # If some NgramObservation objects already exist, fetch the ngram of the last object, and skip past that one
+        # in the line_iter stream.
+        if NgramObservation.objects.exists():
+            last_gram = str(NgramObservation.objects.order_by('-pk').first().ngram).encode('utf8')
+            print(" - Some NgramObservation objects already exist. Skipping all grams through %s" % last_gram)
+            for line in line_iter:
+                if line[0].split(b'\t', 1)[0] > last_gram:
+                    # store the final line in extra so it gets processed
+                    extra = [line]
+                    break
+
         # Run this loop for each batch of batch_size lines. We're going to read the lines; group them by gram;
         # efficiently fetch Ngram IDs for all grams in the batch; and then write all observations from the batch
         # with a postgres COPY.
@@ -449,7 +467,7 @@ def load_database():
             #           'entries': [
             #                [<instance count>, <document count>, <year>, <jurisdictionID],
             #           ]})}
-            grams = defaultdict(lambda: {'count': 0, 'entries': []})
+            grams = OrderedDict()  # make sure of ordering so grams go into db in alphabetical order
             for line, path_index in lines:
 
                 gram, instances, documents = line.split(b'\t')
@@ -467,13 +485,14 @@ def load_database():
                 words += (None,) * (3-len(words))
 
                 # add to grams dict
+                grams.setdefault(words, {'count': 0, 'entries': []})
                 year, jur = path_year_jurs[path_index][1:]
                 if year and jur:
                     grams[words]['count'] += instances
                 grams[words]['entries'].append([instances, documents, year, jur])
 
             # filter out grams that fall below threshold
-            grams = {k:v for k,v in grams.items() if v['count'] >= ingest_threshold}
+            grams = OrderedDict((k, v) for k, v in grams.items() if v['count'] >= ingest_threshold)
 
             # build tree of word IDs in this batch, like
             # tree = {
