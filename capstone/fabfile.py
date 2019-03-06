@@ -926,3 +926,9 @@ def sample_captar_images(output_folder='samples'):
                     out_path,
                     BytesIO(volume_storage.contents(image, 'rb'))  # passing file handle directly doesn't work because S3 storage strips file wrappers
                 )
+
+
+@task
+def make_pdf(volume_folder):
+    import scripts.make_pdf
+    scripts.make_pdf.make_pdf(volume_folder)
