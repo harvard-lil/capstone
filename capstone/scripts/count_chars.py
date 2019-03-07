@@ -4,7 +4,7 @@ from celery import shared_task
 from capdb.models import CaseXML
 import json
 from os import mkdir
-from scripts.helpers import extract_casebody
+
 
 def count_chars_in_all_cases(path):
     """
@@ -37,7 +37,7 @@ def count_case_chars(case_xml_id, path, write_to_disk=False):
     reporter = case_metadata.reporter
     volume = case_metadata.volume
     charlist = list(case_xml.orig_xml)
-    case_body_char_list = list(extract_casebody(case_xml.orig_xml).text())
+    case_body_char_list = list(case_xml.extract_casebody().text())
 
     output = {}
     output['metadata_db_id'] = case_metadata.pk

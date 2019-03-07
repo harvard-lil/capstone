@@ -6,7 +6,7 @@ from scripts.helpers import serialize_xml, parse_xml
 from scripts.generate_case_html import generate_html, tag_map
 from scripts.merge_alto_style import generate_styled_case_xml
 from scripts.compare_alto_case import validate
-from capdb.models import CaseXML
+from capdb.models import CaseXML, CaseMetadata
 
 
 def test_serialize_xml_should_not_modify_input_xml(unaltered_alto_xml):
@@ -27,15 +27,10 @@ def test_serialize_xml_should_not_modify_input_xml(unaltered_alto_xml):
 
 @pytest.mark.django_db
 def test_generate_html_tags(ingest_case_xml):
-    for case in CaseXML.objects.all():
-        parsed_case_xml = parse_xml(case.orig_xml)
-
-        # shouldn't attempt to parse a duplicative case
-        if parsed_case_xml('duplicative|casebody'):
-            assert generate_html(case.orig_xml).startswith("<h1 class='error'>")
-            continue
+    for case in CaseMetadata.objects.in_scope():
+        parsed_case_xml = case.case_xml.get_parsed_xml()
         casebody_tree = parsed_case_xml("casebody|casebody")[0]
-        casebody_html = generate_html(case.orig_xml).replace('\n', '').replace('\r', '').replace('\t', ' ')
+        casebody_html = generate_html(case.case_xml.extract_casebody()).replace('\n', '').replace('\r', '').replace('\t', ' ')
 
         for element in casebody_tree.iter():
             old_tag = element.tag.split("}")[1]
@@ -48,18 +43,7 @@ def test_generate_html_tags(ingest_case_xml):
                 class_search = r'<' + re.escape(new_tag) + r'[^>]*class="' + re.escape(old_tag)
                 assert re.search(class_search, casebody_html, re.IGNORECASE) is not None
 
-@pytest.mark.django_db
-def test_generate_html_footnotes(ingest_case_xml):
-    for case in CaseXML.objects.all():
-        parsed_case_xml = parse_xml(case.orig_xml)
-
-        # shouldn't attempt to parse a duplicative case
-        if parsed_case_xml('duplicative|casebody'):
-            assert generate_html(case.orig_xml).startswith("<h1 class='error'>")
-            continue
-        casebody_html = generate_html(case.orig_xml).replace('\n', '').replace('\r', '').replace('\t', ' ')
         parsed_html = PyQuery(casebody_html)
-
         for footnote in parsed_case_xml("casebody|footnote"):
             footnote_id = "footnote_" + footnote.attrib['label']
             assert parsed_html('aside[id="%s"]' % footnote_id).length == 1
@@ -67,16 +51,9 @@ def test_generate_html_footnotes(ingest_case_xml):
 
 @pytest.mark.django_db
 def test_html_pagebreak(ingest_case_xml):
-    for case in CaseXML.objects.all():
-        parsed_case_xml = parse_xml(case.orig_xml)
-
-        # shouldn't attempt to parse a duplicative case
-        if parsed_case_xml('duplicative|casebody'):
-            assert generate_html(case.orig_xml).startswith("<h1 class='error'>")
-            continue
-
-        styled_xml = generate_styled_case_xml(case, strict = False)
-        styled_html = generate_html(styled_xml)
+    for case in CaseMetadata.objects.in_scope():
+        styled_xml = generate_styled_case_xml(case.case_xml, strict = False)
+        styled_html = generate_html(parse_xml(styled_xml)('casebody|casebody'))
         pb_list = re.findall(r'(.{3})<pagebreak/>(.{3})', styled_xml)
         br_list = re.findall(r'(.{3})<br class="pagebreak" style="page-break-before: always"/>(.{3})', styled_html)
         assert set(pb_list) == set(br_list)
@@ -85,21 +62,15 @@ def test_html_pagebreak(ingest_case_xml):
 @pytest.mark.django_db
 def test_generate_pagebreak(ingest_case_xml):
     page_break_element_search = re.compile(r'\d+\((\d+)\)')
-    for case in CaseXML.objects.all():
+    for case in CaseMetadata.objects.in_scope():
 
         # this test logic is too stupid to handle pagebreaks where multiple pages of footnotes
         # at the end of the opinion. The actual logic does work.
-        if case.metadata.case_id.startswith("WnApp"):
-            continue
-
-        parsed_case_xml = parse_xml(case.orig_xml)
-        # shouldn't attempt to parse a duplicative case
-        if parsed_case_xml('duplicative|casebody'):
-            assert generate_html(case.orig_xml).startswith("<h1 class='error'>")
+        if case.case_id.startswith("WnApp"):
             continue
 
         #generate the styled and page broken XML
-        styled_xml = generate_styled_case_xml(case, strict = False)
+        styled_xml = generate_styled_case_xml(case.case_xml, strict = False)
 
         # get rid of all tags that will interfere with the xml parsing
         strip_tags = r'\<em\>|\<\/em\>|\<strong\>|\<\/strong\>|\<footnotemark\>|\<\/footnotemark\>|\<bracketnum\>|\<\/bracketnum\>'

@@ -269,14 +269,6 @@ def ordered_query_iterator(queryset, chunk_size=1000):
         if i < chunk_size:
             break
         filter = get_filter(order_by, obj)
-            
-def extract_casebody(case_xml):
-    # strip soft hyphens from line endings
-    text = case_xml.replace(u'\xad', '')
-    case = parse_xml(text)
-
-    return case('casebody|casebody')
-
 
 def element_text_iter(el, with_tail=False):
     """

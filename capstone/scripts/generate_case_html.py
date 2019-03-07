@@ -1,7 +1,7 @@
 from lxml import etree
 import re
 
-from .helpers import parse_xml, left_strip_text
+from .helpers import left_strip_text
 
 tag_map = {"author": "p", "opinion": "article", "casebody": "section",
            "citation": "p", "correction": "aside", "court": "p",
@@ -17,18 +17,10 @@ bracketnum_number = re.compile(r'\d')
 headnotes_number = re.compile(r'^(\d+).*')
 
 
-def generate_html(case_xml, tag_map=tag_map):
+def generate_html(casebody, tag_map=tag_map):
     """
-    converts case xml to html
+        Converts case xml to html. casebody should be a pyquery element extracted from case XML.
     """
-    parsed_xml = parse_xml(case_xml)
-
-    # give a descriptive error for duplicative cases
-    if parsed_xml('duplicative|casebody'):
-        return "<h1 class='error'>This case is duplicative and was not fully \
-        processed. It should be available in the original, non-regional \
-        reporter.</h1>"
-    casebody = parsed_xml("casebody|casebody")
     casebody_tree = casebody[0]
 
     # all elements before the first opinion go into a <section class="head-matter"> container

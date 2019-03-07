@@ -167,14 +167,15 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
 
         if casebody['status'] == 'ok':
             # if status is 'ok', we've passed the perms check and have to load orig_xml into casebody['data']
-            orig_xml = case.case_xml.orig_xml
 
             # non-JSON, single-case delivery formats will be handled by custom renderers
             if type(request.accepted_renderer) == HTMLRenderer:
-                data = orig_xml
+                data = case.case_xml.extract_casebody()
                 casebody['title'] = case.full_cite()
             elif type(request.accepted_renderer) == XMLRenderer:
-                data = orig_xml
+                parsed_xml = case.case_xml.get_parsed_xml()
+                case.case_xml.reorder_head_matter(parsed_xml)
+                data = helpers.serialize_xml(parsed_xml)
 
             # for JSON, pick html, xml, or text based on body_format query param
             else:
@@ -182,10 +183,10 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
 
                 if body_format == 'html':
                     # serialize to html
-                    data = generate_html(orig_xml)
+                    data = generate_html(case.case_xml.extract_casebody())
                 elif body_format == 'xml':
                     # serialize to xml
-                    casebody_pq = helpers.extract_casebody(orig_xml)
+                    casebody_pq = case.case_xml.extract_casebody()
 
                     # For the XML output, footnotes have <footnote label="foo">, so we should strip "foo" from the start
                     # of the footnote text.
@@ -198,7 +199,7 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
                     data = re.sub(r"\s{2,}", " ", c.decode())
                 else:
                     # serialize to json
-                    casebody_pq = helpers.extract_casebody(orig_xml)
+                    casebody_pq = case.case_xml.extract_casebody()
 
                     # For the plain text output, footnotes should keep their labels in the text, but we want to make sure
                     # there is a space separating the labels from the first word. Otherwise a text analysis comes up with
