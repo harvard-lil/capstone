@@ -16,7 +16,7 @@ from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
-                             serialize_xml, jurisdiction_translation_long_name, extract_casebody,
+                             serialize_xml, jurisdiction_translation_long_name,
                              short_id_from_s3_key)
 from scripts.process_metadata import get_case_metadata
 
@@ -842,7 +842,7 @@ class CaseMetadata(models.Model):
             case_text = CaseText(metadata=self)
 
         if new_text is None:
-            new_text = extract_casebody(self.case_xml.orig_xml).text()
+            new_text = self.case_xml.extract_casebody().text()
 
         if new_text != case_text.text:
             case_text.text = new_text
@@ -1145,6 +1145,55 @@ class CaseXML(BaseXMLModel):
     def short_id(self):
         """ ID of this case as referred to by volume xml file. """
         return short_id_from_s3_key(self.s3_key)
+
+    def extract_casebody(self, reorder_head_matter=True):
+        """
+            Return pyquery casebody element for this case.
+            By default, this strips soft hyphens and reorders head matter to match the print order.
+        """
+        # strip soft hyphens from line endings
+        text = self.orig_xml.replace(u'\xad', '')
+        parsed_xml = parse_xml(text)
+        if reorder_head_matter:
+            self.reorder_head_matter(parsed_xml)
+        return parsed_xml('casebody|casebody')
+
+    def reorder_head_matter(self, parsed_xml):
+        """
+            Reorder head matter (elements inside <casebody>, before the first <opinion>) to match the reading order
+            from the printed page. We can get reading order by sorting by the ID of the associated ALTO elements,
+            which is stored in the <div TYPE="blocks"> section of the case XML.
+        """
+        # Head matter elements look like:
+        #     <casebody ...>
+        #         <foo id="b17-10">...</foo>
+        # First remove all of those elements, up to the first element without an ID, and store them in removed_els by ID:
+        casebody = parsed_xml('casebody|casebody')
+        removed_els = {}
+        for el in casebody.children().items():
+            if not el.attr('id'):
+                break
+            removed_els[el.attr('id')] = el.remove()
+
+        # Alto associations look like:
+        #   <div TYPE="blocks">
+        #     <div TYPE="element">
+        #         <fptr><area BEGIN="b15-4" .../></fptr>
+        #         <fptr><seq><area BEGIN="BL_15.2" .../></seq></fptr>
+        #     </div>
+        # Next we look up each head matter element's <area> tag in this structure, find the next following
+        # area tag that contains the alto ID, and split the alto ID for sorting:
+        block_order = []
+        for el_id in removed_els.keys():
+            alto_id = parsed_xml('mets|div[TYPE="blocks"] mets|area[BEGIN="%s"]' % el_id).closest('mets|fptr').next().find('mets|area:eq(0)').attr('BEGIN').split('.')
+            # given "BL_15.2", add ["BL_15", 2, "b15-4"] to the list for sorting:
+            block_order.append((alto_id[0], int(alto_id[1]), el_id))
+        block_order.sort(reverse=True)  # reverse sort because we're going to prepend each item in order
+
+        # Add each removed element back to casebody in the order specified by block_order:
+        for _, _, el_id in block_order:
+            casebody.prepend(removed_els[el_id])
+
 
 class Citation(models.Model):
     type = models.CharField(max_length=100,
