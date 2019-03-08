@@ -2,110 +2,7 @@
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
 
-// Titillium
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-black-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-black-webfont.woff') format('woff');
-    font-weight: 900;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-bold-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-bold-webfont.woff') format('woff');
-    font-weight: 700;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-bolditalic-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-bolditalic-webfont.woff') format('woff');
-    font-weight: 700;
-    font-style: italic;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-extralight-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-extralight-webfont.woff') format('woff');
-    font-weight: 200;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-extralightitalic-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-extralightitalic-webfont.woff') format('woff');
-    font-weight: 200;
-    font-style: italic;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-italic-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-italic-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: italic;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-light-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-light-webfont.woff') format('woff');
-    font-weight: 300;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-lightitalic-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-lightitalic-webfont.woff') format('woff');
-    font-weight: 300;
-    font-style: italic;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-regular-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-regular-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-semibold-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-semibold-webfont.woff') format('woff');
-    font-weight: 600;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'titillium';
-    src: url('../../fonts/titilliumweb-semibolditalic-webfont.woff2') format('woff2'),
-         url('../../fonts/titilliumweb-semibolditalic-webfont.woff') format('woff');
-    font-weight: 600;
-    font-style: italic;
-}
-
-
-@font-face {
-    font-family: 'Libre Baskerville';
-    src: url('../../fonts/LibreBaskerville-Italic.woff') format('woff');
-    font-weight: 300;
-    font-style: italic;
-}
-
-
-@font-face {
-    font-family: 'Libre Baskerville';
-    src: url('../../fonts/LibreBaskerville-Regular.woff') format('woff');
-    font-weight: 300;
-    font-style: normal;
-}
+@import 'fonts';
 
 // brand color
 $color-blue: #009AFF;
@@ -210,8 +107,10 @@ $font-weight-regular: 400;
 $font-weight-light: 300;
 $font-weight-extra-light: 200;
 
-$font-serif: "Libre Baskerville", "Baskerville", "Georgia", serif;
-$font-sans-serif: "titillium", "Helvetica", sans-serif;
+$font-serif: "source-serif", "Baskerville", "Georgia", serif;
+$font-sans-serif: "source-sans", sans-serif;
+$font-serif-fancy: "Libre Baskerville", "Baskerville", serif;
+$font-monospace: "source-code", monospace;
 
 .font-italic {
   font-style: italic

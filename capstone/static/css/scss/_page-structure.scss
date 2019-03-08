@@ -201,15 +201,15 @@
     color: $color-violet-large-text;
     z-index: 1;
     margin-left: 20px;
-    line-height: 50px;
-    font-size: 23px;
+    line-height: 40px;
+    font-size: 26px;
     letter-spacing: 0.64px;
     @include media-breakpoint-down(md) {
       border: none;
       box-shadow: none;
       margin-left: 0;
-      font-size: 22px;
-      line-height: 35px;
+      font-size: 20px;
+      line-height: 31px;
     }
   }
 }
