@@ -1,21 +1,21 @@
 import re
 import urllib
+from collections import OrderedDict
 
-from django.db.models import Sum
 from django.http import HttpResponseRedirect, FileResponse
 from django.utils.text import slugify
 
-from rest_framework import viewsets, renderers
+from rest_framework import viewsets, renderers, mixins
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from capapi.middleware import add_cache_header
 from capdb import models
 
-from capapi import serializers, filters, permissions
+from capapi import serializers, filters, permissions, pagination
 from capapi import renderers as capapi_renderers
 from capdb.models import Citation
-from scripts.ngrams import tokenize
 
 
 class BaseViewSet(viewsets.ReadOnlyModelViewSet):
@@ -156,39 +156,58 @@ class CaseExportViewSet(BaseViewSet):
         return response
 
 
-class NgramViewSet(BaseViewSet):
-    serializer_class = serializers.NgramSerializer
-    queryset = models.Ngram.objects.order_by('year')
+class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    http_method_names = ['get']
+    queryset = models.Ngram.objects.order_by('pk').select_related('w1', 'w2', 'w3')
     filterset_class = filters.NgramFilter
+    pagination_class = pagination.SmallCapPagination
+    renderer_classes = (
+        renderers.JSONRenderer,
+        capapi_renderers.NgramBrowsableAPIRenderer,
+    )
 
-    def filter_queryset(self, queryset):
-        """ Handle q= query parameter. """
-        queryset = super().filter_queryset(queryset)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # cache translation table between jurisdiction slug and ID
+        self.jurisdiction_id_to_slug = {v:k for k,v in filters.jurisdiction_slug_to_id.items()}
+        self.jurisdiction_id_to_slug[None] = 'total'
 
+    def list(self, request, *args, **kwargs):
+        # without specific ngram search, return nothing
         q = self.request.GET.get('q', '').strip()
-        if q:
-            # get first three tokens from q
-            words = list(tokenize(q.strip()))[:3]
+        if not q:
+            return Response({})
 
-            # find IDs of those tokens in DB
-            word_objs = list(models.NgramWord.objects.filter(word__in=words))
+        # fetch all unique ngrams for query, and paginate
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
 
-            if len(word_objs) < len(words):
-                # if all three tokens aren't in DB, no match
-                queryset = queryset.none()
-            else:
-                # Get the ngram counts for each year.
-                # This is basically the ORM equivalent of the following SQL
-                # (plus automatic handling of NULLs and jurisdiction filtering):
-                #   SELECT SUM(count) FROM capdb_ngram WHERE w1=words[1] AND w2=words[2] AND w3=words[3] GROUP BY year;
-                words_dict = {w.word: w for w in word_objs}
-                word_ids = [words_dict[w] for w in words]
-                keys = ['w1', 'w2', 'w3'][:len(words)]
-                queryset = queryset.filter(**dict(zip(keys, word_ids)))
-                queryset = queryset.values(*(keys+['year'])).annotate(count=Sum('count'))
-        else:
-            # without a query, return nothing
-            queryset = queryset.none()
+        # get counts for each ngram
+        out = OrderedDict()
+        if page:
 
-        return queryset
+            # build lookup table
+            ngrams_by_id = {}
+            for ngram in page:
+                out[str(ngram)] = ngrams_by_id[ngram.pk] = {}
 
+            # fetch all observations, using same query parameters
+            observations = models.NgramObservation.objects.filter(ngram__in=page)
+            obs_filter = filters.NgramObservationFilter(data=request.query_params, queryset=observations, request=request)
+            if not obs_filter.is_valid():
+                raise obs_filter.errors
+            observations = list(obs_filter.qs.values_list('ngram_id', 'jurisdiction_id', 'year', 'instance_count', 'document_count'))
+
+            # sort with None values first
+            observations.sort(key=lambda x: [[y is not None, y] for y in x])
+
+            # organize all observations by ngram, then jurisdiction, then year
+            for ngram_id, jurisdiction_id, year, instance_count, document_count in observations:
+                jurs = ngrams_by_id[ngram_id]
+                jurisdiction_slug = self.jurisdiction_id_to_slug[jurisdiction_id]
+                if jurisdiction_slug not in jurs:
+                    jurs[jurisdiction_slug] = OrderedDict()
+                years = jurs[jurisdiction_slug]
+                years[year or "total"] = [instance_count, document_count]
+
+        return self.get_paginated_response(out)

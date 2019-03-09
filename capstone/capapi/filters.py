@@ -2,6 +2,7 @@ from functools import lru_cache
 
 from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import Q
 from django.utils.functional import SimpleLazyObject
 #from django.contrib.postgres.search import SearchQuery
 from scripts.fts_temp import SearchQueryTemp
@@ -23,6 +24,7 @@ def lazy_choices(queryset, id_attr, label_attr):
 jur_choices = lazy_choices(models.Jurisdiction.objects.all(), 'slug', 'name_long')
 court_choices = lazy_choices(models.Court.objects.all(), 'slug', 'name')
 reporter_choices = lazy_choices(models.Reporter.objects.all(), 'id', 'full_name')
+jurisdiction_slug_to_id = SimpleLazyObject(lambda: dict(models.Jurisdiction.objects.values_list('slug', 'pk')))
 
 class NoopMixin():
     """
@@ -177,8 +179,6 @@ class CaseFilter(NoopMixin, filters.FilterSet):
         else:
             return qs
 
-
-
     class Meta:
         model = models.CaseMetadata
         fields = [
@@ -209,20 +209,90 @@ class CaseExportFilter(NoopMixin, filters.FilterSet):
         }
 
 
-class NgramFilter(NoopMixin, filters.FilterSet):
-    jurisdiction = filters.ChoiceFilter(
-        field_name='jurisdiction',
-        label='Jurisdiction',
-        choices=jur_choices)
+class NgramFilter(filters.FilterSet):
+    jurisdiction = filters.MultipleChoiceFilter(
+        choices=SimpleLazyObject(lambda: [['total', 'Total across jurisdictions (default)'], ['all', 'Select all jurisdictions']] + list(jur_choices)),
+        method='jurisdiction_filter',
+    )
+    year = filters.CharFilter(
+        method='year_filter',
+        help_text='Use "total" to only show total value for all jurisdictions rather than per year',
+    )
     q = filters.CharFilter(
         label='Words',
         help_text='Up to three words separated by spaces',
-        method='noop',  # handled by NgramViewSet.filter_queryset()
+        method='q_filter',
     )
 
     class Meta:
         model = models.Ngram
-        fields = ['jurisdiction', 'q']
+        fields = ['jurisdiction', 'year', 'q']
+
+    def q_filter(self, qs, name, value):
+        return qs.from_string(value.strip().lower())
+
+    def jurisdiction_filter(self, qs, name, value):
+        """
+            Handle list of jurisdictions.
+        """
+        if 'total' not in value and 'all' not in value:
+            jurisdiction_ids = [jurisdiction_slug_to_id[slug] for slug in value]
+            qs = qs.filter(observations__jurisdiction_id__in=jurisdiction_ids)
+        return qs
+
+    def year_filter(self, qs, name, value):
+        if value != 'total':
+            return qs.filter(observations__year=value)
+        return qs
+
+
+class NgramObservationFilter(filters.FilterSet):
+    jurisdiction = filters.MultipleChoiceFilter(
+        choices=SimpleLazyObject(lambda: [['total', 'Total across jurisdictions (default)'], ['all', 'Select all jurisdictions']] + list(jur_choices)),
+        method='jurisdiction_filter',
+    )
+    year = filters.CharFilter(
+        method='year_filter',
+        help_text='Use "total" to only show total value for all jurisdictions rather than per year',
+    )
+
+    def __init__(self, data, *args, **kwargs):
+        # default jurisdiction to 'total' so we don't load data for all jurisdictions unless requested
+        if not data.get('jurisdiction'):
+            data = data.copy()
+            data['jurisdiction'] = 'total'
+        super().__init__(data, *args, **kwargs)
+
+    class Meta:
+        model = models.NgramObservation
+        fields = ['jurisdiction', 'year']
+
+    def jurisdiction_filter(self, qs, name, value):
+        """
+            Handle list of jurisdictions.
+        """
+        # if 'all' provided, don't filter by jurisdiction
+        if 'all' in value:
+            return qs
+
+        # If 'total' provided, include filter(jurisdiction=None) to get totals
+        q = Q()
+        if 'total' in value:
+            q |= Q(jurisdiction_id=None)
+            value.remove('total')
+
+        # If others provided, include filter(jurisdiction_id__in=[]) to get those
+        jurisdiction_ids = [jurisdiction_slug_to_id[slug] for slug in value]
+        if jurisdiction_ids:
+            q |= Q(jurisdiction_id__in=jurisdiction_ids)
+
+        return qs.filter(q)
+
+    def year_filter(self, qs, name, value):
+        if value == 'total':
+            value = None
+        return qs.filter(year=value)
+
 
 
 def parse_phrase_search(search_term):

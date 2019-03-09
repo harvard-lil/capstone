@@ -125,6 +125,14 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
             context['page_description'] = "CAPAPI: The Caselaw Access Project API"
         return context
 
+
+class NgramBrowsableAPIRenderer(BrowsableAPIRenderer):
+    def get_filter_form(self, data, view, request):
+        # Passing in an empty list here makes the filter options show even though this endpoint returns a dictionary
+        # instead of a list.
+        return super().get_filter_form([], view, request)
+
+
 class PassthroughRenderer(renderers.JSONRenderer):
     """
         Return data as-is. View should supply a Response.
