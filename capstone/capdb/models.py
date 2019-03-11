@@ -1349,6 +1349,37 @@ class NgramWord(models.Model):
         return self.word
 
 
+class NgramQuerySet(models.QuerySet):
+    def from_string(self, s):
+        """
+            Search for ngrams by string.
+            Given "foo bar baz box", search for (w1="foo", w2="bar", w3="baz")
+            Given "foo", search for (w1="foo", w2=None, w3=None)
+            Given "foo *", search for (w1="foo", w3=None)
+        """
+        # split s into parts
+        parts = s.split()[:3]
+
+        # apply wildcard placeholder
+        any_word = object()
+        if len(parts) > 1 and parts[-1] == '*':
+            parts[-1] = any_word
+
+        # pad with None
+        parts += [None] * (3-len(parts))
+
+        # apply filter
+        query = Q()
+        for i, part in enumerate(parts, 1):
+            if part == any_word:
+                query &= ~Q(**{"w%s" % i: None})
+            elif part:
+                query &= Q(**{"w%s__word" % i: part})
+            else:
+                query &= Q(**{"w%s" % i: None})
+        return self.filter(query)
+
+
 class Ngram(models.Model):
     """
         A record for a 1-gram, 2-gram, or 3-gram.
@@ -1357,6 +1388,8 @@ class Ngram(models.Model):
     w1 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w1')
     w2 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w2', null=True)
     w3 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w3', null=True)
+
+    objects = NgramQuerySet.as_manager()
 
     class Meta:
         indexes = [
@@ -1369,16 +1402,7 @@ class Ngram(models.Model):
 
 class NgramObservationQuerySet(models.QuerySet):
     def from_string(self, s):
-        """ Search for ngrams by string. """
-        parts = s.split()
-        parts += [None] * (3-len(parts))
-        query = Q()
-        for i, part in enumerate(parts):
-            if part:
-                query &= Q(**{"ngram__w%s__word" % (i+1): part})
-            else:
-                query &= Q(**{"ngram__w%s" % (i+1): None})
-        return self.filter(query)
+        return self.filter(ngram__in=Ngram.objects.from_string(s))
 
 
 class NgramObservation(models.Model):

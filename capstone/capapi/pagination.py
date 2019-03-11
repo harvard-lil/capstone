@@ -145,3 +145,8 @@ class CapPagination(FTSPagination):
             return queryset.count()
         except (AttributeError, TypeError):
             return len(queryset)
+
+
+class SmallCapPagination(CapPagination):
+    page_size = 10
+    max_page_size = 10
