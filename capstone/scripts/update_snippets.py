@@ -1,8 +1,9 @@
 import io
 import csv
+
+from django.db import connections
 from django.db.models import Count, Case, When, IntegerField
-from celery import shared_task
-from capdb.models import VolumeMetadata, Reporter, Jurisdiction, CaseMetadata, Snippet, Court
+from capdb.models import Reporter, Jurisdiction, CaseMetadata, Snippet, Court
 import json
 from capweb.templatetags.api_url import api_url
 from tqdm import tqdm
@@ -91,54 +92,10 @@ def cases_by_reporter_tsv():
 
     write_update(label, snippet_format, output.getvalue())
 
-###
-#
-# The next two functions are for updating the map numbers snippet.
-#
-###
-
-def update_map_numbers(chunk_size=1000):
-    """
-        iterate through all volumes
-        chunk into groups of chunk_size, 1000 by default
-        process the vols in that chunk asynchronously with map_volume_tally via apply_async()
-        move onto next chunk
-        write results to snippets model
-    """
-
-    label="map_numbers"
-    snippet_format="application/json"
-    results = map_volume_tally.chunks([ (vol, ) for vol in VolumeMetadata.objects
-        .values_list('pk', flat=True)], chunk_size)\
-        .group()\
-        .apply_async()
-
-
-    output = {}
-    for result_set in tqdm(results.get()):
-        for result in tqdm(result_set):
-            for map_id in tqdm(result.keys()):
-                if map_id not in output:
-                    output[map_id] = {
-                        'case_count': 0,
-                        'page_count': 0,
-                        'reporter_count': 0,
-                        'volume_count': 0
-                    }
-                for count in tqdm(result[map_id]):
-                    output[map_id][count] += result[map_id][count]
-
-    write_update(label, snippet_format, json.dumps(output))
-
-
-@shared_task
-def map_volume_tally(volume_barcode):
-    """
-        create or update counts for each volume. It's in a dict keyed by MAP IDs (jurisdiction essentially) because,
-        which correspond to the map SVG on the homepage. We have to count this per-volume because some volumes might
-        contain multiple jurisdictions. This method does result in one single regional volume being added to the count
-        for every jurisdiction that has (non-duplicative) cases in that region. Same with pages.
-    """
+def update_map_numbers():
+    """ Write map_numbers snippet. """
+    label = "map_numbers"
+    snippet_format = "application/json"
     jurisdiction_translate = {
         "regional":"Regional", "dakota-territory":"Dakota-Territory", "native-american":"Native American",
         "navajo-nation":"Navajo-Nation", "guam":"GU", "us":"US", "n-mar-i":"MP", "pr":"PR", "am-samoa":"AS",
@@ -151,23 +108,25 @@ def map_volume_tally(volume_barcode):
         "neb":"US-NE", "conn":"US-CT", "me":"US-ME", "iowa":"US-IA", "tex":"US-TX", "del":"US-DE", "mo":"US-MO",
         "haw":"US-HI", "nm":"US-NM", "wash":"US-WA", "va":"US-VA"
     }
-    tally = {}
-    volume = VolumeMetadata.objects.get(pk=volume_barcode)
-    # just loop through the cases
-    for case in tqdm(volume.case_metadatas.select_related("jurisdiction").all()):
-
-        if case.jurisdiction:
-            map_id = jurisdiction_translate[case.jurisdiction.slug]
-            if map_id not in tally:
-                tally[map_id] = {}
-                tally[map_id]['case_count'] = 0
-                tally[map_id]['volume_count'] = 1
-                tally[map_id]['page_count'] = 0
-                tally[map_id]['reporter_count'] = 1
-            tally[map_id]['case_count'] += 1
-            tally[map_id]['page_count'] += int(case.last_page) - int(case.first_page) + 1
-    return tally
-
+    cursor = connections['capdb'].cursor()
+    cursor.execute(r"""
+        SELECT 
+          j.slug,
+          COUNT(c.id) AS case_count,
+          COUNT(DISTINCT c.volume_id) AS volume_count,
+          COUNT(DISTINCT c.reporter_id) AS reporter_count,
+          SUM(CASE WHEN (c.first_page||c.last_page)~E'^\\d+$' THEN c.last_page::integer-c.first_page::integer+1 ELSE 1 END) AS page_count
+        FROM capdb_jurisdiction j 
+          LEFT JOIN capdb_casemetadata c ON j.id=c.jurisdiction_id 
+        WHERE
+          c.duplicative IS FALSE
+        GROUP BY j.id;
+    """)
+    # get column names from sql query
+    cols = [col[0] for col in cursor.description]
+    # create output where each key is a jurisdiction and each value is a dict of values from the sql query
+    output = {jurisdiction_translate[row[0]]: dict(zip(cols[1:], row[1:])) for row in cursor.fetchall()}
+    write_update(label, snippet_format, json.dumps(output))
 
 def search_jurisdiction_list():
     write_update(
