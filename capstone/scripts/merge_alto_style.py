@@ -56,12 +56,6 @@ styles = {
     }
 }
 
-# other self closing tags we might want to insert, such as pagebreaks
-additional_self_closing_tags = {
-    'pagebreak': '<pagebreak/>'
-}
-
-
 # regexes to strip added tags from existing casexml:
 strip_style_tags_re = '|'.join(
     re.escape(tag)
@@ -69,17 +63,14 @@ strip_style_tags_re = '|'.join(
     for tag in style.values()
 )
 
-strip_additonal_tags_re = '|'.join(
-    re.escape(tag)
-    for tag in additional_self_closing_tags.values()
-)
+strip_pagebreaks = r'<page\-number[a-zA-Z0-9= #\-"]*>\*\d+</page\-number>'
 
 ### main script
 
 def generate_styled_case_xml(case_xml, strict=True):
 
     # strip added tags from existing casexml:
-    stripped_xml = re.sub(strip_style_tags_re, '', re.sub(strip_additonal_tags_re, '', case_xml.orig_xml))
+    stripped_xml = re.sub(strip_style_tags_re, '', re.sub(strip_pagebreaks, '', case_xml.orig_xml))
     parsed_case = parse_xml(stripped_xml)
 
     # dup cases have no casebody to style
@@ -120,8 +111,14 @@ def generate_styled_case_xml(case_xml, strict=True):
         for text_block in parsed_alto_page('alto|TextBlock[TAGREFS]'):
             text_blocks_by_tagref[text_block.get('TAGREFS')].append((text_block, page_styles))
 
+    previous_page=None
     # Process each casebody element with a pgmap attribute:
     for casebody_element in parsed_case("casebody|casebody [pgmap]"):
+
+        current_final_page = casebody_element.attrib['pgmap'].split(' ')[-1].split('(')[0]
+        if previous_page != current_final_page and ' ' not in casebody_element.attrib['pgmap']:
+            first_text_element = True
+            previous_page = current_final_page
 
         if casebody_element.text.isspace():
             continue
@@ -220,8 +217,15 @@ def generate_styled_case_xml(case_xml, strict=True):
                     insertions[cursor].insert(0, current_tags['close'])
 
             # check if this element needs a page break
+            if first_text_element:
+                first_text_element = False
+                page_marker = page_number_html(alto_element, parsed_case)
+                insertions[cursor].append(page_marker)
+
+            # check if this element needs an inline page break
             if len(page_breaks) > 0 and alto_element in page_breaks:
-                insertions[cursor].append(additional_self_closing_tags['pagebreak'])
+                page_marker = page_number_html(alto_element, parsed_case)
+                insertions[cursor].append(page_marker)
                 page_breaks.remove(alto_element)
 
         # Add final closing tag:
@@ -235,9 +239,15 @@ def generate_styled_case_xml(case_xml, strict=True):
     plain_case_text = force_str(serialize_xml(parsed_case))
 
     # Make sure that we haven't modified the XML outside of the tags:
-    new_stripped_xml = re.sub(strip_style_tags_re, '', re.sub(strip_additonal_tags_re, '', plain_case_text))
+    new_stripped_xml = re.sub(strip_style_tags_re, '', re.sub(strip_pagebreaks, '', plain_case_text))
     if stripped_xml != new_stripped_xml:
         diff = ''.join(difflib.context_diff(stripped_xml.splitlines(keepends=True), new_stripped_xml.splitlines(keepends=True), n=0))
         raise Exception("Styling XML failed: original text and styled text do not match:\n%s" % diff)
 
     return plain_case_text
+
+def page_number_html(alto_element, parsed_case):
+    sequence_number = alto_element.split('_')[1].split('.')[0]
+    printed_page = parsed_case("mets|div[ORDER='{}']".format(sequence_number)).attr('ORDERLABEL')
+    # Make this add the page in as an attribute to the tag
+    return '<page-number id="p{0}" href="#p{0}" label="{0}" citation-index="1">*{0}</page-number>'.format(printed_page)

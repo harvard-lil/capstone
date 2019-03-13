@@ -10,7 +10,7 @@ tag_map = {"author": "p", "opinion": "article", "casebody": "section",
            "parties": "h4", "seealso": "aside", "summary": "p",
            "syllabus": "p", "footnote": "aside", "attorneys": "p",
            "judges": "p", "bracketnum": "a", "footnotemark": "a",
-           "pagebreak": "br"}
+           "page-number": "a"}
 
 # these will pull out the headnotes number and corresponding bracketnum
 bracketnum_number = re.compile(r'\d')
@@ -47,13 +47,15 @@ def generate_html(casebody, tag_map=tag_map):
 
         element_text_copy = element.text
 
-        if element_text_copy is None and tag != 'pagebreak':
+        if element_text_copy is None and tag != 'page-number':
             element_text_copy = element.getchildren()[0].text
 
         # for every attribute except id, turn it into an accepted data-* attribute
         # use list(element.attrib) so we can safely mutate dictionary during iteration
         for attribute in list(element.attrib):
-            if attribute == 'id' or attribute.startswith('data-'):
+            if attribute == 'id' \
+                or attribute == 'href' \
+                or attribute.startswith('data-'):
                 continue
             element.attrib['data-' + attribute] = element.attrib[attribute]
             element.attrib.pop(attribute)
@@ -103,7 +105,7 @@ def generate_html(casebody, tag_map=tag_map):
             else:
                 element.tag = "span"
 
-        elif tag == "pagebreak":
+        elif tag == "page-number":
             # point to the anchor in the headnote
             element.attrib['style'] = "page-break-before: always"
 
