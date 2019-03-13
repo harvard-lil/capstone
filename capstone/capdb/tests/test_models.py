@@ -380,6 +380,65 @@ def test_casebody_delete_word_raise(case_xml):
         case_xml.orig_xml = serialize_xml(parsed_case_xml)
         case_xml.save()
 
+@pytest.mark.django_db
+def test_reorder_head_matter(case_xml):
+    # To set up test, empty out <casebody> and <div TYPE="blocks"> and replace with new XML.
+    # Do this at a string level to avoid trickiness with namespaces.
+    parsed = case_xml.get_parsed_xml()
+    parsed('casebody|casebody').text("REPLACE_CASEBODY")
+    parsed('mets|div[TYPE="blocks"]').text("REPLACE_BLOCKS")
+    xml = str(parsed)
+
+    # elements to be reordered
+    xml = xml.replace("REPLACE_CASEBODY", """
+        <parties id="a">foo</parties>
+        <headnotes id="b">foo</headnotes>
+        <headnotes id="c1">foo</headnotes>
+        <headnotes id="c2">foo</headnotes>
+        <headnotes id="c3">foo</headnotes>
+        <opinion type="majority">
+            <p id="d">foo</p>
+            <footnote label="†">
+                <p id="e">foo</p>
+            </footnote>
+        </opinion>
+        <opinion type="dissent">
+            <p id="f">foo</p>
+        </opinion>
+    """)
+
+    # specify new element order
+    element_order = "b a d c1 e c2 f c3"
+    xml = xml.replace("REPLACE_BLOCKS", "".join("""
+        <div TYPE="element">
+            <fptr><area BEGIN="%s" BETYPE="IDREF" FILEID="casebody_0001"/></fptr>
+            <fptr><seq><area BEGIN="foo.%s" BETYPE="IDREF" FILEID="alto_00009_0"/></seq></fptr>
+        </div>""" % (case_id, alto_id) for alto_id, case_id in enumerate(element_order.split())))
+
+    # reorder xml
+    parsed = parse_xml(xml)
+    case_xml.reorder_head_matter(parsed)
+
+    # strip <casebody> tag and whitespace from result, and verify order
+    result = str(parsed('casebody|casebody'))
+    result = re.sub(r'\s*\n\s*', '', re.sub(r'</?casebody.*?>', '', result), flags=re.S)
+    assert result == re.sub(r'\s*\n\s*', '', """
+        <headnotes id="b">foo</headnotes>
+        <parties id="a">foo</parties>
+        <opinion type="majority">
+            <p id="d">foo</p>
+            <headnotes id="c1">foo</headnotes>
+            <footnote label="†">
+                <p id="e">foo</p>
+                <headnotes id="c2">foo</headnotes>
+            </footnote>
+        </opinion>
+        <opinion type="dissent">
+            <p id="f">foo</p>
+            <headnotes id="c3">foo</headnotes>
+        </opinion>
+    """, flags=re.S)
+
 
 # PageXML update
 
