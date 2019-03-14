@@ -118,7 +118,7 @@ def generate_styled_case_xml(case_xml, strict=True):
         current_final_page = casebody_element.attrib['pgmap'].split(' ')[-1].split('(')[0]
         if previous_page != current_final_page and ' ' not in casebody_element.attrib['pgmap']:
             first_text_element = True
-            previous_page = current_final_page
+        previous_page = current_final_page
 
         if casebody_element.text.isspace():
             continue
@@ -206,6 +206,12 @@ def generate_styled_case_xml(case_xml, strict=True):
             if previous_tags and (not current_tags or current_tags['close'] != previous_tags['close']):
                 insertions[cursor].insert(0, previous_tags['close'])
 
+            # check if this element needs a page break
+            if first_text_element:
+                first_text_element = False
+                page_marker = page_number_html(alto_element, parsed_case)
+                insertions[cursor].append(page_marker)
+
             if current_tags:
                 # If tag changes, new style tag needs to be opened:
                 if not previous_tags or (current_tags['open'] != previous_tags['open']):
@@ -215,12 +221,6 @@ def generate_styled_case_xml(case_xml, strict=True):
                 elif cursor in insertions and not ''.join(insertions[cursor]).isspace():
                     insertions[cursor].append(current_tags['open'])
                     insertions[cursor].insert(0, current_tags['close'])
-
-            # check if this element needs a page break
-            if first_text_element:
-                first_text_element = False
-                page_marker = page_number_html(alto_element, parsed_case)
-                insertions[cursor].append(page_marker)
 
             # check if this element needs an inline page break
             if len(page_breaks) > 0 and alto_element in page_breaks:
