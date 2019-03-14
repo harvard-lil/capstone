@@ -1158,7 +1158,8 @@ class CaseXML(BaseXMLModel):
             self.reorder_head_matter(parsed_xml)
         return parsed_xml('casebody|casebody')
 
-    def reorder_head_matter(self, parsed_xml):
+    @staticmethod
+    def reorder_head_matter(parsed_xml):
         """
             Reorder head matter (elements inside <casebody>, before the first <opinion>) to match the reading order
             from the printed page. We can get reading order by sorting by the ID of the associated ALTO elements,
@@ -1169,11 +1170,13 @@ class CaseXML(BaseXMLModel):
         #         <foo id="b17-10">...</foo>
         # First remove all of those elements, up to the first element without an ID, and store them in removed_els by ID:
         casebody = parsed_xml('casebody|casebody')
-        removed_els = {}
+        removed_els = []
         for el in casebody.children().items():
             if not el.attr('id'):
                 break
-            removed_els[el.attr('id')] = el.remove()
+            removed_els.append(el.remove())
+        if not removed_els:
+            return
 
         # Alto associations look like:
         #   <div TYPE="blocks">
@@ -1181,18 +1184,37 @@ class CaseXML(BaseXMLModel):
         #         <fptr><area BEGIN="b15-4" .../></fptr>
         #         <fptr><seq><area BEGIN="BL_15.2" .../></seq></fptr>
         #     </div>
-        # Next we look up each head matter element's <area> tag in this structure, find the next following
-        # area tag that contains the alto ID, and split the alto ID for sorting:
-        block_order = []
-        for el_id in removed_els.keys():
-            alto_id = parsed_xml('mets|div[TYPE="blocks"] mets|area[BEGIN="%s"]' % el_id).closest('mets|fptr').next().find('mets|area:eq(0)').attr('BEGIN').split('.')
-            # given "BL_15.2", add ["BL_15", 2, "b15-4"] to the list for sorting:
-            block_order.append((alto_id[0], int(alto_id[1]), el_id))
-        block_order.sort(reverse=True)  # reverse sort because we're going to prepend each item in order
+        # Build a dictionary of ID to ALTO order for sorting, e.g. {'b15-4': ('BL_15.2',)}
+        id_to_alto_order = {}
+        for xref_el in parsed_xml('mets|div[TYPE="blocks"] > mets|div[TYPE="element"]').items():
+            par_el, blocks_el = xref_el('mets|fptr').items()
+            id_to_alto_order[par_el('mets|area').attr.BEGIN] = tuple(block_el.attr.BEGIN for block_el in blocks_el('mets|area').items())
 
-        # Add each removed element back to casebody in the order specified by block_order:
-        for _, _, el_id in block_order:
-            casebody.prepend(removed_els[el_id])
+        # Split our remove_els into head_els and opinion_els, based on whether or not they come before the first
+        # element in the first opinion:
+        removed_els.sort(key=lambda el: id_to_alto_order[el.attr.id])
+        first_opinion_el_id = parsed_xml('casebody|opinion:eq(0) > :eq(0)').attr.id
+        if first_opinion_el_id:
+            head_els = [el for el in removed_els if id_to_alto_order[el.attr.id] < id_to_alto_order[first_opinion_el_id]]
+            opinion_els = removed_els[len(head_els):]
+        else:
+            head_els = removed_els
+            opinion_els = []
+
+        # Add all head_els back to the <casebody>
+        for el in reversed(head_els):
+            casebody.prepend(el)
+
+        # Add all opinion_els back, immediately after whatever existing element they come after in sorted order
+        if opinion_els:
+            sorted_ids = sorted(id_to_alto_order.keys(), key=lambda key: id_to_alto_order[key])
+            previous_id_lookup = dict(zip(sorted_ids, [None]+sorted_ids))
+            for el in opinion_els:
+                previous_el = casebody('[id="%s"]' % previous_id_lookup[el.attr.id])
+                if not previous_el.length:
+                    # this shouldn't happen, so throw an exception here to make sure we can't lose elements
+                    raise Exception("Unable to locate previous element %s for element %s" % (previous_id_lookup[el.attr.id], el.attr.id))
+                casebody('[id="%s"]' % previous_id_lookup[el.attr.id]).after(el)
 
 
 class Citation(models.Model):
@@ -1349,6 +1371,37 @@ class NgramWord(models.Model):
         return self.word
 
 
+class NgramQuerySet(models.QuerySet):
+    def from_string(self, s):
+        """
+            Search for ngrams by string.
+            Given "foo bar baz box", search for (w1="foo", w2="bar", w3="baz")
+            Given "foo", search for (w1="foo", w2=None, w3=None)
+            Given "foo *", search for (w1="foo", w3=None)
+        """
+        # split s into parts
+        parts = s.split()[:3]
+
+        # apply wildcard placeholder
+        any_word = object()
+        if len(parts) > 1 and parts[-1] == '*':
+            parts[-1] = any_word
+
+        # pad with None
+        parts += [None] * (3-len(parts))
+
+        # apply filter
+        query = Q()
+        for i, part in enumerate(parts, 1):
+            if part == any_word:
+                query &= ~Q(**{"w%s" % i: None})
+            elif part:
+                query &= Q(**{"w%s__word" % i: part})
+            else:
+                query &= Q(**{"w%s" % i: None})
+        return self.filter(query)
+
+
 class Ngram(models.Model):
     """
         A record for a 1-gram, 2-gram, or 3-gram.
@@ -1357,6 +1410,8 @@ class Ngram(models.Model):
     w1 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w1')
     w2 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w2', null=True)
     w3 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w3', null=True)
+
+    objects = NgramQuerySet.as_manager()
 
     class Meta:
         indexes = [
@@ -1369,16 +1424,7 @@ class Ngram(models.Model):
 
 class NgramObservationQuerySet(models.QuerySet):
     def from_string(self, s):
-        """ Search for ngrams by string. """
-        parts = s.split()
-        parts += [None] * (3-len(parts))
-        query = Q()
-        for i, part in enumerate(parts):
-            if part:
-                query &= Q(**{"ngram__w%s__word" % (i+1): part})
-            else:
-                query &= Q(**{"ngram__w%s" % (i+1): None})
-        return self.filter(query)
+        return self.filter(ngram__in=Ngram.objects.from_string(s))
 
 
 class NgramObservation(models.Model):
