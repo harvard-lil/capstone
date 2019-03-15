@@ -2,7 +2,7 @@ import pytest
 
 from scripts.helpers import nsmap
 from test_data.test_fixtures.factories import *
-from capdb.models import VolumeMetadata, CaseMetadata
+from capdb.models import VolumeMetadata, CaseMetadata, CaseXML
 
 ### helpers ###
 
@@ -208,6 +208,19 @@ def test_related_names(case_xml):
     assert case in court.case_metadatas.all()
     assert case in vol.case_metadatas.all()
 
+
+@pytest.mark.django_db
+def test_update_styled(ingest_case_xml):
+    assert not ingest_case_xml.styled_case_body
+    with pytest.raises(Exception):
+        ingest_case_xml.update_styled_casebody(save_self=True, skip_duplicative=True, strict=True, body_only=True)
+
+    with pytest.raises(Exception):
+        dup_case=CaseMetadata.objects.get(duplicative=True).case_xml
+        dup_case.update_styled_casebody(save_self=True, skip_duplicative=False, strict=True, body_only=True)
+
+    ingest_case_xml.update_styled_casebody(save_self=True, skip_duplicative=True, strict=False, body_only=True)
+    assert "flagged for minor textual inconsistencies" in ingest_case_xml.styled_case_body
 
 # CaseXML update
 

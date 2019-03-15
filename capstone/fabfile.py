@@ -929,6 +929,23 @@ def sample_captar_images(output_folder='samples'):
 
 
 @task
+def update_all_styled_xml_casebody():
+
+    @shared_task
+    def update_styled_xml(case_xml):
+        try:
+            case_xml.update_styled_casebody(save_self=True, skip_duplicative=True, strict=False, body_only=True)
+            return {case_xml.metadata.case_id.split('_')[-1]: "ok"}
+        except Exception as e:
+            return {case_xml.metadata.case_id.split('_')[-1]: e}
+
+    for volume in VolumeXML.objects.select_related('metadata').all():
+        job_list = group([ update_styled_xml.s(case_xml) for case_xml
+              in volume.case_xmls.select_related('metadata').prefetch_related('pages').all()])
+        result = job_list.apply_async()
+        print({volume.metadata.barcode :result.join()})
+
+@task
 def make_pdf(volume_folder):
     import scripts.make_pdf
     scripts.make_pdf.make_pdf(volume_folder)

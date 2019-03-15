@@ -19,6 +19,7 @@ from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translatio
                              serialize_xml, jurisdiction_translation_long_name,
                              short_id_from_s3_key)
 from scripts.process_metadata import get_case_metadata
+from scripts.merge_alto_style import generate_styled_case_xml
 
 
 def choices(*args):
@@ -856,6 +857,8 @@ class CaseXML(BaseXMLModel):
                                on_delete=models.DO_NOTHING)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
+    styled_case_body = XMLField(blank=True, null=True)
+
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
 
@@ -1157,6 +1160,14 @@ class CaseXML(BaseXMLModel):
         if reorder_head_matter:
             self.reorder_head_matter(parsed_xml)
         return parsed_xml('casebody|casebody')
+
+    def update_styled_casebody(self, save_self=True, **kwargs):
+        """
+            Refreshes styled_case_body field with ALTO styles and page numbering
+        """
+        self.styled_case_body = generate_styled_case_xml(self, **kwargs)
+        if save_self:
+            self.save()
 
     @staticmethod
     def reorder_head_matter(parsed_xml):
