@@ -9,7 +9,7 @@
   }
   h1.page-title {
     margin-bottom: 3rem;
-    font-family: $font-sans-serif;
+    font-family: $font-sans-title;
     color: #4A4A4A;
     font-weight: $font-weight-semibold;
     letter-spacing: 1.44px;
@@ -32,7 +32,6 @@
   }
   h2.subtitle {
     color: $color-violet-large-text;
-    font-family: $font-sans-serif;
     font-weight: 400;
     display: block;
     position: relative;
@@ -63,8 +62,6 @@
       content: "\00A7";
       color: $color-yellow;
       margin-left: -2rem;
-      font-family: $font-sans-serif;
-      font-weight: $font-weight-semibold;
       font-size: 70%;
       margin-bottom: -3px;
       margin-right: 0.5rem;

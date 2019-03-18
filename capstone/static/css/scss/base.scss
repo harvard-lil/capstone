@@ -146,6 +146,10 @@ textarea {
 section {
   padding-top: 5rem;
   padding-bottom: 7rem;
+  .section-title {
+    font-family: $font-sans-title;
+  }
+
   @include media-breakpoint-down(sm) {
     .section-title {
       color: $color-violet;

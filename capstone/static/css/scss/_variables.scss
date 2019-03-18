@@ -109,8 +109,13 @@ $font-weight-extra-light: 200;
 
 $font-serif: "source-serif", "Baskerville", "Georgia", serif;
 $font-sans-serif: "source-sans", sans-serif;
+$font-sans-title: "titillium", sans-serif;
 $font-serif-fancy: "Libre Baskerville", "Baskerville", serif;
 $font-monospace: "source-code", monospace;
+
+.font-sans-serif {
+  font-family: $font-sans-serif;
+}
 
 .font-italic {
   font-style: italic
