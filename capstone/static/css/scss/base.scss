@@ -90,6 +90,7 @@ main {
   line-height: 1.5em;
   background-color: $color-white;
   padding: 1rem;
+  font-family: $font-monospace, monospace;
 }
 
 code {
@@ -98,6 +99,7 @@ code {
   padding: 2px;
   margin-left: 4px;
   margin-right: 4px;
+  font-family: $font-monospace, monospace;
 }
 
 .list-group-item {
@@ -150,6 +152,10 @@ textarea {
 section {
   padding-top: 5rem;
   padding-bottom: 7rem;
+  .section-title {
+    font-family: $font-sans-title;
+  }
+
   @include media-breakpoint-down(sm) {
     .section-title {
       color: $color-violet;

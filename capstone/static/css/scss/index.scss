@@ -22,7 +22,7 @@ h1 {
 .splash-quote span {
   @extend .h3;
   @include header-styles;
-  font-family: $font-serif;
+  font-family: $font-serif-fancy;
   font-weight: normal;
 }
 
@@ -46,6 +46,7 @@ h1 {
   @include header-styles;
   margin-bottom: 0;
   font-family: $font-serif;
+  font-weight: 400;
   .content-small-screen & {
     font-family: $font-sans-serif;
     font-size: 5rem;
