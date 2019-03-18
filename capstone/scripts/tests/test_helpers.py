@@ -60,7 +60,39 @@ def test_html_pagebreak(ingest_case_xml):
 
 
 @pytest.mark.django_db
-def test_generate_pagebreak(ingest_case_xml):
+def test_between_paragraph_pagebreak(ingest_case_xml):
+    for case in CaseMetadata.objects.in_scope():
+
+        # this test logic is too stupid to handle pagebreaks where multiple pages of footnotes
+        # at the end of the opinion. The actual logic does work.
+        if case.case_id.startswith("WnApp"):
+            continue
+
+        #generate the styled and page broken XML
+        styled_xml = generate_styled_case_xml(case.case_xml, strict = False)
+        # Highlight the page breaks at the beginning of the casebody elements...
+        stripped_xml = re.sub(r'"\>\<page-number[a-zA-Z0-9= #\-"]*\>\*\d+\<\/page-number\>', '">__PAGE_BREAK__', styled_xml)
+        # get rid of all tags that will interfere with the xml parsing, and the inline pagebreak tags
+        strip_tags = r'\<em\>|\<\/em\>|\<strong\>|\<\/strong\>|\<footnotemark\>|\<\/footnotemark\>|\<bracketnum\>|\<\/bracketnum\>|\<page-number[a-zA-Z0-9= #\-"]*\>\*\d+\<\/page-number\>'
+        stripped_xml = re.sub(strip_tags, '', stripped_xml)
+        stripped_xml = re.sub(r'\xad', ' ', stripped_xml)
+
+        parsed_xml = parse_xml(stripped_xml)
+
+        previous_page = None
+        for casebody_element in parsed_xml("casebody|casebody").children():
+            if 'pgmap' not in casebody_element.attrib:
+                continue
+
+            current_page = casebody_element.attrib['pgmap'].split(' ')[-1].split('(')[0]
+
+            if previous_page != current_page and previous_page is not None and ' ' not in casebody_element.attrib['pgmap']:
+                assert casebody_element.text.startswith("__PAGE_BREAK__")
+            previous_page = current_page
+
+
+@pytest.mark.django_db
+def test_generate_inline_pagebreak(ingest_case_xml):
     page_break_element_search = re.compile(r'\d+\((\d+)\)')
     for case in CaseMetadata.objects.in_scope():
 
@@ -71,11 +103,13 @@ def test_generate_pagebreak(ingest_case_xml):
 
         #generate the styled and page broken XML
         styled_xml = generate_styled_case_xml(case.case_xml, strict = False)
-
-        # get rid of all tags that will interfere with the xml parsing
-        strip_tags = r'\<em\>|\<\/em\>|\<strong\>|\<\/strong\>|\<footnotemark\>|\<\/footnotemark\>|\<bracketnum\>|\<\/bracketnum\>'
-        stripped_xml = re.sub(strip_tags, '', styled_xml)
-        stripped_xml = re.sub(r'\<pagebreak\/\>', '__PAGE_BREAK__ ', stripped_xml)
+        # dump the page breaks that come at the beginning of the casebody elements...
+        stripped_xml = re.sub(r'"\>\<page-number[a-zA-Z0-9= #\-"]*\>\*\d+\<\/page-number\>', '">', styled_xml)
+        # get rid of all tags that will interfere with the xml parsing, and the beginning of the pagebreak tags
+        strip_tags = r'\<em\>|\<\/em\>|\<strong\>|\<\/strong\>|\<footnotemark\>|\<\/footnotemark\>|\<bracketnum\>|\<\/bracketnum\>|\<page-number[a-zA-Z0-9= #\-"]*\>\*\d+'
+        stripped_xml = re.sub(strip_tags, '', stripped_xml)
+        # so we can keep track of the pagebreak tags without breaking xml rendering
+        stripped_xml = re.sub(r'\<\/page-number\>', '__PAGE_BREAK__ ', stripped_xml)
         stripped_xml = re.sub(r'\xad', ' ', stripped_xml)
 
         parsed_xml = parse_xml(stripped_xml)
