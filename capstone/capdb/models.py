@@ -1165,7 +1165,8 @@ class CaseXML(BaseXMLModel):
         """
             Refreshes styled_case_body field with ALTO styles and page numbering
         """
-        self.styled_case_body = generate_styled_case_xml(self, **kwargs)
+        styled_body = generate_styled_case_xml(self, **kwargs)
+        self.styled_case_body = styled_body if styled_body is not False else None
         if save_self:
             self.save()
 

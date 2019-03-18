@@ -929,7 +929,7 @@ def sample_captar_images(output_folder='samples'):
 
 
 @task
-def update_all_styled_xml_casebody():
+def update_all_styled_xml_casebody(skip_existing=True):
 
     @shared_task
     def update_styled_xml(case_xml):
@@ -941,7 +941,12 @@ def update_all_styled_xml_casebody():
 
     for volume in VolumeXML.objects.select_related('metadata').all():
         job_list = group([ update_styled_xml.s(case_xml) for case_xml
-              in volume.case_xmls.select_related('metadata').prefetch_related('pages').all()])
+            in volume.case_xmls\
+                .select_related('metadata')\
+                .prefetch_related('pages')\
+                .filter(metadata__duplicative=False, styled_case_body__isnull=skip_existing)\
+                .all()])
+
         result = job_list.apply_async()
         print({volume.metadata.barcode :result.join()})
 
