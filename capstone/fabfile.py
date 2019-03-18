@@ -941,10 +941,10 @@ def update_all_styled_xml_casebody(skip_existing=True):
 
     for volume in VolumeXML.objects.select_related('metadata').all():
         job_list = group([ update_styled_xml.s(case_xml) for case_xml
-            in volume.case_xmls\
-                .select_related('metadata')\
-                .prefetch_related('pages')\
-                .filter(metadata__duplicative=False, styled_case_body__isnull=skip_existing)\
+            in volume.case_xmls
+                .select_related('metadata')
+                .prefetch_related('pages')
+                .filter(metadata__duplicative=False, styled_case_body__isnull=skip_existing)
                 .all()])
 
         result = job_list.apply_async()
