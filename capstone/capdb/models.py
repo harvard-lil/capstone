@@ -1184,13 +1184,16 @@ class CaseXML(BaseXMLModel):
         #         <fptr><area BEGIN="b15-4" .../></fptr>
         #         <fptr><seq><area BEGIN="BL_15.2" .../></seq></fptr>
         #     </div>
-        # Build a dictionary of ID to ALTO order for sorting, e.g. {'b15-4': ('BL_15.2',)}
+        # Build a dictionary of ID to ALTO order for sorting, e.g. {'b15-4': (15, 2),)}
+        # ALTO blocks have IDs like "BL_<page number>.<block number>", so extract the two numbers to sort numerically.
         id_to_alto_order = {}
         for xref_el in parsed_xml('mets|div[TYPE="blocks"] > mets|div[TYPE="element"]').items():
             par_el, blocks_el = xref_el('mets|fptr').items()
-            id_to_alto_order[par_el('mets|area').attr.BEGIN] = tuple(block_el.attr.BEGIN for block_el in blocks_el('mets|area').items())
+            alto_id = blocks_el('mets|area').attr.BEGIN
+            parts = alto_id.split('_')[1].split('.')
+            id_to_alto_order[par_el('mets|area').attr.BEGIN] = (int(parts[0]), int(parts[1]))
 
-        # Split our remove_els into head_els and opinion_els, based on whether or not they come before the first
+        # Split remove_els into head_els and opinion_els, based on whether or not they come before the first
         # element in the first opinion:
         removed_els.sort(key=lambda el: id_to_alto_order[el.attr.id])
         first_opinion_el_id = parsed_xml('casebody|opinion:eq(0) > :eq(0)').attr.id

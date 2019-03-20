@@ -409,11 +409,12 @@ def test_reorder_head_matter(case_xml):
 
     # specify new element order
     element_order = "b a d c1 e c2 f c3"
+    alto_ids = "BL_9.9 BL_9.10 BL_9.11 BL_9.12 BL_10.9 BL_10.10 BL_10.11 BL_10.12"
     xml = xml.replace("REPLACE_BLOCKS", "".join("""
         <div TYPE="element">
             <fptr><area BEGIN="%s" BETYPE="IDREF" FILEID="casebody_0001"/></fptr>
-            <fptr><seq><area BEGIN="foo.%s" BETYPE="IDREF" FILEID="alto_00009_0"/></seq></fptr>
-        </div>""" % (case_id, alto_id) for alto_id, case_id in enumerate(element_order.split())))
+            <fptr><seq><area BEGIN="%s" BETYPE="IDREF" FILEID="alto_00009_0"/></seq></fptr>
+        </div>""" % (case_id, alto_id) for case_id, alto_id in zip(element_order.split(), alto_ids.split())))
 
     # reorder xml
     parsed = parse_xml(xml)
