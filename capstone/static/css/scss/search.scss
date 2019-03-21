@@ -33,19 +33,18 @@
 
 .dropdown-search-routes{
   > .dropdown-title {
-    @extend h3;
+    @extend h5;
+    min-width: 100%;
     display: inline-block;
     margin-left: 10px;
-    border-bottom: 2px solid $color-violet;
-    border-radius: 0;
-    color: inherit;
-    background-color: inherit;
-    font-weight: $font-weight-semibold;
+    color: $color-violet;
+    font-family: $font-sans-title;
+    font-weight: 400;
+    background-color: rgb(220, 220, 220);
     text-align: left;
     text-transform: capitalize;
-    width: 91%;
-    padding-left: 0;
-    padding-bottom: 20px;
+    padding-left: 10px;
+    padding-bottom: 10px;
     margin-bottom: 0;
     &:after {
       float: right;
@@ -115,6 +114,31 @@
   }
 }
 
+// search disclaimer
+@include media-breakpoint-up(lg) {
+  .search-disclaimer {
+    @include make-col(3);
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .search-disclaimer {
+    @include make-col(10);
+    margin: 0 auto;
+  }
+}
+
+.search-disclaimer {
+  font-size: 0.8em;
+  line-height: 1.5em;
+  a {
+    border-bottom: 1px solid $color-blue;
+  }
+  p {
+    margin-bottom: 0.2em;
+  }
+}
+
 // search fields
 
 .field-table {
@@ -122,13 +146,14 @@
 }
 
 .field_label_container {
-  text-align: right;
   padding-right: 10px !important;
 }
 
 .queryfield {
-  border: 1px solid $color-violet;
+  border: 1px solid $color-violet-gray;
   outline: 0;
+  float: right;
+  margin-top: -5px;
   &:focus, &:active {
     border: 1px solid $color-blue;
   }
@@ -183,7 +208,6 @@ select {
 .addfield {
   width: 100%;
   > button {
-    float: right;
     border: 1px solid $color-violet;
     margin-bottom: 10px;
     margin-top: 10px;
@@ -301,18 +325,19 @@ select {
     font-weight: $font-weight-semibold;
   }
   .result-title {
-    @extend h5;
-    line-height: 1.5em;
+    font-size: 1.2em;
     a {
-      color: $color-violet;
-      border-bottom: 0;
-    }
-    .result-citation {
-      color: $color-violet-gray;
+      border-bottom: 2px solid $color-blue;
     }
   }
-  .decision-date, .volume {
+  .result-citation {
+      color: $color-black;
+    }
+  .volume {
     color: $color-violet-gray;
+  }
+  .decision-date {
+    font-size: 0.7em;
   }
   .result-name {
     overflow: scroll;

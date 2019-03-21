@@ -1,6 +1,6 @@
 <template>
-  <form @submit.prevent="$emit('new-search', fields, endpoint)">
-    <div class="search-form-container col-centered">
+  <form @submit.prevent="$emit('new-search', fields, endpoint)" class="row">
+    <div class="search-form-container">
       <searchroutes :endpoint="endpoint" :endpoints="endpoints"></searchroutes>
       <br/>
       <!-- Table showing search fields. Also includes add field and search buttons. -->
@@ -16,7 +16,8 @@
              class="alert alert-danger">
           <!--<p>Please correct the following <strong>2 error(s)</strong>: </p>-->
           <p>Please correct the following {{ Object.keys(field_errors).length }} error(s):</p>
-          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">Please correct the following {{ Object.keys(field_errors).length }} error(s)</h2>
+          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">Please correct the following {{
+            Object.keys(field_errors).length }} error(s)</h2>
           <ul class="bullets">
             <li v-for="(error, name) in field_errors"
                 :key="'error' + name">
@@ -33,7 +34,7 @@
                 {{ field["label"] }}
               </label>
             </div>
-            <div class="col-7">
+            <div class="col-6">
               <template v-if="field['choices']">
                 <select v-model='field["value"]'
                         :id='field["name"]'>
@@ -68,7 +69,7 @@
           </div>
           <!--Add field row-->
           <div class="row">
-            <div class="col-4"></div>
+            <div class="col-3"></div>
             <div class="col-7">
               <div v-if="fields.length > 0" class="dropdown addfield">
                 <button class="dropdown-toggle add-field-button btn-white-violet"
@@ -87,6 +88,14 @@
                   </button>
                 </div>
               </div>
+              <button class="btn-default btn-submit"
+                      type="submit"
+                      value="Search">
+                Search
+                <span v-if="show_loading" class="spinner-border spinner-border-sm" role="status"
+                      aria-hidden="true"></span>
+              </button>
+              <span v-if="show_loading" id="searching-focus" class="sr-only" tabindex="-1">Searching&nbsp;</span>
             </div>
             <div class="col-1"></div>
           </div>
@@ -94,28 +103,26 @@
           <div class="row">
             <div class="col-4"></div>
             <div class="col-7">
-              <button class="btn-default btn-submit"
-                     type="submit"
-                     value="Search">
-                Search
-                <span v-if="show_loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              </button>
-              <span v-if="show_loading" id="searching-focus" class="sr-only" tabindex="-1">Searching&nbsp;</span>
+
             </div>
             <div class="col-1"></div>
           </div>
         </div>
-        <!--Docs links-->
-        <div class="row">
-          <div class="col-12">
-            <p>
-              Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
-              <strong>Need legal advice?</strong> This is not your best option! Read about
-              <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
-            </p>
-          </div>
-        </div>
       </div>
+    </div>
+    <div class="search-disclaimer">
+      <!--Docs links-->
+      <p>
+        Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
+      </p>
+      <p>
+        <strong>Need legal advice?</strong> This is not your best option! Read about
+        <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
+      <hr/>
+      <p>
+      * Note on full text search:
+
+      </p>
     </div>
   </form>
 </template>

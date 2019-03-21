@@ -1,27 +1,37 @@
 <template>
   <li class="result">
     <div class="result-title row">
-      <a target="_blank"
-         :href="$parent.case_view_url(result.id)">
-        {{result.name_abbreviation}}
-      </a>
-    </div>
-    <div class="result-title row">
-      <span v-for="(citation, index) in result.citations" v-bind:key="citation.cite" class="result-citation">
-        {{ citation.cite }}<span v-if="index+1 < result.citations.length">, </span>
-      </span>
-    </div>
+      <div class="col-10">
 
-    <div class="row">
-      <div class="court"
-           v-if="result.court">
-        {{ result.court.name }}
+        <a target="_blank" class="simple"
+           :href="$parent.case_view_url(result.id)">
+          {{result.name_abbreviation}}
+        </a>
       </div>
-      <div class="decision-date">
+      <div class="col-2 decision-date">
         {{ formatDate(result.decision_date) }}
       </div>
     </div>
-
+    <div class="row">
+      <span v-for="(citation, index) in result.citations"
+            v-bind:key="citation.cite"
+            class="result-citation">
+        {{ citation.cite }}<span v-if="index+1 < result.citations.length">, </span>
+      </span>
+      <span class="court" target="_blank"
+            v-if="result.court">
+      &nbsp;&middot;
+        <a class="simple" :href="result.court.url">
+          {{ result.court.name }}
+        </a>
+      </span>
+      <span class="jurisdiction">
+        &nbsp;&middot;
+        <a class="simple" target="_blank" :href="result.jurisdiction.url">
+          {{result.jurisdiction.name_long}}
+        </a>
+      </span>
+    </div>
   </li>
 </template>
 
@@ -31,7 +41,7 @@
       'result'
     ],
     methods: {
-      formatDate (dateStr){
+      formatDate(dateStr) {
         /*
           Format a date string of any precision:
             1999-02-10 becomes February 10, 1999

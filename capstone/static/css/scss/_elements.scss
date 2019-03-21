@@ -152,8 +152,8 @@ pre {
 
 a {
   text-decoration: none;
-  color: $color-magenta;
-  border-bottom: 2px solid $color-magenta;
+  color: $color-black;
+  border-bottom: 2px solid $color-blue;
   font-weight: $font-weight-regular;
   &:hover, &:focus, &:active {
     text-decoration: none;
@@ -163,4 +163,8 @@ a {
     -moz-transition: border, color 300ms ease-out;
     -o-transition: border, color 300ms ease-out;
   }
+}
+a.simple {
+  color: $color-blue;
+  border-bottom: 0;
 }
