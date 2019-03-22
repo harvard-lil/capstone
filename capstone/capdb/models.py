@@ -1223,11 +1223,11 @@ class CaseXML(BaseXMLModel):
                     raise Exception("Unable to locate previous element %s for element %s" % (previous_id_lookup[el.attr.id], el.attr.id))
                 casebody('[id="%s"]' % previous_id_lookup[el.attr.id]).after(el)
 
-    def update_styled_xml(self, **kwargs):
+    def update_styled_xml(self, strict=False, body_only=True, with_status=True, **kwargs):
         """
             Refreshes styled_case_body field with ALTO styles and page numbering
         """
-        styled_body_results = generate_styled_case_xml(self, with_status=True, **kwargs)
+        styled_body_results = generate_styled_case_xml(self, strict=strict, body_only=body_only, with_status=with_status, **kwargs)
         if styled_body_results['status'] != 'skipped':
             new_styled_xml = self.styled_xml if self.styled_xml_id else CaseStyledXML()
             new_styled_xml.styled_xml = styled_body_results['content']
