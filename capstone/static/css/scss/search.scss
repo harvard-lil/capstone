@@ -21,17 +21,12 @@
   display: none;
 }
 
-.fancy-for {
-  font-family: $font-serif;
-  font-style: italic;
-  font-size: 24px;
-  text-align: right;
-  @include media-breakpoint-down(sm) {
-    font-size: 20px;
-  }
+.search-form-contents {
+  float: right;
 }
 
 .dropdown-search-routes{
+  @include make-col(11);
   > .dropdown-title {
     @extend h5;
     min-width: 100%;
@@ -128,6 +123,12 @@
   }
 }
 
+@include media-breakpoint-only(xs) {
+  .search-disclaimer {
+    display: none;
+  }
+}
+
 .search-disclaimer {
   font-size: 0.8em;
   line-height: 1.5em;
@@ -136,6 +137,9 @@
   }
   p {
     margin-bottom: 0.2em;
+  }
+  .bold {
+    font-weight: 600;
   }
 }
 
