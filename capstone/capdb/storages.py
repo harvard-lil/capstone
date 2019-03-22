@@ -78,7 +78,7 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
         """ Tag S3 item at path with key=value. """
         results = self.connection.meta.client.put_object_tagging(
             Bucket=self.bucket_name,
-            Key=path,
+            Key=os.path.join(self.location, path),
             Tagging={
                 'TagSet': [
                     {
@@ -104,7 +104,7 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
         """ Delete S3 item at path. NEVER USE THIS. """
         results = self.connection.meta.client.delete_object(
             Bucket=self.bucket_name,
-            Key=path
+            Key=os.path.join(self.location, path)
         )
         # boto3 should return 'versionID': (version id) if successful, this will return True or False
         return 'VersionId' in results
