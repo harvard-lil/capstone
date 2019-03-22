@@ -65,7 +65,7 @@ strip_style_tags_re = '|'.join(
 strip_pagebreaks = r'<page\-number[a-zA-Z0-9= #\-"]*>\*\d+</page\-number>'
 
 ### main script
-def generate_styled_case_xml(case_xml, strict=True, skip_duplicative=False, body_only=False):
+def generate_styled_case_xml(case_xml, strict=False, skip_duplicative=False, body_only=True, with_status=False):
 
     return_dict = {'status': 'ok', 'details': None, 'content': None}
 
@@ -251,7 +251,7 @@ def generate_styled_case_xml(case_xml, strict=True, skip_duplicative=False, body
     return_dict['content'] = plain_case_text if not body_only \
         else force_str(serialize_xml(parsed_case('casebody|casebody')))
 
-    return return_dict
+    return plain_case_text if not with_status else return_dict
 
 def page_number_html(alto_element, parsed_case):
     sequence_number = alto_element.split('_')[1].split('.')[0]
