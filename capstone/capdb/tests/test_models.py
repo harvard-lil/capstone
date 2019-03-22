@@ -211,16 +211,17 @@ def test_related_names(case_xml):
 
 @pytest.mark.django_db
 def test_update_styled(ingest_case_xml):
-    assert not ingest_case_xml.styled_case_body
+    assert not ingest_case_xml.styled_xml
     with pytest.raises(Exception):
-        ingest_case_xml.update_styled_casebody(save_self=True, skip_duplicative=True, strict=True, body_only=True)
+        ingest_case_xml.update_styled_xml(strict=True)
 
     with pytest.raises(Exception):
         dup_case=CaseMetadata.objects.get(duplicative=True).case_xml
-        dup_case.update_styled_casebody(save_self=True, skip_duplicative=False, strict=True, body_only=True)
+        dup_case.update_styled_xml(skip_duplicative=False)
 
-    ingest_case_xml.update_styled_casebody(save_self=True, skip_duplicative=True, strict=False, body_only=True)
-    assert "flagged for minor textual inconsistencies" in ingest_case_xml.styled_case_body
+    ingest_case_xml.update_styled_xml()
+    assert ingest_case_xml.styled_xml.mismatched
+    assert "certainly appellant was not bound to appeal" in ingest_case_xml.styled_xml.styled_xml
 
 # CaseXML update
 
