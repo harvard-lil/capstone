@@ -1080,18 +1080,16 @@ class CaseXML(BaseXMLModel):
                 case_metadata.jurisdiction = None
 
             # set or create court
-            # we look up court by name and/or name_abbreviation from data["court"]
+            # we look up court by name, name_abbreviation, and jurisdiction
             court_kwargs = {k: v for k, v in data["court"].items() if v}
-            if court_kwargs:
+            if court_kwargs and case_metadata.jurisdiction:
+                court_kwargs['jurisdiction_id'] = case_metadata.jurisdiction.id
                 try:
                     court = Court.get_from_cache(**court_kwargs)
                 except Court.DoesNotExist:
                     court = Court(**court_kwargs)
                     court.save()
                 case_metadata.court = court
-                if case_metadata.jurisdiction_id and court.jurisdiction_id != case_metadata.jurisdiction_id:
-                    court.jurisdiction_id = case_metadata.jurisdiction_id
-                    court.save()
 
         case_metadata.save()
 
