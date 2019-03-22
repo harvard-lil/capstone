@@ -15,10 +15,21 @@
   padding-left: 0 !important;
 }
 
+.search-page > * {
+  padding: 1em;
+}
 //*** head matter
 
-.dropdown-toggle::after {
-  display: none;
+.page-title {
+  font-size: 48px;
+  @include media-breakpoint-up(md) {
+    text-align: right;
+    margin-right: .2em;
+
+    // janky stuff to vertically align "Find" label with dropdown
+    position: relative;
+    top: -8px;
+  }
 }
 
 .search-form-contents {
@@ -26,12 +37,10 @@
 }
 
 .dropdown-search-routes{
-  @include make-col(11);
   > .dropdown-title {
     @extend h5;
     min-width: 100%;
     display: inline-block;
-    margin-left: 10px;
     color: $color-violet;
     font-family: $font-sans-title;
     font-weight: 400;
@@ -88,50 +97,11 @@
   padding-bottom: 2rem;
 }
 
-// SEARCH AND RESULTS CONTAINERS
-@include media-breakpoint-up(lg) {
-  .search-form-container,
-  .results-list-container {
-    @include make-col(8)
-  }
-}
-
-@include media-breakpoint-down(md) {
-  .search-form-container,
-  .results-list-container {
-    @include make-col(10)
-  }
-}
-
-@include media-breakpoint-up(lg) {
-  .search-form-container {
-    padding-left: 100px;
-  }
-}
-
 // search disclaimer
-@include media-breakpoint-up(lg) {
-  .search-disclaimer {
-    @include make-col(3);
-  }
-}
-
-@include media-breakpoint-down(md) {
-  .search-disclaimer {
-    @include make-col(10);
-    margin: 0 auto;
-  }
-}
-
-@include media-breakpoint-only(xs) {
-  .search-disclaimer {
-    display: none;
-  }
-}
-
 .search-disclaimer {
   font-size: 0.8em;
   line-height: 1.5em;
+  padding-right: 2em !important;
   a {
     border-bottom: 1px solid $color-blue;
   }
@@ -147,6 +117,14 @@
 
 .field-table {
   margin-top: 36px;
+}
+
+.field-row {
+  small {
+    line-height: 1.3;
+    display: block;
+    margin-bottom: 10px;
+  }
 }
 
 .field_label_container {
@@ -209,8 +187,14 @@ select {
   font-weight: $font-weight-semibold;
 }
 
+.submit-button-group {
+  float: right;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
 .addfield {
-  width: 100%;
+  float: right;
   > button {
     border: 1px solid $color-violet;
     margin-bottom: 10px;
@@ -239,20 +223,13 @@ select {
   }
 }
 
-.remfield {
-  margin-left: 5px;
-  background: transparent;
-  vertical-align: middle;
-  height: 100%;
-}
-
 .field-button {
   border: 0;
   background: transparent url("../../img/search/remove-circle-sprite.svg") no-repeat;
   background-size: auto 26px;
   width: 26px;
   height: 26px;
-  margin-bottom: 10px;
+  margin-left: 5px;
   &.active {
     &:hover, &:active, &:focus {
       background-position-x: -26px !important;
@@ -306,23 +283,6 @@ select {
   margin-bottom: 3rem;
   .row {
     margin-bottom: 5px;
-    @include media-breakpoint-down(sm) {
-      div {
-        @include make-col(12);
-
-      }
-    }
-    /* Make every first div larger
-    and every second div text-align right */
-    @include media-breakpoint-up(md) {
-      div:first-child {
-        @include make-col(8);
-      }
-      div:nth-child(2) {
-        @include make-col(4);
-        text-align: right;
-      }
-    }
   }
   .result-data-label {
     color: $color-violet-gray;
@@ -342,6 +302,9 @@ select {
   }
   .decision-date {
     font-size: 0.7em;
+    @include media-breakpoint-up(md) {
+      text-align: right;
+    }
   }
   .result-name {
     overflow: scroll;

@@ -1,14 +1,14 @@
 <template>
   <li class="result">
     <div class="result-title row">
-      <div class="col-10">
+      <div class="col-md-9">
 
         <a target="_blank" class="simple"
            :href="$parent.case_view_url(result.id)">
           {{result.name_abbreviation}}
         </a>
       </div>
-      <div class="col-2 decision-date">
+      <div class="col-md-3 decision-date">
         {{ formatDate(result.decision_date) }}
       </div>
     </div>

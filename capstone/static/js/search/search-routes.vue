@@ -1,12 +1,13 @@
 <template>
   <div class="row">
-    <div class="dropdown dropdown-search-routes">
+    <div class="dropdown dropdown-search-routes col-11">
       <button class="btn dropdown-toggle dropdown-title"
               type="button"
               id="search-routes-dropdown"
               data-toggle="dropdown"
               aria-haspopup="true"
-              aria-expanded="false">
+              aria-expanded="false"
+              aria-describedby="overview">
         {{endpoint}}
       </button>
 
