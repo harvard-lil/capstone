@@ -1,17 +1,17 @@
 <template>
   <form @submit.prevent="$emit('new-search', fields, endpoint)" class="row">
     <div class="col-md-3">
-      <h1 class="page-title" id="overview">
+      <h1 class="page-title">
         <img alt=""
              aria-hidden="true"
-             :src='`${urls.static}img/red-arrow-right.svg`'
+             :src='`${urls.static}img/arrows/violet-arrow-right.svg`'
              class="decorative-arrow"/>
         Find
       </h1>
     </div>
     <div class="col-md-9">
       <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-7">
 
           <searchroutes :endpoint="endpoint" :endpoints="endpoints">
           </searchroutes>
@@ -40,12 +40,12 @@
           <div class="row field-row"
                v-for="field in fields" :key="field.name"
                v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }">
-            <div class="col-3 field_label_container">
+            <div class="col-4 field_label_container">
               <label class="querylabel" :for="field['name']">
                 {{ field["label"] }}
               </label>
             </div>
-            <div class="col-8">
+            <div class="col-7">
               <template v-if="field['choices']">
                 <select v-model='field["value"]'
                         :id='field["name"]'>
@@ -117,7 +117,7 @@
       </div>
 
         </div>
-        <div class="col-lg-4 search-disclaimer">
+        <div class="col-lg-5 search-disclaimer">
           <p>
             Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
           </p>

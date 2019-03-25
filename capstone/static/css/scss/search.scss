@@ -16,12 +16,12 @@
 }
 
 .search-page > * {
-  padding: 1em;
+  padding: 2.5em;
 }
 //*** head matter
 
 .page-title {
-  font-size: 48px;
+  @extend h2;
   @include media-breakpoint-up(md) {
     text-align: right;
     margin-right: .2em;
@@ -38,31 +38,31 @@
 
 .dropdown-search-routes{
   > .dropdown-title {
-    @extend h5;
+    @extend h6;
     min-width: 100%;
     display: inline-block;
     color: $color-violet;
     font-family: $font-sans-title;
     font-weight: 400;
-    background-color: rgb(220, 220, 220);
+    background-color: rgba(220, 220, 220, 0.35);
     text-align: left;
     text-transform: capitalize;
     padding-left: 10px;
     padding-bottom: 10px;
     margin-bottom: 0;
+    margin-top: 15px;
     &:after {
       float: right;
     }
   }
 
   > .dropdown-menu {
-    width: 91%;
-    margin-left: 10px;
     padding: 0;
     border-radius: 0;
-    border: 1px solid $color-violet;
+    border: 1px solid $color-violet-gray;
+    width: 100%;
     .dropdown-item {
-      color: $color-violet;
+      color: $color-black;
       border-bottom: 1px solid $color-gray;
       text-transform: capitalize;
       font-size: inherit;
@@ -101,7 +101,10 @@
 .search-disclaimer {
   font-size: 0.8em;
   line-height: 1.5em;
-  padding-right: 2em !important;
+  @include media-breakpoint-up(lg) {
+    padding-left: 20px !important;
+  }
+  margin-top: 15px;
   a {
     border-bottom: 1px solid $color-blue;
   }
@@ -177,7 +180,9 @@
 
 select {
   width: 100%;
-  border: 1px solid $color-violet;
+  border: 1px solid $color-violet-gray;
+  padding: 5px;
+  margin-bottom: 10px;
 }
 
 .btn-submit {
@@ -229,7 +234,8 @@ select {
   background-size: auto 26px;
   width: 26px;
   height: 26px;
-  margin-left: 5px;
+  margin-left: 10px;
+  margin-bottom: 10px;
   &.active {
     &:hover, &:active, &:focus {
       background-position-x: -26px !important;
