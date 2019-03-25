@@ -1,6 +1,6 @@
 <template>
   <div class="row">
-    <div class="dropdown dropdown-search-routes col-11">
+    <div class="dropdown dropdown-search-routes col-12">
       <button class="btn dropdown-toggle dropdown-title"
               type="button"
               id="search-routes-dropdown"
