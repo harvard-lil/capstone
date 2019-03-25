@@ -19,6 +19,7 @@ from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translatio
                              serialize_xml, jurisdiction_translation_long_name,
                              short_id_from_s3_key)
 from scripts.process_metadata import get_case_metadata
+from scripts.merge_alto_style import generate_styled_case_xml
 
 
 def choices(*args):
@@ -848,12 +849,18 @@ class CaseMetadata(models.Model):
             case_text.text = new_text
             case_text.save()
 
+class CaseStyledXML(models.Model):
+    """ Case XML with ALTO styling incorporated """
+    styled_xml = XMLField()
+    mismatched = models.BooleanField(default=False)
 
 class CaseXML(BaseXMLModel):
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',
                                     on_delete=models.SET_NULL)
     volume = models.ForeignKey(VolumeXML, related_name='case_xmls',
                                on_delete=models.DO_NOTHING)
+    styled_xml = models.OneToOneField(CaseStyledXML, blank=True, null=True, related_name='xml',
+                                      on_delete=models.SET_NULL)
     s3_key = models.CharField(max_length=1024, blank=True, help_text="s3 path")
 
     tracker = FieldTracker()
@@ -1217,6 +1224,21 @@ class CaseXML(BaseXMLModel):
                     raise Exception("Unable to locate previous element %s for element %s" % (previous_id_lookup[el.attr.id], el.attr.id))
                 casebody('[id="%s"]' % previous_id_lookup[el.attr.id]).after(el)
 
+    def update_styled_xml(self, strict=False, body_only=True, with_status=True, **kwargs):
+        """
+            Refreshes styled_case_body field with ALTO styles and page numbering
+        """
+        styled_body_results = generate_styled_case_xml(self, strict=strict, body_only=body_only, with_status=with_status, **kwargs)
+        if styled_body_results['status'] != 'skipped':
+            new_styled_xml = self.styled_xml if self.styled_xml_id else CaseStyledXML()
+            new_styled_xml.styled_xml = styled_body_results['content']
+            new_styled_xml.mismatched = True if styled_body_results['status'] == 'mismatch' else False
+            new_styled_xml.save()
+
+            self.styled_xml = new_styled_xml
+            self.save(update_related=False)
+
+        return styled_body_results['status']
 
 class Citation(models.Model):
     type = models.CharField(max_length=100,

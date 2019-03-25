@@ -929,6 +929,10 @@ def sample_captar_images(output_folder='samples'):
 
 
 @task
+def update_all_styled_xml_casebody(update_existing=False):
+    tasks.update_all_styled_xml_casebody(update_existing=update_existing)
+
+@task
 def make_pdf(volume_folder):
     import scripts.make_pdf
     scripts.make_pdf.make_pdf(volume_folder)
