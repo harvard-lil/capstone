@@ -7,7 +7,6 @@ from capdb.models import Reporter, Jurisdiction, CaseMetadata, Snippet, Court
 import json
 from capweb.templatetags.api_url import api_url
 from tqdm import tqdm
-from collections import OrderedDict
 
 def update_all():
     update_map_numbers()
