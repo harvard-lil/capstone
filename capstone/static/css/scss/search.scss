@@ -51,7 +51,9 @@
     padding-left: 10px;
     padding-bottom: 10px;
     margin-bottom: 0;
-    margin-top: 15px;
+    @include media-breakpoint-up(lg) {
+      margin-top: 15px;
+    }
     &:after {
       float: right;
       content: url("../../img/arrows/expand-arrow-blocked.svg");
