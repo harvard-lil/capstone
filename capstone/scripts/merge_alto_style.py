@@ -8,6 +8,7 @@ from django.utils.encoding import force_str
 
 from scripts.helpers import parse_xml, serialize_xml
 
+
 ### helpers
 
 def split_string_and_insertions(string, pattern):
@@ -65,9 +66,8 @@ strip_style_tags_re = '|'.join(
 strip_pagebreaks = r'<page\-number[a-zA-Z0-9= #\-"]*>\*\d+</page\-number>'
 
 ### main script
-def generate_styled_case_xml(case_xml, strict=True, skip_duplicative=False, body_only=False, with_status=False):
 
-    return_dict = {'status': 'ok', 'details': None, 'content': None}
+def generate_styled_case_xml(case_xml, strict=True):
 
     # strip added tags from existing casexml:
     stripped_xml = re.sub(strip_style_tags_re, '', re.sub(strip_pagebreaks, '', case_xml.orig_xml))
@@ -75,8 +75,6 @@ def generate_styled_case_xml(case_xml, strict=True, skip_duplicative=False, body
 
     # dup cases have no casebody to style
     if parsed_case('duplicative|casebody'):
-        if skip_duplicative:
-            return {'status': 'skipped', 'details': 'duplicative', 'content': None }
         raise Exception("Duplicative case: no casebody data to merge")
 
     # Build a dictionary of text blocks in the alto files, indexed by tagref, with their associated page styles if any.
@@ -171,15 +169,13 @@ def generate_styled_case_xml(case_xml, strict=True, skip_duplicative=False, body
 
         # Handle remaining cases where text does not match:
         if casebody_element_text != alto_text:
+
             if strict:
                 raise Exception(
                     "Case text and alto text do not match for case_xml ID %s, element ID %s.\n"
                     "Case text: %s\nAlto text: %s"
                     % (case_xml.pk, casebody_element.get('id'), casebody_element_text, alto_text)
                 )
-            else:
-                return_dict['status'] = "mismatch"
-                return_dict['details'] = "Case text doesn't match ALTO text"
 
             # To handle mismatches, diff the two strings and patch alto_styles to match casebody_element_text.
             # For example, suppose casebody_element_text = "abXcdef", alto_text = "abcdYef", and
@@ -248,10 +244,7 @@ def generate_styled_case_xml(case_xml, strict=True, skip_duplicative=False, body
         diff = ''.join(difflib.context_diff(stripped_xml.splitlines(keepends=True), new_stripped_xml.splitlines(keepends=True), n=0))
         raise Exception("Styling XML failed: original text and styled text do not match:\n%s" % diff)
 
-    return_dict['content'] = plain_case_text if not body_only \
-        else force_str(serialize_xml(parsed_case('casebody|casebody')))
-
-    return plain_case_text if not with_status else return_dict
+    return plain_case_text
 
 def page_number_html(alto_element, parsed_case):
     sequence_number = alto_element.split('_')[1].split('.')[0]

@@ -2,7 +2,7 @@ import pytest
 
 from scripts.helpers import nsmap
 from test_data.test_fixtures.factories import *
-from capdb.models import VolumeMetadata, CaseMetadata, CaseXML
+from capdb.models import VolumeMetadata, CaseMetadata
 
 ### helpers ###
 
@@ -208,20 +208,6 @@ def test_related_names(case_xml):
     assert case in court.case_metadatas.all()
     assert case in vol.case_metadatas.all()
 
-
-@pytest.mark.django_db
-def test_update_styled(ingest_case_xml):
-    assert not ingest_case_xml.styled_xml
-    with pytest.raises(Exception):
-        ingest_case_xml.update_styled_xml(strict=True)
-
-    with pytest.raises(Exception):
-        dup_case=CaseMetadata.objects.get(duplicative=True).case_xml
-        dup_case.update_styled_xml(skip_duplicative=False)
-
-    ingest_case_xml.update_styled_xml()
-    assert ingest_case_xml.styled_xml.mismatched
-    assert "certainly appellant was not bound to appeal" in ingest_case_xml.styled_xml.styled_xml
 
 # CaseXML update
 

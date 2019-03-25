@@ -5,29 +5,6 @@ from scripts.helpers import ordered_query_iterator
 
 from capdb.models import *
 
-def update_all_styled_xml_casebody(update_existing=False):
-    """
-        Updates the styled XML for lacking cases, or all cases if update_existing is set to true
-    """
-    query = VolumeXML.objects.all()
-
-    for volume_id in query.values_list('pk', flat=True):
-        update_style_one_volume.delay(volume_id, update_existing=update_existing)
-
-
-@shared_task
-def update_style_one_volume(volume_id, update_existing=False):
-    if update_existing:
-        return [case_xml.update_styled_xml(strict=False, skip_duplicative=False, body_only=True) for case_xml
-                in CaseXML.objects
-                .filter(metadata__duplicative=False, volume_id=volume_id)
-                .select_related('metadata').prefetch_related('pages').all()]
-    else:
-        return [case_xml.update_styled_xml(strict=False, skip_duplicative=False, body_only=True) for case_xml
-                in CaseXML.objects
-                .filter(metadata__duplicative=False, volume_id=volume_id, styled_xml__isnull=True)
-                .select_related('metadata').prefetch_related('pages').all()]
-
 
 def create_case_metadata_from_all_vols(update_existing=False):
     """
