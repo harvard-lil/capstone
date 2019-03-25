@@ -58,7 +58,6 @@ def test_search_court_list(ingest_case_xml):
     assert parsed[1][1] == 'Illinois: Illinois Appellate Court'
     assert parsed[2][1] == 'Washington: Washington Court of Appeals'
 
-@pytest.mark.django_db
 def test_search_reporter_list(ingest_case_xml):
     update_snippets.search_reporter_list()
     reporters = Snippet.objects.get(label='search_reporter_list')

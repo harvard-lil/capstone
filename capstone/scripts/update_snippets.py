@@ -148,7 +148,7 @@ def search_court_list():
 
 def search_reporter_list():
     reporters = [ (reporter.id, "{}- {}".format(reporter.short_name, reporter.full_name))
-               for reporter in Reporter.objects.order_by('short_name').all()]
+               for reporter in Reporter.objects.order_by('full_name').all()]
     write_update(
         "search_reporter_list",
         "application/json",
