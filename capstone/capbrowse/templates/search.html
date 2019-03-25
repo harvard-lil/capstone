@@ -32,7 +32,7 @@
     const choices = {
       "jurisdiction": {% snippet 'search_jurisdiction_list' %},
       "reporter": {% snippet 'search_reporter_list' %},
-      "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
+      "whitelisted": [["true", "Whitelisted"], ["false", "Not Whitelisted"]]
     };
 {% comment %}
     /*
