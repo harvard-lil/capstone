@@ -1,31 +1,22 @@
 <template>
+
   <li class="result">
+    <div class="result-title row">
+      <div class="col-md-9">
 
-    <div class="row">
-      <div class="result-title col-12">
-        <a target="_blank" v-text="result.name_long"
-           :href="$parent.metadata_view_url('jurisdiction', result.id)"></a>
+        <a target="_blank" class="simple"
+          :href="$parent.metadata_view_url('jurisdiction', result.id)" v-text="result.name_long">
+        </a>
       </div>
-    </div>
-
-    <div class="result-data">
-      <div class="row">
-        <div class="">
-          <span class="result-data-label">Abbreviation:</span>
-          {{ result.name }}
-          <br/>
-          <span class="result-data-label">Slug:</span>
-          {{ result.slug }}
-        </div>
-        <div>
+      <div class="col-md-3 decision-date">
           <a class="see-cases"
              @click="$parent.$emit('see-cases', 'jurisdiction', result.slug)">
             See cases
           </a>
-        </div>
       </div>
     </div>
   </li>
+
 </template>
 
 <script>
