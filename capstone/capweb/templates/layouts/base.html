@@ -6,13 +6,15 @@
     <div class="full-content {% block full_content_style %}{% endblock %}">
       <div class="top-section {% block top_section_style %}{% endblock %}">
         <div class="title-section">
-          <h1 class="page-title" id="overview">
-            <img alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'
-                 class="decorative-arrow"/>
-            {% block content_title %}{% block title %}{% if title %}{{ title }}{% endif %}{% endblock %}{% endblock %}
-          </h1>
+          {% block title_section %}
+            <h1 class="page-title" id="overview">
+              <img alt=""
+                   aria-hidden="true"
+                   src='{% static "img/red-arrow-right.svg" %}'
+                   class="decorative-arrow"/>
+              {% block content_title %}{% block title %}{% if title %}{{ title }}{% endif %}{% endblock %}{% endblock %}
+            </h1>
+          {% endblock %}
         </div>
         <div class="explainer-section">
           <div class="content">{% block explainer %}{% endblock %}</div>
