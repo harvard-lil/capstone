@@ -129,9 +129,9 @@ def update_map_numbers():
     write_update(label, snippet_format, json.dumps(output))
 
 def search_jurisdiction_list():
-    jurisdictions = OrderedDict((jurisdiction.slug, jurisdiction.name_long)
-                        for jurisdiction in Jurisdiction.objects.order_by('slug').all()
-         if jurisdiction.slug != 'regional' and jurisdiction.slug != 'tribal')
+    jurisdictions = [ (jurisdiction.slug, jurisdiction.name_long)
+            for jurisdiction in Jurisdiction.objects.order_by('slug').all()
+            if jurisdiction.slug != 'regional' and jurisdiction.slug != 'tribal']
     write_update(
         "search_jurisdiction_list",
         "application/json",
@@ -139,8 +139,8 @@ def search_jurisdiction_list():
     )
 
 def search_court_list():
-    courts = OrderedDict((court.slug, "{}: {}".format(court.jurisdiction, court.name))
-                for court in Court.objects.order_by('slug').all())
+    courts = [ (court.slug, "{}: {}".format(court.jurisdiction, court.name))
+               for court in Court.objects.order_by('slug').all()]
     write_update(
         "search_court_list",
         "application/json",
@@ -148,8 +148,8 @@ def search_court_list():
     )
 
 def search_reporter_list():
-    reporters = OrderedDict((reporter.id, "{}- {}".format(reporter.short_name, reporter.full_name)) for reporter
-     in Reporter.objects.order_by('short_name').all())
+    reporters = [ (reporter.id, "{}- {}".format(reporter.short_name, reporter.full_name))
+               for reporter in Reporter.objects.order_by('short_name').all()]
     write_update(
         "search_reporter_list",
         "application/json",
