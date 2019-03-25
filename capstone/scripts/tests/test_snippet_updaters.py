@@ -63,8 +63,6 @@ def test_search_reporter_list(ingest_case_xml):
     update_snippets.search_reporter_list()
     reporters = Snippet.objects.get(label='search_reporter_list')
     parsed = json.loads(reporters.contents)
-    assert parsed[0][1] == 'Ill. (Breese)- Illinois Reports'
-    assert parsed[1][1] == 'Ill. App.- Illinois Appellate Court Reports'
-    assert parsed[2][1] == 'N.W. 2d- North Western Reporter 2d'
-    assert parsed[3][1] == 'Wash. App.- Washington Appellate Reports'
+    assert len(parsed) == 4
+    assert parsed[-1][1] == 'Wash. App.- Washington Appellate Reports'
 
