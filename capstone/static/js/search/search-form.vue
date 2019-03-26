@@ -148,7 +148,7 @@
               value: "",
               label: "Full-Text Search",
               default: true,
-              format: "e.g. insurance illinois",
+              format: "e.g. library",
               info: "Terms stemmed and combined using AND. Words in quotes searched as phrases."
             },
             {
