@@ -90,6 +90,7 @@
   .dropdown-menu {
     max-height: 300px;
     overflow-y: scroll;
+    z-index: 1000;
   }
   .dropdown-item {
     background-color: $color-white;

@@ -8,7 +8,6 @@ import json
 from capweb.templatetags.api_url import api_url
 from tqdm import tqdm
 
-
 def update_all():
     update_map_numbers()
     cases_by_jurisdiction_tsv()
@@ -129,26 +128,31 @@ def update_map_numbers():
     write_update(label, snippet_format, json.dumps(output))
 
 def search_jurisdiction_list():
+    jurisdictions = [ (jurisdiction.slug, jurisdiction.name_long)
+            for jurisdiction in Jurisdiction.objects.order_by('slug').all()
+            if jurisdiction.slug != 'regional' and jurisdiction.slug != 'tribal']
     write_update(
         "search_jurisdiction_list",
         "application/json",
-        json.dumps({jurisdiction.slug: jurisdiction.name_long for jurisdiction in Jurisdiction.objects.all()
-         if jurisdiction.slug != 'regional' and jurisdiction.slug != 'tribal'})
+        json.dumps(jurisdictions)
     )
 
 def search_court_list():
+    courts = [ (court.slug, "{}: {}".format(court.jurisdiction, court.name))
+               for court in Court.objects.order_by('slug').all()]
     write_update(
         "search_court_list",
         "application/json",
-        json.dumps({court.slug: "{}: {}".format(court.jurisdiction, court.name) for court in Court.objects.all()})
+        json.dumps(courts)
     )
 
 def search_reporter_list():
+    reporters = [ (reporter.id, "{}- {}".format(reporter.short_name, reporter.full_name))
+               for reporter in Reporter.objects.order_by('full_name').all()]
     write_update(
         "search_reporter_list",
         "application/json",
-        json.dumps({reporter.id: "{}- {}".format(reporter.short_name, reporter.full_name) for reporter
-         in Reporter.objects.all()})
+        json.dumps(reporters)
     )
 
 def write_update(label, snippet_format, contents):
