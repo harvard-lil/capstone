@@ -32,6 +32,14 @@ p {
   @include make-col(10);
 }
 
+section.casebody {
+  @include make-col(12);
+}
+
+blockquote {
+  padding: 0 1em;
+}
+
 p.small-text {
   font-size: 14px;
   font-weight: $font-weight-semibold;
@@ -69,7 +77,6 @@ h4.case-name {
 }
 
 #citation_container {
-  //@include make-col(6);
   @extend .col-centered;
 }
 
@@ -108,7 +115,7 @@ section.head-matter {
       margin-top: 0;
       margin-bottom: 0;
 
-      margin-left: 10em;
+      margin-left: 5em;
       // on small screens, don't make head matter narrow
       @media (max-width: 767.98px) {
         margin-left: 6em;
@@ -145,12 +152,11 @@ section.head-matter {
   }
 }
 
-.parties {
-  text-align: center;
-  padding-bottom: 20px;
+.parties, .docketnumber, .decisiondate {
+  display: none;
 }
 
-.decisiondate, .attorneys, .judges {
+.attorneys, .judges {
   text-align: center;
   font-size: 1.25rem;
 }
@@ -209,11 +215,11 @@ section.head-matter {
   font-weight: $font-weight-semibold;
   margin-bottom: 5px;
   color: $color-magenta;
+  vertical-align: super;
 }
 
 .footnote {
   font-size: 0.9em;
-
   > p {
     margin-bottom: 8px;
     margin-left: 2em;
