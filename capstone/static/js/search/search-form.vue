@@ -50,8 +50,8 @@
                 <select v-model='field["value"]'
                         :id='field["name"]'>
                   <option v-for="(label, value) in choices[field['choices']]"
-                          :value="value" v-bind:key="label">
-                    {{label}}
+                          :value="label[0]" v-bind:key="label[1]">
+                    {{label[1]}}
                   </option>
                 </select>
               </template>

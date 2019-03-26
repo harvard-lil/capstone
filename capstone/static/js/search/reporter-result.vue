@@ -1,21 +1,17 @@
 <template>
   <li class="result">
     <div class="result-title row">
-      <a target="_blank" :href="$parent.metadata_view_url('reporter', result.id)">
-        {{result.full_name}}
-      </a>
-    </div>
-    <div class="result-data">
-      <div class="row">
-        <div>
-          <span class="result-data-label">Abbreviation:</span> {{ result.short_name }}
-        </div>
-        <div>
+      <div class="col-md-9">
+
+        <a target="_blank" class="simple"
+          :href="$parent.metadata_view_url('reporter', result.id)" v-text="result.full_name">
+        </a>
+      </div>
+      <div class="col-md-3 decision-date">
           <a class="see-cases"
-             @click="$parent.$emit('see-cases', 'reporter', result.id)">
+             @click="$parent.$emit('see-cases', 'reporter', result.slug)">
             See cases
           </a>
-        </div>
       </div>
     </div>
   </li>
