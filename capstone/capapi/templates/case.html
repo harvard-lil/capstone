@@ -8,60 +8,34 @@
 
 {% block content %}
   <div class="case-container header-margin">
-    <div class="metadata">
-      <div id="citation_container" class="text-center">
-        <p title="official citation" class="center" id="citation_for_copy"
-           name="citation">{{ citation_full }}
-          <!--<button data-toggle="tooltip" title="Copy Citation to Clipboard" id="citation_copy"
-              onclick="CopyToClipboard('citation_for_copy')">
-        <img src="{% static "img/copy_icon.png" %}" alt="Copy Citation to Clipboard">
-      </button>-->
-        </p>
+    <div class="metadata text-center col-centered">
+      <div class="court">
+        <a href="{{ metadata.court.url }}">
+          {{ metadata.court.name }}</a>
       </div>
-      <div class="text-center court">
-        <p class="">
-          <!--<a href="{{ metadata.court.url }}">{{ metadata.court.name }}</a>-->
-          {{ metadata.court.name }}
-        </p>
-        <p>
-          {{ metadata.decision_date }}
-        </p>
+      <h4 class="case-name">{{ metadata.name }}</h4>
+      <div class="citations">
+        {{ metadata.citations }}
       </div>
-
-      <div class="text-center reporter">
-        <p>
-          <!--<a href="{{ metadata.reporter.url }}">
-            {{ metadata.reporter.full_name }}</a>,
-          No.<a href="{{ metadata.volume.url }}">
-          {{ metadata.volume.volume_number }}.</a>-->
-          {{ metadata.reporter.full_name }}, No. {{ metadata.volume.volume_number }}.
-          <span class="pages">p.{{ metadata.first_page }}&ndash;{{ metadata.last_page }}.</span>
-        </p>
+      <div class="docket-number">
+        {{ metadata.docket_number }}
       </div>
-
-      {% if metadata.docket_number %}
-        <div class="text-center docket">
-          {{ metadata.docket_number }}
-        </div>
-      {% endif %}
-
-
+      <div class="decision_date">
+        {{ metadata.decision_date }}
+      </div>
     </div>
+
     {% if reason == 'error_auth_required' %}
-      <section class="name">
-        <h4 class="text-center">{{ metadata.name }}</h4>
-        <br/>
+      <div class="name">
         <div class="alert-warning text-center">
           <h6 class="case-viewing-error">
             You must be signed in to see the full case.
           </h6>
         </div>
-      </section>
+      </div>
     {% elif reason == 'full_case_param_missing' %}
       <section class="name text-center">
-        <h4>{{ metadata.name }}</h4>
-        <br/>
-        <div class="alert-warning text-center">
+          <div class="alert-warning text-center">
           <h6 class="case-viewing-error">
             Full case parameter is missing in HTML request.</h6>
         </div>
@@ -79,11 +53,11 @@
         <h6 class="case-viewing-error">
           Could not load case body</h6>
       </div>
-      </div>
     {% else %}
       {{ case_html|safe }}
     {% endif %}
 
+  </div>
   <script>
     /*
     This bit of script selects the citation input and copies it. It then informs the users that the citation was copied
