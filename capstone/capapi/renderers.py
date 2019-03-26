@@ -46,6 +46,16 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
         official_cit_entries = [citation['cite'] for citation in data['citations'] if citation['type'] == 'official']
         official_citation = official_cit_entries[0] if len(official_cit_entries[0]) > 0 else None
         template = loader.get_template('case.html')
+
+        # TODO: add html renderer to court and others. For now here's a quick fix
+        data['court']['url'] = data['court']['url'].split("format=html")[0]
+        citations = ""
+        citation_count = len(data['citations'])
+        for key, citation in enumerate(data['citations']):
+            citations += citation.get('cite')
+            if key + 1 < citation_count:
+                citations += "; "
+
         context = {
             'citation': official_citation,
             'page_description': data['name'],
@@ -57,7 +67,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 "docket_number": data["docket_number"],
                 "first_page": data["first_page"],
                 "last_page": data["last_page"],
-                "citations": data["citations"],
+                "citations": citations,
                 "volume": data["volume"],
                 "reporter": data["reporter"],
                 "court": data["court"],
