@@ -17,7 +17,7 @@ bracketnum_number = re.compile(r'\d')
 headnotes_number = re.compile(r'^(\d+).*')
 
 
-def generate_html(casebody, tag_map=tag_map):
+def generate_html(casebody, tag_map=tag_map, abbreviated=False):
     """
         Converts case xml to html. casebody should be a pyquery element extracted from case XML.
     """
@@ -44,6 +44,11 @@ def generate_html(casebody, tag_map=tag_map):
 
         # remove the namespace from the tag name
         tag = element.tag.split('}')[-1]
+
+        if abbreviated:
+            if tag == "parties" or tag == "decisiondate" or tag == "docketnumber":
+                element.getparent().remove(element)
+                continue
 
         element_text_copy = element.text
 
