@@ -225,7 +225,6 @@ select {
       background-color: $color-violet;
       color: $color-white;
       &:after {
-        float: right;
         content: url("../../img/plus_sign_white.svg");
         display: inline-block;
       }
