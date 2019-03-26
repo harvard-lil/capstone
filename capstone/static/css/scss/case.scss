@@ -145,12 +145,11 @@ section.head-matter {
   }
 }
 
-.parties {
-  text-align: center;
-  padding-bottom: 20px;
+.parties, .docketnumber, .decisiondate {
+  display: none;
 }
 
-.decisiondate, .attorneys, .judges {
+.attorneys, .judges {
   text-align: center;
   font-size: 1.25rem;
 }
