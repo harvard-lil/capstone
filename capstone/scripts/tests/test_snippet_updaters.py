@@ -46,7 +46,7 @@ def test_search_jurisdiction_list(ingest_case_xml):
     update_snippets.search_jurisdiction_list()
     jurisdictions = Snippet.objects.get(label='search_jurisdiction_list')
     parsed = json.loads(jurisdictions.contents)
-    assert parsed[1][1] == 'Washington'
+    assert parsed[1][1] == 'Tribal Jurisdictions'
     assert parsed[0][1] == 'Illinois'
 
 @pytest.mark.django_db
