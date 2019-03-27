@@ -130,7 +130,7 @@ def update_map_numbers():
 def search_jurisdiction_list():
     jurisdictions = [ (jurisdiction.slug, jurisdiction.name_long)
             for jurisdiction in Jurisdiction.objects.order_by('slug').all()
-            if jurisdiction.slug != 'regional' and jurisdiction.slug != 'tribal']
+            if jurisdiction.slug != 'regional']
     write_update(
         "search_jurisdiction_list",
         "application/json",
