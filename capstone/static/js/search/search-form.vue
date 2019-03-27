@@ -175,7 +175,7 @@
               format: "e.g. Civ. No. 74-289",
             },
             {
-              name: "citation",
+              name: "cite",
               value: "",
               label: "Citation",
               format: "e.g. 1 Ill. 17",
