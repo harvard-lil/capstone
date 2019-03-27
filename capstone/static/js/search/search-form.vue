@@ -49,9 +49,9 @@
               <template v-if="field['choices']">
                 <select v-model='field["value"]'
                         :id='field["name"]'>
-                  <option v-for="(label, value) in choices[field['choices']]"
-                          :value="label[0]" v-bind:key="label[1]">
-                    {{label[1]}}
+                  <option v-for="choice in choices[field['choices']]"
+                          :value="choice[0]" v-bind:key="choice[1]">
+                    {{choice[1]}}
                   </option>
                 </select>
               </template>
@@ -148,7 +148,7 @@
               value: "",
               label: "Full-Text Search",
               default: true,
-              format: "e.g. library",
+              format: "e.g. insurance illinois",
               info: "Terms stemmed and combined using AND. Words in quotes searched as phrases."
             },
             {
