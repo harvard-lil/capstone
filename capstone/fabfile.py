@@ -10,6 +10,7 @@ import json
 from random import randrange, randint
 from pathlib import Path
 from celery import shared_task, group
+from tqdm import tqdm
 
 # set up Django
 
@@ -33,7 +34,8 @@ import capdb.tasks as tasks
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
     validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars, \
     update_snippets
-from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace, volume_barcode_from_folder
+from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace, volume_barcode_from_folder, \
+    up_to_date_volumes
 
 
 @task(alias='run')
@@ -788,7 +790,6 @@ def report_multiple_jurisdictions(out_path="court_jurisdictions.csv"):
         Write a CSV report of courts with multiple jurisdictions.
     """
     from capweb.helpers import select_raw_sql
-    from tqdm import tqdm
 
     # select distinct cm.court_id from capdb_casemetadata cm, capdb_court c where cm.court_id=c.id and c.jurisdiction_id != cm.jurisdiction_id;
     court_ids = {
@@ -840,8 +841,6 @@ def ice_volumes(scope='all', dry_run='true'):
     from capdb.storages import captar_storage
     from scripts.ice_volumes import recursively_tag
     from scripts.helpers import storage_lookup
-
-    from tqdm import tqdm
 
     print("Preparing validation hash...")
     # validation paths look like 'validation/redacted/barcode[_datetime].txt'
@@ -919,8 +918,61 @@ def sample_captar_images(output_folder='samples'):
                     BytesIO(volume_storage.contents(image, 'rb'))  # passing file handle directly doesn't work because S3 storage strips file wrappers
                 )
 
-
 @task
 def make_pdf(volume_folder):
     import scripts.make_pdf
     scripts.make_pdf.make_pdf(volume_folder)
+
+@task
+def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=settings.REDACTION_KEY):
+    """
+        Convert captar volumes to token stream zip files to be imported.
+    """
+    import scripts.refactor_xml
+    from capdb.storages import captar_storage
+
+    # find existing zips in token_streams to skip recreating
+    if not replace_existing:
+        existing_vols = {Path(p).stem for p in captar_storage.iter_files('token_streams')}
+
+    # get list of all redacted vols and unredacted vols
+    redacted_vols = up_to_date_volumes(captar_storage.iter_files('redacted'))
+    if volume_barcodes:
+        volume_barcodes = set(volume_barcodes)
+        redacted_vols = [i for i in redacted_vols if i[0] in volume_barcodes]
+    unredacted_vols = dict(up_to_date_volumes(captar_storage.iter_files('unredacted')))
+
+    # zip each pair of volumes
+    for barcode, redacted_path in redacted_vols:
+        if barcode in unredacted_vols:
+            primary_path = unredacted_vols[barcode]
+            secondary_path = redacted_path
+        else:
+            primary_path = redacted_path
+            secondary_path = None
+        if not replace_existing and primary_path.name in existing_vols:
+            continue
+        scripts.refactor_xml.volume_to_json.delay(barcode, primary_path, secondary_path, key=key)
+
+@task
+def load_token_streams(replace_existing=False):
+    """
+        Import token stream zip files created by captar_to_token_stream.
+    """
+    import scripts.refactor_xml
+    from capdb.storages import captar_storage
+
+    # find already-import volumes to skip re-importing
+    if not replace_existing:
+        already_imported = set(VolumeMetadata.objects.exclude(xml_metadata=None).values_list('barcode', flat=True))
+
+    # import zips
+    zip_paths = up_to_date_volumes(captar_storage.iter_files('token_streams'))
+    for volume_barcode, path in zip_paths:
+        if not replace_existing and volume_barcode in already_imported:
+            continue
+        scripts.refactor_xml.write_to_db.delay(volume_barcode, path)
+
+@task
+def refresh_case_body_cache():
+    tasks.sync_case_body_cache_for_all_vols()

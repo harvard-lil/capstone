@@ -69,7 +69,7 @@ def export_queryset(queryset, dir_name, filter_item, public=False):
     formats = {'xml': {}, 'text': {}}
     
     # we can safely select_related case_xml because we fetch these in blocks of 1000 via ordered_query_iterator
-    queryset = queryset.select_related('case_xml').order_by('id')
+    queryset = queryset.select_related('case_xml', 'body_cache').order_by('id')
 
     try:
         # set up vars for each format

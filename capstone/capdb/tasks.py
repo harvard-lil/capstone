@@ -6,6 +6,29 @@ from scripts.helpers import ordered_query_iterator
 from capdb.models import *
 
 
+def sync_case_body_cache_for_all_vols():
+    """
+        Call sync_case_body_cache_for_vol celery task for each volume
+    """
+    for volume_id in VolumeMetadata.objects.exclude(xml_metadata=None).values_list('pk', flat=True):
+        sync_case_body_cache_for_vol.delay(volume_id)
+
+
+@shared_task
+def sync_case_body_cache_for_vol(volume_id):
+    """
+        create or update cases for each volume
+    """
+    volume = VolumeMetadata.objects.get(pk=volume_id)
+    pages = list(volume.page_structures.all())
+    blocks_by_id = PageStructure.blocks_by_id(pages)
+    fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
+    labels_by_block_id = PageStructure.labels_by_block_id(pages)
+
+    for case_metadata in volume.case_metadatas.select_related('structure'):
+        case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id)
+
+
 def create_case_metadata_from_all_vols(update_existing=False):
     """
         iterate through all volumes, call celery task for each volume

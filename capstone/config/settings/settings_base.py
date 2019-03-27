@@ -575,3 +575,6 @@ WEBPACK_LOADER = {
         'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
     }
 }
+
+# used for encrypting redacted text -- this should usually not be set, but only entered on demand
+REDACTION_KEY = None

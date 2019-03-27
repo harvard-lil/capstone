@@ -44,30 +44,38 @@ info = print
 
 def get_file_type(path):
     """ Sort volume files by type. """
-    if '/alto/' in path:
-        if path.endswith('.xml'):
+    if 'alto/' in path:
+        if path.endswith('.xml') or path.endswith('.xml.gz'):
             return 'alto'
         return None
-    if '/images/' in path:
+    if 'images/' in path:
         if path.endswith('.jp2'):
+            return 'jp2'
+        if path.endswith('.jpg'):
             return 'jp2'
         if path.endswith('.tif'):
             return 'tif'
         if path.endswith('.pdf'):
             return 'pdf'
         return None
-    if '/casemets/' in path:
-        if path.endswith('.xml'):
+    if 'casemets/' in path:
+        if path.endswith('.xml') or path.endswith('.xml.gz'):
             return 'case'
         return None
     if path.endswith('METS.md5'):
         return 'md5'
-    if path.endswith('METS.xml'):
+    if path.endswith('METS.xml') or path.endswith('METS.xml.gz'):
         return 'volume'
-    if path.endswith('BOXES.xml'):
+    if path.endswith('BOXES.xml') or path.endswith('BOXES.xml.gz'):
         return 'boxes'
     return None
 
+def files_by_type(files):
+    """ Sort list of paths into dict by type. """
+    out = defaultdict(list)
+    for f in files:
+        out[get_file_type(f)].append(f)
+    return out
 
 class LoggingTarFile(tarfile.TarFile):
     def addfile(self, tarinfo, fileobj=None):
@@ -406,10 +414,7 @@ def compress_volume(storage_name, volume_name):
         return
 
     # get sorted files
-    volume_files = storage.iter_files_recursive(volume_name)
-    volume_files_by_type = defaultdict(list)
-    for volume_file in volume_files:
-        volume_files_by_type[get_file_type(volume_file)].append(volume_file)
+    volume_files_by_type = files_by_type(storage.iter_files_recursive(volume_name))
 
     # make a copy of volume in a temp dir
     with TemporaryDirectory() as tempdir:

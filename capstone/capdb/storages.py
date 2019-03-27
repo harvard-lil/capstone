@@ -223,6 +223,7 @@ class CaptarStorage(CapStorageMixin, Storage):
         self.parent = parent
         self.path = path
         self.tar_path = str(Path(path, Path(path).name+".tar"))
+        self.hash_path = self.tar_path + '.sha256'
         self.index_path = self.tar_path+".csv"
         self.index = {}
         for line in csv.DictReader(parent.contents(self.index_path).split("\n")):
@@ -231,6 +232,10 @@ class CaptarStorage(CapStorageMixin, Storage):
                 continue
             path = path.split("/", 1)[1]  # remove top-level directory
             self.index[path] = line
+
+    def get_hash(self):
+        """ Get contents of .sha256 file. """
+        return self.parent.contents(self.hash_path)
 
     def contents(self, path, mode='r'):
         contents = super().contents(path, 'rb')

@@ -1,6 +1,9 @@
 import hashlib
+import json
 import re
 
+import nacl
+from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
 import django.contrib.postgres.search as pg_search
 from django.core.exceptions import ObjectDoesNotExist
@@ -10,14 +13,18 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from lxml import etree
 from model_utils import FieldTracker
+import nacl.encoding
+import nacl.secret
+from pyquery import PyQuery
 
 from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
 from capweb.helpers import reverse, transaction_safe_exceptions
+from scripts import render_case
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
                              short_id_from_s3_key)
-from scripts.process_metadata import get_case_metadata
+from scripts.process_metadata import get_case_metadata, parse_decision_date
 
 
 def choices(*args):
@@ -566,6 +573,7 @@ class VolumeMetadata(models.Model):
     # just extract this and keep it here for now -- we can use it to check the reporter= field later:
     xml_reporter_short_name = models.CharField(max_length=255, blank=True, null=True)
     xml_reporter_full_name = models.CharField(max_length=255, blank=True, null=True)
+    xml_metadata = JSONField(blank=True, null=True)
 
     tracker = FieldTracker()
 
@@ -746,6 +754,7 @@ class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
     last_page = models.CharField(max_length=255, null=True, blank=True)
+    publication_status = models.CharField(max_length=255, null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
     judges = JSONField(null=True, blank=True)
@@ -754,9 +763,13 @@ class CaseMetadata(models.Model):
     attorneys = JSONField(null=True, blank=True)
 
     docket_number = models.CharField(max_length=20000, blank=True)
+    docket_numbers = JSONField(null=True, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
+    argument_date_original = models.CharField(max_length=100, blank=True, null=True)
     court = models.ForeignKey('Court', null=True, related_name='case_metadatas', on_delete=models.SET_NULL)
+    district_name = models.CharField(max_length=255, null=True, blank=True)
+    district_abbreviation = models.CharField(max_length=255, null=True, blank=True)
     name = models.TextField(blank=True)
     name_abbreviation = models.CharField(max_length=1024, blank=True, db_index=True)
     volume = models.ForeignKey('VolumeMetadata', related_name='case_metadatas',
@@ -765,6 +778,7 @@ class CaseMetadata(models.Model):
                                  on_delete=models.DO_NOTHING)
     date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
     duplicative = models.BooleanField(default=False)
+    initial_metadata_synced = models.BooleanField(default=False)
 
     # denormalized fields -
     # these should not be set directly, but are automatically copied from self.jurisdiction by database triggers
@@ -840,11 +854,168 @@ class CaseMetadata(models.Model):
             case_text = CaseText(metadata=self)
 
         if new_text is None:
-            new_text = self.case_xml.extract_casebody().text()
+            try:
+                new_text = self.structure.extract_text()
+            except CaseStructure.DoesNotExist:
+                new_text = self.case_xml.extract_casebody().text()
 
         if new_text != case_text.text:
             case_text.text = new_text
             case_text.save()
+
+    def get_hydrated_structure(self):
+        """
+            Return structure for this case with all references to page blocks replaced by the actual block contents.
+            This is useful for diagnosing rendering errors.
+        """
+        structure = self.structure
+        blocks_by_id = PageStructure.blocks_by_id(structure.pages.all())
+        renderer = render_case.VolumeRenderer(blocks_by_id, {}, {})
+        return renderer.hydrate_opinions(structure.opinions, blocks_by_id)
+
+    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None):
+        """
+            Update self.body_cache with new values based on the current value of self.structure.
+            blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
+        """
+        structure = self.structure
+        if not blocks_by_id or not labels_by_block_id:
+            pages = list(structure.pages.all())
+        blocks_by_id = blocks_by_id or PageStructure.blocks_by_id(pages)
+        fonts_by_id = fonts_by_id or CaseFont.fonts_by_id(blocks_by_id)
+        labels_by_block_id = labels_by_block_id or PageStructure.labels_by_block_id(pages)
+
+        renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, labels_by_block_id)
+        text = renderer.render_text(self)
+        html = renderer.render_html(self)
+        xml = renderer.render_xml(self)
+
+        ## create json
+
+        casebody_pq = PyQuery(html)
+
+        # add footnote labels to footnotes
+        for footnote in casebody_pq('.footnote').items():
+            label = footnote.attr['data-label']
+            if label:
+                footnote_paragraph = footnote.children()[0]
+                footnote_paragraph.text = "%s %s" % (label, footnote_paragraph.text)
+
+        # extract each opinion into a dictionary
+        opinions = []
+        for opinion in casebody_pq.items('.opinion'):
+            opinions.append({
+                'type': opinion.attr.type,
+                'author': opinion('.author').text() or None,
+                'text': opinion.text(),
+            })
+        head_matter, opinions = opinions[0], opinions[1:]
+        json = {
+            'head_matter': head_matter['text'],
+            'judges': [judge.text for judge in casebody_pq('p.judges')],
+            'attorneys': [attorney.text for attorney in casebody_pq('p.attorneys')],
+            'parties': [party.text for party in casebody_pq('p.parties')],
+            'opinions': opinions,
+        }
+
+        ## save
+
+        try:
+            body_cache = self.body_cache
+        except CaseBodyCache.DoesNotExist:
+            body_cache = CaseBodyCache(metadata=self)
+        body_cache.text = text
+        body_cache.html = html
+        body_cache.xml = xml
+        body_cache.json = json
+        body_cache.save()
+
+    def sync_from_initial_metadata(self, force=False):
+        """
+            Update metadata values for this case based on the value of self.initial_metadata.
+            We will only do this the first time, unless force=True, to avoid stepping on values that are later updated
+            directly.
+        """
+        if self.initial_metadata_synced and not force:
+            return
+        self.initial_metadata_synced = True
+        data = self.initial_metadata.metadata
+
+        # set up data
+        duplicative_case = data['duplicative']
+
+        self.duplicative = duplicative_case
+        self.first_page = data["first_page"]
+        self.last_page = data["last_page"]
+
+        if not duplicative_case:
+            self.name = data["name"]
+            self.name_abbreviation = data["name_abbreviation"]
+            self.publication_status = data["status"]
+            self.decision_date_original = data["decision_date"]
+            self.decision_date = parse_decision_date(data["decision_date"])
+            self.argument_date_original = data.get("argument_date")
+            if data["docket_numbers"]:
+                self.docket_number = data["docket_numbers"][0]
+            self.docket_numbers = data["docket_numbers"]
+            if data.get("district"):
+                self.district_name = data["district"]["name"]
+                self.district_abbreviation = data["district"]["abbreviation"]
+
+            # set jurisdiction
+            court = data["court"]
+            try:
+                if self.volume.barcode in special_jurisdiction_cases:
+                    jurisdiction_name = special_jurisdiction_cases[self.volume.barcode]
+                else:
+                    jurisdiction_name = jurisdiction_translation[court["jurisdiction"]]
+                self.jurisdiction = Jurisdiction.get_from_cache(name=jurisdiction_name)
+            except KeyError:
+                # just mark these as None -- they require manual cleanup
+                self.jurisdiction = None
+
+            # set or create court
+            # we look up court by name, name_abbreviation, and jurisdiction
+            court_kwargs = {obj_key:court[data_key] for obj_key, data_key in (('name', 'name'), ('name_abbreviation', 'abbreviation')) if data_key in court}
+            if self.jurisdiction and court_kwargs:
+                court_kwargs["jurisdiction_id"] = self.jurisdiction_id
+                try:
+                    court = Court.get_from_cache(**court_kwargs)
+                except Court.DoesNotExist:
+                    court = Court(**court_kwargs)
+                    court.save()
+                self.court = court
+
+        self.save()
+
+        ### Handle citations
+
+        # set up a fake cite for duplicate cases
+        if duplicative_case:
+            # only makes sense to create a citation if we have a label for the first page
+            first_page = self.structure.pages.order_by('order').first()
+            if first_page and first_page.label:
+                citations = [{
+                    'category': 'official',
+                    'type': 'bluebook',
+                    'text': "{} {} {}".format(self.volume.volume_number, self.reporter.short_name, first_page.label),
+                    'duplicative': True,
+                }]
+            else:
+                citations = []
+        else:
+            citations = data['citations']
+
+        # create each citation
+        self.citations.all().delete()
+        if citations:
+            Citation.objects.bulk_create(Citation(
+                cite=citation['text'],
+                type=citation['category'],
+                category=citation['type'],
+                duplicative=citation.get('duplicative', False),
+                case=self,
+            ) for citation in citations)
 
 
 class CaseXML(BaseXMLModel):
@@ -1219,6 +1390,7 @@ class CaseXML(BaseXMLModel):
 class Citation(models.Model):
     type = models.CharField(max_length=100,
                             choices=(("official", "official"), ("parallel", "parallel")))
+    category = models.CharField(max_length=100, blank=True, null=True)  # this field and "type" are reversed from the values in CaseXML -- possibly should be switched back?
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
     normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
@@ -1457,3 +1629,194 @@ class Snippet(models.Model):
 
     def __str__(self):
         return self.label
+
+
+class TarFile(models.Model):
+    """
+        A captar file that was used for ingest.
+    """
+    volume = models.ForeignKey(VolumeMetadata, on_delete=models.DO_NOTHING)
+    storage_path = models.CharField(max_length=1000)
+    hash = models.CharField(max_length=1000)
+
+    def __str__(self):
+        return "%s <%s>" % (self.storage_path, self.hash)
+
+
+class CaseFont(models.Model):
+    """
+        A distinct font used in one or more alto files.
+    """
+    family = models.CharField(max_length=100)
+    size = models.CharField(max_length=100)
+    style = models.CharField(max_length=100, blank=True)
+    type = models.CharField(max_length=100)
+    width = models.CharField(max_length=100)
+
+    def __str__(self):
+        return "%s %s %s" % (self.family, self.size, self.style)
+
+    @classmethod
+    def fonts_by_id(cls, blocks_by_id):
+        font_ids = []
+        for block in blocks_by_id.values():
+            for token in block.get('tokens', []):
+                if type(token) != str and token[0] == 'font':
+                    font_ids.append(token[1]['id'])
+        return {t.id: t for t in cls.objects.filter(pk__in=font_ids)}
+
+
+class PageStructure(models.Model):
+    """
+        Data structure derived from an ALTO file for a page of a volume.
+    """
+    volume = models.ForeignKey(VolumeMetadata, on_delete=models.DO_NOTHING, related_name='page_structures')
+    order = models.SmallIntegerField()
+    label = models.CharField(max_length=100, blank=True)
+
+    blocks = JSONField()
+    spaces = JSONField(blank=True, null=True)  # probably unnecessary -- in case pages ever have more than one PrintSpace
+    font_names = JSONField(blank=True, null=True)  # for mapping font IDs back to style names in alto
+    encrypted_strings = models.TextField(blank=True, null=True)
+
+    image_file_name = models.CharField(max_length=100)
+    width = models.SmallIntegerField()
+    height = models.SmallIntegerField()
+    deskew = models.CharField(max_length=1000, blank=True)
+
+    ingest_source = models.ForeignKey(TarFile, on_delete=models.DO_NOTHING)
+    ingest_path = models.CharField(max_length=1000)
+
+    def order_to_alto_id(self):
+        """ Convert 1 to alto_00001_0, 2 to alto_00001_1, 3 to alto_00002_0, and so on. """
+        return 'alto_%05d_%s' % ((self.order+1)//2, (self.order+1)%2)
+
+    @staticmethod
+    def blocks_by_id(pages):
+        blocks = {}
+        for page in pages:
+            for block in page.blocks:
+                blocks[block['id']] = block
+        return blocks
+
+    @staticmethod
+    def labels_by_block_id(pages):
+        labels = {}
+        for page in pages:
+            for block in page.blocks:
+                labels[block['id']] = page.label
+        return labels
+
+    def encrypt(self, key=settings.REDACTION_KEY):
+        """
+            Encrypt a page dictionary. Example:
+                >>> page = Page(blocks=[ \
+                    {'format': 'image', 'redacted':True, 'data':'unencrypted'}, \
+                    {'redacted':True, 'tokens': ['text']}, \
+                    {'tokens': ['text', ['redact'], 'text', ['/redact']]}, \
+                    ])
+                >>> page.encrypt(key)
+                >>> page.blocks
+                [
+                    {'format': 'image', 'redacted':True, 'data':['enc', {'i':0}]},
+                    {'redacted':True, 'tokens': [['enc', {'i':1}]]},
+                    {'tokens': ['text', ['redact'], ['enc', {'i':1}], ['/redact']]},
+                ]
+                >>> page.encrypted_strings
+                <encrypted JSON array containing the decrypted strings for each index value>
+        """
+        if self.encrypted_strings:
+            raise ValueError("Cannot encrypt page with existing 'encrypted_strings' value.")
+
+        # extract each redacted string and replace it with a reference like ['enc', {'i': 1}]. i value will later become the
+        # index into an encrypted array of strings.
+        strings = {}
+        string_counter = 0
+        for block in self.blocks:
+            if block.get('format') == 'image':
+                if block.get('redacted', False):
+                    enc_data = strings[block['data']] = ['enc', {'i': string_counter}]
+                    block['data'] = enc_data
+                    string_counter += 1
+            else:
+                all_redacted = block.get('redacted', False)
+                redacted_span = False
+                tokens = block.get('tokens', [])
+                for i in range(len(tokens)):
+                    token = tokens[i]
+                    if type(token) == str:
+                        if all_redacted or redacted_span:
+                            if token not in strings:
+                                strings[token] = ['enc', {'i': string_counter}]
+                                string_counter += 1
+                            tokens[i:i + 1] = [strings[token]]
+                    elif token[0] == 'redact':
+                        redacted_span = True
+                    elif token[0] == '/redact':
+                        redacted_span = False
+
+        # update references with correct i values
+        string_vals = list(strings.keys())
+        for i, val in enumerate(string_vals):
+            strings[val][1]['i'] = i
+
+        # store encrypted array
+        box = nacl.secret.SecretBox(key, encoder=nacl.encoding.Base64Encoder)
+        self.encrypted_strings = box.encrypt(json.dumps(string_vals).encode('utf8'),
+                                             encoder=nacl.encoding.Base64Encoder).decode('utf8')
+
+    def decrypt(self, key=settings.REDACTION_KEY):
+        """
+            Decrypt a page dictionary. Performs the reverse transformation to the example for encrypt().
+        """
+        # decrypt stored strings
+        box = nacl.secret.SecretBox(key, encoder=nacl.encoding.Base64Encoder)
+        strings = json.loads(
+            box.decrypt(self.encrypted_strings.encode('utf8'), encoder=nacl.encoding.Base64Encoder).decode('utf8'))
+
+        # replace tokens like ['enc', {'i': 1}] with ith entry from strings array
+        for block in self.blocks:
+            if block.get('format') == 'image':
+                if block.get('redacted', False):
+                    block['data'] = strings[block['data'][1]['i']]
+            else:
+                tokens = block.get('tokens', [])
+                for i in range(len(tokens)):
+                    token = tokens[i]
+                    if type(token) != str and token[0] == 'enc':
+                        tokens[i:i + 1] = [strings[token[1]['i']]]
+
+
+class CaseStructure(models.Model):
+    """
+        Structure of a case, based on references to PageStructure.
+    """
+    metadata = models.OneToOneField(CaseMetadata, on_delete=models.DO_NOTHING, related_name='structure')
+    pages = models.ManyToManyField(PageStructure, related_name='cases')
+    opinions = JSONField()
+    corrections = JSONField(blank=True, null=True)
+
+    ingest_source = models.ForeignKey(TarFile, on_delete=models.DO_NOTHING)
+    ingest_path = models.CharField(max_length=1000)
+
+
+class CaseInitialMetadata(models.Model):
+    """
+        Initial metadata for case, provided by Innodata.
+    """
+    case = models.OneToOneField(CaseMetadata, on_delete=models.DO_NOTHING, related_name='initial_metadata')
+    metadata = JSONField()
+
+    ingest_source = models.ForeignKey(TarFile, on_delete=models.DO_NOTHING)
+    ingest_path = models.CharField(max_length=1000)
+
+
+class CaseBodyCache(models.Model):
+    """
+    Renditions of a case.
+    """
+    metadata = models.OneToOneField(CaseMetadata, related_name='body_cache', on_delete=models.CASCADE)
+    text = models.TextField(blank=True, null=True)
+    html = models.TextField(blank=True, null=True)
+    xml = models.TextField(blank=True, null=True)
+    json = JSONField(blank=True, null=True)

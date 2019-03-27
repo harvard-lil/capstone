@@ -32,6 +32,7 @@ coreschema==0.0.4         # via coreapi, drf-yasg
 coverage==4.5.2           # via pytest-cov
 cryptography==2.5         # via moto, paramiko
 cssselect==1.0.3          # via mincss
+diff-match-patch==20181111
 django-appconf==1.0.2     # via django-compressor
 django-bootstrap4==0.0.7
 django-compressor==2.2    # via django-libsass
@@ -86,7 +87,7 @@ nltk==3.4
 paramiko==2.4.2           # via fabric3
 pathlib2==2.3.3           # via pytest
 pbr==5.1.1                # via mock
-pillow==5.4.1             # via img2pdf, reportlab
+pillow==5.4.1
 pip-tools==3.3.2
 pluggy==0.8.1             # via pytest
 port-for==0.4             # via pytest-redis

@@ -7,7 +7,6 @@ from django.template import loader
 from rest_framework import renderers
 
 from capweb.helpers import cache_func
-from scripts.generate_case_html import generate_html
 from scripts.process_metadata import parse_decision_date
 
 
@@ -87,7 +86,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             context['reason'] = 'other'
             return template.render(context, renderer_context['request'])
 
-        context['case_html'] = generate_html(data['casebody']['data'])
+        context['case_html'] = data['casebody']['data']
         context['title'] = data['casebody']['title']
 
         return template.render(context, renderer_context['request'])
