@@ -286,4 +286,32 @@
       </div>
     </div>
   </div>
+  {# =============> CODE EXAMPLES <============= #}
+  <div class="project-description">
+    <h2 class="subtitle simple-subtitle" id="examples">
+      <a href="https://github.com/harvard-lil/cap-examples">
+        CAP Search
+      </a>
+    </h2>
+    <p>
+      Our own search utility is a CAPAPI consumer written in Vue with a smattering of python on the back end. Most
+      of the relevant code can be found in the 'capbrowse' app in our larger codebase for case management which
+      is called Capstone.
+    </p>
+    <p class="social">
+      <span class="github">
+        <a href="https://github.com/harvard-lil/capstone"
+           target="_blank"
+           title="Capstone source code on Github"
+           aria-label="Capstone source code on Github"></a>
+      </span>
+      <span class="website">
+        <a href="{% url "search" %}"
+           title="CAP Search"
+           target="_blank"
+           aria-label="CAP Search"></a>
+      </span>
+    </p>
+  </div>
+
 {% endblock %}
