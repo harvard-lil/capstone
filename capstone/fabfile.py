@@ -38,7 +38,7 @@ from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespa
 
 @task(alias='run')
 def run_django(port="127.0.0.1:8000"):
-    local("python manage.py runserver %s" % port)
+    management.call_command('runserver', port)
 
 @task
 def test():
@@ -75,12 +75,12 @@ def validate_private_volumes():
     validate_private_volumes_script.validate_private_volumes()
 
 @task
-def ingest_jurisdiction():
-    ingest_tt_data.populate_jurisdiction()
+def ingest_fixtures():
+    management.call_command('loaddata', 'capdb/fixtures/jurisdictions.json', 'capdb/fixtures/reporters.json', database='capdb')
 
 @task
 def ingest_metadata():
-    ingest_tt_data.populate_jurisdiction()
+    ingest_fixtures()
     ingest_tt_data.ingest(False)
 
 @task
@@ -90,13 +90,6 @@ def sync_metadata():
     Changes field names according to maps listed at the top of ingest_tt_data script.
     """
     ingest_tt_data.ingest(True)
-
-@task
-def relink_reporter_jurisdiction():
-    """
-    This will re-build the links between the Reporter table and Jurisdiction table
-    """
-    ingest_tt_data.relink_reporter_jurisdiction()
 
 @task
 def run_pending_migrations():
@@ -164,19 +157,18 @@ def migrate():
         Migrate all dbs at once
     """
 
-    local("python manage.py migrate --database=default")
-    local("python manage.py migrate --database=capdb")
+    management.call_command('migrate', database="default")
+    management.call_command('migrate', database="capdb")
     if settings.USE_TEST_TRACKING_TOOL_DB:
-        local("python manage.py migrate --database=tracking_tool")
+        management.call_command('migrate', database="tracking_tool")
 
     update_postgres_env()
 
 @task
 def load_test_data():
     if settings.USE_TEST_TRACKING_TOOL_DB:
-        local("python manage.py loaddata --database=tracking_tool test_data/tracking_tool.json")
+        management.call_command('loaddata', 'test_data/tracking_tool.json', database="tracking_tool")
     ingest_metadata()
-    ingest_jurisdiction()
     total_sync_with_s3()
 
 
@@ -186,7 +178,7 @@ def add_permissions_groups():
     Add permissions groups for admin panel
     """
     # add capapi groups
-    local("python manage.py loaddata capapi/fixtures/groups.yaml")
+    management.call_command('loaddata', 'capapi/fixtures/groups.yaml')
 
 
 @task

@@ -3,8 +3,8 @@ from django.db import connections
 
 from tqdm import tqdm
 
-from capdb.models import VolumeMetadata, TrackingToolUser, Reporter, ProcessStep, TrackingToolLog, BookRequest, Jurisdiction
-from tracking_tool.models import BookRequests, Eventloggers, Hollis, Pstep, Reporters, Users, Volumes
+from capdb.models import VolumeMetadata, TrackingToolUser, ProcessStep, TrackingToolLog, BookRequest, Jurisdiction
+from tracking_tool.models import BookRequests, Eventloggers, Hollis, Pstep, Users, Volumes
 
 user_field_map = {'id': 'id', 'privlevel': 'privilege_level', 'email': 'email', 'created_at': 'created_at',
                   'updated_at': 'updated_at' }
@@ -14,9 +14,6 @@ book_request_field_map = {'id': 'id', 'updated_by': 'updated_by', 'created_at': 
                           'delivery_date': 'delivery_date'}
 pstep_field_map = {'step_id': 'step', 'name': 'label', 'prereq': 'prerequisites', 'desc': 'description',
                    'created_at': 'created_at', 'updated_at': 'updated_at'}
-reporter_field_map = {'id': 'id', 'reporter': 'full_name', 'short': 'short_name', 'start_date': 'start_year',
-                      'end_date': 'end_year', 'volumes': 'volume_count', 'created_at': 'created_at',
-                      'updated_at': 'updated_at', 'notes': 'notes'}
 volume_field_map = {'bar_code': 'barcode', 'hollis_no': 'hollis_number', 'volume': 'volume_number',
                     'publisher': 'publisher', 'publicationyear': 'publication_year', 'reporter_id': 'reporter_id',
                     'nom_volume': 'nominative_volume_number', 'nominative_name': 'nominative_name',
@@ -48,7 +45,6 @@ def ingest(dupcheck):
     copyModel(Users, TrackingToolUser, user_field_map, dupcheck)
     copyModel(BookRequests, BookRequest, book_request_field_map, dupcheck)
     copyModel(Pstep, ProcessStep, pstep_field_map, dupcheck, dupe_field='step_id')
-    copyModel(Reporters, Reporter, reporter_field_map, dupcheck)
     copyModel(Volumes, VolumeMetadata, volume_field_map, dupcheck, dupe_field='bar_code')
     copyModel(Eventloggers, TrackingToolLog, eventloggers_field_map, dupcheck)
     
@@ -120,16 +116,3 @@ def copyModel(source, destination, field_map, dupcheck, dupe_field='id'):
     if sequence_sql:
         with connections['capdb'].cursor() as cursor:
             cursor.execute(sequence_sql[0])
-
-def populate_jurisdiction():
-    """This populates the jurisdiction table based on what's in the tracking tool stub"""
-    reporters = Reporters.objects.values('state').distinct()
-    for jurisdiction in reporters:
-        Jurisdiction.objects.get_or_create(name=jurisdiction['state'])
-    # hard-coded jurisdictions not present in tracking tool
-    Jurisdiction.objects.get_or_create(name='Tribal', name_long='Tribal Jurisdictions', slug='tribal')
-
-def relink_reporter_jurisdiction():
-    for tt_reporter in Reporters.objects.all():
-        reporter = Reporter.objects.get(id=tt_reporter.id)
-        reporter.jurisdictions.add(Jurisdiction.objects.get(name=tt_reporter.state))

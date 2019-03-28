@@ -1,0 +1,622 @@
+[
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 1,
+    "fields": {
+      "name": "N.Y.",
+      "name_long": "New York",
+      "slug": "ny",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 2,
+    "fields": {
+      "name": "Conn.",
+      "name_long": "Connecticut",
+      "slug": "conn",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 3,
+    "fields": {
+      "name": "Ga.",
+      "name_long": "Georgia",
+      "slug": "ga",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 4,
+    "fields": {
+      "name": "Mass.",
+      "name_long": "Massachusetts",
+      "slug": "mass",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 5,
+    "fields": {
+      "name": "N.C.",
+      "name_long": "North Carolina",
+      "slug": "nc",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 6,
+    "fields": {
+      "name": "Pa.",
+      "name_long": "Pennsylvania",
+      "slug": "pa",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 7,
+    "fields": {
+      "name": "Va.",
+      "name_long": "Virginia",
+      "slug": "va",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 8,
+    "fields": {
+      "name": "Del.",
+      "name_long": "Delaware",
+      "slug": "del",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 9,
+    "fields": {
+      "name": "Regional",
+      "name_long": "Regional",
+      "slug": "regional",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 10,
+    "fields": {
+      "name": "La.",
+      "name_long": "Louisiana",
+      "slug": "la",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 11,
+    "fields": {
+      "name": "Tenn.",
+      "name_long": "Tennessee",
+      "slug": "tenn",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 12,
+    "fields": {
+      "name": "Utah",
+      "name_long": "Utah",
+      "slug": "utah",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 13,
+    "fields": {
+      "name": "Okla.",
+      "name_long": "Oklahoma",
+      "slug": "okla",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 14,
+    "fields": {
+      "name": "Ind.",
+      "name_long": "Indiana",
+      "slug": "ind",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 15,
+    "fields": {
+      "name": "R.I.",
+      "name_long": "Rhode Island",
+      "slug": "ri",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 16,
+    "fields": {
+      "name": "Miss.",
+      "name_long": "Mississippi",
+      "slug": "miss",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 17,
+    "fields": {
+      "name": "Vt.",
+      "name_long": "Vermont",
+      "slug": "vt",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 18,
+    "fields": {
+      "name": "N.D.",
+      "name_long": "North Dakota",
+      "slug": "nd",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 19,
+    "fields": {
+      "name": "Or.",
+      "name_long": "Oregon",
+      "slug": "or",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 20,
+    "fields": {
+      "name": "Mont.",
+      "name_long": "Montana",
+      "slug": "mont",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 21,
+    "fields": {
+      "name": "Ariz.",
+      "name_long": "Arizona",
+      "slug": "ariz",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 22,
+    "fields": {
+      "name": "Ohio",
+      "name_long": "Ohio",
+      "slug": "ohio",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 23,
+    "fields": {
+      "name": "Ala.",
+      "name_long": "Alabama",
+      "slug": "ala",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 24,
+    "fields": {
+      "name": "N.J.",
+      "name_long": "New Jersey",
+      "slug": "nj",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 25,
+    "fields": {
+      "name": "P.R.",
+      "name_long": "Puerto Rico",
+      "slug": "pr",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 26,
+    "fields": {
+      "name": "Ky.",
+      "name_long": "Kentucky",
+      "slug": "ky",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 27,
+    "fields": {
+      "name": "Idaho",
+      "name_long": "Idaho",
+      "slug": "idaho",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 28,
+    "fields": {
+      "name": "Fla.",
+      "name_long": "Florida",
+      "slug": "fla",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 29,
+    "fields": {
+      "name": "Ill.",
+      "name_long": "Illinois",
+      "slug": "ill",
+      "whitelisted": true
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 30,
+    "fields": {
+      "name": "Cal.",
+      "name_long": "California",
+      "slug": "cal",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 31,
+    "fields": {
+      "name": "Colo.",
+      "name_long": "Colorado",
+      "slug": "colo",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 32,
+    "fields": {
+      "name": "Tex.",
+      "name_long": "Texas",
+      "slug": "tex",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 33,
+    "fields": {
+      "name": "Wyo.",
+      "name_long": "Wyoming",
+      "slug": "wyo",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 34,
+    "fields": {
+      "name": "Ark.",
+      "name_long": "Arkansas",
+      "slug": "ark",
+      "whitelisted": true
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 35,
+    "fields": {
+      "name": "W. Va.",
+      "name_long": "West Virginia",
+      "slug": "w-va",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 36,
+    "fields": {
+      "name": "Minn.",
+      "name_long": "Minnesota",
+      "slug": "minn",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 37,
+    "fields": {
+      "name": "Mo.",
+      "name_long": "Missouri",
+      "slug": "mo",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 38,
+    "fields": {
+      "name": "Wash.",
+      "name_long": "Washington",
+      "slug": "wash",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 39,
+    "fields": {
+      "name": "U.S.",
+      "name_long": "United States",
+      "slug": "us",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 40,
+    "fields": {
+      "name": "Haw.",
+      "name_long": "Hawaii",
+      "slug": "haw",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 41,
+    "fields": {
+      "name": "Navajo Nation",
+      "name_long": "Navajo Nation",
+      "slug": "navajo-nation",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 42,
+    "fields": {
+      "name": "Me.",
+      "name_long": "Maine",
+      "slug": "me",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 43,
+    "fields": {
+      "name": "Kan.",
+      "name_long": "Kansas",
+      "slug": "kan",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 44,
+    "fields": {
+      "name": "V.I.",
+      "name_long": "Virgin Islands",
+      "slug": "vi",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 45,
+    "fields": {
+      "name": "Iowa",
+      "name_long": "Iowa",
+      "slug": "iowa",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 46,
+    "fields": {
+      "name": "Wis.",
+      "name_long": "Wisconsin",
+      "slug": "wis",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 47,
+    "fields": {
+      "name": "N.H.",
+      "name_long": "New Hampshire",
+      "slug": "nh",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 48,
+    "fields": {
+      "name": "Nev.",
+      "name_long": "Nevada",
+      "slug": "nev",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 49,
+    "fields": {
+      "name": "Mich.",
+      "name_long": "Michigan",
+      "slug": "mich",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 50,
+    "fields": {
+      "name": "Md.",
+      "name_long": "Maryland",
+      "slug": "md",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 51,
+    "fields": {
+      "name": "Neb.",
+      "name_long": "Nebraska",
+      "slug": "neb",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 52,
+    "fields": {
+      "name": "N.M.",
+      "name_long": "New Mexico",
+      "slug": "nm",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 53,
+    "fields": {
+      "name": "Alaska",
+      "name_long": "Alaska",
+      "slug": "alaska",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 54,
+    "fields": {
+      "name": "S.D.",
+      "name_long": "South Dakota",
+      "slug": "sd",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 55,
+    "fields": {
+      "name": "Dakota Territory",
+      "name_long": "Dakota Territory",
+      "slug": "dakota-territory",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 56,
+    "fields": {
+      "name": "D.C.",
+      "name_long": "District of Columbia",
+      "slug": "dc",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 57,
+    "fields": {
+      "name": "N. Mar. I.",
+      "name_long": "Northern Mariana Islands",
+      "slug": "n-mar-i",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 58,
+    "fields": {
+      "name": "Am. Samoa",
+      "name_long": "American Samoa",
+      "slug": "am-samoa",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 59,
+    "fields": {
+      "name": "S.C.",
+      "name_long": "South Carolina",
+      "slug": "sc",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 60,
+    "fields": {
+      "name": "Guam",
+      "name_long": "Guam",
+      "slug": "guam",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 61,
+    "fields": {
+      "name": "Native American",
+      "name_long": "Native American",
+      "slug": "native-american",
+      "whitelisted": false
+    }
+  },
+  {
+    "model": "capdb.jurisdiction",
+    "pk": 62,
+    "fields": {
+      "name": "Tribal",
+      "name_long": "Tribal Jurisdictions",
+      "slug": "tribal",
+      "whitelisted": false
+    }
+  }
+]

@@ -1,6 +1,6 @@
 import pytest
 
-from capdb.models import Court
+from capdb.models import Court, Reporter, Jurisdiction
 from scripts.edits import tribal_jurisdiction, strip_court_names, merge_courts
 
 
@@ -8,10 +8,11 @@ from scripts.edits import tribal_jurisdiction, strip_court_names, merge_courts
 def test_tribal_jurisdiction(ingest_case_xml):
     # set up conditions for edit
     case = ingest_case_xml.metadata
-    case.jurisdiction.name_long = "United States"
-    case.jurisdiction.save()
-    case.reporter.full_name = "West's American Tribal Law Reporter"
-    case.reporter.save()
+    case.jurisdiction = Jurisdiction.objects.get(name_long="United States")
+    case.reporter = Reporter.objects.get(full_name="West's American Tribal Law Reporter")
+    case.save()
+    case.court.jurisdiction = case.jurisdiction
+    case.court.save()
     original_jurisdiction = case.jurisdiction
 
     # dry run
