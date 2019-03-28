@@ -1,7 +1,7 @@
 import pytest
 
 import fabfile
-from capdb.models import TrackingToolUser, BookRequest, ProcessStep, Reporter, TrackingToolLog, VolumeMetadata, PageXML, \
+from capdb.models import TrackingToolUser, BookRequest, ProcessStep, TrackingToolLog, VolumeMetadata, PageXML, \
     CaseXML
 from scripts.helpers import parse_xml, serialize_xml
 
@@ -76,7 +76,7 @@ def test_update_dup_checking(ingest_volume_xml, ingest_case_xml):
 @pytest.mark.django_db
 def test_sync_metadata(ingest_metadata):
     # helper to get count of all migrated models
-    models = [VolumeMetadata, TrackingToolLog, Reporter, ProcessStep, BookRequest, TrackingToolUser]
+    models = [VolumeMetadata, TrackingToolLog, ProcessStep, BookRequest, TrackingToolUser]
     def get_counts():
         return {Model: Model.objects.count() for Model in models}
 

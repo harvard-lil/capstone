@@ -46,8 +46,8 @@ def test_search_jurisdiction_list(ingest_case_xml):
     update_snippets.search_jurisdiction_list()
     jurisdictions = Snippet.objects.get(label='search_jurisdiction_list')
     parsed = json.loads(jurisdictions.contents)
-    assert parsed[1][1] == 'Tribal Jurisdictions'
-    assert parsed[0][1] == 'Illinois'
+    assert parsed[0][1] == 'Alabama'
+    assert parsed[1][1] == 'Alaska'
 
 @pytest.mark.django_db
 def test_search_court_list(ingest_case_xml):
@@ -63,6 +63,6 @@ def test_search_reporter_list(ingest_case_xml):
     update_snippets.search_reporter_list()
     reporters = Snippet.objects.get(label='search_reporter_list')
     parsed = json.loads(reporters.contents)
-    assert len(parsed) == 4
-    assert parsed[-1][1] == 'Wash. App.- Washington Appellate Reports'
+    assert len(parsed) == 647
+    assert parsed[-1][1] == 'York Leg. Rec.- York Legal Record'
 
