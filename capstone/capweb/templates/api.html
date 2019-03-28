@@ -98,8 +98,8 @@
       or reach it from the command line. For example, here is a curl command to request a single case from Illinois:</p>
     <pre class="code-block">curl "{% api_url "casemetadata-list" %}?jurisdiction=ill&page_size=1"</pre>
     <p>
-      If you haven't used APIs before, you might want to jump down to our
-      <a href="#beginners">Beginner's Introduction to APIs</a>.
+      If you haven't used APIs before, you might want to check out our <a href="{% url "search" %}">search tool</a>,
+      or jump down to our <a href="#beginners">Beginner's Introduction to APIs</a>.
     </p>
   </div>
 
@@ -1009,9 +1009,11 @@
       Beginner's Introduction to APIs
     </h2>
     <p>
-      Are you a little lost in all the technical jargon? Here's a good place to start. This is by no means a
-      complete introduction to using <a href="#def-api">APIs</a>, but it might be just enough to help situate a
-      technically inclined person who's a bit outside of their comfort zone.
+      Are you a little lost in all the technical jargon, but still want to give the API a shot? This is a good place to
+      start! This is by no means a complete introduction to using <a href="#def-api">APIs</a>, but it might be just
+      enough to help situate a technically inclined person who's a bit outside of their comfort zone. If you've had
+      enough and would prefer to just access the cases using a human-centric interface, please check out our
+      <a href="{% url 'search' %}">search tool</a>.
     </p>
     <p>
       Fundamentally, an API is no different from a regular website: A program on your computer, such as a web
