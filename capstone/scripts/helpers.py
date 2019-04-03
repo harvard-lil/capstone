@@ -1,5 +1,6 @@
 import hashlib
 import shutil
+from pathlib import Path
 
 from django.db.models import Q
 from lxml import etree
@@ -370,3 +371,12 @@ def volume_barcode_from_folder(folder):
             32044032501660_unredacted_2018_10_18_06.26.00  ->  32044032501660
     """
     return folder.replace('unredacted', 'redacted').split("_redacted", 1)[0]
+
+def up_to_date_volumes(volume_paths):
+    """ Get all up-to-date volumes from a list of paths. Yields (volume_barcode, path) for each up-to-date path. """
+    current_vol = next(volume_paths, "")
+    while current_vol:
+        next_vol = next(volume_paths, "")
+        if volume_barcode_from_folder(Path(current_vol).name) != volume_barcode_from_folder(Path(next_vol).name):
+            yield (volume_barcode_from_folder(Path(current_vol).name), Path(current_vol))
+        current_vol = next_vol

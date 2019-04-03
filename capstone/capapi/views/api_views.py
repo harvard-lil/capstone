@@ -79,7 +79,7 @@ class CaseViewSet(BaseViewSet):
 
     def get_queryset(self):
         if self.is_full_case_request():
-            return self.queryset.select_related('case_xml')
+            return self.queryset.select_related('case_xml', 'body_cache')
         else:
             return self.queryset
 

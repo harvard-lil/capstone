@@ -3,6 +3,9 @@ from .settings_base import *  # noqa
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'k2#@_q=1$(__n7#(zax6#46fu)x=3&^lz&bwb8ol-_097k_rj5'
 
+# nacl.encoding.Base64Encoder.encode(nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE))
+REDACTION_KEY = b'DPpSaf/iGNmq/3SYOPH6LfCZ9jUFkuoGKXycb2Of5Ms='
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

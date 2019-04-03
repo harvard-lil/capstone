@@ -9,6 +9,7 @@ from rest_framework.serializers import ListSerializer
 from capapi.models import SiteLimits
 from capapi.renderers import HTMLRenderer, XMLRenderer
 from capdb import models
+from capdb.models import CaseBodyCache
 from scripts import helpers
 from scripts.generate_case_html import generate_html
 from .permissions import get_single_casebody_permissions
@@ -170,12 +171,18 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
 
             # non-JSON, single-case delivery formats will be handled by custom renderers
             if type(request.accepted_renderer) == HTMLRenderer:
-                data = case.case_xml.extract_casebody()
+                try:
+                    data = case.body_cache.html
+                except CaseBodyCache.DoesNotExist:
+                    data = generate_html(case.case_xml.extract_casebody())
                 casebody['title'] = case.full_cite()
             elif type(request.accepted_renderer) == XMLRenderer:
-                parsed_xml = case.case_xml.get_parsed_xml()
-                case.case_xml.reorder_head_matter(parsed_xml)
-                data = helpers.serialize_xml(parsed_xml)
+                try:
+                    data = case.body_cache.xml
+                except CaseBodyCache.DoesNotExist:
+                    parsed_xml = case.case_xml.get_parsed_xml()
+                    case.case_xml.reorder_head_matter(parsed_xml)
+                    data = helpers.serialize_xml(parsed_xml)
 
             # for JSON, pick html, xml, or text based on body_format query param
             else:
@@ -183,55 +190,66 @@ class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):
 
                 if body_format == 'html':
                     # serialize to html
-                    data = generate_html(case.case_xml.extract_casebody())
+                    try:
+                        data = case.body_cache.html
+                    except CaseBodyCache.DoesNotExist:
+                        data = generate_html(case.case_xml.extract_casebody())
                 elif body_format == 'xml':
-                    # serialize to xml
-                    casebody_pq = case.case_xml.extract_casebody()
+                    try:
+                        data = case.body_cache.xml
+                    except CaseBodyCache.DoesNotExist:
+                        # serialize to xml
+                        casebody_pq = case.case_xml.extract_casebody()
 
-                    # For the XML output, footnotes have <footnote label="foo">, so we should strip "foo" from the start
-                    # of the footnote text.
-                    for footnote in casebody_pq('casebody|footnote'):
-                        label = footnote.attrib.get('label')
-                        if label:
-                            helpers.left_strip_text(footnote[0], label)
+                        # For the XML output, footnotes have <footnote label="foo">, so we should strip "foo" from the start
+                        # of the footnote text.
+                        for footnote in casebody_pq('casebody|footnote'):
+                            label = footnote.attrib.get('label')
+                            if label:
+                                helpers.left_strip_text(footnote[0], label)
 
-                    c = helpers.serialize_xml(casebody_pq)
-                    data = re.sub(r"\s{2,}", " ", c.decode())
+                        c = helpers.serialize_xml(casebody_pq)
+                        data = re.sub(r"\s{2,}", " ", c.decode())
+                elif body_format == 'tokens':
+                    data = case.get_hydrated_structure()
                 else:
-                    # serialize to json
-                    casebody_pq = case.case_xml.extract_casebody()
+                    try:
+                        data = case.body_cache.json
+                    except CaseBodyCache.DoesNotExist:
+                        # serialize to json
+                        casebody_pq = case.case_xml.extract_casebody()
 
-                    # For the plain text output, footnotes should keep their labels in the text, but we want to make sure
-                    # there is a space separating the labels from the first word. Otherwise a text analysis comes up with
-                    # a lot of noise like "1The".
-                    for footnote in casebody_pq('casebody|footnote'):
-                        label = footnote.attrib.get('label')
-                        if label:
-                            # Get text of footnote and replace "[label][nonwhitespace char]" with "[label][nonwhitespace char]"
-                            footnote_paragraph = casebody_pq(footnote[0])
-                            new_text = footnote_paragraph.text()
-                            new_text = re.sub(r'^(%s)(\S)' % re.escape(label), r'\1 \2', new_text)
-                            footnote_paragraph.text(new_text)
+                        # For the plain text output, footnotes should keep their labels in the text, but we want to make sure
+                        # there is a space separating the labels from the first word. Otherwise a text analysis comes up with
+                        # a lot of noise like "1The".
+                        for footnote in casebody_pq('casebody|footnote'):
+                            label = footnote.attrib.get('label')
+                            if label:
+                                # Get text of footnote and replace "[label][nonwhitespace char]" with "[label][nonwhitespace char]"
+                                footnote_paragraph = casebody_pq(footnote[0])
+                                new_text = footnote_paragraph.text()
+                                new_text = re.sub(r'^(%s)(\S)' % re.escape(label), r'\1 \2', new_text)
+                                footnote_paragraph.text(new_text)
 
-                    # extract each opinion into a dictionary
-                    opinions = []
-                    for opinion in casebody_pq.items('casebody|opinion'):
-                        opinions.append({
-                            'type': opinion.attr('type'),
-                            'author': opinion('casebody|author').text() or None,
-                            'text': opinion.text(),
-                        })
+                        # extract each opinion into a dictionary
+                        opinions = []
+                        for opinion in casebody_pq.items('casebody|opinion'):
+                            opinions.append({
+                                'type': opinion.attr('type'),
+                                'author': opinion('casebody|author').text() or None,
+                                'text': opinion.text(),
+                            })
 
-                        # remove opinion so it doesn't get included in head_matter below
-                        opinion.remove()
+                            # remove opinion so it doesn't get included in head_matter below
+                            opinion.remove()
 
-                    data = {
-                        'head_matter': casebody_pq.text(),
-                        'judges': case.judges,
-                        'attorneys': case.attorneys,
-                        'parties': case.parties,
-                        'opinions': opinions
-                    }
+                        data = {
+                            'head_matter': casebody_pq.text(),
+                            'judges': case.judges,
+                            'attorneys': case.attorneys,
+                            'parties': case.parties,
+                            'opinions': opinions
+                        }
 
             casebody['data'] = data
 

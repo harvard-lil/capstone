@@ -147,7 +147,7 @@ class CaseFilter(NoopMixin, filters.FilterSet):
     body_format = filters.ChoiceFilter(
         method='noop',
         label='Format for case text (applies only if including case text)',
-        choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML')),
+        choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML'), ('tokens', 'debug tokens')),
     )
 
     def find_by_citation(self, qs, name, value):

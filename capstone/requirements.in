@@ -67,10 +67,12 @@ swagger_spec_validator  # optional package for schema validation by drf-yasg
 pyyaml==4.2b4       # only an indirect dependency; included here to pin beta version until 4.x released, as 3.x shows security warning on github
 -e git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize # Fix issues related to https://github.com/gmr/email-normalize/pull/3 (https://github.com/harvard-lil/capstone/issues/745)
 
-# pdf generation
+# File conversion
 PyPDF2
 reportlab
 img2pdf
+Pillow
+diff-match-patch
 
 # maintenance page
 webpage2html # save target page as string
