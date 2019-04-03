@@ -10,7 +10,6 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from lxml import etree
 from model_utils import FieldTracker
-from partial_index import PartialIndex
 
 from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
@@ -734,10 +733,6 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
         return reverse('court-detail', args=[self.pk], scheme="https")
 
 
-# where clause for creating DB indexes used by the api /cases/ endpoint
-case_metadata_partial_index_where = "jurisdiction_id IS NOT NULL AND court_id IS NOT NULL AND NOT duplicative"
-
-
 
 class CaseMetadataQuerySet(models.QuerySet):
     def in_scope(self):
@@ -818,15 +813,18 @@ class CaseMetadata(models.Model):
     def __str__(self):
         return self.case_id
 
-    class Meta:
-        indexes = [
-            # index for ordering of case API endpoint
-            PartialIndex(fields=['decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
-            # indexes for ordering of case API endpoint when filtered by jurisdiction, court, or reporter
-            PartialIndex(fields=['jurisdiction_slug', 'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
-            PartialIndex(fields=['court_slug',        'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
-            PartialIndex(fields=['reporter',          'decision_date', 'id'], unique=True, where=case_metadata_partial_index_where),
-        ]
+    # We now create manually what were originally created by virtue of
+    # indexes of a Meta class, as instances of PartialIndex, in the
+    # following migrations:
+    #
+    # capdb/migrations/0043_auto_20180614_1649.py
+    # capdb/migrations/0042_auto_20180614_1524.py
+    # capdb/migrations/0052_auto_20181003_2041.py
+    #
+    # the where clause for creating these indexes, used by the api /cases/
+    # endpoint, was "jurisdiction_id IS NOT NULL AND court_id IS NOT NULL
+    # AND NOT duplicative" -- the same effect, if needed later, can be
+    # accomplished in Django 2.2 with a condition.
 
     def full_cite(self):
         return "%s, %s (%s)" % (self.name_abbreviation, ", ".join(cite.cite for cite in self.citations.all()), self.decision_date.year)

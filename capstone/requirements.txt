@@ -39,7 +39,6 @@ django-extensions==2.1.4
 django-filter==2.1.0      # via djangorestframework-filters
 django-hosts==3.0
 django-libsass==0.7
-django-partial-index==0.5.2
 django-pipeline==1.6.14
 django-redis==4.10.0
 django-simple-history==2.7.0
