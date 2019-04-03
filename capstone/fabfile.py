@@ -22,7 +22,7 @@ except Exception as e:
 
 from django.core import management
 from django.db import connections
-from django.utils.encoding import force_str
+from django.utils.encoding import force_str, force_bytes
 from django.conf import settings
 from fabric.api import local
 from fabric.decorators import task
@@ -929,7 +929,16 @@ def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=setting
         Convert captar volumes to token stream zip files to be imported.
     """
     import scripts.refactor_xml
+    from getpass import getpass
+    import nacl.secret, nacl.encoding
     from capdb.storages import captar_storage
+
+    # get key
+    if not key:
+        key = getpass("Enter REDACTION_KEY (e.g. DPpSaf/iGNmq/3SYOPH6LfCZ9jUFkuoGKXycb2Of5Ms=): ")
+
+    # make sure key is valid
+    nacl.secret.SecretBox(force_bytes(key), encoder=nacl.encoding.Base64Encoder)
 
     # find existing zips in token_streams to skip recreating
     if not replace_existing:
@@ -946,13 +955,13 @@ def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=setting
     for barcode, redacted_path in redacted_vols:
         if barcode in unredacted_vols:
             primary_path = unredacted_vols[barcode]
-            secondary_path = redacted_path
+            secondary_path = str(redacted_path)
         else:
             primary_path = redacted_path
             secondary_path = None
         if not replace_existing and primary_path.name in existing_vols:
             continue
-        scripts.refactor_xml.volume_to_json.delay(barcode, primary_path, secondary_path, key=key)
+        scripts.refactor_xml.volume_to_json.delay(barcode, str(primary_path), secondary_path, key=str(key))
 
 @task
 def load_token_streams(replace_existing=False):
@@ -971,7 +980,7 @@ def load_token_streams(replace_existing=False):
     for volume_barcode, path in zip_paths:
         if not replace_existing and volume_barcode in already_imported:
             continue
-        scripts.refactor_xml.write_to_db.delay(volume_barcode, path)
+        scripts.refactor_xml.write_to_db.delay(volume_barcode, str(path))
 
 @task
 def refresh_case_body_cache():
