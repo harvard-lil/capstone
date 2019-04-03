@@ -157,7 +157,7 @@ class VolumeRenderer:
         metadata = volume.xml_metadata
         volume_el = etree.Element('volume', {
             'barcode': volume.barcode,
-            'contributinglibrary': 'Harvard Law School Library',
+            'contributinglibrary': metadata['contributing_library'],
             'xmlns': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Volume:v1',
         })
         reporter = metadata['reporter']

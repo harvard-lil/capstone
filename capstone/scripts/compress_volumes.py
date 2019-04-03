@@ -495,10 +495,19 @@ def compress_volume(storage_name, volume_name):
                 sha_out.write(tar_out.hexdigest())
 
 @contextmanager
-def open_captar_volume(volume_path):
-    with TemporaryDirectory() as temp_dir:
+def open_captar_volume(volume_path, delete_temp_on_error=True):
+    """
+        Accessing individual parts of captar files is really slow if they're on S3. This copies them locally, if necessary.
+        With delete_temp_on_error=False, we'll avoid deleting the temp dir afterward so the locally-copied files can
+        be inspected by the caller.
+    """
+    temp_dir = None
+    delete_temp = False
+    try:
         # copy captar from S3 to disk if necessary
         if isinstance(captar_storage, CapS3Storage):
+            temp_dir = tempfile.mkdtemp()
+            delete_temp = True
             Path(temp_dir, volume_path).mkdir(parents=True)
             for path in captar_storage.iter_files(str(volume_path)):
                 copy_file(path, Path(temp_dir, path), from_storage=captar_storage)
@@ -513,6 +522,13 @@ def open_captar_volume(volume_path):
             yield None
         else:
             yield volume_storage
+    except:
+        if not delete_temp_on_error:
+            delete_temp = False
+        raise
+    finally:
+        if delete_temp:
+            shutil.rmtree(temp_dir)
 
 @shared_task
 def validate_volume(volume_path):

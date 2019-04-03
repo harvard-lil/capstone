@@ -1,6 +1,8 @@
 import bisect
 import json
 import re
+import shutil
+import subprocess
 import tempfile
 from base64 import b64encode
 from copy import deepcopy
@@ -18,7 +20,7 @@ from django.utils import timezone
 
 from capdb.models import CaseFont, PageStructure, VolumeMetadata, CaseMetadata, CaseStructure, Reporter, \
     CaseInitialMetadata, CaseXML, TarFile
-from capdb.storages import captar_storage
+from capdb.storages import captar_storage, CapS3Storage
 from scripts import render_case
 from scripts.compress_volumes import files_by_type, open_captar_volume
 from scripts.helpers import parse_xml
@@ -291,6 +293,11 @@ def extract_paragraphs(children, case_id_to_alto_ids, blocks_by_id):
             if el.attr.orphan:
                 footnote['orphan'] = el.attr.orphan
             footnote_pars, _, footnote_par_els = extract_paragraphs(el.children().items(), case_id_to_alto_ids, blocks_by_id)
+
+            # casemets <footnote redact='true'> flag is not reliably set. we also set it if all paragraphs are redacted.
+            if all(par.get('redacted', False) for par in footnote_pars):
+                footnote['redacted'] = True
+
             footnote['paragraphs'] = footnote_pars
             paragraph_els.extend(footnote_par_els)
             footnotes.append(footnote)
@@ -323,18 +330,20 @@ def elements_equal(e1, e2, ignore={}):
         Recursively compare two lxml Elements. Raise ValueError if not identical.
     """
     if e1.tag != e2.tag:
-        raise ValueError("%s != %s" % (e1, e2))
+        raise ValueError("e1.tag != e2.tag (%s != %s)" % (e1.tag, e2.tag))
     if e1.text != e2.text:
-        raise ValueError("%s != %s" % (e1, e2))
+        raise ValueError("e1.text != e2.text (%s != %s)" % (e1.text, e2.text))
     if e1.tail != e2.tail:
-        raise ValueError("%s != %s" % (e1, e2))
+        raise ValueError("e1.tail != e2.tail (%s != %s)" % (e1.tail, e2.tail))
     ignore_attrs = ignore.get('attrs', set()) | ignore.get('tag_attrs', {}).get(e1.tag.rsplit('}', 1)[-1], set())
-    if {k:v for k,v in e1.attrib.items() if k not in ignore_attrs} != {k:v for k,v in e2.attrib.items() if k not in ignore_attrs}:
-        raise ValueError("%s != %s" % (e1, e2))
+    e1_attrib = {k:v for k,v in e1.attrib.items() if k not in ignore_attrs}
+    e2_attrib = {k:v for k,v in e2.attrib.items() if k not in ignore_attrs}
+    if e1_attrib != e2_attrib:
+        raise ValueError("e1.attrib != e2.atrib (%s != %s)" % (e1_attrib, e2_attrib))
     s1 = [i for i in e1 if i.tag.rsplit('}', 1)[-1] not in ignore.get('tags', ())]
     s2 = [i for i in e2 if i.tag.rsplit('}', 1)[-1] not in ignore.get('tags', ())]
     if len(s1) != len(s2):
-        raise ValueError("%s != %s" % (e1, e2))
+        raise ValueError("e1 children != e2 children (%s != %s)" % (s1, s2))
     for c1, c2 in zip(s1, s2):
         elements_equal(c1, c2, ignore)
 
@@ -366,12 +375,26 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
         as a zip file. This wrapper just makes sure the captar files are available locally, and then hands off to
         another function for the main work.
     """
-    with open_captar_volume(primary_path) as unredacted_storage:
-        if secondary_path:
-            with open_captar_volume(secondary_path) as redacted_storage:
-                volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key=key)
-        else:
-            volume_to_json_inner(volume_barcode, unredacted_storage, key=key)
+    unredacted_storage = redacted_storage = None
+    try:
+        with open_captar_volume(primary_path, False) as unredacted_storage:
+            if secondary_path:
+                with open_captar_volume(secondary_path, False) as redacted_storage:
+                    volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key=key)
+            else:
+                volume_to_json_inner(volume_barcode, unredacted_storage, key=key)
+    except:
+        if isinstance(captar_storage, CapS3Storage):
+            # copy busted S3 files locally for further inspection
+            for storage in (unredacted_storage, redacted_storage):
+                if not storage:
+                    continue
+                dest_dir = Path(settings.BASE_DIR, 'test_data/zips')
+                print("Copying failed captar from %s to %s" % (storage.parent.location, dest_dir))
+                subprocess.call(['rsync', '-a', storage.parent.location + '/', str(dest_dir)])
+                shutil.rmtree(storage.parent.location)  # delete local temp dir
+        raise
+
 
 def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=None, key=settings.REDACTION_KEY):
     """
@@ -400,6 +423,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
         'publication_date': volume_el('publicationdate').text(),
         'tar_path': str(unredacted_storage.path),
         'tar_hash': unredacted_storage.get_hash(),
+        'contributing_library': volume_el.attr.contributinglibrary,
     }
     reporter_el = volume_el('reporter')
     metadata['reporter'] = {
@@ -817,7 +841,12 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             old_casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', old_casebody, flags=re.S)
             old_casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', old_casebody, flags=re.S)
             old_casebody = old_casebody.replace(' label=""', '')  # footnote with empty label
-            xml_strings_equal(new_casebody, old_casebody, {'attrs': {'pgmap', 'xmlns'}})
+            xml_strings_equal(new_casebody, old_casebody, {
+                'attrs': {'pgmap', 'xmlns'},
+                'tag_attrs': {
+                    'footnote': {'redact'},  # the redact attr isn't reliably set in the original, so our output may not match. comparison will still ensure that redacted footnotes don't appear.
+                }
+            })
 
             # compare <case>
             if not case_obj.duplicative:
