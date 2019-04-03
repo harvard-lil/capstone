@@ -14,20 +14,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls import url, include
+from django.urls import path, include
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^', include('capweb.urls')),
-    url(r'^', include('capapi.urls')),
-    url(r'^', include('capbrowse.urls')),
+    path('admin/', admin.site.urls),
+    path('', include('capweb.urls')),
+    path('', include('capapi.urls')),
+    path('', include('capbrowse.urls')),
 ]
 
 # use django-debug-toolbar if installed
 if settings.DEBUG:
     try:
         import debug_toolbar
-        urlpatterns += [url(r'^__debug__/', include(debug_toolbar.urls))]
+        urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
     except ImportError:
         pass
