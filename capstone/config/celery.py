@@ -17,7 +17,7 @@ app = Celery('config', include=[
     'scripts.export',
     'scripts.ngrams',
     'scripts.update_snippets',
-    'scripts.captar_to_token_streams',
+    'scripts.refactor_xml',
 ])
 
 # Using a string here means the worker doesn't have to serialize
