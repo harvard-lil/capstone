@@ -556,11 +556,11 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                 else:
                     tokens = block['tokens'] = []
                     last_font = None
-                    redacted_span = False
                     check_string_redaction = redacted_storage and not block.get('redacted', False)
 
                     # handle <TextLine>
                     for line_el in block_el.iter('TextLine'):
+                        redacted_span = False
                         tokens.append(['line', {'rect': rect(line_el.attrib)}])
 
                         # handle <String>
@@ -612,13 +612,15 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                             else:
                                 tokens.extend((ocr_token, ['/ocr']))
 
+                        # close open [redact]
+                        if redacted_span:
+                            tokens.append(['/redact'])
+
                         tokens.append(['/line'])
 
-                    # close open spans
+                    # close open [font]
                     if last_font:
                         tokens.append(['/font'])
-                    if redacted_span:
-                        tokens.append(['/redact'])
 
                 page['blocks'].append(block)
         pages.append(page)
