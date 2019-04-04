@@ -2,6 +2,9 @@ from datetime import datetime
 from scripts.helpers import parse_xml, resolve_namespace
 import re
 
+from scripts.fix_court_tag.fix_court_tag import fix_court_tag
+
+
 def get_case_metadata(case_xml):
     parsed = parse_xml(case_xml.replace('\xad', ''))
 
@@ -48,6 +51,9 @@ def get_case_metadata(case_xml):
         'name_abbreviation': parsed('case|court').attr.abbreviation,
         'name': parsed('case|court').text(),
     }
+
+    # apply manual fixes
+    jurisdiction, court['name'], court['name_abbreviation'] = fix_court_tag(jurisdiction, court['name'], court['name_abbreviation'])
 
     judges = [judge.text for judge in parsed('casebody|judges')]
     attorneys = [attorney.text for attorney in parsed('casebody|attorneys')]

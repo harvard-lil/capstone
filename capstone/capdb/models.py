@@ -21,6 +21,7 @@ from capdb.storages import bulk_export_storage
 from capdb.versioning import TemporalHistoricalRecords
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
+from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
                              short_id_from_s3_key)
@@ -962,8 +963,12 @@ class CaseMetadata(models.Model):
                 self.district_name = data["district"]["name"]
                 self.district_abbreviation = data["district"]["abbreviation"]
 
-            # set jurisdiction
+            # apply fixes from scripts.fix_court_tag
             court = data["court"]
+            if court.get('jurisdiction') and court.get('name') and court.get('abbreviation'):
+                court['jurisdiction'], court['name'], court['abbreviation'] = fix_court_tag(court['jurisdiction'], court['name'], court['abbreviation'])
+
+            # set jurisdiction
             try:
                 if self.volume.barcode in special_jurisdiction_cases:
                     jurisdiction_name = special_jurisdiction_cases[self.volume.barcode]
