@@ -140,9 +140,15 @@ class VolumeRenderer:
 
     def close_string(self, string_el):
         """ Once <String CONTENT> is reassembled, strip any closing spaces and reconstruct CC value. """
-        if string_el.attrib['CONTENT'].endswith(' '):
-            string_el.attrib['CONTENT'] = string_el.attrib['CONTENT'][:-1]
-        string_el.attrib['CC'] = bin(int(string_el.attrib['CC']))[2:].zfill(len(string_el.attrib['CONTENT'])).replace('1', '9')
+        content = string_el.attrib['CONTENT']
+        if content.endswith(' '):
+            content = string_el.attrib['CONTENT'] = content[:-1]
+        if content:
+            # convert integer value for character confidence, like 0b10101010, back into a string like '90909090', by
+            # converting integer to binary string, left padding with zeroes, and replacing 1 with 9
+            string_el.attrib['CC'] = bin(int(string_el.attrib['CC']))[2:].zfill(len(string_el.attrib['CONTENT'])).replace('1', '9')
+        else:
+            string_el.attrib['CC'] = '0'
 
     def rect_to_dict(self, rect):
         """ Convert [left, top, width, height] back into attributes. """
