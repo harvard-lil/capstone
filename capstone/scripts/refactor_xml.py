@@ -842,6 +842,11 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             old_casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', old_casebody, flags=re.S)
             old_casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', old_casebody, flags=re.S)
             old_casebody = old_casebody.replace(' label=""', '')  # footnote with empty label
+
+            # normalize multiple spaces
+            old_casebody = re.sub(r' +', ' ', old_casebody)
+            new_casebody = re.sub(r' +', ' ', new_casebody)
+
             xml_strings_equal(new_casebody, old_casebody, {
                 'attrs': {'pgmap', 'xmlns'},
                 'tag_attrs': {
