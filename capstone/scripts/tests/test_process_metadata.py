@@ -1,6 +1,8 @@
 import os
 import pytest
 import datetime
+
+from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import read_file
 from scripts import process_metadata
 
@@ -19,6 +21,19 @@ def test_get_single_case_metadata(ingest_case_xml):
     assert type(case['decision_date_original']) is str
 
     assert case['jurisdiction'] == 'Illinois'
+
+def test_fix_court_tag():
+    to_check = (
+        # manual_fixes.csv:
+        # works with hand-coded replacement values
+        (('Alabama', ' Alabama  Court of Criminal  Appeal ', ' Ala.  Crim.  App. '), ('Alabama', 'Alabama Court of Criminal Appeals', 'Ala. Crim. App.')),
+        # works with ID-based replacement values
+        (('Alabama', 'Alaska Court of Appeals', 'Alaska Ct. App.'), ('Alaska', 'Alaska Court of Appeals', 'Alaska Ct. App.')),
+        # tribal_jurisdictions.csv:
+        (('United States', 'Appellate Court of the Hopi Tribe', 'Hopi Tribe Ct. App.'), ('Tribal Jurisdictions', 'Appellate Court of the Hopi Tribe', 'Hopi Tribe Ct. App.')),
+    )
+    for old_info, new_info in to_check:
+        assert fix_court_tag(*old_info) == new_info
 
 def test_get_case_metadata():
     casemets_test_dir = "test_data/from_vendor"
