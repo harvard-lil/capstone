@@ -339,7 +339,7 @@ def elements_equal(e1, e2, ignore={}):
     e1_attrib = {k:v for k,v in e1.attrib.items() if k not in ignore_attrs}
     e2_attrib = {k:v for k,v in e2.attrib.items() if k not in ignore_attrs}
     if e1_attrib != e2_attrib:
-        raise ValueError("e1.attrib != e2.atrib (%s != %s)" % (e1_attrib, e2_attrib))
+        raise ValueError("e1.attrib != e2.attrib (%s != %s)" % (e1_attrib, e2_attrib))
     s1 = [i for i in e1 if i.tag.rsplit('}', 1)[-1] not in ignore.get('tags', ())]
     s2 = [i for i in e2 if i.tag.rsplit('}', 1)[-1] not in ignore.get('tags', ())]
     if len(s1) != len(s2):
