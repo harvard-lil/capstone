@@ -603,10 +603,15 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                             # end with a hyphen.
                             text = string_attrib['CONTENT']
                             next_tag = string.getnext()
-                            if (next_tag is not None and next_tag.tag == 'SP') or text[-1] not in ('-', '\xad'):
+                            if (next_tag is not None and next_tag.tag == 'SP') or (text and text[-1] not in ('-', '\xad')):
                                 text += ' '
 
-                            tokens.extend((ocr_token, text, ['/ocr']))
+                            # <String CONTENT> can be empty, so only include text if it's filled in:
+                            if text:
+                                tokens.extend((ocr_token, text, ['/ocr']))
+                            else:
+                                tokens.extend((ocr_token, ['/ocr']))
+
                         tokens.append(['/line'])
 
                     # close open spans
@@ -798,6 +803,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             alto_xml_output = renderer.render_page(page_obj, redacted)
             original_alto = str(parsed('Page'))
             original_alto = original_alto.replace('WC="1.0"', 'WC="1.00"')  # normalize irregular decimal places
+            original_alto = original_alto.replace('CC=""', 'CC="0"')  # normalize character confidence for empty strings -- some are CC="", some are CC="0"
 
             # validate everything *except* the attributes listed here, which are permanently stripped:
             xml_strings_equal(alto_xml_output, original_alto, {
