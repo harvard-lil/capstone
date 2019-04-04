@@ -369,7 +369,7 @@ def create_page_obj(volume_obj, page, ingest_source=None):
 
 
 @shared_task
-def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.REDACTION_KEY):
+def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.REDACTION_KEY, save_failed=False):
     """
         Given volume barcode and locations of redacted and unredacted captar files, write out extracted tokenstreams
         as a zip file. This wrapper just makes sure the captar files are available locally, and then hands off to
@@ -389,9 +389,10 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
             for storage in (unredacted_storage, redacted_storage):
                 if not storage:
                     continue
-                dest_dir = Path(settings.BASE_DIR, 'test_data/zips')
-                print("Copying failed captar from %s to %s" % (storage.parent.location, dest_dir))
-                subprocess.call(['rsync', '-a', storage.parent.location + '/', str(dest_dir)])
+                if save_failed:
+                    dest_dir = Path(settings.BASE_DIR, 'test_data/zips')
+                    print("Copying failed captar from %s to %s" % (storage.parent.location, dest_dir))
+                    subprocess.call(['rsync', '-a', storage.parent.location + '/', str(dest_dir)])
                 shutil.rmtree(storage.parent.location)  # delete local temp dir
         raise
 
