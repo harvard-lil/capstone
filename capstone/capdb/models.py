@@ -1658,6 +1658,9 @@ class CaseFont(models.Model):
     type = models.CharField(max_length=100)
     width = models.CharField(max_length=100)
 
+    class Meta:
+        unique_together = ('family', 'size', 'style', 'type', 'width')
+
     def __str__(self):
         return "%s %s %s" % (self.family, self.size, self.style)
 

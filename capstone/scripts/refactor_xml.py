@@ -900,6 +900,16 @@ def write_to_db(volume_barcode, zip_path):
             cases = json.loads(zip.open('cases.json').read().decode('utf8'))
             fonts_by_fake_id = json.loads(zip.open('fonts.json').read().decode('utf8'))
 
+    # save CaseFonts
+    # do this outside the transaction so volumes can see the same fonts while importing in parallel
+    print("Saving fonts")
+    font_fake_id_to_real_id = {}
+    fonts_by_id = {}
+    for font_fake_id, font_attrs in fonts_by_fake_id.items():
+        font_obj, _ = CaseFont.objects.get_or_create(**font_attrs)
+        font_fake_id_to_real_id[int(font_fake_id)] = font_obj.pk
+        fonts_by_id[font_obj.pk] = font_obj
+
     with transaction.atomic(using='capdb'):
 
         # save volume
@@ -915,14 +925,6 @@ def write_to_db(volume_barcode, zip_path):
         # save TarFile
         ingest_source, _ = TarFile.objects.get_or_create(storage_path=volume['metadata']['tar_path'], hash=volume['metadata']['tar_hash'], volume=volume_obj)
 
-        # save CaseFonts
-        print("Saving fonts")
-        font_fake_id_to_real_id = {}
-        fonts_by_id = {}
-        for font_fake_id, font_attrs in fonts_by_fake_id.items():
-            font_obj, _ = CaseFont.objects.get_or_create(**font_attrs)
-            font_fake_id_to_real_id[int(font_fake_id)] = font_obj.pk
-            fonts_by_id[font_obj.pk] = font_obj
 
         # In volume_to_json we generated fake CaseFont IDs that were inserted into the pages dict. Replace those with
         # the real ones:
