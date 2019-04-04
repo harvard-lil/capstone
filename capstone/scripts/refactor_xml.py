@@ -377,9 +377,9 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
     """
     unredacted_storage = redacted_storage = None
     try:
-        with open_captar_volume(primary_path, False) as unredacted_storage:
+        with open_captar_volume(Path(primary_path), False) as unredacted_storage:
             if secondary_path:
-                with open_captar_volume(secondary_path, False) as redacted_storage:
+                with open_captar_volume(Path(secondary_path), False) as redacted_storage:
                     volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key=key)
             else:
                 volume_to_json_inner(volume_barcode, unredacted_storage, key=key)

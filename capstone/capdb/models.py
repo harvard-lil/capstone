@@ -1761,7 +1761,7 @@ class PageStructure(models.Model):
             strings[val][1]['i'] = i
 
         # store encrypted array
-        box = nacl.secret.SecretBox(key, encoder=nacl.encoding.Base64Encoder)
+        box = nacl.secret.SecretBox(force_bytes(key), encoder=nacl.encoding.Base64Encoder)
         self.encrypted_strings = box.encrypt(json.dumps(string_vals).encode('utf8'),
                                              encoder=nacl.encoding.Base64Encoder).decode('utf8')
 
@@ -1770,7 +1770,7 @@ class PageStructure(models.Model):
             Decrypt a page dictionary. Performs the reverse transformation to the example for encrypt().
         """
         # decrypt stored strings
-        box = nacl.secret.SecretBox(key, encoder=nacl.encoding.Base64Encoder)
+        box = nacl.secret.SecretBox(force_bytes(key), encoder=nacl.encoding.Base64Encoder)
         strings = json.loads(
             box.decrypt(self.encrypted_strings.encode('utf8'), encoder=nacl.encoding.Base64Encoder).decode('utf8'))
 
