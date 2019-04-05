@@ -46,8 +46,14 @@ def fix_court_tag(jurisdiction_name, court_name, court_abbrev):
 
     # repeatedly correct values from normalizations() dict (function call is cached, so dict is only loaded once)
     key = (jurisdiction_name, court_name, court_abbrev)
+    prev_keys = {key}
     while key in normalizations():
         key = normalizations()[key]
+
+        # avoid infinite loops
+        if key in prev_keys:
+            break
+        prev_keys.add(key)
 
     return key
 
