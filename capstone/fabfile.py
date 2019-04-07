@@ -964,6 +964,12 @@ def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=setting
         scripts.refactor_xml.volume_to_json.delay(barcode, str(primary_path), secondary_path, key=str(key), save_failed=save_failed)
 
 @task
+def validate_token_stream(volume_barcode, key=settings.REDACTION_KEY):
+    """ Run just the reversability check from captar_to_token_stream; useful for debugging a previous failure. """
+    import scripts.refactor_xml
+    scripts.refactor_xml.test_reversability(volume_barcode, key)
+
+@task
 def load_token_streams(replace_existing=False):
     """
         Import token stream zip files created by captar_to_token_stream.

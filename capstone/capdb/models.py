@@ -1802,7 +1802,6 @@ class CaseStructure(models.Model):
     metadata = models.OneToOneField(CaseMetadata, on_delete=models.DO_NOTHING, related_name='structure')
     pages = models.ManyToManyField(PageStructure, related_name='cases')
     opinions = JSONField()
-    corrections = JSONField(blank=True, null=True)
 
     ingest_source = models.ForeignKey(TarFile, on_delete=models.DO_NOTHING)
     ingest_path = models.CharField(max_length=1000)
