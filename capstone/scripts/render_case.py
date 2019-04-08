@@ -64,7 +64,7 @@ def remove_empty_tags(tree, ignore_tags=set()):
                 if prev is None:
                     parent.text = (parent.text or '') + el.tail
                 else:
-                    prev.tail += (prev.tail or '') + el.tail
+                    prev.tail = (prev.tail or '') + el.tail
             parent.remove(el)
             if parent == tree:
                 break
