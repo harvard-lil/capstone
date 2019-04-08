@@ -1,0 +1,19 @@
+{% extends "layouts/narrow.html" %}
+
+{% block title %}Read Caselaw: {{ reporters.0.short_name }}{% endblock %}
+{% block meta_description %}Caselaw Access Project cases{% endblock %}
+
+{% block main_content %}
+  <div class="page-section">
+    {% for reporter in reporters %}
+      <h2 class="subtitle">{{ reporter.short_name }}</h2>
+      <p>{{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})</p>
+      <p>
+        <strong>Volume number:</strong>
+        {% for volume in reporter.volumes.all %}
+          <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number=volume.volume_number host 'cite' %}">{{ volume.volume_number }}</a>
+        {% endfor %}
+      </p>
+    {% endfor %}
+  </div>
+{% endblock %}

@@ -477,6 +477,7 @@ class Reporter(models.Model):
     jurisdictions = models.ManyToManyField(Jurisdiction)
     full_name = models.CharField(max_length=1024, db_index=True)
     short_name = models.CharField(max_length=64)
+    short_name_slug = models.CharField(max_length=64, blank=True, null=True, db_index=True)
     start_year = models.IntegerField(blank=True, null=True)
     end_year = models.IntegerField(blank=True, null=True)
     volume_count = models.IntegerField(blank=True, null=True)
@@ -492,6 +493,11 @@ class Reporter(models.Model):
     class Meta:
         ordering = ['full_name']
 
+    def save(self, *args, **kwargs):
+        if not self.short_name_slug:
+            self.short_name_slug = slugify(self.short_name)
+        return super().save(*args, **kwargs)
+
     @property
     def case_exports(self):
         return CaseExport.objects.filter(filter_type='reporter', filter_id=self.pk)
@@ -506,7 +512,7 @@ class VolumeMetadata(models.Model):
     volume_number = models.CharField(max_length=64, blank=True, null=True)
     publisher = models.CharField(max_length=255, blank=True, null=True)
     publication_year = models.IntegerField(blank=True, null=True)
-    reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING)
+    reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='volumes')
     nominative_volume_number = models.CharField(max_length=1024, blank=True, null=True)
     nominative_name = models.CharField(max_length=1024, blank=True, null=True)
     series_volume_number = models.CharField(max_length=1024, blank=True, null=True)
@@ -1403,7 +1409,10 @@ class Citation(models.Model):
     tracker = FieldTracker()
 
     def __str__(self):
-        return str(self.id)
+        return str(self.cite)
+
+    class Meta:
+        ordering = ['type']  # so official will come back before parallel
 
     def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
         if self.tracker.has_changed('cite'):
@@ -1413,6 +1422,9 @@ class Citation(models.Model):
     @staticmethod
     def normalize_cite(cite):
         return re.sub(r'[^0-9a-z]', '', cite.lower())
+
+    def page_number(self):
+        return self.cite.rsplit(' ', 1)[-1]
 
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)

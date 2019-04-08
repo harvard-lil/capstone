@@ -1,0 +1,26 @@
+{% extends "layouts/narrow.html" %}
+{% block title %}
+  Welcome
+{% endblock %}
+{% block meta_description %}Caselaw Access Project cases{% endblock %}
+
+{% block main_content %}
+  <div class="page-section">
+    <p>
+      Welcome to the Caselaw Access Project! We offer free access without a login to up to 500 cases per person per day,
+      brought to you by the Harvard Law Library.
+    </p>
+    <p><strong>
+      If you continue to see this page, please check that you have cookies enabled for our site. We require cookies to
+      enforce the cases-per-person-per-day limit.
+    </strong></p>
+    <p>
+      This part of our site is for humans, not bots. If you need programmatic access, please check out our API. If you
+      need more than 500 cases per day, please see our docs on how to do that. You can also read our full terms of service.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" name="not_a_bot" value="yes" id="not-a-bot">Great, take me to the cases!</button>
+    </form>
+  </div>
+{% endblock %}
