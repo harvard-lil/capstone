@@ -19,15 +19,65 @@ from django.utils import timezone
 
 from capdb.models import CaseFont, PageStructure, VolumeMetadata, CaseMetadata, CaseStructure, Reporter, \
     CaseInitialMetadata, CaseXML, TarFile
-from capdb.storages import captar_storage, CapS3Storage
+from capdb.storages import captar_storage, CapS3Storage, CaptarStorage
 from scripts import render_case
 from scripts.compress_volumes import files_by_type, open_captar_volume
 from scripts.helpers import parse_xml
-
+from scripts.render_case import iter_pars
 
 
 ### HELPERS ###
-from scripts.render_case import iter_pars
+def dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, unredacted_storage, redacted_storage, case, pages, renderer, blocks_by_id):
+    """
+        For debugging when a case fails to match during assert_reversability -- dump case and alto files locally:
+            unredacted_storage.parent.location = 'test_data/zips'
+            redacted_storage.parent.location = 'test_data/zips'
+            dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, unredacted_storage, redacted_storage, case, pages, renderer, blocks_by_id)
+    """
+    page_objs_by_block_id = {block['id']: p for p in pages for block in p['blocks']}
+    case_pages = {}
+    for par in iter_pars(case['opinions']):
+        for block_id in par['block_ids']:
+            page = page_objs_by_block_id[block_id]
+            case_pages[page['id']] = page
+    base_path = Path('test_data/zips/dump')
+    to_dump = [(unredacted_storage, case['path'])] + [(unredacted_storage, page['path']) for page in case_pages.values()]
+    if redacted_storage:
+        to_dump += [(redacted_storage, path.replace('unredacted', 'redacted')) for _, path in to_dump]
+    for storage, path in to_dump:
+        path = path[:-3]
+        out_path = base_path / path
+        out_path.parent.mkdir(exist_ok=True, parents=True)
+        out_path.write_text(storage.contents(path))
+    base_path.joinpath("%s-old-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(old_casebody)
+    base_path.joinpath("%s-new-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(new_casebody)
+    base_path.joinpath("%s-case-structure.json" % volume_barcode).write_text(json.dumps(renderer.hydrate_opinions(case['opinions'], blocks_by_id), indent=2))
+
+def dump_files_for_page(volume_barcode, redacted, alto_xml_output, original_alto):
+    """
+        For debugging when an alto file fails to match during assert_reversability.
+    """
+    base_path = Path('test_data/zips/dump')
+    base_path.joinpath("%s-old-alto-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(original_alto)
+    base_path.joinpath("%s-new-alto-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(alto_xml_output)
+
+
+# for fixing special cases that can't be fixed automatically (none of these currently!)
+special_cases = {
+    # "casemets/32044061413472_unredacted_CASEMETS_0043.xml": [('[id="AC7"] casebody|bracketnum', 'text', '[4]')],
+}
+def apply_special_cases(path, parsed):
+    """
+        If path appears in special_cases, replace attribute and text values for given selectors.
+    """
+    if path in special_cases:
+        for selector, attr, new_value in special_cases[path]:
+            el = parsed(selector)
+            if attr == 'text':
+                el.text(new_value)
+            else:
+                el.attr(attr, new_value)
+    return parsed
 
 rect_attrs = ['HPOS', 'VPOS', 'WIDTH', 'HEIGHT']
 def rect(el_attrib):
@@ -37,6 +87,7 @@ def rect(el_attrib):
 def parse(storage, path, remove_namespaces=True):
     """ Extract .gz-compressed XML path from storage, and return as PyQuery object. """
     xml = parse_xml(storage.contents(path[:-3]))  # strip .gz so captar_storage will decompress for us
+    apply_special_cases(path, xml)
     if remove_namespaces:
         xml = xml.remove_namespaces()
     return xml
@@ -238,7 +289,14 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
 
     # insert all case_tokens into blocks
     for position, token in reversed(case_tags):
-        offset, block, i = blocks_lookup[bisect.bisect_right(blocks_offsets, position)-1]
+        block_index = bisect.bisect_right(blocks_offsets, position)-1
+        offset, block, i = blocks_lookup[block_index]
+
+        # if this is a closing /token and would be inserted at the start of a string,
+        # insert at the end of the previous string instead so tokens tend to nest
+        if position == offset and token[0].startswith('/') and block_index > 0:
+            offset, block, i = blocks_lookup[block_index-1]
+
         insert_tags(block, i, position - offset, [token])
 
 def sync_alto_blocks_with_case_paragraphs(pars, blocks_by_id, case_id_to_alto_ids):
@@ -366,6 +424,145 @@ def create_page_obj(volume_obj, page, ingest_source=None):
         ingest_path=page['path'],
     )
 
+def strip_bracketnum_hyphens(text):
+    """
+        Tags like <bracketnum>[4---]</bracketnum> mess up our process because some of the hyphens get redacted and some
+        get edited out. We end up editing out the redacted one and letting an unredacted hyphen slip through. Since
+        hyphens next to the bracket are typos anyway, filter them out. Note that hyphens not touching the brackets are
+        ok and not stripped out, like <bracketnum>[4-8]</bracketnum>.
+    """
+    text = re.sub(r'\[[-\xad]+', '[', text)
+    text = re.sub(r'[-\xad]+]', ']', text)
+    return text
+
+def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
+                         volume, pages, cases, fonts_by_id,
+                         paths=None, blocks_by_id=None, key=settings.REDACTION_KEY):
+    """
+        Check that our extraction task has succeeded, by making sure that the volume, page, cases, and fonts_by_id
+        variables can be used to recreate the files in unredacted_storage and redacted_storage.
+    """
+    # setup
+    paths = paths or files_by_type(sorted(unredacted_storage.iter_files_recursive()))
+    blocks_by_id = blocks_by_id or {block['id']: block for page in pages for block in page['blocks']}
+
+    # decrypt again
+    if redacted_storage:
+        print("Decrypting pages")
+        for page in pages:
+            page_obj = PageStructure(blocks=page['blocks'], encrypted_strings=page['encrypted_strings'])
+            page_obj.decrypt(key)
+    ### validate results
+    # Here we build fake Django objects and make sure we can render the extracted data back into XML that matches
+    # the source files.
+    renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id,
+                                          {})  # we don't need labels_by_block_id because original_xml cases don't include page numbers
+    # validate volume dict
+    volume_obj = VolumeMetadata(barcode=volume_barcode, xml_metadata=volume['metadata'])
+    new_xml = renderer.render_volume(volume_obj)
+    parsed = parse(unredacted_storage, paths['volume'][0])
+    volume_el = parsed('volume')
+    old_xml = str(volume_el)
+    old_xml = old_xml.replace('<nominativereporter abbreviation="" volnumber=""/>',
+                              '')  # remove blank <normativereporter>
+    xml_strings_equal(new_xml, old_xml)
+    # validate pages dict
+    print("Checking ALTO integrity")
+    for page in pages:
+        page_obj = create_page_obj(volume_obj, page)
+        to_test = [(unredacted_storage, page['path'], False)]
+        if redacted_storage:
+            to_test.append((redacted_storage, page['path'].replace('unredacted', 'redacted'), True))
+        for storage, path, redacted in to_test:
+            print("- checking %s" % path)
+            parsed = parse(storage, path)
+            parsed('SP:first-child,SP:last-child').remove()  # remove <SP> element from start and end of <TextLine> -- can happen because of redaction
+
+            # strip spaces from <String> elements CONTENT and CC tags to match stripping in ingest
+            for s in parsed('String'):
+                content = s.attrib['CONTENT']
+                if content != content.strip():
+                    cc = s.attrib['CC']
+                    while content and content[0] == ' ':
+                        content = content[1:]
+                        cc = cc[1:]
+                    while content and content[-1] == ' ':
+                        content = content[:-1]
+                        cc = cc[:-1]
+                    s.attrib['CONTENT'] = content
+                    s.attrib['CC'] = cc
+
+            alto_xml_output = renderer.render_page(page_obj, redacted)
+            original_alto = str(parsed('Page'))
+            original_alto = original_alto.replace('WC="1.0"', 'WC="1.00"')  # normalize irregular decimal places
+            original_alto = original_alto.replace('CC=""', 'CC="0"')  # normalize character confidence for empty strings -- some are CC="", some are CC="0"
+
+            # validate everything *except* the attributes listed here, which are permanently stripped:
+            xml_strings_equal(alto_xml_output, original_alto, {
+                'tag_attrs': {
+                    'Page': {'ID', 'PHYSICAL_IMG_NR', 'xmlns'},
+                    'PrintSpace': {'ID'},
+                    'TextBlock': {'TAGREFS'},
+                    'Illustration': {'TAGREFS'},
+                    'TextLine': {'ID'},
+                    'String': {'ID', 'TAGREFS'},
+                    'SP': {'HPOS', 'ID', 'VPOS', 'WIDTH'}
+                }
+            })
+    # validate cases
+    print("Checking case integrity")
+    for case in cases:
+        # create fake CaseMetadata object
+        case_obj = CaseMetadata(case_id=case['id'], volume=volume_obj, duplicative=case['metadata']['duplicative'],
+                                first_page=case['metadata']['first_page'], last_page=case['metadata']['last_page'])
+        case_obj.structure = CaseStructure(metadata=case_obj, opinions=case['opinions'])
+        case_obj.initial_metadata = CaseInitialMetadata(case=case_obj, metadata=case['metadata'])
+
+        to_test = [(unredacted_storage, case['path'], False)]
+        if redacted_storage:
+            to_test.append((redacted_storage, case['path'].replace('unredacted', 'redacted'), True))
+
+        for storage, path, redacted in to_test:
+            # load comparison xml
+            print("- checking %s" % path)
+            parsed = parse(storage, path, remove_namespaces=False)
+            CaseXML.reorder_head_matter(parsed)
+            parsed = parsed.remove_namespaces()
+            # strip hyphens from <bracketnum> to match ingested case
+            for headnote_ref in parsed('casebody bracketnum').items():
+                headnote_ref.text(strip_bracketnum_hyphens(headnote_ref.text()))
+
+            ## compare <casebody>
+            renderer.redacted = redacted
+            new_casebody = renderer.render_orig_xml(case_obj)
+            old_casebody = str(parsed('casebody'))
+            casebodies = [new_casebody, old_casebody]
+
+            # normalize formatting in casebody xml
+            strip_whitespace_els = 'blockquote|author|p|headnotes|history|disposition|syllabus|summary|attorneys|judges|otherdate|decisiondate|parties|seealso|citation|docketnumber|court'
+            for i, casebody in enumerate(casebodies):
+                # remove whitespace from start and end of tags:
+                casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', casebody, flags=re.S)
+                casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', casebody, flags=re.S)
+                casebody = casebody.replace(' label=""', '')  # footnote with empty label
+                casebody = re.sub(r' +', ' ', casebody)  # normalize multiple spaces
+                casebodies[i] = casebody
+
+            xml_strings_equal(*casebodies, {
+                'attrs': {'pgmap', 'xmlns'},
+                'tag_attrs': {
+                    'footnote': {'redact'},
+                # the redact attr isn't reliably set in the original, so our output may not match. comparison will still ensure that redacted footnotes don't appear.
+                }
+            })
+
+            ## compare <case>
+            if not case_obj.duplicative:
+                new_case_head = renderer.render_case_header(case_obj.case_id, case_obj.initial_metadata.metadata)
+                old_case_head = str(parsed('case'))
+                old_case_head = old_case_head.replace('<docketnumber/>', '')
+                old_case_head = re.sub(r'\s*(<[^>]+>)\s*', r'\1', old_case_head, flags=re.S)  # strip whitespace around elements
+                xml_strings_equal(new_case_head, old_case_head)
 
 @shared_task
 def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.REDACTION_KEY, save_failed=False):
@@ -702,9 +899,14 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             sections = [['unprocessed', casebody.children().items()]]
         else:
             # for non-duplicative case, create fake <opinion> with elements appearing before first opinion, type 'head'
-            head_matter_children = casebody.children(':not(opinion):not(corrections)').items()
+            head_matter_children = casebody.children(':not(opinion):not(correction)').items()
             opinion_els = [[el.attr.type, list(el.children().items())] for el in casebody.children('opinion').items()]
             sections = [['head', list(head_matter_children)]] + opinion_els
+
+            # handle <correction> tags after last opinion
+            corrections = list(casebody.children('correction').items())
+            if corrections:
+                sections.append(['corrections', corrections])
 
             # add 'ref' attribute to each <bracketnum>, linking to ID of each <headnotes> element if possible
             headnotes_lookup = {}
@@ -713,6 +915,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                 if number:
                     headnotes_lookup[number.group(0)] = headnote.attr.id
             for headnote_ref in casebody('bracketnum').items():
+                headnote_ref.text(strip_bracketnum_hyphens(headnote_ref.text()))
                 number = re.search(r'\d', headnote_ref.text())
                 if number and number.group(0) in headnotes_lookup:
                     headnote_ref.attr.ref = headnotes_lookup[number.group(0)]
@@ -743,17 +946,12 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             opinion = {'type': op_type}
             paragraphs, footnotes, paragraph_els = extract_paragraphs(children, case_id_to_alto_ids, blocks_by_id)
             sync_alto_blocks_with_case_paragraphs(paragraph_els, blocks_by_id, case_id_to_alto_ids)
+
             if paragraphs:
                 opinion['paragraphs'] = paragraphs
             if footnotes:
                 opinion['footnotes'] = footnotes
             opinions.append(opinion)
-
-        # handle <corrections>
-        if not duplicative:
-            corrections = list(case_el.children('correction').items())
-            if corrections:
-                case['corrections'] = [el.text() for el in corrections]
 
         cases.append(case)
 
@@ -778,106 +976,12 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                 zip.writestr(path, json.dumps(obj))
         temp_output_file.seek(0)
 
-        # decrypt again
-        if redacted_storage:
-            print("Decrypting pages")
-            for page in pages:
-                page_obj = PageStructure(blocks=page['blocks'], encrypted_strings=page['encrypted_strings'])
-                page_obj.decrypt(key)
+        ### check reversability ###
 
-        ### validate results
-
-        # Here we build fake Django objects and make sure we can render the extracted data back into XML that matches
-        # the source files.
-
-        renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, {})  # we don't need labels_by_block_id because original_xml cases don't include page numbers
-
-        # validate volume dict
-        volume_obj = VolumeMetadata(barcode=volume_barcode, xml_metadata=volume['metadata'])
-        new_xml = renderer.render_volume(volume_obj)
-        parsed = parse(unredacted_storage, paths['volume'][0])
-        volume_el = parsed('volume')
-        old_xml = str(volume_el)
-        old_xml = old_xml.replace('<nominativereporter abbreviation="" volnumber=""/>', '')  # remove blank <normativereporter>
-        xml_strings_equal(new_xml, old_xml)
-
-        # validate pages dict
-        print("Checking ALTO integrity")
-        for page in pages:
-            page_obj = create_page_obj(volume_obj, page)
-            to_test = [(unredacted_storage, page['path'], False)]
-            if redacted_storage:
-                to_test.append((redacted_storage, page['path'].replace('unredacted', 'redacted'), True))
-            for storage, path, redacted in to_test:
-                print("- checking %s" % path)
-                parsed = parse(storage, path)
-                alto_xml_output = renderer.render_page(page_obj, redacted)
-                original_alto = str(parsed('Page'))
-                original_alto = original_alto.replace('WC="1.0"', 'WC="1.00"')  # normalize irregular decimal places
-                original_alto = original_alto.replace('CC=""', 'CC="0"')  # normalize character confidence for empty strings -- some are CC="", some are CC="0"
-
-                # validate everything *except* the attributes listed here, which are permanently stripped:
-                xml_strings_equal(alto_xml_output, original_alto, {
-                    'tag_attrs': {
-                        'Page': {'ID', 'PHYSICAL_IMG_NR', 'xmlns'},
-                        'PrintSpace': {'ID'},
-                        'TextBlock': {'TAGREFS'},
-                        'Illustration': {'TAGREFS'},
-                        'TextLine': {'ID'},
-                        'String': {'ID', 'TAGREFS'},
-                        'SP': {'HPOS', 'ID', 'VPOS', 'WIDTH'}
-                    }
-                })
-
-        # validate cases
-        print("Checking case integrity")
-        for case in cases:
-            # create fake CaseMetadata object
-            case_obj = CaseMetadata(case_id=case['id'], volume=volume_obj, duplicative=case['metadata']['duplicative'],
-                                    first_page=case['metadata']['first_page'], last_page=case['metadata']['last_page'])
-            case_obj.structure = CaseStructure(metadata=case_obj, opinions=case['opinions'], corrections=case.get('corrections') or None)
-            case_obj.initial_metadata = CaseInitialMetadata(case=case_obj, metadata=case['metadata'])
-
-            to_test = [(unredacted_storage, case['path'], False)]
-            if redacted_storage:
-                to_test.append((redacted_storage, case['path'].replace('unredacted', 'redacted'), True))
-
-            for storage, path, redacted in to_test:
-                # load comparison xml
-                print("- checking %s" % path)
-                parsed = parse(storage, path, remove_namespaces=False)
-                CaseXML.reorder_head_matter(parsed)
-                parsed = parsed.remove_namespaces()
-
-                ## compare <casebody>
-                renderer.redacted = redacted
-                new_casebody = renderer.render_orig_xml(case_obj)
-                old_casebody = str(parsed('casebody'))
-                casebodies = [new_casebody, old_casebody]
-
-                # normalize formatting in casebody xml
-                strip_whitespace_els = 'blockquote|author|p|headnotes|history|disposition|syllabus|summary|attorneys|judges|otherdate|decisiondate|parties|seealso|citation|docketnumber|court'
-                for i, casebody in enumerate(casebodies):
-                    # remove whitespace from start and end of tags:
-                    casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', casebody, flags=re.S)
-                    casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', casebody, flags=re.S)
-                    casebody = casebody.replace(' label=""', '')  # footnote with empty label
-                    casebody = re.sub(r' +', ' ', casebody)  # normalize multiple spaces
-                    casebodies[i] = casebody
-
-                xml_strings_equal(*casebodies, {
-                    'attrs': {'pgmap', 'xmlns'},
-                    'tag_attrs': {
-                        'footnote': {'redact'},  # the redact attr isn't reliably set in the original, so our output may not match. comparison will still ensure that redacted footnotes don't appear.
-                    }
-                })
-
-                ## compare <case>
-                if not case_obj.duplicative:
-                    new_case_head = renderer.render_case_header(case_obj.case_id, case_obj.initial_metadata.metadata)
-                    old_case_head = str(parsed('case'))
-                    old_case_head = old_case_head.replace('<docketnumber/>', '')
-                    xml_strings_equal(new_case_head, old_case_head)
+        assert_reversability(
+            volume_barcode, unredacted_storage, redacted_storage,
+            volume, pages, cases, fonts_by_id,
+            paths, blocks_by_id, key)
 
         ### copy temp file to permanent storage
 
@@ -899,7 +1003,34 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
     finally:
         temp_output_file.close()
 
+### validate_token_stream fab task
 
+def test_reversability(volume_barcode, key=settings.REDACTION_KEY):
+    """
+        This does just the last step of volume_to_json, by loading up the files for a given barcode and running
+        assert_reversability. This separate task is mostly useful for quickly debugging a -failed.zip file created
+        by a previous run of volume_to_json.
+    """
+    redacted_paths = list(captar_storage.iter_files('redacted/%s' % volume_barcode, partial_path=True))
+    unredacted_paths = list(captar_storage.iter_files('unredacted/%s' % volume_barcode, partial_path=True))
+    if unredacted_paths:
+        unredacted_storage = CaptarStorage(captar_storage, unredacted_paths[-1])
+        redacted_storage = CaptarStorage(captar_storage, redacted_paths[-1])
+    else:
+        unredacted_storage = CaptarStorage(captar_storage, redacted_paths[-1])
+        redacted_storage = None
+    zip_path = list(i for i in captar_storage.iter_files('token_streams/%s' % volume_barcode, partial_path=True) if i.endswith('.zip'))
+    with captar_storage.open(zip_path[-1], 'rb') as raw:
+        with ZipFile(raw) as zip:
+            volume = json.loads(zip.open('volume.json').read().decode('utf8'))
+            pages = json.loads(zip.open('pages.json').read().decode('utf8'))
+            cases = json.loads(zip.open('cases.json').read().decode('utf8'))
+            fonts_by_id = {int(k):v for k,v in json.loads(zip.open('fonts.json').read().decode('utf8')).items()}
+    for page in pages:
+        page['font_names'] = {int(k):v for k, v in page['font_names'].items()}
+    assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
+                         volume, pages, cases, fonts_by_id,
+                         key=key)
 
 ### write to database
 
@@ -973,7 +1104,7 @@ def write_to_db(volume_barcode, zip_path):
             except CaseMetadata.DoesNotExist:
                 metadata_obj = CaseMetadata(case_id=case['id'], reporter=volume_obj.reporter, volume=volume_obj)
                 metadata_obj.save()
-            case_objs.append(CaseStructure(metadata=metadata_obj, opinions=case['opinions'], corrections=case.get('corrections') or None, ingest_source=ingest_source, ingest_path=case['path']))
+            case_objs.append(CaseStructure(metadata=metadata_obj, opinions=case['opinions'], ingest_source=ingest_source, ingest_path=case['path']))
             initial_metadata_objs.append(CaseInitialMetadata(case=metadata_obj, metadata=case['metadata'], ingest_source=ingest_source, ingest_path=case['path']))
         case_objs = CaseStructure.objects.bulk_create(case_objs)
         initial_metadata_objs = CaseInitialMetadata.objects.bulk_create(initial_metadata_objs)

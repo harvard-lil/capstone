@@ -13,7 +13,9 @@ def iter_pars(opinions):
         for footnote in opinion.get('footnotes', []):
             yield from footnote.get('paragraphs', [])
 
-not_redacted_tokens = {'font'}  # these formatting tokens shouldn't be stripped from redacted spans, because it messes up rendering
+# these tokens shouldn't be stripped from redacted spans, because it messes up rendering
+# resulting empty tags will be stripped during rendering
+not_redacted_tokens = {'font', 'bracketnum', 'footnotemark'}
 
 def filter_tokens(tokens, tags, redacted=True):
     """
@@ -39,6 +41,35 @@ def filter_tokens(tokens, tags, redacted=True):
             redacted_span = True
         elif token[0].lstrip('/') in tags:
             yield token
+
+def remove_empty_tags(tree, ignore_tags=set()):
+    """
+        Remove empty child elements from an lxml Element, except for any listed in the ignore_tags set. Example:
+            >>> tree = etree.XML('<p>asfd<a><b>asdf<c/>asdf</b></a>asdf<d></d></p>')
+            >>> remove_empty_tags(tree)
+            >>> etree.tostring(tree)
+            b'<p>asfd<a><b>asdfasdf</b></a>asdf</p>'
+            >>> tree = etree.XML('<p><a><b><c></c></b></a></p>')
+            >>> remove_empty_tags(tree, {'a'})
+            >>> etree.tostring(tree)
+            b'<p><a/></p>'
+    """
+    for el in tree.iter():
+        while True:
+            if el.tag in ignore_tags or el.text or len(el):
+                break
+            parent = el.getparent()
+            if el.tail:
+                prev = el.getprevious()
+                if prev is None:
+                    parent.text = (parent.text or '') + el.tail
+                else:
+                    prev.tail += (prev.tail or '') + el.tail
+            parent.remove(el)
+            if parent == tree:
+                break
+            el = parent
+
 
 class VolumeRenderer:
     """
@@ -112,9 +143,15 @@ class VolumeRenderer:
                         if not ignore_strings:
                             string_el.attrib['CONTENT'] += token
                     elif token[0] == 'line':
+                        # close old </TextLine> and start new <TextLine>
                         if string_el is not None:
                             self.close_string(string_el)
                             string_el = None
+
+                        # don't add empty <TextLine>, which can be caused by redaction
+                        if line_el is not None and len(line_el) == 0:
+                            block_el.remove(line_el)
+
                         line_el = etree.SubElement(block_el, 'TextLine', self.rect_to_dict(token[1]['rect']))
                     elif token[0] == 'font':
                         current_font = fonts_lookup[token[1]['id']]
@@ -133,10 +170,14 @@ class VolumeRenderer:
                             CC=str(token[1].get('cc',0)),
                             WC=('%.2f' % token[1]['wc']),
                             **self.rect_to_dict(token[1]['rect'])))
+
+                # cleanup final string_el and line_el
+                if line_el is not None and len(line_el) == 0:
+                    block_el.remove(line_el)
                 if string_el is not None:
                     self.close_string(string_el)
 
-        return etree.tostring(page_el, encoding=str)
+        return etree.tostring(page_el, encoding=str, pretty_print=True)
 
     def close_string(self, string_el):
         """ Once <String CONTENT> is reassembled, strip any closing spaces and reconstruct CC value. """
@@ -228,8 +269,6 @@ class VolumeRenderer:
                     continue
                 words.extend(filter_tokens(block.get('tokens', []), {}))
             pars.append("".join(words))
-        if case_structure.corrections:
-            pars.extend(case_structure.corrections)
         return "\n\n".join(pars)
 
     ### XML/HTML RENDERING ###
@@ -275,7 +314,6 @@ class VolumeRenderer:
         """
         case_structure = case.structure
         self.opinions = case_structure.opinions
-        self.corrections = case_structure.corrections
         self.duplicative = case_structure.metadata.duplicative
 
         # <section class='case'>, or <casebody>
@@ -300,23 +338,13 @@ class VolumeRenderer:
                 opinion_el.append(footnote_el)
 
             # special handling -- for xml, head matter goes directly under <case>
-            if self.format == 'xml' and opinion['type'] in ('head', 'unprocessed'):
+            if self.format == 'xml' and opinion['type'] in ('head', 'unprocessed', 'corrections'):
                 for el in opinion_el:
                     case_el.append(el)
             else:
                 case_el.append(opinion_el)
 
-        # <section class='corrections'>, or <corrections>
-        if self.corrections:
-            if self.format == 'xml':
-                for correction in self.corrections:
-                    etree.SubElement(case_el, 'corrections').text = correction
-            else:
-                corrections_el = etree.SubElement(case_el, 'section', {'class': 'corrections'})
-                for correction in self.corrections:
-                    etree.SubElement(corrections_el, 'p').text = correction
-
-        return etree.tostring(case_el, encoding=str)
+        return etree.tostring(case_el, encoding=str, pretty_print=True)
 
     def make_case_el(self, case):
         """ Make <section class='case'>, or <casebody> """
@@ -335,7 +363,7 @@ class VolumeRenderer:
             return etree.Element('opinion', {'type': opinion['type']})
         else:
             return etree.Element('section', {
-                'class': 'head-matter' if opinion['type'] == 'head' else 'opinion ' + opinion['type'],
+                'class': opinion['type'] if opinion['type'] in ('head', 'corrections') else 'opinion ' + opinion['type'],
             })
 
     def make_footnote_el(self, footnote):
@@ -460,8 +488,14 @@ class VolumeRenderer:
                             with self.wrap_font_tags(handler, tag_stack, open_font_tags):
                                 tag_stack.append((handler.endElement, (token_name[1:] if self.format == 'xml' else 'a',)))
 
+            # run all of our commands, like "handler.startElement(*args)", to actually build the xml tree
             for method, args in tag_stack:
                 method(*args)
+
+            # remove empty tags, which would typically be created by redacted spans
+            par_el = handler._root
+            remove_empty_tags(par_el, ignore_tags={'img'})
+
             parent_el.append(handler._root)
 
         return last_page_label
