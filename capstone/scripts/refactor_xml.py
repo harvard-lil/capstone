@@ -562,6 +562,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                 old_case_head = str(parsed('case'))
                 old_case_head = old_case_head.replace('<docketnumber/>', '')
                 old_case_head = re.sub(r'\s*(<[^>]+>)\s*', r'\1', old_case_head, flags=re.S)  # strip whitespace around elements
+                old_case_head = re.sub(r'\s+', ' ', old_case_head)  # normalize multiple spaces within elements
                 xml_strings_equal(new_case_head, old_case_head)
 
 @shared_task
@@ -797,7 +798,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
                             # Handle CONTENT attribute: append a space if next tag is a space, or if string does not
                             # end with a hyphen.
-                            text = string_attrib['CONTENT']
+                            text = string_attrib['CONTENT'].strip()
                             next_tag = string.getnext()
                             if (next_tag is not None and next_tag.tag == 'SP') or (text and text[-1] not in ('-', '\xad')):
                                 text += ' '
