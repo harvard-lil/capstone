@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
+from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils import timezone
@@ -52,7 +53,7 @@ def home(request):
     """ Base page -- list all of our jurisdictions and reporters. """
 
     # get reporters sorted by jurisdiction
-    reporters = Reporter.objects.all().prefetch_related('jurisdictions').order_by('full_name')
+    reporters = Reporter.objects.all().prefetch_related('jurisdictions').order_by('short_name')
     reporters_by_jurisdiction = defaultdict(list)
     for reporter in reporters:
         for jurisdiction in reporter.jurisdictions.all():
@@ -67,7 +68,10 @@ def home(request):
 
 def series(request, series_slug):
     """ /<series_slug>/ -- list all volumes for each series with that slug (typically only one). """
-    reporters = list(Reporter.objects.filter(short_name_slug=series_slug).prefetch_related('volumes').order_by('full_name'))
+    reporters = list(Reporter.objects
+        .filter(short_name_slug=series_slug)
+        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.order_by('reporter_id', 'volume_number')))
+        .order_by('full_name'))
     if not reporters:
         raise Http404
     return render(request, 'cite/series.html', {
@@ -79,7 +83,7 @@ def volume(request, series_slug, volume_number):
     volumes = list(VolumeMetadata.objects
         .filter(reporter__short_name_slug=series_slug, volume_number=volume_number)
         .select_related('reporter')
-        .prefetch_related('case_metadatas__citations'))
+        .prefetch_related(Prefetch('case_metadatas', queryset=CaseMetadata.objects.order_by('first_page').prefetch_related('citations'))))
     if not volumes:
         raise Http404
     return render(request, 'cite/volume.html', {
