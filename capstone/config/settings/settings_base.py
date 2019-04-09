@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'capapi',
     'django_sql_trace',
     'capweb',
+    'cite',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
@@ -111,6 +112,10 @@ HOSTS = {
     'api': {
         'subdomain': 'api',
         'urlconf': 'capapi.api_urls',
+    },
+    'cite': {
+        'subdomain': 'cite',
+        'urlconf': 'cite.urls',
     },
 }
 API_HOST_OVERRIDE = None
@@ -549,6 +554,7 @@ FULL_TEXT_FEATURE = True
 NEW_RESEARCHER_FEATURE = True
 HARVARD_RESEARCHER_FEATURE = True
 RANGE_REQUEST_FEATURE = False
+CITE_SUBDOMAIN_FEATURE = False
 
 HARVARD_IP_RANGES = """
     12.0.48.0/20

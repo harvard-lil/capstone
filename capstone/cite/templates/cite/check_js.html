@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <noscript>
+      <meta http-equiv="Refresh" content="0;URL=?set_cookie=1&no_js=1" />
+    </noscript>
+  </head>
+  <body>
+    <form method="post" id="not-a-bot-form">
+      {% csrf_token %}
+      <input type="hidden" name="not_a_bot" value="yes">
+    </form>
+    <script>
+      document.getElementById('not-a-bot-form').submit();
+    </script>
+    <a href="?set_cookie=1&no_js=1">Click here to continue</a>
+  </body>
+</html>

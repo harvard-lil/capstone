@@ -5,6 +5,7 @@
     "fields": {
       "full_name": "Edwards' Chancery Reports",
       "short_name": "Edw. Ch.",
+      "short_name_slug": "edw-ch",
       "start_year": 1831,
       "end_year": 1850,
       "volume_count": 4,
@@ -23,6 +24,7 @@
     "fields": {
       "full_name": "Barbour's Chancery Reports",
       "short_name": "Barb. Ch.",
+      "short_name_slug": "barb-ch",
       "start_year": 1845,
       "end_year": 1848,
       "volume_count": 3,
@@ -41,6 +43,7 @@
     "fields": {
       "full_name": "Sandford's Chancery Reports",
       "short_name": "Sand. Ch.",
+      "short_name_slug": "sand-ch",
       "start_year": 1843,
       "end_year": 1847,
       "volume_count": 4,
@@ -59,6 +62,7 @@
     "fields": {
       "full_name": "Saratoga Chancery Sentinel",
       "short_name": "Sarat. Ch. Sent.",
+      "short_name_slug": "sarat-ch-sent",
       "start_year": 1841,
       "end_year": 1847,
       "volume_count": 1,
@@ -77,6 +81,7 @@
     "fields": {
       "full_name": "Paige's Chancery Reports",
       "short_name": "Paige Ch.",
+      "short_name_slug": "paige-ch",
       "start_year": 1828,
       "end_year": 1845,
       "volume_count": 11,
@@ -95,6 +100,7 @@
     "fields": {
       "full_name": "Clarke's Chancery Reports",
       "short_name": "Cl. Ch.",
+      "short_name_slug": "cl-ch",
       "start_year": 1839,
       "end_year": 1841,
       "volume_count": 1,
@@ -113,6 +119,7 @@
     "fields": {
       "full_name": "Hoffman's Chancery Reports",
       "short_name": "Hoff. Ch.",
+      "short_name_slug": "hoff-ch",
       "start_year": 1839,
       "end_year": 1840,
       "volume_count": 1,
@@ -131,6 +138,7 @@
     "fields": {
       "full_name": "Hopkins' Chancery Reports",
       "short_name": "Hopk. Ch.",
+      "short_name_slug": "hopk-ch",
       "start_year": 1823,
       "end_year": 1826,
       "volume_count": 1,
@@ -149,6 +157,7 @@
     "fields": {
       "full_name": "Lansing's Chancery Reports",
       "short_name": "Lans. Ch.",
+      "short_name_slug": "lans-ch",
       "start_year": 1824,
       "end_year": 1826,
       "volume_count": 1,
@@ -167,6 +176,7 @@
     "fields": {
       "full_name": "Johnson's Chancery Reports",
       "short_name": "Johns. Ch.",
+      "short_name_slug": "johns-ch",
       "start_year": 1814,
       "end_year": 1823,
       "volume_count": 7,
@@ -185,6 +195,7 @@
     "fields": {
       "full_name": "New York Reports",
       "short_name": "N.Y.",
+      "short_name_slug": "ny",
       "start_year": 1877,
       "end_year": 1956,
       "volume_count": 309,
@@ -203,6 +214,7 @@
     "fields": {
       "full_name": "New York Reports",
       "short_name": "N.Y. 2d",
+      "short_name_slug": "ny-2d",
       "start_year": 1956,
       "end_year": 2003,
       "volume_count": 100,
@@ -221,6 +233,7 @@
     "fields": {
       "full_name": "New York Reports",
       "short_name": "N.Y.3d",
+      "short_name_slug": "ny3d",
       "start_year": 2004,
       "end_year": 2009,
       "volume_count": 22,
@@ -239,6 +252,7 @@
     "fields": {
       "full_name": "Abbott's New Cases",
       "short_name": "Abb.N. Cas.",
+      "short_name_slug": "abbn-cas",
       "start_year": 1876,
       "end_year": 1894,
       "volume_count": 32,
@@ -257,6 +271,7 @@
     "fields": {
       "full_name": "Abbott's Practice Reports",
       "short_name": "Abb. Pr.",
+      "short_name_slug": "abb-pr",
       "start_year": 1854,
       "end_year": 1875,
       "volume_count": 19,
@@ -275,6 +290,7 @@
     "fields": {
       "full_name": "Howard's Practice Reports",
       "short_name": "How. Pr.",
+      "short_name_slug": "how-pr",
       "start_year": 1844,
       "end_year": 1846,
       "volume_count": 67,
@@ -293,6 +309,7 @@
     "fields": {
       "full_name": "New York Miscellaneous Reports",
       "short_name": "Misc.",
+      "short_name_slug": "misc",
       "start_year": 1892,
       "end_year": 1942,
       "volume_count": 208,
@@ -311,6 +328,7 @@
     "fields": {
       "full_name": "New York Miscellaneous Reports",
       "short_name": "Misc.2d",
+      "short_name_slug": "misc2d",
       "start_year": 1956,
       "end_year": 2004,
       "volume_count": 196,
@@ -329,6 +347,7 @@
     "fields": {
       "full_name": "New York Miscellaneous Reports",
       "short_name": "Misc.3d",
+      "short_name_slug": "misc3d",
       "start_year": 2004,
       "end_year": 2016,
       "volume_count": 42,
@@ -347,6 +366,7 @@
     "fields": {
       "full_name": "West's New York Supplement",
       "short_name": "N.Y.S.",
+      "short_name_slug": "nys",
       "start_year": 1888,
       "end_year": 1938,
       "volume_count": 0,
@@ -365,6 +385,7 @@
     "fields": {
       "full_name": "West's New York Supplement",
       "short_name": "N.Y.S. 2d",
+      "short_name_slug": "nys-2d",
       "start_year": 1938,
       "end_year": 1987,
       "volume_count": 0,
@@ -383,6 +404,7 @@
     "fields": {
       "full_name": "West's New York Supplement",
       "short_name": "N.Y.S. 2d",
+      "short_name_slug": "nys-2d",
       "start_year": 1988,
       "end_year": 2009,
       "volume_count": 0,
@@ -401,6 +423,7 @@
     "fields": {
       "full_name": "Appellate Division Reports",
       "short_name": "A.D.",
+      "short_name_slug": "ad",
       "start_year": 1896,
       "end_year": 1955,
       "volume_count": 286,
@@ -419,6 +442,7 @@
     "fields": {
       "full_name": "Appellate Division Reports",
       "short_name": "A.D.2d",
+      "short_name_slug": "ad2d",
       "start_year": 1956,
       "end_year": 2003,
       "volume_count": 309,
@@ -437,6 +461,7 @@
     "fields": {
       "full_name": "Appellate Division Reports",
       "short_name": "A.D.3d",
+      "short_name_slug": "ad3d",
       "start_year": 2004,
       "end_year": 2009,
       "volume_count": 115,
@@ -455,6 +480,7 @@
     "fields": {
       "full_name": "Supreme Court Reports (Hun)",
       "short_name": "N.Y. Sup. Ct.",
+      "short_name_slug": "ny-sup-ct",
       "start_year": 1868,
       "end_year": 1896,
       "volume_count": 92,
@@ -473,6 +499,7 @@
     "fields": {
       "full_name": "Lansing's Reports",
       "short_name": "Lans.",
+      "short_name_slug": "lans",
       "start_year": 1869,
       "end_year": 1873,
       "volume_count": 7,
@@ -491,6 +518,7 @@
     "fields": {
       "full_name": "Barbour's Supreme Court Reports",
       "short_name": "Barb.",
+      "short_name_slug": "barb",
       "start_year": 1847,
       "end_year": 1877,
       "volume_count": 67,
@@ -509,6 +537,7 @@
     "fields": {
       "full_name": "Lockwood's Reversed Cases",
       "short_name": "Lock. Rev. Cas.",
+      "short_name_slug": "lock-rev-cas",
       "start_year": 1799,
       "end_year": 1847,
       "volume_count": 1,
@@ -527,6 +556,7 @@
     "fields": {
       "full_name": "Denio's Reports",
       "short_name": "Denio",
+      "short_name_slug": "denio",
       "start_year": 1845,
       "end_year": 1848,
       "volume_count": 5,
@@ -545,6 +575,7 @@
     "fields": {
       "full_name": "Hill and Denio Supplement (Labor)",
       "short_name": "Hill & Den.",
+      "short_name_slug": "hill-den",
       "start_year": 1842,
       "end_year": 1844,
       "volume_count": 1,
@@ -563,6 +594,7 @@
     "fields": {
       "full_name": "Hill's Reports",
       "short_name": "Hill",
+      "short_name_slug": "hill",
       "start_year": 1841,
       "end_year": 1844,
       "volume_count": 7,
@@ -581,6 +613,7 @@
     "fields": {
       "full_name": "Edmond's Select Cases",
       "short_name": "Edm. Sel. Cas.",
+      "short_name_slug": "edm-sel-cas",
       "start_year": 1834,
       "end_year": 1853,
       "volume_count": 2,
@@ -599,6 +632,7 @@
     "fields": {
       "full_name": "Yates Select Cases",
       "short_name": "Yates Sel. Cas.",
+      "short_name_slug": "yates-sel-cas",
       "start_year": 1809,
       "end_year": 1809,
       "volume_count": 1,
@@ -617,6 +651,7 @@
     "fields": {
       "full_name": "Anthon's Nisi Prius Cases",
       "short_name": "Ant. N.P. Cas.",
+      "short_name_slug": "ant-np-cas",
       "start_year": 1808,
       "end_year": 1851,
       "volume_count": 1,
@@ -635,6 +670,7 @@
     "fields": {
       "full_name": "Wendell's Reports",
       "short_name": "Wend.",
+      "short_name_slug": "wend",
       "start_year": 1828,
       "end_year": 1841,
       "volume_count": 26,
@@ -653,6 +689,7 @@
     "fields": {
       "full_name": "Cowen's Reports",
       "short_name": "Cow.",
+      "short_name_slug": "cow",
       "start_year": 1823,
       "end_year": 1829,
       "volume_count": 8,
@@ -671,6 +708,7 @@
     "fields": {
       "full_name": "Johnson's Reports",
       "short_name": "Johns.",
+      "short_name_slug": "johns",
       "start_year": 1806,
       "end_year": 1823,
       "volume_count": 18,
@@ -689,6 +727,7 @@
     "fields": {
       "full_name": "Caines' Reports",
       "short_name": "Cai.",
+      "short_name_slug": "cai",
       "start_year": 1796,
       "end_year": 1805,
       "volume_count": 3,
@@ -707,6 +746,7 @@
     "fields": {
       "full_name": "Caines' Cases",
       "short_name": "Cai. Cas.",
+      "short_name_slug": "cai-cas",
       "start_year": 1796,
       "end_year": 1805,
       "volume_count": 2,
@@ -725,6 +765,7 @@
     "fields": {
       "full_name": "Coleman & Caines' Cases",
       "short_name": "Cole. & Cai. Cas.",
+      "short_name_slug": "cole-cai-cas",
       "start_year": 1794,
       "end_year": 1805,
       "volume_count": 1,
@@ -743,6 +784,7 @@
     "fields": {
       "full_name": "Johnson's Cases",
       "short_name": "Johns. Cas.",
+      "short_name_slug": "johns-cas",
       "start_year": 1799,
       "end_year": 1803,
       "volume_count": 2,
@@ -761,6 +803,7 @@
     "fields": {
       "full_name": "Coleman's Cases",
       "short_name": "Cole. Cas.",
+      "short_name_slug": "cole-cas",
       "start_year": 1791,
       "end_year": 1800,
       "volume_count": 1,
@@ -779,6 +822,7 @@
     "fields": {
       "full_name": "Parker's Criminal Reports",
       "short_name": "Park. Crim. Rep.",
+      "short_name_slug": "park-crim-rep",
       "start_year": 1839,
       "end_year": 1868,
       "volume_count": 6,
@@ -797,6 +841,7 @@
     "fields": {
       "full_name": "Redfield's Reports",
       "short_name": "Redf.",
+      "short_name_slug": "redf",
       "start_year": 1848,
       "end_year": 1882,
       "volume_count": 5,
@@ -815,6 +860,7 @@
     "fields": {
       "full_name": "Bradford's Reports",
       "short_name": "Brad.",
+      "short_name_slug": "brad",
       "start_year": 1849,
       "end_year": 1857,
       "volume_count": 4,
@@ -833,6 +879,7 @@
     "fields": {
       "full_name": "Sickels Opinions of the Attorneys General",
       "short_name": "Sick. Op. Att'y Gen.",
+      "short_name_slug": "sick-op-atty-gen",
       "start_year": 1796,
       "end_year": 1872,
       "volume_count": 0,
@@ -851,6 +898,7 @@
     "fields": {
       "full_name": "Thompson & Cook's Supreme Court Reports",
       "short_name": "Thomp. & Cook",
+      "short_name_slug": "thomp-cook",
       "start_year": 1873,
       "end_year": 1875,
       "volume_count": 6,
@@ -869,6 +917,7 @@
     "fields": {
       "full_name": "Armstrong's Contested Election Cases in New York",
       "short_name": "Armstrong. Election Cases",
+      "short_name_slug": "armstrong-election-cases",
       "start_year": 1777,
       "end_year": 1871,
       "volume_count": 1,
@@ -887,6 +936,7 @@
     "fields": {
       "full_name": "Howard's Appeal Cases",
       "short_name": "How. App. Cas.",
+      "short_name_slug": "how-app-cas",
       "start_year": 1847,
       "end_year": 1848,
       "volume_count": 1,
@@ -905,6 +955,7 @@
     "fields": {
       "full_name": "Abbott's Court of Appeals Decisions",
       "short_name": "Abb. Ct. App.",
+      "short_name_slug": "abb-ct-app",
       "start_year": 1850,
       "end_year": 1868,
       "volume_count": 4,
@@ -923,6 +974,7 @@
     "fields": {
       "full_name": "Selden's Notes of Cases",
       "short_name": "Seld. Notes",
+      "short_name_slug": "seld-notes",
       "start_year": 1852,
       "end_year": 1854,
       "volume_count": 1,
@@ -941,6 +993,7 @@
     "fields": {
       "full_name": "Keyes' Reports",
       "short_name": "Keyes",
+      "short_name_slug": "keyes",
       "start_year": 1863,
       "end_year": 1868,
       "volume_count": 4,
@@ -959,6 +1012,7 @@
     "fields": {
       "full_name": "Transcript Appeals",
       "short_name": "Trans. App.",
+      "short_name_slug": "trans-app",
       "start_year": 1867,
       "end_year": 1868,
       "volume_count": 4,
@@ -977,6 +1031,7 @@
     "fields": {
       "full_name": "Silvernail's Court of Appeals Reports",
       "short_name": "Silv. Ct. App.",
+      "short_name_slug": "silv-ct-app",
       "start_year": 1886,
       "end_year": 1892,
       "volume_count": 4,
@@ -995,6 +1050,7 @@
     "fields": {
       "full_name": "Silvernail's Supreme Court Reports",
       "short_name": "Silv. Sup.",
+      "short_name_slug": "silv-sup",
       "start_year": 1889,
       "end_year": 1890,
       "volume_count": 5,
@@ -1013,6 +1069,7 @@
     "fields": {
       "full_name": "New York Criminal Reports",
       "short_name": "N.Y. Crim.",
+      "short_name_slug": "ny-crim",
       "start_year": 1881,
       "end_year": 1924,
       "volume_count": 41,
@@ -1031,6 +1088,7 @@
     "fields": {
       "full_name": "Wheeler's Criminal Cases",
       "short_name": "Wheel. Cr. Cas.",
+      "short_name_slug": "wheel-cr-cas",
       "start_year": 1791,
       "end_year": 1825,
       "volume_count": 3,
@@ -1049,6 +1107,7 @@
     "fields": {
       "full_name": "Tucker's Surrogate's Reports",
       "short_name": "Tuck. Surr.",
+      "short_name_slug": "tuck-surr",
       "start_year": 1864,
       "end_year": 1869,
       "volume_count": 1,
@@ -1067,6 +1126,7 @@
     "fields": {
       "full_name": "Demarest's Surrogate's Reports",
       "short_name": "Dem. Sur.",
+      "short_name_slug": "dem-sur",
       "start_year": 1882,
       "end_year": 1888,
       "volume_count": 6,
@@ -1085,6 +1145,7 @@
     "fields": {
       "full_name": "Connoly's Surrogate's Reports",
       "short_name": "Connoly Sur. Rep.",
+      "short_name_slug": "connoly-sur-rep",
       "start_year": 1888,
       "end_year": 1891,
       "volume_count": 2,
@@ -1103,6 +1164,7 @@
     "fields": {
       "full_name": "Gibbons' Surrogate's Reports",
       "short_name": "Gibb. Surr.",
+      "short_name_slug": "gibb-surr",
       "start_year": 1893,
       "end_year": 1898,
       "volume_count": 2,
@@ -1121,6 +1183,7 @@
     "fields": {
       "full_name": "Mills' Surrogate's Reports",
       "short_name": "Mills Surr.",
+      "short_name_slug": "mills-surr",
       "start_year": 1899,
       "end_year": 1917,
       "volume_count": 18,
@@ -1139,6 +1202,7 @@
     "fields": {
       "full_name": "Power's Surrogate's Reports",
       "short_name": "Pow. Surr.",
+      "short_name_slug": "pow-surr",
       "start_year": 1890,
       "end_year": 1894,
       "volume_count": 1,
@@ -1157,6 +1221,7 @@
     "fields": {
       "full_name": "Liquor Tax Law Reports",
       "short_name": "Liquor Tax Rep.",
+      "short_name_slug": "liquor-tax-rep",
       "start_year": 1896,
       "end_year": 1905,
       "volume_count": 3,
@@ -1175,6 +1240,7 @@
     "fields": {
       "full_name": "New York State Reporter",
       "short_name": "N.Y. St. Rptr.",
+      "short_name_slug": "ny-st-rptr",
       "start_year": 1886,
       "end_year": 1897,
       "volume_count": 75,
@@ -1193,6 +1259,7 @@
     "fields": {
       "full_name": "Daly's Common Pleas Reports",
       "short_name": "Daly (N.Y.)",
+      "short_name_slug": "daly-ny",
       "start_year": 1859,
       "end_year": 1891,
       "volume_count": 16,
@@ -1211,6 +1278,7 @@
     "fields": {
       "full_name": "E.D. Smith's Common Pleas Reports",
       "short_name": "E.D. Smith",
+      "short_name_slug": "ed-smith",
       "start_year": 1850,
       "end_year": 1858,
       "volume_count": 4,
@@ -1229,6 +1297,7 @@
     "fields": {
       "full_name": "Hilton's Common Pleas Reports",
       "short_name": "Hilt.",
+      "short_name_slug": "hilt",
       "start_year": 1855,
       "end_year": 1860,
       "volume_count": 2,
@@ -1247,6 +1316,7 @@
     "fields": {
       "full_name": "City Court Reports",
       "short_name": "N.Y. City Ct. Rep.",
+      "short_name_slug": "ny-city-ct-rep",
       "start_year": 1874,
       "end_year": 1884,
       "volume_count": 2,
@@ -1265,6 +1335,7 @@
     "fields": {
       "full_name": "Hall's Superior Court Reports",
       "short_name": "Hall Super. Ct. Rep.",
+      "short_name_slug": "hall-super-ct-rep",
       "start_year": 1828,
       "end_year": 1829,
       "volume_count": 2,
@@ -1283,6 +1354,7 @@
     "fields": {
       "full_name": "Sandford's Superior Court Reports",
       "short_name": "Sandford Super. Ct. Rep.",
+      "short_name_slug": "sandford-super-ct-rep",
       "start_year": 1847,
       "end_year": 1852,
       "volume_count": 5,
@@ -1301,6 +1373,7 @@
     "fields": {
       "full_name": "Jones and Spencer's Superior Court Reports",
       "short_name": "Jones and Spencer's Super. Ct. Rep.",
+      "short_name_slug": "jones-and-spencers-super-ct-rep",
       "start_year": 1871,
       "end_year": 1892,
       "volume_count": 29,
@@ -1319,6 +1392,7 @@
     "fields": {
       "full_name": "Sweeney's Superior Court Reports",
       "short_name": "Sweeney Super. Ct. Rep.",
+      "short_name_slug": "sweeney-super-ct-rep",
       "start_year": 1869,
       "end_year": 1870,
       "volume_count": 2,
@@ -1337,6 +1411,7 @@
     "fields": {
       "full_name": "Robertson's Superior Court Reports",
       "short_name": "Robertson's Super. Ct. Rep.",
+      "short_name_slug": "robertsons-super-ct-rep",
       "start_year": 1863,
       "end_year": 1868,
       "volume_count": 7,
@@ -1355,6 +1430,7 @@
     "fields": {
       "full_name": "Bosworth's Superior Court Reports",
       "short_name": "Bosworth Super. Ct. Rep.",
+      "short_name_slug": "bosworth-super-ct-rep",
       "start_year": 1856,
       "end_year": 1863,
       "volume_count": 10,
@@ -1373,6 +1449,7 @@
     "fields": {
       "full_name": "Duer's Superior Court Reports",
       "short_name": "Duer Super. Ct. Rep.",
+      "short_name_slug": "duer-super-ct-rep",
       "start_year": 1852,
       "end_year": 1857,
       "volume_count": 6,
@@ -1391,6 +1468,7 @@
     "fields": {
       "full_name": "Day's Reports",
       "short_name": "Day",
+      "short_name_slug": "day",
       "start_year": 1802,
       "end_year": 1813,
       "volume_count": 5,
@@ -1409,6 +1487,7 @@
     "fields": {
       "full_name": "Connecticut Reports",
       "short_name": "Conn.",
+      "short_name_slug": "conn",
       "start_year": 1814,
       "end_year": 1852,
       "volume_count": 287,
@@ -1427,6 +1506,7 @@
     "fields": {
       "full_name": "Dudley's Georgia Reports",
       "short_name": "Dudley Rep.",
+      "short_name_slug": "dudley-rep",
       "start_year": 1830,
       "end_year": 1833,
       "volume_count": 1,
@@ -1445,6 +1525,7 @@
     "fields": {
       "full_name": "Charlton's Reports",
       "short_name": "Charlton Rep.",
+      "short_name_slug": "charlton-rep",
       "start_year": 1805,
       "end_year": 1810,
       "volume_count": 1,
@@ -1463,6 +1544,7 @@
     "fields": {
       "full_name": "Decisions of the Superior Courts of the State of Georgia",
       "short_name": "Georgia Decisions",
+      "short_name_slug": "georgia-decisions",
       "start_year": 1841,
       "end_year": 1843,
       "volume_count": 1,
@@ -1481,6 +1563,7 @@
     "fields": {
       "full_name": "Carolina Law Repository",
       "short_name": "N.C. (Car. L. Rep.)",
+      "short_name_slug": "nc-car-l-rep",
       "start_year": 1813,
       "end_year": 1816,
       "volume_count": 2,
@@ -1499,6 +1582,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Taylor)",
       "short_name": "N.C. (Tay.)",
+      "short_name_slug": "nc-tay",
       "start_year": 1798,
       "end_year": 1802,
       "volume_count": 1,
@@ -1517,6 +1601,7 @@
     "fields": {
       "full_name": "Taylor's North Carolina Term Reports",
       "short_name": "N.C. (Taylor)",
+      "short_name_slug": "nc-taylor",
       "start_year": 1816,
       "end_year": 1818,
       "volume_count": 1,
@@ -1535,6 +1620,7 @@
     "fields": {
       "full_name": "Dallas",
       "short_name": "Dall.",
+      "short_name_slug": "dall",
       "start_year": 1754,
       "end_year": 1806,
       "volume_count": 4,
@@ -1553,6 +1639,7 @@
     "fields": {
       "full_name": "Addison",
       "short_name": "Add.",
+      "short_name_slug": "add",
       "start_year": 1791,
       "end_year": 1799,
       "volume_count": 1,
@@ -1571,6 +1658,7 @@
     "fields": {
       "full_name": "Hening & Munford",
       "short_name": "Va. (Hen. & M.)",
+      "short_name_slug": "va-hen-m",
       "start_year": 1806,
       "end_year": 1810,
       "volume_count": 1,
@@ -1589,6 +1677,7 @@
     "fields": {
       "full_name": "Jefferson",
       "short_name": "Jeff.",
+      "short_name_slug": "jeff",
       "start_year": 1730,
       "end_year": 1772,
       "volume_count": 1,
@@ -1607,6 +1696,7 @@
     "fields": {
       "full_name": "Martin",
       "short_name": "N.C. (Mart.)",
+      "short_name_slug": "nc-mart",
       "start_year": 1778,
       "end_year": 1797,
       "volume_count": 1,
@@ -1625,6 +1715,7 @@
     "fields": {
       "full_name": "Delaware Reports",
       "short_name": "Del.",
+      "short_name_slug": "del",
       "start_year": 1919,
       "end_year": 1966,
       "volume_count": 59,
@@ -1643,6 +1734,7 @@
     "fields": {
       "full_name": "Delaware Cases",
       "short_name": "Del. Cas.",
+      "short_name_slug": "del-cas",
       "start_year": 1792,
       "end_year": 1830,
       "volume_count": 3,
@@ -1661,6 +1753,7 @@
     "fields": {
       "full_name": "Delaware Chancery Reports",
       "short_name": "Del. Ch.",
+      "short_name_slug": "del-ch",
       "start_year": 1814,
       "end_year": 1895,
       "volume_count": 42,
@@ -1679,6 +1772,7 @@
     "fields": {
       "full_name": "West's Atlantic Reporter, Second Series",
       "short_name": "A.2d",
+      "short_name_slug": "a2d",
       "start_year": 1939,
       "end_year": 2010,
       "volume_count": 999,
@@ -1697,6 +1791,7 @@
     "fields": {
       "full_name": "Tennessee Appeals Reports",
       "short_name": "Tenn. App.",
+      "short_name_slug": "tenn-app",
       "start_year": 1925,
       "end_year": 1971,
       "volume_count": 63,
@@ -1715,6 +1810,7 @@
     "fields": {
       "full_name": "Utah Reports",
       "short_name": "Utah",
+      "short_name_slug": "utah",
       "start_year": 1873,
       "end_year": 1974,
       "volume_count": 123,
@@ -1733,6 +1829,7 @@
     "fields": {
       "full_name": "Oklahoma Reports",
       "short_name": "Okla.",
+      "short_name_slug": "okla",
       "start_year": 1890,
       "end_year": 1953,
       "volume_count": 208,
@@ -1751,6 +1848,7 @@
     "fields": {
       "full_name": "Utah Reports, Second Series",
       "short_name": "Utah 2d",
+      "short_name_slug": "utah-2d",
       "start_year": 1953,
       "end_year": 1974,
       "volume_count": 30,
@@ -1769,6 +1867,7 @@
     "fields": {
       "full_name": "Indiana Reports",
       "short_name": "Ind.",
+      "short_name_slug": "ind",
       "start_year": 1847,
       "end_year": 1903,
       "volume_count": 275,
@@ -1787,6 +1886,7 @@
     "fields": {
       "full_name": "Rhode Island Reports",
       "short_name": "R.I.",
+      "short_name_slug": "ri",
       "start_year": 1828,
       "end_year": 1950,
       "volume_count": 122,
@@ -1805,6 +1905,7 @@
     "fields": {
       "full_name": "Tennessee Reports",
       "short_name": "Tenn.",
+      "short_name_slug": "tenn",
       "start_year": 1872,
       "end_year": 1878,
       "volume_count": 225,
@@ -1823,6 +1924,7 @@
     "fields": {
       "full_name": "South Carolina Reports",
       "short_name": "S.C.",
+      "short_name_slug": "sc",
       "start_year": 1869,
       "end_year": 1983,
       "volume_count": 401,
@@ -1841,6 +1943,7 @@
     "fields": {
       "full_name": "Mississippi Reports",
       "short_name": "Miss.",
+      "short_name_slug": "miss",
       "start_year": 1851,
       "end_year": 1966,
       "volume_count": 254,
@@ -1859,6 +1962,7 @@
     "fields": {
       "full_name": "Vermont Reports",
       "short_name": "Vt.",
+      "short_name_slug": "vt",
       "start_year": 1826,
       "end_year": 2013,
       "volume_count": 193,
@@ -1877,6 +1981,7 @@
     "fields": {
       "full_name": "North Dakota Reports",
       "short_name": "N.D.",
+      "short_name_slug": "nd",
       "start_year": 1890,
       "end_year": 1953,
       "volume_count": 79,
@@ -1895,6 +2000,7 @@
     "fields": {
       "full_name": "Oregon Reports",
       "short_name": "Or.",
+      "short_name_slug": "or",
       "start_year": 1853,
       "end_year": 2011,
       "volume_count": 353,
@@ -1913,6 +2019,7 @@
     "fields": {
       "full_name": "Montana Reports",
       "short_name": "Mont.",
+      "short_name_slug": "mont",
       "start_year": 1868,
       "end_year": 1890,
       "volume_count": 374,
@@ -1931,6 +2038,7 @@
     "fields": {
       "full_name": "Arizona Appeals Reports",
       "short_name": "Ariz. App.",
+      "short_name_slug": "ariz-app",
       "start_year": 1965,
       "end_year": 1977,
       "volume_count": 27,
@@ -1949,6 +2057,7 @@
     "fields": {
       "full_name": "Arizona Reports",
       "short_name": "Ariz.",
+      "short_name_slug": "ariz",
       "start_year": 1886,
       "end_year": 1911,
       "volume_count": 233,
@@ -1967,6 +2076,7 @@
     "fields": {
       "full_name": "Ohio Miscellaneous Reports",
       "short_name": "Ohio Misc.",
+      "short_name_slug": "ohio-misc",
       "start_year": 1965,
       "end_year": 1975,
       "volume_count": 24,
@@ -1985,6 +2095,7 @@
     "fields": {
       "full_name": "Alabama Reports",
       "short_name": "Ala.",
+      "short_name_slug": "ala",
       "start_year": 1840,
       "end_year": 1976,
       "volume_count": 295,
@@ -2003,6 +2114,7 @@
     "fields": {
       "full_name": "Alabama Appellate Courts Reports",
       "short_name": "Ala. App.",
+      "short_name_slug": "ala-app",
       "start_year": 1911,
       "end_year": 1968,
       "volume_count": 62,
@@ -2021,6 +2133,7 @@
     "fields": {
       "full_name": "New Jersey Superior Court Reports",
       "short_name": "N.J. Super.",
+      "short_name_slug": "nj-super",
       "start_year": 1948,
       "end_year": 2009,
       "volume_count": 435,
@@ -2039,6 +2152,7 @@
     "fields": {
       "full_name": "Puerto Rico Reports",
       "short_name": "P.R.",
+      "short_name_slug": "pr",
       "start_year": 1899,
       "end_year": 1972,
       "volume_count": 98,
@@ -2057,6 +2171,7 @@
     "fields": {
       "full_name": "Kentucky Reports",
       "short_name": "Ky.",
+      "short_name_slug": "ky",
       "start_year": 1879,
       "end_year": 1951,
       "volume_count": 237,
@@ -2075,6 +2190,7 @@
     "fields": {
       "full_name": "Idaho Reports",
       "short_name": "Idaho",
+      "short_name_slug": "idaho",
       "start_year": 1866,
       "end_year": 1890,
       "volume_count": 155,
@@ -2093,6 +2209,7 @@
     "fields": {
       "full_name": "Florida Supplement",
       "short_name": "Fla. Supp.",
+      "short_name_slug": "fla-supp",
       "start_year": 1952,
       "end_year": 1982,
       "volume_count": 49,
@@ -2111,6 +2228,7 @@
     "fields": {
       "full_name": "Florida Supplement Second",
       "short_name": "Fla. Supp. 2d",
+      "short_name_slug": "fla-supp-2d",
       "start_year": 1983,
       "end_year": 1992,
       "volume_count": 50,
@@ -2129,6 +2247,7 @@
     "fields": {
       "full_name": "Illinois Appellate Court Reports",
       "short_name": "Ill. App.",
+      "short_name_slug": "ill-app",
       "start_year": 1877,
       "end_year": 1887,
       "volume_count": 351,
@@ -2147,6 +2266,7 @@
     "fields": {
       "full_name": "Illinois Appellate Court Reports, Second Series",
       "short_name": "Ill. App. 2d",
+      "short_name_slug": "ill-app-2d",
       "start_year": 1953,
       "end_year": 1971,
       "volume_count": 133,
@@ -2165,6 +2285,7 @@
     "fields": {
       "full_name": "Illinois Appellate Court Reports, Third Series",
       "short_name": "Ill. App. 3d",
+      "short_name_slug": "ill-app-3d",
       "start_year": 1971,
       "end_year": 2014,
       "volume_count": 409,
@@ -2183,6 +2304,7 @@
     "fields": {
       "full_name": "New Jersey Miscellaneous Reports",
       "short_name": "N.J. Misc.",
+      "short_name_slug": "nj-misc",
       "start_year": 1923,
       "end_year": 1949,
       "volume_count": 26,
@@ -2201,6 +2323,7 @@
     "fields": {
       "full_name": "California Appellate Reports",
       "short_name": "Cal. App.",
+      "short_name_slug": "cal-app",
       "start_year": 1905,
       "end_year": 1934,
       "volume_count": 140,
@@ -2219,6 +2342,7 @@
     "fields": {
       "full_name": "California Appellate Reports, Second Series",
       "short_name": "Cal. App. 2d",
+      "short_name_slug": "cal-app-2d",
       "start_year": 1934,
       "end_year": 1966,
       "volume_count": 276,
@@ -2237,6 +2361,7 @@
     "fields": {
       "full_name": "Ohio Opinions",
       "short_name": "Ohio Op.",
+      "short_name_slug": "ohio-op",
       "start_year": 1934,
       "end_year": 1956,
       "volume_count": 60,
@@ -2255,6 +2380,7 @@
     "fields": {
       "full_name": "California Appellate Reports, Third Series",
       "short_name": "Cal. App. 3d",
+      "short_name_slug": "cal-app-3d",
       "start_year": 1969,
       "end_year": 1991,
       "volume_count": 235,
@@ -2273,6 +2399,7 @@
     "fields": {
       "full_name": "California Appellate Reports, Fourth Series",
       "short_name": "Cal. App. 4th",
+      "short_name_slug": "cal-app-4th",
       "start_year": 1991,
       "end_year": 2017,
       "volume_count": 221,
@@ -2291,6 +2418,7 @@
     "fields": {
       "full_name": "Ohio Opinions",
       "short_name": "Ohio Op. 2d",
+      "short_name_slug": "ohio-op-2d",
       "start_year": 1956,
       "end_year": 1976,
       "volume_count": 75,
@@ -2309,6 +2437,7 @@
     "fields": {
       "full_name": "Ohio Opinions",
       "short_name": "Ohio Op. 3d",
+      "short_name_slug": "ohio-op-3d",
       "start_year": 1976,
       "end_year": 1982,
       "volume_count": 24,
@@ -2327,6 +2456,7 @@
     "fields": {
       "full_name": "Louisiana Reports",
       "short_name": "La.",
+      "short_name_slug": "la",
       "start_year": 1901,
       "end_year": 1972,
       "volume_count": 159,
@@ -2345,6 +2475,7 @@
     "fields": {
       "full_name": "Louisiana Court of Appeals Reports",
       "short_name": "La. App.",
+      "short_name_slug": "la-app",
       "start_year": 1924,
       "end_year": 1932,
       "volume_count": 19,
@@ -2363,6 +2494,7 @@
     "fields": {
       "full_name": "Colorado Reports",
       "short_name": "Colo.",
+      "short_name_slug": "colo",
       "start_year": 1864,
       "end_year": 1891,
       "volume_count": 200,
@@ -2381,6 +2513,7 @@
     "fields": {
       "full_name": "Texas Reports",
       "short_name": "Tex.",
+      "short_name_slug": "tex",
       "start_year": 1846,
       "end_year": 1872,
       "volume_count": 164,
@@ -2399,6 +2532,7 @@
     "fields": {
       "full_name": "Connecticut Supplement",
       "short_name": "Conn. Supp.",
+      "short_name_slug": "conn-supp",
       "start_year": 1935,
       "end_year": 2004,
       "volume_count": 51,
@@ -2417,6 +2551,7 @@
     "fields": {
       "full_name": "Pennsylvania Superior Court Reports",
       "short_name": "Pa. Super. Ct.",
+      "short_name_slug": "pa-super-ct",
       "start_year": 1896,
       "end_year": 1997,
       "volume_count": 456,
@@ -2435,6 +2570,7 @@
     "fields": {
       "full_name": "Georgia Reports",
       "short_name": "Ga.",
+      "short_name_slug": "ga",
       "start_year": 1846,
       "end_year": 1889,
       "volume_count": 293,
@@ -2453,6 +2589,7 @@
     "fields": {
       "full_name": "Wyoming Reports",
       "short_name": "Wyo.",
+      "short_name_slug": "wyo",
       "start_year": 1870,
       "end_year": 1959,
       "volume_count": 80,
@@ -2471,6 +2608,7 @@
     "fields": {
       "full_name": "Oregon Tax Reports",
       "short_name": "Or. Tax",
+      "short_name_slug": "or-tax",
       "start_year": 1962,
       "end_year": 2006,
       "volume_count": 18,
@@ -2489,6 +2627,7 @@
     "fields": {
       "full_name": "North Carolina Court of Appeals Reports",
       "short_name": "N.C. App.",
+      "short_name_slug": "nc-app",
       "start_year": 1968,
       "end_year": 2008,
       "volume_count": 211,
@@ -2507,6 +2646,7 @@
     "fields": {
       "full_name": "Arkansas Reports",
       "short_name": "Ark.",
+      "short_name_slug": "ark",
       "start_year": 1837,
       "end_year": 1844,
       "volume_count": 375,
@@ -2525,6 +2665,7 @@
     "fields": {
       "full_name": "West Virginia Supreme Court",
       "short_name": "W. Va.",
+      "short_name_slug": "w-va",
       "start_year": 1864,
       "end_year": 0,
       "volume_count": 232,
@@ -2543,6 +2684,7 @@
     "fields": {
       "full_name": "Virginia Court of Appeals Courts",
       "short_name": "Va. App.",
+      "short_name_slug": "va-app",
       "start_year": 1985,
       "end_year": 2014,
       "volume_count": 62,
@@ -2561,6 +2703,7 @@
     "fields": {
       "full_name": "Pennsylvania District and County Reports",
       "short_name": "Pa. D. & C.",
+      "short_name_slug": "pa-d-c",
       "start_year": 1922,
       "end_year": 1954,
       "volume_count": 89,
@@ -2579,6 +2722,7 @@
     "fields": {
       "full_name": "Pennsylvania District and County Reports",
       "short_name": "Pa. D. & C. 2d",
+      "short_name_slug": "pa-d-c-2d",
       "start_year": 1955,
       "end_year": 1977,
       "volume_count": 75,
@@ -2597,6 +2741,7 @@
     "fields": {
       "full_name": "Pennsylvania District and County Reports",
       "short_name": "Pa. D. & C. 3d",
+      "short_name_slug": "pa-d-c-3d",
       "start_year": 1977,
       "end_year": 1989,
       "volume_count": 50,
@@ -2615,6 +2760,7 @@
     "fields": {
       "full_name": "Florida Reports",
       "short_name": "Fla.",
+      "short_name_slug": "fla",
       "start_year": 1846,
       "end_year": 1948,
       "volume_count": 160,
@@ -2633,6 +2779,7 @@
     "fields": {
       "full_name": "Pennsylvania District and County Reports",
       "short_name": "Pa. D. & C. 4th",
+      "short_name_slug": "pa-d-c-4th",
       "start_year": 1990,
       "end_year": 2006,
       "volume_count": 76,
@@ -2651,6 +2798,7 @@
     "fields": {
       "full_name": "Minnesota Reports",
       "short_name": "Minn.",
+      "short_name_slug": "minn",
       "start_year": 1851,
       "end_year": 1977,
       "volume_count": 312,
@@ -2669,6 +2817,7 @@
     "fields": {
       "full_name": "Ohio Appellate Reports",
       "short_name": "Ohio App.",
+      "short_name_slug": "ohio-app",
       "start_year": 1913,
       "end_year": 1965,
       "volume_count": 120,
@@ -2687,6 +2836,7 @@
     "fields": {
       "full_name": "Missouri Appeal Reports",
       "short_name": "Mo. App.",
+      "short_name_slug": "mo-app",
       "start_year": 1876,
       "end_year": 1878,
       "volume_count": 240,
@@ -2705,6 +2855,7 @@
     "fields": {
       "full_name": "Ohio Appellate Reports, Second Series",
       "short_name": "Ohio App. 2d",
+      "short_name_slug": "ohio-app-2d",
       "start_year": 1965,
       "end_year": 1982,
       "volume_count": 70,
@@ -2723,6 +2874,7 @@
     "fields": {
       "full_name": "Washington Reports",
       "short_name": "Wash.",
+      "short_name_slug": "wash",
       "start_year": 1890,
       "end_year": 1903,
       "volume_count": 199,
@@ -2741,6 +2893,7 @@
     "fields": {
       "full_name": "Pennsylvania State Reports",
       "short_name": "Pa.",
+      "short_name_slug": "pa",
       "start_year": 1845,
       "end_year": 2010,
       "volume_count": 619,
@@ -2759,6 +2912,7 @@
     "fields": {
       "full_name": "Washington Reports",
       "short_name": "Wash. 2d",
+      "short_name_slug": "wash-2d",
       "start_year": 1939,
       "end_year": 2008,
       "volume_count": 175,
@@ -2777,6 +2931,7 @@
     "fields": {
       "full_name": "Oregon Reports, Court of Appeals",
       "short_name": "Or. App.",
+      "short_name_slug": "or-app",
       "start_year": 1969,
       "end_year": 2013,
       "volume_count": 259,
@@ -2795,6 +2950,7 @@
     "fields": {
       "full_name": "California Reports",
       "short_name": "Cal.",
+      "short_name_slug": "cal",
       "start_year": 1850,
       "end_year": 1934,
       "volume_count": 220,
@@ -2813,6 +2969,7 @@
     "fields": {
       "full_name": "Court of Claims Reports",
       "short_name": "Ct. Cl.",
+      "short_name_slug": "ct-cl",
       "start_year": 1863,
       "end_year": 1982,
       "volume_count": 231,
@@ -2831,6 +2988,7 @@
     "fields": {
       "full_name": "California Reports",
       "short_name": "Cal. 2d",
+      "short_name_slug": "cal-2d",
       "start_year": 1934,
       "end_year": 1969,
       "volume_count": 71,
@@ -2849,6 +3007,7 @@
     "fields": {
       "full_name": "California Reports",
       "short_name": "Cal. 3d",
+      "short_name_slug": "cal-3d",
       "start_year": 1969,
       "end_year": 1991,
       "volume_count": 54,
@@ -2867,6 +3026,7 @@
     "fields": {
       "full_name": "California Reports",
       "short_name": "Cal. 4th",
+      "short_name_slug": "cal-4th",
       "start_year": 1991,
       "end_year": 2014,
       "volume_count": 56,
@@ -2885,6 +3045,7 @@
     "fields": {
       "full_name": "Hawaii Reports",
       "short_name": "Haw.",
+      "short_name_slug": "haw",
       "start_year": 1847,
       "end_year": 1856,
       "volume_count": 71,
@@ -2903,6 +3064,7 @@
     "fields": {
       "full_name": "Indiana Court of Appeals Reports",
       "short_name": "Ind. App.",
+      "short_name_slug": "ind-app",
       "start_year": 1890,
       "end_year": 1895,
       "volume_count": 182,
@@ -2921,6 +3083,7 @@
     "fields": {
       "full_name": "Hawaii Appellate Reports",
       "short_name": "Haw. App.",
+      "short_name_slug": "haw-app",
       "start_year": 1980,
       "end_year": 1994,
       "volume_count": 10,
@@ -2939,6 +3102,7 @@
     "fields": {
       "full_name": "Navajo Reporter",
       "short_name": "Navajo Rptr.",
+      "short_name_slug": "navajo-rptr",
       "start_year": 1969,
       "end_year": 2005,
       "volume_count": 8,
@@ -2957,6 +3121,7 @@
     "fields": {
       "full_name": "Maine Reports",
       "short_name": "Me.",
+      "short_name_slug": "me",
       "start_year": 1820,
       "end_year": 1965,
       "volume_count": 160,
@@ -2975,6 +3140,7 @@
     "fields": {
       "full_name": "Kansas Court of Appeals Reports",
       "short_name": "Kan. App. 2d",
+      "short_name_slug": "kan-app-2d",
       "start_year": 1977,
       "end_year": 2006,
       "volume_count": 45,
@@ -2993,6 +3159,7 @@
     "fields": {
       "full_name": "Virgin Islands Reports",
       "short_name": "V.I.",
+      "short_name_slug": "vi",
       "start_year": 1917,
       "end_year": 2012,
       "volume_count": 60,
@@ -3011,6 +3178,7 @@
     "fields": {
       "full_name": "Iowa Reports",
       "short_name": "Iowa",
+      "short_name_slug": "iowa",
       "start_year": 1855,
       "end_year": 1890,
       "volume_count": 261,
@@ -3029,6 +3197,7 @@
     "fields": {
       "full_name": "Kansas Reports",
       "short_name": "Kan.",
+      "short_name_slug": "kan",
       "start_year": 1862,
       "end_year": 2009,
       "volume_count": 291,
@@ -3047,6 +3216,7 @@
     "fields": {
       "full_name": "Washington Appellate Reports",
       "short_name": "Wash. App.",
+      "short_name_slug": "wash-app",
       "start_year": 1969,
       "end_year": 2013,
       "volume_count": 173,
@@ -3065,6 +3235,7 @@
     "fields": {
       "full_name": "Massachusetts Reports",
       "short_name": "Mass.",
+      "short_name_slug": "mass",
       "start_year": 1804,
       "end_year": 2016,
       "volume_count": 466,
@@ -3083,6 +3254,7 @@
     "fields": {
       "full_name": "Wisconsin Reports",
       "short_name": "Wis.",
+      "short_name_slug": "wis",
       "start_year": 1853,
       "end_year": 1894,
       "volume_count": 264,
@@ -3101,6 +3273,7 @@
     "fields": {
       "full_name": "Wisconsin Reports Second",
       "short_name": "Wis. 2d",
+      "short_name_slug": "wis-2d",
       "start_year": 1957,
       "end_year": 1975,
       "volume_count": 422,
@@ -3119,6 +3292,7 @@
     "fields": {
       "full_name": "New Hampshire Reports",
       "short_name": "N.H.",
+      "short_name_slug": "nh",
       "start_year": 1816,
       "end_year": 1842,
       "volume_count": 164,
@@ -3137,6 +3311,7 @@
     "fields": {
       "full_name": "Connecticut Appellate Reports",
       "short_name": "Conn. App.",
+      "short_name_slug": "conn-app",
       "start_year": 1983,
       "end_year": 2010,
       "volume_count": 121,
@@ -3155,6 +3330,7 @@
     "fields": {
       "full_name": "Nevada Reports",
       "short_name": "Nev.",
+      "short_name_slug": "nev",
       "start_year": 1865,
       "end_year": 2009,
       "volume_count": 126,
@@ -3173,6 +3349,7 @@
     "fields": {
       "full_name": "Georgia Appeals Reports",
       "short_name": "Ga. App.",
+      "short_name_slug": "ga-app",
       "start_year": 1907,
       "end_year": 2013,
       "volume_count": 298,
@@ -3191,6 +3368,7 @@
     "fields": {
       "full_name": "Michigan Reports",
       "short_name": "Mich.",
+      "short_name_slug": "mich",
       "start_year": 1847,
       "end_year": 2013,
       "volume_count": 494,
@@ -3209,6 +3387,7 @@
     "fields": {
       "full_name": "Maryland Appellate Reports",
       "short_name": "Md. App.",
+      "short_name_slug": "md-app",
       "start_year": 1967,
       "end_year": 2013,
       "volume_count": 216,
@@ -3227,6 +3406,7 @@
     "fields": {
       "full_name": "Oklahoma Criminal Reports",
       "short_name": "Okla. Crim.",
+      "short_name_slug": "okla-crim",
       "start_year": 1908,
       "end_year": 1953,
       "volume_count": 97,
@@ -3245,6 +3425,7 @@
     "fields": {
       "full_name": "Maryland Reports",
       "short_name": "Md.",
+      "short_name_slug": "md",
       "start_year": 1851,
       "end_year": 0,
       "volume_count": 437,
@@ -3263,6 +3444,7 @@
     "fields": {
       "full_name": "Illinois Reports",
       "short_name": "Ill.",
+      "short_name_slug": "ill",
       "start_year": 1819,
       "end_year": 1954,
       "volume_count": 415,
@@ -3281,6 +3463,7 @@
     "fields": {
       "full_name": "Illinois Reports, Second Series",
       "short_name": "Ill. 2d",
+      "short_name_slug": "ill-2d",
       "start_year": 1953,
       "end_year": 1971,
       "volume_count": 218,
@@ -3299,6 +3482,7 @@
     "fields": {
       "full_name": "Illinois Court of Claims Reports",
       "short_name": "Ill. Ct. Cl.",
+      "short_name_slug": "ill-ct-cl",
       "start_year": 1889,
       "end_year": 1923,
       "volume_count": 53,
@@ -3317,6 +3501,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va.",
+      "short_name_slug": "va",
       "start_year": 1829,
       "end_year": 1908,
       "volume_count": 265,
@@ -3335,6 +3520,7 @@
     "fields": {
       "full_name": "Pennsylvania Commonwealth Court Reports",
       "short_name": "Pa. Commw.",
+      "short_name_slug": "pa-commw",
       "start_year": 1970,
       "end_year": 1994,
       "volume_count": 168,
@@ -3353,6 +3539,7 @@
     "fields": {
       "full_name": "Nebraska Reports",
       "short_name": "Neb.",
+      "short_name_slug": "neb",
       "start_year": 1860,
       "end_year": 2008,
       "volume_count": 274,
@@ -3371,6 +3558,7 @@
     "fields": {
       "full_name": "Ohio State Reports, New Service",
       "short_name": "Ohio St. (n.s.)",
+      "short_name_slug": "ohio-st-ns",
       "start_year": 1852,
       "end_year": 1964,
       "volume_count": 177,
@@ -3389,6 +3577,7 @@
     "fields": {
       "full_name": "Ohio State Reports, Second Series",
       "short_name": "Ohio St. 2d",
+      "short_name_slug": "ohio-st-2d",
       "start_year": 1965,
       "end_year": 1982,
       "volume_count": 70,
@@ -3407,6 +3596,7 @@
     "fields": {
       "full_name": "Ohio State Reports, Third Service",
       "short_name": "Ohio St. 3d",
+      "short_name_slug": "ohio-st-3d",
       "start_year": 1982,
       "end_year": 1991,
       "volume_count": 275,
@@ -3425,6 +3615,7 @@
     "fields": {
       "full_name": "Ohio State Reports",
       "short_name": "Ohio St.",
+      "short_name_slug": "ohio-st",
       "start_year": 1840,
       "end_year": 1851,
       "volume_count": 13,
@@ -3443,6 +3634,7 @@
     "fields": {
       "full_name": "North Carolina Reports",
       "short_name": "N.C.",
+      "short_name_slug": "nc",
       "start_year": 1868,
       "end_year": 2013,
       "volume_count": 364,
@@ -3461,6 +3653,7 @@
     "fields": {
       "full_name": "New Jersey Tax Court Reports",
       "short_name": "N.J. Tax Ct.",
+      "short_name_slug": "nj-tax-ct",
       "start_year": 1979,
       "end_year": 2009,
       "volume_count": 24,
@@ -3479,6 +3672,7 @@
     "fields": {
       "full_name": "New Jersey Law Reports",
       "short_name": "N.J.L.",
+      "short_name_slug": "njl",
       "start_year": 1790,
       "end_year": 1948,
       "volume_count": 137,
@@ -3497,6 +3691,7 @@
     "fields": {
       "full_name": "New Mexico Reports",
       "short_name": "N.M.",
+      "short_name_slug": "nm",
       "start_year": 1852,
       "end_year": 2012,
       "volume_count": 149,
@@ -3515,6 +3710,7 @@
     "fields": {
       "full_name": "New Jersey Reports",
       "short_name": "N.J.",
+      "short_name_slug": "nj",
       "start_year": 1949,
       "end_year": 2012,
       "volume_count": 217,
@@ -3533,6 +3729,7 @@
     "fields": {
       "full_name": "New Jersey Equity Reports",
       "short_name": "N.J. Eq.",
+      "short_name_slug": "nj-eq",
       "start_year": 1830,
       "end_year": 1948,
       "volume_count": 142,
@@ -3551,6 +3748,7 @@
     "fields": {
       "full_name": "Conference by Cameron & Norwood",
       "short_name": "N.C. (Cam. & Nor.)",
+      "short_name_slug": "nc-cam-nor",
       "start_year": 1800,
       "end_year": 1804,
       "volume_count": 1,
@@ -3569,6 +3767,7 @@
     "fields": {
       "full_name": "California Unreported Cases",
       "short_name": "Cal. Unrep.",
+      "short_name_slug": "cal-unrep",
       "start_year": 1855,
       "end_year": 1910,
       "volume_count": 7,
@@ -3587,6 +3786,7 @@
     "fields": {
       "full_name": "Reports of Cases in the Probate Court of the City and County of San Francisco, from January 1, 1872, to December 31, 1879, Milton H. Myrick, Probate Judge",
       "short_name": "Myrick",
+      "short_name_slug": "myrick",
       "start_year": 1872,
       "end_year": 1879,
       "volume_count": 1,
@@ -3605,6 +3805,7 @@
     "fields": {
       "full_name": "Reports of Decisions in Probate, by James V. Coffey, Judge of the Superior Court in and for the City and County of San Francisco, State of California. Reported and Annotated by Peter V. Ross and Jeremiah V. Coffey",
       "short_name": "Coffey",
+      "short_name_slug": "coffey",
       "start_year": 1908,
       "end_year": 1916,
       "volume_count": 6,
@@ -3623,6 +3824,7 @@
     "fields": {
       "full_name": "Massachusetts Appeals Court Reports",
       "short_name": "Mass. App. Ct.",
+      "short_name_slug": "mass-app-ct",
       "start_year": 1972,
       "end_year": 2008,
       "volume_count": 84,
@@ -3641,6 +3843,7 @@
     "fields": {
       "full_name": "Massachusets Reports",
       "short_name": "Mass. (Allen)",
+      "short_name_slug": "mass-allen",
       "start_year": 1861,
       "end_year": 1867,
       "volume_count": 0,
@@ -3659,6 +3862,7 @@
     "fields": {
       "full_name": "Reports of Massachusetts Appellate Division",
       "short_name": "Mass. App. Div.",
+      "short_name_slug": "mass-app-div",
       "start_year": 1936,
       "end_year": 1937,
       "volume_count": 16,
@@ -3677,6 +3881,7 @@
     "fields": {
       "full_name": "Massachusetts Reports Supplement",
       "short_name": "Mass. Supp.",
+      "short_name_slug": "mass-supp",
       "start_year": 1980,
       "end_year": 1983,
       "volume_count": 4,
@@ -3695,6 +3900,7 @@
     "fields": {
       "full_name": "Massachusetts Appellate Decisions",
       "short_name": "Mass. App. Dec.",
+      "short_name_slug": "mass-app-dec",
       "start_year": 1941,
       "end_year": 1977,
       "volume_count": 59,
@@ -3713,6 +3919,7 @@
     "fields": {
       "full_name": "Reports of Massachusetts Appellate Division (Annual)",
       "short_name": "Mass. App. Div.",
+      "short_name_slug": "mass-app-div",
       "start_year": 1980,
       "end_year": 2014,
       "volume_count": 35,
@@ -3731,6 +3938,7 @@
     "fields": {
       "full_name": "Minor",
       "short_name": "Minor",
+      "short_name_slug": "minor",
       "start_year": 1820,
       "end_year": 1826,
       "volume_count": 1,
@@ -3749,6 +3957,7 @@
     "fields": {
       "full_name": "Stewart",
       "short_name": "Stew.",
+      "short_name_slug": "stew",
       "start_year": 1827,
       "end_year": 1831,
       "volume_count": 3,
@@ -3767,6 +3976,7 @@
     "fields": {
       "full_name": "Stewart and Porter",
       "short_name": "Stew. & P.",
+      "short_name_slug": "stew-p",
       "start_year": 1831,
       "end_year": 1834,
       "volume_count": 5,
@@ -3785,6 +3995,7 @@
     "fields": {
       "full_name": "Porter",
       "short_name": "Port.",
+      "short_name_slug": "port",
       "start_year": 1834,
       "end_year": 1839,
       "volume_count": 9,
@@ -3803,6 +4014,7 @@
     "fields": {
       "full_name": "Dallam's Opinions",
       "short_name": "Dallam",
+      "short_name_slug": "dallam",
       "start_year": 1840,
       "end_year": 1844,
       "volume_count": 1,
@@ -3821,6 +4033,7 @@
     "fields": {
       "full_name": "Texas Court of Appeals Reports",
       "short_name": "Tex. Ct. App.",
+      "short_name_slug": "tex-ct-app",
       "start_year": 1876,
       "end_year": 1882,
       "volume_count": 30,
@@ -3839,6 +4052,7 @@
     "fields": {
       "full_name": "Texas Criminal Reports",
       "short_name": "Tex. Crim.",
+      "short_name_slug": "tex-crim",
       "start_year": 1892,
       "end_year": 1963,
       "volume_count": 142,
@@ -3857,6 +4071,7 @@
     "fields": {
       "full_name": "Texas Civil Appeals Reports",
       "short_name": "Tex. Civ. App.",
+      "short_name_slug": "tex-civ-app",
       "start_year": 1892,
       "end_year": 1911,
       "volume_count": 63,
@@ -3875,6 +4090,7 @@
     "fields": {
       "full_name": "Condensed Reports of Decisions in Civil Causes in the Court of Appeals (White & Wilson)",
       "short_name": "White & W.",
+      "short_name_slug": "white-w",
       "start_year": 1879,
       "end_year": 1884,
       "volume_count": 4,
@@ -3893,6 +4109,7 @@
     "fields": {
       "full_name": "Texas Unreported Cases (Posey)",
       "short_name": "Posey",
+      "short_name_slug": "posey",
       "start_year": 1879,
       "end_year": 1884,
       "volume_count": 2,
@@ -3911,6 +4128,7 @@
     "fields": {
       "full_name": "Texas Law Reporter",
       "short_name": "Tex. L. R.",
+      "short_name_slug": "tex-l-r",
       "start_year": 1882,
       "end_year": 1884,
       "volume_count": 3,
@@ -3929,6 +4147,7 @@
     "fields": {
       "full_name": "Conflicting Civil Cases in the Texas Reports",
       "short_name": "King's Conflicting Cases",
+      "short_name_slug": "kings-conflicting-cases",
       "start_year": 1890,
       "end_year": 1911,
       "volume_count": 3,
@@ -3947,6 +4166,7 @@
     "fields": {
       "full_name": "Synopses of the Decisions of the Supreme Court of the State of Texas: rendered, upon applications for writs of habeas corpus, original and on appeal, arising from restraints by conscript and other military authorities, during the terms in 1862, 1863, 1864,",
       "short_name": "Robards",
+      "short_name_slug": "robards",
       "start_year": 1862,
       "end_year": 1865,
       "volume_count": 1,
@@ -3965,6 +4185,7 @@
     "fields": {
       "full_name": "Alaska Reports",
       "short_name": "Alaska",
+      "short_name_slug": "alaska",
       "start_year": 1887,
       "end_year": 1958,
       "volume_count": 17,
@@ -3983,6 +4204,7 @@
     "fields": {
       "full_name": "Alaska Federal Reports",
       "short_name": "Alaska Fed.",
+      "short_name_slug": "alaska-fed",
       "start_year": 1869,
       "end_year": 1937,
       "volume_count": 5,
@@ -4001,6 +4223,7 @@
     "fields": {
       "full_name": "Colorado Court of Appeals Reports",
       "short_name": "Colo. App.",
+      "short_name_slug": "colo-app",
       "start_year": 1891,
       "end_year": 1915,
       "volume_count": 27,
@@ -4019,6 +4242,7 @@
     "fields": {
       "full_name": "South Western Reporter",
       "short_name": "S.W.",
+      "short_name_slug": "sw",
       "start_year": 1886,
       "end_year": 1928,
       "volume_count": 300,
@@ -4037,6 +4261,7 @@
     "fields": {
       "full_name": "South Western Reporter Second Series",
       "short_name": "S.W.2d",
+      "short_name_slug": "sw2d",
       "start_year": 1928,
       "end_year": 1999,
       "volume_count": 999,
@@ -4055,6 +4280,7 @@
     "fields": {
       "full_name": "South Western Reporter Third Series",
       "short_name": "S.W.3d",
+      "short_name_slug": "sw3d",
       "start_year": 2000,
       "end_year": 2014,
       "volume_count": 434,
@@ -4073,6 +4299,7 @@
     "fields": {
       "full_name": "Connecticut Reports",
       "short_name": "Root",
+      "short_name_slug": "root",
       "start_year": 1789,
       "end_year": 1798,
       "volume_count": 2,
@@ -4091,6 +4318,7 @@
     "fields": {
       "full_name": "Connecticut Reports",
       "short_name": "Kirby",
+      "short_name_slug": "kirby",
       "start_year": 1785,
       "end_year": 1789,
       "volume_count": 2,
@@ -4109,6 +4337,7 @@
     "fields": {
       "full_name": "Connecticut Circuit Court Reports",
       "short_name": "Conn. Cir. Ct.",
+      "short_name_slug": "conn-cir-ct",
       "start_year": 1961,
       "end_year": 1974,
       "volume_count": 6,
@@ -4127,6 +4356,7 @@
     "fields": {
       "full_name": "Reports of Decisions Made in the Superior Courts of the Eastern District of Georgia",
       "short_name": "Charlton",
+      "short_name_slug": "charlton",
       "start_year": 1811,
       "end_year": 1837,
       "volume_count": 1,
@@ -4145,6 +4375,7 @@
     "fields": {
       "full_name": "Georgia reports; justice's courts and miscellaneous cases, 1820 to 1846,  reported and edited by Joseph Gault. A verbatim reprint.",
       "short_name": "Gault",
+      "short_name_slug": "gault",
       "start_year": 1820,
       "end_year": 1846,
       "volume_count": 1,
@@ -4163,6 +4394,7 @@
     "fields": {
       "full_name": "Georgia Law Reporter",
       "short_name": "Ga. L. Rep.",
+      "short_name_slug": "ga-l-rep",
       "start_year": 1885,
       "end_year": 1886,
       "volume_count": 1,
@@ -4181,6 +4413,7 @@
     "fields": {
       "full_name": "Reports of the Decisions of the Supreme Court of Iowa",
       "short_name": "Bradf.",
+      "short_name_slug": "bradf",
       "start_year": 1838,
       "end_year": 1841,
       "volume_count": 2,
@@ -4199,6 +4432,7 @@
     "fields": {
       "full_name": "Reports of cases argued and Determined in the Supreme Court of Iowa",
       "short_name": "Morris",
+      "short_name_slug": "morris",
       "start_year": 1839,
       "end_year": 1846,
       "volume_count": 1,
@@ -4217,6 +4451,7 @@
     "fields": {
       "full_name": "Reports of Cases in Law and Equity, Determined in the Supreme Court of the State of Iowa",
       "short_name": "Greene",
+      "short_name_slug": "greene",
       "start_year": 1847,
       "end_year": 1854,
       "volume_count": 4,
@@ -4235,6 +4470,7 @@
     "fields": {
       "full_name": "Blackford",
       "short_name": "Blackf.",
+      "short_name_slug": "blackf",
       "start_year": 1817,
       "end_year": 1847,
       "volume_count": 8,
@@ -4253,6 +4489,7 @@
     "fields": {
       "full_name": "Smith",
       "short_name": "Smith",
+      "short_name_slug": "smith",
       "start_year": 1848,
       "end_year": 1849,
       "volume_count": 1,
@@ -4271,6 +4508,7 @@
     "fields": {
       "full_name": "Indiana Law Reporter",
       "short_name": "Ind. L. Rep.",
+      "short_name_slug": "ind-l-rep",
       "start_year": 1881,
       "end_year": 1881,
       "volume_count": 1,
@@ -4289,6 +4527,7 @@
     "fields": {
       "full_name": "Reports of Cases Argued and Determined in the Superior Court at Indianapolis",
       "short_name": "Wilson",
+      "short_name_slug": "wilson",
       "start_year": 1871,
       "end_year": 1874,
       "volume_count": 1,
@@ -4307,6 +4546,7 @@
     "fields": {
       "full_name": "Illinois Circuit Court Reports",
       "short_name": "Ill. Cir. Ct. Rep.",
+      "short_name_slug": "ill-cir-ct-rep",
       "start_year": 1907,
       "end_year": 1909,
       "volume_count": 3,
@@ -4325,6 +4565,7 @@
     "fields": {
       "full_name": "Pinney",
       "short_name": "Pin.",
+      "short_name_slug": "pin",
       "start_year": 1839,
       "end_year": 1852,
       "volume_count": 3,
@@ -4343,6 +4584,7 @@
     "fields": {
       "full_name": "Chandler",
       "short_name": "Chand.",
+      "short_name_slug": "chand",
       "start_year": 1849,
       "end_year": 1852,
       "volume_count": 2,
@@ -4361,6 +4603,7 @@
     "fields": {
       "full_name": "Burnett",
       "short_name": "Bur.",
+      "short_name_slug": "bur",
       "start_year": 1841,
       "end_year": 1843,
       "volume_count": 1,
@@ -4379,6 +4622,7 @@
     "fields": {
       "full_name": "Report of the Court of Claims",
       "short_name": "Ct. Cl.",
+      "short_name_slug": "ct-cl",
       "start_year": 1941,
       "end_year": 2011,
       "volume_count": 28,
@@ -4397,6 +4641,7 @@
     "fields": {
       "full_name": "Washington Territory Reports",
       "short_name": "Wash. Terr.",
+      "short_name_slug": "wash-terr",
       "start_year": 1854,
       "end_year": 1888,
       "volume_count": 3,
@@ -4415,6 +4660,7 @@
     "fields": {
       "full_name": "Reports of Criminal Trials in the Circuit, State and United States Courts, held in Richmond, Virginia",
       "short_name": "Howison",
+      "short_name_slug": "howison",
       "start_year": 1850,
       "end_year": 1851,
       "volume_count": 1,
@@ -4433,6 +4679,7 @@
     "fields": {
       "full_name": "Aikens",
       "short_name": "Aik.",
+      "short_name_slug": "aik",
       "start_year": 1825,
       "end_year": 1828,
       "volume_count": 2,
@@ -4451,6 +4698,7 @@
     "fields": {
       "full_name": "Chipman, D.",
       "short_name": "D. Chip.",
+      "short_name_slug": "d-chip",
       "start_year": 1789,
       "end_year": 1824,
       "volume_count": 2,
@@ -4469,6 +4717,7 @@
     "fields": {
       "full_name": "Brayton",
       "short_name": "Brayt.",
+      "short_name_slug": "brayt",
       "start_year": 1815,
       "end_year": 1819,
       "volume_count": 1,
@@ -4487,6 +4736,7 @@
     "fields": {
       "full_name": "Tyler",
       "short_name": "Tyl.",
+      "short_name_slug": "tyl",
       "start_year": 1800,
       "end_year": 1803,
       "volume_count": 2,
@@ -4505,6 +4755,7 @@
     "fields": {
       "full_name": "Chipman, N.",
       "short_name": "N. Chip.",
+      "short_name_slug": "n-chip",
       "start_year": 1789,
       "end_year": 1791,
       "volume_count": 1,
@@ -4523,6 +4774,7 @@
     "fields": {
       "full_name": "South Dakota Reports",
       "short_name": "S.D.",
+      "short_name_slug": "sd",
       "start_year": 1890,
       "end_year": 1976,
       "volume_count": 96,
@@ -4541,6 +4793,7 @@
     "fields": {
       "full_name": "Dakota Reports",
       "short_name": "Dakota",
+      "short_name_slug": "dakota",
       "start_year": 1867,
       "end_year": 1889,
       "volume_count": 6,
@@ -4559,6 +4812,7 @@
     "fields": {
       "full_name": "Cases Adjudged in the Supreme Court of New-Jersey Relative to the Manumission of Negroes and Others Holden in Bondage",
       "short_name": "N.J. (Manumission)",
+      "short_name_slug": "nj-manumission",
       "start_year": 1775,
       "end_year": 1793,
       "volume_count": 1,
@@ -4577,6 +4831,7 @@
     "fields": {
       "full_name": "The Burlington Court Book",
       "short_name": "N.J. (Burlington County Ct.)",
+      "short_name_slug": "nj-burlington-county-ct",
       "start_year": 1680,
       "end_year": 1709,
       "volume_count": 1,
@@ -4595,6 +4850,7 @@
     "fields": {
       "full_name": "Decisions of the Superior and Supreme Courts of New Hampshire, from 1802 to 1809, and from 1813 to 1816.",
       "short_name": "Smith",
+      "short_name_slug": "smith",
       "start_year": 1802,
       "end_year": 1816,
       "volume_count": 1,
@@ -4613,6 +4869,7 @@
     "fields": {
       "full_name": "Nebraska Court of Appeals Reports",
       "short_name": "Neb. App.",
+      "short_name_slug": "neb-app",
       "start_year": 1992,
       "end_year": 2005,
       "volume_count": 15,
@@ -4631,6 +4888,7 @@
     "fields": {
       "full_name": "Missouri Reports",
       "short_name": "Mo.",
+      "short_name_slug": "mo",
       "start_year": 1843,
       "end_year": 1891,
       "volume_count": 365,
@@ -4649,6 +4907,7 @@
     "fields": {
       "full_name": "Colorado Law Reporter",
       "short_name": "Colo. L. Rep.",
+      "short_name_slug": "colo-l-rep",
       "start_year": 1880,
       "end_year": 1884,
       "volume_count": 4,
@@ -4667,6 +4926,7 @@
     "fields": {
       "full_name": "Reports of Cases Argued and Determined in the United States Superior Court for the Territory of Arkansas, from 1820 to 1836",
       "short_name": "Ark. Terr. Rep.",
+      "short_name_slug": "ark-terr-rep",
       "start_year": 1820,
       "end_year": 1836,
       "volume_count": 1,
@@ -4685,6 +4945,7 @@
     "fields": {
       "full_name": "Reports of Cases Determined in the District Courts of the State of California",
       "short_name": "Cal. Dist. Ct.",
+      "short_name_slug": "cal-dist-ct",
       "start_year": 1857,
       "end_year": 1858,
       "volume_count": 2,
@@ -4703,6 +4964,7 @@
     "fields": {
       "full_name": "California Superior Court Decisions:  Notable Cases",
       "short_name": "Cal. Super. Ct.",
+      "short_name_slug": "cal-super-ct",
       "start_year": 1924,
       "end_year": 1929,
       "volume_count": 2,
@@ -4721,6 +4983,7 @@
     "fields": {
       "full_name": "Unwritten Decisions of the Supreme Court of California",
       "short_name": "Cal.",
+      "short_name_slug": "cal",
       "start_year": 0,
       "end_year": 0,
       "volume_count": 1,
@@ -4739,6 +5002,7 @@
     "fields": {
       "full_name": "Colorado Nisi Prius Decisions",
       "short_name": "Colo. N. P.",
+      "short_name_slug": "colo-n-p",
       "start_year": 1900,
       "end_year": 1902,
       "volume_count": 1,
@@ -4757,6 +5021,7 @@
     "fields": {
       "full_name": "Reports of Cases Adjudged in the Superior Court and Supreme Court of Errors",
       "short_name": "Conn. Super. Ct.",
+      "short_name_slug": "conn-super-ct",
       "start_year": 1789,
       "end_year": 1793,
       "volume_count": 2,
@@ -4775,6 +5040,7 @@
     "fields": {
       "full_name": "Reports of Cases Adjudged in the Superior Court",
       "short_name": "Conn. Super. Ct.",
+      "short_name_slug": "conn-super-ct",
       "start_year": 1785,
       "end_year": 1789,
       "volume_count": 1,
@@ -4793,6 +5059,7 @@
     "fields": {
       "full_name": "Reports of Cases Adjudged in the Court of Appeals of the District of Columbia",
       "short_name": "App. D.C.",
+      "short_name_slug": "app-dc",
       "start_year": 1893,
       "end_year": 1934,
       "volume_count": 408,
@@ -4811,6 +5078,7 @@
     "fields": {
       "full_name": "Reports of cases argued and adjudged in the Supreme Court of the District of Columbia (Tucker & Clephane)",
       "short_name": "D.C. (Tuck. & Cl.)",
+      "short_name_slug": "dc-tuck-cl",
       "start_year": 1892,
       "end_year": 1893,
       "volume_count": 1,
@@ -4829,6 +5097,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of the District of Columbia (Mackey)",
       "short_name": "D.C. (Mackey)",
+      "short_name_slug": "dc-mackey",
       "start_year": 1880,
       "end_year": 1892,
       "volume_count": 9,
@@ -4847,6 +5116,7 @@
     "fields": {
       "full_name": "Reports of cases argued and adjudged in the Supreme Court of the District of Columbia (MacArthur & Mackey)",
       "short_name": "D.C. (MacArth. & M.)",
+      "short_name_slug": "dc-macarth-m",
       "start_year": 1879,
       "end_year": 1880,
       "volume_count": 1,
@@ -4865,6 +5135,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of the District of Columbia (MacArthur)",
       "short_name": "D.C. (MacArth.)",
+      "short_name_slug": "dc-macarth",
       "start_year": 1873,
       "end_year": 1879,
       "volume_count": 3,
@@ -4883,6 +5154,7 @@
     "fields": {
       "full_name": "Reports of cases civil and criminal in the United States Circuit Court of the District of Columbia, from 1801 to 1841",
       "short_name": "D.C. Cir.",
+      "short_name_slug": "dc-cir",
       "start_year": 1840,
       "end_year": 1850,
       "volume_count": 2,
@@ -4901,6 +5173,7 @@
     "fields": {
       "full_name": "Reports of cases arising upon applications for letters-patent for inventions determined in the Circuit and Supreme Court of the District of Columbia (MacArthur's Patent Cases)",
       "short_name": "D.C. (patent)",
+      "short_name_slug": "dc-patent",
       "start_year": 1841,
       "end_year": 1859,
       "volume_count": 1,
@@ -4919,6 +5192,7 @@
     "fields": {
       "full_name": "Supreme Court of the District of Columbia Reports",
       "short_name": "S.C.D.C. (N.S.)",
+      "short_name_slug": "scdc-ns",
       "start_year": 1933,
       "end_year": 1936,
       "volume_count": 2,
@@ -4937,6 +5211,7 @@
     "fields": {
       "full_name": "Decisions of the Superior Courts of the state of Georgia",
       "short_name": "Ga. Super. Ct.",
+      "short_name_slug": "ga-super-ct",
       "start_year": 1842,
       "end_year": 1843,
       "volume_count": 1,
@@ -4955,6 +5230,7 @@
     "fields": {
       "full_name": "Reports of causes determined in the United States District Court for the District of Hawaii.",
       "short_name": "D. Haw.",
+      "short_name_slug": "d-haw",
       "start_year": 1900,
       "end_year": 1917,
       "volume_count": 4,
@@ -4973,6 +5249,7 @@
     "fields": {
       "full_name": "Reports of cases decided in the Court of Appeals of Indiana",
       "short_name": "Ind. App.",
+      "short_name_slug": "ind-app",
       "start_year": 1972,
       "end_year": 1979,
       "volume_count": 31,
@@ -4991,6 +5268,7 @@
     "fields": {
       "full_name": "Reports of cases determined in the Supreme court of the territory of Kansas (McCahon)",
       "short_name": "McCahon",
+      "short_name_slug": "mccahon",
       "start_year": 1858,
       "end_year": 1868,
       "volume_count": 1,
@@ -5009,6 +5287,7 @@
     "fields": {
       "full_name": "Reports of cases decided in the Courts of Appeals of the state of Kansas",
       "short_name": "Kan. App.",
+      "short_name_slug": "kan-app",
       "start_year": 1895,
       "end_year": 1901,
       "volume_count": 10,
@@ -5027,6 +5306,7 @@
     "fields": {
       "full_name": "Reports of selected civil and criminal cases decided in the Court of Appeals of Kentucky",
       "short_name": "Ky. (Met.)",
+      "short_name_slug": "ky-met",
       "start_year": 1858,
       "end_year": 1863,
       "volume_count": 4,
@@ -5045,6 +5325,7 @@
     "fields": {
       "full_name": "Reports of cases at common law and in equity, decided in the Court of Appeals of Kentucky",
       "short_name": "Ky. (B. Mon.)",
+      "short_name_slug": "ky-b-mon",
       "start_year": 1840,
       "end_year": 1857,
       "volume_count": 18,
@@ -5063,6 +5344,7 @@
     "fields": {
       "full_name": "Reports of select cases decided in the Court of Appeals of Kentucky during the year\u2026",
       "short_name": "Ky. (Dana)",
+      "short_name_slug": "ky-dana",
       "start_year": 1833,
       "end_year": 1840,
       "volume_count": 9,
@@ -5081,6 +5363,7 @@
     "fields": {
       "full_name": "Reports of cases at law and in equity, argued and decided in the Court of Appeals of the commonwealth of Kentucky",
       "short_name": "Ky. (J.J. Marsh.)",
+      "short_name_slug": "ky-jj-marsh",
       "start_year": 1829,
       "end_year": 1832,
       "volume_count": 7,
@@ -5099,6 +5382,7 @@
     "fields": {
       "full_name": "Reports of cases at common law and in equity : argued and decided in the Court of Appeals of the Commonwealth of Kentucky",
       "short_name": "Ky. (T.B. Mon.)",
+      "short_name_slug": "ky-tb-mon",
       "start_year": 1824,
       "end_year": 1828,
       "volume_count": 7,
@@ -5117,6 +5401,7 @@
     "fields": {
       "full_name": "Reports of cases at common law and in chancery, decided by the Court of Appeals of the commonwealth of Kentucky",
       "short_name": "Ky. (Litt.)",
+      "short_name_slug": "ky-litt",
       "start_year": 1822,
       "end_year": 1824,
       "volume_count": 5,
@@ -5135,6 +5420,7 @@
     "fields": {
       "full_name": "Cases selected from the decisions of the Court of Appeals of Kentucky, not heretofore reported",
       "short_name": "Ky. (Litt. Sel. Cas.)",
+      "short_name_slug": "ky-litt-sel-cas",
       "start_year": 1795,
       "end_year": 1821,
       "volume_count": 1,
@@ -5153,6 +5439,7 @@
     "fields": {
       "full_name": "Kentucky Court of Appeals (Marshall, A.K.)",
       "short_name": "Ky. (A.K. Marsh.)",
+      "short_name_slug": "ky-ak-marsh",
       "start_year": 1817,
       "end_year": 1821,
       "volume_count": 3,
@@ -5171,6 +5458,7 @@
     "fields": {
       "full_name": "Reports of cases at common law and in chancery, argued and decided in the Court of Appeals of the commonwealth of Kentucky",
       "short_name": "Ky. (Bibb)",
+      "short_name_slug": "ky-bibb",
       "start_year": 1808,
       "end_year": 1809,
       "volume_count": 1,
@@ -5189,6 +5477,7 @@
     "fields": {
       "full_name": "Reports of selected civil and criminal cases decided in the Court of Appeals of Kentucky",
       "short_name": "Ky. (Duv.)",
+      "short_name_slug": "ky-duv",
       "start_year": 1863,
       "end_year": 1866,
       "volume_count": 2,
@@ -5207,6 +5496,7 @@
     "fields": {
       "full_name": "Decisions of the Court of Appeals of the state of Kentucky, from March 1st, 1801, to January 18,1805, inclusive",
       "short_name": "Ky. (Sneed)",
+      "short_name_slug": "ky-sneed",
       "start_year": 1801,
       "end_year": 1805,
       "volume_count": 1,
@@ -5225,6 +5515,7 @@
     "fields": {
       "full_name": "A report of the causes determined by the late Supreme court for the district of Kentucky, and by the Court for appeals, in which titles to land were in dispute",
       "short_name": "Ky. (Hughes)",
+      "short_name_slug": "ky-hughes",
       "start_year": 1785,
       "end_year": 1801,
       "volume_count": 1,
@@ -5243,6 +5534,7 @@
     "fields": {
       "full_name": "Kentucky Opinions, containing the unreported opinions of the Court of Appeals",
       "short_name": "Ky. Op.",
+      "short_name_slug": "ky-op",
       "start_year": 1864,
       "end_year": 1886,
       "volume_count": 13,
@@ -5261,6 +5553,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the various Courts of Appeal of the state of Louisiana (McGloin)",
       "short_name": "McGl.",
+      "short_name_slug": "mcgl",
       "start_year": 1881,
       "end_year": 1884,
       "volume_count": 2,
@@ -5279,6 +5572,7 @@
     "fields": {
       "full_name": "Teissier's digest of the unreported decisions of the Court of appeal, Orleans Parish, from October 15th, 1917, to July 31st, 1922",
       "short_name": "La. App. (Teiss.)",
+      "short_name_slug": "la-app-teiss",
       "start_year": 1917,
       "end_year": 1922,
       "volume_count": 1,
@@ -5297,6 +5591,7 @@
     "fields": {
       "full_name": "Peltier's decisions, Court of Appeal, Parish of Orleans (Peltier)",
       "short_name": "Pelt.",
+      "short_name_slug": "pelt",
       "start_year": 1917,
       "end_year": 1923,
       "volume_count": 7,
@@ -5315,6 +5610,7 @@
     "fields": {
       "full_name": "Decisions, Court of Appeal, parish of Orleans (Teissier)",
       "short_name": "Teiss.",
+      "short_name_slug": "teiss",
       "start_year": 1903,
       "end_year": 1917,
       "volume_count": 14,
@@ -5333,6 +5629,7 @@
     "fields": {
       "full_name": "Legal points decided by the Second circuit court of Louisiana (Gunby's Reports)",
       "short_name": "Gunby",
+      "short_name_slug": "gunby",
       "start_year": 1885,
       "end_year": 1885,
       "volume_count": 1,
@@ -5351,6 +5648,7 @@
     "fields": {
       "full_name": "Unreported cases heard and determined by the Supreme Court of Louisiana, from January 8, 1877, to April, 1880",
       "short_name": "Mann. Unrep. Cas.",
+      "short_name_slug": "mann-unrep-cas",
       "start_year": 1877,
       "end_year": 1880,
       "volume_count": 1,
@@ -5369,6 +5667,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Court of Appeals of Maryland",
       "short_name": "Gill",
+      "short_name_slug": "gill",
       "start_year": 1843,
       "end_year": 1851,
       "volume_count": 9,
@@ -5387,6 +5686,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Court of Appeals of Maryland",
       "short_name": "G. & J.",
+      "short_name_slug": "g-j",
       "start_year": 1829,
       "end_year": 1841,
       "volume_count": 12,
@@ -5405,6 +5705,7 @@
     "fields": {
       "full_name": "Harris and Gill",
       "short_name": "H. & G.",
+      "short_name_slug": "h-g",
       "start_year": 1826,
       "end_year": 1829,
       "volume_count": 2,
@@ -5423,6 +5724,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the General Court and Court of Appeals of the State of Maryland, form 1800 ... [to 1826]",
       "short_name": "H. & J.",
+      "short_name_slug": "h-j",
       "start_year": 1800,
       "end_year": 1826,
       "volume_count": 7,
@@ -5441,6 +5743,7 @@
     "fields": {
       "full_name": "Maryland reports, being a series of the most important law cases argued and determined in the Provincial Court and Court of Appeals of the then province of Maryland, from the year 1700 [i.e. 1658] down to the [end of 1799]",
       "short_name": "H. & McH.",
+      "short_name_slug": "h-mch",
       "start_year": 1770,
       "end_year": 1799,
       "volume_count": 4,
@@ -5459,6 +5762,7 @@
     "fields": {
       "full_name": "Reports of cases decided in the High Court of Chancery of Maryland : containing cases from the year 1847 to [1854]",
       "short_name": "Md. Ch.",
+      "short_name_slug": "md-ch",
       "start_year": 1851,
       "end_year": 1854,
       "volume_count": 4,
@@ -5477,6 +5781,7 @@
     "fields": {
       "full_name": "Reports of cases decided in the High court of chancery of Maryland. [1811-1832]",
       "short_name": "Md. Ch.",
+      "short_name_slug": "md-ch",
       "start_year": 1811,
       "end_year": 1832,
       "volume_count": 3,
@@ -5495,6 +5800,7 @@
     "fields": {
       "full_name": "Baltimore city reports, comprising opinions of the various courts of Baltimore city since 1888...",
       "short_name": "Balt. C. Rep.",
+      "short_name_slug": "balt-c-rep",
       "start_year": 1888,
       "end_year": 1928,
       "volume_count": 4,
@@ -5513,6 +5819,7 @@
     "fields": {
       "full_name": "Reports of cases argued and adjudged in the Superior Court of Judicature of the Province of Massachusetts Bay, between 1761 and 1772",
       "short_name": "Super. Ct. Jud.",
+      "short_name_slug": "super-ct-jud",
       "start_year": 1761,
       "end_year": 1772,
       "volume_count": 1,
@@ -5531,6 +5838,7 @@
     "fields": {
       "full_name": "Records of the Court of assistants of the colony of the Massachusetts bay, 1630-1692",
       "short_name": "Rec. Ct. Assistants",
+      "short_name_slug": "rec-ct-assistants",
       "start_year": 1630,
       "end_year": 1692,
       "volume_count": 3,
@@ -5549,6 +5857,7 @@
     "fields": {
       "full_name": "Reports of controverted elections in the House of representatives, of the commonwealth of Massachusetts...",
       "short_name": "Rep. Cont. El.",
+      "short_name_slug": "rep-cont-el",
       "start_year": 1780,
       "end_year": 1852,
       "volume_count": 1,
@@ -5567,6 +5876,7 @@
     "fields": {
       "full_name": "Reports of contested election cases in the Senate and House of Representatives of the commonwealth of Massachusetts for the year 1886-1897",
       "short_name": "Rep. Cont. Elect. Case.",
+      "short_name_slug": "rep-cont-elect-case",
       "start_year": 1886,
       "end_year": 1897,
       "volume_count": 1,
@@ -5585,6 +5895,7 @@
     "fields": {
       "full_name": "Records of the Court of General Sessions of the Peace for the County of Worcester, Massachusetts, from 1731 to 1737",
       "short_name": "Rec. Ct. Gen. Sess.",
+      "short_name_slug": "rec-ct-gen-sess",
       "start_year": 1731,
       "end_year": 1737,
       "volume_count": 1,
@@ -5603,6 +5914,7 @@
     "fields": {
       "full_name": "Records and files of the Quarterly Courts of Essex County, Massachusetts",
       "short_name": "Rec. Q. Ct.",
+      "short_name_slug": "rec-q-ct",
       "start_year": 1911,
       "end_year": 1975,
       "volume_count": 9,
@@ -5621,6 +5933,7 @@
     "fields": {
       "full_name": "Records of the Suffolk county court, 1671-1680",
       "short_name": "Rec. Co. Ct.",
+      "short_name_slug": "rec-co-ct",
       "start_year": 1671,
       "end_year": 1680,
       "volume_count": 2,
@@ -5639,6 +5952,7 @@
     "fields": {
       "full_name": "Massachusetts Land Court decisions, 1898-1908",
       "short_name": "Davis L. Ct. Cas.",
+      "short_name_slug": "davis-l-ct-cas",
       "start_year": 1898,
       "end_year": 1908,
       "volume_count": 1,
@@ -5657,6 +5971,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of the state of Michigan",
       "short_name": "Doug.",
+      "short_name_slug": "doug",
       "start_year": 1843,
       "end_year": 1847,
       "volume_count": 2,
@@ -5675,6 +5990,7 @@
     "fields": {
       "full_name": "Unreported opinions of the Supreme court of Michigan, 1836-1843, edited by William Wirt Blume",
       "short_name": "Blume Unrep. Op.",
+      "short_name_slug": "blume-unrep-op",
       "start_year": 1836,
       "end_year": 1843,
       "volume_count": 1,
@@ -5693,6 +6009,7 @@
     "fields": {
       "full_name": "Transactions of the Supreme Court of the territory of Michigan",
       "short_name": "Blume Sup. Ct. Trans.",
+      "short_name_slug": "blume-sup-ct-trans",
       "start_year": 1805,
       "end_year": 1836,
       "volume_count": 6,
@@ -5711,6 +6028,7 @@
     "fields": {
       "full_name": "Michigan appeals reports; cases decided in the Michigan Court of Appeals.",
       "short_name": "Mich. App. ",
+      "short_name_slug": "mich-app",
       "start_year": 1965,
       "end_year": 2016,
       "volume_count": 310,
@@ -5729,6 +6047,7 @@
     "fields": {
       "full_name": "Report of the Court of Claims",
       "short_name": "Mich. Ct. Cl.",
+      "short_name_slug": "mich-ct-cl",
       "start_year": 1939,
       "end_year": 1942,
       "volume_count": 10,
@@ -5747,6 +6066,7 @@
     "fields": {
       "full_name": "Practice reports. Cases decided in the Supreme court of Michigan in 1896, in which written opinions were not filed.",
       "short_name": "Mich. Pr.",
+      "short_name_slug": "mich-pr",
       "start_year": 1896,
       "end_year": 1896,
       "volume_count": 1,
@@ -5765,6 +6085,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Court of Appeals of the State of New York",
       "short_name": "N.Y.",
+      "short_name_slug": "ny",
       "start_year": 1871,
       "end_year": 1871,
       "volume_count": 1,
@@ -5783,6 +6104,7 @@
     "fields": {
       "full_name": "Reports of cases at law and in chancery, decided by the Supreme court of Ohio, during the years 1831, 1832, 1833, 1834.",
       "short_name": "Wright",
+      "short_name_slug": "wright",
       "start_year": 1831,
       "end_year": 1834,
       "volume_count": 1,
@@ -5801,6 +6123,7 @@
     "fields": {
       "full_name": "American Samoa Reports 2d",
       "short_name": "Am. Samoa 2d",
+      "short_name_slug": "am-samoa-2d",
       "start_year": 1983,
       "end_year": 1997,
       "volume_count": 31,
@@ -5819,6 +6142,7 @@
     "fields": {
       "full_name": "American Samoa Reports 3d",
       "short_name": "Am. Samoa 3d",
+      "short_name_slug": "am-samoa-3d",
       "start_year": 1997,
       "end_year": 2014,
       "volume_count": 10,
@@ -5837,6 +6161,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of the District of Columbia (District of Columbia - reported by Mackey)",
       "short_name": "D.C.",
+      "short_name_slug": "dc",
       "start_year": 1863,
       "end_year": 1872,
       "volume_count": 2,
@@ -5855,6 +6180,7 @@
     "fields": {
       "full_name": "Reports of cases civil and criminal in the United States Circuit Court of the District of Columbia, from 1801 to 1841 (Cranch)",
       "short_name": "D.C. (Cranch)",
+      "short_name_slug": "dc-cranch",
       "start_year": 1801,
       "end_year": 1840,
       "volume_count": 5,
@@ -5873,6 +6199,7 @@
     "fields": {
       "full_name": "Reports of cases argued and adjudged in the Court of Appeals of Kentucky",
       "short_name": "Ky. (Hard.)",
+      "short_name_slug": "ky-hard",
       "start_year": 1805,
       "end_year": 1808,
       "volume_count": 1,
@@ -5891,6 +6218,7 @@
     "fields": {
       "full_name": "Massachusetts Land Court Decisions (Davis)",
       "short_name": "Davis L. Ct. Cas.",
+      "short_name_slug": "davis-l-ct-cas",
       "start_year": 1898,
       "end_year": 1908,
       "volume_count": 1,
@@ -5909,6 +6237,7 @@
     "fields": {
       "full_name": "Mandamus cases decided in the Supreme court of Michigan",
       "short_name": "McGrath",
+      "short_name_slug": "mcgrath",
       "start_year": 1891,
       "end_year": 1897,
       "volume_count": 1,
@@ -5927,6 +6256,7 @@
     "fields": {
       "full_name": "Michigan nisi prius cases, decided by the state and federal courts in Michigan",
       "short_name": "Howell N.P.",
+      "short_name_slug": "howell-np",
       "start_year": 1868,
       "end_year": 1884,
       "volume_count": 1,
@@ -5945,6 +6275,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the court of chancery of the state of michigan",
       "short_name": "Walk. Ch.",
+      "short_name_slug": "walk-ch",
       "start_year": 1842,
       "end_year": 1845,
       "volume_count": 1,
@@ -5963,6 +6294,7 @@
     "fields": {
       "full_name": "The Michigan Nisi Prius Reports",
       "short_name": "Mich. N.P. R.",
+      "short_name_slug": "mich-np-r",
       "start_year": 1870,
       "end_year": 1871,
       "volume_count": 2,
@@ -5981,6 +6313,7 @@
     "fields": {
       "full_name": "Reports of Cases Determined in the Court of Chancery of the State of Michigan",
       "short_name": "Harr. Ch.",
+      "short_name_slug": "harr-ch",
       "start_year": 1838,
       "end_year": 1842,
       "volume_count": 1,
@@ -5999,6 +6332,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the superior court of chancery of the state of mississippi",
       "short_name": "Miss. (S. & M. Ch.)",
+      "short_name_slug": "miss-s-m-ch",
       "start_year": 1840,
       "end_year": 1843,
       "volume_count": 1,
@@ -6017,6 +6351,7 @@
     "fields": {
       "full_name": "Reports of cases decided in the Superior Court of Chancery of the state of Mississippi",
       "short_name": "Freem. Ch.",
+      "short_name_slug": "freem-ch",
       "start_year": 1839,
       "end_year": 1843,
       "volume_count": 1,
@@ -6035,6 +6370,7 @@
     "fields": {
       "full_name": "Mississippi State Cases; being criminal cases decided in the High court of errors and appeals",
       "short_name": "Mor. St. Cas.",
+      "short_name_slug": "mor-st-cas",
       "start_year": 1818,
       "end_year": 1872,
       "volume_count": 2,
@@ -6053,6 +6389,7 @@
     "fields": {
       "full_name": "Mississippi Decisions: containing the unreported opinions of the Supreme Court of Mississippi",
       "short_name": "Miss. Dec.",
+      "short_name_slug": "miss-dec",
       "start_year": 1820,
       "end_year": 1885,
       "volume_count": 2,
@@ -6071,6 +6408,7 @@
     "fields": {
       "full_name": "Mississippi Court Records from the files of the High Court of Errors and Appeals, 1799-1859",
       "short_name": "Miss. Ct. Rec.",
+      "short_name_slug": "miss-ct-rec",
       "start_year": 1799,
       "end_year": 1859,
       "volume_count": 1,
@@ -6089,6 +6427,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Haywood)",
       "short_name": "N.C. (Hayw.)",
+      "short_name_slug": "nc-hayw",
       "start_year": 1789,
       "end_year": 1806,
       "volume_count": 2,
@@ -6107,6 +6446,7 @@
     "fields": {
       "full_name": "Journal of the Courts of Common Rights and Chancery of East New Jersey",
       "short_name": "Edsall",
+      "short_name_slug": "edsall",
       "start_year": 1683,
       "end_year": 1702,
       "volume_count": 1,
@@ -6125,6 +6465,7 @@
     "fields": {
       "full_name": "The Minutes of the Court of Sessions, Westchester County, New York",
       "short_name": "Westchester",
+      "short_name_slug": "westchester",
       "start_year": 1657,
       "end_year": 1696,
       "volume_count": 1,
@@ -6143,6 +6484,7 @@
     "fields": {
       "full_name": "Anderson's Unreported Ohio Appellate Cases:  cases argued and determined in the Ohio courts of appeal",
       "short_name": "Ohio App. Unrep.",
+      "short_name_slug": "ohio-app-unrep",
       "start_year": 1990,
       "end_year": 2014,
       "volume_count": 8,
@@ -6161,6 +6503,7 @@
     "fields": {
       "full_name": "Cases decided in the Courts of common pleas, in the Fifth circuit of the state of Ohio [1816-1819] (Tappan)",
       "short_name": "Tapp. Rep.",
+      "short_name_slug": "tapp-rep",
       "start_year": 1816,
       "end_year": 1819,
       "volume_count": 1,
@@ -6179,6 +6522,7 @@
     "fields": {
       "full_name": "Cincinnati Superior Court Decisions (Hosea)",
       "short_name": "Hosea's Rep.",
+      "short_name_slug": "hoseas-rep",
       "start_year": 1907,
       "end_year": 1907,
       "volume_count": 1,
@@ -6197,6 +6541,7 @@
     "fields": {
       "full_name": "Ohio Circuit Court Reports (new series)",
       "short_name": "Ohio C.C. (N.S.)",
+      "short_name_slug": "ohio-cc-ns",
       "start_year": 1904,
       "end_year": 1922,
       "volume_count": 32,
@@ -6215,6 +6560,7 @@
     "fields": {
       "full_name": "Ohio nisi prius and general term reports",
       "short_name": "Ohio Nisi Prius",
+      "short_name_slug": "ohio-nisi-prius",
       "start_year": 1894,
       "end_year": 1901,
       "volume_count": 8,
@@ -6233,6 +6579,7 @@
     "fields": {
       "full_name": "Ohio nisi prius and general term reports (new series)",
       "short_name": "Ohio Nisi Prius (N.S.)",
+      "short_name_slug": "ohio-nisi-prius-ns",
       "start_year": 1904,
       "end_year": 1934,
       "volume_count": 32,
@@ -6251,6 +6598,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Superior Court of Cincinnati at special and general terms (Disney)",
       "short_name": "Disney (Ohio)",
+      "short_name_slug": "disney-ohio",
       "start_year": 1867,
       "end_year": 1871,
       "volume_count": 2,
@@ -6269,6 +6617,7 @@
     "fields": {
       "full_name": "Reports of cases argued and adjudged in the Superior Court of Cincinnati",
       "short_name": "Handy",
+      "short_name_slug": "handy",
       "start_year": 1854,
       "end_year": 1855,
       "volume_count": 1,
@@ -6287,6 +6636,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the circuit courts of Ohio",
       "short_name": "Jahn",
+      "short_name_slug": "jahn",
       "start_year": 1885,
       "end_year": 1901,
       "volume_count": 22,
@@ -6305,6 +6655,7 @@
     "fields": {
       "full_name": "Cases decided in the supreme court of ohio : upon the circuit at the special sessions in Columbus",
       "short_name": "Ohio",
+      "short_name_slug": "ohio",
       "start_year": 1821,
       "end_year": 1851,
       "volume_count": 9,
@@ -6323,6 +6674,7 @@
     "fields": {
       "full_name": "Reports of cases at law and in chancery Ohio",
       "short_name": "Ohio Ch.",
+      "short_name_slug": "ohio-ch",
       "start_year": 1831,
       "end_year": 1834,
       "volume_count": 1,
@@ -6341,6 +6693,7 @@
     "fields": {
       "full_name": "Reports of select cases argued and determined in the Probate court of Hamilton county, Ohio",
       "short_name": "Goebel",
+      "short_name_slug": "goebel",
       "start_year": 1885,
       "end_year": 1890,
       "volume_count": 1,
@@ -6359,6 +6712,7 @@
     "fields": {
       "full_name": "The Cincinnati Superior court reporter",
       "short_name": "Cin. Sup. Ct. Rep.",
+      "short_name_slug": "cin-sup-ct-rep",
       "start_year": 1870,
       "end_year": 1873,
       "volume_count": 2,
@@ -6377,6 +6731,7 @@
     "fields": {
       "full_name": "Decisiones del Tribunal de Circuito de Apelaciones de Puerto Rico",
       "short_name": "T.C.A.",
+      "short_name_slug": "tca",
       "start_year": 1995,
       "end_year": 0,
       "volume_count": 17,
@@ -6395,6 +6750,7 @@
     "fields": {
       "full_name": "Fallos y sentencias del Tribunal Supremo de Puerto Rico",
       "short_name": "P.R. Sent.",
+      "short_name_slug": "pr-sent",
       "start_year": 1899,
       "end_year": 1902,
       "volume_count": 2,
@@ -6413,6 +6769,7 @@
     "fields": {
       "full_name": "Blair County Law Reporter 2d",
       "short_name": "Blair Co. L.R. 2d",
+      "short_name_slug": "blair-co-lr-2d",
       "start_year": 1940,
       "end_year": 1947,
       "volume_count": 2,
@@ -6431,6 +6788,7 @@
     "fields": {
       "full_name": "Cadwalader's cases, being decisions of the Hon. John Cadwalader",
       "short_name": "E.D. Pa.",
+      "short_name_slug": "ed-pa",
       "start_year": 1858,
       "end_year": 1879,
       "volume_count": 2,
@@ -6449,6 +6807,7 @@
     "fields": {
       "full_name": "Cambria County Law Journal Reports",
       "short_name": "Cambria Co. L.J.",
+      "short_name_slug": "cambria-co-lj",
       "start_year": 1917,
       "end_year": 1928,
       "volume_count": 1,
@@ -6467,6 +6826,7 @@
     "fields": {
       "full_name": "Cases in the Supreme Court of Pennsylvania; being those cases not designated to be reported",
       "short_name": "Monaghan",
+      "short_name_slug": "monaghan",
       "start_year": 1888,
       "end_year": 1891,
       "volume_count": 2,
@@ -6485,6 +6845,7 @@
     "fields": {
       "full_name": "Centre County Legal Journal",
       "short_name": "C.C.L.J.",
+      "short_name_slug": "cclj",
       "start_year": 1960,
       "end_year": 1999,
       "volume_count": 33,
@@ -6503,6 +6864,7 @@
     "fields": {
       "full_name": "Centre County Legal Journal 2d",
       "short_name": "C.C.L.J. 2d",
+      "short_name_slug": "cclj-2d",
       "start_year": 1999,
       "end_year": 2010,
       "volume_count": 101,
@@ -6521,6 +6883,7 @@
     "fields": {
       "full_name": "Cases decided in the District and Circuit court of the United States for the Pennsylvania District",
       "short_name": "D. Pa.",
+      "short_name_slug": "d-pa",
       "start_year": 1813,
       "end_year": 1813,
       "volume_count": 1,
@@ -6539,6 +6902,7 @@
     "fields": {
       "full_name": "Pennsylvania District and County Reports",
       "short_name": "Pa. D. & C. 5th",
+      "short_name_slug": "pa-d-c-5th",
       "start_year": 2007,
       "end_year": 2014,
       "volume_count": 30,
@@ -6557,6 +6921,7 @@
     "fields": {
       "full_name": "A Franklin County Legal Journal",
       "short_name": "Franklin Co. Legal J.",
+      "short_name_slug": "franklin-co-legal-j",
       "start_year": 1977,
       "end_year": 2000,
       "volume_count": 17,
@@ -6575,6 +6940,7 @@
     "fields": {
       "full_name": "Adams County Legal Journal",
       "short_name": "Adams Co. L.J.",
+      "short_name_slug": "adams-co-lj",
       "start_year": 1959,
       "end_year": 2010,
       "volume_count": 51,
@@ -6593,6 +6959,7 @@
     "fields": {
       "full_name": "Berk's County Law Journal",
       "short_name": "Berk's Co. L.J..",
+      "short_name_slug": "berks-co-lj",
       "start_year": 1908,
       "end_year": 1990,
       "volume_count": 82,
@@ -6611,6 +6978,7 @@
     "fields": {
       "full_name": "Blair County Law Reporter",
       "short_name": "Blair Co. L.R.",
+      "short_name_slug": "blair-co-lr",
       "start_year": 1898,
       "end_year": 1903,
       "volume_count": 2,
@@ -6629,6 +6997,7 @@
     "fields": {
       "full_name": "Bradford County Law Journal",
       "short_name": "Bradford Co. L.J.",
+      "short_name_slug": "bradford-co-lj",
       "start_year": 1992,
       "end_year": 2014,
       "volume_count": 5,
@@ -6647,6 +7016,7 @@
     "fields": {
       "full_name": "Bucks County Law Reporter",
       "short_name": "Bucks Co. L.R.",
+      "short_name_slug": "bucks-co-lr",
       "start_year": 1951,
       "end_year": 2014,
       "volume_count": 84,
@@ -6665,6 +7035,7 @@
     "fields": {
       "full_name": "Butler County Legal Journal",
       "short_name": "Butler Co. Legal J.",
+      "short_name_slug": "butler-co-legal-j",
       "start_year": 1959,
       "end_year": 2014,
       "volume_count": 19,
@@ -6683,6 +7054,7 @@
     "fields": {
       "full_name": "Cambria County Reports",
       "short_name": "Cambria Co. Rep.",
+      "short_name_slug": "cambria-co-rep",
       "start_year": 1929,
       "end_year": 1986,
       "volume_count": 31,
@@ -6701,6 +7073,7 @@
     "fields": {
       "full_name": "Cases in the Supreme Court of Pennsylvania; being those cases not designated to be reported\u00c9",
       "short_name": "Sadler",
+      "short_name_slug": "sadler",
       "start_year": 1885,
       "end_year": 1889,
       "volume_count": 10,
@@ -6719,6 +7092,7 @@
     "fields": {
       "full_name": "Chester County Reports",
       "short_name": "Ches. Co. Rep.",
+      "short_name_slug": "ches-co-rep",
       "start_year": 1879,
       "end_year": 2005,
       "volume_count": 53,
@@ -6737,6 +7111,7 @@
     "fields": {
       "full_name": "Chrostwaite's Pennsylvania Municipal Law Reporter",
       "short_name": "Mun.  L. Rep.",
+      "short_name_slug": "mun-l-rep",
       "start_year": 1890,
       "end_year": 1979,
       "volume_count": 70,
@@ -6755,6 +7130,7 @@
     "fields": {
       "full_name": "Crawford County Legal Journal",
       "short_name": "Craw. Co. Leg. J.",
+      "short_name_slug": "craw-co-leg-j",
       "start_year": 1957,
       "end_year": 2010,
       "volume_count": 28,
@@ -6773,6 +7149,7 @@
     "fields": {
       "full_name": "Cumberland Law Journal",
       "short_name": "Cumberland L.J.",
+      "short_name_slug": "cumberland-lj",
       "start_year": 1950,
       "end_year": 2009,
       "volume_count": 58,
@@ -6791,6 +7168,7 @@
     "fields": {
       "full_name": "Decisions of the Honorable John J. Pearson, judge of the twelvth judicial district",
       "short_name": "Pears.",
+      "short_name_slug": "pears",
       "start_year": 1850,
       "end_year": 1880,
       "volume_count": 2,
@@ -6809,6 +7187,7 @@
     "fields": {
       "full_name": "Delaware County Reports",
       "short_name": "Del. Co. Reps.",
+      "short_name_slug": "del-co-reps",
       "start_year": 1883,
       "end_year": 2003,
       "volume_count": 81,
@@ -6827,6 +7206,7 @@
     "fields": {
       "full_name": "Erie County Legal Journal",
       "short_name": "Erie. Co. L.J.",
+      "short_name_slug": "erie-co-lj",
       "start_year": 1945,
       "end_year": 2008,
       "volume_count": 38,
@@ -6845,6 +7225,7 @@
     "fields": {
       "full_name": "Fayette Legal Journal",
       "short_name": "Fay. L.J.",
+      "short_name_slug": "fay-lj",
       "start_year": 1938,
       "end_year": 2011,
       "volume_count": 74,
@@ -6863,6 +7244,7 @@
     "fields": {
       "full_name": "Hazard's Register of Pennsylvania",
       "short_name": "Haz. Pa. Reg.",
+      "short_name_slug": "haz-pa-reg",
       "start_year": 1828,
       "end_year": 1935,
       "volume_count": 16,
@@ -6881,6 +7263,7 @@
     "fields": {
       "full_name": "Judgements in the Admiralty of Pennsylvania in four suits, brought as for maritime hypothecations",
       "short_name": "Pa. (Admiralty)",
+      "short_name_slug": "pa-admiralty",
       "start_year": 1789,
       "end_year": 1789,
       "volume_count": 1,
@@ -6899,6 +7282,7 @@
     "fields": {
       "full_name": "Lackawanna Jurist",
       "short_name": "Lack. Jur.",
+      "short_name_slug": "lack-jur",
       "start_year": 1888,
       "end_year": 2014,
       "volume_count": 107,
@@ -6917,6 +7301,7 @@
     "fields": {
       "full_name": "Lackawanna Legal News",
       "short_name": "Lack. L. N.",
+      "short_name_slug": "lack-l-n",
       "start_year": 1895,
       "end_year": 1903,
       "volume_count": 8,
@@ -6935,6 +7320,7 @@
     "fields": {
       "full_name": "Lancaster Law Review",
       "short_name": "Lanc. L. Rev.",
+      "short_name_slug": "lanc-l-rev",
       "start_year": 1883,
       "end_year": 1993,
       "volume_count": 73,
@@ -6953,6 +7339,7 @@
     "fields": {
       "full_name": "Lebanon County Legal Journal",
       "short_name": "Lebanon Co. L.J.",
+      "short_name_slug": "lebanon-co-lj",
       "start_year": 1946,
       "end_year": 2008,
       "volume_count": 42,
@@ -6971,6 +7358,7 @@
     "fields": {
       "full_name": "Legal gazette reports of cases decided in the United States Circuit Court (Campbell)",
       "short_name": "Pa. Leg. Gaz.",
+      "short_name_slug": "pa-leg-gaz",
       "start_year": 1869,
       "end_year": 1872,
       "volume_count": 1,
@@ -6989,6 +7377,7 @@
     "fields": {
       "full_name": "Legal Gazette (Philadelphia, Pa.)",
       "short_name": "Leg. Gaz.",
+      "short_name_slug": "leg-gaz",
       "start_year": 1869,
       "end_year": 1876,
       "volume_count": 8,
@@ -7007,6 +7396,7 @@
     "fields": {
       "full_name": "Magistrate and Constable",
       "short_name": "Magis. & Const.",
+      "short_name_slug": "magis-const",
       "start_year": 1895,
       "end_year": 1895,
       "volume_count": 1,
@@ -7025,6 +7415,7 @@
     "fields": {
       "full_name": "Pennsylvania County Court Reports",
       "short_name": "Pa. Co. Ct.",
+      "short_name_slug": "pa-co-ct",
       "start_year": 1886,
       "end_year": 1921,
       "volume_count": 50,
@@ -7043,6 +7434,7 @@
     "fields": {
       "full_name": "The district reports of cases decided in all the judicial districts of the State of Pennsylvania",
       "short_name": "Pa. Dist.",
+      "short_name_slug": "pa-dist",
       "start_year": 1892,
       "end_year": 1921,
       "volume_count": 30,
@@ -7061,6 +7453,7 @@
     "fields": {
       "full_name": "Pennsylvania Fiduciary Reporter",
       "short_name": "Pa. Fid.",
+      "short_name_slug": "pa-fid",
       "start_year": 1951,
       "end_year": 1980,
       "volume_count": 30,
@@ -7079,6 +7472,7 @@
     "fields": {
       "full_name": "Pennsylvania Fiduciary Reporter 3d",
       "short_name": "Pa. Fid. 3d",
+      "short_name_slug": "pa-fid-3d",
       "start_year": 2011,
       "end_year": 2012,
       "volume_count": 1,
@@ -7097,6 +7491,7 @@
     "fields": {
       "full_name": "Pennsylvania Justices' Law Reporter",
       "short_name": "Pa. Just. L. Rep.",
+      "short_name_slug": "pa-just-l-rep",
       "start_year": 1902,
       "end_year": 1918,
       "volume_count": 16,
@@ -7115,6 +7510,7 @@
     "fields": {
       "full_name": "Pennsylvania Law Journal Reports",
       "short_name": "Pa. L.J. Rep.",
+      "short_name_slug": "pa-lj-rep",
       "start_year": 1842,
       "end_year": 1852,
       "volume_count": 5,
@@ -7133,6 +7529,7 @@
     "fields": {
       "full_name": "Pennnsylvania Law Record",
       "short_name": "Pa. L. Rec.",
+      "short_name_slug": "pa-l-rec",
       "start_year": 1879,
       "end_year": 1880,
       "volume_count": 3,
@@ -7151,6 +7548,7 @@
     "fields": {
       "full_name": "Pennsylvania Supreme Court Reports (Pennypacker)",
       "short_name": "Pennyp.",
+      "short_name_slug": "pennyp",
       "start_year": 1881,
       "end_year": 1884,
       "volume_count": 4,
@@ -7169,6 +7567,7 @@
     "fields": {
       "full_name": "Probate cases; being cases heard and decided by the register of wills for the county of Philadelphia (Singer)",
       "short_name": "Singer Prob. Cas.",
+      "short_name_slug": "singer-prob-cas",
       "start_year": 1901,
       "end_year": 1904,
       "volume_count": 1,
@@ -7187,6 +7586,7 @@
     "fields": {
       "full_name": "Records of the Courts of Chester County, Pennsylvania",
       "short_name": "Rec. Ct. Ches. Co. Pa.",
+      "short_name_slug": "rec-ct-ches-co-pa",
       "start_year": 1681,
       "end_year": 1710,
       "volume_count": 2,
@@ -7205,6 +7605,7 @@
     "fields": {
       "full_name": "Records of the Court of Quarter sessions and Common Pleas of Bucks County, Pennsylvania, 1684-1700",
       "short_name": "Rec. Bucks. Co. (Pa.)",
+      "short_name_slug": "rec-bucks-co-pa",
       "start_year": 1684,
       "end_year": 1700,
       "volume_count": 1,
@@ -7223,6 +7624,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Court of Common Pleas of the first judicial district of Pennsylvania (Browne)",
       "short_name": "Bro. Com. P.",
+      "short_name_slug": "bro-com-p",
       "start_year": 1811,
       "end_year": 1813,
       "volume_count": 2,
@@ -7241,6 +7643,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Courts of Common Please, Quarter Sessions, Oyer and Terminer (Ashmead)",
       "short_name": "Ashm. (Pa.)",
+      "short_name_slug": "ashm-pa",
       "start_year": 1831,
       "end_year": 1841,
       "volume_count": 2,
@@ -7259,6 +7662,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Supreme Court of Pennsylvania (Yeates)",
       "short_name": "Yeates",
+      "short_name_slug": "yeates",
       "start_year": 1791,
       "end_year": 1808,
       "volume_count": 4,
@@ -7277,6 +7681,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Supreme Court of Pennsylvania (Binney)",
       "short_name": "Binn.",
+      "short_name_slug": "binn",
       "start_year": 1799,
       "end_year": 1814,
       "volume_count": 6,
@@ -7295,6 +7700,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Supreme Court of Pennsylvania (Sergeant & Rawle)",
       "short_name": "Serg. & Rawl.",
+      "short_name_slug": "serg-rawl",
       "start_year": 1814,
       "end_year": 1828,
       "volume_count": 17,
@@ -7313,6 +7719,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Supreme Court of Pennsylvania (Watts & Sergeant)",
       "short_name": "Watts & Serg.",
+      "short_name_slug": "watts-serg",
       "start_year": 1841,
       "end_year": 1845,
       "volume_count": 9,
@@ -7331,6 +7738,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Supreme Court of Pennsylvania (Rawle)",
       "short_name": "Rawle",
+      "short_name_slug": "rawle",
       "start_year": 1829,
       "end_year": 1836,
       "volume_count": 5,
@@ -7349,6 +7757,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Supreme Court of Pennsylvania (Penrose & Watts)",
       "short_name": "Pen. & W.",
+      "short_name_slug": "pen-w",
       "start_year": 1830,
       "end_year": 1833,
       "volume_count": 3,
@@ -7367,6 +7776,7 @@
     "fields": {
       "full_name": "Reports of cases adjudged in the Supreme Court of Pennsylvania (Wharton)",
       "short_name": "Whart.",
+      "short_name_slug": "whart",
       "start_year": 1835,
       "end_year": 1841,
       "volume_count": 6,
@@ -7385,6 +7795,7 @@
     "fields": {
       "full_name": "Reports of cases argued and adjudged in the Supreme Court of Pennsylvania (Grant)",
       "short_name": "Grant",
+      "short_name_slug": "grant",
       "start_year": 1859,
       "end_year": 1864,
       "volume_count": 3,
@@ -7403,6 +7814,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of Pennsylvania",
       "short_name": "Watts",
+      "short_name_slug": "watts",
       "start_year": 1832,
       "end_year": 1840,
       "volume_count": 10,
@@ -7421,6 +7833,7 @@
     "fields": {
       "full_name": "Reports of cases decided by the judges of the supreme court of Pennsylvania, in the court of nisi prius",
       "short_name": "Brightly",
+      "short_name_slug": "brightly",
       "start_year": 1809,
       "end_year": 1851,
       "volume_count": 1,
@@ -7439,6 +7852,7 @@
     "fields": {
       "full_name": "Reports of cases decided by the supreme court of pennsylvania which have been omitted from the regular reports",
       "short_name": "Walker",
+      "short_name_slug": "walker",
       "start_year": 1853,
       "end_year": 1885,
       "volume_count": 4,
@@ -7457,6 +7871,7 @@
     "fields": {
       "full_name": "Reports of cases decided in the supreme court and county courts of Pennsylvania",
       "short_name": "Wilcox",
+      "short_name_slug": "wilcox",
       "start_year": 1887,
       "end_year": 1889,
       "volume_count": 1,
@@ -7475,6 +7890,7 @@
     "fields": {
       "full_name": "Reports of cases determined in the district court for the city and county of Philadelphia",
       "short_name": "Miles",
+      "short_name_slug": "miles",
       "start_year": 1827,
       "end_year": 1841,
       "volume_count": 2,
@@ -7493,6 +7909,7 @@
     "fields": {
       "full_name": "Lycoming Reporter",
       "short_name": "Lycoming R.",
+      "short_name_slug": "lycoming-r",
       "start_year": 1949,
       "end_year": 2010,
       "volume_count": 68,
@@ -7511,6 +7928,7 @@
     "fields": {
       "full_name": "Mercer County Law Journal",
       "short_name": "Mercer",
+      "short_name_slug": "mercer",
       "start_year": 1956,
       "end_year": 1991,
       "volume_count": 25,
@@ -7529,6 +7947,7 @@
     "fields": {
       "full_name": "Mifflin County Legal Journal",
       "short_name": "M.C.L.J.",
+      "short_name_slug": "mclj",
       "start_year": 1961,
       "end_year": 1999,
       "volume_count": 38,
@@ -7547,6 +7966,7 @@
     "fields": {
       "full_name": "Monroe Legal Reporter",
       "short_name": "Monroe L.R.",
+      "short_name_slug": "monroe-lr",
       "start_year": 1938,
       "end_year": 2009,
       "volume_count": 54,
@@ -7565,6 +7985,7 @@
     "fields": {
       "full_name": "Montgomery County Law Reporter",
       "short_name": "Mont. Co. L. Rep.",
+      "short_name_slug": "mont-co-l-rep",
       "start_year": 1885,
       "end_year": 2006,
       "volume_count": 139,
@@ -7583,6 +8004,7 @@
     "fields": {
       "full_name": "Northampton County Law Reporter",
       "short_name": "Northam. Law Rep.",
+      "short_name_slug": "northam-law-rep",
       "start_year": 1889,
       "end_year": 2006,
       "volume_count": 54,
@@ -7601,6 +8023,7 @@
     "fields": {
       "full_name": "Northumberland County Legal News",
       "short_name": "Northum. Co. Leg. N.",
+      "short_name_slug": "northum-co-leg-n",
       "start_year": 1888,
       "end_year": 1889,
       "volume_count": 1,
@@ -7619,6 +8042,7 @@
     "fields": {
       "full_name": "Northumberland Legal Journal",
       "short_name": "Northumb. L.J.",
+      "short_name_slug": "northumb-lj",
       "start_year": 1913,
       "end_year": 2011,
       "volume_count": 83,
@@ -7637,6 +8061,7 @@
     "fields": {
       "full_name": "Olwine's Law Journal",
       "short_name": "Olwine's L.J.",
+      "short_name_slug": "olwines-lj",
       "start_year": 1849,
       "end_year": 1850,
       "volume_count": 1,
@@ -7655,6 +8080,7 @@
     "fields": {
       "full_name": "Philadelphia Reports",
       "short_name": "Phila. Reports",
+      "short_name_slug": "phila-reports",
       "start_year": 1850,
       "end_year": 1891,
       "volume_count": 20,
@@ -7673,6 +8099,7 @@
     "fields": {
       "full_name": "Pittsburgh Legal Journal",
       "short_name": "Pittsb. L.J.",
+      "short_name_slug": "pittsb-lj",
       "start_year": 1853,
       "end_year": 2010,
       "volume_count": 143,
@@ -7691,6 +8118,7 @@
     "fields": {
       "full_name": "Pittsburgh Reports",
       "short_name": "Pitts. R.",
+      "short_name_slug": "pitts-r",
       "start_year": 1853,
       "end_year": 1873,
       "volume_count": 3,
@@ -7709,6 +8137,7 @@
     "fields": {
       "full_name": "Somerset Legal Journal",
       "short_name": "Som. L.J.",
+      "short_name_slug": "som-lj",
       "start_year": 1920,
       "end_year": 2006,
       "volume_count": 62,
@@ -7727,6 +8156,7 @@
     "fields": {
       "full_name": "Beaver County Legal Journal",
       "short_name": "B. Co. Leg. J.",
+      "short_name_slug": "b-co-leg-j",
       "start_year": 1939,
       "end_year": 1987,
       "volume_count": 45,
@@ -7745,6 +8175,7 @@
     "fields": {
       "full_name": "Carbon County Law Journal",
       "short_name": "Carbon Co. L.J.",
+      "short_name_slug": "carbon-co-lj",
       "start_year": 1966,
       "end_year": 2005,
       "volume_count": 17,
@@ -7763,6 +8194,7 @@
     "fields": {
       "full_name": "Dauphin County Reports",
       "short_name": "Dau. Co. Rep.",
+      "short_name_slug": "dau-co-rep",
       "start_year": 1895,
       "end_year": 2008,
       "volume_count": 123,
@@ -7781,6 +8213,7 @@
     "fields": {
       "full_name": "Docket",
       "short_name": "Docket",
+      "short_name_slug": "docket",
       "start_year": 1897,
       "end_year": 1898,
       "volume_count": 2,
@@ -7799,6 +8232,7 @@
     "fields": {
       "full_name": "Lackawanna Bar Reports",
       "short_name": "Lack. Bar  R.",
+      "short_name_slug": "lack-bar-r",
       "start_year": 1906,
       "end_year": 1907,
       "volume_count": 1,
@@ -7817,6 +8251,7 @@
     "fields": {
       "full_name": "Lackawanna Legal Record",
       "short_name": "Lack. L.R.",
+      "short_name_slug": "lack-lr",
       "start_year": 1879,
       "end_year": 1879,
       "volume_count": 1,
@@ -7835,6 +8270,7 @@
     "fields": {
       "full_name": "Lancaster Bar",
       "short_name": "Lanc. Bar",
+      "short_name_slug": "lanc-bar",
       "start_year": 1869,
       "end_year": 1883,
       "volume_count": 7,
@@ -7853,6 +8289,7 @@
     "fields": {
       "full_name": "Lawrence Law Journal",
       "short_name": "Law. L.J.",
+      "short_name_slug": "law-lj",
       "start_year": 1942,
       "end_year": 1979,
       "volume_count": 26,
@@ -7871,6 +8308,7 @@
     "fields": {
       "full_name": "Legal Gazette",
       "short_name": "Leg. Gaz.",
+      "short_name_slug": "leg-gaz",
       "start_year": 1869,
       "end_year": 1876,
       "volume_count": 8,
@@ -7889,6 +8327,7 @@
     "fields": {
       "full_name": "Legal Record Reports",
       "short_name": "Leg. Rec. Rep.",
+      "short_name_slug": "leg-rec-rep",
       "start_year": 1879,
       "end_year": 1882,
       "volume_count": 2,
@@ -7907,6 +8346,7 @@
     "fields": {
       "full_name": "Lehigh County Law Journal",
       "short_name": "Lehigh Co. L.J.",
+      "short_name_slug": "lehigh-co-lj",
       "start_year": 1903,
       "end_year": 1940,
       "volume_count": 18,
@@ -7925,6 +8365,7 @@
     "fields": {
       "full_name": "Lehigh Valley Law Reporter",
       "short_name": "Lehigh Val. L. Rep.",
+      "short_name_slug": "lehigh-val-l-rep",
       "start_year": 1885,
       "end_year": 1887,
       "volume_count": 1,
@@ -7943,6 +8384,7 @@
     "fields": {
       "full_name": "Luzerne Law Journal",
       "short_name": "Luz. L.J.",
+      "short_name_slug": "luz-lj",
       "start_year": 1871,
       "end_year": 1871,
       "volume_count": 1,
@@ -7961,6 +8403,7 @@
     "fields": {
       "full_name": "Luzerne Legal Observer",
       "short_name": "Luz. L.O.",
+      "short_name_slug": "luz-lo",
       "start_year": 1860,
       "end_year": 1864,
       "volume_count": 3,
@@ -7979,6 +8422,7 @@
     "fields": {
       "full_name": "Pennsylvania Corporation Reporter",
       "short_name": "Pa. Corp. R.",
+      "short_name_slug": "pa-corp-r",
       "start_year": 1914,
       "end_year": 1939,
       "volume_count": 27,
@@ -7997,6 +8441,7 @@
     "fields": {
       "full_name": "Philadelphia County Reporter",
       "short_name": "Phila. Co. R.",
+      "short_name_slug": "phila-co-r",
       "start_year": 1979,
       "end_year": 1998,
       "volume_count": 24,
@@ -8015,6 +8460,7 @@
     "fields": {
       "full_name": "Schuylkill Register",
       "short_name": "Schuy. Reg.",
+      "short_name_slug": "schuy-reg",
       "start_year": 1933,
       "end_year": 1945,
       "volume_count": 10,
@@ -8033,6 +8479,7 @@
     "fields": {
       "full_name": "Susquehanna Legal Chronicle",
       "short_name": "Susq. Leg. Chron.",
+      "short_name_slug": "susq-leg-chron",
       "start_year": 1878,
       "end_year": 1878,
       "volume_count": 1,
@@ -8051,6 +8498,7 @@
     "fields": {
       "full_name": "York Legal Record",
       "short_name": "York Leg. Rec.",
+      "short_name_slug": "york-leg-rec",
       "start_year": 1880,
       "end_year": 2013,
       "volume_count": 126,
@@ -8069,6 +8517,7 @@
     "fields": {
       "full_name": "Westmoreland County Law Journal",
       "short_name": "Wes. C.L.J.",
+      "short_name_slug": "wes-clj",
       "start_year": 1911,
       "end_year": 2010,
       "volume_count": 92,
@@ -8087,6 +8536,7 @@
     "fields": {
       "full_name": "United States Reports (Dallas)",
       "short_name": "U.S. (Dall.)",
+      "short_name_slug": "us-dall",
       "start_year": 1790,
       "end_year": 1800,
       "volume_count": 4,
@@ -8105,6 +8555,7 @@
     "fields": {
       "full_name": "Reports of equity, election, and other important cases, argued and determined principally in the courts of the county of Philadelphia",
       "short_name": "Brewster",
+      "short_name_slug": "brewster",
       "start_year": 1856,
       "end_year": 1873,
       "volume_count": 4,
@@ -8123,6 +8574,7 @@
     "fields": {
       "full_name": "Washington County Reports",
       "short_name": "Wash. Co.(Pa.)",
+      "short_name_slug": "wash-copa",
       "start_year": 1922,
       "end_year": 2002,
       "volume_count": 86,
@@ -8141,6 +8593,7 @@
     "fields": {
       "full_name": "Records of the Court of Trials of the Town of Warwick, 1659-1674",
       "short_name": "Rec. T. Warwick (R.I.)",
+      "short_name_slug": "rec-t-warwick-ri",
       "start_year": 1659,
       "end_year": 1674,
       "volume_count": 1,
@@ -8159,6 +8612,7 @@
     "fields": {
       "full_name": "Records of the Vice-Admiralty Court of Rhode Island, 1716-1752",
       "short_name": "Rec. V.A. Ct. (R.I.)",
+      "short_name_slug": "rec-va-ct-ri",
       "start_year": 1716,
       "end_year": 1752,
       "volume_count": 1,
@@ -8177,6 +8631,7 @@
     "fields": {
       "full_name": "Rhode Island Court Records",
       "short_name": "R.I. Ct. Rec.",
+      "short_name_slug": "ri-ct-rec",
       "start_year": 1647,
       "end_year": 1670,
       "volume_count": 2,
@@ -8195,6 +8650,7 @@
     "fields": {
       "full_name": "Rhode Island Decisions",
       "short_name": "R.I. Dec.",
+      "short_name_slug": "ri-dec",
       "start_year": 1924,
       "end_year": 1935,
       "volume_count": 12,
@@ -8213,6 +8669,7 @@
     "fields": {
       "full_name": "Rhode Island Superior Court Rescripts",
       "short_name": "Super. Ct. (R.I.)",
+      "short_name_slug": "super-ct-ri",
       "start_year": 1917,
       "end_year": 1919,
       "volume_count": 2,
@@ -8231,6 +8688,7 @@
     "fields": {
       "full_name": "North Eastern Reporter",
       "short_name": "N.E.",
+      "short_name_slug": "ne",
       "start_year": 1885,
       "end_year": 1936,
       "volume_count": 200,
@@ -8249,6 +8707,7 @@
     "fields": {
       "full_name": "North Eastern Reporter 3d",
       "short_name": "N.E.3d",
+      "short_name_slug": "ne3d",
       "start_year": 2014,
       "end_year": 0,
       "volume_count": 13,
@@ -8267,6 +8726,7 @@
     "fields": {
       "full_name": "North Western Reporter",
       "short_name": "N.W.",
+      "short_name_slug": "nw",
       "start_year": 1879,
       "end_year": 1942,
       "volume_count": 300,
@@ -8285,6 +8745,7 @@
     "fields": {
       "full_name": "North Western Reporter 2d",
       "short_name": "N.W.2d",
+      "short_name_slug": "nw2d",
       "start_year": 1942,
       "end_year": 2014,
       "volume_count": 847,
@@ -8303,6 +8764,7 @@
     "fields": {
       "full_name": "Pacific Reporter",
       "short_name": "P.",
+      "short_name_slug": "p",
       "start_year": 1883,
       "end_year": 1931,
       "volume_count": 300,
@@ -8321,6 +8783,7 @@
     "fields": {
       "full_name": "Pacific Reporter 3d",
       "short_name": "P.3d",
+      "short_name_slug": "p3d",
       "start_year": 2000,
       "end_year": 2014,
       "volume_count": 327,
@@ -8339,6 +8802,7 @@
     "fields": {
       "full_name": "South Eastern Reporter 2d",
       "short_name": "S.E.2d",
+      "short_name_slug": "se2d",
       "start_year": 1939,
       "end_year": 2014,
       "volume_count": 756,
@@ -8357,6 +8821,7 @@
     "fields": {
       "full_name": "Cases at law, argued and determined in the court of appeals of South Carolina",
       "short_name": "S.C.L. (McMul.)",
+      "short_name_slug": "scl-mcmul",
       "start_year": 1840,
       "end_year": 1842,
       "volume_count": 2,
@@ -8375,6 +8840,7 @@
     "fields": {
       "full_name": "Cases at law, argued and determined in the court of appeals of South Carolina",
       "short_name": "S.C.L. (Chev.)",
+      "short_name_slug": "scl-chev",
       "start_year": 1839,
       "end_year": 1840,
       "volume_count": 1,
@@ -8393,6 +8859,7 @@
     "fields": {
       "full_name": "Chancery cases argued and determined in the Court of Appeals of South Carolina (McCord)",
       "short_name": "S.C. Eq. (McCord Eq.)",
+      "short_name_slug": "sc-eq-mccord-eq",
       "start_year": 1825,
       "end_year": 1826,
       "volume_count": 1,
@@ -8411,6 +8878,7 @@
     "fields": {
       "full_name": "Chancery cases determined in the Court of Appeals of South Carolina (Riley)",
       "short_name": "S.C. Eq. (Ril. Eq.)",
+      "short_name_slug": "sc-eq-ril-eq",
       "start_year": 1836,
       "end_year": 1837,
       "volume_count": 1,
@@ -8429,6 +8897,7 @@
     "fields": {
       "full_name": "Equity cases, argued and determined in the Court of appeals of South Carolina (Speers)",
       "short_name": "S.C. Eq. (Speers Eq.)",
+      "short_name_slug": "sc-eq-speers-eq",
       "start_year": 1842,
       "end_year": 1844,
       "volume_count": 1,
@@ -8447,6 +8916,7 @@
     "fields": {
       "full_name": "Equity cases, argued and determined in the Court of appeals of South Carolina (McMullan)",
       "short_name": "S.C. Eq. (McMul. Eq.)",
+      "short_name_slug": "sc-eq-mcmul-eq",
       "start_year": 1840,
       "end_year": 1842,
       "volume_count": 1,
@@ -8465,6 +8935,7 @@
     "fields": {
       "full_name": "Records of the court of Chancery of South Carolina, 1671-1779",
       "short_name": "Rec. Co. Ch. (S.C.)",
+      "short_name_slug": "rec-co-ch-sc",
       "start_year": 1671,
       "end_year": 1779,
       "volume_count": 1,
@@ -8483,6 +8954,7 @@
     "fields": {
       "full_name": "Report of law cases determined in the Court of Appeals of South Carolina (Riley)",
       "short_name": "S.C.L. (Ril.)",
+      "short_name_slug": "scl-ril",
       "start_year": 1836,
       "end_year": 1837,
       "volume_count": 1,
@@ -8501,6 +8973,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the court of appeals and the court of errors of South Carolina",
       "short_name": "S.C.L. (Strob.)",
+      "short_name_slug": "scl-strob",
       "start_year": 1846,
       "end_year": 1850,
       "volume_count": 4,
@@ -8519,6 +8992,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the court of appeals of south carolina",
       "short_name": "S.C. Eq. (Dud. Eq.)",
+      "short_name_slug": "sc-eq-dud-eq",
       "start_year": 1837,
       "end_year": 1838,
       "volume_count": 1,
@@ -8537,6 +9011,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the court of appeals of south carolina on appeal from the courts of law",
       "short_name": "S.C.L. (Bail.)",
+      "short_name_slug": "scl-bail",
       "start_year": 1828,
       "end_year": 1832,
       "volume_count": 2,
@@ -8555,6 +9030,7 @@
     "fields": {
       "full_name": "Reports of cases argud and determined in the court of chancery of the state of south carolina",
       "short_name": "S.C. Eq. (Des.Eq.)",
+      "short_name_slug": "sc-eq-deseq",
       "start_year": 1784,
       "end_year": 1816,
       "volume_count": 4,
@@ -8573,6 +9049,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the superior court of law in the state of South carolina",
       "short_name": "S.C.L. (Bay)",
+      "short_name_slug": "scl-bay",
       "start_year": 1783,
       "end_year": 1804,
       "volume_count": 2,
@@ -8591,6 +9068,7 @@
     "fields": {
       "full_name": "Reports of cases at law argued and determined in the Court of Appeals and the Court of Errors of South Carolina",
       "short_name": "S.C.L. (Rich.)",
+      "short_name_slug": "scl-rich",
       "start_year": 1844,
       "end_year": 1846,
       "volume_count": 2,
@@ -8609,6 +9087,7 @@
     "fields": {
       "full_name": "Reports of cases at law argued and determined in the Court of Appeals and the Court of Errors of South Carolina",
       "short_name": "S.C.L. (Speers)",
+      "short_name_slug": "scl-speers",
       "start_year": 1842,
       "end_year": 1844,
       "volume_count": 2,
@@ -8627,6 +9106,7 @@
     "fields": {
       "full_name": "Reports of cases at law argued and determined in the Court of Appeals and the Court of Errors of South Carolina",
       "short_name": "S.C.L. (Rice)",
+      "short_name_slug": "scl-rice",
       "start_year": 1838,
       "end_year": 1839,
       "volume_count": 1,
@@ -8645,6 +9125,7 @@
     "fields": {
       "full_name": "Reports of cases at law argued and determined in the court of appeals of south carolina",
       "short_name": "S.C.L. (Hill)",
+      "short_name_slug": "scl-hill",
       "start_year": 1833,
       "end_year": 1837,
       "volume_count": 3,
@@ -8663,6 +9144,7 @@
     "fields": {
       "full_name": "Reports of cases at law argued and determined in the court of appeals of south carolina",
       "short_name": "S.C.L. (Dud.)",
+      "short_name_slug": "scl-dud",
       "start_year": 1837,
       "end_year": 1838,
       "volume_count": 1,
@@ -8681,6 +9163,7 @@
     "fields": {
       "full_name": "Reports of cases determined in the constitutional court of south carolina",
       "short_name": "S.C.L. (McCord)",
+      "short_name_slug": "scl-mccord",
       "start_year": 1821,
       "end_year": 1828,
       "volume_count": 4,
@@ -8699,6 +9182,7 @@
     "fields": {
       "full_name": "Reports of cases determined in the constitutional court of south carolina",
       "short_name": "S.C.L. (Nott & McC.)",
+      "short_name_slug": "scl-nott-mcc",
       "start_year": 1817,
       "end_year": 1820,
       "volume_count": 2,
@@ -8717,6 +9201,7 @@
     "fields": {
       "full_name": "Reports of cases determined in the constitutional court of south carolina",
       "short_name": "S.C.L. (Harp.)",
+      "short_name_slug": "scl-harp",
       "start_year": 1823,
       "end_year": 1824,
       "volume_count": 1,
@@ -8735,6 +9220,7 @@
     "fields": {
       "full_name": "Reports of cases in chancery argued and determined in the court of appeals of South Carolina",
       "short_name": "S.C. Eq. (Hill Eq.)",
+      "short_name_slug": "sc-eq-hill-eq",
       "start_year": 1833,
       "end_year": 1837,
       "volume_count": 2,
@@ -8753,6 +9239,7 @@
     "fields": {
       "full_name": "Reports of cases in chancery argued and determined in the court of appeals of South Carolina",
       "short_name": "S.C. Eq. (Rice Eq.)",
+      "short_name_slug": "sc-eq-rice-eq",
       "start_year": 1838,
       "end_year": 1839,
       "volume_count": 1,
@@ -8771,6 +9258,7 @@
     "fields": {
       "full_name": "Reports of cases in chancery argued and determined in the court of appeals of South Carolina",
       "short_name": "S.C. Eq. (Rich. Eq.)",
+      "short_name_slug": "sc-eq-rich-eq",
       "start_year": 1850,
       "end_year": 1868,
       "volume_count": 12,
@@ -8789,6 +9277,7 @@
     "fields": {
       "full_name": "Reports of cases in equity, argued and determined in the court of appeals and court of errors of south carolina",
       "short_name": "S.C. Eq. (Rich. Cas.)",
+      "short_name_slug": "sc-eq-rich-cas",
       "start_year": 1831,
       "end_year": 1832,
       "volume_count": 1,
@@ -8807,6 +9296,7 @@
     "fields": {
       "full_name": "Reports of cases in equity, argued and determined in the court of appeals and court of errors of south carolina",
       "short_name": "S.C. Eq. (Strobh. Eq.)",
+      "short_name_slug": "sc-eq-strobh-eq",
       "start_year": 1846,
       "end_year": 1850,
       "volume_count": 4,
@@ -8825,6 +9315,7 @@
     "fields": {
       "full_name": "Reports of cases in equity, argued and determined in the court of appeals of south carolina",
       "short_name": "S.C. Eq. (Bail. Eq.)",
+      "short_name_slug": "sc-eq-bail-eq",
       "start_year": 1830,
       "end_year": 1831,
       "volume_count": 1,
@@ -8843,6 +9334,7 @@
     "fields": {
       "full_name": "Reports of judicial decisions in the Constitutional Court of South Carolina",
       "short_name": "S.C.L. (Mill)",
+      "short_name_slug": "scl-mill",
       "start_year": 1817,
       "end_year": 1818,
       "volume_count": 2,
@@ -8861,6 +9353,7 @@
     "fields": {
       "full_name": "Reports of judicial decisions in the Constitutional court, of the state of South-Carolina",
       "short_name": "S.C.L. (Tread.)",
+      "short_name_slug": "scl-tread",
       "start_year": 1812,
       "end_year": 1816,
       "volume_count": 2,
@@ -8879,6 +9372,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the court of criminal appeals of Tennessee",
       "short_name": "Tenn. Crim. App.",
+      "short_name_slug": "tenn-crim-app",
       "start_year": 1969,
       "end_year": 1971,
       "volume_count": 4,
@@ -8897,6 +9391,7 @@
     "fields": {
       "full_name": "Unreported Tennessee Cases",
       "short_name": "Unrep. Tenn. Cas.",
+      "short_name_slug": "unrep-tenn-cas",
       "start_year": 1847,
       "end_year": 1869,
       "volume_count": 2,
@@ -8915,6 +9410,7 @@
     "fields": {
       "full_name": "Tennessee Cases with Notes and Annotations",
       "short_name": "Tenn. Cas.",
+      "short_name_slug": "tenn-cas",
       "start_year": 1847,
       "end_year": 1894,
       "volume_count": 3,
@@ -8933,6 +9429,7 @@
     "fields": {
       "full_name": "Tennessee Chancery Reports",
       "short_name": "Tenn. Ch. R.",
+      "short_name_slug": "tenn-ch-r",
       "start_year": 1872,
       "end_year": 1878,
       "volume_count": 3,
@@ -8951,6 +9448,7 @@
     "fields": {
       "full_name": "A Digest of the Laws of Texas:  containing a full and complete compilation of the land laws; together with opinions of the Supreme court [1840-1844]",
       "short_name": "Dallam",
+      "short_name_slug": "dallam",
       "start_year": 1840,
       "end_year": 1844,
       "volume_count": 1,
@@ -8969,6 +9467,7 @@
     "fields": {
       "full_name": "Court of Customs Appeals reports",
       "short_name": "Ct. Cust.",
+      "short_name_slug": "ct-cust",
       "start_year": 1910,
       "end_year": 1929,
       "volume_count": 16,
@@ -8987,6 +9486,7 @@
     "fields": {
       "full_name": "Decisions of the United States Court of Military Appeals",
       "short_name": "C.M.A.",
+      "short_name_slug": "cma",
       "start_year": 1951,
       "end_year": 1975,
       "volume_count": 23,
@@ -9005,6 +9505,7 @@
     "fields": {
       "full_name": "Federal Claims Reporter",
       "short_name": "Fed. Cl.",
+      "short_name_slug": "fed-cl",
       "start_year": 1993,
       "end_year": 2014,
       "volume_count": 90,
@@ -9023,6 +9524,7 @@
     "fields": {
       "full_name": "Federal Reporter 3d Series",
       "short_name": "F.3d",
+      "short_name_slug": "f3d",
       "start_year": 1993,
       "end_year": 2014,
       "volume_count": 761,
@@ -9041,6 +9543,7 @@
     "fields": {
       "full_name": "Federal Supplement 2d",
       "short_name": "F. Supp. 2d",
+      "short_name_slug": "f-supp-2d",
       "start_year": 1998,
       "end_year": 2014,
       "volume_count": 990,
@@ -9059,6 +9562,7 @@
     "fields": {
       "full_name": "West's Bankruptcy Reporter",
       "short_name": "B.R.",
+      "short_name_slug": "br",
       "start_year": 1980,
       "end_year": 2014,
       "volume_count": 512,
@@ -9077,6 +9581,7 @@
     "fields": {
       "full_name": "West's Federal Appendix",
       "short_name": "F. App'x",
+      "short_name_slug": "f-appx",
       "start_year": 2001,
       "end_year": 2014,
       "volume_count": 570,
@@ -9095,6 +9600,7 @@
     "fields": {
       "full_name": "West's Military Justice Reporter",
       "short_name": "M.J.",
+      "short_name_slug": "mj",
       "start_year": 1978,
       "end_year": 2014,
       "volume_count": 72,
@@ -9113,6 +9619,7 @@
     "fields": {
       "full_name": "West's Veterans Appeals Reporter",
       "short_name": "Vet. App.",
+      "short_name_slug": "vet-app",
       "start_year": 1990,
       "end_year": 2014,
       "volume_count": 25,
@@ -9131,6 +9638,7 @@
     "fields": {
       "full_name": "United States Claims Court Reporter",
       "short_name": "Cl. Ct.",
+      "short_name_slug": "cl-ct",
       "start_year": 1983,
       "end_year": 1992,
       "volume_count": 26,
@@ -9149,6 +9657,7 @@
     "fields": {
       "full_name": "United States Court of International Trade Reports",
       "short_name": "Ct. Int'l Trade",
+      "short_name_slug": "ct-intl-trade",
       "start_year": 1980,
       "end_year": 2009,
       "volume_count": 33,
@@ -9167,6 +9676,7 @@
     "fields": {
       "full_name": "United States Customs Court Reports",
       "short_name": "Cust. Ct.",
+      "short_name_slug": "cust-ct",
       "start_year": 1938,
       "end_year": 1977,
       "volume_count": 85,
@@ -9185,6 +9695,7 @@
     "fields": {
       "full_name": "Federal Cases",
       "short_name": "F. Cas.",
+      "short_name_slug": "f-cas",
       "start_year": 1789,
       "end_year": 1880,
       "volume_count": 31,
@@ -9203,6 +9714,7 @@
     "fields": {
       "full_name": "Federal Reporter",
       "short_name": "F.",
+      "short_name_slug": "f",
       "start_year": 1880,
       "end_year": 1924,
       "volume_count": 300,
@@ -9221,6 +9733,7 @@
     "fields": {
       "full_name": "Reports of the United States Board of Tax Appeals",
       "short_name": "B.T.A.",
+      "short_name_slug": "bta",
       "start_year": 1924,
       "end_year": 1942,
       "volume_count": 47,
@@ -9239,6 +9752,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va. (Patt. & Heath)",
+      "short_name_slug": "va-patt-heath",
       "start_year": 1829,
       "end_year": 1908,
       "volume_count": 0,
@@ -9257,6 +9771,7 @@
     "fields": {
       "full_name": "Decisions of the Cases in Virginia, by the High Court of Chancery (Wythe)",
       "short_name": "Va. Ch. Dec.",
+      "short_name_slug": "va-ch-dec",
       "start_year": 1788,
       "end_year": 1789,
       "volume_count": 1,
@@ -9275,6 +9790,7 @@
     "fields": {
       "full_name": "Minutes of the Council and General court of colonial Virginia",
       "short_name": "Va.",
+      "short_name_slug": "va",
       "start_year": 1622,
       "end_year": 1683,
       "volume_count": 1,
@@ -9293,6 +9809,7 @@
     "fields": {
       "full_name": "Virginia Circuit Court Opinions",
       "short_name": "Va. Cir.",
+      "short_name_slug": "va-cir",
       "start_year": 1957,
       "end_year": 2014,
       "volume_count": 87,
@@ -9311,6 +9828,7 @@
     "fields": {
       "full_name": "Virginia Colonial Decisions",
       "short_name": "Va. Col. Dec.",
+      "short_name_slug": "va-col-dec",
       "start_year": 1728,
       "end_year": 1741,
       "volume_count": 2,
@@ -9329,6 +9847,7 @@
     "fields": {
       "full_name": "Virginia Decisions",
       "short_name": "Va. Dec.",
+      "short_name_slug": "va-dec",
       "start_year": 1871,
       "end_year": 1900,
       "volume_count": 2,
@@ -9347,6 +9866,7 @@
     "fields": {
       "full_name": "American Samoa Reports",
       "short_name": "Am. Samoa",
+      "short_name_slug": "am-samoa",
       "start_year": 1900,
       "end_year": 1975,
       "volume_count": 4,
@@ -9365,6 +9885,7 @@
     "fields": {
       "full_name": "Select cases adjudged in the courts of the state of New York",
       "short_name": "Yates",
+      "short_name_slug": "yates",
       "start_year": 1809,
       "end_year": 1809,
       "volume_count": 1,
@@ -9383,6 +9904,7 @@
     "fields": {
       "full_name": "The Ohio Law Abstract",
       "short_name": "Ohio Law Abs.",
+      "short_name_slug": "ohio-law-abs",
       "start_year": 1922,
       "end_year": 1965,
       "volume_count": 95,
@@ -9401,6 +9923,7 @@
     "fields": {
       "full_name": "The Ohio Law Reporter; a weekly journal published in the interest of the legal profession in the state of Ohio",
       "short_name": "Ohio L.R.",
+      "short_name_slug": "ohio-lr",
       "start_year": 1903,
       "end_year": 1934,
       "volume_count": 40,
@@ -9419,6 +9942,7 @@
     "fields": {
       "full_name": "Legal Chronicle reports of Cases decided in the Supreme Court of Pennsylvania (Foster)",
       "short_name": "Foster",
+      "short_name_slug": "foster",
       "start_year": 1873,
       "end_year": 1875,
       "volume_count": 3,
@@ -9437,6 +9961,7 @@
     "fields": {
       "full_name": "Law Times (New Series)",
       "short_name": "Law Times (N.S.)",
+      "short_name_slug": "law-times-ns",
       "start_year": 1879,
       "end_year": 1885,
       "volume_count": 6,
@@ -9455,6 +9980,7 @@
     "fields": {
       "full_name": "Law Times",
       "short_name": "Law Times",
+      "short_name_slug": "law-times",
       "start_year": 1873,
       "end_year": 1878,
       "volume_count": 6,
@@ -9473,6 +9999,7 @@
     "fields": {
       "full_name": "Luzerne Legal Register",
       "short_name": "Luz. Leg. Reg.",
+      "short_name_slug": "luz-leg-reg",
       "start_year": 1872,
       "end_year": 1886,
       "volume_count": 14,
@@ -9491,6 +10018,7 @@
     "fields": {
       "full_name": "Reports of some of the criminal cases on primary hearing, before Richard Vaux, recorder of the city of Philadelphia",
       "short_name": "Vaux",
+      "short_name_slug": "vaux",
       "start_year": 1841,
       "end_year": 1845,
       "volume_count": 1,
@@ -9509,6 +10037,7 @@
     "fields": {
       "full_name": "Select cases in equity and at law",
       "short_name": "Parsons",
+      "short_name_slug": "parsons",
       "start_year": 1841,
       "end_year": 1851,
       "volume_count": 2,
@@ -9527,6 +10056,7 @@
     "fields": {
       "full_name": "The common pleas reporter",
       "short_name": "Com. Pl. Rep.",
+      "short_name_slug": "com-pl-rep",
       "start_year": 1879,
       "end_year": 1887,
       "volume_count": 4,
@@ -9545,6 +10075,7 @@
     "fields": {
       "full_name": "Weekly notes of cases argued and determined in the Supreme Court of Pennsylvania",
       "short_name": "Week. No. Cas. (Pa.)",
+      "short_name_slug": "week-no-cas-pa",
       "start_year": 1875,
       "end_year": 1899,
       "volume_count": 44,
@@ -9563,6 +10094,7 @@
     "fields": {
       "full_name": "Atlantic Reporter",
       "short_name": "A.",
+      "short_name_slug": "a",
       "start_year": 1885,
       "end_year": 1938,
       "volume_count": 200,
@@ -9581,6 +10113,7 @@
     "fields": {
       "full_name": "West's Atlantic Reporter, Third Series",
       "short_name": "A.3d",
+      "short_name_slug": "a3d",
       "start_year": 2010,
       "end_year": 2015,
       "volume_count": 94,
@@ -9599,6 +10132,7 @@
     "fields": {
       "full_name": "South Eastern Reporter",
       "short_name": "S.E.",
+      "short_name_slug": "se",
       "start_year": 1887,
       "end_year": 1939,
       "volume_count": 200,
@@ -9617,6 +10151,7 @@
     "fields": {
       "full_name": "Reports of equity cases, determined in the Court of Appeals of the state of South Carolina",
       "short_name": "S.C. Eq. (Harp. Eq.)",
+      "short_name_slug": "sc-eq-harp-eq",
       "start_year": 1824,
       "end_year": 1824,
       "volume_count": 1,
@@ -9635,6 +10170,7 @@
     "fields": {
       "full_name": "Reports of judicial decisions in the state of South Carolina",
       "short_name": "S.C.L. (Brev.)",
+      "short_name_slug": "scl-brev",
       "start_year": 1793,
       "end_year": 1815,
       "volume_count": 3,
@@ -9653,6 +10189,7 @@
     "fields": {
       "full_name": "Lackawanna Bar",
       "short_name": "Lack. Bar. R.",
+      "short_name_slug": "lack-bar-r",
       "start_year": 1878,
       "end_year": 1878,
       "volume_count": 1,
@@ -9671,6 +10208,7 @@
     "fields": {
       "full_name": "Pennsylvania Fiduciary Reporter 2d",
       "short_name": "Pa. Fid. 2d",
+      "short_name_slug": "pa-fid-2d",
       "start_year": 1981,
       "end_year": 2010,
       "volume_count": 30,
@@ -9689,6 +10227,7 @@
     "fields": {
       "full_name": "Proceedings of the General Court of Assizes held in the city of New York, October 6,1680, to October 6, 1682",
       "short_name": "N.Y. Proc. Ct. Ass.",
+      "short_name_slug": "ny-proc-ct-ass",
       "start_year": 1680,
       "end_year": 1682,
       "volume_count": 1,
@@ -9707,6 +10246,7 @@
     "fields": {
       "full_name": "North Eastern Reporter 2d",
       "short_name": "N.E.2d",
+      "short_name_slug": "ne2d",
       "start_year": 1936,
       "end_year": 2014,
       "volume_count": 999,
@@ -9725,6 +10265,7 @@
     "fields": {
       "full_name": "Pacific Reporter 2d",
       "short_name": "P.2d",
+      "short_name_slug": "p2d",
       "start_year": 1931,
       "end_year": 2000,
       "volume_count": 999,
@@ -9743,6 +10284,7 @@
     "fields": {
       "full_name": "Guam Reports",
       "short_name": "Guam",
+      "short_name_slug": "guam",
       "start_year": 1976,
       "end_year": 1979,
       "volume_count": 2,
@@ -9761,6 +10303,7 @@
     "fields": {
       "full_name": "Northern Mariana Islands Commonwealth Reporter",
       "short_name": "N. Mar. I. Commw.",
+      "short_name_slug": "n-mar-i-commw",
       "start_year": 1979,
       "end_year": 0,
       "volume_count": 3,
@@ -9779,6 +10322,7 @@
     "fields": {
       "full_name": "Decisiones de Puerto Rico",
       "short_name": "P.R. Dec.",
+      "short_name_slug": "pr-dec",
       "start_year": 1899,
       "end_year": 0,
       "volume_count": 194,
@@ -9797,6 +10341,7 @@
     "fields": {
       "full_name": "Luzerne Legal Register Reports",
       "short_name": "Luz. Leg. Reg.",
+      "short_name_slug": "luz-leg-reg",
       "start_year": 1882,
       "end_year": 2010,
       "volume_count": 100,
@@ -9815,6 +10360,7 @@
     "fields": {
       "full_name": "Schuylkill Legal Record",
       "short_name": "Schuy. L. Rec.",
+      "short_name_slug": "schuy-l-rec",
       "start_year": 1879,
       "end_year": 1979,
       "volume_count": 75,
@@ -9833,6 +10379,7 @@
     "fields": {
       "full_name": "Court of Customs and Patent Appeals Reports",
       "short_name": "C.C.P.A.",
+      "short_name_slug": "ccpa",
       "start_year": 1929,
       "end_year": 1982,
       "volume_count": 53,
@@ -9851,6 +10398,7 @@
     "fields": {
       "full_name": "Customs Bulletin and Decisions",
       "short_name": "Cust. B. & Dec.",
+      "short_name_slug": "cust-b-dec",
       "start_year": 1968,
       "end_year": 2003,
       "volume_count": 38,
@@ -9869,6 +10417,7 @@
     "fields": {
       "full_name": "Federal Reporter 2d Series",
       "short_name": "F.2d",
+      "short_name_slug": "f2d",
       "start_year": 1924,
       "end_year": 1993,
       "volume_count": 999,
@@ -9887,6 +10436,7 @@
     "fields": {
       "full_name": "Federal Rules Decisions",
       "short_name": "F.R.D.",
+      "short_name_slug": "frd",
       "start_year": 1941,
       "end_year": 2014,
       "volume_count": 298,
@@ -9905,6 +10455,7 @@
     "fields": {
       "full_name": "Federal Supplement",
       "short_name": "F. Supp.",
+      "short_name_slug": "f-supp",
       "start_year": 1932,
       "end_year": 1998,
       "volume_count": 999,
@@ -9923,6 +10474,7 @@
     "fields": {
       "full_name": "United States Reports",
       "short_name": "U.S.",
+      "short_name_slug": "us",
       "start_year": 1875,
       "end_year": 0,
       "volume_count": 557,
@@ -9941,6 +10493,7 @@
     "fields": {
       "full_name": "Reports of the Tax Court of the United States",
       "short_name": "T.C.",
+      "short_name_slug": "tc",
       "start_year": 1942,
       "end_year": 2013,
       "volume_count": 141,
@@ -9959,6 +10512,7 @@
     "fields": {
       "full_name": "Ohio Appellate Reports, Third Series",
       "short_name": "Ohio App. 3d",
+      "short_name_slug": "ohio-app-3d",
       "start_year": 1982,
       "end_year": 2015,
       "volume_count": 375,
@@ -9977,6 +10531,7 @@
     "fields": {
       "full_name": "Ohio Miscellaneous Reports, Second Series",
       "short_name": "Ohio Misc. 2d",
+      "short_name_slug": "ohio-misc-2d",
       "start_year": 1965,
       "end_year": 2015,
       "volume_count": 0,
@@ -9995,6 +10550,7 @@
     "fields": {
       "full_name": "Massachusetts Reports",
       "short_name": "Mass. (Cush)",
+      "short_name_slug": "mass-cush",
       "start_year": 1848,
       "end_year": 1853,
       "volume_count": 0,
@@ -10013,6 +10569,7 @@
     "fields": {
       "full_name": "Massachusetts Reports",
       "short_name": "Mass. (Pick.)",
+      "short_name_slug": "mass-pick",
       "start_year": 1822,
       "end_year": 1839,
       "volume_count": 24,
@@ -10031,6 +10588,7 @@
     "fields": {
       "full_name": "Abbott's Practice Reports",
       "short_name": "Abb. Pr. (n.s.)",
+      "short_name_slug": "abb-pr-ns",
       "start_year": 1854,
       "end_year": 1875,
       "volume_count": 16,
@@ -10049,6 +10607,7 @@
     "fields": {
       "full_name": "Howard's Practice Reports",
       "short_name": "How. Pr. (n.s.)",
+      "short_name_slug": "how-pr-ns",
       "start_year": 1844,
       "end_year": 1886,
       "volume_count": 0,
@@ -10067,6 +10626,7 @@
     "fields": {
       "full_name": "Martin (Louisiana Term Reports)",
       "short_name": "Mart. (o.s.)",
+      "short_name_slug": "mart-os",
       "start_year": 1809,
       "end_year": 1830,
       "volume_count": 0,
@@ -10085,6 +10645,7 @@
     "fields": {
       "full_name": "Martin (Louisiana Term Reports)",
       "short_name": "Mart. (n.s.)",
+      "short_name_slug": "mart-ns",
       "start_year": 1809,
       "end_year": 1830,
       "volume_count": 0,
@@ -10103,6 +10664,7 @@
     "fields": {
       "full_name": "A collection of cases decided by the General Court of Virginia, chiefly relating to the penal laws of the Commonwealth",
       "short_name": "Va. (Va. Cas.)",
+      "short_name_slug": "va-va-cas",
       "start_year": 1789,
       "end_year": 1826,
       "volume_count": 0,
@@ -10121,6 +10683,7 @@
     "fields": {
       "full_name": "Arkansas Appellate Reports",
       "short_name": "Ark. App.",
+      "short_name_slug": "ark-app",
       "start_year": 1981,
       "end_year": 2009,
       "volume_count": 0,
@@ -10139,6 +10702,7 @@
     "fields": {
       "full_name": "Robinson",
       "short_name": "Rob.",
+      "short_name_slug": "rob",
       "start_year": 1841,
       "end_year": 1846,
       "volume_count": 12,
@@ -10157,6 +10721,7 @@
     "fields": {
       "full_name": "Louisiana Annual Reports",
       "short_name": "La. Ann.",
+      "short_name_slug": "la-ann",
       "start_year": 1846,
       "end_year": 1900,
       "volume_count": 52,
@@ -10175,6 +10740,7 @@
     "fields": {
       "full_name": "Federal Supplement 3d",
       "short_name": "F. Supp. 3d",
+      "short_name_slug": "f-supp-3d",
       "start_year": 2014,
       "end_year": 0,
       "volume_count": 0,
@@ -10193,6 +10759,7 @@
     "fields": {
       "full_name": "Cases in chancery, argued and determined in the Court of appeals of South Carolina",
       "short_name": "S.C. Eq. (Chev. Eq.)",
+      "short_name_slug": "sc-eq-chev-eq",
       "start_year": 1839,
       "end_year": 1840,
       "volume_count": 0,
@@ -10211,6 +10778,7 @@
     "fields": {
       "full_name": "Reports of cases, civil and criminal, argued and adjudged in the Circuit court of the District of Columbia for the county of Washington",
       "short_name": "Hay. & Haz.",
+      "short_name_slug": "hay-haz",
       "start_year": 1840,
       "end_year": 1863,
       "volume_count": 2,
@@ -10229,6 +10797,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Murphey)",
       "short_name": "N.C. (Mur.)",
+      "short_name_slug": "nc-mur",
       "start_year": 1804,
       "end_year": 1819,
       "volume_count": 3,
@@ -10247,6 +10816,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Hawks)",
       "short_name": "N.C. (Hawks)",
+      "short_name_slug": "nc-hawks",
       "start_year": 1820,
       "end_year": 1826,
       "volume_count": 4,
@@ -10265,6 +10835,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Iredell's Equity)",
       "short_name": "N.C. (Ired. Eq.)",
+      "short_name_slug": "nc-ired-eq",
       "start_year": 1840,
       "end_year": 1852,
       "volume_count": 8,
@@ -10283,6 +10854,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Iredell's Law)",
       "short_name": "N.C. (Ired.)",
+      "short_name_slug": "nc-ired",
       "start_year": 1840,
       "end_year": 1852,
       "volume_count": 13,
@@ -10301,6 +10873,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Devereux's Law)",
       "short_name": "N.C. (Dev.)",
+      "short_name_slug": "nc-dev",
       "start_year": 1826,
       "end_year": 1834,
       "volume_count": 4,
@@ -10319,6 +10892,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Devereux's Equity)",
       "short_name": "N.C. (Dev. Eq.)",
+      "short_name_slug": "nc-dev-eq",
       "start_year": 1826,
       "end_year": 1834,
       "volume_count": 2,
@@ -10337,6 +10911,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Devereux & Battle's Law)",
       "short_name": "N.C. (Dev. & Bat.)",
+      "short_name_slug": "nc-dev-bat",
       "start_year": 1834,
       "end_year": 1839,
       "volume_count": 3,
@@ -10355,6 +10930,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Devereux & Battle's Equity)",
       "short_name": "N.C. (Dev. & Bat. Eq.)",
+      "short_name_slug": "nc-dev-bat-eq",
       "start_year": 1834,
       "end_year": 1839,
       "volume_count": 2,
@@ -10373,6 +10949,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Busbee's Law)",
       "short_name": "N.C. (Busb.)",
+      "short_name_slug": "nc-busb",
       "start_year": 1852,
       "end_year": 1853,
       "volume_count": 1,
@@ -10391,6 +10968,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Busbee's Equity)",
       "short_name": "N.C. (Busb. Eq)",
+      "short_name_slug": "nc-busb-eq",
       "start_year": 1852,
       "end_year": 1853,
       "volume_count": 1,
@@ -10409,6 +10987,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Jones' Law)",
       "short_name": "N.C. (Jones)",
+      "short_name_slug": "nc-jones",
       "start_year": 1853,
       "end_year": 1862,
       "volume_count": 8,
@@ -10427,6 +11006,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Jones' Equity)",
       "short_name": "N.C. (Jones Eq.)",
+      "short_name_slug": "nc-jones-eq",
       "start_year": 1853,
       "end_year": 1863,
       "volume_count": 6,
@@ -10445,6 +11025,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Winston)",
       "short_name": "N.C. (Win.)",
+      "short_name_slug": "nc-win",
       "start_year": 1863,
       "end_year": 1864,
       "volume_count": 1,
@@ -10463,6 +11044,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Phillips' Law)",
       "short_name": "N.C. (Phil.)",
+      "short_name_slug": "nc-phil",
       "start_year": 1866,
       "end_year": 1868,
       "volume_count": 1,
@@ -10481,6 +11063,7 @@
     "fields": {
       "full_name": "North Carolina Reports (Phillips' Equity)",
       "short_name": "N.C. (Phil. Eq.)",
+      "short_name_slug": "nc-phil-eq",
       "start_year": 1866,
       "end_year": 1868,
       "volume_count": 1,
@@ -10499,6 +11082,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va. (Wash.)",
+      "short_name_slug": "va-wash",
       "start_year": 1790,
       "end_year": 1796,
       "volume_count": 2,
@@ -10517,6 +11101,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va. (Munf.)",
+      "short_name_slug": "va-munf",
       "start_year": 1810,
       "end_year": 1820,
       "volume_count": 6,
@@ -10535,6 +11120,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va. (Rand.)",
+      "short_name_slug": "va-rand",
       "start_year": 1821,
       "end_year": 1828,
       "volume_count": 6,
@@ -10553,6 +11139,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va. (Leigh)",
+      "short_name_slug": "va-leigh",
       "start_year": 1829,
       "end_year": 1842,
       "volume_count": 12,
@@ -10571,6 +11158,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va. (Rob.)",
+      "short_name_slug": "va-rob",
       "start_year": 1842,
       "end_year": 1844,
       "volume_count": 2,
@@ -10589,6 +11177,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va. (Call)",
+      "short_name_slug": "va-call",
       "start_year": 1779,
       "end_year": 1825,
       "volume_count": 6,
@@ -10607,6 +11196,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va. (Gilmer)",
+      "short_name_slug": "va-gilmer",
       "start_year": 1820,
       "end_year": 1821,
       "volume_count": 1,
@@ -10625,6 +11215,7 @@
     "fields": {
       "full_name": "Virginia Reports",
       "short_name": "Va. (Gratt.)",
+      "short_name_slug": "va-gratt",
       "start_year": 1844,
       "end_year": 1880,
       "volume_count": 33,
@@ -10643,6 +11234,7 @@
     "fields": {
       "full_name": "Southern Reporter, Third Series",
       "short_name": "So.3d",
+      "short_name_slug": "so3d",
       "start_year": 2009,
       "end_year": 0,
       "volume_count": 0,
@@ -10661,6 +11253,7 @@
     "fields": {
       "full_name": "Southern Reporter, Second Series",
       "short_name": "So.2d",
+      "short_name_slug": "so2d",
       "start_year": 1940,
       "end_year": 2009,
       "volume_count": 999,
@@ -10679,6 +11272,7 @@
     "fields": {
       "full_name": "Southern Reporter",
       "short_name": "So.",
+      "short_name_slug": "so",
       "start_year": 1886,
       "end_year": 1940,
       "volume_count": 200,
@@ -10697,6 +11291,7 @@
     "fields": {
       "full_name": "New Mexico Appellate Reports",
       "short_name": "N.M.",
+      "short_name_slug": "nm",
       "start_year": 1967,
       "end_year": 2012,
       "volume_count": 0,
@@ -10715,6 +11310,7 @@
     "fields": {
       "full_name": "Reports of selected civil and criminal cases decided in the Court of Appeals of Kentucky",
       "short_name": "Ky. (Bush)",
+      "short_name_slug": "ky-bush",
       "start_year": 1866,
       "end_year": 1879,
       "volume_count": 14,
@@ -10733,6 +11329,7 @@
     "fields": {
       "full_name": "Louisiana Reports",
       "short_name": "La.",
+      "short_name_slug": "la",
       "start_year": 1830,
       "end_year": 1841,
       "volume_count": 19,
@@ -10751,6 +11348,7 @@
     "fields": {
       "full_name": "Northern Mariana Islands Reporter",
       "short_name": "N. Mar. I.",
+      "short_name_slug": "n-mar-i",
       "start_year": 1989,
       "end_year": 0,
       "volume_count": 5,
@@ -10769,6 +11367,7 @@
     "fields": {
       "full_name": "United States Reports (Cranch)",
       "short_name": "U.S. (Cranch)",
+      "short_name_slug": "us-cranch",
       "start_year": 1801,
       "end_year": 1815,
       "volume_count": 9,
@@ -10787,6 +11386,7 @@
     "fields": {
       "full_name": "United States Reports (Wheaton)",
       "short_name": "U.S. (Wheat.)",
+      "short_name_slug": "us-wheat",
       "start_year": 1816,
       "end_year": 1827,
       "volume_count": 12,
@@ -10805,6 +11405,7 @@
     "fields": {
       "full_name": "United States Reports (Peters)",
       "short_name": "U.S. (Pet.)",
+      "short_name_slug": "us-pet",
       "start_year": 1828,
       "end_year": 1842,
       "volume_count": 16,
@@ -10823,6 +11424,7 @@
     "fields": {
       "full_name": "United States Reports (Howard)",
       "short_name": "U.S. (How.)",
+      "short_name_slug": "us-how",
       "start_year": 1843,
       "end_year": 1860,
       "volume_count": 24,
@@ -10841,6 +11443,7 @@
     "fields": {
       "full_name": "United States Reports (Black)",
       "short_name": "U.S. (Black)",
+      "short_name_slug": "us-black",
       "start_year": 1861,
       "end_year": 1862,
       "volume_count": 2,
@@ -10859,6 +11462,7 @@
     "fields": {
       "full_name": "United States Reports (Wallace)",
       "short_name": "U.S. (Wall.)",
+      "short_name_slug": "us-wall",
       "start_year": 1863,
       "end_year": 1874,
       "volume_count": 23,
@@ -10877,6 +11481,7 @@
     "fields": {
       "full_name": "United States Court of Appeals for the District of Columbia Circuit",
       "short_name": "U.S. App. D.C.",
+      "short_name_slug": "us-app-dc",
       "start_year": 1941,
       "end_year": 0,
       "volume_count": 0,
@@ -10895,6 +11500,7 @@
     "fields": {
       "full_name": "Ohio Court of Appeals Reports",
       "short_name": "Ohio Ct. App.",
+      "short_name_slug": "ohio-ct-app",
       "start_year": 1916,
       "end_year": 1922,
       "volume_count": 0,
@@ -10913,6 +11519,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of Tennessee",
       "short_name": "Tenn. (Mart. & Yer.)",
+      "short_name_slug": "tenn-mart-yer",
       "start_year": 1825,
       "end_year": 1828,
       "volume_count": 1,
@@ -10931,6 +11538,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of Tennessee",
       "short_name": "Tenn. (Yer.)",
+      "short_name_slug": "tenn-yer",
       "start_year": 1818,
       "end_year": 1837,
       "volume_count": 10,
@@ -10949,6 +11557,7 @@
     "fields": {
       "full_name": "Reports of the cases argued and determined in the Supreme Court of Tennessee during the years 1851-[1853]",
       "short_name": "Tenn. (Swan)",
+      "short_name_slug": "tenn-swan",
       "start_year": 1851,
       "end_year": 1853,
       "volume_count": 2,
@@ -10967,6 +11576,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of Tennessee, during the years 1839 [to 1851]",
       "short_name": "Tenn. (Hum.)",
+      "short_name_slug": "tenn-hum",
       "start_year": 1839,
       "end_year": 1851,
       "volume_count": 11,
@@ -10985,6 +11595,7 @@
     "fields": {
       "full_name": "Reports of the cases argued and determined in the Supreme Court of Tennessee, during the years 1853-[1858]",
       "short_name": "Tenn. (Sneed)",
+      "short_name_slug": "tenn-sneed",
       "start_year": 1853,
       "end_year": 1858,
       "volume_count": 5,
@@ -11003,6 +11614,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of Tennessee",
       "short_name": "Tenn. (Cold.)",
+      "short_name_slug": "tenn-cold",
       "start_year": 1860,
       "end_year": 1870,
       "volume_count": 7,
@@ -11021,6 +11633,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of Tennessee",
       "short_name": "Tenn. (Heisk.)",
+      "short_name_slug": "tenn-heisk",
       "start_year": 1870,
       "end_year": 1874,
       "volume_count": 12,
@@ -11039,6 +11652,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of Tennessee during the years 1838-9",
       "short_name": "Tenn. (Meigs)",
+      "short_name_slug": "tenn-meigs",
       "start_year": 1838,
       "end_year": 1839,
       "volume_count": 1,
@@ -11057,6 +11671,7 @@
     "fields": {
       "full_name": "Reports of cases argued and determined in the Supreme Court of Tennessee during the year 1858 [to 1859]",
       "short_name": "Tenn. (Head)",
+      "short_name_slug": "tenn-head",
       "start_year": 1858,
       "end_year": 1860,
       "volume_count": 3,
@@ -11075,6 +11690,7 @@
     "fields": {
       "full_name": "Reports of cases argued and adjudged in the Supreme court of errors and appeals of Tennessee. 3, 4, and 5 Haywood in one volume, with notes and references.",
       "short_name": "Tenn. (Hayw.)",
+      "short_name_slug": "tenn-hayw",
       "start_year": 1816,
       "end_year": 1818,
       "volume_count": 3,
@@ -11093,6 +11709,7 @@
     "fields": {
       "full_name": "Tennessee reports : reports of cases argued and determined in the highest courts of law and equity of the state of Tennessee.",
       "short_name": "Tenn. (Overt.)",
+      "short_name_slug": "tenn-overt",
       "start_year": 1791,
       "end_year": 1815,
       "volume_count": 2,
@@ -11111,6 +11728,7 @@
     "fields": {
       "full_name": "Tennessee reports : reports of cases argued and determined in the highest courts of law and equity of the state of Tennessee.",
       "short_name": "Tenn. (Cooke)",
+      "short_name_slug": "tenn-cooke",
       "start_year": 1811,
       "end_year": 1814,
       "volume_count": 1,
@@ -11129,6 +11747,7 @@
     "fields": {
       "full_name": "Tennessee reports : reports of cases argued and determined in the highest courts of law and equity of the state of Tennessee.",
       "short_name": "Tenn. (Peck)",
+      "short_name_slug": "tenn-peck",
       "start_year": 1821,
       "end_year": 1824,
       "volume_count": 1,
@@ -11147,6 +11766,7 @@
     "fields": {
       "full_name": "Delaware Reports",
       "short_name": "Del. (Harr.)",
+      "short_name_slug": "del-harr",
       "start_year": 1832,
       "end_year": 1855,
       "volume_count": 5,
@@ -11165,6 +11785,7 @@
     "fields": {
       "full_name": "Delaware Reports",
       "short_name": "Del. (Houst.)",
+      "short_name_slug": "del-houst",
       "start_year": 1855,
       "end_year": 1893,
       "volume_count": 10,
@@ -11183,6 +11804,7 @@
     "fields": {
       "full_name": "Delaware Reports",
       "short_name": "Del. (Marv.)",
+      "short_name_slug": "del-marv",
       "start_year": 1893,
       "end_year": 1897,
       "volume_count": 2,
@@ -11201,6 +11823,7 @@
     "fields": {
       "full_name": "Delaware Reports",
       "short_name": "Del. (Penne.)",
+      "short_name_slug": "del-penne",
       "start_year": 1897,
       "end_year": 1909,
       "volume_count": 7,
@@ -11219,6 +11842,7 @@
     "fields": {
       "full_name": "Delaware Reports",
       "short_name": "Del. (Boyce)",
+      "short_name_slug": "del-boyce",
       "start_year": 1909,
       "end_year": 1920,
       "volume_count": 7,
@@ -11237,6 +11861,7 @@
     "fields": {
       "full_name": "Illinois Reports",
       "short_name": "Ill. (Breese)",
+      "short_name_slug": "ill-breese",
       "start_year": 1819,
       "end_year": 1831,
       "volume_count": 1,
@@ -11255,6 +11880,7 @@
     "fields": {
       "full_name": "Illinois Reports",
       "short_name": "Ill. (Scam)",
+      "short_name_slug": "ill-scam",
       "start_year": 1832,
       "end_year": 1843,
       "volume_count": 4,
@@ -11273,6 +11899,7 @@
     "fields": {
       "full_name": "Illinois Reports",
       "short_name": "Ill. (Gilm.)",
+      "short_name_slug": "ill-gilm",
       "start_year": 1844,
       "end_year": 1849,
       "volume_count": 5,
@@ -11291,6 +11918,7 @@
     "fields": {
       "full_name": "Mississippi Reports",
       "short_name": "Miss. (Walker)",
+      "short_name_slug": "miss-walker",
       "start_year": 1818,
       "end_year": 1832,
       "volume_count": 1,
@@ -11309,6 +11937,7 @@
     "fields": {
       "full_name": "Mississippi Reports",
       "short_name": "Miss. (Howard)",
+      "short_name_slug": "miss-howard",
       "start_year": 1834,
       "end_year": 1843,
       "volume_count": 6,
@@ -11327,6 +11956,7 @@
     "fields": {
       "full_name": "Mississippi Reports",
       "short_name": "Miss. (S. & M.)",
+      "short_name_slug": "miss-s-m",
       "start_year": 1843,
       "end_year": 1850,
       "volume_count": 15,
@@ -11345,6 +11975,7 @@
     "fields": {
       "full_name": "Massachusetts Reports",
       "short_name": "Mass. (Will.)",
+      "short_name_slug": "mass-will",
       "start_year": 1804,
       "end_year": 1805,
       "volume_count": 1,
@@ -11363,6 +11994,7 @@
     "fields": {
       "full_name": "Massachusetts Reports",
       "short_name": "Mass. (Tyng)",
+      "short_name_slug": "mass-tyng",
       "start_year": 1805,
       "end_year": 1822,
       "volume_count": 16,
@@ -11381,6 +12013,7 @@
     "fields": {
       "full_name": "Massachusetts Reports",
       "short_name": "Mass. (Met.)",
+      "short_name_slug": "mass-met",
       "start_year": 1840,
       "end_year": 1847,
       "volume_count": 14,
@@ -11399,6 +12032,7 @@
     "fields": {
       "full_name": "Massachusetts Reports",
       "short_name": "Mass. (Gray)",
+      "short_name_slug": "mass-gray",
       "start_year": 1854,
       "end_year": 1860,
       "volume_count": 17,
@@ -11417,6 +12051,7 @@
     "fields": {
       "full_name": "West's American Tribal Law Reporter",
       "short_name": "Tribal",
+      "short_name_slug": "tribal",
       "start_year": 1997,
       "end_year": 2016,
       "volume_count": 13,
@@ -11435,6 +12070,7 @@
     "fields": {
       "full_name": "Indian Territory Reports",
       "short_name": "Indian Terr.",
+      "short_name_slug": "indian-terr",
       "start_year": 1896,
       "end_year": 1907,
       "volume_count": 7,
@@ -11453,6 +12089,7 @@
     "fields": {
       "full_name": "Burnett",
       "short_name": "Bur.",
+      "short_name_slug": "bur",
       "start_year": 1842,
       "end_year": 1843,
       "volume_count": 1,
@@ -11471,6 +12108,7 @@
     "fields": {
       "full_name": "Ohio Circuit Court Decisions",
       "short_name": "Ohio C.C. Dec.",
+      "short_name_slug": "ohio-cc-dec",
       "start_year": 1901,
       "end_year": 1923,
       "volume_count": 38,
@@ -11489,6 +12127,7 @@
     "fields": {
       "full_name": "Ohio Circuit Decisions",
       "short_name": "Ohio Cir. Dec.",
+      "short_name_slug": "ohio-cir-dec",
       "start_year": 1885,
       "end_year": 1923,
       "volume_count": 0,
@@ -11507,6 +12146,7 @@
     "fields": {
       "full_name": "Condensed Reports of Decisions in Civil Causes in the Court of Appeals",
       "short_name": "Willson",
+      "short_name_slug": "willson",
       "start_year": 1883,
       "end_year": 1892,
       "volume_count": 3,
@@ -11525,6 +12165,7 @@
     "fields": {
       "full_name": "The Massachusetts law reporter.",
       "short_name": "Mass. Law Rep.",
+      "short_name_slug": "mass-law-rep",
       "start_year": 1993,
       "end_year": 0,
       "volume_count": 0,
@@ -11543,6 +12184,7 @@
     "fields": {
       "full_name": "Reports of cases at law argued and determined in the Court of Appeals and the Court of Errors of South Carolina",
       "short_name": "S.C.L. (Rich.)",
+      "short_name_slug": "scl-rich",
       "start_year": 1850,
       "end_year": 1868,
       "volume_count": 13,
@@ -11561,6 +12203,7 @@
     "fields": {
       "full_name": "Reports of cases in chancery argued and determined in the court of appeals of South Carolina",
       "short_name": "S.C. Eq. (Rich. Eq.)",
+      "short_name_slug": "sc-eq-rich-eq",
       "start_year": 1844,
       "end_year": 1846,
       "volume_count": 2,
@@ -11579,6 +12222,7 @@
     "fields": {
       "full_name": "Porto Rico Federal Reports",
       "short_name": "P.R. Fed.",
+      "short_name_slug": "pr-fed",
       "start_year": 1900,
       "end_year": 1930,
       "volume_count": 13,
@@ -11597,6 +12241,7 @@
     "fields": {
       "full_name": "California Appellate Reports, Fifth Series",
       "short_name": "Cal. App. 5th",
+      "short_name_slug": "cal-app-5th",
       "start_year": 2017,
       "end_year": 0,
       "volume_count": 0,
@@ -11615,6 +12260,7 @@
     "fields": {
       "full_name": "The reports of the Supreme Court of Pennsylvania from the year 1754 to the year 1844 (Alden's condensed reports)",
       "short_name": "Ald.",
+      "short_name_slug": "ald",
       "start_year": 1754,
       "end_year": 1814,
       "volume_count": 3,
@@ -11633,6 +12279,7 @@
     "fields": {
       "full_name": "West's Hawaii Reports",
       "short_name": "Haw.",
+      "short_name_slug": "haw",
       "start_year": 1994,
       "end_year": 0,
       "volume_count": 44,
