@@ -1,17 +1,20 @@
 <html>
   <head>
     <noscript>
-      <meta http-equiv="Refresh" content="0;URL=?set_cookie=1&no_js=1" />
+      <meta http-equiv="Refresh" content="0;URL=?no_js=1&next={{ next }}" />
     </noscript>
   </head>
   <body>
     <form method="post" id="not-a-bot-form">
       {% csrf_token %}
       <input type="hidden" name="not_a_bot" value="yes">
+      <input type="hidden" name="next" value="{{ next }}" id="next">
     </form>
     <script>
+      {# set form next value from JS to include url fragment, which we can't see on the server side #}
+      document.getElementById('next').value = document.location.toString();
       document.getElementById('not-a-bot-form').submit();
     </script>
-    <a href="?set_cookie=1&no_js=1">Click here to continue</a>
+    <a href="?no_js=1&next={{ next }}">Click here to continue</a>
   </body>
 </html>
