@@ -2,35 +2,29 @@ import re
 import time
 from collections import defaultdict
 from contextlib import contextmanager
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
-from django.http import Http404, HttpResponse, HttpResponseRedirect, QueryDict
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils import timezone
+from django.utils.http import is_safe_url
 from rest_framework.request import Request
 
 from capapi import serializers
 from capapi.authentication import SessionAuthentication
 from capapi.renderers import HTMLRenderer
 from capdb.models import Reporter, VolumeMetadata, Citation, CaseMetadata
+from capweb.helpers import reverse
 
 ### helpers ###
 
-def replace_query_params(url, **query_params):
-    """
-        Return URL with query_params inserted or updated. If a value is None, param will be removed.
-    """
-    (scheme, netloc, path, params, query, fragment) = urlparse(url)
-    query_dict = QueryDict(query).copy()
-    for k, v in query_params.items():
-        if v is None:
-            query_dict.pop(k, None)
-        else:
-            query_dict[k] = v
-    return urlunparse((scheme, netloc, path, params, query_dict.urlencode(), fragment))
+def safe_redirect(request):
+    """ Redirect to request.GET['next'] if it exists and is safe, or else to '/' """
+    next = request.GET.get('next', '/')
+    return HttpResponseRedirect(next if is_safe_url(next) else '/')
 
 @contextmanager
 def locked_session(request, using='default'):
@@ -96,30 +90,7 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
     """
         /<series_slug>/<volume_number>/<page_number>/                       -- show requested case (or list of cases, or case not found page).
         /<series_slug>/<volume_number>/<page_number>/<case_id>/             -- show requested case, using case_id to find one of multiple cases at this cite
-        /<series_slug>/<volume_number>/<page_number>/?set_cookie=1          -- try to use javascript to set a 'not_a_bot=1' cookie
-        /<series_slug>/<volume_number>/<page_number>/?set_cookie=1&no_js=1  -- ask user to click a button to set a 'not_a_bot=1' cookie
     """
-
-    ### handle logged-out user who was redirected here with ?set_cookie=1
-    if 'set_cookie' in request.GET:
-
-        # user already had a not_a_bot cookie and just needed a session cookie -- they're ready to go:
-        if 'case_allowance_remaining' in request.session and request.COOKIES.get('not_a_bot', 'no') == 'yes':
-            return HttpResponseRedirect(replace_query_params(request.get_full_path(), set_cookie=None, no_js=None))
-
-        # user has successfully POSTed to get their not_a_bot cookie:
-        elif request.method == 'POST' and request.POST.get('not_a_bot') == 'yes':
-            response = HttpResponseRedirect(replace_query_params(request.get_full_path(), set_cookie=None, no_js=None))
-            response.set_cookie('not_a_bot', 'yes', max_age=60*60*24*365*100)
-            return response
-
-        # user failed the JS check, so has to click the button by hand:
-        elif 'no_js' in request.GET:
-            return render(request, 'cite/set_cookie.html')
-
-        # try to use JS to click button for user:
-        else:
-            return render(request, 'cite/check_js.html')
 
     ### try to look up citation
     full_cite = "%s %s %s" % (volume_number, series_slug.replace('-', ' ').title(), page_number)
@@ -166,7 +137,7 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         else:
             request.session['case_allowance_remaining'] = settings.API_CASE_DAILY_ALLOWANCE
             request.session['case_allowance_last_updated'] = time.time()
-            return HttpResponseRedirect(replace_query_params(request.get_full_path(), set_cookie='1'))
+            return HttpResponseRedirect('%s?%s' % (reverse('set_cookie', host='cite'), urlencode({'next': request.get_full_path()})))
 
         # render case using API serializer
         api_request = Request(request, authenticators=[SessionAuthentication()])
@@ -180,4 +151,32 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         return render(request, 'cite/citation_failed.html', {
             "citations": citations,
             "full_cite": full_cite,
+        })
+
+def set_cookie(request):
+    """
+        /set_cookie/          -- try to use javascript to set a 'not_a_bot=1' cookie
+        /set_cookie/?no_js=1  -- ask user to click a button to set a 'not_a_bot=1' cookie
+    """
+    # user already had a not_a_bot cookie and just needed a session cookie,
+    # which was set when they were forwarded here -- they're ready to go:
+    if 'case_allowance_remaining' in request.session and request.COOKIES.get('not_a_bot', 'no') == 'yes':
+        return safe_redirect(request)
+
+    # user has successfully POSTed to get their not_a_bot cookie:
+    elif request.method == 'POST' and request.POST.get('not_a_bot') == 'yes':
+        response = safe_redirect(request)
+        response.set_cookie('not_a_bot', 'yes', max_age=60 * 60 * 24 * 365 * 100)
+        return response
+
+    # user failed the JS check, so has to click the button by hand:
+    elif 'no_js' in request.GET:
+        return render(request, 'cite/set_cookie.html', {
+            'next': request.GET.get('next', '/'),
+        })
+
+    # try to use JS to click button for user:
+    else:
+        return render(request, 'cite/check_js.html', {
+            'next': request.GET.get('next', '/'),
         })
