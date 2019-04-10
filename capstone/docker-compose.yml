@@ -19,6 +19,20 @@ services:
 #            - RABBITMQ_DEFAULT_USER=admin
 #            - RABBITMQ_DEFAULT_PASS=mypass
 ##        mem_limit: 128M
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+        environment:
+          - node.name=es01
+          - bootstrap.memory_lock=true
+          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        ulimits:
+          memlock:
+            soft: -1
+            hard: -1
+        volumes:
+          - esdata01:/usr/share/elasticsearch/data
+        ports:
+          - 9200:9200
     worker:
         build: .
         image: capstone:0.3.3
@@ -74,3 +88,5 @@ volumes:
     db_data:
     node_modules:
     test_redis:
+    esdata01:
+      driver: local
