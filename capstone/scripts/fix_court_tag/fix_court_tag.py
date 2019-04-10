@@ -88,7 +88,15 @@ def normalizations():
 
             # if 'Fixed Court Name' is numeric, look up corrected value from referenced Court ID:
             if line['Fixed Court Name'].isdigit():
+                if line['Fixed Court Name'] == line['Court ID']:
+                    raise ValueError("Court %s cannot have itself as reference." % line['Court ID'])
                 new_line = lines_by_id[line['Fixed Court Name']]
+                line_ids = {line['Court ID'], new_line['Court ID']}
+                while new_line['Fixed Court Name'].isdigit():
+                    new_line = lines_by_id[new_line['Fixed Court Name']]
+                    if new_line['Court ID'] in line_ids:
+                        raise ValueError("Court list %s is a reference loop" % line_ids)
+                    line_ids.add(new_line['Court ID'])
                 to_fix[key] = fixed(new_line)
 
             # else fill in corrections directly, if any:
