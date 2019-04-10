@@ -90,6 +90,7 @@ Add the following to `/etc/hosts`:
 
     127.0.0.1       case.test
     127.0.0.1       api.case.test
+    127.0.0.1       cite.case.test
 
 ### Manual Local Setup <a id="manual-local-setup"></a>
 1. [Install global system requirements](#install-global-system-requirements)
@@ -121,7 +122,7 @@ For Mac developers, [Postgres.app](https://postgresapp.com/) is a nice, simple w
 #### 4. Install application requirements <a id="install-application-requirements"></a>
     (capstone)$ pip install -r requirements.txt
 
-This will make a virtualenv entitled "capstone." You can tell that you're inside the virtualenv because your shell prompt will now inlcude the string **(capstone)**.
+This will make a virtualenv entitled "capstone." You can tell that you're inside the virtualenv because your shell prompt will now include the string **(capstone)**.
 
 #### 5. Set up the postgres database and load test data <a id="set-up-the-postgres-database-and-load-test-data"></a>
 
