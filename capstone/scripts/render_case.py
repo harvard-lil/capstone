@@ -218,7 +218,7 @@ class VolumeRenderer:
         if metadata['spine_start_date']:
             spinedate_el = etree.SubElement(volume_el, 'spinedate')
             etree.SubElement(spinedate_el, 'start').text = metadata['spine_start_date']
-            if metadata['end_date']:
+            if metadata['spine_end_date']:
                 etree.SubElement(spinedate_el, 'end').text = metadata['spine_end_date']
         etree.SubElement(volume_el, 'publicationdate').text = metadata['publication_date']
         publisher = metadata['publisher']

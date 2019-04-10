@@ -53,19 +53,36 @@ def dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, un
     base_path.joinpath("%s-new-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(new_casebody)
     base_path.joinpath("%s-case-structure.json" % volume_barcode).write_text(json.dumps(renderer.hydrate_opinions(case['opinions'], blocks_by_id), indent=2))
 
-def dump_files_for_page(volume_barcode, redacted, alto_xml_output, original_alto):
+def dump_files_for_page(volume_barcode, redacted, alto_xml_output, original_alto, page, unredacted_storage, redacted_storage):
     """
         For debugging when an alto file fails to match during assert_reversability.
     """
     base_path = Path('test_data/zips/dump')
+    path = page['path'][:-3]
+    base_path.joinpath(path).write_text(unredacted_storage.contents(path))
+    if redacted_storage:
+        path = path.replace('unredacted', 'redacted')
+        base_path.joinpath(path).write_text(redacted_storage.contents(path))
     base_path.joinpath("%s-old-alto-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(original_alto)
     base_path.joinpath("%s-new-alto-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(alto_xml_output)
+    base_path.joinpath("%s-alto-structure.json" % volume_barcode).write_text(json.dumps(page, indent=2))
 
-
-# for fixing special cases that can't be fixed automatically (none of these currently!)
-special_cases = {
-    # "casemets/32044061413472_unredacted_CASEMETS_0043.xml": [('[id="AC7"] casebody|bracketnum', 'text', '[4]')],
+# Some different ways to exclude files from validation, or patch their contents:
+skip_redacted_validation = {
+    # For this volume the redacted version was processed years before the unredacted version, so some files don't match:
+    '32044038693412',
 }
+skip_validation_files = {}
+special_text_replacements = {}
+special_cases = {
+    # These cases have one TextBlock that ends with a hyphen, and the next TextBlock starting with a redacted <bracketnum>,
+    # which together leads Innodata to insert a space where it usually wouldn't. Delete the space.
+    # NOTE: These may represent an underlying bug where a headnote that spans pages gets its second half replaced with
+    # a copy of its first half.
+    "casemets/32044038665188_redacted_CASEMETS_0147.xml.gz": [('[id="Aqs"]', 'replace_text', ('knowl­ William', 'knowl­William'))],
+    "casemets/32044038686689_redacted_CASEMETS_0040.xml.gz": [('[id="AL3u"]', 'replace_text', ('un­ This', 'un­This'))],
+}
+
 def apply_special_cases(path, parsed):
     """
         If path appears in special_cases, replace attribute and text values for given selectors.
@@ -75,18 +92,37 @@ def apply_special_cases(path, parsed):
             el = parsed(selector)
             if attr == 'text':
                 el.text(new_value)
+            elif attr == 'replace_text':
+                el.text(el.text().replace(*new_value))
             else:
                 el.attr(attr, new_value)
     return parsed
 
-rect_attrs = ['HPOS', 'VPOS', 'WIDTH', 'HEIGHT']
+def apply_text_replacements(path, text, text_replacements):
+    """
+        If path appears in text_replacements, replace each old value with new value in order.
+    """
+    if path in text_replacements:
+        for old_val, new_val in text_replacements[path]:
+            text = text.replace(old_val, new_val)
+    return text
+
 def rect(el_attrib):
     """ Convert an XML element like <foo HPOS="1" VPOS="2" WIDTH="3" HEIGHT="4"> to [1, 2, 3, 4]. """
-    return [float(el_attrib[attr]) if '.' in el_attrib[attr] else int(el_attrib[attr]) for attr in rect_attrs]
+    return (
+        float(el_attrib['HPOS']) if '.' in el_attrib['HPOS'] else int(el_attrib['HPOS']),
+        float(el_attrib['VPOS']) if '.' in el_attrib['VPOS'] else int(el_attrib['VPOS']),
+        float(el_attrib['WIDTH']) if '.' in el_attrib['WIDTH'] else int(el_attrib['WIDTH']),
+        float(el_attrib['HEIGHT']) if '.' in el_attrib['HEIGHT'] else int(el_attrib['HEIGHT']),
+    )
 
-def parse(storage, path, remove_namespaces=True):
+def parse(storage, path, remove_namespaces=True, text_replacements=None):
     """ Extract .gz-compressed XML path from storage, and return as PyQuery object. """
-    xml = parse_xml(storage.contents(path[:-3]))  # strip .gz so captar_storage will decompress for us
+    text = storage.contents(path[:-3])  # strip .gz so captar_storage will decompress for us
+    text = apply_text_replacements(path, text, special_text_replacements)
+    if text_replacements:
+        text = apply_text_replacements(path, text, text_replacements)
+    xml = parse_xml(text)
     apply_special_cases(path, xml)
     if remove_namespaces:
         xml = xml.remove_namespaces()
@@ -436,7 +472,7 @@ def strip_bracketnum_hyphens(text):
     return text
 
 def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
-                         volume, pages, cases, fonts_by_id,
+                         volume, pages, cases, fonts_by_id, text_replacements={},
                          paths=None, blocks_by_id=None, key=settings.REDACTION_KEY):
     """
         Check that our extraction task has succeeded, by making sure that the volume, page, cases, and fonts_by_id
@@ -452,45 +488,43 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
         for page in pages:
             page_obj = PageStructure(blocks=page['blocks'], encrypted_strings=page['encrypted_strings'])
             page_obj.decrypt(key)
+            
     ### validate results
     # Here we build fake Django objects and make sure we can render the extracted data back into XML that matches
     # the source files.
-    renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id,
-                                          {})  # we don't need labels_by_block_id because original_xml cases don't include page numbers
+    renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, {})  # we don't need labels_by_block_id because original_xml cases don't include page numbers
+    
     # validate volume dict
     volume_obj = VolumeMetadata(barcode=volume_barcode, xml_metadata=volume['metadata'])
     new_xml = renderer.render_volume(volume_obj)
     parsed = parse(unredacted_storage, paths['volume'][0])
     volume_el = parsed('volume')
     old_xml = str(volume_el)
-    old_xml = old_xml.replace('<nominativereporter abbreviation="" volnumber=""/>',
-                              '')  # remove blank <normativereporter>
+    old_xml = re.sub(r'\s*(<[^>]+>)\s*', r'\1', old_xml, flags=re.S)  # strip whitespace around elements
+    old_xml = old_xml.replace('<nominativereporter abbreviation="" volnumber=""/>', '')  # remove blank <normativereporter>
     xml_strings_equal(new_xml, old_xml)
+    
     # validate pages dict
     print("Checking ALTO integrity")
     for page in pages:
         page_obj = create_page_obj(volume_obj, page)
         to_test = [(unredacted_storage, page['path'], False)]
-        if redacted_storage:
+        if redacted_storage and volume_barcode not in skip_redacted_validation:
             to_test.append((redacted_storage, page['path'].replace('unredacted', 'redacted'), True))
         for storage, path, redacted in to_test:
             print("- checking %s" % path)
-            parsed = parse(storage, path)
+            if path in skip_validation_files:
+                continue
+            parsed = parse(storage, path, text_replacements=text_replacements)
             parsed('SP:first-child,SP:last-child').remove()  # remove <SP> element from start and end of <TextLine> -- can happen because of redaction
 
             # strip spaces from <String> elements CONTENT and CC tags to match stripping in ingest
             for s in parsed('String'):
                 content = s.attrib['CONTENT']
                 if content != content.strip():
-                    cc = s.attrib['CC']
-                    while content and content[0] == ' ':
-                        content = content[1:]
-                        cc = cc[1:]
-                    while content and content[-1] == ' ':
-                        content = content[:-1]
-                        cc = cc[:-1]
-                    s.attrib['CONTENT'] = content
-                    s.attrib['CC'] = cc
+                    pre_space, post_space = re.match(r'(\s*).*?(\s*)', content).groups()
+                    s.attrib['CONTENT'] = content[len(pre_space):-len(post_space) or None]
+                    s.attrib['CC'] = s.attrib['CC'][len(pre_space):-len(post_space) or None]
 
             alto_xml_output = renderer.render_page(page_obj, redacted)
             original_alto = str(parsed('Page'))
@@ -509,6 +543,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                     'SP': {'HPOS', 'ID', 'VPOS', 'WIDTH'}
                 }
             })
+            
     # validate cases
     print("Checking case integrity")
     for case in cases:
@@ -519,13 +554,15 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
         case_obj.initial_metadata = CaseInitialMetadata(case=case_obj, metadata=case['metadata'])
 
         to_test = [(unredacted_storage, case['path'], False)]
-        if redacted_storage:
+        if redacted_storage and volume_barcode not in skip_redacted_validation:
             to_test.append((redacted_storage, case['path'].replace('unredacted', 'redacted'), True))
 
         for storage, path, redacted in to_test:
             # load comparison xml
             print("- checking %s" % path)
-            parsed = parse(storage, path, remove_namespaces=False)
+            if path in skip_validation_files:
+                continue
+            parsed = parse(storage, path, remove_namespaces=False, text_replacements=text_replacements)
             CaseXML.reorder_head_matter(parsed)
             parsed = parsed.remove_namespaces()
             # strip hyphens from <bracketnum> to match ingested case
@@ -649,6 +686,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
     print("Reading ALTO files")
     fake_font_id = 1
     fonts_by_id = {}
+    text_replacements = {}
     for path in paths['alto']:
         print(path)
 
@@ -657,9 +695,10 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
         # load redacted file and determine which IDs appear in the redacted version
         if redacted_storage:
-            redacted_parsed = parse(redacted_storage, path.replace('unredacted', 'redacted'))
-            unredacted_block_ids = {block.attr.ID for block in redacted_parsed('TextBlock,Illustration').items()}
-            unredacted_string_ids = {block.attr.ID for block in redacted_parsed('String').items()}
+            redacted_path = path.replace('unredacted', 'redacted')
+            redacted_parsed = parse(redacted_storage, redacted_path)
+            allowed_block_rects = {rect(block.attrib): block.attrib['ID'] for block in redacted_parsed('TextBlock,Illustration')}
+            allowed_string_rects = {rect(block.attrib): block.attrib['ID'] for block in redacted_parsed('String')}
 
         # build lookup of block labels (e.g. name, p, blockquote) by tagref ID
         labels_by_tagref = {s.attrib['ID']: s.attrib['LABEL'] for s in parsed[0].iter('StructureTag')}  #
@@ -716,9 +755,10 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
             # Extract each <TextBlock>:
             for block_el in space_el[0]:
+                block_rect = rect(block_el.attrib)
                 block = {
                     'id': block_el.attrib['ID'],
-                    'rect': rect(block_el.attrib),
+                    'rect': block_rect,
                     'class': labels_by_tagref[block_el.attrib['TAGREFS']],
                 }
 
@@ -727,8 +767,14 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                     block['space'] = space_index
 
                 # check for redacted blocks
-                if redacted_storage and block['id'] not in unredacted_block_ids:
-                    block['redacted'] = True
+                if redacted_storage:
+                    if block_rect in allowed_block_rects:
+                        # if redacted and unredacted block IDs don't match, add a text_replacement for this file to
+                        # change redacted ID to unredacted ID during later validation.
+                        if block['id'] != allowed_block_rects[block_rect]:
+                            text_replacements.setdefault(redacted_path, []).append((allowed_block_rects[block_rect], block['id']))
+                    else:
+                        block['redacted'] = True
 
                 # handle <Illustration>
                 if block_el.tag == 'Illustration':
@@ -763,6 +809,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                         # handle <String>
                         for string in line_el.iter('String'):
                             string_attrib = string.attrib  # for speed
+                            string_rect = rect(string_attrib)
 
                             # Handle STYLEREFS attribute: start and stop a ['font', {'id':CaseFont.id}] span each
                             # time the style changes.
@@ -777,17 +824,17 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                             # region.
                             if check_string_redaction:
                                 if redacted_span:
-                                    if string_attrib['ID'] in unredacted_string_ids:
+                                    if string_rect in allowed_string_rects:
                                         tokens.append(['/redact'])
                                         redacted_span = False
                                 else:
-                                    if string_attrib['ID'] not in unredacted_string_ids:
+                                    if string_rect not in allowed_string_rects:
                                         tokens.append(['redact'])
                                         redacted_span = True
 
                             # Write an ['ocr', {'rect':<bounding box>, 'wc':<word confidence>, 'cc':<character confidence>}]
                             # span for each word.
-                            ocr_token = ['ocr', {'rect': rect(string_attrib), 'wc': float(string_attrib['WC'])}]
+                            ocr_token = ['ocr', {'rect': string_rect, 'wc': float(string_attrib['WC'])}]
 
                             # cc is a string of zeroes for each high-confidence character and nines for each low-confidence
                             # character. We don't store all-zero strings at all. For strings with some nines, convert to
@@ -820,6 +867,11 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                         tokens.append(['/font'])
 
                 page['blocks'].append(block)
+
+        # reverse the text replacements so we first change BL_1.2 to BL_1.3, and then BL_1.1 to BL_1.2:
+        if redacted_storage and redacted_path in text_replacements:
+            text_replacements[redacted_path].reverse()
+
         pages.append(page)
 
     ### Extract data for each case into the cases dict ###
@@ -954,6 +1006,14 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                 opinion['footnotes'] = footnotes
             opinions.append(opinion)
 
+        # if we have text_replacements for pages this case depends on, also apply them to this case:
+        if text_replacements:
+            redacted_path = path.replace('unredacted', 'redacted')
+            for page_ref in parsed('fileGrp[USE="alto"] FLocat'):
+                page_path = page_ref.attrib['{http://www.w3.org/1999/xlink}href'][3:]
+                if page_path in text_replacements:
+                    text_replacements.setdefault(redacted_path, []).append(text_replacements[page_path])
+
         cases.append(case)
 
     # encrypt redacted strings
@@ -981,7 +1041,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
         assert_reversability(
             volume_barcode, unredacted_storage, redacted_storage,
-            volume, pages, cases, fonts_by_id,
+            volume, pages, cases, fonts_by_id, text_replacements,
             paths, blocks_by_id, key)
 
         ### copy temp file to permanent storage
