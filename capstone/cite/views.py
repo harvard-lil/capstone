@@ -47,6 +47,14 @@ def locked_session(request, using='default'):
             request.session.update(temp_session)
             request.session.save()
 
+def natural_sort_key(text):
+    """
+        Sort numeric parts of text numerically and text parts alphabetically. Example:
+            >>> sorted(["9 Foo", "10 Foo", "9A Foo"], key=natural_sort_key)
+            ['9 Foo', '9A Foo', '10 Foo']
+    """
+    return [int(part) if part.isdigit() else part for word in text.split() for part in re.split('(\d+)', word)]
+
 ### views ###
 
 def home(request):
@@ -68,24 +76,26 @@ def home(request):
 
 def series(request, series_slug):
     """ /<series_slug>/ -- list all volumes for each series with that slug (typically only one). """
-    reporters = list(Reporter.objects
+    reporters = (Reporter.objects
         .filter(short_name_slug=series_slug)
-        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.order_by('reporter_id', 'volume_number')))
+        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None)))
         .order_by('full_name'))
     if not reporters:
         raise Http404
+    reporters = [(reporter, sorted(reporter.volumes.all(), key=lambda volume: natural_sort_key(volume.volume_number))) for reporter in reporters]
     return render(request, 'cite/series.html', {
         "reporters": reporters,
     })
 
 def volume(request, series_slug, volume_number):
     """ /<series_slug>/<volume_number>/ -- list all cases for given volumes (typically only one). """
-    volumes = list(VolumeMetadata.objects
+    volumes = (VolumeMetadata.objects
         .filter(reporter__short_name_slug=series_slug, volume_number=volume_number)
         .select_related('reporter')
-        .prefetch_related(Prefetch('case_metadatas', queryset=CaseMetadata.objects.order_by('first_page').prefetch_related('citations'))))
+        .prefetch_related('case_metadatas__citations'))
     if not volumes:
         raise Http404
+    volumes = [(volume, sorted(volume.case_metadatas.all(), key=lambda case: natural_sort_key(case.first_page or ''))) for volume in volumes]
     return render(request, 'cite/volume.html', {
         "volumes": volumes,
     })
