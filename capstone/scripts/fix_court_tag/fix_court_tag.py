@@ -82,6 +82,10 @@ def normalizations():
         for line in lines_by_id.values():
             key = (line['Jurisdiction'], line['Court Name'], line['Court Name Abbreviation'])
 
+            # sometimes a number is accidentally put in the wrong column:
+            if line['Fixed Court Name Abbreviation'].isdigit():
+                line['Fixed Court Name'] = line['Fixed Court Name Abbreviation']
+
             # if 'Fixed Court Name' is numeric, look up corrected value from referenced Court ID:
             if line['Fixed Court Name'].isdigit():
                 new_line = lines_by_id[line['Fixed Court Name']]
