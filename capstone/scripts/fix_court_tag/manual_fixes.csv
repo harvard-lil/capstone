@@ -174,7 +174,7 @@ x,12887,Athens County Court of Common Pleas,9236,Ohio C.P.,,1,Ohio,,1909-09-08,1
 x,18712,Athens County Court of Common Pleas,9236,Athens Cty. C.P. Ct.,,1,Ohio,,1940-01-01,1940-01-01,1698753,View example
 x,20136,Athens County Municipal Court,,Athens Cty. Mun. Ct.,,8,Ohio,,1973-08-24,2012-02-16,6686590,View example
 x,9842,Atlantic County Circuit Court,,Atlantic Cty. Cir. Ct.,,27,New Jersey,,1931-08-24,1947-08-25,433442,View example
-x,15776,Atlantic County Circuit Court,15776,Atlantic Cty. Ct.,,1,New Jersey,,1943-11-18,1943-11-18,458069,View example
+x,15776,Atlantic County Circuit Court,9842,Atlantic Cty. Ct.,,1,New Jersey,,1943-11-18,1943-11-18,458069,View example
 x,9510,Atlantic County Court,,Atlantic Cty. Ct.,,13,New Jersey,,1946-12-06,1978-06-30,318534,View example
 x,9954,Atlantic County Court of Common Pleas,,Atlantic Cty. Ct. C.P.,,2,New Jersey,,1924-01-01,1937-12-12,439475,View example
 x,15770,Atlantic County Court of Oyer and Terminer,,Atlantic Cty. Ct. of Oyer & Terminer,,1,New Jersey,,1948-01-01,1948-01-01,436477,View example
@@ -279,7 +279,7 @@ x,12029,Berks County Court of Quarter Sessions,12956,Berks Cty. Ct. Quarter Sess
 x,12956,Berks County Court of Quarter Sessions,,Berks Ct. Quarter Sess.,,1,Pennsylvania,,1943-08-02,1943-08-02,1555876,View example
 x,9668,Berks County Orphans' Court,,Berks Cty. Orphans' Ct.,,93,Pennsylvania,,1872-01-01,1968-11-25,220800,View example
 x,16618,Berks County of Common Pleas,9197,Berks Cty. C.P.,,2,Pennsylvania,,1981-03-19,2000-06-13,1937633,View example
-x,17304,Berks County of Orphans' Court,16705,Berks Cty. Orphans' Ct.,,2,Pennsylvania,,1952-06-13,1952-07-18,1598471,View example
+x,17304,Berks County of Orphans' Court,9668,Berks Cty. Orphans' Ct.,,2,Pennsylvania,,1952-06-13,1952-07-18,1598471,View example
 x,17065,Berkshire Superior Court,,Berkshire Super. Ct.,,1,Massachusetts,,2017-02-06,2017-02-06,6063762,View example
 x,20814,Berrien County Circuit Court,,Berrien Cty. Cir. Ct.,,9,Michigan,,1869-12-17,1871-10-01,3868615,View example
 x,9743,Binghamton City Court,,Binghamton City Ct.,,22,New York,,1928-01-01,1996-10-17,350688,View example
@@ -1916,8 +1916,8 @@ x,16816,Lebanon County Court of Common Pleas,10489,Leb. Cty. Ct. C.P.,,2,Pennsyl
 x,21727,Lebanon County Court of Common Pleas,10489,Lebanon Cty. Ct. C.P.,,8,Pennsylvania,,1882-11-13,1886-03-15,1036106,View example
 x,16789,Lebanon County Court of Oyer and Terminer,,Lebanon Cty. Ct. Oyer & Terminer,,1,Pennsylvania,,1948-01-22,1948-01-22,1573486,View example
 x,16866,Lebanon County Court of Oyer and Terminer,16789,Leb. Cty. Ct. Oyer & Terminer,,1,Pennsylvania,,1963-03-02,1963-03-02,1672295,View example
-x,12194,Lebanon County Court of Quarter Sessions,,Leb. Cty. Ct. Quarter Sess.,,8,Pennsylvania,,1934-01-12,1968-04-29,1508606,View example
-x,12975,Lebanon County Court of Quarter Sessions,12975,Lebanon Cty. Ct. Quarter Sess.,,16,Pennsylvania,,1883-10-15,1968-04-05,1036207,View example
+x,12194,Lebanon County Court of Quarter Sessions,12975,Leb. Cty. Ct. Quarter Sess.,,8,Pennsylvania,,1934-01-12,1968-04-29,1508606,View example
+x,12975,Lebanon County Court of Quarter Sessions,,Lebanon Cty. Ct. Quarter Sess.,,16,Pennsylvania,,1883-10-15,1968-04-05,1036207,View example
 x,13394,Lebanon County Criminal Court,,Lebanon Cty. Crim. Ct.,,1,Pennsylvania,,1967-01-10,1967-01-10,1697780,View example
 x,16734,Lebanon County Criminal Court,13394,Leb. Cty. Crim. Ct.,,1,Pennsylvania,,1967-06-21,1967-06-21,1700294,View example
 x,13392,Lebanon County Orphans' Court,,Lebanon Cty. Orphans' Ct.,,8,Pennsylvania,,1884-09-24,1965-03-16,812940,View example
@@ -2026,8 +2026,8 @@ x,13368,Luzerne County Court of Common Pleas,9691,Delaware Cty. C.P.,,1,Pennsylv
 x,16796,Luzerne County Court of Common Pleas,9691,Luzerne Cty. Ct. C.P.,,5,Pennsylvania,,1885-12-07,1968-08-16,1036270,View example
 x,12930,Luzerne County Court of Oyer and Terminer,,Luzerne Cty. Ct. Oyer & Terminer,,8,Pennsylvania,,1891-11-11,1966-03-24,823761,View example
 x,12054,Luzerne County Court of Quarter Sessions,,Luzerne Cty. Ct. Quarter Sess.,,111,Pennsylvania,,1860-11-07,1966-02-17,1036081,View example
-x,12841,Luzerne County Court of Quarter Sessions,12841,Luzerne Ct. Quarter Sess.,,2,Pennsylvania,,1943-07-26,1956-02-23,1555896,View example
-x,17249,Luzerne County Court of Quarter Sessions,12841,Luzerne County Ct. Quarter Sess.,,1,Pennsylvania,,1960-11-03,1960-11-03,1656031,View example
+x,12841,Luzerne County Court of Quarter Sessions,12054,Luzerne Ct. Quarter Sess.,,2,Pennsylvania,,1943-07-26,1956-02-23,1555896,View example
+x,17249,Luzerne County Court of Quarter Sessions,12054,Luzerne County Ct. Quarter Sess.,,1,Pennsylvania,,1960-11-03,1960-11-03,1656031,View example
 x,13391,Luzerne County Criminal Court,,Luzerne Cty. Crim. Ct.,,2,Pennsylvania,,1966-03-23,1968-01-15,1693858,View example
 x,11272,Luzerne County Orphans' Court,,Luzerne Cty. Orphans' Ct.,,43,Pennsylvania,,1873-01-01,1967-04-14,825922,View example
 x,16890,Luzerne County Orphans' Court,11272,Luzerne Cty. Orphan's Ct.,,1,Pennsylvania,,1943-03-12,1943-03-12,1554364,View example
@@ -2427,7 +2427,7 @@ x,23699,"New Jersey Superior Court, Law Division",9065,N.J. Super. Ct. Law Div.,
 x,10944,"New Jersey Superior Court, Probate Division",,N.J. Super. Ct.,,1,New Jersey,,1983-11-10,1983-11-10,901058,View example
 x,8774,New Jersey Supreme Court,9588,N.J. Sup. Ct.,,22027,New Jersey,,1789-04-01,1947-12-31,14217,View example
 x,9523,New Jersey Supreme Court,9588,N.J. Sup. Ct,,82,New Jersey,,1850-10-01,1852-11-01,401143,View example
-x,9588,New Jersey Supreme Court,9588,N.J.,,36,New Jersey,,1860-06-01,1999-07-21,166621,View example
+x,9588,New Jersey Supreme Court,,N.J.,,36,New Jersey,,1860-06-01,1999-07-21,166621,View example
 x,15804,New Kent County Circuit Court,,New Kent Cty. Cir. Ct.,,2,Virginia,,1992-06-26,2010-12-09,3870796,View example
 x,17618,New Paltz Justice Court,,New Paltz J. Ct.,,2,New York,,2004-06-10,2004-07-13,1323737,View example
 x,21553,New Philadelphia Municipal Court,,New Philadelphia Mun. Ct.,,1,Ohio,,1982-09-09,1982-09-09,6710186,View example
@@ -2438,10 +2438,10 @@ x,9703,New York Appellate Term,,N.Y. App. Term,,386,New York,,1898-04-27,2014-08
 x,16243,New York Arbitration Court,,N.Y. Arb. Ct.,,1,New York,,1894-02-01,1894-02-01,1974053,View example
 x,21837,New York Cayuga County Court,,N.Y. Cayuga Cty. Ct.,,1,New York,,1889-07-01,1889-07-01,801671,View example
 x,11174,New York Children's Court,,N.Y. Child. Ct.,,43,New York,,1912-03-28,1961-10-20,822346,View example
-x,11181,New York Children's Court,11181,N.Y. Child Ct.,,2,New York,,1949-02-03,1960-06-23,945592,View example
-x,20131,New York Children's Court,11181,N.Y. Children Ct.,,1,New York,,1957-05-27,1957-05-27,1046567,View example
-x,17809,"New York Children's Court, Kings County",11181,N.Y. Child. Ct.,,1,New York,,1912-03-28,1912-03-28,1200460,View example
-x,19434,"New York Children's Court, Kings County",11181,Child. Ct.,,1,New York,,1914-09-12,1914-09-12,1209610,View example
+x,11181,New York Children's Court,11174,N.Y. Child Ct.,,2,New York,,1949-02-03,1960-06-23,945592,View example
+x,20131,New York Children's Court,11174,N.Y. Children Ct.,,1,New York,,1957-05-27,1957-05-27,1046567,View example
+x,17809,"New York Children's Court, Kings County",11174,N.Y. Child. Ct.,,1,New York,,1912-03-28,1912-03-28,1200460,View example
+x,19434,"New York Children's Court, Kings County",11174,Child. Ct.,,1,New York,,1914-09-12,1914-09-12,1209610,View example
 ?,8831,New York Circuit Court,,N.Y. Cir. Ct.,,111,New York,,1804-06-01,1895-11-01,201350,View example
 ?,20533,"New York Circuit Court, Albany County",,N.Y. Cir. Ct.,,1,New York,,1891-02-26,1891-02-26,3379143,View example
 ?,9165,"New York Circuit Court, Columbia County",,New York Circuit Court,,2,New York,,1845-09-01,1853-04-01,201356,View example
@@ -2556,7 +2556,7 @@ x,19769,New York Court Police Justice Court,,N.Y. Police J. Ct.,,1,New York,,195
 x,9581,New York Court for the Correction of Errors,,N.Y.,,1069,New York,,1798-02-01,1846-12-01,372207,View example
 x,20688,New York Court of Appeal,8873,N. Y.,,2,New York,,2006-01-17,2006-03-23,3637310,View example
 x,20698,New York Court of Appeal,8873,N.Y.,,1,New York,,2006-04-04,2006-04-04,3640221,View example
-x,8873,New York Court of Appeals,8873,N.Y.,,117127,New York,,1800-12-02,2017-09-14,14224,View example
+x,8873,New York Court of Appeals,,N.Y.,,117127,New York,,1800-12-02,2017-09-14,14224,View example
 x,10120,New York Court of Appeals,8873,N. Y.,,138,New York,,1887-10-04,1890-03-21,664250,View example
 x,14207,New York Court of Appeals,8873,N.Y. Ct. App.,,512,New York,,1864-12-01,1986-12-19,1960491,View example
 x,22929,New York Court of Assizes,,N.Y. Ct. Assizes,,8,New York,,1682-10-06,1682-10-06,12185660,View example
@@ -3383,8 +3383,8 @@ x,15780,Southampton County Circuit Court,,Southampton Cty. Cir. Ct.,,8,Virginia,
 x,9179,Southern District of West Virginia,,S.D.W. Va.,,7,United States,,1946-05-27,1998-04-30,289659,View example
 x,20972,Special Court,20706,Reg'l Rail Reorg. Ct.,,1,United States,,1979-01-08,1979-01-08,4055774,View example
 x,15623,Special Court of Appeals,14991,Va. Spec. Ct. App.,,19,Virginia,,1877-02-01,1889-09-01,4439854,View example
-x,9943,Special Court of Appeals of Virginia,,Va.,,133,Virginia,,1924-12-18,1928-12-06,468380,View example
-x,14991,Special Court of Appeals of Virginia,14991,Va. Spec. Ct. App.,,30,Virginia,,1927-12-22,1928-03-02,2414367,View example
+x,9943,Special Court of Appeals of Virginia,14991,Va.,,133,Virginia,,1924-12-18,1928-12-06,468380,View example
+x,14991,Special Court of Appeals of Virginia,,Va. Spec. Ct. App.,,30,Virginia,,1927-12-22,1928-03-02,2414367,View example
 x,20706,"Special Court, Regional Rail Reorganization Act",,Reg'l Rail Reorg. Ct.,,1,United States,,1984-08-30,1984-08-30,3694792,View example
 x,16291,Special Tribunal Supplement,,Spec. Trib Supp.,,1,California,,1977-05-02,1977-05-02,6035500,View example
 x,11422,Special Tribunal of Pennsylvania,,Pa. Spec. Trib.,,2,Pennsylvania,,2002-10-24,2002-10-24,1070098,View example
@@ -4589,7 +4589,7 @@ x,15799,United States Judicial Conference Committee on Judicial Conduct and Disa
 x,13783,United States Judicial Conference Committee to Review Circuit Council Conduct and Disability Orders,,U.S. Judicial Conference Committee to Review Circuit Council Conduct & Disability Orders,,3,United States,,1994-09-29,2006-04-28,1848656,View example
 x,22697,United States Judicial Conference Committee to Review Circuit Council Conduct and Disability Orders,13783,U. S. Judicial Conference Committee to Review Circuit Council Conduct & Disability Orders,,1,United States,,1993-11-02,1993-11-02,10517794,View example
 x,20699,United States Judicial Conference of Committee on Judicial Conduct and Disability,15799,U. S. Judicial Conference of Committee on Judicial Conduct & Disability,,2,United States,,2008-01-14,2008-01-14,5869770,View example
-x,9314,United States Judicial Panel on Multidistrict Litigation,9314,J.P.M.L,,202,United States,,1968-09-17,2007-08-17,31388,View example
+x,9314,United States Judicial Panel on Multidistrict Litigation,9818,J.P.M.L,,202,United States,,1968-09-17,2007-08-17,31388,View example
 x,9818,United States Judicial Panel on Multidistrict Litigation,,J.P.M.L.,,1532,United States,,1968-09-13,2017-12-06,62034,View example
 x,22938,United States Land Office,,U.S. Land Office,,1,United States,,1881-11-01,1881-11-01,12125563,View example
 x,20667,United States Navy Court of Military Review,,N.C.M.R.,,56,United States,,1978-11-22,1981-04-17,3580016,View example
