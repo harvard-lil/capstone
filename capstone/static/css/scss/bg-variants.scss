@@ -1,0 +1,80 @@
+.bg-white {
+  h1, .h1 {
+    color: $color-black;
+  }
+  a {
+    color: $color-blue;
+    &:hover, &:active, &:focus {
+      color: $color-dark-blue;
+    }
+  }
+}
+
+/* color variations */
+
+.bg-black {
+  border-top: 1px solid $color-white;
+  margin-top: 0;
+  color: $color-white;
+  a {
+   color: $color-magenta;
+
+  }
+  .title-section > h1.page-title {
+    color: $color-white !important;
+  }
+  .explainer-section > .content {
+    color: $color-white;
+  }
+}
+
+.bg-yellow {
+  #sidebar-menu {
+    border-right: none;
+  }
+  a {
+    border-bottom: 3px solid $color-violet;
+    &:hover, &:active, &:focus {
+      color: $color-black;
+      border-bottom: 3px solid $color-black;
+    }
+  }
+  .btn {
+    &:hover, &:active, &:focus {
+      background-color: $color-yellow;
+    }
+  }
+}
+
+
+.bg-black, .inverse {
+  color: $color-white;
+  h1, .section-title {
+    color: $color-yellow !important;
+  }
+
+
+  .btn, .btn-default, .btn-inverse {
+    background-color: $color-white;
+    color: $color-black;
+    font-weight: $font-weight-semibold;
+    &:hover, &:active, &:focus {
+      background-color: $color-yellow;
+      border-bottom: none;
+    }
+  }
+  .section-subtitle {
+    @include media-breakpoint-down(md) {
+      color: $color-white;
+    }
+  }
+}
+
+.bg-violet {
+  @extend .bg-black;
+  background-color: $color-violet-large-text;
+  color: $color-white;
+  h1, .section-title {
+    color: $color-white !important;
+  }
+}

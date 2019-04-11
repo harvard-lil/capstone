@@ -18,12 +18,10 @@
 @import "bootstrap/type";
 
 @import 'variables';
-@import 'elements';
-@import 'a11y';
-@import 'dropdown';
-@import 'nav';
-@import 'footer';
-@import 'page-structure';
+@import 'font-styles';
+
+// The stylesheets that build on top of base.scss but should be included in bases.scss
+// are at the bottom of the page
 
 ::selection {
   background: $color-yellow-bright; /* WebKit/Blink Browsers */
@@ -35,18 +33,13 @@
   color: $color-black;
 }
 
-
 body {
-  @extend .font-body;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   /* push footer to bottom of screen if insufficient main-content to fill page */
   display: flex;
   flex-direction: column;
   color: $color-black;
-  font-size: 20px;
-  line-height: 29px;
-  font-weight: 400;
   -webkit-hyphens: auto;
   -moz-hyphens: auto;
   -ms-hyphens: auto;
@@ -58,12 +51,13 @@ body {
   min-height: 100vh;
 }
 
-a, button, .btn {
+// BUTTONS & LINKS
+a, button, .btn, .btn-primary, .btn-secondary, .btn-tertiary {
   cursor: pointer;
-}
-
-button {
-  @extend .btn;
+  &:hover, &:focus, &:active {
+    text-decoration: none;
+    text-transform: uppercase;
+  }
 }
 
 button, .btn-white-violet {
@@ -71,6 +65,145 @@ button, .btn-white-violet {
   border: 2px solid $color-violet;
   background: $color-white;
   color: $color-violet;
+}
+
+.btn {
+  font-family: $font-sans-serif;
+  font-weight: $font-weight-bold;
+  font-size: 14px;
+  line-height: 25px;
+  border-radius: 0;
+  letter-spacing: 1px;
+  text-decoration: none !important;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  &:hover, &:active, &:focus {
+    transition: none;
+    -webkit-transition: background-color 200ms ease-out;
+    -moz-transition: background-color 200ms ease-out;
+    -o-transition: background-color 200ms ease-out;
+  }
+  &:disabled {
+    background-color: $color-gray;
+    color: $color-medium-gray;
+    border: 2px solid $color-gray;
+    cursor: default;
+  }
+}
+
+.btn-default {
+  @extend .btn;
+  background-color: $color-violet;
+  color: $color-white;
+  font-weight: $font-weight-semibold;
+  border: 2px solid $color-violet !important;
+  &:hover, &:active, &:focus {
+    background-color: $color-white;
+    color: $color-violet;
+  }
+}
+
+.btn-group {
+  margin-bottom: 3rem;
+}
+
+.btn-inverse {
+  @extend .btn;
+  border: 2px solid $color-black;
+  color: $color-black;
+  background: $color-white;
+  &:hover, &:focus, &:active {
+    background: $color-yellow;
+    border: 2px solid;
+    color: $color-black;
+  }
+}
+
+.inverse button:hover,
+.inverse button:active,
+.inverse button:focus {
+  background-color: $color-light-blue;
+  color: $color-black;
+  border: $color-black;
+}
+
+.inverse a:focus,
+.inverse a:active,
+.inverse a:hover {
+  color: $color-light-blue;
+}
+
+.inverse .alert {
+  background-color: transparent;
+  color: $color-orange;
+  border-bottom: 1px solid $color-orange;
+  border-radius: 0;
+}
+
+.highlighted {
+  color: $color-magenta;
+  font-weight: $font-weight-semibold;
+}
+
+.decorative-arrow {
+  margin-left: -3rem;
+}
+
+ul {
+  padding-left: 0;
+}
+
+li {
+  list-style: none;
+}
+
+ol.spacious-list,
+ul.spacious-list {
+  li {
+    margin-bottom: 1.2rem;
+  }
+}
+
+ol.alpha > li {
+  list-style-type: lower-alpha;
+  padding-left: 1rem;
+}
+
+ol.num > li {
+  list-style-type: decimal;
+}
+
+ul.bullets, ul.bullets ul {
+  padding-left: 1.5em !important;
+  li {
+    list-style-type: circle;
+  }
+}
+
+section {
+  width: 100%;
+}
+
+table {
+  margin-bottom: 4rem;
+}
+
+table > tbody > tr {
+  line-height: 2.5rem;
+}
+
+table > tbody > tr > th {
+  font-family: $font-serif;
+  font-weight: $font-weight-normal;
+  min-width: 400px;
+}
+
+pre {
+  white-space: -moz-pre-wrap;
+  white-space: -o-pre-wrap;
+  white-space: pre-wrap;
+  word-wrap: break-word; /* Internet Explorer 5.5+ */
+  border: 0;
 }
 
 
@@ -102,6 +235,48 @@ code {
   margin-right: 4px;
   font-family: $font-monospace, monospace;
 }
+
+
+/* grid / layout */
+.col-centered {
+  margin: 0 auto;
+  float: none;
+}
+
+.container-full {
+  width: 100%;
+  height: 100%;
+}
+
+/////////// text
+.centered-text {
+  text-align: center;
+}
+
+.blue-text {
+  color: $color-blue;
+}
+
+
+.text-primary {
+  color: $color-blue;
+}
+
+.help-block {
+  color: $color-orange;
+  text-transform: none;
+}
+
+.section-subtitle {
+  margin-bottom: 1em;
+  margin-top: 20px;
+}
+
+
+.section-symbol {
+  top: -20px;
+}
+
 
 .list-group-item {
   border-radius: 0 !important;
@@ -149,67 +324,11 @@ textarea {
   border-radius: 0;
 }
 
-/* Section styles */
-section {
-  padding-top: 5rem;
-  padding-bottom: 7rem;
-  .section-title {
-    font-family: $font-sans-title;
-  }
 
-  @include media-breakpoint-down(sm) {
-    .section-title {
-      color: $color-violet;
-    }
-    .section-subtitle {
-      color: $color-black;
-    }
-  }
-  .section-subtitle {
-    font-weight: 300;
-  }
-}
-
-section > .content {
-  margin: 0 auto;
-  @include make-col(10);
-  @include media-breakpoint-down(md) {
-    @include make-col(11);
-  }
-}
-
-section > .content > .row > .content-left {
-  @include media-breakpoint-only(xl) {
-    @include make-col(3);
-  }
-  @include media-breakpoint-only(lg) {
-    .decorative-arrow {
-      margin-left: -2rem;
-    }
-    @include make-col(4);
-  }
-  @include media-breakpoint-only(md) {
-    @include make-col(4);
-  }
-  @include media-breakpoint-down(sm) {
-    @include make-col(10);
-  }
-}
-
-section > .content > .row > .content-right {
-  @include media-breakpoint-only(xl) {
-    @include make-col(7);
-    @include make-col-offset(1);
-  }
-  @include media-breakpoint-only(lg) {
-    @include make-col(6);
-    @include make-col-offset(1);
-  }
-  @include media-breakpoint-only(md) {
-    padding-left: 20px;
-    @include make-col(6);
-    @include make-col-offset(1);
-  }
+.section-intro {
+  font-family: $font-serif;
+  font-size: 1.25em;
+  line-height: 1.7em;
 }
 
 li.item-set {
@@ -233,58 +352,7 @@ li.item-set {
   }
 }
 
-.github {
-  display: inline;
-}
 
-.social {
-  span {
-    float: left;
-  }
-  a {
-    background-position-x: 0;
-    border-bottom: none;
-    display: block;
-    height: 30px;
-    width: 30px;
-    margin-right: 10px;
-    &:hover, &:active, &:focus {
-      background-position-x: -30px !important;
-    }
-  }
-  .email > a {
-    background: url('../../img/logos/mail-sprite.svg') no-repeat;
-    background-size: auto 30px;
-  }
-  /* github is not a perfect circle */
-  .github > a {
-    background: url('../../img/logos/github-sprite.svg') no-repeat;
-    background-size: auto 29px;
-  }
-  .website > a {
-    background: url('../../img/arrow-sprite.svg') no-repeat;
-    background-size: auto 30px;
-  }
-  .twitter > a {
-    background: url('../../img/logos/twitter-sprite.svg') no-repeat;
-    background-size: auto 30px;
-  }
-}
-
-.social.big {
-  .twitter > a, .github > a, .email > a {
-    background-size: auto 60px;
-    height: 60px;
-    width: 60px;
-    &:hover, &:active, &:focus {
-      background-position-x: -60px !important;
-    }
-  }
-  /* github is not a perfect circle */
-  .github > a {
-    background-size: auto 58px;
-  }
-}
 
 .inverse {
   .social {
@@ -294,44 +362,38 @@ li.item-set {
   }
 }
 
-.bg-black, .inverse {
-  color: $color-white;
-  h1, .section-title {
-    color: $color-yellow !important;
-  }
 
-  a {
-    color: $color-white;
-    &:hover, &:focus, &:active {
-      border-bottom: 3px solid $color-white;
-    }
-  }
-  .btn, .btn-default, .btn-inverse {
-    background-color: $color-white;
-    color: $color-black;
-    font-weight: $font-weight-semibold;
-    &:hover, &:active, &:focus {
-      background-color: $color-yellow;
-      border-bottom: none;
-    }
-  }
-  .section-subtitle {
-    @include media-breakpoint-down(md) {
-      color: $color-white;
-    }
-  }
-}
-
-.bg-violet {
-  @extend .bg-black;
-  background-color: $color-violet-large-text;
-  color: $color-white;
-  h1, .section-title {
-    color: $color-white !important;
-  }
-}
 
 .bg-violet-dark {
   @extend .bg-black;
   background-color: #3b2668;
 }
+
+/* logos */
+.footer-lil-logo {
+  width: 173px;
+  height: 90px;
+  display: block;
+}
+
+.footer-lil-logo-white {
+  @extend .footer-lil-logo;
+  background: url("../../img/logos/lil-white.svg") no-repeat !important;
+  background-size: contain !important;
+}
+
+.footer-lil-logo-black {
+  @extend .footer-lil-logo;
+  background: url("../../img/logos/lil-black.svg") no-repeat !important;
+  background-size: contain !important;
+}
+
+
+@import 'bg-variants';
+@import 'social';
+@import 'a11y';
+@import 'dropdown';
+@import 'nav';
+@import 'footer';
+@import 'page-structure';
+

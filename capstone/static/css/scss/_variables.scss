@@ -2,8 +2,6 @@
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
 
-@import 'fonts';
-
 // brand color
 $color-blue: #0276FF;
 
@@ -21,7 +19,7 @@ $color-violet: #4830FD;
 $color-yellow: #FFD21B;
 
 /* important text*/
-$color-magenta: #A200DB;
+$color-magenta: #E878FF;
 
 /* use sparingly, or for decorative purposes.
 These colors are difficult for people to see */
@@ -41,7 +39,7 @@ $color-tan: #F7F6F2;
 $color-light-gray: #f7f7f9;
 $color-medium-blue: #78B6FF;
 $color-light-blue: #D2E7FF;
-$color-dark-blue: #22349A;
+$color-dark-blue: #004FB3;
 $color-orange: #EDA633;
 
 
@@ -113,152 +111,4 @@ $font-sans-title: "titillium", sans-serif;
 $font-serif-fancy: "Libre Baskerville", "Baskerville", serif;
 $font-monospace: "source-code", monospace;
 
-.font-sans-serif {
-  font-family: $font-sans-serif;
-}
-
-.font-italic {
-  font-style: italic
-}
-
-.font-body {
-  font-family: $font-sans-serif;
-  font-weight: 300;
-  letter-spacing: 0.05em;
-}
-
-.font-bold,
-.font-semibold,
-.font-body,
-.font-header,
-.font-header-bold {
-  @extend .font-body;
-}
-
-.font-serif {
-  font-family: $font-serif !important;
-}
-
-
-.section-symbol {
-  top: -20px;
-}
-
-// h6 starts at $base-font-size
-// headings grow from h6 to h1 by $heading-scale
-@include media-breakpoint-only(xl) {
-  $base-font-size: 20px;
-  $heading-scale: 10; // amount of px headings grow from h6 to h1
-  @for $i from 1 through 6 {
-    h#{$i}, .h#{$i} {
-      font-size: $base-font-size + $heading-scale * (6 - $i);
-    }
-  }
-}
-
-@include media-breakpoint-only(lg) {
-  $base-font-size: 18px;
-  $heading-scale: 8; // amount of px headings grow from h6 to h1
-  @for $i from 1 through 6 {
-    h#{$i}, .h#{$i} {
-      font-size: $base-font-size + $heading-scale * (6 - $i);
-    }
-  }
-}
-
-@include media-breakpoint-only(md) {
-  $base-font-size: 16px;
-  $heading-scale: 6; // amount of px headings grow from h6 to h1
-  @for $i from 1 through 6 {
-    h#{$i}, .h#{$i} {
-      font-size: $base-font-size + $heading-scale * (6 - $i);
-    }
-  }
-}
-
-@include media-breakpoint-down(sm) {
-  $base-font-size: 14px;
-  $heading-scale: 4; // amount of px headings grow from h6 to h1
-  @for $i from 1 through 6 {
-    h#{$i}, .h#{$i} {
-      font-size: $base-font-size + $heading-scale * (6 - $i);
-    }
-  }
-}
-
-
-.section-subtitle {
-  margin-bottom: 1em;
-  margin-top: 20px;
-}
-
-/* grid / layout */
-.col-centered {
-  margin: 0 auto;
-  float: none;
-}
-
 $header-margin-size: 4rem;
-
-
-.container-full {
-  width: 100%;
-  height: 100%;
-}
-
-/////////// text
-.centered-text {
-  text-align: center;
-}
-
-.blue-text {
-  color: $color-blue;
-}
-
-.bold-text {
-  @extend .font-bold;
-  font-weight: $font-weight-bold;
-}
-
-strong {
-  @extend .bold-text;
-}
-
-.semibold-text {
-  @extend .font-semibold;
-}
-
-.text-primary {
-  color: $color-blue;
-}
-
-.help-block {
-  color: $color-orange;
-  text-transform: none;
-}
-
-strong, b {
-  @extend .font-semibold;
-}
-
-
-
-
-/* logos */
-.footer-lil-logo {
-  width: 173px;
-  height: 90px;
-  display: block;
-}
-
-.footer-lil-logo-white {
-  @extend .footer-lil-logo;
-  background: url("../../img/logos/lil-white.svg") no-repeat !important;
-  background-size: contain !important;
-}
-
-.footer-lil-logo-black {
-  @extend .footer-lil-logo;
-  background: url("../../img/logos/lil-black.svg") no-repeat !important;
-  background-size: contain !important;
-}

@@ -1,4 +1,5 @@
 @import 'variables';
+@import 'base';
 @import 'map';
 @import 'footer/black';
 
@@ -20,10 +21,10 @@ h1 {
 }
 
 .splash-quote span {
-  @extend .h3;
   @include header-styles;
   font-family: $font-serif-fancy;
   font-weight: normal;
+  font-size: 3.3em;
 }
 
 .section-title {

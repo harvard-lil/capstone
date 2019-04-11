@@ -19,7 +19,6 @@
 }
 
 .subtitle.simple-subtitle {
-  @extend .h4;
   &:before {
     content: "";
     margin: 0;
