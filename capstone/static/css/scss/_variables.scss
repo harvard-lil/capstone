@@ -37,7 +37,7 @@ $color-gray: #D9D9D9;
 $color-medium-gray: #979797;
 $color-tan: #F7F6F2;
 $color-light-gray: #f7f7f9;
-$color-medium-blue: #78B6FF;
+$color-medium-blue: #2C60FF;
 $color-light-blue: #D2E7FF;
 $color-dark-blue: #004FB3;
 $color-orange: #EDA633;
@@ -98,11 +98,12 @@ $color-violet-gray-dark: #474756;
 @mixin button($color1, $color2, $color3) {
   margin: 0.8em 0;
   &.btn-primary {
-    border: 0;
+    border: 2px solid $color1;
     background-color: $color1;
     color: $color2;
     &:hover, &:active, &:focus {
       background-color: $color3;
+      border: 2px solid $color3;
     }
   }
   &.btn-secondary {

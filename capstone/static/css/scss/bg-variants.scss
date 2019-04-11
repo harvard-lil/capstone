@@ -21,16 +21,13 @@
     border-right: none;
   }
   a {
-    border-bottom: 3px solid $color-violet;
+    color: $color-dark-blue;
     &:hover, &:active, &:focus {
       color: $color-black;
-      border-bottom: 3px solid $color-black;
     }
   }
-  .btn {
-    &:hover, &:active, &:focus {
-      background-color: $color-yellow;
-    }
+  .btn-primary, .btn-secondary, .btn-tertiary {
+    @include button($color-dark-blue, $color-yellow, $color-black);
   }
 }
 
@@ -38,6 +35,12 @@
   color: $color-white;
   h1, .section-title {
     color: $color-yellow !important;
+  }
+  a {
+    color: $color-magenta;
+    &:hover, &:active, &:focus {
+      color: $color-pink;
+    }
   }
   .btn-primary, .btn-secondary, .btn-tertiary {
     @include button($color-magenta, $color-black, $color-pink);
@@ -49,15 +52,18 @@
   }
   border-top: 1px solid $color-white;
   margin-top: 0;
-  a {
-    color: $color-magenta;
-
-  }
   .title-section > h1.page-title {
     color: $color-white !important;
   }
   .explainer-section > .content {
     color: $color-white;
+  }
+}
+
+.bg-tan {
+  @extend .bg-white;
+  .btn-primary, .btn-secondary, .btn-tertiary {
+    @include button ($color-medium-blue, $color-white, $color-dark-blue)
   }
 }
 
