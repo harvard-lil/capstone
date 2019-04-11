@@ -429,9 +429,9 @@ def test_reorder_head_matter(case_xml):
         <opinion type="majority">
             <p id="d">foo</p>
             <headnotes id="c1">foo</headnotes>
+            <headnotes id="c2">foo</headnotes>
             <footnote label="†">
                 <p id="e">foo</p>
-                <headnotes id="c2">foo</headnotes>
             </footnote>
         </opinion>
         <opinion type="dissent">
