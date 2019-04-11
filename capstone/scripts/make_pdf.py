@@ -19,8 +19,9 @@ from capdb.models import VolumeMetadata, Citation, PageXML
 from capdb.storages import pdf_storage
 
 # multiplier to convert pixel dimensions to point dimensions used by PDF, assuming 300 PPI
-from scripts.compress_volumes import open_captar_volume
+from scripts.compress_volumes import open_captar_volume, files_by_type
 from scripts.helpers import volume_barcode_from_folder
+from scripts.refactor_xml import parse
 
 pixels_to_points = 1 / 300 * inch
 
@@ -60,34 +61,49 @@ def make_pdf(volume_folder, show_words=False, missing_pages=0):
         missing_pages: if using test data, number of pages that are missing from beginning of volume
     """
 
-    # read volume metadata
-    volume_metadata = VolumeMetadata.objects.select_related('reporter').get(pk=volume_barcode_from_folder(volume_folder))
-
-    # read case metadata to add bookmarks to PDF
-    bookmarks = defaultdict(list)
-    for i, case in enumerate(volume_metadata.case_metadatas.prefetch_related(Prefetch('citations', queryset=Citation.objects.filter(type='official'))).all()):
-        page = int(case.first_page)
-        if case.duplicative:
-            bookmarks[page].append("Case %s" % (i+1))
-        else:
-            cite = case.citations.all()[0]
-            bookmarks[page].append(cite.cite)
 
     # read list of files from captar
     volume_path = Path("redacted", volume_folder)
     print("Loading %s" % volume_path)
     with open_captar_volume(volume_path) as volume_storage:
 
+        paths = files_by_type(sorted(volume_storage.iter_files_recursive()))
+
+        # read volume metadata
+        try:
+            volume_metadata = VolumeMetadata.objects.select_related('reporter').get(pk=volume_barcode_from_folder(volume_folder))
+            volume_number = volume_metadata.volume_number
+            reporter_name = volume_metadata.reporter.full_name
+            reporter_short_name = volume_metadata.reporter.short_name
+            pages = (page.get_parsed_xml() for page in PageXML.objects.filter(volume__metadata=volume_metadata).defer('orig_xml'))
+            # read case metadata to add bookmarks to PDF
+            bookmarks = defaultdict(list)
+            for i, case in enumerate(volume_metadata.case_metadatas.prefetch_related(Prefetch('citations', queryset=Citation.objects.filter(type='official'))).all()):
+                page = int(case.first_page)
+                if case.duplicative:
+                    bookmarks[page].append("Case %s" % (i+1))
+                else:
+                    cite = case.citations.all()[0]
+                    bookmarks[page].append(cite.cite)
+        except VolumeMetadata.DoesNotExist:
+            parsed = parse(volume_storage, paths['volume'][0])
+            volume_el = parsed('volume')
+            reporter_el = volume_el('reporter')
+            volume_number = reporter_el.attr.volnumber
+            reporter_name = reporter_el.text()
+            reporter_short_name = reporter_el.attr.abbreviation
+            pages = (parse(volume_storage, path, remove_namespaces=False) for path in paths['alto'])
+            bookmarks = {}
+
         # set up PDF
         pdf = PdfFileWriter()
-        pdf.addMetadata({'/Title': "%s volume %s" % (volume_metadata.reporter.full_name, volume_metadata.volume_number)})
+        pdf.addMetadata({'/Title': "%s volume %s" % (reporter_name, volume_number)})
         pdf.addMetadata({'/Creator': 'Harvard Library Innovation Lab'})
 
         # process each page
-        for page in tqdm(PageXML.objects.filter(volume__metadata=volume_metadata).defer('orig_xml')):
+        for parsed_alto in tqdm(pages):
 
             # read page info from database
-            parsed_alto = page.get_parsed_xml()
             tif_file = Path('images', parsed_alto('alto|fileName').text()).with_suffix('.tif')
             page_number = int(parsed_alto('alto|Page').attr('PHYSICAL_IMG_NR'))
 
@@ -100,7 +116,6 @@ def make_pdf(volume_folder, show_words=False, missing_pages=0):
                 media_box = image_pdf_page.mediaBox
                 width = float(media_box.getWidth())
                 height = float(media_box.getHeight())
-
 
             ### create text page
 
@@ -165,6 +180,6 @@ def make_pdf(volume_folder, show_words=False, missing_pages=0):
                     pdf.addBookmark(bookmark, page_number - 1 - missing_pages)
 
     # save pdf to storage
-    pdf_name = slugify("%s %s" % (volume_metadata.volume_number, volume_metadata.reporter.short_name)) + ".pdf"
+    pdf_name = slugify("%s %s" % (volume_number, reporter_short_name)) + ".pdf"
     with pdf_storage.open(pdf_name, 'wb') as pdf_file:
         pdf.write(pdf_file)
