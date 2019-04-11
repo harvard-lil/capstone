@@ -181,15 +181,16 @@ class VolumeRenderer:
 
     def close_string(self, string_el):
         """ Once <String CONTENT> is reassembled, strip any closing spaces and reconstruct CC value. """
-        content = string_el.attrib['CONTENT']
-        if content.endswith(' '):
-            content = string_el.attrib['CONTENT'] = content[:-1]
+        string_attrib = string_el.attrib
+        content = string_attrib['CONTENT']
+        if content.strip() != content:
+            content = string_attrib['CONTENT'] = content.strip()
         if content:
             # convert integer value for character confidence, like 0b10101010, back into a string like '90909090', by
             # converting integer to binary string, left padding with zeroes, and replacing 1 with 9
-            string_el.attrib['CC'] = bin(int(string_el.attrib['CC']))[2:].zfill(len(string_el.attrib['CONTENT'])).replace('1', '9')
+            string_attrib['CC'] = bin(int(string_attrib['CC']))[2:].zfill(len(string_attrib['CONTENT'])).replace('1', '9')
         else:
-            string_el.attrib['CC'] = '0'
+            string_attrib['CC'] = '0'
 
     def rect_to_dict(self, rect):
         """ Convert [left, top, width, height] back into attributes. """
@@ -314,7 +315,7 @@ class VolumeRenderer:
         """
         case_structure = case.structure
         self.opinions = case_structure.opinions
-        self.duplicative = case_structure.metadata.duplicative
+        self.duplicative = case.duplicative
 
         # <section class='case'>, or <casebody>
         case_el = self.make_case_el(case)
