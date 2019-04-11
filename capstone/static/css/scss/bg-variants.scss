@@ -1,4 +1,5 @@
 .bg-white {
+  color: $color-black;
   h1, .h1 {
     color: $color-black;
   }
@@ -8,27 +9,14 @@
       color: $color-dark-blue;
     }
   }
-}
 
-/* color variations */
-
-.bg-black {
-  border-top: 1px solid $color-white;
-  margin-top: 0;
-  color: $color-white;
-  a {
-   color: $color-magenta;
-
-  }
-  .title-section > h1.page-title {
-    color: $color-white !important;
-  }
-  .explainer-section > .content {
-    color: $color-white;
+  .btn-primary, .btn-secondary, .btn-tertiary {
+    @include button($color-blue, $color-white, $color-dark-blue);
   }
 }
 
 .bg-yellow {
+  color: $color-black;
   #sidebar-menu {
     border-right: none;
   }
@@ -46,27 +34,30 @@
   }
 }
 
-
-.bg-black, .inverse {
+.bg-black {
   color: $color-white;
   h1, .section-title {
     color: $color-yellow !important;
   }
-
-
-  .btn, .btn-default, .btn-inverse {
-    background-color: $color-white;
-    color: $color-black;
-    font-weight: $font-weight-semibold;
-    &:hover, &:active, &:focus {
-      background-color: $color-yellow;
-      border-bottom: none;
-    }
+  .btn-primary, .btn-secondary, .btn-tertiary {
+    @include button($color-magenta, $color-black, $color-pink);
   }
   .section-subtitle {
     @include media-breakpoint-down(md) {
       color: $color-white;
     }
+  }
+  border-top: 1px solid $color-white;
+  margin-top: 0;
+  a {
+    color: $color-magenta;
+
+  }
+  .title-section > h1.page-title {
+    color: $color-white !important;
+  }
+  .explainer-section > .content {
+    color: $color-white;
   }
 }
 

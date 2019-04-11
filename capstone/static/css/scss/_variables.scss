@@ -41,7 +41,7 @@ $color-medium-blue: #78B6FF;
 $color-light-blue: #D2E7FF;
 $color-dark-blue: #004FB3;
 $color-orange: #EDA633;
-
+$color-pink: #F9DBFF;
 
 //$color-yellow-light: #FFFDEA;
 $color-yellow-light: #EAEAFF;
@@ -92,6 +92,33 @@ $color-violet-gray-dark: #474756;
   /* in small screens, simply make background violet */
   @include media-breakpoint-down(sm) {
     background: $color-violet-large-text;
+  }
+}
+
+@mixin button($color1, $color2, $color3) {
+  margin: 0.8em 0;
+  &.btn-primary {
+    border: 0;
+    background-color: $color1;
+    color: $color2;
+    &:hover, &:active, &:focus {
+      background-color: $color3;
+    }
+  }
+  &.btn-secondary {
+    border: 2px solid $color1;
+    color: $color1;
+    background-color: transparent;
+    &:hover, &:active, &:focus {
+      border: 2px solid $color3;
+      color: $color3;
+    }
+  }
+  &.btn-tertiary {
+    color: $color1;
+    &:hover, &:active, &:focus {
+      color: $color3;
+    }
   }
 }
 
