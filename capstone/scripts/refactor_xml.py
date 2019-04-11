@@ -27,11 +27,34 @@ from scripts.render_case import iter_pars
 
 
 ### HELPERS ###
+
+def scan_dupe_paragraphs():
+    """
+        Check captar files for paragraphs where the second half is a repeat of the first half. Some of these are caused
+        by a processing bug that replaces one ALTO paragraph with another. Others are benign, such as when a case
+        repeats the party names twice.
+    """
+    dupes = []
+    for zip_path in captar_storage.iter_files('unredacted'):
+        print("Scanning %s" % zip_path)
+        with open_captar_volume(Path(zip_path), False) as unredacted_storage:
+            paths = files_by_type(sorted(unredacted_storage.iter_files_recursive()))
+            for path in paths['case']:
+                parsed = parse(unredacted_storage, path)
+                for par in parsed("casebody [id]").items():
+                    text = par.text()
+                    if len(text) < 20:
+                        continue
+                    text = text.replace('\xad', '').replace('-', '')
+                    if text[-(len(text) // 2):] == text[:len(text) // 2]:
+                        print(path, par)
+                        dupes.append([path, str(par)])
+    Path('test_data/zips/duplicate_pars.json').write_text(json.dumps(dupes, indent=4))
+
 def dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, unredacted_storage, redacted_storage, case, pages, renderer, blocks_by_id):
     """
         For debugging when a case fails to match during assert_reversability -- dump case and alto files locally:
-            unredacted_storage.parent.location = 'test_data/zips'
-            redacted_storage.parent.location = 'test_data/zips'
+            unredacted_storage.parent.location = redacted_storage.parent.location = 'test_data/zips'
             dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, unredacted_storage, redacted_storage, case, pages, renderer, blocks_by_id)
     """
     page_objs_by_block_id = {block['id']: p for p in pages for block in p['blocks']}
@@ -69,18 +92,13 @@ def dump_files_for_page(volume_barcode, redacted, alto_xml_output, original_alto
 
 # Some different ways to exclude files from validation, or patch their contents:
 skip_redacted_validation = {
-    # For this volume the redacted version was processed years before the unredacted version, so some files don't match:
-    '32044038693412',
+    # For these volumes the redacted version was processed years before the unredacted version, so some files don't match:
+    '32044038693412', '32044049198187',
 }
 skip_validation_files = {}
 special_text_replacements = {}
 special_cases = {
-    # These cases have one TextBlock that ends with a hyphen, and the next TextBlock starting with a redacted <bracketnum>,
-    # which together leads Innodata to insert a space where it usually wouldn't. Delete the space.
-    # NOTE: These may represent an underlying bug where a headnote that spans pages gets its second half replaced with
-    # a copy of its first half.
-    "casemets/32044038665188_redacted_CASEMETS_0147.xml.gz": [('[id="Aqs"]', 'replace_text', ('knowl­ William', 'knowl­William'))],
-    "casemets/32044038686689_redacted_CASEMETS_0040.xml.gz": [('[id="AL3u"]', 'replace_text', ('un­ This', 'un­This'))],
+    # "casemets/32044038665188_redacted_CASEMETS_0147.xml.gz": [('[id="Aqs"]', 'replace_text', ('knowl­ William', 'knowl­William'))],
 }
 
 def apply_special_cases(path, parsed):
@@ -522,7 +540,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
             for s in parsed('String'):
                 content = s.attrib['CONTENT']
                 if content != content.strip():
-                    pre_space, post_space = re.match(r'(\s*).*?(\s*)', content).groups()
+                    pre_space, post_space = re.match(r'(\s*).*?(\s*)$', content).groups()
                     s.attrib['CONTENT'] = content[len(pre_space):-len(post_space) or None]
                     s.attrib['CC'] = s.attrib['CC'][len(pre_space):-len(post_space) or None]
 
@@ -576,13 +594,14 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
             casebodies = [new_casebody, old_casebody]
 
             # normalize formatting in casebody xml
-            strip_whitespace_els = 'blockquote|author|p|headnotes|history|disposition|syllabus|summary|attorneys|judges|otherdate|decisiondate|parties|seealso|citation|docketnumber|court'
+            strip_whitespace_els = 'blockquote|author|p|headnotes|history|disposition|syllabus|summary|attorneys|judges|otherdate|decisiondate|parties|seealso|citation|docketnumber|court|correction'
             for i, casebody in enumerate(casebodies):
                 # remove whitespace from start and end of tags:
                 casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', casebody, flags=re.S)
                 casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', casebody, flags=re.S)
                 casebody = casebody.replace(' label=""', '')  # footnote with empty label
                 casebody = re.sub(r' +', ' ', casebody)  # normalize multiple spaces
+                casebody = casebody.replace('\xad ', '\xad')  # fix doubled-paragraph bug
                 casebodies[i] = casebody
 
             xml_strings_equal(*casebodies, {
@@ -598,6 +617,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                 new_case_head = renderer.render_case_header(case_obj.case_id, case_obj.initial_metadata.metadata)
                 old_case_head = str(parsed('case'))
                 old_case_head = old_case_head.replace('<docketnumber/>', '')
+                old_case_head = old_case_head.replace('&#13;', ' ')  # normalize \r
                 old_case_head = re.sub(r'\s*(<[^>]+>)\s*', r'\1', old_case_head, flags=re.S)  # strip whitespace around elements
                 old_case_head = re.sub(r'\s+', ' ', old_case_head)  # normalize multiple spaces within elements
                 xml_strings_equal(new_case_head, old_case_head)
@@ -629,7 +649,6 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
                     subprocess.call(['rsync', '-a', storage.parent.location + '/', str(dest_dir)])
                 shutil.rmtree(storage.parent.location)  # delete local temp dir
         raise
-
 
 def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=None, key=settings.REDACTION_KEY, save_failed=False):
     """
@@ -747,7 +766,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
             # <PrintSpace> mostly seems to be redundant of <Page>, but store it if it's not redundant:
             space_rect = rect(space_el[0].attrib)
-            if space_rect == [0, 0, page['width'], page['height']]:
+            if space_rect == (0, 0, page['width'], page['height']):
                 space_index = None
             else:
                 page['spaces'].append(space_rect)
@@ -768,12 +787,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
                 # check for redacted blocks
                 if redacted_storage:
-                    if block_rect in allowed_block_rects:
-                        # if redacted and unredacted block IDs don't match, add a text_replacement for this file to
-                        # change redacted ID to unredacted ID during later validation.
-                        if block['id'] != allowed_block_rects[block_rect]:
-                            text_replacements.setdefault(redacted_path, []).append((allowed_block_rects[block_rect], block['id']))
-                    else:
+                    if block_rect not in allowed_block_rects:
                         block['redacted'] = True
 
                 # handle <Illustration>
@@ -850,8 +864,13 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                             if (next_tag is not None and next_tag.tag == 'SP') or (text and text[-1] not in ('-', '\xad')):
                                 text += ' '
 
-                            # <String CONTENT> can be empty, so only include text if it's filled in:
-                            if text:
+                            # add [['ocr'], text, ['/ocr']]
+                            if redacted_span and 'footnotemark' in string_attrib['TAGREFS'] and text and text[-1] == ' ':
+                                # don't redact space after footnote
+                                tokens.extend((ocr_token, text[:-1], ['/redact'], ' ', ['/ocr']))
+                                redacted_span = False
+                            elif text:
+                                # <String CONTENT> can be empty, so only include text if it's filled in:
                                 tokens.extend((ocr_token, text, ['/ocr']))
                             else:
                                 tokens.extend((ocr_token, ['/ocr']))

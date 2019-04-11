@@ -1364,12 +1364,19 @@ class CaseXML(BaseXMLModel):
         #     </div>
         # Build a dictionary of ID to ALTO order for sorting, e.g. {'b15-4': (15, 2),)}
         # ALTO blocks have IDs like "BL_<page number>.<block number>", so extract the two numbers to sort numerically.
+        # Skip elements inside footnotes. We can more often do the correct thing by attaching entities to the closest
+        # non-footnote element -- though this will do the wrong thing when entities were extracted from footnotes in
+        # the first place.
+        footnote_el_ids = {el.attr.id for el in casebody('casebody|footnote [id]').items()}
         id_to_alto_order = {}
         for xref_el in parsed_xml('mets|div[TYPE="blocks"] > mets|div[TYPE="element"]').items():
             par_el, blocks_el = xref_el('mets|fptr').items()
+            par_id = par_el('mets|area').attr.BEGIN
+            if par_id in footnote_el_ids:
+                continue
             alto_id = blocks_el('mets|area').attr.BEGIN
             parts = alto_id.split('_')[1].split('.')
-            id_to_alto_order[par_el('mets|area').attr.BEGIN] = (int(parts[0]), int(parts[1]))
+            id_to_alto_order[par_id] = (int(parts[0]), int(parts[1]))
 
         # Split remove_els into head_els and opinion_els, based on whether or not they come before the first
         # element in the first opinion:
