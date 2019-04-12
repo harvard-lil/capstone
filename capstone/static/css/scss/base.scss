@@ -334,13 +334,13 @@ li.item-set {
 
 .footer-lil-logo-white {
   @extend .footer-lil-logo;
-  background: url("../../img/logos/lil-white.svg") no-repeat !important;
+  background: url("../../img/logos/lil-white.svg") no-repeat;
   background-size: contain !important;
 }
 
 .footer-lil-logo-black {
   @extend .footer-lil-logo;
-  background: url("../../img/logos/lil-black.svg") no-repeat !important;
+  background: url("../../img/logos/lil-black.svg") no-repeat;
   background-size: contain !important;
 }
 
