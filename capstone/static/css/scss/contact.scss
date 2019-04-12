@@ -26,18 +26,9 @@ input, textarea {
   border: 0;
 }
 
-
 .errorlist {
   li {
     color: $color-dark-blue;
     font-size: 0.9rem;
-  }
-}
-
-.btn.btn-default {
-  border-bottom: 0;
-  &:active, &:focus {
-    background-color: $color-white;
-    color: $color-black !important;
   }
 }

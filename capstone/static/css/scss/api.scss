@@ -32,12 +32,6 @@ button, .btn {
   ul, li, a, .prettyprint {
     font-size: 16px;
   }
-
-  .page-header h1 {
-    letter-spacing: 1px;
-    @extend .h2;
-  }
-
   .pager > .previous,
   .pager > .next {
     list-style: none;
