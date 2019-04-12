@@ -1,19 +1,22 @@
 {% extends "layouts/narrow.html" %}
 {% block title %}
-  {% if not citations %}Read Caselaw: {{ full_cite }}
-  {% else %}Read Caselaw: {{ citations.0 }}{% endif %}
+  {% if not cases %}
+    Read Caselaw: {{ full_cite }}
+  {% else %}
+    Read Caselaw: {{ cases.0.citations.first }}
+  {% endif %}
 {% endblock %}
 {% block meta_description %}Caselaw Access Project cases{% endblock %}
 
 {% block main_content %}
   <div class="page-section">
-    {% if not citations %}
+    {% if not cases %}
       Citation "{{ full_cite }}" not found. <a href="https://scholar.google.com/scholar?as_sdt=40000006&q={{ full_cite }}">Click here to search Google Scholar</a>.
     {% else %}
-      Multiple cases match "{{ full_cite }}":
+      <h2 class="subtitle">Multiple cases match "{{ full_cite }}"</h2>
       <ul>
-        {% for citation in citations %}
-          <li><a href="{% url 'series' series_slug=reporter.short_name_slug volume_number=volume.volume_number case_id=citation.case_id host 'cite' %}">{{ citation.case }}</a></li>
+        {% for case in cases %}
+          <li><a href="{% url 'citation' series_slug=series_slug volume_number=volume_number page_number=page_number case_id=case.id host 'cite' %}">{{ case.full_cite }}</a></li>
         {% endfor %}
       </ul>
     {% endif %}
