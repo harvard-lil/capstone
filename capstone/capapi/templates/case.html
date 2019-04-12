@@ -9,6 +9,13 @@
 {% block content %}
   <div class="case-container header-margin">
     <div class="metadata text-center col-centered">
+      {% if not request.user.is_authenticated %}
+        <div class="alert alert-success" role="alert">
+          Welcome to the Caselaw Access Project! We allow free access to up to 500 cases per person per day &mdash; see our
+          <a href="{% url 'terms' %}">terms of use</a> for details. <a href="{% url 'register' %}">Sign up for an account</a>
+          to use our API or apply for unlimited research scholar access.
+        </div>
+      {% endif %}
       <div class="court">
         <a href="{{ metadata.court.url }}">
           {{ metadata.court.name }}</a>
