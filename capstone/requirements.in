@@ -80,3 +80,5 @@ mincss       # remove unused css styles
 
 # Elasticsearch
 elasticsearch-dsl
+django-elasticsearch-dsl
+django-elasticsearch-dsl-drf
