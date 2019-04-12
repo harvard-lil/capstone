@@ -24,8 +24,8 @@ from capweb.helpers import reverse
 
 def safe_redirect(request):
     """ Redirect to request.GET['next'] if it exists and is safe, or else to '/' """
-    next = request.GET.get('next', '/')
-    return HttpResponseRedirect(next if is_safe_url(next) else '/')
+    next = request.POST.get('next') or request.GET.get('next') or '/'
+    return HttpResponseRedirect(next if is_safe_url(next, allowed_hosts={request.get_host()}) else '/')
 
 @contextmanager
 def locked_session(request, using='default'):
@@ -61,7 +61,7 @@ def home(request):
     """ Base page -- list all of our jurisdictions and reporters. """
 
     # get reporters sorted by jurisdiction
-    reporters = Reporter.objects.all().prefetch_related('jurisdictions').order_by('short_name')
+    reporters = Reporter.objects.prefetch_related('jurisdictions').order_by('short_name')
     reporters_by_jurisdiction = defaultdict(list)
     for reporter in reporters:
         for jurisdiction in reporter.jurisdictions.all():
@@ -111,7 +111,7 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
     normalized_cite = re.sub(r'[^0-9a-z]', '', full_cite.lower())
     citations = Citation.objects.filter(normalized_cite=normalized_cite)
     if case_id:
-        citations = citations.filter(case_id=case_id)
+        citations = citations.filter(case__id=case_id)
     citations = list(citations)
 
     ### handle case where we found a unique case with that citation
@@ -119,7 +119,7 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
 
         # look up case data
         case = CaseMetadata.objects\
-            .select_related('case_xml', 'body_cache')\
+            .select_related('case_xml', 'body_cache', 'volume', 'reporter')\
             .prefetch_related('citations')\
             .defer('body_cache__xml', 'body_cache__text', 'body_cache__json') \
             .get(citations=citations[0])
@@ -162,9 +162,19 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
 
     ### handle non-unique citation (zero or multiple)
     else:
+        if citations:
+            cases = (CaseMetadata.objects
+                .filter(citations__in=citations)
+                .select_related('reporter')
+                .prefetch_related('citations'))
+        else:
+            cases = []
         return render(request, 'cite/citation_failed.html', {
-            "citations": citations,
+            "cases": cases,
             "full_cite": full_cite,
+            "series_slug": series_slug,
+            "volume_number": volume_number,
+            "page_number": page_number,
         })
 
 def set_cookie(request):

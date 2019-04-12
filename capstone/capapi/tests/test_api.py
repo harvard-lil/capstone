@@ -74,7 +74,7 @@ def test_model_endpoint(request, client, fixture_name, detail_attr, comparison_a
 
 @pytest.mark.django_db
 def test_cases_count_cache(client, three_cases, django_assert_num_queries):
-    # fetching same endpoing a second time should have one less query, because queryset.count() is cached
+    # fetching same endpoint a second time should have one less query, because queryset.count() is cached
     with django_assert_num_queries(select=3):
         response = client.get(api_reverse('casemetadata-list'))
         assert response.json()['count'] == 3
@@ -173,7 +173,7 @@ def test_authenticated_full_case_blacklisted(auth_user, auth_client, case):
 @pytest.mark.django_db
 def test_unlimited_access(auth_user, auth_client, case):
     ### user with unlimited access should not have blacklisted cases count against them
-    auth_user.total_case_allowance = 500
+    auth_user.total_case_allowance = settings.API_CASE_DAILY_ALLOWANCE
     auth_user.unlimited_access = True
     auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
     auth_user.save()

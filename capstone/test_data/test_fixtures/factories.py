@@ -25,8 +25,8 @@ class CapUserFactory(factory.DjangoModelFactory):
 
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
-    total_case_allowance = 500
-    case_allowance_remaining = 500
+    total_case_allowance = settings.API_CASE_DAILY_ALLOWANCE
+    case_allowance_remaining = settings.API_CASE_DAILY_ALLOWANCE
     is_staff = False
     is_superuser = False
     is_active = True
@@ -93,7 +93,7 @@ class VolumeFactory(factory.DjangoModelFactory):
     barcode = factory.Faker('ean', length=13)
     created_by = factory.SubFactory(TrackingToolUserFactory)
     reporter = factory.SubFactory(ReporterFactory)
-    volume_number = factory.Sequence(lambda n: n)
+    volume_number = factory.Sequence(lambda n: str(n))
 
 @register
 class VolumeXMLFactory(factory.DjangoModelFactory):
@@ -131,7 +131,7 @@ class CaseFactory(factory.DjangoModelFactory):
     decision_date = factory.Faker("date_this_century", before_today=True, after_today=False)
     court = factory.SubFactory(CourtFactory)
     volume = factory.SubFactory(VolumeFactory)
-    reporter = factory.SubFactory(ReporterFactory)
+    reporter = factory.LazyAttribute(lambda o: o.volume.reporter)
 
 
 @register
