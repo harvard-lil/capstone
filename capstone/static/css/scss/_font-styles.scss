@@ -1,7 +1,6 @@
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
-
 @import 'font-face';
 
 // Global font styles
@@ -32,18 +31,24 @@ h1, h2, h3, h4, h5, h6,
 h1, .h1 {
   font-size: 3.6em;
   font-weight: $font-weight-semibold;
+  @include media-breakpoint-down(md) {
+    font-size: 3em;
+  }
 }
 
 h2, .h2 {
   font-size: 3em;
   font-weight: normal;
+  @include media-breakpoint-down(md) {
+    font-size: 2.3em;
+  }
+
 }
 
 h3, .h3 {
   font-size: 2em;
   font-weight: $font-weight-semibold;
 }
-
 
 strong, b {
   font-weight: $font-weight-semibold;
