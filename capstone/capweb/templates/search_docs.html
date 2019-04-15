@@ -11,6 +11,7 @@
 {% block title %}CAP Search{% endblock %}
 {% block meta_description %}Caselaw Access Project Search Docs{% endblock %}
 {% block top_section_style %}bg-black{% endblock %}
+{% block row_style %}bg-tan{% endblock %}
 
 {% block explainer %}
   The Caselaw Access Project Search Interface facilitates searching and viewing all official US court cases
@@ -57,7 +58,7 @@
   {# ==============> ABOUT <============== #}
   <div class="page-section">
     <h2 class="subtitle" id="about">Overview</h2>
-    <p><a href="{% url "search" %}">Search CAP</a></p>
+    <p><a class="btn-primary" href="{% url "search" %}">Search CAP</a></p>
     <p>
        With this tool, we aim to provide a simple interface for locating and viewing the cases and metadata in the CAP
       repository. Right now, this tool is fairly basic. You can use it to search through our cases and some of our
