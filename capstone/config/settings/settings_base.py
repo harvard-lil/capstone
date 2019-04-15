@@ -288,13 +288,7 @@ PIPELINE = {
             ),
             'output_filename': 'api.css'
         },
-        'viz': {
-            'source_filenames': (
-                'css/scss/docs.scss',
-                'css/scss/viz.scss',
-            ),
-            'output_filename': 'viz.css'
-        },
+
         'case': {
             'source_filenames': {
                 'css/scss/case.scss',
