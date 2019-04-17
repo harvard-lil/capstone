@@ -8,9 +8,11 @@
   {% stylesheet 'docs' %}
 {% endblock %}
 
-{% block title %}CAP API{% endblock %}
+{% block title %}CAP API documentation{% endblock %}
 {% block meta_description %}Caselaw Access Project API Docs{% endblock %}
 {% block top_section_style %}bg-black{% endblock %}
+{% block row_style %}bg-tan{% endblock %}
+
 
 {% block explainer %}
   The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases
@@ -87,7 +89,7 @@
   {# ==============> GETTING STARTED <============== #}
   <div class="page-section">
     <h2 class="subtitle" id="getting-started">Getting Started</h2>
-    <p><a href="{% api_url "api-root" %}">Browse the API</a></p>
+    <p><a class="btn-primary" href="{% api_url "api-root" %}">API</a></p>
     <p>
       CAPAPI includes an in-browser API viewer, but is primarily intended for software developers to access
       caselaw programmatically, whether to run your own analysis or build tools for other users. API results are in JSON

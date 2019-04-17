@@ -1,4 +1,5 @@
 @import 'variables';
+@import 'base.scss';
 @import 'footer/yellow';
 
 @include media-breakpoint-down(md) {
@@ -19,7 +20,6 @@
 }
 
 .subtitle.simple-subtitle {
-  @extend .h4;
   &:before {
     content: "";
     margin: 0;

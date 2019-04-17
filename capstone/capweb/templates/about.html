@@ -8,11 +8,13 @@
 
 {% block title %}About{% endblock %}
 {% block meta_description %}About the Caselaw Access Project{% endblock %}
+{% block full_content_style %}bg-white{% endblock %}
 
 {% block explainer %}
   The Caselaw Access Project (&#8220;CAP&#8221;) expands public access to U.S. law.
   <br/>
-  Our goal is to make all published U.S. court decisions freely available to the public online, in a consistent format, digitized from the collection of the Harvard Law Library.
+  Our goal is to make all published U.S. court decisions freely available to the public online, in a consistent format,
+  digitized from the collection of the Harvard Law Library.
 {% endblock %}
 
 {% block sidebar_menu %}
@@ -31,7 +33,7 @@
         </li>
         <li>
           <a class="list-group-item" href="#numbers">
-          <span class="text">By the numbers</span>
+            <span class="text">By the numbers</span>
           </a>
         </li>
         <li>
@@ -106,23 +108,23 @@
     <h2 class="subtitle" id="limits">Scope limits</h2>
     <p>CAP does not include:</p>
     <ul class="spacious-list bullets">
-        <li>
-          New cases as they are published. We currently include volumes published through
-          June, 2018, and may or may not include additional volumes in the future.
-        </li>
-        <li>
-          Cases not designated as officially published, such as most lower court decisions.
-        </li>
-        <li>
-          Non-published trial documents such as party filings, orders, and exhibits.
-        </li>
-        <li>
-          Parallel versions of cases from regional reporters, unless those cases were
-          designated by a court as official.
-        </li>
-        <li>
-          Cases officially published in digital form, such as recent cases from Illinois and Arkansas.
-        </li>
+      <li>
+        New cases as they are published. We currently include volumes published through
+        June, 2018, and may or may not include additional volumes in the future.
+      </li>
+      <li>
+        Cases not designated as officially published, such as most lower court decisions.
+      </li>
+      <li>
+        Non-published trial documents such as party filings, orders, and exhibits.
+      </li>
+      <li>
+        Parallel versions of cases from regional reporters, unless those cases were
+        designated by a court as official.
+      </li>
+      <li>
+        Cases officially published in digital form, such as recent cases from Illinois and Arkansas.
+      </li>
     </ul>
     <p>
       Cases published after 1922 do not include headnotes.
@@ -148,16 +150,20 @@
       </li>
     </ul>
   </div>
-    {# ==============> DIGITIZATION PROCESS <============== #}
+  {# ==============> DIGITIZATION PROCESS <============== #}
   <div class="page-section">
-    <h2 class="subtitle" id="digitization">
-      Digitization Process
-    </h2>
+    <h2 class="subtitle" id="digitization">Digitization Process</h2>
     <p>
-      We created this data by digitizing roughly 40 million pages of court decisions contained in roughly 40,000 bound volumes owned by the Harvard Law School Library.
+      We created this data by digitizing roughly 40 million pages of court decisions contained in roughly 40,000 bound
+      volumes owned by the Harvard Law School Library.
     </p>
     <p>
-      Members of our team created metadata for each volume, including a unique barcode, reporter name, title, jurisdiction, publication date and other volume-level information. We then used a high-speed scanner to produce JP2 and TIF images of every page. A vendor then used OCR to extract the text of every case, creating case-level XML files. Key metadata fields, like case name, citation, court and decision date, were corrected for accuracy, while the text of each case was left as raw OCR output. In addition, for cases from volumes not yet in the public domain, our vendor redacted any headnotes.
+      Members of our team created metadata for each volume, including a unique barcode, reporter name, title,
+      jurisdiction, publication date and other volume-level information. We then used a high-speed scanner to produce
+      JP2 and TIF images of every page. A vendor then used OCR to extract the text of every case, creating case-level
+      XML files. Key metadata fields, like case name, citation, court and decision date, were corrected for accuracy,
+      while the text of each case was left as raw OCR output. In addition, for cases from volumes not yet in the public
+      domain, our vendor redacted any headnotes.
     </p>
   </div>
   {# ==============> DATA QUALITY <============== #}
@@ -196,7 +202,7 @@
     <p>
       <span class="highlighted">MLA</span>
       <br/>
-       The President and Fellows of Harvard University. "Caselaw Access Project." 2018, [url].
+      The President and Fellows of Harvard University. "Caselaw Access Project." 2018, [url].
     </p>
     <p>
       <span class="highlighted">Chicago / Turabian</span>
@@ -212,30 +218,30 @@
   {# ==============> USAGE <============== #}
   <div class="page-section">
     <h2 class="subtitle" id="usage">Usage &amp; access</h2>
-      <p>
-        <span class="highlighted">The CAP data is free for the public to use and access.</span>
-      </p>
-      <p>
-        Case metadata, such as the case name, citation, court, date, etc.,
-        is freely and openly accessible without limitation.
-        Full case text can be freely viewed or downloaded but
-        you must register for an account to do so, and currently you may
-        view or download no more than 500 cases per day. In addition,
-        research scholars can qualify for bulk data access by agreeing to certain use and redistribution restrictions.
-        You can request a bulk access agreement by <a href="{% url "register" %}">creating an account</a>
-        and then <a href="{% url "user-details" %}">visiting your account page</a>.
-      </p>
-      <p>
-        Access limitations on full text and bulk data are a component of Harvard’s
-        collaboration agreement with Ravel Law, Inc. (now part of Lexis-Nexis).
-        These limitations will end, at the latest, in March of 2024.
-        In addition, these limitations apply only to cases from
-        jurisdictions that continue to publish their official case law in print form.
-        Once a jurisdiction transitions from print-first publishing to digital-first publishing,
-        these limitations cease. Thus far, Illinois and Arkansas have made this important and positive
-        shift and, as a result, all historical cases from these jurisdictions are freely available to the public
-        without restriction. We hope many other jurisdictions will follow their example soon.
-      </p>
+    <p>
+      <span class="highlighted">The CAP data is free for the public to use and access.</span>
+    </p>
+    <p>
+      Case metadata, such as the case name, citation, court, date, etc.,
+      is freely and openly accessible without limitation.
+      Full case text can be freely viewed or downloaded but
+      you must register for an account to do so, and currently you may
+      view or download no more than 500 cases per day. In addition,
+      research scholars can qualify for bulk data access by agreeing to certain use and redistribution restrictions.
+      You can request a bulk access agreement by <a href="{% url "register" %}">creating an account</a>
+      and then <a href="{% url "user-details" %}">visiting your account page</a>.
+    </p>
+    <p>
+      Access limitations on full text and bulk data are a component of Harvard’s
+      collaboration agreement with Ravel Law, Inc. (now part of Lexis-Nexis).
+      These limitations will end, at the latest, in March of 2024.
+      In addition, these limitations apply only to cases from
+      jurisdictions that continue to publish their official case law in print form.
+      Once a jurisdiction transitions from print-first publishing to digital-first publishing,
+      these limitations cease. Thus far, Illinois and Arkansas have made this important and positive
+      shift and, as a result, all historical cases from these jurisdictions are freely available to the public
+      without restriction. We hope many other jurisdictions will follow their example soon.
+    </p>
   </div>
 
   {# ==============> PRESS <============== #}
@@ -249,9 +255,6 @@
           </p>
           <span class="item-origin">
               {{ news_item.publication }}
-            </span>
-          <span class="bullet">
-               &bull;
             </span>
           <span class="item-date">
               {{ news_item.date }}
@@ -267,77 +270,38 @@
 
     <ul>
       <li class="item-set">
-        <span class="item-name">
-          <a href="https://lil.law.harvard.edu/">
-            LIL
-          </a>
-        </span>
-        <span class="color-red">&bull;</span>
-        <span>
-          The Caselaw Access Project is a Harvard Law School Library Innovation Lab Project.
-        </span>
+        The Caselaw Access Project is a <a class="item-name" href="https://lil.law.harvard.edu/">Harvard Law School
+        Library Innovation Lab</a> Project.
       </li>
       <li class="item-set">
-        <span class="item-name">
-          <a href="https://law.harvard.edu/library">
-            Harvard Law School Library
-          </a>
-        </span>
-        <span class="color-red">&bull;</span>
-        <span>
-          LIL is part of the Harvard Law School Library.
-        </span>
+        LIL is part of the <a class="item-name" href="https://law.harvard.edu/library">
+        Harvard Law School Library.
+      </a>
       </li>
 
       <li class="item-set">
-        <span class="item-name">
-          <a href="https://cyber.law.harvard.edu">
-            Berkman-Klein Center
-          </a>
-        </span>
-        <span class="color-red"> &bull; </span>
-        <span>
-          The Berkman-Klein Center cooperated with LIL on the Caselaw Access Project.
-        </span>
+        <a class="item-name" href="https://cyber.law.harvard.edu">
+          Berkman-Klein Center
+        </a> cooperated with LIL on the Caselaw Access Project.
       </li>
 
       <li class="item-set">
-        <span class="item-name">
-          <a href="https://www.ravellaw.com/">
-            Ravel Law
-          </a>
-        </span>
-        <span class="color-red">&bull;</span>
-        <span>
-          Ravel has partnered with the Harvard Law Library and LIL since the beginning of the Caselaw Access Project.
-          Ravel funded the digitization effort and now offers free public access to the entire corpus through their
-          <a href="https://home.ravellaw.com">search interface</a> and their
-          <a href="https://home.ravellaw.com/api">non-commercial API</a>.
-        </span>
+        <a class="item-name" href="https://www.ravellaw.com/">
+          Ravel Law
+        </a> has partnered with the Harvard Law Library and LIL since the beginning of the Caselaw Access Project.
+        Ravel funded the digitization effort and now offers free public access to the entire corpus through their
+        <a href="https://home.ravellaw.com">search interface</a> and their
+        <a href="https://home.ravellaw.com/api">non-commercial API</a>.
       </li>
 
       <li class="item-set">
-        <span class="item-name">
-          <a href="https://www.classaction.org/">
-            ClassAction.org
-          </a>
-        </span>
-        <span class="color-red"> &bull; </span>
-        <span>
-          Carl Jaeckel of ClassAction.org graciously donated the case.law domain name.
-        </span>
+        Carl Jaeckel of <a class="item-name" href="https://www.classaction.org/">ClassAction.org</a> graciously donated
+        the case.law domain name.
       </li>
 
       <li class="item-set">
-        <span class="item-name">
-          <a href="https://www.cloudflare.com/">
-            Cloudflare
-          </a>
-        </span>
-        <span class="color-red"> &bull; </span>
-        <span>
-          Cloudflare has generously provided LIL with network services for case.law.
-        </span>
+        <a class="item-name" href="https://www.cloudflare.com/">Cloudflare</a> has generously provided LIL with network
+        services for case.law.
       </li>
     </ul>
   </div>

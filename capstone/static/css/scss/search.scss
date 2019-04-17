@@ -1,7 +1,7 @@
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
-@import "variables";
+@import "base.scss";
 
 .row.alert-danger {
   padding: 10px 0;
@@ -117,9 +117,6 @@
     padding-left: 20px !important;
   }
   margin-top: 15px;
-  a {
-    border-bottom: 1px solid $color-blue;
-  }
   p {
     margin-bottom: 0.2em;
   }
@@ -201,14 +198,10 @@ select {
 
 .btn-submit {
   float: right;
-  border: 1px solid $color-violet !important;
-  width: 100px;
-
 }
 
 .submit-button-group {
   float: right;
-  margin-top: 10px;
   margin-left: 10px;
 }
 
@@ -226,7 +219,7 @@ select {
       background-color: $color-violet;
       color: $color-white;
       &:after {
-        content: url("../../img/plus_sign_white.svg");
+        content: url("../../img/plus_sign_violet.svg");
         display: inline-block;
       }
     }

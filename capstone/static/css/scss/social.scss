@@ -1,0 +1,52 @@
+.github {
+  display: inline;
+}
+
+.social {
+  span {
+    float: left;
+  }
+  a {
+    background-position-x: 0;
+    border-bottom: none;
+    display: block;
+    height: 30px;
+    width: 30px;
+    margin-right: 10px;
+    &:hover, &:active, &:focus {
+      background-position-x: -30px !important;
+    }
+  }
+  .email > a {
+    background: url('../../img/logos/mail-sprite.svg') no-repeat;
+    background-size: auto 30px;
+  }
+  /* github is not a perfect circle */
+  .github > a {
+    background: url('../../img/logos/github-sprite.svg') no-repeat;
+    background-size: auto 29px;
+  }
+  .website > a {
+    background: url('../../img/arrow-sprite.svg') no-repeat;
+    background-size: auto 30px;
+  }
+  .twitter > a {
+    background: url('../../img/logos/twitter-sprite.svg') no-repeat;
+    background-size: auto 30px;
+  }
+}
+
+.social.big {
+  .twitter > a, .github > a, .email > a {
+    background-size: auto 60px;
+    height: 60px;
+    width: 60px;
+    &:hover, &:active, &:focus {
+      background-position-x: -60px !important;
+    }
+  }
+  /* github is not a perfect circle */
+  .github > a {
+    background-size: auto 58px;
+  }
+}
