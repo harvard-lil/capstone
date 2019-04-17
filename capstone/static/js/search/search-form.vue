@@ -194,6 +194,12 @@
               hidden: true,
             },
             {
+              name: "court_id",
+              value: "",
+              label: "Court ID",
+              format: ""
+            },
+            {
               name: "jurisdiction",
               value: "",
               label: "Jurisdiction",
@@ -201,6 +207,12 @@
             }
           ],
           courts: [
+            {
+              name: "id",
+              value: "",
+              label: "ID",
+              format: ""
+            },
             {
               name: "slug",
               value: "",

@@ -88,6 +88,7 @@ class CourtFilter(filters.FilterSet):
     class Meta:
         model = models.Court
         fields = [
+            'id',
             'slug',
             'name',
             'name_abbreviation',
@@ -107,8 +108,12 @@ class CaseFilter(NoopMixin, filters.FilterSet):
         method='find_by_citation')
     court = filters.ChoiceFilter(
         field_name='court_slug',
-        label='Court',
+        label='Court Slug',
         choices=court_choices)
+    court_id = filters.NumberFilter(
+        field_name='court_id',
+        label='Court ID',
+    )
     reporter = filters.ChoiceFilter(
         field_name='reporter_id',
         label='Reporter',
