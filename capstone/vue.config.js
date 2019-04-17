@@ -32,7 +32,7 @@ let vueConfig = {
 
   // When running `npm run serve`, paths in webpack-stats.json will point to the live dev server.
   // Otherwise they will point to the compiled assets URL.
-  baseUrl: devMode ? 'http://localhost:8080/static/dist' : '/static/dist',
+  publicPath: devMode ? 'http://localhost:8080/static/dist' : '/static/dist',
 
   pages: {
     base: 'static/js/base.js',
