@@ -167,7 +167,7 @@ def migrate():
     update_postgres_env()
 
 @task
-def rebuild_elasticsearch_index():
+def rebuild_search_index():
     management.call_command('search_index', '--rebuild')
 
 @task
