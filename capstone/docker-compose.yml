@@ -24,7 +24,7 @@ services:
         environment:
           - node.name=es01
           - bootstrap.memory_lock=true
-          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+          - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
         ulimits:
           memlock:
             soft: -1
