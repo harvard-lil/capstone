@@ -1,5 +1,10 @@
+import re
+
 from django_elasticsearch_dsl import DocType, Index, fields
 from capdb.models import CaseMetadata, CaseXML, VolumeMetadata, Jurisdiction, Court, Reporter
+
+from scripts.generate_case_html import generate_html
+
 
 case = Index('cases')
 
@@ -26,6 +31,7 @@ class CaseDocument(DocType):
         "name": fields.TextField(),
         "name_abbreviation": fields.KeywordField()
     })
+
     jurisdiction = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "slug": fields.KeywordField(),
@@ -34,22 +40,77 @@ class CaseDocument(DocType):
         "whitelisted": fields.BooleanField()
     })
 
-    judges = fields.StringField(analyzer='keyword', multi=True)
-    parties = fields.StringField(analyzer='keyword', multi=True)
-    attorneys = fields.StringField(analyzer='keyword', multi=True)
+    casebody = fields.NestedField(properties={
+        'data': fields.NestedField(properties={
+            'text': fields.TextField(),
+            'xml': fields.KeywordField(),
+            'html': fields.KeywordField(),
+            'structured': fields.NestedField(properties={
+                'attorneys': fields.KeywordField(multi=True),
+                'judges': fields.KeywordField(multi=True),
+                'parties': fields.KeywordField(multi=True),
+                'headmatter': fields.KeywordField(multi=True),
+                'opinions': fields.ObjectField(),
+            }),
+        })
+    })
+
     docket_numbers = fields.ObjectField()
-    opinions = fields.ObjectField()
 
     def prepare_docket_numbers(self, instance):
-        if instance.docket_numbers:
-            return instance.docket_numbers
-        return { 'docket_numbers': None }
+        if not instance.docket_numbers:
+            return { 'docket_numbers': None }
+        return instance.docket_numbers
 
-    def prepare_opinions(self, instance):
-        if instance.opinions:
-            return instance.opinions
-        return { 'opinions': None }
+    def prepare_casebody(self, instance):
+        if not instance.case_xml:
+            return { 'case_body': {
+                'data': None,
+                'status': 'Casebody not found during indexing. Please send the CAP team this URL '
+                          'and this error message.'
+            }}
 
+        parsed_casebody = instance.case_xml.extract_casebody()
+
+        # For the plain text output, footnotes should keep their labels in the text, but we want to make sure
+        # there is a space separating the labels from the first word. Otherwise a text analysis comes up with
+        # a lot of noise like "1The".
+        for footnote in parsed_casebody('casebody|footnote'):
+            label = footnote.attrib.get('label')
+            if label:
+                # Get text of footnote and replace "[label][nonwhitespace char]" with "[label][nonwhitespace char]"
+                footnote_paragraph = parsed_casebody(footnote[0])
+                new_text = footnote_paragraph.text()
+                new_text = re.sub(r'^(%s)(\S)' % re.escape(label), r'\1 \2', new_text)
+                footnote_paragraph.text(new_text)
+
+        # extract each opinion into a dictionary
+        opinions = []
+        for opinion in parsed_casebody.items('casebody|opinion'):
+            opinions.append({
+                'type': opinion.attr('type'),
+                'author': opinion('casebody|author').text() or None,
+                'text': opinion.text(),
+            })
+
+            # remove opinion so it doesn't get included in head_matter below
+            opinion.remove()
+
+
+        return {
+            'data': {
+                'text': instance.case_xml.extract_casebody().text(),
+                'xml': instance.case_xml.orig_xml,
+                'html': generate_html(parsed_casebody),
+                'structured': {
+                    'attorneys': instance.attorneys,
+                    'judges': instance.judges,
+                    'parties': instance.parties,
+                    'headmatter': parsed_casebody.text(),
+                    'opinions': opinions,
+                }
+            }
+        }
 
 
     class Meta:
@@ -70,9 +131,14 @@ class CaseDocument(DocType):
             'date_added',
         ]
 
-    #def get_queryset(self):
-    #    """Not mandatory but to improve performance we can select related in one sql request"""
-    #    return super(CarDocument, self).get_queryset().select_related(
-    #        'manufacturer'
-    #    )
+    # reduces number of DB queries
+    def get_queryset(self):
+        return super(CaseDocument, self).get_queryset().select_related(
+            'volume',
+            'reporter',
+            'court',
+            'jurisdiction',
+            'reporter',
+            'case_xml'
+        ).filter(duplicative=False)
 
