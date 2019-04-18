@@ -8,7 +8,6 @@
          target="_blank">
       </a>
       <div class="social">
-        <span>Follow us:&nbsp;</span>
         <span class="github">
           <a href="https://github.com/harvard-lil/capstone" target="_blank"
              title="Caselaw Access Project Github"
@@ -23,6 +22,15 @@
       </div>
 
     </div>
+  <div class="col-4 footer-copyright small">
+      <p>
+        {# spans stop text from breaking within sentences if avoidable #}
+        <span>&#169;{% now 'Y' %} The President and Fellows of Harvard University.</span>
+        <span>Site text is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</span>
+        <span><a href="https://github.com/harvard-lil/capstone">Source code</a> is MIT licensed.</span>
+        <span>Harvard asserts no copyright in caselaw retrieved from this site.</span>
+      </p>
+  </div>
     <div class="col">
       <nav aria-label="footer">
         <ul class="list-inline links">
@@ -63,14 +71,6 @@
     </div>
   </div>
   <div class="row footer-copyright small">
-    <div class="col">
-      <p>
-        {# spans stop text from breaking within sentences if avoidable #}
-        <span>&#169;{% now 'Y' %} The President and Fellows of Harvard University.</span>
-        <span>Site text is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</span>
-        <span><a href="https://github.com/harvard-lil/capstone">Source code</a> is MIT licensed.</span>
-        <span>Harvard asserts no copyright in caselaw retrieved from this site.</span>
-      </p>
-    </div>
+
   </div>
 </footer>
