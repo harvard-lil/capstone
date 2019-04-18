@@ -392,11 +392,13 @@ def test_reorder_head_matter(case_xml):
     # elements to be reordered
     xml = xml.replace("REPLACE_CASEBODY", """
         <parties id="a">foo</parties>
+        <empty id="empty1"> </empty>
         <headnotes id="b">foo</headnotes>
         <headnotes id="c1">foo</headnotes>
         <headnotes id="c2">foo</headnotes>
         <headnotes id="c3">foo</headnotes>
         <opinion type="majority">
+            <empty id="empty2"> </empty>
             <p id="d">foo</p>
             <footnote label="†">
                 <p id="e">foo</p>
@@ -408,13 +410,15 @@ def test_reorder_head_matter(case_xml):
     """)
 
     # specify new element order
-    element_order = "b a d c1 e c2 f c3"
-    alto_ids = "BL_9.9 BL_9.10 BL_9.11 BL_9.12 BL_10.9 BL_10.10 BL_10.11 BL_10.12"
+    pairs = [('b', 'BL_9.9'), ('a', 'BL_9.10'), ('d', 'BL_9.11'), ('c1', 'BL_9.12'), ('e', 'BL_10.9'), ('c2', 'BL_10.10'), ('f', 'BL_10.11'), ('c3', 'BL_10.12'), ('empty1', None), ('empty2', None)]
     xml = xml.replace("REPLACE_BLOCKS", "".join("""
         <div TYPE="element">
             <fptr><area BEGIN="%s" BETYPE="IDREF" FILEID="casebody_0001"/></fptr>
-            <fptr><seq><area BEGIN="%s" BETYPE="IDREF" FILEID="alto_00009_0"/></seq></fptr>
-        </div>""" % (case_id, alto_id) for case_id, alto_id in zip(element_order.split(), alto_ids.split())))
+            <fptr><seq>%s</seq></fptr>
+        </div>""" % (
+            case_id,
+            ('<area BEGIN="%s" BETYPE="IDREF" FILEID="alto_00009_0"/>' % alto_id) if alto_id else ''
+        ) for case_id, alto_id in pairs))
 
     # reorder xml
     parsed = parse_xml(xml)
@@ -426,7 +430,9 @@ def test_reorder_head_matter(case_xml):
     assert result == re.sub(r'\s*\n\s*', '', """
         <headnotes id="b">foo</headnotes>
         <parties id="a">foo</parties>
+        <empty id="empty1"> </empty>
         <opinion type="majority">
+            <empty id="empty2"> </empty>
             <p id="d">foo</p>
             <headnotes id="c1">foo</headnotes>
             <headnotes id="c2">foo</headnotes>
