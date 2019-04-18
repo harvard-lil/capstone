@@ -46,7 +46,7 @@ def export_cases_by_reporter(id):
     """
     reporter = Reporter.objects.get(pk=id)
     cases = CaseViewSet.queryset.filter(reporter=reporter)
-    out_path = "{}-{:%Y%m%d}".format(reporter.full_name, timezone.now())
+    out_path = "{}-{:%Y%m%d}".format(reporter.short_name, timezone.now())
     export_queryset(cases, out_path, reporter, public=False)
 
 def try_to_close(file_handle):
