@@ -1,29 +1,59 @@
-{% extends "layouts/narrow.html" %}
+{% extends "layouts/full.html" %}
 {% load pipeline %}
-
-{% block title %}Bulk downloads{% endblock %}
-{% block meta_description %}Caselaw Access Project Bulk Access{% endblock %}
 
 {% block extra_head %}
   {% stylesheet 'tools' %}
 {% endblock %}
 
+{% block title %}Bulk data{% endblock %}
+{% block meta_description %}Caselaw Access Project Bulk Access{% endblock %}
+{% block top_section_style %}bg-white{% endblock %}
+{% block row_style %}bg-white{% endblock %}
+
+{% block explainer %}
+  Our bulk data files contain the same information that is available
+  via <a href="{% url "api" %}">our API</a>,
+  but are much faster to download if you want to interact with a large number of cases. Each file contains
+  all of the cases from a single jurisdiction or reporter.
+  <br/>
+  <a class="btn btn-primary" href="{% url "bulk-docs" %}">See docs</a>
+{% endblock %}
+
+{% block sidebar_menu %}
+  <nav id="sidebar-menu" aria-label="table of contents">
+    <div class="content">
+      <ul class="list-group">
+        {% if exports.public %}
+          <li>
+            <a class="list-group-item" href="#public">
+              <span class="text">Public bulk data</span>
+            </a>
+          </li>
+        {% endif %}
+        <li>
+          <a class="list-group-item" href="#researcher">
+            <span class="text">Researcher downloads</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+{% endblock %}
 {% block main_content %}
-  <div class="page-section">
-    See our <a href="{% url "bulk-docs" %}">bulk data docs</a> for an explanation of these files.
-  </div>
+  {# ==============> PUBLIC DATA <============== #}
   {% if exports.public %}
     <div class="page-section">
-      <h2 class="subtitle">
+      <h2 class="subtitle" id="public">
         Public Bulk Data
       </h2>
       <p>Click a link to download.</p>
       {% include "includes/download_list.html" with zips=exports.public %}
     </div>
   {% endif %}
+  {# ==============> RESEARCHER DOWNLOADS <============== #}
   <div class="page-section">
-    <h2 class="subtitle">
-      Bulk Data for Academic Research
+    <h2 class="subtitle" id="research">
+      Researcher downloads
     </h2>
     {% if exports.private %}
       <p>
