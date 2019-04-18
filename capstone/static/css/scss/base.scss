@@ -63,7 +63,8 @@ button, .btn,
 .btn-primary, .btn-secondary, .btn-tertiary {
   text-transform: uppercase;
   font-weight: $font-weight-bold;
-  font-size: 0.7em;
+  font-family: $font-sans-serif;
+  font-size: 0.7em !important;
   padding: 0.65em 0.8em;
   border-radius: 0;
   &:disabled {
@@ -74,11 +75,6 @@ button, .btn,
   @include media-breakpoint-down(md) {
     font-size: 1em;
   }
-}
-
-.btn, .btn-primary {
-  //line-height: 25px;
-  text-decoration: none !important;
 }
 
 .btn-group {

@@ -43,7 +43,6 @@ label {
 }
 
 .simple-subtitle {
-  color: $color-violet;
   @include media-breakpoint-up(lg) {
     font-size: 45px;
   }
