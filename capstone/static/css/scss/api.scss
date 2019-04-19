@@ -4,6 +4,7 @@
 @import 'bootstrap/tooltip';
 @import 'bootstrap/modal';
 @import "variables";
+@import "base.scss";
 
 nav {
   padding: 0;
@@ -15,29 +16,11 @@ nav[aria-label="main"] ~ .container {
   padding-top: 90px;
 }
 
-button, .btn {
-  background-color: $color-violet;
-  color: $color-white;
-  border: 2px solid $color-violet;
-  font-weight: $font-weight-semibold;
-  &:hover, &:focus, &:active {
-    background-color: $color-white;
-    color: $color-violet;
-    border: 2px solid $color-violet;
-  }
-}
-
 .container {
   letter-spacing: 0.03em;
   ul, li, a, .prettyprint {
     font-size: 16px;
   }
-
-  .page-header h1 {
-    letter-spacing: 1px;
-    @extend .h2;
-  }
-
   .pager > .previous,
   .pager > .next {
     list-style: none;
@@ -150,20 +133,11 @@ li > code {
 
 .modal-content {
   font-size: 1rem;
-  button.btn:hover,
-  button.btn:focus,
-  button.btn:active {
-    padding: 4px 8px;
-  }
   button.close {
-    background-color: transparent;
-    color: $color-magenta;
     font-weight: $font-weight-bold;
     font-size: 20px;
-    &:hover, &:active, &:focus {
-      border: 0;
-      color: $color-violet;
-    }
+    @extend .btn-secondary;
+
   }
   input, select {
     width: 100%;

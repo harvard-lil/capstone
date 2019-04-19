@@ -81,7 +81,7 @@
         <div class="col-3"></div>
         <div class="col-8">
           <div class="submit-button-group">
-            <button class="btn-default btn-submit"
+            <button class="btn-primary btn-submit"
                     type="submit"
                     value="Search">
               Search
@@ -96,7 +96,7 @@
                   tabindex="-1">Searching&nbsp;</span>
           </div>
           <div v-if="fields.length > 0" class="dropdown addfield">
-            <button class="dropdown-toggle add-field-button btn-white-violet"
+            <button class="dropdown-toggle add-field-button btn-secondary"
                     type="button"
                     id="dropdownMenuButton"
                     data-toggle="dropdown"
@@ -194,6 +194,12 @@
               hidden: true,
             },
             {
+              name: "court_id",
+              value: "",
+              label: "Court ID",
+              format: ""
+            },
+            {
               name: "jurisdiction",
               value: "",
               label: "Jurisdiction",
@@ -201,6 +207,12 @@
             }
           ],
           courts: [
+            {
+              name: "id",
+              value: "",
+              label: "ID",
+              format: ""
+            },
             {
               name: "slug",
               value: "",

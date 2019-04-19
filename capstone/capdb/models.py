@@ -1,5 +1,6 @@
 import hashlib
 import json
+import math
 import re
 
 import nacl
@@ -1375,19 +1376,25 @@ class CaseXML(BaseXMLModel):
             if par_id in footnote_el_ids:
                 continue
             alto_id = blocks_el('mets|area').attr.BEGIN
-            parts = alto_id.split('_')[1].split('.')
-            id_to_alto_order[par_id] = (int(parts[0]), int(parts[1]))
+            # for an empty paragraph with contents redacted, there's no alto_id
+            if alto_id:
+                parts = alto_id.split('_')[1].split('.')
+                id_to_alto_order[par_id] = (int(parts[0]), int(parts[1]))
 
         # Split remove_els into head_els and opinion_els, based on whether or not they come before the first
         # element in the first opinion:
-        removed_els.sort(key=lambda el: id_to_alto_order[el.attr.id])
-        first_opinion_el_id = parsed_xml('casebody|opinion:eq(0) > :eq(0)').attr.id
+        removed_els.sort(key=lambda el: id_to_alto_order.get(el.attr.id, (math.inf,)))
+        first_opinion_el_id = next((el.attr.id for el in parsed_xml('casebody|opinion').children().items() if el.attr.id in id_to_alto_order), None)
+        head_els = []
+        opinion_els = []
         if first_opinion_el_id:
-            head_els = [el for el in removed_els if id_to_alto_order[el.attr.id] < id_to_alto_order[first_opinion_el_id]]
-            opinion_els = removed_els[len(head_els):]
+            for el in removed_els:
+                if el.attr.id not in id_to_alto_order or id_to_alto_order[el.attr.id] < id_to_alto_order[first_opinion_el_id]:
+                    head_els.append(el)
+                else:
+                    opinion_els.append(el)
         else:
             head_els = removed_els
-            opinion_els = []
 
         # Add all head_els back to the <casebody>
         for el in reversed(head_els):

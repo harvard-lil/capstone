@@ -5,11 +5,6 @@ footer {
   hyphens: none;
 }
 
-footer {
-  .lil-logo {
-    @extend .footer-lil-logo-black;
-  }
-}
 
 .footer-content > :nth-child(2) {
   text-align: right;
@@ -80,9 +75,8 @@ footer {
 
 .footer-copyright {
   margin: 0 auto;
-  @include make-col(11);
   p {
-    text-align: right;
+    text-align: left;
   }
   span {
     display: inline-block;

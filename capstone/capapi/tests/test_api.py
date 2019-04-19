@@ -405,6 +405,14 @@ def test_filter_case(client, three_cases, court, jurisdiction):
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
 
+    # filtering case by court id
+    case_to_test = three_cases[2]
+    assert case_to_test.court.id == court.id
+    response = client.get(search_url, {"court_id": court.id})
+    content = response.json()
+    assert len(content['results']) == 1
+    assert content['results'][0]['id'] == case_to_test.id
+
     # filtering case by reporter
     reporter = case_to_test.reporter
     response = client.get(search_url, {"reporter": reporter.pk})

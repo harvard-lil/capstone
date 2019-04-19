@@ -61,19 +61,19 @@
     {% endif %}
     <div class="btn-group">
       <a href="{% url "password_change" %}"
-         class="btn btn-default">
+         class="btn btn-secondary">
         Change password
-      </a>
-      &nbsp;
-      <a href="{% url "logout" %}"
-         class="btn btn-default">
-        Log out
       </a>
 
        <a href="{% url "reset-api-key" %}"
-         class="btn btn-default">
+         class="btn btn-secondary">
         Reset API Key
       </a>
+      <a href="{% url "logout" %}"
+         class="btn btn-primary">
+        Log out
+      </a>
+
     </div>
   </div>
 {% endblock %}

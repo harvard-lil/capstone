@@ -1,15 +1,21 @@
 {% load api_url %}
 {% for section_label, item_list in zips.items %}
-  <h3 class="section-title">By {{ section_label }}</h3>
+  <h4 class="section-title">By {{ section_label }}</h4>
+  <br/>
   {% for filter_item, exports in item_list.items %}
     <div class="row">
-      <div class="col-3">{{ filter_item }}</div>
-      {% for export_type, export in exports.items %}
-        <div class="col-4 {% if not forloop.first %}offset-1{% endif %}">
-          <a href="{% api_url "caseexport-download" pk=export.pk %}">{{ export.file_name }}</a>
-          ({{ export.file.size|filesizeformat }})
-        </div>
-      {% endfor %}
+      <div class="col-12">
+
+        <div class="section-subtitle">{{ filter_item }}</div>
+        {% for export_type, export in exports.items %}
+          <div class="export-type">
+            <a class="{% if export_type == 'text' %}btn-primary{% else %}btn-secondary{% endif %}"
+               href="{% api_url "caseexport-download" pk=export.pk %}">{{ export_type }}</a>
+
+            <div class="file-size small color-gray">{{ export.file.size|filesizeformat }}</div>
+          </div>
+        {% endfor %}
+      </div>
     </div>
   {% endfor %}
 {% endfor %}

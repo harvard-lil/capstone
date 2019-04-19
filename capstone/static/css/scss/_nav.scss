@@ -46,7 +46,7 @@ nav[aria-label="main"] {
   background-color: $color-black;
   color: $color-white;
   font-weight: $font-weight-normal;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.07em;
   z-index: 999;
   user-select: none;
   border-bottom: 1px solid $color-white;
@@ -58,7 +58,6 @@ nav[aria-label="main"] {
     font-size: 1.2rem;
   }
 }
-
 
 nav[aria-label="main"].sticky {
   position: fixed;
@@ -146,8 +145,6 @@ nav[aria-label="main"].sticky {
   }
 }
 
-
-
 /* show symbols on expand and collapse of dropdowns */
 li.nav-item.dropdown {
   > a.nav-link:after {
@@ -197,12 +194,12 @@ li.nav-item.dropdown {
   cursor: pointer;
   position: relative;
   right: 10px;
-  margin-top: 10px;
   background-color: $color-black;
   width: 34px;
   height: 30px;
   padding-left: 4px;
   float: right;
+  padding-top: 0;
   &:focus, &:active {
     outline: 1px solid $color-yellow;
   }

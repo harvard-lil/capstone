@@ -1,0 +1,79 @@
+.bg-white {
+  color: $color-black;
+  h1, .h1 {
+    color: $color-black;
+  }
+  a {
+    color: $color-blue;
+    &:hover, &:active, &:focus {
+      color: $color-dark-blue;
+    }
+  }
+
+  .btn-primary, .btn-secondary, .btn-tertiary {
+    @include button($color-blue, $color-white, $color-dark-blue);
+  }
+}
+
+.bg-yellow {
+  color: $color-black;
+  #sidebar-menu {
+    border-right: none;
+  }
+  a {
+    color: $color-dark-blue;
+    &:hover, &:active, &:focus {
+      color: $color-black;
+    }
+  }
+  .btn-primary, .btn-secondary, .btn-tertiary {
+    @include button($color-dark-blue, $color-yellow, $color-black);
+  }
+}
+
+.bg-black {
+  color: $color-white;
+  a {
+    color: $color-magenta;
+    &:hover, &:active, &:focus {
+      color: $color-pink;
+    }
+  }
+  .btn-primary, .btn-secondary, .btn-tertiary {
+    @include button($color-magenta, $color-black, $color-pink);
+  }
+  .section-subtitle {
+    @include media-breakpoint-down(md) {
+      color: $color-white;
+    }
+  }
+  margin-top: 0;
+  .title-section > h1.page-title {
+    color: $color-white !important;
+  }
+  .explainer-section > .content {
+    color: $color-white;
+  }
+  li.item-set > .item-origin {
+    color: $color-white;
+  }
+}
+
+.bg-tan {
+  @extend .bg-white;
+  .btn-primary, .btn-secondary, .btn-tertiary {
+    @include button ($color-medium-blue, $color-white, $color-dark-blue)
+  }
+  .btn-secondary {
+    background-color: $color-white !important;
+  }
+}
+
+.bg-violet {
+  @extend .bg-black;
+  background-color: $color-violet-large-text;
+  color: $color-white;
+  h1, .section-title {
+    color: $color-white !important;
+  }
+}

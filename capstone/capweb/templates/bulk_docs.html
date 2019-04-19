@@ -7,14 +7,18 @@
   {% stylesheet 'docs' %}
 {% endblock %}
 
-{% block title %}Bulk Downloads{% endblock %}
-{% block meta_description %}Caselaw Access Project Bulk Downloads{% endblock %}
+{% block title %}Bulk data documentation{% endblock %}
+{% block meta_description %}Caselaw Access Project bulk data documentation{% endblock %}
+{% block top_section_style %}bg-black{% endblock %}
+{% block row_style %}bg-tan{% endblock %}
 
 {% block explainer %}
   Our <a href="{% url "bulk-download" %}">bulk data files</a> contain the same information that is available
   via <a href="{% url "api" %}">our API</a>,
   but are much faster to download if you want to interact with a large number of cases. Each file contains
   all of the cases from a single jurisdiction or reporter.
+  <br/>
+  <a class="btn btn-primary" href="{% url "bulk-download" %}">Access data</a>
 {% endblock %}
 
 {% block sidebar_menu %}

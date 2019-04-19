@@ -1,11 +1,11 @@
 @import 'variables';
+@import 'base.scss';
 @import 'map';
-@import 'footer/black';
+@import 'footer/magenta';
 
 h1 {
   @include sr-only;
 }
-
 
 /*
  * specialized lettering for index page
@@ -19,13 +19,6 @@ h1 {
   margin-bottom: $headings-margin-bottom;
 }
 
-.splash-quote span {
-  @extend .h3;
-  @include header-styles;
-  font-family: $font-serif-fancy;
-  font-weight: normal;
-}
-
 .section-title {
   @extend .h1;
   @include header-styles;
@@ -35,10 +28,10 @@ h1 {
 }
 
 .section-subtitle {
-  @extend .h5;
-  @include header-styles;
-  margin-bottom: 1em;
+  margin-bottom: 2em;
   margin-top: 20px;
+  font-family: $font-serif;
+  font-weight: normal !important;
 }
 
 .number {
@@ -103,7 +96,7 @@ h1 {
     padding: 0.5rem;
     min-height: 90px;
   }
-  
+
   .branding {
     .nav-branding {
       background: url("../../img/logos/black.svg") no-repeat;
@@ -146,7 +139,6 @@ h1 {
   }
 }
 
-
 /* show map only on medium sized devices and above */
 .content-right > .map {
   margin-top: 3em;
@@ -183,13 +175,11 @@ h1 {
 
 #section-follow {
   .social {
-    margin-top: 40px;
     span {
       margin-right: 1rem;
     }
   }
 }
-
 
 .content-small-screen {
   @include media-breakpoint-between(xs, sm) {
@@ -228,7 +218,7 @@ section > .splash-quote {
   margin: 0 auto;
   text-align: center;
   padding-bottom: 3rem;
-  @include make-col(5);
+  @include make-col(7);
   @include media-breakpoint-down(md) {
     @include make-col(8);
     .decorative-arrow {
@@ -237,6 +227,18 @@ section > .splash-quote {
     > h3 {
       font-size: 1.5rem;
       line-height: 2rem;
+    }
+  }
+  span {
+    @include header-styles;
+    font-family: $font-serif-fancy;
+    font-weight: normal;
+    font-size: 3.2em;
+    @include media-breakpoint-only(md) {
+      font-size: 2em;
+    }
+    @include media-breakpoint-down(sm) {
+      font-size: 1em;
     }
   }
 }
@@ -272,7 +274,6 @@ section > .splash-quote {
   margin-left: -30px;
   margin-top: -1px;
 }
-
 
 /* hide social in footer since we have a section dedicated to it */
 footer {
