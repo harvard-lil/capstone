@@ -18,6 +18,31 @@ from capapi import renderers as capapi_renderers
 from capdb.models import Citation
 
 
+from django_elasticsearch_dsl_drf.constants import (
+    LOOKUP_FILTER_TERMS,
+    LOOKUP_FILTER_RANGE,
+    LOOKUP_FILTER_PREFIX,
+    LOOKUP_FILTER_WILDCARD,
+    LOOKUP_QUERY_IN,
+    LOOKUP_QUERY_GT,
+    LOOKUP_QUERY_GTE,
+    LOOKUP_QUERY_LT,
+    LOOKUP_QUERY_LTE,
+    LOOKUP_QUERY_EXCLUDE,
+)
+from django_elasticsearch_dsl_drf.filter_backends import (
+    FilteringFilterBackend,
+    IdsFilterBackend,
+    OrderingFilterBackend,
+    DefaultOrderingFilterBackend,
+    SearchFilterBackend,
+)
+from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
+from django_elasticsearch_dsl_drf.pagination import PageNumberPagination
+
+from capapi.documents import CaseDocument
+from capapi.serializers import CaseDocumentSerializer
+
 class BaseViewSet(viewsets.ReadOnlyModelViewSet):
     http_method_names = ['get']
 
@@ -111,6 +136,62 @@ class CaseViewSet(BaseViewSet):
             return HttpResponseRedirect(new_url)
 
         return super(CaseViewSet, self).retrieve(*args, **kwargs)
+
+class CaseDocumentViewSet(BaseDocumentViewSet):
+    """The CaseDocument view."""
+
+    document = CaseDocument
+    serializer_class = CaseDocumentSerializer
+    pagination_class = PageNumberPagination
+    lookup_field = 'id'
+    filter_backends = [
+        FilteringFilterBackend,
+        IdsFilterBackend,
+        OrderingFilterBackend,
+        DefaultOrderingFilterBackend,
+        SearchFilterBackend,
+    ]
+    # Define search fields
+    search_fields = (
+        'case_body__data__text',
+        'name',
+        'jurisdiction__name_long',
+        'court__name',
+    )
+    # Define filter fields
+    filter_fields = {
+        'id': {
+            'field': 'id',
+            # Note, that we limit the lookups of id field in this example,
+            # to `range`, `in`, `gt`, `gte`, `lt` and `lte` filters.
+            'lookups': [
+                LOOKUP_FILTER_RANGE,
+                LOOKUP_QUERY_IN,
+                LOOKUP_QUERY_GT,
+                LOOKUP_QUERY_GTE,
+                LOOKUP_QUERY_LT,
+                LOOKUP_QUERY_LTE,
+            ],
+        },
+        'name': 'name',
+    }
+    # Define ordering fields
+    ordering_fields = {
+        'decision_date': 'decision_date',
+        'name_abbreviation': 'name_abbreviation.raw',
+        'id': 'id',
+    }
+    # Specify default ordering
+    ordering = ('decision_date', 'name_abbreviation', 'id',)
+
+    def is_full_case_request(self):
+        return True if self.request.query_params.get('full_case', 'false').lower() == 'true' else False
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.is_full_case_request():
+            return serializers.CaseDocumentSerializerWithCasebody
+        else:
+            return self.serializer_class
 
 
 class CaseExportViewSet(BaseViewSet):
