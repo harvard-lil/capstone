@@ -154,6 +154,8 @@ class CaseDocument(DocType):
             'duplicative',
             'date_added',
         ]
+        ignore_signals = True
+        auto_refresh = False
 
     # reduces number of DB queries
     def get_queryset(self):
