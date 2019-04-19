@@ -1,6 +1,6 @@
 @import 'variables';
 @import 'base.scss';
-@import 'footer/yellow';
+@import 'footer/magenta';
 
 @include media-breakpoint-down(md) {
   .dropdown-item {
@@ -10,16 +10,8 @@
   }
 }
 
-#sidebar-menu {
-  border-right: $color-violet-light 1px solid;
-}
-
-.full-content {
-  border-right: $color-violet-light 1px solid;
-  border-left: $color-violet-light 1px solid;
-}
-
 .subtitle.simple-subtitle {
+  margin-top: 2em;
   &:before {
     content: "";
     margin: 0;
@@ -60,7 +52,7 @@
     @include make-col(3);
     .main-img {
       max-width: 80%;
-      margin-top: 25%;
+      margin-top: 50%;
     }
   }
   @include media-breakpoint-down(md) {

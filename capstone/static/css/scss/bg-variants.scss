@@ -5,6 +5,7 @@
   }
   a {
     color: $color-blue;
+    fill: $color-blue;
     &:hover, &:active, &:focus {
       color: $color-dark-blue;
     }
@@ -35,6 +36,7 @@
   color: $color-white;
   a {
     color: $color-magenta;
+    fill: $color-magenta;
     &:hover, &:active, &:focus {
       color: $color-pink;
     }
