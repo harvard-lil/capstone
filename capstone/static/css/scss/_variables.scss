@@ -78,6 +78,9 @@ $color-violet-gray-dark: #474756;
 
 .color-black { color: $color-black; }
 
+.color-gray { color: $color-medium-gray; }
+
+
 @mixin diagonal_gradient($color1, $color2) {
   background: $color1; /* Old browsers */
   background: -moz-linear-gradient(45deg, $color1 0%, $color2 100%); /* FF3.6-15 */

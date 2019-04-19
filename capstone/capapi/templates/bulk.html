@@ -2,7 +2,7 @@
 {% load pipeline %}
 
 {% block extra_head %}
-  {% stylesheet 'tools' %}
+  {% stylesheet 'bulk' %}
 {% endblock %}
 
 {% block title %}Bulk data{% endblock %}
@@ -43,18 +43,13 @@
   {# ==============> PUBLIC DATA <============== #}
   {% if exports.public %}
     <div class="page-section">
-      <h2 class="subtitle" id="public">
-        Public Bulk Data
-      </h2>
-      <p>Click a link to download.</p>
+      <h2 class="subtitle" id="public">Public Bulk Data</h2>
       {% include "includes/download_list.html" with zips=exports.public %}
     </div>
   {% endif %}
   {# ==============> RESEARCHER DOWNLOADS <============== #}
   <div class="page-section">
-    <h2 class="subtitle" id="researcher">
-      Researcher downloads
-    </h2>
+    <h2 class="subtitle" id="researcher">Researcher downloads</h2>
     {% if exports.private %}
       <p>
         The following jurisdictions are available for download under your scholarly research agreement.
