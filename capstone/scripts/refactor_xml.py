@@ -491,7 +491,7 @@ def strip_bracketnum_hyphens(text):
     return text
 
 def block_text(block):
-    """ Return raw rext of block. """
+    """ Return raw text of block. """
     return "".join(token for token in block.get('tokens', []) if type(token) == str)
 
 def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
