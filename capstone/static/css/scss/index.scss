@@ -1,7 +1,7 @@
 @import 'variables';
 @import 'base.scss';
 @import 'map';
-@import 'footer/black';
+@import 'footer/magenta';
 
 h1 {
   @include sr-only;
@@ -28,10 +28,10 @@ h1 {
 }
 
 .section-subtitle {
-  @extend .h5;
-  @include header-styles;
-  margin-bottom: 1em;
+  margin-bottom: 2em;
   margin-top: 20px;
+  font-family: $font-serif;
+  font-weight: normal !important;
 }
 
 .number {
@@ -175,7 +175,6 @@ h1 {
 
 #section-follow {
   .social {
-    margin-top: 40px;
     span {
       margin-right: 1rem;
     }

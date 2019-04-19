@@ -129,9 +129,9 @@
         </div>
         <div class="content-right">
           <!-- section subtitle -->
-          <span class="section-subtitle">
+          <div class="section-subtitle">
             Start exploring the data! Here are some tools you can use to check it out.
-          </span>
+          </div>
 
           <h3>
             <a href="{% url "api" %}">
@@ -180,9 +180,9 @@
         </div>
         <div class="content-right">
           <!-- section subtitle -->
-          <span class="section-subtitle">
+          <div class="section-subtitle">
             Sky’s the limit. See some early experiments made possible by the opening up of caselaw data.
-          </span>
+          </div>
           <h3>
             <a href="{% url "wordclouds" %}">
               Wordclouds
@@ -220,9 +220,9 @@
         </div>
         <div class="content-right">
           <!-- section subtitle -->
-          <span class="section-subtitle">
-            What's been written about Caselaw Access Project around the web
-          </span>
+          <div class="section-subtitle">
+            What's been written about Caselaw Access Project around the web:
+          </div>
           <ul>
             {% for news_item in news %}
               <li class="item-set">
@@ -253,19 +253,9 @@
       <div class="row">
         <div class="content-left">
           <!-- section title -->
-          <h2 class="section-title">
-            <img class="decorative-arrow"
-                 alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'>
-            Keep in touch!
-          </h2>
+          Follow our progress, contribute code, or just say hi!
         </div>
         <div class="content-right">
-          <span class="section-subtitle">
-            Follow our progress, contribute code, or just say hi!
-          </span>
-
           <div class="social big">
             <span class="twitter">
               <a href="https://twitter.com/caselawaccess" target="_blank"
