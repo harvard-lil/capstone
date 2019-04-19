@@ -1,7 +1,7 @@
 import re
 
 from django_elasticsearch_dsl import DocType, Index, fields
-from capdb.models import CaseMetadata, CaseXML, VolumeMetadata, Jurisdiction, Court, Reporter
+from capdb.models import CaseMetadata
 
 from scripts.generate_case_html import generate_html
 
