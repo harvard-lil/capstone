@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import tempfile
 from base64 import b64encode
+from collections import defaultdict
 from io import BytesIO
 from zipfile import ZipFile
 from pathlib import Path
@@ -489,6 +490,10 @@ def strip_bracketnum_hyphens(text):
     text = re.sub(r'[-\xad]+]', ']', text)
     return text
 
+def block_text(block):
+    """ Return raw text of block. """
+    return "".join(token for token in block.get('tokens', []) if type(token) == str)
+
 def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                          volume, pages, cases, fonts_by_id, text_replacements={},
                          paths=None, blocks_by_id=None, key=settings.REDACTION_KEY):
@@ -510,7 +515,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
     ### validate results
     # Here we build fake Django objects and make sure we can render the extracted data back into XML that matches
     # the source files.
-    renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, {})  # we don't need labels_by_block_id because original_xml cases don't include page numbers
+    renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, {}, pretty_print=False)  # we don't need labels_by_block_id because original_xml cases don't include page numbers
     
     # validate volume dict
     volume_obj = VolumeMetadata(barcode=volume_barcode, xml_metadata=volume['metadata'])
@@ -532,6 +537,9 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
         for storage, path, redacted in to_test:
             print("- checking %s" % path)
             if path in skip_validation_files:
+                continue
+            if redacted and 'duplicates' in page:
+                print(" - skipping redacted test; page has duplicates")
                 continue
             parsed = parse(storage, path, text_replacements=text_replacements)
             parsed('SP:first-child,SP:last-child').remove()  # remove <SP> element from start and end of <TextLine> -- can happen because of redaction
@@ -580,6 +588,9 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
             print("- checking %s" % path)
             if path in skip_validation_files:
                 continue
+            if redacted and 'has_corrupt_blocks' in case['metadata']:
+                print(" - skipping redacted test; case has corrupt blocks")
+                continue
             parsed = parse(storage, path, remove_namespaces=False, text_replacements=text_replacements)
             CaseXML.reorder_head_matter(parsed)
             parsed = parsed.remove_namespaces()
@@ -600,27 +611,31 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                 casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', casebody, flags=re.S)
                 casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', casebody, flags=re.S)
                 casebody = casebody.replace(' label=""', '')  # footnote with empty label
-                casebody = re.sub(r' +', ' ', casebody)  # normalize multiple spaces
+                casebody = re.sub(r'>\s+<', '><', casebody)  # normalize multiline xml file to single file
+                casebody = re.sub(r'\s+', ' ', casebody)  # normalize multiple spaces
                 casebody = casebody.replace('\xad ', '\xad')  # fix doubled-paragraph bug
                 casebodies[i] = casebody
 
             xml_strings_equal(*casebodies, {
                 'attrs': {'pgmap', 'xmlns'},
                 'tag_attrs': {
-                    'footnote': {'redact'},
-                # the redact attr isn't reliably set in the original, so our output may not match. comparison will still ensure that redacted footnotes don't appear.
+                    'footnote': {'redact'},  # the redact attr isn't reliably set in the original, so our output may not match. comparison will still ensure that redacted footnotes don't appear.
                 }
             })
 
             ## compare <case>
             if not case_obj.duplicative:
-                new_case_head = renderer.render_case_header(case_obj.case_id, case_obj.initial_metadata.metadata)
-                old_case_head = str(parsed('case'))
-                old_case_head = old_case_head.replace('<docketnumber/>', '')
-                old_case_head = old_case_head.replace('&#13;', ' ')  # normalize \r
-                old_case_head = re.sub(r'\s*(<[^>]+>)\s*', r'\1', old_case_head, flags=re.S)  # strip whitespace around elements
-                old_case_head = re.sub(r'\s+', ' ', old_case_head)  # normalize multiple spaces within elements
-                xml_strings_equal(new_case_head, old_case_head)
+                case_heads = [
+                    renderer.render_case_header(case_obj.case_id, case_obj.initial_metadata.metadata),
+                    str(parsed('case'))
+                ]
+                for i, case_head in enumerate(case_heads):
+                    case_head = case_head.replace('<docketnumber/>', '')
+                    case_head = case_head.replace('&#13;', ' ')  # normalize \r
+                    case_head = re.sub(r'\s*(<[^>]+>)\s*', r'\1', case_head, flags=re.S)  # strip whitespace around elements
+                    case_head = re.sub(r'\s+', ' ', case_head)  # normalize multiple spaces within elements
+                    case_heads[i] = case_head
+                xml_strings_equal(*case_heads)
 
 @shared_task
 def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.REDACTION_KEY, save_failed=False):
@@ -706,21 +721,44 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
     fake_font_id = 1
     fonts_by_id = {}
     text_replacements = {}
+    corrupt_blocks = set()
     for path in paths['alto']:
         print(path)
 
         parsed = parse(unredacted_storage, path)
         alto_id = 'alto_' + path.split('_ALTO_', 1)[1].split('.')[0]
 
+        # index rects in unredacted file
+        unredacted_rects = defaultdict(list)
+        for block in parsed('TextBlock,Illustration,String'):
+            unredacted_rects[(block.tag, rect(block.attrib))].append(block.attrib['ID'])
+
+        # record duplicates and mark blocks as corrupted if they appear more than once
+        duplicates = []
+        for tag_rect, ids in unredacted_rects.items():
+            if len(ids) > 1:
+                duplicates.append([tag_rect, ids])
+                if tag_rect[0] == 'String':
+                    ids = {parsed('[ID="%s"]' % id).parent().parent().attr.ID for id in ids}
+                corrupt_blocks.update(ids)
+
         # load redacted file and determine which IDs appear in the redacted version
+        redacted_ids = set()
         if redacted_storage:
+            # index rects in redacted file
             redacted_path = path.replace('unredacted', 'redacted')
             redacted_parsed = parse(redacted_storage, redacted_path)
-            allowed_block_rects = {rect(block.attrib): block.attrib['ID'] for block in redacted_parsed('TextBlock,Illustration')}
-            allowed_string_rects = {rect(block.attrib): block.attrib['ID'] for block in redacted_parsed('String')}
+            redacted_rects = defaultdict(list)
+            for block in redacted_parsed('TextBlock,Illustration,String'):
+                redacted_rects[(block.tag, rect(block.attrib))].append(block.attrib['ID'])
+
+            for tag_rect, ids in unredacted_rects.items():
+                # redact rects if they appear more frequently in unredacted version
+                if len(ids) != len(redacted_rects[tag_rect]):
+                    redacted_ids.update(ids)
 
         # build lookup of block labels (e.g. name, p, blockquote) by tagref ID
-        labels_by_tagref = {s.attrib['ID']: s.attrib['LABEL'] for s in parsed[0].iter('StructureTag')}  #
+        labels_by_tagref = {s.attrib['ID']: s.attrib['LABEL'] for s in parsed[0].iter('StructureTag')}
 
         page_el = parsed('Page')
         page = {
@@ -734,6 +772,9 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             'spaces': [],
             'blocks': [],
         }
+
+        if duplicates:
+            page['duplicates'] = duplicates
 
         # look up page label from volume info
         page['label'] = volume['page_labels'][page['order']]
@@ -781,13 +822,17 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                     'class': labels_by_tagref[block_el.attrib['TAGREFS']],
                 }
 
+                # mark corrupt blocks
+                if block['id'] in corrupt_blocks:
+                    block['corrupt'] = True
+
                 # annotate blocks that have an atypical PrintSpace (if there are any)
                 if space_index is not None:
                     block['space'] = space_index
 
                 # check for redacted blocks
                 if redacted_storage:
-                    if block_rect not in allowed_block_rects:
+                    if block['id'] in redacted_ids:
                         block['redacted'] = True
 
                 # handle <Illustration>
@@ -818,7 +863,8 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                     # handle <TextLine>
                     for line_el in block_el.iter('TextLine'):
                         redacted_span = False
-                        tokens.append(['line', {'rect': rect(line_el.attrib)}])
+                        line_rect = rect(line_el.attrib)
+                        tokens.append(['line', {'rect': line_rect}])
 
                         # handle <String>
                         for string in line_el.iter('String'):
@@ -838,11 +884,11 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                             # region.
                             if check_string_redaction:
                                 if redacted_span:
-                                    if string_rect in allowed_string_rects:
+                                    if string_attrib['ID'] not in redacted_ids:
                                         tokens.append(['/redact'])
                                         redacted_span = False
                                 else:
-                                    if string_rect not in allowed_string_rects:
+                                    if string_attrib['ID'] in redacted_ids:
                                         tokens.append(['redact'])
                                         redacted_span = True
 
@@ -867,8 +913,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                             # add [['ocr'], text, ['/ocr']]
                             if redacted_span and 'footnotemark' in string_attrib['TAGREFS'] and text and text[-1] == ' ':
                                 # don't redact space after footnote
-                                tokens.extend((ocr_token, text[:-1], ['/redact'], ' ', ['/ocr']))
-                                redacted_span = False
+                                tokens.extend((ocr_token, text[:-1], ['/redact'], ' ', ['redact'], ['/ocr']))
                             elif text:
                                 # <String CONTENT> can be empty, so only include text if it's filled in:
                                 tokens.extend((ocr_token, text, ['/ocr']))
@@ -964,6 +1009,18 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
         for xref_el in parsed('div[TYPE="blocks"] > div[TYPE="element"]').items():
             par_el, blocks_el = xref_el('fptr').items()
             case_id_to_alto_ids[par_el('area').attr.BEGIN] = [block_el.attr.BEGIN for block_el in blocks_el('area').items()]
+
+        # check for corrupt blocks
+        duplicates = []
+        for alto_ids in case_id_to_alto_ids.values():
+            if any(id in corrupt_blocks for id in alto_ids):
+                metadata['has_corrupt_blocks'] = True
+            if len(alto_ids) == 2:
+                texts = [re.sub(r'\s+', ' ', block_text(blocks_by_id[id]).replace('\xad', '').replace('-', '').strip()) for id in alto_ids]
+                if texts[0] == texts[1]:
+                    duplicates.append(alto_ids)
+        if duplicates:
+            metadata['duplicates'] = duplicates
 
         # extract each <opinion> from the <casebody> for processing
         if duplicative:
@@ -1205,3 +1262,4 @@ def write_to_db(volume_barcode, zip_path):
         for case in case_objs:
             case.metadata.sync_from_initial_metadata(force=True)
             case.metadata.sync_case_body_cache(blocks_by_id=blocks_by_id, fonts_by_id=fonts_by_id)
+

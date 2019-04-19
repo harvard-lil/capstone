@@ -84,14 +84,14 @@ class VolumeRenderer:
                 - as text
                 - as token stream for debugging
     """
-    def __init__(self, blocks_by_id, fonts_by_id, labels_by_block_id, redacted=True):
+    def __init__(self, blocks_by_id, fonts_by_id, labels_by_block_id, redacted=True, pretty_print=True):
         """ Set some initial values that apply for the whole volume. """
         self.blocks_by_id = blocks_by_id
         self.fonts_by_id = fonts_by_id
         self.labels_by_block_id = labels_by_block_id
         self.redacted = redacted
         self.original_xml = False
-
+        self.pretty_print = pretty_print
 
     ### ALTO <Page> RENDERING ###
 
@@ -140,7 +140,9 @@ class VolumeRenderer:
                 line_el = None
                 for token in filter_tokens(block['tokens'], self.alto_block_token_filter, redacted):
                     if type(token) == str:
-                        if not ignore_strings:
+                        if not ignore_strings and string_el is not None:
+                            # ignore_strings will be true if we are in an [edit] block, and are ignoring the replacement text
+                            # string_el will be None if we have a string outside an [ocr] block -- those only go into the case and not the alto
                             string_el.attrib['CONTENT'] += token
                     elif token[0] == 'line':
                         # close old </TextLine> and start new <TextLine>
@@ -177,7 +179,7 @@ class VolumeRenderer:
                 if string_el is not None:
                     self.close_string(string_el)
 
-        return etree.tostring(page_el, encoding=str, pretty_print=True)
+        return etree.tostring(page_el, encoding=str, pretty_print=self.pretty_print)
 
     def close_string(self, string_el):
         """ Once <String CONTENT> is reassembled, strip any closing spaces and reconstruct CC value. """
@@ -345,7 +347,7 @@ class VolumeRenderer:
             else:
                 case_el.append(opinion_el)
 
-        return etree.tostring(case_el, encoding=str, pretty_print=True)
+        return etree.tostring(case_el, encoding=str, pretty_print=self.pretty_print)
 
     def make_case_el(self, case):
         """ Make <section class='case'>, or <casebody> """
