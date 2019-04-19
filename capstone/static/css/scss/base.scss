@@ -308,13 +308,6 @@ li.item-set {
   }
 }
 
-.inverse {
-  .social {
-    .github > a, .website > a {
-      background-position-x: -60px;
-    }
-  }
-}
 
 .bg-violet-dark {
   @extend .bg-black;
