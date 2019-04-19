@@ -15,54 +15,85 @@ case.settings(
 
 @case.doc_type
 class CaseDocument(DocType):
+    name_abbreviation = fields.StringField(
+        fields={
+            'raw': fields.KeywordField(),
+            'suggest': fields.CompletionField(),
+        }
+    )
+
+    name_abbreviation = fields.StringField(
+        fields={
+            'raw': fields.KeywordField(),
+            'suggest': fields.CompletionField(),
+        }
+    )
+
+    name = fields.TextField()
+
+    docket_numbers = fields.ObjectField()
+
     volume = fields.ObjectField(properties={
         "barcode": fields.TextField(),
-        'volume_number': fields.KeywordField(),
+        'volume_number': fields.StringField(
+            fields={
+                'raw': fields.KeywordField(),
+                'suggest': fields.CompletionField(),
+            })
     })
 
     reporter = fields.ObjectField(properties={
         "id": fields.IntegerField(),
-        "full_name": fields.TextField()
+        "full_name": fields.StringField(
+            fields={
+                'raw': fields.KeywordField(),
+                'suggest': fields.CompletionField(),
+            })
     })
 
     court = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "slug": fields.KeywordField(),
         "name": fields.TextField(),
-        "name_abbreviation": fields.KeywordField()
+        "name_abbreviation": fields.StringField(
+            fields={
+                'raw': fields.KeywordField(),
+                'suggest': fields.CompletionField(),
+            })
     })
 
     jurisdiction = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "slug": fields.KeywordField(),
         "name": fields.KeywordField(),
-        "name_long": fields.KeywordField(),
+        "name_long": fields.StringField(
+            fields={
+                'raw': fields.KeywordField(),
+                'suggest': fields.CompletionField(),
+            }),
         "whitelisted": fields.BooleanField()
     })
 
-    casebody = fields.NestedField(properties={
-        'data': fields.NestedField(properties={
-            'text': fields.TextField(),
-            'xml': fields.KeywordField(),
-            'html': fields.KeywordField(),
-            'structured': fields.NestedField(properties={
-                'attorneys': fields.KeywordField(multi=True),
-                'judges': fields.KeywordField(multi=True),
-                'parties': fields.KeywordField(multi=True),
-                'headmatter': fields.KeywordField(multi=True),
-                'opinions': fields.ObjectField(),
-            }),
-        })
+    casebody_data = fields.NestedField(properties={
+        'text': fields.TextField(),
+        'xml': fields.KeywordField(),
+        'html': fields.KeywordField(),
+        'structured': fields.NestedField(properties={
+            'attorneys': fields.KeywordField(multi=True),
+            'judges': fields.KeywordField(multi=True),
+            'parties': fields.KeywordField(multi=True),
+            'headmatter': fields.KeywordField(multi=True),
+            'opinions': fields.ObjectField(),
+        }),
     })
 
-    docket_numbers = fields.ObjectField()
 
     def prepare_docket_numbers(self, instance):
         if not instance.docket_numbers:
             return { 'docket_numbers': None }
         return instance.docket_numbers
 
-    def prepare_casebody(self, instance):
+    def prepare_casebody_data(self, instance):
         if not instance.case_xml:
             return { 'case_body': {
                 'data': None,
@@ -96,7 +127,6 @@ class CaseDocument(DocType):
             # remove opinion so it doesn't get included in head_matter below
             opinion.remove()
 
-
         return {
             'data': {
                 'text': instance.case_xml.extract_casebody().text(),
@@ -116,18 +146,11 @@ class CaseDocument(DocType):
     class Meta:
         model = CaseMetadata
         fields = [
-            'name',
-            'name_abbreviation',
+            'id',
             'last_page',
-            'jurisdiction_name',
-            'jurisdiction_name_long',
-            'jurisdiction_slug',
-            'jurisdiction_whitelisted',
+            'first_page',
             'decision_date',
-            'district_name',
-            'district_abbreviation',
             'duplicative',
-            'case_id',
             'date_added',
         ]
 
