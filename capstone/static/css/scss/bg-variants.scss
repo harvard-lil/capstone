@@ -33,9 +33,6 @@
 
 .bg-black {
   color: $color-white;
-  h1, .section-title {
-    color: $color-yellow !important;
-  }
   a {
     color: $color-magenta;
     &:hover, &:active, &:focus {
@@ -50,12 +47,14 @@
       color: $color-white;
     }
   }
-  border-top: 1px solid $color-white;
   margin-top: 0;
   .title-section > h1.page-title {
     color: $color-white !important;
   }
   .explainer-section > .content {
+    color: $color-white;
+  }
+  li.item-set > .item-origin {
     color: $color-white;
   }
 }
@@ -64,6 +63,9 @@
   @extend .bg-white;
   .btn-primary, .btn-secondary, .btn-tertiary {
     @include button ($color-medium-blue, $color-white, $color-dark-blue)
+  }
+  .btn-secondary {
+    background-color: $color-white !important;
   }
 }
 

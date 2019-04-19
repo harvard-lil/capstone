@@ -12,7 +12,7 @@
 {% block explainer %}
   The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
   and their associated metadata. We currently offer three ways to access the data: our
-  <a href="{% url "api" %}">API</a>, <a href="{% url "bulk-docs" %}">bulk downloads</a>, and
+  <a href="{% api_url "api-root" %}">API</a>, <a href="{% url "bulk-download" %}">bulk downloads</a>, and
   <a href="{% url "search" %}">search</a>.
 {% endblock %}
 {% block row_style %}bg-tan{% endblock %}

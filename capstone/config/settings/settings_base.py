@@ -258,6 +258,12 @@ PIPELINE = {
             ),
             'output_filename': 'tools.css'
         },
+        'bulk': {
+            'source_filenames': (
+                'css/scss/bulk.scss',
+            ),
+            'output_filename': 'bulk.css'
+        },
         'gallery': {
             'source_filenames': (
                 'css/scss/gallery.scss',

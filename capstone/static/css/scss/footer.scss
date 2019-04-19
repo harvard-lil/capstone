@@ -75,9 +75,8 @@ footer {
 
 .footer-copyright {
   margin: 0 auto;
-  @include make-col(11);
   p {
-    text-align: right;
+    text-align: left;
   }
   span {
     display: inline-block;
