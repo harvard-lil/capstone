@@ -89,17 +89,18 @@ class CaseDocument(DocType):
 
 
     def prepare_docket_numbers(self, instance):
-        if not instance.docket_numbers:
+        if not hasattr(instance, 'docket_numbers'):
             return { 'docket_numbers': None }
         return instance.docket_numbers
 
     def prepare_casebody_data(self, instance):
-        if not instance.case_xml:
+        if not hasattr(instance, 'case_xml'):
             return { 'case_body': {
                 'data': None,
                 'status': 'Casebody not found during indexing. Please send the CAP team this URL '
                           'and this error message.'
             }}
+
 
         parsed_casebody = instance.case_xml.extract_casebody()
 
