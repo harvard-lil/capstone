@@ -593,3 +593,5 @@ ELASTICSEARCH_DSL={
         'hosts': 'elasticsearch:9200'
     },
 }
+
+ELASTICSEARCH_API_ENABLE = False
