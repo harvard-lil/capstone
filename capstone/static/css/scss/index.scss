@@ -19,6 +19,16 @@ h1 {
   margin-bottom: $headings-margin-bottom;
 }
 
+.section-narrow {
+  padding: 2em 0;
+  &.extra-top-padding {
+    padding-top: 6em;
+  }
+  &.extra-bottom-padding {
+    padding-bottom: 6em;
+  }
+}
+
 .section-title {
   @extend .h1;
   @include header-styles;
@@ -194,14 +204,6 @@ h1 {
 }
 
 #section-about {
-  .bg-white-violet {
-    padding: 1rem 2rem;
-    margin-bottom: 2rem;
-    min-width: 100%;
-  }
-}
-
-#section-about {
   padding-bottom: 0;
   @include media-breakpoint-down(md) {
     padding-bottom: 60px;
@@ -212,6 +214,11 @@ h1 {
   .social {
     span {
       margin-right: 1rem;
+    }
+  }
+  .content-left {
+    @include media-breakpoint-down(md) {
+      margin-bottom: 3em;
     }
   }
 }
