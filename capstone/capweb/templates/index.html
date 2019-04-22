@@ -2,6 +2,7 @@
 {% load static %}
 {% load pipeline %}
 {% load api_url %}
+{% load format_number %}
 {% load render_bundle from webpack_loader %}
 
 {% block extra_head %}
@@ -45,7 +46,7 @@
         <div class="content-small-screen numbers">
           <div class="row">
             <div class="col">
-              <span class="number">{{ numbers.cases }}</span>
+              <span class="number">{{ state.cases }}</span>
             </div>
             <div class="col mt-3">
               <span class="label-big">
@@ -61,12 +62,12 @@
             </div>
             <hr/>
             <div class="col">
-              <span class="reporters-number">{{ numbers.reporters }}</span>
+              <span class="reporters-number">{{ state.reporters }}</span>
               <span class="label color-yellow-bright">Reporters</span>
             </div>
             <div class="dotted-vr"></div>
             <div class="col pl-1">
-              <span class="pages-scanned-number">{{ numbers.pages_scanned }}M</span>
+              <span class="pages-scanned-number">{{ state.pages_scanned }}M</span>
               <span class="label">Pages scanned</span>
             </div>
           </div>
@@ -79,27 +80,46 @@
                  src='{% static "img/red-arrow-right.svg" %}'>
             Our data
           </h2>
-          <div class="numbers numbers-vertical">
+          <div class="numbers numbers-state numbers-vertical">
             <ul>
-              <li class="item-set">
+              <li class="item-set jur-name">
                 <span class="number jur_name">Overall</span>
               </li>
-              <li class="item-set">
-                <span class="number num_cases">{{ numbers.cases }}M</span>
+              <li class="item-set num-cases">
+                <span class="number num_cases">{{ state.cases }}M</span>
                 <p>Unique cases</p>
               </li>
-              <li class="item-set">
-                <span class="number num_reporters">{{ numbers.reporters }}</span>
+              <li class="item-set num-reporters">
+                <span class="number num_reporters">{{ state.reporters }}</span>
                 <p>Reporters</p>
               </li>
-              <li class="item-set">
-                <span class="number num_pages">{{ numbers.pages_scanned }}M</span>
+              <li class="item-set num-pages">
+                <span class="number num_pages">{{ state.pages_scanned }}M</span>
                 <p>Pages scanned</p>
               </li>
             </ul>
           </div>
-
+          <div class="numbers numbers-federal numbers-vertical">
+            <ul>
+              <li class="item-set jur-name">
+                <span class="number federal-jur_name">Federal</span>
+              </li>
+              <li class="item-set num-cases">
+                <span class="number federal-num_cases">{{ federal.cases|format_number }}</span>
+                <p>Unique cases</p>
+              </li>
+              <li class="item-set num-reporters">
+                <span class="number federal-num_reporters">{{ federal.reporters|format_number }}</span>
+                <p>Reporters</p>
+              </li>
+              <li class="item-set num-pages">
+                <span class="number federal-num_pages">{{ federal.pages_scanned|format_number }}</span>
+                <p>Pages scanned</p>
+              </li>
+            </ul>
+          </div>
         </div>
+
         <div class="content-right">
           <div class="map">
             <a href="#section-dive-in"

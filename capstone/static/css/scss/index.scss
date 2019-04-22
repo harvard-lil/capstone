@@ -46,11 +46,10 @@ h1 {
   }
 }
 
-.number.jur_name {
-  padding: 0;
+.number.jur_name, .number.federal-jur_name {
   max-height: 100px;
   margin-bottom: 1rem;
-  padding-bottom: .2rem;
+  padding: 0 0 .2rem;
   border-bottom: 1px solid $color-white;
 }
 
@@ -121,7 +120,7 @@ h1 {
   }
 }
 
-.content-left > .numbers-vertical {
+.numbers-vertical {
   background-color: $color-black;
   margin-top: 20px;
   text-align: left;
@@ -143,17 +142,53 @@ h1 {
 .content-right > .map {
   margin-top: 3em;
   margin-bottom: 3em;
-
+  min-width: 100%;
   @include media-breakpoint-down(sm) {
     display: none;
+  }
+}
+
+#section-about > .content {
+  @extend .col-12;
+  .content-right {
+    @include media-breakpoint-down(lg) {
+      min-width: 60%;
+    }
+
   }
 }
 
 #section-about > .content > .row {
   .content-left,
   .content-right {
+    @include media-breakpoint-down(lg) {
+      font-size: 0.8em;
+    }
     @include media-breakpoint-down(sm) {
       display: none;
+    }
+  }
+  .content-right {
+    margin-left: 3em;
+  }
+}
+
+#section-about > .content > .row > .content-left {
+  @extend .col-3;
+  padding-left: 0;
+  padding-right: 0;
+  @include media-breakpoint-down(lg) {
+    .numbers-vertical {
+      .num-reporters {
+        display: none;
+      }
+    }
+  }
+  @include media-breakpoint-down(md) {
+    .numbers-vertical {
+      .num-pages {
+        display: none;
+      }
     }
   }
 }
