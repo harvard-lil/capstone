@@ -19,14 +19,22 @@ logger = logging.getLogger(__name__)
 
 def index(request):
     news = get_data_from_lil_site(section="news")
-    numbers = {
-        "pages_scanned": 40,
+    federal = {
+        "cases": 1693904,
+        "reporters": 32,
+        "pages_scanned": 9547364,
+    }
+
+    state = {
         "cases": 6.7,
         "reporters": 627,
+        "pages_scanned": 40,
     }
+
     return render(request, "index.html", {
         'news': news[0:5],
-        'numbers': numbers,
+        'state': state,
+        'federal': federal,
         'page_image': 'img/og_image/index.png',
         'page_name': 'home'
     })
@@ -151,6 +159,7 @@ def api(request):
         'page_description': 'To get started with the API, you can explore it in your browser, or reach it from the '
                             'command line.'
     })
+
 
 def search_docs(request):
     return render(request, 'search_docs.html')

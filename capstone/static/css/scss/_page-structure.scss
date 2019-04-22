@@ -177,15 +177,6 @@ section {
   .section-title {
     font-family: $font-sans-title;
   }
-
-  @include media-breakpoint-down(sm) {
-    .section-title {
-      color: $color-violet;
-    }
-    .section-subtitle {
-      color: $color-black;
-    }
-  }
   .section-subtitle {
     font-weight: 300;
   }

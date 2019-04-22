@@ -5,12 +5,8 @@
      xmlns="http://www.w3.org/2000/svg"
      role="img"
      xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>
-        Map of USA and territories
-    </title>
-    <desc>
-        Map showing a summary of available data
-    </desc>
+    <title>Map of USA and territories</title>
+    <desc>Map showing a summary of available data</desc>
     <g id="usa_territories_white" fill="none" fill-rule="nonzero" stroke="#FFFFFF" stroke-width="0.5">
         <g id="Dakota-Territory" transform="translate(192, -30)">
             <title>Dakota Territory</title>
@@ -24,7 +20,7 @@
                 </polygon>
             </a>
         </g>
-        <g transform="translate(450, 135)">
+        <!--<g transform="translate(450, 135)">
             <title>Federal</title>
             <a aria-label="Federal" class="state-link"
                href="#">
@@ -32,7 +28,7 @@
                       class="state state-pointer" id="US">
                 </path>
             </a>
-        </g>
+        </g>-->
 
         <g>
             <title>American Samoa</title>
