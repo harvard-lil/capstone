@@ -70,12 +70,3 @@
     background-color: $color-white !important;
   }
 }
-
-.bg-violet {
-  @extend .bg-black;
-  background-color: $color-violet-large-text;
-  color: $color-white;
-  h1, .section-title {
-    color: $color-white !important;
-  }
-}

@@ -204,14 +204,6 @@ h1 {
 }
 
 #section-about {
-  .bg-white-violet {
-    padding: 1rem 2rem;
-    margin-bottom: 2rem;
-    min-width: 100%;
-  }
-}
-
-#section-about {
   padding-bottom: 0;
   @include media-breakpoint-down(md) {
     padding-bottom: 60px;
