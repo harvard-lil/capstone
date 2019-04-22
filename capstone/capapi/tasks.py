@@ -1,4 +1,5 @@
 from datetime import timedelta
+import requests
 
 from celery import shared_task
 from django.conf import settings
@@ -37,6 +38,16 @@ User emails:
 
     # reset limits
     SiteLimits.reset()
+
+    # notify external service
+    try:
+        url = settings.HEALTHCHECK_URL["%s.daily_site_limit_reset_and_report" % __name__]
+        if url:
+            r = requests.get(url)
+            if r.status_code != requests.codes.ok:
+                print("CAP daily usage report was unable to notify healthcheck service.")
+    except KeyError:
+        pass
 
 @shared_task
 def cache_query_count(sql, cache_key):
