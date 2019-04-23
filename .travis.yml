@@ -32,8 +32,8 @@ before_install:
 - sudo rm -f /etc/boto.cfg
 
 # set up node
-- nvm install stable
-- nvm use stable
+- nvm install 11.14.0
+- nvm use 11.14.0
 
 install:
 # python packages
