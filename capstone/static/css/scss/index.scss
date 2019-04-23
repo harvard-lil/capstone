@@ -19,6 +19,16 @@ h1 {
   margin-bottom: $headings-margin-bottom;
 }
 
+.section-narrow {
+  padding: 2em 0;
+  &.extra-top-padding {
+    padding-top: 6em;
+  }
+  &.extra-bottom-padding {
+    padding-bottom: 6em;
+  }
+}
+
 .section-title {
   @extend .h1;
   @include header-styles;
@@ -46,11 +56,10 @@ h1 {
   }
 }
 
-.number.jur_name {
-  padding: 0;
+.number.jur_name, .number.federal-jur_name {
   max-height: 100px;
   margin-bottom: 1rem;
-  padding-bottom: .2rem;
+  padding: 0 0 .2rem;
   border-bottom: 1px solid $color-white;
 }
 
@@ -121,7 +130,7 @@ h1 {
   }
 }
 
-.content-left > .numbers-vertical {
+.numbers-vertical {
   background-color: $color-black;
   margin-top: 20px;
   text-align: left;
@@ -143,26 +152,54 @@ h1 {
 .content-right > .map {
   margin-top: 3em;
   margin-bottom: 3em;
-
+  min-width: 100%;
   @include media-breakpoint-down(sm) {
     display: none;
+  }
+}
+
+#section-about > .content {
+  @extend .col-12;
+  .content-right {
+    @include media-breakpoint-down(lg) {
+      min-width: 60%;
+    }
+
   }
 }
 
 #section-about > .content > .row {
   .content-left,
   .content-right {
+    @include media-breakpoint-down(lg) {
+      font-size: 0.8em;
+    }
     @include media-breakpoint-down(sm) {
       display: none;
     }
   }
+  .content-right {
+    margin-left: 3em;
+  }
 }
 
-#section-about {
-  .bg-white-violet {
-    padding: 1rem 2rem;
-    margin-bottom: 2rem;
-    min-width: 100%;
+#section-about > .content > .row > .content-left {
+  @extend .col-3;
+  padding-left: 0;
+  padding-right: 0;
+  @include media-breakpoint-down(lg) {
+    .numbers-vertical {
+      .num-reporters {
+        display: none;
+      }
+    }
+  }
+  @include media-breakpoint-down(md) {
+    .numbers-vertical {
+      .num-pages {
+        display: none;
+      }
+    }
   }
 }
 
@@ -177,6 +214,11 @@ h1 {
   .social {
     span {
       margin-right: 1rem;
+    }
+  }
+  .content-left {
+    @include media-breakpoint-down(md) {
+      margin-bottom: 3em;
     }
   }
 }

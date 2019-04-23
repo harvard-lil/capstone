@@ -612,6 +612,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                 casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', casebody, flags=re.S)
                 casebody = casebody.replace(' label=""', '')  # footnote with empty label
                 casebody = re.sub(r'>\s+<', '><', casebody)  # normalize multiline xml file to single file
+                casebody = re.sub(r'<([a-z]+)[^>]*></\1>', '', casebody)  # remove empty elements (typically redacted paragraphs)
                 casebody = re.sub(r'\s+', ' ', casebody)  # normalize multiple spaces
                 casebody = casebody.replace('\xad ', '\xad')  # fix doubled-paragraph bug
                 casebodies[i] = casebody
@@ -900,12 +901,19 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                             # character. We don't store all-zero strings at all. For strings with some nines, convert to
                             # binary and interpret as an integer for compactness.
                             cc = string_attrib['CC']
+                            text = string_attrib['CONTENT']
                             if '9' in cc:
+                                if text != text.strip():
+                                    # If we're storing cc and text has whitespace, we have to strip the same character range from both text and cc:
+                                    pre_space, post_space = re.match(r'(\s*).*?(\s*)$', text).groups()
+                                    text = text[len(pre_space):-len(post_space) or None]
+                                    cc = cc[len(pre_space):-len(post_space) or None]
                                 ocr_token[1]['cc'] = int(cc.replace('9', '1'), 2)
+                            else:
+                                # If not storing cc, just strip whitespace from text:
+                                text = text.strip()
 
-                            # Handle CONTENT attribute: append a space if next tag is a space, or if string does not
-                            # end with a hyphen.
-                            text = string_attrib['CONTENT'].strip()
+                            # Append a space if next tag is a space, or if string does not end with a hyphen.
                             next_tag = string.getnext()
                             if (next_tag is not None and next_tag.tag == 'SP') or (text and text[-1] not in ('-', '\xad')):
                                 text += ' '
@@ -1262,4 +1270,3 @@ def write_to_db(volume_barcode, zip_path):
         for case in case_objs:
             case.metadata.sync_from_initial_metadata(force=True)
             case.metadata.sync_case_body_cache(blocks_by_id=blocks_by_id, fonts_by_id=fonts_by_id)
-

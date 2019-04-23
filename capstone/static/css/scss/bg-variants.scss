@@ -5,6 +5,7 @@
   }
   a {
     color: $color-blue;
+    fill: $color-blue;
     &:hover, &:active, &:focus {
       color: $color-dark-blue;
     }
@@ -35,6 +36,7 @@
   color: $color-white;
   a {
     color: $color-magenta;
+    fill: $color-magenta;
     &:hover, &:active, &:focus {
       color: $color-pink;
     }
@@ -66,14 +68,5 @@
   }
   .btn-secondary {
     background-color: $color-white !important;
-  }
-}
-
-.bg-violet {
-  @extend .bg-black;
-  background-color: $color-violet-large-text;
-  color: $color-white;
-  h1, .section-title {
-    color: $color-white !important;
   }
 }

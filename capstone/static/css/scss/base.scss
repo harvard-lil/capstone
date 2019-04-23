@@ -308,19 +308,6 @@ li.item-set {
   }
 }
 
-.inverse {
-  .social {
-    .github > a, .website > a {
-      background-position-x: -60px;
-    }
-  }
-}
-
-.bg-violet-dark {
-  @extend .bg-black;
-  background-color: #3b2668;
-}
-
 /* logos */
 .footer-lil-logo {
   width: 173px;
