@@ -78,5 +78,5 @@ diff-match-patch
 webpage2html # save target page as string
 mincss       # remove unused css styles
 
-# healthcheck
+# capapi.tasks and capweb.helpers use requests
 requests  # also via aws-xray-sdk, coreapi, docker, moto, response
