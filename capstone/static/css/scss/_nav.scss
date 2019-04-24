@@ -92,6 +92,12 @@ nav[aria-label="main"].sticky {
   }
 }
 
+nav[aria-label="main"].sticky > #burger-icon {
+  @include media-breakpoint-down(md) {
+    padding-top: 10px;
+  }
+}
+
 .nav-content {
   float: right;
   display: inline-table;

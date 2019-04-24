@@ -80,3 +80,8 @@ mincss       # remove unused css styles
 
 # capapi.tasks and capweb.helpers use requests
 requests  # also via aws-xray-sdk, coreapi, docker, moto, response
+
+# Elasticsearch
+elasticsearch-dsl
+django-elasticsearch-dsl
+django-elasticsearch-dsl-drf

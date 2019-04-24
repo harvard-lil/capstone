@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     'drf_yasg',   # API specification
     'django_hosts',     # subdomain routing
     'webpack_loader',   # webpack assets
+    'elasticsearch_dsl',
+    'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl_drf',
 ]
 
 REST_FRAMEWORK = {
@@ -589,3 +592,11 @@ REDACTION_KEY = None
 HEALTHCHECK_URL = {
     'capapi.tasks.daily_site_limit_reset_and_report': None,
 }
+
+ELASTICSEARCH_DSL={
+    'default': {
+        'hosts': 'elasticsearch:9200'
+    },
+}
+
+ELASTICSEARCH_API_ENABLE = False
