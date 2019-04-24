@@ -227,7 +227,7 @@ def ordered_query_iterator(queryset, chunk_size=1000):
 
         This requires that:
             - the query have an order_by
-            - all ordering fields be null=False
+            - all ordering fields not contain any NULL values (because `field > NULL` doesn't work as a predicate)
             - the final ordering field be unique=True
 
         Alternatively you may want to use the builtin queryset.iterator(chunk_size). This function is preferable if:
@@ -245,6 +245,8 @@ def ordered_query_iterator(queryset, chunk_size=1000):
         key_pair, *rest = order_by
         key, comparator = key_pair
         value = getattr(obj, key)
+        if value is None:
+            raise ValueError("Cannot use ordered_query_iterator on column %s that contains NULL values" % order_by)
         filter = Q(**{'%s__%s' % (key, comparator): value})
         if rest:
             filter = filter | (Q(**{key: value}) & get_filter(rest, obj))
@@ -254,8 +256,6 @@ def ordered_query_iterator(queryset, chunk_size=1000):
     order_by = queryset.query.order_by
     assert order_by, "Queryset must have a unique ordering"
     meta = queryset.model._meta
-    for key in order_by:
-        assert not meta.get_field(key).null, "order_by field %s must be null=False" % key
     assert meta.get_field(order_by[-1]).unique, "order_by field %s must be unique=True" % order_by[-1]
     order_by = [(key[1:], 'lt') if key.startswith('-') else (key, 'gt') for key in order_by]
 
