@@ -158,7 +158,7 @@ class CaseDocument(DocType):
         auto_refresh = False
 
     def get_queryset(self):
-        return ordered_query_iterator(
+        results = ordered_query_iterator(
             super(CaseDocument, self).get_queryset()
             .select_related(
                 'volume',
@@ -170,4 +170,18 @@ class CaseDocument(DocType):
             .in_scope()
             .order_by('decision_date', 'id')  # we have an index on this ordering with in_scope(), so ordered_query_iterator can run efficiently
         )
+
+        # wrap results in a fake queryset with a count() method that returns 'many'.
+        # this is necessary only because `./manage.py search_index` expects to receive a queryset and print a count
+        # when it begins indexing.
+        class FakeQueryset:
+            def __init__(self, results):
+                self.results = results
+            def __iter__(self):
+                return self
+            def __next__(self):
+                return next(self.results)
+            def count(self):
+                return 'many'
+        return FakeQueryset(results)
 
