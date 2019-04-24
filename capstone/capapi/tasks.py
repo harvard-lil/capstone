@@ -42,10 +42,11 @@ User emails:
     # notify external service
     try:
         url = settings.HEALTHCHECK_URL["%s.daily_site_limit_reset_and_report" % __name__]
-        if url:
+        try:
             r = requests.get(url)
-            if r.status_code != requests.codes.ok:
-                print("CAP daily usage report was unable to notify healthcheck service.")
+            r.raise_for_status()
+        except requests.exceptions.RequestException as err:
+            print("CAP daily usage report was unable to notify healthcheck service.")
     except KeyError:
         pass
 
