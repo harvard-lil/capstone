@@ -15,6 +15,7 @@ from django.db.models import QuerySet
 from django.template.defaultfilters import slugify
 from django.http import FileResponse
 from django.test.utils import CaptureQueriesContext
+from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
 
 from capapi.tasks import cache_query_count
@@ -88,9 +89,11 @@ def wrap_user(request, user):
         - set user.ip_address, so we can check the user's IP address
         This intentionally re-wraps the user object if called twice, so the tracking is reset.
     """
-    user = TrackingWrapper(user)
-    user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
-    return user
+    def inner_wrap_user():
+        wrapped_user = TrackingWrapper(user)
+        wrapped_user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
+        return wrapped_user
+    return SimpleLazyObject(inner_wrap_user)
 
 
 class CachedCountQuerySet(QuerySet):

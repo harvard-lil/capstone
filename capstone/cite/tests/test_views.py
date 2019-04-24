@@ -91,9 +91,7 @@ def test_single_case(client, auth_client, django_assert_num_queries, case):
     """ Test /series/volume/case/ with one matching case """
 
     # setup
-    cite = case.citations.first()
-    cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
-    url = reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite')
+    url = case.get_readable_url()
     parsed = parse_xml(case.case_xml.orig_xml)
     case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
 
