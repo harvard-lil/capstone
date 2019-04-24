@@ -12,10 +12,13 @@ from capdb import models
 from capdb.models import CaseBodyCache
 from scripts import helpers
 from scripts.generate_case_html import generate_html
-from .permissions import get_single_casebody_permissions
+from .permissions import get_single_casebody_permissions, check_update_case_permissions
 
 logger = logging.getLogger(__name__)
 
+from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
+
+from .documents import CaseDocument
 
 class CitationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -98,6 +101,25 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'jurisdiction',
         )
 
+class CaseDocumentSerializer(DocumentSerializer):
+
+    class Meta:
+        document = CaseDocument
+        fields = (
+            'id',
+            'url',
+            'name',
+            'name_abbreviation',
+            'decision_date',
+            'docket_number',
+            'first_page',
+            'last_page',
+            'citations',
+            'volume',
+            'reporter',
+            'court',
+            'jurisdiction',
+        )
 
 class CaseAllowanceMixin:
     """
@@ -148,6 +170,45 @@ class CaseAllowanceMixin:
 class ListSerializerWithCaseAllowance(CaseAllowanceMixin, ListSerializer):
     """ Custom ListSerializer for CaseSerializerWithCasebody that enforces CaseAllowance. """
     pass
+
+class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSerializer):
+    casebody = serializers.SerializerMethodField()
+
+    class Meta:
+        document = CaseDocument
+        fields = CaseDocumentSerializer.Meta.fields + ('casebody',)
+        list_serializer_class = ListSerializerWithCaseAllowance
+
+    def get_casebody(self, case, check_permissions=True):
+
+        # check permissions for full-text access to this case
+        request = self.context.get('request')
+        if check_permissions:
+            status = check_update_case_permissions(request, case)
+        else:
+            status = 'ok'
+
+        if status == 'ok':
+
+            body_format = request.query_params.get('body_format', None)
+
+            if body_format == 'html':
+                return {
+                    'data': case.casebody_data['data']['html'],
+                    'status': status
+                }
+            elif body_format == 'xml':
+                return {
+                    'data': case.casebody_data['data']['xml'],
+                    'status': status
+                }
+            else:
+                return {
+                    'data': case.casebody_data['data']['structured'],
+                    'status': status
+                }
+        return {'status': status, 'data': None}
+
 
 
 class CaseSerializerWithCasebody(CaseAllowanceMixin, CaseSerializer):

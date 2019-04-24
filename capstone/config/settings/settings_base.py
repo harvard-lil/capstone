@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     'drf_yasg',   # API specification
     'django_hosts',     # subdomain routing
     'webpack_loader',   # webpack assets
+    'elasticsearch_dsl',
+    'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl_drf',
 ]
 
 REST_FRAMEWORK = {
@@ -584,3 +587,11 @@ WEBPACK_LOADER = {
 
 # used for encrypting redacted text -- this should usually not be set, but only entered on demand
 REDACTION_KEY = None
+
+ELASTICSEARCH_DSL={
+    'default': {
+        'hosts': 'elasticsearch:9200'
+    },
+}
+
+ELASTICSEARCH_API_ENABLE = False

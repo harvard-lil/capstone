@@ -77,3 +77,8 @@ diff-match-patch
 # maintenance page
 webpage2html # save target page as string
 mincss       # remove unused css styles
+
+# Elasticsearch
+elasticsearch-dsl
+django-elasticsearch-dsl
+django-elasticsearch-dsl-drf

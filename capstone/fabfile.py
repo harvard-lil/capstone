@@ -167,6 +167,10 @@ def migrate():
     update_postgres_env()
 
 @task
+def rebuild_search_index():
+    management.call_command('search_index', '--rebuild')
+
+@task
 def load_test_data():
     if settings.USE_TEST_TRACKING_TOOL_DB:
         management.call_command('loaddata', 'test_data/tracking_tool.json', database="tracking_tool")

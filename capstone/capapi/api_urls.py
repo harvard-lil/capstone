@@ -7,7 +7,6 @@ from drf_yasg import openapi
 
 from capapi.views import api_views
 
-
 router = routers.DefaultRouter()
 router.register('cases', api_views.CaseViewSet)
 router.register('citations', api_views.CitationViewSet)
@@ -16,6 +15,10 @@ router.register('courts', api_views.CourtViewSet)
 router.register('volumes', api_views.VolumeViewSet)
 router.register('reporters', api_views.ReporterViewSet)
 router.register('bulk', api_views.CaseExportViewSet)
+
+if settings.ELASTICSEARCH_API_ENABLE:
+    router.register('elastic_cases', api_views.CaseDocumentViewSet, basename="elastic_cases")
+
 if settings.NGRAMS_FEATURE:
     router.register('ngrams', api_views.NgramViewSet)
 
