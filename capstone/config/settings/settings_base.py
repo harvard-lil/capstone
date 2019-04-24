@@ -588,6 +588,11 @@ WEBPACK_LOADER = {
 # used for encrypting redacted text -- this should usually not be set, but only entered on demand
 REDACTION_KEY = None
 
+# external service to notify on completion of a task
+HEALTHCHECK_URL = {
+    'capapi.tasks.daily_site_limit_reset_and_report': None,
+}
+
 ELASTICSEARCH_DSL={
     'default': {
         'hosts': 'elasticsearch:9200'

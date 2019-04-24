@@ -124,7 +124,7 @@ pyyaml==4.2b4
 rcssmin==1.0.6            # via django-compressor
 redis==3.2.1
 reportlab==3.5.13
-requests==2.21.0          # via aws-xray-sdk, coreapi, docker, moto, responses
+requests==2.21.0
 responses==0.10.5         # via moto
 rjsmin==1.0.12            # via django-compressor
 ruamel.yaml==0.15.87      # via drf-yasg
