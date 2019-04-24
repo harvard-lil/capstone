@@ -72,6 +72,7 @@ def cache_header_middleware(get_response):
             'cache_header_not_set': not response.has_header("Cache-Control"),
             'csrf_cookie_not_used': not request.META.get("CSRF_COOKIE_USED"),
             'cookie_header_not_set': not response.has_header("Set-Cookie"),
+            'session_safe': not request.session.modified,
         }
 
         # If all tests pass, we can set the Cache-Control header

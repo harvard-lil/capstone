@@ -854,6 +854,11 @@ class CaseMetadata(models.Model):
     def get_absolute_url(self):
         return reverse('casemetadata-detail', args=[self.id], scheme="https")
 
+    def get_readable_url(self):
+        cite = self.citations.first()
+        cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
+        return reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite')
+
     def create_or_update_case_text(self, new_text=None):
         """ Create or update the related case_text object for this case_metadata. """
         if hasattr(self, 'case_text'):
