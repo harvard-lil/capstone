@@ -4,7 +4,7 @@ from django_elasticsearch_dsl import DocType, Index, fields
 from capdb.models import CaseMetadata
 
 from scripts.generate_case_html import generate_html
-
+from scripts.helpers import ordered_query_iterator
 
 case = Index('cases')
 
@@ -157,14 +157,17 @@ class CaseDocument(DocType):
         ignore_signals = True
         auto_refresh = False
 
-    # reduces number of DB queries
     def get_queryset(self):
-        return super(CaseDocument, self).get_queryset().select_related(
-            'volume',
-            'reporter',
-            'court',
-            'jurisdiction',
-            'reporter',
-            'case_xml'
-        ).filter(duplicative=False)
+        return ordered_query_iterator(
+            super(CaseDocument, self).get_queryset()
+            .select_related(
+                'volume',
+                'reporter',
+                'court',
+                'jurisdiction',
+                'reporter',
+                'case_xml')
+            .in_scope()
+            .order_by('decision_date', 'id')  # we have an index on this ordering with in_scope(), so ordered_query_iterator can run efficiently
+        )
 
