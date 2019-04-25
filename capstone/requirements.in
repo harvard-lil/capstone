@@ -25,11 +25,11 @@ redis               # redis connector
 python-redis-lock   # cross-process locks
 
 # Django stuff
-django<2.1             # Fix issues related to 2.1.x branch (https://github.com/harvard-lil/capstone/issues/745)
+django<2.2             # Fix issues related to 2.1.x branch (https://github.com/harvard-lil/capstone/issues/745)
 django-storages==1.6.6 # Fix issues related to 1.7.x branch (https://github.com/harvard-lil/capstone/issues/745)
 boto3==1.7.84          # Fix issues related to 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
 whitenoise             # serve static assets
--e git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils # Fix issues related to https://github.com/jazzband/django-model-utils/issues/331 (https://github.com/harvard-lil/capstone/issues/745)
+-e git://github.com/jcushman/django-model-utils.git@f2e97e41418788c81ee8e5ab1cec37ecff65a003#egg=django-model-utils  # PR: https://github.com/jazzband/django-model-utils/pull/369
 django-simple-history  # model versioning
 django-redis           # use redis as Django cache backend
 django-hosts           # URL routing across subdomains

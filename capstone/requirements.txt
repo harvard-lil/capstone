@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
--e git+git://github.com/jcushman/django-model-utils.git@d34043f#egg=django-model-utils
+-e git+git://github.com/jcushman/django-model-utils.git@f2e97e41418788c81ee8e5ab1cec37ecff65a003#egg=django-model-utils
 -e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
 -e git+git://github.com/jcushman/pyquery.git@115173a#egg=pyquery
 amqp==2.4.0               # via kombu
@@ -48,7 +48,7 @@ django-redis==4.10.0
 django-simple-history==2.7.0
 django-storages==1.6.6
 django-webpack-loader==0.6.0
-django==2.0.13
+django==2.1.8
 djangorestframework-filters==1.0.0.dev0
 djangorestframework==3.9.1
 dnspython==1.16.0
