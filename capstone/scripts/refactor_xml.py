@@ -1,4 +1,5 @@
 import bisect
+import difflib
 import json
 import re
 import shutil
@@ -52,6 +53,11 @@ def scan_dupe_paragraphs():
                         dupes.append([path, str(par)])
     Path('test_data/zips/duplicate_pars.json').write_text(json.dumps(dupes, indent=4))
 
+def dump_text(path, text):
+    path = Path('test_data/zips/dump', path)
+    print("Dumping %s" % path)
+    path.write_text(text)
+
 def dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, unredacted_storage, redacted_storage, case, pages, renderer, blocks_by_id):
     """
         For debugging when a case fails to match during assert_reversability -- dump case and alto files locally:
@@ -64,37 +70,37 @@ def dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, un
         for block_id in par['block_ids']:
             page = page_objs_by_block_id[block_id]
             case_pages[page['id']] = page
-    base_path = Path('test_data/zips/dump')
     to_dump = [(unredacted_storage, case['path'])] + [(unredacted_storage, page['path']) for page in case_pages.values()]
     if redacted_storage:
         to_dump += [(redacted_storage, path.replace('unredacted', 'redacted')) for _, path in to_dump]
     for storage, path in to_dump:
         path = path[:-3]
-        out_path = base_path / path
+        out_path = Path(path)
         out_path.parent.mkdir(exist_ok=True, parents=True)
-        out_path.write_text(storage.contents(path))
-    base_path.joinpath("%s-old-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(old_casebody)
-    base_path.joinpath("%s-new-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(new_casebody)
-    base_path.joinpath("%s-case-structure.json" % volume_barcode).write_text(json.dumps(renderer.hydrate_opinions(case['opinions'], blocks_by_id), indent=2))
+        dump_text(out_path, storage.contents(path))
+    dump_text("%s-old-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted'), old_casebody)
+    dump_text("%s-new-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted'), new_casebody)
+    dump_text("%s-case-structure.json" % volume_barcode, json.dumps(renderer.hydrate_opinions(case['opinions'], blocks_by_id), indent=2))
 
 def dump_files_for_page(volume_barcode, redacted, alto_xml_output, original_alto, page, unredacted_storage, redacted_storage):
     """
         For debugging when an alto file fails to match during assert_reversability.
     """
-    base_path = Path('test_data/zips/dump')
     path = page['path'][:-3]
-    base_path.joinpath(path).write_text(unredacted_storage.contents(path))
+    dump_text(path, unredacted_storage.contents(path))
     if redacted_storage:
         path = path.replace('unredacted', 'redacted')
-        base_path.joinpath(path).write_text(redacted_storage.contents(path))
-    base_path.joinpath("%s-old-alto-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(original_alto)
-    base_path.joinpath("%s-new-alto-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted')).write_text(alto_xml_output)
-    base_path.joinpath("%s-alto-structure.json" % volume_barcode).write_text(json.dumps(page, indent=2))
+        dump_text(path, redacted_storage.contents(path))
+    dump_text("%s-old-alto-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted'), original_alto)
+    dump_text("%s-new-alto-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted'), alto_xml_output)
+    dump_text("%s-alto-structure.json" % volume_barcode, json.dumps(page, indent=2))
 
 # Some different ways to exclude files from validation, or patch their contents:
 skip_redacted_validation = {
     # For these volumes the redacted version was processed years before the unredacted version, so some files don't match:
     '32044038693412', '32044049198187',
+    # redacted version reprocessed in December 2015, doesn't match earlier unredacted version
+    '32044060521416',
 }
 skip_validation_files = {}
 special_text_replacements = {}
@@ -107,14 +113,14 @@ def apply_special_cases(path, parsed):
         If path appears in special_cases, replace attribute and text values for given selectors.
     """
     if path in special_cases:
-        for selector, attr, new_value in special_cases[path]:
+        for selector, op, *args in special_cases[path]:
             el = parsed(selector)
-            if attr == 'text':
-                el.text(new_value)
-            elif attr == 'replace_text':
-                el.text(el.text().replace(*new_value))
-            else:
-                el.attr(attr, new_value)
+            if op == 'text':
+                el.text(args[0])
+            elif op == 'replace_text':
+                el.text(el.text().replace(*args[0]))
+            elif op == 'delete':
+                el.remove()
     return parsed
 
 def apply_text_replacements(path, text, text_replacements):
@@ -250,6 +256,10 @@ def index_blocks(blocks):
                 blocks_text += token
     return blocks_text, blocks_offsets, blocks_lookup
 
+# use this special constant (a unicode reserved codepoint) to indicate where <footnotemark> and <bracketnum> tags
+# appear in the ALTO and case files, to help with lining up diffs.
+tag_marker = '\uE000'
+
 def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
     """
         Given a list of blocks of tokens from ALTO, and a single tokenized paragraph from CaseMETS, add 'edit' tags to
@@ -266,16 +276,14 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
 
     # Break out the new tokens into a list of non-text tokens in [offset, token] form, and a string of the text tokens
     case_tags = []
-    case_text = ""
+    case_text = []
     for token in case_tokens:
         if type(token) == str:
-            if not case_text:
-                case_text += token.lstrip()  # lstrip here so offsets will be correct
-            else:
-                case_text += token
+            case_text.append(token)
         else:
-            case_tags.append([len(case_text), token])
-    case_text = case_text.rstrip()  # remove any whitespace at start and end of paragraph of case text
+            case_tags.append(token)
+            case_text.append(tag_marker)
+    case_text = "".join(case_text).strip()  # remove any whitespace at start and end of paragraph of case text
 
     blocks_text, blocks_offsets, blocks_lookup = index_blocks(alto_blocks)
 
@@ -283,17 +291,46 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
 
     if case_text != blocks_text:
 
+        ## get diff
+        if case_tags:
+            # if there are footnote/bracket marks in the text, split around those and diff each range separately, so
+            # edits stay on the right side of the tags
+            b_parts = blocks_text.split(tag_marker)
+            c_parts = case_text.split(tag_marker)
+            if len(b_parts) == len(c_parts):
+                diff = []
+                b_offset = c_offset = 0
+                for b, c in zip(blocks_text.split(tag_marker), case_text.split(tag_marker)):
+                    for tag, i1, i2, j1, j2 in diff_strings(b, c):
+                        diff.append([tag, i1+b_offset, i2+b_offset, j1+c_offset, j2+c_offset])
+                    b_offset += len(b)+1
+                    c_offset += len(c)+1
+            else:
+                diff = diff_strings(blocks_text, case_text)
+        else:
+            # otherwise diff entire string
+            diff = diff_strings(blocks_text, case_text)
+
         # Get all differences between alto text and case text,
         # in order from end to start so we don't mess up indexes as we make edits.
         # tag will be "insert", "replace", or "delete"
         # i1:i2 will be the target range in the alto text, and j1:j2 will be the source range in the case text
-        for tag, i1, i2, j1, j2 in reversed(diff_strings(blocks_text, case_text)):
+        for tag, i1, i2, j1, j2 in reversed(diff):
             if tag == 'equal':
                 continue
 
             # find the target block for this edit
             block_index = bisect.bisect_right(blocks_offsets, i1) - 1
             offset, block, i = blocks_lookup[block_index]
+
+            # Check if we should use block to left instead:
+            # When we're inserting to the left edge of the string, it's equally valid to insert on right edge of previous
+            # string. We'd rather do that unless the previous string ends in a space.
+            if i1 == offset and block_index > 0:
+                left_offset, left_block, left_i = blocks_lookup[block_index - 1]
+                if left_block[-1] != ' ':
+                    offset, block, i = left_offset, left_block, left_i
+                    block_index -= 1
 
             # update range relative to offset for this block
             i1 -= offset
@@ -311,7 +348,7 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
 
             # replace removed text with new text from case text, if any
             insert_count = insert_tags(block, i, i1, [
-                ['edit', {'was': removed}],
+                ['edit', {'was': removed.replace(tag_marker, '')}],
                 case_text[j1:j2],  # will be empty if tag == "delete"
                 ['/edit'],
             ])
@@ -334,25 +371,22 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
                 removed = block[i][:len_to_remove]
                 block[i] = block[i][len_to_remove:]
                 insert_count += insert_tags(block, i, 0, [
-                    ['edit', {'was': removed}],
+                    ['edit', {'was': removed.replace(tag_marker, '')}],
                     ['/edit'],
                 ])
                 len_to_remove -= len(removed)
 
-        # reindex blocks to account for edits
-        blocks_text, blocks_offsets, blocks_lookup = index_blocks(alto_blocks)
-
-    # insert all case_tokens into blocks
-    for position, token in reversed(case_tags):
-        block_index = bisect.bisect_right(blocks_offsets, position)-1
-        offset, block, i = blocks_lookup[block_index]
-
-        # if this is a closing /token and would be inserted at the start of a string,
-        # insert at the end of the previous string instead so tokens tend to nest
-        if position == offset and token[0].startswith('/') and block_index > 0:
-            offset, block, i = blocks_lookup[block_index-1]
-
-        insert_tags(block, i, position - offset, [token])
+    # replace tag markers with tags from case_tags list
+    for block in reversed(alto_blocks):
+        for i in range(len(block)-1, -1, -1):
+            token = block[i]
+            if type(token) == str:
+                if tag_marker in token:
+                    parts = token.split(tag_marker)
+                    tags = case_tags[-len(parts)+1:]
+                    del case_tags[-len(tags):]
+                    new_tokens = ([parts[0]] if parts[0] else []) + [i for a in zip(tags, parts[1:]) for i in a if i]
+                    block[i:i+1] = new_tokens
 
 def sync_alto_blocks_with_case_paragraphs(pars, blocks_by_id, case_id_to_alto_ids):
     """
@@ -377,6 +411,28 @@ def sync_alto_blocks_with_case_paragraphs(pars, blocks_by_id, case_id_to_alto_id
 
         # sync text and tags
         sync_alto_blocks_with_case_tokens(blocks, tokenize_element(par[0]))
+
+        # Special case for insertion on left edge of redaction:
+        # If we're inserting text on the left edge of a redaction, it's ambiguous whether the inserted text should be
+        # redacted or not. The above code does redact it, but it's more often correct not to. This unredacts the insertion,
+        # converting [["redact"],["ocr"],["edit",{"was": ""}],"\u00ad",["/edit"]] to
+        # [["edit",{"was": ""}],"\u00ad",["/edit"],["redact"],["ocr"]]
+        have_text = False  # we only perform this fix after seeing some text in the paragraph
+        for block in blocks:
+            for i in range(len(block)-4):
+                token = block[i]
+                if not have_text:
+                    if type(token) == str:
+                        have_text = True
+                    continue
+                if (
+                        token == ['redact']
+                        and type(block[i+1]) != str and block[i+1][0] == 'ocr'
+                        and type(block[i+2]) != str and block[i+2][0] == 'edit' and block[i+2][1]['was'] == ''
+                        and type(block[i+3]) == str
+                        and block[i+4] == ['/edit']
+                ):
+                    block[i:i+5] = block[i+2:i+5] + block[i:i+2]
 
 def extract_paragraphs(children, case_id_to_alto_ids, blocks_by_id):
     """
@@ -444,18 +500,21 @@ def elements_equal(e1, e2, ignore={}):
     if e1.tag != e2.tag:
         raise ValueError("e1.tag != e2.tag (%s != %s)" % (e1.tag, e2.tag))
     if e1.text != e2.text:
-        raise ValueError("e1.text != e2.text (%s != %s)" % (e1.text, e2.text))
+        diff = '\n'.join(difflib.ndiff([e1.text or ''], [e2.text or '']))
+        raise ValueError("e1.text != e2.text:\n%s" % diff)
     if e1.tail != e2.tail:
         raise ValueError("e1.tail != e2.tail (%s != %s)" % (e1.tail, e2.tail))
     ignore_attrs = ignore.get('attrs', set()) | ignore.get('tag_attrs', {}).get(e1.tag.rsplit('}', 1)[-1], set())
     e1_attrib = {k:v for k,v in e1.attrib.items() if k not in ignore_attrs}
     e2_attrib = {k:v for k,v in e2.attrib.items() if k not in ignore_attrs}
     if e1_attrib != e2_attrib:
-        raise ValueError("e1.attrib != e2.attrib (%s != %s)" % (e1_attrib, e2_attrib))
+        diff = "\n".join(difflib.Differ().compare(["%s: %s" % i for i in sorted(e1_attrib.items())], ["%s: %s" % i for i in sorted(e2_attrib.items())]))
+        raise ValueError("e1.attrib != e2.attrib:\n%s" % diff)
     s1 = [i for i in e1 if i.tag.rsplit('}', 1)[-1] not in ignore.get('tags', ())]
     s2 = [i for i in e2 if i.tag.rsplit('}', 1)[-1] not in ignore.get('tags', ())]
     if len(s1) != len(s2):
-        raise ValueError("e1 children != e2 children (%s != %s)" % (s1, s2))
+        diff = "\n".join(difflib.Differ().compare([s.tag for s in s1], [s.tag for s in s2]))
+        raise ValueError("e1 children != e2 children:\n%s" % diff)
     for c1, c2 in zip(s1, s2):
         elements_equal(c1, c2, ignore)
 
@@ -490,6 +549,25 @@ def strip_bracketnum_hyphens(text):
     text = re.sub(r'[-\xad]+]', ']', text)
     return text
 
+def conform_cc_attr(parsed):
+    """ Older volumes have character confidence stored as '100,100,100,100' instead of '0000'. Switch back. """
+    for string_el in parsed('String[CC]'):
+        cc = string_el.attrib['CC']
+        # bail out if we get passed a new-style file by mistake:
+        if set(cc) == {'0', '9'}:
+            break
+        string_el.attrib['CC'] = "".join('0' if i == '100' else '9' for i in cc.split(","))
+
+def infer_cc_style(parsed):
+    """ Guess whether alto file has old-style CC tags like '100,100,100,100' instead of new-style like '0000'. """
+    for string_el in parsed('String[CC]'):
+        cc_chars = set(string_el.attrib['CC'])
+        if cc_chars & {'1', ','}:  # old-style if CC tag contains a 1 or ,
+            return True
+        if cc_chars == {'0', '9'}:  # new-style if CC tag contains only 0 or 9
+            return False
+    return None
+
 def block_text(block):
     """ Return raw text of block. """
     return "".join(token for token in block.get('tokens', []) if type(token) == str)
@@ -517,7 +595,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
     # the source files.
     renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, {}, pretty_print=False)  # we don't need labels_by_block_id because original_xml cases don't include page numbers
     
-    # validate volume dict
+    ## validate volume dict
     volume_obj = VolumeMetadata(barcode=volume_barcode, xml_metadata=volume['metadata'])
     new_xml = renderer.render_volume(volume_obj)
     parsed = parse(unredacted_storage, paths['volume'][0])
@@ -527,8 +605,24 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
     old_xml = old_xml.replace('<nominativereporter abbreviation="" volnumber=""/>', '')  # remove blank <normativereporter>
     xml_strings_equal(new_xml, old_xml)
     
-    # validate pages dict
+    ## validate pages dict
     print("Checking ALTO integrity")
+
+    # validate everything *except* the attributes listed here, which are permanently stripped:
+    ignore = {
+        'tag_attrs': {
+            'Page': {'ID', 'PHYSICAL_IMG_NR', 'xmlns'},
+            'PrintSpace': {'ID'},
+            'TextBlock': {'TAGREFS'},
+            'Illustration': {'TAGREFS'},
+            'TextLine': {'ID'},
+            'String': {'ID', 'TAGREFS'},
+            'SP': {'HPOS', 'ID', 'VPOS', 'WIDTH'}
+        }
+    }
+    if 'skip_cc_check' in volume:
+        ignore['tag_attrs']['String'].update(('WC', 'CC'))
+
     for page in pages:
         page_obj = create_page_obj(volume_obj, page)
         to_test = [(unredacted_storage, page['path'], False)]
@@ -544,6 +638,19 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
             parsed = parse(storage, path, text_replacements=text_replacements)
             parsed('SP:first-child,SP:last-child').remove()  # remove <SP> element from start and end of <TextLine> -- can happen because of redaction
 
+            # remove elements from page['extra_redacted_ids'], as well as parent TextLine if it ends up empty
+            if redacted and 'extra_redacted_ids' in page:
+                for redacted_id in page['extra_redacted_ids']:
+                    el = parsed('[ID="%s"]' % redacted_id)
+                    parent = el.parent()
+                    parsed('[ID="%s"]' % redacted_id).remove()
+                    if parent and len(parent[0]) == 0:
+                        parent.remove()
+
+            # fix old CC attributes
+            if 'old_cc_style' in page:
+                conform_cc_attr(parsed)
+
             # strip spaces from <String> elements CONTENT and CC tags to match stripping in ingest
             for s in parsed('String'):
                 content = s.attrib['CONTENT']
@@ -557,18 +664,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
             original_alto = original_alto.replace('WC="1.0"', 'WC="1.00"')  # normalize irregular decimal places
             original_alto = original_alto.replace('CC=""', 'CC="0"')  # normalize character confidence for empty strings -- some are CC="", some are CC="0"
 
-            # validate everything *except* the attributes listed here, which are permanently stripped:
-            xml_strings_equal(alto_xml_output, original_alto, {
-                'tag_attrs': {
-                    'Page': {'ID', 'PHYSICAL_IMG_NR', 'xmlns'},
-                    'PrintSpace': {'ID'},
-                    'TextBlock': {'TAGREFS'},
-                    'Illustration': {'TAGREFS'},
-                    'TextLine': {'ID'},
-                    'String': {'ID', 'TAGREFS'},
-                    'SP': {'HPOS', 'ID', 'VPOS', 'WIDTH'}
-                }
-            })
+            xml_strings_equal(alto_xml_output, original_alto, ignore)
             
     # validate cases
     print("Checking case integrity")
@@ -715,6 +811,8 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
         'name': publisher_el.text(),
         'place': publisher_el.attr.place,
     }
+    if volume_barcode in skip_redacted_validation:
+        volume['metadata'].setdefault('errors', {})['old_redacted_volume'] = True
 
     ### Extract data for each page into the pages dict ###
 
@@ -723,11 +821,19 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
     fonts_by_id = {}
     text_replacements = {}
     corrupt_blocks = set()
+    old_cc_style = None
     for path in paths['alto']:
         print(path)
 
         parsed = parse(unredacted_storage, path)
         alto_id = 'alto_' + path.split('_ALTO_', 1)[1].split('.')[0]
+
+        # check if we need to fix CC attributes
+        if old_cc_style is None:
+            old_cc_style = infer_cc_style(parsed)
+        if old_cc_style:
+            conform_cc_attr(parsed)
+            volume['metadata'].setdefault('errors', {})['old_cc_style'] = True
 
         # index rects in unredacted file
         unredacted_rects = defaultdict(list)
@@ -758,6 +864,14 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                 if len(ids) != len(redacted_rects[tag_rect]):
                     redacted_ids.update(ids)
 
+            # check if redacted volume was created later and has corrected CC values
+            # if so, build a lookup to populate WC and CC from redacted file, and skip validation of those attrs
+            if old_cc_style:
+                redacted_old_cc_style = infer_cc_style(redacted_parsed)
+                if not redacted_old_cc_style:
+                    volume['skip_cc_check'] = True
+                    cc_lookup = {(el.attrib['ID'], el.attrib['CONTENT']):(el.attrib['WC'], el.attrib['CC']) for el in redacted_parsed('String')}
+
         # build lookup of block labels (e.g. name, p, blockquote) by tagref ID
         labels_by_tagref = {s.attrib['ID']: s.attrib['LABEL'] for s in parsed[0].iter('StructureTag')}
 
@@ -770,12 +884,17 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             'height': int(page_el.attr.HEIGHT),
             'file_name': parsed('sourceImageInformation fileName').text().replace('.png', '.tif'),
             'deskew': parsed('processingStepSettings').text(),
+            'innodata_timestamp': parsed('alto')[0][0].text.rsplit(': ', 1)[-1],  # TODO: store in db -- extract timestamp from first comment in file
             'spaces': [],
             'blocks': [],
         }
 
         if duplicates:
-            page['duplicates'] = duplicates
+            page['duplicates'] = duplicates  # TODO: store in db
+            volume['metadata'].setdefault('errors', {})['duplicate_blocks'] = True
+
+        if old_cc_style:
+            page['old_cc_style'] = True
 
         # look up page label from volume info
         page['label'] = volume['page_labels'][page['order']]
@@ -795,6 +914,47 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
         # store an CaseFont ID -> alto style ID mapping so we can regenerate the ALTO for testing
         page['font_names'] = {v:k for k, v in fonts_by_style_id.items()}
+
+        # mark footnotemarks and bracketnums
+        # <RoleTag ID="footnotemark0001" LABEL="footnotemark"/>
+        # <RoleTag ID="bracketnum0001" LABEL="bracketnum"/>
+        extra_redacted_ids = []
+        for role_tag in parsed('RoleTag'):
+            tags = parsed('[TAGREFS="%s"]' % role_tag.attrib['ID'])
+            start_tag, end_tag = tags[0], tags[-1]
+            start_tag.attrib['prefix_char'] = tag_marker
+            end_tag.attrib['suffix_char'] = tag_marker
+
+            # redact any ALTO tags inside a redacted tag
+            if redacted_storage and tags.length > 1 and start_tag.attrib['ID'] in redacted_ids:
+                tag = start_tag
+                while True:
+                    next_tag = tag.getnext()
+                    if next_tag is None:
+
+                        space_before_start = start_tag.getprevious()
+                        if space_before_start is not None:
+                            tag_id = space_before_start.attrib['ID']
+                            if tag_id not in redacted_ids:
+                                redacted_ids.add(tag_id)
+                                extra_redacted_ids.append(tag_id)
+
+                        parent_tag = tag.getparent()
+                        next_line = parent_tag.getnext()
+                        if next_line is None:
+                            next_tag = parent_tag.getparent().getnext()[0][0]
+                        else:
+                            next_tag = next_line[0]
+                    tag = next_tag
+                    if tag == end_tag:
+                        break
+                    tag_id = tag.attrib['ID']
+                    if tag_id not in redacted_ids:
+                        redacted_ids.add(tag_id)
+                        extra_redacted_ids.append(tag_id)
+        if len(extra_redacted_ids) > 1:
+            print("extra_redacted_ids:", extra_redacted_ids)
+            page['extra_redacted_ids'] = extra_redacted_ids  # TODO: store in DB?
 
         # ALTO files are structured like:
         # <Page>
@@ -860,6 +1020,8 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                     tokens = block['tokens'] = []
                     last_font = None
                     check_string_redaction = redacted_storage and not block.get('redacted', False)
+                    first_string = True
+                    in_redacted_tag = False
 
                     # handle <TextLine>
                     for line_el in block_el.iter('TextLine'):
@@ -885,7 +1047,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                             # region.
                             if check_string_redaction:
                                 if redacted_span:
-                                    if string_attrib['ID'] not in redacted_ids:
+                                    if string_attrib['ID'] not in redacted_ids and not in_redacted_tag:
                                         tokens.append(['/redact'])
                                         redacted_span = False
                                 else:
@@ -895,13 +1057,17 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
                             # Write an ['ocr', {'rect':<bounding box>, 'wc':<word confidence>, 'cc':<character confidence>}]
                             # span for each word.
-                            ocr_token = ['ocr', {'rect': string_rect, 'wc': float(string_attrib['WC'])}]
+                            text = string_attrib['CONTENT']
+                            if old_cc_style and cc_lookup and (string_attrib['ID'], text) in cc_lookup:
+                                wc, cc = cc_lookup[string_attrib['ID'], text]
+                            else:
+                                wc = string_attrib['WC']
+                                cc = string_attrib['CC']
+                            ocr_token = ['ocr', {'rect': string_rect, 'wc': float(wc)}]
 
                             # cc is a string of zeroes for each high-confidence character and nines for each low-confidence
                             # character. We don't store all-zero strings at all. For strings with some nines, convert to
                             # binary and interpret as an integer for compactness.
-                            cc = string_attrib['CC']
-                            text = string_attrib['CONTENT']
                             if '9' in cc:
                                 if text != text.strip():
                                     # If we're storing cc and text has whitespace, we have to strip the same character range from both text and cc:
@@ -913,13 +1079,23 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                                 # If not storing cc, just strip whitespace from text:
                                 text = text.strip()
 
+                            # Append prefix and suffix tag chars, if any -- these mark where footnote/bracket tags start
+                            # and stop for later diffing with case text
+                            if 'prefix_char' in string_attrib:
+                                text = string_attrib['prefix_char'] + text
+                                in_redacted_tag = redacted_span
+                            if 'suffix_char' in string_attrib:
+                                text = text + string_attrib['suffix_char']
+                                in_redacted_tag = False
+
                             # Append a space if next tag is a space, or if string does not end with a hyphen.
                             next_tag = string.getnext()
                             if (next_tag is not None and next_tag.tag == 'SP') or (text and text[-1] not in ('-', '\xad')):
                                 text += ' '
 
                             # add [['ocr'], text, ['/ocr']]
-                            if redacted_span and 'footnotemark' in string_attrib['TAGREFS'] and text and text[-1] == ' ':
+                            tagrefs = string_attrib.get('TAGREFS', '')
+                            if redacted_span and ('footnotemark' in tagrefs or 'bracketnum' in tagrefs) and text and text[-1] == ' ' and not first_string:
                                 # don't redact space after footnote
                                 tokens.extend((ocr_token, text[:-1], ['/redact'], ' ', ['redact'], ['/ocr']))
                             elif text:
@@ -927,6 +1103,8 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                                 tokens.extend((ocr_token, text, ['/ocr']))
                             else:
                                 tokens.extend((ocr_token, ['/ocr']))
+
+                            first_string = False
 
                         # close open [redact]
                         if redacted_span:
@@ -1029,6 +1207,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                     duplicates.append(alto_ids)
         if duplicates:
             metadata['duplicates'] = duplicates
+            volume['metadata'].setdefault('errors', {})['doubled_paragraphs'] = True
 
         # extract each <opinion> from the <casebody> for processing
         if duplicative:

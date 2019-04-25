@@ -158,7 +158,8 @@ class VolumeRenderer:
                     elif token[0] == 'font':
                         current_font = fonts_lookup[token[1]['id']]
                     elif token[0] == 'edit':
-                        string_el.attrib['CONTENT'] += token[1]['was']
+                        if string_el is not None:
+                            string_el.attrib['CONTENT'] += token[1]['was']
                         ignore_strings = True
                     elif token[0] == '/edit':
                         ignore_strings = False
