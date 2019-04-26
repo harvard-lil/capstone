@@ -98,7 +98,7 @@ def dump_files_for_page(volume_barcode, redacted, alto_xml_output, original_alto
 # Some different ways to exclude files from validation, or patch their contents:
 skip_redacted_validation = {
     # For these volumes the redacted version was processed years before the unredacted version, so some files don't match:
-    '32044038693412', '32044049198187',
+    '32044038693412', '32044049198187', '32044057285991',
     # redacted version reprocessed in December 2015, doesn't match earlier unredacted version
     '32044060521416',
 }
@@ -328,7 +328,7 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
             # string. We'd rather do that unless the previous string ends in a space.
             if i1 == offset and block_index > 0:
                 left_offset, left_block, left_i = blocks_lookup[block_index - 1]
-                if left_block[-1] != ' ':
+                if left_block[left_i][-1] != ' ':
                     offset, block, i = left_offset, left_block, left_i
                     block_index -= 1
 
@@ -921,6 +921,10 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
         extra_redacted_ids = []
         for role_tag in parsed('RoleTag'):
             tags = parsed('[TAGREFS="%s"]' % role_tag.attrib['ID'])
+            # these won't be found if a single word contains more than one footnotemark, in which case we can't do
+            # anything useful -- just skip
+            if not tags:
+                continue
             start_tag, end_tag = tags[0], tags[-1]
             start_tag.attrib['prefix_char'] = tag_marker
             end_tag.attrib['suffix_char'] = tag_marker
@@ -1094,8 +1098,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                                 text += ' '
 
                             # add [['ocr'], text, ['/ocr']]
-                            tagrefs = string_attrib.get('TAGREFS', '')
-                            if redacted_span and ('footnotemark' in tagrefs or 'bracketnum' in tagrefs) and text and text[-1] == ' ' and not first_string:
+                            if redacted_span and 'suffix_char' in string_attrib and text and text[-1] == ' ' and not first_string:
                                 # don't redact space after footnote
                                 tokens.extend((ocr_token, text[:-1], ['/redact'], ' ', ['redact'], ['/ocr']))
                             elif text:
