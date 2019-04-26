@@ -3,7 +3,7 @@ import re
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
-from django.utils.translation import string_concat
+from django.utils.text import format_lazy
 
 from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract
 from capweb.helpers import reverse, reverse_lazy
@@ -80,11 +80,10 @@ class ResearchContractForm(forms.ModelForm):
     name = forms.CharField(label='Full name of researcher')
     email = forms.EmailField(
         disabled=True,  # any email submitted by user will be ignored
-        help_text=string_concat(
+        help_text=format_lazy(
             "For faster approval, make sure you are applying from a CAP account with an email address "
-            "provided by your institution. If this is the wrong email address, <a href='",
-            reverse_lazy('register'),
-            "'>create an account</a> with the correct address before applying."))
+            "provided by your institution. If this is the wrong email address, <a href='{}'>create an account</a> "
+            "with the correct address before applying.", reverse_lazy('register')))
     institution = forms.CharField(label='Academic or non-profit research institution')
     title = forms.CharField(label='Title or Affiliation')
     area_of_interest = forms.CharField(label='Research area of interest (optional and non-binding)', widget=forms.Textarea, required=False)

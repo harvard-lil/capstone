@@ -9,6 +9,9 @@ REDACTION_KEY = b'DPpSaf/iGNmq/3SYOPH6LfCZ9jUFkuoGKXycb2Of5Ms='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# don't check password quality locally, since it's annoying
+AUTH_PASSWORD_VALIDATORS = []
+
 # don't require celery listener
 CELERY_TASK_ALWAYS_EAGER = True
 # propagate exceptions
