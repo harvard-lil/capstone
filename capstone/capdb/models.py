@@ -1373,6 +1373,9 @@ class CaseXML(BaseXMLModel):
         # Skip elements inside footnotes. We can more often do the correct thing by attaching entities to the closest
         # non-footnote element -- though this will do the wrong thing when entities were extracted from footnotes in
         # the first place.
+        def sortable_id(alto_id):
+            parts = alto_id.split('_')[1].split('.')
+            return (int(parts[0]), int(parts[1]))
         footnote_el_ids = {el.attr.id for el in casebody('casebody|footnote [id]').items()}
         id_to_alto_order = {}
         for xref_el in parsed_xml('mets|div[TYPE="blocks"] > mets|div[TYPE="element"]').items():
@@ -1380,11 +1383,11 @@ class CaseXML(BaseXMLModel):
             par_id = par_el('mets|area').attr.BEGIN
             if par_id in footnote_el_ids:
                 continue
-            alto_id = blocks_el('mets|area').attr.BEGIN
+            alto_ids = [el.attrib['BEGIN'] for el in blocks_el('mets|area')]
             # for an empty paragraph with contents redacted, there's no alto_id
-            if alto_id:
-                parts = alto_id.split('_')[1].split('.')
-                id_to_alto_order[par_id] = (int(parts[0]), int(parts[1]))
+            if alto_ids:
+                alto_ids = sorted(sortable_id(alto_id) for alto_id in alto_ids)
+                id_to_alto_order[par_id] = alto_ids[0]
 
         # Split remove_els into head_els and opinion_els, based on whether or not they come before the first
         # element in the first opinion:
