@@ -98,7 +98,17 @@ def dump_files_for_page(volume_barcode, redacted, alto_xml_output, original_alto
 # Some different ways to exclude files from validation, or patch their contents:
 skip_redacted_validation = {
     # For these volumes the redacted version was processed years before the unredacted version, so some files don't match:
-    '32044038693412', '32044049198187', '32044057285991',
+    '32044038693412', '32044049198187', '32044057285991', '32044061419297', '32044057485864',
+    # These are not confirmed problems, but likely have the same mismatch problem as above since they appear with the
+    # same status in the "Innodata Issues 2_26 with Innodata Comments_0312.xlsx" spreadsheet:
+    '32044133495473', '32044132283672', '32044132283128', '32044132280017', '32044132276635', '32044132276163',
+    '32044132259987', '32044132254970', '32044110609344', '32044110609062', '32044109584359', '32044088578307',
+    '32044088575501', '32044078693496', '32044078690989', '32044078672888', '32044078660776', '32044078654670',
+    '32044078645140', '32044078618758', '32044078613403', '32044078613346', '32044078613114', '32044078606837',
+    '32044078605938', '32044078583721', '32044078580479', '32044078576097', '32044078575396', '32044078568128',
+    '32044078484847', '32044078483179', '32044078466141', '32044078466133', '32044078465598', '32044078465531',
+    '32044078458338', '32044078458239', '32044078452489', '32044078439254', '32044078419835', '32044075545673',
+    '32044066110107', '32044066109877', '32044066073792', '32044061394037',
     # redacted version reprocessed in December 2015, doesn't match earlier unredacted version
     '32044060521416',
 }
@@ -226,6 +236,18 @@ def insert_tags(block, i, offset, new_tokens):
     block[i:i + 1] = to_insert
     return len(to_insert) - 1
 
+# use this special constant (a unicode reserved codepoint) to indicate where <footnotemark> and <bracketnum> tags
+# appear in the ALTO and case files, to help with lining up diffs.
+tag_marker = '\uE000'
+tag_name_lookup = {
+    tag_marker: 'bracketnum',
+    chr(ord(tag_marker)+1): '/bracketnum',
+    chr(ord(tag_marker)+2): 'footnotemark',
+    chr(ord(tag_marker)+3): '/footnotemark',
+}
+tag_marker_lookup = {v:k for k,v in tag_name_lookup.items()}
+tag_marker_re = re.compile(r'([%s])' % "".join(tag_name_lookup.keys()))
+
 def index_blocks(blocks):
     """
         Given a list of blocks, return:
@@ -251,14 +273,17 @@ def index_blocks(blocks):
     for block in blocks:
         for i, token in enumerate(block):
             if type(token) == str:
+
+                # replace individual tag markers with base tag_marker
+                fixed_token = tag_marker_re.sub(tag_marker, token)
+                if token != fixed_token:
+                    token = fixed_token
+                    block[i] = token
+
                 blocks_offsets.append(len(blocks_text))
                 blocks_lookup.append((len(blocks_text), block, i))
                 blocks_text += token
     return blocks_text, blocks_offsets, blocks_lookup
-
-# use this special constant (a unicode reserved codepoint) to indicate where <footnotemark> and <bracketnum> tags
-# appear in the ALTO and case files, to help with lining up diffs.
-tag_marker = '\uE000'
 
 def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
     """
@@ -300,7 +325,7 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
             if len(b_parts) == len(c_parts):
                 diff = []
                 b_offset = c_offset = 0
-                for b, c in zip(blocks_text.split(tag_marker), case_text.split(tag_marker)):
+                for b, c in zip(b_parts, c_parts):
                     for tag, i1, i2, j1, j2 in diff_strings(b, c):
                         diff.append([tag, i1+b_offset, i2+b_offset, j1+c_offset, j2+c_offset])
                     b_offset += len(b)+1
@@ -926,11 +951,18 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             if not tags:
                 continue
             start_tag, end_tag = tags[0], tags[-1]
-            start_tag.attrib['prefix_char'] = tag_marker
-            end_tag.attrib['suffix_char'] = tag_marker
+            tag_label = role_tag.attrib['LABEL']
+            start_tag.attrib['prefix_char'] = tag_marker_lookup[tag_label]
+            end_tag.attrib['suffix_char'] = tag_marker_lookup['/'+tag_label]
 
             # redact any ALTO tags inside a redacted tag
             if redacted_storage and tags.length > 1 and start_tag.attrib['ID'] in redacted_ids:
+
+                # if multiple tags have same rect, bail out -- we can't apply this logic to a file with duplicate blocks
+                rects = set(rect(tag.attrib) for tag in tags)
+                if len(rects) < len(tags):
+                    continue
+
                 tag = start_tag
                 while True:
                     next_tag = tag.getnext()
@@ -1281,6 +1313,20 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                     text_replacements.setdefault(redacted_path, []).append(text_replacements[page_path])
 
         cases.append(case)
+
+    # fix tag markers from ALTO blocks not included in cases
+    print("Fixing non-case ALTO tags")
+    case_blocks = {block_id for case in cases for par in iter_pars(case['opinions']) for block_id in par['block_ids']}
+    for page in pages:
+        for block in page['blocks']:
+            if block['id'] not in case_blocks:
+                tokens = block.get('tokens', [])
+                if tokens:
+                    for i in range(len(tokens)-1, -1, -1):
+                        token = tokens[i]
+                        if type(token) == str and tag_marker_re.search(token):
+                            parts = tag_marker_re.split(token)
+                            tokens[i:i+1] = [[tag_name_lookup[p]] if p in tag_name_lookup else p for p in parts]
 
     # encrypt redacted strings
     if redacted_storage:
