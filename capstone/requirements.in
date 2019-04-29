@@ -1,4 +1,5 @@
-# After updating this file, run `pip-compile` to update requirements.txt.
+# After updating this file, run `fab pip-compile` to update requirements.txt.
+# To update a single dependency, pass pip-compile args to fab. For example: fab 'pip-compile:-P django'
 
 # general
 tqdm                # script progress bars
