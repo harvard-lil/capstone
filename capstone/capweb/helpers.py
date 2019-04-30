@@ -3,9 +3,11 @@ import re
 from collections import namedtuple
 from contextlib import contextmanager
 from functools import wraps
-
+import markdown
+from markdown.extensions.toc import TocExtension
 import requests
 import django_hosts
+
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.core.cache import caches
@@ -161,3 +163,16 @@ def user_has_harvard_email(failure_url='non-harvard-email'):
     return user_passes_test(
         test_func=lambda u: bool(re.search(r'[.@]harvard.edu$', u.email)),
         login_url=failure_url)
+
+
+def render_markdown(markdown_doc):
+    """
+        Render given markdown document and return (html, table_of_contents, meta)
+    """
+    md = markdown.Markdown(extensions=[TocExtension(baselevel=2, marker=''), 'meta'])
+    html = md.convert(markdown_doc)\
+        .replace('<h2 ', '<h2 class="subtitle" ')
+    toc = md.toc.replace('<a ', '<a class="list-group-item" ')
+    toc = "".join(toc.splitlines(True)[2:-2])  # strip <div><ul> around toc by dropping first and last two lines
+    meta = {k:''.join(v) for k, v in md.Meta.items()}
+    return html, toc, meta

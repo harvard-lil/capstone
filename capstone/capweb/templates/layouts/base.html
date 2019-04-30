@@ -12,17 +12,17 @@
                    aria-hidden="true"
                    src='{% static "img/red-arrow-right.svg" %}'
                    class="decorative-arrow"/>
-              {% block content_title %}{% block title %}{% if title %}{{ title }}{% endif %}{% endblock %}{% endblock %}
+              {% block content_title %}{% block title %}{{ title|default:"" }}{% endblock %}{% endblock %}
             </h1>
           {% endblock %}
         </div>
         <div class="section-intro">
-          <div class="content">{% block explainer %}{% endblock %}</div>
+          <div class="content">{% block explainer %}{{ explainer|default:"" }}{% endblock %}</div>
         </div>
       </div>
       <div class="row {% block row_style %}{% endblock %}">
         {% block sidebar_menu %}{% endblock %}
-        <div class="main-content {% block main_content_style %}{% endblock %}">{% block main_content %}{% endblock %}</div>
+        <div class="main-content {% block main_content_style %}{% endblock %}">{% block main_content %}{{ main_content|default:"" }}{% endblock %}</div>
       </div>
     </div>
   </div>
