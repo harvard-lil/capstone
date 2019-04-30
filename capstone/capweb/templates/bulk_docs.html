@@ -21,43 +21,37 @@
   <a class="btn btn-primary" href="{% url "bulk-download" %}">Access data</a>
 {% endblock %}
 
-{% block sidebar_menu %}
-  <nav id="sidebar-menu" aria-label="table of contents">
-    <div class="content">
-      <ul class="list-group">
-        <li>
-          <a class="list-group-item" href="#requesting-access">
-            <span class="text">Requesting Access</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#downloading">
-            <span class="text">Downloading</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#api-equivalence">
-            <span class="text">API Equivalence</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#data-format">
-            <span class="text">Data Format</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#examples">
-            <span class="text">Using Bulk Data</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#visit-us">
-            <span class="text">Visit Us</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+{% block sidebar_menu_items %}
+  <li>
+    <a class="list-group-item" href="#requesting-access">
+      <span class="text">Requesting Access</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#downloading">
+      <span class="text">Downloading</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#api-equivalence">
+      <span class="text">API Equivalence</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#data-format">
+      <span class="text">Data Format</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#examples">
+      <span class="text">Using Bulk Data</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#visit-us">
+      <span class="text">Visit Us</span>
+    </a>
+  </li>
 {% endblock %}
 
 {% block main_content %}

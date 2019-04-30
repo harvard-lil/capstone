@@ -20,38 +20,32 @@
   <a href="{% url "about" %}">Learn more about the project.</a>
 {% endblock %}
 
-{% block sidebar_menu %}
-  <nav id="sidebar-menu" aria-label="table of contents">
-    <div class="content">
-      <ul class="list-group">
-        <li>
-          <a class="list-group-item" href="#about">
-            <span class="text">Overview</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#scope">
-            <span class="text">What's included?</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#searching">
-            <span class="text">Searching</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#tips">
-            <span class="text">Tips</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#research">
-            <span class="text">Getting Legal Help</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+{% block sidebar_menu_items %}
+  <li>
+    <a class="list-group-item" href="#about">
+      <span class="text">Overview</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#scope">
+      <span class="text">What's included?</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#searching">
+      <span class="text">Searching</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#tips">
+      <span class="text">Tips</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#research">
+      <span class="text">Getting Legal Help</span>
+    </a>
+  </li>
 {% endblock %}
 
 {% block main_content %}

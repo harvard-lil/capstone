@@ -7,20 +7,14 @@
   Browse the collection of the <a href="{% url 'home' %}">Caselaw Access Project</a>.
 {% endblock %}
 
-{% block sidebar_menu %}
-  <nav id="sidebar-menu" aria-label="table of contents">
-    <div class="content">
-      <ul class="list-group">
-        {% for jurisdiction, reporters in jurisdictions %}
-          <li>
-            <a class="list-group-item" href="#{{ jurisdiction.slug }}">
-              <span class="text">{{ jurisdiction }}</span>
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </nav>
+{% block sidebar_menu_items %}
+  {% for jurisdiction, reporters in jurisdictions %}
+    <li>
+      <a class="list-group-item" href="#{{ jurisdiction.slug }}">
+        <span class="text">{{ jurisdiction }}</span>
+      </a>
+    </li>
+  {% endfor %}
 {% endblock %}
 
 {% block main_content %}

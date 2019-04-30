@@ -21,68 +21,62 @@
   <a href="{% url "about" %}">Learn more about the project.</a>
 {% endblock %}
 
-{% block sidebar_menu %}
-  <nav id="sidebar-menu" aria-label="table of contents">
-    <div class="content">
-      <ul class="list-group">
-        <li>
-          <a class="list-group-item" href="#getting-started">
-            <span class="text">Start Here</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#registration">
-            <span class="text">Registration</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#authentication">
-            <span class="text">Authentication</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#dataformats">
-            <span class="text">Data Formats</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#pagination">
-            <span class="text">Pagination and Counts</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#limits">
-            <span class="text">Access Limits</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#examples">
-            <span class="text">Examples</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#endpoints">
-            <span class="text">Endpoints</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#beginners">
-            <span class="text">Intro to APIs</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#problems">
-            <span class="text">Report Issues</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#glossary">
-            <span class="text">Glossary</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+{% block sidebar_menu_items %}
+  <li>
+    <a class="list-group-item" href="#getting-started">
+      <span class="text">Start Here</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#registration">
+      <span class="text">Registration</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#authentication">
+      <span class="text">Authentication</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#dataformats">
+      <span class="text">Data Formats</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#pagination">
+      <span class="text">Pagination and Counts</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#limits">
+      <span class="text">Access Limits</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#examples">
+      <span class="text">Examples</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#endpoints">
+      <span class="text">Endpoints</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#beginners">
+      <span class="text">Intro to APIs</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#problems">
+      <span class="text">Report Issues</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#glossary">
+      <span class="text">Glossary</span>
+    </a>
+  </li>
 {% endblock %}
 
 {% block main_content %}
