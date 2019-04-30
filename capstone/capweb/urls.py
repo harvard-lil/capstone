@@ -1,3 +1,4 @@
+from capweb.views import MarkdownView
 from . import views
 from django.contrib.auth import views as auth_views
 from django.urls import path, include
@@ -24,7 +25,7 @@ urlpatterns = [
     path('bulk/', TemplateView.as_view(template_name='bulk_docs.html'), name='bulk-docs'),
     path('bulk/download/', user_views.bulk, name='bulk-download'),
 
-    path('terms', TemplateView.as_view(template_name='terms-of-use.html'), name='terms'),
+    path('terms', MarkdownView.as_view(template_name='terms-of-use.md'), name='terms'),
     path('privacy', TemplateView.as_view(template_name='privacy-policy.html'), name='privacy'),
 
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
