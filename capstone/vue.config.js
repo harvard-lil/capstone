@@ -55,6 +55,7 @@ let vueConfig = {
   },
 
   devServer: {
+    public: 'localhost:8080',
     host: '127.0.0.1',
     headers: { 'Access-Control-Allow-Origin': '*' },
     allowedHosts: [
