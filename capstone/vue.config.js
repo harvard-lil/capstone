@@ -57,6 +57,9 @@ let vueConfig = {
   devServer: {
     host: '127.0.0.1',
     headers: { 'Access-Control-Allow-Origin': '*' },
+    allowedHosts: [
+        '.case.test'
+    ]
   },
 
   // static assets are hashed by whitenoise

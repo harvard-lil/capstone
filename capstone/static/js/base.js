@@ -98,6 +98,20 @@ let setupScrollStickiness = function() {
   handleScroll();  // handle case where page is already scrolled on load
 };
 
+const urlFragmentScrollCheck = function() {
+  /* When scrolling to an in-page target, make sure it is visible below the navbar */
+  const navBar = $('#main-nav');
+  function hashChanged() {
+    if (location.hash) {
+      const offset = $(':target').offset();
+      if (offset){
+        $('html, body').animate({scrollTop: Math.floor(offset.top - navBar.height())}, 0);
+      }
+    }
+  }
+  window.addEventListener("hashchange", hashChanged, false);
+  hashChanged();
+};
 
 $(function() {
   selectedNavStyling();
@@ -106,4 +120,5 @@ $(function() {
   setupDropdown();
   setupBurgerAction();
   patchAnchorTagButtons();
+  urlFragmentScrollCheck();
 });
