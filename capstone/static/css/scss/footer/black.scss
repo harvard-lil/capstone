@@ -13,6 +13,6 @@ footer {
     }
   }
   .lil-logo {
-    @extend .footer-lil-logo-white;
+    @extend %footer-lil-logo-white;
   }
 }

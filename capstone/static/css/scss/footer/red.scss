@@ -1,7 +1,7 @@
 footer {
   background-color: $color-red;
   .lil-logo {
-    @extend .footer-lil-logo-black;
+    @extend %footer-lil-logo-black;
   }
   @include media-breakpoint-down(md) {
     .credits { color: $color-white; }

@@ -57,7 +57,8 @@
     <title>{% block title %}{% if title %}{{ title }}{% endif %}{% endblock title %}{% block title_suffix %} | Caselaw Access Project{% endblock title_suffix %}</title>
     <meta name="description" content="{% block meta_description %}{% if meta_description %}{{ meta_description }}{% else %}Explore American Caselaw{% endif %}{% endblock meta_description %}">
 
-    {% stylesheet "base" %}
+    {# if a stylesheet has to import base.scss, it should override this block instead of going in extra_head to avoid double import #}
+    {% block base_css %}{% stylesheet "base" %}{% endblock %}
     {% render_bundle 'chunk-vendors' %}
     {% render_bundle 'base' %}
     {% block extra_head %}{% endblock %}

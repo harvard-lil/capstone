@@ -5,8 +5,8 @@
 {% load format_number %}
 {% load render_bundle from webpack_loader %}
 
+{% block base_css %}{% stylesheet 'index' %}{% endblock %}
 {% block extra_head %}
-  {% stylesheet 'index' %}
   {% render_bundle 'map' %}
 {% endblock %}
 
