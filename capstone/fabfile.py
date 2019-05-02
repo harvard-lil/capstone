@@ -72,7 +72,9 @@ def pip_compile(args=''):
     Path('requirements.txt').write_text(reqs)
 
     # run pip-compile
-    command = ['pip-compile', '--generate-hashes']+args.split()
+    # Use --allow-unsafe because pip --require-hashes needs all requirements to be pinned, including those like
+    # setuptools that pip-compile leaves out by default.
+    command = ['pip-compile', '--generate-hashes', '--allow-unsafe']+args.split()
     print("Calling %s" % " ".join(command))
     subprocess.check_call(command, env=dict(os.environ, CUSTOM_COMPILE_COMMAND='fab pip-compile'))
 
