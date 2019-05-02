@@ -5,9 +5,7 @@
 {% load rest_framework %}
 {% load urlize_url_fields_only %}
 
-{% block extra_head %}
-  {% stylesheet 'api' %}
-{% endblock %}
+{% block base_css %}{% stylesheet 'api' %}{% endblock %}
 
 {% block title %}{% if name == "Api Root" %}Root | {% elif name %}{{ name }} | {% endif %}API{% endblock %}
 
