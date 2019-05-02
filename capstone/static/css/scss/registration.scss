@@ -1,11 +1,5 @@
-@import 'bootstrap/_functions.scss';
-@import 'bootstrap/_variables.scss';
-@import 'bootstrap/mixins';
-@import "bootstrap/variables";
-@import "bootstrap/buttons";
-@import "bootstrap/forms";
-@import "variables";
 @import "base.scss";
+@import "bootstrap/forms";
 @import "footer/black";
 
 .content {
