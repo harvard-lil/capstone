@@ -19,26 +19,21 @@
   <a class="btn btn-primary" href="{% url "bulk-docs" %}">See docs</a>
 {% endblock %}
 
-{% block sidebar_menu %}
-  <nav id="sidebar-menu" aria-label="table of contents">
-    <div class="content">
-      <ul class="list-group">
-        {% if exports.public %}
-          <li>
-            <a class="list-group-item" href="#public">
-              <span class="text">Public bulk data</span>
-            </a>
-          </li>
-        {% endif %}
-        <li>
-          <a class="list-group-item" href="#researcher">
-            <span class="text">Researcher downloads</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+{% block sidebar_menu_items %}
+  {% if exports.public %}
+    <li>
+      <a class="list-group-item" href="#public">
+        <span class="text">Public bulk data</span>
+      </a>
+    </li>
+  {% endif %}
+  <li>
+    <a class="list-group-item" href="#researcher">
+      <span class="text">Researcher downloads</span>
+    </a>
+  </li>
 {% endblock %}
+
 {% block main_content %}
   {# ==============> PUBLIC DATA <============== #}
   {% if exports.public %}

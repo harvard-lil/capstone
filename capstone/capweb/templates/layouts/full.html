@@ -1,3 +1,13 @@
 {% extends "layouts/base.html" %}
 
 {% block row_style %}below-the-fold{% endblock %}
+
+{% block sidebar_menu %}
+  <nav id="sidebar-menu" aria-label="table of contents">
+    <div class="content">
+      <ul class="list-group">
+        {% block sidebar_menu_items %}{% if sidebar_menu_items %}{{ sidebar_menu_items }}{% endif %}{% endblock %}
+      </ul>
+    </div>
+  </nav>
+{% endblock %}

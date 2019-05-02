@@ -17,28 +17,22 @@
 {% endblock %}
 {% block row_style %}bg-tan{% endblock %}
 
-{% block sidebar_menu %}
-  <nav id="sidebar-menu" aria-label="table of contents">
-    <div class="content">
-      <ul class="list-group">
-        <li>
-          <a class="list-group-item" href="#api">
-            <span class="text">API</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#bulk">
-            <span class="text">Bulk Data</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#search">
-            <span class="text">Search</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+{% block sidebar_menu_items %}
+  <li>
+    <a class="list-group-item" href="#api">
+      <span class="text">API</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#bulk">
+      <span class="text">Bulk Data</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#search">
+      <span class="text">Search</span>
+    </a>
+  </li>
 {% endblock %}
 {% block main_content_style %}{% endblock %}
 {% block main_content %}
