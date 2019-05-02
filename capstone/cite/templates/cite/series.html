@@ -4,16 +4,14 @@
 {% block meta_description %}Caselaw Access Project cases{% endblock %}
 
 {% block main_content %}
-  <div class="page-section">
-    {% for reporter, volumes in reporters %}
-      <h2 class="subtitle">{{ reporter.short_name }}</h2>
-      <p>{{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})</p>
-      <p>
-        <strong>Volume number:</strong>
-        {% for volume in volumes %}
-          <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number=volume.volume_number host 'cite' %}">{{ volume.volume_number }}</a>
-        {% endfor %}
-      </p>
-    {% endfor %}
-  </div>
+  {% for reporter, volumes in reporters %}
+    <h2 class="subtitle">{{ reporter.short_name }}</h2>
+    <p>{{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})</p>
+    <p>
+      <strong>Volume number:</strong>
+      {% for volume in volumes %}
+        <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number=volume.volume_number host 'cite' %}">{{ volume.volume_number }}</a>
+      {% endfor %}
+    </p>
+  {% endfor %}
 {% endblock %}

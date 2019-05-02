@@ -18,19 +18,17 @@
 {% endblock %}
 
 {% block main_content %}
-  <div class="page-section">
-    {% for jurisdiction, reporters in jurisdictions %}
-      <h2 class="subtitle" id="{{ jurisdiction.slug }}">
-        {{ jurisdiction }}
-      </h2>
-      <ul>
-        {% for reporter in reporters %}
-          <li>
-            <strong><a href="{% url 'series' series_slug=reporter.short_name_slug host 'cite' %}">{{ reporter.short_name }}</a>:</strong>
-            {{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})
-          </li>
-        {% endfor %}
-      </ul>
-    {% endfor %}
-  </div>
+  {% for jurisdiction, reporters in jurisdictions %}
+    <h2 class="subtitle" id="{{ jurisdiction.slug }}">
+      {{ jurisdiction }}
+    </h2>
+    <ul>
+      {% for reporter in reporters %}
+        <li>
+          <strong><a href="{% url 'series' series_slug=reporter.short_name_slug host 'cite' %}">{{ reporter.short_name }}</a>:</strong>
+          {{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})
+        </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
 {% endblock %}
