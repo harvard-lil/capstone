@@ -50,130 +50,122 @@
 
 {% block main_content %}
   {# ==============> ABOUT <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="about">Overview</h2>
-    <p><a class="btn-primary" href="{% url "search" %}">Search CAP</a></p>
-    <p>
-       With this tool, we aim to provide a simple interface for locating and viewing the cases and metadata in the CAP
-      repository. Right now, this tool is fairly basic. You can use it to search through our cases and some of our
-      metadata tables, but there are no advanced tools. If you have any feature suggestions, we'd appreciate your taking
-      the time to let us know either in an issue report <a href="https://github.com/harvard-lil/capstone/issues">in our
-      code repository on github.com</a>, or through our <a href="{% url 'contact' %}">contact page</a>.
-    </p>
-    <p>
-      If you're a developer, you might be more interested in directly accessing our <a href="{% url "api" %}">API</a> or
-      <a href="{% url "bulk-docs" %}">Bulk Data</a>.
-    </p>
-  </div>
+  <h2 class="subtitle" id="about">Overview</h2>
+  <p><a class="btn-primary" href="{% url "search" %}">Search CAP</a></p>
+  <p>
+     With this tool, we aim to provide a simple interface for locating and viewing the cases and metadata in the CAP
+    repository. Right now, this tool is fairly basic. You can use it to search through our cases and some of our
+    metadata tables, but there are no advanced tools. If you have any feature suggestions, we'd appreciate your taking
+    the time to let us know either in an issue report <a href="https://github.com/harvard-lil/capstone/issues">in our
+    code repository on github.com</a>, or through our <a href="{% url 'contact' %}">contact page</a>.
+  </p>
+  <p>
+    If you're a developer, you might be more interested in directly accessing our <a href="{% url "api" %}">API</a> or
+    <a href="{% url "bulk-docs" %}">Bulk Data</a>.
+  </p>
+
   {# ==============> SCOPE <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="about">What's included?</h2>
-    <p>
-      The CAP search tool searches everything included in the <a href="{% url 'api' %}">CAP API</a>. See
-      <a href="{% url 'about' %}#data">our About page</a> for more details on the materials included.
-    </p>
-  </div>
+  <h2 class="subtitle" id="about">What's included?</h2>
+  <p>
+    The CAP search tool searches everything included in the <a href="{% url 'api' %}">CAP API</a>. See
+    <a href="{% url 'about' %}#data">our About page</a> for more details on the materials included.
+  </p>
+
   {# ==============> SEARCHING <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="searching">Searching in CAP is simple</h2>
-    <div>
-      <ul>
-        <li><strong>First:</strong> Choose What To Search</li>
-        <li><strong>Second:</strong> Select Your Search Criteria</li>
-        <li><strong>Third:</strong> Execute the Search</li>
-      </ul>
-    </div>
-    <div>
-      <dt>Choose What To Search</dt>
-      <dd>
-        The search tool allows you to search through several different tables of objects; right now, you may search
-        cases, courts, jurisdictions, and reporters. When you first arrive at the search page, it is set to search
-        cases. To search for something else, click on "Cases" and select something else from the dropdown menu. By
-        default, the search tool is set to search for Cases. To search for something else, click on "Cases" and select
-        something from the dropdown menu.
-      </dd>
-      <dd>
-        For example, you may want to search our jurisdiction list. At the top of the search form where it says "Search
-        for
-        <u>Cases</u>" (or whatever else it might be set to) you should click on the word "Cases" and select something
-        else
-        from the dropdown menu.
-      </dd>
-    </div>
-    <div>
-      <dt>Select Your Search Criteria</dt>
-      <dd>
-        Within each table of objects, there are several fields you can use to define your search. You could search for
-        cases by their citation or by full-text search, and you can search for reporters by their jurisdiction. You can
-        even precisely refine your search by using several fields at once. To add a field to your search, simply click
-        the
-        "Add Field" button, select the field you wish to add from the dropdown, add your search criteria, and press the
-        search button.
-      </dd>
-      <dd>
-        For example, if you were searching our Reporters, the default search field is Jurisdiction. Perhaps you'd like
-        to
-        search for reporters' names that start with a specific word: Press the "Add Field" button, and from the dropdown
-        box, and select "Full Name." There is no need to remove any field boxes you don't plan on entering search terms
-        into— they will not affect the search results— but it certainly might make complex searches easier to manage,
-        visually.
-      </dd>
-      <dt>Execute the Search</dt>
-      <dd>
-        Here's the easy part— just click on the Search button. The loading screen should pop up momentarily, and your
-        search results should appear below. If there was a problem contacting the search server, or the server returned
-        an error with one of your search fields, it appears on-screen.
-      </dd>
-    </div>
+  <h2 class="subtitle" id="searching">Searching in CAP is simple</h2>
+  <div>
+    <ul>
+      <li><strong>First:</strong> Choose What To Search</li>
+      <li><strong>Second:</strong> Select Your Search Criteria</li>
+      <li><strong>Third:</strong> Execute the Search</li>
+    </ul>
+  </div>
+  <div>
+    <dt>Choose What To Search</dt>
+    <dd>
+      The search tool allows you to search through several different tables of objects; right now, you may search
+      cases, courts, jurisdictions, and reporters. When you first arrive at the search page, it is set to search
+      cases. To search for something else, click on "Cases" and select something else from the dropdown menu. By
+      default, the search tool is set to search for Cases. To search for something else, click on "Cases" and select
+      something from the dropdown menu.
+    </dd>
+    <dd>
+      For example, you may want to search our jurisdiction list. At the top of the search form where it says "Search
+      for
+      <u>Cases</u>" (or whatever else it might be set to) you should click on the word "Cases" and select something
+      else
+      from the dropdown menu.
+    </dd>
+  </div>
+  <div>
+    <dt>Select Your Search Criteria</dt>
+    <dd>
+      Within each table of objects, there are several fields you can use to define your search. You could search for
+      cases by their citation or by full-text search, and you can search for reporters by their jurisdiction. You can
+      even precisely refine your search by using several fields at once. To add a field to your search, simply click
+      the
+      "Add Field" button, select the field you wish to add from the dropdown, add your search criteria, and press the
+      search button.
+    </dd>
+    <dd>
+      For example, if you were searching our Reporters, the default search field is Jurisdiction. Perhaps you'd like
+      to
+      search for reporters' names that start with a specific word: Press the "Add Field" button, and from the dropdown
+      box, and select "Full Name." There is no need to remove any field boxes you don't plan on entering search terms
+      into— they will not affect the search results— but it certainly might make complex searches easier to manage,
+      visually.
+    </dd>
+    <dt>Execute the Search</dt>
+    <dd>
+      Here's the easy part— just click on the Search button. The loading screen should pop up momentarily, and your
+      search results should appear below. If there was a problem contacting the search server, or the server returned
+      an error with one of your search fields, it appears on-screen.
+    </dd>
   </div>
 
   {# ==============> TIPS <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="tips">Tips</h2>
-    <div>
-        <p>
-        You may use as many search field boxes as you like.
-        </p>
+  <h2 class="subtitle" id="tips">Tips</h2>
+  <div>
+      <p>
+      You may use as many search field boxes as you like.
+      </p>
 
-        <p>
-        For Full-Text searching (currently only available in Cases) each separate word is treated as a separate search
-          term bound with a logical "and." We don't yet offer phrase searching but plan to implement it soon.
-        </p>
+      <p>
+      For Full-Text searching (currently only available in Cases) each separate word is treated as a separate search
+        term bound with a logical "and." We don't yet offer phrase searching but plan to implement it soon.
+      </p>
 
-        <p>
-          Results in metadata searches allow you to efficiently perform a new search for all of the cases related to that
-          result. For example, if you're searching our jurisdiction list, each result on that list has a "See Cases"
-          button that starts a new search for all of the cases under the specified jurisdiction. Don't worry— you can
-          get back to your original search using the back button.
-        </p>
+      <p>
+        Results in metadata searches allow you to efficiently perform a new search for all of the cases related to that
+        result. For example, if you're searching our jurisdiction list, each result on that list has a "See Cases"
+        button that starts a new search for all of the cases under the specified jurisdiction. Don't worry— you can
+        get back to your original search using the back button.
+      </p>
 
-        <p>
-        You may use as many search field boxes as you like.
-        </p>
+      <p>
+      You may use as many search field boxes as you like.
+      </p>
 
-        <p>
-          To share a search, simply copy the URL and pass it along! It will link the user to the specific page of
-          results you're viewing. To send them to the first page of results, navigate to the first page of results
-          before copying the URL.
-        </p>
-    </div>
+      <p>
+        To share a search, simply copy the URL and pass it along! It will link the user to the specific page of
+        results you're viewing. To send them to the first page of results, navigate to the first page of results
+        before copying the URL.
+      </p>
   </div>
 
   {# ==============> TIPS <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="research">Getting Legal Help</h2>
-    <div>
-        <p>
-          Our caselaw search tool is not kept up to date. It currently has caselaw through
-          mid-2018, but may contain many mistakes as well. It is not intended for use in legal proceedings, and we
-          cannot provide individual assistance with legal research.
-        </p>
-        <p>
-          To find an attorney, get help with legal research skills, or find up-to-date databases for use in legal
-          proceedings, please see the <a href="{% url "about" %}#legal-help">"Getting Legal Help" section of our About
-          page</a>.
-        </p>
-    </div>
+  <h2 class="subtitle" id="research">Getting Legal Help</h2>
+  <div>
+      <p>
+        Our caselaw search tool is not kept up to date. It currently has caselaw through
+        mid-2018, but may contain many mistakes as well. It is not intended for use in legal proceedings, and we
+        cannot provide individual assistance with legal research.
+      </p>
+      <p>
+        To find an attorney, get help with legal research skills, or find up-to-date databases for use in legal
+        proceedings, please see the <a href="{% url "about" %}#legal-help">"Getting Legal Help" section of our About
+        page</a>.
+      </p>
   </div>
 
 {% endblock %}

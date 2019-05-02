@@ -309,20 +309,18 @@ li.item-set {
 }
 
 /* logos */
-.footer-lil-logo {
+footer .lil-logo {
   width: 173px;
   height: 90px;
   display: block;
 }
 
 .footer-lil-logo-white {
-  @extend .footer-lil-logo;
   background: url("../../img/logos/lil-white.svg") no-repeat;
   background-size: contain !important;
 }
 
 .footer-lil-logo-black {
-  @extend .footer-lil-logo;
   background: url("../../img/logos/lil-black.svg") no-repeat;
   background-size: contain !important;
 }
