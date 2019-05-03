@@ -1,6 +1,16 @@
 title: Privacy Policy
 meta_description: Caselaw Access Project Privacy Policy
-explainer: Caselaw Access Project is operated by the President and Fellows of Harvard College (“Harvard”) in support of its mission to educate and disseminate knowledge and information. As used in this Privacy Policy, “CAP” refers to the Caselaw Access Project and to Harvard more generally. <br/><br/> CAP is committed to preserving your privacy and being transparent about how we use information collected through the case.law website (the “Website”) and any other applications, functionality or services offered by CAP (collectively with the Website, the “Services”). This privacy policy describes how CAP uses, collects, and shares information through the Services.
+explainer: Caselaw Access Project is operated by the President and Fellows
+    of Harvard College (“Harvard”) in support of its mission to
+    educate and disseminate knowledge and information. As used in this
+    Privacy Policy, “CAP” refers to the Caselaw Access Project and to
+    Harvard more generally. <br /><br /> CAP is committed to
+    preserving your privacy and being transparent about how we use
+    information collected through the case.law website (the “Website”)
+    and any other applications, functionality or services offered by
+    CAP (collectively with the Website, the “Services”). This privacy
+    policy describes how CAP uses, collects, and shares information
+    through the Services.
 
 ## What types of information does CAP collect?
 
