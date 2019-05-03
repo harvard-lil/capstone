@@ -26,7 +26,7 @@ urlpatterns = [
     path('bulk/download/', user_views.bulk, name='bulk-download'),
 
     path('terms', MarkdownView.as_view(template_name='terms-of-use.md'), name='terms'),
-    path('privacy', TemplateView.as_view(template_name='privacy-policy.html'), name='privacy'),
+    path('privacy', MarkdownView.as_view(template_name='privacy-policy.md'), name='privacy'),
 
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),
