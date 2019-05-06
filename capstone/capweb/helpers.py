@@ -174,5 +174,5 @@ def render_markdown(markdown_doc):
         .replace('<h2 ', '<h2 class="subtitle" ')
     toc = md.toc.replace('<a ', '<a class="list-group-item" ')
     toc = "".join(toc.splitlines(True)[2:-2])  # strip <div><ul> around toc by dropping first and last two lines
-    meta = {k:''.join(v) for k, v in md.Meta.items()}
+    meta = {k:' '.join(v) for k, v in md.Meta.items()}
     return html, toc, meta
