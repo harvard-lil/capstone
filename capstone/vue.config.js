@@ -40,6 +40,7 @@ let vueConfig = {
     limericks: 'static/js/generate_limericks.js',
     witchcraft: 'static/js/witchcraft.js',
     search: 'static/js/search.js',
+    ngrams: 'static/js/ngrams.js',
   },
 
   configureWebpack: {

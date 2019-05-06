@@ -315,7 +315,14 @@ PIPELINE = {
                 'css/scss/view_metadata.scss',
             },
             'output_filename': 'view_metadata.css'
-        }
+        },
+        'ngrams': {
+            'source_filenames': {
+                'css/scss/ngrams.scss',
+            },
+            'output_filename': 'ngrams.css'
+        },
+
     },
     # These are not yet converted to vue/webpack:
     # 'JAVASCRIPT': {

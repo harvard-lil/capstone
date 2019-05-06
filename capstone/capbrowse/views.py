@@ -19,6 +19,7 @@ def view_jurisdiction(request, jurisdiction_id):
         'title': jurisdiction.name
     })
 
+
 def view_reporter(request, reporter_id):
     reporter = get_object_or_404(Reporter, pk=reporter_id)
     fields = OrderedDict([
@@ -35,6 +36,7 @@ def view_reporter(request, reporter_id):
         'type': 'reporter',
         'title': reporter.short_name
     })
+
 
 def view_court(request, court_id):
     court = get_object_or_404(Court, pk=court_id)
@@ -56,3 +58,6 @@ def view_court(request, court_id):
 def search(request):
     return render(request, "search.html")
 
+
+def ngrams(request):
+    return render(request, "ngrams.html")

@@ -1,0 +1,41 @@
+@import "bootstrap/functions";
+@import "bootstrap/variables";
+@import "bootstrap/mixins";
+@import "base.scss";
+
+.dropdown-menu {
+  padding: 0;
+  border-radius: 0;
+  border: 1px solid $color-violet-gray;
+  width: 100%;
+  .dropdown-item {
+    color: $color-black;
+    border-bottom: 1px solid $color-gray;
+    text-transform: capitalize;
+    font-size: inherit;
+    font-weight: inherit;
+    &:hover, &:active, &:focus {
+      background-color: $color-yellow;
+    }
+    &.active {
+      background-color: $color-yellow-light;
+    }
+  }
+}
+
+.selected-jur {
+  background-color: $color-gray;
+  border-radius: 5em;
+  margin: 0.5em;
+  font-size: 0.5em;
+  padding: 0.4em;
+  cursor: pointer;
+  &:after {
+    content: " x";
+    border-left: 1px solid $color-black;
+  }
+  &:hover, &:focus, &:active {
+    background-color: $color-yellow;
+  }
+
+}
