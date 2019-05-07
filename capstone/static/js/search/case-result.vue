@@ -4,7 +4,7 @@
       <div class="col-md-9">
 
         <a target="_blank" class="simple"
-           :href="$parent.case_view_url(result.id)">
+           :href="result.frontend_url">
           {{result.name_abbreviation}}
         </a>
       </div>
