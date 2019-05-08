@@ -118,6 +118,9 @@ special_text_replacements = {
     # footnotemark inconsistently added to unredacted casemets because ’ identified as 1
     "casemets/32044066192519_unredacted_CASEMETS_0019.xml.gz": [('<footnotemark>1</footnotemark>', '’')],
     "casemets/32044066192519_redacted_CASEMETS_0019.xml.gz": [('Emporia, Kansas. At the instant', 'Emporia, Kansas.’ At the instant')],
+    # extra hyphen in redacted case but not redacted alto
+    "casemets/32044078515160_redacted_CASEMETS_0036.xml.gz": [('­There was evidence', 'There was evidence')],
+    "casemets/32044078515160_redacted_CASEMETS_0184.xml.gz": [('­-In accordance with the authority', '-In accordance with the authority')],
 }
 special_cases = {
     # footnotemark inconsistently added to unredacted casemets because ’ identified as 1
@@ -747,13 +750,13 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
             # normalize formatting in casebody xml
             strip_whitespace_els = 'blockquote|author|p|headnotes|history|disposition|syllabus|summary|attorneys|judges|otherdate|decisiondate|parties|seealso|citation|docketnumber|court|correction'
             for i, casebody in enumerate(casebodies):
-                # remove whitespace from start and end of tags:
-                casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', casebody, flags=re.S)
-                casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', casebody, flags=re.S)
                 casebody = casebody.replace(' label=""', '')  # footnote with empty label
                 casebody = re.sub(r'>\s+<', '><', casebody)  # normalize multiline xml file to single file
                 casebody = re.sub(r'<([a-z]+)[^>]*></\1>', '', casebody)  # remove empty elements (typically redacted paragraphs)
                 casebody = re.sub(r'\s+', ' ', casebody)  # normalize multiple spaces
+                # remove whitespace from start and end of tags:
+                casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', casebody, flags=re.S)
+                casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', casebody, flags=re.S)
                 casebody = casebody.replace('\xad ', '\xad')  # fix doubled-paragraph bug
                 casebodies[i] = casebody
 
@@ -987,8 +990,8 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
         # <RoleTag ID="footnotemark0001" LABEL="footnotemark"/>
         # <RoleTag ID="bracketnum0001" LABEL="bracketnum"/>
         extra_redacted_ids = []
-        for role_tag in parsed('RoleTag'):
-            tags = parsed('[TAGREFS="%s"]' % role_tag.attrib['ID'])
+        for role_tag in parsed('RoleTag[LABEL="footnotemark"],RoleTag[LABEL="bracketnum"]'):
+            tags = parsed('[TAGREFS~="%s"]' % role_tag.attrib['ID'])
             # these won't be found if a single word contains more than one footnotemark, in which case we can't do
             # anything useful -- just skip
             if not tags:
