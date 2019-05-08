@@ -63,6 +63,8 @@ def reverse(*args, **kwargs):
     """
         Wrap django_hosts.reverse() to try all known hosts.
     """
+    kwargs.setdefault('scheme', 'http' if settings.DEBUG else 'https')
+
     # if host is provided, just use that
     if 'host' in kwargs:
         return django_hosts.reverse(*args, **kwargs)

@@ -854,7 +854,8 @@ class CaseMetadata(models.Model):
     def get_absolute_url(self):
         return reverse('casemetadata-detail', args=[self.id], scheme="https")
 
-    def get_readable_url(self):
+    def frontend_url(self):
+        # TODO: this should be cached on the model, and should include case ID if multiple cases share a citation
         cite = self.citations.first()
         cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
         return reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite')

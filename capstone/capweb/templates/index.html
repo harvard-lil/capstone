@@ -4,9 +4,18 @@
 {% load api_url %}
 {% load format_number %}
 {% load render_bundle from webpack_loader %}
+{% load snippet %}
 
 {% block base_css %}{% stylesheet 'index' %}{% endblock %}
 {% block extra_head %}
+  <script>
+    {% autoescape off %}
+      const mapSettings = {
+        "data": {% snippet 'map_numbers' %},
+        "jurisdictionUrl": "{% url "home" host "cite" %}#JURISDICTION"
+      };
+    {% endautoescape %}
+  </script>
   {% render_bundle 'map' %}
 {% endblock %}
 

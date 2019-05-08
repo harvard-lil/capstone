@@ -80,9 +80,6 @@
       'jurisdiction-result': JurisdictionResult,
     },
     methods: {
-      case_view_url: function (case_id) {
-        return this.urls.casemetadata_detail.replace('987654321', case_id)
-      },
       metadata_view_url: function (endpoint, id) {
         return this.urls.view_court.replace('987654321', id).replace('/court/', "/" + endpoint + "/")
       }
