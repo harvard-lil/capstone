@@ -17,19 +17,20 @@ def iter_pars(opinions):
 # resulting empty tags will be stripped during rendering
 not_redacted_tokens = {'font', 'bracketnum', 'footnotemark'}
 
-def filter_tokens(tokens, tags, redacted=True):
+def filter_tokens(block, tags, redacted=True):
     """
         Filter a list of tokens and yield only text strings and tags included in `tags`. If redacted=True, filter out
         everything between ['redact'] tags. Example:
         >>> list(filter_tokens(['text', ['foo'], ['bar'], ['redact'], 'text2', ['redact']], {'foo'}))
         ['text', ['foo']]
     """
-    if tags is None:
-        yield from tokens
+    tokens = block.get('tokens')
+    if not tokens:
         return
+    all_redacted = block.get('redacted', False)
     redacted_span = False
     for token in tokens:
-        if redacted and redacted_span:
+        if redacted and (all_redacted or redacted_span):
             if type(token) != str:
                 if token[0] == '/redact':
                     redacted_span = False
@@ -138,7 +139,7 @@ class VolumeRenderer:
                 ignore_strings = False
                 string_el = None
                 line_el = None
-                for token in filter_tokens(block['tokens'], self.alto_block_token_filter, redacted):
+                for token in filter_tokens(block, self.alto_block_token_filter, redacted):
                     if type(token) == str:
                         if not ignore_strings and string_el is not None:
                             # ignore_strings will be true if we are in an [edit] block, and are ignoring the replacement text
@@ -271,7 +272,7 @@ class VolumeRenderer:
                 block = self.blocks_by_id[block_id]
                 if block.get("redacted"):
                     continue
-                words.extend(filter_tokens(block.get('tokens', []), {}))
+                words.extend(filter_tokens(block, {}))
             pars.append("".join(words))
         return "\n\n".join(pars)
 
@@ -416,8 +417,6 @@ class VolumeRenderer:
             # write each block in the paragraph
             for block_id in par['block_ids']:
                 block = self.blocks_by_id[block_id]
-                if self.redacted and block.get('redacted'):
-                    continue
 
                 # write <page-number> or <a class='page-label'> between blocks
                 if not self.original_xml:
@@ -435,7 +434,7 @@ class VolumeRenderer:
                         last_page_label = page_label
 
                 # write <img>
-                if block.get('format') == 'image':
+                if block.get('format') == 'image' and not (self.redacted and block.get('redacted')):
                     if self.format == 'xml':
                         tag_stack.append((handler.characters, ('[[Image here]]',)))
                     else:
@@ -445,7 +444,7 @@ class VolumeRenderer:
                 # write tokens
                 else:
                     open_font_tags = []
-                    for token in filter_tokens(block.get('tokens'), self.html_token_filter, self.redacted):
+                    for token in filter_tokens(block, self.html_token_filter, self.redacted):
 
                         # text token
                         if type(token) == str:
