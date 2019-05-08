@@ -397,6 +397,7 @@ class VolumeRenderer:
                 continue
             handler = sax.ElementTreeContentHandler()
             tag_stack = []
+            open_tags = set()
 
             # opening tag
             if self.format == 'xml':
@@ -488,9 +489,14 @@ class VolumeRenderer:
                                     attrs['id'] = 'ref_' + ref
                                 with self.wrap_font_tags(handler, tag_stack, open_font_tags):
                                     tag_stack.append((handler.startElement, ('a', attrs,)))
+                            open_tags.add(token_name)
                         elif token_name == '/footnotemark' or token_name == '/bracketnum':
-                            with self.wrap_font_tags(handler, tag_stack, open_font_tags):
-                                tag_stack.append((handler.endElement, (token_name[1:] if self.format == 'xml' else 'a',)))
+                            # we could hit a close tag without an open tag, if the open tag was in a previous redacted block
+                            tag_name = token_name[1:]
+                            if tag_name in open_tags:
+                                with self.wrap_font_tags(handler, tag_stack, open_font_tags):
+                                    tag_stack.append((handler.endElement, (token_name[1:] if self.format == 'xml' else 'a',)))
+                                open_tags.remove(tag_name)
 
             # run all of our commands, like "handler.startElement(*args)", to actually build the xml tree
             for method, args in tag_stack:
