@@ -55,7 +55,7 @@ def remove_empty_tags(tree, ignore_tags=set()):
             >>> etree.tostring(tree)
             b'<p><a/></p>'
     """
-    for el in tree.iter():
+    for el in tree.iterdescendants():
         while True:
             if el.tag in ignore_tags or el.text or len(el):
                 break
@@ -505,7 +505,9 @@ class VolumeRenderer:
             par_el = handler._root
             remove_empty_tags(par_el, ignore_tags={'img'})
 
-            parent_el.append(handler._root)
+            # append element if not empty (contents not redacted)
+            if par_el.text or len(par_el):
+                parent_el.append(par_el)
 
         return last_page_label
 
