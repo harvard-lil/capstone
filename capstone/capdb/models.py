@@ -1377,12 +1377,12 @@ class CaseXML(BaseXMLModel):
         def sortable_id(alto_id):
             parts = alto_id.split('_')[1].split('.')
             return (int(parts[0]), int(parts[1]))
-        footnote_el_ids = {el.attr.id for el in casebody('casebody|footnote [id]').items()}
+        ignore_ids = {el.attr.id for el in casebody('casebody|footnote [id],casebody|correction').items()}
         id_to_alto_order = {}
         for xref_el in parsed_xml('mets|div[TYPE="blocks"] > mets|div[TYPE="element"]').items():
             par_el, blocks_el = xref_el('mets|fptr').items()
             par_id = par_el('mets|area').attr.BEGIN
-            if par_id in footnote_el_ids:
+            if par_id in ignore_ids:
                 continue
             alto_ids = [el.attrib['BEGIN'] for el in blocks_el('mets|area')]
             # for an empty paragraph with contents redacted, there's no alto_id

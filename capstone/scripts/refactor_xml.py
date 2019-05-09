@@ -79,7 +79,11 @@ def dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, un
         for block_id in par['block_ids']:
             page = page_objs_by_block_id[block_id]
             case_pages[page['id']] = page
-    to_dump = [(unredacted_storage, case['path'])] + [(unredacted_storage, page['path']) for page in case_pages.values()]
+    case_pages = sorted(case_pages.values(), key=lambda page: page['path'])
+    to_dump = (
+            [(unredacted_storage, case['path'])] +
+            [(unredacted_storage, page['path']) for page in case_pages]
+    )
     if redacted_storage:
         to_dump += [(redacted_storage, path.replace('unredacted', 'redacted')) for _, path in to_dump]
     for storage, path in to_dump:
@@ -87,6 +91,8 @@ def dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, un
         out_path = Path(path)
         out_path.parent.mkdir(exist_ok=True, parents=True)
         dump_text(out_path, storage.contents(path))
+    for page in case_pages:
+        dump_image(unredacted_storage, page['file_name'])
     dump_text("%s-old-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted'), old_casebody)
     dump_text("%s-new-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted'), new_casebody)
     dump_text("%s-case-structure.json" % volume_barcode, json.dumps(renderer.hydrate_opinions(case['opinions'], blocks_by_id), indent=2))
@@ -121,6 +127,19 @@ special_text_replacements = {
     # extra hyphen in redacted case but not redacted alto
     "casemets/32044078515160_redacted_CASEMETS_0036.xml.gz": [('­There was evidence', 'There was evidence')],
     "casemets/32044078515160_redacted_CASEMETS_0184.xml.gz": [('­-In accordance with the authority', '-In accordance with the authority')],
+    "casemets/32044078639846_redacted_CASEMETS_0260.xml.gz": [('­VI. On the subject', 'VI. On the subject')],
+    "casemets/32044078639762_redacted_CASEMETS_0057.xml.gz": [('­IV. Defendant contends that the', 'IV. Defendant contends that the')],
+    "casemets/32044078493681_redacted_CASEMETS_0030.xml.gz": [('­But even so, the appellee', 'But even so, the appellee')],
+    "casemets/32044078639804_redacted_CASEMETS_0002.xml.gz": [('­Defendant moved to strike', 'Defendant moved to strike')],
+    "casemets/32044078499704_redacted_CASEMETS_0070.xml.gz": [('­• We find this proceeding', '• We find this proceeding')],
+    "casemets/32044078566742_redacted_CASEMETS_0016.xml.gz": [('­In its motion for a rehearing', 'In its motion for a rehearing')],
+    "casemets/32044078680782_redacted_CASEMETS_0042.xml.gz": [('­-In view of deficiencies of', '-In view of deficiencies of')],
+    "casemets/32044078639879_redacted_CASEMETS_0002.xml.gz": [('­Hence this case should be', 'Hence this case should be')],
+    "casemets/32044078565546_redacted_CASEMETS_0040.xml.gz": [('­The evidence is undisputed', 'The evidence is undisputed')],
+    "casemets/32044078639838_redacted_CASEMETS_0128.xml.gz": [('­II. The second point made', 'II. The second point made')],
+    "casemets/32044078499399_redacted_CASEMETS_0023.xml.gz": [('­-As the rule now stands', '-As the rule now stands')],
+    "casemets/32044078498003_redacted_CASEMETS_0056.xml.gz": [('­-The amount of evidence required', '-The amount of evidence required')],
+    "casemets/32044078515210_redacted_CASEMETS_0103.xml.gz": [('­-It will be observed that', '-It will be observed that')],
     # case is missing an alto block reference
     "casemets/32044133498154_unredacted_CASEMETS_0058.xml.gz": [(
         '<area BEGIN="BL_456.1" BETYPE="IDREF" FILEID="alto_00228_1"/>',
@@ -134,6 +153,7 @@ special_cases = {
     # footnotemark should have been redacted from ALTO, as it is in casemets
     # (could possibly detect automatically by checking redacted="true" value on related footnote)
     "alto/32044078581188_redacted_ALTO_00159_0.xml.gz": [('[ID="ST_317.4.16.3"],[ID="SP_317.4.16.4"]', 'delete')],
+    "alto/32044078581204_redacted_ALTO_00112_1.xml.gz": [('[ID="ST_224.1.13.7"],[ID="SP_224.1.13.8"]', 'delete')],
 }
 
 def apply_special_cases(path, parsed):
