@@ -5,8 +5,31 @@
 
   export default {
     extends: Line,
-    props: ['chartData', 'options'],
+    props: ['chartData'],
     mixins: [reactiveProp],
+    data() {
+      return {
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            yAxes: [{
+              gridLines: {
+                color: "rgba(0, 0, 0, 0)",
+              },
+              ticks: {
+                beginAtZero: true
+              }
+            }],
+            xAxes: [{
+              gridLines: {
+                color: "rgba(0, 0, 0, 0)",
+              },
+            }]
+          }
+        }
+      }
+    },
     mounted() {
       this.renderChart(this.chartData, this.options)
     }

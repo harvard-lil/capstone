@@ -1,15 +1,66 @@
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
+@import "bootstrap/utilities/align";
 @import "base.scss";
+
+.row {
+  padding-bottom: 0.5em;
+}
+
+.alert-danger {
+
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+label {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  font-weight: $font-weight-bold;
+  margin-right: 0.5em;
+  color: $color-violet-gray;
+}
+
+input[type="number"] {
+  max-width: 20%;
+}
+
+input {
+  border: 0;
+}
+
+.description  {
+  color: $color-violet-gray;
+}
+
+.form-group-elements {
+  margin: 0.8em 0;
+}
+
+.text-to-graph, input[type="number"] {
+  padding-left: 0.25em !important;
+}
+
+.main-content {
+  padding-bottom: 0;
+}
+
+.graph-container {
+  background-color: $color-white;
+}
 
 .dropdown-menu {
   padding: 0;
   border-radius: 0;
   border: 1px solid $color-violet-gray;
   width: 100%;
+  max-height: 15em;
+  overflow-y: scroll;
+  z-index: 999;
   .dropdown-item {
     color: $color-black;
+    background-color: $color-white;
     border-bottom: 1px solid $color-gray;
     text-transform: capitalize;
     font-size: inherit;
@@ -24,18 +75,16 @@
 }
 
 .selected-jur {
-  background-color: $color-gray;
+  background-color: $color-violet-gray;
+  color: $color-white;
   border-radius: 5em;
   margin: 0.5em;
   font-size: 0.5em;
-  padding: 0.4em;
+  padding: 0.5em;
   cursor: pointer;
-  &:after {
-    content: " x";
-    border-left: 1px solid $color-black;
-  }
   &:hover, &:focus, &:active {
     background-color: $color-yellow;
+    color: $color-black;
   }
 
 }

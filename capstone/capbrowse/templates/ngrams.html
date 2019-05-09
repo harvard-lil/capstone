@@ -12,27 +12,26 @@
 
 {% block top_section_style %}bg-tan simple-section{% endblock %}
 {% block title %}Ngrams{% endblock %}
-{% block title_section %}{% endblock %}
+{% block title_section %}
+{% endblock %}
 {% block meta_description %}
-  About the Caselaw Access Project
+  Ngrams in Caselaw Access Project
 {% endblock %}
 {% block sidebar_menu %}{% endblock %}
 
 {% block main_content %}
 <div id="app" class="content"></div>
+<script>
+  {% autoescape off %}
+  const snippets = {
+    jurisdictions: {% snippet 'search_jurisdiction_list' %}
+  };
+  {% endautoescape %}
+</script>
 <noscript>
   This ngrams interface requires javascript, even for basic functionality. If you can not or will not use
   javascript, your best bet is to directly use <a href="{% api_url "api-root" %}">the API this search interface
   queries.</a> There is no data available in this search interface that is not available through the API.
 </noscript>
-  <script>
-    {% autoescape off %}
-
-    const snippets = {
-      jurisdictions: {% snippet 'search_jurisdiction_list' %}
-    };
-    console.log("getting snippets?", snippets);
-    {% endautoescape %}
-  </script>
 {% render_bundle 'ngrams' %}
 {% endblock %}
