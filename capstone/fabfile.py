@@ -60,16 +60,7 @@ def pip_compile(args=''):
         and convert them to https form with hashes once they're written to requirements.txt:
             https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.tar.gz#egg=email-normalize --hash=sha256:530851e150781c5208f0b60a278a902a3e5c6b98cd31d21f86eba54335134766
     """
-    import requests, hashlib, re, subprocess
-
-    def git_to_https(m):
-        url = 'https://%s/archive/%s.tar.gz#%s' % (m.group(1), m.group(2), m.group(3))
-        return '%s --hash=sha256:%s' % (url, hashlib.sha256(requests.get(url).content).hexdigest())
-
-    # convert https form to git form
-    reqs = Path('requirements.txt').read_text()
-    reqs = re.sub(r'https://(.*?)/archive/(.*?).tar.gz(\S*).*?\n', r'-e git+git://\1.git@\2\3\n', reqs)
-    Path('requirements.txt').write_text(reqs)
+    import subprocess
 
     # run pip-compile
     # Use --allow-unsafe because pip --require-hashes needs all requirements to be pinned, including those like
@@ -77,11 +68,6 @@ def pip_compile(args=''):
     command = ['pip-compile', '--generate-hashes', '--allow-unsafe']+args.split()
     print("Calling %s" % " ".join(command))
     subprocess.check_call(command, env=dict(os.environ, CUSTOM_COMPILE_COMMAND='fab pip-compile'))
-
-    # convert git form to https form
-    reqs = Path('requirements.txt').read_text()
-    reqs = re.sub(r'-e git\+git://(.*?).git@(.*?)#(\S*)', git_to_https, reqs)
-    Path('requirements.txt').write_text(reqs)
 
 @task
 def show_urls():

@@ -16,8 +16,7 @@ flower              # monitoring
 lxml
 xmltodict
 #pyquery
-# use this until https://github.com/gawel/pyquery/pull/183 lands:
--e git://github.com/jcushman/pyquery.git@115173a#egg=pyquery # Fix issues related to 1.4.x branch (https://github.com/harvard-lil/capstone/issues/745)
+https://github.com/gawel/pyquery/archive/2351446c56d5c3df93e3fd81a2b828cf00e3b648.zip#egg=pyquery  # Can be dropped on release of 1.4.1 (https://github.com/gawel/pyquery/pull/183)
 
 # database
 psycopg2            # postgres connector
@@ -30,7 +29,7 @@ django<2.2             # Fix issues related to 2.1.x branch (https://github.com/
 django-storages==1.6.6 # Fix issues related to 1.7.x branch (https://github.com/harvard-lil/capstone/issues/745)
 boto3==1.7.84          # Fix issues related to 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
 whitenoise             # serve static assets
--e git://github.com/jcushman/django-model-utils.git@f2e97e41418788c81ee8e5ab1cec37ecff65a003#egg=django-model-utils  # PR: https://github.com/jazzband/django-model-utils/pull/369
+https://github.com/jcushman/django-model-utils/archive/f2e97e41418788c81ee8e5ab1cec37ecff65a003.zip#egg=django-model-utils  # PR: https://github.com/jazzband/django-model-utils/pull/369
 django-simple-history  # model versioning
 django-redis           # use redis as Django cache backend
 django-hosts           # URL routing across subdomains
@@ -66,7 +65,7 @@ django-bootstrap4   # render bootstrap forms in django templates
 drf-yasg            # expose API specification
 swagger_spec_validator  # optional package for schema validation by drf-yasg
 pyyaml==4.2b4       # only an indirect dependency; included here to pin beta version until 4.x released, as 3.x shows security warning on github
--e git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize # Fix issues related to https://github.com/gmr/email-normalize/pull/3 (https://github.com/harvard-lil/capstone/issues/745)
+https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.zip#egg=email-normalize  # Fix issues related to https://github.com/gmr/email-normalize/pull/3 (https://github.com/harvard-lil/capstone/issues/745)
 
 # File conversion
 PyPDF2
