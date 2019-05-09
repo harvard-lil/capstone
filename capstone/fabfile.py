@@ -68,6 +68,38 @@ def pip_compile(args=''):
     command = ['pip-compile', '--generate-hashes', '--allow-unsafe']+args.split()
     print("Calling %s" % " ".join(command))
     subprocess.check_call(command, env=dict(os.environ, CUSTOM_COMPILE_COMMAND='fab pip-compile'))
+    update_docker_image_version()
+
+@task
+def update_docker_image_version():
+    """
+        Update the image version in docker-compose.yml to contain a hash of all files that affect the Dockerfile build.
+    """
+    import re
+
+    # get hash of Dockerfile input files
+    paths = ['Dockerfile', 'requirements.txt', 'package-lock.json']
+    hasher = hashlib.sha256()
+    for path in paths:
+        hasher.update(Path(path).read_bytes())
+    hash = hasher.hexdigest()[:32]
+
+    # see if hash appears in docker-compose.yml
+    docker_compose_path = Path(settings.BASE_DIR, 'docker-compose.yml')
+    docker_compose = docker_compose_path.read_text()
+    if hash not in docker_compose:
+
+        # if hash not found, increment image version number, append new hash, and insert
+        current_version = re.findall(r'image: capstone:(.*)', docker_compose)[0]
+        digits = current_version.split('-')[0].split('.')
+        digits[-1] = str(int(digits[-1])+1)
+        new_version = "%s-%s" % (".".join(digits), hash)
+        docker_compose = docker_compose.replace(current_version, new_version)
+        docker_compose_path.write_text(docker_compose)
+        print("%s updated to version %s" % (docker_compose_path, new_version))
+        
+    else:
+        print("%s is already up to date" % docker_compose_path)
 
 @task
 def show_urls():
