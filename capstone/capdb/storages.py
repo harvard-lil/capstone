@@ -290,6 +290,9 @@ class CaptarStorage(CapStorageMixin, Storage):
                 else:
                     yield key
 
+    def exists(self, name):
+        return name in self.index or name+'.gz' in self.index
+
 ### instances ###
 
 # settings.py will define a list of storages like this:

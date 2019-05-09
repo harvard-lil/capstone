@@ -106,12 +106,12 @@ def dump_files_for_page(volume_barcode, redacted, alto_xml_output, original_alto
 
 # Some different ways to exclude files from validation, or patch their contents:
 skip_redacted_validation = {
-    # Footnote marks on the <docketnumber> were not properly redacted in this volume
+    # Footnote marks on the <docketnumber> were not properly redacted in these Kansas volumes
     # Example of individual fixes, which I gave up on:
     # "alto/32044073040222_redacted_ALTO_00146_1.xml.gz": [('[ID="SP_292.6.1.4"],[ID="ST_292.6.1.5"]', 'delete')],
     # "alto/32044073040222_redacted_ALTO_00256_0.xml.gz": [('[ID="SP_511.6.1.4"],[ID="ST_511.6.1.5"]', 'delete')],
     # "alto/32044073040222_redacted_ALTO_00377_0.xml.gz": [('[ID="SP_753.6.1.4"],[ID="ST_753.6.1.5"]', 'delete')],
-    '32044073040222',
+    '32044073040222','32044078453420','32044132275520','32044142600170',
 }
 skip_validation_files = {}
 special_text_replacements = {
@@ -121,11 +121,19 @@ special_text_replacements = {
     # extra hyphen in redacted case but not redacted alto
     "casemets/32044078515160_redacted_CASEMETS_0036.xml.gz": [('­There was evidence', 'There was evidence')],
     "casemets/32044078515160_redacted_CASEMETS_0184.xml.gz": [('­-In accordance with the authority', '-In accordance with the authority')],
+    # case is missing an alto block reference
+    "casemets/32044133498154_unredacted_CASEMETS_0058.xml.gz": [(
+        '<area BEGIN="BL_456.1" BETYPE="IDREF" FILEID="alto_00228_1"/>',
+        '<area BEGIN="BL_455.17" BETYPE="IDREF" FILEID="alto_00228_0"/><area BEGIN="BL_456.1" BETYPE="IDREF" FILEID="alto_00228_1"/>',
+    )],
 }
 special_cases = {
     # footnotemark inconsistently added to unredacted casemets because ’ identified as 1
     "alto/32044066192519_unredacted_ALTO_00115_0.xml.gz": [('[ID="ST_229.1.3.3"]', 'attrs', {"CONTENT": "Kansas.’", "CC": "00000000"})],
     "alto/32044066192519_redacted_ALTO_00115_0.xml.gz": [('[ID="ST_229.1.3.3"]', 'attrs', {"CONTENT": "Kansas.’", "CC": "00000000"})],
+    # footnotemark should have been redacted from ALTO, as it is in casemets
+    # (could possibly detect automatically by checking redacted="true" value on related footnote)
+    "alto/32044078581188_redacted_ALTO_00159_0.xml.gz": [('[ID="ST_317.4.16.3"],[ID="SP_317.4.16.4"]', 'delete')],
 }
 
 def apply_special_cases(path, parsed):
@@ -266,15 +274,18 @@ def index_blocks(blocks):
             (a) the combined text from the blocks
             (b) the offsets mapping from that text back to each string in the blocks
             (c) a lookup of the strings themselves
+            (d) a list of all tag marker names in the text
         Example:
-            >>> blocks = [['foo', ['tag'], 'bar'], ['baz']]
-            >>> blocks_text, blocks_offsets, blocks_lookup = index_blocks(blocks)
+            >>> blocks = [[tag_marker_lookup['bracketnum']+'foo'+tag_marker_lookup['/bracketnum'], ['tag'], 'bar'], ['baz']]
+            >>> blocks_text, blocks_offsets, blocks_lookup, block_tag_names = index_blocks(blocks)
             >>> blocks_text
             'foobarbaz'
             >>> blocks_offsets
             [0, 3, 6]
             >>> blocks_lookup
             [[0, ['foo', ['tag'], 'bar'], 0], [3, ['foo', ['tag'], 'bar'], 2], [6, ['baz'], 0]]
+            >>> block_tag_names
+            ['bracketnum', '/bracketnum']
         This allows us to start from the combined text and use it to modify the individual strings in the blocks object.
         For example, if we want to modify blocks_text[5] (an 'r'), we can search blocks_offsets to figure out that it is part
         of entry 1 (because it is after 3 and before 6), and then use blocks_lookup[1] to update the original string.
@@ -282,20 +293,22 @@ def index_blocks(blocks):
     blocks_text = ''
     blocks_offsets = []
     blocks_lookup = []
+    block_tag_names = []
     for block in blocks:
         for i, token in enumerate(block):
             if type(token) == str:
 
                 # replace individual tag markers with base tag_marker
-                fixed_token = tag_marker_re.sub(tag_marker, token)
-                if token != fixed_token:
-                    token = fixed_token
+                tag_markers = tag_marker_re.findall(token)
+                if tag_markers:
+                    token = tag_marker_re.sub(tag_marker, token)
                     block[i] = token
+                    block_tag_names.extend(tag_name_lookup[i] for i in tag_markers)
 
                 blocks_offsets.append(len(blocks_text))
                 blocks_lookup.append((len(blocks_text), block, i))
                 blocks_text += token
-    return blocks_text, blocks_offsets, blocks_lookup
+    return blocks_text, blocks_offsets, blocks_lookup, block_tag_names
 
 def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
     """
@@ -322,28 +335,25 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
             case_text.append(tag_marker)
     case_text = "".join(case_text).strip()  # remove any whitespace at start and end of paragraph of case text
 
-    blocks_text, blocks_offsets, blocks_lookup = index_blocks(alto_blocks)
+    blocks_text, blocks_offsets, blocks_lookup, block_tag_names = index_blocks(alto_blocks)
 
     ## text update -- update ALTO text to match case text ##
 
     if case_text != blocks_text:
 
         ## get diff
-        if case_tags:
-            # if there are footnote/bracket marks in the text, split around those and diff each range separately, so
-            # edits stay on the right side of the tags
+        if case_tags and block_tag_names == [tag[0] for tag in case_tags]:
+            # if there are matching footnote/bracket marks in the text, split around those and diff each range
+            # separately, so edits stay on the right side of the tags
             b_parts = blocks_text.split(tag_marker)
             c_parts = case_text.split(tag_marker)
-            if len(b_parts) == len(c_parts):
-                diff = []
-                b_offset = c_offset = 0
-                for b, c in zip(b_parts, c_parts):
-                    for tag, i1, i2, j1, j2 in diff_strings(b, c):
-                        diff.append([tag, i1+b_offset, i2+b_offset, j1+c_offset, j2+c_offset])
-                    b_offset += len(b)+1
-                    c_offset += len(c)+1
-            else:
-                diff = diff_strings(blocks_text, case_text)
+            diff = []
+            b_offset = c_offset = 0
+            for b, c in zip(b_parts, c_parts):
+                for tag, i1, i2, j1, j2 in diff_strings(b, c):
+                    diff.append([tag, i1+b_offset, i2+b_offset, j1+c_offset, j2+c_offset])
+                b_offset += len(b)+1
+                c_offset += len(c)+1
         else:
             # otherwise diff entire string
             diff = diff_strings(blocks_text, case_text)
@@ -959,6 +969,13 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             'spaces': [],
             'blocks': [],
         }
+
+        # volume barcodes containing underscore, like "Cal5th_001", may have file_name incorrectly as
+        # Cal5th_00100196_1.tif instead of Cal5th_001_00100196_1.tif. Detect and fix:
+        if not unredacted_storage.exists(page['file_name']):
+            fixed_file_name = '%s_%s' % (volume_barcode, page['file_name'].split('_', 1)[1])
+            if unredacted_storage.exists('images/'+fixed_file_name):
+                page['file_name'] = fixed_file_name
 
         if duplicates:
             page['duplicates'] = duplicates  # TODO: store in db
