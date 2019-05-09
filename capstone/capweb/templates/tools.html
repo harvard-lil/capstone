@@ -11,9 +11,9 @@
 {% block top_section_style %}bg-black{% endblock %}
 {% block explainer %}
   The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
-  and their associated metadata. We currently offer four ways to access the data:
+  and their associated metadata. We currently offer five ways to access the data:
   <a href="{% api_url "api-root" %}">API</a>, <a href="{% url "bulk-download" %}">bulk downloads</a>,
-  <a href="{% url "search" %}">search</a>, and <a href="{% url "home" host "cite" %}">browse</a>.
+  <a href="{% url "search" %}">search</a>, <a href="{% url "home" host "cite" %}">browse</a>, and an <a href="{% url "ngrams" %}">Ngram viewer</a>.
 {% endblock %}
 {% block row_style %}bg-tan{% endblock %}
 
@@ -38,6 +38,12 @@
       <span class="text">Browse</span>
     </a>
   </li>
+  <li>
+    <a class="list-group-item" href="#ngrams">
+      <span class="text">Ngrams</span>
+    </a>
+  </li>
+
 {% endblock %}
 {% block main_content_style %}{% endblock %}
 {% block main_content %}
@@ -83,4 +89,14 @@
   <div class="btn-group">
     <a class="btn-primary" href="{% url "home" host "cite" %}">BROWSE</a>
   </div>
+
+  {# ==============> NGRAMS <============== #}
+  <h2 class="subtitle" id="ngrams">Ngrams</h2>
+  <p>
+    Explore the data by looking at how usage of text changes over time.
+  </p>
+  <div class="btn-group">
+    <a class="btn-primary" href="{% url "ngrams" %}">NGRAMS</a>
+  </div>
+
 {% endblock %}

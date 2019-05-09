@@ -79,7 +79,7 @@
     data: function () {
       return {
         chartData: null,
-        textToGraph: "the court, court",
+        textToGraph: "",
         minYear: 1800,
         maxYear: 2000,
         minPossible: 1640,
@@ -197,8 +197,5 @@
         }
       },
     },
-    mounted() {
-      this.createGraph()
-    }
   }
 </script>
