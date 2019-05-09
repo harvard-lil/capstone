@@ -69,4 +69,3 @@ except ImportError:
     pass
 
 NGRAMS_FEATURE = True
-CITE_SUBDOMAIN_FEATURE = True
