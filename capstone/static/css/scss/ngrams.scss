@@ -9,7 +9,6 @@
 }
 
 .alert-danger {
-
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
@@ -19,7 +18,7 @@ label {
   text-transform: uppercase;
   font-weight: $font-weight-bold;
   margin-right: 0.5em;
-  color: $color-violet-gray;
+  color: $color-violet-gray-dark;
 }
 
 input[type="number"] {
@@ -30,8 +29,24 @@ input {
   border: 0;
 }
 
-.description  {
+input.dropdown-toggle.btn-secondary {
+  color: $color-violet-gray-dark !important;
+  border: 2px solid $color-violet-gray-dark !important;
+}
+
+.page-title {
+  h1 {
+    font-size: 2em;
+    padding-bottom: 0.5em;
+  }
+}
+
+.description {
   color: $color-violet-gray;
+}
+
+.top-section {
+  padding-top: 0;
 }
 
 .form-group-elements {
@@ -39,7 +54,9 @@ input {
 }
 
 .text-to-graph, input[type="number"] {
-  padding-left: 0.25em !important;
+  padding-left: 0.5em !important;
+  padding-bottom: 0.25em;
+  padding-top: 0.25em;
 }
 
 .main-content {

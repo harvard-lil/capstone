@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div class="page-title">
+      <h1>Ngrams</h1>
+    </div>
     <div class="form-group">
       <div class="row">
         <input class="col-lg-12 text-to-graph" placeholder="Your text here" v-model.trim="textToGraph">
@@ -44,12 +47,13 @@
       </div>
       <div class="row">
         <div class="selected-jurs">
-          <span class="small description" v-if="selectedJurs.length">Selected:</span>
-          <span class="small selected-jur" v-on:click="toggleJur(jur)" v-for="jur in selectedJurs">
+          <span class="small" v-if="selectedJurs.length">Selected:</span>
+          <span class="small selected-jur" v-bind:key="jur[0]" v-on:click="toggleJur(jur)" v-for="jur in selectedJurs">
             {{jur[1]}}
           </span>
         </div>
       </div>
+      <br/>
     </div><!-- end form -->
     <div class="graph">
       <div class="container graph-container">
@@ -82,6 +86,7 @@
         maxPossible: 2018,
         jurisdictions: {},
         selectedJurs: [],
+        colors: ["#0276FF", "#E878FF", "#EDA633", "#FF654D", "#6350FD"],
         errors: ""
       }
     },
@@ -128,11 +133,11 @@
         jurs.splice(0, 0, "");
         let jurs_params = jurs.join("&jurisdiction=");
 
+        let count = 0;
         for (let idx in terms) {
           let self = this;
           let term = terms[idx];
           let url = "http://api.case.test:8000/v1/ngrams/?q=" + term + jurs_params;
-          console.log("ngram url:", url)
           axios.get(url)
               .then((resp) => {
                 // [instance_count, document_count]
@@ -156,9 +161,16 @@
                   }
                 }
                 let newDatasets = self.chartData.datasets;
+                let color = "";
+
+                if (this.colors.length - 1 > count) {
+                  color = this.colors[count];
+                } else {
+                  color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
+                }
                 newDatasets.push({
                   label: term,
-                  borderColor: '#' + (Math.random() * 0xFFFFFF << 0).toString(16),
+                  borderColor: color,
                   backgroundColor: "rgba(0, 0, 0, 0)",
                   borderWidth: 2,
                   data: results
@@ -167,6 +179,7 @@
                   labels: years,
                   datasets: newDatasets
                 };
+                count += 1;
               });
 
         }
@@ -182,7 +195,6 @@
         } else {
           this.selectedJurs.push(jurisdiction);
         }
-        console.log("current selected jurs:", this.selectedJurs);
       },
     },
     mounted() {
@@ -190,12 +202,3 @@
     }
   }
 </script>
-<style scoped>
-  .graph {
-    font-family: 'Avenir', Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-  }
-
-</style>

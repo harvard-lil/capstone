@@ -12,6 +12,11 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          legend: {
+            labels: {
+              boxWidth: 20,
+            }
+          },
           scales: {
             yAxes: [{
               gridLines: {
