@@ -855,7 +855,7 @@ class CaseMetadata(models.Model):
     def get_absolute_url(self):
         return reverse('casemetadata-detail', args=[self.id], scheme="https")
 
-    def get_frontend_url(self, cite=None, disambiguate=False):
+    def get_frontend_url(self, cite=None, disambiguate=False, include_host=True):
         """
             Return cite.case.law cite for this case, like /series/volnum/pagenum/.
             If disambiguate is true, return /series/volnum/pagenum/id/.
@@ -864,7 +864,8 @@ class CaseMetadata(models.Model):
         cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
         args = [slugify(cite_parts[1]), cite_parts[0], cite_parts[2]] + ([self.id] if disambiguate else [])
         url = reverse('citation', args=args, host='cite')
-        url = '/'+url.split('/',3)[3]  # strip https://cite.case.law prefix so stored value can be moved between servers
+        if not include_host:
+            url = '/'+url.split('/',3)[3]  # strip https://cite.case.law prefix so stored value can be moved between servers
         return url
 
     def create_or_update_case_text(self, new_text=None):

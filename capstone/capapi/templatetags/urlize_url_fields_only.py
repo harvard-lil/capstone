@@ -11,7 +11,7 @@ register = template.Library()
 @register.filter()
 def urlize_url_fields_only(text):
     ret = sub(
-        '&quot;(http.*)+(&quot;)',
-        lambda url_match: urlize_quoted_links(url_match.group(1)),
+        '&quot;(https?://.*)&quot;',
+        lambda url_match: '&quot;%s&quot;' % urlize_quoted_links(url_match.group(1)),
         escape(text.decode()))
     return ret

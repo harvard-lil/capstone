@@ -1077,6 +1077,6 @@ def update_case_frontend_url():
                 continue
             last_id = cite.case_id
             case = CaseMetadata(id=cite.case_id)
-            case.frontend_url = case.get_frontend_url(cite, disambiguate=cite.cite in ambiguous_cites)
+            case.frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=cite.cite in ambiguous_cites)
             case_batch.append(case)
         CaseMetadata.objects.bulk_update(case_batch, ['frontend_url'])
