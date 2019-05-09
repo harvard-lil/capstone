@@ -60,16 +60,7 @@ def pip_compile(args=''):
         and convert them to https form with hashes once they're written to requirements.txt:
             https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.tar.gz#egg=email-normalize --hash=sha256:530851e150781c5208f0b60a278a902a3e5c6b98cd31d21f86eba54335134766
     """
-    import requests, hashlib, re, subprocess
-
-    def git_to_https(m):
-        url = 'https://%s/archive/%s.tar.gz#%s' % (m.group(1), m.group(2), m.group(3))
-        return '%s --hash=sha256:%s' % (url, hashlib.sha256(requests.get(url).content).hexdigest())
-
-    # convert https form to git form
-    reqs = Path('requirements.txt').read_text()
-    reqs = re.sub(r'https://(.*?)/archive/(.*?).tar.gz(\S*).*?\n', r'-e git+git://\1.git@\2\3\n', reqs)
-    Path('requirements.txt').write_text(reqs)
+    import subprocess
 
     # run pip-compile
     # Use --allow-unsafe because pip --require-hashes needs all requirements to be pinned, including those like
@@ -77,11 +68,38 @@ def pip_compile(args=''):
     command = ['pip-compile', '--generate-hashes', '--allow-unsafe']+args.split()
     print("Calling %s" % " ".join(command))
     subprocess.check_call(command, env=dict(os.environ, CUSTOM_COMPILE_COMMAND='fab pip-compile'))
+    update_docker_image_version()
 
-    # convert git form to https form
-    reqs = Path('requirements.txt').read_text()
-    reqs = re.sub(r'-e git\+git://(.*?).git@(.*?)#(\S*)', git_to_https, reqs)
-    Path('requirements.txt').write_text(reqs)
+@task
+def update_docker_image_version():
+    """
+        Update the image version in docker-compose.yml to contain a hash of all files that affect the Dockerfile build.
+    """
+    import re
+
+    # get hash of Dockerfile input files
+    paths = ['Dockerfile', 'requirements.txt', 'package-lock.json']
+    hasher = hashlib.sha256()
+    for path in paths:
+        hasher.update(Path(path).read_bytes())
+    hash = hasher.hexdigest()[:32]
+
+    # see if hash appears in docker-compose.yml
+    docker_compose_path = Path(settings.BASE_DIR, 'docker-compose.yml')
+    docker_compose = docker_compose_path.read_text()
+    if hash not in docker_compose:
+
+        # if hash not found, increment image version number, append new hash, and insert
+        current_version = re.findall(r'image: capstone:(.*)', docker_compose)[0]
+        digits = current_version.split('-')[0].split('.')
+        digits[-1] = str(int(digits[-1])+1)
+        new_version = "%s-%s" % (".".join(digits), hash)
+        docker_compose = docker_compose.replace(current_version, new_version)
+        docker_compose_path.write_text(docker_compose)
+        print("%s updated to version %s" % (docker_compose_path, new_version))
+        
+    else:
+        print("%s is already up to date" % docker_compose_path)
 
 @task
 def show_urls():

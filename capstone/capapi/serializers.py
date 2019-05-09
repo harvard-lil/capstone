@@ -88,6 +88,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
         fields = (
             'id',
             'url',
+            'frontend_url',
             'name',
             'name_abbreviation',
             'decision_date',

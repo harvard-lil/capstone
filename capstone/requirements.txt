@@ -4,9 +4,6 @@
 #
 #    fab pip-compile
 #
-https://github.com/jcushman/django-model-utils/archive/f2e97e41418788c81ee8e5ab1cec37ecff65a003.tar.gz#egg=django-model-utils --hash=sha256:70bb4dd4e5e4c91544ce645d65c7ef0c58bc4711da45feccd902d5747abc6bae
-https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.tar.gz#egg=email-normalize --hash=sha256:95aa7e2d9c44cb91e12dfff8f08fb6373bc3ca791c44a2c422986b84645c5d2e
-https://github.com/jcushman/pyquery/archive/115173a.tar.gz#egg=pyquery --hash=sha256:086e838487a2849eb64b0df29522c5a1e53c08bedbe0920ffd00bee485aff432
 amqp==2.4.0 \
     --hash=sha256:9f181e4aef6562e6f9f45660578fc1556150ca06e836ecb9e733e6ea10b48464 \
     --hash=sha256:c3d7126bfbc640d076a01f1f4f6e609c0e4348508150c1f61336b0d83c738d2b \
@@ -225,6 +222,8 @@ django-hosts==3.0 \
     --hash=sha256:8e83232dbd7ff0d9de5c814f16bdf4cd1971bd00c54fa1f3e507aed4f93215a8
 django-libsass==0.7 \
     --hash=sha256:49db3334b87e1f7955c4f9fb9945bc296f8bfd27a14d6d89706e4b0e5dc5de1c
+https://github.com/jcushman/django-model-utils/archive/f2e97e41418788c81ee8e5ab1cec37ecff65a003.zip#egg=django-model-utils \
+    --hash=sha256:e52b087de48c8ca8406304fd26a79de3fd2cb94d7b30f92cb3d0542dd579cc03
 django-nine==0.1.13 \
     --hash=sha256:cf1d2a3725a24c97fff307cc8d8daf476aa67ceefe86dcd9586d19106af2af16 \
     --hash=sha256:cf2a775dc1ba44aa2a9aec3a09130df108def55ff63074a33fe44bd531177da1 \
@@ -244,9 +243,9 @@ django-storages==1.6.6 \
 django-webpack-loader==0.6.0 \
     --hash=sha256:60bab6b9a037a5346fad12d2a70a6bc046afb33154cf75ed640b93d3ebd5f520 \
     --hash=sha256:970b968c2a8975fb7eff56a3bab5d0d90d396740852d1e0c50c5cfe2b824199a
-django==2.1.8 \
-    --hash=sha256:0fd54e4f27bc3e0b7054a11e6b3a18fa53f2373f6b2df8a22e8eadfe018970a5 \
-    --hash=sha256:f3b28084101d516f56104856761bc247f85a2a5bbd9da39d9f6197ff461b3ee4
+django==2.2.1 \
+    --hash=sha256:6fcc3cbd55b16f9a01f37de8bcbe286e0ea22e87096557f1511051780338eaea \
+    --hash=sha256:bb407d0bb46395ca1241f829f5bd03f7e482f97f7d1936e26e98dacb201ed4ec
 djangorestframework-filters==1.0.0.dev0 \
     --hash=sha256:d53692f9f0dfcdc1df4e890787f7212c3602476b85faffdefec02e2bc386c5b6 \
     --hash=sha256:dfb58706f5f00ce72a01968d99fcc3e500bdeaaa275568fd60ae868bf2b90aad
@@ -283,6 +282,8 @@ elasticsearch==6.3.1 \
     --hash=sha256:7546cc08e3899716e12fe67d12d7cfe9a64647014d1134b014c3c392b63cad42 \
     --hash=sha256:aada5cfdc4a543c47098eb3aca6663848ef5d04b4324935ced441debc11ec98b \
     # via django-elasticsearch-dsl-drf, elasticsearch-dsl
+https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.zip#egg=email-normalize \
+    --hash=sha256:366bdd6870b59aee8bf7aed1e22533eb0ceb78d008513a7add9098311cc2a97a
 execnet==1.5.0 \
     --hash=sha256:a7a84d5fa07a089186a329528f127c9d73b9de57f1a1131b82bb5320ee651f6a \
     --hash=sha256:fc155a6b553c66c838d1a22dba1dc9f5f505c43285a878c6f74a79c024750b83 \
@@ -500,9 +501,9 @@ pillow==5.4.1 \
     --hash=sha256:e9c8066249c040efdda84793a2a669076f92a301ceabe69202446abb4c5c5ef9 \
     --hash=sha256:f227d7e574d050ff3996049e086e1f18c7bd2d067ef24131e50a1d3fe5831fbc \
     --hash=sha256:fc9a12aad714af36cf3ad0275a96a733526571e52710319855628f476dcb144e
-pip-tools==3.6.1 \
-    --hash=sha256:603d374e43bfa02e7a775b58c25a203799155d42f89ef94ee445eb7ae116439f \
-    --hash=sha256:7c52bd17e8b8003a0d8daf5ac6e98c38097223508993fefb440c7e333a09f345
+pip-tools==3.7.0 \
+    --hash=sha256:4ff38ab655bec47db2d5a82fa6c6807e231ecddf3b7cbb2f2b957a9b11f016c3 \
+    --hash=sha256:542cc32393ec8e97932b4710462567e3ecbd0a1d483d8b1d5ef05bc6ef83f7f8
 pluggy==0.8.1 \
     --hash=sha256:8ddc32f03971bfdf900a81961a48ccf2fb677cf7715108f85295c67405798616 \
     --hash=sha256:980710797ff6a041e9a73a5787804f848996ecaa6f8a1b1e08224a5894f2074a \
@@ -637,6 +638,8 @@ pynacl==1.3.0 \
     # via paramiko
 pypdf2==1.26.0 \
     --hash=sha256:e28f902f2f0a1603ea95ebe21dff311ef09be3d0f0ef29a3e44a932729564385
+https://github.com/gawel/pyquery/archive/2351446c56d5c3df93e3fd81a2b828cf00e3b648.zip#egg=pyquery \
+    --hash=sha256:0629b8ffb14e2b60c62f5331a150a2829d24727514ed2f56135ecd753b858950
 pytest-cov==2.6.1 \
     --hash=sha256:0ab664b25c6aa9716cbf203b17ddb301932383046082c081b9848a0edf5add33 \
     --hash=sha256:230ef817450ab0699c6cc3c9c8f7a829c34674456f2ed8df1fe1d39780f7c87f
@@ -764,6 +767,10 @@ soupsieve==1.7.3 \
     --hash=sha256:466910df7561796a60748826781ebe9a888f7a1668a636ae86783f44d10aae73 \
     --hash=sha256:87db12ae79194f0ff9808d2b1641c4f031ae39ffa3cab6b907ea7c1e5e5ed445 \
     # via beautifulsoup4
+sqlparse==0.3.0 \
+    --hash=sha256:40afe6b8d4b1117e7dff5504d7a8ce07d9a1b15aeeade8a2d10f130a834f8177 \
+    --hash=sha256:7c3dca29c022744e95b547e867cee89f4fce4373f3549ccd8797d8eb52cdb873 \
+    # via django
 swagger-spec-validator==2.4.3 \
     --hash=sha256:57e29feb3aa921a9fb98bd70af148746b27c77d3207266f5571cebcce211e685 \
     --hash=sha256:62ef22eca3f429d93fddda5d793d2a1a9057d3732e7a14606e641805326ae4a6

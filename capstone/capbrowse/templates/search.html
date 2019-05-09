@@ -4,9 +4,7 @@
 {% load api_url %}
 {% load snippet %}
 {% load render_bundle from webpack_loader %}
-{% block extra_head %}
-  {% stylesheet 'search' %}
-{% endblock %}
+{% block base_css %}{% stylesheet 'search' %}{% endblock %}
 
 {% block top_section_style %}bg-tan simple-section{% endblock %}
 {% block title %}Search{% endblock %}
@@ -23,7 +21,6 @@
 // This is essentially each endpoint with its API interface
 // eslint-disable-next-line
   const urls = {
-    casemetadata_detail: "{% api_url "casemetadata-detail" 987654321 %}?full_case=true&format=html",
     view_court: "{% url 'view_court' 987654321 %}",
     api_root: "{% api_url "api-root" %}v1/",
     static: "{% static "" %}",

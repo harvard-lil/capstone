@@ -1,9 +1,7 @@
 {% extends "layouts/centered.html" %}
 {% load pipeline %}
 {% load static %}
-{% block extra_head %}
-  {% stylesheet 'case' %}
-{% endblock %}
+{% block base_css %}{% stylesheet 'case' %}{% endblock %}
 {% block title %}{{ citation_full }}{% endblock %}
 
 {% block content %}
