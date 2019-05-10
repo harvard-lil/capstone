@@ -760,6 +760,7 @@ class CaseMetadataQuerySet(models.QuerySet):
 
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
+    frontend_url = models.CharField(max_length=255, null=True, blank=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
     last_page = models.CharField(max_length=255, null=True, blank=True)
     publication_status = models.CharField(max_length=255, null=True, blank=True)
@@ -854,11 +855,18 @@ class CaseMetadata(models.Model):
     def get_absolute_url(self):
         return reverse('casemetadata-detail', args=[self.id], scheme="https")
 
-    def frontend_url(self):
-        # TODO: this should be cached on the model, and should include case ID if multiple cases share a citation
-        cite = self.citations.first()
+    def get_frontend_url(self, cite=None, disambiguate=False, include_host=True):
+        """
+            Return cite.case.law cite for this case, like /series/volnum/pagenum/.
+            If disambiguate is true, return /series/volnum/pagenum/id/.
+        """
+        cite = cite or self.citations.first()
         cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
-        return reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite')
+        args = [slugify(cite_parts[1]), cite_parts[0], cite_parts[2]] + ([self.id] if disambiguate else [])
+        url = reverse('citation', args=args, host='cite')
+        if not include_host:
+            url = '/'+url.split('/',3)[3]  # strip https://cite.case.law prefix so stored value can be moved between servers
+        return url
 
     def create_or_update_case_text(self, new_text=None):
         """ Create or update the related case_text object for this case_metadata. """

@@ -28,7 +28,7 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter, Citation, CaseMetadata
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
@@ -1049,3 +1049,34 @@ def load_token_streams(replace_existing=False):
 @task
 def refresh_case_body_cache():
     tasks.sync_case_body_cache_for_all_vols()
+
+@task
+def update_case_frontend_url():
+    """
+        Update CaseMetadata.frontend_url value for all cases.
+    """
+    import itertools
+
+    # get a set of all ambiguous_cites that appear more than once -- these should be linked by ID
+    cursor = django.db.connections['capdb'].cursor()
+    cursor.execute("SELECT DISTINCT a.cite FROM capdb_citation a, capdb_citation b WHERE a.cite=b.cite AND a.id<b.id")
+    ambiguous_cites = {row[0] for row in cursor.fetchall()}
+
+    # loop through all cites in batches of 10000
+    cites = Citation.objects.order_by('case_id', 'type').only('case_id', 'cite').iterator()
+    last_id = None
+    for i in tqdm(itertools.count()):  # infinite loop with progress bar
+        cite_batch = list(itertools.islice(cites, 10000))
+        if not cite_batch:
+            break
+
+        # set frontend_url for each distinct case in batch
+        case_batch = []
+        for cite in cite_batch:
+            if cite.case_id == last_id:
+                continue
+            last_id = cite.case_id
+            case = CaseMetadata(id=cite.case_id)
+            case.frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=cite.cite in ambiguous_cites)
+            case_batch.append(case)
+        CaseMetadata.objects.bulk_update(case_batch, ['frontend_url'])
