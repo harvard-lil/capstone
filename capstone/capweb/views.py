@@ -93,7 +93,8 @@ def tools(request):
         'page_title': 'Caselaw Access Project Tools',
         'page_description': 'The capstone of the Caselaw Access Project is a robust set of tools which facilitate access'
                             ' to the cases and their associated metadata. We currently offer two ways to access the '
-                            'data: our API, and bulk downloads.'
+                            'data: our API, and bulk downloads.',
+        'ngrams': settings.NGRAMS_FEATURE
     })
 
 
