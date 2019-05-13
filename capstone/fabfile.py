@@ -1064,7 +1064,7 @@ def update_case_frontend_url(update_existing=False):
     ambiguous_cites = {row[0] for row in cursor.fetchall()}
 
     # loop through all cites in batches of 10000
-    cites = Citation.objects.order_by('case_id', 'type', 'id').only('case_id', 'cite')
+    cites = Citation.objects.select_related('case').order_by('case_id', 'type', 'id').only('cite', 'case__reporter_id', 'case__volume_id')
     if not update_existing:
         cites = cites.filter(case__frontend_url=None)
     cites = ordered_query_iterator(cites, chunk_size=10000)
@@ -1080,7 +1080,7 @@ def update_case_frontend_url(update_existing=False):
             if cite.case_id == last_id:
                 continue
             last_id = cite.case_id
-            case = CaseMetadata(id=cite.case_id)
+            case = cite.case
             case.frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=cite.cite in ambiguous_cites)
             case_batch.append(case)
         CaseMetadata.objects.bulk_update(case_batch, ['frontend_url'])
