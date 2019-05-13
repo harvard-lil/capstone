@@ -216,10 +216,12 @@ class CaseExportFilter(NoopMixin, filters.FilterSet):
 
 class NgramFilter(filters.FilterSet):
     jurisdiction = filters.MultipleChoiceFilter(
+        label='Jurisdiction',
         choices=SimpleLazyObject(lambda: [['total', 'Total across jurisdictions (default)'], ['all', 'Select all jurisdictions']] + list(jur_choices)),
         method='jurisdiction_filter',
     )
     year = filters.CharFilter(
+        label='Year filter',
         method='year_filter',
         help_text='Use "total" to only show total value for all jurisdictions rather than per year',
     )
