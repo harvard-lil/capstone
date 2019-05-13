@@ -1051,11 +1051,12 @@ def refresh_case_body_cache():
     tasks.sync_case_body_cache_for_all_vols()
 
 @task
-def update_case_frontend_url():
+def update_case_frontend_url(update_existing=False):
     """
         Update CaseMetadata.frontend_url value for all cases.
     """
     import itertools
+    from scripts.helpers import ordered_query_iterator
 
     # get a set of all ambiguous_cites that appear more than once -- these should be linked by ID
     cursor = django.db.connections['capdb'].cursor()
@@ -1063,9 +1064,12 @@ def update_case_frontend_url():
     ambiguous_cites = {row[0] for row in cursor.fetchall()}
 
     # loop through all cites in batches of 10000
-    cites = Citation.objects.order_by('case_id', 'type').only('case_id', 'cite').iterator()
+    cites = Citation.objects.order_by('case_id', 'type', 'id').only('case_id', 'cite')
+    if not update_existing:
+        cites = cites.filter(case__frontend_url=None)
+    cites = ordered_query_iterator(cites, chunk_size=10000)
     last_id = None
-    for i in tqdm(itertools.count()):  # infinite loop with progress bar
+    for _ in tqdm(itertools.count()):  # infinite loop with progress bar
         cite_batch = list(itertools.islice(cites, 10000))
         if not cite_batch:
             break
