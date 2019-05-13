@@ -10,7 +10,7 @@ from django.db import connections, utils
 import json
 from datetime import datetime
 
-from capdb.models import CaseMetadata, Court, Reporter
+from capdb.models import CaseMetadata, Court, Reporter, Citation
 from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, get_reporter_count_for_jur
 
 import fabfile
@@ -168,3 +168,33 @@ def test_get_reporter_count_for_jur(reporter, jurisdiction):
     date = datetime.strptime(results['recorded'], "%Y-%m-%d %H:%M:%S.%f")
     assert date.day == datetime.now().day
     assert results['total'] == Reporter.objects.filter(jurisdictions=jurisdiction.id).count()
+
+
+@pytest.mark.django_db
+def test_update_case_frontend_url(citation):
+    citation.cite = "123 Test 456"
+    citation.type = "official"
+    citation.save()
+    Citation(cite="456 Test2 789", type="parallel", case=citation.case).save()
+    fabfile.update_case_frontend_url()
+    citation.case.refresh_from_db()
+    assert citation.case.frontend_url == "/test/123/456/"
+
+
+@pytest.mark.django_db
+def test_update_case_frontend_url_hyphen_cite(citation):
+    citation.cite = "123-Test-456"
+    citation.save()
+    fabfile.update_case_frontend_url()
+    citation.case.refresh_from_db()
+    assert citation.case.frontend_url == "/test/123/456/%s/" % citation.case_id
+
+
+@pytest.mark.django_db
+def test_update_case_frontend_url_bad_cite(citation):
+    citation.cite = "BAD"
+    citation.save()
+    fabfile.update_case_frontend_url()
+    case = citation.case
+    case.refresh_from_db()
+    assert citation.case.frontend_url == "/%s/%s/%s/%s/" % (case.reporter.short_name_slug, case.volume.volume_number, case.first_page, citation.case_id)
