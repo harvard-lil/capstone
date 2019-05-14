@@ -1739,6 +1739,8 @@ class PageStructure(models.Model):
     spaces = JSONField(blank=True, null=True)  # probably unnecessary -- in case pages ever have more than one PrintSpace
     font_names = JSONField(blank=True, null=True)  # for mapping font IDs back to style names in alto
     encrypted_strings = models.TextField(blank=True, null=True)
+    duplicates = JSONField(blank=True, null=True)  # list of duplicate IDs detected during conversion
+    extra_redacted_ids = JSONField(blank=True, null=True)  # list of IDs redacted during conversion
 
     image_file_name = models.CharField(max_length=100)
     width = models.SmallIntegerField()

@@ -596,6 +596,8 @@ def create_page_obj(volume_obj, page, ingest_source=None):
         blocks=page['blocks'],
         spaces=page['spaces'] or None,
         encrypted_strings=page.get('encrypted_strings') or None,
+        duplicates=page.get('duplicates') or None,
+        extra_redacted_ids=page.get('extra_redacted_ids') or None,
         image_file_name=page['file_name'],
         width=page['width'],
         height=page['height'],
@@ -641,7 +643,7 @@ def block_text(block):
 
 def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                          volume, pages, cases, fonts_by_id, text_replacements={},
-                         paths=None, blocks_by_id=None, key=settings.REDACTION_KEY):
+                         paths=None, blocks_by_id=None, key=settings.REDACTION_KEY, catch_validation_errors=False):
     """
         Check that our extraction task has succeeded, by making sure that the volume, page, cases, and fonts_by_id
         variables can be used to recreate the files in unredacted_storage and redacted_storage.
@@ -662,7 +664,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
     # the source files.
     renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, {}, pretty_print=False)  # we don't need labels_by_block_id because original_xml cases don't include page numbers
 
-    redacted_errors_as_warnings = 'tool_version_mismatch' in volume['metadata'].get('errors', {}) or volume_barcode in skip_redacted_validation
+    redacted_errors_as_warnings = catch_validation_errors or 'tool_version_mismatch' in volume['metadata'].get('errors', {}) or volume_barcode in skip_redacted_validation
 
     ## validate volume dict
     volume_obj = VolumeMetadata(barcode=volume_barcode, xml_metadata=volume['metadata'])
@@ -827,7 +829,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                         raise
 
 @shared_task
-def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.REDACTION_KEY, save_failed=False):
+def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.REDACTION_KEY, save_failed=False, catch_validation_errors=False):
     """
         Given volume barcode and locations of redacted and unredacted captar files, write out extracted tokenstreams
         as a zip file. This wrapper just makes sure the captar files are available locally, and then hands off to
@@ -838,9 +840,9 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
         with open_captar_volume(Path(primary_path), False) as unredacted_storage:
             if secondary_path:
                 with open_captar_volume(Path(secondary_path), False) as redacted_storage:
-                    volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key=key, save_failed=save_failed)
+                    volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key, save_failed, catch_validation_errors)
             else:
-                volume_to_json_inner(volume_barcode, unredacted_storage, key=key, save_failed=save_failed)
+                volume_to_json_inner(volume_barcode, unredacted_storage, key, save_failed, catch_validation_errors)
     except:
         if isinstance(captar_storage, CapS3Storage):
             # copy busted S3 files locally for further inspection
@@ -854,7 +856,7 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
                 shutil.rmtree(storage.parent.location)  # delete local temp dir
         raise
 
-def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=None, key=settings.REDACTION_KEY, save_failed=False):
+def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=None, key=settings.REDACTION_KEY, save_failed=False, catch_validation_errors=False):
     """
         Given volume barcode and redacted and unredacted captar storages, write out extracted tokenstreams as a zip file.
     """
@@ -985,7 +987,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             'height': int(page_el.attr.HEIGHT),
             'file_name': parsed('sourceImageInformation fileName').text().replace('.png', '.tif'),
             'deskew': parsed('processingStepSettings').text(),
-            'innodata_timestamp': parsed('alto')[0][0].text.rsplit(': ', 1)[-1],  # TODO: store in db -- extract timestamp from first comment in file
+            'innodata_timestamp': parsed('alto')[0][0].text.rsplit(': ', 1)[-1],  # not actually saving this since it's redundant of volume['metadata']['processing']
             'spaces': [],
             'blocks': [],
         }
@@ -998,7 +1000,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                 page['file_name'] = fixed_file_name
 
         if duplicates:
-            page['duplicates'] = duplicates  # TODO: store in db
+            page['duplicates'] = duplicates
             volume['metadata'].setdefault('errors', {})['duplicate_blocks'] = True
 
         if old_cc_style:
@@ -1073,7 +1075,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                         extra_redacted_ids.append(tag_id)
         if len(extra_redacted_ids) > 1:
             print("extra_redacted_ids:", extra_redacted_ids)
-            page['extra_redacted_ids'] = extra_redacted_ids  # TODO: store in DB?
+            page['extra_redacted_ids'] = extra_redacted_ids
 
         # ALTO files are structured like:
         # <Page>
@@ -1438,7 +1440,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             assert_reversability(
                 volume_barcode, unredacted_storage, redacted_storage,
                 volume, pages, cases, fonts_by_id, text_replacements,
-                paths, blocks_by_id, key)
+                paths, blocks_by_id, key, catch_validation_errors)
         except:
             # save temp zip locally if requested
             if save_failed:
