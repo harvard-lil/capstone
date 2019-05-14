@@ -8,7 +8,7 @@ import tempfile
 from base64 import b64encode
 from collections import defaultdict
 from io import BytesIO
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_BZIP2
 from pathlib import Path
 from PIL import Image
 from celery import shared_task
@@ -1428,7 +1428,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
     with tempfile.SpooledTemporaryFile(max_size=2**20*100) as temp_output_file:
 
         # do this here so we can safely decrypt again for validation
-        zip = ZipFile(temp_output_file, 'w')
+        zip = ZipFile(temp_output_file, 'w', compression=ZIP_BZIP2)
         for path, obj in (('pages.json', pages), ('cases.json', cases), ('fonts.json', fonts_by_id)):
             zip.writestr(path, json.dumps(obj))
 
