@@ -1,6 +1,6 @@
 import logging
-import os
 from collections import OrderedDict
+from pathlib import Path
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
@@ -121,8 +121,7 @@ def maintenance_mode(request):
 
 
 def wordclouds(request):
-    wordcloud_dir = os.path.join(settings.BASE_DIR, 'static/img/wordclouds')
-    wordclouds = [w for w in os.listdir(wordcloud_dir) if w.endswith('.png')]
+    wordclouds = sorted(path.name for path in Path(settings.BASE_DIR, 'static/img/wordclouds').glob('*.png'))
     return render(request, "gallery/wordclouds.html", {
         "wordclouds": wordclouds,
         'page_image': 'img/og_image/wordclouds.png',
