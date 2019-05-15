@@ -104,9 +104,9 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'jurisdiction',
         )
 
-    _frontend_url_base = reverse('home', host='cite').rstrip('/')
-
     def get_frontend_url(self, obj):
+        if not hasattr(self, '_frontend_url_base'):
+            CaseSerializer._frontend_url_base = reverse('home', host='cite').rstrip('/')
         return self._frontend_url_base + (obj.frontend_url or '')
 
 
