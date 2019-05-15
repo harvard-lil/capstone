@@ -1,6 +1,8 @@
 {% extends "layouts/centered.html" %}
 {% load pipeline %}
 {% load static %}
+{% load capweb_static %}
+
 {% block base_css %}{% stylesheet 'case' %}{% endblock %}
 {% block title %}{{ citation_full }}{% endblock %}
 
@@ -9,8 +11,10 @@
     <div class="metadata text-center col-centered">
       {% if not request.user.is_authenticated %}
         <div class="alert alert-success" role="alert">
-          Welcome to the Caselaw Access Project! We allow free access to up to 500 cases per person per day &mdash; see our
-          <a href="{% url 'terms' %}">terms of use</a> for details. <a href="{% url 'register' %}">Sign up for an account</a>
+          Welcome to the Caselaw Access Project! We allow free access to up to 500 cases per person per day &mdash; see
+          our
+          <a href="{% url 'terms' %}">terms of use</a> for details. <a href="{% url 'register' %}">Sign up for an
+          account</a>
           to use our API or apply for unlimited research scholar access.
         </div>
       {% endif %}
@@ -76,5 +80,46 @@
       document.execCommand("copy");
       citation_container.classList.add("citation_copied");
     }
+  </script>
+  <script type="application/ld+json">
+ {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id":"{{ frontend_url }}"
+  },
+  "headline": "{{ metadata.name_abbreviation }}",
+  "isAccessibleForFree": "False",
+  {% if not metadata.jurisdiction.whitelisted %}
+  "hasPart": {
+    "@type": "WebPageElement",
+    "isAccessibleForFree": "False",
+    "cssSelector": ".casebody"
+  },
+  {% endif %}
+  "author": {
+    "@type": "Organization",
+    "name": "{{ metadata.court.name }}"
+    },
+  "genre": "Law",
+  "keywords": "{{ metadata.citations }}, {{ metadata.name_abbreviation }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Harvard Law School Library Innovation Lab",
+    "logo": {
+      "@type": "ImageObject",
+      "url":"{% capweb_static "img/lil-logo-black.png" %}",
+      "width": 693,
+      "height": 361
+    }
+  },
+   "image": "{% capweb_static "img/og_image/api.jpg" %}",
+   "datePublished": "{{ metadata.decision_date }}",
+   "dateModified": "2018-10-29",
+   "dateCreated": "{{ metadata.decision_date }}",
+   "description": "{{ metadata.name }}"
+ }
+
   </script>
 {% endblock %}

@@ -3,6 +3,9 @@ footer {
   font-size: 18px;
   background-color: $color-yellow;
   hyphens: none;
+  .lil-logo {
+    @extend %footer-lil-logo-black;
+  }
 }
 
 
