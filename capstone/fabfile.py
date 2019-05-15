@@ -982,7 +982,7 @@ def make_pdf(volume_folder):
     scripts.make_pdf.make_pdf(volume_folder)
 
 @task
-def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=settings.REDACTION_KEY, save_failed=False):
+def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=settings.REDACTION_KEY, save_failed=False, catch_validation_errors=False):
     """
         Convert captar volumes to token stream zip files to be imported.
     """
@@ -1019,7 +1019,7 @@ def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=setting
             secondary_path = None
         if not replace_existing and primary_path.name in existing_vols:
             continue
-        scripts.refactor_xml.volume_to_json.delay(barcode, str(primary_path), secondary_path, key=str(key), save_failed=save_failed)
+        scripts.refactor_xml.volume_to_json.delay(barcode, str(primary_path), secondary_path, key=str(key), save_failed=save_failed, catch_validation_errors=catch_validation_errors)
 
 @task
 def validate_token_stream(volume_barcode, key=settings.REDACTION_KEY):
