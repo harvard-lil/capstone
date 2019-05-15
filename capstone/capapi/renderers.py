@@ -59,6 +59,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             'citation': official_citation,
             'page_description': data['name'],
             'page_title': data['name_abbreviation'],
+            'frontend_url': data['frontend_url'],
             'metadata': {
                 "name": data["name"],
                 "name_abbreviation": data["name_abbreviation"],
