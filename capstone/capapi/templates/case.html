@@ -63,9 +63,7 @@
           Could not load case body</h6>
       </div>
     {% else %}
-      <div class="cookie-wall">
-        {{ case_html|safe }}
-      </div>
+      {{ case_html|safe }}
     {% endif %}
 
   </div>
@@ -84,7 +82,7 @@
     }
   </script>
   <script type="application/ld+json">
-{
+ {
   "@context": "https://schema.org",
   "@type": "Article",
   "mainEntityOfPage": {
@@ -93,11 +91,13 @@
   },
   "headline": "{{ metadata.name_abbreviation }}",
   "isAccessibleForFree": "False",
+  {% if not metadata.jurisdiction.whitelisted %}
   "hasPart": {
     "@type": "WebPageElement",
     "isAccessibleForFree": "False",
-    "cssSelector": ".cookie-wall"
+    "cssSelector": ".casebody"
   },
+  {% endif %}
   "author": {
     "@type": "Organization",
     "name": "{{ metadata.court.name }}"
@@ -110,7 +110,7 @@
     "logo": {
       "@type": "ImageObject",
       "url":"{% capweb_static "img/lil-logo-black.png" %}",
-      "width: 693,
+      "width": 693,
       "height": 361
     }
   },
