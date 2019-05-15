@@ -22,6 +22,10 @@
 {% block main_content %}
 <div id="app" class="content"></div>
 <script>
+  const urls = {
+    api_root: "{% api_url "api-root" %}v1/"
+  };
+
   {% autoescape off %}
   const snippets = {
     jurisdictions: {% snippet 'search_jurisdiction_list' %}
