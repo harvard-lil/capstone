@@ -66,7 +66,6 @@
 
 <script>
   import LineExample from './LineChart.vue';
-  import axios from 'axios';
 
   export default {
     name: 'Main',
@@ -75,6 +74,7 @@
     },
     beforeMount() {
       this.jurisdictions = snippets.jurisdictions;  // eslint-disable-line
+      this.urls = urls;
     },
     data: function () {
       return {
@@ -85,6 +85,7 @@
         minPossible: 1640,
         maxPossible: 2018,
         jurisdictions: {},
+        urls: {},
         selectedJurs: [],
         colors: ["#0276FF", "#E878FF", "#EDA633", "#FF654D", "#6350FD"],
         errors: ""
@@ -137,16 +138,21 @@
         for (let idx in terms) {
           let self = this;
           let term = terms[idx];
-          let url = "http://api.case.test:8000/v1/ngrams/?q=" + term + jurs_params;
-          axios.get(url)
-              .then((resp) => {
-                // [instance_count, document_count]
-                let data = resp.data.results[term];
+          let url = this.urls.api_root + "ngrams/?q=" + term + jurs_params;
+          fetch(url).then((resp) => {
+            if (!resp.ok) {
+              throw resp
+            }
+            return resp.json();
+          })
+              .then((response) => {
+                let data = response.results[term];
                 let results = [];
                 for (let idx in data) {
                   let jur = data[idx];
                   for (let y in years) {
                     let year = years[y];
+                    // only include years selected
                     if ((year >= this.minYear) && (year <= this.maxYear)) {
                       if (results[y]) {
                         if (jur[year]) {
@@ -160,9 +166,9 @@
                     }
                   }
                 }
+                // set colors
                 let newDatasets = self.chartData.datasets;
                 let color = "";
-
                 if (this.colors.length - 1 > count) {
                   color = this.colors[count];
                 } else {
@@ -180,22 +186,29 @@
                   datasets: newDatasets
                 };
                 count += 1;
-              });
+              })
+              .catch((response) => {
+                if (response === "canceled") {
+                  return;
+                }
+              })
+
 
         }
-
-
-      },
+      }
+      ,
       getRandomInt() {
         return Math.floor(Math.random() * (50 - 5 + 1)) + 5
-      },
+      }
+      ,
       toggleJur(jurisdiction) {
         if (this.selectedJurs.indexOf(jurisdiction) > -1) {
           this.selectedJurs.splice(this.selectedJurs.indexOf(jurisdiction), 1);
         } else {
           this.selectedJurs.push(jurisdiction);
         }
-      },
+      }
+      ,
     },
   }
 </script>

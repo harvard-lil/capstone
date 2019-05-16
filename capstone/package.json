@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "awesome-charts": "^1.0.0",
-    "axios": "^0.18.0",
     "chart.js": "^2.8.0",
     "jquery": "^3.3.1",
     "vue": "^2.5.17",
