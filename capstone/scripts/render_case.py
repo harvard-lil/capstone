@@ -412,7 +412,13 @@ class VolumeRenderer:
 
                 tag_stack.append((handler.startElement, (par['class'], par_attrs,)))
             else:
-                tag_stack.append((handler.startElement, ('p', {'class': par['class'], 'id': par['id']},)))
+                if par['class'] == 'p':
+                    tag = ('p', {'id': par['id']},)
+                elif par['class'] == 'blockquote':
+                    tag = ('blockquote', {'id': par['id']},)
+                else:
+                    tag = ('p', {'class': par['class'], 'id': par['id']},)
+                tag_stack.append((handler.startElement, tag))
 
             # write each block in the paragraph
             for block_id in par['block_ids']:
