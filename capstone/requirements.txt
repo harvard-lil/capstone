@@ -220,6 +220,8 @@ django-filter==2.1.0 \
 django-hosts==3.0 \
     --hash=sha256:3599645f37b4c51df6140d659bef356e05ae7ff7748f8fef14c2c84083dd8089 \
     --hash=sha256:8e83232dbd7ff0d9de5c814f16bdf4cd1971bd00c54fa1f3e507aed4f93215a8
+django-ipware==2.1.0 \
+    --hash=sha256:a7c7a8fd019dbdc9c357e6e582f65034e897572fc79a7e467674efa8aef9d00b
 django-libsass==0.7 \
     --hash=sha256:49db3334b87e1f7955c4f9fb9945bc296f8bfd27a14d6d89706e4b0e5dc5de1c
 https://github.com/jcushman/django-model-utils/archive/f2e97e41418788c81ee8e5ab1cec37ecff65a003.zip#egg=django-model-utils \
@@ -240,6 +242,9 @@ django-simple-history==2.7.0 \
 django-storages==1.6.6 \
     --hash=sha256:7339070cf0c8042f5a885783a0a909175a8dbb68e7f5697d597571c830a460c4 \
     --hash=sha256:f1dd5668a4df9a23aff56c8321ea3aac3fda23d9d17473158d308d1b13e5363e
+django-user-agents==0.3.2 \
+    --hash=sha256:72b1d8f10eebf88c6c04548668ca06c3d4392b1de79dd2a5cf3da7bc5f3027b6 \
+    --hash=sha256:c5d3d827ea86ed0971b7e344bf8f97ce46a41ccb3ab479c1aef12930bf6ac058
 django-webpack-loader==0.6.0 \
     --hash=sha256:60bab6b9a037a5346fad12d2a70a6bc046afb33154cf75ed640b93d3ebd5f520 \
     --hash=sha256:970b968c2a8975fb7eff56a3bab5d0d90d396740852d1e0c50c5cfe2b824199a
@@ -790,6 +795,10 @@ tornado==5.1.1 \
 tqdm==4.29.1 \
     --hash=sha256:b856be5cb6cfaee3b2733655c7c5bbc7751291bb5d1a4f54f020af4727570b3e \
     --hash=sha256:c9b9b5eeba13994a4c266aae7eef7aeeb0ba2973e431027e942b4faea139ef49
+ua-parser==0.8.0 \
+    --hash=sha256:3908c19ea0abdcdfe7245366dc03e5b4a8901ec17105bd66ba2ccbe3948dce8a \
+    --hash=sha256:97bbcfc9321a3151d96bb5d62e54270247b0e3be0590a6f2ff12329851718dcb \
+    # via user-agents
 uritemplate==3.0.0 \
     --hash=sha256:01c69f4fe8ed503b2951bef85d996a9d22434d2431584b5b107b2981ff416fbd \
     --hash=sha256:1b9c467a940ce9fb9f50df819e8ddd14696f89b9a8cc87ac77952ba416e0a8fd \
@@ -799,6 +808,9 @@ urllib3==1.24.2 \
     --hash=sha256:4c291ca23bbb55c76518905869ef34bdd5f0e46af7afe6861e8375643ffee1a0 \
     --hash=sha256:9a247273df709c4fedb38c711e44292304f73f39ab01beda9f6b9fc375669ac3 \
     # via elasticsearch, requests
+user-agents==2.0 \
+    --hash=sha256:792869b990a244f71efea1cb410ecaba99a270a64c5ac37d365bde5d70d6a2fa \
+    --hash=sha256:7af7419d61ce8f72ad487cc77ea3b4d1dcaa4cbb7b6df533a7c7aa3ccc44e5b3
 vine==1.3.0 \
     --hash=sha256:133ee6d7a9016f177ddeaf191c1f58421a1dcc6ee9a42c58b34bed40e1d2cd87 \
     --hash=sha256:ea4947cc56d1fd6f2095c8d543ee25dad966f78692528e68b4fada11ba3f98af \

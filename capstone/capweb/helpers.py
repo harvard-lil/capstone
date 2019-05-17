@@ -9,7 +9,7 @@ import markdown
 from markdown.extensions.toc import TocExtension
 import requests
 import django_hosts
-from django_user_agents.utils import get_user_agent, parse
+from django_user_agents.utils import get_user_agent
 from ipware import get_client_ip
 
 from django.conf import settings

@@ -1,6 +1,5 @@
 import re
 import pytest
-from unittest import mock
 from django.conf import settings
 from django.utils.text import slugify
 from capapi.tests.helpers import check_response
