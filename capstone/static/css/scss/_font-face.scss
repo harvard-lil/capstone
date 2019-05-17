@@ -269,7 +269,16 @@
   font-style: normal;
 }
 
+
 // Titillium
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-bold-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-bold-webfont.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+}
+
 @font-face {
     font-family: 'titillium';
     src: url('../../fonts/titilliumweb-semibold-webfont.woff2') format('woff2'),
@@ -286,3 +295,10 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'titillium';
+    src: url('../../fonts/titilliumweb-extralight-webfont.woff2') format('woff2'),
+         url('../../fonts/titilliumweb-extralight-webfont.woff') format('woff');
+    font-weight: 200;
+    font-style: normal;
+}

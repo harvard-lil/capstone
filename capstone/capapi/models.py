@@ -331,3 +331,16 @@ class SiteLimits(models.Model):
             site_limits.daily_signups = 0
             site_limits.daily_downloads = 0
             site_limits.save()
+
+
+class MailingList(models.Model):
+    email = models.EmailField(
+        max_length=254,
+        unique=True,
+        error_messages={'unique': "You're already subscribed."}
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # this field could be manually set in the unlikely case that someone repeatedly signs someone else up. They couldn't
+    # re-add the address since their it would already be in here, but we'd know to not email them.
+    do_not_email = models.BooleanField(default=False)

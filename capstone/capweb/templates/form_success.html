@@ -5,16 +5,18 @@
   {% stylesheet 'contact' %}
 {% endblock %}
 
-{% block title %}Contact{% endblock %}
-{% block meta_description %}Caselaw Access Project contact{% endblock %}
+{% block title %}{{ form_title|title }}{% endblock %}
+{% block meta_description %}Caselaw Access Project {{ form_title }}{% endblock %}
 {% block full_content_style %}bg-yellow{% endblock %}
 
 {% block main_content %}
   <br/>
   <br/>
-  <p>Thank you! We will be in touch shortly.</p>
+  <p>Thank you! {{ message }}</p>
   <p>
-    <a href="{% url "contact" %}" class="btn btn-secondary">Back</a>
+    {% if form_title == 'contact' %}
+      <a href="{% url "contact" %}" class="btn btn-secondary">Back</a>
+    {% endif %}
     <a href="/" class="btn btn-primary">Home</a>
   </p>
 {% endblock %}
