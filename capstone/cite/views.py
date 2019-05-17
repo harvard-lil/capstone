@@ -108,10 +108,11 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
 
     ### try to look up citation
     full_cite = "%s %s %s" % (volume_number, series_slug.replace('-', ' ').title(), page_number)
-    normalized_cite = re.sub(r'[^0-9a-z]', '', full_cite.lower())
-    citations = Citation.objects.filter(normalized_cite=normalized_cite)
     if case_id:
-        citations = citations.filter(case__id=case_id)
+        citations = Citation.objects.filter(case__id=case_id)
+    else:
+        normalized_cite = re.sub(r'[^0-9a-z]', '', full_cite.lower())
+        citations = Citation.objects.filter(normalized_cite=normalized_cite)
     citations = list(citations)
 
     ### handle case where we found a unique case with that citation

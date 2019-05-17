@@ -73,7 +73,7 @@ def test_cache_headers(case, request, settings,
 def test_cache_case_cite(client, case, settings):
     """ Single-case cite.case.law page should be cached only if case is whitelisted. """
     settings.SET_CACHE_CONTROL_HEADER = True
-    url = case.get_readable_url()
+    url = case.get_frontend_url()
 
     # whitelisted case is cached
     case.jurisdiction.whitelisted = True

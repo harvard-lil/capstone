@@ -28,7 +28,7 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter, Citation, CaseMetadata
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
@@ -46,6 +46,60 @@ def run_django(port="127.0.0.1:8000"):
 def test():
     """ Run tests with coverage report. """
     local("pytest --fail-on-template-vars --cov --cov-report=")
+
+@task(alias='pip-compile')
+def pip_compile(args=''):
+    """
+        We want to run `pip-compile --generate-hashes` so hash values of packages are locked.
+        This breaks packages installed from source; pip currently refuses to install source packages alongside hashed packages:
+            https://github.com/pypa/pip/issues/4995
+        pip will install packages from github in gz form, but those are currently rejected by pip-compile:
+            https://github.com/jazzband/pip-tools/issues/700
+        So we need to keep package requirements in requirements.in that look like this:
+            -e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
+        and convert them to https form with hashes once they're written to requirements.txt:
+            https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.tar.gz#egg=email-normalize --hash=sha256:530851e150781c5208f0b60a278a902a3e5c6b98cd31d21f86eba54335134766
+    """
+    import subprocess
+
+    # run pip-compile
+    # Use --allow-unsafe because pip --require-hashes needs all requirements to be pinned, including those like
+    # setuptools that pip-compile leaves out by default.
+    command = ['pip-compile', '--generate-hashes', '--allow-unsafe']+args.split()
+    print("Calling %s" % " ".join(command))
+    subprocess.check_call(command, env=dict(os.environ, CUSTOM_COMPILE_COMMAND='fab pip-compile'))
+    update_docker_image_version()
+
+@task
+def update_docker_image_version():
+    """
+        Update the image version in docker-compose.yml to contain a hash of all files that affect the Dockerfile build.
+    """
+    import re
+
+    # get hash of Dockerfile input files
+    paths = ['Dockerfile', 'requirements.txt', 'package-lock.json']
+    hasher = hashlib.sha256()
+    for path in paths:
+        hasher.update(Path(path).read_bytes())
+    hash = hasher.hexdigest()[:32]
+
+    # see if hash appears in docker-compose.yml
+    docker_compose_path = Path(settings.BASE_DIR, 'docker-compose.yml')
+    docker_compose = docker_compose_path.read_text()
+    if hash not in docker_compose:
+
+        # if hash not found, increment image version number, append new hash, and insert
+        current_version = re.findall(r'image: capstone:(.*)', docker_compose)[0]
+        digits = current_version.split('-')[0].split('.')
+        digits[-1] = str(int(digits[-1])+1)
+        new_version = "%s-%s" % (".".join(digits), hash)
+        docker_compose = docker_compose.replace(current_version, new_version)
+        docker_compose_path.write_text(docker_compose)
+        print("%s updated to version %s" % (docker_compose_path, new_version))
+        
+    else:
+        print("%s is already up to date" % docker_compose_path)
 
 @task
 def show_urls():
@@ -928,7 +982,7 @@ def make_pdf(volume_folder):
     scripts.make_pdf.make_pdf(volume_folder)
 
 @task
-def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=settings.REDACTION_KEY, save_failed=False):
+def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=settings.REDACTION_KEY, save_failed=False, catch_validation_errors=False):
     """
         Convert captar volumes to token stream zip files to be imported.
     """
@@ -965,7 +1019,7 @@ def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=setting
             secondary_path = None
         if not replace_existing and primary_path.name in existing_vols:
             continue
-        scripts.refactor_xml.volume_to_json.delay(barcode, str(primary_path), secondary_path, key=str(key), save_failed=save_failed)
+        scripts.refactor_xml.volume_to_json.delay(barcode, str(primary_path), secondary_path, key=str(key), save_failed=save_failed, catch_validation_errors=catch_validation_errors)
 
 @task
 def validate_token_stream(volume_barcode, key=settings.REDACTION_KEY):
@@ -995,3 +1049,38 @@ def load_token_streams(replace_existing=False):
 @task
 def refresh_case_body_cache():
     tasks.sync_case_body_cache_for_all_vols()
+
+@task
+def update_case_frontend_url(update_existing=False):
+    """
+        Update CaseMetadata.frontend_url value for all cases.
+    """
+    import itertools
+    from scripts.helpers import ordered_query_iterator
+
+    # get a set of all ambiguous_cites that appear more than once -- these should be linked by ID
+    cursor = django.db.connections['capdb'].cursor()
+    cursor.execute("SELECT DISTINCT a.cite FROM capdb_citation a, capdb_citation b WHERE a.cite=b.cite AND a.id<b.id")
+    ambiguous_cites = {row[0] for row in cursor.fetchall()}
+
+    # loop through all cites in batches of 10000
+    cites = Citation.objects.select_related('case').order_by('case_id', 'type', 'id').only('cite', 'case__reporter_id', 'case__volume_id')
+    if not update_existing:
+        cites = cites.filter(case__frontend_url=None)
+    cites = ordered_query_iterator(cites, chunk_size=10000)
+    last_id = None
+    for _ in tqdm(itertools.count()):  # infinite loop with progress bar
+        cite_batch = list(itertools.islice(cites, 10000))
+        if not cite_batch:
+            break
+
+        # set frontend_url for each distinct case in batch
+        case_batch = []
+        for cite in cite_batch:
+            if cite.case_id == last_id:
+                continue
+            last_id = cite.case_id
+            case = cite.case
+            case.frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=cite.cite in ambiguous_cites)
+            case_batch.append(case)
+        CaseMetadata.objects.bulk_update(case_batch, ['frontend_url'])

@@ -3,13 +3,14 @@ import re
 
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.reverse import reverse
+from rest_framework.reverse import reverse as api_reverse
 from rest_framework.serializers import ListSerializer
 
 from capapi.models import SiteLimits
 from capapi.renderers import HTMLRenderer, XMLRenderer
 from capdb import models
 from capdb.models import CaseBodyCache
+from capweb.helpers import reverse
 from scripts import helpers
 from scripts.generate_case_html import generate_html
 from .permissions import get_single_casebody_permissions, check_update_case_permissions
@@ -76,6 +77,7 @@ class CaseReporterSerializer(serializers.ModelSerializer):
 class CaseSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="casemetadata-detail", lookup_field="id")
+    frontend_url = serializers.SerializerMethodField()
     court = CourtSerializer(source='denormalized_court')
     jurisdiction = JurisdictionSerializer(source='denormalized_jurisdiction')
     citations = CitationSerializer(many=True)
@@ -88,6 +90,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
         fields = (
             'id',
             'url',
+            'frontend_url',
             'name',
             'name_abbreviation',
             'decision_date',
@@ -100,6 +103,12 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             'court',
             'jurisdiction',
         )
+
+    def get_frontend_url(self, obj):
+        if not hasattr(self, '_frontend_url_base'):
+            CaseSerializer._frontend_url_base = reverse('home', host='cite').rstrip('/')
+        return self._frontend_url_base + (obj.frontend_url or '')
+
 
 class CaseDocumentSerializer(DocumentSerializer):
 
@@ -394,7 +403,7 @@ class CaseExportSerializer(serializers.ModelSerializer):
         fields = ('id', 'download_url', 'file_name', 'export_date', 'public', 'filter_type', 'filter_id', 'body_format')
 
     def get_download_url(self, obj):
-        return reverse('caseexport-download', kwargs={'pk': obj.pk}, request=self.context.get('request'))
+        return api_reverse('caseexport-download', kwargs={'pk': obj.pk}, request=self.context.get('request'))
 
 
 # modified serializers for use by scripts/export.py

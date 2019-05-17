@@ -1,7 +1,4 @@
 {% extends "layouts/narrow.html" %}
 {% load pipeline %}
 {% block full_content_style %}bg-white{% endblock %}
-
-{% block extra_head %}
-  {% stylesheet 'registration' %}
-{% endblock %}
+{% block base_css %}{% stylesheet 'registration' %}{% endblock %}

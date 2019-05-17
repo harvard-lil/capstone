@@ -19,55 +19,46 @@
   <a class="btn btn-primary" href="{% url "bulk-docs" %}">See docs</a>
 {% endblock %}
 
-{% block sidebar_menu %}
-  <nav id="sidebar-menu" aria-label="table of contents">
-    <div class="content">
-      <ul class="list-group">
-        {% if exports.public %}
-          <li>
-            <a class="list-group-item" href="#public">
-              <span class="text">Public bulk data</span>
-            </a>
-          </li>
-        {% endif %}
-        <li>
-          <a class="list-group-item" href="#researcher">
-            <span class="text">Researcher downloads</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+{% block sidebar_menu_items %}
+  {% if exports.public %}
+    <li>
+      <a class="list-group-item" href="#public">
+        <span class="text">Public bulk data</span>
+      </a>
+    </li>
+  {% endif %}
+  <li>
+    <a class="list-group-item" href="#researcher">
+      <span class="text">Researcher downloads</span>
+    </a>
+  </li>
 {% endblock %}
+
 {% block main_content %}
   {# ==============> PUBLIC DATA <============== #}
   {% if exports.public %}
-    <div class="page-section">
-      <h2 class="subtitle" id="public">Public Bulk Data</h2>
-      {% include "includes/download_list.html" with zips=exports.public %}
-    </div>
+    <h2 class="subtitle" id="public">Public Bulk Data</h2>
+    {% include "includes/download_list.html" with zips=exports.public %}
   {% endif %}
   {# ==============> RESEARCHER DOWNLOADS <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="researcher">Researcher downloads</h2>
-    {% if exports.private %}
-      <p>
-        The following jurisdictions are available for download under your scholarly research agreement.
-        Click a link to download.
-      </p>
-      {% include "includes/download_list.html" with zips=exports.private %}
-    {% elif request.user.harvard_access and not request.user.harvard_ip %}
-      <p>You will have access to bulk data when accessing this page from a Harvard IP address.</p>
-    {% else %}
-      <p>
-        Bulk downloads of the remaining jurisdictions are freely available to research scholars.
-        To request access, please log in, visit your <a href="{% url "user-details" %}">account page</a>,
-        and click "Request unlimited research access."
-      </p>
-      <p>
-        For more information about our access limits, or details on requesting bulk data for commercial use, see the
-        <a href="{% url "api" %}">Access Limits section of our API documentation</a>.
-      </p>
-    {% endif %}
-  </div>
+  <h2 class="subtitle" id="researcher">Researcher downloads</h2>
+  {% if exports.private %}
+    <p>
+      The following jurisdictions are available for download under your scholarly research agreement.
+      Click a link to download.
+    </p>
+    {% include "includes/download_list.html" with zips=exports.private %}
+  {% elif request.user.harvard_access and not request.user.harvard_ip %}
+    <p>You will have access to bulk data when accessing this page from a Harvard IP address.</p>
+  {% else %}
+    <p>
+      Bulk downloads of the remaining jurisdictions are freely available to research scholars.
+      To request access, please log in, visit your <a href="{% url "user-details" %}">account page</a>,
+      and click "Request unlimited research access."
+    </p>
+    <p>
+      For more information about our access limits, or details on requesting bulk data for commercial use, see the
+      <a href="{% url "api" %}">Access Limits section of our API documentation</a>.
+    </p>
+  {% endif %}
 {% endblock %}

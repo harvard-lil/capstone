@@ -315,7 +315,14 @@ PIPELINE = {
                 'css/scss/view_metadata.scss',
             },
             'output_filename': 'view_metadata.css'
-        }
+        },
+        'ngrams': {
+            'source_filenames': {
+                'css/scss/ngrams.scss',
+            },
+            'output_filename': 'ngrams.css'
+        },
+
     },
     # These are not yet converted to vue/webpack:
     # 'JAVASCRIPT': {
@@ -557,7 +564,6 @@ FULL_TEXT_FEATURE = True
 NEW_RESEARCHER_FEATURE = True
 HARVARD_RESEARCHER_FEATURE = True
 RANGE_REQUEST_FEATURE = False
-CITE_SUBDOMAIN_FEATURE = False
 
 HARVARD_IP_RANGES = """
     12.0.48.0/20

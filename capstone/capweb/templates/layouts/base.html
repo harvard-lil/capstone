@@ -17,12 +17,12 @@
           {% endblock %}
         </div>
         <div class="section-intro">
-          <div class="content">{% block explainer %}{% endblock %}</div>
+          <div class="content">{% block explainer %}{% if explainer %}{{ explainer }}{% endif %}{% endblock %}</div>
         </div>
       </div>
       <div class="row {% block row_style %}{% endblock %}">
         {% block sidebar_menu %}{% endblock %}
-        <div class="main-content {% block main_content_style %}{% endblock %}">{% block main_content %}{% endblock %}</div>
+        <div class="main-content {% block main_content_style %}{% endblock %}">{% block main_content %}{% if main_content %}{{ main_content }}{% endif %}{% endblock %}</div>
       </div>
     </div>
   </div>

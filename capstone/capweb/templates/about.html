@@ -17,346 +17,319 @@
   digitized from the collection of the Harvard Law Library.
 {% endblock %}
 
-{% block sidebar_menu %}
-  <nav id="sidebar-menu" aria-label="table of contents">
-    <div class="content">
-      <ul class="list-group">
-        <li>
-          <a class="list-group-item" href="#data">
-            <span class="text">Our data</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#limits">
-            <span class="text">Scope limits</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#numbers">
-            <span class="text">By the numbers</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#digitization">
-            <span class="text">Digitization</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#data-quality">
-            <span class="text">Data quality</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#data-citation">
-            <span class="text">Data citation</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#usage">
-            <span class="text">Usage &amp; access</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#press">
-            <span class="text">Press</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#partners">
-            <span class="text">Partners</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#contributors">
-            <span class="text">Contributors</span>
-          </a>
-        </li>
-        <li>
-          <a class="list-group-item" href="#legal-help">
-            <span class="text">Getting Legal Help</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+{% block sidebar_menu_items %}
+  <li>
+    <a class="list-group-item" href="#data">
+      <span class="text">Our data</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#limits">
+      <span class="text">Scope limits</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#numbers">
+      <span class="text">By the numbers</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#digitization">
+      <span class="text">Digitization</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#data-quality">
+      <span class="text">Data quality</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#data-citation">
+      <span class="text">Data citation</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#usage">
+      <span class="text">Usage &amp; access</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#press">
+      <span class="text">Press</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#partners">
+      <span class="text">Partners</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#contributors">
+      <span class="text">Contributors</span>
+    </a>
+  </li>
+  <li>
+    <a class="list-group-item" href="#legal-help">
+      <span class="text">Getting Legal Help</span>
+    </a>
+  </li>
 {% endblock %}
 
 {% block main_content %}
   {# ==============> DATA <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="data">What data do we have?</h2>
-    <p>
-      CAP includes all official, book-published United States case law — every volume designated as an official
-      report of decisions by a court within the United States.
-    </p>
-    <p>
-      Our scope includes all state courts, federal courts, and territorial courts for American
-      Samoa, Dakota Territory, Guam, Native American Courts, Navajo Nation, and the Northern Mariana
-      Islands. Our earliest case is from 1658, and our most recent cases are from 2018.
-    </p>
-    <p>
-      Each volume has been converted into structured, case-level data broken out by majority and dissenting
-      opinion, with human-checked metadata for party names, docket number, citation, and date.
-    </p>
-    <p>
-      We also plan to share (but have not yet published) page images and page-level OCR data for all volumes.
-    </p>
-  </div>
+  <h2 class="subtitle" id="data">What data do we have?</h2>
+  <p>
+    CAP includes all official, book-published United States case law — every volume designated as an official
+    report of decisions by a court within the United States.
+  </p>
+  <p>
+    Our scope includes all state courts, federal courts, and territorial courts for American
+    Samoa, Dakota Territory, Guam, Native American Courts, Navajo Nation, and the Northern Mariana
+    Islands. Our earliest case is from 1658, and our most recent cases are from 2018.
+  </p>
+  <p>
+    Each volume has been converted into structured, case-level data broken out by majority and dissenting
+    opinion, with human-checked metadata for party names, docket number, citation, and date.
+  </p>
+  <p>
+    We also plan to share (but have not yet published) page images and page-level OCR data for all volumes.
+  </p>
 
   {# ==============> LIMITS <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="limits">Scope limits</h2>
-    <p>CAP does not include:</p>
-    <ul class="spacious-list bullets">
-      <li>
-        New cases as they are published. We currently include volumes published through
-        June, 2018, and may or may not include additional volumes in the future.
-      </li>
-      <li>
-        Cases not designated as officially published, such as most lower court decisions.
-      </li>
-      <li>
-        Non-published trial documents such as party filings, orders, and exhibits.
-      </li>
-      <li>
-        Parallel versions of cases from regional reporters, unless those cases were
-        designated by a court as official.
-      </li>
-      <li>
-        Cases officially published in digital form, such as recent cases from Illinois and Arkansas.
-      </li>
-    </ul>
-    <p>
-      Cases published after 1922 do not include headnotes.
-    </p>
-  </div>
+  <h2 class="subtitle" id="limits">Scope limits</h2>
+  <p>CAP does not include:</p>
+  <ul class="spacious-list bullets">
+    <li>
+      New cases as they are published. We currently include volumes published through
+      June, 2018, and may or may not include additional volumes in the future.
+    </li>
+    <li>
+      Cases not designated as officially published, such as most lower court decisions.
+    </li>
+    <li>
+      Non-published trial documents such as party filings, orders, and exhibits.
+    </li>
+    <li>
+      Parallel versions of cases from regional reporters, unless those cases were
+      designated by a court as official.
+    </li>
+    <li>
+      Cases officially published in digital form, such as recent cases from Illinois and Arkansas.
+    </li>
+  </ul>
+  <p>
+    Cases published after 1922 do not include headnotes.
+  </p>
 
   {# ==============> NUMBERS <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="numbers">By the numbers</h2>
-    <p>
-      Here are some tsv-formatted spreadsheets with specific counts from our collection, and links to view
-      those cases in the API:
-    </p>
-    <ul class="spacious-list">
-      <li>
-        <a href="{% static "downloads/cases_by_reporter.tsv" %}">Case Count by Reporter Series</a>
-      </li>
-      <li>
-        <a href="{% static "downloads/cases_by_jurisdiction.tsv" %}">Case Count by Jurisdiction</a>
-      </li>
-      <li>
-        <a href="{% static "downloads/cases_by_decision_date.tsv" %}">Case Count by Decision Date</a>
-      </li>
-    </ul>
-  </div>
+  <h2 class="subtitle" id="numbers">By the numbers</h2>
+  <p>
+    Here are some tsv-formatted spreadsheets with specific counts from our collection, and links to view
+    those cases in the API:
+  </p>
+  <ul class="spacious-list">
+    <li>
+      <a href="{% static "downloads/cases_by_reporter.tsv" %}">Case Count by Reporter Series</a>
+    </li>
+    <li>
+      <a href="{% static "downloads/cases_by_jurisdiction.tsv" %}">Case Count by Jurisdiction</a>
+    </li>
+    <li>
+      <a href="{% static "downloads/cases_by_decision_date.tsv" %}">Case Count by Decision Date</a>
+    </li>
+  </ul>
+
   {# ==============> DIGITIZATION PROCESS <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="digitization">Digitization Process</h2>
-    <p>
-      We created this data by digitizing roughly 40 million pages of court decisions contained in roughly 40,000 bound
-      volumes owned by the Harvard Law School Library.
-    </p>
-    <p>
-      Members of our team created metadata for each volume, including a unique barcode, reporter name, title,
-      jurisdiction, publication date and other volume-level information. We then used a high-speed scanner to produce
-      JP2 and TIF images of every page. A vendor then used OCR to extract the text of every case, creating case-level
-      XML files. Key metadata fields, like case name, citation, court and decision date, were corrected for accuracy,
-      while the text of each case was left as raw OCR output. In addition, for cases from volumes not yet in the public
-      domain, our vendor redacted any headnotes.
-    </p>
-  </div>
+  <h2 class="subtitle" id="digitization">Digitization Process</h2>
+  <p>
+    We created this data by digitizing roughly 40 million pages of court decisions contained in roughly 40,000 bound
+    volumes owned by the Harvard Law School Library.
+  </p>
+  <p>
+    Members of our team created metadata for each volume, including a unique barcode, reporter name, title,
+    jurisdiction, publication date and other volume-level information. We then used a high-speed scanner to produce
+    JP2 and TIF images of every page. A vendor then used OCR to extract the text of every case, creating case-level
+    XML files. Key metadata fields, like case name, citation, court and decision date, were corrected for accuracy,
+    while the text of each case was left as raw OCR output. In addition, for cases from volumes not yet in the public
+    domain, our vendor redacted any headnotes.
+  </p>
+
   {# ==============> DATA QUALITY <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="data-quality">Data quality</h2>
-    <p>
-      Our data inevitably includes countless errors as part of the digitization process.
-      <span class="highlighted">The public launch of this project is only the start of discovering
-        errors, and we hope you will help us in finding and fixing them.</span>
-    </p>
-    <p>
-      Some parts of our data are higher quality than others. Case metadata, such as the party names, docket
-      number, citation, and date, has received human review. Case text and general head matter has been
-      generated by machine OCR and has not received human review.</p>
-    <p>
-      You can report errors of all kinds at
-      <a href="https://github.com/harvard-lil/capstone/labels/Data">our Github issue tracker</a>, where you
-      can also see currently known issues. We particularly welcome metadata corrections, feature requests,
-      and suggestions for large-scale algorithmic changes. We are not currently able to process individual
-      OCR corrections, but welcome general suggestions on the OCR correction process.
-    </p>
-  </div>
+  <h2 class="subtitle" id="data-quality">Data quality</h2>
+  <p>
+    Our data inevitably includes countless errors as part of the digitization process.
+    <span class="highlighted">The public launch of this project is only the start of discovering
+      errors, and we hope you will help us in finding and fixing them.</span>
+  </p>
+  <p>
+    Some parts of our data are higher quality than others. Case metadata, such as the party names, docket
+    number, citation, and date, has received human review. Case text and general head matter has been
+    generated by machine OCR and has not received human review.</p>
+  <p>
+    You can report errors of all kinds at
+    <a href="https://github.com/harvard-lil/capstone/labels/Data">our Github issue tracker</a>, where you
+    can also see currently known issues. We particularly welcome metadata corrections, feature requests,
+    and suggestions for large-scale algorithmic changes. We are not currently able to process individual
+    OCR corrections, but welcome general suggestions on the OCR correction process.
+  </p>
 
   {# ==============> DATA CITATION <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="data-citation">Data citation</h2>
-    <p>
-      Data made available through the Caselaw Access Project API and bulk download service is citable.
-      View our suggested citation in these standard formats:
-    </p>
-    <p>
-      <span class="highlighted">APA</span>
-      <br/>
-      <span class="font-italic">Caselaw Access Project.</span> (2018). Retrieved [date], from [url].
-    </p>
-    <p>
-      <span class="highlighted">MLA</span>
-      <br/>
-      The President and Fellows of Harvard University. "Caselaw Access Project." 2018, [url].
-    </p>
-    <p>
-      <span class="highlighted">Chicago / Turabian</span>
-      <br/>
-      Caselaw Access Project. "Caselaw Access Project." Last modified [date], [url].
-    </p>
-    <p>
-      Have you used Caselaw Access Project data in your research?
-      <a class="contact_email" href="mailto:{{ email }}">Tell us about it.</a>
-    </p>
-  </div>
+  <h2 class="subtitle" id="data-citation">Data citation</h2>
+  <p>
+    Data made available through the Caselaw Access Project API and bulk download service is citable.
+    View our suggested citation in these standard formats:
+  </p>
+  <p>
+    <span class="highlighted">APA</span>
+    <br/>
+    <span class="font-italic">Caselaw Access Project.</span> (2018). Retrieved [date], from [url].
+  </p>
+  <p>
+    <span class="highlighted">MLA</span>
+    <br/>
+    The President and Fellows of Harvard University. "Caselaw Access Project." 2018, [url].
+  </p>
+  <p>
+    <span class="highlighted">Chicago / Turabian</span>
+    <br/>
+    Caselaw Access Project. "Caselaw Access Project." Last modified [date], [url].
+  </p>
+  <p>
+    Have you used Caselaw Access Project data in your research?
+    <a class="contact_email" href="mailto:{{ email }}">Tell us about it.</a>
+  </p>
 
   {# ==============> USAGE <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="usage">Usage &amp; access</h2>
-    <p>
-      <span class="highlighted">The CAP data is free for the public to use and access.</span>
-    </p>
-    <p>
-      Case metadata, such as the case name, citation, court, date, etc.,
-      is freely and openly accessible without limitation.
-      Full case text can be freely viewed or downloaded but
-      you must register for an account to do so, and currently you may
-      view or download no more than 500 cases per day. In addition,
-      research scholars can qualify for bulk data access by agreeing to certain use and redistribution restrictions.
-      You can request a bulk access agreement by <a href="{% url "register" %}">creating an account</a>
-      and then <a href="{% url "user-details" %}">visiting your account page</a>.
-    </p>
-    <p>
-      Access limitations on full text and bulk data are a component of Harvard’s
-      collaboration agreement with Ravel Law, Inc. (now part of Lexis-Nexis).
-      These limitations will end, at the latest, in March of 2024.
-      In addition, these limitations apply only to cases from
-      jurisdictions that continue to publish their official case law in print form.
-      Once a jurisdiction transitions from print-first publishing to digital-first publishing,
-      these limitations cease. Thus far, Illinois and Arkansas have made this important and positive
-      shift and, as a result, all historical cases from these jurisdictions are freely available to the public
-      without restriction. We hope many other jurisdictions will follow their example soon.
-    </p>
-  </div>
+  <h2 class="subtitle" id="usage">Usage &amp; access</h2>
+  <p>
+    <span class="highlighted">The CAP data is free for the public to use and access.</span>
+  </p>
+  <p>
+    Case metadata, such as the case name, citation, court, date, etc.,
+    is freely and openly accessible without limitation.
+    Full case text can be freely viewed or downloaded but
+    you must register for an account to do so, and currently you may
+    view or download no more than 500 cases per day. In addition,
+    research scholars can qualify for bulk data access by agreeing to certain use and redistribution restrictions.
+    You can request a bulk access agreement by <a href="{% url "register" %}">creating an account</a>
+    and then <a href="{% url "user-details" %}">visiting your account page</a>.
+  </p>
+  <p>
+    Access limitations on full text and bulk data are a component of Harvard’s
+    collaboration agreement with Ravel Law, Inc. (now part of Lexis-Nexis).
+    These limitations will end, at the latest, in March of 2024.
+    In addition, these limitations apply only to cases from
+    jurisdictions that continue to publish their official case law in print form.
+    Once a jurisdiction transitions from print-first publishing to digital-first publishing,
+    these limitations cease. Thus far, Illinois and Arkansas have made this important and positive
+    shift and, as a result, all historical cases from these jurisdictions are freely available to the public
+    without restriction. We hope many other jurisdictions will follow their example soon.
+  </p>
 
   {# ==============> PRESS <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="press">Press</h2>
-    <ul>
-      {% for news_item in news %}
-        <li class="item-set">
-          <p class="item-title">
-            <a href="{{ news_item.url }}">{{ news_item.title }}</a>
-          </p>
-          <span class="item-origin">
-              {{ news_item.publication }}
-            </span>
-          <span class="item-date">
-              {{ news_item.date }}
-            </span>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
+  <h2 class="subtitle" id="press">Press</h2>
+  <ul>
+    {% for news_item in news %}
+      <li class="item-set">
+        <p class="item-title">
+          <a href="{{ news_item.url }}">{{ news_item.title }}</a>
+        </p>
+        <span class="item-origin">
+            {{ news_item.publication }}
+          </span>
+        <span class="item-date">
+            {{ news_item.date }}
+          </span>
+      </li>
+    {% endfor %}
+  </ul>
 
   {# ==============> Friends & Partners <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="partners">Friends & Partners</h2>
+  <h2 class="subtitle" id="partners">Friends & Partners</h2>
 
-    <ul>
-      <li class="item-set">
-        The Caselaw Access Project is a <a class="item-name" href="https://lil.law.harvard.edu/">Harvard Law School
-        Library Innovation Lab</a> Project.
-      </li>
-      <li class="item-set">
-        LIL is part of the <a class="item-name" href="https://law.harvard.edu/library">
-        Harvard Law School Library.
-      </a>
-      </li>
+  <ul>
+    <li class="item-set">
+      The Caselaw Access Project is a <a class="item-name" href="https://lil.law.harvard.edu/">Harvard Law School
+      Library Innovation Lab</a> Project.
+    </li>
+    <li class="item-set">
+      LIL is part of the <a class="item-name" href="https://law.harvard.edu/library">
+      Harvard Law School Library.
+    </a>
+    </li>
 
-      <li class="item-set">
-        <a class="item-name" href="https://cyber.law.harvard.edu">
-          Berkman-Klein Center
-        </a> cooperated with LIL on the Caselaw Access Project.
-      </li>
+    <li class="item-set">
+      <a class="item-name" href="https://cyber.law.harvard.edu">
+        Berkman-Klein Center
+      </a> cooperated with LIL on the Caselaw Access Project.
+    </li>
 
-      <li class="item-set">
-        <a class="item-name" href="https://www.ravellaw.com/">
-          Ravel Law
-        </a> has partnered with the Harvard Law Library and LIL since the beginning of the Caselaw Access Project.
-        Ravel funded the digitization effort and now offers free public access to the entire corpus through their
-        <a href="https://home.ravellaw.com">search interface</a> and their
-        <a href="https://home.ravellaw.com/api">non-commercial API</a>.
-      </li>
+    <li class="item-set">
+      <a class="item-name" href="https://www.ravellaw.com/">
+        Ravel Law
+      </a> has partnered with the Harvard Law Library and LIL since the beginning of the Caselaw Access Project.
+      Ravel funded the digitization effort and now offers free public access to the entire corpus through their
+      <a href="https://home.ravellaw.com">search interface</a> and their
+      <a href="https://home.ravellaw.com/api">non-commercial API</a>.
+    </li>
 
-      <li class="item-set">
-        Carl Jaeckel of <a class="item-name" href="https://www.classaction.org/">ClassAction.org</a> graciously donated
-        the case.law domain name.
-      </li>
+    <li class="item-set">
+      Carl Jaeckel of <a class="item-name" href="https://www.classaction.org/">ClassAction.org</a> graciously donated
+      the case.law domain name.
+    </li>
 
-      <li class="item-set">
-        <a class="item-name" href="https://www.cloudflare.com/">Cloudflare</a> has generously provided LIL with network
-        services for case.law.
-      </li>
-    </ul>
-  </div>
+    <li class="item-set">
+      <a class="item-name" href="https://www.cloudflare.com/">Cloudflare</a> has generously provided LIL with network
+      services for case.law.
+    </li>
+  </ul>
 
   {# ==============> CONTRIBUTORS <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="contributors">Contributors</h2>
+  <h2 class="subtitle" id="contributors">Contributors</h2>
 
-    <ul>
-      {% for key,contributor in contributors.items %}
-        {% if contributor.name %}
-          <li class="item-set">
-                <span class="item-name">
-                  {% if contributor.hash %}
-                    <a href="https://lil.law.harvard.edu/about/#{{ contributor.hash }}">
-                      {{ contributor.name }}
-                    </a>
-                  {% else %}
+  <ul>
+    {% for key,contributor in contributors.items %}
+      {% if contributor.name %}
+        <li class="item-set">
+              <span class="item-name">
+                {% if contributor.hash %}
+                  <a href="https://lil.law.harvard.edu/about/#{{ contributor.hash }}">
                     {{ contributor.name }}
-                  {% endif %}
-                </span>
-            <span class="color-red">
-                  &rarr;
-                </span>
-            <span>
-                  {{ contributor.role }}
-                </span>
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
-  </div>
-
+                  </a>
+                {% else %}
+                  {{ contributor.name }}
+                {% endif %}
+              </span>
+          <span class="color-red">
+                &rarr;
+              </span>
+          <span>
+                {{ contributor.role }}
+              </span>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
 
   {# ==============> GETTING LEGAL HELP <============== #}
-  <div class="page-section">
-    <h2 class="subtitle" id="legal-help">Getting Legal Help</h2>
-    <p>
-      The Caselaw Access Project team cannot help with personal legal research problems or legal representation.
-      Our data is valuable for scholarship, but it is a work in progress and is not kept up to date. Please do not rely
-      on our data set to solve personal legal problems.
-    </p>
-    <p>
-      <strong>Finding a lawyer:</strong> see the list of links on the Harvard Law School Library's page
-      "<a href="https://asklib.law.harvard.edu/faq/115265">Where can I get legal advice?</a>"
-    </p>
-    <p>
-      <strong>Alternate databases:</strong> if you need to conduct up-to-date research for use in a legal proceeding,
-      consider <a href="https://guides.library.harvard.edu/alternatelegaldatabases">one of these alternate databases</a>.
-    </p>
-    <p>
-      <strong>Learning to conduct legal research:</strong> If you have access to a
-      <a href="http://www.washlaw.edu/statecourtcounty/">public law library</a>, its librarians should
-      be able to help you learn legal research skills. The Harvard Law School Library Reference Desk may also be able
-      to offer assistance through their <a href="https://asklib.law.harvard.edu/">Ask a Librarian</a> service.
-    </p>
-  </div>
+  <h2 class="subtitle" id="legal-help">Getting Legal Help</h2>
+  <p>
+    The Caselaw Access Project team cannot help with personal legal research problems or legal representation.
+    Our data is valuable for scholarship, but it is a work in progress and is not kept up to date. Please do not rely
+    on our data set to solve personal legal problems.
+  </p>
+  <p>
+    <strong>Finding a lawyer:</strong> see the list of links on the Harvard Law School Library's page
+    "<a href="https://asklib.law.harvard.edu/faq/115265">Where can I get legal advice?</a>"
+  </p>
+  <p>
+    <strong>Alternate databases:</strong> if you need to conduct up-to-date research for use in a legal proceeding,
+    consider <a href="https://guides.library.harvard.edu/alternatelegaldatabases">one of these alternate databases</a>.
+  </p>
+  <p>
+    <strong>Learning to conduct legal research:</strong> If you have access to a
+    <a href="http://www.washlaw.edu/statecourtcounty/">public law library</a>, its librarians should
+    be able to help you learn legal research skills. The Harvard Law School Library Reference Desk may also be able
+    to offer assistance through their <a href="https://asklib.law.harvard.edu/">Ask a Librarian</a> service.
+  </p>
 {% endblock %}

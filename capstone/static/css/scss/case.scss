@@ -1,5 +1,17 @@
 @import "base.scss";
 
+.case {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  section {
+    // for .page-label:before absolute positioning
+    position: relative;
+  }
+}
+
 section, article {
   @include make-col(11);
   @extend .col-centered;
@@ -240,5 +252,21 @@ section.head-matter {
   // highlight selected footnote
   &:target {
     background-color: #FFF1F8;
+  }
+}
+
+.page-label{
+  color: $color-medium-gray;
+  font-size: .8em;
+  padding: .4em;
+
+  &:before {
+    display: inline-block;
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    transform: translateX(-100%);
+    padding-right: 1em;
+    font-size: 1.2rem;
   }
 }

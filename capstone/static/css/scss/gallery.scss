@@ -1,5 +1,4 @@
 @import 'variables';
-@import 'base.scss';
 @import 'footer/magenta';
 
 @include media-breakpoint-down(md) {
@@ -11,7 +10,6 @@
 }
 
 .subtitle.simple-subtitle {
-  margin-top: 2em;
   &:before {
     content: "";
     margin: 0;
@@ -25,7 +23,7 @@
 }
 
 .page-section {
-  padding-bottom: 3rem;
+  padding-bottom: 6rem;
   &:last-child {
     border-bottom: 0;
     padding-bottom: 0;
@@ -52,7 +50,6 @@
     @include make-col(3);
     .main-img {
       max-width: 80%;
-      margin-top: 50%;
     }
   }
   @include media-breakpoint-down(md) {

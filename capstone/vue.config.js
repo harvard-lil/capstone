@@ -40,6 +40,7 @@ let vueConfig = {
     limericks: 'static/js/generate_limericks.js',
     witchcraft: 'static/js/witchcraft.js',
     search: 'static/js/search.js',
+    ngrams: 'static/js/ngrams.js',
   },
 
   configureWebpack: {
@@ -55,8 +56,12 @@ let vueConfig = {
   },
 
   devServer: {
+    public: 'localhost:8080',
     host: '127.0.0.1',
     headers: { 'Access-Control-Allow-Origin': '*' },
+    allowedHosts: [
+        '.case.test'
+    ]
   },
 
   // static assets are hashed by whitenoise

@@ -17,19 +17,20 @@ def iter_pars(opinions):
 # resulting empty tags will be stripped during rendering
 not_redacted_tokens = {'font', 'bracketnum', 'footnotemark'}
 
-def filter_tokens(tokens, tags, redacted=True):
+def filter_tokens(block, tags, redacted=True):
     """
         Filter a list of tokens and yield only text strings and tags included in `tags`. If redacted=True, filter out
         everything between ['redact'] tags. Example:
         >>> list(filter_tokens(['text', ['foo'], ['bar'], ['redact'], 'text2', ['redact']], {'foo'}))
         ['text', ['foo']]
     """
-    if tags is None:
-        yield from tokens
+    tokens = block.get('tokens')
+    if not tokens:
         return
+    all_redacted = block.get('redacted', False)
     redacted_span = False
     for token in tokens:
-        if redacted and redacted_span:
+        if redacted and (all_redacted or redacted_span):
             if type(token) != str:
                 if token[0] == '/redact':
                     redacted_span = False
@@ -54,7 +55,7 @@ def remove_empty_tags(tree, ignore_tags=set()):
             >>> etree.tostring(tree)
             b'<p><a/></p>'
     """
-    for el in tree.iter():
+    for el in tree.iterdescendants():
         while True:
             if el.tag in ignore_tags or el.text or len(el):
                 break
@@ -138,7 +139,7 @@ class VolumeRenderer:
                 ignore_strings = False
                 string_el = None
                 line_el = None
-                for token in filter_tokens(block['tokens'], self.alto_block_token_filter, redacted):
+                for token in filter_tokens(block, self.alto_block_token_filter, redacted):
                     if type(token) == str:
                         if not ignore_strings and string_el is not None:
                             # ignore_strings will be true if we are in an [edit] block, and are ignoring the replacement text
@@ -271,7 +272,7 @@ class VolumeRenderer:
                 block = self.blocks_by_id[block_id]
                 if block.get("redacted"):
                     continue
-                words.extend(filter_tokens(block.get('tokens', []), {}))
+                words.extend(filter_tokens(block, {}))
             pars.append("".join(words))
         return "\n\n".join(pars)
 
@@ -397,6 +398,7 @@ class VolumeRenderer:
                 continue
             handler = sax.ElementTreeContentHandler()
             tag_stack = []
+            open_tags = set()
 
             # opening tag
             if self.format == 'xml':
@@ -410,13 +412,17 @@ class VolumeRenderer:
 
                 tag_stack.append((handler.startElement, (par['class'], par_attrs,)))
             else:
-                tag_stack.append((handler.startElement, ('p', {'class': par['class'], 'id': par['id']},)))
+                if par['class'] == 'p':
+                    tag = ('p', {'id': par['id']},)
+                elif par['class'] == 'blockquote':
+                    tag = ('blockquote', {'id': par['id']},)
+                else:
+                    tag = ('p', {'class': par['class'], 'id': par['id']},)
+                tag_stack.append((handler.startElement, tag))
 
             # write each block in the paragraph
             for block_id in par['block_ids']:
                 block = self.blocks_by_id[block_id]
-                if self.redacted and block.get('redacted'):
-                    continue
 
                 # write <page-number> or <a class='page-label'> between blocks
                 if not self.original_xml:
@@ -434,7 +440,7 @@ class VolumeRenderer:
                         last_page_label = page_label
 
                 # write <img>
-                if block.get('format') == 'image':
+                if block.get('format') == 'image' and not (self.redacted and block.get('redacted')):
                     if self.format == 'xml':
                         tag_stack.append((handler.characters, ('[[Image here]]',)))
                     else:
@@ -444,7 +450,7 @@ class VolumeRenderer:
                 # write tokens
                 else:
                     open_font_tags = []
-                    for token in filter_tokens(block.get('tokens'), self.html_token_filter, self.redacted):
+                    for token in filter_tokens(block, self.html_token_filter, self.redacted):
 
                         # text token
                         if type(token) == str:
@@ -488,9 +494,14 @@ class VolumeRenderer:
                                     attrs['id'] = 'ref_' + ref
                                 with self.wrap_font_tags(handler, tag_stack, open_font_tags):
                                     tag_stack.append((handler.startElement, ('a', attrs,)))
+                            open_tags.add(token_name)
                         elif token_name == '/footnotemark' or token_name == '/bracketnum':
-                            with self.wrap_font_tags(handler, tag_stack, open_font_tags):
-                                tag_stack.append((handler.endElement, (token_name[1:] if self.format == 'xml' else 'a',)))
+                            # we could hit a close tag without an open tag, if the open tag was in a previous redacted block
+                            tag_name = token_name[1:]
+                            if tag_name in open_tags:
+                                with self.wrap_font_tags(handler, tag_stack, open_font_tags):
+                                    tag_stack.append((handler.endElement, (token_name[1:] if self.format == 'xml' else 'a',)))
+                                open_tags.remove(tag_name)
 
             # run all of our commands, like "handler.startElement(*args)", to actually build the xml tree
             for method, args in tag_stack:
@@ -500,7 +511,9 @@ class VolumeRenderer:
             par_el = handler._root
             remove_empty_tags(par_el, ignore_tags={'img'})
 
-            parent_el.append(handler._root)
+            # append element if not empty (contents not redacted)
+            if par_el.text or len(par_el):
+                parent_el.append(par_el)
 
         return last_page_label
 

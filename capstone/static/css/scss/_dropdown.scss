@@ -19,7 +19,7 @@
   z-index: 1;
 }
 
-.dropdown.show .dropdown-menu {
+.dropdown.show .dropdown-menu, .dropdown-menu.show {
   display: block;
   @include media-breakpoint-down(md) {
     position: relative;

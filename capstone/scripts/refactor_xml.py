@@ -8,7 +8,7 @@ import tempfile
 from base64 import b64encode
 from collections import defaultdict
 from io import BytesIO
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_BZIP2
 from pathlib import Path
 from PIL import Image
 from celery import shared_task
@@ -53,6 +53,15 @@ def scan_dupe_paragraphs():
                         dupes.append([path, str(par)])
     Path('test_data/zips/duplicate_pars.json').write_text(json.dumps(dupes, indent=4))
 
+def dump_image(storage, image_name):
+    """ Export an image for debugging, e.g. 32044066192519_00115_0.tif """
+    in_path = Path('images', image_name)
+    out_path = Path('test_data/zips/dump', in_path)
+    out_path.parent.mkdir(exist_ok=True, parents=True)
+    print("Dumping %s" % out_path)
+    out_path.write_bytes(storage.contents(in_path, 'rb'))
+
+
 def dump_text(path, text):
     path = Path('test_data/zips/dump', path)
     print("Dumping %s" % path)
@@ -70,7 +79,11 @@ def dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, un
         for block_id in par['block_ids']:
             page = page_objs_by_block_id[block_id]
             case_pages[page['id']] = page
-    to_dump = [(unredacted_storage, case['path'])] + [(unredacted_storage, page['path']) for page in case_pages.values()]
+    case_pages = sorted(case_pages.values(), key=lambda page: page['path'])
+    to_dump = (
+            [(unredacted_storage, case['path'])] +
+            [(unredacted_storage, page['path']) for page in case_pages]
+    )
     if redacted_storage:
         to_dump += [(redacted_storage, path.replace('unredacted', 'redacted')) for _, path in to_dump]
     for storage, path in to_dump:
@@ -78,6 +91,8 @@ def dump_files_for_case(volume_barcode, old_casebody, new_casebody, redacted, un
         out_path = Path(path)
         out_path.parent.mkdir(exist_ok=True, parents=True)
         dump_text(out_path, storage.contents(path))
+    for page in case_pages:
+        dump_image(unredacted_storage, page['file_name'])
     dump_text("%s-old-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted'), old_casebody)
     dump_text("%s-new-case-%s.xml" % (volume_barcode, 'redacted' if redacted else 'unredacted'), new_casebody)
     dump_text("%s-case-structure.json" % volume_barcode, json.dumps(renderer.hydrate_opinions(case['opinions'], blocks_by_id), indent=2))
@@ -97,15 +112,48 @@ def dump_files_for_page(volume_barcode, redacted, alto_xml_output, original_alto
 
 # Some different ways to exclude files from validation, or patch their contents:
 skip_redacted_validation = {
-    # For these volumes the redacted version was processed years before the unredacted version, so some files don't match:
-    '32044038693412', '32044049198187', '32044057285991',
-    # redacted version reprocessed in December 2015, doesn't match earlier unredacted version
-    '32044060521416',
+    # Footnote marks on the <docketnumber> were not properly redacted in these Kansas volumes
+    # Example of individual fixes, which I gave up on:
+    # "alto/32044073040222_redacted_ALTO_00146_1.xml.gz": [('[ID="SP_292.6.1.4"],[ID="ST_292.6.1.5"]', 'delete')],
+    # "alto/32044073040222_redacted_ALTO_00256_0.xml.gz": [('[ID="SP_511.6.1.4"],[ID="ST_511.6.1.5"]', 'delete')],
+    # "alto/32044073040222_redacted_ALTO_00377_0.xml.gz": [('[ID="SP_753.6.1.4"],[ID="ST_753.6.1.5"]', 'delete')],
+    '32044073040222','32044078453420','32044132275520','32044142600170',
 }
 skip_validation_files = {}
-special_text_replacements = {}
+special_text_replacements = {
+    # footnotemark inconsistently added to unredacted casemets because ’ identified as 1
+    "casemets/32044066192519_unredacted_CASEMETS_0019.xml.gz": [('<footnotemark>1</footnotemark>', '’')],
+    "casemets/32044066192519_redacted_CASEMETS_0019.xml.gz": [('Emporia, Kansas. At the instant', 'Emporia, Kansas.’ At the instant')],
+    # extra hyphen in redacted case but not redacted alto
+    "casemets/32044078515160_redacted_CASEMETS_0036.xml.gz": [('­There was evidence', 'There was evidence')],
+    "casemets/32044078515160_redacted_CASEMETS_0184.xml.gz": [('­-In accordance with the authority', '-In accordance with the authority')],
+    "casemets/32044078639846_redacted_CASEMETS_0260.xml.gz": [('­VI. On the subject', 'VI. On the subject')],
+    "casemets/32044078639762_redacted_CASEMETS_0057.xml.gz": [('­IV. Defendant contends that the', 'IV. Defendant contends that the')],
+    "casemets/32044078493681_redacted_CASEMETS_0030.xml.gz": [('­But even so, the appellee', 'But even so, the appellee')],
+    "casemets/32044078639804_redacted_CASEMETS_0002.xml.gz": [('­Defendant moved to strike', 'Defendant moved to strike')],
+    "casemets/32044078499704_redacted_CASEMETS_0070.xml.gz": [('­• We find this proceeding', '• We find this proceeding')],
+    "casemets/32044078566742_redacted_CASEMETS_0016.xml.gz": [('­In its motion for a rehearing', 'In its motion for a rehearing')],
+    "casemets/32044078680782_redacted_CASEMETS_0042.xml.gz": [('­-In view of deficiencies of', '-In view of deficiencies of')],
+    "casemets/32044078639879_redacted_CASEMETS_0002.xml.gz": [('­Hence this case should be', 'Hence this case should be')],
+    "casemets/32044078565546_redacted_CASEMETS_0040.xml.gz": [('­The evidence is undisputed', 'The evidence is undisputed')],
+    "casemets/32044078639838_redacted_CASEMETS_0128.xml.gz": [('­II. The second point made', 'II. The second point made')],
+    "casemets/32044078499399_redacted_CASEMETS_0023.xml.gz": [('­-As the rule now stands', '-As the rule now stands')],
+    "casemets/32044078498003_redacted_CASEMETS_0056.xml.gz": [('­-The amount of evidence required', '-The amount of evidence required')],
+    "casemets/32044078515210_redacted_CASEMETS_0103.xml.gz": [('­-It will be observed that', '-It will be observed that')],
+    # case is missing an alto block reference
+    "casemets/32044133498154_unredacted_CASEMETS_0058.xml.gz": [(
+        '<area BEGIN="BL_456.1" BETYPE="IDREF" FILEID="alto_00228_1"/>',
+        '<area BEGIN="BL_455.17" BETYPE="IDREF" FILEID="alto_00228_0"/><area BEGIN="BL_456.1" BETYPE="IDREF" FILEID="alto_00228_1"/>',
+    )],
+}
 special_cases = {
-    # "casemets/32044038665188_redacted_CASEMETS_0147.xml.gz": [('[id="Aqs"]', 'replace_text', ('knowl­ William', 'knowl­William'))],
+    # footnotemark inconsistently added to unredacted casemets because ’ identified as 1
+    "alto/32044066192519_unredacted_ALTO_00115_0.xml.gz": [('[ID="ST_229.1.3.3"]', 'attrs', {"CONTENT": "Kansas.’", "CC": "00000000"})],
+    "alto/32044066192519_redacted_ALTO_00115_0.xml.gz": [('[ID="ST_229.1.3.3"]', 'attrs', {"CONTENT": "Kansas.’", "CC": "00000000"})],
+    # footnotemark should have been redacted from ALTO, as it is in casemets
+    # (could possibly detect automatically by checking redacted="true" value on related footnote)
+    "alto/32044078581188_redacted_ALTO_00159_0.xml.gz": [('[ID="ST_317.4.16.3"],[ID="SP_317.4.16.4"]', 'delete')],
+    "alto/32044078581204_redacted_ALTO_00112_1.xml.gz": [('[ID="ST_224.1.13.7"],[ID="SP_224.1.13.8"]', 'delete')],
 }
 
 def apply_special_cases(path, parsed):
@@ -118,9 +166,11 @@ def apply_special_cases(path, parsed):
             if op == 'text':
                 el.text(args[0])
             elif op == 'replace_text':
-                el.text(el.text().replace(*args[0]))
+                el.text(el.text().replace(*args))
             elif op == 'delete':
                 el.remove()
+            elif op == 'attrs':
+                el[0].attrib.update(args[0])
     return parsed
 
 def apply_text_replacements(path, text, text_replacements):
@@ -226,21 +276,36 @@ def insert_tags(block, i, offset, new_tokens):
     block[i:i + 1] = to_insert
     return len(to_insert) - 1
 
+# use this special constant (a unicode reserved codepoint) to indicate where <footnotemark> and <bracketnum> tags
+# appear in the ALTO and case files, to help with lining up diffs.
+tag_marker = '\uE000'
+tag_name_lookup = {
+    tag_marker: 'bracketnum',
+    chr(ord(tag_marker)+1): '/bracketnum',
+    chr(ord(tag_marker)+2): 'footnotemark',
+    chr(ord(tag_marker)+3): '/footnotemark',
+}
+tag_marker_lookup = {v:k for k,v in tag_name_lookup.items()}
+tag_marker_re = re.compile(r'([%s])' % "".join(tag_name_lookup.keys()))
+
 def index_blocks(blocks):
     """
         Given a list of blocks, return:
             (a) the combined text from the blocks
             (b) the offsets mapping from that text back to each string in the blocks
             (c) a lookup of the strings themselves
+            (d) a list of all tag marker names in the text
         Example:
-            >>> blocks = [['foo', ['tag'], 'bar'], ['baz']]
-            >>> blocks_text, blocks_offsets, blocks_lookup = index_blocks(blocks)
+            >>> blocks = [[tag_marker_lookup['bracketnum']+'foo'+tag_marker_lookup['/bracketnum'], ['tag'], 'bar'], ['baz']]
+            >>> blocks_text, blocks_offsets, blocks_lookup, block_tag_names = index_blocks(blocks)
             >>> blocks_text
             'foobarbaz'
             >>> blocks_offsets
             [0, 3, 6]
             >>> blocks_lookup
             [[0, ['foo', ['tag'], 'bar'], 0], [3, ['foo', ['tag'], 'bar'], 2], [6, ['baz'], 0]]
+            >>> block_tag_names
+            ['bracketnum', '/bracketnum']
         This allows us to start from the combined text and use it to modify the individual strings in the blocks object.
         For example, if we want to modify blocks_text[5] (an 'r'), we can search blocks_offsets to figure out that it is part
         of entry 1 (because it is after 3 and before 6), and then use blocks_lookup[1] to update the original string.
@@ -248,17 +313,22 @@ def index_blocks(blocks):
     blocks_text = ''
     blocks_offsets = []
     blocks_lookup = []
+    block_tag_names = []
     for block in blocks:
         for i, token in enumerate(block):
             if type(token) == str:
+
+                # replace individual tag markers with base tag_marker
+                tag_markers = tag_marker_re.findall(token)
+                if tag_markers:
+                    token = tag_marker_re.sub(tag_marker, token)
+                    block[i] = token
+                    block_tag_names.extend(tag_name_lookup[i] for i in tag_markers)
+
                 blocks_offsets.append(len(blocks_text))
                 blocks_lookup.append((len(blocks_text), block, i))
                 blocks_text += token
-    return blocks_text, blocks_offsets, blocks_lookup
-
-# use this special constant (a unicode reserved codepoint) to indicate where <footnotemark> and <bracketnum> tags
-# appear in the ALTO and case files, to help with lining up diffs.
-tag_marker = '\uE000'
+    return blocks_text, blocks_offsets, blocks_lookup, block_tag_names
 
 def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
     """
@@ -285,28 +355,25 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
             case_text.append(tag_marker)
     case_text = "".join(case_text).strip()  # remove any whitespace at start and end of paragraph of case text
 
-    blocks_text, blocks_offsets, blocks_lookup = index_blocks(alto_blocks)
+    blocks_text, blocks_offsets, blocks_lookup, block_tag_names = index_blocks(alto_blocks)
 
     ## text update -- update ALTO text to match case text ##
 
     if case_text != blocks_text:
 
         ## get diff
-        if case_tags:
-            # if there are footnote/bracket marks in the text, split around those and diff each range separately, so
-            # edits stay on the right side of the tags
+        if case_tags and block_tag_names == [tag[0] for tag in case_tags]:
+            # if there are matching footnote/bracket marks in the text, split around those and diff each range
+            # separately, so edits stay on the right side of the tags
             b_parts = blocks_text.split(tag_marker)
             c_parts = case_text.split(tag_marker)
-            if len(b_parts) == len(c_parts):
-                diff = []
-                b_offset = c_offset = 0
-                for b, c in zip(blocks_text.split(tag_marker), case_text.split(tag_marker)):
-                    for tag, i1, i2, j1, j2 in diff_strings(b, c):
-                        diff.append([tag, i1+b_offset, i2+b_offset, j1+c_offset, j2+c_offset])
-                    b_offset += len(b)+1
-                    c_offset += len(c)+1
-            else:
-                diff = diff_strings(blocks_text, case_text)
+            diff = []
+            b_offset = c_offset = 0
+            for b, c in zip(b_parts, c_parts):
+                for tag, i1, i2, j1, j2 in diff_strings(b, c):
+                    diff.append([tag, i1+b_offset, i2+b_offset, j1+c_offset, j2+c_offset])
+                b_offset += len(b)+1
+                c_offset += len(c)+1
         else:
             # otherwise diff entire string
             diff = diff_strings(blocks_text, case_text)
@@ -529,6 +596,8 @@ def create_page_obj(volume_obj, page, ingest_source=None):
         blocks=page['blocks'],
         spaces=page['spaces'] or None,
         encrypted_strings=page.get('encrypted_strings') or None,
+        duplicates=page.get('duplicates') or None,
+        extra_redacted_ids=page.get('extra_redacted_ids') or None,
         image_file_name=page['file_name'],
         width=page['width'],
         height=page['height'],
@@ -574,7 +643,7 @@ def block_text(block):
 
 def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                          volume, pages, cases, fonts_by_id, text_replacements={},
-                         paths=None, blocks_by_id=None, key=settings.REDACTION_KEY):
+                         paths=None, blocks_by_id=None, key=settings.REDACTION_KEY, catch_validation_errors=False):
     """
         Check that our extraction task has succeeded, by making sure that the volume, page, cases, and fonts_by_id
         variables can be used to recreate the files in unredacted_storage and redacted_storage.
@@ -594,7 +663,9 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
     # Here we build fake Django objects and make sure we can render the extracted data back into XML that matches
     # the source files.
     renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, {}, pretty_print=False)  # we don't need labels_by_block_id because original_xml cases don't include page numbers
-    
+
+    redacted_errors_as_warnings = catch_validation_errors or 'tool_version_mismatch' in volume['metadata'].get('errors', {}) or volume_barcode in skip_redacted_validation
+
     ## validate volume dict
     volume_obj = VolumeMetadata(barcode=volume_barcode, xml_metadata=volume['metadata'])
     new_xml = renderer.render_volume(volume_obj)
@@ -603,6 +674,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
     old_xml = str(volume_el)
     old_xml = re.sub(r'\s*(<[^>]+>)\s*', r'\1', old_xml, flags=re.S)  # strip whitespace around elements
     old_xml = old_xml.replace('<nominativereporter abbreviation="" volnumber=""/>', '')  # remove blank <normativereporter>
+    old_xml = re.sub(r'\s+', ' ', old_xml)  # normalize multiple spaces
     xml_strings_equal(new_xml, old_xml)
     
     ## validate pages dict
@@ -626,7 +698,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
     for page in pages:
         page_obj = create_page_obj(volume_obj, page)
         to_test = [(unredacted_storage, page['path'], False)]
-        if redacted_storage and volume_barcode not in skip_redacted_validation:
+        if redacted_storage:
             to_test.append((redacted_storage, page['path'].replace('unredacted', 'redacted'), True))
         for storage, path, redacted in to_test:
             print("- checking %s" % path)
@@ -664,7 +736,14 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
             original_alto = original_alto.replace('WC="1.0"', 'WC="1.00"')  # normalize irregular decimal places
             original_alto = original_alto.replace('CC=""', 'CC="0"')  # normalize character confidence for empty strings -- some are CC="", some are CC="0"
 
-            xml_strings_equal(alto_xml_output, original_alto, ignore)
+            try:
+                xml_strings_equal(alto_xml_output, original_alto, ignore)
+            except ValueError as e:
+                if redacted and redacted_errors_as_warnings:
+                    volume['metadata'].setdefault('errors', {}).setdefault('failed_validations', {})[path] = True
+                    print("- ignoring validation error in %s" % path)
+                else:
+                    raise
             
     # validate cases
     print("Checking case integrity")
@@ -676,7 +755,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
         case_obj.initial_metadata = CaseInitialMetadata(case=case_obj, metadata=case['metadata'])
 
         to_test = [(unredacted_storage, case['path'], False)]
-        if redacted_storage and volume_barcode not in skip_redacted_validation:
+        if redacted_storage:
             to_test.append((redacted_storage, case['path'].replace('unredacted', 'redacted'), True))
 
         for storage, path, redacted in to_test:
@@ -703,22 +782,29 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
             # normalize formatting in casebody xml
             strip_whitespace_els = 'blockquote|author|p|headnotes|history|disposition|syllabus|summary|attorneys|judges|otherdate|decisiondate|parties|seealso|citation|docketnumber|court|correction'
             for i, casebody in enumerate(casebodies):
-                # remove whitespace from start and end of tags:
-                casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', casebody, flags=re.S)
-                casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', casebody, flags=re.S)
                 casebody = casebody.replace(' label=""', '')  # footnote with empty label
                 casebody = re.sub(r'>\s+<', '><', casebody)  # normalize multiline xml file to single file
                 casebody = re.sub(r'<([a-z]+)[^>]*></\1>', '', casebody)  # remove empty elements (typically redacted paragraphs)
                 casebody = re.sub(r'\s+', ' ', casebody)  # normalize multiple spaces
+                # remove whitespace from start and end of tags:
+                casebody = re.sub(r'(<(?:%s)[^>]*>)\s+' % strip_whitespace_els, r'\1', casebody, flags=re.S)
+                casebody = re.sub(r'\s+(</(?:%s)>)' % strip_whitespace_els, r'\1', casebody, flags=re.S)
                 casebody = casebody.replace('\xad ', '\xad')  # fix doubled-paragraph bug
                 casebodies[i] = casebody
 
-            xml_strings_equal(*casebodies, {
-                'attrs': {'pgmap', 'xmlns'},
-                'tag_attrs': {
-                    'footnote': {'redact'},  # the redact attr isn't reliably set in the original, so our output may not match. comparison will still ensure that redacted footnotes don't appear.
-                }
-            })
+            try:
+                xml_strings_equal(*casebodies, {
+                    'attrs': {'pgmap', 'xmlns'},
+                    'tag_attrs': {
+                        'footnote': {'redact'},  # the redact attr isn't reliably set in the original, so our output may not match. comparison will still ensure that redacted footnotes don't appear.
+                    }
+                })
+            except ValueError as e:
+                if redacted and redacted_errors_as_warnings:
+                    volume['metadata'].setdefault('errors', {}).setdefault('failed_validations', {})[path] = True
+                    print("- ignoring validation error in %s" % path)
+                else:
+                    raise
 
             ## compare <case>
             if not case_obj.duplicative:
@@ -732,10 +818,18 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                     case_head = re.sub(r'\s*(<[^>]+>)\s*', r'\1', case_head, flags=re.S)  # strip whitespace around elements
                     case_head = re.sub(r'\s+', ' ', case_head)  # normalize multiple spaces within elements
                     case_heads[i] = case_head
-                xml_strings_equal(*case_heads)
+
+                try:
+                    xml_strings_equal(*case_heads)
+                except ValueError as e:
+                    if redacted and redacted_errors_as_warnings:
+                        volume['metadata'].setdefault('errors', {}).setdefault('failed_validations', {})[path] = True
+                        print("- ignoring validation error in %s" % path)
+                    else:
+                        raise
 
 @shared_task
-def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.REDACTION_KEY, save_failed=False):
+def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.REDACTION_KEY, save_failed=False, catch_validation_errors=False):
     """
         Given volume barcode and locations of redacted and unredacted captar files, write out extracted tokenstreams
         as a zip file. This wrapper just makes sure the captar files are available locally, and then hands off to
@@ -746,9 +840,9 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
         with open_captar_volume(Path(primary_path), False) as unredacted_storage:
             if secondary_path:
                 with open_captar_volume(Path(secondary_path), False) as redacted_storage:
-                    volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key=key, save_failed=save_failed)
+                    volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key, save_failed, catch_validation_errors)
             else:
-                volume_to_json_inner(volume_barcode, unredacted_storage, key=key, save_failed=save_failed)
+                volume_to_json_inner(volume_barcode, unredacted_storage, key, save_failed, catch_validation_errors)
     except:
         if isinstance(captar_storage, CapS3Storage):
             # copy busted S3 files locally for further inspection
@@ -762,7 +856,7 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
                 shutil.rmtree(storage.parent.location)  # delete local temp dir
         raise
 
-def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=None, key=settings.REDACTION_KEY, save_failed=False):
+def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=None, key=settings.REDACTION_KEY, save_failed=False, catch_validation_errors=False):
     """
         Given volume barcode and redacted and unredacted captar storages, write out extracted tokenstreams as a zip file.
     """
@@ -812,7 +906,16 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
         'place': publisher_el.attr.place,
     }
     if volume_barcode in skip_redacted_validation:
-        volume['metadata'].setdefault('errors', {})['old_redacted_volume'] = True
+        volume['metadata'].setdefault('errors', {})['manual_skip_redacted_validation'] = True
+
+    # extract data from comments like <!--Created by Innodata R.E.D. RLI tool version 20151218-103 on 2015-12-22T16:41:08.081941-->
+    processing = metadata['processing'] = {}
+    processing['tool_version'], processing['date'] = parsed('mets')[0][0].text.split('RLI tool version ', 1)[1].split('-->', 1)[0].split(' on ')
+    if redacted_storage:
+        redacted_parsed = parse(redacted_storage, paths['volume'][0].replace('unredacted', 'redacted'))
+        processing['redacted_tool_version'], processing['redacted_date'] = redacted_parsed('mets')[0][0].text.split('RLI tool version ', 1)[1].split('-->', 1)[0].split(' on ')
+        if processing['tool_version'] != processing['redacted_tool_version']:
+            volume['metadata'].setdefault('errors', {})['tool_version_mismatch'] = True
 
     ### Extract data for each page into the pages dict ###
 
@@ -884,13 +987,20 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
             'height': int(page_el.attr.HEIGHT),
             'file_name': parsed('sourceImageInformation fileName').text().replace('.png', '.tif'),
             'deskew': parsed('processingStepSettings').text(),
-            'innodata_timestamp': parsed('alto')[0][0].text.rsplit(': ', 1)[-1],  # TODO: store in db -- extract timestamp from first comment in file
+            'innodata_timestamp': parsed('alto')[0][0].text.rsplit(': ', 1)[-1],  # not actually saving this since it's redundant of volume['metadata']['processing']
             'spaces': [],
             'blocks': [],
         }
 
+        # volume barcodes containing underscore, like "Cal5th_001", may have file_name incorrectly as
+        # Cal5th_00100196_1.tif instead of Cal5th_001_00100196_1.tif. Detect and fix:
+        if not unredacted_storage.exists(page['file_name']):
+            fixed_file_name = '%s_%s' % (volume_barcode, page['file_name'].split('_', 1)[1])
+            if unredacted_storage.exists('images/'+fixed_file_name):
+                page['file_name'] = fixed_file_name
+
         if duplicates:
-            page['duplicates'] = duplicates  # TODO: store in db
+            page['duplicates'] = duplicates
             volume['metadata'].setdefault('errors', {})['duplicate_blocks'] = True
 
         if old_cc_style:
@@ -919,18 +1029,25 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
         # <RoleTag ID="footnotemark0001" LABEL="footnotemark"/>
         # <RoleTag ID="bracketnum0001" LABEL="bracketnum"/>
         extra_redacted_ids = []
-        for role_tag in parsed('RoleTag'):
-            tags = parsed('[TAGREFS="%s"]' % role_tag.attrib['ID'])
+        for role_tag in parsed('RoleTag[LABEL="footnotemark"],RoleTag[LABEL="bracketnum"]'):
+            tags = parsed('[TAGREFS~="%s"]' % role_tag.attrib['ID'])
             # these won't be found if a single word contains more than one footnotemark, in which case we can't do
             # anything useful -- just skip
             if not tags:
                 continue
             start_tag, end_tag = tags[0], tags[-1]
-            start_tag.attrib['prefix_char'] = tag_marker
-            end_tag.attrib['suffix_char'] = tag_marker
+            tag_label = role_tag.attrib['LABEL']
+            start_tag.attrib['prefix_char'] = tag_marker_lookup[tag_label]
+            end_tag.attrib['suffix_char'] = tag_marker_lookup['/'+tag_label]
 
             # redact any ALTO tags inside a redacted tag
             if redacted_storage and tags.length > 1 and start_tag.attrib['ID'] in redacted_ids:
+
+                # if multiple tags have same rect, bail out -- we can't apply this logic to a file with duplicate blocks
+                rects = set(rect(tag.attrib) for tag in tags)
+                if len(rects) < len(tags):
+                    continue
+
                 tag = start_tag
                 while True:
                     next_tag = tag.getnext()
@@ -958,7 +1075,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                         extra_redacted_ids.append(tag_id)
         if len(extra_redacted_ids) > 1:
             print("extra_redacted_ids:", extra_redacted_ids)
-            page['extra_redacted_ids'] = extra_redacted_ids  # TODO: store in DB?
+            page['extra_redacted_ids'] = extra_redacted_ids
 
         # ALTO files are structured like:
         # <Page>
@@ -1078,7 +1195,8 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                                     pre_space, post_space = re.match(r'(\s*).*?(\s*)$', text).groups()
                                     text = text[len(pre_space):-len(post_space) or None]
                                     cc = cc[len(pre_space):-len(post_space) or None]
-                                ocr_token[1]['cc'] = int(cc.replace('9', '1'), 2)
+                                if cc:
+                                    ocr_token[1]['cc'] = int(cc.replace('9', '1'), 2)
                             else:
                                 # If not storing cc, just strip whitespace from text:
                                 text = text.strip()
@@ -1282,6 +1400,20 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
         cases.append(case)
 
+    # fix tag markers from ALTO blocks not included in cases
+    print("Fixing non-case ALTO tags")
+    case_blocks = {block_id for case in cases for par in iter_pars(case['opinions']) for block_id in par['block_ids']}
+    for page in pages:
+        for block in page['blocks']:
+            if block['id'] not in case_blocks:
+                tokens = block.get('tokens', [])
+                if tokens:
+                    for i in range(len(tokens)-1, -1, -1):
+                        token = tokens[i]
+                        if type(token) == str and tag_marker_re.search(token):
+                            parts = tag_marker_re.split(token)
+                            tokens[i:i+1] = [[tag_name_lookup[p]] if p in tag_name_lookup else p for p in parts]
+
     # encrypt redacted strings
     if redacted_storage:
         print("Encrypting pages")
@@ -1292,23 +1424,39 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
 
     ### export results to a temp file
 
-    # do this here so we can safely decrypt again for validation
 
     font_attrs = ['family', 'size', 'style', 'type', 'width']
     fonts_by_id = {f.id: {attr: getattr(f, attr) for attr in font_attrs} for f in fonts_by_id.values()}
-    temp_output_file = tempfile.SpooledTemporaryFile(max_size=2**20*100)
-    try:
-        with ZipFile(temp_output_file, 'w') as zip:
-            for path, obj in (('volume.json', volume), ('pages.json', pages), ('cases.json', cases), ('fonts.json', fonts_by_id)):
-                zip.writestr(path, json.dumps(obj))
-        temp_output_file.seek(0)
+    with tempfile.SpooledTemporaryFile(max_size=2**20*100) as temp_output_file:
+
+        # do this here so we can safely decrypt again for validation
+        zip = ZipFile(temp_output_file, 'w', compression=ZIP_BZIP2)
+        for path, obj in (('pages.json', pages), ('cases.json', cases), ('fonts.json', fonts_by_id)):
+            zip.writestr(path, json.dumps(obj))
 
         ### check reversability ###
 
-        assert_reversability(
-            volume_barcode, unredacted_storage, redacted_storage,
-            volume, pages, cases, fonts_by_id, text_replacements,
-            paths, blocks_by_id, key)
+        try:
+            assert_reversability(
+                volume_barcode, unredacted_storage, redacted_storage,
+                volume, pages, cases, fonts_by_id, text_replacements,
+                paths, blocks_by_id, key, catch_validation_errors)
+        except:
+            # save temp zip locally if requested
+            if save_failed:
+                dest_path = Path(settings.BASE_DIR, 'test_data/zips', 'token_streams', unredacted_storage.path.name + '-failed.zip')
+                print("Copying failed zip to %s" % dest_path)
+                zip.writestr('volume.json', json.dumps(volume))
+                zip.close()
+                temp_output_file.seek(0)
+                with dest_path.open('wb') as out:
+                    shutil.copyfileobj(temp_output_file, out)
+            raise
+
+        # add volume.json here so we get any errors recorded during validation
+        zip.writestr('volume.json', json.dumps(volume))
+        zip.close()
+        temp_output_file.seek(0)
 
         ### copy temp file to permanent storage
 
@@ -1317,18 +1465,6 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
         if captar_storage.exists(str(out_path)):
             captar_storage.delete(str(out_path))
         captar_storage.save(str(out_path), temp_output_file)
-
-    except:
-        # save temp zip locally if requested
-        if save_failed:
-            dest_path = Path(settings.BASE_DIR, 'test_data/zips', 'token_streams', unredacted_storage.path.name + '-failed.zip')
-            print("Copying failed zip to %s" % dest_path)
-            with dest_path.open('wb') as out:
-                shutil.copyfileobj(temp_output_file, out)
-        raise
-
-    finally:
-        temp_output_file.close()
 
 ### validate_token_stream fab task
 

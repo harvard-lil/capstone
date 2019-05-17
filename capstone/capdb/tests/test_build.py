@@ -2,6 +2,8 @@
 import os
 import subprocess
 from pathlib import Path
+
+import fabfile
 import pytest
 from io import StringIO
 
@@ -18,11 +20,12 @@ def test_makemigrations():
     assert out.getvalue() == 'No changes detected\n', "Model changes detected. Please run ./manage.py makemigrations"
 
 def test_pip_compile():
-    result = subprocess.run(["pip-compile", "-n"], stdout=subprocess.PIPE,
-                            # strip COV_ environment variables so pip-compile doesn't try to report test coverage
-                            env={k:v for k,v in os.environ.items() if not k.startswith('COV_')})
     existing_requirements = Path('requirements.txt').read_bytes()
-    assert result.stdout == existing_requirements, "Changes detected to requirements.in. Please run pip-compile"
+    subprocess.check_call(["fab", "pip-compile"], stdout=subprocess.PIPE,
+                          # strip COV_ environment variables so pip-compile doesn't try to report test coverage
+                          env={k:v for k,v in os.environ.items() if not k.startswith('COV_')})
+    new_requirements = Path('requirements.txt').read_bytes()
+    assert new_requirements == existing_requirements, "Changes detected to requirements.in. Please run fab pip-compile"
 
 def test_flake8():
     subprocess.check_call('flake8')
@@ -41,3 +44,9 @@ def test_npm_build():
 
     assert dist_hash == dist_hash2, "'npm run build' updated files in %s" % dist_dir
     assert stats_hash == stats_hash2, "'npm run build' updated %s" % stats_file
+
+def test_docker_compose_version():
+    docker_compose_path = Path(settings.BASE_DIR, 'docker-compose.yml')
+    existing_docker_compose = docker_compose_path.read_text()
+    fabfile.update_docker_image_version()
+    assert docker_compose_path.read_text() == existing_docker_compose, "'fab update_docker_image_version' needed to be run."

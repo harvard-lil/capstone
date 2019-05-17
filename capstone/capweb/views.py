@@ -1,14 +1,17 @@
 import logging
-import os
 from collections import OrderedDict
+from pathlib import Path
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
+from django.views import View
 
 from capweb.forms import ContactForm, MailingListSubscribe
-from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email
+from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
 from capapi import serializers
@@ -120,7 +123,8 @@ def tools(request):
         'page_title': 'Caselaw Access Project Tools',
         'page_description': 'The capstone of the Caselaw Access Project is a robust set of tools which facilitate access'
                             ' to the cases and their associated metadata. We currently offer two ways to access the '
-                            'data: our API, and bulk downloads.'
+                            'data: our API, and bulk downloads.',
+        'ngrams': settings.NGRAMS_FEATURE
     })
 
 
@@ -147,8 +151,7 @@ def maintenance_mode(request):
 
 
 def wordclouds(request):
-    wordcloud_dir = os.path.join(settings.BASE_DIR, 'static/img/wordclouds')
-    wordclouds = [w for w in os.listdir(wordcloud_dir) if w.endswith('.png')]
+    wordclouds = sorted(path.name for path in Path(settings.BASE_DIR, 'static/img/wordclouds').glob('*.png'))
     return render(request, "gallery/wordclouds.html", {
         "wordclouds": wordclouds,
         'page_image': 'img/og_image/wordclouds.png',
@@ -198,3 +201,31 @@ def search_docs(request):
 def snippet(request, label):
     snippet = get_object_or_404(Snippet, label=label).contents
     return HttpResponse(snippet, content_type=snippet.format)
+
+
+class MarkdownView(View):
+    """
+        Render template_name as markdown, and then pass 'main_content', 'sidebar_menu_items', and 'meta' to base_template_name
+        for display as HTML.
+
+        IMPORTANT: As all outputs are marked safe, subclasses should never include user-generated input in the template context.
+    """
+    base_template_name = "layouts/full.html"
+    extra_context = {}
+    template_name = None
+
+    def get(self, request, *args, **kwargs):
+        # render any django template tags in markdown document
+        markdown_doc = render_to_string(self.template_name, self.extra_context, request)
+
+        # render markdown document to html
+        html, toc, meta = render_markdown(markdown_doc)
+
+        # present markdown html within base_template_name
+        meta = {k:mark_safe(v) for k,v in meta.items()}
+        return render(request, self.base_template_name, {
+            'main_content': mark_safe(html),
+            'sidebar_menu_items': mark_safe(toc),
+            **self.extra_context,
+            **meta,
+        })

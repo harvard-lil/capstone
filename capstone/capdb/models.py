@@ -760,6 +760,7 @@ class CaseMetadataQuerySet(models.QuerySet):
 
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, null=True, db_index=True)
+    frontend_url = models.CharField(max_length=255, null=True, blank=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
     last_page = models.CharField(max_length=255, null=True, blank=True)
     publication_status = models.CharField(max_length=255, null=True, blank=True)
@@ -854,10 +855,28 @@ class CaseMetadata(models.Model):
     def get_absolute_url(self):
         return reverse('casemetadata-detail', args=[self.id], scheme="https")
 
-    def get_readable_url(self):
-        cite = self.citations.first()
-        cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
-        return reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite')
+    def get_frontend_url(self, cite=None, disambiguate=False, include_host=True):
+        """
+            Return cite.case.law cite for this case, like /series/volnum/pagenum/.
+            If disambiguate is true, return /series/volnum/pagenum/id/.
+        """
+        cite = cite or self.citations.first()
+        # try to match "(volnumber) (series) (pagenumber)"
+        m = re.match(r'(\S+)\s+(.+?)\s+(\S+)$', cite.cite)
+        if not m:
+            # if cite doesn't match the expected format, always disambiguate so URL resolution doesn't depend on cite value
+            disambiguate = True
+            # try to match "(year)-(series)-(case index)", e.g. "2017-Ohio-5699" and "2015-NMCA-053"
+            m = re.match(r'(\S+)-(.+?)-(\S+)$', cite.cite)
+        # TODO: final fallback value is wrong, because first_page is the physical page count and not the page label
+        # after token streams are in, we should be able to retrieve the actual page label instead
+        cite_parts = m.groups() if m else [self.volume.volume_number, self.reporter.short_name, self.first_page]
+        args = [slugify(cite_parts[1]), cite_parts[0], cite_parts[2]] + ([self.id] if disambiguate else [])
+        url = reverse('citation', args=args, host='cite')
+        if not include_host:
+            # strip https://cite.case.law prefix so stored value can be moved between servers
+            url = '/'+url.split('/',3)[3]
+        return url
 
     def create_or_update_case_text(self, new_text=None):
         """ Create or update the related case_text object for this case_metadata. """
@@ -1028,6 +1047,7 @@ class CaseMetadata(models.Model):
         if citations:
             Citation.objects.bulk_create(Citation(
                 cite=citation['text'],
+                normalized_cite=Citation.normalize_cite(citation['text']),
                 type=citation['category'],
                 category=citation['type'],
                 duplicative=citation.get('duplicative', False),
@@ -1373,18 +1393,21 @@ class CaseXML(BaseXMLModel):
         # Skip elements inside footnotes. We can more often do the correct thing by attaching entities to the closest
         # non-footnote element -- though this will do the wrong thing when entities were extracted from footnotes in
         # the first place.
-        footnote_el_ids = {el.attr.id for el in casebody('casebody|footnote [id]').items()}
+        def sortable_id(alto_id):
+            parts = alto_id.split('_')[1].split('.')
+            return (int(parts[0]), int(parts[1]))
+        ignore_ids = {el.attr.id for el in casebody('casebody|footnote [id],casebody|correction').items()}
         id_to_alto_order = {}
         for xref_el in parsed_xml('mets|div[TYPE="blocks"] > mets|div[TYPE="element"]').items():
             par_el, blocks_el = xref_el('mets|fptr').items()
             par_id = par_el('mets|area').attr.BEGIN
-            if par_id in footnote_el_ids:
+            if par_id in ignore_ids:
                 continue
-            alto_id = blocks_el('mets|area').attr.BEGIN
+            alto_ids = [el.attrib['BEGIN'] for el in blocks_el('mets|area')]
             # for an empty paragraph with contents redacted, there's no alto_id
-            if alto_id:
-                parts = alto_id.split('_')[1].split('.')
-                id_to_alto_order[par_id] = (int(parts[0]), int(parts[1]))
+            if alto_ids:
+                alto_ids = sorted(sortable_id(alto_id) for alto_id in alto_ids)
+                id_to_alto_order[par_id] = alto_ids[0]
 
         # Split remove_els into head_els and opinion_els, based on whether or not they come before the first
         # element in the first opinion:
@@ -1717,6 +1740,8 @@ class PageStructure(models.Model):
     spaces = JSONField(blank=True, null=True)  # probably unnecessary -- in case pages ever have more than one PrintSpace
     font_names = JSONField(blank=True, null=True)  # for mapping font IDs back to style names in alto
     encrypted_strings = models.TextField(blank=True, null=True)
+    duplicates = JSONField(blank=True, null=True)  # list of duplicate IDs detected during conversion
+    extra_redacted_ids = JSONField(blank=True, null=True)  # list of IDs redacted during conversion
 
     image_file_name = models.CharField(max_length=100)
     width = models.SmallIntegerField()

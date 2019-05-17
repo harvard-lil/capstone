@@ -2,6 +2,7 @@
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
 @import "base.scss";
+@import 'footer/yellow';
 
 .row.alert-danger {
   padding: 10px 0;
@@ -12,7 +13,7 @@
 .main-content {
   margin: 0 !important;
   min-width: 100%;
-  padding-left: 0 !important;
+  padding: 0 !important;
 }
 
 .search-page > * {

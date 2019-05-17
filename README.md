@@ -190,7 +190,7 @@ Run tests in parallel for speed:
 
 Top-level requirements are stored in `requirements.in`. After updating that file, you should run
 
-    (capstone)$ pip-compile
+    (capstone)$ fab pip-compile
 
 to freeze all subdependencies into `requirements.txt`.
 
