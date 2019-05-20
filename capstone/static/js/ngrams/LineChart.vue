@@ -23,13 +23,21 @@
                 color: "rgba(0, 0, 0, 0)",
               },
               ticks: {
-                beginAtZero: true
+                beginAtZero: true,
+                callback: function (value) {
+                  if (value % 1 === 0) {
+                    return value;
+                  }
+                }
               }
             }],
             xAxes: [{
               gridLines: {
                 color: "rgba(0, 0, 0, 0)",
               },
+              ticks: {
+                beginAtZero: true,
+              }
             }]
           }
         }

@@ -74,7 +74,7 @@
     },
     beforeMount() {
       this.jurisdictions = snippets.jurisdictions;  // eslint-disable-line
-      this.urls = urls;
+      this.urls = urls;  // eslint-disable-line
     },
     data: function () {
       return {
@@ -92,12 +92,8 @@
       }
     },
     methods: {
-      isValidNumber() {
-        return (this.minYear <= this.maxYear) &&
-            (this.minYear >= this.minPossible) &&
-            (this.minYear <= this.maxPossible) &&
-            (this.maxYear >= this.minPossible) &&
-            (this.maxYear <= this.maxPossible)
+      isValidYear(year) {
+        return (year >= this.minPossible) && (year <= this.maxPossible)
       },
       isValidText() {
         return this.textToGraph.length > 0
@@ -115,15 +111,20 @@
         return terms.map(term => term.trim())
 
       },
-      createGraph() {
-        if (!(this.isValidNumber())) {
+      inputsAreValid() {
+        if ((this.minYear > this.maxYear) || !this.isValidYear(this.minYear) || !this.isValidYear(this.maxYear)) {
           this.errors = "Please choose valid years. Years must be between " + this.minPossible + " and " + this.maxPossible + ".";
-          return
+          return false
         }
         if (!(this.isValidText())) {
           this.errors = "Please enter text";
-          return
+          return false
         }
+        return true
+      },
+      createGraph() {
+        if (!this.inputsAreValid()) return;
+        this.errors = "";
         let terms = this.getTerms(this.textToGraph);
         let years = this.range(this.minYear, this.maxYear);
         this.chartData = {
@@ -133,82 +134,76 @@
         let jurs = this.getSelectedJurs();
         jurs.splice(0, 0, "");
         let jurs_params = jurs.join("&jurisdiction=");
-
-        let count = 0;
         for (let idx in terms) {
           let self = this;
           let term = terms[idx];
           let url = this.urls.api_root + "ngrams/?q=" + term + jurs_params;
-          fetch(url).then((resp) => {
-            if (!resp.ok) {
-              throw resp
-            }
-            return resp.json();
-          })
+          fetch(url)
+              .then((resp) => {
+                if (!resp.ok) {
+                  throw resp
+                }
+                return resp.json();
+              })
               .then((response) => {
                 let data = response.results[term];
-                let results = [];
-                for (let idx in data) {
-                  let jur = data[idx];
-                  for (let y in years) {
-                    let year = years[y];
-                    // only include years selected
-                    if ((year >= this.minYear) && (year <= this.maxYear)) {
-                      if (results[y]) {
-                        if (jur[year]) {
-                          results[y] = results[y] + jur[year][0]
-                        }
-                      } else if (jur[year]) {
-                        results[y] = jur[year][0]
-                      } else {
-                        results[y] = 0;
-                      }
-                    }
-                  }
-                }
-                // set colors
-                let newDatasets = self.chartData.datasets;
-                let color = "";
-                if (this.colors.length - 1 > count) {
-                  color = this.colors[count];
-                } else {
-                  color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
-                }
-                newDatasets.push({
-                  label: term,
-                  borderColor: color,
-                  backgroundColor: "rgba(0, 0, 0, 0)",
-                  borderWidth: 2,
-                  data: results
-                });
-                self.chartData = {
-                  labels: years,
-                  datasets: newDatasets
-                };
-                count += 1;
+                let results = self.parseResponse(data, years);
+                self.graphResults(results, term, years);
               })
               .catch((response) => {
                 if (response === "canceled") {
-                  return;
+                  self.errors = "Something went wrong. Please try again."
                 }
               })
-
-
         }
-      }
-      ,
-      getRandomInt() {
-        return Math.floor(Math.random() * (50 - 5 + 1)) + 5
-      }
-      ,
+      },
+      graphResults(results, term, years) {
+        let newDatasets = this.chartData.datasets;
+        // set colors: assign color from list of colors if four or under terms
+        // Otherwise, create random color
+        let color = this.colors.length >= 1 ? this.colors.pop() : ('#' + (Math.random() * 0xFFFFFF << 0).toString(16));
+
+        newDatasets.push({
+          label: term,
+          borderColor: color,
+          backgroundColor: "rgba(0, 0, 0, 0)",
+          borderWidth: 2,
+          data: results
+        });
+        this.chartData = {
+          labels: years,
+          datasets: newDatasets
+        };
+      },
+      parseResponse(data, years) {
+        let results = [];
+        for (let idx in data) {
+          let jur = data[idx];
+          for (let y in years) {
+            let year = years[y];
+            // only include years selected
+            if ((year >= this.minYear) && (year <= this.maxYear)) {
+              if (results[y]) {
+                if (jur[year]) {
+                  results[y] = results[y] + jur[year][0]
+                }
+              } else if (jur[year]) {
+                results[y] = jur[year][0];
+              } else {
+                results[y] = 0;
+              }
+            }
+          }
+        }
+        return results;
+      },
       toggleJur(jurisdiction) {
         if (this.selectedJurs.indexOf(jurisdiction) > -1) {
           this.selectedJurs.splice(this.selectedJurs.indexOf(jurisdiction), 1);
         } else {
           this.selectedJurs.push(jurisdiction);
         }
-      }
-      ,
+      },
     },
   }
 </script>
