@@ -2,7 +2,7 @@ import logging
 from collections import OrderedDict
 from pathlib import Path
 
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -15,6 +15,7 @@ from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, 
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
 from capapi import serializers
+from capapi.models import MailingList
 from capapi.resources import form_for_request
 
 logger = logging.getLogger(__name__)
@@ -89,6 +90,9 @@ def contact(request):
     })
 
 def subscribe(request):
+    if request.method != 'POST':
+        raise Http404("GET requests not allowed with this path.")
+
     form = form_for_request(request, MailingListSubscribe)
 
     subject = "Caselaw Access Project: Subscribed! We'll keep you up to date."
@@ -100,22 +104,15 @@ def subscribe(request):
               "Warmest Regards,\n"\
               "The CAP Project Team"
 
-    if request.method == 'POST' and form.is_valid():
+    if form.is_valid():
         data = form.data
+        MailingList.objects.create(email=data.get('email'))
         send_contact_email(subject, message, data.get('email'))
         logger.info("sent subscribe email: %s" % data)
         return HttpResponseRedirect(reverse('subscribe-success'))
 
-    email_from = request.user.email if request.user.is_authenticated else ""
-    form.initial = {"email": email_from}
+    return index(request)
 
-    return render(request, 'subscribe.html', {
-        "form": form,
-        "email": settings.DEFAULT_FROM_EMAIL,
-        'page_image': 'img/og_image/contact.png',
-        'page_title': 'Contact Caselaw Access Project',
-        'page_description': 'Email us at %s or fill out this form. ' % settings.DEFAULT_FROM_EMAIL,
-    })
 
 def tools(request):
     return render(request, 'tools.html', {

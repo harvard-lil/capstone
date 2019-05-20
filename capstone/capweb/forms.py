@@ -1,4 +1,5 @@
 from django import forms
+from capapi.models import MailingList
 
 
 class ContactForm(forms.Form):
@@ -8,3 +9,9 @@ class ContactForm(forms.Form):
 
 class MailingListSubscribe(forms.Form):
     email = forms.EmailField(label="email", required=True)
+
+    def clean_email(self):
+        data = self.cleaned_data['email']
+        if MailingList.objects.filter(email=data).count() > 0:
+            raise forms.ValidationError("You're already subscribed.")
+        return data
