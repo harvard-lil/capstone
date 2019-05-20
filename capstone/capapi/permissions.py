@@ -1,4 +1,3 @@
-from capweb import helpers
 from rest_framework import permissions
 
 staff_level_permissions = [
@@ -7,7 +6,6 @@ staff_level_permissions = [
     'capapi.change_capuser',
     'capapi.delete_capuser',
 ]
-
 
 class IsSafeMethodsUser(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -36,13 +34,11 @@ def get_single_casebody_permissions(request, case):
     updating case download permissions for user if case is blacklisted
     """
     casebody = {"status": None, "data": None}
+
     if not case.jurisdiction_id:
         casebody["status"] = casebody_permissions["unk"]
 
     elif case.jurisdiction_whitelisted:
-        casebody["status"] = casebody_permissions["ok"]
-
-    elif helpers.is_google_bot(request):
         casebody["status"] = casebody_permissions["ok"]
 
     elif request.user.is_anonymous:
