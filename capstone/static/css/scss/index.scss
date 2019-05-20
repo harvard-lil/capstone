@@ -13,8 +13,15 @@
 *
 ***************************************************************/
 
+.section-separator {
+  border-top: 2px solid $color-white;
+  width: 75%;
+  @include media-breakpoint-up(lg) {
+    width: 68%
+  }
+}
 
-
+// Stuff in the headline elements
 @mixin header-styles {
   display: block;
   font-family: $font-sans-serif;
@@ -23,15 +30,12 @@
   margin-bottom: $headings-margin-bottom;
 }
 
-
-
 h2.section-title {
   @extend .h1;
   @include header-styles;
   font-family: $font-sans-title;
   letter-spacing: 0.16rem;
   font-size: 2.25rem;
-  padding: 0;
   @include media-breakpoint-only(xl) {
     font-size: 4rem;
   }
@@ -47,17 +51,6 @@ h2.section-title {
   }
 }
 
-.small-screen-card-title {
-  font-size: 1.5rem;
-  font-weight: $font-weight-semibold;
-  margin-bottom: .5rem;
-}
-
-.card-img {
-  max-width: 100%;
-  border: 1px solid white;
-}
-
 .section-intro {
   line-height: 1.75rem;
 }
@@ -66,10 +59,26 @@ h2.section-title {
   hyphens: none;
 }
 
-.item-credit {
-  font-size: 12pt;
-  font-family: $font-sans-serif;
-  color: $color-yellow;
+// Stuff in the card elements
+.small-screen-card-title {
+  font-size: 1.5rem;
+  font-weight: $font-weight-semibold;
+  margin-bottom: .5rem;
+}
+
+.card-body {
+  p {
+    line-height: 1.65rem;
+    @include media-breakpoint-down(lg) {
+      font-size: 1.125rem;
+      line-height: 1.45rem;
+    }
+  }
+}
+
+.card-img {
+  max-width: 100%;
+  border: 1px solid white;
 }
 
 .short-standalone-quote {
@@ -81,6 +90,12 @@ h2.section-title {
   }
 }
 
+.item-credit {
+  font-size: 12pt;
+  font-family: $font-sans-serif;
+  color: $color-yellow;
+}
+
 .short-standalone-quote:before {
   content: open-quote;
 }
@@ -89,22 +104,11 @@ h2.section-title {
   content: close-quote;
 }
 
-.section-separator {
-  border-top: 2px solid $color-white;
-  width: 75%;
-  @include media-breakpoint-up(lg) {
-    width: 68%
-  }
-}
-
-
 /**************************************************************
 *
-* == Splash Quote Section Specific ==
+* == Splash Quote Section ==
 *
 ***************************************************************/
-
-
 
 .splash-quote-section {
   h1 {
@@ -131,7 +135,7 @@ h2.section-title {
 
 /**************************************************************
 *
-* == Map Section Specific ==
+* == Map Section ==
 *
 ***************************************************************/
 
@@ -290,10 +294,27 @@ h2.section-title {
   }
 }
 
+/**************************************************************
+*
+* == Dive-In Section ==
+*
+***************************************************************/
+/*
+.dive-in-section {
+  .card-body {
+    p {
+      @include media-breakpoint-down(lg){
+        font-size: 1rem;
+      }
+    }
+  }
+
+}
+*/
 
 /**************************************************************
 *
-* == Contact Section Specific ==
+* == Contact Section ==
 *
 ***************************************************************/
 
@@ -324,6 +345,16 @@ h2.section-title {
 
   form.email_form {
     margin-bottom: 0;
+    .alert {
+      font-size: $font-size-sm;
+      padding: .25rem;
+    }
+    button.close {
+      display: none;
+    }
+    .invalid-feedback {
+      display: none;
+    }
   }
 
   .follow {
@@ -331,11 +362,16 @@ h2.section-title {
     font-size: $font-size-base;
     line-height: 1.25rem;
   }
+
   .add {
     font-family: $font-sans-serif;
     font-size: $font-size-sm;
     line-height: 1.25rem;
+    @include media-breakpoint-down(md) {
+      font-size: $font-size-base;
+    }
   }
+
   .promise {
     font-family: $font-sans-serif;
     font-size: $font-size-sm;

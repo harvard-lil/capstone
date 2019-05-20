@@ -100,7 +100,7 @@
             <img aria-hidden="true" src='{% static "img/white-arrow-right.svg" %}'>
           </div>
           <div class="col-4">
-            <h2 class="section-title">
+            <h2 class="section-title p-0">
               Our data
             </h2>
           </div>
@@ -172,7 +172,7 @@
           <img alt="" aria-hidden="true" src='{% static "img/magenta-arrow-right.svg" %}'>
         </div>
         <div class="col-8 col-md-3 col-sm-10 offset-1 offset-lg-0">
-          <h2 class="section-title pt-4 pt-xl-0 pt-md-3 mb-0 mb-md-2">
+          <h2 class="section-title p-0 pt-4 pt-md-3 pt-xl-0 mb-0 mb-md-2">
             Dive in!
           </h2>
           <div class="section-subtitle d-none d-md-block">
@@ -482,38 +482,52 @@
     <!-- START CONTACT --> <!-- (https://1n.pm/igQ7s) -->
 
     <div class="contact-section m-0 p-0 pb-5 pt-5 bg-yellow">
+      <div class="row d-inline d-md-none">
+        <div class="col-6 pl-0 offset-1">
+          <h2 class="section-title pt-0 mb-3">
+            Contact
+          </h2>
+        </div>
+      </div>
       <div class="row">
-        <div class="col-3 offset-1 d-none d-md-block follow">
+        <div class="col-2 offset-1 d-none d-md-block follow">
           Follow our progress, contribute code, or just say hi!
         </div>
-        <div class="col-2">
-              <div class="social">
-                <span class="twitter">
-                  <a href="https://twitter.com/caselawaccess" target="_blank"
-                     title="Caselaw Access Project Twitter"
-                     aria-label="Caselaw Access Project Twitter">
-                  </a>
-                 </span>
-                <span class="github">
-                  <a href="https://github.com/harvard-lil/capstone" target="_blank"
-                     title="Caselaw Access Project Github"
-                     aria-label="Caselaw Access Project Github"></a>
-                </span>
-                <span class="email">
-                  <a href="{% url "contact" %}"
-                     title="Caselaw Access Project contact form"
-                     aria-label="Caselaw Access Project contact form"></a>
-                </span>
-              </div>
-            </div>
-        <div class="col-2">
+        <div class="col-8 offset-1 d-block d-md-none pb-4">
           <form class="email_form" action="{% url 'subscribe' %}" method="post">
             {% csrf_token %}
             {% bootstrap_form subscribe_form %}
             <div class="add">Add your email to keep in touch</div>
           </form>
         </div>
-        <div class="col-3 promise pl-5">
+        <div class="col-11 col-md-2 offset-1 offset-md-0 ">
+          <div class="social d-md-flex justify-content-end">
+            <span class="twitter">
+              <a href="https://twitter.com/caselawaccess" target="_blank"
+                 title="Caselaw Access Project Twitter"
+                 aria-label="Caselaw Access Project Twitter">
+              </a>
+             </span>
+            <span class="github">
+              <a href="https://github.com/harvard-lil/capstone" target="_blank"
+                 title="Caselaw Access Project Github"
+                 aria-label="Caselaw Access Project Github"></a>
+            </span>
+            <span class="email">
+              <a href="{% url "contact" %}"
+                 title="Caselaw Access Project contact form"
+                 aria-label="Caselaw Access Project contact form"></a>
+            </span>
+          </div>
+        </div>
+        <div class="d-none d-md-block col-5 col-md-5 col-lg-3 offset-1 offset-sm-0">
+          <form class="email_form" action="{% url 'subscribe' %}" method="post">
+            {% csrf_token %}
+            {% bootstrap_form subscribe_form %}
+            <div class="add">Add your email to keep in touch</div>
+          </form>
+        </div>
+        <div class="col-3 promise pl-5 d-none d-lg-block">
               We promise won't spam you, though we might invite you to a hackathon.
         </div>
       </div>
@@ -521,5 +535,15 @@
 
     <!-- END CONTACT -->
   </div>
+  <script>
+    // If there's an email validation error (i.e. it already exists,) this will scroll the user to the email
+    // sign-up form. It will also remove the /subscribe at the end of the URL because we're displaying the
+    // index view.
+    subscribe_validation_error = document.getElementsByClassName('alert-danger');
+    if (subscribe_validation_error.length > 0) {
+        history.replaceState({}, "Caselaw Access Project", "/");
+        subscribe_validation_error[0].scrollIntoView()
+    }
+  </script>
 {% endblock %}
 
