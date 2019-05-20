@@ -21,6 +21,10 @@
   }
 }
 
+.social {
+  display: none;
+}
+
 // Stuff in the headline elements
 @mixin header-styles {
   display: block;
@@ -376,5 +380,8 @@ h2.section-title {
     font-family: $font-sans-serif;
     font-size: $font-size-sm;
     line-height: 1.25rem;
+  }
+  .social-top {
+    @extend .social;
   }
 }
