@@ -160,18 +160,25 @@
     <code>full_case=true</code>parameter.</span>
   </p>
   <p>
-    CAPAPI returns case text in three formats: text (default), XML, or HTML. The choice of format is either
-    controlled by the <code>body_format</code>, which will return the body and metadata in a JSON container,
-    or the <code>format</code> parameter which will return the case by itself. Only one of these parameters
-    should be specified at a time.
+    CAPAPI is capapble of returning case text in three formats: text(default), XML, or HTML. In most instances, each
+    case is represented by a JSON object which includes various pieces of metadata, and the case text itself which is
+    located in the <code>casebody</code> property. In both the <a href="#endpoint-cases"> case browse/search results
+    endpoint</a> and the <a href="#endpoint-cases"> individual case endpoint</a>, the <code>casebody</code> parameter
+    returns JSON structured plain text, but you can change that to either HTML or XML by setting the
+    <code>body_format</code> query parameter to either <code>html</code> or <code>xml</code>.
   </p>
   <p>
-    The non-default behavior, and simpler of the two is the <code>format</code> parameter, which accepts a
-    value of either <code>html</code> or <code>xml</code>. If you specify <code>html</code>, CAPAPI returns a
-    lightly styled, standalone HTML page. If you specify <code>xml</code> CAPAPI returns the entire original
-    XML document with intact METS, PREMIS and structural metadata.
+    In the individual <a href="#endpoint-cases">case</a> endpoint, you can alternately pass <code>html</code> or
+    <code>xml</code> to the <code>format</code> parameter to dispense with the JSON container and return only the
+    HTML or XML formatted case. The HTML returned using the <code>format</code> parameter is the same as the HTML
+    returned in the JSON container with <code>body_format</code> set to <code>html</code>. The XML output is
+    significantly more verbose&mdash; It includes METS, PREMIS and structural metadata.
   </p>
-
+  <p>
+    Do not set both <code>format</code> and <code>body_format</code> in the same query, and always use them with the
+    <code>full_case</code> parameter set to <code>true</code>. Using the <code>format</code> parameter with the
+    <a href="#endpoint-cases"> case browse/search results endpoint</a> will have no effect.
+  </p>
   <p>
   This is what you can expect from different format specifications using the <code>body_format</code>
   parameter.
