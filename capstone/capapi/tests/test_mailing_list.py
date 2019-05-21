@@ -12,13 +12,15 @@ def test_subscribe_get():
         subscribe(request)
 
 @pytest.mark.django_db
-def test_subscribe():
+def test_subscribe(mailoutbox):
+    assert len(mailoutbox) == 0
     assert MailingList.objects.count() == 0
     path = reverse('subscribe')
     data = {'email': 'joe@aol.com'}
     request = RequestFactory().post(path, data)
     subscribe(request)
     assert MailingList.objects.all()[0].email == 'joe@aol.com'
+    assert len(mailoutbox) == 1
 
 @pytest.mark.django_db
 def test_reject_duplicate_subscribe():
