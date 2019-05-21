@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 
 from capweb.forms import ContactForm, MailingListSubscribe
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
@@ -89,6 +90,8 @@ def contact(request):
         'page_description': 'Email us at %s or fill out this form. ' % settings.DEFAULT_FROM_EMAIL,
     })
 
+
+@csrf_exempt
 def subscribe(request):
     if request.method != 'POST':
         raise Http404("GET requests not allowed with this path.")
