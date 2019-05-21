@@ -495,7 +495,6 @@
         </div>
         <div class="col-8 offset-1 d-block d-md-none pb-4">
           <form class="email_form" action="{% url 'subscribe' %}" method="post">
-            {% csrf_token %}
             {% bootstrap_form subscribe_form %}
             <div class="add">Add your email to keep in touch</div>
           </form>
@@ -522,7 +521,6 @@
         </div>
         <div class="d-none d-md-block col-5 col-md-5 col-lg-3 offset-1 offset-sm-0">
           <form class="email_form" action="{% url 'subscribe' %}" method="post">
-            {% csrf_token %}
             {% bootstrap_form subscribe_form %}
             <div class="add">Add your email to keep in touch</div>
           </form>
