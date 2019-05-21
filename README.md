@@ -1,7 +1,7 @@
 Capstone
 ========
 
-[![Build Status](https://travis-ci.org/harvard-lil/capstone.svg?branch=develop)](https://travis-ci.org/harvard-lil/capstone) [![Coverage Status](https://coveralls.io/repos/github/harvard-lil/capstone/badge.svg?branch=develop)](https://coveralls.io/github/harvard-lil/capstone?branch=develop)
+[![CircleCI](https://circleci.com/gh/harvard-lil/capstone.svg?style=svg)](https://circleci.com/gh/harvard-lil/capstone) [![codecov](https://codecov.io/gh/harvard-lil/capstone/branch/develop/graph/badge.svg)](https://codecov.io/gh/harvard-lil/capstone)
 
 This is the source code for [case.law](https://case.law), a website written by the Harvard Law School Library Innovation Lab to manage and serve court opinions. Other than several cases used for our automated testing, this repository does not contain case data. Case data may be obtained through the website.
 
