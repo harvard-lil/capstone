@@ -33,7 +33,18 @@ urlpatterns = [
     path('gallery/witchcraft', TemplateView.as_view(template_name='gallery/witchcraft.html'), name='witchcraft'),
 
     path('contact/', views.contact, name='contact'),
-    path('contact-success/', TemplateView.as_view(template_name='contact_success.html'), name='contact-success'),
+    path('contact-success/', TemplateView.as_view(template_name='form_success.html',
+                                                  extra_context={
+                                                      'form_title': 'contact',
+                                                      'message': 'We\'ll be in touch, shortly.'
+                                                  }),  name='contact-success'),
+
+    path('subscribe/', views.subscribe, name='subscribe'),
+    path('subscribe-success/', TemplateView.as_view(template_name='form_success.html',
+                                                  extra_context={
+                                                      'form_title': 'subscribe',
+                                                      'message': 'We\'ll keep in touch.'
+                                                  }),  name='subscribe-success'),
 
     ### user account pages ###
 

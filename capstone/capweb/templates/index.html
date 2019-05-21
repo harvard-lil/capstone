@@ -4,6 +4,7 @@
 {% load api_url %}
 {% load format_number %}
 {% load render_bundle from webpack_loader %}
+{% load bootstrap4 %}
 {% load snippet %}
 
 {% block base_css %}{% stylesheet 'index' %}{% endblock %}
@@ -22,270 +23,485 @@
 {% block title_suffix %}Caselaw Access Project{% endblock title_suffix %}
 
 {% block content %}
-  <h1>Caselaw Access Project</h1>
-  <section id="section-quote" class="bg-black">
-    <div class="splash-quote">
-      <span>
-        <img class="decorative-arrow"
-             alt=""
-             aria-hidden="true"
-             src='{% static "img/red-arrow-right.svg" %}'/>
-        Three hundred and sixty years of United States caselaw
-        <img class="decorative-arrow left"
-             alt=""
-             aria-hidden="true"
-             src='{% static "img/red-arrow-left.svg" %}'/>
-      </span>
+
+  <div class="main-content bg-black">
+
+    <!-- START SPLASH QUOTE -->
+    <div class="splash-quote-section pb-0 pb-md-5 bg-black">
+      <h1>Caselaw Access Project</h1>
+      <div class="row pb-5 text-center mt-0 mt-lg-5 pt-5" id="section-quote">
+        <div class="col-1 col-sm-2 col-lg-3 splash-arrow-container text-right pt-2 pt-xl-3">
+          <img class="decorative-arrow-img pull-right d-none d-md-inline"
+               alt=""
+               aria-hidden="true"
+               src='{% static "img/violet-arrow-right.svg" %}'/>
+        </div>
+        <div class="col d-none d-md-block" id="splash-quote">
+          Three hundred and sixty years of United States caselaw
+        </div>
+        <div class="col d-block d-md-none" id="splash-quote">
+          A complete collection of published United States caselaw from 1640 to 2017
+        </div>
+
+        <div class="col-1 col-sm-2 col-lg-3 splash-arrow-container pt-2 pt-xl-3 text-left">
+          <img class="decorative-arrow-img text-left d-none d-md-inline"
+               alt=""
+               aria-hidden="true"
+               src='{% static "img/violet-arrow-left.svg" %}'/>
+        </div>
+      </div>
     </div>
-    <img class="decorative-mountains-purple"
-         alt=""
-         aria-hidden="true"
-         src="{% static "img/purple-mountains.png" %}">
-    <img class="decorative-mountains-red"
-         alt=""
-         aria-hidden="true"
-         src="{% static "img/red-mountains.png" %}">
-  </section>
 
-  <!-- About -->
-  <section id="section-about"
-           class="bg-gradient">
-    <div class="content">
-      <div class="row">
-        <div class="content-small-screen numbers">
-          <div class="row">
-            <div class="col">
-              <span class="number">{{ state.cases }}</span>
-            </div>
-            <div class="col mt-3">
-              <span class="label-big">
-                Million
+    <!-- END SPLASH QUOTE -->
+    <!-- START MAP -->
+
+    <div class="map-section m-0 pt-0 bg-gradient">
+      <div class="d-block d-md-none d-lg-none d-xl-none bg-gradient small-screen-map-section pb-5">
+        <div class="row pt-5 top-numbers-row">
+          <div class="col-4 offset-2 p-0">
+            <p class="bignumber">6.7</p>
+          </div>
+          <div class="col-4 pt-4">
+            <div class="pt-2 pt-sm-4 vseparator">
+              <span class="million">Million</span><br>
+              <span class="uniquecases">
+                Unique cases
               </span>
-              <img
-                      alt=""
-                      aria-hidden="true"
-                      src='{% static "img/red-arrow-left.svg" %}'/>
-              <span class="label">
-                <span class="color-yellow-bright">Unique</span> cases
-              </span>
-            </div>
-            <hr/>
-            <div class="col">
-              <span class="reporters-number">{{ state.reporters }}</span>
-              <span class="label color-yellow-bright">Reporters</span>
-            </div>
-            <div class="dotted-vr"></div>
-            <div class="col pl-1">
-              <span class="pages-scanned-number">{{ state.pages_scanned }}M</span>
-              <span class="label">Pages scanned</span>
             </div>
           </div>
         </div>
-        <div class="content-left">
-          <h2 class="section-title">
-            <img class="decorative-arrow"
-                 alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'>
-            Our data
-          </h2>
-          <div class="numbers numbers-state numbers-vertical">
-            <ul>
-              <li class="item-set jur-name">
-                <span class="number jur_name">Overall</span>
-              </li>
-              <li class="item-set num-cases">
-                <span class="number num_cases">{{ state.cases }}M</span>
-                <p>Unique cases</p>
-              </li>
-              <li class="item-set num-reporters">
-                <span class="number num_reporters">{{ state.reporters }}</span>
-                <p>Reporters</p>
-              </li>
-              <li class="item-set num-pages">
-                <span class="number num_pages">{{ state.pages_scanned }}M</span>
-                <p>Pages scanned</p>
-              </li>
-            </ul>
-          </div>
-          <div class="numbers numbers-federal numbers-vertical">
-            <ul>
-              <li class="item-set jur-name">
-                <span class="number federal-jur_name">Federal</span>
-              </li>
-              <li class="item-set num-cases">
-                <span class="number federal-num_cases">{{ federal.cases|format_number }}</span>
-                <p>Unique cases</p>
-              </li>
-              <li class="item-set num-reporters">
-                <span class="number federal-num_reporters">{{ federal.reporters|format_number }}</span>
-                <p>Reporters</p>
-              </li>
-              <li class="item-set num-pages">
-                <span class="number federal-num_pages">{{ federal.pages_scanned|format_number }}</span>
-                <p>Pages scanned</p>
-              </li>
-            </ul>
+        <div class="row p-0 mb-3 mb-sm-4">
+          <div class="col-8 offset-2 p-0 mt-0 mb-0 vseparator">
           </div>
         </div>
 
-        <div class="content-right">
-          <div class="map">
-            <a href="#section-dive-in"
-               class="skip">Skip map</a>
-            {% include "includes/usa_territories_white.svg" %}
+        <div class="row">
+          <div class="col-4 offset-2 p-0">
+            <div class="sixtwentyseven">627</div>
+          </div>
+          <div class="col-4 p-0">
+            <div class="fortym pl-3">40M</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4 offset-2 p-0">
+            <div class="bottom-text bottom-text-border pl-1 pt-4">Reporters</div>
+          </div>
+          <div class="col-6 p-0">
+            <div class="bottom-text pt-4 pl-2">Pages scanned</div>
+          </div>
+        </div>
+
+
+      </div>
+      <div class="d-none d-md-block d-lg-block d-xl-block pt-5">
+        <div class="row top-section-row">
+          <div class="col-1 text-right p-3 d-none d-lg-block">
+            <img aria-hidden="true" src='{% static "img/white-arrow-right.svg" %}'>
+          </div>
+          <div class="col-4 offset-1 offset-lg-0">
+            <h2 class="section-title p-0">
+              Our data
+            </h2>
+          </div>
+        </div>
+        <div class="row content-row">
+          <div class="col-3 offset-md-1 pr-3">
+
+            <div class="card text-white state-numbers-card mt-2 mb-4">
+              <div class="card-header bg-transparent mb-2">State</div>
+              <div class="card-body bg-black p-3 pt-2 pb-2">
+                <h5 class="card-title pb-1 jur_name">Overall</h5>
+
+                <div class="number-set mt-3 p-0">
+                  <p class="card-text figure mb-0 num_cases">{{ state.cases }}</p>
+                  <p class="card-text label">Unique cases</p>
+                </div>
+
+                <div class="number-set d-lg-block d-md-none p-0">
+                  <p class="card-text figure mb-0 num_reporters">{{ state.reporters }}</p>
+                  <p class="card-text label">Reporters</p>
+                </div>
+
+                <div class="number-set p-0">
+                  <p class="card-text figure mb-0 num_pages">{{ state.pages_scanned }}</p>
+                  <p class="card-text label">Pages Scanned</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card text-white federal-numbers-card mb-3">
+              <div class="card-header bg-transparent mb-2">Federal</div>
+              <div class="card-body bg-black p-3 pt-2">
+
+                <div class="number-set">
+                  <p class="card-text figure mb-0">{{ federal.cases|format_number }}</p>
+                  <p class="card-text label">Unique cases</p>
+                </div>
+
+                <div class="number-set d-lg-block d-md-none">
+                  <p class="card-text figure mb-0">{{ federal.reporters|format_number }}</p>
+                  <p class="card-text label">Reporters</p>
+                </div>
+
+                <div class="number-set">
+                  <p class="card-text figure mb-0">{{ federal.pages_scanned|format_number }}</p>
+                  <p class="card-text label">Pages Scanned</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="col-7">
+            <div class="map bg-transparent pl-5">
+              <a href="#section-dive-in"
+                 class="skip">Skip map</a>
+              {% include "includes/usa_territories_white.svg" %}
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </section>
-  <!-- /About -->
 
+    <!-- END MAP -->
+    <!-- START DIVE-IN -->
 
-  <!-- Dive in -->
-  <section id="section-dive-in" class="bg-black section-narrow extra-top-padding">
-    <div class="content">
-      <div class="row">
-        <div class="content-left">
-          <!-- section title -->
-          <h2 class="section-title">
-            <img class="decorative-arrow"
-                 alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'>
+    <div class="dive-in-section m-0 p-0 bg-black">
+      <div class="row pt-4">
+        <div class="col-1 text-right pr-3 pt-4 mt-1 d-none d-lg-block">
+          <img alt="" aria-hidden="true" src='{% static "img/magenta-arrow-right.svg" %}'>
+        </div>
+        <div class="col-8 col-md-3 col-sm-10 offset-1 offset-lg-0">
+          <h2 class="section-title p-0 pt-4 pt-md-3 pt-xl-0 mb-0 mb-md-2">
             Dive in!
           </h2>
-        </div>
-        <div class="content-right">
-          <!-- section subtitle -->
-          <div class="section-subtitle">
-            Start exploring the data! Here are some tools you can use to check it out.
+          <div class="section-subtitle d-none d-md-block">
+            See the full list:<br>
+            <div class="pt-2">
+              <a href="" class="btn-primary">tools</a>
+            </div>
           </div>
-
-          <h3>
-            <a href="{% url "api" %}">
-              API
-            </a>
-          </h3>
-          <p>The API allows users to browse and download cases using a few short commands.</p>
-
-          <h3>
-            <a href="{% url "bulk-docs" %}">
-              Bulk data
-            </a>
-          </h3>
-          <p>Download whole zip files of whitelisted jurisdictions like Illinois.</p>
-          <h3>
-            <a href="{% url "search" %}">
-              Search
-            </a>
-          </h3>
-          <p>Search and view case</p>
-
-
-          <a href="{% url "tools" %}"
-             class="btn btn-primary">
-            Browse tools
-          </a>
+        </div>
+        <div class="col-10 col-md-7 col-lg-4 offset-1 offset-md-0">
+          <div class="row">
+            <div class="col-12 pt-4 d-none d-md-block section-intro">
+              Start exploring the data! Here are some tools you can use to check it out.
+            </div>
+            <div class="col-11 pt-0 d-block d-md-none color-yellow font-sans-serif">
+              Start exploring the data! Here are some tools you can use to check it out.
+            </div>
+          </div>
+          <div class="row mt-4">
+            <div class="col">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="card text-white bg-transparent pr-3 mb-4">
+                    <div class="card-body bg-black">
+                      <div class="card-title d-block d-sm-none small-screen-card-title"><a href="">Search</a></div>
+                      <p class="d-none d-sm-block"><span class="highlighted">Search</span> allows users to browse and
+                        download cases using a few short
+                        commands.</p>
+                      <p class="d-block d-sm-none">Search allows users to browse and download cases using a few short
+                        commands.</p>
+                      <div class="card-footer d-none d-sm-block">
+                        <div class="btn-group mb-0">
+                          <a href="" class="btn-secondary">search</a>
+                          <a href="" class="btn-tertiary">see docs</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="card text-white bg-transparent pr-3">
+                    <div class="card-body bg-black">
+                      <div class="card-title d-block d-sm-none small-screen-card-title"><a href="">API</a></div>
+                      <p class="d-none d-sm-block"><span class="highlighted">The API</span> allows users to browse and
+                        download cases using a few
+                        short commands.</p>
+                      <p class="d-block d-sm-none">The API allows users to browse and download cases using a few short
+                        commands.</p>
+                      <div class="card-footer">
+                        <div class="btn-group mb-0 d-none d-sm-block">
+                          <a href="" class="btn-secondary">API</a>
+                          <a href="" class="btn-tertiary">see docs</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row d-none d-md-block">
+                <div class="col-sm-6">
+                  <div class="card text-white bg-transparent d-none d-sm-block mb-4 pr-3">
+                    <div class="card-body bg-black">
+                      <p><span class="highlighted">Download</span> whole zip files of whitelisted jurisdictions like
+                        Illinois.</p>
+                      <div class="card-footer">
+                        <div class="btn-group mb-0">
+                          <a href="" class="btn-secondary">bulk</a>
+                          <a href="" class="btn-tertiary">see docs</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row d-block d-sm-none">
+            <a href="" class="btn-primary">TOOLS</a>
+          </div>
+        </div>
+        <div class="col-3 d-none d-lg-block pl-5 pt-4">
+          <div class="card image-card mb-5">
+            <img class="card-img"
+                 alt="a technician holding disbound pages from a case reporter in front of a high speed scanner"
+                 src='{% static "img/book-scan.jpg" %}'>
+            <div class="card-footer item-credit mt-2">Photo Credit Goes Here</div>
+          </div>
+          <div class="card image-card ">
+            <img class="card-img"
+                 alt="case reporter books in in stacks"
+                 src='{% static "img/reporters.jpg" %}'/>
+            <div class="card-footer item-credit">Photo Credit Goes Here</div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
-  <!-- /Dive in -->
 
-  <!-- Showcase -->
-  <section id="section-gallery" class="bg-black section-narrow">
-    <div class="content">
+    <!-- END DIVE-IN -->
+    <!-- START GALLERY -->
+
+    <div class="gallery-section m-0 p-0 pt-5 bg-black">
       <div class="row">
-        <div class="content-left">
-          <!-- section title -->
-          <h2 class="section-title">
-            <img class="decorative-arrow"
-                 alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'>
+        <div class="col-1"></div>
+        <div class="col-3 d-none d-md-block mb-3">
+          <div class="section-separator"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-1 text-right pr-3 pt-4 mt-1 mt-1 d-none d-lg-block">
+          <img alt="" aria-hidden="true" src='{% static "img/magenta-arrow-right.svg" %}'>
+        </div>
+        <div class="col-8 col-sm-10 col-md-3 offset-1 offset-lg-0 ">
+          <h2 class="section-title pt-4 pt-md-3 pt-xl-0 mb-0 mb-md-2">
             Gallery
           </h2>
-        </div>
-        <div class="content-right">
-          <!-- section subtitle -->
-          <div class="section-subtitle">
-            Sky’s the limit. See some early experiments made possible by the opening up of caselaw data.
+          <div class="section-subtitle d-none d-md-block">
+            See the full list:<br>
+            <div class="pt-2">
+              <a href="" class="btn-primary">gallery</a>
+            </div>
           </div>
-          <h3>
-            <a href="{% url "wordclouds" %}">
-              Wordclouds
-            </a>
-          </h3>
-          <p>Most used words for every year of California caselaw from 1852 to 2015.</p>
-          <h3>
-            <a href="{% url "limericks" %}">
-              Limericks
-            </a>
-          </h3>
-          <p>Generate rhymes using caselaw!</p>
-          <a class="btn btn-primary"
-             href="{% url "gallery" %}">See gallery</a>
+        </div>
+        <div class="col-10 col-md-7 col-lg-4 offset-1 offset-md-0">
+          <div class="row">
+            <div class="col-12 pt-4 d-none d-md-block section-intro">
+              See some early experiments made possible by the opening up of caselaw data.
+            </div>
+            <div class="col-11 pt-0 d-block d-md-none color-yellow font-sans-serif">
+              See some early experiments made possible by the opening up of caselaw data.
+            </div>
+          </div>
+          <div class="row mt-4">
+            <div class="col">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="card text-white bg-transparent pr-3">
+                    <div class="card-body bg-black">
+                      <div class="card-title font-weight-bold d-none d-md-block">Limericks</div>
+                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="">Limericks</a></div>
+                      <p>Generate rhymes using caselaw!</p>
+                      <div class="card-footer d-none d-md-block">
+                        <div class="btn-group">
+                          <a href="" class="btn-tertiary p-0 mt-0">see projects</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
 
+                  <div class="card text-white bg-transparent pr-3">
+                    <div class="card-body bg-black">
+                      <div class="card-title font-weight-bold d-none d-md-block">Wordclouds</div>
+                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="">Wordclouds</a></div>
+                      <p>Graphics showcasing the most-used words in California caselaw each year between 1852 and
+                        2015. </p>
+                      <div class="card-footer d-none d-md-block">
+                        <div class="btn-group">
+                          <a href="" class="btn-tertiary p-0 mt-0">see projects</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6 d-none d-sm-block">
+                  <div class="card text-white bg-transparent pr-3">
+                    <div class="card-body bg-black">
+                      <div class="card-title font-weight-bold d-none d-md-block">Gavelfury</div>
+                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="">Gavelfury</a></div>
+                      <p>See all instances of "!"</p>
+                      <div class="card-footer d-none d-md-block">
+                        <div class="btn-group">
+                          <a href="" class="btn-tertiary p-0 mt-0">see projects</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 d-none d-sm-block">
+                  <div class="card text-white bg-transparent pr-3">
+                    <div class="card-body bg-black">
+                      <div class="card-title font-weight-bold d-none d-md-block">Witchcraft</div>
+                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="">Witchcraft</a></div>
+                      <p>See all instances of "witchcraft" charted out on the U.S. map.</p>
+                      <div class="card-footer d-none d-md-block">
+                        <div class="btn-group">
+                          <a href="" class="btn-tertiary p-0 mt-0">see projects</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-1 d-block d-sm-none">
+              <a href="" class="btn-primary">Gallery</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-3 d-none d-lg-block pl-5 pt-4">
+          <div class="card">
+            <div class="card-body">
+              <p class="short-standalone-quote mt-2">Is that she!</p>
+            </div>
+            <div class="card-footer">
+              <p class="item-credit mt-2">&mdash;Gavelfury</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <p class="short-standalone-quote mt-2 font-weight-bold">The reach of the indemnity clause.<br>
+                Payment is not expected because.<br> The defendant contends.<br> The defendants were friends.<br>
+                The same is true of quarantine laws.
+              </p>
+            </div>
+            <div class="card-footer">
+              <p class="item-credit mt-2">&mdash;A caselaw limerick</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
-  <!-- /Showcase -->
 
-  <!-- Links -->
-  <section id="section-links" class="bg-black section-narrow extra-bottom-padding">
-    <div class="content">
+    <!-- END GALLERY -->
+    <!-- START PRESS -->
+
+    <div class="press-section m-0 p-0 pb-5 pt-5 bg-black">
       <div class="row">
-        <div class="content-left">
-          <!-- section title -->
-          <h2 class="section-title">
-            <img class="decorative-arrow"
-                 alt=""
-                 aria-hidden="true"
-                 src='{% static "img/red-arrow-right.svg" %}'>
-            Links &amp; press
-          </h2>
+        <div class="col-1"></div>
+        <div class="col-3 d-none d-md-block mb-3">
+          <div class="section-separator"></div>
         </div>
-        <div class="content-right">
-          <!-- section subtitle -->
-          <div class="section-subtitle">
-            What's been written about Caselaw Access Project around the web:
+      </div>
+      <div class="row">
+        <div class="col-1 text-right p-3 d-none d-lg-block">
+          <img alt="" aria-hidden="true" src='{% static "img/magenta-arrow-right.svg" %}'>
+        </div>
+        <div class="col-10 col-md-3 offset-1 offset-lg-0">
+          <h2 class="section-title p-0">
+            Links & Press
+          </h2>
+          <div class="section-subtitle d-none d-md-block">
+            See the full list:<br>
+            <div class="pt-2">
+              <a href="" class="btn-primary">press</a>
+            </div>
           </div>
-          <ul>
-            {% for news_item in news %}
-              <li class="item-set">
-                <p class="item-title">
-                  <a href="{{ news_item.url }}"
-                     title="Go to {{ news_item.publication }} to read {{ news_item.title }}"
-                     target="_blank">{{ news_item.title|truncatechars:60 }}</a>
-                </p>
-                <span class="item-origin">
+        </div>
+        <div class="col-10 col-md-6 col-lg-4 offset-1 offset-lg-0">
+          <div class="row">
+            <div class="col-12 pt-4 d-none d-lg-block section-intro">
+              What's been written about Caselaw Access Project around the web
+            </div>
+            <div class="col-11 col-md-10 pt-0 d-block d-md-none color-yellow font-sans-serif">
+              Some content about Caselaw Access Project around the web
+            </div>
+
+          </div>
+          <div class="row mt-4">
+            <div class="col">
+              <ul class="spacious-list">
+                {% for news_item in news %}
+                  <li {% if forloop.counter0 > 1 %}
+                  class="item-set d-none d-md-block"
+                {% else %}
+                  class="item-set"
+                {% endif %}>
+                  <p class="item-title">
+                    <a href="{{ news_item.url }}"
+                       title="Go to {{ news_item.publication }} to read {{ news_item.title }}"
+
+                       target="_blank"> {{ news_item.title|truncatechars:60 }}</a>
+                  </p>
+                  <span class="item-credit mt-2">
                 {{ news_item.publication }}
               </span>
-                <span class="item-date">
+                  <span class="item-date">
                 {{ news_item.date }}
               </span>
-              </li>
-            {% endfor %}
-          </ul>
-          <a href="{% url "about" %}#press"
-             title="Read more Caselaw Access Project press"
-             class="btn btn-primary">See more</a>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="col-3 d-none d-lg-block pl-3 pt-3">
+          <div class="card">
+            <div class="card-body">
+              <p class="short-standalone-quote">&lsquo;Improving access to justice is a priority,&rsquo; said Martha
+                Minow,
+                dean of Harvard Law School</p>
+            </div>
+            <div class="card-footer">
+              <p class="item-credit mt-2 pull-right">&mdash;New York Times</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
-  <!-- /Links -->
-  <section id="section-follow" class="bg-yellow">
-    <div class="content">
+
+    <!-- END PRESS -->
+    <!-- START CONTACT --> <!-- (https://1n.pm/igQ7s) -->
+
+    <div class="contact-section m-0 p-0 pb-5 pt-5 bg-yellow">
+      <div class="row d-inline d-md-none">
+        <div class="col-6 pl-0 offset-1">
+          <h2 class="section-title pt-0 mb-3">
+            Contact
+          </h2>
+        </div>
+      </div>
       <div class="row">
-        <div class="content-left">
-          <!-- section title -->
+        <div class="col-2 offset-1 d-none d-md-block follow">
           Follow our progress, contribute code, or just say hi!
         </div>
-        <div class="content-right">
-          <div class="social big">
+        <div class="col-8 offset-1 d-block d-md-none pb-4">
+          <form class="email_form" action="{% url 'subscribe' %}" method="post">
+            {% csrf_token %}
+            {% bootstrap_form subscribe_form %}
+            <div class="add">Add your email to keep in touch</div>
+          </form>
+        </div>
+        <div class="col-11 col-md-2 offset-1 offset-md-0 ">
+          <div class="social-top d-block d-md-flex justify-content-end">
             <span class="twitter">
               <a href="https://twitter.com/caselawaccess" target="_blank"
                  title="Caselaw Access Project Twitter"
@@ -304,9 +520,30 @@
             </span>
           </div>
         </div>
+        <div class="d-none d-md-block col-5 col-md-5 col-lg-3 offset-1 offset-sm-0">
+          <form class="email_form" action="{% url 'subscribe' %}" method="post">
+            {% csrf_token %}
+            {% bootstrap_form subscribe_form %}
+            <div class="add">Add your email to keep in touch</div>
+          </form>
+        </div>
+        <div class="col-3 promise pl-5 d-none d-lg-block">
+              We promise won't spam you, though we might invite you to a hackathon.
+        </div>
       </div>
     </div>
-  </section>
 
+    <!-- END CONTACT -->
+  </div>
+  <script>
+    // If there's an email validation error (i.e. it already exists,) this will scroll the user to the email
+    // sign-up form. It will also remove the /subscribe at the end of the URL because we're displaying the
+    // index view.
+    subscribe_validation_error = document.getElementsByClassName('alert-danger');
+    if (subscribe_validation_error.length > 0) {
+        history.replaceState({}, "Caselaw Access Project", "/");
+        subscribe_validation_error[0].scrollIntoView()
+    }
+  </script>
 {% endblock %}
 

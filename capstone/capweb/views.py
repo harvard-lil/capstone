@@ -2,7 +2,7 @@ import logging
 from collections import OrderedDict
 from pathlib import Path
 
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -10,11 +10,12 @@ from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.views import View
 
-from capweb.forms import ContactForm
+from capweb.forms import ContactForm, MailingListSubscribe
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
 from capapi import serializers
+from capapi.models import MailingList
 from capapi.resources import form_for_request
 
 logger = logging.getLogger(__name__)
@@ -33,8 +34,10 @@ def index(request):
         "reporters": 627,
         "pages_scanned": 40,
     }
+    subscribe_form = form_for_request(request, MailingListSubscribe)
 
     return render(request, "index.html", {
+        'subscribe_form': subscribe_form,
         'news': news[0:5],
         'state': state,
         'federal': federal,
@@ -85,6 +88,30 @@ def contact(request):
         'page_title': 'Contact Caselaw Access Project',
         'page_description': 'Email us at %s or fill out this form. ' % settings.DEFAULT_FROM_EMAIL,
     })
+
+def subscribe(request):
+    if request.method != 'POST':
+        raise Http404("GET requests not allowed with this path.")
+
+    form = form_for_request(request, MailingListSubscribe)
+
+    subject = "Caselaw Access Project: Subscribed! We'll keep you up to date."
+    message = "Hello,\n"\
+              "We've got your email address on file; we'll let you know about big project updates, project-specific "\
+              "conferences, hackathons or any other related events we're hosting. If you didn't sign up for this, or "\
+              "signed up by mistake, just hit reply and let us know— we'll remove your address promptly."\
+              "\n\n"\
+              "Warmest Regards,\n"\
+              "The CAP Project Team"
+
+    if form.is_valid():
+        data = form.data
+        MailingList.objects.create(email=data.get('email'))
+        send_contact_email(subject, message, data.get('email'))
+        logger.info("sent subscribe email: %s" % data)
+        return HttpResponseRedirect(reverse('subscribe-success'))
+
+    return index(request)
 
 
 def tools(request):

@@ -65,6 +65,8 @@ function addMapMouseovers() {
 }
 
 function add_event_to_jur(event, el, jurname) {
+  // mapSettings lives in index.html, which calls this js file. eslint hates that.
+  // eslint-disable-next-line
   const map_data = mapSettings.data;
   el.addEventListener(event, function () {
     Array.from(document.getElementsByClassName("jur_name")).forEach(function (el) {
@@ -100,6 +102,8 @@ function addJurHrefs() {
   Array.from(statelinks).forEach(function (el) {
     Array.from(el.childNodes).forEach(function (child) {
       if (child.classList && child.classList.value.substring("state") !== -1) {
+        // mapSettings lives in index.html, which calls this js file. eslint hates that.
+        // eslint-disable-next-line
         el.setAttribute("href", mapSettings.jurisdictionUrl.replace("JURISDICTION", jurisdiction_translation[child.id]['slug']));
         el.setAttribute("target", "_blank");
       }
