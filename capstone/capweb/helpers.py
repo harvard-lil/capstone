@@ -1,7 +1,6 @@
 import json
 import re
 import socket
-from bs4 import BeautifulSoup
 from collections import namedtuple
 from contextlib import contextmanager
 from functools import wraps
@@ -9,7 +8,6 @@ import markdown
 from markdown.extensions.toc import TocExtension
 import requests
 import django_hosts
-from django_user_agents.utils import get_user_agent
 from ipware import get_client_ip
 
 from django.conf import settings
@@ -213,11 +211,3 @@ def is_google_bot(request):
         return False
     host_ip = socket.gethostbyname(host)
     return host_ip == ip
-
-
-def get_schema(response):
-    soup = BeautifulSoup(response.content.decode(), 'html.parser')
-    scripts = soup.find_all('script', {'type': 'application/ld+json'})
-    assert len(scripts) == 1
-    script = scripts[0]
-    return json.loads(script.text)

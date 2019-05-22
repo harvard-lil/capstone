@@ -1,9 +1,11 @@
 import re
+import json
 import pytest
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.utils.text import slugify
 from capapi.tests.helpers import check_response
-from capweb.helpers import reverse, get_schema
+from capweb.helpers import reverse
 from capweb import helpers
 
 from scripts.helpers import parse_xml
@@ -157,6 +159,14 @@ def test_single_case(client, auth_client, django_assert_num_queries, case):
     check_response(response, content_includes=case_text)
     auth_client.auth_user.refresh_from_db()
     assert auth_client.auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+
+
+def get_schema(response):
+    soup = BeautifulSoup(response.content.decode(), 'html.parser')
+    scripts = soup.find_all('script', {'type': 'application/ld+json'})
+    assert len(scripts) == 1
+    script = scripts[0]
+    return json.loads(script.text)
 
 
 @pytest.mark.django_db
