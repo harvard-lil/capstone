@@ -1,6 +1,6 @@
 @import "base.scss";
 
-.case {
+.casebody {
   img {
     max-width: 100%;
     height: auto;
@@ -232,26 +232,33 @@ section.head-matter {
 
 .footnote {
   font-size: 0.9em;
-  > p {
-    margin-bottom: 8px;
-    margin-left: 2em;
-    line-height: $line-height-sm;
+  margin-left: 2em;
+  line-height: $line-height-sm;
+  position: relative;
+
+  > p, > blockquote {
+    margin-bottom: .5em;
   }
 
   // footnote number
   > a {
-    float: left;
+    position: absolute;
+    left: 0;
+    transform: translateX(-100%);
+    padding-right: 1em;
     border-bottom: 0;
     font-weight: $font-weight-semibold;
-    line-height: $line-height-sm;
-    width: 20px;
-    text-align: center;
     color: $color-magenta;
   }
 
   // highlight selected footnote
   &:target {
     background-color: #FFF1F8;
+  }
+
+  // hide floating page label within footnotes
+  .page-label:before {
+    display: none;
   }
 }
 

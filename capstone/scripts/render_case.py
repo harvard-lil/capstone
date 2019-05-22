@@ -17,6 +17,8 @@ def iter_pars(opinions):
 # resulting empty tags will be stripped during rendering
 not_redacted_tokens = {'font', 'bracketnum', 'footnotemark'}
 
+par_class_to_tag = {"parties": "h4"}
+
 def filter_tokens(block, tags, redacted=True):
     """
         Filter a list of tokens and yield only text strings and tags included in `tags`. If redacted=True, filter out
@@ -360,16 +362,24 @@ class VolumeRenderer:
                 'xmlns': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body_Duplicative:v1' if self.duplicative else 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1',
             })
         else:
-            return etree.Element('section', {'class': 'case', 'data-case-id': case.case_id})
+            return etree.Element('section', {
+                'class': 'casebody',
+                'data-case-id': case.case_id,
+                'data-firstpage': case.first_page or '',
+                'data-lastpage': case.last_page or '',
+            })
 
     def make_opinion_el(self, opinion):
         """ Make <section class='opinion'>, or <opinion> """
         if self.format == 'xml':
             return etree.Element('opinion', {'type': opinion['type']})
         else:
-            return etree.Element('section', {
-                'class': opinion['type'] if opinion['type'] in ('head', 'corrections') else 'opinion ' + opinion['type'],
-            })
+            if opinion['type'] == 'head':
+                return etree.Element('section', {'class': 'head-matter'})
+            elif opinion['type'] == 'corrections':
+                return etree.Element('section', {'class': 'corrections'})
+            else:
+                return etree.Element('article', {'class': 'opinion', 'data-type': opinion['type']})
 
     def make_footnote_el(self, footnote):
         """ Make <aside class='footnote'>, or <footnote> """
@@ -417,7 +427,7 @@ class VolumeRenderer:
                 elif par['class'] == 'blockquote':
                     tag = ('blockquote', {'id': par['id']},)
                 else:
-                    tag = ('p', {'class': par['class'], 'id': par['id']},)
+                    tag = (par_class_to_tag.get(par['class'], 'p'), {'class': par['class'], 'id': par['id']},)
                 tag_stack.append((handler.startElement, tag))
 
             # write each block in the paragraph
