@@ -14,13 +14,13 @@
     The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
     and their associated metadata. We currently offer five ways to access the data:
     <a href="{% api_url "api-root" %}">API</a>, <a href="{% url "bulk-download" %}">bulk downloads</a>,
-    <a href="{% url "search" %}">search</a>, <a href="{% url "home" host "cite" %}">browse</a>, and an
+    <a href="{% url "search" %}">search</a>, <a href="{% url "cite_home" host "cite" %}">browse</a>, and an
     <a href="{% url "ngrams" %}">Ngram viewer</a>.
   {% else %}
     The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
     and their associated metadata. We currently offer four ways to access the data:
     <a href="{% api_url "api-root" %}">API</a>, <a href="{% url "bulk-download" %}">bulk downloads</a>,
-    <a href="{% url "search" %}">search</a>, and <a href="{% url "home" host "cite" %}">browse</a>.
+    <a href="{% url "search" %}">search</a>, and <a href="{% url "cite_home" host "cite" %}">browse</a>.
 
   {% endif %}
 {% endblock %}
@@ -97,7 +97,7 @@
     Browse and cite all of our cases sorted by jurisdiction, series, and volume.
   </p>
   <div class="btn-group">
-    <a class="btn-primary" href="{% url "home" host "cite" %}">BROWSE</a>
+    <a class="btn-primary" href="{% url "cite_home" host "cite" %}">BROWSE</a>
   </div>
 
   {# ==============> NGRAMS <============== #}

@@ -13,7 +13,7 @@ from scripts.helpers import parse_xml
 def test_home(client, django_assert_num_queries, ingest_metadata):
     """ Test / """
     with django_assert_num_queries(select=2):
-        response = client.get(reverse('home', host='cite'))
+        response = client.get(reverse('cite_home', host='cite'))
     check_response(response, content_includes="Alabama Appellate Courts Reports")
 
 @pytest.mark.django_db

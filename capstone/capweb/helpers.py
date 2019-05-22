@@ -15,7 +15,6 @@ from django.core.mail import EmailMessage
 from django.db import transaction, connections, OperationalError
 from django.urls import NoReverseMatch
 from django.utils.functional import lazy
-from django_hosts.resolvers import get_host_patterns
 
 
 def cache_func(key, timeout=None, cache_name='default'):
@@ -59,6 +58,8 @@ def get_data_from_lil_site(section="news"):
     data = json.loads(content.strip()[start_index + 1:end_index])
     return data[section]
 
+_host_names = sorted(settings.HOSTS.keys())
+
 def reverse(*args, **kwargs):
     """
         Wrap django_hosts.reverse() to try all known hosts.
@@ -70,14 +71,13 @@ def reverse(*args, **kwargs):
         return django_hosts.reverse(*args, **kwargs)
 
     # try each host
-    hosts = get_host_patterns()
-    for i, host in enumerate(reversed(hosts)):
-        kwargs['host'] = host.name
+    for i, host_name in enumerate(_host_names):
+        kwargs['host'] = host_name
         try:
             return django_hosts.reverse(*args, **kwargs)
         except NoReverseMatch:
             # raise NoReverseMatch only after testing final host
-            if i == len(hosts)-1:
+            if i == len(_host_names)-1:
                 raise
 
 reverse_lazy = lazy(reverse, str)
