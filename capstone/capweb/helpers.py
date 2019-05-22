@@ -8,7 +8,6 @@ import markdown
 from markdown.extensions.toc import TocExtension
 import requests
 import django_hosts
-from ipware import get_client_ip
 
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
@@ -197,13 +196,11 @@ def is_google_bot(request):
     """
     from https://blog.majsky.cz/detecting-google-bot-python-and-django/
     """
-    user_agent = get_user_agent(request)
-    if not user_agent.is_bot:
+    if "Googlebot" not in request.META.get('HTTP_USER_AGENT', ''):
         return False
-    ip, _ = get_client_ip(request)
+    ip = request.user.ip_address
     try:
         host = socket.gethostbyaddr(ip)[0]
-        print(host)
     except (socket.herror, socket.error):
         return False
     domain_name = ".".join(host.split('.')[1:])
