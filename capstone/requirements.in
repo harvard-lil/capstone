@@ -87,8 +87,3 @@ elasticsearch-dsl
 django-elasticsearch-dsl
 django-elasticsearch-dsl-drf
 
-# Checking for bots
-user-agents
-django-user_agents
-django-ipware
-
