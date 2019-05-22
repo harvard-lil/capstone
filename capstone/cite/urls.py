@@ -8,5 +8,5 @@ urlpatterns = [
     path('<str:series_slug>/<str:volume_number>/<str:page_number>/', views.citation, name='citation'),
     path('<str:series_slug>/<str:volume_number>/', views.volume, name='volume'),
     path('<str:series_slug>/', views.series, name='series'),
-    path('', views.home, name='home'),
+    path('', views.home, name='cite_home'),
 ]

@@ -13,7 +13,7 @@
     {% autoescape off %}
       const mapSettings = {
         "data": {% snippet 'map_numbers' %},
-        "jurisdictionUrl": "{% url "home" host "cite" %}#JURISDICTION"
+        "jurisdictionUrl": "{% url "cite_home" host "cite" %}#JURISDICTION"
       };
     {% endautoescape %}
   </script>
