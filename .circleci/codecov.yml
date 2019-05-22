@@ -1,0 +1,10 @@
+# don't fail the PR on coverage decrease
+coverage:
+  status:
+    project: false
+    patch: false
+    changes: false
+
+# rewrite paths so "capdb/tasks.py" becomes "capstone/capdb/tasks.py" in coverage file:
+fixes:
+  - "::capstone/"
