@@ -18,7 +18,7 @@ from capapi import serializers
 from capapi.authentication import SessionAuthentication
 from capapi.renderers import HTMLRenderer
 from capdb.models import Reporter, VolumeMetadata, Citation, CaseMetadata
-from capweb.helpers import reverse
+from capweb import helpers
 
 ### helpers ###
 
@@ -148,11 +148,14 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
                 else:
                     serializer = serializers.CaseSerializerWithCasebody
 
+        elif helpers.is_google_bot(request):
+            serializer = serializers.NoLoginCaseSerializer
+
         # if non-whitelisted case, not logged in, and no cookies set up, redirect to ?set_cookie=1
         else:
             request.session['case_allowance_remaining'] = settings.API_CASE_DAILY_ALLOWANCE
             request.session['case_allowance_last_updated'] = time.time()
-            return HttpResponseRedirect('%s?%s' % (reverse('set_cookie', host='cite'), urlencode({'next': request.get_full_path()})))
+            return HttpResponseRedirect('%s?%s' % (helpers.reverse('set_cookie', host='cite'), urlencode({'next': request.get_full_path()})))
 
         # render case using API serializer
         api_request = Request(request, authenticators=[SessionAuthentication()])
@@ -183,9 +186,13 @@ def set_cookie(request):
         /set_cookie/          -- try to use javascript to set a 'not_a_bot=1' cookie
         /set_cookie/?no_js=1  -- ask user to click a button to set a 'not_a_bot=1' cookie
     """
+    # user is actually a google bot
+    if helpers.is_google_bot(request):
+        return safe_redirect(request)
+
     # user already had a not_a_bot cookie and just needed a session cookie,
     # which was set when they were forwarded here -- they're ready to go:
-    if 'case_allowance_remaining' in request.session and request.COOKIES.get('not_a_bot', 'no') == 'yes':
+    elif 'case_allowance_remaining' in request.session and request.COOKIES.get('not_a_bot', 'no') == 'yes':
         return safe_redirect(request)
 
     # user has successfully POSTed to get their not_a_bot cookie:

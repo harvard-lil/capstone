@@ -1,5 +1,6 @@
 import json
 import re
+import socket
 from collections import namedtuple
 from contextlib import contextmanager
 from functools import wraps
@@ -178,3 +179,21 @@ def render_markdown(markdown_doc):
     toc = "".join(toc.splitlines(True)[2:-2])  # strip <div><ul> around toc by dropping first and last two lines
     meta = {k:' '.join(v) for k, v in md.Meta.items()}
     return html, toc, meta
+
+
+def is_google_bot(request):
+    """
+    from https://blog.majsky.cz/detecting-google-bot-python-and-django/
+    """
+    if "Googlebot" not in request.META.get('HTTP_USER_AGENT', ''):
+        return False
+    ip = request.user.ip_address
+    try:
+        host = socket.gethostbyaddr(ip)[0]
+    except (socket.herror, socket.error):
+        return False
+    domain_name = ".".join(host.split('.')[1:])
+    if domain_name not in ['googlebot.com', 'google.com']:
+        return False
+    host_ip = socket.gethostbyname(host)
+    return host_ip == ip
