@@ -95,9 +95,10 @@ h2.section-title {
 }
 
 .item-credit {
-  font-size: 12pt;
+  font-size: $font-size-sm;
   font-family: $font-sans-serif;
   color: $color-yellow;
+  line-height: 1.25rem;
 }
 
 .short-standalone-quote:before {
@@ -330,21 +331,6 @@ h2.section-title {
 
   #id_email {
     border: 0;
-  }
-
-  .email_form:after {
-    left: 100%;
-    top: .5rem;
-    margin-left: .5rem;
-    content: " ";
-    height: 0;
-    width: 0;
-    position: absolute;
-    pointer-events: none;
-    border: 12px solid rgba(0, 0, 0, 0);
-    border-top-color: $color-black;
-    display: inline-block;
-    transform: rotate(270deg);
   }
 
   form.email_form {
