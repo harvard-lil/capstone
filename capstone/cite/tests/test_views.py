@@ -4,7 +4,7 @@ import pytest
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.utils.text import slugify
-from capapi.tests.helpers import check_response
+from capapi.tests.helpers import check_response, is_cached
 from capweb.helpers import reverse
 from capweb import helpers
 
@@ -231,6 +231,8 @@ def test_schema_in_case_as_google_bot(client, case, monkeypatch):
     case.jurisdiction.save()
 
     response = client.get(url, follow=True)
+
+    assert not is_cached(response)
 
     # show cases anyway
     check_response(response, content_includes=case_text)
