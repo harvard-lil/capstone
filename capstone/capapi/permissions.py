@@ -1,4 +1,3 @@
-from capweb import helpers
 from rest_framework import permissions
 
 staff_level_permissions = [
@@ -40,9 +39,6 @@ def get_single_casebody_permissions(request, case):
         casebody["status"] = casebody_permissions["unk"]
 
     elif case.jurisdiction_whitelisted:
-        casebody["status"] = casebody_permissions["ok"]
-
-    elif helpers.is_google_bot(request):
         casebody["status"] = casebody_permissions["ok"]
 
     elif request.user.is_anonymous:

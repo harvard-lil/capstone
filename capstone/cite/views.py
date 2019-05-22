@@ -149,7 +149,7 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
                     serializer = serializers.CaseSerializerWithCasebody
 
         elif helpers.is_google_bot(request):
-            serializer = serializers.CaseSerializerWithCasebody
+            serializer = serializers.NoLoginCaseSerializer
         # if non-whitelisted case, not logged in, and no cookies set up, redirect to ?set_cookie=1
         else:
             request.session['case_allowance_remaining'] = settings.API_CASE_DAILY_ALLOWANCE
