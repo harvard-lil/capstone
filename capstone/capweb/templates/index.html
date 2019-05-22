@@ -194,7 +194,7 @@
           <div class="row mt-4">
             <div class="col">
               <div class="row">
-                <div class="col-sm-6">
+                <div class="col-12 col-sm-6">
                   <div class="card text-white bg-transparent pr-3 mb-4">
                     <div class="card-body bg-black">
                       <div class="card-title d-block d-sm-none small-screen-card-title"><a href="{% url "search" %}">
@@ -213,7 +213,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-6">
+                <div class="col-12 col-sm-6">
                   <div class="card text-white bg-transparent pr-3">
                     <div class="card-body bg-black">
                       <div class="card-title d-block d-sm-none small-screen-card-title"><a href="{% api_url "api-root" %}">API</a></div>
@@ -232,8 +232,8 @@
                   </div>
                 </div>
               </div>
-              <div class="row d-none d-md-block">
-                <div class="col-sm-6">
+              <div class="row">
+                <div class="col-6 d-none d-md-block">
                   <div class="card text-white bg-transparent d-none d-sm-block mb-4 pr-3">
                     <div class="card-body bg-black">
                       <p><span class="highlighted">Download</span> whole zip files of whitelisted jurisdictions like
@@ -242,6 +242,21 @@
                         <div class="btn-group mb-0">
                           <a href="{% url "bulk-download" %}" class="btn-secondary">bulk</a>
                           <a href="{% url "bulk-docs" %}" class="btn-tertiary">see docs</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 d-none d-md-block">
+                  <div class="card text-white bg-transparent d-none d-sm-block pr-3 mb-4">
+                    <div class="card-body bg-black">
+                      <div class="card-title d-block d-sm-none small-screen-card-title">
+                        <a href="{% url "cite_home" host "cite" %}">Browse</a></div>
+                      <p class="d-none d-sm-block"><span class="highlighted">Browse</span> a list of all cases in our
+                        corpus organized by state or territory.</p>
+                      <div class="card-footer d-none d-sm-block">
+                        <div class="btn-group mb-0">
+                          <a href="{% url "cite_home" host "cite" %}" class="btn-secondary">browse</a>
                         </div>
                       </div>
                     </div>
@@ -381,7 +396,7 @@
         <div class="col-3 d-none d-lg-block pl-5 pt-4">
           <div class="card">
             <div class="card-body">
-              <p class="short-standalone-quote mt-2">Is that she!</p>
+              <p class="short-standalone-quote mb-1 mt-2">Is that she!</p>
             </div>
             <div class="card-footer">
               <p class="item-credit mt-2">&mdash;Gavelfury</p>
@@ -389,7 +404,7 @@
           </div>
           <div class="card">
             <div class="card-body">
-              <p class="short-standalone-quote mt-2">The reach of the indemnity clause.<br>
+              <p class="short-standalone-quote mb-1 mt-2">The reach of the indemnity clause.<br>
                 Payment is not expected because.<br> The defendant contends.<br> The defendants were friends.<br>
                 The same is true of quarantine laws.
               </p>
@@ -466,7 +481,7 @@
         <div class="col-3 d-none d-lg-block pl-3 pt-3">
           <div class="card">
             <div class="card-body">
-              <p class="short-standalone-quote">&lsquo;Improving access to justice is a priority,&rsquo; said Martha
+              <p class="short-standalone-quote mb-1">&lsquo;Improving access to justice is a priority,&rsquo; said Martha
                 Minow,
                 dean of Harvard Law School</p>
             </div>
