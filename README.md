@@ -260,26 +260,41 @@ included in templates with `{% render_bundle %}`.
 If you want to edit javascript files, you will need to install `node` and the package.json javascript packages:
 
     $ brew install node
-    $ npm install
+    $ npm install -g yarn
+    $ yarn install --frozen-lockfile
 
 You can then run the local javascript development server in a separate terminal window, or in the background:
 
-    $ npm run serve
+    $ yarn serve
 
 This will cause javascript files to be loaded live from http://127.0.0.1:8080/ and recompiled on save in the background.
 Your changes should be present at http://127.0.0.1:8000.
 
-*Important:* Any time you run `npm run serve`, before committing, you must then run
+*Important:* Any time you run `yarn serve`, before committing, you must then run
 
-    $ npm run build
+    $ yarn build
 
 to compile the production assets and recreate webpack-stats.json, or else tests will fail when you send a pull request.
 (If you don't change anything, you could also just undo the changes to webpack-stats.json.)
 
-Installing node and running `npm run serve` is not necessary unless you are editing javascript. On a clean checkout, or
-after shutting down `npm run serve` and running `npm run build`, the local dev server will use the compiled production
-assets. (Under the hood, use of the local dev server vs. production assets is controlled by the contents of
-`webpack-stats.json`.)
+Installing node and running `yarn serve` is not necessary unless you are editing javascript. On a clean checkout, or
+after shutting down `yarn serve` and running `yarn build`, the local dev server will use the compiled production
+assets. Under the hood, use of the local dev server vs. production assets is controlled by the contents of
+`webpack-stats.json`.
+
+*Installing packages*: You can install new packages with:
+
+    $ yarn add --dev package
+
+After changing package.json or yarn.lock, you should run `fab update_docker_image_version` to ensure that docker users
+get the updates.
+
+*Yarn and docker:* `yarn` will also work inside docker-compose:
+
+    $ docker-compose run web yarn build
+
+`yarn` packages inside docker are stored in `/node_modules`. The `/app/capstone/node_modules` folder is just an empty
+mount to block out any `node_modules` folder that might exist on the host.
 
 ## Documentation <a id="documentation"></a>
 This readme, code comments, and the API usage docs are the only docs we have. If you want something documented more thoroughly, file an issue and we'll get back to you.

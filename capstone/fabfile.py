@@ -78,7 +78,7 @@ def update_docker_image_version():
     import re
 
     # get hash of Dockerfile input files
-    paths = ['Dockerfile', 'requirements.txt', 'package-lock.json']
+    paths = ['Dockerfile', 'requirements.txt', 'yarn.lock']
     hasher = hashlib.sha256()
     for path in paths:
         hasher.update(Path(path).read_bytes())

@@ -64,9 +64,6 @@ let vueConfig = {
     ]
   },
 
-  // static assets are hashed by whitenoise
-  filenameHashing: false,
-
   chainWebpack: config => {
     // delete HTML related webpack plugins
     // via https://github.com/vuejs/vue-cli/issues/1478
