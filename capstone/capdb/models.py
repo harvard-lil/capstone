@@ -941,17 +941,17 @@ class CaseMetadata(models.Model):
         opinions = []
         for opinion in casebody_pq.items('.opinion'):
             opinions.append({
-                'type': opinion.attr.type,
+                'type': opinion.attr['data-type'],
                 'author': opinion('.author').text() or None,
                 'text': opinion.text(),
             })
-        head_matter, opinions = opinions[0], opinions[1:]
         json = {
-            'head_matter': head_matter['text'],
-            'judges': [judge.text for judge in casebody_pq('p.judges')],
-            'attorneys': [attorney.text for attorney in casebody_pq('p.attorneys')],
-            'parties': [party.text for party in casebody_pq('p.parties')],
+            'head_matter': casebody_pq('.head-matter').text(),
+            'judges': [judge.text() for judge in casebody_pq('p.judges').items()],
+            'attorneys': [attorney.text() for attorney in casebody_pq('p.attorneys').items()],
+            'parties': [party.text() for party in casebody_pq('p.parties').items()],
             'opinions': opinions,
+            'corrections': casebody_pq('.corrections').text(),
         }
 
         ## save
