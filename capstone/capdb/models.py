@@ -850,7 +850,11 @@ class CaseMetadata(models.Model):
     # accomplished in Django 2.2 with a condition.
 
     def full_cite(self):
-        return "%s, %s (%s)" % (self.name_abbreviation, ", ".join(cite.cite for cite in self.citations.all()), self.decision_date.year)
+        return "%s, %s%s" % (
+            self.name_abbreviation,
+            ", ".join(cite.cite for cite in self.citations.all()),
+            " (%s)" % self.decision_date.year if self.decision_date else ""
+        )
 
     def get_absolute_url(self):
         return reverse('casemetadata-detail', args=[self.id], scheme="https")
@@ -1047,6 +1051,7 @@ class CaseMetadata(models.Model):
         if citations:
             Citation.objects.bulk_create(Citation(
                 cite=citation['text'],
+                normalized_cite=Citation.normalize_cite(citation['text']),
                 type=citation['category'],
                 category=citation['type'],
                 duplicative=citation.get('duplicative', False),

@@ -7,7 +7,6 @@ staff_level_permissions = [
     'capapi.delete_capuser',
 ]
 
-
 class IsSafeMethodsUser(permissions.BasePermission):
     def has_permission(self, request, view):
         # we're a read-only operation here
@@ -35,6 +34,7 @@ def get_single_casebody_permissions(request, case):
     updating case download permissions for user if case is blacklisted
     """
     casebody = {"status": None, "data": None}
+
     if not case.jurisdiction_id:
         casebody["status"] = casebody_permissions["unk"]
 

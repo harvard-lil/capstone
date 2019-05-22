@@ -41,6 +41,9 @@
       color: $color-pink;
     }
   }
+  g > a {
+    fill: transparent;
+  }
   .btn-primary, .btn-secondary, .btn-tertiary {
     @include button($color-magenta, $color-black, $color-pink);
   }

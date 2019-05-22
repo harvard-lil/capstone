@@ -86,4 +86,3 @@ requests  # also via aws-xray-sdk, coreapi, docker, moto, response
 elasticsearch-dsl
 django-elasticsearch-dsl
 django-elasticsearch-dsl-drf
-

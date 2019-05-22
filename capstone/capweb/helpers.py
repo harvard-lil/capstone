@@ -1,6 +1,5 @@
 import json
 import re
-import socket
 from collections import namedtuple
 from contextlib import contextmanager
 from functools import wraps
@@ -25,7 +24,6 @@ def cache_func(key, timeout=None, cache_name='default'):
         `key` should be a lambda that takes the decorated function's arguments and returns a cache key.
     """
     cache = caches[cache_name]
-
     def decorator(func):
         @wraps(func)
         def decorated(*args, **kwargs):
@@ -42,11 +40,8 @@ def cache_func(key, timeout=None, cache_name='default'):
             value = func(*args, **kwargs)
             cache.set(cache_key, value, timeout)
             return value
-
         return decorated
-
     return decorator
-
 
 @cache_func(
     key=lambda section: 'get_data_from_lil_site:%s' % section,
@@ -63,7 +58,6 @@ def get_data_from_lil_site(section="news"):
         end_index = -1
     data = json.loads(content.strip()[start_index + 1:end_index])
     return data[section]
-
 
 def reverse(*args, **kwargs):
     """
@@ -83,12 +77,10 @@ def reverse(*args, **kwargs):
             return django_hosts.reverse(*args, **kwargs)
         except NoReverseMatch:
             # raise NoReverseMatch only after testing final host
-            if i == len(hosts) - 1:
+            if i == len(hosts)-1:
                 raise
 
-
 reverse_lazy = lazy(reverse, str)
-
 
 def show_toolbar_callback(request):
     """
@@ -101,7 +93,6 @@ def show_toolbar_callback(request):
 
 class StatementTimeout(Exception):
     pass
-
 
 @contextmanager
 def statement_timeout(timeout, db="default"):
@@ -122,7 +113,6 @@ def statement_timeout(timeout, db="default"):
                 raise
             # reset to default, in case we're in a nested transaction
             cursor.execute("SET LOCAL statement_timeout = %s", [original_timeout])
-
 
 @contextmanager
 def transaction_safe_exceptions(using=None):
@@ -145,13 +135,11 @@ def transaction_safe_exceptions(using=None):
     else:
         yield
 
-
 def select_raw_sql(sql, args=None, using=None):
     with connections[using].cursor() as cursor:
         cursor.execute(sql, args)
         nt_result = namedtuple('Result', [col[0] for col in cursor.description])
         return [nt_result(*row) for row in cursor.fetchall()]
-
 
 def send_contact_email(title, content, from_address):
     """
@@ -184,27 +172,9 @@ def render_markdown(markdown_doc):
         Render given markdown document and return (html, table_of_contents, meta)
     """
     md = markdown.Markdown(extensions=[TocExtension(baselevel=2, marker=''), 'meta'])
-    html = md.convert(markdown_doc) \
+    html = md.convert(markdown_doc)\
         .replace('<h2 ', '<h2 class="subtitle" ')
     toc = md.toc.replace('<a ', '<a class="list-group-item" ')
     toc = "".join(toc.splitlines(True)[2:-2])  # strip <div><ul> around toc by dropping first and last two lines
-    meta = {k: ' '.join(v) for k, v in md.Meta.items()}
+    meta = {k:' '.join(v) for k, v in md.Meta.items()}
     return html, toc, meta
-
-
-def is_google_bot(request):
-    """
-    from https://blog.majsky.cz/detecting-google-bot-python-and-django/
-    """
-    if "Googlebot" not in request.META.get('HTTP_USER_AGENT', ''):
-        return False
-    ip = request.user.ip_address
-    try:
-        host = socket.gethostbyaddr(ip)[0]
-    except (socket.herror, socket.error):
-        return False
-    domain_name = ".".join(host.split('.')[1:])
-    if domain_name not in ['googlebot.com', 'google.com']:
-        return False
-    host_ip = socket.gethostbyname(host)
-    return host_ip == ip

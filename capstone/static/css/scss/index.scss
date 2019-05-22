@@ -3,14 +3,29 @@
 @import 'map';
 @import 'footer/magenta';
 
-h1 {
-  @include sr-only;
+
+
+/**************************************************************
+*
+* == Global Stuff ==
+*
+* For classes that are basically the same in multiple sections
+*
+***************************************************************/
+
+.section-separator {
+  border-top: 2px solid $color-white;
+  width: 75%;
+  @include media-breakpoint-up(lg) {
+    width: 68%
+  }
 }
 
-/*
- * specialized lettering for index page
- */
+.social {
+  display: none;
+}
 
+// Stuff in the headline elements
 @mixin header-styles {
   display: block;
   font-family: $font-sans-serif;
@@ -19,307 +34,354 @@ h1 {
   margin-bottom: $headings-margin-bottom;
 }
 
-.section-narrow {
-  padding: 2em 0;
-  &.extra-top-padding {
-    padding-top: 6em;
+h2.section-title {
+  @extend .h1;
+  @include header-styles;
+  font-family: $font-sans-title;
+  letter-spacing: 0.16rem;
+  font-size: 2.25rem;
+  @include media-breakpoint-only(xl) {
+    font-size: 4rem;
   }
-  &.extra-bottom-padding {
-    padding-bottom: 6em;
+  @include media-breakpoint-only(lg) {
+    font-size: 3rem;
+  }
+  @include media-breakpoint-only(md) {
+    font-size: 2.5rem;
+  }
+  @include media-breakpoint-only(sm) {
+    font-size: 2.75rem;
+    margin-bottom: 0;
   }
 }
 
-.section-title {
-  @extend .h1;
-  @include header-styles;
-  .decorative-arrow {
-    margin-bottom: 1.5rem;
-  }
+.section-intro {
+  line-height: 1.75rem;
 }
 
 .section-subtitle {
-  margin-bottom: 2em;
-  margin-top: 20px;
-  font-family: $font-serif;
-  font-weight: normal !important;
+  hyphens: none;
 }
 
-.number {
-  @extend .h5;
-  @include header-styles;
-  margin-bottom: 0;
-  font-family: $font-serif;
-  font-weight: 400;
-  .content-small-screen & {
-    font-family: $font-sans-serif;
-    font-size: 5rem;
-  }
-}
-
-.number.jur_name, .number.federal-jur_name {
-  max-height: 100px;
-  margin-bottom: 1rem;
-  padding: 0 0 .2rem;
-  border-bottom: 1px solid $color-white;
-}
-
-.pages-scanned-number, .reporters-number {
-  @include header-styles;
-  font-size: 3rem;
-}
-
-.pages-scanned-number {
-  font-family: $font-sans-serif;
-}
-
-.label {
-  @extend .h5;
-  @include header-styles;
-  font-family: $font-sans-serif;
+// Stuff in the card elements
+.small-screen-card-title {
+  font-size: 1.5rem;
   font-weight: $font-weight-semibold;
+  margin-bottom: .5rem;
 }
 
-.label-big {
-  @include header-styles;
-  font-size: 1.8rem;
-  font-family: $font-sans-serif;
-}
-
-.content-right h3 {
-  @extend .h5;
-  font-family: $font-sans-serif;
-}
-
-/* on small screens:
-  - display white background logo
-  - change fixed positioning of nav bar
-*/
-
-@include media-breakpoint-down(sm) {
-  #main.all-content {
-    padding-top: 0;
-  }
-
-  .branding-standalone {
-    display: inline-block;
-    padding: 0.5rem;
-    min-height: 90px;
-  }
-
-  .branding {
-    .nav-branding {
-      background: url("../../img/logos/black.svg") no-repeat;
-      background-size: contain;
-      &:hover, &:focus, &:active {
-        background: url("../../img/logos/violet-black.svg") no-repeat;
-        background-size: contain;
-      }
-    }
-  }
-
-  nav[aria-label="main"] {
-    position: relative;
-    .branding {
-      display: none;
-    }
-    &.sticky {
-      .branding {
-        display: inline-block;
-      }
-    }
-  }
-}
-
-.numbers-vertical {
-  background-color: $color-black;
-  margin-top: 20px;
-  text-align: left;
-  padding-top: 15px;
-  padding-bottom: 15px;
-  -webkit-box-shadow: 1px 1px 2px $color-black;
-  -moz-box-shadow: 1px 1px 2px $color-black;
-  box-shadow: 1px 1px 2px $color-black;
-  li.item-set {
-    margin-bottom: 0;
-  }
-  ul {
-    padding-left: 15px;
-    padding-right: 15px;
-  }
-}
-
-/* show map only on medium sized devices and above */
-.content-right > .map {
-  margin-top: 3em;
-  margin-bottom: 3em;
-  min-width: 100%;
-  @include media-breakpoint-down(sm) {
-    display: none;
-  }
-}
-
-#section-about > .content {
-  @extend .col-12;
-  .content-right {
+.card-body {
+  p {
+    line-height: 1.65rem;
     @include media-breakpoint-down(lg) {
-      min-width: 60%;
+      font-size: 1.125rem;
+      line-height: 1.45rem;
     }
-
   }
 }
 
-#section-about > .content > .row {
-  .content-left,
-  .content-right {
-    @include media-breakpoint-down(lg) {
-      font-size: 0.8em;
-    }
-    @include media-breakpoint-down(sm) {
-      display: none;
-    }
-  }
-  .content-right {
-    margin-left: 3em;
-  }
+.card-img {
+  max-width: 100%;
+  border: 1px solid white;
 }
 
-#section-about > .content > .row > .content-left {
-  @extend .col-3;
-  padding-left: 0;
-  padding-right: 0;
+.short-standalone-quote {
+  font-size: 1.4rem;
+  font-family: $font-sans-serif;
+  color: $color-white;
   @include media-breakpoint-down(lg) {
-    .numbers-vertical {
-      .num-reporters {
-        display: none;
-      }
-    }
-  }
-  @include media-breakpoint-down(md) {
-    .numbers-vertical {
-      .num-pages {
-        display: none;
-      }
-    }
+    font-size: 1.1rem;
   }
 }
 
-#section-about {
-  padding-bottom: 0;
-  @include media-breakpoint-down(md) {
-    padding-bottom: 60px;
-  }
+.item-credit {
+  font-size: 12pt;
+  font-family: $font-sans-serif;
+  color: $color-yellow;
 }
 
-#section-follow {
-  .social {
-    span {
-      margin-right: 1rem;
-    }
-  }
-  .content-left {
-    @include media-breakpoint-down(md) {
-      margin-bottom: 3em;
-    }
-  }
+.short-standalone-quote:before {
+  content: open-quote;
 }
 
-.content-small-screen {
-  @include media-breakpoint-between(xs, sm) {
-    @include make-col(10);
-    margin: 0 auto;
-  }
-  @include media-breakpoint-up(md) {
-    display: none;
-  }
-  hr {
-    border-top: 2px dotted $color-yellow-bright;
-    width: 100%;
-  }
-  .dotted-vr {
-    border-left: 2px dotted $color-yellow-bright;
-    min-height: 100%;
-    width: 10px;
-    margin-left: -10px;
-    margin-right: 10px;
-  }
-  .reporters-number {
-    font-family: $font-serif;
-  }
-  .pages-scanned-number {
-    font-weight: $font-weight-light;
-    color: $color-yellow-bright;
-  }
-  img {
-    float: right;
-    top: -20px;
-    position: relative;
-  }
+.short-standalone-quote:after {
+  content: close-quote;
 }
 
-section > .splash-quote {
-  margin: 0 auto;
-  text-align: center;
-  padding-bottom: 3rem;
-  @include make-col(7);
-  @include media-breakpoint-down(md) {
-    @include make-col(8);
-    .decorative-arrow {
-      display: none;
-    }
-    > h3 {
-      font-size: 1.5rem;
-      line-height: 2rem;
-    }
+/**************************************************************
+*
+* == Splash Quote Section ==
+*
+***************************************************************/
+
+.splash-quote-section {
+  h1 {
+    @include sr-only;
   }
-  span {
+  #splash-quote {
     @include header-styles;
+    letter-spacing: .065rem;
+    color: $color-white;
+    line-height: 1.26;
     font-family: $font-serif-fancy;
     font-weight: normal;
-    font-size: 3.2em;
-    @include media-breakpoint-only(md) {
-      font-size: 2em;
+    font-size: 3.25rem;
+    @include media-breakpoint-down(lg) {
+      font-size: 2.75rem;
     }
-    @include media-breakpoint-down(sm) {
-      font-size: 1em;
+    @include media-breakpoint-down(xs) {
+      font-size: 2rem;
     }
+    hyphens: none;
   }
+
 }
 
-#section-quote {
-  padding-bottom: 0;
-  position: relative;
-  .decorative-mountains-red {
-    float: right;
-    bottom: -6px;
-    position: relative;
-  }
+/**************************************************************
+*
+* == Map Section ==
+*
+***************************************************************/
 
-  @include media-breakpoint-down(md) {
-    .decorative-mountains-purple,
-    .decorative-mountains-red {
-      display: none;
-    }
-  }
-}
-
-/* arrow shape */
-#section-quote:after {
-  top: 100%;
+.map-section:before {
   left: 50%;
   content: " ";
   height: 0;
   width: 0;
   position: absolute;
   pointer-events: none;
-  border: 30px solid rgba(0, 0, 0, 0);
+  border: 20px solid rgba(0, 0, 0, 0);
   border-top-color: $color-black;
-  margin-left: -30px;
+  margin-left: -20px;
   margin-top: -1px;
 }
 
-/* hide social in footer since we have a section dedicated to it */
-footer {
-  .social {
+.map-section {
+  background-color: $color-black;
+
+  .federal-numbers-card {
+    max-width: 19rem;
+    .card-header {
+      font-family: $font-sans-serif;
+      font-size: 1.75rem;
+      letter-spacing: .08rem;
+    }
+    .card-title {
+      border-bottom: 1px solid #fff;
+      font-family: $font-serif;
+    }
+    .number-set {
+      letter-spacing: .06rem;
+      .figure {
+        font-size: 1.8rem;
+        font-family: $font-serif;
+      }
+    }
+  }
+
+  .state-numbers-card {
+    max-width: 19rem;
+    .card-body {
+      letter-spacing: 0.05rem;
+    }
+    .card-header {
+      font-family: $font-sans-serif;
+      font-size: 1.75rem;
+      letter-spacing: .08rem;
+    }
+    .card-title {
+      border-bottom: 1px solid #fff;
+      font-family: $font-serif;
+    }
+    .number-set {
+      letter-spacing: .06rem;
+      .figure {
+        font-size: 1.3rem;
+        font-family: $font-serif;
+      }
+    }
+  }
+  .map {
+    margin-top: -2rem;
+  }
+  .content-row {
+    margin-bottom: 2rem;
+  }
+  .small-screen-map-section {
+    font-family: $font-sans-title;
+    .bignumber {
+      font-size: 5em;
+      font-weight: $font-weight-black;
+      line-height: 6rem;
+      margin-bottom: 0;
+      @include media-breakpoint-only(sm) {
+        font-size: 8em;
+        line-height: 9rem;
+      }
+    }
+    .sixtwentyseven {
+      font-size: 3.5rem;
+      font-weight: $font-weight-bold;
+      border-right: 2px solid $color-white;
+      line-height: 2rem;
+      letter-spacing: .2rem;
+      @include media-breakpoint-only(sm) {
+        line-height: 4rem;
+        border-right: 4px solid $color-white;
+        font-size: 6rem;
+      }
+    }
+
+    .million {
+      font-weight: $font-weight-black;
+      font-size: 1.5rem;
+      @include media-breakpoint-only(sm) {
+        font-size: 3rem;
+      }
+    }
+    .uniquecases {
+      font-size: 1.2rem;
+      font-weight: $font-weight-semibold;
+      @include media-breakpoint-only(sm) {
+        font-size: 2.15rem;
+      }
+    }
+    .fortym {
+      font-weight: $font-weight-extra-light;
+      font-family: $font-sans-title;
+      font-size: 3.5rem;
+      line-height: 2rem;
+      @include media-breakpoint-only(sm) {
+        line-height: 4rem;
+        font-size: 6rem;
+      }
+    }
+    .bottom-text {
+      letter-spacing: .075rem;
+      font-size: 1.1rem;
+      font-weight: $font-weight-semibold;
+      @include media-breakpoint-only(sm) {
+        font-size: 1.85rem;
+      }
+    }
+    .bottom-text-border {
+      border-right: 2px solid $color-white;
+      @include media-breakpoint-only(sm) {
+        border-right: 4px solid $color-white;
+      }
+    }
+    .vseparator {
+      border-top: 2px solid $color-white;
+      @include media-breakpoint-only(sm) {
+        border-top: 4px solid $color-white;
+      }
+    }
+
+  }
+}
+
+.map-section:after {
+  left: 50%;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border: 50px solid rgba(0, 0, 0, 0);
+  border-top-color: $color-black;
+  margin-left: -50px;
+  margin-top: -8rem;
+  transform: rotate(180deg);
+  display: inline-block;
+  @include media-breakpoint-down(md) {
     display: none;
+  }
+}
+
+/**************************************************************
+*
+* == Dive-In Section ==
+*
+***************************************************************/
+/*
+.dive-in-section {
+  .card-body {
+    p {
+      @include media-breakpoint-down(lg){
+        font-size: 1rem;
+      }
+    }
+  }
+
+}
+*/
+
+/**************************************************************
+*
+* == Contact Section ==
+*
+***************************************************************/
+
+.contact-section {
+
+  label[for=id_email] {
+    @include sr-only;
+  }
+
+  #id_email {
+    border: 0;
+  }
+
+  .email_form:after {
+    left: 100%;
+    top: .5rem;
+    margin-left: .5rem;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border: 12px solid rgba(0, 0, 0, 0);
+    border-top-color: $color-black;
+    display: inline-block;
+    transform: rotate(270deg);
+  }
+
+  form.email_form {
+    margin-bottom: 0;
+    .alert {
+      font-size: $font-size-sm;
+      padding: .25rem;
+    }
+    button.close {
+      display: none;
+    }
+    .invalid-feedback {
+      display: none;
+    }
+  }
+
+  .follow {
+    font-family: $font-serif;
+    font-size: $font-size-base;
+    line-height: 1.25rem;
+  }
+
+  .add {
+    font-family: $font-sans-serif;
+    font-size: $font-size-sm;
+    line-height: 1.25rem;
+    @include media-breakpoint-down(md) {
+      font-size: $font-size-base;
+    }
+  }
+
+  .promise {
+    font-family: $font-sans-serif;
+    font-size: $font-size-sm;
+    line-height: 1.25rem;
+  }
+  .social-top {
+    @extend .social;
   }
 }

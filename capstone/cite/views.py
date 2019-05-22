@@ -150,6 +150,7 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
 
         elif helpers.is_google_bot(request):
             serializer = serializers.NoLoginCaseSerializer
+
         # if non-whitelisted case, not logged in, and no cookies set up, redirect to ?set_cookie=1
         else:
             request.session['case_allowance_remaining'] = settings.API_CASE_DAILY_ALLOWANCE
@@ -179,7 +180,6 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
             "volume_number": volume_number,
             "page_number": page_number,
         })
-
 
 def set_cookie(request):
     """
