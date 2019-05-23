@@ -790,6 +790,12 @@ def ngram_load_database():
 
 
 @task
+def ngram_load_kv_database():
+    from scripts.ngrams import load_kv_database
+    load_kv_database()
+
+
+@task
 def url_to_js_string(target_url="http://case.test:8000/maintenance/?no_toolbar", out_path="maintenance.html", new_domain="case.law"):
     """ Save target URL and all assets as a single Javascript-endoded HTML string. """
     import webpage2html
