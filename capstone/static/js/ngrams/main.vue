@@ -91,7 +91,6 @@
     data: function () {
       return {
         chartData: null,
-        // textToGraph: "court, the court",
         textToGraph: "apple pie, blueberry pie",
         minYear: 1800,
         maxYear: 2000,
