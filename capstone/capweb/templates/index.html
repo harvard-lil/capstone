@@ -178,7 +178,7 @@
           <div class="section-subtitle d-none d-md-block">
             See the full list:<br>
             <div class="pt-2">
-              <a href="" class="btn-primary">tools</a>
+              <a href="{% url "tools" %}" class="btn-primary">tools</a>
             </div>
           </div>
         </div>
@@ -194,10 +194,11 @@
           <div class="row mt-4">
             <div class="col">
               <div class="row">
-                <div class="col-sm-6">
+                <div class="col-12 col-sm-6">
                   <div class="card text-white bg-transparent pr-3 mb-4">
                     <div class="card-body bg-black">
-                      <div class="card-title d-block d-sm-none small-screen-card-title"><a href="">Search</a></div>
+                      <div class="card-title d-block d-sm-none small-screen-card-title"><a href="{% url "search" %}">
+                        Search</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">Search</span> allows users to browse and
                         download cases using a few short
                         commands.</p>
@@ -205,17 +206,17 @@
                         commands.</p>
                       <div class="card-footer d-none d-sm-block">
                         <div class="btn-group mb-0">
-                          <a href="" class="btn-secondary">search</a>
-                          <a href="" class="btn-tertiary">see docs</a>
+                          <a href="{% url "search" %}" class="btn-secondary">search</a>
+                          <a href="{% url "search-docs" %}" class="btn-tertiary">see docs</a>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-6">
+                <div class="col-12 col-sm-6">
                   <div class="card text-white bg-transparent pr-3">
                     <div class="card-body bg-black">
-                      <div class="card-title d-block d-sm-none small-screen-card-title"><a href="">API</a></div>
+                      <div class="card-title d-block d-sm-none small-screen-card-title"><a href="{% api_url "api-root" %}">API</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">The API</span> allows users to browse and
                         download cases using a few
                         short commands.</p>
@@ -223,24 +224,39 @@
                         commands.</p>
                       <div class="card-footer">
                         <div class="btn-group mb-0 d-none d-sm-block">
-                          <a href="" class="btn-secondary">API</a>
-                          <a href="" class="btn-tertiary">see docs</a>
+                          <a href="{% api_url "api-root" %}" class="btn-secondary">API</a>
+                          <a href="{% url "api" %}" class="btn-tertiary">see docs</a>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="row d-none d-md-block">
-                <div class="col-sm-6">
+              <div class="row">
+                <div class="col-6 d-none d-md-block">
                   <div class="card text-white bg-transparent d-none d-sm-block mb-4 pr-3">
                     <div class="card-body bg-black">
                       <p><span class="highlighted">Download</span> whole zip files of whitelisted jurisdictions like
                         Illinois.</p>
                       <div class="card-footer">
                         <div class="btn-group mb-0">
-                          <a href="" class="btn-secondary">bulk</a>
-                          <a href="" class="btn-tertiary">see docs</a>
+                          <a href="{% url "bulk-download" %}" class="btn-secondary">bulk</a>
+                          <a href="{% url "bulk-docs" %}" class="btn-tertiary">see docs</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 d-none d-md-block">
+                  <div class="card text-white bg-transparent d-none d-sm-block pr-3 mb-4">
+                    <div class="card-body bg-black">
+                      <div class="card-title d-block d-sm-none small-screen-card-title">
+                        <a href="{% url "cite_home" host "cite" %}">Browse</a></div>
+                      <p class="d-none d-sm-block"><span class="highlighted">Browse</span> a list of all cases in our
+                        corpus organized by state or territory.</p>
+                      <div class="card-footer d-none d-sm-block">
+                        <div class="btn-group mb-0">
+                          <a href="{% url "cite_home" host "cite" %}" class="btn-secondary">browse</a>
                         </div>
                       </div>
                     </div>
@@ -250,21 +266,21 @@
             </div>
           </div>
           <div class="row d-block d-sm-none">
-            <a href="" class="btn-primary">TOOLS</a>
+            <a href="{% url "tools" %}" class="btn-primary">TOOLS</a>
           </div>
         </div>
         <div class="col-3 d-none d-lg-block pl-5 pt-4">
-          <div class="card image-card mb-5">
+          <div class="card image-card mb-3">
             <img class="card-img"
                  alt="a technician holding disbound pages from a case reporter in front of a high speed scanner"
                  src='{% static "img/book-scan.jpg" %}'>
-            <div class="card-footer item-credit mt-2">Photo Credit Goes Here</div>
+            <div class="card-footer item-credit mt-2">Image: Brooks Kraft/Harvard Law School</div>
           </div>
           <div class="card image-card ">
             <img class="card-img"
                  alt="case reporter books in in stacks"
                  src='{% static "img/reporters.jpg" %}'/>
-            <div class="card-footer item-credit">Photo Credit Goes Here</div>
+            <div class="card-footer item-credit mt-2">Image: Brooks Kraft/Harvard Law School</div>
           </div>
         </div>
       </div>
@@ -291,7 +307,7 @@
           <div class="section-subtitle d-none d-md-block">
             See the full list:<br>
             <div class="pt-2">
-              <a href="" class="btn-primary">gallery</a>
+              <a href="{% url "gallery" %}" class="btn-primary">gallery</a>
             </div>
           </div>
         </div>
@@ -311,11 +327,11 @@
                   <div class="card text-white bg-transparent pr-3">
                     <div class="card-body bg-black">
                       <div class="card-title font-weight-bold d-none d-md-block">Limericks</div>
-                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="">Limericks</a></div>
+                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="{% url "limericks" %}">Limericks</a></div>
                       <p>Generate rhymes using caselaw!</p>
                       <div class="card-footer d-none d-md-block">
                         <div class="btn-group">
-                          <a href="" class="btn-tertiary p-0 mt-0">see projects</a>
+                          <a href="{% url "limericks" %}" class="btn-tertiary p-0 mt-0">see project</a>
                         </div>
                       </div>
                     </div>
@@ -326,12 +342,12 @@
                   <div class="card text-white bg-transparent pr-3">
                     <div class="card-body bg-black">
                       <div class="card-title font-weight-bold d-none d-md-block">Wordclouds</div>
-                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="">Wordclouds</a></div>
+                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="{% url "wordclouds" %}">Wordclouds</a></div>
                       <p>Graphics showcasing the most-used words in California caselaw each year between 1852 and
                         2015. </p>
                       <div class="card-footer d-none d-md-block">
                         <div class="btn-group">
-                          <a href="" class="btn-tertiary p-0 mt-0">see projects</a>
+                          <a href="{% url "wordclouds" %}" class="btn-tertiary p-0 mt-0">see project</a>
                         </div>
                       </div>
                     </div>
@@ -344,11 +360,11 @@
                   <div class="card text-white bg-transparent pr-3">
                     <div class="card-body bg-black">
                       <div class="card-title font-weight-bold d-none d-md-block">Gavelfury</div>
-                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="">Gavelfury</a></div>
+                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="http://www.gavelfury.com/">Gavelfury</a></div>
                       <p>See all instances of "!"</p>
                       <div class="card-footer d-none d-md-block">
                         <div class="btn-group">
-                          <a href="" class="btn-tertiary p-0 mt-0">see projects</a>
+                          <a href="http://www.gavelfury.com/" class="btn-tertiary p-0 mt-0">see project</a>
                         </div>
                       </div>
                     </div>
@@ -358,11 +374,11 @@
                   <div class="card text-white bg-transparent pr-3">
                     <div class="card-body bg-black">
                       <div class="card-title font-weight-bold d-none d-md-block">Witchcraft</div>
-                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="">Witchcraft</a></div>
+                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="{% url "witchcraft" %}">Witchcraft</a></div>
                       <p>See all instances of "witchcraft" charted out on the U.S. map.</p>
                       <div class="card-footer d-none d-md-block">
                         <div class="btn-group">
-                          <a href="" class="btn-tertiary p-0 mt-0">see projects</a>
+                          <a href="{% url "witchcraft" %}" class="btn-tertiary p-0 mt-0">see project</a>
                         </div>
                       </div>
                     </div>
@@ -373,14 +389,14 @@
           </div>
           <div class="row">
             <div class="col-1 d-block d-sm-none">
-              <a href="" class="btn-primary">Gallery</a>
+              <a href="{% url "gallery" %}" class="btn-primary">Gallery</a>
             </div>
           </div>
         </div>
         <div class="col-3 d-none d-lg-block pl-5 pt-4">
           <div class="card">
             <div class="card-body">
-              <p class="short-standalone-quote mt-2">Is that she!</p>
+              <p class="short-standalone-quote mb-1 mt-2">Is that she!</p>
             </div>
             <div class="card-footer">
               <p class="item-credit mt-2">&mdash;Gavelfury</p>
@@ -388,7 +404,7 @@
           </div>
           <div class="card">
             <div class="card-body">
-              <p class="short-standalone-quote mt-2 font-weight-bold">The reach of the indemnity clause.<br>
+              <p class="short-standalone-quote mb-1 mt-2">The reach of the indemnity clause.<br>
                 Payment is not expected because.<br> The defendant contends.<br> The defendants were friends.<br>
                 The same is true of quarantine laws.
               </p>
@@ -422,7 +438,7 @@
           <div class="section-subtitle d-none d-md-block">
             See the full list:<br>
             <div class="pt-2">
-              <a href="" class="btn-primary">press</a>
+              <a href="{% url "about" %}#press" class="btn-primary">press</a>
             </div>
           </div>
         </div>
@@ -448,15 +464,14 @@
                   <p class="item-title">
                     <a href="{{ news_item.url }}"
                        title="Go to {{ news_item.publication }} to read {{ news_item.title }}"
-
                        target="_blank"> {{ news_item.title|truncatechars:60 }}</a>
                   </p>
                   <span class="item-credit mt-2">
-                {{ news_item.publication }}
-              </span>
+                    {{ news_item.publication }}
+                  </span>
                   <span class="item-date">
-                {{ news_item.date }}
-              </span>
+                    {{ news_item.date }}
+                  </span>
                 </li>
                 {% endfor %}
               </ul>
@@ -466,7 +481,7 @@
         <div class="col-3 d-none d-lg-block pl-3 pt-3">
           <div class="card">
             <div class="card-body">
-              <p class="short-standalone-quote">&lsquo;Improving access to justice is a priority,&rsquo; said Martha
+              <p class="short-standalone-quote mb-1">&lsquo;Improving access to justice is a priority,&rsquo; said Martha
                 Minow,
                 dean of Harvard Law School</p>
             </div>
@@ -497,6 +512,7 @@
           <form class="email_form" action="{% url 'subscribe' %}" method="post">
             {% bootstrap_form subscribe_form %}
             <div class="add">Add your email to keep in touch</div>
+                <button class="btn-secondary subscribe" type="submit" form="email_form_large" >Subscribe!</button>
           </form>
         </div>
         <div class="col-11 col-md-2 offset-1 offset-md-0 ">
@@ -520,13 +536,16 @@
           </div>
         </div>
         <div class="d-none d-md-block col-5 col-md-5 col-lg-3 offset-1 offset-sm-0">
-          <form class="email_form" action="{% url 'subscribe' %}" method="post">
-            {% bootstrap_form subscribe_form %}
-            <div class="add">Add your email to keep in touch</div>
+
+          <form class="email_form_large" action="{% url 'subscribe' %}" method="post">
+                {% bootstrap_form subscribe_form %}
+                <div class="add">Add your email to keep in touch</div>
+                <button class="btn-secondary subscribe" type="submit" form="email_form_large" >Subscribe!</button>
           </form>
         </div>
         <div class="col-3 promise pl-5 d-none d-lg-block">
-              We promise won't spam you, though we might invite you to a hackathon.
+
+          We promise won't spam you, though we might invite you to a hackathon.
         </div>
       </div>
     </div>
