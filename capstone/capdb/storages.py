@@ -326,3 +326,80 @@ for storage_name in settings.STORAGES:
 
 redis_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DEFAULT_DB))
 redis_ingest_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_INGEST_DB))
+
+
+### K/V stores ###
+
+# import plyvel
+#
+# class NgramKVLevelDB:
+#     def __init__(self):
+#         self.db = plyvel.DB(os.path.join(settings.STORAGES['ngram_storage']['kwargs']['location'], 'leveldb'), create_if_missing=True, write_buffer_size=100 * 2 ** 20)
+#
+#     def put(self, k, v):
+#         self.db.put(k, v)
+#
+#     def get(self, k):
+#         return self.db.get(k)
+#
+#     def put_batch(self, items):
+#         with self.db.write_batch() as wb:
+#             for k, v in items:
+#                 wb.put(k, v)
+#
+#     def last_key(self):
+#         try:
+#             db_iter = self.db.raw_iterator()
+#             db_iter.seek_to_last()
+#             return db_iter.key()
+#         except plyvel.IteratorInvalidError:
+#             return None
+
+import lmdb
+
+class NgramKVLMDB:
+    def __init__(self):
+        self.db = lmdb.open(
+            os.path.join(settings.STORAGES['ngram_storage']['kwargs']['location'], 'lmdb'),
+            map_size=2**30,
+            writemap=True,
+            map_async=True,
+            subdir=True,
+        )
+
+    def put(self, k, v):
+        with self.db.begin(write=True) as txn:
+            txn.put(k, v)
+
+    def get(self, k):
+        with self.db.begin() as txn:
+            return txn.get(k)
+
+    def get_prefix(self, prefix):
+        with self.db.begin() as txn:
+            cursor = txn.cursor()
+            if not cursor.set_range(prefix):
+                return
+            for k, v in cursor:
+                if k.startswith(prefix):
+                    yield k, v
+                else:
+                    break
+
+    def put_batch(self, items, append=False):
+        with self.db.begin(write=True) as txn:
+            for k, v in items:
+                txn.put(k, v, append=append)
+
+    def last_key(self):
+        with self.db.begin() as txn:
+            cursor = txn.cursor()
+            if cursor.last():
+                return cursor.key()
+            return None
+
+    def pop(self, k):
+        with self.db.begin(write=True) as txn:
+            txn.pop(k)
+
+ngram_kv_store = SimpleLazyObject(lambda: NgramKVLMDB())

@@ -558,8 +558,11 @@ LOGIN_URL = 'login'
 # directories to search for nltk data
 NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
 
+NGRAM_INGEST_THRESHOLD = 100
+
 # feature flags
 NGRAMS_FEATURE = False
+NGRAMS_KV_FEATURE = False
 FULL_TEXT_FEATURE = True
 NEW_RESEARCHER_FEATURE = True
 HARVARD_RESEARCHER_FEATURE = True
