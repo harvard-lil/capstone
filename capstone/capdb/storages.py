@@ -1,6 +1,7 @@
 import csv
 import gzip
 import hashlib
+import msgpack
 import os
 import itertools
 from pathlib import Path
@@ -367,35 +368,46 @@ class NgramKVLMDB:
             subdir=True,
         )
 
-    def put(self, k, v):
+    ## helpers
+
+    def unpack(self, v, packed=False):
+        return msgpack.unpackb(v) if packed and v is not None else v
+
+    def pack(self, v, packed=False):
+        return msgpack.packb(v) if packed and v is not None else v
+
+    ## writers
+
+    def put(self, k, v, packed=False):
         with self.db.begin(write=True) as txn:
-            txn.put(k, v)
+            txn.put(k, self.pack(v, packed))
 
-    def get(self, k):
+    def put_batch(self, items, packed=False):
+        try:
+            items = list(items)
+            with self.db.begin(write=True) as txn:
+                for k, v in items:
+                    txn.put(k, self.pack(v, packed))
+        except lmdb.MapFullError:
+            # double the map_size and try again
+            self.db.set_mapsize(self.db.info()['map_size'] * 2)
+            self.put_batch(items)
+
+    ## readers
+
+    def get(self, k, packed=False):
         with self.db.begin() as txn:
-            return txn.get(k)
+            return self.unpack(txn.get(k), packed)
 
-    def get_prefix(self, prefix):
+    def get_prefix(self, prefix, packed=False):
         with self.db.begin() as txn:
             cursor = txn.cursor()
             if not cursor.set_range(prefix):
                 return
             for k, v in cursor:
-                if k.startswith(prefix):
-                    yield k, v
-                else:
-                    break
-
-    def put_batch(self, items):
-        try:
-            items = list(items)
-            with self.db.begin(write=True) as txn:
-                for k, v in items:
-                    txn.put(k, v)
-        except lmdb.MapFullError:
-            # double the map_size and try again
-            self.db.set_mapsize(self.db.info()['map_size'] * 2)
-            self.put_batch(items)
+                if not k.startswith(prefix):
+                    return
+                yield k, self.unpack(v, packed)
 
     def last_key(self):
         with self.db.begin() as txn:
@@ -404,8 +416,8 @@ class NgramKVLMDB:
                 return cursor.key()
             return None
 
-    def pop(self, k):
+    def pop(self, k, packed=False):
         with self.db.begin(write=True) as txn:
-            txn.pop(k)
+            return self.unpack(txn.pop(k), packed)
 
 ngram_kv_store = SimpleLazyObject(lambda: NgramKVLMDB())

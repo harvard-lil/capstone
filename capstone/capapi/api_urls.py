@@ -20,7 +20,7 @@ if settings.ELASTICSEARCH_API_ENABLE:
     router.register('elastic_cases', api_views.CaseDocumentViewSet, basename="elastic_cases")
 
 if settings.NGRAMS_FEATURE:
-    router.register('ngrams', api_views.NgramViewSet)
+    router.register('ngrams', api_views.NgramViewSet, basename='ngrams')
 
 schema_view = get_schema_view(
     openapi.Info(
