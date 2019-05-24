@@ -1,6 +1,7 @@
 import csv
 import gzip
 import hashlib
+import msgpack
 import os
 import itertools
 from pathlib import Path
@@ -326,3 +327,97 @@ for storage_name in settings.STORAGES:
 
 redis_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DEFAULT_DB))
 redis_ingest_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_INGEST_DB))
+
+
+### K/V stores ###
+
+# import plyvel
+#
+# class NgramKVLevelDB:
+#     def __init__(self):
+#         self.db = plyvel.DB(os.path.join(settings.STORAGES['ngram_storage']['kwargs']['location'], 'leveldb'), create_if_missing=True, write_buffer_size=100 * 2 ** 20)
+#
+#     def put(self, k, v):
+#         self.db.put(k, v)
+#
+#     def get(self, k):
+#         return self.db.get(k)
+#
+#     def put_batch(self, items):
+#         with self.db.write_batch() as wb:
+#             for k, v in items:
+#                 wb.put(k, v)
+#
+#     def last_key(self):
+#         try:
+#             db_iter = self.db.raw_iterator()
+#             db_iter.seek_to_last()
+#             return db_iter.key()
+#         except plyvel.IteratorInvalidError:
+#             return None
+
+import lmdb
+
+class NgramKVLMDB:
+    def __init__(self):
+        self.db = lmdb.open(
+            os.path.join(settings.STORAGES['ngram_storage']['kwargs']['location'], 'lmdb'),
+            map_size=2**30,
+            writemap=True,
+            map_async=True,
+            subdir=True,
+        )
+
+    ## helpers
+
+    def unpack(self, v, packed=False):
+        return msgpack.unpackb(v) if packed and v is not None else v
+
+    def pack(self, v, packed=False):
+        return msgpack.packb(v) if packed and v is not None else v
+
+    ## writers
+
+    def put(self, k, v, packed=False):
+        with self.db.begin(write=True) as txn:
+            txn.put(k, self.pack(v, packed))
+
+    def put_batch(self, items, packed=False):
+        try:
+            items = list(items)
+            with self.db.begin(write=True) as txn:
+                for k, v in items:
+                    txn.put(k, self.pack(v, packed))
+        except lmdb.MapFullError:
+            # double the map_size and try again
+            self.db.set_mapsize(self.db.info()['map_size'] * 2)
+            self.put_batch(items)
+
+    ## readers
+
+    def get(self, k, packed=False):
+        with self.db.begin() as txn:
+            return self.unpack(txn.get(k), packed)
+
+    def get_prefix(self, prefix, packed=False):
+        with self.db.begin() as txn:
+            cursor = txn.cursor()
+            if not cursor.set_range(prefix):
+                return
+            for k, v in cursor:
+                if not k.startswith(prefix):
+                    return
+                yield k, self.unpack(v, packed)
+
+    def last_key(self):
+        with self.db.begin() as txn:
+            cursor = txn.cursor()
+            if cursor.last():
+                return cursor.key()
+            return None
+
+    def pop(self, k, packed=False):
+        with self.db.begin(write=True) as txn:
+            return self.unpack(txn.pop(k), packed)
+
+ngram_kv_store = SimpleLazyObject(lambda: NgramKVLMDB())

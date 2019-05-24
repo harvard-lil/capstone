@@ -3,6 +3,7 @@ import csv
 import itertools
 import json
 import lzma
+
 import re
 import tempfile
 from contextlib import ExitStack, contextmanager
@@ -20,11 +21,11 @@ from tqdm import tqdm
 
 from capdb.models import Jurisdiction, CaseMetadata, CaseText, NgramObservation, Ngram, NgramWord
 from scripts.helpers import ordered_query_iterator
-from capdb.storages import ngram_storage, redis_client
+from capdb.storages import ngram_storage, redis_client, ngram_kv_store
 
 nltk.data.path = settings.NLTK_PATH
 unicode_translate_table = dict((ord(a), ord(b)) for a, b in zip(u'\u201c\u201d\u2018\u2019', u'""\'\''))
-ingest_threshold = 10  # minimum gram occurrences across dataset to be loaded into database
+ingest_threshold = settings.NGRAM_INGEST_THRESHOLD  # minimum gram occurrences across dataset to be loaded into database
 
 # custom tokenizer to disable separating contractions and possessives into separate words
 tokenizer = copy.copy(nltk.tokenize._treebank_word_tokenizer)
@@ -526,3 +527,137 @@ def load_database():
             fields = ['ngram_id', 'instance_count', 'document_count', 'year', 'jurisdiction_id']
             rows = ([gram_lookup[words]]+entry for words, gram in grams.items() for entry in gram['entries'])
             postgres_copy(NgramObservation, fields, rows)
+
+def parse_ngram_paths(paths):
+    """
+        Parse out jurisdiction id, year, and word length metadata from a list of ngram filepaths. E.g.:
+        >>> parse_ngram_paths(['jurisdiction_year/ill_1887-1.tsz.xz', 'year/1887-1.tsv.xz', 'total/total-1.tsv.xz'])
+        [
+            {'jurisdiction_id': 29, 'length': '1', 'path': 'jurisdiction_year/ill_1887-1.tsv.xz', 'year': 1887},
+            {'jurisdiction_id': None, 'length': '1', 'path': 'year/1887-1.tsv.xz', 'year': 1887},
+            {'jurisdiction_id': None, 'length': '1', 'path': 'total/total-1.tsv.xz', 'year': None}
+        ]
+    """
+    ngram_files = []
+    for path in paths:
+        # handle "jurisdiction_year/ill_1887-1.tsv.xz"
+        m = re.match(r'jurisdiction_year/([^/]+)_(\d{4})-([123])\.tsv\.xz', path)
+        if m:
+            ngram_files.append({'path': path, 'year': int(m.group(2)), 'jurisdiction': m.group(1), 'length': m.group(3)})
+            continue
+
+        # handle "year/1887-1.tsv.xz"
+        m = re.match(r'year/(\d{4})-([123])\.tsv\.xz', path)
+        if m:
+            ngram_files.append({'path': path, 'year': int(m.group(1)), 'jurisdiction': None, 'length': m.group(2)})
+            continue
+
+        # handle "total/total-1.tsv.xz"
+        m = re.match(r'total/total-([123]).tsv.xz', path)
+        if m:
+            ngram_files.append({'path': path, 'year': None, 'jurisdiction': None, 'length': m.group(1)})
+    return ngram_files
+
+def load_kv_database():
+    """
+        Read all ngram text files and write them to LevelDB in settings.NGRAM_LEVELDB_PATH
+    """
+
+    # Get list of files to read and their metadata
+    ngram_files = parse_ngram_paths(ngram_storage.iter_files_recursive())
+    jurisdiction_lookup = dict(Jurisdiction.objects.values_list('slug', 'pk'))
+
+    for ngram_file in ngram_files:
+        # Subtract 1900 from all years, because msgpack stores numbers < 128 in a single byte. This removes a byte from
+        # each observation we store for years 1900-2027
+        if ngram_file['year']:
+            ngram_file['year'] -= 1900
+
+        # Translate jurisdiction slug to jurisdiction ID
+        if ngram_file['jurisdiction']:
+            ngram_file['jurisdiction'] = jurisdiction_lookup[ngram_file['jurisdiction']]
+
+    # Read all files together, merging lines in alphabetical order so we can handle all observations
+    # for a given gram at the same time. This reduces queries on the Ngram table as we go along.
+
+    # Open all files:
+    with read_xzs(p['path'] for p in ngram_files) as files:
+
+        # turn each file handle into an iterator to yield its index in ngram_files and line
+        def iter_with_n(iter, n):
+            for item in iter:
+                yield item, n
+        file_iters = [iter_with_n(f, path_index) for path_index, f in enumerate(files)]
+
+        # merge all files alphabetically
+        extra = []
+        batch_size = 100000
+        line_iter = tqdm(merge(*file_iters))
+
+        # If some NgramObservation objects already exist, fetch the ngram of the last object, and skip past that one
+        # in the line_iter stream.
+        last_gram = ngram_kv_store.last_key()
+        if last_gram:
+            print(" - Some NgramObservation objects already exist. Skipping all grams through %s" % last_gram)
+            while True:
+                extra = list(itertools.islice(line_iter, batch_size))
+                if not extra:
+                    break
+                if extra[-1][0] >= last_gram:
+                    while extra[0][0] < last_gram:
+                        extra.pop(0)
+                    ngram_kv_store.pop(last_gram)
+                    break
+
+        # Run this loop for each batch of batch_size lines. We're going to read the lines; group them by gram;
+        # filter out those below the threshold; and write each gram to the KV store
+        while True:
+
+            # fetch a batch of lines
+            lines = extra + list(itertools.islice(line_iter, batch_size))
+            if not lines:
+                break
+
+            # peel off last gram and save for next batch, so we don't split up grams.
+            # this makes sure that it's safe to filter out grams that fall below ingest_threshold
+            extra = [lines.pop()]
+            last_gram = extra[0][0].split(b'\t', 1)[0]
+            while lines and lines[-1][0].split(b'\t', 1)[0] == last_gram:
+                extra.append(lines.pop())
+            if not lines:
+                lines = extra
+                extra = []
+
+            # organize all lines from this chunk into a data structure like
+            # grams = {
+            #      b'<word count><gram>': {
+            #           <jurisdiction_id>: {
+            #               <year-1900>: [<instances>, <documents>],
+            #       }})
+            grams = defaultdict(lambda: defaultdict(dict))
+            below_threshold_grams = set()
+            for line, path_index in lines:
+                # set up variables for this line
+                gram, instances, documents = line.split(b'\t')
+                instances = int(instances)
+                documents = int(documents)
+                ngram_file = ngram_files[path_index]
+                year = ngram_file['year']
+                jur = ngram_file['jurisdiction']
+                length = ngram_file['length']
+                gram = bytes([int(length)])+gram
+
+                # when we hit the total-count line, with no year and no jurisdiction, check the ingest_threshold
+                # and delete this gram if it falls below the threshold
+                if not year and not jur and instances < ingest_threshold:
+                    below_threshold_grams.add(gram)
+                    grams.pop(gram, None)
+                    continue
+                if gram in below_threshold_grams:
+                    continue
+
+                # store observation
+                grams[gram][jur][year] = [instances, documents]
+
+            # write keys
+            ngram_kv_store.put_batch(grams.items(), packed=True)
