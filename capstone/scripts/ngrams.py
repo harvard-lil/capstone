@@ -553,7 +553,7 @@ def parse_ngram_paths(paths):
             continue
 
         # handle "total/total-1.tsv.xz"
-        m = re.match(r'total/total-([123]).tsv.xz', path)
+        m = re.match(r'total/total-([123])\.tsv\.xz', path)
         if m:
             ngram_files.append({'path': path, 'year': None, 'jurisdiction': None, 'length': m.group(1)})
     return ngram_files
@@ -570,11 +570,11 @@ def load_kv_database():
     for ngram_file in ngram_files:
         # Subtract 1900 from all years, because msgpack stores numbers < 128 in a single byte. This removes a byte from
         # each observation we store for years 1900-2027
-        if ngram_file['year']:
+        if ngram_file['year'] is not None:
             ngram_file['year'] -= 1900
 
         # Translate jurisdiction slug to jurisdiction ID
-        if ngram_file['jurisdiction']:
+        if ngram_file['jurisdiction'] is not None:
             ngram_file['jurisdiction'] = jurisdiction_lookup[ngram_file['jurisdiction']]
 
     # Read all files together, merging lines in alphabetical order so we can handle all observations
@@ -634,7 +634,7 @@ def load_kv_database():
             #           <jurisdiction_id>: {
             #               <year-1900>: [<instances>, <documents>],
             #       }})
-            grams = defaultdict(lambda: defaultdict(dict))
+            grams = defaultdict(lambda: defaultdict(list))
             below_threshold_grams = set()
             for line, path_index in lines:
                 # set up variables for this line
@@ -649,7 +649,7 @@ def load_kv_database():
 
                 # when we hit the total-count line, with no year and no jurisdiction, check the ingest_threshold
                 # and delete this gram if it falls below the threshold
-                if not year and not jur and instances < ingest_threshold:
+                if year is None and jur is None and instances < ingest_threshold:
                     below_threshold_grams.add(gram)
                     grams.pop(gram, None)
                     continue
@@ -657,7 +657,7 @@ def load_kv_database():
                     continue
 
                 # store observation
-                grams[gram][jur][year] = [instances, documents]
+                grams[gram][jur].extend([year, instances, documents])
 
             # write keys
             ngram_kv_store.put_batch(grams.items(), packed=True)
