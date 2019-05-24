@@ -237,6 +237,7 @@ class CaseExportViewSet(BaseViewSet):
 class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     http_method_names = ['get']
     filterset_class = filters.NgramFilter
+    queryset = models.CaseMetadata.objects.all()  # fake queryset just to get the filterset to render in the API viewer
     renderer_classes = (
         renderers.JSONRenderer,
         capapi_renderers.NgramBrowsableAPIRenderer,
