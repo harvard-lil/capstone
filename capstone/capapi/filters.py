@@ -215,42 +215,21 @@ class CaseExportFilter(NoopMixin, filters.FilterSet):
 
 
 class NgramFilter(filters.FilterSet):
-    jurisdiction = filters.MultipleChoiceFilter(
-        label='Jurisdiction',
-        choices=SimpleLazyObject(lambda: [['total', 'Total across jurisdictions (default)'], ['all', 'Select all jurisdictions']] + list(jur_choices)),
-        method='jurisdiction_filter',
-    )
-    year = filters.CharFilter(
-        label='Year filter',
-        method='year_filter',
-        help_text='Use "total" to only show total value for all jurisdictions rather than per year',
-    )
     q = filters.CharFilter(
         label='Words',
         help_text='Up to three words separated by spaces',
-        method='q_filter',
+    )
+    jurisdiction = filters.MultipleChoiceFilter(
+        label='Jurisdiction',
+        choices=SimpleLazyObject(lambda: [['total', 'Total across jurisdictions (default)'], ['all', 'Select all jurisdictions']] + list(jur_choices)),
+    )
+    year = filters.CharFilter(
+        label='Year filter',
+        help_text='Use "total" to only show total value for all jurisdictions rather than per year',
     )
 
     class Meta:
-        model = models.Ngram
-        fields = ['jurisdiction', 'year', 'q']
-
-    def q_filter(self, qs, name, value):
-        return qs.from_string(value.strip().lower())
-
-    def jurisdiction_filter(self, qs, name, value):
-        """
-            Handle list of jurisdictions.
-        """
-        if 'total' not in value and 'all' not in value:
-            jurisdiction_ids = [jurisdiction_slug_to_id[slug] for slug in value]
-            qs = qs.filter(observations__jurisdiction_id__in=jurisdiction_ids)
-        return qs
-
-    def year_filter(self, qs, name, value):
-        if value != 'total':
-            return qs.filter(observations__year=value)
-        return qs
+        fields = ['q', 'jurisdiction', 'year']
 
 
 class NgramObservationFilter(filters.FilterSet):
