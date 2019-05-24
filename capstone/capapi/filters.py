@@ -4,8 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
 from django.utils.functional import SimpleLazyObject
-#from django.contrib.postgres.search import SearchQuery
-from scripts.fts_temp import SearchQueryTemp
+from django.contrib.postgres.search import SearchQuery
 
 import rest_framework_filters as filters
 from rest_framework.exceptions import ValidationError
@@ -282,7 +281,7 @@ class NgramObservationFilter(filters.FilterSet):
 
 
 def parse_phrase_search(search_term):
-    results = SearchQueryTemp("")
+    results = SearchQuery("")
     normalized = search_term.replace('“', '"').replace('”', '"').replace('"', ' " ')
 
     # balance out uneven quotes by killing the last one
@@ -300,11 +299,11 @@ def parse_phrase_search(search_term):
             in_a_phrase = True
         elif word == '"' and in_a_phrase:
             in_a_phrase = False
-            results &= SearchQueryTemp(" ".join(current_phrase), search_type="phrase")
+            results &= SearchQuery(" ".join(current_phrase), search_type="phrase")
             current_phrase = []
         elif in_a_phrase:
             current_phrase.append(word)
         else:
-            results &= SearchQueryTemp(word, search_type="plain")
+            results &= SearchQuery(word, search_type="plain")
 
     return results
