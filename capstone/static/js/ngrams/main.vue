@@ -2,6 +2,8 @@
   <div>
     <div class="page-title">
       <h1>Ngrams</h1>
+      <p>Navigate the distribution of words and phrases across U.S. case law with keywords, date ranges, and
+        jurisdictions.</p>
     </div>
     <div class="form-group">
       <div class="row">
@@ -47,7 +49,9 @@
       </div>
       <div class="row">
         <div class="selected-jurs">
-          <span class="small" v-if="selectedJurs.length">Selected:</span>
+
+          <span class="small" v-if="selectedJurs.length">Searching selected:</span>
+          <span class="small" v-else>Searching all jursidictions</span>
           <span class="small selected-jur" v-bind:key="jur[0]" v-on:click="toggleJur(jur)" v-for="jur in selectedJurs">
             {{jur[1]}}
           </span>
@@ -75,11 +79,19 @@
     beforeMount() {
       this.jurisdictions = snippets.jurisdictions;  // eslint-disable-line
       this.urls = urls;  // eslint-disable-line
+
+      // autofill text to match URL query
+      if (this.$route.query.q) {
+        this.textToGraph = this.$route.query.q;
+      }
+    },
+    mounted() {
+      this.createGraph();
     },
     data: function () {
       return {
         chartData: null,
-        textToGraph: "",
+        textToGraph: "apple pie, blueberry pie",
         minYear: 1800,
         maxYear: 2000,
         minPossible: 1640,
@@ -134,6 +146,7 @@
         let jurs = this.getSelectedJurs();
         jurs.splice(0, 0, "");
         let jurs_params = jurs.join("&jurisdiction=");
+        this.$router.push({path: '/', query: {q: this.textToGraph}})
         for (let idx in terms) {
           let self = this;
           let term = terms[idx];
@@ -154,8 +167,9 @@
                 if (response === "canceled") {
                   self.errors = "Something went wrong. Please try again."
                 }
-              })
+              });
         }
+
       },
       graphResults(results, term, years) {
         let newDatasets = this.chartData.datasets;
