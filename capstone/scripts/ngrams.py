@@ -3,7 +3,6 @@ import csv
 import itertools
 import json
 import lzma
-import msgpack
 
 import re
 import tempfile
@@ -661,4 +660,4 @@ def load_kv_database():
                 grams[gram][jur][year] = [instances, documents]
 
             # write keys
-            ngram_kv_store.put_batch((k, msgpack.packb(v)) for k,v in grams.items())
+            ngram_kv_store.put_batch(grams.items(), packed=True)

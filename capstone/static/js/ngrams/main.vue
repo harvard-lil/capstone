@@ -51,7 +51,7 @@
         <div class="selected-jurs">
 
           <span class="small" v-if="selectedJurs.length">Searching selected:</span>
-          <span class="small" v-else>Searching all jursidictions</span>
+          <span class="small" v-else>Searching all jurisdictions</span>
           <span class="small selected-jur" v-bind:key="jur[0]" v-on:click="toggleJur(jur)" v-for="jur in selectedJurs">
             {{jur[1]}}
           </span>
@@ -146,11 +146,9 @@
         let jurs = this.getSelectedJurs();
         jurs.splice(0, 0, "");
         let jurs_params = jurs.join("&jurisdiction=");
-        this.$router.push({path: '/', query: {q: this.textToGraph}})
-        for (let idx in terms) {
-          let self = this;
-          let term = terms[idx];
-          let url = this.urls.api_root + "ngrams/?q=" + term + jurs_params;
+        this.$router.push({path: '/', query: {q: this.textToGraph}});
+        for (const term of terms) {
+          const url = this.urls.api_root + "ngrams/?q=" + term + jurs_params;
           fetch(url)
               .then((resp) => {
                 if (!resp.ok) {
@@ -159,54 +157,52 @@
                 return resp.json();
               })
               .then((response) => {
-                let data = response.results[term];
-                let results = self.parseResponse(data, years);
-                self.graphResults(results, term, years);
+                const results = this.parseResponse(response.results);
+                this.graphResults(results, years);
               })
               .catch((response) => {
                 if (response === "canceled") {
-                  self.errors = "Something went wrong. Please try again."
+                  this.errors = "Something went wrong. Please try again."
                 }
               });
         }
 
       },
-      graphResults(results, term, years) {
-        let newDatasets = this.chartData.datasets;
-        // set colors: assign color from list of colors if four or under terms
-        // Otherwise, create random color
-        let color = this.colors.length >= 1 ? this.colors.pop() : ('#' + (Math.random() * 0xFFFFFF << 0).toString(16));
+      graphResults(results, years) {
+        const newDatasets = this.chartData.datasets;
 
-        newDatasets.push({
-          label: term,
-          borderColor: color,
-          backgroundColor: "rgba(0, 0, 0, 0)",
-          borderWidth: 2,
-          data: results
-        });
+        for (const [term, data] of Object.entries(results)) {
+          // set colors: assign color from list of colors if four or under terms
+          // Otherwise, create random color
+          const color = this.colors.length >= 1 ? this.colors.pop() : ('#' + (Math.random() * 0xFFFFFF << 0).toString(16));
+          newDatasets.push({
+            label: term || "HEY",
+            borderColor: color,
+            backgroundColor: "rgba(0, 0, 0, 0)",
+            borderWidth: 2,
+            data: data,
+          });
+        }
         this.chartData = {
           labels: years,
           datasets: newDatasets
         };
       },
-      parseResponse(data, years) {
-        let results = [];
-        for (let idx in data) {
-          let jur = data[idx];
-          for (let y in years) {
-            let year = years[y];
-            // only include years selected
-            if ((year >= this.minYear) && (year <= this.maxYear)) {
-              if (results[y]) {
-                if (jur[year]) {
-                  results[y] = results[y] + jur[year][0]
-                }
-              } else if (jur[year]) {
-                results[y] = jur[year][0];
-              } else {
-                results[y] = 0;
+      parseResponse(data) {
+        const results = {};
+        for (const [gram, jurs] of Object.entries(data)) {
+          for (const [jurName, jurData] of Object.entries(jurs)) {
+            const years = [];
+            for (const yearData of jurData) {
+              const year = yearData['year'];
+              if ( year === "total" )
+                continue;
+              // only include years selected
+              if ((year >= this.minYear) && (year <= this.maxYear)) {
+                years[year] = yearData['count'][0];
               }
             }
+            results[(jurName === "total" ? "" : jurName + ": ") + gram] = years;
           }
         }
         return results;

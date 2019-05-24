@@ -1,10 +1,9 @@
+import bisect
 import json
-import msgpack
 import re
 import urllib
 from collections import OrderedDict
 
-from django.conf import settings
 from django.http import HttpResponseRedirect, FileResponse
 from django.utils.text import slugify
 
@@ -13,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from capapi import serializers, filters, permissions, pagination, renderers as capapi_renderers
+from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument
 from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
@@ -237,9 +236,7 @@ class CaseExportViewSet(BaseViewSet):
 
 class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     http_method_names = ['get']
-    queryset = models.Ngram.objects.order_by('pk').select_related('w1', 'w2', 'w3')
     filterset_class = filters.NgramFilter
-    pagination_class = pagination.SmallCapPagination
     renderer_classes = (
         renderers.JSONRenderer,
         capapi_renderers.NgramBrowsableAPIRenderer,
@@ -268,139 +265,109 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         # without specific ngram search, return nothing
-        q = self.request.GET.get('q', '').strip()
+        q = self.request.GET.get('q', '').strip().lower()
         if not q:
             return Response({})
 
-        if not settings.NGRAMS_KV_FEATURE:
-
-            # fetch all unique ngrams for query, and paginate
-            queryset = self.filter_queryset(self.get_queryset())
-            page = self.paginate_queryset(queryset)
-
-            # get counts for each ngram
-            out = OrderedDict()
-            if page:
-
-                # build lookup table
-                ngrams_by_id = {}
-                for ngram in page:
-                    out[str(ngram)] = ngrams_by_id[ngram.pk] = {}
-
-                # fetch all observations, using same query parameters
-                observations = models.NgramObservation.objects.filter(ngram__in=page)
-                obs_filter = filters.NgramObservationFilter(data=request.query_params, queryset=observations, request=request)
-                if not obs_filter.is_valid():
-                    raise obs_filter.errors
-                observations = list(obs_filter.qs.values_list('ngram_id', 'jurisdiction_id', 'year', 'instance_count', 'document_count'))
-
-                # sort with None values first
-                observations.sort(key=lambda x: [[y is not None, y] for y in x])
-
-                # organize all observations by ngram, then jurisdiction, then year
-                for ngram_id, jurisdiction_id, year, instance_count, document_count in observations:
-                    jurs = ngrams_by_id[ngram_id]
-                    jurisdiction_slug = self.jurisdiction_id_to_slug[jurisdiction_id]
-                    if jurisdiction_slug not in jurs:
-                        jurs[jurisdiction_slug] = OrderedDict()
-                    years = jurs[jurisdiction_slug]
-                    years[year or "total"] = [instance_count, document_count]
-
-            return self.get_paginated_response(out)
-
+        ## look up query in KV store
+        words = q.split(' ')[:3]  # use first 3 words
+        q_len = len(words)
+        # prepend word count as first byte
+        q = bytes([q_len]) + ' '.join(words).encode('utf8')
+        if q.endswith(b' *'):
+            # wildcard search
+            pairs = ngram_kv_store.get_prefix(q[:-1], packed=True)
         else:
-            ## look up query in KV store
-            words = q.split(' ')[:3]  # use first 3 words
-            q_len = len(words)
-            # prepend word count as first byte
-            q = bytes([q_len]) + ' '.join(words).encode('utf8')
-            if q.endswith(b' *'):
-                # wildcard search
-                pairs = ngram_kv_store.get_prefix(q[:-1])
+            # non-wildcard search
+            value = ngram_kv_store.get(q, packed=True)
+            if value:
+                pairs = [(q, value)]
             else:
-                # non-wildcard search
-                value = ngram_kv_store.get(q)
-                if value:
-                    pairs = [(q, value)]
-                else:
-                    pairs = []
+                pairs = []
 
-            ## format results
-            results = OrderedDict()
-            if pairs:
+        ## format results
+        results = OrderedDict()
+        if pairs:
 
-                # prepare jurisdiction_filter from jurisdiction= query param
-                jurisdictions = request.GET.getlist('jurisdiction')
-                if 'all' in jurisdictions:
-                    jurisdiction_filter = None
-                else:
-                    jurisdiction_filter = set(filters.jurisdiction_slug_to_id[j] for j in jurisdictions if j in filters.jurisdiction_slug_to_id)
-                    if 'total' in jurisdictions or not jurisdiction_filter:
-                        jurisdiction_filter.add(None)
+            # prepare jurisdiction_filter from jurisdiction= query param
+            jurisdictions = request.GET.getlist('jurisdiction')
+            if 'all' in jurisdictions:
+                jurisdiction_filter = None
+            else:
+                jurisdiction_filter = set(filters.jurisdiction_slug_to_id[j] for j in jurisdictions if j in filters.jurisdiction_slug_to_id)
+                if 'total' in jurisdictions or not jurisdiction_filter:
+                    jurisdiction_filter.add(None)
 
-                # prepare year_filter from year= query param
-                year_filter = set()
-                for year in request.GET.getlist('year'):
-                    if year == 'total':
-                        year_filter.add(None)
-                    elif year.isdigit():
-                        year_filter.add(int(year))
+            # prepare year_filter from year= query param
+            year_filter = set()
+            for year in request.GET.getlist('year'):
+                if year == 'total':
+                    year_filter.add(None)
+                elif year.isdigit():
+                    year_filter.add(int(year))
 
-                # reformat stored gram data for delivery
-                # pairs coming out of the KV store will look like:
-                #   [
-                #     (b'<wordcount><gram>', msgpack.packb({
-                #       <jur_id>: {
-                #         <year - 1900>: [<instance_count>, <document_count>]
-                #     })),
-                #  ]
-                # this reformats to:
-                #  {
-                #    <jurisdiction slug>: [
-                #      {
-                #        'year': <year>,
-                #        'count': [<instance_count>, <total instances>],
-                #        'doc_count': [<instance_count>, <total instances>],
-                #      }
-                #    ]
-                #  }
-                for gram, data in pairs:
-                    data = msgpack.unpackb(data)
-                    out = {}
-                    for jur_id, years in data.items():
+            # get top 10 pairs
+            top_pairs = []
+            for gram, data in pairs:
+                sort_count = data[None][None][0]
+                bisect.insort_right(top_pairs, (sort_count, gram, data))
+                top_pairs = top_pairs[-10:]
 
-                        # apply jurisdiction_filter
-                        if jurisdiction_filter and jur_id not in jurisdiction_filter:
+            # Reformat stored gram data for delivery.
+            # top_pairs will look like:
+            #   [
+            #     (<sort_count>, b'<wordcount><gram>', {
+            #       <jur_id>: {
+            #         <year - 1900>: [<instance_count>, <document_count>]
+            #     }),
+            #  ]
+            # this reformats to:
+            #  {
+            #    <jurisdiction slug>: [
+            #      {
+            #        'year': <year>,
+            #        'count': [<instance_count>, <total instances>],
+            #        'doc_count': [<instance_count>, <total instances>],
+            #      }
+            #    ]
+            #  }
+            for _, gram, data in reversed(top_pairs):
+                out = {}
+                for jur_id, years in data.items():
+
+                    # apply jurisdiction_filter
+                    if jurisdiction_filter and jur_id not in jurisdiction_filter:
+                        continue
+
+                    years_out = []
+                    jur_slug = self.jurisdiction_id_to_slug[jur_id]
+                    for year, counts in years.items():
+
+                        # years will be -1900 for msgpack compression -- add 1900 back in
+                        if year is not None:
+                            year += 1900
+
+                        # apply year filter
+                        if year_filter and year not in year_filter:
                             continue
 
-                        years_out = []
-                        jur_slug = self.jurisdiction_id_to_slug[jur_id]
-                        for year, counts in years.items():
+                        totals = self.totals_by_jurisdiction_year_length[(jur_slug, year, q_len)]
+                        years_out.append(OrderedDict((
+                            ("year", str(year) if year else "total"),
+                            ("count", [counts[0], totals[0]]),
+                            ("doc_count", [counts[1], totals[1]]),
+                        )))
 
-                            # years will be -1900 for msgpack compression -- add 1900 back in
-                            if year is not None:
-                                year += 1900
+                    out[jur_slug] = years_out
 
-                            # apply year filter
-                            if year_filter and year not in year_filter:
-                                continue
+                results[gram[1:].decode('utf8')] = out
 
-                            totals = self.totals_by_jurisdiction_year_length[(jur_slug, year, q_len)]
-                            years_out.append(OrderedDict((
-                                ("year", str(year) if year else "total"),
-                                ("count", [counts[0], totals[0]]),
-                                ("doc_count", [counts[1], totals[1]]),
-                            )))
+        paginated = OrderedDict((
+            ("count", len(results)),
+            ("next", None),
+            ("previous", None),
+            ("results", results),
+        ))
 
-                        out[jur_slug] = years_out
+        return Response(paginated)
 
-                    results[gram[1:].decode('utf8')] = out
-
-            paginated = OrderedDict((
-                ("count", 1),
-                ("next", None),
-                ("previous", None),
-                ("results", results),
-            ))
-
-            return Response(paginated)
