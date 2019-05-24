@@ -176,7 +176,7 @@
           // Otherwise, create random color
           const color = this.colors.length >= 1 ? this.colors.pop() : ('#' + (Math.random() * 0xFFFFFF << 0).toString(16));
           newDatasets.push({
-            label: term || "HEY",
+            label: term,
             borderColor: color,
             backgroundColor: "rgba(0, 0, 0, 0)",
             borderWidth: 2,
@@ -199,7 +199,7 @@
                 continue;
               // only include years selected
               if ((year >= this.minYear) && (year <= this.maxYear)) {
-                years[year] = yearData['count'][0];
+                years[year-this.minYear] = yearData['count'][0];
               }
             }
             results[(jurName === "total" ? "" : jurName + ": ") + gram] = years;
