@@ -310,7 +310,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             # get top 10 pairs
             top_pairs = []
             for gram, data in pairs:
-                sort_count = data[None][None][0]
+                total_jur = data[None]
+                sort_count = next(total_jur[i+1] for i in range(0, len(total_jur), 3) if total_jur[i] is None)
                 bisect.insort_right(top_pairs, (sort_count, gram, data))
                 top_pairs = top_pairs[-10:]
 
@@ -318,9 +319,10 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             # top_pairs will look like:
             #   [
             #     (<sort_count>, b'<wordcount><gram>', {
-            #       <jur_id>: {
-            #         <year - 1900>: [<instance_count>, <document_count>]
-            #     }),
+            #       <jur_id>: [
+            #         <year - 1900>, <instance_count>, <document_count>,
+            #         <year - 1900>, <instance_count>, <document_count>, ...
+            #     ]),
             #  ]
             # this reformats to:
             #  {
@@ -342,7 +344,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
                     years_out = []
                     jur_slug = self.jurisdiction_id_to_slug[jur_id]
-                    for year, counts in years.items():
+                    for i in range(0, len(years), 3):
+                        year, count, doc_count = years[i:i+3]
 
                         # years will be -1900 for msgpack compression -- add 1900 back in
                         if year is not None:
@@ -355,10 +358,11 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                         totals = self.totals_by_jurisdiction_year_length[(jur_slug, year, q_len)]
                         years_out.append(OrderedDict((
                             ("year", str(year) if year else "total"),
-                            ("count", [counts[0], totals[0]]),
-                            ("doc_count", [counts[1], totals[1]]),
+                            ("count", [count, totals[0]]),
+                            ("doc_count", [doc_count, totals[1]]),
                         )))
 
+                    years_out.sort(key=lambda y: y["year"])
                     out[jur_slug] = years_out
 
                 results[gram[1:].decode('utf8')] = out
