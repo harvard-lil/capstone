@@ -661,4 +661,4 @@ def load_kv_database():
                 grams[gram][jur][year] = [instances, documents]
 
             # write keys
-            ngram_kv_store.put_batch(((k, msgpack.packb(grams[k])) for k in sorted(grams.keys())), append=True)
+            ngram_kv_store.put_batch((k, msgpack.packb(v)) for k,v in grams.items())
