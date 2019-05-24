@@ -386,10 +386,16 @@ class NgramKVLMDB:
                 else:
                     break
 
-    def put_batch(self, items, append=False):
-        with self.db.begin(write=True) as txn:
-            for k, v in items:
-                txn.put(k, v, append=append)
+    def put_batch(self, items):
+        try:
+            items = list(items)
+            with self.db.begin(write=True) as txn:
+                for k, v in items:
+                    txn.put(k, v)
+        except lmdb.MapFullError:
+            # double the map_size and try again
+            self.db.set_mapsize(self.db.info()['map_size'] * 2)
+            self.put_batch(items)
 
     def last_key(self):
         with self.db.begin() as txn:
