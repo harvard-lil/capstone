@@ -7,17 +7,28 @@
     </div>
     <div class="form-group">
       <div class="row">
-        <input class="col-lg-12 text-to-graph" placeholder="Your text here" v-model.trim="textToGraph">
+        <input class="col-lg-12 text-to-graph"
+               placeholder="Your text here"
+               v-on:keyup.enter="createGraph()"
+               v-model.trim="textToGraph">
         <div class="col-lg-12 description small">Separate entries using commas</div>
       </div>
 
       <div class="row">
         <div class="col-lg-6 form-group-elements">
           <label for="min-year">From</label>
-          <input id="min-year" v-model.number="minYear" type="number" min="1640" max="2018"/>
+          <input id="min-year"
+                 v-model.number="minYear"
+                 type="number"
+                 v-on:keyup.enter="createGraph()"
+                 min="1640" max="2018"/>
           &nbsp;
           <label for="max-year">To</label>
-          <input id="max-year" v-model.number="maxYear" type="number" min="1640" max="2018"/>
+          <input id="max-year"
+                 v-model.number="maxYear"
+                 type="number"
+                 v-on:keyup.enter="createGraph()"
+                 min="1640" max="2018"/>
         </div>
         <div class="col-lg-4 text-right">
           <input class="dropdown-toggle btn-secondary"
@@ -148,7 +159,7 @@
         let jurs_params = jurs.join("&jurisdiction=");
         this.$router.push({path: '/', query: {q: this.textToGraph}});
         for (const term of terms) {
-          const url = this.urls.api_root + "ngrams/?q=" + term + jurs_params;
+          const url = encodeURI(this.urls.api_root + "ngrams/?q=" + term + jurs_params);
           fetch(url)
               .then((resp) => {
                 if (!resp.ok) {
@@ -170,16 +181,15 @@
       },
       graphResults(results, years) {
         const newDatasets = this.chartData.datasets;
-
         for (const [term, data] of Object.entries(results)) {
           // set colors: assign color from list of colors if four or under terms
           // Otherwise, create random color
           const color = this.colors.length >= 1 ? this.colors.pop() : ('#' + (Math.random() * 0xFFFFFF << 0).toString(16));
           newDatasets.push({
             label: term,
-            borderColor: color,
-            backgroundColor: "rgba(0, 0, 0, 0)",
-            borderWidth: 2,
+            backgroundColor: color,
+            borderWidth: 0,
+            borderRadius: 100,
             data: data,
           });
         }
