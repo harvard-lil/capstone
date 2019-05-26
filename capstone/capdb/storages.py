@@ -391,7 +391,7 @@ class NgramKVLMDB:
         except lmdb.MapFullError:
             # double the map_size and try again
             self.db.set_mapsize(self.db.info()['map_size'] * 2)
-            self.put_batch(items)
+            self.put_batch(items, packed)
 
     ## readers
 

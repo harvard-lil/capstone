@@ -598,6 +598,7 @@ def load_kv_database():
         # in the line_iter stream.
         last_gram = ngram_kv_store.last_key()
         if last_gram:
+            last_gram = last_gram[1:]
             print(" - Some NgramObservation objects already exist. Skipping all grams through %s" % last_gram)
             while True:
                 extra = list(itertools.islice(line_iter, batch_size))
