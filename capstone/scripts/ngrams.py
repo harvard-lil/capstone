@@ -152,6 +152,11 @@ def ngram_jurisdiction(jurisdiction_id, replace_existing=False, max_n=3):
     first_year = case_query.order_by('decision_date', 'id').first().decision_date.year
     last_year = case_query.order_by('-decision_date', '-id').first().decision_date.year
 
+    # load totals variable if needed
+    if not replace_existing:
+        with read_write_totals() as totals:
+            pass
+
     # ngram each year
     for year in range(first_year, last_year+1):
 
@@ -160,39 +165,53 @@ def ngram_jurisdiction(jurisdiction_id, replace_existing=False, max_n=3):
 
         # optionally skip reindexing jurisdiction-year combinations that already have ngrams
         if not replace_existing:
-            with read_write_totals() as totals:
-                if any(key.startswith(out_stem) for key in totals):
-                    continue
+            if any(key.startswith(out_stem) for key in totals):
+                print(" - %s already in totals.json" % out_stem)
+                continue
 
-        # count words for each case
-        counters = defaultdict(lambda: defaultdict(Counter))
-        queryset = CaseText.objects.filter(metadata__decision_date__year=year, metadata__jurisdiction=jurisdiction).order_by('id')
-        for case_text in ordered_query_iterator(queryset):
-            for n in range(1, max_n + 1):
-                grams = list(' '.join(gram) for gram in ngrams(tokenize(case_text.text), n))
-                counters[n]['total_tokens'] = counters[n].setdefault('total_tokens', 0) + len(grams)
-                counters[n]['total_documents'] = counters[n].setdefault('total_documents', 0) + 1
-                counters[n]['instances'].update(grams)
-                counters[n]['documents'].update(set(grams))
+        ngram_jurisdiction_year.delay(jurisdiction_id, year, out_stem, replace_existing, max_n)
 
-        # no cases for this year
-        if not counters:
-            continue
+@shared_task
+def ngram_jurisdiction_year(jurisdiction_id, year, out_stem, replace_existing=False, max_n=3):
+    print("- Ngramming %s" % out_stem)
 
-        # export files
-        for n, counts in counters.items():
+    # optionally skip reindexing jurisdiction-year combinations that already have ngrams
+    if not replace_existing:
+        with read_write_totals() as totals:
+            if any(key.startswith(out_stem) for key in totals):
+                print(" - %s already in totals.json" % out_stem)
+                return
 
-            # write ngram file (e.g. jurisdiction_year/mass_2018-1.tsv.xz)
-            out_path = out_stem + '-%s.tsv.xz' % n
-            with get_writer_for_path(out_path) as out:
-                out.write(bytes("gram\tinstances\tdocuments\n", 'utf8'))
-                count_pairs = zip(sorted(counts['instances'].items()), sorted(counts['documents'].items()))
-                for instance_count, document_count in count_pairs:
-                    out.write(bytes(instance_count[0] + "\t" + str(instance_count[1]) + "\t" + str(document_count[1]) + "\n", 'utf8'))
+    # count words for each case
+    counters = defaultdict(lambda: defaultdict(Counter))
+    queryset = CaseText.objects.filter(metadata__decision_date__year=year, metadata__jurisdiction_id=jurisdiction_id).order_by('id')
+    for case_text in ordered_query_iterator(queryset):
+        for n in range(1, max_n + 1):
+            grams = list(' '.join(gram) for gram in ngrams(tokenize(case_text.text), n))
+            counters[n]['total_tokens'] = counters[n].setdefault('total_tokens', 0) + len(grams)
+            counters[n]['total_documents'] = counters[n].setdefault('total_documents', 0) + 1
+            counters[n]['instances'].update(grams)
+            counters[n]['documents'].update(set(grams))
 
-            # add totals to totals.json file
-            with read_write_totals() as totals:
-                totals[out_path] = {'grams': counts['total_tokens'], 'documents': counts['total_documents']}
+    # no cases for this year
+    if not counters:
+        print(" - No cases for %s" % out_stem)
+        return
+
+    # export files
+    for n, counts in counters.items():
+
+        # write ngram file (e.g. jurisdiction_year/mass_2018-1.tsv.xz)
+        out_path = out_stem + '-%s.tsv.xz' % n
+        with get_writer_for_path(out_path) as out:
+            out.write(bytes("gram\tinstances\tdocuments\n", 'utf8'))
+            count_pairs = zip(sorted(counts['instances'].items()), sorted(counts['documents'].items()))
+            for instance_count, document_count in count_pairs:
+                out.write(bytes(instance_count[0] + "\t" + str(instance_count[1]) + "\t" + str(document_count[1]) + "\n", 'utf8'))
+
+        # add totals to totals.json file
+        with read_write_totals() as totals:
+            totals[out_path] = {'grams': counts['total_tokens'], 'documents': counts['total_documents']}
 
 @contextmanager
 def read_xz(path):
