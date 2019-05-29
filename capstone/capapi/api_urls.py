@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.urls import path, re_path, include
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -46,6 +46,7 @@ urlpatterns = [
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=None), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
 
+    path('robots.txt', TemplateView.as_view(template_name='robots_api.txt', content_type='text/plain'), name='robots_api'),
     path('', RedirectView.as_view(url='/v1/', permanent=False), name='api-root')
 ]
 
