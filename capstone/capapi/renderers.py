@@ -39,7 +39,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
         if 'detail' in data:
             if data['detail'] == "Not found.":
                 template = loader.get_template('case_404.html')
-                return template.render({}, renderer_context['request'])
+                return template.render(renderer_context, renderer_context['request'])
             return generate_html_error("Authentication Error", data['detail'])
 
         official_cit_entries = [citation['cite'] for citation in data['citations'] if citation['type'] == 'official']
@@ -56,6 +56,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 citations += "; "
 
         context = {
+            **renderer_context,
             'citation': official_citation,
             'page_description': data['name'],
             'page_title': data['name_abbreviation'],
