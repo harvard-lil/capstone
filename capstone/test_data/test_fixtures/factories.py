@@ -95,15 +95,14 @@ class VolumeFactory(factory.DjangoModelFactory):
     reporter = factory.SubFactory(ReporterFactory)
     volume_number = factory.Sequence(lambda n: str(n))
 
+_volume_xml = Path(settings.BASE_DIR, "test_data/from_vendor/32044057892259_redacted/32044057892259_redacted_METS.xml").read_text()
+
 @register
 class VolumeXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = VolumeXML
 
-    orig_xml = (
-            Path(settings.BASE_DIR) /
-            "test_data/from_vendor/32044057892259_redacted/32044057892259_redacted_METS.xml"
-    ).read_text()
+    orig_xml = factory.Sequence(lambda n: _volume_xml + ' ' * n)  # avoid identical md5 values
     s3_key = factory.Sequence(lambda n: '%08d' % n)
     metadata = factory.SubFactory(VolumeFactory)
 
@@ -145,35 +144,32 @@ class CitationFactory(factory.DjangoModelFactory):
     case = factory.SubFactory(CaseFactory)
     cite = factory.Faker('sentence', nb_words=5)
 
+_case_xml = Path(settings.BASE_DIR, "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml").read_text()
 
 @register
 class CaseXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseXML
 
-    orig_xml = (
-            Path(settings.BASE_DIR) /
-            "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml"
-    ).read_text()
+    orig_xml = factory.Sequence(lambda n: _case_xml.replace('casebody_0001', 'casebody_000%s' % n))  # avoid identical md5/case_id values
     volume = factory.SubFactory(VolumeXMLFactory)
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         """ Add the needed Jurisdiction for this CaseXML's metadata instance to be created on save. """
-        parsed = parse_xml(cls.orig_xml)
+        parsed = parse_xml(kwargs['orig_xml'])
         JurisdictionFactory(name=jurisdiction_translation[parsed('case|court').attr('jurisdiction').strip()])
         return super()._create(model_class, *args, **kwargs)
 
+
+_page_xml = Path(settings.BASE_DIR, "test_data/from_vendor/32044057892259_redacted/alto/32044057892259_redacted_ALTO_00008_0.xml").read_text()
 
 @register
 class PageXMLFactory(factory.DjangoModelFactory):
     class Meta:
         model = PageXML
 
-    orig_xml = (
-            Path(settings.BASE_DIR) /
-            "test_data/from_vendor/32044057892259_redacted/alto/32044057892259_redacted_ALTO_00008_0.xml"
-    ).read_text()
+    orig_xml = factory.Sequence(lambda n: _page_xml + ' ' * n)  # avoid identical md5 values
     s3_key = factory.Sequence(lambda n: '%08d' % n)
     volume = factory.SubFactory(VolumeXMLFactory)
 

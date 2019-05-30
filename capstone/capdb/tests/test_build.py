@@ -30,6 +30,7 @@ def test_pip_compile():
 def test_flake8():
     subprocess.check_call('flake8')
 
+@pytest.mark.skipif(not os.environ.get('DOCKERIZED'), reason="npm build can only be tested in docker")
 def test_npm_build():
     dist_dir = Path(settings.STATICFILES_DIRS[0], settings.WEBPACK_LOADER['DEFAULT']['BUNDLE_DIR_NAME'])
     stats_file = settings.WEBPACK_LOADER['DEFAULT']['STATS_FILE']
