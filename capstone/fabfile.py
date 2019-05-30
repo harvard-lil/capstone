@@ -35,7 +35,7 @@ from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_
     validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars, \
     update_snippets
 from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace, volume_barcode_from_folder, \
-    up_to_date_volumes
+    up_to_date_volumes, storage_lookup
 
 
 @task(alias='run')
@@ -753,6 +753,23 @@ def validate_captar_volumes():
         for volume_name in captar_storage.iter_files(folder):
             scripts.compress_volumes.validate_volume.delay(volume_name)
 
+@task
+def list_missing_captar_volumes():
+    """ List all up-to-date folders in ingest storage that aren't in captar_storage yet. """
+    from capdb.storages import captar_storage
+    for storage_name in ['ingest_storage', 'private_ingest_storage']:
+        print("Checking %s..." % storage_name)
+        storage, path_prefix = storage_lookup[storage_name]
+        print("- listing source folders")
+        expected_files = set(str(path)+'.tar' for _, path in tqdm(up_to_date_volumes(storage.iter_files(""))))
+        print("\n- listing captar archives")
+        dest_files = set(path.rsplit('/', 1)[-1] for path in tqdm(captar_storage.iter_files_recursive(path_prefix)) if path.endswith('.tar'))
+        print()
+        missing = expected_files - dest_files
+        if missing:
+            print("- missing from captar_storage/%s:\n%s" % (path_prefix, "\n".join(missing)))
+        else:
+            print("- all volumes finished")
 
 @task
 def create_case_text_for_all_cases(update_existing=False):
@@ -1090,3 +1107,4 @@ def update_case_frontend_url(update_existing=False):
             case.frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=cite.cite in ambiguous_cites)
             case_batch.append(case)
         CaseMetadata.objects.bulk_update(case_batch, ['frontend_url'])
+
