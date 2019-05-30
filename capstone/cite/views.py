@@ -148,6 +148,7 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
                 else:
                     serializer = serializers.CaseSerializerWithCasebody
 
+        # handle google crawler
         elif helpers.is_google_bot(request):
             serializer = serializers.NoLoginCaseSerializer
 
@@ -161,7 +162,11 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         api_request = Request(request, authenticators=[SessionAuthentication()])
         api_request.accepted_renderer = HTMLRenderer()
         serialized = serializer(case, context={'request': api_request})
-        rendered = HTMLRenderer().render(serialized.data, renderer_context={'request': api_request})
+        context = {'request': api_request}
+        if not case.jurisdiction_whitelisted:
+            # blacklisted cases shouldn't show cached version in google search results
+            context['meta_tags'] = [{"name": "googlebot", "content": "noarchive",}]
+        rendered = HTMLRenderer().render(serialized.data, renderer_context=context)
         return HttpResponse(rendered)
 
     ### handle non-unique citation (zero or multiple)
