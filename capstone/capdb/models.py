@@ -286,7 +286,7 @@ class XMLQuerySet(models.QuerySet):
 class BaseXMLModel(models.Model):
     """ Base class for models that store XML documents. """
     orig_xml = XMLField()
-    md5 = models.CharField(max_length=255, blank=True, null=True)
+    md5 = models.CharField(max_length=255, unique=True)
     size = models.IntegerField(blank=True, null=True)
 
     objects = XMLQuerySet.as_manager()
@@ -302,7 +302,7 @@ class BaseXMLModel(models.Model):
 
         # update md5
         if self.tracker.has_changed('orig_xml'):
-            if not self.tracker.has_changed('md5'):
+            if not self.md5 or not self.tracker.has_changed('md5'):
                 self.md5 = self.get_md5()
             if not self.tracker.has_changed('size'):
                 self.size = self.get_size()
@@ -759,7 +759,7 @@ class CaseMetadataQuerySet(models.QuerySet):
 
 
 class CaseMetadata(models.Model):
-    case_id = models.CharField(max_length=64, null=True, db_index=True)
+    case_id = models.CharField(max_length=64, unique=True)
     frontend_url = models.CharField(max_length=255, null=True, blank=True)
     first_page = models.CharField(max_length=255, null=True, blank=True)
     last_page = models.CharField(max_length=255, null=True, blank=True)
