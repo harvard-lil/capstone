@@ -577,6 +577,45 @@ def parse_ngram_paths(paths):
             ngram_files.append({'path': path, 'year': None, 'jurisdiction': None, 'length': m.group(1)})
     return ngram_files
 
+def seek_to_line(f, prefix):
+    """
+        Seek sorted file f to the beginning of the first line that is >= prefix.
+        Via http://pts.github.io/pts-line-bisect/line_bisect_evolution.html
+        >>> f = StringIO("aa\nbb\ncc\ndd\n")
+        >>> seek_to_line(f, 'a'); f.readline()
+        'aa\n'
+        >>> seek_to_line(f, 'b'); f.readline()
+        'bb\n'
+        >>> seek_to_line(f, 'e'); f.readline()
+        ''
+    """
+    f.seek(0, 2)  # Seek to EOF.
+    size = f.tell()
+    lo, hi = 0, size - 1
+    midf = mid = None
+    while lo < hi:
+        mid = (lo + hi) >> 1
+        if mid > 0:
+            f.seek(mid - 1)  # Just to figure out where our line starts.
+            f.readline()  # Ignore previous line, find our line.
+            midf = f.tell()
+        else:
+            midf = 0
+            f.seek(midf)
+        line = f.readline()  # We read at f.tell() == midf.
+        # EOF (`not line') is always larger than any line we search for.
+        if not line or prefix <= line:
+            hi = mid
+        else:
+            lo = mid + 1
+    if mid == lo:
+        f.seek(midf)
+    elif lo <= 0:
+        f.seek(0)
+    else:
+        f.seek(lo - 1)
+        f.readline()
+
 def load_kv_database():
     """
         Read all ngram text files and write them to LevelDB in settings.NGRAM_LEVELDB_PATH
@@ -602,6 +641,15 @@ def load_kv_database():
     # Open all files:
     with read_xzs(p['path'] for p in ngram_files) as files:
 
+        # If some NgramObservation objects already exist, fetch the ngram of the last object, and skip past that one
+        # in the line_iter stream.
+        last_gram = ngram_kv_store.last_key()
+        if last_gram:
+            last_gram = last_gram[1:]
+            print(" - Some NgramObservation objects already exist. Skipping all grams through %s" % last_gram)
+            for f in files:
+                seek_to_line(f, last_gram)
+
         # turn each file handle into an iterator to yield its index in ngram_files and line
         def iter_with_n(iter, n):
             for item in iter:
@@ -612,22 +660,6 @@ def load_kv_database():
         extra = []
         batch_size = 100000
         line_iter = tqdm(merge(*file_iters))
-
-        # If some NgramObservation objects already exist, fetch the ngram of the last object, and skip past that one
-        # in the line_iter stream.
-        last_gram = ngram_kv_store.last_key()
-        if last_gram:
-            last_gram = last_gram[1:]
-            print(" - Some NgramObservation objects already exist. Skipping all grams through %s" % last_gram)
-            while True:
-                extra = list(itertools.islice(line_iter, batch_size))
-                if not extra:
-                    break
-                if extra[-1][0] >= last_gram:
-                    while extra[0][0] < last_gram:
-                        extra.pop(0)
-                    ngram_kv_store.pop(last_gram)
-                    break
 
         # Run this loop for each batch of batch_size lines. We're going to read the lines; group them by gram;
         # filter out those below the threshold; and write each gram to the KV store
