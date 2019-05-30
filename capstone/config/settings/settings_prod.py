@@ -44,6 +44,12 @@ STORAGES = {
             'bucket_name': 'hlsldigilab-xfer',
         }
     },
+    'ngram_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'ngrams'),
+        },
+    },
 }
 
 INVENTORY = {
