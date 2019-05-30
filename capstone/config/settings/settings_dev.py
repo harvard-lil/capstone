@@ -69,3 +69,4 @@ except ImportError:
     pass
 
 NGRAMS_FEATURE = True
+NGRAM_INGEST_THRESHOLD = 1
