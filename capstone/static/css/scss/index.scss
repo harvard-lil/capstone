@@ -157,9 +157,16 @@ h2.section-title {
   margin-top: -1px;
 }
 
+
+
 .map-section {
   background-color: $color-black;
-
+  .num_cases:after, .num_pages:after{
+    content: " Million";
+    @include media-breakpoint-down(md) {
+      content: "M";
+    }
+  }
   .federal-numbers-card {
     max-width: 19rem;
     .card-header {
@@ -178,6 +185,7 @@ h2.section-title {
         font-family: $font-serif;
       }
     }
+
   }
 
   .state-numbers-card {
