@@ -31,9 +31,9 @@ def index(request):
     }
 
     state = {
-        "cases": 6.7,
-        "reporters": 627,
-        "pages_scanned": 40,
+        "cases": "6.7M",
+        "reporters": "627",
+        "pages_scanned": "40M",
     }
     subscribe_form = form_for_request(request, MailingListSubscribe)
 
