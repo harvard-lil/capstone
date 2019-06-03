@@ -1,6 +1,9 @@
 import csv
+import functools
 import gzip
 import hashlib
+import platform
+
 import msgpack
 import os
 import itertools
@@ -360,15 +363,23 @@ import lmdb
 
 class NgramKVLMDB:
     def __init__(self):
+        self.open()
+
+    ## helpers
+
+    def open(self):
         self.db = lmdb.open(
             os.path.join(settings.STORAGES['ngram_storage']['kwargs']['location'], 'lmdb'),
-            map_size=2**30,
+            # On linux we can set a virtual size of 1TB and the OS won't care.
+            # On Mac & Win we have to start small and grow.
+            map_size=2**40 if platform.system() == 'Linux' else 2**20,
             writemap=True,
             map_async=True,
             subdir=True,
         )
 
-    ## helpers
+    def close(self):
+        self.db.close()
 
     def unpack(self, v, packed=False):
         return msgpack.unpackb(v) if packed and v is not None else v
@@ -376,12 +387,29 @@ class NgramKVLMDB:
     def pack(self, v, packed=False):
         return msgpack.packb(v) if packed and v is not None else v
 
+    class decorators:
+        def retry(wrapped):
+            @functools.wraps(wrapped)
+            def do_retry(self, *args, **kwargs):
+                for i in range(1, -1, -1):
+                    try:
+                        return wrapped(self, *args, **kwargs)
+                    except lmdb.Error as e:
+                        if i == 0:
+                            raise
+                        print("Retrying after lmbd error: %s" % e)
+                        self.close()
+                        self.open()
+            return do_retry
+
     ## writers
 
+    @decorators.retry
     def put(self, k, v, packed=False):
         with self.db.begin(write=True) as txn:
             txn.put(k, self.pack(v, packed))
 
+    @decorators.retry
     def put_batch(self, items, packed=False):
         try:
             items = list(items)
@@ -395,10 +423,12 @@ class NgramKVLMDB:
 
     ## readers
 
+    @decorators.retry
     def get(self, k, packed=False):
         with self.db.begin() as txn:
             return self.unpack(txn.get(k), packed)
 
+    @decorators.retry
     def get_prefix(self, prefix, packed=False):
         with self.db.begin() as txn:
             cursor = txn.cursor()
@@ -409,6 +439,7 @@ class NgramKVLMDB:
                     return
                 yield k, self.unpack(v, packed)
 
+    @decorators.retry
     def last_key(self):
         with self.db.begin() as txn:
             cursor = txn.cursor()
@@ -416,6 +447,7 @@ class NgramKVLMDB:
                 return cursor.key()
             return None
 
+    @decorators.retry
     def pop(self, k, packed=False):
         with self.db.begin(write=True) as txn:
             return self.unpack(txn.pop(k), packed)
