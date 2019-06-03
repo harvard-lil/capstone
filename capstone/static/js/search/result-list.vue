@@ -1,6 +1,6 @@
 <template>
 
-  <div v-if="show_loading" class="results-loading-container col-centered">
+  <div v-if="showLoading" class="results-loading-container col-centered">
     <img alt="" aria-hidden="true" :src='`${urls.static}img/loading.gif`' class="loading-gif"/>
     <div class="loading-text">Loading results ...</div>
   </div>
@@ -65,7 +65,7 @@
       'results',
       'first_result_number',
       'last_result_number',
-      'show_loading',
+      'showLoading',
       'endpoint',
       'hitcount',
       'page',

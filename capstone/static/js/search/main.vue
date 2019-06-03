@@ -5,7 +5,7 @@
                  class="bg-tan"
                  :field_errors="field_errors"
                  :search_error="search_error"
-                 :show_loading="show_loading"
+                 :showLoading="showLoading"
                  :endpoint="endpoint"
                  :urls="urls"
                  :choices="choices">
@@ -19,7 +19,7 @@
                  :results="results"
                  :first_result_number="first_result_number"
                  :last_result_number="last_result_number"
-                 :show_loading="show_loading"
+                 :showLoading="showLoading"
                  :endpoint="endpoint"
                  :hitcount="hitcount"
                  :urls="urls">
@@ -51,10 +51,7 @@
         this.handleRouteUpdate(route, oldRoute);
       },
     },
-    components: {
-      'search-form': SearchForm,
-      'result-list': ResultList
-    },
+    components: {SearchForm, ResultList},
     data: function () {
       return {
         title: "Search",
@@ -63,7 +60,7 @@
         results: [],
         first_result_number: null,
         last_result_number: null,
-        show_loading: false,
+        showLoading: false,
         cursors: [],
         endpoint: 'cases', // only used in the title in search.html. The working endpoint is in the searchform component
         page_size: 10,
@@ -189,7 +186,7 @@
         // submitted by the user.
         const currentFetchID = Math.random();
         this.currentFetchID = currentFetchID;
-        this.startLoading();
+        this.showLoading = true;
         return fetch(query_url)
           .then((response)=>{
             if (currentFetchID !== this.currentFetchID) { throw "canceled" }
@@ -209,7 +206,7 @@
 
             // use this.$set to set array value with reactivity -- see https://vuejs.org/v2/guide/list.html#Caveats
             this.$set(this.results, this.page, results_json.results);
-            this.stopLoading();
+            this.showLoading = false;
           })
           .catch((response)=>{
             if (response === "canceled"){
@@ -217,7 +214,7 @@
             }
 
             // scroll up to show error message
-            this.stopLoading();
+            this.showLoading = false;
             this.scrollToSearchForm();
 
             if (response.status === 400 && this.field_errors) {
@@ -258,15 +255,6 @@
         this.cursors = [];
         this.last_page = true;
         this.first_page = true;
-      },
-      startLoading: function () {
-        /* shows the loading screen and throbber */
-        setTimeout(()=>{document.querySelector('#searching-focus').focus()});  // "Searching" message for screenreaders
-        this.show_loading = true;
-      },
-      stopLoading: function () {
-        /* hides the loading screen and throbber */
-        this.show_loading = false;
       },
       seeCases: function (parameter, value) {
         /*

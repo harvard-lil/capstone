@@ -220,7 +220,7 @@ class NgramFilter(filters.FilterSet):
     )
     jurisdiction = filters.MultipleChoiceFilter(
         label='Jurisdiction',
-        choices=SimpleLazyObject(lambda: [['total', 'Total across jurisdictions (default)'], ['all', 'Select all jurisdictions']] + list(jur_choices)),
+        choices=SimpleLazyObject(lambda: [['total', 'Total across jurisdictions (default)'], ['*', 'Select all jurisdictions']] + list(jur_choices)),
     )
     year = filters.CharFilter(
         label='Year filter',

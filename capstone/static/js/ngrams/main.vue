@@ -2,78 +2,183 @@
   <div>
     <div class="page-title">
       <h1>Ngrams</h1>
-      <p>Navigate the distribution of words and phrases across U.S. case law with keywords, date ranges, and
-        jurisdictions.</p>
+      <p>View words and phrases in U.S. case law through time.</p>
     </div>
-    <div class="form-group">
-      <div class="row">
-        <input class="col-lg-12 text-to-graph"
-               placeholder="Your text here"
-               v-on:keyup.enter="createGraph()"
-               v-model.trim="textToGraph">
-        <div class="col-lg-12 description small">Separate entries using commas</div>
-      </div>
-
-      <div class="row">
-        <div class="col-lg-6 form-group-elements">
-          <label for="min-year">From</label>
-          <input id="min-year"
-                 v-model.number="minYear"
-                 type="number"
-                 v-on:keyup.enter="createGraph()"
-                 min="1640" max="2018"/>
-          &nbsp;
-          <label for="max-year">To</label>
-          <input id="max-year"
-                 v-model.number="maxYear"
-                 type="number"
-                 v-on:keyup.enter="createGraph()"
-                 min="1640" max="2018"/>
-        </div>
-        <div class="col-lg-4 text-right">
-          <input class="dropdown-toggle btn-secondary"
-                 type="button"
-                 id="jurisdictions"
-                 value="Jurisdictions"
-                 data-toggle="dropdown"
-                 aria-haspopup="true"
-                 aria-expanded="false">
-          <div class="dropdown dropdown-menu" aria-labelledby="jurisdictions">
-            <button class="dropdown-item" type="button"
-                    v-on:click="toggleJur(jurisdiction)"
-                    :class="{active: selectedJurs.indexOf(jurisdiction) > -1}"
-                    v-for="jurisdiction in jurisdictions" :key="jurisdiction[0]">
-              {{jurisdiction[1]}}
-            </button>
+    <form @submit.prevent="submitForm">
+      <div class="form-group">
+        <div class="row">
+          <input class="col-lg-12 text-to-graph"
+                 v-model="textToGraph">
+          <div class="col-lg-12 description small">
+            Example searches:
+            <a class="example-link" href="#/?q=apple, banana, orange">
+              apple, banana, orange
+            </a>
+            /
+            <a class="example-link" href="#/?q=he said, she said">
+              he said, she said
+            </a>
+            /
+            <a class="example-link" href="#/?q=a dangerous *">
+              a dangerous *
+            </a>
+            /
+            <a class="example-link" href="#/?q=me: lobster, cal: gold, tex: cowboy">
+              me: lobster, cal: gold, tex: cowboy
+            </a>
+            /
+            <a class="example-link" href="#/?q=all: apples">
+              *: apples
+            </a>
           </div>
         </div>
-        <div class="col-lg-2 text-right">
-          <button v-on:click="createGraph" class="btn-create btn-primary">
-            Graph
-          </button>
+        <div class="row">
+          <div class="ml-auto mr-3">
+            <button class="btn-secondary"
+                    type="button"
+                    data-toggle="collapse"
+                    data-target="#optionsPanel"
+                    aria-expanded="false"
+                    aria-controls="optionsPanel">
+              Graph options
+            </button>
+          </div>
+          <div class="mr-3">
+            <button class="btn-secondary"
+                    type="button"
+                    data-toggle="collapse"
+                    data-target="#helpPanel"
+                    aria-expanded="false"
+                    aria-controls="optionsPanel">
+              Help
+            </button>
+          </div>
+          <div class="">
+            <loading-button :showLoading="showLoading">Graph</loading-button>
+          </div>
+        </div>
+        <div class="row" v-if="errors.length">
+          <ul class="small alert-danger">
+            <li v-for="error in errors">{{error}}</li>  <!-- eslint-disable-line vue/require-v-for-key -->
+          </ul>
+        </div>
+      </div><!-- end form -->
+    </form>
+    <div class="collapse" id="helpPanel">
+      <div class="card card-body">
+        <h5 class="card-title">Wildcard search</h5>
+        <p>
+          Search for all terms ending with a word by adding a "*" to the end, like
+          "<a href="#/?q=ride a *">ride a *</a>".
+        </p>
+        <h5 class="card-title">Jurisdiction search</h5>
+        <p>
+          Limit a term to a particular jurisdiction by starting the term with that jurisdiction's code and a colon,
+          like "<a href="#/?q=cal: gold mine">cal: gold mine</a>".
+        </p>
+        <p>
+          Show all jurisdictions separately with a *, like "<a href="#/?q=*: apples">*: apples</a>".
+        </p>
+        <h5 class="card-title">Jurisdiction codes</h5>
+        <div class="row">
+          <div class="col-4"
+               v-for="jurisdiction in jurisdictions" :key="jurisdiction[0]">
+            <p>{{jurisdiction[1]}}: "{{jurisdiction[0]}}:"</p>
+          </div>
         </div>
       </div>
-      <div class="row" v-if="errors.length">
-        <div class="small alert-danger">
-          <span>{{errors}}</span>
+    </div>
+    <div class="collapse" id="optionsPanel">
+      <div class="card card-body">
+        <div class="form-group">
+          <label for="min-year">From</label>
+          <input id="min-year"
+                 @change="graphResults"
+                 v-model.number="minYear"
+                 type="number"
+                 min="1640" max="2018"/>
+          <label for="max-year"> To</label>
+          <input id="max-year"
+                 @change="graphResults"
+                 v-model.number="maxYear"
+                 type="number"
+                 min="1640" max="2018"/>
+        </div>
+        <fieldset class="form-group" aria-describedby="percentOrAbsHelpText">
+          <small id="percentOrAbsHelpText" class="form-text text-muted">
+            Show count as a percentage of all grams for the year, or an absolute number?
+          </small>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="percentOrAbs"
+                   id="percentOrAbs1"
+                   value="percent"
+                   @change="graphResults"
+                   v-model="percentOrAbs">
+            <label class="form-check-label" for="percentOrAbs1">Percentage</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="percentOrAbs"
+                   id="percentOrAbs2"
+                   value="absolute"
+                   @change="graphResults"
+                   v-model="percentOrAbs">
+            <label class="form-check-label" for="percentOrAbs2">Absolute number</label>
+          </div>
+        </fieldset>
+        <fieldset class="form-group" aria-describedby="countTypeHelpText">
+          <small id="countTypeHelpText" class="form-text text-muted">
+            Show count of cases containing your term, or count of individual instances of your term?
+          </small>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="countType"
+                   id="countType1"
+                   value="doc_count"
+                   @change="graphResults"
+                   v-model="countType">
+            <label class="form-check-label" for="countType1">Case count</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="countType"
+                   id="countType2"
+                   value="count"
+                   @change="graphResults"
+                   v-model="countType">
+            <label class="form-check-label" for="countType2">Instance count</label>
+          </div>
+        </fieldset>
+        <div class="form-group">
+          <label for="formControlRange">Smoothing</label>
+          <small id="smoothingFactorHelpText" class="form-text text-muted">
+            <span v-if="smoothingFactor > 0">
+              Data points will be averaged with the nearest {{smoothingFactor}}% of other points.
+            </span>
+            <span v-else>
+              No smoothing will be applied.
+            </span>
+          </small>
+          <input type="range"
+                 class="form-control-range"
+                 min="0" max="10"
+                 @change="graphResults"
+                 v-model="smoothingFactor"
+                 id="formControlRange">
         </div>
       </div>
-      <div class="row">
-        <div class="selected-jurs">
-
-          <span class="small" v-if="selectedJurs.length">Searching selected:</span>
-          <span class="small" v-else>Searching all jurisdictions</span>
-          <span class="small selected-jur" v-bind:key="jur[0]" v-on:click="toggleJur(jur)" v-for="jur in selectedJurs">
-            {{jur[1]}}
-          </span>
-        </div>
-      </div>
-      <br/>
-    </div><!-- end form -->
+    </div>
     <div class="graph">
       <div class="container graph-container">
-        <line-example :chartData="chartData">
-        </line-example>
+        <line-example :chartData="chartData"
+                      :percentOrAbs="percentOrAbs"
+                      :countType="countType"
+                      :smoothingWindow="smoothingWindow"/>
       </div>
     </div>
   </div>
@@ -81,148 +186,265 @@
 
 <script>
   import LineExample from './LineChart.vue';
+  import LoadingButton from '../vue-shared/loading-button.vue';
+  import debounce from 'lodash.debounce';
 
   export default {
     name: 'Main',
-    components: {
-      'line-example': LineExample
-    },
+    components: {LineExample, LoadingButton},
     beforeMount() {
-      this.jurisdictions = snippets.jurisdictions;  // eslint-disable-line
+      this.jurisdictions = [["*", "Wildcard"]].concat(snippets.jurisdictions);  // eslint-disable-line
+      for (const[k, v] of this.jurisdictions)
+        this.jurisdictionLookup[k] = v;
       this.urls = urls;  // eslint-disable-line
-
-      // autofill text to match URL query
-      if (this.$route.query.q) {
-        this.textToGraph = this.$route.query.q;
-      }
     },
-    mounted() {
-      this.createGraph();
+    mounted: function () {
+      /* Read url state when first loaded. */
+      this.handleRouteUpdate(this.$route);
+    },
+    watch: {
+      /* Read url state on change. */
+      '$route': function (route, oldRoute) {
+        this.handleRouteUpdate(route, oldRoute);
+      },
     },
     data: function () {
       return {
         chartData: null,
-        textToGraph: "apple pie, blueberry pie",
+        rawData: null,
+        textToGraph: "apple pie, baseball",
         minYear: 1800,
-        maxYear: 2000,
+        maxYear: 2018,
         minPossible: 1640,
         maxPossible: 2018,
-        jurisdictions: {},
+        smoothingFactor: 0,
+        smoothingWindow: 0,
+        countType: "doc_count",
+        percentOrAbs: "percent",
+        jurisdictions: [],
+        jurisdictionLookup: {},
         urls: {},
         selectedJurs: [],
-        colors: ["#0276FF", "#E878FF", "#EDA633", "#FF654D", "#6350FD"],
-        errors: ""
+        // colors via http://mkweb.bcgsc.ca/biovis2012/ and https://contrast-ratio.com/:
+        // these colors work for color-blindness, and have contrast against white that is WCAG AA large or better
+        colors: [
+          "rgb(0,0,0)", "rgb(73,0,146)", "rgb(146,0,0)",
+          "rgb(0,73,73)", "rgb(0,109,219)", "rgb(146,73,0)",
+          "rgb(0,146,146)", "rgb(182,109,255)", "rgb(219,109,0)",
+        ],
+        pointStyles: ['circle', 'cross', 'crossRot', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'],
+        errors: [],
+        showLoading: false,
       }
     },
     methods: {
       isValidYear(year) {
-        return (year >= this.minPossible) && (year <= this.maxPossible)
+        return year === '' || (this.minPossible <= year && year <= this.maxPossible)
       },
-      isValidText() {
-        return this.textToGraph.length > 0
+      clampYears() {
+        /* clamp minYear and maxYear to acceptable values */
+        if (!this.isValidYear(this.minYear))
+          this.minYear = this.minPossible;
+        if (!this.isValidYear(this.maxYear))
+          this.maxYear = this.maxPossible;
+        if (this.maxYear && this.minYear && this.minYear > this.maxYear)
+          [this.minYear, this.maxYear] = [this.maxYear, this.minYear];
       },
       range(start, stop, step = 1) {
         start = Number(start);
         stop = Number(stop);
         return Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
       },
-      getSelectedJurs() {
-        return this.selectedJurs.map(jur => jur[0]);
-      },
       getTerms(text) {
         let terms = text.split(",");
-        return terms.map(term => term.trim())
-
+        return terms.map(term => term.trim());
       },
-      inputsAreValid() {
-        if ((this.minYear > this.maxYear) || !this.isValidYear(this.minYear) || !this.isValidYear(this.maxYear)) {
-          this.errors = "Please choose valid years. Years must be between " + this.minPossible + " and " + this.maxPossible + ".";
-          return false
-        }
-        if (!(this.isValidText())) {
-          this.errors = "Please enter text";
-          return false
-        }
-        return true
-      },
-      createGraph() {
-        if (!this.inputsAreValid()) return;
-        this.errors = "";
-        let terms = this.getTerms(this.textToGraph);
-        let years = this.range(this.minYear, this.maxYear);
-        this.chartData = {
-          labels: years,
-          datasets: []
+      submitForm() {
+        /* copy the form state into the route to trigger a redraw */
+        const query = {
+          q: this.textToGraph
         };
-        let jurs = this.getSelectedJurs();
-        jurs.splice(0, 0, "");
-        let jurs_params = jurs.join("&jurisdiction=");
-        this.$router.push({path: '/', query: {q: this.textToGraph}});
-        for (const term of terms) {
-          const url = encodeURI(this.urls.api_root + "ngrams/?q=" + term + jurs_params);
-          fetch(url)
-              .then((resp) => {
-                if (!resp.ok) {
-                  throw resp
-                }
-                return resp.json();
-              })
-              .then((response) => {
-                const results = this.parseResponse(response.results);
-                this.graphResults(results, years);
-              })
-              .catch((response) => {
-                if (response === "canceled") {
-                  this.errors = "Something went wrong. Please try again."
-                }
-              });
+        if (this.selectedJurs.length)
+          query['jurs'] = this.selectedJurs;
+        this.$router.push({
+          path: '/',
+          query
+        });
+      },
+      handleRouteUpdate(route, oldRoute) {  // eslint-disable-line no-unused-vars
+        // autofill form to match URL query
+        const query = route.query;
+        if (query.q)
+          this.textToGraph = this.$route.query.q;
+
+        // clear existing errors, but don't clear existing graph yet in case we can't draw anything new
+        this.errors = [];
+
+        // validate input
+        const q = query.q;
+        if (q === undefined){
+          // first load, with no query to run
+          return;
         }
+        if (!q.trim()){
+          this.errors.push("Please enter text");
+          return;
+        }
+        const terms = this.getTerms(q);
+
+        this.showLoading = true;
+        Promise.all(
+
+          // send request for each term, in parallel
+          terms.map((term)=> {
+            const [firstWord, ...restWords] = term.split(/\s/);
+
+            // parse jurisdiction prefix
+            let jursParams = "";
+            if (firstWord.endsWith(':')) {
+              const jur = firstWord.slice(0, -1);
+              if (!this.jurisdictionLookup[jur]){
+                this.errors.push(`Unknown jurisdiction "${jur}". Options are: ${Object.keys(this.jurisdictionLookup)}`);
+                return null;
+              }
+              jursParams = "&jurisdiction=" + encodeURIComponent(jur);
+              term = restWords.join(' ');
+            }
+
+            // fetch results
+            const url = this.urls.api_root + "ngrams/?q=" + encodeURIComponent(term) + jursParams;
+            return fetch(url)
+
+              // json parse each response
+              .then((resp) => {
+                if (!resp.ok)
+                  throw resp;
+                return resp.json();
+
+              // filter out responses with no results
+              }).then((resp)=>{
+                if (Object.keys(resp.results).length === 0) {
+                  this.errors.push(`"${term}" appears fewer than 100 times in our corpus.`);
+                  return null;
+                }
+                return resp.results;
+              })
+          })
+        ).then((results) => {
+          // merge results into single dict for processing, so we can find correct year range
+          // const mergedResults = Object.assign({}, ...allResults.filter(result => result !== null));
+          // if (Object.keys(mergedResults).length === 0)
+          //   return;
+
+          // display results
+          const rawData = this.parseResponse(results);
+          if (Object.keys(rawData.results).length === 0)
+            return;
+          this.rawData = rawData;
+          this.graphResults();
+          this.showLoading = false;
+        }).catch(response => {
+          // error handling
+          this.showLoading = false;
+          this.errors.push("Connection error: failed to load results");
+          console.log("Connection error:", response);  // eslint-disable-line
+        });
 
       },
-      graphResults(results, years) {
-        const newDatasets = this.chartData.datasets;
-        for (const [term, data] of Object.entries(results)) {
-          // set colors: assign color from list of colors if four or under terms
-          // Otherwise, create random color
-          const color = this.colors.length >= 1 ? this.colors.pop() : ('#' + (Math.random() * 0xFFFFFF << 0).toString(16));
+      // graphResults is debounced so we don't redraw the graph too often when settings are changed
+      graphResults: debounce(function(){
+
+        // validate input from display options
+        this.clampYears();
+        if (!this.rawData)
+          return;
+        const newDatasets = [];
+        const dataMinYear = this.rawData.minYear;
+        const dataMaxYear = this.rawData.maxYear;
+        const minYear = Math.max(dataMinYear, this.minYear);
+        const maxYear = Math.min(dataMaxYear, this.maxYear);
+        let colorIndex = this.rawData.colorOffset;
+
+        // prepare each dataset
+        for (const [term, rawData] of Object.entries(this.rawData.results)) {
+
+          // apply percentOrAbs and countType settings
+          let data = rawData.map((year) => {
+            if (year === null) return 0;
+            if (this.percentOrAbs === "absolute") return year[this.countType][0];
+            return year[this.countType][0]/year[this.countType][1]*100;
+          });
+
+          // apply minYear and maxYear settings
+          data = data.slice(minYear-dataMinYear, maxYear-dataMinYear+1);
+
+          // apply smoothingFactor setting
+          data = this.movingAverage(data, maxYear-minYear);
+
+          // rotate colors
+          const color = this.colors[colorIndex++ % this.colors.length];
+
+          // show individual points if we have fewer than 50 total
+          const pointRadius = maxYear-minYear < 50 ? 3 : 0;
+
           newDatasets.push({
             label: term,
-            backgroundColor: color,
-            borderWidth: 0,
+            borderColor: color,
+            backgroundColor: "rgba(0, 0, 0, 0)",
+            borderWidth: 2,
             borderRadius: 100,
             data: data,
+            pointStyle: this.pointStyles[colorIndex % this.pointStyles.length],
+            pointRadius: pointRadius,
+            pointHitRadius: 5,
           });
         }
+
+        // show chart
         this.chartData = {
-          labels: years,
-          datasets: newDatasets
+          labels: this.range(minYear, maxYear+1),
+          datasets: newDatasets,
         };
-      },
-      parseResponse(data) {
+      }, 200),
+      parseResponse(apiResults) {
         const results = {};
-        for (const [gram, jurs] of Object.entries(data)) {
-          for (const [jurName, jurData] of Object.entries(jurs)) {
-            const years = [];
-            for (const yearData of jurData) {
-              const year = yearData['year'];
-              if ( year === "total" )
-                continue;
-              // only include years selected
-              if ((year >= this.minYear) && (year <= this.maxYear)) {
-                years[year-this.minYear] = yearData['count'][0];
+        let minYear = null, maxYear = null;
+        for (const result of apiResults) {
+          for (const [gram, jurs] of Object.entries(result)) {
+            for (const [jurName, jurData] of Object.entries(jurs)) {
+              const years = new Array(this.maxPossible + 1).fill(null);
+              for (const yearData of jurData) {
+                let year = yearData['year'];
+                if (year === "total")
+                  continue;
+                year = parseInt(year, 10);
+                if (minYear === null || minYear > year)
+                  minYear = year;
+                if (maxYear === null || maxYear < year)
+                  maxYear = year;
+                years[year] = yearData;
               }
+              results[(jurName === "total" ? "" : this.jurisdictionLookup[jurName] + ": ") + gram] = years;
             }
-            results[(jurName === "total" ? "" : jurName + ": ") + gram] = years;
           }
         }
-        return results;
-      },
-      toggleJur(jurisdiction) {
-        if (this.selectedJurs.indexOf(jurisdiction) > -1) {
-          this.selectedJurs.splice(this.selectedJurs.indexOf(jurisdiction), 1);
-        } else {
-          this.selectedJurs.push(jurisdiction);
+        for (const key of Object.keys(results)){
+          results[key] = results[key].slice(minYear, maxYear+1);
         }
+        // set a random colorOffset for this response, so colors change on each request
+        const colorOffset = Math.floor(Math.random() * this.colors.length);
+        return {colorOffset, minYear, maxYear, results};
+      },
+      movingAverage(items, totalRange) {
+        /* average each item in items along with smoothingFactor % of adjacent items */
+        const window = Math.floor(totalRange * (this.smoothingFactor/100));
+        this.smoothingWindow = window;
+        if (window < 1)
+          return items;
+        return items.map((_, i) => this.average(items.slice(Math.max(i-window, 0), Math.min(i+window, items.length))));
+      },
+      average(items){
+        return items.reduce((a, b) => a + b) / items.length
       },
     },
   }

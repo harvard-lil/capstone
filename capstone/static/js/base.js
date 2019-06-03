@@ -1,5 +1,6 @@
 import 'bootstrap/js/dist/util'
 import 'bootstrap/js/dist/dropdown'
+import 'bootstrap/js/dist/collapse'
 
 import $ from "jquery"
 import * as utils from './utils.js'

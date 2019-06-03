@@ -81,19 +81,7 @@
         <div class="col-3"></div>
         <div class="col-8">
           <div class="submit-button-group">
-            <button class="btn-primary btn-submit"
-                    type="submit"
-                    value="Search">
-              Search
-              <span v-if="show_loading"
-                    class="spinner-border spinner-border-sm"
-                    role="status"
-                    aria-hidden="true"></span>
-            </button>
-            <span v-if="show_loading"
-                  id="searching-focus"
-                  class="sr-only"
-                  tabindex="-1">Searching&nbsp;</span>
+            <loading-button :showLoading="showLoading">Search</loading-button>
           </div>
           <div v-if="fields.length > 0" class="dropdown addfield">
             <button class="dropdown-toggle add-field-button btn-secondary"
@@ -132,9 +120,10 @@
 </template>
 <script>
   import searchroutes from "./search-routes"
+  import LoadingButton from '../vue-shared/loading-button.vue';
 
   export default {
-    components: {searchroutes},
+    components: {searchroutes, LoadingButton},
     data: function () {
       return {
         query: [],
@@ -306,7 +295,7 @@
 
       }
     },
-    props: ['choices', 'search_error', 'field_errors', 'urls', 'show_loading', 'endpoint'],
+    props: ['choices', 'search_error', 'field_errors', 'urls', 'showLoading', 'endpoint'],
     methods: {
       removeField(field_name) {
         this.fields = this.fields.filter(field => field.name !== field_name);

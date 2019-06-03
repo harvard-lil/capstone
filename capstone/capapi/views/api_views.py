@@ -292,7 +292,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
             # prepare jurisdiction_filter from jurisdiction= query param
             jurisdictions = request.GET.getlist('jurisdiction')
-            if 'all' in jurisdictions:
+            if '*' in jurisdictions:
                 jurisdiction_filter = None
             else:
                 jurisdiction_filter = set(filters.jurisdiction_slug_to_id[j] for j in jurisdictions if j in filters.jurisdiction_slug_to_id)
@@ -365,7 +365,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                     years_out.sort(key=lambda y: y["year"])
                     out[jur_slug] = years_out
 
-                results[gram[1:].decode('utf8')] = out
+                if out:
+                    results[gram[1:].decode('utf8')] = out
 
         paginated = OrderedDict((
             ("count", len(results)),
