@@ -108,45 +108,45 @@
         <div class="row content-row">
           <div class="col-3 offset-md-1 pr-3">
 
-            <div class="card text-white state-numbers-card mt-2 mb-4">
-              <div class="card-header bg-transparent mb-2">State</div>
-              <div class="card-body bg-black p-3 pt-2 pb-2">
-                <h5 class="card-title pb-1 jur_name">Overall</h5>
+            <div class="boxcontainer text-white state-numbers-boxcontainer mt-2 mb-4">
+              <div class="boxcontainer-header bg-transparent mb-2">State</div>
+              <div class="boxcontainer-body bg-black p-3 pt-2 pb-2">
+                <h5 class="boxcontainer-title pb-1 jur_name">Overall</h5>
 
                 <div class="number-set mt-3 p-0">
-                  <p class="card-text figure mb-0 num_cases">{{ state.cases }}</p>
-                  <p class="card-text label">Unique cases</p>
+                  <p class="boxcontainer-text figure mb-0 num_cases">{{ state.cases }}</p>
+                  <p class="boxcontainer-text label">Unique cases</p>
                 </div>
 
                 <div class="number-set d-lg-block d-md-none p-0">
-                  <p class="card-text figure mb-0 num_reporters">{{ state.reporters }}</p>
-                  <p class="card-text label">Reporters</p>
+                  <p class="boxcontainer-text figure mb-0 num_reporters">{{ state.reporters }}</p>
+                  <p class="boxcontainer-text label">Reporters</p>
                 </div>
 
                 <div class="number-set p-0">
-                  <p class="card-text figure mb-0 num_pages">{{ state.pages_scanned }}</p>
-                  <p class="card-text label">Pages Scanned</p>
+                  <p class="boxcontainer-text figure mb-0 num_pages">{{ state.pages_scanned }}</p>
+                  <p class="boxcontainer-text label">Pages Scanned</p>
                 </div>
               </div>
             </div>
 
-            <div class="card text-white federal-numbers-card mb-3">
-              <div class="card-header bg-transparent mb-2">Federal</div>
-              <div class="card-body bg-black p-3 pt-2">
+            <div class="boxcontainer text-white federal-numbers-boxcontainer mb-3">
+              <div class="boxcontainer-header bg-transparent mb-2">Federal</div>
+              <div class="boxcontainer-body bg-black p-3 pt-2">
 
                 <div class="number-set">
-                  <p class="card-text figure mb-0">{{ federal.cases|format_number }}</p>
-                  <p class="card-text label">Unique cases</p>
+                  <p class="boxcontainer-text figure mb-0">{{ federal.cases|format_number }}</p>
+                  <p class="boxcontainer-text label">Unique cases</p>
                 </div>
 
                 <div class="number-set d-lg-block d-md-none">
-                  <p class="card-text figure mb-0">{{ federal.reporters|format_number }}</p>
-                  <p class="card-text label">Reporters</p>
+                  <p class="boxcontainer-text figure mb-0">{{ federal.reporters|format_number }}</p>
+                  <p class="boxcontainer-text label">Reporters</p>
                 </div>
 
                 <div class="number-set">
-                  <p class="card-text figure mb-0">{{ federal.pages_scanned|format_number }}</p>
-                  <p class="card-text label">Pages Scanned</p>
+                  <p class="boxcontainer-text figure mb-0">{{ federal.pages_scanned|format_number }}</p>
+                  <p class="boxcontainer-text label">Pages Scanned</p>
                 </div>
               </div>
             </div>
@@ -195,16 +195,16 @@
             <div class="col">
               <div class="row">
                 <div class="col-12 col-sm-6">
-                  <div class="card text-white bg-transparent pr-3 mb-4">
-                    <div class="card-body bg-black">
-                      <div class="card-title d-block d-sm-none small-screen-card-title"><a href="{% url "search" %}">
+                  <div class="boxcontainer text-white bg-transparent pr-3 mb-4">
+                    <div class="boxcontainer-body bg-black">
+                      <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title"><a href="{% url "search" %}">
                         Search</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">Search</span> allows users to browse and
                         download cases using a few short
                         commands.</p>
                       <p class="d-block d-sm-none">Search allows users to browse and download cases using a few short
                         commands.</p>
-                      <div class="card-footer d-none d-sm-block">
+                      <div class="boxcontainer-footer d-none d-sm-block">
                         <div class="btn-group mb-0">
                           <a href="{% url "search" %}" class="btn-secondary">search</a>
                           <a href="{% url "search-docs" %}" class="btn-tertiary">see docs</a>
@@ -214,15 +214,15 @@
                   </div>
                 </div>
                 <div class="col-12 col-sm-6">
-                  <div class="card text-white bg-transparent pr-3">
-                    <div class="card-body bg-black">
-                      <div class="card-title d-block d-sm-none small-screen-card-title"><a href="{% api_url "api-root" %}">API</a></div>
+                  <div class="boxcontainer text-white bg-transparent pr-3">
+                    <div class="boxcontainer-body bg-black">
+                      <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title"><a href="{% api_url "api-root" %}">API</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">The API</span> allows users to browse and
                         download cases using a few
                         short commands.</p>
                       <p class="d-block d-sm-none">The API allows users to browse and download cases using a few short
                         commands.</p>
-                      <div class="card-footer">
+                      <div class="boxcontainer-footer">
                         <div class="btn-group mb-0 d-none d-sm-block">
                           <a href="{% api_url "api-root" %}" class="btn-secondary">API</a>
                           <a href="{% url "api" %}" class="btn-tertiary">see docs</a>
@@ -234,11 +234,11 @@
               </div>
               <div class="row">
                 <div class="col-6 d-none d-md-block">
-                  <div class="card text-white bg-transparent d-none d-sm-block mb-4 pr-3">
-                    <div class="card-body bg-black">
+                  <div class="boxcontainer text-white bg-transparent d-none d-sm-block mb-4 pr-3">
+                    <div class="boxcontainer-body bg-black">
                       <p><span class="highlighted">Download</span> whole zip files of whitelisted jurisdictions like
                         Illinois.</p>
-                      <div class="card-footer">
+                      <div class="boxcontainer-footer">
                         <div class="btn-group mb-0">
                           <a href="{% url "bulk-download" %}" class="btn-secondary">bulk</a>
                           <a href="{% url "bulk-docs" %}" class="btn-tertiary">see docs</a>
@@ -248,13 +248,13 @@
                   </div>
                 </div>
                 <div class="col-6 d-none d-md-block">
-                  <div class="card text-white bg-transparent d-none d-sm-block pr-3 mb-4">
-                    <div class="card-body bg-black">
-                      <div class="card-title d-block d-sm-none small-screen-card-title">
+                  <div class="boxcontainer text-white bg-transparent d-none d-sm-block pr-3 mb-4">
+                    <div class="boxcontainer-body bg-black">
+                      <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title">
                         <a href="{% url "cite_home" host "cite" %}">Browse</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">Browse</span> a list of all cases in our
                         corpus organized by state or territory.</p>
-                      <div class="card-footer d-none d-sm-block">
+                      <div class="boxcontainer-footer d-none d-sm-block">
                         <div class="btn-group mb-0">
                           <a href="{% url "cite_home" host "cite" %}" class="btn-secondary">browse</a>
                         </div>
@@ -270,17 +270,17 @@
           </div>
         </div>
         <div class="col-3 d-none d-lg-block pl-5 pt-4">
-          <div class="card image-card mb-3">
-            <img class="card-img"
+          <div class="boxcontainer image-boxcontainer mb-3">
+            <img class="boxcontainer-img"
                  alt="a technician holding disbound pages from a case reporter in front of a high speed scanner"
                  src='{% static "img/book-scan.jpg" %}'>
-            <div class="card-footer item-credit mt-2">Image: Brooks Kraft/Harvard Law School</div>
+            <div class="boxcontainer-footer item-credit mt-2">Image: Brooks Kraft/Harvard Law School</div>
           </div>
-          <div class="card image-card ">
-            <img class="card-img"
+          <div class="boxcontainer image-boxcontainer ">
+            <img class="boxcontainer-img"
                  alt="case reporter books in in stacks"
                  src='{% static "img/reporters.jpg" %}'/>
-            <div class="card-footer item-credit mt-2">Image: Brooks Kraft/Harvard Law School</div>
+            <div class="boxcontainer-footer item-credit mt-2">Image: Brooks Kraft/Harvard Law School</div>
           </div>
         </div>
       </div>
@@ -324,12 +324,12 @@
             <div class="col">
               <div class="row">
                 <div class="col-sm-6">
-                  <div class="card text-white bg-transparent pr-3">
-                    <div class="card-body bg-black">
-                      <div class="card-title font-weight-bold d-none d-md-block">Limericks</div>
-                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="{% url "limericks" %}">Limericks</a></div>
+                  <div class="boxcontainer text-white bg-transparent pr-3">
+                    <div class="boxcontainer-body bg-black">
+                      <div class="boxcontainer-title font-weight-bold d-none d-md-block">Limericks</div>
+                      <div class="boxcontainer-title small-screen-boxcontainer-title d-block d-md-none"><a href="{% url "limericks" %}">Limericks</a></div>
                       <p>Generate rhymes using caselaw!</p>
-                      <div class="card-footer d-none d-md-block">
+                      <div class="boxcontainer-footer d-none d-md-block">
                         <div class="btn-group">
                           <a href="{% url "limericks" %}" class="btn-tertiary p-0 mt-0">see project</a>
                         </div>
@@ -339,13 +339,13 @@
                 </div>
                 <div class="col-sm-6">
 
-                  <div class="card text-white bg-transparent pr-3">
-                    <div class="card-body bg-black">
-                      <div class="card-title font-weight-bold d-none d-md-block">Wordclouds</div>
-                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="{% url "wordclouds" %}">Wordclouds</a></div>
+                  <div class="boxcontainer text-white bg-transparent pr-3">
+                    <div class="boxcontainer-body bg-black">
+                      <div class="boxcontainer-title font-weight-bold d-none d-md-block">Wordclouds</div>
+                      <div class="boxcontainer-title small-screen-boxcontainer-title d-block d-md-none"><a href="{% url "wordclouds" %}">Wordclouds</a></div>
                       <p>Graphics showcasing the most-used words in California caselaw each year between 1852 and
                         2015. </p>
-                      <div class="card-footer d-none d-md-block">
+                      <div class="boxcontainer-footer d-none d-md-block">
                         <div class="btn-group">
                           <a href="{% url "wordclouds" %}" class="btn-tertiary p-0 mt-0">see project</a>
                         </div>
@@ -357,12 +357,12 @@
               </div>
               <div class="row">
                 <div class="col-sm-6 d-none d-sm-block">
-                  <div class="card text-white bg-transparent pr-3">
-                    <div class="card-body bg-black">
-                      <div class="card-title font-weight-bold d-none d-md-block">Gavelfury</div>
-                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="http://www.gavelfury.com/">Gavelfury</a></div>
+                  <div class="boxcontainer text-white bg-transparent pr-3">
+                    <div class="boxcontainer-body bg-black">
+                      <div class="boxcontainer-title font-weight-bold d-none d-md-block">Gavelfury</div>
+                      <div class="boxcontainer-title small-screen-boxcontainer-title d-block d-md-none"><a href="http://www.gavelfury.com/">Gavelfury</a></div>
                       <p>See all instances of "!"</p>
-                      <div class="card-footer d-none d-md-block">
+                      <div class="boxcontainer-footer d-none d-md-block">
                         <div class="btn-group">
                           <a href="http://www.gavelfury.com/" class="btn-tertiary p-0 mt-0">see project</a>
                         </div>
@@ -371,12 +371,12 @@
                   </div>
                 </div>
                 <div class="col-sm-6 d-none d-sm-block">
-                  <div class="card text-white bg-transparent pr-3">
-                    <div class="card-body bg-black">
-                      <div class="card-title font-weight-bold d-none d-md-block">Witchcraft</div>
-                      <div class="card-title small-screen-card-title d-block d-md-none"><a href="{% url "witchcraft" %}">Witchcraft</a></div>
+                  <div class="boxcontainer text-white bg-transparent pr-3">
+                    <div class="boxcontainer-body bg-black">
+                      <div class="boxcontainer-title font-weight-bold d-none d-md-block">Witchcraft</div>
+                      <div class="boxcontainer-title small-screen-boxcontainer-title d-block d-md-none"><a href="{% url "witchcraft" %}">Witchcraft</a></div>
                       <p>See all instances of "witchcraft" charted out on the U.S. map.</p>
-                      <div class="card-footer d-none d-md-block">
+                      <div class="boxcontainer-footer d-none d-md-block">
                         <div class="btn-group">
                           <a href="{% url "witchcraft" %}" class="btn-tertiary p-0 mt-0">see project</a>
                         </div>
@@ -394,22 +394,22 @@
           </div>
         </div>
         <div class="col-3 d-none d-lg-block pl-5 pt-4">
-          <div class="card">
-            <div class="card-body">
+          <div class="boxcontainer">
+            <div class="boxcontainer-body">
               <p class="short-standalone-quote mb-1 mt-2">Is that she!</p>
             </div>
-            <div class="card-footer">
+            <div class="boxcontainer-footer">
               <p class="item-credit mt-2">&mdash;Gavelfury</p>
             </div>
           </div>
-          <div class="card">
-            <div class="card-body">
+          <div class="boxcontainer">
+            <div class="boxcontainer-body">
               <p class="short-standalone-quote mb-1 mt-2">The reach of the indemnity clause.<br>
                 Payment is not expected because.<br> The defendant contends.<br> The defendants were friends.<br>
                 The same is true of quarantine laws.
               </p>
             </div>
-            <div class="card-footer">
+            <div class="boxcontainer-footer">
               <p class="item-credit mt-2">&mdash;A caselaw limerick</p>
             </div>
           </div>
@@ -479,13 +479,13 @@
           </div>
         </div>
         <div class="col-3 d-none d-lg-block pl-3 pt-3">
-          <div class="card">
-            <div class="card-body">
+          <div class="boxcontainer">
+            <div class="boxcontainer-body">
               <p class="short-standalone-quote mb-1">&lsquo;Improving access to justice is a priority,&rsquo; said Martha
                 Minow,
                 dean of Harvard Law School</p>
             </div>
-            <div class="card-footer">
+            <div class="boxcontainer-footer">
               <p class="item-credit mt-2 pull-right">&mdash;New York Times</p>
             </div>
           </div>

@@ -63,14 +63,14 @@ h2.section-title {
   hyphens: none;
 }
 
-// Stuff in the card elements
-.small-screen-card-title {
+// Stuff in the boxcontainer elements
+.small-screen-boxcontainer-title {
   font-size: 1.5rem;
   font-weight: $font-weight-semibold;
   margin-bottom: .5rem;
 }
 
-.card-body {
+.boxcontainer-body {
   p {
     line-height: 1.65rem;
     @include media-breakpoint-down(lg) {
@@ -80,7 +80,7 @@ h2.section-title {
   }
 }
 
-.card-img {
+.boxcontainer-img {
   max-width: 100%;
   border: 1px solid white;
 }
@@ -159,14 +159,14 @@ h2.section-title {
 
 .map-section {
   background-color: $color-black;
-  .federal-numbers-card {
+  .federal-numbers-boxcontainer {
     max-width: 19rem;
-    .card-header {
+    .boxcontainer-header {
       font-family: $font-sans-serif;
       font-size: 1.75rem;
       letter-spacing: .08rem;
     }
-    .card-title {
+    .boxcontainer-title {
       border-bottom: 1px solid #fff;
       font-family: $font-serif;
     }
@@ -179,17 +179,17 @@ h2.section-title {
     }
   }
 
-  .state-numbers-card {
+  .state-numbers-boxcontainer {
     max-width: 19rem;
-    .card-body {
+    .boxcontainer-body {
       letter-spacing: 0.05rem;
     }
-    .card-header {
+    .boxcontainer-header {
       font-family: $font-sans-serif;
       font-size: 1.75rem;
       letter-spacing: .08rem;
     }
-    .card-title {
+    .boxcontainer-title {
       border-bottom: 1px solid #fff;
       font-family: $font-serif;
     }
@@ -305,7 +305,7 @@ h2.section-title {
 ***************************************************************/
 /*
 .dive-in-section {
-  .card-body {
+  .boxcontainer-body {
     p {
       @include media-breakpoint-down(lg){
         font-size: 1rem;
