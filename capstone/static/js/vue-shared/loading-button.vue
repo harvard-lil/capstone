@@ -19,7 +19,11 @@
     watch: {
       showLoading: function(newVal, oldVal) {  // eslint-disable-line no-unused-vars
         if(newVal)
-          setTimeout(()=>{document.querySelector('#loading-focus').focus()});
+          setTimeout(()=>{
+            const loadingMessage = document.querySelector('#loading-focus');
+            if (loadingMessage)
+              loadingMessage.focus();
+          });
       }
     }
   }

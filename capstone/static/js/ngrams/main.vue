@@ -27,7 +27,7 @@
               me: lobster, cal: gold, tex: cowboy
             </a>
             /
-            <a class="example-link" href="#/?q=all: apples">
+            <a class="example-link" href="#/?q=*: apples">
               *: apples
             </a>
           </div>
@@ -154,6 +154,31 @@
             <label class="form-check-label" for="countType2">Instance count</label>
           </div>
         </fieldset>
+        <fieldset class="form-group" aria-describedby="sameYAxisHelpText">
+          <small id="sameYAxisHelpText" class="form-text text-muted">
+            Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for comparing correlation)?
+          </small>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="sameYAxis"
+                   id="sameYAxis1"
+                   :value="true"
+                   @change="graphResults"
+                   v-model="sameYAxis">
+            <label class="form-check-label" for="sameYAxis1">Terms on the same Y axis</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="sameYAxis"
+                   id="sameYAxis2"
+                   :value="false"
+                   @change="graphResults"
+                   v-model="sameYAxis">
+            <label class="form-check-label" for="sameYAxis2">Terms scaled to fill Y axis</label>
+          </div>
+        </fieldset>
         <div class="form-group">
           <label for="formControlRange">Smoothing</label>
           <small id="smoothingFactorHelpText" class="form-text text-muted">
@@ -176,9 +201,8 @@
     <div class="graph">
       <div class="container graph-container">
         <line-example :chartData="chartData"
-                      :percentOrAbs="percentOrAbs"
-                      :countType="countType"
-                      :smoothingWindow="smoothingWindow"/>
+                      :options="chartOptions"
+                      ref="chart"/>
       </div>
     </div>
   </div>
@@ -210,7 +234,8 @@
     },
     data: function () {
       return {
-        chartData: null,
+        chartData: {datasets: []},
+        chartNeedsRerender: false,
         rawData: null,
         textToGraph: "apple pie, baseball",
         minYear: 1800,
@@ -221,6 +246,8 @@
         smoothingWindow: 0,
         countType: "doc_count",
         percentOrAbs: "percent",
+        sameYAxis: true,
+        previousSameYAxis: true,
         jurisdictions: [],
         jurisdictionLookup: {},
         urls: {},
@@ -235,6 +262,62 @@
         pointStyles: ['circle', 'cross', 'crossRot', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'],
         errors: [],
         showLoading: false,
+        chartOptions: {
+          responsive: true,
+          maintainAspectRatio: false,
+          legend: {
+            labels: {
+              boxWidth: 20,
+              usePointStyle: true,
+            }
+          },
+          scales: {
+            yAxes: [{
+              id: '0',
+              type: 'linear',
+              gridLines: {
+                color: "rgba(0, 0, 0, 0)",
+              },
+              ticks: {
+                beginAtZero: true,
+              }
+            }],
+            xAxes: [{
+              gridLines: {
+                color: "rgba(0, 0, 0, 0)",
+              },
+            }]
+          },
+          tooltips: {
+            callbacks: {
+              title: (tooltipItem, data) => {
+                /* format tooltip title to include date range when smoothing is on */
+                const label = tooltipItem[0].label;
+                if (!this.smoothingWindow)
+                  return label;
+                const startRange = Math.max(data.labels[0], Number(label)-this.smoothingWindow);
+                const endRange = Math.min(data.labels[data.labels.length-1], Number(label)+this.smoothingWindow);
+                return `${startRange}-${endRange}`;
+              },
+              label: (tooltipItem, data) => {
+                /*
+                  format tooltip text based on percentOrAbs and countType,
+                  like "term: X% of instances" or "term: Y cases"
+                */
+                let label = data.datasets[tooltipItem.datasetIndex].label || '';
+                if (label)
+                  label += ': ';
+                if (this.percentOrAbs === "percent") {
+                  label += tooltipItem.yLabel.toPrecision(3) + "% of";
+                }else {
+                  label += tooltipItem.yLabel;
+                }
+                label += this.countType === "count" ? " instances" : " cases";
+                return label;
+              }
+            }
+          }
+        },
       }
     },
     methods: {
@@ -364,6 +447,7 @@
         const minYear = Math.max(dataMinYear, this.minYear);
         const maxYear = Math.min(dataMaxYear, this.maxYear);
         let colorIndex = this.rawData.colorOffset;
+        let fullChartReset = false;
 
         // prepare each dataset
         for (const [term, rawData] of Object.entries(this.rawData.results)) {
@@ -397,7 +481,26 @@
             pointStyle: this.pointStyles[colorIndex % this.pointStyles.length],
             pointRadius: pointRadius,
             pointHitRadius: 5,
+            yAxisID: this.sameYAxis ? '0' : newDatasets.length.toString(),
           });
+        }
+
+        // handle this.sameYAxis
+        const yAxes = this.chartOptions.scales.yAxes;
+        if (!this.sameYAxis) {
+          yAxes[0].display = false;
+          if (yAxes.length < newDatasets.length) {
+            fullChartReset = true;
+            for (let i=yAxes.length;i<newDatasets.length;i++) {
+              yAxes.push(Object.assign({}, yAxes[0], {'id': i.toString()}));
+            }
+          }
+        } else {
+          yAxes[0].display = true;
+        }
+        if (this.sameYAxis !== this.previousSameYAxis) {
+          this.previousSameYAxis = this.sameYAxis;
+          fullChartReset = true;
         }
 
         // show chart
@@ -405,6 +508,11 @@
           labels: this.range(minYear, maxYear+1),
           datasets: newDatasets,
         };
+
+        // fullChartReset is a workaround for the yAxisID property not being reactive --
+        // see https://github.com/apertureless/vue-chartjs/issues/177
+        if (fullChartReset)
+          this.$refs.chart.fullRerender(this.chartData, this.chartOptions);
       }, 200),
       parseResponse(apiResults) {
         const results = {};
