@@ -10,6 +10,7 @@
 @import 'bootstrap/alert';
 @import 'bootstrap/buttons';
 @import 'bootstrap/card';
+@import 'bootstrap/close';
 @import 'bootstrap/forms';
 @import 'bootstrap/grid';
 @import "bootstrap/list-group";
@@ -66,7 +67,7 @@ button, .btn,
   text-transform: uppercase;
   font-weight: $font-weight-bold;
   font-family: $font-sans-serif;
-  font-size: 0.7em !important;
+  font-size: 0.7em;
   padding: 0.35em 0.8em;
   border-radius: 0;
   &:disabled {
@@ -308,6 +309,13 @@ li.item-set {
   > .bullet {
     color: $color-red;
   }
+}
+
+/* card bootstrap overrides */
+.card {
+  border: none;
+  background-color: inherit;
+  border-radius: 0;
 }
 
 /* logos */

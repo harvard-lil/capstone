@@ -8,7 +8,9 @@
       <div class="form-group">
         <div class="row">
           <input class="col-lg-12 text-to-graph"
-                 v-model="textToGraph">
+                 v-model="textToGraph"
+                 ref="textToGraph"
+                 aria-label="ngram query">
           <div class="col-lg-12 description small">
             Example searches:
             <a class="example-link" href="#/?q=apple, banana, orange">
@@ -64,140 +66,167 @@
         </div>
       </div><!-- end form -->
     </form>
-    <div class="collapse" id="helpPanel">
-      <div class="card card-body">
-        <h5 class="card-title">Wildcard search</h5>
-        <p>
-          Search for all terms ending with a word by adding a "*" to the end, like
-          "<a href="#/?q=ride a *">ride a *</a>".
-        </p>
-        <h5 class="card-title">Jurisdiction search</h5>
-        <p>
-          Limit a term to a particular jurisdiction by starting the term with that jurisdiction's code and a colon,
-          like "<a href="#/?q=cal: gold mine">cal: gold mine</a>".
-        </p>
-        <p>
-          Show all jurisdictions separately with a *, like "<a href="#/?q=*: apples">*: apples</a>".
-        </p>
-        <h5 class="card-title">Jurisdiction codes</h5>
-        <div class="row">
-          <div class="col-4"
-               v-for="jurisdiction in jurisdictions" :key="jurisdiction[0]">
-            <p>{{jurisdiction[1]}}: "{{jurisdiction[0]}}:"</p>
+    <div id="collapsePanels">
+      <div class="collapse card"
+           id="helpPanel"
+           data-parent="#collapsePanels">
+        <div class="card-body">
+          <button type="button"
+                  class="close h40.7em "
+                  data-toggle="collapse"
+                  data-target="#helpPanel"
+                  aria-controls="helpPanel"
+                  aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h5 class="card-title">Wildcard search</h5>
+          <p>
+            Search for all terms ending with a word by adding a "*" to the end, like
+            "<a href="#/?q=ride a *">ride a *</a>".
+          </p>
+          <h5 class="card-title">Jurisdiction search</h5>
+          <p>
+            Limit a term to a particular jurisdiction by starting the term with that jurisdiction's code and a colon,
+            like "<a href="#/?q=cal: gold mine">cal: gold mine</a>".
+          </p>
+          <p>
+            Show all jurisdictions separately with a *, like "<a href="#/?q=*: apples">*: apples</a>".
+          </p>
+          <h5 class="card-title">Jurisdiction codes</h5>
+          <div class="row">
+            <div class="col-4"
+                 v-for="jurisdiction in jurisdictions" :key="jurisdiction[0]">
+              <p>
+                {{jurisdiction[1]}}: "<a
+                      href="#"
+                      @click="appendJurisdictionCode(jurisdiction[0])"
+              >{{jurisdiction[0]}}:</a>"
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="collapse" id="optionsPanel">
-      <div class="card card-body">
-        <div class="form-group">
-          <label for="min-year">From</label>
-          <input id="min-year"
-                 @change="graphResults"
-                 v-model.number="minYear"
-                 type="number"
-                 min="1640" max="2018"/>
-          <label for="max-year"> To</label>
-          <input id="max-year"
-                 @change="graphResults"
-                 v-model.number="maxYear"
-                 type="number"
-                 min="1640" max="2018"/>
-        </div>
-        <fieldset class="form-group" aria-describedby="percentOrAbsHelpText">
-          <small id="percentOrAbsHelpText" class="form-text text-muted">
-            Show count as a percentage of all grams for the year, or an absolute number?
-          </small>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input"
-                   type="radio"
-                   name="percentOrAbs"
-                   id="percentOrAbs1"
-                   value="percent"
+      <div class="collapse card"
+           id="optionsPanel"
+           data-parent="#collapsePanels">
+        <div class="card-body">
+          <button type="button"
+                  class="close h40.7em "
+                  data-toggle="collapse"
+                  data-target="#optionsPanel"
+                  aria-controls="optionsPanel"
+                  aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <div class="form-group">
+            <label for="min-year">From</label>
+            <input id="min-year"
                    @change="graphResults"
-                   v-model="percentOrAbs">
-            <label class="form-check-label" for="percentOrAbs1">Percentage</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input"
-                   type="radio"
-                   name="percentOrAbs"
-                   id="percentOrAbs2"
-                   value="absolute"
+                   v-model.number="minYear"
+                   type="number"
+                   min="1640" max="2018"/>
+            <label for="max-year"> To</label>
+            <input id="max-year"
                    @change="graphResults"
-                   v-model="percentOrAbs">
-            <label class="form-check-label" for="percentOrAbs2">Absolute number</label>
+                   v-model.number="maxYear"
+                   type="number"
+                   min="1640" max="2018"/>
           </div>
-        </fieldset>
-        <fieldset class="form-group" aria-describedby="countTypeHelpText">
-          <small id="countTypeHelpText" class="form-text text-muted">
-            Show count of cases containing your term, or count of individual instances of your term?
-          </small>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input"
-                   type="radio"
-                   name="countType"
-                   id="countType1"
-                   value="doc_count"
+          <fieldset class="form-group" aria-describedby="percentOrAbsHelpText">
+            <small id="percentOrAbsHelpText" class="form-text text-muted">
+              Show count as a percentage of all grams for the year, or an absolute number?
+            </small>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input"
+                     type="radio"
+                     name="percentOrAbs"
+                     id="percentOrAbs1"
+                     value="percent"
+                     @change="graphResults"
+                     v-model="percentOrAbs">
+              <label class="form-check-label" for="percentOrAbs1">Percentage</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input"
+                     type="radio"
+                     name="percentOrAbs"
+                     id="percentOrAbs2"
+                     value="absolute"
+                     @change="graphResults"
+                     v-model="percentOrAbs">
+              <label class="form-check-label" for="percentOrAbs2">Absolute number</label>
+            </div>
+          </fieldset>
+          <fieldset class="form-group" aria-describedby="countTypeHelpText">
+            <small id="countTypeHelpText" class="form-text text-muted">
+              Show count of cases containing your term, or count of individual instances of your term?
+            </small>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input"
+                     type="radio"
+                     name="countType"
+                     id="countType1"
+                     value="doc_count"
+                     @change="graphResults"
+                     v-model="countType">
+              <label class="form-check-label" for="countType1">Case count</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input"
+                     type="radio"
+                     name="countType"
+                     id="countType2"
+                     value="count"
+                     @change="graphResults"
+                     v-model="countType">
+              <label class="form-check-label" for="countType2">Instance count</label>
+            </div>
+          </fieldset>
+          <fieldset class="form-group" aria-describedby="sameYAxisHelpText">
+            <small id="sameYAxisHelpText" class="form-text text-muted">
+              Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for comparing correlation)?
+            </small>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input"
+                     type="radio"
+                     name="sameYAxis"
+                     id="sameYAxis1"
+                     :value="true"
+                     @change="graphResults"
+                     v-model="sameYAxis">
+              <label class="form-check-label" for="sameYAxis1">Terms on the same Y axis</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input"
+                     type="radio"
+                     name="sameYAxis"
+                     id="sameYAxis2"
+                     :value="false"
+                     @change="graphResults"
+                     v-model="sameYAxis">
+              <label class="form-check-label" for="sameYAxis2">Terms scaled to fill Y axis</label>
+            </div>
+          </fieldset>
+          <div class="form-group">
+            <label for="formControlRange">Smoothing</label>
+            <small id="smoothingFactorHelpText" class="form-text text-muted">
+              <span v-if="smoothingFactor > 0">
+                Data points will be averaged with the nearest {{smoothingFactor}}% of other points.
+              </span>
+              <span v-else>
+                No smoothing will be applied.
+              </span>
+            </small>
+            <input type="range"
+                   class="form-control-range"
+                   min="0" max="10"
                    @change="graphResults"
-                   v-model="countType">
-            <label class="form-check-label" for="countType1">Case count</label>
+                   v-model="smoothingFactor"
+                   id="formControlRange">
           </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input"
-                   type="radio"
-                   name="countType"
-                   id="countType2"
-                   value="count"
-                   @change="graphResults"
-                   v-model="countType">
-            <label class="form-check-label" for="countType2">Instance count</label>
-          </div>
-        </fieldset>
-        <fieldset class="form-group" aria-describedby="sameYAxisHelpText">
-          <small id="sameYAxisHelpText" class="form-text text-muted">
-            Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for comparing correlation)?
-          </small>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input"
-                   type="radio"
-                   name="sameYAxis"
-                   id="sameYAxis1"
-                   :value="true"
-                   @change="graphResults"
-                   v-model="sameYAxis">
-            <label class="form-check-label" for="sameYAxis1">Terms on the same Y axis</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input"
-                   type="radio"
-                   name="sameYAxis"
-                   id="sameYAxis2"
-                   :value="false"
-                   @change="graphResults"
-                   v-model="sameYAxis">
-            <label class="form-check-label" for="sameYAxis2">Terms scaled to fill Y axis</label>
-          </div>
-        </fieldset>
-        <div class="form-group">
-          <label for="formControlRange">Smoothing</label>
-          <small id="smoothingFactorHelpText" class="form-text text-muted">
-            <span v-if="smoothingFactor > 0">
-              Data points will be averaged with the nearest {{smoothingFactor}}% of other points.
-            </span>
-            <span v-else>
-              No smoothing will be applied.
-            </span>
-          </small>
-          <input type="range"
-                 class="form-control-range"
-                 min="0" max="10"
-                 @change="graphResults"
-                 v-model="smoothingFactor"
-                 id="formControlRange">
         </div>
       </div>
-    </div>
+    </div> <!-- /collapsePanels -->
     <div class="graph">
       <div class="container graph-container">
         <line-example :chartData="chartData"
@@ -553,6 +582,12 @@
       },
       average(items){
         return items.reduce((a, b) => a + b) / items.length
+      },
+      appendJurisdictionCode(code) {
+        if (this.textToGraph)
+          this.textToGraph += ", ";
+        this.textToGraph += code + ": ";
+        this.$refs.textToGraph.focus();
       },
     },
   }
