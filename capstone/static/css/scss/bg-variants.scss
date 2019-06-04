@@ -66,10 +66,14 @@
 
 .bg-tan {
   @extend .bg-white;
+  a {
+    color: darken($color-blue, 5%);  // contrast ratio > 4.5
+  }
   .btn-primary, .btn-secondary, .btn-tertiary {
     @include button ($color-medium-blue, $color-white, $color-dark-blue)
   }
   .btn-secondary {
     background-color: $color-white !important;
   }
+  .text-muted { color: darken($text-muted, 5%) !important; }  // contrast ratio > 4.5
 }
