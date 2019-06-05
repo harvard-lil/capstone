@@ -11,15 +11,16 @@
   display: inline-block;
   line-height: inherit;
   white-space: nowrap;
+  padding: 0.3em 0;
   .nav-branding {
-    background: url("../../img/logos/white.svg") no-repeat;
+    background: url("../../img/logos/cap-logo-harvard-white.svg") no-repeat;
     background-size: contain;
     width: 187px;
     height: 72px;
     display: block;
     background-position-x: 0;
     &:hover, &:focus, &:active {
-      background: url("../../img/logos/red-white.svg") no-repeat;
+      background: url("../../img/logos/cap-logo-harvard-hover.svg") no-repeat;
       background-size: contain;
     }
   }
@@ -60,14 +61,14 @@ nav[aria-label="main"].sticky {
     position: relative;
   }
   .nav-branding {
-    background: url("../../img/logos/long-white.svg") no-repeat;
+    background: url("../../img/logos/cap-logo-long-white-harvard.svg") no-repeat;
     background-size: contain;
     width: 200px;
     height: 30px;
     margin-top: 1.5rem;
     margin-left: 1rem;
     &:hover, &:focus, &:active {
-      background: url("../../img/logos/long-yellow.svg") no-repeat;
+      background: url("../../img/logos/cap-logo-long-yellow-harvard.svg") no-repeat;
       background-size: contain;
     }
 
