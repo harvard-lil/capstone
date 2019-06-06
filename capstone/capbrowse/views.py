@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from capdb.models import Jurisdiction, Court, Reporter
 from collections import OrderedDict
 
+from capweb.helpers import password_protected_page
+
 
 def view_jurisdiction(request, jurisdiction_id):
     jurisdiction = get_object_or_404(Jurisdiction, pk=jurisdiction_id)
@@ -59,5 +61,6 @@ def search(request):
     return render(request, "search.html")
 
 
+@password_protected_page('ngrams')
 def ngrams(request):
     return render(request, "ngrams.html")
