@@ -2,7 +2,11 @@
   <div>
     <div class="page-title">
       <h1>Ngrams</h1>
-      <p>View words and phrases in U.S. case law through time.</p>
+      <p>
+        The <a href="/">Caselaw Access Project</a> collects 360 years of United States caselaw from the collection of
+        the Harvard Law School Library — about 12 billion words in all. Our Ngrams tool graphs the frequency of words
+        and phrases through time.
+      </p>
     </div>
     <form @submit.prevent="submitForm">
       <div class="form-group">
@@ -12,26 +16,8 @@
                  ref="textToGraph"
                  aria-label="ngram query">
           <div class="col-lg-12 description small">
-            Example searches:
-            <a class="example-link" href="#/?q=apple, banana, orange">
-              apple, banana, orange
-            </a>
-            /
-            <a class="example-link" href="#/?q=he said, she said">
-              he said, she said
-            </a>
-            /
-            <a class="example-link" href="#/?q=a dangerous *">
-              a dangerous *
-            </a>
-            /
-            <a class="example-link" href="#/?q=me: lobster, cal: gold, tex: cowboy">
-              me: lobster, cal: gold, tex: cowboy
-            </a>
-            /
-            <a class="example-link" href="#/?q=*: apples">
-              *: apples
-            </a>
+            Search for phrases of one to three words. Click the "Help" button for examples and advanced search options,
+            and "Graph Options" to control the display of your results.
           </div>
         </div>
         <div class="row">
@@ -72,34 +58,62 @@
            data-parent="#collapsePanels">
         <div class="card-body">
           <button type="button"
-                  class="close h40.7em "
+                  class="close h40.7em"
                   data-toggle="collapse"
                   data-target="#helpPanel"
                   aria-controls="helpPanel"
                   aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
+
+          <h5>Basic searches</h5>
+          <p>
+            Search for phrases of one to three words. Multiple phrases can be separated by commas. Do not use quotes.
+            All searches are case-insensitive. Examples:
+          </p>
+          <ul class="bullets">
+            <li><example-link query="piracy"/> (history of the term "piracy")</li>
+            <li><example-link query="his or her"/> (history of the term "his or her")</li>
+            <li><example-link query="apple, banana, orange, pear"/> (compare "apple" to "banana" to "orange" to "pear")</li>
+            <li><example-link query="he said, she said"/> (compare "he said" to "she said")</li>
+          </ul>
+
           <h5 class="card-title">Wildcard search</h5>
           <p>
-            Search for all terms ending with a word by adding a "*" to the end, like
-            "<a href="#/?q=ride a *">ride a *</a>".
+            Replace the final word of a phrase with "*" to perform a wildcard search. This will return the top ten
+            phrases beginning with your first one or two words. Wildcards are currently allowed only as the final
+            word in a phrase. Examples:
           </p>
+          <ul class="bullets">
+            <li><example-link query="constitutional *"/> (top ten two-word phrases beginning with "constitutional")</li>
+            <li><example-link query="ride a *"/> (top ten three-word phrases beginning with "ride a")</li>
+            <li>* amendment (not currently supported)</li>
+          </ul>
+
           <h5 class="card-title">Jurisdiction search</h5>
           <p>
-            Limit a term to a particular jurisdiction by starting the term with that jurisdiction's code and a colon,
-            like "<a href="#/?q=cal: gold mine">cal: gold mine</a>".
+            Limit a term to a particular jurisdiction (US state or state-level political division) by starting the term with
+            that jurisdiction's code. Available jurisdiction codes are listed below. Examples:
           </p>
+          <ul class="bullets">
+            <li><example-link query="cal: gold mine"/> (history of the term "gold mine" in California)</li>
+            <li><example-link query="me: lobster, cal: gold, tex: cowboy"/> (compare "lobster" in Maine, "gold" in California, and "cowboy" in Texas)</li>
+          </ul>
           <p>
-            Show all jurisdictions separately with a *, like "<a href="#/?q=*: apples">*: apples</a>".
+            Show all jurisdictions separately by using the special jurisdiction code "*". Examples:
           </p>
+          <ul class="bullets">
+            <li><example-link query="*: gold"/> (compare "gold" in all jurisdictions separately)</li>
+          </ul>
+
           <h5 class="card-title">Jurisdiction codes</h5>
           <div class="row">
             <div class="col-4"
                  v-for="jurisdiction in jurisdictions" :key="jurisdiction[0]">
               <p>
                 {{jurisdiction[1]}}: "<a
-                      href="#"
-                      @click="appendJurisdictionCode(jurisdiction[0])"
+                      :href="`?q=${jurisdiction[0]}}: `"
+                      @click.prevent="appendJurisdictionCode(jurisdiction[0])"
               >{{jurisdiction[0]}}:</a>"
               </p>
             </div>
@@ -231,8 +245,31 @@
       <div class="container graph-container">
         <line-example :chartData="chartData"
                       :options="chartOptions"
+                      :styles="chartStyles"
                       ref="chart"/>
       </div>
+    </div>
+    <p class="download-link">
+      <a v-if="chartData.datasets.length > 0"
+         href="#"
+         download="image.png"
+         @mousedown="setDownloadUrl"
+         @touchstart="setDownloadUrl"
+      >Download as an image</a>
+    </p>
+    <div class="cite-formats">
+      <p>Graphs on this page may be freely reproduced with credit. Suggested citation formats:</p>
+      <dl class="row">
+        <dt class="col-sm-3">APA</dt>
+        <dd class="col-sm-9">Ngrams, Caselaw Access Project. ({{currentYear}}). Retrieved [date], from {{currentUrl}}.</dd>
+        <dt class="col-sm-3">MLA</dt>
+        <dd class="col-sm-9">Ngram graph of "{{textToGraph}}"; <i>Caselaw Access Project</i>, Harvard University, [date], {{currentUrl}}.</dd>
+        <dt class="col-sm-3">Chicago / Turabian</dt>
+        <dd class="col-sm-9">"Ngrams." Caselaw Access Project. {{currentUrl}} (retrieved [date]).</dd>
+        <dt class="col-sm-3">Bluebook</dt>
+        <dd class="col-sm-9">Caselaw Access Project. Ngrams ({{currentYear}}); {{currentUrl}}.</dd>
+      </dl>
+      <p>How are you using CAP data? Let us know via the contact page!</p>
     </div>
   </div>
 </template>
@@ -241,15 +278,28 @@
   import LineExample from './LineChart.vue';
   import LoadingButton from '../vue-shared/loading-button.vue';
   import debounce from 'lodash.debounce';
+  import Chart from 'chart.js';
+  import Vue from 'vue';
 
   export default {
     name: 'Main',
-    components: {LineExample, LoadingButton},
+    components: {
+      LineExample,
+      LoadingButton,
+      ExampleLink: Vue.component('example-link', {
+        template: `<router-link class="example-link" :to="\`?q=\${query}\`">{{query}}</router-link>`,
+        props: ['query'],
+      }),
+    },
     beforeMount() {
       this.jurisdictions = [["*", "Wildcard"]].concat(snippets.jurisdictions);  // eslint-disable-line
       for (const[k, v] of this.jurisdictions)
         this.jurisdictionLookup[k] = v;
       this.urls = urls;  // eslint-disable-line
+      Chart.pluginService.register({
+        beforeDraw: this.beforeDraw,
+        afterLayout: this.afterLayout,
+      });
     },
     mounted: function () {
       /* Read url state when first loaded. */
@@ -262,7 +312,11 @@
       },
     },
     data: function () {
+      const chartHeight = 400;
       return {
+        baseUrl: window.location.origin + this.$router.options.base,
+        currentYear: new Date().getFullYear(),
+        chartHeight: chartHeight,
         chartData: {datasets: []},
         chartNeedsRerender: false,
         rawData: null,
@@ -271,7 +325,7 @@
         maxYear: 2018,
         minPossible: 1640,
         maxPossible: 2018,
-        smoothingFactor: 0,
+        smoothingFactor: 2,
         smoothingWindow: 0,
         countType: "doc_count",
         percentOrAbs: "percent",
@@ -333,20 +387,29 @@
                   format tooltip text based on percentOrAbs and countType,
                   like "term: X% of instances" or "term: Y cases"
                 */
-                let label = data.datasets[tooltipItem.datasetIndex].label || '';
-                if (label)
-                  label += ': ';
+                let label = data.datasets[tooltipItem.datasetIndex].label + ': ';
+                const value = tooltipItem.yLabel;
+                const countType = this.countType === "count" ? "instances" : "cases";
                 if (this.percentOrAbs === "percent") {
-                  label += tooltipItem.yLabel.toPrecision(3) + "% of";
-                }else {
-                  label += tooltipItem.yLabel;
+                  label += `${value.toPrecision(3)}% of ${countType}`;
+                } else if (this.smoothingWindow) {
+                  label += `about ${value < 10 ? value.toPrecision(2) : Math.round(value)} ${countType} per year`;
+                } else {
+                  label += `${tooltipItem.yLabel} ${countType}`;
                 }
-                label += this.countType === "count" ? " instances" : " cases";
                 return label;
               }
             }
           }
         },
+        chartStyles: {
+          height: `${chartHeight}px`,
+        }
+      }
+    },
+    computed: {
+      currentUrl: function () {
+        return this.baseUrl.slice(0, -1) + this.$route.fullPath;
       }
     },
     methods: {
@@ -443,18 +506,13 @@
               })
           })
         ).then((results) => {
-          // merge results into single dict for processing, so we can find correct year range
-          // const mergedResults = Object.assign({}, ...allResults.filter(result => result !== null));
-          // if (Object.keys(mergedResults).length === 0)
-          //   return;
-
           // display results
+          this.showLoading = false;
           const rawData = this.parseResponse(results);
           if (Object.keys(rawData.results).length === 0)
-            return;
+            return;  // no search term found results
           this.rawData = rawData;
           this.graphResults();
-          this.showLoading = false;
         }).catch(response => {
           // error handling
           this.showLoading = false;
@@ -547,6 +605,8 @@
         const results = {};
         let minYear = null, maxYear = null;
         for (const result of apiResults) {
+          if (result === null)
+            continue;
           for (const [gram, jurs] of Object.entries(result)) {
             for (const [jurName, jurData] of Object.entries(jurs)) {
               const years = new Array(this.maxPossible + 1).fill(null);
@@ -588,6 +648,35 @@
           this.textToGraph += ", ";
         this.textToGraph += code + ": ";
         this.$refs.textToGraph.focus();
+      },
+      setDownloadUrl(event) {
+        /* when the Download url is clicked/right-clicked/touched, intercept the event and fill in the correct image data for download */
+        const url=this.$refs.chart.$refs.canvas.toDataURL('image/png');
+        const tag = event.currentTarget;
+        tag.href=url;
+      },
+      beforeDraw(chart) {
+        /* draw the chart background (white background and credit line) */
+        const ctx = chart.chart.ctx;
+        const canvas = ctx.canvas;
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        ctx.save();
+        // white background for PNG download
+        ctx.fillStyle = "#FFF";
+        ctx.fillRect(0, 0, w, h);
+        // credit text
+        ctx.fillStyle = "#888";
+        ctx.font = "10px Arial";
+        ctx.textAlign = "right";
+        ctx.fillText(`Caselaw Access Project${w>400?' at Harvard Law School':''}. ${this.baseUrl}`, w-5, h-11);
+        ctx.restore();
+      },
+      afterLayout(chart) {
+        /* make room for the legend, once we know how big it will be, by resizing the chart */
+        const newHeight = `${this.chartHeight-32+chart.legend.height}px`;
+        if (newHeight !== this.chartStyles.height)
+          this.chartStyles.height = newHeight;
       },
     },
   }
