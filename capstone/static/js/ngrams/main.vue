@@ -135,14 +135,12 @@
           <div class="form-group">
             <label for="min-year">From</label>
             <input id="min-year"
-                   @change="graphResults"
-                   v-model.number="minYear"
+                   v-model.lazy.number="minYear"
                    type="number"
                    min="1640" max="2018"/>
             <label for="max-year"> To</label>
             <input id="max-year"
-                   @change="graphResults"
-                   v-model.number="maxYear"
+                   v-model.lazy.number="maxYear"
                    type="number"
                    min="1640" max="2018"/>
           </div>
@@ -156,7 +154,6 @@
                      name="percentOrAbs"
                      id="percentOrAbs1"
                      value="percent"
-                     @change="graphResults"
                      v-model="percentOrAbs">
               <label class="form-check-label" for="percentOrAbs1">Percentage</label>
             </div>
@@ -166,7 +163,6 @@
                      name="percentOrAbs"
                      id="percentOrAbs2"
                      value="absolute"
-                     @change="graphResults"
                      v-model="percentOrAbs">
               <label class="form-check-label" for="percentOrAbs2">Absolute number</label>
             </div>
@@ -181,7 +177,6 @@
                      name="countType"
                      id="countType1"
                      value="doc_count"
-                     @change="graphResults"
                      v-model="countType">
               <label class="form-check-label" for="countType1">Case count</label>
             </div>
@@ -191,14 +186,14 @@
                      name="countType"
                      id="countType2"
                      value="count"
-                     @change="graphResults"
                      v-model="countType">
               <label class="form-check-label" for="countType2">Instance count</label>
             </div>
           </fieldset>
           <fieldset class="form-group" aria-describedby="sameYAxisHelpText">
             <small id="sameYAxisHelpText" class="form-text text-muted">
-              Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for comparing correlation)?
+              Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for
+              comparing correlation)?
             </small>
             <div class="form-check form-check-inline">
               <input class="form-check-input"
@@ -206,7 +201,6 @@
                      name="sameYAxis"
                      id="sameYAxis1"
                      :value="true"
-                     @change="graphResults"
                      v-model="sameYAxis">
               <label class="form-check-label" for="sameYAxis1">Terms on the same Y axis</label>
             </div>
@@ -216,7 +210,6 @@
                      name="sameYAxis"
                      id="sameYAxis2"
                      :value="false"
-                     @change="graphResults"
                      v-model="sameYAxis">
               <label class="form-check-label" for="sameYAxis2">Terms scaled to fill Y axis</label>
             </div>
@@ -234,8 +227,7 @@
             <input type="range"
                    class="form-control-range"
                    min="0" max="10"
-                   @change="graphResults"
-                   v-model="smoothingFactor"
+                   v-model.lazy="smoothingFactor"
                    id="formControlRange">
           </div>
         </div>
@@ -310,6 +302,25 @@
       '$route': function (route, oldRoute) {
         this.handleRouteUpdate(route, oldRoute);
       },
+      percentOrAbs: function (newval) {
+        this.setNewQueries("percentOrAbs", newval);
+      },
+      countType: function (newval) {
+        this.setNewQueries("countType", newval);
+      },
+      sameYAxis: function (newval) {
+        this.setNewQueries("sameYAxis", newval);
+      },
+      minYear: function (newval) {
+        this.setNewQueries("minYear", newval);
+      },
+      maxYear: function (newval) {
+        this.setNewQueries("maxYear", newval);
+      },
+      smoothingFactor: function(newval) {
+        this.setNewQueries("smoothingFactor", newval);
+      }
+
     },
     data: function () {
       const chartHeight = 400;
@@ -437,7 +448,12 @@
       submitForm() {
         /* copy the form state into the route to trigger a redraw */
         const query = {
-          q: this.textToGraph
+          q: this.textToGraph,
+          percentOrAbs: this.percentOrAbs,
+          countType: this.countType,
+          minYear: this.minYear,
+          maxYear: this.maxYear,
+          smoothingFactor: this.smoothingFactor
         };
         if (this.selectedJurs.length)
           query['jurs'] = this.selectedJurs;
@@ -449,9 +465,26 @@
       handleRouteUpdate(route, oldRoute) {  // eslint-disable-line no-unused-vars
         // autofill form to match URL query
         const query = route.query;
-        if (query.q)
-          this.textToGraph = this.$route.query.q;
 
+        // update vals from query parameters
+        if (query.q) {
+          // only show loading icon if search text was changed
+          this.showLoading = this.$route.query.q !== this.textToGraph;
+          this.textToGraph = this.$route.query.q;
+        }
+        if (query.percentOrAbs)
+          this.percentOrAbs = this.$route.query.percentOrAbs;
+        if (query.countType)
+          this.countType = this.$route.query.countType;
+        if (query.sameYAxis)
+          // sameYAxis expects a boolean
+          this.sameYAxis = this.$route.query.sameYAxis === "true";
+        if (query.minYear)
+          this.minYear = Number(this.$route.query.minYear);
+        if (query.maxYear)
+          this.maxYear = Number(this.$route.query.maxYear);
+        if (query.smoothingFactor)
+          this.smoothingFactor = Number(this.$route.query.smoothingFactor);
         // clear existing errors, but don't clear existing graph yet in case we can't draw anything new
         this.errors = [];
 
@@ -467,7 +500,6 @@
         }
         const terms = this.getTerms(q);
 
-        this.showLoading = true;
         Promise.all(
 
           // send request for each term, in parallel
@@ -642,6 +674,18 @@
       },
       average(items){
         return items.reduce((a, b) => a + b) / items.length
+      },
+      setNewQueries(newKey, newVal) {
+        let oldQueries = this.$route.query;
+        let newQueries = {};
+        for (let key in oldQueries) {
+          newQueries[key] = oldQueries[key];
+        }
+        newQueries[newKey] = newVal;
+        this.$router.replace({
+          path: '/',
+          query: newQueries,
+        });
       },
       appendJurisdictionCode(code) {
         if (this.textToGraph)
