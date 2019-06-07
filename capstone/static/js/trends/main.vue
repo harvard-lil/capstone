@@ -118,227 +118,194 @@
 
     <div v-if="chartData.datasets.length > 0" class="row graph-menu">
       <div class="col-auto ml-auto">
-        <button class="btn-secondary"
-                type="button"
-                data-toggle="collapse"
-                data-target="#optionsPanel"
-                aria-expanded="false"
-                aria-label="Customize graph display"
-                title="Customize"
-                aria-controls="optionsPanel">
+        <panelset-button panel-id="options" :current-panel="currentPanel" aria-label="Customize graph display" title="Customize">
           <img :src="`${urls.static}img/icons/settings.svg`">
-        </button>
-        <button class="btn-secondary"
-                type="button"
-                data-toggle="collapse"
-                data-target="#citePanel"
-                aria-expanded="false"
-                aria-label="Cite graph"
-                title="Cite"
-                aria-controls="citePanel">
+        </panelset-button>
+        <panelset-button panel-id="table" :current-panel="currentPanel" aria-label="View as table" title="Table view">
+          <img :src="`${urls.static}img/icons/view_list.svg`">
+        </panelset-button>
+        <panelset-button panel-id="cite" :current-panel="currentPanel" aria-label="Cite graph" title="Cite">
           <img :src="`${urls.static}img/icons/school.svg`">
-        </button>
-        <button class="btn-secondary"
-                type="button"
-                data-toggle="collapse"
-                data-target="#downloadPanel"
-                aria-expanded="false"
-                aria-label="Download graph"
-                title="Download"
-                aria-controls="downloadPanel">
+        </panelset-button>
+        <panelset-button panel-id="download" :current-panel="currentPanel" aria-label="Download graph" title="Download">
           <img :src="`${urls.static}img/icons/download.svg`">
-        </button>
+        </panelset-button>
       </div>
     </div>
 
     <div id="collapsePanels">
 
       <!-- customize panel -->
-      <div class="collapse card"
-           id="optionsPanel"
-           data-parent="#collapsePanels">
-        <div class="card-body">
-          <button type="button"
-                  class="close h40.7em "
-                  data-toggle="collapse"
-                  data-target="#optionsPanel"
-                  aria-controls="optionsPanel"
-                  aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
-          <h5>Customize graph display</h5>
-          <div class="form-group">
-            <label for="min-year">Year range: from</label>
-            <input id="min-year"
-                   v-model.lazy.number="minYear"
-                   type="number"
-                   min="1640" max="2018"/>
-            <label for="max-year"> To</label>
-            <input id="max-year"
-                   v-model.lazy.number="maxYear"
-                   type="number"
-                   min="1640" max="2018"/>
-          </div>
-          <fieldset class="form-group" aria-describedby="percentOrAbsHelpText">
-            <p id="percentOrAbsHelpText" class="form-text">
-              Show count as a percentage of all grams for the year, or an absolute number?
-            </p>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input"
-                     type="radio"
-                     name="percentOrAbs"
-                     id="percentOrAbs1"
-                     value="percent"
-                     v-model="percentOrAbs">
-              <label class="form-check-label" for="percentOrAbs1">Percentage</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input"
-                     type="radio"
-                     name="percentOrAbs"
-                     id="percentOrAbs2"
-                     value="absolute"
-                     v-model="percentOrAbs">
-              <label class="form-check-label" for="percentOrAbs2">Absolute number</label>
-            </div>
-          </fieldset>
-          <fieldset class="form-group" aria-describedby="countTypeHelpText">
-            <p id="countTypeHelpText" class="form-text">
-              Show count of cases containing your term, or count of individual instances of your term?
-            </p>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input"
-                     type="radio"
-                     name="countType"
-                     id="countType1"
-                     value="doc_count"
-                     v-model="countType">
-              <label class="form-check-label" for="countType1">Case count</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input"
-                     type="radio"
-                     name="countType"
-                     id="countType2"
-                     value="count"
-                     v-model="countType">
-              <label class="form-check-label" for="countType2">Instance count</label>
-            </div>
-          </fieldset>
-          <fieldset class="form-group" aria-describedby="sameYAxisHelpText">
-            <p id="sameYAxisHelpText" class="form-text">
-              Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for
-              comparing correlation)?
-            </p>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input"
-                     type="radio"
-                     name="sameYAxis"
-                     id="sameYAxis1"
-                     :value="true"
-                     v-model="sameYAxis">
-              <label class="form-check-label" for="sameYAxis1">Terms on the same Y axis</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input"
-                     type="radio"
-                     name="sameYAxis"
-                     id="sameYAxis2"
-                     :value="false"
-                     v-model="sameYAxis">
-              <label class="form-check-label" for="sameYAxis2">Terms scaled to fill Y axis</label>
-            </div>
-          </fieldset>
-          <div class="form-group">
-            <label for="formControlRange">Smoothing</label>
-            <p id="smoothingFactorHelpText" class="form-text">
-              <span v-if="smoothingFactor > 0">
-                Data points will be averaged with the nearest {{smoothingFactor}}% of other points.
-              </span>
-              <span v-else>
-                No smoothing will be applied.
-              </span>
-            </p>
-            <input type="range"
-                   class="form-control-range"
-                   min="0" max="10"
-                   v-model.lazy="smoothingFactor"
-                   id="formControlRange">
-          </div>
+      <panelset-panel panel-id="options" :current-panel="currentPanel">
+        <h5>Customize graph display</h5>
+        <div class="form-group">
+          <label for="min-year">Year range: from</label>
+          <input id="min-year"
+                 v-model.lazy.number="minYear"
+                 type="number"
+                 min="1640" max="2018"/>
+          <label for="max-year"> To</label>
+          <input id="max-year"
+                 v-model.lazy.number="maxYear"
+                 type="number"
+                 min="1640" max="2018"/>
         </div>
-      </div>
+        <fieldset class="form-group" aria-describedby="percentOrAbsHelpText">
+          <p id="percentOrAbsHelpText" class="form-text">
+            Show count as a percentage of all grams for the year, or an absolute number?
+          </p>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="percentOrAbs"
+                   id="percentOrAbs1"
+                   value="percent"
+                   v-model="percentOrAbs">
+            <label class="form-check-label" for="percentOrAbs1">Percentage</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="percentOrAbs"
+                   id="percentOrAbs2"
+                   value="absolute"
+                   v-model="percentOrAbs">
+            <label class="form-check-label" for="percentOrAbs2">Absolute number</label>
+          </div>
+        </fieldset>
+        <fieldset class="form-group" aria-describedby="countTypeHelpText">
+          <p id="countTypeHelpText" class="form-text">
+            Show count of cases containing your term, or count of individual instances of your term?
+          </p>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="countType"
+                   id="countType1"
+                   value="doc_count"
+                   v-model="countType">
+            <label class="form-check-label" for="countType1">Case count</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="countType"
+                   id="countType2"
+                   value="count"
+                   v-model="countType">
+            <label class="form-check-label" for="countType2">Instance count</label>
+          </div>
+        </fieldset>
+        <fieldset class="form-group" aria-describedby="sameYAxisHelpText">
+          <p id="sameYAxisHelpText" class="form-text">
+            Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for
+            comparing correlation)?
+          </p>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="sameYAxis"
+                   id="sameYAxis1"
+                   :value="true"
+                   v-model="sameYAxis">
+            <label class="form-check-label" for="sameYAxis1">Terms on the same Y axis</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input"
+                   type="radio"
+                   name="sameYAxis"
+                   id="sameYAxis2"
+                   :value="false"
+                   v-model="sameYAxis">
+            <label class="form-check-label" for="sameYAxis2">Terms scaled to fill Y axis</label>
+          </div>
+        </fieldset>
+        <div class="form-group">
+          <label for="formControlRange">Smoothing</label>
+          <p id="smoothingFactorHelpText" class="form-text">
+            <span v-if="smoothingFactor > 0">
+              Data points will be averaged with the nearest {{smoothingFactor}}% of other points.
+            </span>
+            <span v-else>
+              No smoothing will be applied.
+            </span>
+          </p>
+          <input type="range"
+                 class="form-control-range"
+                 min="0" max="10"
+                 v-model.lazy="smoothingFactor"
+                 id="formControlRange">
+        </div>
+      </panelset-panel>
+
+      <!-- table panel -->
+      <panelset-panel panel-id="table" :current-panel="currentPanel">
+        <h5>Table View</h5>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th scope="col">Year</th>
+                <th v-for="dataset in chartData.datasets" scope="col">{{dataset.label}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(year, i) in chartData.labels">
+                <th scope="row">{{year}}</th>
+                <td v-for="dataset in chartData.datasets">{{formatValue(dataset.data[i])}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </panelset-panel>
 
       <!-- cite panel -->
-      <div class="collapse card"
-           id="citePanel"
-           data-parent="#collapsePanels">
-        <div class="card-body">
-          <button type="button"
-                  class="close h40.7em "
-                  data-toggle="collapse"
-                  data-target="#citePanel"
-                  aria-controls="citePanel"
-                  aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-          <h5>Scholarly Citation and Reuse</h5>
-          <p>
-            Version: Historical Trends dataset version {{datasetVersion}}, published {{datasetDate}}.
-          </p>
-          <p>Graphs on this page may be freely reproduced with credit. Suggested citation formats:</p>
-          <dl class="row">
-            <dt class="col-sm-3">APA</dt>
-            <dd class="col-sm-9">
-              <!-- via https://columbiacollege-ca.libguides.com/apa/images -->
-              "Graph of '{{textToGraph}},'"
-              by {{author}}, {{datasetYear}}, {{publication}} v.{{datasetVersion}}.
-              Retrieved [date], from {{currentUrl}}.
-            </dd>
-            <dt class="col-sm-3">MLA</dt>
-            <dd class="col-sm-9">
-              <!-- via image cited on the web only example from https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_works_cited_electronic_sources.html -->
-              <!-- title -->"Graph of '{{textToGraph}}.'"
-              <!-- publication --><i>{{publication}} v.{{datasetVersion}}</i>,
-              <!-- author -->{{author}}.
-              <!-- publication date -->{{datasetDate}},
-              <!-- url -->{{currentUrl}}.
-              <!-- accessed date -->Accessed [date].
-            </dd>
-            <dt class="col-sm-3">Chicago / Turabian</dt>
-            <dd class="col-sm-9">
-              <!-- via http://www.easybib.com/guides/citation-guides/chicago-turabian/how-to-cite-a-photo-digital-image-chicago-turabian/ -->
-              Graph of "{{textToGraph}}."
-              {{datasetYear}}. {{publication}} v.{{datasetVersion}}, {{author}}, Cambridge, MA.
-              {{currentUrl}}.
-            </dd>
-            <dt class="col-sm-3">Bluebook</dt>
-            <dd class="col-sm-9">{{author}}, <i>{{publication}} v.{{datasetVersion}}</i>, Graph of "{{textToGraph}}," {{currentUrl}} (last visited [date]).</dd>
-          </dl>
-        </div>
-      </div>
+      <panelset-panel panel-id="cite" :current-panel="currentPanel">
+        <h5>Scholarly Citation and Reuse</h5>
+        <p>
+          Version: Historical Trends dataset version {{datasetVersion}}, published {{datasetDate}}.
+        </p>
+        <p>Graphs on this page may be freely reproduced with credit. Suggested citation formats:</p>
+        <dl class="row">
+          <dt class="col-sm-3">APA</dt>
+          <dd class="col-sm-9">
+            <!-- via https://columbiacollege-ca.libguides.com/apa/images -->
+            "Graph of '{{textToGraph}},'"
+            by {{author}}, {{datasetYear}}, {{publication}} v.{{datasetVersion}}.
+            Retrieved [date], from {{currentUrl}}.
+          </dd>
+          <dt class="col-sm-3">MLA</dt>
+          <dd class="col-sm-9">
+            <!-- via image cited on the web only example from https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_works_cited_electronic_sources.html -->
+            <!-- title -->"Graph of '{{textToGraph}}.'"
+            <!-- publication --><i>{{publication}} v.{{datasetVersion}}</i>,
+            <!-- author -->{{author}}.
+            <!-- publication date -->{{datasetDate}},
+            <!-- url -->{{currentUrl}}.
+            <!-- accessed date -->Accessed [date].
+          </dd>
+          <dt class="col-sm-3">Chicago / Turabian</dt>
+          <dd class="col-sm-9">
+            <!-- via http://www.easybib.com/guides/citation-guides/chicago-turabian/how-to-cite-a-photo-digital-image-chicago-turabian/ -->
+            Graph of "{{textToGraph}}."
+            {{datasetYear}}. {{publication}} v.{{datasetVersion}}, {{author}}, Cambridge, MA.
+            {{currentUrl}}.
+          </dd>
+          <dt class="col-sm-3">Bluebook</dt>
+          <dd class="col-sm-9">{{author}}, <i>{{publication}} v.{{datasetVersion}}</i>, Graph of "{{textToGraph}}," {{currentUrl}} (last visited [date]).</dd>
+        </dl>
+      </panelset-panel>
 
       <!-- download panel -->
-      <div class="collapse card"
-           id="downloadPanel"
-           data-parent="#collapsePanels">
-        <div class="card-body">
-          <button type="button"
-                  class="close h40.7em "
-                  data-toggle="collapse"
-                  data-target="#downloadPanel"
-                  aria-controls="downloadPanel"
-                  aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-          <h5>Download</h5>
-          <a href="#"
-             download="image.png"
-             @mousedown="setDownloadUrl"
-             @touchstart="setDownloadUrl"
-          >Download as an image</a>
-        </div>
-      </div>
+
+      <panelset-panel panel-id="download" :current-panel="currentPanel">
+        <h5>Download</h5>
+        <a href="#"
+           download="image.png"
+           @mousedown="setDownloadUrl"
+           @touchstart="setDownloadUrl"
+        >Download as an image</a>
+      </panelset-panel>
     </div> <!-- /collapsePanels -->
     <div class="graph">
       <div class="container graph-container">
@@ -354,12 +321,14 @@
 <script>
   import LineExample from './LineChart.vue';
   import LoadingButton from '../vue-shared/loading-button.vue';
+  import Panelset from '../vue-shared/panelset';
   import debounce from 'lodash.debounce';
   import Chart from 'chart.js';
   import Vue from 'vue';
 
   export default {
     name: 'Main',
+    mixins: [Panelset],
     components: {
       LineExample,
       LoadingButton,
@@ -419,6 +388,7 @@
         author: "Harvard University",
         publication: "Caselaw Access Project Historical Trends",
 
+        currentTab: null,
         chartHeight: chartHeight,
         chartData: {datasets: []},
         chartNeedsRerender: false,
@@ -491,21 +461,7 @@
                 return `${startRange}-${endRange}`;
               },
               label: (tooltipItem, data) => {
-                /*
-                  format tooltip text based on percentOrAbs and countType,
-                  like "term: X% of instances" or "term: Y cases"
-                */
-                let label = data.datasets[tooltipItem.datasetIndex].label + ': ';
-                const value = tooltipItem.yLabel;
-                const countType = this.countType === "count" ? "instances" : "cases";
-                if (this.percentOrAbs === "percent") {
-                  label += `${value.toPrecision(3)}% of ${countType}`;
-                } else if (this.smoothingWindow) {
-                  label += `about ${value < 10 ? value.toPrecision(2) : Math.round(value)} ${countType} per year`;
-                } else {
-                  label += `${tooltipItem.yLabel} ${countType}`;
-                }
-                return label;
+                return data.datasets[tooltipItem.datasetIndex].label + ': ' + this.formatValue(tooltipItem.yLabel);
               }
             }
           }
@@ -521,6 +477,19 @@
       },
     },
     methods: {
+      formatValue(value) {
+        /*
+          format numeric datapoint based on percentOrAbs, countType, and smoothingWindow
+        */
+        const countType = this.countType === "count" ? "instances" : "cases";
+        if (this.percentOrAbs === "percent") {
+          return `${value.toPrecision(3)}% of ${countType}`;
+        } else if (this.smoothingWindow) {
+          return `about ${value < 10 ? value.toPrecision(2) : Math.round(value)} ${countType} per year`;
+        } else {
+          return `${value} ${countType}`;
+        }
+      },
       isValidYear(year) {
         return year === '' || (this.minPossible <= year && year <= this.maxPossible)
       },
