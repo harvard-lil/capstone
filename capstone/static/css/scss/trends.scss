@@ -147,6 +147,8 @@ form {
 }
 
 .download-link {
+  @extend .text-muted;
+  @extend small;
   text-align: center;
   margin: 0 !important;
 }

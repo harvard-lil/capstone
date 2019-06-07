@@ -1,11 +1,11 @@
 <template>
   <div>
     <div class="page-title">
-      <h1>Ngrams</h1>
+      <h1>Historical Trends</h1>
       <p>
-        The <a href="/">Caselaw Access Project</a> collects 360 years of United States caselaw from the collection of
-        the Harvard Law School Library — about 12 billion words in all. Our Ngrams tool graphs the frequency of words
-        and phrases through time.
+        The <a href="/">Caselaw Access Project</a> collects 360 years of United States caselaw from the Harvard Law
+        School Library — about 12 billion words in all. Our Historical Trends tool graphs the frequency
+        of words and phrases through time, similar to the Google Ngram Viewer.
       </p>
     </div>
     <form @submit.prevent="submitForm">
@@ -14,7 +14,7 @@
           <input class="col-lg-12 text-to-graph"
                  v-model="textToGraph"
                  ref="textToGraph"
-                 aria-label="ngram query">
+                 aria-label="terms to graph">
           <div class="col-lg-12 description small">
             Search for phrases of one to three words. Click the "Help" button for examples and advanced search options,
             and "Graph Options" to control the display of your results.
@@ -135,14 +135,12 @@
           <div class="form-group">
             <label for="min-year">From</label>
             <input id="min-year"
-                   @change="graphResults"
-                   v-model.number="minYear"
+                   v-model.lazy.number="minYear"
                    type="number"
                    min="1640" max="2018"/>
             <label for="max-year"> To</label>
             <input id="max-year"
-                   @change="graphResults"
-                   v-model.number="maxYear"
+                   v-model.lazy.number="maxYear"
                    type="number"
                    min="1640" max="2018"/>
           </div>
@@ -156,7 +154,6 @@
                      name="percentOrAbs"
                      id="percentOrAbs1"
                      value="percent"
-                     @change="graphResults"
                      v-model="percentOrAbs">
               <label class="form-check-label" for="percentOrAbs1">Percentage</label>
             </div>
@@ -166,7 +163,6 @@
                      name="percentOrAbs"
                      id="percentOrAbs2"
                      value="absolute"
-                     @change="graphResults"
                      v-model="percentOrAbs">
               <label class="form-check-label" for="percentOrAbs2">Absolute number</label>
             </div>
@@ -181,7 +177,6 @@
                      name="countType"
                      id="countType1"
                      value="doc_count"
-                     @change="graphResults"
                      v-model="countType">
               <label class="form-check-label" for="countType1">Case count</label>
             </div>
@@ -191,14 +186,14 @@
                      name="countType"
                      id="countType2"
                      value="count"
-                     @change="graphResults"
                      v-model="countType">
               <label class="form-check-label" for="countType2">Instance count</label>
             </div>
           </fieldset>
           <fieldset class="form-group" aria-describedby="sameYAxisHelpText">
             <small id="sameYAxisHelpText" class="form-text text-muted">
-              Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for comparing correlation)?
+              Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for
+              comparing correlation)?
             </small>
             <div class="form-check form-check-inline">
               <input class="form-check-input"
@@ -206,7 +201,6 @@
                      name="sameYAxis"
                      id="sameYAxis1"
                      :value="true"
-                     @change="graphResults"
                      v-model="sameYAxis">
               <label class="form-check-label" for="sameYAxis1">Terms on the same Y axis</label>
             </div>
@@ -216,7 +210,6 @@
                      name="sameYAxis"
                      id="sameYAxis2"
                      :value="false"
-                     @change="graphResults"
                      v-model="sameYAxis">
               <label class="form-check-label" for="sameYAxis2">Terms scaled to fill Y axis</label>
             </div>
@@ -234,8 +227,7 @@
             <input type="range"
                    class="form-control-range"
                    min="0" max="10"
-                   @change="graphResults"
-                   v-model="smoothingFactor"
+                   v-model.lazy="smoothingFactor"
                    id="formControlRange">
           </div>
         </div>
@@ -250,6 +242,7 @@
       </div>
     </div>
     <p class="download-link">
+      Historical Trends dataset version {{datasetVersion}}, published {{datasetDate}} •
       <a v-if="chartData.datasets.length > 0"
          href="#"
          download="image.png"
@@ -261,13 +254,31 @@
       <p>Graphs on this page may be freely reproduced with credit. Suggested citation formats:</p>
       <dl class="row">
         <dt class="col-sm-3">APA</dt>
-        <dd class="col-sm-9">Ngrams, Caselaw Access Project. ({{currentYear}}). Retrieved [date], from {{currentUrl}}.</dd>
+        <dd class="col-sm-9">
+          <!-- via https://columbiacollege-ca.libguides.com/apa/images -->
+          "Graph of '{{textToGraph}},'"
+          by {{author}}, {{datasetYear}}, {{publication}} v.{{datasetVersion}}.
+          Retrieved [date], from {{currentUrl}}.
+        </dd>
         <dt class="col-sm-3">MLA</dt>
-        <dd class="col-sm-9">Ngram graph of "{{textToGraph}}"; <i>Caselaw Access Project</i>, Harvard University, [date], {{currentUrl}}.</dd>
+        <dd class="col-sm-9">
+          <!-- via image cited on the web only example from https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_works_cited_electronic_sources.html -->
+          <!-- title -->"Graph of '{{textToGraph}}.'"
+          <!-- publication --><i>{{publication}} v.{{datasetVersion}}</i>,
+          <!-- author -->{{author}}.
+          <!-- publication date -->{{datasetDate}},
+          <!-- url -->{{currentUrl}}.
+          <!-- accessed date -->Accessed [date].
+        </dd>
         <dt class="col-sm-3">Chicago / Turabian</dt>
-        <dd class="col-sm-9">"Ngrams." Caselaw Access Project. {{currentUrl}} (retrieved [date]).</dd>
+        <dd class="col-sm-9">
+          <!-- via http://www.easybib.com/guides/citation-guides/chicago-turabian/how-to-cite-a-photo-digital-image-chicago-turabian/ -->
+          Graph of "{{textToGraph}}."
+          {{datasetYear}}. {{publication}} v.{{datasetVersion}}, {{author}}, Cambridge, MA.
+          {{currentUrl}}.
+        </dd>
         <dt class="col-sm-3">Bluebook</dt>
-        <dd class="col-sm-9">Caselaw Access Project. Ngrams ({{currentYear}}); {{currentUrl}}.</dd>
+        <dd class="col-sm-9">{{author}}, <i>{{publication}} v.{{datasetVersion}}</i>, Graph of "{{textToGraph}}," {{currentUrl}} (last visited [date]).</dd>
       </dl>
       <p>How are you using CAP data? Let us know via the contact page!</p>
     </div>
@@ -310,12 +321,38 @@
       '$route': function (route, oldRoute) {
         this.handleRouteUpdate(route, oldRoute);
       },
+      percentOrAbs: function (newval) {
+        this.setNewQueries("percentOrAbs", newval);
+      },
+      countType: function (newval) {
+        this.setNewQueries("countType", newval);
+      },
+      sameYAxis: function (newval) {
+        this.setNewQueries("sameYAxis", newval);
+      },
+      minYear: function (newval) {
+        this.setNewQueries("minYear", newval);
+      },
+      maxYear: function (newval) {
+        this.setNewQueries("maxYear", newval);
+      },
+      smoothingFactor: function(newval) {
+        this.setNewQueries("smoothingFactor", newval);
+      }
+
     },
     data: function () {
       const chartHeight = 400;
       return {
+        // citation stuff
         baseUrl: window.location.origin + this.$router.options.base,
         currentYear: new Date().getFullYear(),
+        datasetVersion: "1.0",
+        datasetDate: "June 6, 2019",
+        datasetYear: "2019",
+        author: "Harvard University",
+        publication: "Caselaw Access Project Historical Trends",
+
         chartHeight: chartHeight,
         chartData: {datasets: []},
         chartNeedsRerender: false,
@@ -352,6 +389,11 @@
             labels: {
               boxWidth: 20,
               usePointStyle: true,
+            }
+          },
+          layout: {
+            padding: {
+              bottom: 10,
             }
           },
           scales: {
@@ -410,7 +452,7 @@
     computed: {
       currentUrl: function () {
         return this.baseUrl.slice(0, -1) + this.$route.fullPath;
-      }
+      },
     },
     methods: {
       isValidYear(year) {
@@ -437,7 +479,12 @@
       submitForm() {
         /* copy the form state into the route to trigger a redraw */
         const query = {
-          q: this.textToGraph
+          q: this.textToGraph,
+          percentOrAbs: this.percentOrAbs,
+          countType: this.countType,
+          minYear: this.minYear,
+          maxYear: this.maxYear,
+          smoothingFactor: this.smoothingFactor
         };
         if (this.selectedJurs.length)
           query['jurs'] = this.selectedJurs;
@@ -449,9 +496,26 @@
       handleRouteUpdate(route, oldRoute) {  // eslint-disable-line no-unused-vars
         // autofill form to match URL query
         const query = route.query;
-        if (query.q)
-          this.textToGraph = this.$route.query.q;
 
+        // update vals from query parameters
+        if (query.q) {
+          // only show loading icon if search text was changed
+          this.showLoading = this.$route.query.q !== this.textToGraph;
+          this.textToGraph = this.$route.query.q;
+        }
+        if (query.percentOrAbs)
+          this.percentOrAbs = this.$route.query.percentOrAbs;
+        if (query.countType)
+          this.countType = this.$route.query.countType;
+        if (query.sameYAxis)
+          // sameYAxis expects a boolean
+          this.sameYAxis = this.$route.query.sameYAxis === "true";
+        if (query.minYear)
+          this.minYear = Number(this.$route.query.minYear);
+        if (query.maxYear)
+          this.maxYear = Number(this.$route.query.maxYear);
+        if (query.smoothingFactor)
+          this.smoothingFactor = Number(this.$route.query.smoothingFactor);
         // clear existing errors, but don't clear existing graph yet in case we can't draw anything new
         this.errors = [];
 
@@ -467,7 +531,6 @@
         }
         const terms = this.getTerms(q);
 
-        this.showLoading = true;
         Promise.all(
 
           // send request for each term, in parallel
@@ -642,6 +705,18 @@
       },
       average(items){
         return items.reduce((a, b) => a + b) / items.length
+      },
+      setNewQueries(newKey, newVal) {
+        let oldQueries = this.$route.query;
+        let newQueries = {};
+        for (let key in oldQueries) {
+          newQueries[key] = oldQueries[key];
+        }
+        newQueries[newKey] = newVal;
+        this.$router.replace({
+          path: '/',
+          query: newQueries,
+        });
       },
       appendJurisdictionCode(code) {
         if (this.textToGraph)
