@@ -9,53 +9,30 @@
       </p>
     </div>
     <form @submit.prevent="submitForm">
-      <div class="form-group">
-        <div class="row">
-          <input class="col-lg-12 text-to-graph"
+      <div class="form-row query-row">
+        <div class="col pr-0">
+          <input class="text-to-graph"
                  v-model="textToGraph"
                  ref="textToGraph"
                  aria-label="terms to graph">
-          <div class="col-lg-12 description small">
-            Search for phrases of one to three words. Click the "Help" button for examples and advanced search options,
-            and "Graph Options" to control the display of your results.
-          </div>
         </div>
-        <div class="row">
-          <div class="ml-auto mr-3">
-            <button class="btn-secondary"
-                    type="button"
-                    data-toggle="collapse"
-                    data-target="#optionsPanel"
-                    aria-expanded="false"
-                    aria-controls="optionsPanel">
-              Graph options
-            </button>
-          </div>
-          <div class="mr-3">
-            <button class="btn-secondary"
-                    type="button"
-                    data-toggle="collapse"
-                    data-target="#helpPanel"
-                    aria-expanded="false"
-                    aria-controls="optionsPanel">
-              Help
-            </button>
-          </div>
-          <div class="">
-            <loading-button :showLoading="showLoading">Graph</loading-button>
-          </div>
+        <loading-button :showLoading="showLoading" class="col-auto pl-0">Graph</loading-button>
+        <div class="col-auto">
+          <button class="btn-secondary "
+                  type="button"
+                  ref="helpButton"
+                  data-toggle="collapse"
+                  data-target="#helpPanel"
+                  aria-expanded="false"
+                  aria-controls="helpPanel">
+            ADVANCED
+          </button>
         </div>
-        <div class="row" v-if="errors.length">
-          <ul class="small alert-danger">
-            <li v-for="error in errors">{{error}}</li>  <!-- eslint-disable-line vue/require-v-for-key -->
-          </ul>
-        </div>
-      </div><!-- end form -->
-    </form>
-    <div id="collapsePanels">
+      </div>
       <div class="collapse card"
            id="helpPanel"
-           data-parent="#collapsePanels">
+           tabindex="-1"
+           @keydown.esc="$refs.helpButton.click()">
         <div class="card-body">
           <button type="button"
                   class="close h40.7em"
@@ -66,7 +43,7 @@
             <span aria-hidden="true">&times;</span>
           </button>
 
-          <h5>Basic searches</h5>
+          <h5>Search tips</h5>
           <p>
             Search for phrases of one to three words. Multiple phrases can be separated by commas. Do not use quotes.
             All searches are case-insensitive. Examples:
@@ -120,6 +97,63 @@
           </div>
         </div>
       </div>
+      <div class="row">
+        <div class="col-12 description small">
+          Example searches:
+          <example-link query="piracy"/> /
+          <example-link query="he said, she said"/> /
+          <example-link query="ride a *"/> /
+          <example-link query="me: lobster, cal: gold, tex: cowboy"/> /
+          <example-link query="*: gold"/> /
+          <a href="#" @click.prevent="$refs.helpButton.click()">more ...</a>
+        </div>
+      </div>
+    </form>
+
+    <div class="row" v-if="errors.length">
+      <ul class="small alert-danger">
+        <li v-for="error in errors">{{error}}</li>  <!-- eslint-disable-line vue/require-v-for-key -->
+      </ul>
+    </div>
+
+    <div v-if="chartData.datasets.length > 0" class="row graph-menu">
+      <div class="col-auto ml-auto">
+        <button class="btn-secondary"
+                type="button"
+                data-toggle="collapse"
+                data-target="#optionsPanel"
+                aria-expanded="false"
+                aria-label="Customize graph display"
+                title="Customize"
+                aria-controls="optionsPanel">
+          <img :src="`${urls.static}img/icons/settings.svg`">
+        </button>
+        <button class="btn-secondary"
+                type="button"
+                data-toggle="collapse"
+                data-target="#citePanel"
+                aria-expanded="false"
+                aria-label="Cite graph"
+                title="Cite"
+                aria-controls="citePanel">
+          <img :src="`${urls.static}img/icons/school.svg`">
+        </button>
+        <button class="btn-secondary"
+                type="button"
+                data-toggle="collapse"
+                data-target="#downloadPanel"
+                aria-expanded="false"
+                aria-label="Download graph"
+                title="Download"
+                aria-controls="downloadPanel">
+          <img :src="`${urls.static}img/icons/download.svg`">
+        </button>
+      </div>
+    </div>
+
+    <div id="collapsePanels">
+
+      <!-- customize panel -->
       <div class="collapse card"
            id="optionsPanel"
            data-parent="#collapsePanels">
@@ -129,11 +163,13 @@
                   data-toggle="collapse"
                   data-target="#optionsPanel"
                   aria-controls="optionsPanel"
-                  aria-label="Close">
+                  aria-label="Close"
+          >
             <span aria-hidden="true">&times;</span>
           </button>
+          <h5>Customize graph display</h5>
           <div class="form-group">
-            <label for="min-year">From</label>
+            <label for="min-year">Year range: from</label>
             <input id="min-year"
                    v-model.lazy.number="minYear"
                    type="number"
@@ -145,9 +181,9 @@
                    min="1640" max="2018"/>
           </div>
           <fieldset class="form-group" aria-describedby="percentOrAbsHelpText">
-            <small id="percentOrAbsHelpText" class="form-text text-muted">
+            <p id="percentOrAbsHelpText" class="form-text">
               Show count as a percentage of all grams for the year, or an absolute number?
-            </small>
+            </p>
             <div class="form-check form-check-inline">
               <input class="form-check-input"
                      type="radio"
@@ -168,9 +204,9 @@
             </div>
           </fieldset>
           <fieldset class="form-group" aria-describedby="countTypeHelpText">
-            <small id="countTypeHelpText" class="form-text text-muted">
+            <p id="countTypeHelpText" class="form-text">
               Show count of cases containing your term, or count of individual instances of your term?
-            </small>
+            </p>
             <div class="form-check form-check-inline">
               <input class="form-check-input"
                      type="radio"
@@ -191,10 +227,10 @@
             </div>
           </fieldset>
           <fieldset class="form-group" aria-describedby="sameYAxisHelpText">
-            <small id="sameYAxisHelpText" class="form-text text-muted">
+            <p id="sameYAxisHelpText" class="form-text">
               Show all terms on the same Y axis (for comparing frequency) or scale each term to fill the Y axis (for
               comparing correlation)?
-            </small>
+            </p>
             <div class="form-check form-check-inline">
               <input class="form-check-input"
                      type="radio"
@@ -216,20 +252,91 @@
           </fieldset>
           <div class="form-group">
             <label for="formControlRange">Smoothing</label>
-            <small id="smoothingFactorHelpText" class="form-text text-muted">
+            <p id="smoothingFactorHelpText" class="form-text">
               <span v-if="smoothingFactor > 0">
                 Data points will be averaged with the nearest {{smoothingFactor}}% of other points.
               </span>
               <span v-else>
                 No smoothing will be applied.
               </span>
-            </small>
+            </p>
             <input type="range"
                    class="form-control-range"
                    min="0" max="10"
                    v-model.lazy="smoothingFactor"
                    id="formControlRange">
           </div>
+        </div>
+      </div>
+
+      <!-- cite panel -->
+      <div class="collapse card"
+           id="citePanel"
+           data-parent="#collapsePanels">
+        <div class="card-body">
+          <button type="button"
+                  class="close h40.7em "
+                  data-toggle="collapse"
+                  data-target="#citePanel"
+                  aria-controls="citePanel"
+                  aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h5>Scholarly Citation and Reuse</h5>
+          <p>
+            Version: Historical Trends dataset version {{datasetVersion}}, published {{datasetDate}}.
+          </p>
+          <p>Graphs on this page may be freely reproduced with credit. Suggested citation formats:</p>
+          <dl class="row">
+            <dt class="col-sm-3">APA</dt>
+            <dd class="col-sm-9">
+              <!-- via https://columbiacollege-ca.libguides.com/apa/images -->
+              "Graph of '{{textToGraph}},'"
+              by {{author}}, {{datasetYear}}, {{publication}} v.{{datasetVersion}}.
+              Retrieved [date], from {{currentUrl}}.
+            </dd>
+            <dt class="col-sm-3">MLA</dt>
+            <dd class="col-sm-9">
+              <!-- via image cited on the web only example from https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_works_cited_electronic_sources.html -->
+              <!-- title -->"Graph of '{{textToGraph}}.'"
+              <!-- publication --><i>{{publication}} v.{{datasetVersion}}</i>,
+              <!-- author -->{{author}}.
+              <!-- publication date -->{{datasetDate}},
+              <!-- url -->{{currentUrl}}.
+              <!-- accessed date -->Accessed [date].
+            </dd>
+            <dt class="col-sm-3">Chicago / Turabian</dt>
+            <dd class="col-sm-9">
+              <!-- via http://www.easybib.com/guides/citation-guides/chicago-turabian/how-to-cite-a-photo-digital-image-chicago-turabian/ -->
+              Graph of "{{textToGraph}}."
+              {{datasetYear}}. {{publication}} v.{{datasetVersion}}, {{author}}, Cambridge, MA.
+              {{currentUrl}}.
+            </dd>
+            <dt class="col-sm-3">Bluebook</dt>
+            <dd class="col-sm-9">{{author}}, <i>{{publication}} v.{{datasetVersion}}</i>, Graph of "{{textToGraph}}," {{currentUrl}} (last visited [date]).</dd>
+          </dl>
+        </div>
+      </div>
+
+      <!-- download panel -->
+      <div class="collapse card"
+           id="downloadPanel"
+           data-parent="#collapsePanels">
+        <div class="card-body">
+          <button type="button"
+                  class="close h40.7em "
+                  data-toggle="collapse"
+                  data-target="#downloadPanel"
+                  aria-controls="downloadPanel"
+                  aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h5>Download</h5>
+          <a href="#"
+             download="image.png"
+             @mousedown="setDownloadUrl"
+             @touchstart="setDownloadUrl"
+          >Download as an image</a>
         </div>
       </div>
     </div> <!-- /collapsePanels -->
@@ -240,47 +347,6 @@
                       :styles="chartStyles"
                       ref="chart"/>
       </div>
-    </div>
-    <p class="download-link">
-      Historical Trends dataset version {{datasetVersion}}, published {{datasetDate}} •
-      <a v-if="chartData.datasets.length > 0"
-         href="#"
-         download="image.png"
-         @mousedown="setDownloadUrl"
-         @touchstart="setDownloadUrl"
-      >Download as an image</a>
-    </p>
-    <div class="cite-formats">
-      <p>Graphs on this page may be freely reproduced with credit. Suggested citation formats:</p>
-      <dl class="row">
-        <dt class="col-sm-3">APA</dt>
-        <dd class="col-sm-9">
-          <!-- via https://columbiacollege-ca.libguides.com/apa/images -->
-          "Graph of '{{textToGraph}},'"
-          by {{author}}, {{datasetYear}}, {{publication}} v.{{datasetVersion}}.
-          Retrieved [date], from {{currentUrl}}.
-        </dd>
-        <dt class="col-sm-3">MLA</dt>
-        <dd class="col-sm-9">
-          <!-- via image cited on the web only example from https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_works_cited_electronic_sources.html -->
-          <!-- title -->"Graph of '{{textToGraph}}.'"
-          <!-- publication --><i>{{publication}} v.{{datasetVersion}}</i>,
-          <!-- author -->{{author}}.
-          <!-- publication date -->{{datasetDate}},
-          <!-- url -->{{currentUrl}}.
-          <!-- accessed date -->Accessed [date].
-        </dd>
-        <dt class="col-sm-3">Chicago / Turabian</dt>
-        <dd class="col-sm-9">
-          <!-- via http://www.easybib.com/guides/citation-guides/chicago-turabian/how-to-cite-a-photo-digital-image-chicago-turabian/ -->
-          Graph of "{{textToGraph}}."
-          {{datasetYear}}. {{publication}} v.{{datasetVersion}}, {{author}}, Cambridge, MA.
-          {{currentUrl}}.
-        </dd>
-        <dt class="col-sm-3">Bluebook</dt>
-        <dd class="col-sm-9">{{author}}, <i>{{publication}} v.{{datasetVersion}}</i>, Graph of "{{textToGraph}}," {{currentUrl}} (last visited [date]).</dd>
-      </dl>
-      <p>How are you using CAP data? Let us know via the contact page!</p>
     </div>
   </div>
 </template>
