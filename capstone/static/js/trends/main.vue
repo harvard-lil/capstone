@@ -1,11 +1,11 @@
 <template>
   <div>
     <div class="page-title">
-      <h1>Ngrams</h1>
+      <h1>Historical Trends</h1>
       <p>
-        The <a href="/">Caselaw Access Project</a> collects 360 years of United States caselaw from the collection of
-        the Harvard Law School Library — about 12 billion words in all. Our Ngrams tool graphs the frequency of words
-        and phrases through time.
+        The <a href="/">Caselaw Access Project</a> collects 360 years of United States caselaw from the Harvard Law
+        School Library — about 12 billion words in all. Our Historical Trends tool graphs the frequency
+        of words and phrases through time, similar to the Google Ngram Viewer.
       </p>
     </div>
     <form @submit.prevent="submitForm">
@@ -14,7 +14,7 @@
           <input class="col-lg-12 text-to-graph"
                  v-model="textToGraph"
                  ref="textToGraph"
-                 aria-label="ngram query">
+                 aria-label="terms to graph">
           <div class="col-lg-12 description small">
             Search for phrases of one to three words. Click the "Help" button for examples and advanced search options,
             and "Graph Options" to control the display of your results.
@@ -242,6 +242,7 @@
       </div>
     </div>
     <p class="download-link">
+      Historical Trends dataset version {{datasetVersion}}, published {{datasetDate}} •
       <a v-if="chartData.datasets.length > 0"
          href="#"
          download="image.png"
@@ -253,13 +254,31 @@
       <p>Graphs on this page may be freely reproduced with credit. Suggested citation formats:</p>
       <dl class="row">
         <dt class="col-sm-3">APA</dt>
-        <dd class="col-sm-9">Ngrams, Caselaw Access Project. ({{currentYear}}). Retrieved [date], from {{currentUrl}}.</dd>
+        <dd class="col-sm-9">
+          <!-- via https://columbiacollege-ca.libguides.com/apa/images -->
+          "Graph of '{{textToGraph}},'"
+          by {{author}}, {{datasetYear}}, {{publication}} v.{{datasetVersion}}.
+          Retrieved [date], from {{currentUrl}}.
+        </dd>
         <dt class="col-sm-3">MLA</dt>
-        <dd class="col-sm-9">Ngram graph of "{{textToGraph}}"; <i>Caselaw Access Project</i>, Harvard University, [date], {{currentUrl}}.</dd>
+        <dd class="col-sm-9">
+          <!-- via image cited on the web only example from https://owl.purdue.edu/owl/research_and_citation/mla_style/mla_formatting_and_style_guide/mla_works_cited_electronic_sources.html -->
+          <!-- title -->"Graph of '{{textToGraph}}.'"
+          <!-- publication --><i>{{publication}} v.{{datasetVersion}}</i>,
+          <!-- author -->{{author}}.
+          <!-- publication date -->{{datasetDate}},
+          <!-- url -->{{currentUrl}}.
+          <!-- accessed date -->Accessed [date].
+        </dd>
         <dt class="col-sm-3">Chicago / Turabian</dt>
-        <dd class="col-sm-9">"Ngrams." Caselaw Access Project. {{currentUrl}} (retrieved [date]).</dd>
+        <dd class="col-sm-9">
+          <!-- via http://www.easybib.com/guides/citation-guides/chicago-turabian/how-to-cite-a-photo-digital-image-chicago-turabian/ -->
+          Graph of "{{textToGraph}}."
+          {{datasetYear}}. {{publication}} v.{{datasetVersion}}, {{author}}, Cambridge, MA.
+          {{currentUrl}}.
+        </dd>
         <dt class="col-sm-3">Bluebook</dt>
-        <dd class="col-sm-9">Caselaw Access Project. Ngrams ({{currentYear}}); {{currentUrl}}.</dd>
+        <dd class="col-sm-9">{{author}}, <i>{{publication}} v.{{datasetVersion}}</i>, Graph of "{{textToGraph}}," {{currentUrl}} (last visited [date]).</dd>
       </dl>
       <p>How are you using CAP data? Let us know via the contact page!</p>
     </div>
@@ -325,8 +344,15 @@
     data: function () {
       const chartHeight = 400;
       return {
+        // citation stuff
         baseUrl: window.location.origin + this.$router.options.base,
         currentYear: new Date().getFullYear(),
+        datasetVersion: "1.0",
+        datasetDate: "June 6, 2019",
+        datasetYear: "2019",
+        author: "Harvard University",
+        publication: "Caselaw Access Project Historical Trends",
+
         chartHeight: chartHeight,
         chartData: {datasets: []},
         chartNeedsRerender: false,
@@ -363,6 +389,11 @@
             labels: {
               boxWidth: 20,
               usePointStyle: true,
+            }
+          },
+          layout: {
+            padding: {
+              bottom: 10,
             }
           },
           scales: {
@@ -421,7 +452,7 @@
     computed: {
       currentUrl: function () {
         return this.baseUrl.slice(0, -1) + this.$route.fullPath;
-      }
+      },
     },
     methods: {
       isValidYear(year) {

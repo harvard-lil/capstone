@@ -14,8 +14,8 @@
     The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
     and their associated metadata. We currently offer five ways to access the data:
     <a href="{% api_url "api-root" %}">API</a>, <a href="{% url "bulk-download" %}">bulk downloads</a>,
-    <a href="{% url "search" %}">search</a>, <a href="{% url "cite_home" host "cite" %}">browse</a>, and an
-    <a href="{% url "ngrams" %}">Ngram viewer</a>.
+    <a href="{% url "search" %}">search</a>, <a href="{% url "cite_home" host "cite" %}">browse</a>, and a
+    <a href="{% url "trends" %}">historical trends viewer</a>.
   {% else %}
     The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
     and their associated metadata. We currently offer four ways to access the data:
@@ -49,8 +49,8 @@
   </li>
   {% if ngrams %}
     <li>
-      <a class="list-group-item" href="#ngrams">
-        <span class="text">Ngrams</span>
+      <a class="list-group-item" href="#trends">
+        <span class="text">Historical Trends</span>
       </a>
     </li>
   {% endif %}
@@ -100,14 +100,14 @@
     <a class="btn-primary" href="{% url "cite_home" host "cite" %}">BROWSE</a>
   </div>
 
-  {# ==============> NGRAMS <============== #}
+  {# ==============> HISTORICAL TRENDS <============== #}
   {% if ngrams %}
-    <h2 class="subtitle" id="ngrams">Ngrams</h2>
+    <h2 class="subtitle" id="trends">Historical Trends</h2>
     <p>
-      Explore the data by looking at how usage of text changes over time.
+      Explore the data by looking at how usage of terms changes over time, similar to the Google Ngram Viewer.
     </p>
     <div class="btn-group">
-      <a class="btn-primary" href="{% url "ngrams" %}">NGRAMS</a>
+      <a class="btn-primary" href="{% url "trends" %}">HISTORICAL TRENDS</a>
     </div>
   {% endif %}
 {% endblock %}

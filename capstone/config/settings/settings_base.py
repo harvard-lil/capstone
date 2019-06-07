@@ -316,11 +316,11 @@ PIPELINE = {
             },
             'output_filename': 'view_metadata.css'
         },
-        'ngrams': {
+        'trends': {
             'source_filenames': {
-                'css/scss/ngrams.scss',
+                'css/scss/trends.scss',
             },
-            'output_filename': 'ngrams.css'
+            'output_filename': 'trends.css'
         },
 
     },
