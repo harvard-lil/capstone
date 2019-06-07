@@ -5,6 +5,7 @@ from collections import namedtuple
 from contextlib import contextmanager
 from functools import wraps
 import markdown
+from markdown.extensions.attr_list import AttrListExtension
 from markdown.extensions.toc import TocExtension
 import requests
 import django_hosts
@@ -168,15 +169,20 @@ def user_has_harvard_email(failure_url='non-harvard-email'):
         login_url=failure_url)
 
 
-def render_markdown(markdown_doc):
+def render_markdown(markdown_doc, link_text_translate=None):
     """
         Render given markdown document and return (html, table_of_contents, meta)
+
+        The optional link_text_translate argument accepts a dictionary, and will replace all instances of the key with
+        the vaule, where the key is the entire link text string.
     """
-    md = markdown.Markdown(extensions=[TocExtension(baselevel=2, marker=''), 'meta'])
-    html = md.convert(markdown_doc)\
-        .replace('<h2 ', '<h2 class="subtitle" ')
+    md = markdown.Markdown(extensions=[TocExtension(baselevel=2, marker=''), AttrListExtension(), 'meta'])
+    html = md.convert(markdown_doc)
     toc = md.toc.replace('<a ', '<a class="list-group-item" ')
     toc = "".join(toc.splitlines(True)[2:-2])  # strip <div><ul> around toc by dropping first and last two lines
+    for original, replacement in link_text_translate.items():
+        print(original, replacement)
+        toc = toc.replace(">{}<".format(original), ">{}<".format(replacement))
     meta = {k:' '.join(v) for k, v in md.Meta.items()}
     return html, toc, meta
 

@@ -48,25 +48,36 @@ def index(request):
 
 
 def about(request):
-    news = get_data_from_lil_site(section="news")
+    base_template_name = "layouts/full.html"
     contributors = get_data_from_lil_site(section="contributors")
     sorted_contributors = {}
     for contributor in contributors:
-
         sorted_contributors[contributor['sort_name']] = contributor
         if contributor['affiliated']:
             sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
+
     sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
-    return render(request, "about.html", {
-        "page_name": "about",
+
+    markdown_doc = render_to_string("about.md", {
         "contributors": sorted_contributors,
-        "news": news,
-        "email": settings.DEFAULT_FROM_EMAIL,
-        'page_image': 'img/og_image/about.png',
-        'page_title': 'About the Caselaw Access Project',
-        'page_description': 'The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make'
-                            'all published U.S. court decisions freely available to the public online, in a consistent '
-                            'format, digitized from the collection of the Harvard Law Library.',
+        "news": get_data_from_lil_site(section="news"),
+        "email": settings.DEFAULT_FROM_EMAIL
+    }, request)
+
+    toc_translate = {
+        "What data do we have?": "Our Data",
+        "Digitization Process": "Digitization",
+        "Friends &amp; Partners": "Partners",
+    }
+
+    # render markdown document to html
+    html, toc, meta = render_markdown(markdown_doc, toc_translate)
+
+    meta = {k: mark_safe(v) for k, v in meta.items()}
+    return render(request, base_template_name, {
+        'main_content': mark_safe(html),
+        'sidebar_menu_items': mark_safe(toc),
+        **meta,
     })
 
 
