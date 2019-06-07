@@ -23,7 +23,8 @@
 <div id="app" class="content"></div>
 <script>
   const urls = {
-    api_root: "{% api_url "api-root" %}v1/"
+    api_root: "{% api_url "api-root" %}v1/",
+    static: "{% static "" %}",
   };
 
   {% autoescape off %}
