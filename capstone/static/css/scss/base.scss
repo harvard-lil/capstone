@@ -16,6 +16,7 @@
 @import "bootstrap/list-group";
 @import "bootstrap/reboot";
 @import "bootstrap/spinners";
+@import "bootstrap/tables";
 @import 'bootstrap/transitions';
 @import "bootstrap/type";
 
@@ -155,12 +156,6 @@ table {
 
 table > tbody > tr {
   line-height: 2.5rem;
-}
-
-table > tbody > tr > th {
-  font-family: $font-serif;
-  font-weight: $font-weight-normal;
-  min-width: 400px;
 }
 
 pre {
