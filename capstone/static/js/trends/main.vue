@@ -32,7 +32,9 @@
       <div class="collapse card"
            id="helpPanel"
            tabindex="-1"
-           @keydown.esc="$refs.helpButton.click()">
+           @keydown.esc="$refs.helpButton.click()"
+           @click="helpLinkClicked"
+      >
         <div class="card-body">
           <button type="button"
                   class="close h40.7em"
@@ -90,8 +92,8 @@
               <p>
                 {{jurisdiction[1]}}: "<a
                       :href="`?q=${jurisdiction[0]}}: `"
-                      @click.prevent="appendJurisdictionCode(jurisdiction[0])"
-              >{{jurisdiction[0]}}:</a>"
+                      @click.prevent="appendJurisdictionCode(jurisdiction[0])">
+                {{jurisdiction[0]}}:</a>"
               </p>
             </div>
           </div>
@@ -246,13 +248,13 @@
             <thead>
               <tr>
                 <th scope="col">Year</th>
-                <th v-for="dataset in chartData.datasets" scope="col">{{dataset.label}}</th>
+                <th v-for="dataset in chartData.datasets" scope="col">{{dataset.label}}</th> <!-- eslint-disable-line vue/require-v-for-key -->
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(year, i) in chartData.labels">
+              <tr v-for="(year, i) in chartData.labels"> <!-- eslint-disable-line vue/require-v-for-key -->
                 <th scope="row">{{year}}</th>
-                <td v-for="dataset in chartData.datasets">{{formatValue(dataset.data[i])}}</td>
+                <td v-for="dataset in chartData.datasets">{{formatValue(dataset.data[i])}}</td> <!-- eslint-disable-line vue/require-v-for-key -->
               </tr>
             </tbody>
           </table>
@@ -373,11 +375,18 @@
       },
       smoothingFactor: function(newval) {
         this.setNewQueries("smoothingFactor", newval);
-      }
-
+      },
     },
     data: function () {
       const chartHeight = 400;
+      const urlValues = {
+        percentOrAbs: "percent",
+        countType: "doc_count",
+        sameYAxis: true,
+        minYear: 1800,
+        maxYear: 2018,
+        smoothingFactor: 2,
+      };
       return {
         // citation stuff
         baseUrl: window.location.origin + this.$router.options.base,
@@ -388,26 +397,22 @@
         author: "Harvard University",
         publication: "Caselaw Access Project Historical Trends",
 
+        defaultUrlValues: urlValues,
+        ...urlValues,
+
         currentTab: null,
         chartHeight: chartHeight,
         chartData: {datasets: []},
         chartNeedsRerender: false,
         rawData: null,
         textToGraph: "apple pie, baseball",
-        minYear: 1800,
-        maxYear: 2018,
         minPossible: 1640,
         maxPossible: 2018,
-        smoothingFactor: 2,
         smoothingWindow: 0,
-        countType: "doc_count",
-        percentOrAbs: "percent",
-        sameYAxis: true,
         previousSameYAxis: true,
         jurisdictions: [],
         jurisdictionLookup: {},
         urls: {},
-        selectedJurs: [],
         // colors via http://mkweb.bcgsc.ca/biovis2012/ and https://contrast-ratio.com/:
         // these colors work for color-blindness, and have contrast against white that is WCAG AA large or better
         colors: [
@@ -513,55 +518,51 @@
       },
       submitForm() {
         /* copy the form state into the route to trigger a redraw */
-        const query = {
-          q: this.textToGraph,
-          percentOrAbs: this.percentOrAbs,
-          countType: this.countType,
-          minYear: this.minYear,
-          maxYear: this.maxYear,
-          smoothingFactor: this.smoothingFactor
-        };
-        if (this.selectedJurs.length)
-          query['jurs'] = this.selectedJurs;
-        this.$router.push({
-          path: '/',
-          query
-        });
+        const query = {...this.$route.query, q: this.textToGraph};
+        this.showLoading = true;
+        this.$router.push({query});
       },
       handleRouteUpdate(route, oldRoute) {  // eslint-disable-line no-unused-vars
         // autofill form to match URL query
         const query = route.query;
 
         // update vals from query parameters
-        if (query.q) {
-          // only show loading icon if search text was changed
-          this.showLoading = this.$route.query.q !== this.textToGraph;
-          this.textToGraph = this.$route.query.q;
-        }
         if (query.percentOrAbs)
-          this.percentOrAbs = this.$route.query.percentOrAbs;
+          this.percentOrAbs = query.percentOrAbs;
         if (query.countType)
-          this.countType = this.$route.query.countType;
+          this.countType = query.countType;
         if (query.sameYAxis)
           // sameYAxis expects a boolean
-          this.sameYAxis = this.$route.query.sameYAxis === "true";
+          this.sameYAxis = query.sameYAxis === "true";
         if (query.minYear)
-          this.minYear = Number(this.$route.query.minYear);
+          this.minYear = Number(query.minYear);
         if (query.maxYear)
-          this.maxYear = Number(this.$route.query.maxYear);
+          this.maxYear = Number(query.maxYear);
         if (query.smoothingFactor)
-          this.smoothingFactor = Number(this.$route.query.smoothingFactor);
+          this.smoothingFactor = Number(query.smoothingFactor);
+
         // clear existing errors, but don't clear existing graph yet in case we can't draw anything new
         this.errors = [];
 
         // validate input
-        const q = query.q;
+        let q = query.q;
         if (q === undefined){
           // first load, with no query to run
+          q = this.textToGraph;
+          this.showLoading = true;
+        } else if (q !== this.textToGraph) {
+          this.textToGraph = q;
+          this.showLoading = true;
+        }
+
+        if (!this.showLoading) {
+          this.graphResults();
           return;
         }
+
         if (!q.trim()){
           this.errors.push("Please enter text");
+          this.showLoading = false;
           return;
         }
         const terms = this.getTerms(q);
@@ -570,6 +571,8 @@
 
           // send request for each term, in parallel
           terms.map((term)=> {
+            if (term === "")
+              return null;
             const [firstWord, ...restWords] = term.split(/\s/);
 
             // parse jurisdiction prefix
@@ -578,6 +581,10 @@
               const jur = firstWord.slice(0, -1);
               if (!this.jurisdictionLookup[jur]){
                 this.errors.push(`Unknown jurisdiction "${jur}". Options are: ${Object.keys(this.jurisdictionLookup)}`);
+                return null;
+              }
+              if (!restWords.length) {
+                this.errors.push(`Jurisdiction ${jur} should be followed by a search term.`);
                 return null;
               }
               jursParams = "&jurisdiction=" + encodeURIComponent(jur);
@@ -742,16 +749,12 @@
         return items.reduce((a, b) => a + b) / items.length
       },
       setNewQueries(newKey, newVal) {
-        let oldQueries = this.$route.query;
-        let newQueries = {};
-        for (let key in oldQueries) {
-          newQueries[key] = oldQueries[key];
-        }
-        newQueries[newKey] = newVal;
-        this.$router.replace({
-          path: '/',
-          query: newQueries,
-        });
+        const query = Object.assign({}, this.$route.query);
+        if (this.defaultUrlValues[newKey] === newVal)
+          delete query[newKey];
+        else
+          query[newKey] = newVal;
+        this.$router.replace({query});
       },
       appendJurisdictionCode(code) {
         if (this.textToGraph)
@@ -788,6 +791,10 @@
         if (newHeight !== this.chartStyles.height)
           this.chartStyles.height = newHeight;
       },
+      helpLinkClicked(event) {
+        if (event.target.tagName === "A")
+          this.$refs.helpButton.click();
+      }
     },
   }
 </script>

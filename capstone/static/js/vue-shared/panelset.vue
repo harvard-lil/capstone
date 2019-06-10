@@ -37,7 +37,9 @@
         template: `
           <div class="card"
                :id="\`\${panelId}Panel\`"
-               v-if="currentPanel === panelId">
+               v-if="currentPanel === panelId"
+               tabindex="-1"
+               @keydown.esc="$parent.currentPanel = null">
             <div class="card-body">
               <button type="button"
                       @click="$parent.currentPanel = null"
