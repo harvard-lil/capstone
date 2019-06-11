@@ -52,8 +52,14 @@ input[type="number"] {
   @extend .text-muted;
 }
 
+.example-link-list {
+  display: inline;
+  li {
+    display: inline;
+  }
+}
 .example-link {
-  white-space: nowrap;
+  display: inline-block;
 }
 
 .top-section {
@@ -81,10 +87,18 @@ form {
 
 .graph {
   border: 1px rgba(0, 0, 0, 0.125) solid;
+  background-color: $color-white;
 }
 
 .graph-container {
   background-color: $color-white;
+}
+
+.graph-keyboard-instructions {
+  background-color: white;
+  @extend .text-muted;
+  @extend small;
+  text-align: center;
 }
 
 .dropdown-menu {
@@ -136,6 +150,11 @@ form {
   h5 {
     margin-top: 1em;
   }
+  .close {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+  }
 }
 
 .card {
@@ -169,12 +188,27 @@ form {
     padding: .5em;
     border: 1px rgba(0, 0, 0, 0.125) solid !important;
     margin-right: 1em !important;
+    position: relative;
     img {
       height: 1.5em;
       opacity: 0.7;
       &:hover {
         opacity: 1;
       }
+    }
+    span {
+      display: none;
+    }
+    &:hover span, &:focus span {
+      display: inline;
+      position: absolute;
+      line-height: initial;
+      top: 100%;
+      left: 50%;
+      white-space: nowrap;
+      transform: translateX(-50%);
+      font-size: .8em;
+      z-index: 1;
     }
   }
 }

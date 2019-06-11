@@ -31,7 +31,7 @@
 <script>
   import SearchForm from './search-form.vue'
   import ResultList from './result-list.vue'
-  import 'url-polyfill'  // can be removed when core-js upgraded to 3.0
+  import {encodeQueryData} from '../utils'
 
   export default {
     beforeMount: function () {
@@ -291,12 +291,6 @@
         });
       },
 
-      encodeQueryData: function(data) {
-        /* encodes data as a query parameter string */
-        const searchParams = new URLSearchParams();
-        Object.keys(data).forEach(key => searchParams.append(key, data[key]));
-        return searchParams.toString();
-      },
       assembleUrl: function () {
         /* assembles and returns URL */
         const params = {
@@ -313,7 +307,7 @@
           }
         });
 
-        return `${this.urls.api_root}${this.endpoint}/?${this.encodeQueryData(params)}`;
+        return `${this.urls.api_root}${this.endpoint}/?${encodeQueryData(params)}`;
       }
     }
   }
