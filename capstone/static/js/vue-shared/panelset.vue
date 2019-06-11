@@ -21,16 +21,35 @@
   export default {
     components: {
       PanelsetButton: Vue.component('panelset-button', {
-        props: ['panelId', 'currentPanel'],
+        props: ['panelId', 'currentPanel', 'title'],
         template: `
           <button class="btn-secondary"
+                  :id="\`\${panelId}PanelButton\`"
                   type="button"
-                  @click="$parent.currentPanel = (currentPanel === panelId?null:panelId)"
+                  @click="onClick"
                   :aria-expanded="currentPanel === panelId"
                   :aria-controls="currentPanel === panelId ? \`\${panelId}Panel\` : false">
             <slot></slot>
           </button>
-        `
+        `,
+        methods: {
+          onClick() {
+            if (this.currentPanel === this.panelId){
+              this.$parent.currentPanel = null;
+            } else {
+              this.$parent.currentPanel = this.panelId;
+              // focus on first element
+              Vue.nextTick().then(() => {
+                const firstFocus = document.getElementById(
+                  `${this.panelId}Panel`
+                ).querySelectorAll(
+                  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                )[0];
+                firstFocus.focus();
+              });
+            }
+          },
+        }
       }),
       PanelsetPanel: Vue.component('panelset-panel', {
         props: ['panelId', 'currentPanel'],
@@ -39,19 +58,32 @@
                :id="\`\${panelId}Panel\`"
                v-if="currentPanel === panelId"
                tabindex="-1"
-               @keydown.esc="$parent.currentPanel = null">
+               @keydown.esc="closeButtonClick">
             <div class="card-body">
+              <slot></slot>
               <button type="button"
-                      @click="$parent.currentPanel = null"
-                      class="close h40.7em "
+                      @click="closeButtonClick"
+                      class="close"
+                      @blur.prevent="closeButtonBlur"
                       :aria-controls="\`\${panelId}Panel\`"
-                      aria-label="Close">
+                      :aria-label="\`close \${panelId} panel\`">
                 <span aria-hidden="true">&times;</span>
               </button>
-              <slot></slot>
             </div>
           </div>
         `,
+        methods: {
+          focusOnButton() {
+            document.getElementById(`${this.panelId}PanelButton`).focus();
+          },
+          closeButtonClick() {
+            this.$parent.currentPanel = null;
+            this.focusOnButton();
+          },
+          closeButtonBlur() {
+            this.focusOnButton();
+          },
+        }
       }),
     },
     data: function () {

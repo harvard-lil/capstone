@@ -8,7 +8,23 @@
         of words and phrases through time, similar to the Google Ngram Viewer.
       </p>
     </div>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" class="d-flex flex-column">
+
+      <!-- example links -- visually moved to end so dom order makes more sense for screen readers -->
+      <div class="row order-3">
+        <div class="col-12 description small">
+          Example searches:
+          <ul class="example-link-list">
+            <li><example-link query="piracy"/> <span aria-hidden="true"> / </span> </li>
+            <li><example-link query="he said, she said"/> <span aria-hidden="true"> / </span> </li>
+            <li><example-link query="ride a *"/> <span aria-hidden="true"> / </span> </li>
+            <li><example-link query="me: lobster, cal: gold, tex: cowboy"/> <span aria-hidden="true"> / </span> </li>
+            <li><example-link query="*: gold"/> <span aria-hidden="true"> / </span> </li>
+            <li><a href="#" @click.prevent="clickHelpButton">more ...</a></li>
+          </ul>
+        </div>
+      </div>
+
       <div class="form-row query-row">
         <div class="col pr-0">
           <input class="text-to-graph"
@@ -16,35 +32,19 @@
                  ref="textToGraph"
                  aria-label="terms to graph">
         </div>
-        <loading-button :showLoading="showLoading" class="col-auto pl-0">Graph</loading-button>
+        <loading-button :showLoading="showLoading" class="col-auto pl-0">Search</loading-button>
         <div class="col-auto">
-          <button class="btn-secondary "
-                  type="button"
-                  ref="helpButton"
-                  data-toggle="collapse"
-                  data-target="#helpPanel"
-                  aria-expanded="false"
-                  aria-controls="helpPanel">
+          <panelset-button panel-id="help"
+                           :current-panel="currentPanel"
+                           title="Advanced search tips"
+                           aria-label="advanced search tips">
             ADVANCED
-          </button>
+          </panelset-button>
         </div>
       </div>
-      <div class="collapse card"
-           id="helpPanel"
-           tabindex="-1"
-           @keydown.esc="$refs.helpButton.click()"
-           @click="helpLinkClicked"
-      >
-        <div class="card-body">
-          <button type="button"
-                  class="close h40.7em"
-                  data-toggle="collapse"
-                  data-target="#helpPanel"
-                  aria-controls="helpPanel"
-                  aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-
+      <panelset-panel panel-id="help"
+                      :current-panel="currentPanel">
+        <div @click="helpLinkClicked">
           <h5>Search tips</h5>
           <p>
             Search for phrases of one to three words. Multiple phrases can be separated by commas. Do not use quotes.
@@ -87,29 +87,18 @@
 
           <h5 class="card-title">Jurisdiction codes</h5>
           <div class="row">
-            <div class="col-4"
-                 v-for="jurisdiction in jurisdictions" :key="jurisdiction[0]">
-              <p>
-                {{jurisdiction[1]}}: "<a
-                      :href="`?q=${jurisdiction[0]}}: `"
-                      @click.prevent="appendJurisdictionCode(jurisdiction[0])">
-                {{jurisdiction[0]}}:</a>"
-              </p>
-            </div>
+          <div class="col-4"
+               v-for="jurisdiction in jurisdictions" :key="jurisdiction[0]">
+            <p>
+              {{jurisdiction[1]}}: "<a
+                    :href="`?q=${jurisdiction[0]}}: `"
+                    @click.prevent="appendJurisdictionCode(jurisdiction[0])">
+              {{jurisdiction[0]}}:</a>"
+            </p>
           </div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-12 description small">
-          Example searches:
-          <example-link query="piracy"/> /
-          <example-link query="he said, she said"/> /
-          <example-link query="ride a *"/> /
-          <example-link query="me: lobster, cal: gold, tex: cowboy"/> /
-          <example-link query="*: gold"/> /
-          <a href="#" @click.prevent="$refs.helpButton.click()">more ...</a>
         </div>
-      </div>
+      </panelset-panel>
     </form>
 
     <div class="row" v-if="errors.length">
@@ -121,16 +110,20 @@
     <div v-if="chartData.datasets.length > 0" class="row graph-menu">
       <div class="col-auto ml-auto">
         <panelset-button panel-id="options" :current-panel="currentPanel" title="Customize">
-          <img :src="`${urls.static}img/icons/settings.svg`" alt="Customize graph">
+          <img :src="`${urls.static}img/icons/settings.svg`">
+          <span>Customize graph</span>
         </panelset-button>
         <panelset-button panel-id="table" :current-panel="currentPanel" title="Table view">
-          <img :src="`${urls.static}img/icons/view_list.svg`" alt="Table view">
+          <img :src="`${urls.static}img/icons/view_list.svg`">
+          <span>Table view</span>
         </panelset-button>
         <panelset-button panel-id="cite" :current-panel="currentPanel" title="Cite">
-          <img :src="`${urls.static}img/icons/school.svg`" alt="Cite graph">
+          <img :src="`${urls.static}img/icons/school.svg`">
+          <span>Cite graph</span>
         </panelset-button>
         <panelset-button panel-id="download" :current-panel="currentPanel" title="Download">
-          <img :src="`${urls.static}img/icons/download.svg`" alt="Download">
+          <img :src="`${urls.static}img/icons/download.svg`">
+          <span>Download</span>
         </panelset-button>
       </div>
     </div>
@@ -297,6 +290,10 @@
         >Download as an image</a>
       </panelset-panel>
     </div> <!-- /collapsePanels -->
+    <div class="sr-only sr-only-focusable graph-keyboard-instructions" tabindex="0">
+      <strong>Keyboard controls:</strong> with the graph selected, use up and down arrows to select terms, left and right to select points,
+      and enter key to enable or disable selected term.
+    </div>
     <div class="graph">
       <div class="container graph-container"
            @keydown="chartKeyDown"
@@ -304,7 +301,8 @@
         <line-example :chartData="chartData"
                       :options="chartOptions"
                       :styles="chartStyles"
-                      :aria-label="`Graph of '${textToGraph}' between ${minYear} and ${maxYear}`"
+                      :aria-label="`Graph of '${textToGraph}' between ${minYear} and ${maxYear}. See table view for details.`"
+                      aria-describedby="tablePanelButton"
                       role="img"
                       ref="chart"/>
       </div>
@@ -342,12 +340,14 @@
   import Vue from 'vue';
   import VueSlider from 'vue-slider-component';
   import 'vue-slider-component/theme/default.css';
+  import {encodeQueryData} from '../utils';
 
   // math helpers
   const mod = (n, m) => ((n % m) + m) % m;  // mod function that works correctly with negative numbers
   const max = Math.max;
   const min = Math.min;
   const average = (items) => items.reduce((a, b) => a + b) / items.length;
+  const deepCopy = (value) => JSON.parse(JSON.stringify(value));
 
   export default {
     name: 'Main',
@@ -478,6 +478,7 @@
         currentTab: null,
         currentLine: null,
         currentPoint: null,
+        currentHelpPanel: null,
         chartHeight: chartHeight,
         chartData: {datasets: []},
         chartNeedsRerender: false,
@@ -505,6 +506,7 @@
         chartOptions: {
           responsive: true,
           maintainAspectRatio: false,
+          // onClick: this.chartOnClick,
           legend: {
             labels: {
               boxWidth: 20,
@@ -557,7 +559,7 @@
       };
       // add each urlValues entry to data
       for (const [k, v] of Object.entries(urlValues))
-        out[k] = v['default'];
+        out[k] = deepCopy(v['default']);
       return out;
     },
     computed: {
@@ -572,7 +574,7 @@
         */
         const countType = this.countType === "count" ? "instances" : "cases";
         if (this.percentOrAbs === "percent") {
-          return `${value ? value.toPrecision(2) : 0}% of ${countType}`;
+          return `${value === 0 ? 0 : value === 100 ? 100 : value.toPrecision(2)}% of ${countType}`;
         } else if (this.smoothingWindow) {
           return `about ${value < 10 ? value.toPrecision(2) : Math.round(value)} ${countType} per year`;
         } else {
@@ -617,15 +619,13 @@
         /* set query params based on data value */
         const config = this.urlValues[attr];
         let value = this[attr];
-        const query = JSON.parse(JSON.stringify(this.$route.query));  // deep copy
-        const isDefault = config.isDefault ? config.isDefault(value) : config.default === value;
+        const query = deepCopy(this.$route.query);
+        const toParam = config.toParam || ((v) => v);
+        const isDefault = config.isDefault ? config.isDefault(value) : toParam(config.default) === toParam(value);
         if (isDefault)
           delete query[config.param];
-        else {
-          if (config.toParam)
-            value = config.toParam(value);
-          query[config.param] = value;
-        }
+        else
+          query[config.param] = toParam(value);
         this.$router.replace({query});
       },
       textToGraphUpdated() {
@@ -653,8 +653,9 @@
 
             // parse jurisdiction prefix
             let jursParams = "";
+            let jur;
             if (firstWord.endsWith(':')) {
-              const jur = firstWord.slice(0, -1);
+              jur = firstWord.slice(0, -1);
               if (!this.jurisdictionLookup[jur]){
                 this.errors.push(`Unknown jurisdiction "${jur}". Options are: ${Object.keys(this.jurisdictionLookup)}`);
                 return null;
@@ -683,7 +684,11 @@
                   this.errors.push(`"${term}" appears fewer than 100 times in our corpus.`);
                   return null;
                 }
-                return resp.results;
+                // pass search terms through for later click-to-search
+                const searchParams = {search: `"${term}"`};
+                if (jur)
+                  searchParams.jurisdiction = jur;
+                return {results: resp.results, searchParams};
               })
           })
         ).then((results) => {
@@ -727,7 +732,7 @@
         for (const [term, rawData] of Object.entries(this.rawData.results)) {
 
           // apply percentOrAbs and countType settings
-          let data = rawData.map((year) => {
+          let data = rawData.data.map((year) => {
             if (year === null) return 0;
             if (this.percentOrAbs === "absolute") return year[this.countType][0];
             return year[this.countType][0]/year[this.countType][1]*100;
@@ -799,7 +804,7 @@
         for (const result of apiResults) {
           if (result === null)
             continue;
-          for (const [gram, jurs] of Object.entries(result)) {
+          for (const [gram, jurs] of Object.entries(result.results)) {
             for (const [jurName, jurData] of Object.entries(jurs)) {
               const years = new Array(this.maxPossible + 1).fill(null);
               for (const yearData of jurData) {
@@ -813,14 +818,17 @@
                   maxYear = year;
                 years[year] = yearData;
               }
-              results[(jurName === "total" ? "" : this.jurisdictionLookup[jurName] + ": ") + gram] = years;
+              results[(jurName === "total" ? "" : this.jurisdictionLookup[jurName] + ": ") + gram] = {
+                data: years,
+                searchParams: result.searchParams,
+              };
             }
           }
         }
         minYear = max(minYear, this.minPossible);
         maxYear = min(maxYear, this.maxPossible);
         for (const key of Object.keys(results)){
-          results[key] = results[key].slice(minYear, maxYear+1);
+          results[key].data = results[key].data.slice(minYear, maxYear+1);
         }
         // set a random colorOffset for this response, so colors change on each request
         const colorOffset = Math.floor(Math.random() * this.colors.length);
@@ -915,6 +923,21 @@
         else
           this.deselectedTerms.splice(index, 1);
       },
+      chartOnClick(e, targets) {
+        if (!targets.length)
+          return;
+        const chart = this.$refs.chart.$data._chart;
+        const point = chart.getElementAtEvent(e)[0];
+        const year = this.chartData.labels[point._index];
+        const term = this.chartData.datasets[point._datasetIndex].label;
+        const searchParams = {
+          ...this.rawData.results[term].searchParams,
+          decision_date_min: `${year}-01-01`,
+          decision_date_max: `${year}-12-31`,
+        };
+        const url = `${this.urls.search_page}?${encodeQueryData(searchParams)}`;
+        window.open(url, '_blank');
+      },
       beforeDraw(chart) {
         /* draw the chart background (white background and credit line) */
         const ctx = chart.chart.ctx;
@@ -938,9 +961,13 @@
         if (newHeight !== this.chartStyles.height)
           this.chartStyles.height = newHeight;
       },
+      clickHelpButton() {
+        document.getElementById('helpPanelButton').click();
+      },
       helpLinkClicked(event) {
+        /* hide the help panel when a link inside is clicked */
         if (event.target.tagName === "A")
-          this.$refs.helpButton.click();
+          this.clickHelpButton();
       }
     },
   }
