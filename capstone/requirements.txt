@@ -243,9 +243,9 @@ django-storages==1.6.6 \
 django-webpack-loader==0.6.0 \
     --hash=sha256:60bab6b9a037a5346fad12d2a70a6bc046afb33154cf75ed640b93d3ebd5f520 \
     --hash=sha256:970b968c2a8975fb7eff56a3bab5d0d90d396740852d1e0c50c5cfe2b824199a
-django==2.2.1 \
-    --hash=sha256:6fcc3cbd55b16f9a01f37de8bcbe286e0ea22e87096557f1511051780338eaea \
-    --hash=sha256:bb407d0bb46395ca1241f829f5bd03f7e482f97f7d1936e26e98dacb201ed4ec
+django==2.2.2 \
+    --hash=sha256:753d30d3eb078064d2ddadfea65083c9848074a7f93d7b4dc7fa6b1380d278f5 \
+    --hash=sha256:7cb67e8b934fab23b6daed7144da52e8a25a47eba7f360ca43d2b448506b01ad
 djangorestframework-filters==1.0.0.dev0 \
     --hash=sha256:d53692f9f0dfcdc1df4e890787f7212c3602476b85faffdefec02e2bc386c5b6 \
     --hash=sha256:dfb58706f5f00ce72a01968d99fcc3e500bdeaaa275568fd60ae868bf2b90aad
@@ -482,10 +482,6 @@ paramiko==2.4.2 \
     --hash=sha256:3c16b2bfb4c0d810b24c40155dbfd113c0521e7e6ee593d704e84b4c658a1f3b \
     --hash=sha256:a8975a7df3560c9f1e2b43dc54ebd40fd00a7017392ca5445ce7df409f900fcb \
     # via fabric3
-pathlib2==2.3.3 \
-    --hash=sha256:25199318e8cc3c25dcb45cbe084cc061051336d5a9ea2a12448d3d8cb748f742 \
-    --hash=sha256:5887121d7f7df3603bca2f710e7219f3eca0eb69e0b7cc6e0a022e155ac931a7 \
-    # via pytest
 pbr==5.1.1 \
     --hash=sha256:f59d71442f9ece3dffc17bc36575768e1ee9967756e6b6535f0ee1f0054c3d68 \
     --hash=sha256:f6d5b23f226a2ba58e14e49aa3b1bfaf814d0199144b95d78458212444de1387 \
@@ -782,7 +778,7 @@ singledispatch==3.4.0.3 \
 six==1.12.0 \
     --hash=sha256:3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c \
     --hash=sha256:d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73 \
-    # via bcrypt, cryptography, django-elasticsearch-dsl-drf, django-extensions, docker, docker-pycreds, drf-yasg, elasticsearch-dsl, fabric3, faker, libsass, mock, more-itertools, moto, nltk, pathlib2, pip-tools, pynacl, pytest, pytest-xdist, python-dateutil, python-jose, responses, singledispatch, swagger-spec-validator, websocket-client
+    # via bcrypt, cryptography, django-elasticsearch-dsl-drf, django-extensions, docker, docker-pycreds, drf-yasg, elasticsearch-dsl, fabric3, faker, libsass, mock, more-itertools, moto, nltk, pip-tools, pynacl, pytest, pytest-xdist, python-dateutil, python-jose, responses, singledispatch, swagger-spec-validator, websocket-client
 soupsieve==1.7.3 \
     --hash=sha256:466910df7561796a60748826781ebe9a888f7a1668a636ae86783f44d10aae73 \
     --hash=sha256:87db12ae79194f0ff9808d2b1641c4f031ae39ffa3cab6b907ea7c1e5e5ed445 \
