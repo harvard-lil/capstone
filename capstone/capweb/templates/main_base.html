@@ -70,7 +70,7 @@
 
     {# if a stylesheet has to import base.scss, it should override this block instead of going in extra_head to avoid double import #}
     {% block base_css %}{% stylesheet "base" %}{% endblock %}
-    {% render_bundle 'chunk-vendors' %}
+    {% render_bundle 'chunk-common' %}
     {% render_bundle 'base' %}
     {% block extra_head %}{% endblock %}
   </head>
