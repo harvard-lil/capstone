@@ -3,7 +3,7 @@
     <div class="page-title">
       <h1>Historical Trends</h1>
       <p>
-        The <a href="/">Caselaw Access Project</a> collects 360 years of United States caselaw from the Harvard Law
+        The <a href="/">Caselaw Access Project</a> includes over 6 million U.S. legal cases from the Harvard Law
         School Library — about 12 billion words in all. Our Historical Trends tool graphs the frequency
         of words and phrases through time, similar to the Google Ngram Viewer.
       </p>
@@ -12,7 +12,7 @@
       <div class="form-row query-row">
         <div class="col pr-0">
           <input class="text-to-graph"
-                 v-model="textToGraph"
+                 :value="textToGraph"
                  ref="textToGraph"
                  aria-label="terms to graph">
         </div>
@@ -120,17 +120,17 @@
 
     <div v-if="chartData.datasets.length > 0" class="row graph-menu">
       <div class="col-auto ml-auto">
-        <panelset-button panel-id="options" :current-panel="currentPanel" aria-label="Customize graph display" title="Customize">
-          <img :src="`${urls.static}img/icons/settings.svg`">
+        <panelset-button panel-id="options" :current-panel="currentPanel" title="Customize">
+          <img :src="`${urls.static}img/icons/settings.svg`" alt="Customize graph">
         </panelset-button>
-        <panelset-button panel-id="table" :current-panel="currentPanel" aria-label="View as table" title="Table view">
-          <img :src="`${urls.static}img/icons/view_list.svg`">
+        <panelset-button panel-id="table" :current-panel="currentPanel" title="Table view">
+          <img :src="`${urls.static}img/icons/view_list.svg`" alt="Table view">
         </panelset-button>
-        <panelset-button panel-id="cite" :current-panel="currentPanel" aria-label="Cite graph" title="Cite">
-          <img :src="`${urls.static}img/icons/school.svg`">
+        <panelset-button panel-id="cite" :current-panel="currentPanel" title="Cite">
+          <img :src="`${urls.static}img/icons/school.svg`" alt="Cite graph">
         </panelset-button>
-        <panelset-button panel-id="download" :current-panel="currentPanel" aria-label="Download graph" title="Download">
-          <img :src="`${urls.static}img/icons/download.svg`">
+        <panelset-button panel-id="download" :current-panel="currentPanel" title="Download">
+          <img :src="`${urls.static}img/icons/download.svg`" alt="Download">
         </panelset-button>
       </div>
     </div>
@@ -140,18 +140,6 @@
       <!-- customize panel -->
       <panelset-panel panel-id="options" :current-panel="currentPanel">
         <h5>Customize graph display</h5>
-        <div class="form-group">
-          <label for="min-year">Year range: from</label>
-          <input id="min-year"
-                 v-model.lazy.number="minYear"
-                 type="number"
-                 min="1640" max="2018"/>
-          <label for="max-year"> To</label>
-          <input id="max-year"
-                 v-model.lazy.number="maxYear"
-                 type="number"
-                 min="1640" max="2018"/>
-        </div>
         <fieldset class="form-group" aria-describedby="percentOrAbsHelpText">
           <p id="percentOrAbsHelpText" class="form-text">
             Show count as a percentage of all grams for the year, or an absolute number?
@@ -310,11 +298,36 @@
       </panelset-panel>
     </div> <!-- /collapsePanels -->
     <div class="graph">
-      <div class="container graph-container">
+      <div class="container graph-container"
+           @keydown="chartKeyDown"
+           tabindex="0">
         <line-example :chartData="chartData"
                       :options="chartOptions"
                       :styles="chartStyles"
+                      :aria-label="`Graph of '${textToGraph}' between ${minYear} and ${maxYear}`"
+                      role="img"
                       ref="chart"/>
+      </div>
+      <div v-if="chartData.datasets.length > 0" class="row zoom-row">
+        <div class="col-auto mr-2">years</div>
+        <input id="min-year"
+               class="col-auto"
+               aria-label="start year"
+               v-model.lazy.number="minYear"
+               type="number"
+               min="1640" max="2018"/>
+        <vue-slider v-model="yearSlider"
+                    class="col mr-3"
+                    :enable-cross="false"
+                    :min="minPossible"
+                    :max="maxPossible"
+        />
+        <input id="max-year"
+               class="col-auto"
+               aria-label="end year"
+               v-model.lazy.number="maxYear"
+               type="number"
+               min="1640" max="2018"/>
       </div>
     </div>
   </div>
@@ -327,6 +340,14 @@
   import debounce from 'lodash.debounce';
   import Chart from 'chart.js';
   import Vue from 'vue';
+  import VueSlider from 'vue-slider-component';
+  import 'vue-slider-component/theme/default.css';
+
+  // math helpers
+  const mod = (n, m) => ((n % m) + m) % m;  // mod function that works correctly with negative numbers
+  const max = Math.max;
+  const min = Math.min;
+  const average = (items) => items.reduce((a, b) => a + b) / items.length;
 
   export default {
     name: 'Main',
@@ -334,6 +355,7 @@
     components: {
       LineExample,
       LoadingButton,
+      VueSlider,
       ExampleLink: Vue.component('example-link', {
         template: `<router-link class="example-link" :to="\`?q=\${query}\`">{{query}}</router-link>`,
         props: ['query'],
@@ -351,43 +373,96 @@
     },
     mounted: function () {
       /* Read url state when first loaded. */
-      this.handleRouteUpdate(this.$route);
+      const route = this.$route;
+      if (route.query.ny)
+        this.preserveMinYear = true;
+      if (route.query.xy)
+        this.preserveMaxYear = true;
+      this.handleRouteUpdate(route);
+      // render default search manually if rendering won't be prompted by URL value
+      if (!route.query.q)
+        this.textToGraphUpdated();
     },
     watch: {
       /* Read url state on change. */
       '$route': function (route, oldRoute) {
         this.handleRouteUpdate(route, oldRoute);
       },
-      percentOrAbs: function (newval) {
-        this.setNewQueries("percentOrAbs", newval);
+      textToGraph() {
+        this.setUrlParam("textToGraph");
+        this.textToGraphUpdated();
       },
-      countType: function (newval) {
-        this.setNewQueries("countType", newval);
+      percentOrAbs: function () {
+        this.setUrlParam("percentOrAbs");
+        this.graphResults();
       },
-      sameYAxis: function (newval) {
-        this.setNewQueries("sameYAxis", newval);
+      countType: function () {
+        this.setUrlParam("countType");
+        this.graphResults();
       },
-      minYear: function (newval) {
-        this.setNewQueries("minYear", newval);
+      sameYAxis: function () {
+        this.setUrlParam("sameYAxis");
+        this.graphResults();
       },
-      maxYear: function (newval) {
-        this.setNewQueries("maxYear", newval);
+      minYear: function () {
+        this.clampYears();
+        this.yearSlider = [this.minYear, this.maxYear];
+        this.setUrlParam("minYear");
+        this.graphResults();
       },
-      smoothingFactor: function(newval) {
-        this.setNewQueries("smoothingFactor", newval);
+      maxYear: function () {
+        this.clampYears();
+        this.yearSlider = [this.minYear, this.maxYear];
+        this.setUrlParam("maxYear");
+        this.graphResults();
+      },
+      yearSlider(newval) {
+        [this.minYear, this.maxYear] = newval;
+      },
+      smoothingFactor: function() {
+        this.setUrlParam("smoothingFactor");
+        this.graphResults();
+      },
+      deselectedTerms: function() {
+        this.setUrlParam("deselectedTerms");
+        this.graphResults();
+      },
+      currentLine() {
+        this.selectLine();
+      },
+      currentPoint() {
+        this.selectPoint();
       },
     },
     data: function () {
       const chartHeight = 400;
+      // configure all the data values that have their state stored in the URL
       const urlValues = {
-        percentOrAbs: "percent",
-        countType: "doc_count",
-        sameYAxis: true,
-        minYear: 1800,
-        maxYear: 2018,
-        smoothingFactor: 2,
+        textToGraph: {param: "q", default: "apple pie, baseball"},
+        smoothingFactor: {param: "sf", default: 2},
+        maxYear: {
+          param: "xy",
+          default: 2018,
+          toValue: this.clampYear,
+          isDefault: (value) => this.rawData && value === this.rawData.maxYear,
+        },
+        minYear: {
+          param: "ny",
+          default: 1800,
+          toValue: this.clampYear,
+          isDefault: (value) => this.rawData && value === this.rawData.minYear,
+        },
+        sameYAxis: {param: "sy", default: true},
+        countType: {param: "ct", default: "doc_count"},
+        percentOrAbs: {param: "pa", default: "percent"},
+        deselectedTerms: {
+          param: "dt",
+          default: [],
+          toValue: (value) => value.split(","),
+          toParam: (value) => value.join(","),
+        },
       };
-      return {
+      const out = {
         // citation stuff
         baseUrl: window.location.origin + this.$router.options.base,
         currentYear: new Date().getFullYear(),
@@ -397,17 +472,19 @@
         author: "Harvard University",
         publication: "Caselaw Access Project Historical Trends",
 
-        defaultUrlValues: urlValues,
-        ...urlValues,
+        urlValues,
+        yearSlider: [urlValues.minYear.default, urlValues.maxYear.default],
 
         currentTab: null,
+        currentLine: null,
+        currentPoint: null,
         chartHeight: chartHeight,
         chartData: {datasets: []},
         chartNeedsRerender: false,
         rawData: null,
         textToGraph: "apple pie, baseball",
-        minPossible: 1640,
-        maxPossible: 2018,
+        minPossible: urlValues.minYear.default,
+        maxPossible: urlValues.maxYear.default,
         smoothingWindow: 0,
         previousSameYAxis: true,
         jurisdictions: [],
@@ -423,6 +500,8 @@
         pointStyles: ['circle', 'cross', 'crossRot', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'],
         errors: [],
         showLoading: false,
+        preserveMinYear: false,
+        preserveMaxYear: false,
         chartOptions: {
           responsive: true,
           maintainAspectRatio: false,
@@ -430,7 +509,8 @@
             labels: {
               boxWidth: 20,
               usePointStyle: true,
-            }
+            },
+            onClick: this.legendItemOnClick,
           },
           layout: {
             padding: {
@@ -461,8 +541,8 @@
                 const label = tooltipItem[0].label;
                 if (!this.smoothingWindow)
                   return label;
-                const startRange = Math.max(data.labels[0], Number(label)-this.smoothingWindow);
-                const endRange = Math.min(data.labels[data.labels.length-1], Number(label)+this.smoothingWindow);
+                const startRange = max(data.labels[0], Number(label)-this.smoothingWindow);
+                const endRange = min(data.labels[data.labels.length-1], Number(label)+this.smoothingWindow);
                 return `${startRange}-${endRange}`;
               },
               label: (tooltipItem, data) => {
@@ -474,7 +554,11 @@
         chartStyles: {
           height: `${chartHeight}px`,
         }
-      }
+      };
+      // add each urlValues entry to data
+      for (const [k, v] of Object.entries(urlValues))
+        out[k] = v['default'];
+      return out;
     },
     computed: {
       currentUrl: function () {
@@ -488,23 +572,21 @@
         */
         const countType = this.countType === "count" ? "instances" : "cases";
         if (this.percentOrAbs === "percent") {
-          return `${value.toPrecision(3)}% of ${countType}`;
+          return `${value ? value.toPrecision(2) : 0}% of ${countType}`;
         } else if (this.smoothingWindow) {
           return `about ${value < 10 ? value.toPrecision(2) : Math.round(value)} ${countType} per year`;
         } else {
           return `${value} ${countType}`;
         }
       },
-      isValidYear(year) {
-        return year === '' || (this.minPossible <= year && year <= this.maxPossible)
+      clampYear(year) {
+        return max(min(Number(year), this.maxPossible), this.minPossible);
       },
       clampYears() {
         /* clamp minYear and maxYear to acceptable values */
-        if (!this.isValidYear(this.minYear))
-          this.minYear = this.minPossible;
-        if (!this.isValidYear(this.maxYear))
-          this.maxYear = this.maxPossible;
-        if (this.maxYear && this.minYear && this.minYear > this.maxYear)
+        this.minYear = this.clampYear(this.minYear);
+        this.maxYear = this.clampYear(this.maxYear);
+        if (this.minYear > this.maxYear)
           [this.minYear, this.maxYear] = [this.maxYear, this.minYear];
       },
       range(start, stop, step = 1) {
@@ -517,55 +599,49 @@
         return terms.map(term => term.trim());
       },
       submitForm() {
-        /* copy the form state into the route to trigger a redraw */
-        const query = {...this.$route.query, q: this.textToGraph};
-        this.showLoading = true;
-        this.$router.push({query});
+        this.textToGraph = this.$refs.textToGraph.value;
       },
-      handleRouteUpdate(route, oldRoute) {  // eslint-disable-line no-unused-vars
-        // autofill form to match URL query
+      handleRouteUpdate(route) {
+        /* set data values based on query params */
         const query = route.query;
-
-        // update vals from query parameters
-        if (query.percentOrAbs)
-          this.percentOrAbs = query.percentOrAbs;
-        if (query.countType)
-          this.countType = query.countType;
-        if (query.sameYAxis)
-          // sameYAxis expects a boolean
-          this.sameYAxis = query.sameYAxis === "true";
-        if (query.minYear)
-          this.minYear = Number(query.minYear);
-        if (query.maxYear)
-          this.maxYear = Number(query.maxYear);
-        if (query.smoothingFactor)
-          this.smoothingFactor = Number(query.smoothingFactor);
+        for (const [attr, config] of Object.entries(this.urlValues)) {
+          let value = query[config.param];
+          if (value) {
+            if (config.toValue)
+              value = config.toValue(value);
+            this[attr] = value;
+          }
+        }
+      },
+      setUrlParam(attr) {
+        /* set query params based on data value */
+        const config = this.urlValues[attr];
+        let value = this[attr];
+        const query = JSON.parse(JSON.stringify(this.$route.query));  // deep copy
+        const isDefault = config.isDefault ? config.isDefault(value) : config.default === value;
+        if (isDefault)
+          delete query[config.param];
+        else {
+          if (config.toParam)
+            value = config.toParam(value);
+          query[config.param] = value;
+        }
+        this.$router.replace({query});
+      },
+      textToGraphUpdated() {
+        /* handle update to this.textToGraph */
 
         // clear existing errors, but don't clear existing graph yet in case we can't draw anything new
         this.errors = [];
 
         // validate input
-        let q = query.q;
-        if (q === undefined){
-          // first load, with no query to run
-          q = this.textToGraph;
-          this.showLoading = true;
-        } else if (q !== this.textToGraph) {
-          this.textToGraph = q;
-          this.showLoading = true;
-        }
-
-        if (!this.showLoading) {
-          this.graphResults();
-          return;
-        }
-
+        let q = this.textToGraph;
         if (!q.trim()){
           this.errors.push("Please enter text");
-          this.showLoading = false;
           return;
         }
         const terms = this.getTerms(q);
+        this.showLoading = true;
 
         Promise.all(
 
@@ -617,6 +693,11 @@
           if (Object.keys(rawData.results).length === 0)
             return;  // no search term found results
           this.rawData = rawData;
+          if (!this.preserveMinYear)
+            this.minYear = this.rawData.minYear;
+          if (!this.preserveMaxYear)
+            this.maxYear = this.rawData.maxYear;
+          this.preserveMinYear = this.preserveMaxYear = false;
           this.graphResults();
         }).catch(response => {
           // error handling
@@ -636,10 +717,11 @@
         const newDatasets = [];
         const dataMinYear = this.rawData.minYear;
         const dataMaxYear = this.rawData.maxYear;
-        const minYear = Math.max(dataMinYear, this.minYear);
-        const maxYear = Math.min(dataMaxYear, this.maxYear);
+        const minYear = this.minYear;
+        const maxYear = this.maxYear;
         let colorIndex = this.rawData.colorOffset;
         let fullChartReset = false;
+        const years = this.range(minYear, maxYear+1);
 
         // prepare each dataset
         for (const [term, rawData] of Object.entries(this.rawData.results)) {
@@ -651,11 +733,15 @@
             return year[this.countType][0]/year[this.countType][1]*100;
           });
 
-          // apply minYear and maxYear settings
-          data = data.slice(minYear-dataMinYear, maxYear-dataMinYear+1);
-
           // apply smoothingFactor setting
-          data = this.movingAverage(data, maxYear-minYear);
+          data = this.movingAverage(data, dataMaxYear-dataMinYear);
+
+          // apply minYear and maxYear settings
+          // the zero arrays and min/max functions handle the case where we are zoomed out or in from the actual data
+          data = Array(max(dataMinYear-minYear, 0)).fill(0).concat(
+            data.slice(max(minYear-dataMinYear, 0), min(maxYear-dataMinYear+1, data.length)),
+            Array(max(maxYear-dataMaxYear, 0)).fill(0),
+          );
 
           // rotate colors
           const color = this.colors[colorIndex++ % this.colors.length];
@@ -674,6 +760,7 @@
             pointRadius: pointRadius,
             pointHitRadius: 5,
             yAxisID: this.sameYAxis ? '0' : newDatasets.length.toString(),
+            hidden: this.deselectedTerms.includes(term),
           });
         }
 
@@ -697,15 +784,15 @@
 
         // show chart
         this.chartData = {
-          labels: this.range(minYear, maxYear+1),
+          labels: years,
           datasets: newDatasets,
         };
 
         // fullChartReset is a workaround for the yAxisID property not being reactive --
         // see https://github.com/apertureless/vue-chartjs/issues/177
         if (fullChartReset)
-          this.$refs.chart.fullRerender(this.chartData, this.chartOptions);
-      }, 200),
+          this.$refs.chart.renderChart(this.chartData, this.chartOptions);
+      }, 50),
       parseResponse(apiResults) {
         const results = {};
         let minYear = null, maxYear = null;
@@ -730,6 +817,8 @@
             }
           }
         }
+        minYear = max(minYear, this.minPossible);
+        maxYear = min(maxYear, this.maxPossible);
         for (const key of Object.keys(results)){
           results[key] = results[key].slice(minYear, maxYear+1);
         }
@@ -743,18 +832,7 @@
         this.smoothingWindow = window;
         if (window < 1)
           return items;
-        return items.map((_, i) => this.average(items.slice(Math.max(i-window, 0), Math.min(i+window, items.length))));
-      },
-      average(items){
-        return items.reduce((a, b) => a + b) / items.length
-      },
-      setNewQueries(newKey, newVal) {
-        const query = Object.assign({}, this.$route.query);
-        if (this.defaultUrlValues[newKey] === newVal)
-          delete query[newKey];
-        else
-          query[newKey] = newVal;
-        this.$router.replace({query});
+        return items.map((_, i) => average(items.slice(max(i-window, 0), min(i+window, items.length))));
       },
       appendJurisdictionCode(code) {
         if (this.textToGraph)
@@ -767,6 +845,75 @@
         const url=this.$refs.chart.$refs.canvas.toDataURL('image/png');
         const tag = event.currentTarget;
         tag.href=url;
+      },
+      chartKeyDown(event) {
+        /* handle keyboard events on chart */
+        switch (event.key) {
+          case "ArrowDown":
+            this.currentLine = mod(this.currentLine === null ? 0 : this.currentLine + 1, this.chartData.datasets.length);
+            break;
+          case "ArrowUp":
+            this.currentLine = mod(this.currentLine === null ? 0 : this.currentLine - 1, this.chartData.datasets.length);
+            break;
+          case "ArrowRight":
+            this.currentPoint = mod(this.currentPoint === null ? 0 : this.currentPoint + 1, this.chartData.labels.length);
+            break;
+          case "ArrowLeft":
+            this.currentPoint = mod(this.currentPoint === null ? 0 : this.currentPoint - 1, this.chartData.labels.length);
+            break;
+          case "Enter":
+            if (this.currentLine !== null)
+              this.clickLegendItem(this.currentLine);
+            break;
+          default:
+            return;
+        }
+        event.preventDefault();
+      },
+      selectLine() {
+        /* handle update to this.currentLine */
+        const datasets = this.chartData.datasets;
+        const index = this.currentLine;
+        for (const [i, dataset] of datasets.entries()) {
+          if (index === i) {
+            dataset.borderWidth = 4;
+          } else {
+            dataset.borderWidth = 2;
+          }
+        }
+        this.chartOptions.animation = {duration: 0};
+        this.$refs.chart.renderChart(this.chartData, this.chartOptions);
+        delete this.chartOptions.animation;
+        if (this.currentPoint !== null)
+          this.selectPoint();
+      },
+      selectPoint() {
+        /* handle update to this.currentPoint */
+        if (this.currentLine === null)
+          this.currentLine = 0;
+        const chart = this.$refs.chart.$data._chart;
+        const meta = chart.getDatasetMeta(this.currentLine);
+        const rect = chart.canvas.getBoundingClientRect();
+        const point = meta.data[this.currentPoint].getCenterPoint();
+        chart.canvas.dispatchEvent(new MouseEvent('mousemove', {
+          clientX: rect.left + point.x,
+          clientY: rect.top + point.y
+        }));
+      },
+      clickLegendItem(datasetIndex) {
+        /* trigger a click event on legend item for given dataset index */
+        const chart = this.$refs.chart.$data._chart;
+        const legend = chart.legend;
+        legend.options.onClick.call(legend, null, legend.legendItems[datasetIndex]);
+      },
+      legendItemOnClick(e, legendItem) {
+        /* handle click on legend item */
+        const term = this.chartData.datasets[legendItem.datasetIndex].label;
+        const index = this.deselectedTerms.indexOf(term);
+        if (index === -1)
+          this.deselectedTerms.push(term);
+        else
+          this.deselectedTerms.splice(index, 1);
       },
       beforeDraw(chart) {
         /* draw the chart background (white background and credit line) */

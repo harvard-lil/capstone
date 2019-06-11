@@ -13,7 +13,8 @@
     "jquery": "^3.3.1",
     "lodash.debounce": "^4.0.8",
     "vue": "^2.5.17",
-    "vue-chartjs": "^3.4.2"
+    "vue-chartjs": "^3.4.2",
+    "vue-slider-component": "^3.0.32"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.7.0",
@@ -45,11 +46,6 @@
     "rules": {},
     "parserOptions": {
       "parser": "babel-eslint"
-    }
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
     }
   },
   "browserslist": [

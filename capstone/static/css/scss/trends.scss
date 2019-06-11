@@ -68,7 +68,7 @@ form {
   margin: 0.8em 0;
 }
 
-.text-to-graph, input[type="number"] {
+.text-to-graph {
   padding-left: 0.5em !important;
   padding-bottom: 0.25em;
   padding-top: 0.25em;
@@ -177,4 +177,10 @@ form {
       }
     }
   }
+}
+
+.zoom-row {
+  align-items: center;
+  background-color: white;
+  padding: .5em;
 }

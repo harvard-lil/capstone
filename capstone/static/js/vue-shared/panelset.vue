@@ -27,7 +27,7 @@
                   type="button"
                   @click="$parent.currentPanel = (currentPanel === panelId?null:panelId)"
                   :aria-expanded="currentPanel === panelId"
-                  :aria-controls="\`\${panelId}Panel\`">
+                  :aria-controls="currentPanel === panelId ? \`\${panelId}Panel\` : false">
             <slot></slot>
           </button>
         `
