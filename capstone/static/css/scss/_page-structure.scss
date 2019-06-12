@@ -227,7 +227,7 @@ section > .content > .row > .content-right {
   flex: 0 0 24%;
   max-width: 24%;
   position: static;
-  padding-top: 5.5rem;
+  padding-top: 4.5rem;
   left: 0;
   top: 0;
   font-family: $font-serif;
@@ -240,8 +240,11 @@ section > .content > .row > .content-right {
     border-bottom: 0;
   }
   .content {
-    position: static;
-    margin: 0 auto;
+    top: 80px;
+    position: -webkit-sticky;
+    position: sticky;
+    height: 90vh;
+    overflow: scroll;
   }
   .list-group-item {
     border: 0;
@@ -264,16 +267,10 @@ section > .content > .row > .content-right {
   @include media-breakpoint-down(md) {
     display: none;
   }
-}
 
-#sidebar-menu.sticky {
-  top: 0;
-  padding-top: 4.5rem;
-  .content {
-    top: 80px;
-    position: -webkit-sticky;
-    position: sticky;
-    height: 90vh;
-    overflow: scroll;
+  .sticky {
+    padding-top: 5.5rem !important;
   }
 }
+
+
