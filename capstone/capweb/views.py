@@ -48,14 +48,12 @@ def index(request):
 
 
 def about(request):
-    base_template_name = "layouts/full.html"
     contributors = get_data_from_lil_site(section="contributors")
     sorted_contributors = {}
     for contributor in contributors:
         sorted_contributors[contributor['sort_name']] = contributor
         if contributor['affiliated']:
             sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
-
     sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
 
     markdown_doc = render_to_string("about.md", {
@@ -74,7 +72,7 @@ def about(request):
     html, toc, meta = render_markdown(markdown_doc, toc_translate)
 
     meta = {k: mark_safe(v) for k, v in meta.items()}
-    return render(request, base_template_name, {
+    return render(request, "layouts/full.html", {
         'main_content': mark_safe(html),
         'sidebar_menu_items': mark_safe(toc),
         **meta,
@@ -129,14 +127,16 @@ def subscribe(request):
 
 
 def tools(request):
-    return render(request, 'tools.html', {
-        'page_image': 'img/og_image/tools.png',
-        'page_title': 'Caselaw Access Project Tools',
-        'page_description': 'The capstone of the Caselaw Access Project is a robust set of tools which facilitate access'
-                            ' to the cases and their associated metadata. We currently offer two ways to access the '
-                            'data: our API, and bulk downloads.',
-        'ngrams': settings.NGRAMS_FEATURE
+    extra_context = {'ngrams': settings.NGRAMS_FEATURE}
+    markdown_doc = render_to_string("tools.md", extra_context, request)
+    html, toc, meta = render_markdown(markdown_doc)
+    meta = {k: mark_safe(v) for k, v in meta.items()}
+    return render(request, "layouts/full.html", {
+        'main_content': mark_safe(html),
+        'sidebar_menu_items': mark_safe(toc),
+        **meta,
     })
+
 
 
 def gallery(request):
