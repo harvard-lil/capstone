@@ -4,7 +4,7 @@
 {% block content %}
   <div class="basic-page">
     <div class="full-content {% block full_content_style %}{% endblock %}">
-      <div class="top-section {% block top_section_style %}{% endblock %}">
+      <div class="top-section {% block top_section_style %}{% endblock %}{% if top_section_style %}{{ top_section_style }}{% endif %}">
         <div class="title-section">
           {% block title_section %}
             <h1 class="page-title" id="overview">
