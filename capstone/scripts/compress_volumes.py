@@ -166,19 +166,24 @@ def jp2_to_jpg_slow(jp2_file, quality=40):
 
         tga_file = os.path.join(tga_dir, "temp.tga")
 
-        subprocess.check_call([
-            "opj_decompress",
-            "-i", jp2_temp_file.name,
-            "-o", tga_file,
-            "-threads", "5",  # on a quick test, 5 threads seems to be fastest
-            "-quiet",  # suppress progress messages
-        ])
+        try:
+            subprocess.check_call([
+                "opj_decompress",
+                "-i", jp2_temp_file.name,
+                "-o", tga_file,
+                "-threads", "5",  # on a quick test, 5 threads seems to be fastest
+                "-quiet",  # suppress progress messages
+            ])
 
-        out = subprocess.check_output([
-            "mozcjpeg",
-            "-quality", str(quality),
-            "-targa", tga_file
-        ])
+            out = subprocess.check_output([
+                "mozcjpeg",
+                "-quality", str(quality),
+                "-targa", tga_file
+            ])
+
+        except subprocess.CalledProcessError as e:
+            print("Error recompressing file %s: %s" % (jp2_file.name, e))
+            raise
 
         return out
 
