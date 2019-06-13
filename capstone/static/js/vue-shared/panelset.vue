@@ -27,6 +27,7 @@
                   :id="\`\${panelId}PanelButton\`"
                   type="button"
                   @click="onClick"
+                  @blur="onBlur"
                   :aria-expanded="currentPanel === panelId"
                   :aria-controls="currentPanel === panelId ? \`\${panelId}Panel\` : false">
             <slot></slot>
@@ -34,20 +35,28 @@
         `,
         methods: {
           onClick() {
-            if (this.currentPanel === this.panelId){
+            if (this.currentPanel === this.panelId) {
               this.$parent.currentPanel = null;
             } else {
               this.$parent.currentPanel = this.panelId;
-              // focus on first element
-              Vue.nextTick().then(() => {
-                const firstFocus = document.getElementById(
-                  `${this.panelId}Panel`
-                ).querySelectorAll(
-                  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-                )[0];
-                firstFocus.focus();
-              });
+              this.focusInPanel();
             }
+          },
+          onBlur() {
+            if (this.currentPanel === this.panelId) {
+              this.focusInPanel();
+            }
+          },
+          focusInPanel(){
+            /* focus on first element inside panel */
+            Vue.nextTick().then(() => {
+              const firstFocus = document.getElementById(
+                `${this.panelId}Panel`
+              ).querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+              )[0];
+              firstFocus.focus();
+            });
           },
         }
       }),
