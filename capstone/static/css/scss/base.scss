@@ -1,5 +1,6 @@
 @import '../_normalize.css';
 @import 'bootstrap/_functions.scss';
+@import 'variables';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
 @import "bootstrap/utilities/display";
@@ -19,7 +20,6 @@
 @import 'bootstrap/transitions';
 @import "bootstrap/type";
 
-@import 'variables';
 @import 'font-styles';
 
 // The stylesheets that build on top of base.scss but should be included in bases.scss

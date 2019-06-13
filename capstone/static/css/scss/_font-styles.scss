@@ -34,6 +34,7 @@ h1, .h1 {
   @include media-breakpoint-down(md) {
     font-size: 3em;
   }
+  line-height: 0.7;
 }
 
 h2, .h2 {
@@ -42,6 +43,7 @@ h2, .h2 {
   @include media-breakpoint-down(md) {
     font-size: 2.3em;
   }
+  line-height: 0.7;
 
 }
 

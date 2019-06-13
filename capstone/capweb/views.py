@@ -129,7 +129,8 @@ def subscribe(request):
 def tools(request):
     extra_context = {'ngrams': settings.NGRAMS_FEATURE}
     markdown_doc = render_to_string("tools.md", extra_context, request)
-    html, toc, meta = render_markdown(markdown_doc)
+    toc_translate = { "The API": "API", }
+    html, toc, meta = render_markdown(markdown_doc, toc_translate)
     meta = {k: mark_safe(v) for k, v in meta.items()}
     return render(request, "layouts/full.html", {
         'main_content': mark_safe(html),
@@ -206,7 +207,7 @@ def api(request):
 
 
 def search_docs(request):
-    return render(request, 'search_docs.html')
+    return render(request, 'search_docs.md')
 
 
 def snippet(request, label):
