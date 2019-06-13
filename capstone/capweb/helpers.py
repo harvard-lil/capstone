@@ -192,8 +192,6 @@ def render_markdown(markdown_doc, link_text_translate=None):
         for original, replacement in link_text_translate.items():
             toc = toc.replace(">{}<".format(original), ">{}<".format(replacement))
     meta = {k:' '.join(v) for k, v in md.Meta.items()}
-    print("\n\n\n\n---->")
-    print(meta)
     return html, toc, meta
 
 class listStyleExtension(Extension):
