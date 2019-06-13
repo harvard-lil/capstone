@@ -1,0 +1,220 @@
+@import "bootstrap/functions";
+@import "bootstrap/variables";
+@import "bootstrap/mixins";
+@import "bootstrap/utilities/align";
+@import "base.scss";
+@import 'footer/yellow';
+
+.basic-page {
+  .main-content {
+    @include media-breakpoint-up(lg) {
+      @include make-col(10);
+    }
+  }
+}
+
+.row {
+  padding-bottom: 0.5em;
+}
+
+.alert-danger {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+label {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  font-weight: $font-weight-bold;
+  margin-right: 0.5em;
+  color: $color-violet-gray-dark;
+}
+
+input[type="number"] {
+  max-width: 20%;
+  min-width: 3.5em;
+  margin-right: .5em;
+}
+
+.btn-secondary {
+  color: $color-violet-gray-dark !important;
+  border: 2px solid $color-violet-gray-dark !important;
+}
+
+.page-title {
+  h1 {
+    font-size: 2em;
+    padding-bottom: 0.5em;
+  }
+}
+
+.description {
+  @extend .text-muted;
+}
+
+.inline-list {
+  display: inline;
+  li {
+    display: inline;
+  }
+}
+.example-link {
+  display: inline-block;
+}
+
+.top-section {
+  padding-top: 0;
+}
+
+form {
+  margin: 0;
+}
+
+.form-group-elements {
+  margin: 0.8em 0;
+}
+
+.text-to-graph {
+  padding-left: 0.5em !important;
+  padding-bottom: 0.25em;
+  padding-top: 0.25em;
+  width: 100%;
+}
+
+.main-content {
+  padding-bottom: 0;
+}
+
+.graph {
+  border: 1px rgba(0, 0, 0, 0.125) solid;
+  background-color: $color-white;
+}
+
+.graph-container {
+  background-color: $color-white;
+}
+
+.graph-keyboard-instructions {
+  background-color: white;
+  @extend .text-muted;
+  @extend small;
+  text-align: center;
+}
+
+.dropdown-menu {
+  padding: 0;
+  border-radius: 0;
+  border: 1px solid $color-violet-gray;
+  width: 100%;
+  max-height: 15em;
+  overflow-y: scroll;
+  z-index: 999;
+  .dropdown-item {
+    color: $color-black;
+    background-color: $color-white;
+    border-bottom: 1px solid $color-gray;
+    text-transform: capitalize;
+    font-size: inherit;
+    font-weight: inherit;
+    &:hover, &:active, &:focus {
+      background-color: $color-yellow;
+    }
+    &.active {
+      background-color: $color-yellow-light;
+    }
+  }
+}
+
+.selected-jur {
+  background-color: $color-violet-gray;
+  color: $color-white;
+  border-radius: 5em;
+  margin: 0.5em;
+  font-size: 0.5em;
+  padding: 0.5em;
+  cursor: pointer;
+  &:hover, &:focus, &:active {
+    background-color: $color-yellow;
+    color: $color-black;
+  }
+
+}
+
+#collapsePanels, #helpPanel{
+  @extend .text-muted;
+  @extend small;
+  p {
+    margin: 0;
+    margin-bottom: .3em;
+  }
+  h5 {
+    margin-top: 1em;
+  }
+  .close {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+  }
+}
+
+.card {
+  background-color: white;
+  border: 1px rgba(0, 0, 0, 0.125) solid;
+}
+
+.cite-formats {
+  font-size: .75em;
+  p {
+    margin-bottom: 1.5em;
+  }
+  dd {
+    line-height: 1.4em;
+  }
+}
+
+.query-row {
+  button {
+    margin: 0 !important;
+  }
+}
+
+.graph-menu {
+  background-color: white;
+  border: 1px rgba(0, 0, 0, 0.125) solid;
+  padding: 0;
+
+  button {
+    line-height: 0;
+    padding: .5em;
+    border: 1px rgba(0, 0, 0, 0.125) solid !important;
+    margin-right: 1em !important;
+    position: relative;
+    img {
+      height: 1.5em;
+      opacity: 0.7;
+      &:hover {
+        opacity: 1;
+      }
+    }
+    span {
+      display: none;
+    }
+    &:hover span, &:focus span {
+      display: inline;
+      position: absolute;
+      line-height: initial;
+      top: 100%;
+      left: 50%;
+      white-space: nowrap;
+      transform: translateX(-50%);
+      font-size: .8em;
+      z-index: 1;
+    }
+  }
+}
+
+.zoom-row {
+  align-items: center;
+  background-color: white;
+  padding: .5em;
+}

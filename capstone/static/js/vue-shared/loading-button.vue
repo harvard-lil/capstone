@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button class="btn-create btn-primary">
+    <button class="btn-create btn-primary d-flex align-items-center">
       <slot></slot>
       <span v-if="showLoading"
             class="spinner-border spinner-border-sm"

@@ -7,6 +7,6 @@ urlpatterns = [
     path('view/reporter/<int:reporter_id>/', views.view_reporter, name='view_reporter'),
     path('view/jurisdiction/<int:jurisdiction_id>/', views.view_jurisdiction, name='view_jurisdiction'),
     path('search/', views.search, name='search'),
-    path('ngrams/', views.ngrams, name='ngrams'),
+    path('trends/', views.trends, name='trends'),
 ]
 

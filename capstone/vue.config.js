@@ -40,7 +40,7 @@ let vueConfig = {
     limericks: 'static/js/generate_limericks.js',
     witchcraft: 'static/js/witchcraft.js',
     search: 'static/js/search.js',
-    ngrams: 'static/js/ngrams.js',
+    trends: 'static/js/trends.js',
   },
 
   configureWebpack: {
@@ -77,12 +77,12 @@ let vueConfig = {
     // copied from node_modules/@vue/cli-service/lib/config/app.js
     config.optimization.splitChunks({
       cacheGroups: {
-        vendors: {
-          name: `chunk-vendors`,
-          test: /[\\/]node_modules[\\/]/,
-          priority: -10,
-          chunks: 'initial'
-        },
+        // vendors: {
+        //   name: `chunk-vendors`,
+        //   test: /[\\/]node_modules[\\/]/,
+        //   priority: -10,
+        //   chunks: 'initial'
+        // },
         common: {
           name: `chunk-common`,
           minChunks: 2,
@@ -91,6 +91,11 @@ let vueConfig = {
           reuseExistingChunk: true
         }
       }
+    });
+
+    // exlude moment.js from chart.js build: https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
+    config.externals({
+      moment: 'moment'
     });
   },
 

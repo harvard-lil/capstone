@@ -62,5 +62,5 @@ def search(request):
 
 
 @password_protected_page('ngrams')
-def ngrams(request):
-    return render(request, "ngrams.html")
+def trends(request):
+    return render(request, "trends.html")
