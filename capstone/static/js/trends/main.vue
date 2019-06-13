@@ -14,7 +14,7 @@
       <div class="row order-3">
         <div class="col-12 description small">
           Example searches:
-          <ul class="example-link-list">
+          <ul class="inline-list">
             <li><example-link query="piracy"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="he said, she said"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="ride a *"/> <span aria-hidden="true"> / </span> </li>
@@ -280,14 +280,22 @@
       </panelset-panel>
 
       <!-- download panel -->
-
       <panelset-panel panel-id="download" :current-panel="currentPanel">
         <h5>Download</h5>
-        <a href="#"
-           download="image.png"
-           @mousedown="setDownloadUrl"
-           @touchstart="setDownloadUrl"
-        >Download as an image</a>
+        <ul class="bullets">
+          <li><strong><a href="#" download="trends.png" @click="imageDownloadClicked" @contextmenu="imageDownloadClicked">Download as an image</a></strong></li>
+          <li><a href="#" download="trends.csv" @click="csvDownloadClicked" @contextmenu="csvDownloadClicked">Download CSV</a> (best for analyzing in Excel)</li>
+          <li><a href="#" download="trends.json" @click="jsonDownloadClicked" @contextmenu="jsonDownloadClicked">Download JSON</a> (best for analyzing from a program)</li>
+        </ul>
+        <p>
+          View the API queries that generated this graph:
+          <ul class="inline-list">
+            <li v-for="(query, index) in currentApiQueries" v-bind:key="query">
+              <a :href="query[1]" target="_blank">{{query[0]}}</a>
+              <span v-if="index !== currentApiQueries.length - 1" aria-hidden="true"> / </span>
+            </li>
+          </ul>
+        </p>
       </panelset-panel>
     </div> <!-- /collapsePanels -->
     <div class="sr-only sr-only-focusable graph-keyboard-instructions" tabindex="0">
@@ -341,6 +349,7 @@
   import VueSlider from 'vue-slider-component';
   import 'vue-slider-component/theme/default.css';
   import {encodeQueryData} from '../utils';
+  import csvStringify from 'csv-stringify/lib/sync';
 
   // math helpers
   const mod = (n, m) => ((n % m) + m) % m;  // mod function that works correctly with negative numbers
@@ -374,10 +383,7 @@
     mounted: function () {
       /* Read url state when first loaded. */
       const route = this.$route;
-      if (route.query.ny)
-        this.preserveMinYear = true;
-      if (route.query.xy)
-        this.preserveMaxYear = true;
+      this.initialQuery = deepCopy(route.query);
       this.handleRouteUpdate(route);
       // render default search manually if rendering won't be prompted by URL value
       if (!route.query.q)
@@ -479,6 +485,7 @@
         currentLine: null,
         currentPoint: null,
         currentHelpPanel: null,
+        currentApiQueries: [],
         chartHeight: chartHeight,
         chartData: {datasets: []},
         chartNeedsRerender: false,
@@ -501,8 +508,7 @@
         pointStyles: ['circle', 'cross', 'crossRot', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'],
         errors: [],
         showLoading: false,
-        preserveMinYear: false,
-        preserveMaxYear: false,
+        initialQuery: null,
         chartOptions: {
           responsive: true,
           maintainAspectRatio: false,
@@ -574,7 +580,7 @@
         */
         const countType = this.countType === "count" ? "instances" : "cases";
         if (this.percentOrAbs === "percent") {
-          return `${value === 0 ? 0 : value === 100 ? 100 : value.toPrecision(2)}% of ${countType}`;
+          return `${!value ? 0 : value === 100 ? 100 : value.toPrecision(2)}% of ${countType}`;
         } else if (this.smoothingWindow) {
           return `about ${value < 10 ? value.toPrecision(2) : Math.round(value)} ${countType} per year`;
         } else {
@@ -628,6 +634,9 @@
           query[config.param] = toParam(value);
         this.$router.replace({query});
       },
+      getApiUrl(endpoint, params) {
+        return `${this.urls.api_root}${endpoint}/?${encodeQueryData(params)}`;
+      },
       textToGraphUpdated() {
         /* handle update to this.textToGraph */
 
@@ -642,6 +651,7 @@
         }
         const terms = this.getTerms(q);
         this.showLoading = true;
+        this.currentApiQueries = [];
 
         Promise.all(
 
@@ -652,10 +662,9 @@
             const [firstWord, ...restWords] = term.split(/\s/);
 
             // parse jurisdiction prefix
-            let jursParams = "";
-            let jur;
+            const params = {};
             if (firstWord.endsWith(':')) {
-              jur = firstWord.slice(0, -1);
+              const jur = firstWord.slice(0, -1);
               if (!this.jurisdictionLookup[jur]){
                 this.errors.push(`Unknown jurisdiction "${jur}". Options are: ${Object.keys(this.jurisdictionLookup)}`);
                 return null;
@@ -664,12 +673,15 @@
                 this.errors.push(`Jurisdiction ${jur} should be followed by a search term.`);
                 return null;
               }
-              jursParams = "&jurisdiction=" + encodeURIComponent(jur);
-              term = restWords.join(' ');
+              params.jurisdiction = jur;
+              params.q = restWords.join(' ');
+            } else {
+              params.q = term;
             }
 
             // fetch results
-            const url = this.urls.api_root + "ngrams/?q=" + encodeURIComponent(term) + jursParams;
+            const url = this.getApiUrl("ngrams", params);
+            this.currentApiQueries.push([term, url]);
             return fetch(url)
 
               // json parse each response
@@ -684,11 +696,7 @@
                   this.errors.push(`"${term}" appears fewer than 100 times in our corpus.`);
                   return null;
                 }
-                // pass search terms through for later click-to-search
-                const searchParams = {search: `"${term}"`};
-                if (jur)
-                  searchParams.jurisdiction = jur;
-                return {results: resp.results, searchParams};
+                return {results: resp.results, params};
               })
           })
         ).then((results) => {
@@ -698,11 +706,18 @@
           if (Object.keys(rawData.results).length === 0)
             return;  // no search term found results
           this.rawData = rawData;
-          if (!this.preserveMinYear)
+
+          // reset (some) graph settings when a new search is run.
+          // we *don't* reset graph settings if this is the first query, and they were set in the URL,
+          // because we want to preserve settings in shared links
+          if (!this.initialQuery || !this.initialQuery[this.urlValues.minYear.param])
             this.minYear = this.rawData.minYear;
-          if (!this.preserveMaxYear)
+          if (!this.initialQuery || !this.initialQuery[this.urlValues.maxYear.param])
             this.maxYear = this.rawData.maxYear;
-          this.preserveMinYear = this.preserveMaxYear = false;
+          if (!this.initialQuery || !this.initialQuery[this.urlValues.deselectedTerms.param])
+            this.deselectedTerms = [];
+          this.initialQuery = null;
+
           this.graphResults();
         }).catch(response => {
           // error handling
@@ -820,7 +835,7 @@
               }
               results[(jurName === "total" ? "" : this.jurisdictionLookup[jurName] + ": ") + gram] = {
                 data: years,
-                searchParams: result.searchParams,
+                params: result.params,
               };
             }
           }
@@ -848,11 +863,36 @@
         this.textToGraph += code + ": ";
         this.$refs.textToGraph.focus();
       },
-      setDownloadUrl(event) {
-        /* when the Download url is clicked/right-clicked/touched, intercept the event and fill in the correct image data for download */
-        const url=this.$refs.chart.$refs.canvas.toDataURL('image/png');
-        const tag = event.currentTarget;
-        tag.href=url;
+      imageDownloadClicked(event) {
+        /* when the Download url is clicked/right-clicked/touched, intercept the event and fill in the correct data for download */
+        const payload = this.$refs.chart.$refs.canvas.toDataURL('image/png');
+        event.currentTarget.href = payload;
+      },
+      jsonDownloadClicked(event) {
+        /* when the Download url is clicked/right-clicked/touched, intercept the event and fill in the correct data for download */
+        let payload = deepCopy(this.rawData);
+        delete payload.colorOffset;
+        payload = "data:application/json;base64," + btoa(JSON.stringify(payload, null, 2));
+        event.currentTarget.href = payload;
+      },
+      csvDownloadClicked(event) {
+        /* when the Download url is clicked/right-clicked/touched, intercept the event and fill in the correct data for download */
+        const results = this.rawData.results;
+        const terms = Object.keys(results);
+        let payload = [];
+        payload.push(["", ...terms.flatMap((term)=>[term, "", "", ""])]);
+        payload.push(["", ...terms.flatMap(()=>["case count", "case denominator", "instance count", "instance denominator"])]);
+        for (const [i, year] of this.chartData.labels.entries()) {
+          payload.push([year, ...terms.flatMap((key)=>{
+            const data = results[key].data[i];
+            if (data === null)
+              return ["", "", "", ""];
+            else
+              return [data.doc_count[0], data.doc_count[1], data.count[0], data.count[1]];
+          })]);
+        }
+        payload = "data:text/csv;base64," + btoa(csvStringify(payload));
+        event.currentTarget.href = payload;
       },
       chartKeyDown(event) {
         /* handle keyboard events on chart */
@@ -930,11 +970,14 @@
         const point = chart.getElementAtEvent(e)[0];
         const year = this.chartData.labels[point._index];
         const term = this.chartData.datasets[point._datasetIndex].label;
+        const params = this.rawData.results[term].params;
         const searchParams = {
-          ...this.rawData.results[term].searchParams,
+          search: `"${params.q}"`,
           decision_date_min: `${year}-01-01`,
           decision_date_max: `${year}-12-31`,
         };
+        if (params.jurisdiction)
+          searchParams.jurisdiction = params.jurisdiction;
         const url = `${this.urls.search_page}?${encodeQueryData(searchParams)}`;
         window.open(url, '_blank');
       },
