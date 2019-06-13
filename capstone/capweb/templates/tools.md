@@ -1,6 +1,7 @@
 {% load static %}
 {% load api_url %}
 title: Tools
+page_image: 'img/og_image/tools.png'
 meta_description: Tools for accessing caselaw
 {% spaceless %}
 {% if ngrams %}
@@ -17,8 +18,9 @@ explainer: The capstone of the Caselaw Access Project is a robust set of tools w
 {% endif %}
 {% endspaceless %}
 top_section_style: bg-black
+row_style: bg-tan
 
-# API {: class="subtitle" }
+# The API {: class="subtitle" }
 Our open-source API is the best option for anybody interested in programmatically accessing our metadata, full-text 
 search, or individual cases.
 
