@@ -586,22 +586,26 @@ def validate_volume(volume_path):
             # check for mismatched files
             orig_xml = volume_storage.contents(volmets_path)
             parsed = parse_xml(orig_xml)
-            volmets_files = set(
-                (
-                    i.children('mets|FLocat').attr(resolve_namespace('xlink|href')),
-                    i.attr('CHECKSUM')
-                ) for i in parsed('mets|file').items()
-            )
+            tar_item_checksum_lookup = dict(tar_items)
+            volmets_files = set()
+            for i in parsed('mets|file').items():
+                file_name = i.children('mets|FLocat').attr(resolve_namespace('xlink|href'))
+                checksum = i.attr('CHECKSUM')
+                # special case -- because of a processing error, pdf files in volmets don't always have checksums
+                # in that case, default the checksum to the actual file checksum so it will match
+                if checksum is None and file_name.endswith('.pdf'):
+                    checksum = tar_item_checksum_lookup.get(file_name)
+                volmets_files.add((file_name, checksum))
 
             # check that all files in METS are expected
             only_in_mets = volmets_files - tar_items
             if only_in_mets:
-                raise ValidationResult("only_in_mets", only_in_mets)
+                raise ValidationResult("only_in_mets", [list(i) for i in only_in_mets])
 
             # check that all files only_in_tar are expected (should be one volmets and one volmets md5)
             only_in_tar = tuple(sorted(item[0].rsplit('_',1)[-1] for item in tar_items - volmets_files))
             if only_in_tar not in top_level_file_sets:
-                raise ValidationResult("only_in_tar", only_in_tar)
+                raise ValidationResult("only_in_tar", list(only_in_tar))
 
             # count suffixes
             suffix_counts = defaultdict(int)
