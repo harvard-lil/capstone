@@ -122,7 +122,7 @@ their example soon.
 # Friends & Partners {: class="subtitle" } 
 
 * The Caselaw Access Project is a [Harvard Law School Library Innovation Lab](https://lil.law.harvard.edu/) Project.
-* LIL is part of the [Harvard Law School Library](https://law.harvard.edu/library){: add_list_class="item-name" }.
+* LIL is part of the [Harvard Law School Library](https://hls.harvard.edu/library){: add_list_class="item-name" }.
 * [Berkman-Klein Center](https://cyber.law.harvard.edu) cooperated with LIL on the Caselaw Access Project.
 * [Ravel Law](https://www.ravellaw.com/) has partnered with the Harvard Law Library and LIL since the beginning of the 
 Caselaw Access Project. Ravel funded the digitization effort and now offers free public access to the entire corpus 
