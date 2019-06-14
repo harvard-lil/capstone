@@ -289,20 +289,28 @@
           <li><a href="#" download="trends.csv" @click="csvDownloadClicked" @contextmenu="csvDownloadClicked">Download CSV</a> (best for analyzing in Excel)</li>
           <li><a href="#" download="trends.json" @click="jsonDownloadClicked" @contextmenu="jsonDownloadClicked">Download JSON</a> (best for analyzing from a program)</li>
         </ul>
-        <p>
-          View the API queries that generated this graph:
+        <div>
+          <p class="d-inline">View the API queries that generated this graph:&nbsp;</p>
           <ul class="inline-list">
             <li v-for="(query, index) in currentApiQueries"> <!-- eslint-disable-line vue/require-v-for-key -->
               <a :href="query[1]" target="_blank">{{query[0]}}</a>
               <span v-if="index !== currentApiQueries.length - 1" aria-hidden="true"> / </span>
             </li>
           </ul>
-        </p>
+        </div>
       </panelset-panel>
     </div> <!-- /collapsePanels -->
-    <div class="sr-only sr-only-focusable graph-keyboard-instructions" tabindex="0">
-      <strong>Keyboard controls:</strong> with the graph selected, use up and down arrows to select terms, left and right to select points,
-      space bar to enable or disable selected term, and enter key to search for example cases.
+    <div class="sr-only sr-only-focusable graph-keyboard-instructions panelset-panel" tabindex="0">
+      <h5>Keyboard controls</h5>
+      <p>With the graph selected:</p>
+      <ul class="bullets">
+        <li>up and down arrows select terms</li>
+        <li>left and right arrows select points</li>
+        <li>space bar enables or disables selected term</li>
+        <li>enter key searches for example cases</li>
+        <li>"s" key enables or disables audio tones</li>
+        <li>"p" key auto plays audio tones</li>
+      </ul>
     </div>
     <div class="graph">
       <div class="container graph-container"
@@ -316,7 +324,7 @@
                       role="img"
                       ref="chart">
         </line-example>
-        <div class="sr-only" aria-live="polite" aria-atomic="true">{{canvasStatus}}</div>
+        <div class="sr-only" aria-live="assertive" aria-atomic="true">{{canvasStatus}}</div>
       </div>
       <div v-if="chartData.datasets.length > 0" class="row zoom-row">
         <div class="col-auto mr-2">years</div>
@@ -345,15 +353,17 @@
 </template>
 
 <script>
-  import LineExample from './LineChart.vue';
-  import LoadingButton from '../vue-shared/loading-button.vue';
-  import Panelset from '../vue-shared/panelset';
-  import debounce from 'lodash.debounce';
   import Chart from 'chart.js';
+  import csvStringify from 'csv-stringify/lib/sync';
+  import debounce from 'lodash.debounce';
+  import Synth from 'tone/Tone/instrument/Synth';
   import Vue from 'vue';
   import VueSlider from 'vue-slider-component';
   import 'vue-slider-component/theme/default.css';
-  import csvStringify from 'csv-stringify/lib/sync';
+
+  import LineExample from './LineChart.vue';
+  import LoadingButton from '../vue-shared/loading-button.vue';
+  import Panelset from '../vue-shared/panelset';
   import SearchResults from './search-results.vue';
   import {getApiUrl, apiQuery} from '../api'
 
@@ -513,6 +523,9 @@
           "rgb(0,146,146)", "rgb(182,109,255)", "rgb(219,109,0)",
         ],
         pointStyles: ['circle', 'cross', 'crossRot', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'],
+        soundsOn: false,
+        soundAutoplay: false,
+        synth: null,
         errors: [],
         showLoading: false,
         initialQuery: null,
@@ -923,10 +936,40 @@
             this.currentPoint |= 0;
             this.searchForPoint(this.currentLine, this.currentPoint);
             break;
+          case "s":
+            this.toggleSoundsOn();
+            break;
+          case "p":
+            this.soundAutoplay = !this.soundAutoplay;
+            if (this.soundAutoplay) {
+              if (!this.soundsOn)
+                this.toggleSoundsOn();
+              this.currentLine |= 0;
+              this.currentPoint |= 0;
+              this.autoplaySound();
+            }
+            break;
           default:
             return;
         }
         event.preventDefault();
+      },
+      toggleSoundsOn() {
+        this.soundsOn = !this.soundsOn;
+        this.setCanvasStatus(`audio tones ${this.soundsOn?"on":"off"}`);
+        if (this.soundsOn)
+          this.synth = new Synth({envelope: {attack: 0.1}}).toMaster();
+      },
+      autoplaySound() {
+        setTimeout(()=>{
+          if (this.soundAutoplay) {
+            if (this.currentPoint < this.chartData.labels.length - 1) {
+              this.currentPoint += 1;
+              this.autoplaySound();
+            } else
+              this.soundAutoplay = false;
+          }
+        }, 100);
       },
       selectLine() {
         /* handle update to this.currentLine */
@@ -959,7 +1002,15 @@
           clientY: rect.top + point.y
         }));
         const dataset = this.chartData.datasets[this.currentLine];
-        this.setCanvasStatus(`${dataset.label} ${this.formatYearRange(this.chartData.labels[this.currentPoint])} ${this.formatValue(dataset.data[this.currentPoint])}`);
+        const value = dataset.data[this.currentPoint];
+        this.setCanvasStatus(`${dataset.label} ${this.formatYearRange(this.chartData.labels[this.currentPoint])} ${this.formatValue(value)}`);
+
+        if (this.soundsOn) {
+          const middleA = 440;
+          const halfStep = 2**(1/12);
+          const halfSteps = value / meta.dataset._scale.max * 36;
+          this.synth.triggerAttackRelease(middleA * halfStep ** halfSteps, .1);
+        }
       },
       setCanvasStatus: debounce(function(status){
         this.canvasStatus = status;
