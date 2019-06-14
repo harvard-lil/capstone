@@ -184,6 +184,8 @@ main {
   background-color: $color-white;
   padding: 1rem;
   font-family: $font-monospace, monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 code {

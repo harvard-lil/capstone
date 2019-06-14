@@ -20,7 +20,7 @@ explainer: The capstone of the Caselaw Access Project is a robust set of tools w
 top_section_style: bg-black
 row_style: bg-tan
 
-# The API {: class="subtitle" }
+# The API {: class="subtitle" data-toc-label='API' }
 Our open-source API is the best option for anybody interested in programmatically accessing our metadata, full-text 
 search, or individual cases.
 

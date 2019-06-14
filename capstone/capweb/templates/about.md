@@ -6,7 +6,7 @@ explainer: The Caselaw Access Project (“CAP”) expands public access to U.S. 
 top_section_style: bg-black
 row_style: bg-tan
 
-# What data do we have? {: class="subtitle" } 
+# What data do we have? {: class="subtitle" data-toc-label='Our Data' } 
 
 CAP includes all official, book-published United States case law — every volume designated as an official report of 
 decisions by a court within the United States.
@@ -45,7 +45,7 @@ API:
 * [Case Count by Jurisdiction]({% static "downloads/cases_by_jurisdiction.tsv" %})
 * [Case Count by Decision Date]({% static "downloads/cases_by_decision_date.tsv" %})
 
-# Digitization Process {: class="subtitle" } 
+# Digitization Process {: class="subtitle" data-toc-label='Digitization' } 
 
 We created this data by digitizing roughly 40 million pages of court decisions contained in roughly 40,000 bound volumes
 owned by the Harvard Law School Library.
@@ -119,7 +119,7 @@ their example soon.
 </ul>
 
 
-# Friends & Partners {: class="subtitle" } 
+# Friends & Partners {: class="subtitle" data-toc-label='Partners' } 
 
 * The Caselaw Access Project is a [Harvard Law School Library Innovation Lab](https://lil.law.harvard.edu/) Project.
 * LIL is part of the [Harvard Law School Library](https://hls.harvard.edu/library){: add_list_class="item-name" }.

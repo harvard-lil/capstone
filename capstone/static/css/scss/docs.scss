@@ -38,6 +38,12 @@ dt {
   margin-top: 2rem;
 }
 
+p.topic-header {
+  margin-top: 2rem;
+  font-weight: bold;
+  margin-bottom: 0px;
+}
+
 lh{
   font-weight: bold;
 }
@@ -62,15 +68,16 @@ dt.example-description {
   font-size: 0.65em;
 }
 
-h5.list-header {
+.list-header {
   font-family: "titillium", "Helvetica", sans-serif;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.9px;
   color: $color-black;
+  font-weight: bold;
 }
 
-li > h5.list-header {
+li > .list-header {
   font-size: 0.9em;
  }
 

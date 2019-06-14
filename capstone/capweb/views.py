@@ -62,14 +62,8 @@ def about(request):
         "email": settings.DEFAULT_FROM_EMAIL
     }, request)
 
-    toc_translate = {
-        "What data do we have?": "Our Data",
-        "Digitization Process": "Digitization",
-        "Friends &amp; Partners": "Partners",
-    }
-
     # render markdown document to html
-    html, toc, meta = render_markdown(markdown_doc, toc_translate)
+    html, toc, meta = render_markdown(markdown_doc)
 
     meta = {k: mark_safe(v) for k, v in meta.items()}
     return render(request, "layouts/full.html", {
@@ -129,8 +123,7 @@ def subscribe(request):
 def tools(request):
     extra_context = {'ngrams': settings.NGRAMS_FEATURE}
     markdown_doc = render_to_string("tools.md", extra_context, request)
-    toc_translate = { "The API": "API", }
-    html, toc, meta = render_markdown(markdown_doc, toc_translate)
+    html, toc, meta = render_markdown(markdown_doc)
     meta = {k: mark_safe(v) for k, v in meta.items()}
     return render(request, "layouts/full.html", {
         'main_content': mark_safe(html),
@@ -191,19 +184,25 @@ def api(request):
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
     whitelisted_jurisdictions = Jurisdiction.objects.filter(whitelisted=True).values('name_long', 'name')
 
-    return render(request, 'api.html', {
-        "page_name": True,
+    markdown_doc = render_to_string("api.md", {
         "case_metadata": case_metadata,
         "case_id": case_metadata['id'],
         "case_jurisdiction": case_metadata['jurisdiction'],
         "reporter_id": reporter_metadata['id'],
         "reporter_metadata": reporter_metadata,
         "whitelisted_jurisdictions": whitelisted_jurisdictions,
-        'page_image': 'img/og_image/tools_api.png',
-        'page_title': 'Caselaw Access Project API Documentation',
-        'page_description': 'To get started with the API, you can explore it in your browser, or reach it from the '
-                            'command line.'
+    }, request)
+
+    # render markdown document to html
+    html, toc, meta = render_markdown(markdown_doc)
+
+    meta = {k: mark_safe(v) for k, v in meta.items()}
+    return render(request, "layouts/full.html", {
+        'main_content': mark_safe(html),
+        'sidebar_menu_items': mark_safe(toc),
+        **meta,
     })
+
 
 
 def search_docs(request):
