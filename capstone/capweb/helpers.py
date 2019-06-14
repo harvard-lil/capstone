@@ -175,12 +175,9 @@ def user_has_harvard_email(failure_url='non-harvard-email'):
         login_url=failure_url)
 
 
-def render_markdown(markdown_doc, link_text_translate=None):
+def render_markdown(markdown_doc):
     """
         Render given markdown document and return (html, table_of_contents, meta)
-
-        The optional link_text_translate argument accepts a dictionary, and will replace all instances of the key with
-        the vaule, where the key is the entire link text string.
     """
 
     md = markdown.Markdown(extensions=[TocExtension(baselevel=2, marker=''), AttrListExtension(), listStyleExtension(),
@@ -188,9 +185,6 @@ def render_markdown(markdown_doc, link_text_translate=None):
     html = md.convert(markdown_doc.lstrip())
     toc = md.toc.replace('<a ', '<a class="list-group-item" ')
     toc = "".join(toc.splitlines(True)[2:-2])  # strip <div><ul> around toc by dropping first and last two lines
-    if link_text_translate:
-        for original, replacement in link_text_translate.items():
-            toc = toc.replace(">{}<".format(original), ">{}<".format(replacement))
     meta = {k:' '.join(v) for k, v in md.Meta.items()}
     return html, toc, meta
 
@@ -212,7 +206,7 @@ class listStyleProcessor(Treeprocessor):
         for modified_parent in [ element for element in tree.findall('.//li[@add_list_class]/..') ]:
             existing_classes = [] if 'class' not in modified_parent.attrib \
                 else modified_parent.attrib['class'].split(' ')
-            new_classes = [word for child in modified_parent.findall('.//li[@add_list_class]')
+            new_classes = [word for child in modified_parent.findall('./li[@add_list_class]')
                            for word in child.attrib['add_list_class'].split(' ')]
             # assigns re-assigns the class as a space separated list of unique classes
             modified_parent.attrib['class'] = " ".join(list(set(new_classes + existing_classes)))
