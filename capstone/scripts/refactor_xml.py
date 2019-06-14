@@ -842,7 +842,7 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
                 with open_captar_volume(Path(secondary_path), False) as redacted_storage:
                     volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key, save_failed, catch_validation_errors)
             else:
-                volume_to_json_inner(volume_barcode, unredacted_storage, key, save_failed, catch_validation_errors)
+                volume_to_json_inner(volume_barcode, unredacted_storage, None, key, save_failed, catch_validation_errors)
     except:
         if isinstance(captar_storage, CapS3Storage):
             # copy busted S3 files locally for further inspection
