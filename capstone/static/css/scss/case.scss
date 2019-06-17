@@ -119,7 +119,6 @@ h4.case-name {
 section.head-matter {
   padding-bottom: 0;
   p, aside {
-    position: relative;
     // on large screens, head matter goes into a narrower column
     margin-top: 1em;
     margin-bottom: 1em;
@@ -276,4 +275,8 @@ section.head-matter {
     padding-right: 1em;
     font-size: 1.2rem;
   }
+}
+// to position .page-label:before
+.head-matter > *, .opinion > * {
+  position: relative;
 }

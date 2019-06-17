@@ -922,20 +922,13 @@ class CaseMetadata(models.Model):
         labels_by_block_id = labels_by_block_id or PageStructure.labels_by_block_id(pages)
 
         renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, labels_by_block_id)
-        text = renderer.render_text(self)
         html = renderer.render_html(self)
         xml = renderer.render_xml(self)
 
         ## create json
 
         casebody_pq = PyQuery(html)
-
-        # add footnote labels to footnotes
-        for footnote in casebody_pq('.footnote').items():
-            label = footnote.attr['data-label']
-            if label:
-                footnote_paragraph = footnote.children()[0]
-                footnote_paragraph.text = "%s %s" % (label, footnote_paragraph.text)
+        casebody_pq.remove('.page-label,.footnotemark,.bracketnum')  # remove page numbers and references from text/json
 
         # extract each opinion into a dictionary
         opinions = []
@@ -953,6 +946,8 @@ class CaseMetadata(models.Model):
             'opinions': opinions,
             'corrections': casebody_pq('.corrections').text(),
         }
+
+        text = "\n".join([json['head_matter']] + [o['text'] for o in opinions] + [json['corrections']])
 
         ## save
 
