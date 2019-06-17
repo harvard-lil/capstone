@@ -258,26 +258,6 @@ class VolumeRenderer:
 
         return etree.tostring(case_el, encoding=str)
 
-    ### TEXT RENDERING ###
-
-    def render_text(self, case):
-        """
-            Render <casebody> as plain text
-        """
-        case_structure = case.structure
-        pars = []
-        for par in iter_pars(case_structure.opinions):
-            if par.get("redacted"):
-                continue
-            words = []
-            for block_id in par['block_ids']:
-                block = self.blocks_by_id[block_id]
-                if block.get("redacted"):
-                    continue
-                words.extend(filter_tokens(block, {}))
-            pars.append("".join(words))
-        return "\n\n".join(pars)
-
     ### XML/HTML RENDERING ###
 
     html_token_filter = {'footnotemark', 'bracketnum', 'font'}
@@ -288,7 +268,7 @@ class VolumeRenderer:
             Render <casebody> as HTML
         """
         self.format = 'html'
-        return self.render_markup(case)
+        return self.render_markup(case).replace('\xad', '')
 
     def render_xml(self, case):
         """
@@ -296,7 +276,7 @@ class VolumeRenderer:
         """
         self.format = 'xml'
         self.original_xml = False
-        return self.render_markup(case)
+        return self.render_markup(case).replace('\xad', '')
 
     def render_orig_xml(self, case):
         """
