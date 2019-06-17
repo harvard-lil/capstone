@@ -98,7 +98,6 @@ form {
   background-color: white;
   @extend .text-muted;
   @extend small;
-  text-align: center;
 }
 
 .dropdown-menu {
@@ -140,7 +139,7 @@ form {
 
 }
 
-#collapsePanels, #helpPanel{
+.panelset-panel{
   @extend .text-muted;
   @extend small;
   p {

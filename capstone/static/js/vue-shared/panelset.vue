@@ -63,7 +63,7 @@
       PanelsetPanel: Vue.component('panelset-panel', {
         props: ['panelId', 'currentPanel'],
         template: `
-          <div class="card"
+          <div class="card panelset-panel"
                :id="\`\${panelId}Panel\`"
                v-if="currentPanel === panelId"
                tabindex="-1"
