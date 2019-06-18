@@ -30,6 +30,10 @@ li > code {
   background-color: inherit;
 }
 
+code {
+  font-size: 1rem;
+}
+
 .endpoint-link {
   font-weight: bold;
 }
@@ -74,12 +78,7 @@ dt.example-description {
   font-weight: 700;
   letter-spacing: 0.9px;
   color: $color-black;
-  font-weight: bold;
 }
-
-li > .list-header {
-  font-size: 0.9em;
- }
 
 .example-mod-description {
   font-size: 14px;
@@ -96,4 +95,13 @@ li > .list-header {
 
 #sidebar-menu {
   background-color: $color-white;
+}
+
+h2.subtitle::before {
+  display: block;
+  content: " ";
+  margin-top: -3rem;
+  height: 3rem;
+  visibility: hidden;
+  pointer-events: none;
 }
