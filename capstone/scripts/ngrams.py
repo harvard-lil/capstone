@@ -11,7 +11,6 @@ from heapq import merge
 from collections import Counter, defaultdict, OrderedDict
 import nltk
 import redis_lock
-import unicodedata
 from celery import shared_task
 from django.conf import settings
 from django.core.management.color import no_style
@@ -19,9 +18,9 @@ from django.db import connections, router
 from django.db.models import Q
 from tqdm import tqdm
 
-from capdb.models import Jurisdiction, CaseMetadata, CaseText, NgramObservation, Ngram, NgramWord
+from capdb.models import Jurisdiction, CaseMetadata, NgramObservation, Ngram, NgramWord, CaseBodyCache
 from scripts.helpers import ordered_query_iterator
-from capdb.storages import ngram_storage, redis_client, ngram_kv_store
+from capdb.storages import ngram_storage, redis_client, ngram_kv_store, ngram_kv_store_full
 
 nltk.data.path = settings.NLTK_PATH
 unicode_translate_table = dict((ord(a), ord(b)) for a, b in zip(u'\u201c\u201d\u2018\u2019', u'""\'\''))
@@ -32,16 +31,20 @@ tokenizer = copy.copy(nltk.tokenize._treebank_word_tokenizer)
 tokenizer.CONTRACTIONS2 = tokenizer.CONTRACTIONS3 = []
 tokenizer.ENDING_QUOTES = tokenizer.ENDING_QUOTES[:-2]
 
-def has_alphanum(s):
-    """
-        Return True if s has at least one alphanumeric character in any language.
-        See https://en.wikipedia.org/wiki/Unicode_character_property#General_Category
-    """
-    for c in s:
-        category = unicodedata.category(c)[0]
-        if category == 'L' or category == 'N':
-            return True
-    return False
+strip_chars = """`~!@#$%^&*()-_=+[{]}\|;:'",<>/?¡°¿‡†—•■"""
+strip_right_chars = strip_chars + "£$©"
+strip_left_chars = strip_chars + ".®"
+
+# def has_alphanum(s):
+#     """
+#         Return True if s has at least one alphanumeric character in any language.
+#         See https://en.wikipedia.org/wiki/Unicode_character_property#General_Category
+#     """
+#     for c in s:
+#         category = unicodedata.category(c)[0]
+#         if category == 'L' or category == 'N':
+#             return True
+#     return False
 
 def tokenize(text):
     # clean up input
@@ -51,8 +54,8 @@ def tokenize(text):
     # yield each valid token
     for sentence in nltk.sent_tokenize(text):
         for token in tokenizer.tokenize(sentence):
-            token = token.lower().strip("'")
-            if has_alphanum(token):
+            token = token.lower().rstrip(strip_right_chars).lstrip(strip_left_chars)
+            if token:
                 yield token
 
 def ngrams(words, n, padding=False):
@@ -165,9 +168,14 @@ def ngram_jurisdiction(jurisdiction_id, replace_existing=False, max_n=3):
 
         # optionally skip reindexing jurisdiction-year combinations that already have ngrams
         if not replace_existing:
-            if any(key.startswith(out_stem) for key in totals):
-                print(" - %s already in totals.json" % out_stem)
-                continue
+            if settings.ROCKSDB_FEATURE:
+                if ngram_kv_store_full.get(b"totals"+ngram_kv_store_full.pack((jurisdiction_id,year,1))):
+                    print(" - Already in totals")
+                    continue
+            else:
+                if any(key.startswith(out_stem) for key in totals):
+                    print(" - %s already in totals.json" % out_stem)
+                    continue
 
         ngram_jurisdiction_year.delay(jurisdiction_id, year, out_stem, replace_existing, max_n)
 
@@ -177,17 +185,26 @@ def ngram_jurisdiction_year(jurisdiction_id, year, out_stem, replace_existing=Fa
 
     # optionally skip reindexing jurisdiction-year combinations that already have ngrams
     if not replace_existing:
-        with read_write_totals() as totals:
-            if any(key.startswith(out_stem) for key in totals):
-                print(" - %s already in totals.json" % out_stem)
+        if settings.ROCKSDB_FEATURE:
+            if ngram_kv_store_full.get(b"totals"+ngram_kv_store_full.pack((jurisdiction_id,year,1))):
+                print(" - Already in totals")
                 return
+        else:
+            with read_write_totals() as totals:
+                if any(key.startswith(out_stem) for key in totals):
+                    print(" - %s already in totals.json" % out_stem)
+                    return
 
     # count words for each case
     counters = defaultdict(lambda: defaultdict(Counter))
-    queryset = CaseText.objects.filter(metadata__decision_date__year=year, metadata__jurisdiction_id=jurisdiction_id).order_by('id')
+    queryset = CaseBodyCache.objects.filter(
+        metadata__duplicative=False, metadata__jurisdiction__isnull=False, metadata__court__isnull=False,
+        metadata__decision_date__year=year, metadata__jurisdiction_id=jurisdiction_id
+    ).only('text').order_by('id')
     for case_text in ordered_query_iterator(queryset):
+        tokens = list(tokenize(case_text.text))
         for n in range(1, max_n + 1):
-            grams = list(' '.join(gram) for gram in ngrams(tokenize(case_text.text), n))
+            grams = list(' '.join(gram) for gram in ngrams(tokens, n))
             counters[n]['total_tokens'] = counters[n].setdefault('total_tokens', 0) + len(grams)
             counters[n]['total_documents'] = counters[n].setdefault('total_documents', 0) + 1
             counters[n]['instances'].update(grams)
@@ -199,19 +216,40 @@ def ngram_jurisdiction_year(jurisdiction_id, year, out_stem, replace_existing=Fa
         return
 
     # export files
+    storage_year = year - 1900
     for n, counts in counters.items():
+        if settings.ROCKSDB_FEATURE:
+            # write each ngram to kv store
+            # see ngram_kv_store_full.merge for details of the merge algorithm
+            with ngram_kv_store_full.in_transaction():
+                count_pairs = zip(sorted(counts['instances'].items()), sorted(counts['documents'].items()))
+                key_prefix = bytes([int(n)])
+                for instance_count, document_count in count_pairs:
+                    key = key_prefix + bytes(instance_count[0], 'utf8')
+                    instance_count, document_count = instance_count[1], document_count[1]
+                    value = (jurisdiction_id, storage_year, instance_count, document_count)
+                    ngram_kv_store_full.merge(key, value, packed=True)
 
-        # write ngram file (e.g. jurisdiction_year/mass_2018-1.tsv.xz)
-        out_path = out_stem + '-%s.tsv.xz' % n
-        with get_writer_for_path(out_path) as out:
-            out.write(bytes("gram\tinstances\tdocuments\n", 'utf8'))
-            count_pairs = zip(sorted(counts['instances'].items()), sorted(counts['documents'].items()))
-            for instance_count, document_count in count_pairs:
-                out.write(bytes(instance_count[0] + "\t" + str(instance_count[1]) + "\t" + str(document_count[1]) + "\n", 'utf8'))
+                # add totals to "totals" key
+                ngram_kv_store_full.put(
+                    b"totals"+ngram_kv_store_full.pack((jurisdiction_id,year,n)),
+                    [counts['total_tokens'], counts['total_documents']],
+                    packed=True)
 
-        # add totals to totals.json file
-        with read_write_totals() as totals:
-            totals[out_path] = {'grams': counts['total_tokens'], 'documents': counts['total_documents']}
+        else:
+            # write ngram file (e.g. jurisdiction_year/mass_2018-1.tsv.xz)
+            out_path = out_stem + '-%s.tsv.xz' % n
+            with get_writer_for_path(out_path) as out:
+                out.write(bytes("gram\tinstances\tdocuments\n", 'utf8'))
+                count_pairs = zip(sorted(counts['instances'].items()), sorted(counts['documents'].items()))
+                for instance_count, document_count in count_pairs:
+                    out.write(
+                        bytes(instance_count[0] + "\t" + str(instance_count[1]) + "\t" + str(document_count[1]) + "\n",
+                              'utf8'))
+
+            # add totals to totals.json file
+            with read_write_totals() as totals:
+                totals[out_path] = {'grams': counts['total_tokens'], 'documents': counts['total_documents']}
 
 @contextmanager
 def read_xz(path):

@@ -2,8 +2,9 @@ import bisect
 import json
 import re
 import urllib
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
+from django.conf import settings
 from django.http import HttpResponseRedirect, FileResponse
 from django.utils.text import slugify
 
@@ -18,7 +19,7 @@ from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
 from capdb.models import Citation
-from capdb.storages import ngram_storage, ngram_kv_store
+from capdb.storages import ngram_storage, ngram_kv_store, ngram_kv_store_full
 from scripts.ngrams import parse_ngram_paths
 
 from django_elasticsearch_dsl_drf.constants import (
@@ -248,21 +249,34 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # cache translation table between jurisdiction slug and ID
         self.jurisdiction_id_to_slug = {v:k for k,v in filters.jurisdiction_slug_to_id.items()}
         self.jurisdiction_id_to_slug[None] = 'total'
+        self.load_totals()
 
+    def load_totals(self):
         # populate self.totals_by_jurisdiction_year_length, a mapping of jurisdiction-year-length to counts, like:
         #   {
         #       (<jur_id>, <year>, <length>): (<word count>, <document count>),
         #   }
-        if ngram_storage.exists('totals.json'):
+        totals_by_jurisdiction_year_length = defaultdict(lambda: [0,0])
+        if settings.ROCKSDB_FEATURE:
+            for k, v in ngram_kv_store_full.get_prefix(b'totals', packed=True):
+                jur, year, n = ngram_kv_store_full.unpack(k[len(b'totals'):])
+                totals_by_jurisdiction_year_length[(jur, year, n)] = v
+                for total in (
+                    totals_by_jurisdiction_year_length[('total', year, n)],
+                    totals_by_jurisdiction_year_length[('total', None, n)]
+                ):
+                    total[0] += v[0]
+                    total[1] += v[1]
+
+        elif ngram_storage.exists('totals.json'):
             totals = json.loads(ngram_storage.contents('totals.json'))
             path_info = {p['path']: p for p in parse_ngram_paths(totals.keys())}
-            totals_by_jurisdiction_year_length = {}
             for path, counts in totals.items():
                 info = path_info[path]
                 totals_by_jurisdiction_year_length[(info['jurisdiction'] or 'total', info['year'], int(info['length']))] = (counts["grams"], counts["documents"])
             self.totals_by_jurisdiction_year_length = totals_by_jurisdiction_year_length
-        else:
-            self.totals_by_jurisdiction_year_length = {}
+
+        self.totals_by_jurisdiction_year_length = totals_by_jurisdiction_year_length
 
     def list(self, request, *args, **kwargs):
         # without specific ngram search, return nothing
@@ -275,12 +289,13 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         q_len = len(words)
         # prepend word count as first byte
         q = bytes([q_len]) + ' '.join(words).encode('utf8')
+        kv_store = ngram_kv_store_full if settings.ROCKSDB_FEATURE else ngram_kv_store
         if q.endswith(b' *'):
             # wildcard search
-            pairs = ngram_kv_store.get_prefix(q[:-1], packed=True)
+            pairs = kv_store.get_prefix(q[:-1], packed=True)
         else:
             # non-wildcard search
-            value = ngram_kv_store.get(q, packed=True)
+            value = kv_store.get(q, packed=True)
             if value:
                 pairs = [(q, value)]
             else:
@@ -311,7 +326,10 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             top_pairs = []
             for gram, data in pairs:
                 total_jur = data[None]
-                sort_count = next(total_jur[i+1] for i in range(0, len(total_jur), 3) if total_jur[i] is None)
+                if settings.ROCKSDB_FEATURE:
+                    sort_count = total_jur[None][0]
+                else:
+                    sort_count = next(total_jur[i+1] for i in range(0, len(total_jur), 3) if total_jur[i] is None)
                 bisect.insort_right(top_pairs, (sort_count, gram, data))
                 top_pairs = top_pairs[-10:]
 
@@ -344,6 +362,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
                     years_out = []
                     jur_slug = self.jurisdiction_id_to_slug[jur_id]
+                    if settings.ROCKSDB_FEATURE and jur_id is None:
+                        years = [i for k, v in years.items() for i in [k]+v]
                     for i in range(0, len(years), 3):
                         year, count, doc_count = years[i:i+3]
 
