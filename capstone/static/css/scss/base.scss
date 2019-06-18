@@ -197,6 +197,10 @@ code {
   font-family: $font-monospace, monospace;
 }
 
+p {
+  top-margin: 1.25rem;
+}
+
 /* grid / layout */
 .col-centered {
   margin: 0 auto;

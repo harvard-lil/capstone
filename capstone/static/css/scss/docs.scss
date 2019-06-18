@@ -30,9 +30,12 @@ li > code {
   background-color: inherit;
 }
 
-code {
-  font-size: 1rem;
+pre code {
+  font-size: 0.95em;
+  margin: 0;
 }
+
+
 
 .endpoint-link {
   font-weight: bold;
@@ -46,6 +49,7 @@ p.topic-header {
   margin-top: 2rem;
   font-weight: bold;
   margin-bottom: 0px;
+  font-family: $font-sans-title;
 }
 
 lh{
@@ -95,6 +99,11 @@ li.list-header {
 
 .code-example-casebody-section {
   color: $red;
+}
+
+p.code-block {
+  margin-top: -20px;
+  margin-bottom: 0;
 }
 
 #sidebar-menu {

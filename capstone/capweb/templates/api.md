@@ -9,8 +9,8 @@ row_style: bg-tan
 explainer: The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases published in books from 1658 to 2018. The collection includes over six million cases scanned from the Harvard Law Library shelves. <a href="{% url "about" }>Learn more about the project</a>. 
 extra_head: {% stylesheet 'docs' %}
 
-  {# ==============> GETTING STARTED <============== #}
-# Getting Started {: class="subtitle" }
+{# ==============> GETTING STARTED <============== #}
+# Getting Started {: class="subtitle" data-toc-label='Start Here' }
 [API]({% api_url "api-root" %}){: class="btn-primary" }
 
 CAPAPI includes an in-browser API viewer, but is primarily intended for software developers to access caselaw 
@@ -26,7 +26,7 @@ command line. For example, here is a curl command to request a single case from 
 If you haven't used APIs before, you might want to check out our [search tool]({% url "search" %}) or jump down to our 
 [Beginner's Introduction to APIs](#beginners-introduction-to-apis).
 
-  {# ==============> REGISTER  <============== #}
+{# ==============> REGISTER  <============== #}
 # Registration {: class="subtitle" }
 
 Most API queries don't require registration: check our [access limits](#access-limits) section for more details.
@@ -35,7 +35,7 @@ Most API queries don't require registration: check our [access limits](#access-l
 [Click here to register for an API key]({% url "register" %}) if you need to access case text from 
 non-[whitelisted](#def-whitelisted) jurisdictions.
 
-  {# ==============> AUTHENTICATION <============== #}
+{# ==============> AUTHENTICATION <============== #}
 # Authentication {: class="subtitle" }
 
 Most API queries don't require registration: check our [access limits](#access-limits) section for more details.
@@ -43,6 +43,8 @@ Most API queries don't require registration: check our [access limits](#access-l
 
 Most API requests do not need to be authenticated. However, if requests are not authenticated, you may see this response
 in results from the case endpoint with `full_case=true`:
+
+
 `{
   "results": [
     {
@@ -73,7 +75,7 @@ While you are [logged into this website]({% url "login" %}), all requests throug
 automatically.
   
 
-  {# ==============> DATA FORMATS <============== #}
+{# ==============> DATA FORMATS <============== #}
 # Case Text Formats {: class="subtitle" data-toc-label='Data Formats' }
   
 Both of these parameters must be used in conjunction with the `full_case=true`parameter.
@@ -100,7 +102,7 @@ Text Format (default)
 {: class="topic-header" }
 
 [{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true]({% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true)
-{: class="example-link" style="margin-top: 0px;" }
+{: class="example-link mt-0" }
 
 The default text format is best for natural language processing. Example response data:
 
@@ -135,7 +137,7 @@ XML Format
 {: class="topic-header" }
 
 [{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=xml]({% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=xml)
-{: class="example-link" style="margin-top: 0px;" }
+{: class="example-link mt-0" }
 
 The XML format is best if your analysis requires more information about pagination, formatting, or page layout. It 
 contains a superset of the information available from body_format=text, but requires parsing XML data. Example 
@@ -148,7 +150,7 @@ HTML Format
 {: class="topic-header" }
 
 [{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html]({% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html)
-{: class="example-link" style="margin-top: 0px;" }
+{: class="example-link mt-0" }
       
 The HTML format is best if you want to show readable, formatted caselaw to humans. It represents a best-effort attempt 
 to transform our XML-formatted data to semantic HTML ready for CSS formatting of your choice. Example response data:
@@ -182,7 +184,7 @@ Responses also include a `"count"` key. Occasionally this may show `"count": nul
 a particular query has not yet been calculated.
   
 
-  {# ==============> ACCESS LIMITS <============== #}
+{# ==============> ACCESS LIMITS <============== #}
 # Access Limits {: class="subtitle" }
   
 The agreement with our project partner, [Ravel](http://ravellaw.com), requires us to limit access to the full
@@ -244,6 +246,8 @@ Commercial Users
 {: class="topic-header", id="def-researchers" }
 
 [Click here to contact Ravel for more information.](http://info.ravellaw.com/contact-us-form)
+{: class="mt-0" }
+
 
 {# ==============> EXAMPLES <============== #}
 # Usage Examples  {: class="subtitle" data-toc-label='Examples' }
@@ -256,7 +260,7 @@ Retrieve a single case by ID
 {: class="topic-header" }
 
 [{% api_url "casemetadata-detail" case_id %}]({% api_url "casemetadata-detail" case_id %})
-{: class="example-link" style="margin-top: 0px;" }
+{: class="example-link mt-0" }
 
 This example uses the [single case](#endpoint-case) endpoint, and will retrieve the metadata for a single 
 case.
@@ -290,7 +294,7 @@ Retrieve a list of cases using a metadata filter
 {: class="topic-header" }
 
 [{% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}]({% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }})
-{: class="example-link" style="margin-top: 0px;" }
+{: class="example-link mt-0" }
 
 This example uses the [cases](#endpoint-cases) endpoint, and will retrieve every case with the citation 
 {{ case_metadata.citations.0.cite }}. 
@@ -315,7 +319,7 @@ Simple Full-Text Search
 {: class="topic-header" }
 
 [{% api_url "casemetadata-list" %}?search=insurance]({% api_url "casemetadata-list" %}?search=insurance)
-{: class="example-link" style="margin-top: 0px;" }
+{: class="example-link mt-0" }
 
 This example performs a simple full-text case search which finds all cases containing the word "insurance." 
 
@@ -345,7 +349,7 @@ Get all reporters in a jurisdiction
 {: class="topic-header" }
 
 [{% api_url "reporter-list" %}?jurisdictions=ark]({% api_url "reporter-list" %}?jurisdictions=ark)
-{: class="example-link" style="margin-top: 0px;" }
+{: class="example-link mt-0" }
 
 This example uses the [reporters](#endpoint-reporters) endpoint, and will retrieve all reporters in Arkansas.
 
@@ -376,24 +380,6 @@ This is the primary endpoint; you use it to browse, search for, and retrieve cas
 case in our system, you can append it to the [path](#def-path) to retrieve a [single case](#endpoint-case).
 {: class="endpoint description" }
 
-Endpoint Parameters:
-{: class="list-header mb-2" }
-
-* **Add Search Term**
-{: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "casemetadata-list" %}?search=insurance Peoria]({% api_url "casemetadata-list" %}?search=insurance Peoria)
-    {: add_list_class="example-mod-url" }
-    * You can narrow your search results by adding terms, separated by spaces. This search will only include cases that contain both "insurance" and Peoria.
-    {: add_list_class="example-mod-description" }
-* **Filter Search With Metadata**
-{: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill]({% api_url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill)
-    {: add_list_class="example-mod-url" }
-    * These queries can be filtered using other metadata fields. This query will perform the prior search while limiting
-     the query to the Illinois jurisdiction.
-    {: add_list_class="example-mod-description" }
-
-      
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
@@ -619,7 +605,7 @@ Endpoint Parameters:
 
 
 {# ==============> jurisdictions <============== #}
-Jurisdictions
+Jurisdictions Endpoint
 {: class="topic-header", id="endpoint-jurisdictions" }
 
 [{% api_url "jurisdiction-list" %}]({% api_url "jurisdiction-list" %}){: class="endpoint-link"  }
@@ -765,7 +751,7 @@ Endpoint Parameters:
      specific page of results.
     {: class="param-description" }
 
-  {# ==============> BEGINNERS <============== #}
+{# ==============> BEGINNERS <============== #}
 # Beginner's Introduction to APIs  {: class="subtitle" data-toc-label='Intro to APIs' }
   
 Are you a little lost in all the technical jargon, but still want to give the API a shot? This is a good place to start!
