@@ -12,31 +12,29 @@
         of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
       </span>
     </p>
-    <ul class="results-list">
-      <li v-if="endpoint==='cases'">
-        <case-result v-for="result in results[page]"
-                     :result="result"
-                     :key="result.id">
-        </case-result>
-      </li>
-      <li v-if="endpoint==='courts'">
-        <court-result v-for="result in results[page]"
-                      :result="result"
-                      :key="result.id">
-        </court-result>
-      </li>
-      <li v-if="endpoint==='jurisdictions'">
-        <jurisdiction-result v-for="result in results[page]"
-                             :result="result"
-                             :key="result.id">
-        </jurisdiction-result>
-      </li>
-      <li v-if="endpoint==='reporters'">
-        <reporter-result v-for="result in results[page]"
-                         :result="result"
-                         :key="result.id">
-        </reporter-result>
-      </li>
+    <ul v-if="endpoint==='cases'" class="results-list">
+      <case-result v-for="result in results[page]"
+                   :result="result"
+                   :key="result.id">
+      </case-result>
+    </ul>
+    <ul v-else-if="endpoint==='courts'">
+      <court-result v-for="result in results[page]"
+                    :result="result"
+                    :key="result.id">
+      </court-result>
+    </ul>
+    <ul v-else-if="endpoint==='jurisdictions'">
+      <jurisdiction-result v-for="result in results[page]"
+                           :result="result"
+                           :key="result.id">
+      </jurisdiction-result>
+    </ul>
+    <ul v-else-if="endpoint==='reporters'">
+      <reporter-result v-for="result in results[page]"
+                       :result="result"
+                       :key="result.id">
+      </reporter-result>
     </ul>
     <div class="row">
       <div class="col-6">

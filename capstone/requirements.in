@@ -24,6 +24,7 @@ mysqlclient         # mysql connector
 redis               # redis connector
 python-redis-lock   # cross-process locks
 lmdb                # key-value store for ngrams
+python-rocksdb      # key-value store for ngrams
 msgpack             # for storing data in KV store
 
 # Django stuff

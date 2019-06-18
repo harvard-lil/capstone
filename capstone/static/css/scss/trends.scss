@@ -98,7 +98,6 @@ form {
   background-color: white;
   @extend .text-muted;
   @extend small;
-  text-align: center;
 }
 
 .dropdown-menu {
@@ -140,7 +139,7 @@ form {
 
 }
 
-#collapsePanels, #helpPanel{
+.panelset-panel{
   @extend .text-muted;
   @extend small;
   p {
@@ -217,4 +216,54 @@ form {
   align-items: center;
   background-color: white;
   padding: .5em;
+}
+
+.results-list-container {
+  background-color: white;
+  border: 1px rgba(0, 0, 0, 0.125) solid;
+  padding: 2em;
+  margin-top: 1em;
+
+  h2 {
+    font-size: 2em;
+    margin-bottom: 1em;
+  }
+}
+
+// copied from search.scss
+.result {
+  @extend h6;
+  margin-bottom: 1.5rem;
+  .row {
+    margin-bottom: 5px;
+  }
+  .result-data-label {
+    color: $color-violet-gray;
+    font-weight: $font-weight-semibold;
+  }
+  .result-title {
+    font-size: 1.2em;
+    a {
+      border-bottom: 2px solid $color-blue;
+    }
+  }
+  .result-citation {
+    color: $color-black;
+  }
+  .volume {
+    color: $color-violet-gray;
+  }
+  .decision-date {
+    font-size: 0.7em;
+    @include media-breakpoint-up(md) {
+      text-align: right;
+    }
+  }
+  .result-name {
+    overflow: scroll;
+  }
+  .see-cases {
+    color: $color-violet;
+    border-bottom: 2px solid $color-violet;
+  }
 }

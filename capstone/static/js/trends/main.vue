@@ -235,7 +235,9 @@
             <tbody>
               <tr v-for="(year, i) in chartData.labels"> <!-- eslint-disable-line vue/require-v-for-key -->
                 <th scope="row">{{year}}</th>
-                <td v-for="dataset in chartData.datasets">{{formatValue(dataset.data[i])}}</td> <!-- eslint-disable-line vue/require-v-for-key -->
+                <td v-for="(dataset, j) in chartData.datasets"> <!-- eslint-disable-line vue/require-v-for-key -->
+                  <a href="#" @click.prevent="searchForPoint(j, i)">{{formatValue(dataset.data[i])}}</a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -287,20 +289,28 @@
           <li><a href="#" download="trends.csv" @click="csvDownloadClicked" @contextmenu="csvDownloadClicked">Download CSV</a> (best for analyzing in Excel)</li>
           <li><a href="#" download="trends.json" @click="jsonDownloadClicked" @contextmenu="jsonDownloadClicked">Download JSON</a> (best for analyzing from a program)</li>
         </ul>
-        <p>
-          View the API queries that generated this graph:
+        <div>
+          <p class="d-inline">View the API queries that generated this graph:&nbsp;</p>
           <ul class="inline-list">
-            <li v-for="(query, index) in currentApiQueries" v-bind:key="query">
+            <li v-for="(query, index) in currentApiQueries"> <!-- eslint-disable-line vue/require-v-for-key -->
               <a :href="query[1]" target="_blank">{{query[0]}}</a>
               <span v-if="index !== currentApiQueries.length - 1" aria-hidden="true"> / </span>
             </li>
           </ul>
-        </p>
+        </div>
       </panelset-panel>
     </div> <!-- /collapsePanels -->
-    <div class="sr-only sr-only-focusable graph-keyboard-instructions" tabindex="0">
-      <strong>Keyboard controls:</strong> with the graph selected, use up and down arrows to select terms, left and right to select points,
-      and enter key to enable or disable selected term.
+    <div class="sr-only sr-only-focusable graph-keyboard-instructions panelset-panel" tabindex="0">
+      <h5>Keyboard controls</h5>
+      <p>With the graph selected:</p>
+      <ul class="bullets">
+        <li>up and down arrows select terms</li>
+        <li>left and right arrows select points</li>
+        <li>space bar enables or disables selected term</li>
+        <li>enter key searches for example cases</li>
+        <li>"s" key enables or disables audio tones</li>
+        <li>"p" key auto plays audio tones</li>
+      </ul>
     </div>
     <div class="graph">
       <div class="container graph-container"
@@ -312,7 +322,9 @@
                       :aria-label="`Graph of '${textToGraph}' between ${minYear} and ${maxYear}. See table view for details.`"
                       aria-describedby="tablePanelButton"
                       role="img"
-                      ref="chart"/>
+                      ref="chart">
+        </line-example>
+        <div class="sr-only" aria-live="assertive" aria-atomic="true">{{canvasStatus}}</div>
       </div>
       <div v-if="chartData.datasets.length > 0" class="row zoom-row">
         <div class="col-auto mr-2">years</div>
@@ -336,20 +348,24 @@
                min="1640" max="2018"/>
       </div>
     </div>
+    <search-results ref="searchResults" :urls="urls"></search-results>
   </div>
 </template>
 
 <script>
-  import LineExample from './LineChart.vue';
-  import LoadingButton from '../vue-shared/loading-button.vue';
-  import Panelset from '../vue-shared/panelset';
-  import debounce from 'lodash.debounce';
   import Chart from 'chart.js';
+  import csvStringify from 'csv-stringify/lib/sync';
+  import debounce from 'lodash.debounce';
+  import Synth from 'tone/Tone/instrument/Synth';
   import Vue from 'vue';
   import VueSlider from 'vue-slider-component';
   import 'vue-slider-component/theme/default.css';
-  import {encodeQueryData} from '../utils';
-  import csvStringify from 'csv-stringify/lib/sync';
+
+  import LineExample from './LineChart.vue';
+  import LoadingButton from '../vue-shared/loading-button.vue';
+  import Panelset from '../vue-shared/panelset';
+  import SearchResults from './search-results.vue';
+  import {getApiUrl, apiQuery} from '../api'
 
   // math helpers
   const mod = (n, m) => ((n % m) + m) % m;  // mod function that works correctly with negative numbers
@@ -365,6 +381,7 @@
       LineExample,
       LoadingButton,
       VueSlider,
+      SearchResults,
       ExampleLink: Vue.component('example-link', {
         template: `<router-link class="example-link" :to="\`?q=\${query}\`">{{query}}</router-link>`,
         props: ['query'],
@@ -488,7 +505,7 @@
         currentApiQueries: [],
         chartHeight: chartHeight,
         chartData: {datasets: []},
-        chartNeedsRerender: false,
+        canvasStatus: "",
         rawData: null,
         textToGraph: "apple pie, baseball",
         minPossible: urlValues.minYear.default,
@@ -506,13 +523,16 @@
           "rgb(0,146,146)", "rgb(182,109,255)", "rgb(219,109,0)",
         ],
         pointStyles: ['circle', 'cross', 'crossRot', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'],
+        soundsOn: false,
+        soundAutoplay: false,
+        synth: null,
         errors: [],
         showLoading: false,
         initialQuery: null,
         chartOptions: {
           responsive: true,
           maintainAspectRatio: false,
-          // onClick: this.chartOnClick,
+          onClick: this.chartOnClick,
           legend: {
             labels: {
               boxWidth: 20,
@@ -544,14 +564,9 @@
           },
           tooltips: {
             callbacks: {
-              title: (tooltipItem, data) => {
+              title: (tooltipItem) => {
                 /* format tooltip title to include date range when smoothing is on */
-                const label = tooltipItem[0].label;
-                if (!this.smoothingWindow)
-                  return label;
-                const startRange = max(data.labels[0], Number(label)-this.smoothingWindow);
-                const endRange = min(data.labels[data.labels.length-1], Number(label)+this.smoothingWindow);
-                return `${startRange}-${endRange}`;
+                return this.formatYearRange(tooltipItem[0].label);
               },
               label: (tooltipItem, data) => {
                 return data.datasets[tooltipItem.datasetIndex].label + ': ' + this.formatValue(tooltipItem.yLabel);
@@ -574,6 +589,15 @@
       },
     },
     methods: {
+      formatYearRange(year) {
+        /* return range of years given a year and this.smoothingWindow */
+        if (!this.smoothingWindow)
+          return year;
+        const labels = this.chartData.labels;
+        const startRange = max(labels[0], Number(year)-this.smoothingWindow);
+        const endRange = min(labels[labels.length-1], Number(year)+this.smoothingWindow);
+        return `${startRange}-${endRange}`;
+      },
       formatValue(value) {
         /*
           format numeric datapoint based on percentOrAbs, countType, and smoothingWindow
@@ -634,9 +658,6 @@
           query[config.param] = toParam(value);
         this.$router.replace({query});
       },
-      getApiUrl(endpoint, params) {
-        return `${this.urls.api_root}${endpoint}/?${encodeQueryData(params)}`;
-      },
       textToGraphUpdated() {
         /* handle update to this.textToGraph */
 
@@ -680,24 +701,16 @@
             }
 
             // fetch results
-            const url = this.getApiUrl("ngrams", params);
+            const url = getApiUrl("ngrams", params);
             this.currentApiQueries.push([term, url]);
-            return fetch(url)
-
-              // json parse each response
-              .then((resp) => {
-                if (!resp.ok)
-                  throw resp;
-                return resp.json();
-
+            return apiQuery(url).then((resp)=>{
               // filter out responses with no results
-              }).then((resp)=>{
-                if (Object.keys(resp.results).length === 0) {
-                  this.errors.push(`"${term}" appears fewer than 100 times in our corpus.`);
-                  return null;
-                }
-                return {results: resp.results, params};
-              })
+              if (Object.keys(resp.results).length === 0) {
+                this.errors.push(`"${term}" appears fewer than 100 times in our corpus.`);
+                return null;
+              }
+              return {results: resp.results, params};
+            });
           })
         ).then((results) => {
           // display results
@@ -716,6 +729,7 @@
             this.maxYear = this.rawData.maxYear;
           if (!this.initialQuery || !this.initialQuery[this.urlValues.deselectedTerms.param])
             this.deselectedTerms = [];
+          this.$refs.searchResults.reset();
           this.initialQuery = null;
 
           this.graphResults();
@@ -880,8 +894,12 @@
         const results = this.rawData.results;
         const terms = Object.keys(results);
         let payload = [];
-        payload.push(["", ...terms.flatMap((term)=>[term, "", "", ""])]);
-        payload.push(["", ...terms.flatMap(()=>["case count", "case denominator", "instance count", "instance denominator"])]);
+        payload.push(["Year", ...terms.flatMap((term)=>[
+          `"${term}" Case Count`,
+          `"${term}" Case Denominator`,
+          `"${term}" Instance Count`,
+          `"${term}" Instance Denominator`,
+        ])]);
         for (const [i, year] of this.chartData.labels.entries()) {
           payload.push([year, ...terms.flatMap((key)=>{
             const data = results[key].data[i];
@@ -909,14 +927,49 @@
           case "ArrowLeft":
             this.currentPoint = mod(this.currentPoint === null ? 0 : this.currentPoint - 1, this.chartData.labels.length);
             break;
-          case "Enter":
+          case " ":
             if (this.currentLine !== null)
               this.clickLegendItem(this.currentLine);
+            break;
+          case "Enter":
+            this.currentLine |= 0;
+            this.currentPoint |= 0;
+            this.searchForPoint(this.currentLine, this.currentPoint);
+            break;
+          case "s":
+            this.toggleSoundsOn();
+            break;
+          case "p":
+            this.soundAutoplay = !this.soundAutoplay;
+            if (this.soundAutoplay) {
+              if (!this.soundsOn)
+                this.toggleSoundsOn();
+              this.currentLine |= 0;
+              this.currentPoint |= 0;
+              this.autoplaySound();
+            }
             break;
           default:
             return;
         }
         event.preventDefault();
+      },
+      toggleSoundsOn() {
+        this.soundsOn = !this.soundsOn;
+        this.setCanvasStatus(`audio tones ${this.soundsOn?"on":"off"}`);
+        if (this.soundsOn)
+          this.synth = new Synth({envelope: {attack: 0.1}}).toMaster();
+      },
+      autoplaySound() {
+        setTimeout(()=>{
+          if (this.soundAutoplay) {
+            if (this.currentPoint < this.chartData.labels.length - 1) {
+              this.currentPoint += 1;
+              this.autoplaySound();
+            } else
+              this.soundAutoplay = false;
+          }
+        }, 100);
       },
       selectLine() {
         /* handle update to this.currentLine */
@@ -934,6 +987,7 @@
         delete this.chartOptions.animation;
         if (this.currentPoint !== null)
           this.selectPoint();
+        this.setCanvasStatus(datasets[index].label);
       },
       selectPoint() {
         /* handle update to this.currentPoint */
@@ -947,7 +1001,20 @@
           clientX: rect.left + point.x,
           clientY: rect.top + point.y
         }));
+        const dataset = this.chartData.datasets[this.currentLine];
+        const value = dataset.data[this.currentPoint];
+        this.setCanvasStatus(`${dataset.label} ${this.formatYearRange(this.chartData.labels[this.currentPoint])} ${this.formatValue(value)}`);
+
+        if (this.soundsOn) {
+          const middleA = 440;
+          const halfStep = 2**(1/12);
+          const halfSteps = value / meta.dataset._scale.max * 36;
+          this.synth.triggerAttackRelease(middleA * halfStep ** halfSteps, .1);
+        }
       },
+      setCanvasStatus: debounce(function(status){
+        this.canvasStatus = status;
+      }, 500),
       clickLegendItem(datasetIndex) {
         /* trigger a click event on legend item for given dataset index */
         const chart = this.$refs.chart.$data._chart;
@@ -968,18 +1035,15 @@
           return;
         const chart = this.$refs.chart.$data._chart;
         const point = chart.getElementAtEvent(e)[0];
-        const year = this.chartData.labels[point._index];
-        const term = this.chartData.datasets[point._datasetIndex].label;
+        this.currentPoint = point._index;
+        this.currentLine = point._datasetIndex;
+        this.searchForPoint(point._datasetIndex, point._index);
+      },
+      searchForPoint(termIndex, pointIndex) {
+        const year = this.chartData.labels[pointIndex];
+        const term = this.chartData.datasets[termIndex].label;
         const params = this.rawData.results[term].params;
-        const searchParams = {
-          search: `"${params.q}"`,
-          decision_date_min: `${year}-01-01`,
-          decision_date_max: `${year}-12-31`,
-        };
-        if (params.jurisdiction)
-          searchParams.jurisdiction = params.jurisdiction;
-        const url = `${this.urls.search_page}?${encodeQueryData(searchParams)}`;
-        window.open(url, '_blank');
+        this.$refs.searchResults.search(term, params, year-this.smoothingWindow, year+this.smoothingWindow);
       },
       beforeDraw(chart) {
         /* draw the chart background (white background and credit line) */
