@@ -692,6 +692,8 @@ python-jose==2.0.2 \
 python-redis-lock==3.3.1 \
     --hash=sha256:5316d473ce6ce86a774b9f9c110d84c3a9bd1a2abfda5d99e9c0c8a872a8e6d6 \
     --hash=sha256:f0649c49341fa943f19b8fbe93c3457df8a0a85006c88134465a16401fd1e553
+python-rocksdb==0.7.0 \
+    --hash=sha256:aa692fbd06d8ed4ad641feee2970062fe01120e87b645a29403c71c628639e4f
 pytz==2018.9 \
     --hash=sha256:32b0891edff07e28efe91284ed9c31e123d84bea3fd98e1f72be2508f43ef8d9 \
     --hash=sha256:d5f05e487007e29e03409f9398d074e158d920d36eb82eaf66fb1136b0c5374c \
@@ -846,4 +848,4 @@ xmltodict==0.11.0 \
 setuptools==41.0.1 \
     --hash=sha256:a222d126f5471598053c9a77f4b5d4f26eaa1f150ad6e01dcf1a42e185d05613 \
     --hash=sha256:c7769ce668c7a333d84e17fe8b524b1c45e7ee9f7908ad0a73e1eda7e6a5aebf \
-    # via markdown, pytest
+    # via markdown, pytest, python-rocksdb

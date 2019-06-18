@@ -2,11 +2,13 @@ FROM python:3.5-stretch
 ENV PYTHONUNBUFFERED 1
 
 # Get build dependencies and packages required by the app
-# pytest-redis requires a local redis instance)
-# https://github.com/ClearcodeHQ/pytest-redis/issues/108)
-# psql for manage.py dbshell
+# redis-server for pytest-redis (https://github.com/ClearcodeHQ/pytest-redis/issues/108)
+# postgresql-client for manage.py dbshell
+# librocksdb5.17 et al. for python-rocksdb
+RUN echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/backports.list
 RUN apt-get update \
-    && apt-get install -y redis-server postgresql-client
+    && apt-get install -y redis-server postgresql-client \
+    && apt-get install -t stretch-backports -y librocksdb5.17 libzstd-dev liblz4-dev libgflags-dev libbz2-dev zlib1g-dev libsnappy-dev librocksdb-dev rocksdb-tools
 
 # pip
 RUN mkdir /app

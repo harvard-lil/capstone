@@ -2,7 +2,8 @@ import csv
 import functools
 import gzip
 import hashlib
-import platform
+import traceback
+from contextlib import contextmanager
 
 import msgpack
 import os
@@ -10,11 +11,13 @@ import itertools
 from pathlib import Path
 
 import redis
+import rocksdb
 
 from django.conf import settings
 from django.core.files import File
 from django.core.files.storage import FileSystemStorage, Storage
 from django.utils.functional import SimpleLazyObject
+from rocksdb.interfaces import MergeOperator
 from storages.backends.s3boto3 import S3Boto3Storage
 
 
@@ -361,31 +364,43 @@ redis_ingest_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_H
 
 import lmdb
 
-class NgramKVLMDB:
-    def __init__(self):
+class KVDB:
+    """ Base key-value store wrapper. """
+    def __init__(self, path=settings.STORAGES['ngram_storage']['kwargs']['location'], name=None):
+        self.path = path
+        if name:
+            self.name = name
         self.open()
+
+    @staticmethod
+    def unpack(v, packed=True):
+        return msgpack.unpackb(v) if packed and v is not None else v
+
+    @staticmethod
+    def pack(v, packed=True):
+        return msgpack.packb(v) if packed and v is not None else v
+
+class NgramKVLMDB(KVDB):
+    """ Wrapper for LMDB. """
+    txn = None
+    name = 'lmdb'
 
     ## helpers
 
     def open(self):
         self.db = lmdb.open(
-            os.path.join(settings.STORAGES['ngram_storage']['kwargs']['location'], 'lmdb'),
+            os.path.join(self.path, self.name),
             # On linux we can set a virtual size of 1TB and the OS won't care.
             # On Mac & Win we have to start small and grow.
-            map_size=2**40 if platform.system() == 'Linux' else 2**20,
-            writemap=True,
-            map_async=True,
+            map_size=2**40,  # if platform.system() == 'Linux' else 2**20,
+            # metasync=False,
+            # writemap=True,
+            # map_async=True,
             subdir=True,
         )
 
     def close(self):
         self.db.close()
-
-    def unpack(self, v, packed=False):
-        return msgpack.unpackb(v) if packed and v is not None else v
-
-    def pack(self, v, packed=False):
-        return msgpack.packb(v) if packed and v is not None else v
 
     class decorators:
         def retry(wrapped):
@@ -402,18 +417,35 @@ class NgramKVLMDB:
                         self.open()
             return do_retry
 
+    @contextmanager
+    def in_transaction(self, *args, **kwargs):
+        with self.db.begin(*args, **kwargs) as txn:
+            self.txn = txn
+            try:
+                yield txn
+            finally:
+                self.txn = None
+
+    @contextmanager
+    def using_transaction(self, *args, **kwargs):
+        if self.txn:
+            yield self.txn
+        else:
+            with self.in_transaction(*args, **kwargs) as txn:
+                yield txn
+
     ## writers
 
     @decorators.retry
     def put(self, k, v, packed=False):
-        with self.db.begin(write=True) as txn:
+        with self.using_transaction(write=True) as txn:
             txn.put(k, self.pack(v, packed))
 
     @decorators.retry
     def put_batch(self, items, packed=False):
         try:
             items = list(items)
-            with self.db.begin(write=True) as txn:
+            with self.using_transaction(write=True) as txn:
                 for k, v in items:
                     txn.put(k, self.pack(v, packed))
         except lmdb.MapFullError:
@@ -425,12 +457,12 @@ class NgramKVLMDB:
 
     @decorators.retry
     def get(self, k, packed=False):
-        with self.db.begin() as txn:
+        with self.using_transaction() as txn:
             return self.unpack(txn.get(k), packed)
 
     @decorators.retry
     def get_prefix(self, prefix, packed=False):
-        with self.db.begin() as txn:
+        with self.using_transaction() as txn:
             cursor = txn.cursor()
             if not cursor.set_range(prefix):
                 return
@@ -441,7 +473,7 @@ class NgramKVLMDB:
 
     @decorators.retry
     def last_key(self):
-        with self.db.begin() as txn:
+        with self.using_transaction() as txn:
             cursor = txn.cursor()
             if cursor.last():
                 return cursor.key()
@@ -449,7 +481,122 @@ class NgramKVLMDB:
 
     @decorators.retry
     def pop(self, k, packed=False):
-        with self.db.begin(write=True) as txn:
+        with self.using_transaction(write=True) as txn:
             return self.unpack(txn.pop(k), packed)
 
+class NgramRocksDB(KVDB):
+    """ Wrapper for RocksDB. """
+    name = 'rocksdb'
+
+    ## helpers
+
+    def open(self):
+        # initial "production ready" settings via https://python-rocksdb.readthedocs.io/en/latest/tutorial/index.html
+        opts = rocksdb.Options()
+        opts.create_if_missing = True
+        opts.max_open_files = 300000
+        opts.write_buffer_size = 64 * 2**20  # 64MB
+        opts.max_write_buffer_number = 3
+        opts.target_file_size_base = 64 * 2**20  # 64MB
+        opts.merge_operator = self.NgramMergeOperator()
+        opts.compression = rocksdb.CompressionType.lz4_compression
+
+        opts.table_factory = rocksdb.BlockBasedTableFactory(
+            filter_policy=rocksdb.BloomFilterPolicy(10),
+            block_cache=rocksdb.LRUCache(2 * 2 ** 30),  # 2GB
+            block_cache_compressed=rocksdb.LRUCache(500 * 2 ** 20))  # 500MB
+
+        self.db = rocksdb.DB(os.path.join(self.path, self.name+".db"), opts)
+
+    def db_or_batch(self):
+        return self.batch or self.db
+
+    @contextmanager
+    def in_transaction(self, *args, **kwargs):
+        """
+            This is not really a RocksDB transaction, which python-rocksdb doesn't seem to support, but a WriteBatch,
+            which is effectively the same for write-only transactions that fit in RAM.
+        """
+        self.batch = rocksdb.WriteBatch(*args, **kwargs)
+        try:
+            yield self.batch
+            self.db.write(self.batch)
+        finally:
+            self.batch = None
+
+    ## writers
+
+    def put(self, k, v, packed=False):
+        self.db_or_batch().put(k, self.pack(v, packed))
+
+    class NgramMergeOperator(MergeOperator):
+        def full_merge(self, key, existing_value, ops):
+            """
+                Our mergable keys contain the counts for all jurisdiction-years and totals for an ngram, like this:
+                    existing_value == self.pack({
+                        <jurisdiction_id>: [
+                            <year>, <instance_count>, <document_count>,
+                            <year>, <instance_count>, <document_count>,
+                            ...
+                        ],
+                        None: {
+                            <year>: [<instance_count>, <document_count>],
+                            ...,
+                            None: [<instance_count>, <document_count>],
+                        }
+                    })
+                This function merges in new observations, in the form:
+                    ops == [
+                        self.pack((<jurisdiction_id>, <year>, <instance_count>, <document_count>)),
+                        ...
+                    ]
+            """
+            try:
+                # get target for merge
+                value = KVDB.unpack(existing_value) if existing_value else {
+                    None: {
+                        None: [0, 0],
+                    }
+                }
+                for new_value in ops:
+                    # get values to merge
+                    new_value = KVDB.unpack(new_value)
+                    jurisdiction_id, storage_year, instance_count, document_count = new_value
+                    # merge in individual jurisdiction-year value
+                    value.setdefault(jurisdiction_id, []).extend((storage_year, instance_count, document_count))
+                    # merge in running total for year
+                    totals = value[None]
+                    totals_year = totals.setdefault(storage_year, [0,0])
+                    totals_year[0] += instance_count
+                    totals_year[1] += document_count
+                    # merge in running total for all years combined
+                    total = totals[None]
+                    total[0] += instance_count
+                    total[1] += document_count
+                return (True, KVDB.pack(value))
+            except Exception:
+                # rocksdb swallows this stack trace, so print before raising
+                traceback.print_exc()
+                raise
+
+        def name(self):
+            return b'ngram_merge'
+
+    def merge(self, k, v, packed=False):
+        self.db_or_batch().merge(k, self.pack(v, packed))
+
+    ## readers
+
+    def get(self, k, packed=False):
+        return self.unpack(self.db.get(k), packed)
+
+    def get_prefix(self, prefix, packed=False):
+        it = self.db.iteritems()
+        it.seek(prefix)
+        for k, v in it:
+            if not k.startswith(prefix):
+                return
+            yield k, self.unpack(v, packed)
+
 ngram_kv_store = SimpleLazyObject(lambda: NgramKVLMDB())
+ngram_kv_store_full = SimpleLazyObject(lambda: NgramRocksDB())

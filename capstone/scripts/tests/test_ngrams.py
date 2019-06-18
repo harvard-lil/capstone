@@ -4,7 +4,7 @@ import pytest
 from mock import mock
 
 import scripts.ngrams
-from capdb.models import NgramWord, NgramObservation
+from capdb.models import NgramWord, NgramObservation, CaseBodyCache
 
 
 @pytest.mark.django_db
@@ -29,8 +29,7 @@ def test_ngrams(file_storage, three_cases, jurisdiction):
         case.jurisdiction_slug = jur.slug  # something about the test env is stopping the trigger from setting this
         case.decision_date = case.decision_date.replace(year=year)
         case.save()
-        case.case_text.text = text
-        case.case_text.save()
+        CaseBodyCache(metadata=case, text=text).save()
 
     # run ngram code
     with mock.patch('scripts.ngrams.ngram_storage', file_storage):
