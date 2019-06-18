@@ -80,6 +80,10 @@ dt.example-description {
   color: $color-black;
 }
 
+li.list-header {
+  font-size: 0.9em;
+}
+
 .example-mod-description {
   font-size: 14px;
 }
@@ -95,13 +99,4 @@ dt.example-description {
 
 #sidebar-menu {
   background-color: $color-white;
-}
-
-h2.subtitle::before {
-  display: block;
-  content: " ";
-  margin-top: -3rem;
-  height: 3rem;
-  visibility: hidden;
-  pointer-events: none;
 }

@@ -439,10 +439,10 @@ Endpoint Parameters:
     {: class="param-description" }
 * `jurisdiction`{: class="parameter-name" }
 {: class="list-group-item" add_list_class="parameter-list" }
-    {: class="param-data-type" }
     * [slug](#def-slug)
-    {: class="param-description" }
+    {: class="param-data-type" }
     * a [jurisdiction](#endpoint-jurisdictions) [slug](#def-slug)
+    {: class="param-description" }
 * `search`{: class="parameter-name" }
 {: class="list-group-item" add_list_class="parameter-list" }
     * An arbitrary [string](#def-string)
@@ -857,7 +857,7 @@ Thanks, and good luck!
   
 
 {# ==============> PROBLEMS <============== #}
-# Reporting Problems and Enhancement Requests  {: class="subtitle" data-toc-label='Report Issues' }
+# Reporting Problems and Enhancement Requests {: class="subtitle" data-toc-label='Report Issues' }
   
 We are serving an imperfect, living dataset through an API that will forever be a work-in-progress. We work hard to hunt 
 down and fix problems in both the API and the data, but a robust user base will uncover problems more quickly than our 
