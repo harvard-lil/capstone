@@ -200,6 +200,9 @@ django-appconf==1.0.2 \
     # via django-compressor
 django-bootstrap4==0.0.7 \
     --hash=sha256:32ffee49c4c8ca7df543aac8733a5d45ad304078f920a0167819525bd33a955a
+django-capture-tag==1.0 \
+    --hash=sha256:9c8a531687aac2a705a16a96c33930fb8193c17b641b7c24cd97ff180053d539 \
+    --hash=sha256:a996f64996830c00641b5b41503c62616f9613a478c84a303fc414e96bfb4891
 django-compressor==2.2 \
     --hash=sha256:7732676cfb9d58498dfb522b036f75f3f253f72ea1345ac036434fdc418c2e57 \
     --hash=sha256:9616570e5b08e92fa9eadc7a1b1b49639cce07ef392fc27c74230ab08075b30f \

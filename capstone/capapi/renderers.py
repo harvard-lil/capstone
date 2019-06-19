@@ -55,11 +55,11 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             if key + 1 < citation_count:
                 citations += "; "
 
+        citation_full = data["name_abbreviation"] + ", " + official_citation + " (" + data["decision_date"][0:4] + ")"
         context = {
             **renderer_context,
             'citation': official_citation,
-            'page_description': data['name'],
-            'page_title': data['name_abbreviation'],
+            'meta_description': "Full text of %s from the Caselaw Access Project." % citation_full,
             'frontend_url': data['frontend_url'],
             'metadata': {
                 "name": data["name"],
@@ -73,7 +73,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 "reporter": data["reporter"],
                 "court": data["court"],
                 "jurisdiction": data["jurisdiction"]},
-            'citation_full': data["name_abbreviation"] + ", " + official_citation + " (" + data["decision_date"][                                                                                   0:4] + ")"
+            'citation_full': citation_full,
         }
 
         # if user requested format=html without requesting full casebody
@@ -110,30 +110,30 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
                 context['page_url'] = parsed_response['url']
 
                 if context['name'] == "Case Instance":
-                    context['page_title'] = parsed_response['name_abbreviation']
-                    context['page_description'] = parsed_response['name']
+                    context['title'] = parsed_response['name_abbreviation']
+                    context['meta_description'] = parsed_response['name']
 
                 if context['name'] == "Jurisdiction Instance":
-                    context['page_title'] = "Jurisdiction: {}".format(parsed_response['name'])
-                    context['page_description'] = "The CAPAPI Jurisdiction Entry for {}".format(parsed_response['name_long'])
+                    context['title'] = "Jurisdiction: {}".format(parsed_response['name'])
+                    context['meta_description'] = "The CAPAPI Jurisdiction Entry for {}".format(parsed_response['name_long'])
 
                 if context['name'] == "Court Instance":
-                    context['page_title'] = parsed_response['name_abbreviation']
-                    context['page_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['name'])
+                    context['title'] = parsed_response['name_abbreviation']
+                    context['meta_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['name'])
 
                 if context['name'] == "Volume Instance":
-                    context['page_title'] = "{} v.{} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
-                    context['page_description'] = "The CAPAPI Volume Entry for {} v. {} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
+                    context['title'] = "{} v.{} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
+                    context['meta_description'] = "The CAPAPI Volume Entry for {} v. {} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
 
                 if context['name'] == "Reporter Instance":
-                    context['page_title'] = parsed_response['short_name']
-                    context['page_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['full_name'])
+                    context['title'] = parsed_response['short_name']
+                    context['meta_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['full_name'])
 
             except:
                 return context
         else:
-            context['page_title'] = context['name']
-            context['page_description'] = "CAPAPI: The Caselaw Access Project API"
+            context['title'] = context['name']
+            context['meta_description'] = "CAPAPI: The Caselaw Access Project API"
         return context
 
 

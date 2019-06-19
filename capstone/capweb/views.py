@@ -89,8 +89,7 @@ def contact(request):
         "form": form,
         "email": settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/contact.png',
-        'page_title': 'Contact Caselaw Access Project',
-        'page_description': 'Email us at %s or fill out this form. ' % settings.DEFAULT_FROM_EMAIL,
+        'meta_description': 'Email us at %s or fill out this form. ' % settings.DEFAULT_FROM_EMAIL,
     })
 
 
@@ -137,8 +136,7 @@ def gallery(request):
     return render(request, 'gallery.html', {
         'email': settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/gallery.png',
-        'page_title': 'Caselaw Access Project Project Gallery',
-        'page_description': 'Sky is the limit! Here are some examples of what’s possible.'
+        'meta_description': 'Sky is the limit! Here are some examples of what’s possible.'
     })
 
 
@@ -150,8 +148,7 @@ def maintenance_mode(request):
         "bottom": "${bottom}",
         "action": "${action}",
         'page_image': 'img/og_image/api.png',
-        'page_title': 'Caselaw Access Project: Error',
-        'page_description': 'This page is broken. Let us know if this should be working.'
+        'meta_description': 'This page is broken. Let us know if this should be working.'
     })
 
 
@@ -160,16 +157,14 @@ def wordclouds(request):
     return render(request, "gallery/wordclouds.html", {
         "wordclouds": wordclouds,
         'page_image': 'img/og_image/wordclouds.png',
-        'page_title': 'Caselaw Access Project Project California Wordclouds',
-        'page_description': 'Most used words in California caselaw from 1853 to 2015'
+        'meta_description': 'Most used words in California caselaw from 1853 to 2015'
     })
 
 
 def limericks(request):
     return render(request, 'gallery/limericks.html', {
         'page_image': 'img/og_image/limericks.png',
-        'page_title': 'Caselaw Access Project Project Limericks!',
-        'page_description': 'Generate rhymes using caselaw!'
+        'meta_description': 'Generate rhymes using caselaw!'
     })
 
 

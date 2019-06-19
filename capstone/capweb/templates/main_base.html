@@ -1,12 +1,25 @@
-{% load static %}{% load pipeline %}{% load capweb_static %}{% load render_bundle from webpack_loader %}<!DOCTYPE html>
+{% load static %}{% load pipeline %}{% load capweb_static %}{% load render_bundle from webpack_loader %}{% load capture_tags %}<!DOCTYPE html>
 <html lang="en">
   <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    {# title #}
+    {% capture as title_out silent %}{% block title %}{% if title %}{{ title }}{% endif %}{% endblock title %}{% block title_suffix %} | Caselaw Access Project{% endblock title_suffix %}{% endcapture %}
+    <title>{{ title_out }}</title>
+    <meta property="og:title" content="{% if og_title %}{{ og_title }}{% else %}{{ title_out }}{% endif %}">
+    <meta property="twitter:title" content="{% if og_title %}{{ og_title }}{% else %}{{ title_out }}{% endif %}">
+
+    {# description #}
+    {% capture as meta_description_out silent %}{% block meta_description %}{% if meta_description %}{{ meta_description }}{% else %}Explore American Caselaw{% endif %}{% endblock meta_description %}{% endcapture %}
+    <meta name="description" content="{{ meta_description_out }}">
+    <meta property="og:description" content="{% if og_description %}{{ og_description }}{% else %}{{ meta_description_out }}{% endif %}">
+    <meta name="twitter:description" content="{% if og_description %}{{ og_description }}{% else %}{{ meta_description_out }}{% endif %}">
+
     {# social #}
-    {% if page_image %}
+    {% if page_image is None %}
+    {% elif page_image %}
       <meta name="twitter:card" content="summary_large_image">
       <meta name="twitter:image" content="{% capweb_static page_image %}">
       <meta property="og:image"  content="{% capweb_static page_image %}">
@@ -18,22 +31,6 @@
 
     <meta name="twitter:site" content="@caselawaccess">
     <meta name="twitter:creator" content="@HarvardLIL">
-
-    {% if page_title %}
-      <meta property="og:title" content="{{ page_title }}">
-      <meta name="twitter:title" content="{{ page_title }}">
-    {% else %}
-      <meta property="og:title" content="Caselaw Access Project">
-      <meta name="twitter:title" content="Caselaw Access Project">
-    {% endif %}
-
-    {% if page_description %}
-      <meta property="og:description" content="{{ page_description }}">
-      <meta name="twitter:description" content="{{ page_description }}">
-    {% else %}
-      <meta property="og:description" content="Explore American Caselaw">
-      <meta name="twitter:description" content="Explore American Caselaw">
-    {% endif %}
 
     {% if page_url %}
       <meta property="og:url" content="{{ page_url }}">
@@ -64,9 +61,6 @@
     <meta name="msapplication-TileColor" content="#2b5797">
     <meta name="msapplication-TileImage" content="{% static "img/favicon/mstile-150x150.png" %}">
     <meta name="theme-color" content="#ffffff">
-
-    <title>{% block title %}{% if title %}{{ title }}{% endif %}{% endblock title %}{% block title_suffix %} | Caselaw Access Project{% endblock title_suffix %}</title>
-    <meta name="description" content="{% block meta_description %}{% if meta_description %}{{ meta_description }}{% else %}Explore American Caselaw{% endif %}{% endblock meta_description %}">
 
     {# if a stylesheet has to import base.scss, it should override this block instead of going in extra_head to avoid double import #}
     {% block base_css %}{% stylesheet "base" %}{% endblock %}
