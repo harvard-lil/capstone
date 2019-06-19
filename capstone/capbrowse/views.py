@@ -63,4 +63,12 @@ def search(request):
 
 @password_protected_page('ngrams')
 def trends(request):
-    return render(request, "trends.html")
+    q = request.GET.get('q')
+    if q:
+        title_suffix = ' for "%s"' % q
+    else:
+        title_suffix = ''
+    return render(request, "trends.html", {
+        'title': 'Historical Trends' + title_suffix,
+        'page_image': None,
+    })

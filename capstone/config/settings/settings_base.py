@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'elasticsearch_dsl',
     'django_elasticsearch_dsl',
     'django_elasticsearch_dsl_drf',
+    'capture_tag',
 ]
 
 REST_FRAMEWORK = {
