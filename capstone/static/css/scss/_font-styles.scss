@@ -34,6 +34,7 @@ h1, .h1 {
   @include media-breakpoint-down(md) {
     font-size: 3em;
   }
+  margin-top: -.5rem;
 }
 
 h2, .h2 {
@@ -42,7 +43,7 @@ h2, .h2 {
   @include media-breakpoint-down(md) {
     font-size: 2.3em;
   }
-
+  padding-top: -.25rem;
 }
 
 h3, .h3 {

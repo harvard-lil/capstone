@@ -30,12 +30,26 @@ li > code {
   background-color: inherit;
 }
 
+pre code {
+  font-size: 0.95em;
+  margin: 0;
+}
+
+
+
 .endpoint-link {
   font-weight: bold;
 }
 
 dt {
   margin-top: 2rem;
+}
+
+p.topic-header {
+  margin-top: 2rem;
+  font-weight: bold;
+  margin-bottom: 0px;
+  font-family: $font-sans-title;
 }
 
 lh{
@@ -62,7 +76,7 @@ dt.example-description {
   font-size: 0.65em;
 }
 
-h5.list-header {
+.list-header {
   font-family: "titillium", "Helvetica", sans-serif;
   font-size: 18px;
   font-weight: 700;
@@ -70,9 +84,9 @@ h5.list-header {
   color: $color-black;
 }
 
-li > h5.list-header {
+li.list-header {
   font-size: 0.9em;
- }
+}
 
 .example-mod-description {
   font-size: 14px;
@@ -85,6 +99,11 @@ li > h5.list-header {
 
 .code-example-casebody-section {
   color: $red;
+}
+
+p.code-block {
+  margin-top: -20px;
+  margin-bottom: 0;
 }
 
 #sidebar-menu {

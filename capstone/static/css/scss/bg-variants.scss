@@ -9,10 +9,19 @@
     &:hover, &:active, &:focus {
       color: $color-dark-blue;
     }
-  }
 
+  }
+  .decorative-arrow {
+    content: url('../../img/violet-arrow-right.svg');
+  }
   .btn-primary, .btn-secondary, .btn-tertiary {
     @include button($color-blue, $color-white, $color-dark-blue);
+  }
+  h2.subtitle {
+    color: lighten($color-violet, 5%);
+  }
+  #sidebar-menu {
+    background-color: $color-white;
   }
 }
 
@@ -20,6 +29,9 @@
   color: $color-black;
   #sidebar-menu {
     border-right: none;
+  }
+  .decorative-arrow {
+    content: url('../../img/blue-arrow-right.svg')
   }
   a {
     color: $color-dark-blue;
@@ -62,18 +74,29 @@
   li.item-set > .item-origin {
     color: $color-white;
   }
+  .decorative-arrow {
+    content: url('../../img/violet-arrow-right.svg');
+    opacity: 0.8;
+  }
 }
 
 .bg-tan {
   @extend .bg-white;
   a {
-    color: darken($color-blue, 5%);  // contrast ratio > 4.5
+    color: $color-violet;  // contrast ratio > 4.5
   }
   .btn-primary, .btn-secondary, .btn-tertiary {
-    @include button ($color-medium-blue, $color-white, $color-dark-blue)
+    @include button ($color-violet-large-text, $color-white, $color-violet-large-text-darkened)
   }
   .btn-secondary {
     background-color: $color-white !important;
   }
   .text-muted { color: darken($text-muted, 5%) !important; }  // contrast ratio > 4.5
+
+  h2.subtitle {
+    color: $color-dark-blue;
+  }
+  .decorative-arrow {
+    content: url('../../img/violet-arrow-right.svg')
+  }
 }

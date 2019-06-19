@@ -72,6 +72,7 @@
     {% block base_css %}{% stylesheet "base" %}{% endblock %}
     {% render_bundle 'chunk-common' %}
     {% render_bundle 'base' %}
+    {%  if extra_head %}{{ extra_head }}{% endif %}
     {% block extra_head %}{% endblock %}
   </head>
   <body class="hamburger-menu-closed" tabindex="-1">

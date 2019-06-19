@@ -8,7 +8,11 @@ from functools import wraps
 import markdown
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from markdown.extensions.attr_list import AttrListExtension
 from markdown.extensions.toc import TocExtension
+from markdown.extensions import Extension
+from markdown.treeprocessors import Treeprocessor
+
 import requests
 import django_hosts
 
@@ -175,14 +179,38 @@ def render_markdown(markdown_doc):
     """
         Render given markdown document and return (html, table_of_contents, meta)
     """
-    md = markdown.Markdown(extensions=[TocExtension(baselevel=2, marker=''), 'meta'])
-    html = md.convert(markdown_doc)\
-        .replace('<h2 ', '<h2 class="subtitle" ')
+
+    md = markdown.Markdown(extensions=[TocExtension(baselevel=2, marker=''), AttrListExtension(), listStyleExtension(),
+                                       'meta'])
+    html = md.convert(markdown_doc.lstrip())
     toc = md.toc.replace('<a ', '<a class="list-group-item" ')
     toc = "".join(toc.splitlines(True)[2:-2])  # strip <div><ul> around toc by dropping first and last two lines
     meta = {k:' '.join(v) for k, v in md.Meta.items()}
     return html, toc, meta
 
+class listStyleExtension(Extension):
+    """
+        This extension to the Markdown library looks at li elements which have the add_list_class attribute and
+        adds the space-separated list of classes to its parent ul or ol element
+    """
+    def extendMarkdown(self, md):
+        md.treeprocessors.register(listStyleProcessor(md), 'list_style', 7)
+
+class listStyleProcessor(Treeprocessor):
+    """
+        This is the meat of the listStyleExtension extension for python markdown
+    """
+    def run(self, tree):
+        # the list comprehension that feeds this for loop returns the parent (/..) of all list items regardless of their
+        # location in the document (//li) if they have the add_list_class attribute ([@add_list_class])
+        for modified_parent in [ element for element in tree.findall('.//li[@add_list_class]/..') ]:
+            existing_classes = [] if 'class' not in modified_parent.attrib \
+                else modified_parent.attrib['class'].split(' ')
+            new_classes = [word for child in modified_parent.findall('./li[@add_list_class]')
+                           for word in child.attrib['add_list_class'].split(' ')]
+            # assigns re-assigns the class as a space separated list of unique classes
+            modified_parent.attrib['class'] = " ".join(list(set(new_classes + existing_classes)))
+        return tree
 
 def is_google_bot(request):
     """

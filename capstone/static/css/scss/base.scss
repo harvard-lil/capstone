@@ -1,5 +1,6 @@
 @import '../_normalize.css';
 @import 'bootstrap/_functions.scss';
+@import 'variables';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
 @import "bootstrap/utilities/display";
@@ -20,7 +21,6 @@
 @import 'bootstrap/transitions';
 @import "bootstrap/type";
 
-@import 'variables';
 @import 'font-styles';
 
 // The stylesheets that build on top of base.scss but should be included in bases.scss
@@ -184,6 +184,8 @@ main {
   background-color: $color-white;
   padding: 1rem;
   font-family: $font-monospace, monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 code {
@@ -193,6 +195,10 @@ code {
   margin-left: 4px;
   margin-right: 4px;
   font-family: $font-monospace, monospace;
+}
+
+p {
+  top-margin: 1.25rem;
 }
 
 /* grid / layout */

@@ -17,13 +17,13 @@ urlpatterns = [
     path('tools/', views.tools, name='tools'),
     path('gallery/', views.gallery, name='gallery'),
     path('api/', views.api, name='api'),
-    path('search-docs/', views.search_docs, name='search-docs'),
+    path('search-docs/', MarkdownView.as_view(template_name='search_docs.md'), name='search-docs'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt',
                                             content_type='text/plain'), name='robots'),
 
     ### bulk data ###
-    path('bulk/', TemplateView.as_view(template_name='bulk_docs.html'), name='bulk-docs'),
     path('bulk/download/', user_views.bulk, name='bulk-download'),
+    path('bulk/', MarkdownView.as_view(template_name='bulk_docs.md'), name='bulk-docs'),
 
     path('terms', MarkdownView.as_view(template_name='terms-of-use.md'), name='terms'),
     path('privacy', MarkdownView.as_view(template_name='privacy-policy.md'), name='privacy'),

@@ -10,6 +10,7 @@ $color-black: #2F2F2F;
 
 /* preferred purple — harder to see when it's small */
 $color-violet-large-text: #6350FD;
+$color-violet-large-text-darkened: #3C2FA2;
 
 /* use for small text for more contrast */
 $color-violet: #4830FD;
@@ -42,6 +43,7 @@ $color-light-blue: #D2E7FF;
 $color-dark-blue: #004FB3;
 $color-orange: #EDA633;
 $color-pink: #F9DBFF;
+$color-blue: #0075FF;
 
 //$color-yellow-light: #FFFDEA;
 $color-yellow-light: #EAEAFF;
@@ -144,3 +146,17 @@ $header-margin-size: 4rem;
   background: url("../../img/logos/lil-black.svg") no-repeat;
   background-size: contain !important;
 }
+
+$top-section-padding: 4.5rem;
+
+$spacer: 1rem;
+$spacers: (
+    0: 0,
+    1: ($spacer * .25),
+    2: ($spacer * .5),
+    3: $spacer,
+    4: ($spacer * 1.5),
+    5: ($spacer * 3),
+    6: ($spacer * 4.5),
+    7: ($spacer * 6.75)
+);

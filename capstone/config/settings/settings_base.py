@@ -255,12 +255,6 @@ PIPELINE = {
             ),
             'output_filename': 'about.css'
         },
-        'tools': {
-            'source_filenames': (
-                'css/scss/tools.scss',
-            ),
-            'output_filename': 'tools.css'
-        },
         'bulk': {
             'source_filenames': (
                 'css/scss/bulk.scss',

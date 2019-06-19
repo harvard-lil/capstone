@@ -48,25 +48,28 @@ def index(request):
 
 
 def about(request):
-    news = get_data_from_lil_site(section="news")
     contributors = get_data_from_lil_site(section="contributors")
     sorted_contributors = {}
     for contributor in contributors:
-
         sorted_contributors[contributor['sort_name']] = contributor
         if contributor['affiliated']:
             sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
     sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
-    return render(request, "about.html", {
-        "page_name": "about",
+
+    markdown_doc = render_to_string("about.md", {
         "contributors": sorted_contributors,
-        "news": news,
-        "email": settings.DEFAULT_FROM_EMAIL,
-        'page_image': 'img/og_image/about.png',
-        'page_title': 'About the Caselaw Access Project',
-        'page_description': 'The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make'
-                            'all published U.S. court decisions freely available to the public online, in a consistent '
-                            'format, digitized from the collection of the Harvard Law Library.',
+        "news": get_data_from_lil_site(section="news"),
+        "email": settings.DEFAULT_FROM_EMAIL
+    }, request)
+
+    # render markdown document to html
+    html, toc, meta = render_markdown(markdown_doc)
+
+    meta = {k: mark_safe(v) for k, v in meta.items()}
+    return render(request, "layouts/full.html", {
+        'main_content': mark_safe(html),
+        'sidebar_menu_items': mark_safe(toc),
+        **meta,
     })
 
 
@@ -118,14 +121,16 @@ def subscribe(request):
 
 
 def tools(request):
-    return render(request, 'tools.html', {
-        'page_image': 'img/og_image/tools.png',
-        'page_title': 'Caselaw Access Project Tools',
-        'page_description': 'The capstone of the Caselaw Access Project is a robust set of tools which facilitate access'
-                            ' to the cases and their associated metadata. We currently offer two ways to access the '
-                            'data: our API, and bulk downloads.',
-        'ngrams': settings.NGRAMS_FEATURE
+    extra_context = {'ngrams': settings.NGRAMS_FEATURE}
+    markdown_doc = render_to_string("tools.md", extra_context, request)
+    html, toc, meta = render_markdown(markdown_doc)
+    meta = {k: mark_safe(v) for k, v in meta.items()}
+    return render(request, "layouts/full.html", {
+        'main_content': mark_safe(html),
+        'sidebar_menu_items': mark_safe(toc),
+        **meta,
     })
+
 
 
 def gallery(request):
@@ -179,23 +184,29 @@ def api(request):
     case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
     whitelisted_jurisdictions = Jurisdiction.objects.filter(whitelisted=True).values('name_long', 'name')
 
-    return render(request, 'api.html', {
-        "page_name": True,
+    markdown_doc = render_to_string("api.md", {
         "case_metadata": case_metadata,
         "case_id": case_metadata['id'],
         "case_jurisdiction": case_metadata['jurisdiction'],
         "reporter_id": reporter_metadata['id'],
         "reporter_metadata": reporter_metadata,
         "whitelisted_jurisdictions": whitelisted_jurisdictions,
-        'page_image': 'img/og_image/tools_api.png',
-        'page_title': 'Caselaw Access Project API Documentation',
-        'page_description': 'To get started with the API, you can explore it in your browser, or reach it from the '
-                            'command line.'
+    }, request)
+
+    # render markdown document to html
+    html, toc, meta = render_markdown(markdown_doc)
+
+    meta = {k: mark_safe(v) for k, v in meta.items()}
+    return render(request, "layouts/full.html", {
+        'main_content': mark_safe(html),
+        'sidebar_menu_items': mark_safe(toc),
+        **meta,
     })
 
 
+
 def search_docs(request):
-    return render(request, 'search_docs.html')
+    return render(request, 'search_docs.md')
 
 
 def snippet(request, label):

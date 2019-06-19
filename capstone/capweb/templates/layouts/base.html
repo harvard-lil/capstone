@@ -4,14 +4,11 @@
 {% block content %}
   <div class="basic-page">
     <div class="full-content {% block full_content_style %}{% endblock %}">
-      <div class="top-section {% block top_section_style %}{% endblock %}">
+      <div class="top-section {% block top_section_style %}{% endblock %}{% if top_section_style %}{{ top_section_style }}{% endif %}">
         <div class="title-section">
           {% block title_section %}
             <h1 class="page-title" id="overview">
-              <img alt=""
-                   aria-hidden="true"
-                   src='{% static "img/red-arrow-right.svg" %}'
-                   class="decorative-arrow"/>
+              <span alt="" aria-hidden="true" class="decorative-arrow"/></span>
               {% block content_title %}{% block title %}{% if title %}{{ title }}{% endif %}{% endblock %}{% endblock %}
             </h1>
           {% endblock %}
@@ -20,7 +17,7 @@
           <div class="content">{% block explainer %}{% if explainer %}{{ explainer }}{% endif %}{% endblock %}</div>
         </div>
       </div>
-      <div class="row {% block row_style %}{% endblock %}">
+      <div class="row {% block row_style %}{% endblock %}{% if row_style %} {{ row_style }}{% endif %}">
         {% block sidebar_menu %}{% endblock %}
         <div class="main-content {% block main_content_style %}{% endblock %}">{% block main_content %}{% if main_content %}{{ main_content }}{% endif %}{% endblock %}</div>
       </div>
