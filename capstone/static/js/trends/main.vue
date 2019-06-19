@@ -113,6 +113,10 @@
           <img :src="`${urls.static}img/icons/settings.svg`">
           <span>Customize graph</span>
         </panelset-button>
+        <panelset-button panel-id="keyboard" :current-panel="currentPanel" title="Keyboard commands">
+          <img :src="`${urls.static}img/icons/keyboard.svg`">
+          <span>Keyboard commands</span>
+        </panelset-button>
         <panelset-button panel-id="table" :current-panel="currentPanel" title="Table view">
           <img :src="`${urls.static}img/icons/view_list.svg`">
           <span>Table view</span>
@@ -221,6 +225,26 @@
         </div>
       </panelset-panel>
 
+      <!-- keyboard commands -->
+      <panelset-panel panel-id="keyboard" :current-panel="currentPanel">
+        <h5>Keyboard Commands</h5>
+        <p>The graph is keyboard accessible. With the graph selected, press:</p>
+        <ul class="bullets">
+          <li>up and down arrows: select terms</li>
+          <li>left and right arrows: select points</li>
+          <li>space bar: enable or disable selected trend line</li>
+          <li>enter key: search for example cases</li>
+          <li>
+            Sounds:
+            <ul class="bullets">
+              <li>"s" key: audio tones on/off</li>
+              <li>"p" key: auto play audio tones</li>
+              <li>"b" key: blues mode</li>
+            </ul>
+          </li>
+        </ul>
+      </panelset-panel>
+
       <!-- table panel -->
       <panelset-panel panel-id="table" :current-panel="currentPanel">
         <h5>Table View</h5>
@@ -300,18 +324,7 @@
         </div>
       </panelset-panel>
     </div> <!-- /collapsePanels -->
-    <div class="sr-only sr-only-focusable graph-keyboard-instructions panelset-panel" tabindex="0">
-      <h5>Keyboard controls</h5>
-      <p>With the graph selected:</p>
-      <ul class="bullets">
-        <li>up and down arrows select terms</li>
-        <li>left and right arrows select points</li>
-        <li>space bar enables or disables selected term</li>
-        <li>enter key searches for example cases</li>
-        <li>"s" key enables or disables audio tones</li>
-        <li>"p" key auto plays audio tones</li>
-      </ul>
-    </div>
+
     <div class="graph">
       <div class="container graph-container"
            @keydown="chartKeyDown"
@@ -356,6 +369,7 @@
   import Chart from 'chart.js';
   import csvStringify from 'csv-stringify/lib/sync';
   import debounce from 'lodash.debounce';
+  import Tone from 'tone/Tone/core/Tone';
   import Synth from 'tone/Tone/instrument/Synth';
   import Vue from 'vue';
   import VueSlider from 'vue-slider-component';
@@ -525,7 +539,16 @@
         pointStyles: ['circle', 'cross', 'crossRot', 'rect', 'rectRounded', 'rectRot', 'star', 'triangle'],
         soundsOn: false,
         soundAutoplay: false,
+        soundPlaySpeed: 50,
+        useScales: false,
+        soundScales: [
+          // [0,1,2,3,4,5,6,7,8,9,10,11],  // half steps
+          // 0,2,4,7,9  // pentatonic scale
+          [0, 3, 5, 6, 7, 10],  // blues scale
+        ],
+        currentSoundScale: 0,
         synth: null,
+        synthStopTime: null,
         errors: [],
         showLoading: false,
         initialQuery: null,
@@ -942,12 +965,16 @@
           case "p":
             this.soundAutoplay = !this.soundAutoplay;
             if (this.soundAutoplay) {
-              if (!this.soundsOn)
-                this.toggleSoundsOn();
+              if (!this.soundsOn) this.toggleSoundsOn();
               this.currentLine |= 0;
               this.currentPoint |= 0;
               this.autoplaySound();
             }
+            break;
+          case "b":
+            this.useScales = !this.useScales;
+            this.setCanvasStatus(`blues mode ${this.useScales?"on":"off"}`);
+            if (!this.soundsOn) this.toggleSoundsOn();
             break;
           default:
             return;
@@ -958,7 +985,7 @@
         this.soundsOn = !this.soundsOn;
         this.setCanvasStatus(`audio tones ${this.soundsOn?"on":"off"}`);
         if (this.soundsOn)
-          this.synth = new Synth({envelope: {attack: 0.1}}).toMaster();
+          this.synth = new Synth({envelope: {attack: this.soundPlaySpeed/1000}}).toMaster();
       },
       autoplaySound() {
         setTimeout(()=>{
@@ -969,7 +996,7 @@
             } else
               this.soundAutoplay = false;
           }
-        }, 100);
+        }, this.soundPlaySpeed);
       },
       selectLine() {
         /* handle update to this.currentLine */
@@ -987,7 +1014,7 @@
         delete this.chartOptions.animation;
         if (this.currentPoint !== null)
           this.selectPoint();
-        this.setCanvasStatus(datasets[index].label);
+        this.setCanvasStatus(datasets[index].label + " trend line");
       },
       selectPoint() {
         /* handle update to this.currentPoint */
@@ -1005,11 +1032,42 @@
         const value = dataset.data[this.currentPoint];
         this.setCanvasStatus(`${dataset.label} ${this.formatYearRange(this.chartData.labels[this.currentPoint])} ${this.formatValue(value)}`);
 
+        // play sound when point selected
         if (this.soundsOn) {
-          const middleA = 440;
           const halfStep = 2**(1/12);
-          const halfSteps = value / meta.dataset._scale.max * 36;
-          this.synth.triggerAttackRelease(middleA * halfStep ** halfSteps, .1);
+          const scaledValue = value / meta.dataset._scale.max;
+          let note;
+          if (this.useScales) {
+            // musical scale version
+            const baseNote = 110;  // start two octaves below middle A
+            const scale = this.soundScales[this.currentSoundScale];
+            const octaves = 4;  // total octaves of notes we have to work with
+            const granularity = octaves * scale.length;  // total notes we have to work with
+            let quantizedValue = Math.floor(scaledValue * granularity);
+            quantizedValue += this.currentLine % 12;  // each line gets its own key
+            const halfSteps = Math.floor(quantizedValue / scale.length) * 12 + scale[quantizedValue % scale.length];
+            note = baseNote * halfStep ** halfSteps;
+          } else {
+            // continuous frequency version
+            const baseNote = 220;
+            const octaves = 3;
+            const halfSteps = scaledValue * 12 * octaves;
+            note = baseNote * halfStep ** halfSteps;
+          }
+          if (this.synthStopTime === null)
+            this.synth.triggerAttack(note);
+          else
+            this.synth.setNote(note);
+          this.synthStopTime = Tone.now() + this.soundPlaySpeed/1000;
+          setTimeout(this.endSounds, this.soundPlaySpeed);
+        }
+      },
+      endSounds() {
+        if (this.synthStopTime === null || this.synthStopTime <= Tone.now()) {
+          this.synth.triggerRelease();
+          this.synthStopTime = null;
+        } else {
+          setTimeout(this.endSounds, this.soundPlaySpeed);
         }
       },
       setCanvasStatus: debounce(function(status){
