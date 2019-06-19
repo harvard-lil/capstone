@@ -951,15 +951,16 @@ class CaseMetadata(models.Model):
 
         ## save
 
+        params = {'text': text, 'html': html, 'xml': xml, 'json': json}
+        # use this approach, instead of update_or_create, to reduce sql traffic:
+        #   - avoid causing a select (if the body_cache has already been populated with select_related)
+        #   - avoid hydrating the params via save(), if they were loaded with defer()
         try:
             body_cache = self.body_cache
         except CaseBodyCache.DoesNotExist:
-            body_cache = CaseBodyCache(metadata=self)
-        body_cache.text = text
-        body_cache.html = html
-        body_cache.xml = xml
-        body_cache.json = json
-        body_cache.save()
+            CaseBodyCache(metadata=self, **params).save()
+        else:
+            CaseBodyCache.objects.filter(id=body_cache.id).update(**params)
 
     def sync_from_initial_metadata(self, force=False):
         """

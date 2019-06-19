@@ -25,7 +25,11 @@ def sync_case_body_cache_for_vol(volume_id):
     fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
     labels_by_block_id = PageStructure.labels_by_block_id(pages)
 
-    for case_metadata in volume.case_metadatas.select_related('structure'):
+    query = volume.case_metadatas\
+        .select_related('structure', 'body_cache')\
+        .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json')
+
+    for case_metadata in query:
         case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id)
 
 

@@ -1108,3 +1108,9 @@ def update_case_frontend_url(update_existing=False):
             case_batch.append(case)
         CaseMetadata.objects.bulk_update(case_batch, ['frontend_url'])
 
+
+# allow tasks to be run as "python fabfile.py task"
+# this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
+if __name__ == "__main__":
+    from fabric.main import main
+    main()
