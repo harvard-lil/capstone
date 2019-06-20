@@ -120,7 +120,7 @@ def subscribe(request):
 
 
 def tools(request):
-    extra_context = {'ngrams': settings.NGRAMS_FEATURE}
+    extra_context = {}
     markdown_doc = render_to_string("tools.md", extra_context, request)
     html, toc, meta = render_markdown(markdown_doc)
     meta = {k: mark_safe(v) for k, v in meta.items()}
