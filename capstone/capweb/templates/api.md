@@ -724,7 +724,7 @@ Endpoint Parameters:
 
 {# ==============> ngrams <============== #}
 Ngrams
-{: class="topic-header", id="endpoint-volumes" }
+{: class="topic-header", id="endpoint-ngrams" }
 
 [{% api_url "ngrams-list" %}]({% api_url "ngrams-list" %}){: class="endpoint-link" }
 {: class="endpoint-link" style="margin-top: 0px;" }
@@ -732,9 +732,8 @@ Ngrams
 For any given term, this endpoint returns a year-by-year list of:
 {: class="mb-0" }
 
-* the number of cases in which that term appears
-* the number of times that term appears in all cases 
-* the total number of cases
+* the number of cases in which that term appears, and the total number of cases
+* the number of times that term appears in all cases, and the total number of terms
 {: add_list_class="bullets mt-0" }
 
 If you set the optional `jurisdiction` parameter, your results will be limited to a specific jurisdiction.
@@ -761,7 +760,42 @@ Endpoint Parameters:
     {: class="param-data-type" }
     * Use this to filter your results by year.
     {: class="param-description" }
+
+
+
+Here's the output when 
+[querying for 'raisins' in California in 1984]({% api_url "ngrams-list" %}?q=raisins&jurisdiction=cal&year=1984): 
+
+`{
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": {
+        "raisins": {
+            "cal": [
+                {
+                    "year": "1984",
+                    "count": [
+                        40,
+                        4589927
+                    ],
+                    "doc_count": [
+                        1,
+                        1237
+                    ]
+                }
+            ]
+        }
+    }
+}`
+{: class="code-block" }    
     
+Under `results` is an object containing the results for the query term `raisins`. Each jurisdiction's [slug](#def-slug) 
+is a key in the `raisins` object. Only `cal` is listed because the jurisdiction parameter in the query is set to `cal`. 
+Under `cal`, there is an array of objects, each containing the counts for a specific year. Since this query filters for 
+results from 1984, that's the only year listed. Under `count`, there's `40, 4589927`, meaning *4,589,927* terms were 
+indexed for California in 1984, and 40 of those are *raisins*. Under `doc_count` there's `1, 1237`, meaning *1,237* 
+cases were indexed for California in 1984, and *raisins* shows up in *1* of those cases.
     
 {# ==============> Citations <============== #}
 Citations
