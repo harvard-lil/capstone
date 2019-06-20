@@ -13,11 +13,20 @@ extra_head: {% stylesheet 'docs' %}
 
 * **June 19, 2019**{: class='list-header' }
 {: add_list_class="bullets" }
-    * We added a new endpoint to our API: `ngrams`. 
-    * Documentation to come soon.
+    * We added the [ngrams]({% api_url "ngrams-list" %}) endpoint to our API. Here are the 
+    [docs]({% url 'api' %}#endpoint-ngrams)
 
+
+# Website {: class="subtitle" }
+
+* **June 19, 2019**{: class='list-header' }
+{: add_list_class="bullets" }
+    * We started recording this public change log.
+    * We added the [historic trends]({% url 'trends' %}) tool to our website.
 
 <!--
+# Data {: class="subtitle" }
+
 The spacing and placement of all the elements in the list is critical.
 
 Make subsequent entries bump up right against the initial list, like this:
