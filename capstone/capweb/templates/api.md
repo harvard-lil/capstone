@@ -366,7 +366,6 @@ API Base
 
 This is the base [endpoint](#def-endpoint) of CAPAPI. It just lists all of the available 
 [endpoints](#def-endpoint).
-{: class="endpoint description" }
 
 
 {# ==============> CASES <============== #}
@@ -378,7 +377,6 @@ Case Browse/Search Endpoint
 
 This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the numeric ID of your 
 case in our system, you can append it to the [path](#def-path) to retrieve a [single case](#endpoint-case).
-{: class="endpoint description" }
 
 Endpoint Parameters:
 {: class="list-header mb-2" }
@@ -451,7 +449,6 @@ Single Case Endpoint
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 Use this endpoint to retrieve a single case.
-{: class="endpoint description" }
 
 Endpoint Parameters:
 {: class="list-header mb-2" }
@@ -559,7 +556,6 @@ Reporters Endpoint
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This will return a list of reporter series.
-{: class="endpoint description" }
 
 
 Endpoint Parameters:
@@ -612,7 +608,6 @@ Jurisdictions Endpoint
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This will return a list of jurisdictions.
-{: class="endpoint description" }
       
 Endpoint Parameters:
 {: class="list-header mb-2" }
@@ -663,7 +658,6 @@ Courts
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This will return a list of courts.
-{: class="endpoint description" }
       
 Endpoint Parameters:
 {: class="list-header mb-2" }
@@ -716,7 +710,6 @@ Volumes
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This will return a complete list of volumes.
-{: class="endpoint description" }
       
 Endpoint Parameters:
 {: class="list-header mb-2" }
@@ -728,8 +721,82 @@ Endpoint Parameters:
     * This field contains a value that we generate which will bring you to a
      specific page of results.
     {: class="param-description" }
-        
 
+{# ==============> ngrams <============== #}
+Ngrams
+{: class="topic-header", id="endpoint-ngrams" }
+
+[{% api_url "ngrams-list" %}]({% api_url "ngrams-list" %}){: class="endpoint-link" }
+{: class="endpoint-link" style="margin-top: 0px;" }
+
+For any given term, this endpoint returns a year-by-year list of:
+{: class="mb-0" }
+
+* the number of cases in which that term appears, and the total number of cases
+* the number of times that term appears in all cases, and the total number of terms
+{: add_list_class="bullets mt-0" }
+
+If you set the optional `jurisdiction` parameter, your results will be limited to a specific jurisdiction.
+
+
+Endpoint Parameters:
+{: class="list-header mb-2" }
+
+* `words`{: class="parameter-name" }
+{: class="list-group-item" add_list_class="parameter-list" }
+    * up to 3 space separated [strings](#def-string)
+    {: class="param-data-type" }
+    * Here is where you specify which terms you'd like to submit. All terms beyond the third are ignored.
+    {: class="param-description" }
+* `jurisdiction`{: class="parameter-name" }
+{: class="list-group-item" add_list_class="parameter-list" }
+    * [Jurisdiction](#endpoint-jurisdiction) [slug](#def-slug): e.g. `tex` or `mass`
+    {: class="param-data-type" }
+    * This will limit your results to a specific jurisdiction.
+    {: class="param-description" }                
+* `year`{: class="parameter-name" }
+{: class="list-group-item" add_list_class="parameter-list" }
+    * YYYY
+    {: class="param-data-type" }
+    * Use this to filter your results by year.
+    {: class="param-description" }
+
+
+
+Here's the output when 
+[querying for 'raisins' in California in 1984]({% api_url "ngrams-list" %}?q=raisins&jurisdiction=cal&year=1984): 
+
+`{
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": {
+        "raisins": {
+            "cal": [
+                {
+                    "year": "1984",
+                    "count": [
+                        40,
+                        4589927
+                    ],
+                    "doc_count": [
+                        1,
+                        1237
+                    ]
+                }
+            ]
+        }
+    }
+}`
+{: class="code-block" }    
+    
+Under `results` is an object containing the results for the query term `raisins`. Each jurisdiction's [slug](#def-slug) 
+is a key in the `raisins` object. Only `cal` is listed because the jurisdiction parameter in the query is set to `cal`. 
+Under `cal`, there is an array of objects, each containing the counts for a specific year. Since this query filters for 
+results from 1984, that's the only year listed. Under `count`, there's `40, 4589927`, meaning *4,589,927* terms were 
+indexed for California in 1984, and 40 of those are *raisins*. Under `doc_count` there's `1, 1237`, meaning *1,237* 
+cases were indexed for California in 1984, and *raisins* shows up in *1* of those cases.
+    
 {# ==============> Citations <============== #}
 Citations
 {: class="topic-header", id="endpoint-citations" }
@@ -738,7 +805,6 @@ Citations
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This will return a list of citations.
-{: class="endpoint description" }
       
 Endpoint Parameters:
 {: class="list-header mb-2" }
@@ -906,7 +972,9 @@ data to another computer program. CAPAPI is a [RESTful](#def-restful) API design
   
 * Special Character
 {: class="list-header mb-0" id="def-special-character" }
-* Special characters are characters that have programmatic significance to a program. The "specialness" of any given character is determined by the context in which it's used. For example, you can't add a bare question mark to your path because they indicate to the server that everything after them is a [parameter](#def-parameter).
+* Special characters are characters that have programmatic significance to a program. The "specialness" of any given 
+character is determined by the context in which it's used. For example, you can't add a bare question mark to your path 
+because they indicate to the server that everything after them is a [parameter](#def-parameter).
 {: class="mt-1" }
 
 
@@ -928,25 +996,33 @@ internet. It's similar to a web browser in that it will retrieve the contents of
   
 * Endpoint
 {: class="list-header mb-0" id="def-endpoint" }
-* You can think of an endpoint as a distinct part of a program, which could require specific inputs, and/or provide different results. For example, the "login" endpoint on a website might accept a valid username and a password for input, and return a message that you've successfully logged in. A "register" endpoint might accept various bits of identifying information, and return a screen that says your account was successfully registered.
+* You can think of an endpoint as a distinct part of a program, which could require specific inputs, and/or provide 
+different results. For example, the "login" endpoint on a website might accept a valid username and a password for 
+input, and return a message that you've successfully logged in. A "register" endpoint might accept various bits of 
+identifying information, and return a screen that says your account was successfully registered.
 {: class="mt-1" }
   
 
 * Jurisdiction
 {: class="list-header mb-0" id="def-jurisdiction" }
-* The jurisdiction of a case or volume is the political division it belongs to, such as the United States, a state, a territory, a tribe, or the District of Columbia. Volumes that collect cases from a region have the jurisdiction "Regional." Cases from tribal courts (other than Navajo Nation) temporarily have the jurisdiction "Tribal Jurisdictions" while we verify the correct jurisdiction for each tribal court.
+* The jurisdiction of a case or volume is the political division it belongs to, such as the United States, a state, a 
+territory, a tribe, or the District of Columbia. Volumes that collect cases from a region have the jurisdiction 
+"Regional." Cases from tribal courts (other than Navajo Nation) temporarily have the jurisdiction "Tribal Jurisdictions"
+while we verify the correct jurisdiction for each tribal court.
 {: class="mt-1" }
 
 
 * OCR
 {: class="list-header mb-0" id="def-ocr" }
-* OCR is a process in which a computer attempts to create text from an image of text. The text in our cases is OCR-derived using scanned case reporter pages as source images.
+* OCR is a process in which a computer attempts to create text from an image of text. The text in our cases is 
+OCR-derived using scanned case reporter pages as source images.
 {: class="mt-1" }
 
 
 * RESTful
 {: class="list-header mb-0" id="def-restful" }
-* A RESTful [API](#def-api) is based on [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol), and makes use of its built-in verbs(commands), such as GET and POST.
+* A RESTful [API](#def-api) is based on [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol), and makes use
+of its built-in verbs(commands), such as GET and POST.
 {: class="mt-1" }
 
 
@@ -958,19 +1034,23 @@ internet. It's similar to a web browser in that it will retrieve the contents of
 
 * Server
 {: class="list-header mb-0" id="def-server" }
-* A server is just a computer on the internet that was configured to respond to requests from other computers. A web server will respond to requests from a web browser. An email server will respond to requests from email programs, and or other email servers which are sending it messages.
+* A server is just a computer on the internet that was configured to respond to requests from other computers. A web 
+server will respond to requests from a web browser. An email server will respond to requests from email programs, and or
+other email servers which are sending it messages.
 {: class="mt-1" }
 
 
 * Slug
 {: class="list-header mb-0" id="def-slug" }
-* A [string](#def-string) with [special characters](#def-special-character) removed for ease of inclusion in a [url](#def-url).
+* A [string](#def-string) with [special characters](#def-special-character) removed for ease of inclusion in a 
+[url](#def-url).
 {: class="mt-1" }
 
 
 * String
 {: class="list-header mb-0" id="def-string" }
-* A string, as a type of data, just means an arbitrary list (or string) of [characters](#def-character). A word is a string. This whole sentence is a string. "h3ll0.!" is a string. This whole document is a string.
+* A string, as a type of data, just means an arbitrary list (or string) of [characters](#def-character). A word is a 
+string. This whole sentence is a string. "h3ll0.!" is a string. This whole document is a string.
 {: class="mt-1" }
 
 
@@ -982,25 +1062,32 @@ internet. It's similar to a web browser in that it will retrieve the contents of
 
 * URL
 {: class="list-header mb-0" id="def-url" }
-* A URL, or Uniform Resource Locator, is an internet address that generally contains a communication protocol, a server name, a path to a file or endpoint, and possibly parameters to pass to the endpoint.
+* A URL, or Uniform Resource Locator, is an internet address that generally contains a communication protocol, a server 
+name, a path to a file or endpoint, and possibly parameters to pass to the endpoint.
 {: class="mt-1" }
 
 
 * URL Parameter
 {: class="list-header mb-0" id="def-parameter" }
-* For our purposes, a parameter is just a piece of data with a label that can be passed to an [endpoint](#def-endpoint) in a web request.
+* For our purposes, a parameter is just a piece of data with a label that can be passed to an [endpoint](#def-endpoint) 
+in a web request.
 {: class="mt-1" }
 
 
 * URL Path
 {: class="list-header mb-0" id="def-path" }
-* The URL path begins with the slash after the [top-level domain](#def-tld) and ends with the question mark that signals the beginning of the [parameters](#def-parameter). It was originally intended to point to a file on the server's hard drive, but these days it's just as likely to point to an application [endpoint](#def-endpoint).
+* The URL path begins with the slash after the [top-level domain](#def-tld) and ends with the question mark that signals
+ the beginning of the [parameters](#def-parameter). It was originally intended to point to a file on the server's hard 
+ drive, but these days it's just as likely to point to an application [endpoint](#def-endpoint).
 {: class="mt-1" }
 
 
 * Whitelisted
 {: class="list-header mb-0" id="def-whitelisted" }
-* While most cases in the database are subject to a 500 case per day access limit, jurisdictions that publish their cases in a citable, machine-readable format are not subject to this limit. [Click here for more information on access limits, what type of users aren't subject to them, and how you can eliminate them in your legal jurisdiction.](#access-limits)
+* While most cases in the database are subject to a 500 case per day access limit, jurisdictions that publish their 
+cases in a citable, machine-readable format are not subject to this limit. 
+For more information on access limits, what type of users aren't subject to them, and how you can eliminate them in your
+legal jurisdiction, visit our [access limits](#access-limits) section.
 {: class="mt-1" }
 
 
@@ -1010,3 +1097,14 @@ internet. It's similar to a web browser in that it will retrieve the contents of
 of results for a query. You can get the value of the cursor for the next and previous pages from the cursor parameter in
 the urls in the `next` and `previous` fields.
 {: class="mt-1" }
+
+
+{# ==============> CHANGES AND STABILITY <============== #}
+# Changes and Stablity {: class="subtitle" data-toc-label='Stability'  }
+
+
+This API is a work in progress. The format of the data it serves may change, and features will be added and possibly 
+removed or replaced. If your work relies on access to specific data in a specific format, you should download the data 
+and use local copies. If you have specific concerns about a particular feature of the API or future availability of 
+specific data, [get in touch]({% url "contact" %}). To see what we've changed recently, check out our 
+[change log]({% url "change-log" %}).
