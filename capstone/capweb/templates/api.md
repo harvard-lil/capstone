@@ -1100,11 +1100,11 @@ the urls in the `next` and `previous` fields.
 
 
 {# ==============> CHANGES AND STABILITY <============== #}
-# Changes and Stablity {: class="subtitle" data-toc-label='Stability'  }
+# Changes and Stability {: class="subtitle" data-toc-label='Stability'  }
 
 
 This API is a work in progress. The format of the data it serves may change, and features will be added and possibly 
 removed or replaced. If your work relies on access to specific data in a specific format, you should download the data 
 and use local copies. If you have specific concerns about a particular feature of the API or future availability of 
 specific data, [get in touch]({% url "contact" %}). To see what we've changed recently, check out our 
-[change log]({% url "change-log" %}).
+[changelog]({% url "changelog" %}).
