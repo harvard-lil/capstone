@@ -4,7 +4,7 @@
 title: Changelog
 page_image: 'img/og_image/tools.png'
 meta_description: CAP Data/Feature Change Log
-explainer: If our data or user-facing research features change in significant ways&mdash; beyond bug fixes and minor changes&mdash; we'll record those changes here.
+explainer: If our data or user-facing research features change in significant ways&mdash;beyond bug fixes and minor changes&mdash;we'll record those changes here.
 top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
