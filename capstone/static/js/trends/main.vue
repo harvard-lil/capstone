@@ -26,13 +26,13 @@
       </div>
 
       <div class="form-row query-row">
-        <div class="col pr-0">
+        <div class="col-sm pr-0">
           <input class="text-to-graph"
                  :value="textToGraph"
                  ref="textToGraph"
                  aria-label="terms to graph">
         </div>
-        <loading-button :showLoading="showLoading" class="col-auto pl-0">Search</loading-button>
+        <loading-button :showLoading="showLoading" class="col-auto pl-sm-0 ml-auto">Search</loading-button>
         <div class="col-auto">
           <panelset-button panel-id="help"
                            :current-panel="currentPanel"
@@ -419,6 +419,8 @@
       // render default search manually if rendering won't be prompted by URL value
       if (!route.query.q)
         this.textToGraphUpdated();
+      window.addEventListener('resize', ()=>{ this.handleWindowResize() });
+      this.handleWindowResize();
     },
     watch: {
       /* Read url state on change. */
@@ -470,6 +472,10 @@
       currentPoint() {
         this.selectPoint();
       },
+      totalChartHeight(newVal) {
+        this.chartStyles.height = `${newVal}px`;
+        console.log("style:", this.chartStyles.height);
+      },
     },
     data: function () {
       const chartHeight = 400;
@@ -518,6 +524,7 @@
         currentHelpPanel: null,
         currentApiQueries: [],
         chartHeight: chartHeight,
+        chartLegendHeight: 32,
         chartData: {datasets: []},
         canvasStatus: "",
         rawData: null,
@@ -577,7 +584,10 @@
               },
               ticks: {
                 beginAtZero: true,
-              }
+              },
+              scaleLabel: {
+                display: true,
+              },
             }],
             xAxes: [{
               gridLines: {
@@ -610,6 +620,19 @@
       currentUrl: function () {
         return this.baseUrl.slice(0, -1) + this.$route.fullPath;
       },
+      totalChartHeight() {
+        return this.chartHeight + this.chartLegendHeight;
+      },
+      yScaleLabel() {
+        const countType = this.countType === "count" ? "instances" : "cases";
+        if (this.percentOrAbs === "percent") {
+          return `% of ${countType}`;
+        } else if (this.smoothingWindow) {
+          return `${countType} per year`;
+        } else {
+          return countType;
+        }
+      },
     },
     methods: {
       formatYearRange(year) {
@@ -625,13 +648,12 @@
         /*
           format numeric datapoint based on percentOrAbs, countType, and smoothingWindow
         */
-        const countType = this.countType === "count" ? "instances" : "cases";
         if (this.percentOrAbs === "percent") {
-          return `${!value ? 0 : value === 100 ? 100 : value.toPrecision(2)}% of ${countType}`;
+          return `${!value ? 0 : value === 100 ? 100 : value.toPrecision(2)}${this.yScaleLabel}`;
         } else if (this.smoothingWindow) {
-          return `about ${value < 10 ? value.toPrecision(2) : Math.round(value)} ${countType} per year`;
+          return `about ${value < 10 ? value.toPrecision(2) : Math.round(value)} ${this.yScaleLabel}`;
         } else {
-          return `${value} ${countType}`;
+          return `${value} ${this.yScaleLabel}`;
         }
       },
       clampYear(year) {
@@ -833,6 +855,10 @@
           }
         } else {
           yAxes[0].display = true;
+          if (yAxes[0].scaleLabel.labelString !== this.yScaleLabel) {
+            yAxes[0].scaleLabel.labelString = this.yScaleLabel;
+            fullChartReset = true;
+          }
         }
         if (this.sameYAxis !== this.previousSameYAxis) {
           this.previousSameYAxis = this.sameYAxis;
@@ -1120,11 +1146,14 @@
         ctx.fillText(`Caselaw Access Project${w>400?' at Harvard Law School':''}. ${this.baseUrl}`, w-5, h-11);
         ctx.restore();
       },
+      handleWindowResize() {
+        /* try to set chart height to 400, but allow it to shrink down to 200 if window height is too small */
+        const availableHeight = window.innerHeight - document.getElementById('main-nav').offsetHeight;
+        this.chartHeight = max(200, min(availableHeight, 400));
+      },
       afterLayout(chart) {
-        /* make room for the legend, once we know how big it will be, by resizing the chart */
-        const newHeight = `${this.chartHeight-32+chart.legend.height}px`;
-        if (newHeight !== this.chartStyles.height)
-          this.chartStyles.height = newHeight;
+        /* resize chart when legend height changes, so legend doesn't squeeze out the chart itself */
+        this.chartLegendHeight = chart.legend.height;
       },
       clickHelpButton() {
         document.getElementById('helpPanelButton').click();
