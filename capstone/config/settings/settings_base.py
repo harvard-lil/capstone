@@ -554,6 +554,7 @@ LOGIN_URL = 'login'
 NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
 
 NGRAM_INGEST_THRESHOLD = 100
+NGRAM_THREAD_COUNT = 4
 
 # feature flags
 NGRAMS_FEATURE = False

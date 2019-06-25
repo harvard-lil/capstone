@@ -366,8 +366,9 @@ import lmdb
 
 class KVDB:
     """ Base key-value store wrapper. """
-    def __init__(self, path=settings.STORAGES['ngram_storage']['kwargs']['location'], name=None):
+    def __init__(self, path=settings.STORAGES['ngram_storage']['kwargs']['location'], name=None, read_only=False):
         self.path = path
+        self.read_only = read_only
         if name:
             self.name = name
         self.open()
@@ -487,6 +488,7 @@ class NgramKVLMDB(KVDB):
 class NgramRocksDB(KVDB):
     """ Wrapper for RocksDB. """
     name = 'rocksdb'
+    batch = None
 
     ## helpers
 
@@ -501,15 +503,24 @@ class NgramRocksDB(KVDB):
         opts.merge_operator = self.NgramMergeOperator()
         opts.compression = rocksdb.CompressionType.lz4_compression
 
+        # fast ingest stuff
+        # via https://github.com/facebook/rocksdb/wiki/RocksDB-FAQ -- "Q: What's the fastest way to load data into RocksDB?"
+        opts.max_background_flushes = 8
+        opts.level0_file_num_compaction_trigger = -1
+        opts.level0_slowdown_writes_trigger = -1
+        opts.level0_stop_writes_trigger = 4000
+        opts.write_buffer_size = 32 * 2**20  # default is 4 * 2 ** 20
+        opts.max_write_buffer_number = 8  # default is 2
+
         opts.table_factory = rocksdb.BlockBasedTableFactory(
             filter_policy=rocksdb.BloomFilterPolicy(10),
             block_cache=rocksdb.LRUCache(2 * 2 ** 30),  # 2GB
             block_cache_compressed=rocksdb.LRUCache(500 * 2 ** 20))  # 500MB
 
-        self.db = rocksdb.DB(os.path.join(self.path, self.name+".db"), opts)
+        self.db = rocksdb.DB(os.path.join(self.path, self.name+".db"), opts, read_only=self.read_only)
 
-    def db_or_batch(self):
-        return self.batch or self.db
+    def db_or_batch(self, batch=None):
+        return batch or self.batch or self.db
 
     @contextmanager
     def in_transaction(self, *args, **kwargs):
@@ -526,8 +537,8 @@ class NgramRocksDB(KVDB):
 
     ## writers
 
-    def put(self, k, v, packed=False):
-        self.db_or_batch().put(k, self.pack(v, packed))
+    def put(self, k, v, packed=False, batch=None):
+        self.db_or_batch(batch).put(k, self.pack(v, packed))
 
     class NgramMergeOperator(MergeOperator):
         def full_merge(self, key, existing_value, ops):
@@ -582,8 +593,8 @@ class NgramRocksDB(KVDB):
         def name(self):
             return b'ngram_merge'
 
-    def merge(self, k, v, packed=False):
-        self.db_or_batch().merge(k, self.pack(v, packed))
+    def merge(self, k, v, packed=False, batch=None):
+        self.db_or_batch(batch).merge(k, self.pack(v, packed))
 
     ## readers
 
@@ -600,3 +611,4 @@ class NgramRocksDB(KVDB):
 
 ngram_kv_store = SimpleLazyObject(lambda: NgramKVLMDB())
 ngram_kv_store_full = SimpleLazyObject(lambda: NgramRocksDB())
+ngram_kv_store_full_ro = SimpleLazyObject(lambda: NgramRocksDB(read_only=True))
