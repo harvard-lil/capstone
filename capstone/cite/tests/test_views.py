@@ -42,11 +42,16 @@ def test_volume(client, django_assert_num_queries, citation_factory):
     """ Test /series/volume/ """
 
     # make sure we correctly handle multiple reporters with same slug
-    case_1, case_2 = [citation_factory().case for _ in range(2)]
-    case_2.reporter.short_name_slug = case_1.reporter.short_name_slug
-    case_2.reporter.save()
-    case_2.volume.volume_number = case_1.volume.volume_number
-    case_2.volume.save()
+    case_1, case_2, case_3 = [citation_factory().case for _ in range(3)]
+    for case in [case_2, case_3]:
+        case.reporter.short_name_slug = case_1.reporter.short_name_slug
+        case.reporter.save()
+        case.volume.volume_number = case_1.volume.volume_number
+        case.volume.save()
+
+    # make sure we exclude dupes
+    case_3.duplicative = True
+    case_3.save()
 
     with django_assert_num_queries(select=3):
         response = client.get(
@@ -56,8 +61,9 @@ def test_volume(client, django_assert_num_queries, citation_factory):
     for case in (case_1, case_2):
         assert case.volume.volume_number in content
         assert case.reporter.full_name in content
-        assert case.name_abbreviation in content
+        assert case.citations.first().cite in content
 
+    assert case_3.citations.first().cite not in content
 
 @pytest.mark.django_db
 def test_case_not_found(client, django_assert_num_queries):
