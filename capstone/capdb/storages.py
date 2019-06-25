@@ -505,10 +505,11 @@ class NgramRocksDB(KVDB):
 
         # fast ingest stuff
         # via https://github.com/facebook/rocksdb/wiki/RocksDB-FAQ -- "Q: What's the fastest way to load data into RocksDB?"
+        # these settings require manual compaction after ingest
         opts.max_background_flushes = 8
         opts.level0_file_num_compaction_trigger = -1
         opts.level0_slowdown_writes_trigger = -1
-        opts.level0_stop_writes_trigger = 4000
+        opts.level0_stop_writes_trigger = 2 ** 16  # default is 24 -- we want to avoid hitting this until it's done
         opts.write_buffer_size = 32 * 2**20  # default is 4 * 2 ** 20
         opts.max_write_buffer_number = 8  # default is 2
 
