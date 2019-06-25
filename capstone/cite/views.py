@@ -76,7 +76,7 @@ def home(request):
 
 def series(request, series_slug):
     """ /<series_slug>/ -- list all volumes for each series with that slug (typically only one). """
-    reporters = (Reporter.objects
+    reporters = list(Reporter.objects
         .filter(short_name_slug=series_slug)
         .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None)))
         .order_by('full_name'))
@@ -89,10 +89,12 @@ def series(request, series_slug):
 
 def volume(request, series_slug, volume_number):
     """ /<series_slug>/<volume_number>/ -- list all cases for given volumes (typically only one). """
-    volumes = (VolumeMetadata.objects
+    volumes = list(VolumeMetadata.objects
         .filter(reporter__short_name_slug=series_slug, volume_number=volume_number)
         .select_related('reporter')
-        .prefetch_related('case_metadatas__citations'))
+        .prefetch_related(
+            Prefetch('case_metadatas', queryset=CaseMetadata.objects.in_scope().prefetch_related('citations'))
+        ))
     if not volumes:
         raise Http404
     volumes = [(volume, sorted(volume.case_metadatas.all(), key=lambda case: natural_sort_key(case.first_page or ''))) for volume in volumes]
@@ -113,7 +115,7 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         citations = [citation] if citation else []
     else:
         normalized_cite = re.sub(r'[^0-9a-z]', '', full_cite.lower())
-        citations = list(Citation.objects.filter(normalized_cite=normalized_cite))
+        citations = list(Citation.objects.filter(normalized_cite=normalized_cite, duplicative=False))
 
     ### handle case where we found a unique case with that citation
     if len(citations) == 1:
