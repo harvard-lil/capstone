@@ -61,7 +61,6 @@ def search(request):
     return render(request, "search.html")
 
 
-@password_protected_page('ngrams')
 def trends(request):
     q = request.GET.get('q')
     if q:

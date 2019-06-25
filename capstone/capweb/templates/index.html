@@ -177,7 +177,7 @@
           </h2>
           <div class="section-subtitle d-none d-md-block">
             See the full list:<br>
-            <div class="pt-2">
+            <div class="pt-3 pt-lg-2">
               <a href="{% url "tools" %}" class="btn-primary">tools</a>
             </div>
           </div>
@@ -211,13 +211,29 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-12 d-none d-sm-block d-md-none col-sm-6">
+                  <div class="boxcontainer text-white bg-transparent pr-3 mb-4">
+                    <div class="boxcontainer-body bg-black">
+                      <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title">
+                        <a href="{% url "tools" %}">Tools</a></div>
+                      <p class="d-none d-sm-block"><span class="highlighted">Our Tools Page</span> shows the rest of the
+                        tools offered by CAP.</p>
+                      <p class="d-block d-sm-none">Our Tools Page will show you the rest of the great tools offered by
+                        CAP.</p>
+                      <div class="boxcontainer-footer d-none d-sm-block">
+                        <div class="btn-group mb-0">
+                          <a href="{% url "tools" %}" class="btn-secondary">Tools</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 d-block d-sm-none d-md-block col-sm-6">
                   <div class="boxcontainer text-white bg-transparent pr-3">
                     <div class="boxcontainer-body bg-black">
                       <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title"><a href="{% api_url "api-root" %}">API</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">The API</span> allows users to browse and
-                        download cases using a few
-                        short commands.</p>
+                        download cases using a few short commands.</p>
                       <p class="d-block d-sm-none">The API allows users to browse and download cases using a few short
                         commands.</p>
                       <div class="boxcontainer-footer d-none d-sm-block">
@@ -245,6 +261,8 @@
                     </div>
                   </div>
                 </div>
+                <!--
+                TEMPORARILY REPLACED PENDING DESIGN DISCUSSION
                 <div class="col-6 d-none d-md-block">
                   <div class="boxcontainer text-white bg-transparent d-none d-sm-block pr-3 mb-4">
                     <div class="boxcontainer-body bg-black">
@@ -255,6 +273,23 @@
                       <div class="boxcontainer-footer d-none d-sm-block">
                         <div class="btn-group mb-0">
                           <a href="{% url "cite_home" host "cite" %}" class="btn-secondary">browse</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                -->
+                <div class="col-6 d-none d-md-block">
+                  <div class="boxcontainer text-white bg-transparent d-none d-sm-block pr-3 mb-4">
+                    <div class="boxcontainer-body bg-black">
+                      <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title">
+                        <a href="{% url "trends" %}">Historical Trends</a></div>
+                      <p class="d-none d-sm-block"><span class="highlighted">Historical Trends</span> lets you visualize
+                        the use of terms over time in caselaw.</p>
+                      <div class="boxcontainer-footer d-none d-sm-block">
+                        <div class="btn-group mb-0">
+                          <a href="{% url "trends" %}" class="btn-secondary">Trends</a>
+                          <a href="{% url "trends-docs" %}" class="btn-tertiary">see docs</a>
                         </div>
                       </div>
                     </div>
@@ -304,7 +339,7 @@
           </h2>
           <div class="section-subtitle d-none d-md-block">
             See the full list:<br>
-            <div class="pt-2">
+            <div class="pt-3 pt-lg-2">
               <a href="{% url "gallery" %}" class="btn-primary">gallery</a>
             </div>
           </div>
@@ -435,7 +470,7 @@
           </h2>
           <div class="section-subtitle d-none d-md-block">
             See the full list:<br>
-            <div class="pt-2">
+            <div class="pt-3 pt-lg-2">
               <a href="{% url "about" %}#press" class="btn-primary">press</a>
             </div>
           </div>
