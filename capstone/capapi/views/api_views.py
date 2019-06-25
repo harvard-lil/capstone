@@ -19,7 +19,7 @@ from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
 from capdb.models import Citation
-from capdb.storages import ngram_storage, ngram_kv_store, ngram_kv_store_full
+from capdb.storages import ngram_storage, ngram_kv_store, ngram_kv_store_full_ro
 from scripts.ngrams import parse_ngram_paths
 
 from django_elasticsearch_dsl_drf.constants import (
@@ -258,8 +258,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         #   }
         totals_by_jurisdiction_year_length = defaultdict(lambda: [0,0])
         if settings.ROCKSDB_FEATURE:
-            for k, v in ngram_kv_store_full.get_prefix(b'totals', packed=True):
-                jur, year, n = ngram_kv_store_full.unpack(k[len(b'totals'):])
+            for k, v in ngram_kv_store_full_ro.get_prefix(b'totals', packed=True):
+                jur, year, n = ngram_kv_store_full_ro.unpack(k[len(b'totals'):])
                 totals_by_jurisdiction_year_length[(jur, year, n)] = v
                 for total in (
                     totals_by_jurisdiction_year_length[('total', year, n)],
@@ -289,7 +289,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         q_len = len(words)
         # prepend word count as first byte
         q = bytes([q_len]) + ' '.join(words).encode('utf8')
-        kv_store = ngram_kv_store_full if settings.ROCKSDB_FEATURE else ngram_kv_store
+        kv_store = ngram_kv_store_full_ro if settings.ROCKSDB_FEATURE else ngram_kv_store
         if q.endswith(b' *'):
             # wildcard search
             pairs = kv_store.get_prefix(q[:-1], packed=True)

@@ -784,8 +784,12 @@ def count_chars_in_all_cases(path="/tmp/counts"):
 @task
 def ngram_jurisdictions(slug=None, replace_existing=False):
     """ Generate ngrams for all jurisdictions. If replace_existing is False (default), only jurisdiction-years without existing ngrams will be indexed. """
-    from scripts.ngrams import ngram_jurisdictions
-    ngram_jurisdictions(slug, replace_existing=bool(replace_existing))
+    if settings.ROCKSDB_FEATURE:
+        from scripts.ngrams import ngram_jurisdictions_rocksdb
+        ngram_jurisdictions_rocksdb(slug)
+    else:
+        from scripts.ngrams import ngram_jurisdictions
+        ngram_jurisdictions(slug, replace_existing=bool(replace_existing))
 
 
 @task
