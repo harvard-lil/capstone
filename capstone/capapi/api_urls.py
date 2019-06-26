@@ -7,19 +7,8 @@ from drf_yasg import openapi
 
 from capapi.views import api_views
 
-if settings.NGRAMS_FEATURE:
-    router_class = routers.DefaultRouter
-else:
-    class NoNgramAPIRootView(routers.APIRootView):
-        def get(self, *args, **kwargs):
-            out = super().get(*args, **kwargs)
-            del out.data['ngrams']
-            return out
-    class NoNgramRouter(routers.DefaultRouter):
-        APIRootView = NoNgramAPIRootView
-    router_class = NoNgramRouter
 
-router = router_class()
+router = routers.DefaultRouter()
 router.register('cases', api_views.CaseViewSet)
 router.register('citations', api_views.CitationViewSet)
 router.register('jurisdictions', api_views.JurisdictionViewSet)
