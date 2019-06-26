@@ -47,4 +47,5 @@ Browse and cite all of our cases sorted by jurisdiction, series, and volume.
 Explore the data by looking at how usage of text changes over time.
     
 [HISTORICAL TRENDS]({% url "trends" %}){: class="btn-primary" }
+[DOCS]({% url "trends-docs" %}){: class="btn-secondary" }
 {: class="btn-group" }

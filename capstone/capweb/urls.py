@@ -18,7 +18,7 @@ urlpatterns = [
     path('gallery/', views.gallery, name='gallery'),
     path('api/', views.api, name='api'),
     path('search-docs/', MarkdownView.as_view(template_name='search_docs.md'), name='search-docs'),
-    #path('trends-docs/', MarkdownView.as_view(template_name='trends_docs.md'), name='trends-docs'),
+    path('trends-docs/', MarkdownView.as_view(template_name='trends_docs.md'), name='trends-docs'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt',
                                             content_type='text/plain'), name='robots'),
 
