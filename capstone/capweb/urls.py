@@ -28,7 +28,7 @@ urlpatterns = [
 
     path('terms', MarkdownView.as_view(template_name='terms-of-use.md'), name='terms'),
     path('privacy', MarkdownView.as_view(template_name='privacy-policy.md'), name='privacy'),
-    path('change-log', MarkdownView.as_view(template_name='change_log.md'), name='change-log'),
+    path('changelog', MarkdownView.as_view(template_name='changelog.md'), name='changelog'),
 
     path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
     path('gallery/limericks', views.limericks, name='limericks'),
