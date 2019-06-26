@@ -4,7 +4,7 @@
 title: Historical Trends documentation
 page_image: 'img/og_image/trends.png'
 meta_description: Caselaw Access Project API Docs
-explainer: CAP Historical Trends visualizes and compares the frequency of terms in citable U.S. caselaw between 1800 and 2018. It provides a simple, flexible search syntax and intuitive controls suitable for casual exploration, serious research, and everything between. The data is sourced directly from our free, public <a href="{% url 'api' }">API</a>.
+explainer: CAP Historical Trends visualizes and compares the frequency of terms in citable US caselaw between 1800 and 2018. It provides a simple, flexible search syntax and intuitive controls suitable for casual exploration, serious research, and everything between. The data is sourced directly from our free, public <a href="{% url 'api' }">API</a>.
 extra_head: {% stylesheet 'docs' %}
 top_section_style: bg-black
 row_style: bg-tan
@@ -14,7 +14,7 @@ row_style: bg-tan
 
 The [Caselaw Access Project](https://case.law/) includes over 6 million U.S. legal cases from the Harvard Law School 
 Library — about 12 billion words in all. Our Historical Trends tool graphs the frequency of words and phrases through
-time from 1800 to 2018, similar to the Google Ngram Viewer. (Though the corpus includes data from cases prior to 1800, 
+time from 1800 to 2018, similar to the Google Ngram Viewer. (Though the corpus includes data from cases before 1800, 
 low case density limits their utility in visualizing trends, so we've excluded them.)
 
 Search for phrases of one to three words. Multiple phrases can be separated by commas. Do not use quotes. 
@@ -40,7 +40,7 @@ mouse cursor, or by using the [keyboard navigation](#keyboard-navigation).
 ** Horizontal axis **
 {: class="list-header mb-1" }
 
-The horizontal axis always represents time; each point on the time line represents one or more years depending on the 
+The horizontal axis always represents time; each point on the timeline represents one or more years, depending on the 
 [Smoothing](#setting-smoothing) setting. If no smoothing is applied, each point on the horizontal axis represents one 
 year. If maximum smoothing is applied, it may be an average of several decades.  Hover over or focus on a data point to 
 see what years each point represents. 
@@ -48,7 +48,7 @@ see what years each point represents.
 ** Vertical axis **
 {: class="list-header mb-1" }
 
-The numerically-labelled vertical axis is a little trickier. Depending on your [settings](#customize-display), it could 
+The numerically-labeled vertical axis is a little trickier. Depending on your [settings](#customize-display), it could 
 represent: 
 
 * the number of times that term was used in a given year
@@ -72,7 +72,7 @@ the smoothing slider all the way to the left, until 'No smoothing will be applie
 If we focus on 1990, we see that 'pear' appears in 0.0065% of cases, 'banana' appears in 0.058% of cases, 'apple' 
 appears in 0.45% of cases, and 'orange' appears in 1% of cases. This can be changed by tweaking the Percentage 
 Count/Instance Count/Scaling settings, which are also accessible by clicking on the gear icon above the graph. By 
-default the settings read: 
+default, the settings read: 
 
 * 'percentage' rather than 'absolute number,' 
 * 'case count' rather than 'instance count,'
@@ -97,7 +97,7 @@ each point on the horizontal access representing a single value for one year, it
 42 years, and the previously bumpy trend line is now smooth. 
 
 
-**Please keep in mind that smoothing does not simply flatten the curve, it changes the values of the each data point.** 
+**Please keep in mind that smoothing does not simply flatten the curve; it changes the values of each data point.** 
 The year labels, however, will not change. This means that a with smoothing enabled, a data point associated with a 
 particular year will have values from other years averaged into it. Smoothing affects data in both the graph and table 
 views, but not CSV or JSON downloads.
@@ -110,7 +110,7 @@ If you'd preview to view the data points in a table rather than on a chart, you 
 keyboard icon and the mortarboard icon) above the graph. These are affected by the 
 [customize display settings](#customize-display) in the same way the graph is. 
 
-**important: smoothing does not simply flatten the curve, it changes the values of the each data point. Pleae see the
+**important: smoothing does not simply flatten the curve; it changes the values of the each data point. Please see the
 [Smoothing](#setting-smoothing) section for more information.**
 
 
