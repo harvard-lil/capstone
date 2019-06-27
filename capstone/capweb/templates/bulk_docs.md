@@ -106,6 +106,14 @@ with lzma.open("data/data.jsonl.xz") as in_file:
         print(case['name'])
 </pre>
 
+To load the compressed data file into an R data frame, do something like this:
+
+<pre class="code-block">
+> install.packages("jsonlite")
+> library(jsonlite)
+> ark <- stream_in(xzfile("Arkansas-20190416-text/data/data.jsonl.xz"))
+</pre>
+
 # Visit Us {: class="subtitle" }
 
 Explore our Illinois Public Bulk Data on 
