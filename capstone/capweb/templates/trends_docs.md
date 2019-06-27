@@ -4,7 +4,7 @@
 title: Historical Trends documentation
 page_image: 'img/og_image/trends.png'
 meta_description: Caselaw Access Project API Docs
-explainer: CAP Historical Trends visualizes and compares the frequency of terms in citable US caselaw between 1800 and 2018. It provides a simple, flexible search syntax and intuitive controls suitable for casual exploration, serious research, and everything between. The data is sourced directly from our free, public <a href="{% url 'api' }">API</a>.
+explainer: CAP Historical Trends visualizes and compares the frequency of terms in citable US caselaw between 1800 and 2018. It provides a simple, flexible search syntax and intuitive controls suitable for casual exploration, serious research, and everything between. The data is sourced directly from our free, public <a href="{% url 'api' %}">API</a>.
 extra_head: {% stylesheet 'docs' %}
 top_section_style: bg-black
 row_style: bg-tan
@@ -65,8 +65,7 @@ Please continue reading for more information on how to change the settings to di
 ** Percentage Count/Instance Count/Scaling **
 {: class="list-header mb-1" }
 
-For example, in the query [https://case.law/trends/?q=apple,%20banana,%20orange,%20pear] we can see four terms: apple, 
-banana, orange, and pear. For the sake of simplicity, we'll turn smoothing off by clicking on the gear icon and sliding 
+For example, in the query [https://case.law/trends/?q=apple, banana, orange, pear](https://case.law/trends/?q=apple,%20banana,%20orange,%20pear) we can see four terms: apple, banana, orange, and pear. For the sake of simplicity, we'll turn smoothing off by clicking on the gear icon and sliding
 the smoothing slider all the way to the left, until 'No smoothing will be applied' is displayed.
 
 If we focus on 1990, we see that 'pear' appears in 0.0065% of cases, 'banana' appears in 0.058% of cases, 'apple' 
@@ -91,7 +90,7 @@ specific term, and not to the other terms. As a result, the Y-axis scale disappe
 ** Smoothing **
 {: class="list-header mb-1" id="setting-smoothing" }
 
-In the previous example, we turned 'smoothing' off so one data point would equal one year. If we drag the smoothing 
+In the previous example, we turned smoothing off so one data point would equal one year. If we drag the smoothing
 slider to the right until "Data points will be averaged with the nearest 10% of other points" is displayed, rather than 
 each point on the horizontal access representing a single value for one year, it now represents a value averaged over 
 42 years, and the previously bumpy trend line is now smooth. 
@@ -161,8 +160,8 @@ with your first one or two words. Wildcards are currently allowed only as the fi
 Examples:
 {: class="list-header mb-1" }
 
-* [`constitutional *`]({% url 'trends' %}?q=*: gold) *(top ten two-word phrases beginning with "constitutional")*
-* [`ride a *`]({% url 'trends' %}?q=*: gold) *(top ten three-word phrases beginning with "ride a")*
+* [`constitutional *`]({% url 'trends' %}?q=constitutional *) *(top ten two-word phrases beginning with "constitutional")*
+* [`ride a *`]({% url 'trends' %}?q=ride a *) *(top ten three-word phrases beginning with "ride a")*
 * `* amendment` **(not currently supported)**{: class="highlighted" }
 {: add_list_class="bullets" }
 
