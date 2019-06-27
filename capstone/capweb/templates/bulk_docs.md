@@ -21,7 +21,7 @@ See our [About page]({% url "about" %}#usage) for details on our data access res
 
 # Downloading {: class="subtitle" }
 
-You can download bulk data ({% url "bulk-download" %}">manually from our website], or
+You can [download bulk data]({% url "bulk-download" %}) manually from our website, or
 [use the API]({% api_url "caseexport-list" %}) if you are fetching many files at once.
 
 
@@ -29,6 +29,13 @@ To download all cases via the API,
 [use the body_format and filter_type parameters to the `/bulk/` endpoint]({% api_url "caseexport-list" %}?body_format=text&filter_type=jurisdiction) 
 to select all cases, sorted by jurisdiction, of your desired body_format.
 
+If you are downloading bulk files manually, you may find that the browser times out on the largest files;
+in that case, use `wget`, which retries when it encounters a network problem. Here's an example for the
+U.S. file with case body in text format:
+
+<pre class="code-block">wget --header="Authorization: Token your-api-token" -O "United States-20190418-text.zip" "https://api.case.law/v1/bulk/17050/download/"</pre>
+
+In this case, you'd replace `your-api-token` with your API token from the [user details]({% url "user-details" %}) page.
 
 # API Equivalence {: class="subtitle" }
 
@@ -68,7 +75,7 @@ indicates that the file is compressed with xzip, and is a text file where each l
 
 The `data.jsonl.xz` file can be unzipped using third-party GUI programs like
 [The Unarchiver](https://theunarchiver.com/) (Mac) or
-[7-zip](https://www.7-zip.org/)(Windows), or from the command line with a command like
+[7-zip](https://www.7-zip.org/) (Windows), or from the command line with a command like
 `unxz -k data/data.jsonl.xz`.
 
 
