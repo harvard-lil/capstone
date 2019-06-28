@@ -3,6 +3,7 @@ import csv
 import itertools
 import json
 import lzma
+import random
 
 import re
 from queue import Queue
@@ -10,12 +11,11 @@ from threading import Thread
 
 import rocksdb
 import tempfile
-import time
 import traceback
 from contextlib import ExitStack, contextmanager
 from heapq import merge
 from collections import Counter, defaultdict, OrderedDict
-from multiprocessing import current_process, Process, Manager
+from multiprocessing import Process, Manager
 from multiprocessing.pool import Pool
 
 import nltk
@@ -140,16 +140,20 @@ def ngram_jurisdictions_rocksdb(slug=None, max_n=3):
         the queue and writes it to the database.
     """
     # process pool of workers to ngram each jurisdiction-year and return keys
-    ngram_workers = Pool(settings.NGRAM_THREAD_COUNT)
+    ngram_workers = Pool(settings.NGRAM_THREAD_COUNT, maxtasksperchild=1)
 
     # inter-process queue of returned keys
     m = Manager()
     queue = m.Queue(settings.NGRAM_THREAD_COUNT)
+    ngram_worker_offsets = m.dict()
+    ngram_worker_lock = m.Lock()
 
     # process to write keys to rocksdb
-    rocksdb_worker = Process(target=rocksdb_writer, args=(queue,))
+    rocksdb_loaded = m.Condition()
+    rocksdb_worker = Process(target=rocksdb_writer, args=(queue, rocksdb_loaded))
     rocksdb_worker.start()
-    time.sleep(.1)  # make sure writer process has time to create new rocks db before reader processes start
+    with rocksdb_loaded:
+        rocksdb_loaded.wait()
 
     # queue each jurisdiction-year for processing
     jurisdictions = Jurisdiction.objects.all()
@@ -170,7 +174,7 @@ def ngram_jurisdictions_rocksdb(slug=None, max_n=3):
         # ngram each year
         for year in range(first_year, last_year + 1):
             # ngram_worker(queue, jurisdiction_id, year, max_n)
-            ngram_worker_results.append((jurisdiction.slug, year, ngram_workers.apply_async(ngram_worker, (queue, jurisdiction.id, jurisdiction.slug, year, max_n))))
+            ngram_worker_results.append((jurisdiction.slug, year, ngram_workers.apply_async(ngram_worker, (ngram_worker_offsets, ngram_worker_lock, queue, jurisdiction.id, jurisdiction.slug, year, max_n))))
 
     # wait for all ngram workers to finish
     ngram_workers.close()
@@ -187,7 +191,7 @@ def ngram_jurisdictions_rocksdb(slug=None, max_n=3):
     queue.put('STOP')
     rocksdb_worker.join()
 
-def ngram_worker(queue, jurisdiction_id, jurisdiction_slug, year, max_n):
+def ngram_worker(ngram_worker_offsets, ngram_worker_lock, queue, jurisdiction_id, jurisdiction_slug, year, max_n):
     """
         Worker process to generate all ngrams for the given jurisdiction-year and add them to the queue.
     """
@@ -197,8 +201,12 @@ def ngram_worker(queue, jurisdiction_id, jurisdiction_slug, year, max_n):
 
     # tqdm setup -- add an offset based on current process index, plus space for rocksdb worker
     desc = "%s-%s" % (jurisdiction_slug, year)
-    id = current_process()._identity
-    pos = 2 + settings.NGRAM_THREAD_COUNT + (id[0] if id else 0)
+    with ngram_worker_lock:
+        line_offset = next((i for i in range(settings.NGRAM_THREAD_COUNT) if i not in ngram_worker_offsets), None)
+        if line_offset is None:
+            line_offset = random.shuffle(ngram_worker_offsets.keys())[0]
+        ngram_worker_offsets[line_offset] = True
+    pos = 2 + settings.NGRAM_THREAD_COUNT + line_offset
 
     # count words for each case
     counters = {n: {'total_tokens':0, 'total_documents':0, 'instances': Counter(), 'documents': Counter()} for n in range(1, max_n + 1)}
@@ -239,13 +247,17 @@ def ngram_worker(queue, jurisdiction_id, jurisdiction_slug, year, max_n):
 
         queue.put((totals, merge_value_prefix, merges))
 
-def rocksdb_writer(queue):
+    del ngram_worker_offsets[line_offset]
+
+def rocksdb_writer(queue, rocksdb_loaded):
     """
         Worker process to pull ngrams off of the queue and add them to a second internal queue for writing to rocksdb.
         This spawns NGRAM_THREAD_COUNT threads to do the actual writing.
     """
     # make sure the database exists; read-only clients in ngram_worker() will choke if it doesn't
     ngram_kv_store_full.get(b'init')
+    with rocksdb_loaded:
+        rocksdb_loaded.notify_all()
 
     # NOTE: the following is a lower-level way to do something we could just do with multiprocessing.ThreadPool.
     # Unfortunately ThreadPool doesn't let us set a max queue size for adding tasks to the queue, which is needed for backpressure.

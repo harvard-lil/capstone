@@ -375,7 +375,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                         if year_filter and year not in year_filter:
                             continue
 
-                        totals = self.totals_by_jurisdiction_year_length[(jur_slug, year, q_len)]
+                        totals = self.totals_by_jurisdiction_year_length[(jur_id, year, q_len)]
                         years_out.append(OrderedDict((
                             ("year", str(year) if year else "total"),
                             ("count", [count, totals[0]]),
