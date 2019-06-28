@@ -487,6 +487,9 @@ class Reporter(models.Model):
     notes = models.TextField(blank=True, null=True)
     hollis = ArrayField(models.CharField(max_length=9), blank=True,
                         help_text="This is going to replace the Hollis model")
+    is_nominative = models.BooleanField(default=False)
+    nominative_for = models.ForeignKey("Reporter", on_delete=models.DO_NOTHING, related_name='nominative_reporters', blank=True, null=True)
+
 
     def __str__(self):
         return "%s: %s %s-%s" % (self.short_name, self.full_name, self.start_year or '', self.end_year or '')
@@ -509,12 +512,15 @@ class Reporter(models.Model):
 
 class VolumeMetadata(models.Model):
     barcode = models.CharField(unique=True, max_length=64, primary_key=True)
-    hollis_number = models.CharField(max_length=9, null=True, help_text="Identifier in the Harvard cataloging system, HOLLIS")
+
+    reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='volumes')
     volume_number = models.CharField(max_length=64, blank=True, null=True)
+    nominative_reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='nominative_volumes', blank=True, null=True)
+    nominative_volume_number = models.CharField(max_length=1024, blank=True, null=True)
+
+    hollis_number = models.CharField(max_length=9, null=True, help_text="Identifier in the Harvard cataloging system, HOLLIS")
     publisher = models.CharField(max_length=255, blank=True, null=True)
     publication_year = models.IntegerField(blank=True, null=True)
-    reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='volumes')
-    nominative_volume_number = models.CharField(max_length=1024, blank=True, null=True)
     nominative_name = models.CharField(max_length=1024, blank=True, null=True)
     series_volume_number = models.CharField(max_length=1024, blank=True, null=True)
     spine_start_year = models.IntegerField(blank=True, null=True)
