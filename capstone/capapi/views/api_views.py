@@ -262,8 +262,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 jur, year, n = ngram_kv_store_full_ro.unpack(k[len(b'totals'):])
                 totals_by_jurisdiction_year_length[(jur, year, n)] = v
                 for total in (
-                    totals_by_jurisdiction_year_length[('total', year, n)],
-                    totals_by_jurisdiction_year_length[('total', None, n)]
+                    totals_by_jurisdiction_year_length[(None, year, n)],
+                    totals_by_jurisdiction_year_length[(None, None, n)]
                 ):
                     total[0] += v[0]
                     total[1] += v[1]
