@@ -6,6 +6,28 @@ from scripts.helpers import ordered_query_iterator
 from capdb.models import *
 
 
+def sync_from_initial_metadata_for_all_vols(force=False):
+    """
+        Call sync_from_initial_metadata celery task for each volume. Use force=truthy to re-run -- probably not desired!
+    """
+    for volume_id in VolumeMetadata.objects.exclude(xml_metadata=None).values_list('pk', flat=True):
+        sync_from_initial_metadata_for_vol.delay(volume_id, force)
+
+
+@shared_task
+def sync_from_initial_metadata_for_vol(volume_id, force):
+    """
+        call sync_from_initial_metadata on cases in given volume
+    """
+    cases = (CaseMetadata.objects
+        .filter(volume_id=volume_id)
+        .select_related('structure', 'initial_metadata', 'volume')
+        .exclude(initial_metadata=None)
+        .exclude(structure=None))
+    for c in cases:
+        c.sync_from_initial_metadata(force=force)
+
+
 def sync_case_body_cache_for_all_vols():
     """
         Call sync_case_body_cache_for_vol celery task for each volume
@@ -17,7 +39,7 @@ def sync_case_body_cache_for_all_vols():
 @shared_task
 def sync_case_body_cache_for_vol(volume_id):
     """
-        create or update cases for each volume
+        call sync_case_body_cache on cases in given volume
     """
     volume = VolumeMetadata.objects.get(pk=volume_id)
     pages = list(volume.page_structures.all())

@@ -1078,6 +1078,11 @@ def refresh_case_body_cache():
     tasks.sync_case_body_cache_for_all_vols()
 
 @task
+def sync_from_initial_metadata(force=False):
+    """ Call sync_from_initial_metadata on all cases. Use force=1 to re-run on already synced cases (not recommended)."""
+    tasks.sync_from_initial_metadata_for_all_vols(force)
+
+@task
 def update_case_frontend_url(update_existing=False):
     """
         Update CaseMetadata.frontend_url value for all cases.
@@ -1112,6 +1117,12 @@ def update_case_frontend_url(update_existing=False):
             case_batch.append(case)
         CaseMetadata.objects.bulk_update(case_batch, ['frontend_url'])
 
+@task
+def run_script(module_path, function_name='main', *args, **kwargs):
+    """ Run an arbitrary function, e.g. fab run_script:module.name,func_name,arg1,arg2 """
+    from django.utils.module_loading import import_string
+    func = import_string("%s.%s" % (module_path, function_name))
+    func(*args, **kwargs)
 
 # allow tasks to be run as "python fabfile.py task"
 # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
