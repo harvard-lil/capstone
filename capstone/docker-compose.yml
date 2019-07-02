@@ -82,6 +82,7 @@ services:
           - "api.case.test:127.0.0.1"
         ports:
             - "8000:8000"
+            - "8080:8080"
 #        mem_limit: 128M
 
 volumes:
