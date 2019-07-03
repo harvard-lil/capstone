@@ -142,19 +142,44 @@ Capstone should now be running at 127.0.0.1:8000.
 
 We have initial support for local development via `docker compose`. Docker setup looks like this:
 
-    $ docker-compose up &
+    $ docker-compose up -d
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capdb;"
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capapi;"
     $ docker-compose exec web fab init_dev_db
     $ docker-compose exec web fab load_test_data
     $ docker-compose exec web fab update_all_snippets
-
+    $ docker-compose exec web fab run
+    
 Capstone should now be running at 127.0.0.1:8000.
 
-***tip**— these commands can be shortened by adding something like this to .bash_profile:*
+If you are working on frontend, you probably want to run yarn as well.
+In a new shell:
+    
+    $ docker-compose exec web yarn serve
+
+
+***Tip***— these commands can be shortened by adding something like this to .bash_profile:
 
     alias d="docker-compose exec"
     alias dfab="d web fab"
+    alias dyarn="d web yarn"
+
+Or:
+
+    alias d="docker-compose exec web"
+    
+And then:
+
+    $ d fab 
+    $ d yarn serve
+   
+   
+***Tip***- If `docker-compose up -d` takes too long to run, you might consider the following:
+    
+    $ cp docker-compose.override.yml.example docker-compose.override.yml
+
+This override file will point the `elasticsearch` service to a `hello-world` image instead of its real settings.
+Use this [override file](https://docs.docker.com/compose/extends/#multiple-compose-files) to override more settings for your own development environment.  
 
 ## Administering and Developing Capstone <a id="administering-and-developing-capstone"></a>
 - [Testing](#testing)

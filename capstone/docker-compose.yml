@@ -73,7 +73,8 @@ services:
         depends_on:
             - redis
             - db
-        command: fab run:0.0.0.0:8000
+        command: /bin/bash
+        tty: true
         environment:
             # let Django load Docker-specific settings conditionally
             - DOCKERIZED=True
