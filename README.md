@@ -158,7 +158,7 @@ In a new shell:
     $ docker-compose exec web yarn serve
 
 
-***tip***— these commands can be shortened by adding something like this to .bash_profile:*
+***Tip***— these commands can be shortened by adding something like this to .bash_profile:
 
     alias d="docker-compose exec"
     alias dfab="d web fab"
@@ -173,7 +173,14 @@ And then:
     $ d fab 
     $ d yarn serve
    
+   
+***Tip***- If `docker-compose up -d` takes too long to run, you might consider the following:
     
+    $ cp docker-compose.override.yml.example docker-compose.override.yml
+
+This override file will point the `elasticsearch` service to a `hello-world` image instead of its real settings.
+Use this [override file](https://docs.docker.com/compose/extends/#multiple-compose-files) to override more settings for your own development environment.  
+
 ## Administering and Developing Capstone <a id="administering-and-developing-capstone"></a>
 - [Testing](#testing)
 - [Requirements](#requirements)

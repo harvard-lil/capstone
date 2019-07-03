@@ -2,6 +2,7 @@ staticfiles/
 .sass-cache/
 .idea/
 settings.py
+docker-compose.override.yml
 __pycache__
 .vagrant/
 .virtualenvs/
