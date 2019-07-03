@@ -40,6 +40,8 @@ from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespa
 
 @task(alias='run')
 def run_django(port="127.0.0.1:8000"):
+    if os.environ.get('DOCKERIZED'):
+        port = "0.0.0.0:8000"
     management.call_command('runserver', port)
 
 @task
