@@ -135,12 +135,11 @@
 
     <div class="response-info" aria-label="{% trans "response info" %}">
         <pre class="prettyprint"><span
-                class="meta nocode"><b>HTTP {{ response.status_code }} {{ response.status_text }}</b>{% autoescape off %}
+                class="meta nocode"><b>HTTP {{ response.status_code }} {{ response.status_text }}</b>
           {% for key, val in response_headers|items %}
             <b>{{ key }}:</b><span class="lit">{{ val|break_long_headers|urlize_quoted_links }}</span>{% endfor %}
 
   </span>{{ content|urlize_url_fields_only }}</pre>
-      {% endautoescape %}
     </div>
   </div>
 
