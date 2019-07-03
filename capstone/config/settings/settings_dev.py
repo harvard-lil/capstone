@@ -28,6 +28,7 @@ if os.environ.get('DOCKERIZED'):
     CELERY_BROKER_URL = 'redis://redis'
     CELERY_RESULT_BACKEND = 'redis://redis'
 
+    ELASTICSEARCH_DSL['default']['hosts'] = 'elasticsearch:9200'
 
 # turn sql console logging on by setting DEBUG_SQL = True
 DEBUG_SQL = False

@@ -221,8 +221,14 @@ def migrate():
     update_postgres_env()
 
 @task
+def populate_search_index():
+    tasks.update_elasticsearch_for_all_vols()
+
+@task
 def rebuild_search_index():
-    management.call_command('search_index', '--rebuild')
+    management.call_command('search_index', '--delete')
+    management.call_command('search_index', '--create')
+    populate_search_index()
 
 @task
 def load_test_data():

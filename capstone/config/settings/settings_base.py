@@ -504,7 +504,6 @@ LOGGING = {
         's3transfer': {
             'level': 'WARNING',
         },
-
     },
     'formatters': {
         'verbose': {
@@ -599,7 +598,7 @@ HEALTHCHECK_URL = {
 
 ELASTICSEARCH_DSL={
     'default': {
-        'hosts': 'elasticsearch:9200'
+        'hosts': 'localhost:9200'
     },
 }
 
