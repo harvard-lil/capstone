@@ -15,6 +15,7 @@ from rest_framework.reverse import reverse
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument
+from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
@@ -28,17 +29,14 @@ from django_elasticsearch_dsl_drf.constants import (
     LOOKUP_QUERY_GT,
     LOOKUP_QUERY_GTE,
     LOOKUP_QUERY_LT,
-    LOOKUP_QUERY_LTE,
-)
+    LOOKUP_QUERY_LTE)
 from django_elasticsearch_dsl_drf.filter_backends import (
     FilteringFilterBackend,
     IdsFilterBackend,
     OrderingFilterBackend,
     DefaultOrderingFilterBackend,
-    SearchFilterBackend,
-)
+    SimpleQueryStringSearchFilterBackend)
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
-from django_elasticsearch_dsl_drf.pagination import PageNumberPagination
 
 
 class BaseViewSet(viewsets.ReadOnlyModelViewSet):
@@ -135,27 +133,35 @@ class CaseViewSet(BaseViewSet):
 
         return super(CaseViewSet, self).retrieve(*args, **kwargs)
 
+
+class CapSearchFilterBackend(SimpleQueryStringSearchFilterBackend):
+    search_param = 'q'
+
+
 class CaseDocumentViewSet(BaseDocumentViewSet):
     """The CaseDocument view."""
 
     document = CaseDocument
     serializer_class = CaseDocumentSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = CapESCursorPagination
     lookup_field = 'id'
     filter_backends = [
         FilteringFilterBackend,
         IdsFilterBackend,
         OrderingFilterBackend,
         DefaultOrderingFilterBackend,
-        SearchFilterBackend,
+        CapSearchFilterBackend,
     ]
     # Define search fields
     search_fields = (
-        'case_body__data__text',
         'name',
-        'jurisdiction__name_long',
-        'court__name',
+        'jurisdiction.name_long',
+        'court.name',
+        'casebody_data.text',
     )
+    simple_query_string_options = {
+        "default_operator": "and",
+    }
     # Define filter fields
     filter_fields = {
         'id': {
@@ -180,7 +186,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'id': 'id',
     }
     # Specify default ordering
-    ordering = ('decision_date', 'name_abbreviation', 'id',)
+    ordering = ('decision_date', 'name_abbreviation')
 
     def is_full_case_request(self):
         return True if self.request.query_params.get('full_case', 'false').lower() == 'true' else False
@@ -191,6 +197,18 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         else:
             return self.serializer_class
 
+    def filter_queryset(self, queryset):
+        queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
+
+        # exclude all values from casebody_data that we don't need to complete the request
+        if self.is_full_case_request():
+            data_formats = ["xml", "html", "structured", "text"]
+            requested_format = self.request.query_params.get('body_format', 'structured')
+            source_filter = {"excludes": ["casebody_data.%s" % format for format in data_formats if format != requested_format]}
+        else:
+            source_filter = {"excludes": "casebody_data.*"}
+
+        return queryset.source(source_filter)
 
 class CaseExportViewSet(BaseViewSet):
     serializer_class = serializers.CaseExportSerializer

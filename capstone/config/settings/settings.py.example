@@ -1,18 +1,22 @@
 from .settings_dev import *
 
-DATABASES['tracking_tool']['PASSWORD'] = ''
-DATABASES['tracking_tool']['HOST'] = ''
+# # log all SQL statements:
+# LOGGING['loggers']['django.db.backends'] = {
+#     'level': 'DEBUG',
+#     'handlers': ['console'],
+#     'propagate': False,
+# }
 
-# for production access -- not needed for testing
-INGEST_STORAGE = {
-    'class': 'cap.storages.CapS3Storage',
-    'kwargs': {
-        'location': 'from_vendor',
-        'access_key': '',
-        'secret_key': '',
-        'bucket_name': '',
-    }
-}
+# # log all elasticsearch queries:
+# LOGGING['loggers']['elasticsearch'] = {
+#     'level': 'DEBUG',
+#     'handlers': ['console'],
+#     'propagate': False,
+# }
 
-# for production
-CELERY_BROKER_URL = 'amqp://admin:mypass@localhost'
+# # log EVERYTHING:
+# LOGGING['loggers'][''] = {
+#     'handlers': ['console'],
+#     'level': 'DEBUG',
+#     'propagate': True,
+# }

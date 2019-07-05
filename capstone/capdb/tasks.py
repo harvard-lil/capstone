@@ -1,9 +1,30 @@
 from datetime import datetime
 from celery import shared_task
 from django.db import connections
+
+from capapi.documents import CaseDocument
 from scripts.helpers import ordered_query_iterator
 
 from capdb.models import *
+
+def update_elasticsearch_for_all_vols():
+    """
+        Call update_elasticsearch_for_vol celery task for each volume.
+    """
+    for volume_id in VolumeMetadata.objects.exclude(xml_metadata=None).values_list('pk', flat=True):
+        update_elasticsearch_for_vol.delay(volume_id)
+
+
+@shared_task
+def update_elasticsearch_for_vol(volume_id):
+    """
+        Index all cases for given volume with elasticsearch.
+    """
+    cases = (CaseMetadata.objects
+        .filter(volume_id=volume_id)
+        .select_related('volume', 'reporter', 'court', 'jurisdiction', 'reporter', 'body_cache')
+        .exclude(body_cache=None))
+    CaseDocument().update(cases)
 
 
 def sync_from_initial_metadata_for_all_vols(force=False):

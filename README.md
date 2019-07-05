@@ -33,6 +33,7 @@ This is the source code for [case.law](https://case.law), a website written by t
   - [Download real data locally](#download-real-data-locally )
   - [Model versioning](#model-versioning)
   - [Working with javascript](#working-with-javascript)
+  - [Elasticsearch](#elasticsearch)
 - [Documentation](#documentation)
 - [Examples](#examples)
 
@@ -320,6 +321,21 @@ get the updates.
 
 `yarn` packages inside docker are stored in `/node_modules`. The `/app/capstone/node_modules` folder is just an empty
 mount to block out any `node_modules` folder that might exist on the host.
+
+### Elasticsearch <a id="elasticsearch"></a>
+
+For local dev, Elasticsearch will automatically be started by `docker-compose up -d`. You can then run
+`fab refresh_case_body_cache` to populate CaseBodyCache for all cases, and `fab rebuild_search_index` to populate the
+search index.
+
+For debugging, see settings.py.example for an example of how to log all requests to and from Elasticsearch.
+
+It may also be useful to run Kibana to directly query Elasticsearch from a browser GUI:
+
+    $ brew install kibana
+    $ kibana -e http://127.0.0.1:9200
+
+You can then go to Kibana -> Dev Tools to run any of the logged queries, or `GET /_mapping` to see the search indexes.
 
 ## Documentation <a id="documentation"></a>
 This readme, code comments, and the API usage docs are the only docs we have. If you want something documented more thoroughly, file an issue and we'll get back to you.

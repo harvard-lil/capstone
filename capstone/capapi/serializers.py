@@ -203,17 +203,17 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
 
             if body_format == 'html':
                 return {
-                    'data': case.casebody_data['data']['html'],
+                    'data': case.casebody_data['html'],
                     'status': status
                 }
             elif body_format == 'xml':
                 return {
-                    'data': case.casebody_data['data']['xml'],
+                    'data': case.casebody_data['xml'],
                     'status': status
                 }
             else:
                 return {
-                    'data': case.casebody_data['data']['structured'],
+                    'data': case.casebody_data['structured'].to_dict(),
                     'status': status
                 }
         return {'status': status, 'data': None}
