@@ -1,6 +1,11 @@
 from datetime import datetime
+from time import sleep
+
 from celery import shared_task
+from celery.exceptions import Reject
 from django.db import connections
+from elasticsearch import ElasticsearchException
+from elasticsearch.helpers import BulkIndexError
 
 from capapi.documents import CaseDocument
 from scripts.helpers import ordered_query_iterator
@@ -15,16 +20,33 @@ def update_elasticsearch_for_all_vols():
         update_elasticsearch_for_vol.delay(volume_id)
 
 
-@shared_task
+@shared_task(acks_late=True)
 def update_elasticsearch_for_vol(volume_id):
     """
         Index all cases for given volume with elasticsearch.
     """
+    # fetch cases
     cases = (CaseMetadata.objects
         .filter(volume_id=volume_id)
         .select_related('volume', 'reporter', 'court', 'jurisdiction', 'reporter', 'body_cache')
         .exclude(body_cache=None))
-    CaseDocument().update(cases)
+
+    # attempt to store 10 times, with linearly increasing backoff. this gives time for the bulk queue to be processed
+    # if necessary (in which case we'll get BulkIndexError with error 429, too many requests).
+    for i in range(10):
+        try:
+            CaseDocument().update(cases)
+            return
+        except ElasticsearchException as e:
+            if i == 9:
+                # If all 10 requests fail, re-add job to the back of the queue
+                if type(e) == BulkIndexError:
+                    # delete submitted data from BulkIndexError, because otherwise error messages are too large to store
+                    for item in e.args[1]:
+                        for v in item.values():
+                            v['data'] = '[data omitted]'
+                raise Reject('Bulk indexing of volume %s failed: %s' % (volume_id, e), requeue=True)
+            sleep(i)
 
 
 def sync_from_initial_metadata_for_all_vols(force=False):

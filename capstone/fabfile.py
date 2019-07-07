@@ -28,7 +28,8 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter, Citation, CaseMetadata
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter, Citation, CaseMetadata, \
+    Court
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
@@ -1131,6 +1132,38 @@ def run_script(module_path, function_name='main', *args, **kwargs):
     from django.utils.module_loading import import_string
     func = import_string("%s.%s" % (module_path, function_name))
     func(*args, **kwargs)
+
+@task
+def delete_empty_courts(dry_run='true'):
+    """
+        Delete empty courts, and reslug any other courts that are affected by the newly-available slug.
+        NOTE: this may not be a good idea to run if users depend on stable court slugs.
+    """
+    from django.db import transaction
+    import re
+    courts_to_delete = set(Court.objects.filter(case_metadatas=None))
+    for court_to_delete in sorted(courts_to_delete, key=lambda c: c.slug):
+        m = re.match(r'(.*?)(?:-(\d+))?$', court_to_delete.slug)
+        prefix, num = m.groups()
+        matches = list(Court.objects.filter(slug__startswith=prefix).order_by('slug'))
+        reslug = []
+        for cc in matches:
+            m = re.match(r'%s-(\d+)$' % re.escape(prefix), cc.slug)
+            if m and (not num or int(num) < int(m.group(1))) and cc not in courts_to_delete:
+                reslug.append(cc)
+        with transaction.atomic(using='capdb'):
+            if dry_run == 'false':
+                print("Deleting %s" % court_to_delete)
+                court_to_delete.delete()
+            else:
+                print("Would delete %s" % court_to_delete)
+            for court_to_reslug in reslug:
+                if dry_run == 'false':
+                    print(" - Reslugging %s" % court_to_reslug)
+                    court_to_reslug.slug = None
+                    court_to_reslug.save()
+                else:
+                    print(" - Would reslug %s" % court_to_reslug)
 
 # allow tasks to be run as "python fabfile.py task"
 # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
