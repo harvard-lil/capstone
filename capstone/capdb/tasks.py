@@ -4,6 +4,7 @@ from time import sleep
 from celery import shared_task
 from celery.exceptions import Reject
 from django.db import connections
+from django.utils import timezone
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 
@@ -12,11 +13,14 @@ from scripts.helpers import ordered_query_iterator
 
 from capdb.models import *
 
-def update_elasticsearch_for_all_vols():
+def update_elasticsearch_for_all_vols(last_updated=None):
     """
         Call update_elasticsearch_for_vol celery task for each volume.
     """
-    for volume_id in VolumeMetadata.objects.exclude(xml_metadata=None).values_list('pk', flat=True):
+    volumes = VolumeMetadata.objects.exclude(xml_metadata=None).exclude(out_of_scope=True)
+    if last_updated:
+        volumes = volumes.exclude(last_es_index__gt=last_updated)
+    for volume_id in volumes.values_list('pk', flat=True):
         update_elasticsearch_for_vol.delay(volume_id)
 
 
@@ -27,6 +31,7 @@ def update_elasticsearch_for_vol(volume_id):
     """
     # fetch cases
     cases = (CaseMetadata.objects
+        .in_scope()
         .filter(volume_id=volume_id)
         .select_related('volume', 'reporter', 'court', 'jurisdiction', 'reporter', 'body_cache')
         .exclude(body_cache=None))
@@ -36,6 +41,7 @@ def update_elasticsearch_for_vol(volume_id):
     for i in range(10):
         try:
             CaseDocument().update(cases)
+            VolumeMetadata.objects.filter(pk=volume_id).update(last_es_index=timezone.now())
             return
         except ElasticsearchException as e:
             if i == 9:
