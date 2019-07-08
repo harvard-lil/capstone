@@ -589,6 +589,8 @@ class VolumeMetadata(models.Model):
     xml_reporter_full_name = models.CharField(max_length=255, blank=True, null=True)
     xml_metadata = JSONField(blank=True, null=True)
 
+    last_es_index = models.DateTimeField(blank=True, null=True, help_text="Last time cases for this volume were successfully indexed by ElasticSearch")
+
     tracker = FieldTracker()
 
     class Meta:
