@@ -948,9 +948,9 @@ class CaseMetadata(models.Model):
             })
         json = {
             'head_matter': casebody_pq('.head-matter').text(),
-            'judges': [judge.text() for judge in casebody_pq('p.judges').items()],
-            'attorneys': [attorney.text() for attorney in casebody_pq('p.attorneys').items()],
-            'parties': [party.text() for party in casebody_pq('p.parties').items()],
+            'judges': [judge.text() for judge in casebody_pq('.judges').items()],
+            'attorneys': [attorney.text() for attorney in casebody_pq('.attorneys').items()],
+            'parties': [party.text() for party in casebody_pq('.parties').items()],
             'opinions': opinions,
             'corrections': casebody_pq('.corrections').text(),
         }
