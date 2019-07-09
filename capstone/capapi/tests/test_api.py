@@ -1,5 +1,6 @@
 import pytest
 from django.db import connections
+from flaky import flaky
 
 from capapi import api_reverse
 from scripts.set_up_postgres import extension_installed
@@ -483,23 +484,29 @@ def test_filter_reporter(client, reporter):
 
 # NGRAMS
 
-# Not updated for current ngram extraction ...
-# @pytest.mark.django_db
-# def test_ngrams(client, ingest_ngrams, jurisdiction):
-#     # get individual ngram objects for comparison
-#     words = [NgramWord.objects.get(word='this'), NgramWord.objects.get(word='case')]
-#     ngram_objs = list(Ngram.objects.filter(w1=words[0], w2=words[1]))
-#     assert ngram_objs
-#
-#     # check result counts when not filtering by jurisdiction
-#     json = client.get(api_reverse('ngram-list'), {'q': 'this case'}).json()
-#     assert sum(r['count'] for r in json['results']) == sum(n.count for n in ngram_objs)
-#
-#     # check result counts when filtering by jurisdiction
-#     ngram_objs[0].jurisdiction = jurisdiction
-#     ngram_objs[0].save()
-#     json = client.get(api_reverse('ngram-list'), {'q': 'this case', 'jurisdiction': jurisdiction.slug}).json()
-#     assert sum(r['count'] for r in json['results']) == ngram_objs[0].count
+@flaky(max_runs=10)  # ngrammed_cases call to ngram_jurisdictions doesn't reliably work because it uses multiprocessing within pytest environment
+@pytest.mark.django_db
+def test_ngrams_api(client, ngrammed_cases):
+
+    # check result counts when not filtering by jurisdiction
+    json = client.get(api_reverse('ngrams-list'), {'q': 'one two'}).json()
+    assert json['results'] == {
+        'one two': {
+            'total': [{'year': '2000', 'count': [2, 9], 'doc_count': [2, 3]}]}}
+
+    # check result counts when filtering by jurisdiction
+    json = client.get(api_reverse('ngrams-list'), {'q': 'one two', 'jurisdiction': ngrammed_cases[1].jurisdiction_slug}).json()
+    assert json['results'] == {
+        'one two': {
+            'jur1': [{'year': '2000', 'count': [1, 6], 'doc_count': [1, 2]}]}}
+
+    # check wildcard match
+    json = client.get(api_reverse('ngrams-list'), {'q': 'three *'}).json()
+    assert json['results'] == {
+        'three four': {
+            'total': [{'year': '2000', 'count': [1, 9], 'doc_count': [1, 3]}]},
+        "three don't": {
+            'total': [{'year': '2000', 'count': [2, 9], 'doc_count': [2, 3]}]}}
 
 
 # RESPONSE FORMATS

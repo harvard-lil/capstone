@@ -23,7 +23,6 @@ psycopg2            # postgres connector
 mysqlclient         # mysql connector
 redis               # redis connector
 python-redis-lock   # cross-process locks
-lmdb                # key-value store for ngrams
 python-rocksdb      # key-value store for ngrams
 msgpack             # for storing data in KV store
 
@@ -54,6 +53,7 @@ flake8==3.4.1      # Fix issues related to 3.6 branch (https://github.com/harvar
 factory-boy        # mocking
 pytest-factoryboy  # inject factory-boy factories into pytest fixtures
 bagit              # validate BagIt bag
+flaky              # retry flaky tests
 
 # SCSS
 libsasscompiler     # for compiling scss in pipeline

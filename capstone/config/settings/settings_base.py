@@ -552,7 +552,6 @@ LOGIN_URL = 'login'
 # directories to search for nltk data
 NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
 
-NGRAM_INGEST_THRESHOLD = 100
 NGRAM_THREAD_COUNT = 4
 
 # feature flags
@@ -560,7 +559,6 @@ FULL_TEXT_FEATURE = True
 NEW_RESEARCHER_FEATURE = True
 HARVARD_RESEARCHER_FEATURE = True
 RANGE_REQUEST_FEATURE = False
-ROCKSDB_FEATURE = False
 
 HARVARD_IP_RANGES = """
     12.0.48.0/20
