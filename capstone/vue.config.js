@@ -26,6 +26,7 @@ RelativeBundleTracker.prototype.writeOutput = function(compiler, contents) {
 };
 
 /*** Vue config ***/
+let devServerHost = process.env.DOCKERIZED ? '0.0.0.0' : '127.0.0.1';
 
 let vueConfig = {
   outputDir: 'static/dist',
@@ -56,8 +57,8 @@ let vueConfig = {
   },
 
   devServer: {
-    public: '0.0.0.0:8080',
-    host: '0.0.0.0',
+    public: devServerHost + ':8080',
+    host: devServerHost,
     headers: { 'Access-Control-Allow-Origin': '*' },
     allowedHosts: [
         '.case.test'
