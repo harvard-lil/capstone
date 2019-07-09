@@ -12,6 +12,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.http import is_safe_url
+from django.utils.text import slugify
 from rest_framework.request import Request
 
 from capapi import serializers
@@ -76,6 +77,9 @@ def home(request):
 
 def series(request, series_slug):
     """ /<series_slug>/ -- list all volumes for each series with that slug (typically only one). """
+    # redirect if series slug is in the wrong format
+    if slugify(series_slug) != series_slug:
+        return HttpResponseRedirect(helpers.reverse('series', args=[slugify(series_slug)], host='cite'))
     reporters = list(Reporter.objects
         .filter(short_name_slug=series_slug)
         .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None)))
@@ -89,8 +93,11 @@ def series(request, series_slug):
 
 def volume(request, series_slug, volume_number):
     """ /<series_slug>/<volume_number>/ -- list all cases for given volumes (typically only one). """
+    # redirect if series slug is in the wrong format
+    if slugify(series_slug) != series_slug:
+        return HttpResponseRedirect(helpers.reverse('volume', args=[slugify(series_slug), volume_number], host='cite'))
     volumes = list(VolumeMetadata.objects
-        .filter(reporter__short_name_slug=series_slug, volume_number=volume_number)
+        .filter(reporter__short_name_slug=slugify(series_slug), volume_number=volume_number)
         .select_related('reporter')
         .prefetch_related(
             Prefetch('case_metadatas', queryset=CaseMetadata.objects.in_scope().prefetch_related('citations'))
@@ -107,6 +114,17 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         /<series_slug>/<volume_number>/<page_number>/                       -- show requested case (or list of cases, or case not found page).
         /<series_slug>/<volume_number>/<page_number>/<case_id>/             -- show requested case, using case_id to find one of multiple cases at this cite
     """
+    # redirect if series slug is in the wrong format
+    if slugify(series_slug) != series_slug:
+        if case_id:
+            return HttpResponseRedirect(helpers.reverse('citation',
+                                                    args=[slugify(series_slug), volume_number, page_number, case_id],
+                                                    host='cite'))
+        else:
+            return HttpResponseRedirect(helpers.reverse('citation',
+                                                        args=[slugify(series_slug), volume_number, page_number],
+                                                        host='cite'))
+
 
     ### try to look up citation
     full_cite = "%s %s %s" % (volume_number, series_slug.replace('-', ' ').title(), page_number)

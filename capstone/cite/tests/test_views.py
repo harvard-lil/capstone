@@ -36,6 +36,14 @@ def test_series(client, django_assert_num_queries, volume_factory):
         assert vol.volume_number in content
         assert vol.reporter.full_name in content
 
+    # make sure we redirect if series is not slugified
+    series_slug = volume_1.reporter.short_name_slug.replace('-', '. ').upper()
+    response = client.get(reverse('series', args=[series_slug], host='cite'))
+    check_response(response, status_code=302)
+    with django_assert_num_queries(select=2):
+        response = client.get(reverse('series', args=[series_slug], host='cite'), follow=True)
+    check_response(response, status_code=200)
+
 
 @pytest.mark.django_db
 def test_volume(client, django_assert_num_queries, citation_factory):
@@ -64,6 +72,15 @@ def test_volume(client, django_assert_num_queries, citation_factory):
         assert case.citations.first().cite in content
 
     assert case_3.citations.first().cite not in content
+
+    # make sure we redirect if reporter name / series is not slugified
+    series_slug = case_1.reporter.short_name_slug.replace('-', '. ').upper()
+    response = client.get(reverse('volume', args=[series_slug, case_1.volume.volume_number], host='cite'))
+    check_response(response, status_code=302)
+    with django_assert_num_queries(select=3):
+        response = client.get(reverse('volume', args=[series_slug, case_1.volume.volume_number], host='cite'), follow=True)
+    check_response(response, status_code=200)
+
 
 @pytest.mark.django_db
 def test_case_not_found(client, django_assert_num_queries):
@@ -165,6 +182,31 @@ def test_single_case(client, auth_client, django_assert_num_queries, case):
     check_response(response, content_includes=case_text)
     auth_client.auth_user.refresh_from_db()
     assert auth_client.auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+
+
+@pytest.mark.django_db
+def test_case_series_name_redirect(client, django_assert_num_queries, case):
+    """ Test /series/volume/case/ with series redirect when not slugified"""
+    cite = case.citations.first()
+    cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
+
+    # series is not slugified, expect redirect
+    response = client.get(
+        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2]], host='cite'))
+    check_response(response, status_code=302)
+
+    response = client.get(
+        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2]], host='cite'), follow=True)
+    check_response(response)
+
+    # series redirect works with case_id
+    response = client.get(
+        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2], case.id], host='cite'))
+    check_response(response, status_code=302)
+
+    response = client.get(
+        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2]], host='cite'), follow=True)
+    check_response(response)
 
 
 def get_schema(response):
