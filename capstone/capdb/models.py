@@ -916,11 +916,21 @@ class CaseMetadata(models.Model):
         renderer = render_case.VolumeRenderer(blocks_by_id, {}, {})
         return renderer.hydrate_opinions(structure.opinions, blocks_by_id)
 
-    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None):
+    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, rerender=True):
         """
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
         """
+        # if rerender is false, just regenerate json and text attributes from existing html
+        if not rerender:
+            try:
+                body_cache = self.body_cache
+            except CaseBodyCache.DoesNotExist:
+                return
+            json, text = self.get_json_from_html(body_cache.html)
+            CaseBodyCache.objects.filter(id=body_cache.id).update(json=json, text=text)
+            return
+
         structure = self.structure
         if not blocks_by_id or not labels_by_block_id:
             pages = list(structure.pages.all())
@@ -931,9 +941,22 @@ class CaseMetadata(models.Model):
         renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, labels_by_block_id)
         html = renderer.render_html(self)
         xml = renderer.render_xml(self)
+        json, text = self.get_json_from_html(html)
 
-        ## create json
+        ## save
 
+        params = {'text': text, 'html': html, 'xml': xml, 'json': json}
+        # use this approach, instead of update_or_create, to reduce sql traffic:
+        #   - avoid causing a select (if the body_cache has already been populated with select_related)
+        #   - avoid hydrating the params via save(), if they were loaded with defer()
+        try:
+            body_cache = self.body_cache
+        except CaseBodyCache.DoesNotExist:
+            CaseBodyCache(metadata=self, **params).save()
+        else:
+            CaseBodyCache.objects.filter(id=body_cache.id).update(**params)
+
+    def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)
         casebody_pq.remove('.page-label,.footnotemark,.bracketnum')  # remove page numbers and references from text/json
 
@@ -953,21 +976,8 @@ class CaseMetadata(models.Model):
             'opinions': opinions,
             'corrections': casebody_pq('.corrections').text(),
         }
-
-        text = "\n".join([json['head_matter']] + [o['text'] for o in opinions] + [json['corrections']])
-
-        ## save
-
-        params = {'text': text, 'html': html, 'xml': xml, 'json': json}
-        # use this approach, instead of update_or_create, to reduce sql traffic:
-        #   - avoid causing a select (if the body_cache has already been populated with select_related)
-        #   - avoid hydrating the params via save(), if they were loaded with defer()
-        try:
-            body_cache = self.body_cache
-        except CaseBodyCache.DoesNotExist:
-            CaseBodyCache(metadata=self, **params).save()
-        else:
-            CaseBodyCache.objects.filter(id=body_cache.id).update(**params)
+        text = "\n".join([json['head_matter']] + [o['text'] for o in json['opinions']] + [json['corrections']])
+        return json, text
 
     def sync_from_initial_metadata(self, force=False):
         """
