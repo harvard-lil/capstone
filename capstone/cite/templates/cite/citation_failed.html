@@ -21,17 +21,17 @@
           <a href="/">Browse</a>
         </li>
         <li class="breadcrumb-item">
-          Reporter <a href="/{{ series_slug }}">
-          {{ series_slug }}
-        </a>
+          <a href="/{{ series_slug }}">
+            Reporter {{ series }}
+          </a>
         </li>
         <li class="breadcrumb-item">
-          Volume <a href="/{{ series_slug }}/{{ volume_number }}">
-          {{ volume_number }}
+          <a href="/{{ series_slug }}/{{ volume_number }}">
+            Volume {{ volume_number }}
           </a>
         </li>
         <li class="breadcrumb-item active" aria-current="page">
-          Page <a href="/{{ series_slug }}/{{ volume_number }}/{{ page_number }}">{{ page_number }}</a>
+          <a href="/{{ series_slug }}/{{ volume_number }}/{{ page_number }}">Page {{ page_number }}</a>
         </li>
       </ol>
     </nav>

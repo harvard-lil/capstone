@@ -4,6 +4,17 @@
 .breadcrumb {
   border-radius: 0;
   background-color: $color-light-gray;
+  font-size: small;
+  .breadcrumb-item {
+    a {
+      color: $color-dark-blue;
+    }
+    &.active {
+      a {
+        color: $color-blue;
+      }
+    }
+  }
 }
 
 h1.page-title, h4 {
@@ -16,7 +27,9 @@ h1.page-title, h4 {
 .basic-page {
   background: $color-white;
 }
+
 .cite-container {
+  @extend .case-container;
   padding-bottom: 100px !important;
   min-width: 85%;
 }
