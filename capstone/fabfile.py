@@ -1055,8 +1055,10 @@ def load_token_streams(replace_existing=False):
         scripts.refactor_xml.write_to_db.delay(volume_barcode, str(path))
 
 @task
-def refresh_case_body_cache():
-    tasks.sync_case_body_cache_for_all_vols()
+def refresh_case_body_cache(rerender=True):
+    """ Recreate CaseBodyCache for all cases. Use `fab refresh_case_body_cache:rerender=false` to just regenerate text/json from html. """
+    rerender = rerender != 'false'
+    tasks.sync_case_body_cache_for_all_vols(rerender)
 
 @task
 def sync_from_initial_metadata(force=False):
