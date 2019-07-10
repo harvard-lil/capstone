@@ -77,16 +77,16 @@ def sync_from_initial_metadata_for_vol(volume_id, force):
         c.sync_from_initial_metadata(force=force)
 
 
-def sync_case_body_cache_for_all_vols():
+def sync_case_body_cache_for_all_vols(rerender=True):
     """
         Call sync_case_body_cache_for_vol celery task for each volume
     """
     for volume_id in VolumeMetadata.objects.exclude(xml_metadata=None).values_list('pk', flat=True):
-        sync_case_body_cache_for_vol.delay(volume_id)
+        sync_case_body_cache_for_vol.delay(volume_id, rerender)
 
 
 @shared_task
-def sync_case_body_cache_for_vol(volume_id):
+def sync_case_body_cache_for_vol(volume_id, rerender=True):
     """
         call sync_case_body_cache on cases in given volume
     """
@@ -101,7 +101,7 @@ def sync_case_body_cache_for_vol(volume_id):
         .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json')
 
     for case_metadata in query:
-        case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id)
+        case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender)
 
 
 def create_case_metadata_from_all_vols(update_existing=False):

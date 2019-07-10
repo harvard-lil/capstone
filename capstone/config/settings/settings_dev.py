@@ -69,4 +69,3 @@ try:
 except ImportError:
     pass
 
-NGRAM_INGEST_THRESHOLD = 1

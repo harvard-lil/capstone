@@ -1,9 +1,9 @@
-import wrapt
 from collections import defaultdict
 from contextlib import contextmanager
 from urllib.parse import urlparse
 from time import time
 
+import mock
 import pytest
 from django.contrib import auth
 from django.contrib.auth.models import Group
@@ -197,6 +197,44 @@ def file_storage(tmpdir):
     return capdb.storages.CapFileStorage(location=str(tmpdir))
 
 
+@pytest.fixture
+def mock_ngram_storage(tmpdir):
+    with mock.patch('capdb.storages.ngram_kv_store._wrapped', SimpleLazyObject(lambda: capdb.storages.NgramRocksDB(path=str(tmpdir)))), \
+            mock.patch('capdb.storages.ngram_kv_store_ro._wrapped', SimpleLazyObject(lambda: capdb.storages.NgramRocksDB(path=str(tmpdir), read_only=True))):
+        yield None
+
+
+@pytest.fixture
+def ngrammed_cases(mock_ngram_storage, three_cases, jurisdiction):
+    import scripts.ngrams
+
+    # set up two jurisdictions
+    jur0 = jurisdiction
+    jur0.slug = 'jur0'
+    jur0.save()
+    jur1 = three_cases[0].jurisdiction
+    jur1.slug = 'jur1'
+    jur1.save()
+
+    # set up three cases across two jurisdictions, all in same year
+    case_settings = [
+        (jur0, '"One? two three." Four!', 2000),
+        (jur1, "One 'two three' don't.", 2000),
+        (jur1, "(Two, three, don't, don't)", 2000),
+    ]
+    for case, (jur, text, year) in zip(three_cases, case_settings):
+        case.jurisdiction = jur
+        case.jurisdiction_slug = jur.slug  # something about the test env is stopping the trigger from setting this
+        case.decision_date = case.decision_date.replace(year=year)
+        case.save()
+        CaseBodyCache(metadata=case, text=text).save()
+
+    # run ngram code
+    scripts.ngrams.ngram_jurisdictions()
+    scripts.ngrams.ngram_kv_store_ro.open()  # re-open so we can see the new values
+
+    return three_cases
+        
 ### Django json fixtures ###
 
 @pytest.fixture
@@ -355,12 +393,6 @@ def ingest_case_xml(ingest_volume_xml):
 @pytest.fixture
 def ingest_duplicative_case_xml(ingest_volumes):
     return CaseXML.objects.get(metadata__case_id='32044061407086_0001')
-
-
-@pytest.fixture
-def ingest_ngrams(ingest_volumes):
-    import scripts.ngrams
-    scripts.ngrams.ngram_jurisdictions()
 
 
 @pytest.fixture

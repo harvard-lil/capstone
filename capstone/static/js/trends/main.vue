@@ -751,7 +751,7 @@
             return apiQuery(url).then((resp)=>{
               // filter out responses with no results
               if (Object.keys(resp.results).length === 0) {
-                this.errors.push(`"${term}" appears fewer than 100 times in our corpus.`);
+                this.errors.push(`"${term}" does not appear in our corpus.`);
                 return null;
               }
               return {results: resp.results, params};

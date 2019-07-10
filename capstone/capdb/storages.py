@@ -1,5 +1,4 @@
 import csv
-import functools
 import gzip
 import hashlib
 import traceback
@@ -337,33 +336,6 @@ redis_ingest_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_H
 
 ### K/V stores ###
 
-# import plyvel
-#
-# class NgramKVLevelDB:
-#     def __init__(self):
-#         self.db = plyvel.DB(os.path.join(settings.STORAGES['ngram_storage']['kwargs']['location'], 'leveldb'), create_if_missing=True, write_buffer_size=100 * 2 ** 20)
-#
-#     def put(self, k, v):
-#         self.db.put(k, v)
-#
-#     def get(self, k):
-#         return self.db.get(k)
-#
-#     def put_batch(self, items):
-#         with self.db.write_batch() as wb:
-#             for k, v in items:
-#                 wb.put(k, v)
-#
-#     def last_key(self):
-#         try:
-#             db_iter = self.db.raw_iterator()
-#             db_iter.seek_to_last()
-#             return db_iter.key()
-#         except plyvel.IteratorInvalidError:
-#             return None
-
-import lmdb
-
 class KVDB:
     """ Base key-value store wrapper. """
     def __init__(self, path=settings.STORAGES['ngram_storage']['kwargs']['location'], name=None, read_only=False):
@@ -371,7 +343,6 @@ class KVDB:
         self.read_only = read_only
         if name:
             self.name = name
-        self.open()
 
     @staticmethod
     def unpack(v, packed=True):
@@ -381,109 +352,17 @@ class KVDB:
     def pack(v, packed=True):
         return msgpack.packb(v) if packed and v is not None else v
 
-class NgramKVLMDB(KVDB):
-    """ Wrapper for LMDB. """
-    txn = None
-    name = 'lmdb'
-
-    ## helpers
-
     def open(self):
-        self.db = lmdb.open(
-            os.path.join(self.path, self.name),
-            # On linux we can set a virtual size of 1TB and the OS won't care.
-            # On Mac & Win we have to start small and grow.
-            map_size=2**40,  # if platform.system() == 'Linux' else 2**20,
-            # metasync=False,
-            # writemap=True,
-            # map_async=True,
-            subdir=True,
-        )
+        raise NotImplementedError
 
-    def close(self):
-        self.db.close()
+    _db = None
+    @property
+    def db(self):
+        """ Open database connection on first use. """
+        if not self._db:
+            self.open()
+        return self._db
 
-    class decorators:
-        def retry(wrapped):
-            @functools.wraps(wrapped)
-            def do_retry(self, *args, **kwargs):
-                for i in range(1, -1, -1):
-                    try:
-                        return wrapped(self, *args, **kwargs)
-                    except lmdb.Error as e:
-                        if i == 0:
-                            raise
-                        print("Retrying after lmbd error: %s" % e)
-                        self.close()
-                        self.open()
-            return do_retry
-
-    @contextmanager
-    def in_transaction(self, *args, **kwargs):
-        with self.db.begin(*args, **kwargs) as txn:
-            self.txn = txn
-            try:
-                yield txn
-            finally:
-                self.txn = None
-
-    @contextmanager
-    def using_transaction(self, *args, **kwargs):
-        if self.txn:
-            yield self.txn
-        else:
-            with self.in_transaction(*args, **kwargs) as txn:
-                yield txn
-
-    ## writers
-
-    @decorators.retry
-    def put(self, k, v, packed=False):
-        with self.using_transaction(write=True) as txn:
-            txn.put(k, self.pack(v, packed))
-
-    @decorators.retry
-    def put_batch(self, items, packed=False):
-        try:
-            items = list(items)
-            with self.using_transaction(write=True) as txn:
-                for k, v in items:
-                    txn.put(k, self.pack(v, packed))
-        except lmdb.MapFullError:
-            # double the map_size and try again
-            self.db.set_mapsize(self.db.info()['map_size'] * 2)
-            self.put_batch(items, packed)
-
-    ## readers
-
-    @decorators.retry
-    def get(self, k, packed=False):
-        with self.using_transaction() as txn:
-            return self.unpack(txn.get(k), packed)
-
-    @decorators.retry
-    def get_prefix(self, prefix, packed=False):
-        with self.using_transaction() as txn:
-            cursor = txn.cursor()
-            if not cursor.set_range(prefix):
-                return
-            for k, v in cursor:
-                if not k.startswith(prefix):
-                    return
-                yield k, self.unpack(v, packed)
-
-    @decorators.retry
-    def last_key(self):
-        with self.using_transaction() as txn:
-            cursor = txn.cursor()
-            if cursor.last():
-                return cursor.key()
-            return None
-
-    @decorators.retry
-    def pop(self, k, packed=False):
-        with self.using_transaction(write=True) as txn:
-            return self.unpack(txn.pop(k), packed)
 
 class NgramRocksDB(KVDB):
     """ Wrapper for RocksDB. """
@@ -491,6 +370,9 @@ class NgramRocksDB(KVDB):
     batch = None
 
     ## helpers
+
+    def db_path(self):
+        return os.path.join(self.path, self.name+".db")
 
     def open(self):
         # initial "production ready" settings via https://python-rocksdb.readthedocs.io/en/latest/tutorial/index.html
@@ -518,7 +400,7 @@ class NgramRocksDB(KVDB):
             block_cache=rocksdb.LRUCache(2 * 2 ** 30),  # 2GB
             block_cache_compressed=rocksdb.LRUCache(500 * 2 ** 20))  # 500MB
 
-        self.db = rocksdb.DB(os.path.join(self.path, self.name+".db"), opts, read_only=self.read_only)
+        self._db = rocksdb.DB(self.db_path(), opts, read_only=self.read_only)
 
     def db_or_batch(self, batch=None):
         return batch or self.batch or self.db
@@ -610,6 +492,6 @@ class NgramRocksDB(KVDB):
                 return
             yield k, self.unpack(v, packed)
 
-ngram_kv_store = SimpleLazyObject(lambda: NgramKVLMDB())
-ngram_kv_store_full = SimpleLazyObject(lambda: NgramRocksDB())
-ngram_kv_store_full_ro = SimpleLazyObject(lambda: NgramRocksDB(read_only=True))
+# using SimpleLazyObject lets our tests mock the wrapped object after import
+ngram_kv_store = SimpleLazyObject(lambda: NgramRocksDB())
+ngram_kv_store_ro = SimpleLazyObject(lambda: NgramRocksDB(read_only=True))

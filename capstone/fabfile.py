@@ -791,38 +791,10 @@ def count_chars_in_all_cases(path="/tmp/counts"):
 
 
 @task
-def ngram_jurisdictions(slug=None, replace_existing=False):
-    """ Generate ngrams for all jurisdictions. If replace_existing is False (default), only jurisdiction-years without existing ngrams will be indexed. """
-    if settings.ROCKSDB_FEATURE:
-        from scripts.ngrams import ngram_jurisdictions_rocksdb
-        ngram_jurisdictions_rocksdb(slug)
-    else:
-        from scripts.ngrams import ngram_jurisdictions
-        ngram_jurisdictions(slug, replace_existing=bool(replace_existing))
-
-
-@task
-def ngram_merge_jurisdictions():
-    from scripts.ngrams import merge_jurisdiction_years
-    merge_jurisdiction_years()
-
-
-@task
-def ngram_merge_total():
-    from scripts.ngrams import merge_total
-    merge_total()
-
-
-@task
-def ngram_load_database():
-    from scripts.ngrams import load_database
-    load_database()
-
-
-@task
-def ngram_load_kv_database():
-    from scripts.ngrams import load_kv_database
-    load_kv_database()
+def ngram_jurisdictions(slug=None):
+    """ Generate ngrams for all jurisdictions, or for single jurisdiction if jurisdiction slug is provided. """
+    from scripts.ngrams import ngram_jurisdictions
+    ngram_jurisdictions(slug)
 
 
 @task
@@ -1083,8 +1055,10 @@ def load_token_streams(replace_existing=False):
         scripts.refactor_xml.write_to_db.delay(volume_barcode, str(path))
 
 @task
-def refresh_case_body_cache():
-    tasks.sync_case_body_cache_for_all_vols()
+def refresh_case_body_cache(rerender=True):
+    """ Recreate CaseBodyCache for all cases. Use `fab refresh_case_body_cache:rerender=false` to just regenerate text/json from html. """
+    rerender = rerender != 'false'
+    tasks.sync_case_body_cache_for_all_vols(rerender)
 
 @task
 def sync_from_initial_metadata(force=False):

@@ -9,7 +9,6 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 import django.contrib.postgres.search as pg_search
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
-from django.db.models import Q
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from lxml import etree
@@ -917,11 +916,21 @@ class CaseMetadata(models.Model):
         renderer = render_case.VolumeRenderer(blocks_by_id, {}, {})
         return renderer.hydrate_opinions(structure.opinions, blocks_by_id)
 
-    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None):
+    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, rerender=True):
         """
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
         """
+        # if rerender is false, just regenerate json and text attributes from existing html
+        if not rerender:
+            try:
+                body_cache = self.body_cache
+            except CaseBodyCache.DoesNotExist:
+                return
+            json, text = self.get_json_from_html(body_cache.html)
+            CaseBodyCache.objects.filter(id=body_cache.id).update(json=json, text=text)
+            return
+
         structure = self.structure
         if not blocks_by_id or not labels_by_block_id:
             pages = list(structure.pages.all())
@@ -932,9 +941,22 @@ class CaseMetadata(models.Model):
         renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, labels_by_block_id)
         html = renderer.render_html(self)
         xml = renderer.render_xml(self)
+        json, text = self.get_json_from_html(html)
 
-        ## create json
+        ## save
 
+        params = {'text': text, 'html': html, 'xml': xml, 'json': json}
+        # use this approach, instead of update_or_create, to reduce sql traffic:
+        #   - avoid causing a select (if the body_cache has already been populated with select_related)
+        #   - avoid hydrating the params via save(), if they were loaded with defer()
+        try:
+            body_cache = self.body_cache
+        except CaseBodyCache.DoesNotExist:
+            CaseBodyCache(metadata=self, **params).save()
+        else:
+            CaseBodyCache.objects.filter(id=body_cache.id).update(**params)
+
+    def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)
         casebody_pq.remove('.page-label,.footnotemark,.bracketnum')  # remove page numbers and references from text/json
 
@@ -954,21 +976,8 @@ class CaseMetadata(models.Model):
             'opinions': opinions,
             'corrections': casebody_pq('.corrections').text(),
         }
-
-        text = "\n".join([json['head_matter']] + [o['text'] for o in opinions] + [json['corrections']])
-
-        ## save
-
-        params = {'text': text, 'html': html, 'xml': xml, 'json': json}
-        # use this approach, instead of update_or_create, to reduce sql traffic:
-        #   - avoid causing a select (if the body_cache has already been populated with select_related)
-        #   - avoid hydrating the params via save(), if they were loaded with defer()
-        try:
-            body_cache = self.body_cache
-        except CaseBodyCache.DoesNotExist:
-            CaseBodyCache(metadata=self, **params).save()
-        else:
-            CaseBodyCache.objects.filter(id=body_cache.id).update(**params)
+        text = "\n".join([json['head_matter']] + [o['text'] for o in json['opinions']] + [json['corrections']])
+        return json, text
 
     def sync_from_initial_metadata(self, force=False):
         """
@@ -1596,92 +1605,6 @@ class CaseExport(models.Model):
         }
         for instance in instances:
             instance._filter_item_cache = lookups[instance.filter_type][instance.filter_id]
-
-
-class NgramWord(models.Model):
-    """
-        A single known token, simply mapping an ID to a text string.
-        We use this to avoid duplicating the same word in multiple ngrams.
-    """
-    word = models.CharField(max_length=10000, unique=True, db_index=True)
-
-    def __str__(self):
-        return self.word
-
-
-class NgramQuerySet(models.QuerySet):
-    def from_string(self, s):
-        """
-            Search for ngrams by string.
-            Given "foo bar baz box", search for (w1="foo", w2="bar", w3="baz")
-            Given "foo", search for (w1="foo", w2=None, w3=None)
-            Given "foo *", search for (w1="foo", w3=None)
-        """
-        # split s into parts
-        parts = s.split()[:3]
-
-        # apply wildcard placeholder
-        any_word = object()
-        if len(parts) > 1 and parts[-1] == '*':
-            parts[-1] = any_word
-
-        # pad with None
-        parts += [None] * (3-len(parts))
-
-        # apply filter
-        query = Q()
-        for i, part in enumerate(parts, 1):
-            if part == any_word:
-                query &= ~Q(**{"w%s" % i: None})
-            elif part:
-                query &= Q(**{"w%s__word" % i: part})
-            else:
-                query &= Q(**{"w%s" % i: None})
-        return self.filter(query)
-
-
-class Ngram(models.Model):
-    """
-        A record for a 1-gram, 2-gram, or 3-gram.
-        Nulls in w2 and w3 indicate 1-grams and 2-grams.
-    """
-    w1 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w1')
-    w2 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w2', null=True)
-    w3 = models.ForeignKey(NgramWord, on_delete=models.CASCADE, related_name='w3', null=True)
-
-    objects = NgramQuerySet.as_manager()
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['w1', 'w2', 'w3']),
-        ]
-
-    def __str__(self):
-        return " ".join(w.word for w in (self.w1, self.w2, self.w3) if w)
-
-
-class NgramObservationQuerySet(models.QuerySet):
-    def from_string(self, s):
-        return self.filter(ngram__in=Ngram.objects.from_string(s))
-
-
-class NgramObservation(models.Model):
-    """
-        A single data point of counts for an ngram for a given jurisdiction and year.
-        jurisdiction=Null indicates total count for a given year.
-        jurisdiction=Null, year=Null indicates total count across all years.
-    """
-    id = models.BigAutoField(primary_key=True)
-    ngram = models.ForeignKey(Ngram, on_delete=models.CASCADE, related_name='observations')
-    instance_count = models.IntegerField()
-    document_count = models.IntegerField()
-    year = models.SmallIntegerField(null=True)
-    jurisdiction = SmallForeignKey(Jurisdiction, null=True, on_delete=models.CASCADE, related_name='ngrams')
-
-    objects = NgramObservationQuerySet.as_manager()
-
-    def __str__(self):
-        return " ".join(str(i) for i in [self.ngram, self.jurisdiction or "all jurisdictions", self.year or "all years"])
 
 
 class Snippet(models.Model):
