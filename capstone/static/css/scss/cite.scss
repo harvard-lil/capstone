@@ -1,0 +1,22 @@
+@import "base.scss";
+@import "bootstrap/breadcrumb";
+
+.breadcrumb {
+  border-radius: 0;
+  background-color: $color-light-gray;
+}
+
+h1.page-title, h4 {
+  @extend h4;
+  line-height: 1.4em;
+  letter-spacing: 0;
+  font-family: $font-serif !important;
+}
+
+.basic-page {
+  background: $color-white;
+}
+.cite-container {
+  padding-bottom: 100px !important;
+  min-width: 85%;
+}
