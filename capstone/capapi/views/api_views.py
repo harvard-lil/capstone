@@ -1,10 +1,9 @@
 import bisect
-import json
 import re
 import urllib
 from collections import OrderedDict, defaultdict
+from pathlib import Path
 
-from django.conf import settings
 from django.http import HttpResponseRedirect, FileResponse
 from django.utils.text import slugify
 
@@ -20,8 +19,7 @@ from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
 from capdb.models import Citation
-from capdb.storages import ngram_storage, ngram_kv_store, ngram_kv_store_full_ro
-from scripts.ngrams import parse_ngram_paths
+from capdb.storages import ngram_kv_store_ro
 
 from django_elasticsearch_dsl_drf.constants import (
     LOOKUP_FILTER_RANGE,
@@ -265,36 +263,31 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # cache translation table between jurisdiction slug and ID
-        self.jurisdiction_id_to_slug = {v:k for k,v in filters.jurisdiction_slug_to_id.items()}
-        self.jurisdiction_id_to_slug[None] = 'total'
-        self.load_totals()
 
-    def load_totals(self):
+        self.jurisdiction_id_to_slug = dict(models.Jurisdiction.objects.values_list('pk', 'slug'))
+        self.jurisdiction_id_to_slug[None] = 'total'
+        self.jurisdiction_slug_to_id = {v:k for k,v in self.jurisdiction_id_to_slug.items()}
+        self.totals_by_jurisdiction_year_length = self.load_totals()
+
+    @staticmethod
+    def load_totals():
         # populate self.totals_by_jurisdiction_year_length, a mapping of jurisdiction-year-length to counts, like:
         #   {
         #       (<jur_id>, <year>, <length>): (<word count>, <document count>),
         #   }
+        if not Path(ngram_kv_store_ro.db_path()).exists():
+            return {}
         totals_by_jurisdiction_year_length = defaultdict(lambda: [0,0])
-        if settings.ROCKSDB_FEATURE:
-            for k, v in ngram_kv_store_full_ro.get_prefix(b'totals', packed=True):
-                jur, year, n = ngram_kv_store_full_ro.unpack(k[len(b'totals'):])
-                totals_by_jurisdiction_year_length[(jur, year, n)] = v
-                for total in (
-                    totals_by_jurisdiction_year_length[(None, year, n)],
-                    totals_by_jurisdiction_year_length[(None, None, n)]
-                ):
-                    total[0] += v[0]
-                    total[1] += v[1]
-
-        elif ngram_storage.exists('totals.json'):
-            totals = json.loads(ngram_storage.contents('totals.json'))
-            path_info = {p['path']: p for p in parse_ngram_paths(totals.keys())}
-            for path, counts in totals.items():
-                info = path_info[path]
-                totals_by_jurisdiction_year_length[(info['jurisdiction'] or 'total', info['year'], int(info['length']))] = (counts["grams"], counts["documents"])
-            self.totals_by_jurisdiction_year_length = totals_by_jurisdiction_year_length
-
-        self.totals_by_jurisdiction_year_length = totals_by_jurisdiction_year_length
+        for k, v in ngram_kv_store_ro.get_prefix(b'totals', packed=True):
+            jur, year, n = ngram_kv_store_ro.unpack(k[len(b'totals'):])
+            totals_by_jurisdiction_year_length[(jur, year, n)] = v
+            for total in (
+                totals_by_jurisdiction_year_length[(None, year, n)],
+                totals_by_jurisdiction_year_length[(None, None, n)]
+            ):
+                total[0] += v[0]
+                total[1] += v[1]
+        return totals_by_jurisdiction_year_length
 
     def list(self, request, *args, **kwargs):
         # without specific ngram search, return nothing
@@ -307,13 +300,12 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         q_len = len(words)
         # prepend word count as first byte
         q = bytes([q_len]) + ' '.join(words).encode('utf8')
-        kv_store = ngram_kv_store_full_ro if settings.ROCKSDB_FEATURE else ngram_kv_store
         if q.endswith(b' *'):
             # wildcard search
-            pairs = kv_store.get_prefix(q[:-1], packed=True)
+            pairs = ngram_kv_store_ro.get_prefix(q[:-1], packed=True)
         else:
             # non-wildcard search
-            value = kv_store.get(q, packed=True)
+            value = ngram_kv_store_ro.get(q, packed=True)
             if value:
                 pairs = [(q, value)]
             else:
@@ -328,26 +320,21 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             if '*' in jurisdictions:
                 jurisdiction_filter = None
             else:
-                jurisdiction_filter = set(filters.jurisdiction_slug_to_id[j] for j in jurisdictions if j in filters.jurisdiction_slug_to_id)
-                if 'total' in jurisdictions or not jurisdiction_filter:
+                jurisdiction_filter = set(self.jurisdiction_slug_to_id[j] for j in jurisdictions if j in self.jurisdiction_slug_to_id)
+                if not jurisdiction_filter:
                     jurisdiction_filter.add(None)
 
             # prepare year_filter from year= query param
             year_filter = set()
             for year in request.GET.getlist('year'):
-                if year == 'total':
-                    year_filter.add(None)
-                elif year.isdigit():
+                if year.isdigit():
                     year_filter.add(int(year))
 
             # get top 10 pairs
             top_pairs = []
             for gram, data in pairs:
                 total_jur = data[None]
-                if settings.ROCKSDB_FEATURE:
-                    sort_count = total_jur[None][0]
-                else:
-                    sort_count = next(total_jur[i+1] for i in range(0, len(total_jur), 3) if total_jur[i] is None)
+                sort_count = total_jur[None][0]
                 bisect.insort_right(top_pairs, (sort_count, gram, data))
                 top_pairs = top_pairs[-10:]
 
@@ -380,14 +367,17 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
                     years_out = []
                     jur_slug = self.jurisdiction_id_to_slug[jur_id]
-                    if settings.ROCKSDB_FEATURE and jur_id is None:
+                    if jur_id is None:
                         years = [i for k, v in years.items() for i in [k]+v]
                     for i in range(0, len(years), 3):
                         year, count, doc_count = years[i:i+3]
 
+                        # filter out total
+                        if year is None:
+                            continue
+
                         # years will be -1900 for msgpack compression -- add 1900 back in
-                        if year is not None:
-                            year += 1900
+                        year += 1900
 
                         # apply year filter
                         if year_filter and year not in year_filter:

@@ -15,7 +15,6 @@ app = Celery('config', include=[
     'scripts.compress_volumes',
     'scripts.ice_volumes',
     'scripts.export',
-    'scripts.ngrams',
     'scripts.update_snippets',
     'scripts.refactor_xml',
 ])
