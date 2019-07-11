@@ -17,11 +17,17 @@
   }
 }
 
-h1.page-title, h4 {
-  @extend h4;
-  line-height: 1.4em;
-  letter-spacing: 0;
-  font-family: $font-serif !important;
+ul.third-party-dbs {
+  li {
+    margin-bottom: 0.5em;
+  }
+}
+
+.btn {
+  .locked-access {
+    height: 14px;
+    margin-bottom: 9px;
+  }
 }
 
 .basic-page {
