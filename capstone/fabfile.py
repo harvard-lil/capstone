@@ -30,6 +30,7 @@ from fabric.decorators import task
 from capapi.models import CapUser
 from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter, Citation, CaseMetadata, \
     Court
+from capweb.models import Gallery
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
@@ -1138,6 +1139,67 @@ def delete_empty_courts(dry_run='true'):
                     court_to_reslug.save()
                 else:
                     print(" - Would reslug %s" % court_to_reslug)
+
+
+@task
+def load_gallery_initial_dataset():
+    current_count = Gallery.objects.count()
+    if current_count > 0:
+        print("Already {} gallery entries.".format(current_count))
+        return
+
+    Gallery.objects.bulk_create([
+        Gallery(
+            title='H2O',
+            image_path='{% static "img/h2o.png" %}',
+            content='H2O uses the [CAP API]({% url "api" %}) to provide free caselaw textbooks for anyone.',
+            repo_link='https://github.com/harvard-lil/h2o',
+            page_link='https://opencasebook.org/',
+            order=10),
+        Gallery(
+            title='Wordclouds',
+            image_path='{% static "img/wordclouds-1933.png" %}',
+            content='Graphics showcasing the most-used words in California caselaw each year between 1852 and 2015.',
+            repo_link='https://github.com/harvard-lil/cap-examples-old/blob/master/make_wordclouds.py',
+            page_link='{% url "wordclouds" %}',
+            order=20),
+        Gallery(
+            title='Limericks',
+            image_path='{% static "img/limerick.png" %}',
+            content='Generate rhymes using caselaw!',
+            repo_link='https://github.com/harvard-lil/cap-examples-old/blob/master/generate_limerick.py',
+            page_link='{% url "limericks" %}',
+            order=30),
+        Gallery(
+            title='Witchcraft in Caselaw',
+            image_path='{% static "img/witchcraft.png" %}',
+            content='See all instances of "witchcraft" charted out on the U.S. map.',
+            repo_link='https://github.com/harvard-lil/cap-examples/blob/master/api_wordsearch/wordsearch.py',
+            page_link='{% url "witchcraft" %}',
+            order=40),
+        Gallery(
+            title='GAVELFURY',
+            image_path='{% static "img/fury.png" %}',
+            content='HSee all instances of "!"',
+            page_link='http://www.gavelfury.com/',
+            order=50),
+        Gallery(
+            title='Code examples',
+            image_path='{% static "img/examples.png" %}',
+            content='Code examples',
+            repo_link='https://github.com/harvard-lil/cap-examples',
+            order=60),
+        Gallery(
+            title='CAP Search',
+            image_path='{% static "img/cap-search.png" %}',
+            content='Our own search utility is a CAPAPI consumer written in Vue with a smattering of python on the back '
+                    'end. Most of the relevant code can be found in the `capbrowse` app in Capstone, our larger codebase '
+                    'for case management. ',
+            repo_link = 'https://github.com/harvard-lil/capstone/tree/develop/capstone/capbrowse',
+            page_link = '{% url "search" %}',
+            order=70)
+    ])
+
 
 # allow tasks to be run as "python fabfile.py task"
 # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
