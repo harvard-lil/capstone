@@ -8,6 +8,7 @@ class Gallery(models.Model):
     image_path = models.CharField(max_length=255)
     page_link = models.CharField(max_length=255, blank=True, null=True)
     repo_link = models.CharField(max_length=255, blank=True, null=True)
+    order = models.IntegerField(unique=True, default=0)
 
     def __str__(self):
-        return self.label
+        return self.title
