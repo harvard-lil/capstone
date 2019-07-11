@@ -474,7 +474,6 @@
       },
       totalChartHeight(newVal) {
         this.chartStyles.height = `${newVal}px`;
-        console.log("style:", this.chartStyles.height);
       },
     },
     data: function () {
