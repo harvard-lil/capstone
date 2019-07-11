@@ -1180,7 +1180,7 @@ def load_gallery_initial_dataset():
         Gallery(
             title='GAVELFURY',
             image_path='{% static "img/fury.png" %}',
-            content='HSee all instances of "!"',
+            content='See all instances of "!"',
             page_link='http://www.gavelfury.com/',
             order=50),
         Gallery(
