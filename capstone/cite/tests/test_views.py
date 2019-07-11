@@ -85,9 +85,9 @@ def test_volume(client, django_assert_num_queries, citation_factory):
 @pytest.mark.django_db
 def test_case_not_found(client, django_assert_num_queries):
     """ Test /series/volume/case/ not found """
-    with django_assert_num_queries(select=1):
+    with django_assert_num_queries(select=2):
         response = client.get(reverse('citation', args=['fake', '123', '456'], host='cite'))
-    check_response(response, content_includes='Citation "123 Fake 456" not found')
+    check_response(response, content_includes='Citation "123 Fake 456" was not found')
 
 
 @pytest.mark.django_db
@@ -103,7 +103,7 @@ def test_cases_multiple(client, django_assert_num_queries, three_cases):
         case.name_abbreviation += str(i)
         case.save()
     cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
-    with django_assert_num_queries(select=3):
+    with django_assert_num_queries(select=4):
         response = client.get(
             reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite'))
     check_response(response, content_includes='Multiple cases match')

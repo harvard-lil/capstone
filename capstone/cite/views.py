@@ -199,9 +199,11 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         else:
             cases = []
         reporters = list(Reporter.objects.filter(short_name_slug=slugify(series_slug)))
-
-        # use the unslugified version for courtlistener searching
-        series = reporters[0].short_name
+        try:
+            # use the unslugified version for courtlistener searching
+            series = reporters[0].short_name
+        except IndexError:
+            series = series_slug
 
         return render(request, 'cite/citation_failed.html', {
             "cases": cases,
