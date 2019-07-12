@@ -317,7 +317,12 @@ PIPELINE = {
             },
             'output_filename': 'trends.css'
         },
-
+        'cite': {
+            'source_filenames': {
+                'css/scss/cite.scss',
+            },
+            'output_filename': 'cite.css'
+        }
     },
     # These are not yet converted to vue/webpack:
     # 'JAVASCRIPT': {

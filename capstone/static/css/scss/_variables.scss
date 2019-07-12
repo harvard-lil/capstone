@@ -138,7 +138,7 @@ $font-monospace: "source-code", monospace;
 $header-margin-size: 4rem;
 
 %footer-lil-logo-white {
-  background: url("../../img/logos/lil-white.svg") no-repeat;
+  background: url("../../img/logos/lil-white.svg") no-repeat !important;
   background-size: contain !important;
 }
 

@@ -198,10 +198,15 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
                 .prefetch_related('citations'))
         else:
             cases = []
+
+        reporter = Reporter.objects.filter(short_name_slug=slugify(series_slug)).first()
+        series = reporter.short_name if reporter else series_slug
+
         return render(request, 'cite/citation_failed.html', {
             "cases": cases,
             "full_cite": full_cite,
             "series_slug": series_slug,
+            "series": series,
             "volume_number": volume_number,
             "page_number": page_number,
         })

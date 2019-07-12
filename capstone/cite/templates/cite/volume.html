@@ -1,18 +1,42 @@
-{% extends "layouts/narrow.html" %}
+{% extends "layouts/centered.html" %}
+{% load pipeline %}
 
-{% block title %}Read Caselaw: {{ volumes.0.0.reporter.short_name }} volume {{ volumes.0.0.volume_number }}{% endblock %}
+{% block base_css %}{% stylesheet 'cite' %}{% endblock %}
+
+{% block title %}Volume: {{ volumes.0.0.reporter.short_name }} volume {{ volumes.0.0.volume_number }}{% endblock %}
 {% block meta_description %}Caselaw Access Project cases{% endblock %}
 
-{% block main_content %}
-  {% for volume, cases in volumes %}
-    {% with volume.reporter as reporter %}
-      <h2 class="subtitle">{{ reporter.short_name }}</h2>
-      <p>{{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }}) volume {{ volume.volume_number }}</p>
-      <ul>
-        {% for case in cases %}
-          <li><a href="{{ case.frontend_url }}">{{ case.full_cite }}</a></li>
-        {% endfor %}
-      </ul>
-    {% endwith %}
-  {% endfor %}
+{% block content %}
+  <div class="cite-container header-margin">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/">Browse</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="/{{ volumes.0.0.reporter.short_name_slug }}">
+            Reporter {{ volumes.0.0.reporter.short_name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          <a href="/{{ volumes.0.0.volume_number }}">
+            Volume {{ volumes.0.0.volume_number }}
+          </a>
+        </li>
+      </ol>
+    </nav>
+
+    {% for volume, cases in volumes %}
+      {% with volume.reporter as reporter %}
+        <h3 class="subtitle">{{ reporter.short_name }}</h3>
+        <p>{{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})
+          volume {{ volume.volume_number }}</p>
+        <ul>
+          {% for case in cases %}
+            <li><a href="{{ case.frontend_url }}">{{ case.full_cite }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endwith %}
+    {% endfor %}
+  </div>
 {% endblock %}
