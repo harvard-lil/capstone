@@ -198,12 +198,9 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
                 .prefetch_related('citations'))
         else:
             cases = []
-        reporters = list(Reporter.objects.filter(short_name_slug=slugify(series_slug)))
-        try:
-            # use the unslugified version for courtlistener searching
-            series = reporters[0].short_name
-        except IndexError:
-            series = series_slug
+
+        reporter = Reporter.objects.filter(short_name_slug=slugify(series_slug)).first()
+        series = reporter.short_name if reporter else series_slug
 
         return render(request, 'cite/citation_failed.html', {
             "cases": cases,
