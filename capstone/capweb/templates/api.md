@@ -2,7 +2,7 @@
 {% load pipeline %}
 {% load api_url %}
 title: API documentation
-page_image: 'img/og_image/tools_api.png'
+page_image: img/og_image/tools_api.png
 meta_description: Caselaw Access Project API Docs
 top_section_style: bg-black
 row_style: bg-tan

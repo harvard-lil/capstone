@@ -18,15 +18,12 @@
     <meta name="twitter:description" content="{% if og_description %}{{ og_description }}{% else %}{{ meta_description_out }}{% endif %}">
 
     {# social #}
-    {% if page_image is None %}
-    {% elif page_image %}
+    {% capture as page_image_out silent %}{% block page_image %}{% if page_image != None %}{{ page_image }}{% else %}img/og_image/api.jpg{% endif %}{% endblock %}{% endcapture %}
+    {% capture as page_image_out silent %}{% if page_image_out|slice:":4" == 'http' %}{{ page_image_out }}{% else %}{% capweb_static page_image_out %}{% endif %}{% endcapture %}
+    {% if page_image_out %}
       <meta name="twitter:card" content="summary_large_image">
-      <meta name="twitter:image" content="{% capweb_static page_image %}">
-      <meta property="og:image"  content="{% capweb_static page_image %}">
-    {% else %}
-      <meta name="twitter:image" content="{% capweb_static "img/og_image/api.jpg" %}">
-      <meta property="og:image"  content="{% capweb_static "img/og_image/api.jpg" %}">
-      <meta name="twitter:card" content="summary">
+      <meta name="twitter:image" content="{{ page_image_out }}">
+      <meta property="og:image"  content="{{ page_image_out }}">
     {% endif %}
 
     <meta name="twitter:site" content="@caselawaccess">
