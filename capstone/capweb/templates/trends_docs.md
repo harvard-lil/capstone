@@ -2,7 +2,7 @@
 {% load pipeline %}
 {% load api_url %}
 title: Historical Trends documentation
-page_image: 'img/og_image/trends.png'
+page_image: img/og_image/trends.png
 meta_description: Caselaw Access Project API Docs
 explainer: CAP Historical Trends visualizes and compares the frequency of terms in citable US caselaw between 1800 and 2018. It provides a simple, flexible search syntax and intuitive controls suitable for casual exploration, serious research, and everything between. The data is sourced directly from our free, public <a href="{% url 'api' %}">API</a>.
 extra_head: {% stylesheet 'docs' %}

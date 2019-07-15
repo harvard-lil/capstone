@@ -1,7 +1,7 @@
 {% load static %}
 title: About
 meta_description: About the Caselaw Access Project
-page_image: 'img/og_image/about.png'
+page_image: img/og_image/about.png
 explainer: The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make all published U.S. court decisions freely available to the public online, in a consistent format, digitized from the collection of the Harvard Law Library. 
 top_section_style: bg-black
 row_style: bg-tan
