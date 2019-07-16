@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Gallery(models.Model):
-    title = models.CharField(max_length=255) # markdown-formatted text
+    title = models.CharField(max_length=255)
     content = models.TextField() # markdown-formatted text
     image_path = models.CharField(max_length=255)
     page_link = models.CharField(max_length=255, blank=True, null=True)

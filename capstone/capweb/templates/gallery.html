@@ -22,285 +22,58 @@
 {% endblock %}
 
 {% block sidebar_menu_items %}
-  <li>
-    <a class="list-group-item" href="#h2o">
-      <span class="text">H2O</span>
-    </a>
-  </li>
-  <li>
-    <a class="list-group-item" href="#wordclouds">
-      <span class="text">Wordclouds</span>
-    </a>
-  </li>
-  <li>
-    <a class="list-group-item" href="#limericks">
-      <span class="text">Limericks</span>
-    </a>
-  </li>
-  <li>
-    <a class="list-group-item" href="#witchcraft">
-      <span class="text">Witchcraft</span>
-    </a>
-  </li>
-  <li>
-    <a class="list-group-item" href="#gavelfury">
-      <span class="text">GAVELFURY</span>
-    </a>
-  </li>
-  <li>
-    <a class="list-group-item" href="#examples">
-      <span class="text">Code Examples</span>
-    </a>
-  </li>
-  <li>
-    <a class="list-group-item" href="#cap-search">
-      <span class="text">CAP Search</span>
-    </a>
-  </li>
+  {% for entry in entries %}
+    <li>
+      <a class="list-group-item" href="#{{ entry.title|slugify }}">
+        <span class="text">{{ entry.title }}</span>
+      </a>
+    </li>
+  {% endfor %}
 {% endblock %}
 
 {% block main_content %}
-  {# =============> H2O <============= #}
-  <div class="row page-section">
+{% for entry in entries %}
+    <div class="row page-section">
     <div class="project-image">
-      <a href="https://opencasebook.org/"
-         aria-label="H2O homepage"
-         title="H2O homepage"
-         id="h2o"
+      <a href="{{ entry.page_link }}"
+         aria-label="{{ entry.title }} homepage"
+         title="{{ entry.title }} homepage"
+         id="{{ entry.title|slugify }}"
          target="_blank">
         <img class="main-img rounded"
              alt=""
-             src="{% static "img/h2o.png" %}">
+             src="{% static entry.image_path %}">
       </a>
     </div>
     <div class="project-description">
-      <h3 class="subtitle simple-subtitle" id="h2o">
-        H2O
+      <h3 class="subtitle simple-subtitle" id="{{ entry.title|slugify }}">
+        {{ entry.title }}
       </h3>
       <p>
-        H2O uses the
-        <a href="{% url "api" %}">
-          CAP API
-        </a>
-        to provide free caselaw textbooks for anyone.
+        {{ entry.content }}
       </p>
       <p class="social">
-        <span class="github">
-          <a href="https://github.com/harvard-lil/h2o" target="_blank"
-             title="H2O source code on Github"
-             aria-label="H2O source code on Github"></a>
-        </span>
 
-        <span class="website">
-          <a href="https://opencasebook.org/"
-             aria-label="H2O homepage"
-             title="H2O homepage"
-             target="_blank">
-          </a>
-        </span>
+        {% if entry.repo_link %}
+          <span class="github">
+            <a href="{{ entry.repo_link }}" target="_blank"
+              title="{{ entry.title }} source code on Github"
+              aria-label="{{ entry.title }} source code on Github"></a>
+          </span>
+        {% endif %}
+
+        {% if entry.page_link %}
+          <span class="website">
+            <a href="{{ entry.page_link }}"
+               aria-label="{{ entry.title }} homepage"
+               title="{{ entry.title }} homepage"
+               target="_blank">
+            </a>
+          </span>
+        {% endif %}
       </p>
     </div>
   </div>
+{% endfor %}
 
-  {# =============> WORDCLOUDS <============= #}
-  <div class="row page-section">
-    <div class="project-image">
-      <a href="{% url "wordclouds" %}"
-         title="Wordcloud homepage"
-         id="wordclouds"
-         aria-label="Wordcloud homepage">
-        <img class="main-img rounded"
-             alt=""
-             src="{% static "img/wordclouds-1933.png" %}">
-      </a>
-    </div>
-    <div class="project-description">
-      <h3 class="subtitle simple-subtitle" id="wordclouds">
-        Wordclouds
-      </h3>
-      <p>
-        Graphics showcasing the most-used words in California caselaw each year between 1852 and 2015.
-      </p>
-      <p class="social">
-        <span class="github">
-          <a href="https://github.com/harvard-lil/cap-examples-old/blob/master/make_wordclouds.py" target="_blank"
-             title="Wordcloud source code on Github"
-             aria-label="Wordcloud source code on Github"></a>
-        </span>
-        <span class="website">
-          <a href="{% url "wordclouds" %}"
-             title="Wordcloud homepage"
-             aria-label="Wordcloud homepage"></a>
-        </span>
-      </p>
-    </div>
-  </div>
-
-  {# =============> LIMERICKS <============= #}
-  <div class="row page-section">
-    <div class="project-image">
-      <a href="{% url "limericks" %}"
-         id="limericks"
-         aria-label="Limericks homepage">
-        <img class="main-img rounded"
-             alt=""
-             src="{% static "img/limerick.png" %}">
-      </a>
-    </div>
-    <div class="project-description">
-      <h3 class="subtitle simple-subtitle" id="limericks">
-        Limericks
-      </h3>
-      <p>
-        Generate rhymes using caselaw!
-      </p>
-      <p class="social">
-        <span class="github">
-          <a href="https://github.com/harvard-lil/cap-examples-old/blob/master/generate_limerick.py" target="_blank"
-             title="Limericks source code on Github"
-             aria-label="Limericks source code on Github"></a>
-        </span>
-
-        <span class="website">
-          <a href="{% url "limericks" %}"
-             title="Limericks homepage"
-             aria-label="Limericks homepage"></a>
-        </span>
-      </p>
-    </div>
-  </div>
-
-  {# =============> WITCHCRAFT <============= #}
-  <div class="row page-section">
-    <div class="project-image">
-      <a href="{% url "witchcraft" %}"
-         id="witchcraft"
-         aria-label="Witchcraft homepage">
-        <img class="main-img"
-             alt=""
-             src="{% static "img/witchcraft.png" %}">
-      </a>
-    </div>
-    <div class="project-description">
-      <h3 class="subtitle simple-subtitle" id="witchcraft">
-        Witchcraft in Caselaw
-      </h3>
-      <p>
-        See all instances of "witchcraft" charted out on the U.S. map.
-      </p>
-      <p class="color-violet">Happy Halloween!</p>
-      <p class="social">
-        <span class="github">
-          <a href="https://github.com/harvard-lil/cap-examples/blob/master/api_wordsearch/wordsearch.py"
-             target="_blank"
-             title="Witchcraft source code on Github"
-             aria-label="Witchcraft source code on Github"></a>
-        </span>
-
-        <span class="website">
-          <a href="{% url "witchcraft" %}"
-             title="Witchcraft homepage"
-             aria-label="Witchcraft homepage"></a>
-        </span>
-      </p>
-    </div>
-  </div>
-
-  {# =============> GAVELFURY <============= #}
-  <div class="row page-section">
-    <div class="project-image">
-      <a href="http://www.gavelfury.com/"
-         id="gavelfury"
-         target="_blank"
-         aria-label="GAVELFURY homepage">
-        <img class="main-img"
-             alt=""
-             src="{% static "img/fury.png" %}">
-      </a>
-    </div>
-    <div class="project-description">
-      <h3 class="subtitle simple-subtitle" id="gavelfury">
-        GAVELFURY
-      </h3>
-      <p>
-        See all instances of "!"
-      </p>
-      <p class="social">
-        <span class="website">
-          <a href="http://www.gavelfury.com/"
-             title="GAVELFURY homepage"
-             target="_blank"
-             aria-label="GAVELFURY homepage"></a>
-        </span>
-      </p>
-    </div>
-  </div>
-
-  {# =============> CODE EXAMPLES <============= #}
-  <div class="row page-section">
-    <div class="project-image">
-      <a href="https://github.com/harvard-lil/cap-examples"
-         id="examples"
-         aria-label="Limericks homepage">
-        <img class="main-img"
-             alt=""
-             src="{% static "img/examples.png" %}">
-      </a>
-    </div>
-
-    <div class="project-description">
-      <h3 class="subtitle simple-subtitle" id="examples">
-        Code examples
-      </h3>
-      <p>
-        See some ways of getting started with the data! Examples are written in Python.
-      </p>
-      <p class="social">
-        <span class="github">
-          <a href="https://github.com/harvard-lil/cap-examples"
-             target="_blank"
-             title="Examples source code on Github"
-             aria-label="Examples source code on Github"></a>
-        </span>
-      </p>
-    </div>
-  </div>
-
-  {# =============> CAP SEARCH <============= #}
-  <div class="row page-section">
-    <div class="project-image">
-      <a href="https://github.com/harvard-lil/capstone/tree/develop/capstone/capbrowse"
-         id="cap-search"
-         aria-label="CAP search code">
-        <img class="main-img"
-             alt=""
-             src="{% static "img/cap-search.png" %}">
-      </a>
-    </div>
-    <div class="project-description">
-      <h3 class="subtitle simple-subtitle" id="cap-search">
-          CAP Search
-      </h3>
-      <p>
-        Our own search utility is a CAPAPI consumer written in Vue
-        with a smattering of python on the back end. Most of the
-        relevant code can be found in the 'capbrowse' app in
-        Capstone, our larger codebase for case management.
-      </p>
-      <p class="social">
-        <span class="github">
-          <a href="https://github.com/harvard-lil/capstone/tree/develop/capstone/capbrowse"
-             target="_blank"
-             title="Capstone source code on Github"
-             aria-label="Capstone source code on Github"></a>
-        </span>
-        <span class="website">
-          <a href="{% url "search" %}"
-             title="CAP Search"
-             target="_blank"
-             aria-label="CAP Search"></a>
-        </span>
-      </p>
-    </div>
-  </div>
 {% endblock %}

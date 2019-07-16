@@ -1,11 +1,13 @@
 import logging
 from collections import OrderedDict
 from pathlib import Path
+from markdown import Markdown as md
 
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.template import Template, Context
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.views import View
@@ -13,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from capweb.forms import ContactForm, MailingListSubscribe
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
+from capweb.models import Gallery
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
 from capapi import serializers
@@ -133,10 +136,27 @@ def tools(request):
 
 
 def gallery(request):
+    entries = Gallery.objects.order_by('order').values()
+
+    for key in range(len(entries)):
+        html_content = md().convert(entries[key]['content'])
+        if html_content.startswith("<p>") and html_content.endswith("</p>"):
+            html_content = html_content[3:-4]
+        entries[key]['content'] = html_content
+
+        if entries[key]['page_link'] and (not entries[key]['page_link'].startswith("http")):
+            # if it doesn't start with http, see if it's a django path. if not: 🤷‍
+            try:
+                entries[key]['page_link'] = reverse(entries[key]['page_link'])
+            except:
+                pass
+
     return render(request, 'gallery.html', {
+        'entries': entries,
         'email': settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/gallery.png',
-        'meta_description': 'Sky is the limit! Here are some examples of what’s possible.'
+        'meta_description': 'Sky is the limit! Here are some examples of what’s possible.',
+        'stank': '{% url "gallery" %}'
     })
 
 
