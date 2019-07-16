@@ -1,22 +1,70 @@
-{% extends "layouts/narrow.html" %}
+{% extends "layouts/centered.html" %}
+{% load render_bundle from webpack_loader %}
+{% load pipeline %}
+
+{% block base_css %}{% stylesheet 'cite' %}{% endblock %}
+
 {% block title %}
   {% if not cases %}
-    Read Caselaw: {{ full_cite }}
+    {{ full_cite }}
   {% else %}
-    Read Caselaw: {{ cases.0.citations.first }}
+    {{ cases.0.citations.first }}
   {% endif %}
 {% endblock %}
 {% block meta_description %}Caselaw Access Project cases{% endblock %}
 
-{% block main_content %}
-  {% if not cases %}
-    Citation "{{ full_cite }}" not found. <a href="https://scholar.google.com/scholar?as_sdt=40000006&q={{ full_cite }}">Click here to search Google Scholar</a>.
-  {% else %}
-    <h2 class="subtitle">Multiple cases match "{{ full_cite }}"</h2>
-    <ul>
-      {% for case in cases %}
-        <li><a href="{% url 'citation' series_slug=series_slug volume_number=volume_number page_number=page_number case_id=case.id host 'cite' %}">{{ case.full_cite }}</a></li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+{% block content %}
+  <div class="cite-container header-margin">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/">Browse</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="/{{ series_slug }}">
+            Reporter {{ series }}
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="/{{ series_slug }}/{{ volume_number }}">
+            Volume {{ volume_number }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          <a href="/{{ series_slug }}/{{ volume_number }}/{{ page_number }}">Page {{ page_number }}</a>
+        </li>
+      </ol>
+    </nav>
+    <div class="content-centered">
+      {% if not cases %}
+        <h3>Citation "{{ full_cite }}" was not found.</h3>
+        <p>Check for the case in other databases:</p>
+        <ul class="third-party-dbs">
+          <li>
+            <a class="btn btn-primary"
+               target="_blank"
+               href="https://www.courtlistener.com/c/{{ series }}/{{ volume_number }}/{{ page_number }}">
+              CourtListener
+            </a>
+          </li>
+          <li>
+            <a class="btn btn-primary"
+               target="_blank"
+               href="https://scholar.google.com/scholar?as_sdt=40000006&q={{ full_cite }}">
+              Google Scholar
+            </a>
+          </li>
+        </ul>
+      {% else %}
+        <h4 class="case-name">Multiple cases match "{{ full_cite }}"</h4>
+        <ul>
+          {% for case in cases %}
+            <li>
+              <a href="{% url 'citation' series_slug=series_slug volume_number=volume_number page_number=page_number case_id=case.id host 'cite' %}">{{ case.full_cite }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

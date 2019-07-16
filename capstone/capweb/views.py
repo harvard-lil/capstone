@@ -1,14 +1,17 @@
 import logging
+import subprocess
 from collections import OrderedDict
 from pathlib import Path
 from markdown import Markdown as md
 
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.template import Template, Context
 from django.template.loader import render_to_string
+from django.utils.http import is_safe_url
 from django.utils.safestring import mark_safe
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -255,3 +258,37 @@ class MarkdownView(View):
             **self.extra_context,
             **meta,
         })
+
+
+_safe_domains = [h['subdomain']+settings.PARENT_HOST for h in settings.HOSTS.values()]
+def screenshot(request):
+    """
+        Return screenshot of submitted URL on our site, e.g. /screenshot/?url=<url>&target=<selector>&target=<selector>&wait=<selector>
+
+        This is a light wrapper around "node scripts/screenshot.js"
+    """
+    if not settings.SCREENSHOT_FEATURE:
+        raise Http404
+
+    # validate that submitted URL is a complete URL on our site
+    url = request.GET.get('url')
+    if not url or not url.startswith('http://' if settings.DEBUG else 'https://') or not is_safe_url(url, _safe_domains):
+        return HttpResponseBadRequest()
+
+    # apply target= and wait= query params
+    command_args = []
+    for selector in request.GET.getlist('wait'):
+        command_args += ['--wait', selector]
+    for selector in request.GET.getlist('target'):
+        command_args += ['--target', selector]
+
+    # get screenshot from node scripts/screenshot.js
+    try:
+        screenshot = subprocess.check_output(['node', 'scripts/screenshot.js', '-m', 10000] + command_args + [url], timeout=10)
+        content_type = "image/png"
+    except subprocess.TimeoutExpired:
+        with staticfiles_storage.open('img/og_image/api.jpg') as screenshot_file:
+            screenshot = screenshot_file.read()
+        content_type = "image/jpeg"
+
+    return HttpResponse(screenshot, content_type=content_type)

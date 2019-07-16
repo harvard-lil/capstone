@@ -52,11 +52,21 @@ let setupBurgerAction = function() {
 };
 
 let selectedNavStyling = function() {
+  let toolsPaths = ['bulk', 'api', 'search', 'search-docs', 'trends', 'trends-docs'];
+
   let path = window.location.pathname.split('/')[1];
   path = path.split('#')[0];
-  path = path === 'user' ? 'account': path;
-  path = path === 'bulk' || path === 'api' ? 'tools': path;
+
+  let host = window.location.host.split('.')[0];
+
+  if (host === 'cite' || toolsPaths.indexOf(path) > -1) {
+    path = 'tools'
+  } else if (path === 'user') {
+    path = 'account'
+  }
+
   $('#nav-' + path).find('a').addClass('selected');
+
 };
 
 let setupSidebarHighlighting = function () {

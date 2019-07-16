@@ -1,7 +1,7 @@
 {% load static %}
 {% load api_url %}
 title: Tools
-page_image: 'img/og_image/tools.png'
+page_image: img/og_image/tools.png
 meta_description: Tools for accessing caselaw
 {% spaceless %}
 explainer: The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases

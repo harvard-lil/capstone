@@ -10,9 +10,11 @@
   "dependencies": {
     "awesome-charts": "^1.0.0",
     "chart.js": "^2.8.0",
+    "commander": "^2.20.0",
     "csv-stringify": "^5.3.0",
     "jquery": "^3.3.1",
     "lodash.debounce": "^4.0.8",
+    "puppeteer": "^1.18.1",
     "tone": "^13.4.9",
     "vue": "^2.5.17",
     "vue-chartjs": "^3.4.2",
