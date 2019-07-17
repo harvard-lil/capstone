@@ -189,6 +189,7 @@ DATABASES = {
 DATABASE_ROUTERS = [
     'tracking_tool.routers.TrackingToolDatabaseRouter',
     'capdb.routers.CapDBRouter',
+    'capweb.routers.CapWebRouter',
 ]
 
 # Password validation
