@@ -50,7 +50,9 @@
         {{ entry.title }}
       </h3>
       <p>
+        {% autoescape off %}
         {{ entry.content }}
+        {% endautoescape %}
       </p>
       <p class="social">
 
