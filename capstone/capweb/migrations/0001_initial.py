@@ -17,7 +17,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=255)),
                 ('content', models.TextField()),
-                ('image_path', models.CharField(max_length=255)),
                 ('page_link', models.CharField(blank=True, max_length=255, null=True)),
                 ('repo_link', models.CharField(blank=True, max_length=255, null=True)),
             ],

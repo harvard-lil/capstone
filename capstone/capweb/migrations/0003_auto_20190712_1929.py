@@ -5,55 +5,63 @@ from django.db import migrations
 def load_gallery_initial_dataset(apps, schema_editor):
     Gallery = apps.get_model('capweb', 'Gallery')
     Gallery.objects.bulk_create([
-        Gallery(
-            title = 'H2O',
-            image_path = 'img/h2o.png',
-            content = 'H2O uses the CAP API to provide free caselaw textbooks for anyone.',
-            repo_link='https://github.com/harvard-lil/h2o',
-            page_link = 'https://opencasebook.org/',
-            order = 10),
+
         Gallery(
             title = 'Wordclouds',
-            image_path = 'img/wordclouds-1933.png',
+            section = 'Research Results',
+            image = 'static/img/gallery/wordclouds-1933.png',
             content = 'Graphics showcasing the most-used words in California caselaw each year between 1852 and 2015.',
             repo_link='https://github.com/harvard-lil/cap-examples-old/blob/master/make_wordclouds.py',
             page_link = 'wordclouds',
-            order = 20),
-        Gallery(
-            title = 'Limericks',
-            image_path = 'img/limerick.png',
-            content = 'Generate rhymes using caselaw!',
-            repo_link='https://github.com/harvard-lil/cap-examples-old/blob/master/generate_limerick.py',
-            page_link = 'limericks',
-            order = 30),
+            order = 10),
         Gallery(
             title = 'Witchcraft in Caselaw',
-            image_path = 'img/witchcraft.png',
+            section = 'Research Results',
+            image = 'static/img/gallery/witchcraft.png',
             content = 'See all instances of "witchcraft" charted out on the U.S. map.',
             repo_link='https://github.com/harvard-lil/cap-examples/blob/master/api_wordsearch/wordsearch.py',
             page_link = 'witchcraft',
-            order = 40),
+            order = 20),
+        Gallery(
+            title='Limericks',
+            section='Fun',
+            image='static/img/gallery/limerick.png',
+            content='Generate rhymes using caselaw!',
+            repo_link='https://github.com/harvard-lil/cap-examples-old/blob/master/generate_limerick.py',
+            page_link='limericks',
+            order = 10),
         Gallery(
             title = 'GAVELFURY',
-            image_path = 'img/fury.png',
+            section = 'Fun',
+            image = 'static/img/gallery/fury.png',
             content = 'See all instances of "!"',
             page_link = 'http://www.gavelfury.com/',
-            order = 50),
+            order = 20),
         Gallery(
             title = 'Code examples',
-            image_path = 'img/examples.png',
+            section = 'Applications',
+            image = 'static/img/gallery/examples.png',
             content = 'See some ways of getting started with the data! Examples are written in Python.',
             repo_link='https://github.com/harvard-lil/cap-examples',
-            order = 60),
+            order = 10),
         Gallery(
             title = 'CAP Search',
-            image_path = 'img/cap-search.png',
+            section = 'Applications',
+            image = 'static/img/gallery/cap-search.png',
             content = 'Our own search utility is a CAPAPI consumer written in Vue with a smattering of python on the '
                       'back end. Most of the relevant code can be found in the `capbrowse` app in Capstone, our larger '
                       'codebase for case management. ',
             repo_link = 'https://github.com/harvard-lil/capstone/tree/develop/capstone/capbrowse',
             page_link = 'search',
-            order = 70)
+            order = 20),
+        Gallery(
+            title = 'H2O',
+            image = 'static/img/gallery/h2o.png',
+            section = 'Applications',
+            content = 'H2O uses the [CAP API]({% url "api" %}) to provide free caselaw textbooks for anyone.',
+            repo_link='https://github.com/harvard-lil/h2o',
+            page_link = 'https://opencasebook.org/',
+            order = 30),
     ])
 
 

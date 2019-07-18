@@ -13,6 +13,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='gallery',
             name='order',
-            field=models.IntegerField(default=0, unique=True),
+            field=models.IntegerField(default=10),
+        ),
+        migrations.AddField(
+            model_name='gallery',
+            name='section',
+            field=models.CharField(default='Applications', max_length=20),
+        ),
+        migrations.AddField(
+            model_name='gallery',
+            name='image',
+            field=models.ImageField(blank=True, null=True, upload_to='static/img/gallery/'),
         )
     ]
