@@ -137,12 +137,15 @@ def tools(request):
     })
 
 
-
 def gallery(request):
     entries = Gallery.objects.order_by('order').values()
 
     for key in range(len(entries)):
-        html_content = md().convert(entries[key]['content'])
+
+        template = Template(entries[key]['content'])
+        context = Context()
+
+        html_content = md().convert(template.render(context))
         if html_content.startswith("<p>") and html_content.endswith("</p>"):
             html_content = html_content[3:-4]
         entries[key]['content'] = html_content
