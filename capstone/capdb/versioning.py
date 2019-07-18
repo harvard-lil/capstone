@@ -38,15 +38,14 @@ class TemporalHistoricalRecords(HistoricalRecords):
         # filter out sys_period from updates:
         def _do_update(self, base_qs, using, pk_val, values, update_fields, forced_update):
             values = [v for v in values if v[0] != sys_period_field]
-            if update_fields and sys_period_field in update_fields:
-                update_fields.remove(sys_period_field)
+            if update_fields:
+                update_fields = tuple(f for f in update_fields if f != sys_period_field)
             return super(cls, self)._do_update(base_qs, using, pk_val, values, update_fields, forced_update)
         cls.add_to_class('_do_update', _do_update)
 
         # filter out sys_period from inserts:
         def _do_insert(self, manager, using, fields, update_pk, raw):
-            if sys_period_field in fields:
-                fields.remove(sys_period_field)
+            fields = tuple(f for f in fields if f != sys_period_field)
             return super(cls, self)._do_insert(manager, using, fields, update_pk, raw)
         cls.add_to_class('_do_insert', _do_insert)
 
