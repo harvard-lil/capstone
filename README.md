@@ -129,7 +129,6 @@ This will make a virtualenv entitled "capstone." You can tell that you're inside
 
     (capstone)$ psql -c "CREATE DATABASE capdb;"
     (capstone)$ psql -c "CREATE DATABASE capapi;"
-    (capstone)$ psql -c "CREATE DATABASE capweb;"
     (capstone)$ fab init_dev_db  # one time -- set up database tables and development Django admin user, migrate databases
     (capstone)$ fab load_test_data  # load in our test data
     (capstone)$ fab update_all_snippets  # make our pre-generated data snippets 
@@ -147,7 +146,6 @@ We have initial support for local development via `docker compose`. Docker setup
     $ docker-compose up -d
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capdb;"
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capapi;"
-    $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capweb;"
     $ docker-compose exec web fab init_dev_db
     $ docker-compose exec web fab load_test_data
     $ docker-compose exec web fab update_all_snippets

@@ -218,7 +218,6 @@ def migrate():
 
     management.call_command('migrate', database="default")
     management.call_command('migrate', database="capdb")
-    management.call_command('migrate', database="capweb")
     if settings.USE_TEST_TRACKING_TOOL_DB:
         management.call_command('migrate', database="tracking_tool")
 
