@@ -66,13 +66,28 @@ in results from the case endpoint with `full_case=true`:
 In this example the response included a case from a non-whitelisted jurisdiction, and `casebody.data` for the case is 
 therefore blank, while `casebody.status` is "error_auth_required".
   
-To authenticate the request from code or the command line, you can provide an `Authorization` header:
+To authenticate a request from the command line or a program, pass the `Authorization` header with your request. 
+<span class="highlighted">The format of the `Authorization` header value is important: Use the string `Token` followed 
+by a space, followed by your API key.</span> 
+
+__Example:__ With an API key of `abcd12345`, you would pass `Token abcd12345` to the 
+`Authorization` header.
+
+A curl command would look like this:
   
-`curl -H "Authorization: Token abcd12345" "{% api_url "casemetadata-list" %}?full_case=true"`
+`curl -H "Authorization: Token abcd12345" "{% api_url "casemetadata-list" %}{{case_id}}/?full_case=true"`
+{: class="code-block" }
+
+In a program, (python's request library in this example,) it would look something like this:
+
+`response = requests.get(
+    '{% api_url "casemetadata-list" %}{{case_id}}/?full_case=true',
+    headers={'Authorization': 'Token abcd12345'}
+)`
 {: class="code-block" }
   
-While you are [logged into this website]({% url "login" %}), all requests through the API browser will be authenticated
-automatically.
+If you are [logged into this website]({% url "login" %}) and accessing the API through a web browser, all requests 
+will be authenticated automatically.
   
 
 {# ==============> DATA FORMATS <============== #}
