@@ -24,7 +24,7 @@ def load_gallery_initial_dataset(apps, schema_editor):
             order = 20),
         Gallery(
             title='Limericks',
-            section='01 Fun Stuff',
+            section='02 Fun Stuff',
             image='static/img/gallery/limerick.png',
             content='Generate rhymes using caselaw!',
             repo_link='https://github.com/harvard-lil/cap-examples-old/blob/master/generate_limerick.py',
@@ -32,21 +32,21 @@ def load_gallery_initial_dataset(apps, schema_editor):
             order = 10),
         Gallery(
             title = 'GAVELFURY',
-            section='01 Fun Stuff',
+            section='02 Fun Stuff',
             image = 'static/img/gallery/fury.png',
             content = 'See all instances of "!"',
             page_link = 'http://www.gavelfury.com/',
             order = 20),
         Gallery(
             title = 'Code examples',
-            section = '02 Applications',
+            section = '01 Applications',
             image = 'static/img/gallery/examples.png',
             content = 'See some ways of getting started with the data! Examples are written in Python.',
             repo_link='https://github.com/harvard-lil/cap-examples',
-            order = 10),
+            order = 20),
         Gallery(
             title = 'CAP Search',
-            section = '02 Applications',
+            section = '01 Applications',
             image = 'static/img/gallery/cap-search.png',
             content = 'Our own search utility is a CAPAPI consumer written in Vue with a smattering of python on the '
                       'back end. Most of the relevant code can be found in the `capbrowse` app in Capstone, our larger '
@@ -57,11 +57,11 @@ def load_gallery_initial_dataset(apps, schema_editor):
         Gallery(
             title = 'H2O',
             image = 'static/img/gallery/h2o.png',
-            section = '02 Applications',
+            section = '01 Applications',
             content = 'H2O uses the [CAP API]({% url "api" %}) to provide free caselaw textbooks for anyone.',
             repo_link='https://github.com/harvard-lil/h2o',
             page_link = 'https://opencasebook.org/',
-            order = 30),
+            order = 10),
     ])
 
 
