@@ -1,5 +1,6 @@
 @import 'variables';
 @import 'footer/magenta';
+@import 'base.scss';
 
 @include media-breakpoint-down(md) {
   .dropdown-item {
@@ -9,10 +10,23 @@
   }
 }
 
-.subtitle.simple-subtitle {
+.main-content {
+  padding-top: 1.25rem !important;
+  @include media-breakpoint-down(md) {
+    padding-top: 0 !important;
+  }
+}
+
+h2.subtitle {
+  @include media-breakpoint-down(md) {
+    font-size: 3rem;
+  }
+}
+
+h2.simple-subtitle {
+  @extend .subtitle;
   &:before {
     content: "";
-    margin: 0;
   }
   a {
     border-bottom: 2px solid $color-violet;
@@ -20,44 +34,14 @@
       border-bottom: 3px solid $color-magenta !important;
     }
   }
-}
-
-.page-section {
-  padding-bottom: 6rem;
-  &:last-child {
-    border-bottom: 0;
-    padding-bottom: 0;
+  @include media-breakpoint-down(sm) {
+    font-size: 2rem;
   }
 }
 
-.project-description {
-  @include media-breakpoint-up(lg) {
-    @include make-col(8);
-    float: right;
-  }
-}
-
-.project-image {
-  > a {
-    border-bottom: 0;
-  }
-  .main-img {
-    border-radius: 50%;
-    border: 1px solid $color-gray;
-  }
-
-  @include media-breakpoint-up(lg) {
-    @include make-col(3);
-    .main-img {
-      max-width: 80%;
-    }
-  }
-  @include media-breakpoint-down(md) {
-    @include make-col(12);
-    .main-img {
-      display: none;
-    }
-  }
+img.gallery-thumbnail {
+  border-radius: 50%;
+  border: 1px solid $color-gray;
 }
 
 /* project specific style */
