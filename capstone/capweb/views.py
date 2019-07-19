@@ -138,31 +138,43 @@ def tools(request):
 
 
 def gallery(request):
-    entries = Gallery.objects.order_by('order').values()
+    output = OrderedDict()
+    for entry in Gallery.objects.order_by('section', 'order'):
+        section = entry.section.split(" ", 1)[1]
+        if section not in output:
+            output[section] = []
 
-    for key in range(len(entries)):
+        item = {
+            'title': entry.title,
+            'image': entry.image.url.replace('static/', '', 1),
+            'repo_link': entry.repo_link,
+        }
 
-        template = Template(entries[key]['content'])
+        template = Template(entry.content)
         context = Context()
 
         html_content = md().convert(template.render(context))
         if html_content.startswith("<p>") and html_content.endswith("</p>"):
             html_content = html_content[3:-4]
-        entries[key]['content'] = html_content
 
-        if entries[key]['page_link'] and (not entries[key]['page_link'].startswith("http")):
+        item['content'] = html_content
+
+        if entry.page_link and (not entry.page_link.startswith("http")):
             # if it doesn't start with http, see if it's a django path. if not: 🤷‍
             try:
-                entries[key]['page_link'] = reverse(entries[key]['page_link'])
+                item['page_link'] = reverse(entry.page_link)
             except:
                 pass
+        else:
+            item['page_link'] = entry.page_link
+
+        output[section].append(item)
 
     return render(request, 'gallery.html', {
-        'entries': entries,
+        'cms_content': output,
         'email': settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/gallery.png',
-        'meta_description': 'Sky is the limit! Here are some examples of what’s possible.',
-        'stank': '{% url "gallery" %}'
+        'meta_description': 'Sky is the limit! Here are some examples of what’s possible.'
     })
 
 
