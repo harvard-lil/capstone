@@ -18,30 +18,26 @@
 }
 
 h2.subtitle {
-  @include media-breakpoint-down(md) {
-    font-size: 3rem;
-  }
+  font-size: 2rem;
 }
 
-h2.simple-subtitle {
-  @extend .subtitle;
-  &:before {
-    content: "";
-  }
+h3.simple-subtitle {
+  font-size: 1.25rem;
+  font-weight: $font-weight-bold;
   a {
-    border-bottom: 2px solid $color-violet;
+    color: $color-black;
+    border-bottom: none;
     &:hover, &:focus {
+      color: $color-black;
       border-bottom: 3px solid $color-magenta !important;
     }
-  }
-  @include media-breakpoint-down(sm) {
-    font-size: 2rem;
   }
 }
 
 img.gallery-thumbnail {
   border-radius: 50%;
   border: 1px solid $color-gray;
+  max-width: 120px;
 }
 
 /* project specific style */
