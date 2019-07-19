@@ -8,7 +8,7 @@ def load_gallery_initial_dataset(apps, schema_editor):
 
         Gallery(
             title = 'Wordclouds',
-            section = 'Research Results',
+            section = '03 Research Results',
             image = 'static/img/gallery/wordclouds-1933.png',
             content = 'Graphics showcasing the most-used words in California caselaw each year between 1852 and 2015.',
             repo_link='https://github.com/harvard-lil/cap-examples-old/blob/master/make_wordclouds.py',
@@ -16,7 +16,7 @@ def load_gallery_initial_dataset(apps, schema_editor):
             order = 10),
         Gallery(
             title = 'Witchcraft in Caselaw',
-            section = 'Research Results',
+            section = '03 Research Results',
             image = 'static/img/gallery/witchcraft.png',
             content = 'See all instances of "witchcraft" charted out on the U.S. map.',
             repo_link='https://github.com/harvard-lil/cap-examples/blob/master/api_wordsearch/wordsearch.py',
@@ -24,7 +24,7 @@ def load_gallery_initial_dataset(apps, schema_editor):
             order = 20),
         Gallery(
             title='Limericks',
-            section='Fun',
+            section='01 Fun Stuff',
             image='static/img/gallery/limerick.png',
             content='Generate rhymes using caselaw!',
             repo_link='https://github.com/harvard-lil/cap-examples-old/blob/master/generate_limerick.py',
@@ -32,21 +32,21 @@ def load_gallery_initial_dataset(apps, schema_editor):
             order = 10),
         Gallery(
             title = 'GAVELFURY',
-            section = 'Fun',
+            section='01 Fun Stuff',
             image = 'static/img/gallery/fury.png',
             content = 'See all instances of "!"',
             page_link = 'http://www.gavelfury.com/',
             order = 20),
         Gallery(
             title = 'Code examples',
-            section = 'Applications',
+            section = '02 Applications',
             image = 'static/img/gallery/examples.png',
             content = 'See some ways of getting started with the data! Examples are written in Python.',
             repo_link='https://github.com/harvard-lil/cap-examples',
             order = 10),
         Gallery(
             title = 'CAP Search',
-            section = 'Applications',
+            section = '02 Applications',
             image = 'static/img/gallery/cap-search.png',
             content = 'Our own search utility is a CAPAPI consumer written in Vue with a smattering of python on the '
                       'back end. Most of the relevant code can be found in the `capbrowse` app in Capstone, our larger '
@@ -57,7 +57,7 @@ def load_gallery_initial_dataset(apps, schema_editor):
         Gallery(
             title = 'H2O',
             image = 'static/img/gallery/h2o.png',
-            section = 'Applications',
+            section = '02 Applications',
             content = 'H2O uses the [CAP API]({% url "api" %}) to provide free caselaw textbooks for anyone.',
             repo_link='https://github.com/harvard-lil/h2o',
             page_link = 'https://opencasebook.org/',
