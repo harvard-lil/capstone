@@ -69,7 +69,7 @@ def home(request):
             reporters_by_jurisdiction[jurisdiction].append(reporter)
 
     # prepare (jurisdiction, reporters) list
-    jurisdictions = sorted(reporters_by_jurisdiction.items(), key=lambda item: item[0].name)
+    jurisdictions = sorted(reporters_by_jurisdiction.items(), key=lambda item: item[0].name_long)
 
     return render(request, 'cite/home.html', {
         "jurisdictions": jurisdictions,
