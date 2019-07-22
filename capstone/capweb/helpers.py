@@ -254,3 +254,11 @@ def password_protected_page(key):
             return render(request, 'password_protected_page.html', {"message": message})
         return inner
     return outer
+
+def natural_sort_key(text):
+    """
+        Sort numeric parts of text numerically and text parts alphabetically. Example:
+            >>> sorted(["9 Foo", "10 Foo", "9A Foo"], key=natural_sort_key)
+            ['9 Foo', '9A Foo', '10 Foo']
+    """
+    return [int(part) if part.isdigit() else part for word in text.split() for part in re.split('(\d+)', word)]

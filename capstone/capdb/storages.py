@@ -297,7 +297,7 @@ class CaptarStorage(CapStorageMixin, Storage):
                     yield key
 
     def exists(self, name):
-        return name in self.index or name+'.gz' in self.index
+        return str(name) in self.index or str(name)+'.gz' in self.index
 
 ### instances ###
 

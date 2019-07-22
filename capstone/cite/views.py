@@ -22,6 +22,8 @@ from capdb.models import Reporter, VolumeMetadata, Citation, CaseMetadata
 from capweb import helpers
 
 ### helpers ###
+from capweb.helpers import natural_sort_key
+
 
 def safe_redirect(request):
     """ Redirect to request.GET['next'] if it exists and is safe, or else to '/' """
@@ -48,13 +50,6 @@ def locked_session(request, using='default'):
             request.session.update(temp_session)
             request.session.save()
 
-def natural_sort_key(text):
-    """
-        Sort numeric parts of text numerically and text parts alphabetically. Example:
-            >>> sorted(["9 Foo", "10 Foo", "9A Foo"], key=natural_sort_key)
-            ['9 Foo', '9A Foo', '10 Foo']
-    """
-    return [int(part) if part.isdigit() else part for word in text.split() for part in re.split('(\d+)', word)]
 
 ### views ###
 
