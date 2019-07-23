@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from capweb.forms import ContactForm, MailingListSubscribe
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
-from capweb.models import GalleryEntry, GallerySection
+from capweb.models import GallerySection
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
 from capapi import serializers
