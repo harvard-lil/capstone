@@ -135,7 +135,17 @@ def validate_private_volumes():
 
 @task
 def ingest_fixtures():
-    management.call_command('loaddata', 'capdb/fixtures/jurisdictions.json', 'capdb/fixtures/reporters.json', database='capdb')
+    management.call_command(
+        'loaddata',
+        'capdb/fixtures/jurisdictions.json',
+        'capdb/fixtures/reporters.json',
+        database='capdb')
+
+    management.call_command(
+        'loaddata',
+        'capweb/fixtures/gallery_sections.json',
+        'capweb/fixtures/gallery_entries.json',
+        database='default')
 
 @task
 def ingest_metadata():
@@ -1138,9 +1148,6 @@ def delete_empty_courts(dry_run='true'):
                     court_to_reslug.save()
                 else:
                     print(" - Would reslug %s" % court_to_reslug)
-
-
-
 
 
 # allow tasks to be run as "python fabfile.py task"

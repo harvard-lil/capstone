@@ -1,0 +1,93 @@
+[
+{
+  "model": "capweb.galleryentry",
+  "pk": 1,
+  "fields": {
+    "title": "Wordclouds",
+    "section": 3,
+    "content": "Graphics showcasing the most-used words in California caselaw each year between 1852 and 2015.",
+    "image": "static/img/gallery/wordclouds-1933.png",
+    "page_link": "wordclouds",
+    "repo_link": "https://github.com/harvard-lil/cap-examples-old/blob/master/make_wordclouds.py",
+    "order": 10
+  }
+},
+{
+  "model": "capweb.galleryentry",
+  "pk": 2,
+  "fields": {
+    "title": "Witchcraft in Caselaw",
+    "section": 3,
+    "content": "See all instances of \"witchcraft\" charted out on the U.S. map.",
+    "image": "static/img/gallery/witchcraft.png",
+    "page_link": "witchcraft",
+    "repo_link": "https://github.com/harvard-lil/cap-examples/blob/master/api_wordsearch/wordsearch.py",
+    "order": 20
+  }
+},
+{
+  "model": "capweb.galleryentry",
+  "pk": 3,
+  "fields": {
+    "title": "Limericks",
+    "section": 2,
+    "content": "Generate rhymes using caselaw!",
+    "image": "static/img/gallery/limerick.png",
+    "page_link": "limericks",
+    "repo_link": "https://github.com/harvard-lil/cap-examples-old/blob/master/generate_limerick.py",
+    "order": 10
+  }
+},
+{
+  "model": "capweb.galleryentry",
+  "pk": 4,
+  "fields": {
+    "title": "GAVELFURY",
+    "section": 2,
+    "content": "See all instances of \"!\"",
+    "image": "static/img/gallery/fury.png",
+    "page_link": "http://www.gavelfury.com/",
+    "repo_link": null,
+    "order": 20
+  }
+},
+{
+  "model": "capweb.galleryentry",
+  "pk": 5,
+  "fields": {
+    "title": "Code examples",
+    "section": 1,
+    "content": "See some ways of getting started with the data! Examples are written in Python.",
+    "image": "static/img/gallery/examples.png",
+    "page_link": null,
+    "repo_link": "https://github.com/harvard-lil/cap-examples",
+    "order": 20
+  }
+},
+{
+  "model": "capweb.galleryentry",
+  "pk": 6,
+  "fields": {
+    "title": "CAP Search",
+    "section": 1,
+    "content": "Our own search utility is a CAPAPI consumer written in Vue with a smattering of python on the back end. Most of the relevant code can be found in the `capbrowse` app in Capstone, our larger codebase for case management. ",
+    "image": "static/img/gallery/cap-search.png",
+    "page_link": "search",
+    "repo_link": "https://github.com/harvard-lil/capstone/tree/develop/capstone/capbrowse",
+    "order": 20
+  }
+},
+{
+  "model": "capweb.galleryentry",
+  "pk": 7,
+  "fields": {
+    "title": "H2O",
+    "section": 1,
+    "content": "H2O uses the [CAP API]({% url \"api\" %}) to provide free caselaw textbooks for anyone.",
+    "image": "static/img/gallery/h2o.png",
+    "page_link": "https://opencasebook.org/",
+    "repo_link": "https://github.com/harvard-lil/h2o",
+    "order": 10
+  }
+}
+]
