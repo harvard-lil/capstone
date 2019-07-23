@@ -79,8 +79,10 @@ urlpatterns = [
         path('user/research/success/', TemplateView.as_view(template_name='research_request/unaffiliated_research_request_success.html'), name='unaffiliated-research-request-success'),
     ])+[
 
+    ### admin stuff ###
     path('maintenance/', views.maintenance_mode , name='maintenance_mode'),
     path('data/<str:label>', views.snippet, name='data_snippet'),
+    path('screenshot/', views.screenshot, name='screenshot'),
 ]
 
 if settings.DEBUG:

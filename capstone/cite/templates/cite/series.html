@@ -1,17 +1,34 @@
-{% extends "layouts/narrow.html" %}
+{% extends "layouts/centered.html" %}
+{% load pipeline %}
 
-{% block title %}Read Caselaw: {{ reporters.0.0.short_name }}{% endblock %}
+{% block base_css %}{% stylesheet 'cite' %}{% endblock %}
+
+{% block title %}Reporter: {{ reporters.0.0.short_name }}{% endblock %}
 {% block meta_description %}Caselaw Access Project cases{% endblock %}
 
-{% block main_content %}
-  {% for reporter, volumes in reporters %}
-    <h2 class="subtitle">{{ reporter.short_name }}</h2>
-    <p>{{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})</p>
-    <p>
-      <strong>Volume number:</strong>
-      {% for volume in volumes %}
-        <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number=volume.volume_number host 'cite' %}">{{ volume.volume_number }}</a>
-      {% endfor %}
-    </p>
-  {% endfor %}
+{% block content %}
+  <div class="cite-container header-margin">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/">Browse</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          <a href="/{{ reporters.0.0.short_name_slug }}">
+            Reporter {{ reporters.0.0.short_name }}
+          </a>
+        </li>
+      </ol>
+    </nav>
+    {% for reporter, volumes in reporters %}
+      <h3 class="subtitle">{{ reporter.short_name }}</h3>
+      <p>{{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})</p>
+      <p>
+        <strong>Volume number:</strong>
+        {% for volume in volumes %}
+          <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number=volume.volume_number host 'cite' %}">{{ volume.volume_number }}</a>
+        {% endfor %}
+      </p>
+    {% endfor %}
+  </div>
 {% endblock %}
