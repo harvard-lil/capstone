@@ -2,14 +2,12 @@ import logging
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
-from markdown import Markdown as md
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from django.template import Template, Context
 from django.template.loader import render_to_string
 from django.utils.http import is_safe_url
 from django.utils.safestring import mark_safe
@@ -18,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from capweb.forms import ContactForm, MailingListSubscribe
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
-from capweb.models import Gallery
+from capweb.models import GalleryEntry, GallerySection
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
 from capapi import serializers
@@ -138,44 +136,14 @@ def tools(request):
 
 
 def gallery(request):
-    output = OrderedDict()
-    for entry in Gallery.objects.order_by('section', 'order'):
-        section = entry.section.split(" ", 1)[1]
-        if section not in output:
-            output[section] = []
-
-        item = {
-            'title': entry.title,
-            'image': entry.image.url.replace('static/', '', 1),
-            'repo_link': entry.repo_link,
-        }
-
-        template = Template(entry.content)
-        context = Context()
-
-        html_content = md().convert(template.render(context))
-        if html_content.startswith("<p>") and html_content.endswith("</p>"):
-            html_content = html_content[3:-4]
-
-        item['content'] = html_content
-
-        if entry.page_link and (not entry.page_link.startswith("http")):
-            # if it doesn't start with http, see if it's a django path. if not: 🤷‍
-            try:
-                item['page_link'] = reverse(entry.page_link)
-            except:
-                pass
-        else:
-            item['page_link'] = entry.page_link
-
-        output[section].append(item)
-
+    sections = GallerySection.objects.all()
     return render(request, 'gallery.html', {
-        'cms_content': output,
+        'sections': sections,
         'email': settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/gallery.png',
         'meta_description': 'Sky is the limit! Here are some examples of what’s possible.'
     })
+
 
 
 def maintenance_mode(request):
