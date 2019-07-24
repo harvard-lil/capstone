@@ -1,6 +1,7 @@
 from django import template
 
 from capweb.helpers import reverse
+from django.urls.resolvers import NoReverseMatch
 
 register = template.Library()
 
@@ -15,7 +16,7 @@ def process_link(link, *args, **kwargs):
         # if it doesn't start with http, see if it's a django path. if not: 🤷‍
         try:
             return reverse(link)
-        except:
+        except NoReverseMatch:
             pass
     else:
         return link
