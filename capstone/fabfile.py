@@ -145,6 +145,7 @@ def ingest_fixtures():
         'loaddata',
         'capweb/fixtures/gallery_sections.json',
         'capweb/fixtures/gallery_entries.json',
+        'capweb/fixtures/gallery_pictures.json',
         database='default')
 
 @task

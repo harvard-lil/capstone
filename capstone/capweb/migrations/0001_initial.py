@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-
+from db_file_storage.storage import DatabaseFileStorage
 
 class Migration(migrations.Migration):
 
@@ -12,6 +12,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.CreateModel(
+            name='CMSPicture',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('bytes', models.TextField()),
+                ('filename', models.CharField(max_length=255)),
+                ('mimetype', models.CharField(max_length=50)),
+            ],
+        ),
         migrations.CreateModel(
             name='GallerySection',
             fields=[
@@ -31,7 +40,7 @@ class Migration(migrations.Migration):
                 ('page_link', models.CharField(blank=True, max_length=255, null=True)),
                 ('repo_link', models.CharField(blank=True, max_length=255, null=True)),
                 ('order', models.IntegerField(default=10)),
-                ('image', models.ImageField(blank=True, null=True, upload_to='static/img/gallery/')),
+                ('image', models.ImageField(blank=True, null=True, storage=DatabaseFileStorage(), upload_to='capweb.CMSPicture/bytes/filename/mimetype')),
             ],
         ),
     ]
