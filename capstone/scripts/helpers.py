@@ -370,7 +370,7 @@ def volume_barcode_from_folder(folder):
             Cal4th_063_redacted  ->  Cal4th_063
             32044032501660_unredacted_2018_10_18_06.26.00  ->  32044032501660
     """
-    return folder.replace('unredacted', 'redacted').split("_redacted", 1)[0]
+    return folder.rsplit('/', 1)[-1].replace('unredacted', 'redacted').split("_redacted", 1)[0]
 
 def up_to_date_volumes(volume_paths):
     """ Get all up-to-date volumes from a list of paths. Yields (volume_barcode, path) for each up-to-date path. """
@@ -380,3 +380,12 @@ def up_to_date_volumes(volume_paths):
         if volume_barcode_from_folder(Path(current_vol).name) != volume_barcode_from_folder(Path(next_vol).name):
             yield (volume_barcode_from_folder(Path(current_vol).name), Path(current_vol))
         current_vol = next_vol
+
+def fix_image_file_name(barcode, file_name):
+    """
+        volume barcodes containing underscore, like "Cal5th_001", may have file_name incorrectly as
+        Cal5th_00100196_1.tif instead of Cal5th_001_00100196_1.tif. Attempt to fix by replacing
+        portion before first underscore with barcode. Caller should then check whether the "fixed"
+        path actually exists.
+    """
+    return '%s_%s' % (barcode, file_name.split('_', 1)[1])
