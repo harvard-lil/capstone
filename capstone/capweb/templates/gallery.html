@@ -44,7 +44,6 @@
 {% block main_content %}
   {% for section in sections %}
     <h2 class="subtitle mt-2 mt-lg-5 mb-0 pb-0" id="{{ section|slugify }}">{{ section }}</h2>
-    <div>
 
     {% for entry in section.entries.all %}
       <div class="row mt-1 mt-md-3 mt-lg-5 mb-3 mb-lg-0">
@@ -56,7 +55,7 @@
              target="_blank">
             <img class="gallery-thumbnail"
                  alt=""
-                 src="{% static entry.image.url %}">
+                 src="{{ entry.image.url }}">
           </a>
         </div>
         <div class="project-description col-12 col-md-9 col-lg-8 offset-0 offset-md-1 offset-lg-2">
@@ -80,7 +79,7 @@
               </p>
             </div>
             <div class="col-12 offset-0 col-md-4 offset-md-1 offset-lg-0 col-lg-12">
-              <p class="social mt-4 mt-lg-4">
+              <p class="social mt-0">
 
                 {% if entry.repo_link %}
                   <span class="github">
@@ -105,8 +104,5 @@
         </div>
       </div>
     {% endfor %}
-
-
   {% endfor %}
-
 {% endblock %}
