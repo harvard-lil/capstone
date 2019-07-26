@@ -985,7 +985,7 @@ def sample_captar_images(output_folder='samples'):
                 )
 
 @task
-def make_pdfs(volume_path=None):
+def make_pdfs(volume_path=None, replace_existing=False):
     """
         Call scripts.make_pdf for all redacted and unredacted volumes, or for single path like 'redacted/<barcode>'
     """
@@ -998,7 +998,7 @@ def make_pdfs(volume_path=None):
     else:
         print("Adding volumes to celery queue:")
         for barcode, volume_path in tqdm(chain(up_to_date_volumes(captar_storage.iter_files('redacted')), up_to_date_volumes(captar_storage.iter_files('unredacted')))):
-            make_pdf.delay(str(volume_path))
+            make_pdf.delay(str(volume_path), replace_existing=replace_existing)
 
 @task
 def captar_to_token_stream(*volume_barcodes, replace_existing=False, key=settings.REDACTION_KEY, save_failed=False, catch_validation_errors=False):
