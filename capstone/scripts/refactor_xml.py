@@ -24,7 +24,7 @@ from capdb.models import CaseFont, PageStructure, VolumeMetadata, CaseMetadata, 
 from capdb.storages import captar_storage, CapS3Storage, CaptarStorage
 from scripts import render_case
 from scripts.compress_volumes import files_by_type, open_captar_volume
-from scripts.helpers import parse_xml
+from scripts.helpers import parse_xml, fix_image_file_name
 from scripts.render_case import iter_pars
 
 
@@ -995,7 +995,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
         # volume barcodes containing underscore, like "Cal5th_001", may have file_name incorrectly as
         # Cal5th_00100196_1.tif instead of Cal5th_001_00100196_1.tif. Detect and fix:
         if not unredacted_storage.exists(page['file_name']):
-            fixed_file_name = '%s_%s' % (volume_barcode, page['file_name'].split('_', 1)[1])
+            fixed_file_name = fix_image_file_name(volume_barcode, page['file_name'])
             if unredacted_storage.exists('images/'+fixed_file_name):
                 page['file_name'] = fixed_file_name
 

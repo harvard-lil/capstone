@@ -23,5 +23,6 @@ capstone/test_data/bulk-data/
 capstone/test_data/ngrams/
 
 *.ipynb*
+*.lprof
 
 node_modules/

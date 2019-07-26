@@ -5,9 +5,10 @@ ENV PYTHONUNBUFFERED 1
 # redis-server for pytest-redis (https://github.com/ClearcodeHQ/pytest-redis/issues/108)
 # postgresql-client for manage.py dbshell
 # librocksdb5.17 et al. for python-rocksdb
+# libtiff-tools and pdftk for make_pdf.py (tiff2pdf, tiffcp, pdftk commands)
 RUN echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/backports.list
 RUN apt-get update \
-    && apt-get install -y redis-server postgresql-client \
+    && apt-get install -y redis-server postgresql-client libtiff-tools pdftk \
     && apt-get install -t stretch-backports -y librocksdb5.17 libzstd-dev liblz4-dev libgflags-dev libbz2-dev zlib1g-dev libsnappy-dev librocksdb-dev rocksdb-tools
 
 # pip
