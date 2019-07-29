@@ -48,15 +48,26 @@
     {% for entry in section.entries.all %}
       <div class="row mt-1 mt-md-3 mt-lg-5 mb-3 mb-lg-0">
         <div class="project-image d-none d-md-block col-md-2 pt-lg-0 pt-3">
-          <a href="{% process_link entry.page_link %}"
-             aria-label="{{ entry.title }} homepage"
-             title="{{ entry.title }} homepage"
-             id="{{ entry.title|slugify }}"
-             target="_blank">
-            <img class="gallery-thumbnail"
-                 alt=""
-                 src="{{ entry.image.url }}">
-          </a>
+          {% if entry.page_link %}
+            <a href="{% process_link entry.page_link %}"
+               aria-label="{{ entry.title }} homepage"
+               title="{{ entry.title }} homepage"
+               id="{{ entry.title|slugify }}"
+               target="_blank">
+              <img class="gallery-thumbnail" alt="" src="{{ entry.image.url }}">
+            </a>
+          {% elif entry.repo_link %}
+            <a href="{{ entry.repo_link }}"
+               aria-label="{{ entry.title }} repository"
+               title="{{ entry.title }} repository"
+               id="{{ entry.title|slugify }}"
+               target="_blank">
+              <img class="gallery-thumbnail" alt="" src="{{ entry.image.url }}">
+            </a>
+          {% else %}
+            <img class="gallery-thumbnail" alt="" src="{{ entry.image.url }}">
+          {% endif %}
+
         </div>
         <div class="project-description col-12 col-md-9 col-lg-8 offset-0 offset-md-1 offset-lg-2">
           <div class="row">
