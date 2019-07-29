@@ -172,8 +172,8 @@ section.head-matter {
   font-size: 1.25rem;
 }
 
-.highlight {
-  background-color: $color-yellow-bright !important;
+mark {
+  background: $color-pink;
 }
 
 .author {
@@ -265,7 +265,7 @@ section.head-matter {
   }
 }
 
-.page-label{
+.page-label {
   color: $color-medium-gray;
   font-size: .8em;
   padding: .4em;
@@ -280,6 +280,7 @@ section.head-matter {
     font-size: 1.2rem;
   }
 }
+
 // to position .page-label:before
 .head-matter > *, .opinion > * {
   position: relative;
