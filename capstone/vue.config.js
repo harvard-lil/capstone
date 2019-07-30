@@ -42,6 +42,7 @@ let vueConfig = {
     witchcraft: 'static/js/witchcraft.js',
     search: 'static/js/search.js',
     trends: 'static/js/trends.js',
+    case: 'static/js/case.js'
   },
 
   configureWebpack: {
