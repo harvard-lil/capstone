@@ -17,7 +17,7 @@ To enable this critical transition, courts should seek and adopt digital-first p
 These solutions should prioritize court convenience, high quality public access, reliability, cost effectiveness and comprehensiveness. And they should offer the courts at least three things: 
 
 * _Self-publishing tools_ – Easy-to-use, high quality, cost effective self-publishing tools adapted to the existing editorial workflow of the court.
-* _Public access website_ – A public website affording free, open access to the court opinions in HTML and PDF, with vendor-neutral and medium-neutral citation. The  website should provide customizable metadata fields, a search engine suited to legal information, an API to enable programmatic access and bulk downloads and Web accessibility compliance for users with disabilities.
+* _Public access website_ – A public website affording free, open access to newly issued court opinions in HTML and PDF, with vendor-neutral and medium-neutral citation. The website should provide customizable metadata fields, a search engine suited to legal information, an API to enable programmatic access and bulk downloads and Web accessibility compliance for users with disabilities.
 * _Professional support and service_ – An experienced support and service team dedicated to helping courts fulfill their publishing and access goals.
 {: add_list_class="spacious-list bullets" }
 
@@ -33,7 +33,7 @@ When courts make this transition to digital-first publishing for new opinions, t
  
 # Case studies {: class="subtitle" }
 
-Solutions meeting these criteria are in place already in many courts, including: 
+Solutions meeting the essential guidelines are in place already in many courts, including: 
 
 * **New Mexico Compilation Commission:** [website](https://nmonesource.com/nmos/en/nav.do) - [case study]({% url 'action-case-study-nm' %})
 * **Arkansas Judiciary:** [website](https://opinions.arcourts.gov/ark/en/nav.do) - [case study]({% url 'action-case-study-ark' %})
@@ -43,9 +43,11 @@ Solutions meeting these criteria are in place already in many courts, including:
 
 Attached to this document are case studies detailing the solutions employed by some of these courts. 
 
-# Approved Vendors {: class="subtitle" }
+# Participating Vendors {: class="subtitle" }
 
-We are happy to highlight vendors who offer digital-first publishing solutions meeting the CAP Digital-First Guidelines. Current vendors include:
+We are happy to highlight vendors committed to working with courts to offer digital-first publishing solutions that meet these criteria. Vendors making this commitment include:
 
 * [Lexum](https://www.lexum.com)
 {: add_list_class="spacious-list bullets" }
+
+Please contact us if you know of other vendors who have demonstrated their willingness to help courts transition to digital-first publishing.
