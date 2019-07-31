@@ -1,9 +1,7 @@
 @import 'variables';
 @import 'base.scss';
 @import 'map';
-@import 'footer/magenta';
-
-
+@import 'footer/black';
 
 /**************************************************************
 *
@@ -52,6 +50,13 @@ h2.section-title {
   @include media-breakpoint-only(sm) {
     font-size: 2.75rem;
     margin-bottom: 0;
+  }
+  &.long-title {
+    @include media-breakpoint-up(lg) {
+      font-size: 3.5rem;
+      letter-spacing: 0;
+      line-height: 1em;
+    }
   }
 }
 
