@@ -19,6 +19,11 @@ urlpatterns = [
     path('api/', views.api, name='api'),
     path('search-docs/', MarkdownView.as_view(template_name='search_docs.md'), name='search-docs'),
     path('trends-docs/', MarkdownView.as_view(template_name='trends_docs.md'), name='trends-docs'),
+    path('action/', MarkdownView.as_view(template_name='action/index.md'), name='action'),
+    path('action/guidelines/', MarkdownView.as_view(template_name='action/guidelines.md'), name='action-guidelines'),
+    path('action/case-study-nm/', MarkdownView.as_view(template_name='action/case-study-nm.md'), name='action-case-study-nm'),
+    path('action/case-study-ark/', MarkdownView.as_view(template_name='action/case-study-ark.md'), name='action-case-study-ark'),
+    path('action/case-study-canada/', MarkdownView.as_view(template_name='action/case-study-canada.md'), name='action-case-study-canada'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt',
                                             content_type='text/plain'), name='robots'),
 

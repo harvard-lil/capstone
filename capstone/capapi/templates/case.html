@@ -1,6 +1,8 @@
 {% extends "layouts/centered.html" %}
 {% load pipeline %}
 {% load static %}
+{% load render_bundle from webpack_loader %}
+
 {% load capweb_static %}
 
 {% block base_css %}{% stylesheet 'case' %}{% endblock %}
@@ -67,20 +69,6 @@
     {% endif %}
 
   </div>
-  <script>
-    /*
-    This bit of script selects the citation input and copies it. It then informs the users that the citation was copied
-    by applying the citation_copied class.
-     */
-
-    function copyCitation() {
-      let citation_container = document.getElementById("citation_container");
-      let cite = document.getElementById("citation_for_copy");
-      cite.select();
-      document.execCommand("copy");
-      citation_container.classList.add("citation_copied");
-    }
-  </script>
   <script type="application/ld+json">
  {
   "@context": "https://schema.org",
@@ -120,5 +108,8 @@
    "description": "{{ metadata.name }}"
  }
 
+
   </script>
+  {% render_bundle 'case' %}
+
 {% endblock %}
