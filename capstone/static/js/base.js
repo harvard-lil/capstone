@@ -63,6 +63,8 @@ let selectedNavStyling = function() {
     path = 'tools'
   } else if (path === 'user') {
     path = 'account'
+  } else if (path === 'action') {
+    path = 'courts'
   }
 
   $('#nav-' + path).find('a').addClass('selected');
