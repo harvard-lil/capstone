@@ -558,3 +558,15 @@ def test_alto_update_disable_related(ingest_case_xml):
     assert new_volume_alto_size == initial_volume_alto_size
     assert new_casemets_alto_size != str(len(force_bytes(alto.orig_xml)))
     assert new_volume_alto_size != str(len(force_bytes(alto.orig_xml)))
+
+# EditLog and EditLogTransaction
+
+@pytest.mark.django_db
+def test_data_edit(volume_metadata):
+    with EditLog(description="test").record() as edit:
+        volume_metadata.publisher = "foo"
+        volume_metadata.save()
+    transactions = list(edit.transactions.all())
+    assert len(transactions) == 1
+    volume_metadata.refresh_from_db()
+    assert transactions[0].timestamp == volume_metadata.sys_period.lower

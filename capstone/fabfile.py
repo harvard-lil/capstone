@@ -224,8 +224,11 @@ def migrate():
     update_postgres_env()
 
 @task
-def populate_search_index(last_updated=None):
-    tasks.update_elasticsearch_for_all_vols(last_updated=last_updated)
+def populate_search_index(last_run_before=None):
+    tasks.run_task_for_volumes(
+        tasks.update_elasticsearch_for_vol,
+        VolumeMetadata.objects.exclude(xml_metadata=None).exclude(out_of_scope=True),
+        last_run_before=last_run_before)
 
 @task
 def rebuild_search_index():
@@ -1066,15 +1069,24 @@ def load_token_streams(replace_existing=False):
         scripts.refactor_xml.write_to_db.delay(volume_barcode, str(path))
 
 @task
-def refresh_case_body_cache(rerender=True):
+def refresh_case_body_cache(last_run_before=None, rerender=True):
     """ Recreate CaseBodyCache for all cases. Use `fab refresh_case_body_cache:rerender=false` to just regenerate text/json from html. """
-    rerender = rerender != 'false'
-    tasks.sync_case_body_cache_for_all_vols(rerender)
+    tasks.run_task_for_volumes(
+        tasks.sync_case_body_cache_for_vol,
+        VolumeMetadata.objects.exclude(xml_metadata=None),
+        last_run_before=last_run_before,
+        rerender=rerender != 'false',
+    )
 
 @task
-def sync_from_initial_metadata(force=False):
+def sync_from_initial_metadata(last_run_before=None, force=False):
     """ Call sync_from_initial_metadata on all cases. Use force=1 to re-run on already synced cases (not recommended)."""
-    tasks.sync_from_initial_metadata_for_all_vols(force)
+    tasks.run_task_for_volumes(
+        tasks.sync_from_initial_metadata_for_vol,
+        VolumeMetadata.objects.exclude(xml_metadata=None),
+        last_run_before=last_run_before,
+        force=force,
+    )
 
 @task
 def update_case_frontend_url(update_existing=False):
@@ -1149,6 +1161,10 @@ def delete_empty_courts(dry_run='true'):
                     court_to_reslug.save()
                 else:
                     print(" - Would reslug %s" % court_to_reslug)
+
+@task
+def update_in_scope(last_run_before=None):
+    tasks.run_task_for_volumes(tasks.update_in_scope_for_vol, last_run_before=last_run_before)
 
 # allow tasks to be run as "python fabfile.py task"
 # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"

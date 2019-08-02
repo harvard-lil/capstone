@@ -2,6 +2,7 @@ import hashlib
 import json
 import math
 import re
+from contextlib import contextmanager
 
 import nacl
 from django.conf import settings
@@ -9,6 +10,7 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 import django.contrib.postgres.search as pg_search
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
+from django.db.models import Q
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from lxml import etree
@@ -132,6 +134,12 @@ def fetch_relations(instance, select_relations=None, prefetch_relations=None):
             if not hasattr(sub_instance, '_prefetched_objects_cache'):
                 sub_instance._prefetched_objects_cache = {}
             sub_instance._prefetched_objects_cache[sub_field_name] = sub_new_instance._prefetched_objects_cache[sub_field_name]
+
+
+class TransactionTimestampDateTimeField(models.DateTimeField):
+    """ Postgres timestamp field that defaults to current_timestamp, the timestamp at the start of the transaction """
+    def db_type(self, connection):
+        return 'timestamptz DEFAULT current_timestamp'
 
 
 class SmallForeignKey(models.ForeignKey):
@@ -489,6 +497,7 @@ class Reporter(models.Model):
     is_nominative = models.BooleanField(default=False)
     nominative_for = models.ForeignKey("Reporter", on_delete=models.DO_NOTHING, related_name='nominative_reporters', blank=True, null=True)
 
+    history = TemporalHistoricalRecords()
 
     def __str__(self):
         return "%s: %s %s-%s" % (self.short_name, self.full_name, self.start_year or '', self.end_year or '')
@@ -541,7 +550,9 @@ class VolumeMetadata(models.Model):
                                             choices=choices('No', 'Complete', 'Yes'))
     analyst_page_count = models.IntegerField(blank=True, null=True,
                                              help_text="The page number of the last numbered page in the book")
-    duplicate = models.BooleanField(default=False)
+    legacy_duplicate = models.BooleanField(default=False, help_text="From tracking tool; we believe this indicates there is another volume with same hollis_number and volume_number")
+    duplicate = models.BooleanField(default=False, help_text="True if there is another volume with same cases")
+    duplicate_of = models.ForeignKey("VolumeMetadata", blank=True, null=True, related_name="duplicates", on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(blank=True, null=True)
     replaced_pages = models.CharField(max_length=1024, blank=True, null=True,
@@ -590,7 +601,10 @@ class VolumeMetadata(models.Model):
 
     last_es_index = models.DateTimeField(blank=True, null=True, help_text="Last time cases for this volume were successfully indexed by ElasticSearch")
 
+    task_statuses = JSONField(default=dict, help_text="Date and results of tasks run for this volume")
+
     tracker = FieldTracker()
+    history = TemporalHistoricalRecords()
 
     class Meta:
         verbose_name_plural = "Volumes"
@@ -604,6 +618,28 @@ class VolumeMetadata(models.Model):
 
     def get_absolute_url(self):
         return reverse('volumemetadata-detail', args=[self.pk], scheme="https")
+
+    def set_duplicate(self, is_duplicate, duplicate_of=None):
+        """
+            Update this volume to reflect that it is or is not a duplicate of another volume.
+            Update volume.case_metadatas.duplicate and .in_scope to match.
+        """
+        with transaction.atomic(using='capdb'):
+            self.duplicate = is_duplicate
+            self.duplicate_of = duplicate_of
+            self.save()
+            self.case_metadatas.update(duplicate=is_duplicate)
+            self.case_metadatas.update_in_scope()
+
+    def set_reporter(self, reporter):
+        """
+            Update this volume's reporter.
+            Update volume.case_metadatas.reporter to match.
+        """
+        with transaction.atomic(using='capdb'):
+            self.reporter = reporter
+            self.save()
+            self.case_metadatas.update(reporter=reporter)
 
 
 class TrackingToolLog(models.Model):
@@ -762,7 +798,10 @@ class CaseMetadataQuerySet(models.QuerySet):
         """
             Return cases accessible from API
         """
-        return self.filter(duplicative=False, jurisdiction__isnull=False, court__isnull=False)
+        return self.filter(in_scope=True)
+
+    def update_in_scope(self):
+        return self.update(in_scope=Q(duplicative=False, duplicate=False) & ~Q(jurisdiction_id=None) & ~Q(court_id=None))
 
 
 class CaseMetadata(models.Model):
@@ -793,7 +832,10 @@ class CaseMetadata(models.Model):
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
                                  on_delete=models.DO_NOTHING)
     date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
-    duplicative = models.BooleanField(default=False)
+    duplicative = models.BooleanField(default=False, help_text="True if case was not processed because it is an unofficial case in a regional reporter")
+    duplicate = models.BooleanField(default=False, help_text="True if case was processed but is a duplicate of another preferred case")
+    duplicate_of = models.ForeignKey("CaseMetadata", blank=True, null=True, on_delete=models.SET_NULL, related_name="duplicates")
+    in_scope = models.BooleanField(default=True, help_text="True if case should be included in public data")
     initial_metadata_synced = models.BooleanField(default=False)
 
     # denormalized fields -
@@ -843,18 +885,19 @@ class CaseMetadata(models.Model):
     def __str__(self):
         return self.case_id
 
-    # We now create manually what were originally created by virtue of
-    # indexes of a Meta class, as instances of PartialIndex, in the
-    # following migrations:
-    #
-    # capdb/migrations/0043_auto_20180614_1649.py
-    # capdb/migrations/0042_auto_20180614_1524.py
-    # capdb/migrations/0052_auto_20181003_2041.py
-    #
-    # the where clause for creating these indexes, used by the api /cases/
-    # endpoint, was "jurisdiction_id IS NOT NULL AND court_id IS NOT NULL
-    # AND NOT duplicative" -- the same effect, if needed later, can be
-    # accomplished in Django 2.2 with a condition.
+    class Meta:
+        # partial indexes to allow fetching in_scope cases, with optional filter by reporter/jurisdiction/court
+        indexes = [
+            models.Index(name='idx_in_scope', fields=('decision_date', 'id'), condition=Q(in_scope=True)),
+            models.Index(name='idx_in_scope_reporter', fields=('reporter', 'decision_date', 'id'), condition=Q(in_scope=True)),
+            models.Index(name='idx_in_scope_jurisdiction', fields=('jurisdiction_slug', 'decision_date', 'id'), condition=Q(in_scope=True)),
+            models.Index(name='idx_in_scope_court', fields=('court_slug', 'decision_date', 'id'), condition=Q(in_scope=True)),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.in_scope != self.get_in_scope():
+            self.in_scope = not self.in_scope
+        super().save(*args, **kwargs)
 
     def full_cite(self):
         return "%s, %s%s" % (
@@ -1070,6 +1113,10 @@ class CaseMetadata(models.Model):
                 duplicative=citation.get('duplicative', False),
                 case=self,
             ) for citation in citations)
+
+    def get_in_scope(self):
+        """ Return correct value for .in_scope """
+        return not self.duplicative and not self.duplicate and bool(self.jurisdiction_id) and bool(self.court_id)
 
 
 class CaseXML(BaseXMLModel):
@@ -1814,3 +1861,75 @@ class CaseBodyCache(models.Model):
     html = models.TextField(blank=True, null=True)
     xml = models.TextField(blank=True, null=True)
     json = JSONField(blank=True, null=True)
+
+
+class EditLog(models.Model):
+    """
+        Record a set of edits. Simple usage:
+
+            with EditLog(description='message').record():
+                volume.save()
+
+        Advanced usage:
+
+            with EditLog(description='message').record(auto_transaction=False) as edit:
+                if things_are_bad:
+                    raise edit.Cancel
+                for i in stuff:
+                    with edit.atomic():
+                        i.save()
+    """
+
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user_id = models.IntegerField(blank=True, null=True)
+    description = models.TextField()
+
+    @contextmanager
+    def record(self, auto_transaction=True):
+        """
+            Context manager to record an EditLog along with any transactions run inside it.
+        """
+        self.save()
+        try:
+            if auto_transaction:
+                with self.atomic():
+                    yield self
+            else:
+                yield self
+        except self.Cancel:
+            self.delete()
+        except Exception:
+            if auto_transaction:
+                self.delete()
+            raise
+
+    class Cancel(Exception):
+        """ Raise this to delete the current log, if auto_transaction=False. """
+        pass
+
+    @contextmanager
+    def atomic(self, using='capdb', savepoint=True):
+        """ Wrapper to open and record transactions within the current log, if auto_transaction=False. """
+        with transaction.atomic(using, savepoint):
+            self.mark_transaction()
+            yield
+
+    def mark_transaction(self):
+        EditLogTransaction(edit=self).save()
+
+
+class EditLogTransaction(models.Model):
+    """
+        Record of a single transaction that was used while recording an EditLog. Can be linked up to history tables
+        by comparing timestamp to sys_period.
+    """
+    edit = models.ForeignKey(EditLog, on_delete=models.CASCADE, related_name='transactions')
+    timestamp = TransactionTimestampDateTimeField()
+
+    def _do_insert(self, manager, using, fields, update_pk, raw):
+        """
+            filter out timestamp from inserts, because it has a database default Django doesn't know about
+        """
+        timestamp_field = self._meta.get_field('timestamp')
+        fields = tuple(f for f in fields if f != timestamp_field)
+        return super()._do_insert(manager, using, fields, update_pk, raw)
