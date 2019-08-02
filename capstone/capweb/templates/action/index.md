@@ -41,8 +41,6 @@ Solutions meeting the essential guidelines are in place already in many courts, 
 * **Supreme Court of Canada:** [website](https://scc-csc.lexum.com/scc-csc/en/nav.do) - [case study]({% url 'action-case-study-canada' %})
 {: add_list_class="spacious-list bullets" }
 
-Attached to this document are case studies detailing the solutions employed by some of these courts. 
-
 # Participating Vendors {: class="subtitle" }
 
 We are happy to highlight vendors committed to working with courts to offer digital-first publishing solutions that meet these criteria. Vendors making this commitment include:
