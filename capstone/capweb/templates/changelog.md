@@ -9,40 +9,45 @@ top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
-# API {: class="subtitle" }
+# July 31, 2019
 
-* **June 19, 2019**{: class='list-header' }
-{: add_list_class="bullets" }
-    * We added the [ngrams]({% api_url "ngrams-list" %}) endpoint to our API. Here are the
-    [docs]({% url 'api' %}#endpoint-ngrams).
+**Website:**
 
+* Improved case display at cite.case.law:
+    * Cases include images for non-textual regions (figures and illustrations)
+        ([example](https://cite.case.law/f2d/537/531/))
+    * Case text includes italics, where detected by OCR
+    * Case text includes pin cites, i.e. page breaks that can be linked to 
+        ([example](https://cite.case.law/f2d/537/531/#p533))
+        
+**API:**
 
-# Website {: class="subtitle" }
+* Removed from `/cases/` endpoint:
+    * In full case responses with JSON format, `["casebody"]["data"]["parties"]` is no longer included.
+      The `["name"]` attribute provides the same information in a cleaner format.
+    * Queries for CaseXML documents (`/cases/<id>/?full_case=true&format=xml`) will return only `<casebody>`, 
+      and not the entire CaseXML file. The outer wrapper had no useful information other than to estimate the 
+      location of page breaks, which are now precisely marked by `<page-number>` elements.
+          
+**Data format:**
 
-* **June 19, 2019**{: class='list-header' }
-{: add_list_class="bullets" }
-    * We started recording this public changelog.
-    * We added the [historic trends]({% url 'trends' %}) tool to our website.
+* Added to case HTML and XML:
+    * `<img>` tags to show images for non-textual regions (figures and illustrations)
+    * `<em>` tags to show italics detected by OCR
+    * `<page-number>` (in xml) or `<a class="page-number">` (in html) tags to mark page breaks
+* Removed from case XML:
+    * The `pgmap` attribute was removed. It was confusing, because it referred to the page-side index in the 
+        physical volume rather than to the printed page label, and it did not allow for precise placement of
+        page breaks within a paragraph. The replacement is to use `<page-number>` elements to infer the correct
+        page number for each element.
+          
+# June 19, 2019
 
-<!--
-# Data {: class="subtitle" }
+**Website:**
 
-The spacing and placement of all the elements in the list is critical.
+* Started recording this public changelog.
+* Added the [historic trends]({% url 'trends' %}) tool.
 
-Make subsequent entries bump up right against the initial list, like this:
+**API:**
 
-* **June 20, 2019**{: class='list-header' }
-{: add_list_class="bullets" }
-    * Added API endpoint to give away free money.
-    * Documentation to come soon.
-* **June 19, 2019**{: class='list-header' }
-{: add_list_class="bullets" }
-    * We added a new endpoint to our API: `ngrams`.
-    * Documentation to come soon.
-
-
-To add a new section, just add another headline with {: class="subtitle" }... there must be exactly one
-space in between the curly brace and the last letter of the headline: like this:
-
-# Bulk Data {: class="subtitle" }
--->
+* Added the [ngrams]({% api_url "ngrams-list" %}) endpoint. Here are the [docs]({% url 'api' %}#endpoint-ngrams).
