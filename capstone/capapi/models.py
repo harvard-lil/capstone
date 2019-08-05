@@ -10,8 +10,6 @@ from django.utils import timezone
 from django.conf import settings
 from netaddr import IPAddress, AddrFormatError, IPNetwork
 
-from capapi.permissions import staff_level_permissions
-
 from model_utils import FieldTracker
 
 from rest_framework.authtoken.models import Token
@@ -178,17 +176,6 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
             return self.case_allowance_remaining >= case_count
         else:
             return True
-
-    def has_module_perms(self, app_label):
-        if app_label == 'capapi' or app_label == 'capdb':
-            return self.is_staff
-
-        return self.is_superuser
-
-    def has_perm(self, perm, obj=None):
-        if perm in staff_level_permissions:
-            return self.is_staff
-        return self.is_superuser
 
     @staticmethod
     def normalize_email(email):
