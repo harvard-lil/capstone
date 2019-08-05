@@ -13,76 +13,104 @@ from scripts.helpers import ordered_query_iterator
 
 from capdb.models import *
 
-def update_elasticsearch_for_all_vols(last_updated=None):
+
+### HELPERS ###
+
+def run_task_for_volumes(task, volumes=None, last_run_before=None, **kwargs):
     """
-        Call update_elasticsearch_for_vol celery task for each volume.
+        Run the given celery task for the given queryset of volumes, or all volumes if not specified.
+        If last_run_before is provided as an ISO timestamp, volumes will only be run if volume.task_statuses indicates that
+        the task has not succeeded after that time.
     """
-    volumes = VolumeMetadata.objects.exclude(xml_metadata=None).exclude(out_of_scope=True)
-    if last_updated:
-        volumes = volumes.exclude(last_es_index__gt=last_updated)
+    if volumes is None:
+        volumes = VolumeMetadata.objects.all()
+    if last_run_before:
+        volumes = volumes.exclude(**{
+            "task_statuses__%s__success" % task.name: True,
+            "task_statuses__%s__timestamp__gte" % task.name: last_run_before
+        })
     for volume_id in volumes.values_list('pk', flat=True):
-        update_elasticsearch_for_vol.delay(volume_id)
+        task.delay(volume_id, **kwargs)
+
+@contextmanager
+def record_task_status_for_volume(task, volume_id):
+    """
+        Context manager to record in volume.task_statuses whether the given task succeeds or fails.
+    """
+    try:
+        yield
+    except Exception as e:
+        volume = VolumeMetadata.objects.get(pk=volume_id)
+        volume.task_statuses[task.name] = {
+            'timestamp': timezone.now().isoformat(),
+            'error': str(e),
+        }
+        volume.save()
+        raise
+    else:
+        volume = VolumeMetadata.objects.get(pk=volume_id)
+        volume.task_statuses[task.name] = {
+            'timestamp': timezone.now().isoformat(),
+            'success': True,
+        }
+        volume.save()
+
+### TASKS ###
+
+@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def update_in_scope_for_vol(self, volume_id):
+    """
+        Call .update_in_scope() for all cases in given volume.
+    """
+    with record_task_status_for_volume(self, volume_id):
+        CaseMetadata.objects.filter(volume_id=volume_id).update_in_scope()
 
 
-@shared_task(acks_late=True)
-def update_elasticsearch_for_vol(volume_id):
+@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def update_elasticsearch_for_vol(self, volume_id):
     """
         Index all cases for given volume with elasticsearch.
     """
-    # fetch cases
-    cases = (CaseMetadata.objects
-        .in_scope()
-        .filter(volume_id=volume_id)
-        .select_related('volume', 'reporter', 'court', 'jurisdiction', 'reporter', 'body_cache')
-        .exclude(body_cache=None))
+    with record_task_status_for_volume(self, volume_id):
+        # fetch cases
+        cases = (CaseMetadata.objects
+            .in_scope()
+            .filter(volume_id=volume_id)
+            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'reporter', 'body_cache')
+            .exclude(body_cache=None))
 
-    # attempt to store 10 times, with linearly increasing backoff. this gives time for the bulk queue to be processed
-    # if necessary (in which case we'll get BulkIndexError with error 429, too many requests).
-    for i in range(10):
-        try:
-            CaseDocument().update(cases)
-            VolumeMetadata.objects.filter(pk=volume_id).update(last_es_index=timezone.now())
-            return
-        except ElasticsearchException as e:
-            if i == 9:
-                # If all 10 requests fail, re-add job to the back of the queue
-                if type(e) == BulkIndexError:
-                    # delete submitted data from BulkIndexError, because otherwise error messages are too large to store
-                    for item in e.args[1]:
-                        for v in item.values():
-                            v['data'] = '[data omitted]'
-                raise Reject('Bulk indexing of volume %s failed: %s' % (volume_id, e), requeue=True)
-            sleep(i)
-
-
-def sync_from_initial_metadata_for_all_vols(force=False):
-    """
-        Call sync_from_initial_metadata celery task for each volume. Use force=truthy to re-run -- probably not desired!
-    """
-    for volume_id in VolumeMetadata.objects.exclude(xml_metadata=None).values_list('pk', flat=True):
-        sync_from_initial_metadata_for_vol.delay(volume_id, force)
+        # attempt to store 10 times, with linearly increasing backoff. this gives time for the bulk queue to be processed
+        # if necessary (in which case we'll get BulkIndexError with error 429, too many requests).
+        for i in range(10):
+            try:
+                CaseDocument().update(cases)
+                VolumeMetadata.objects.filter(pk=volume_id).update(last_es_index=timezone.now())
+                return
+            except ElasticsearchException as e:
+                if i == 9:
+                    # If all 10 requests fail, re-add job to the back of the queue
+                    if type(e) == BulkIndexError:
+                        # delete submitted data from BulkIndexError, because otherwise error messages are too large to store
+                        for item in e.args[1]:
+                            for v in item.values():
+                                v['data'] = '[data omitted]'
+                    raise Reject('Bulk indexing of volume %s failed: %s' % (volume_id, e), requeue=True)
+                sleep(i)
 
 
-@shared_task
-def sync_from_initial_metadata_for_vol(volume_id, force):
+@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def sync_from_initial_metadata_for_vol(self, volume_id, force):
     """
         call sync_from_initial_metadata on cases in given volume
     """
-    cases = (CaseMetadata.objects
-        .filter(volume_id=volume_id)
-        .select_related('structure', 'initial_metadata', 'volume')
-        .exclude(initial_metadata=None)
-        .exclude(structure=None))
-    for c in cases:
-        c.sync_from_initial_metadata(force=force)
-
-
-def sync_case_body_cache_for_all_vols(rerender=True):
-    """
-        Call sync_case_body_cache_for_vol celery task for each volume
-    """
-    for volume_id in VolumeMetadata.objects.exclude(xml_metadata=None).values_list('pk', flat=True):
-        sync_case_body_cache_for_vol.delay(volume_id, rerender)
+    with record_task_status_for_volume(self, volume_id):
+        cases = (CaseMetadata.objects
+            .filter(volume_id=volume_id)
+            .select_related('structure', 'initial_metadata', 'volume')
+            .exclude(initial_metadata=None)
+            .exclude(structure=None))
+        for c in cases:
+            c.sync_from_initial_metadata(force=force)
 
 
 @shared_task

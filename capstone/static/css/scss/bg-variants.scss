@@ -1,5 +1,6 @@
 .bg-white {
   color: $color-black;
+  background-color: white;
   h1, .h1 {
     color: $color-black;
   }
@@ -23,25 +24,13 @@
   #sidebar-menu {
     background-color: $color-white;
   }
-}
+  .section-separator {
+    border-top: 2px solid $color-violet-gray;
+  }
+  .section-subtitle {
+    color: $color-black;
+  }
 
-.bg-yellow {
-  color: $color-black;
-  #sidebar-menu {
-    border-right: none;
-  }
-  .decorative-arrow {
-    content: url('../../img/blue-arrow-right.svg')
-  }
-  a {
-    color: $color-dark-blue;
-    &:hover, &:active, &:focus {
-      color: $color-black;
-    }
-  }
-  .btn-primary, .btn-secondary, .btn-tertiary {
-    @include button($color-dark-blue, $color-yellow, $color-black);
-  }
 }
 
 .bg-black {
@@ -82,8 +71,12 @@
 
 .bg-tan {
   @extend .bg-white;
+  background-color: $color-tan;
   a {
-    color: $color-violet;  // contrast ratio > 4.5
+    color: $color-violet; // contrast ratio > 4.5
+    &:hover, &:focus, &:active {
+      color: $color-dark-blue;
+    }
   }
   .btn-primary, .btn-secondary, .btn-tertiary {
     @include button ($color-violet-large-text, $color-white, $color-violet-large-text-darkened)
@@ -91,12 +84,37 @@
   .btn-secondary {
     background-color: $color-white !important;
   }
-  .text-muted { color: darken($text-muted, 5%) !important; }  // contrast ratio > 4.5
+  .text-muted {
+    color: darken($text-muted, 5%) !important;
+  }
+  // contrast ratio > 4.5
 
   h2.subtitle {
     color: $color-dark-blue;
   }
   .decorative-arrow {
     content: url('../../img/violet-arrow-right.svg')
+  }
+  .section-subtitle {
+    color: $color-black;
+  }
+}
+
+.bg-yellow {
+  color: $color-black;
+  #sidebar-menu {
+    border-right: none;
+  }
+  .decorative-arrow {
+    content: url('../../img/blue-arrow-right.svg')
+  }
+  a {
+    color: $color-dark-blue;
+    &:hover, &:active, &:focus {
+      color: $color-black;
+    }
+  }
+  .btn-primary, .btn-secondary, .btn-tertiary {
+    @include button($color-dark-blue, $color-yellow, $color-black);
   }
 }
