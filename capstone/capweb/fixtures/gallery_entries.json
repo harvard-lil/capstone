@@ -56,12 +56,12 @@
   "pk": 5,
   "fields": {
     "title": "Code examples",
-    "section": 1,
+    "section": 3,
     "content": "See some ways of getting started with the data! Examples are written in Python.",
     "image": "capweb.CMSPicture/bytes/filename/mimetype/examples.png",
     "page_link": null,
     "repo_link": "https://github.com/harvard-lil/cap-examples",
-    "order": 20
+    "order": 10
   }
 },
 {
