@@ -238,6 +238,7 @@ class MarkdownView(View):
         return render(request, self.base_template_name, {
             'main_content': mark_safe(html),
             'sidebar_menu_items': mark_safe(toc),
+            'main_content_style': 'markdown',
             **self.extra_context,
             **meta,
         })

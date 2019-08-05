@@ -1,0 +1,10 @@
+/* styles for markdown pages */
+
+.markdown {
+  h2 {
+    @extend .subtitle;
+  }
+  ul {
+    @extend ul.bullets;
+  }
+}
