@@ -207,6 +207,8 @@ django-compressor==2.2 \
     --hash=sha256:7732676cfb9d58498dfb522b036f75f3f253f72ea1345ac036434fdc418c2e57 \
     --hash=sha256:9616570e5b08e92fa9eadc7a1b1b49639cce07ef392fc27c74230ab08075b30f \
     # via django-libsass
+django-db-file-storage==0.5.3 \
+    --hash=sha256:67bc53a789fbec24eb92fd35797f0b2cf3674d2e036bdf7c3ebeb2b34b87424f
 django-elasticsearch-dsl-drf==0.17.6 \
     --hash=sha256:2bb1d5b47dfe0fa6c052164d6f50648f6cf82942cf81b466dc00fb98b4f7d0f4 \
     --hash=sha256:9f0021e01a305d37c40b89a1bd51407fbf092d0094f3d9a534e9cc4b5ad6d5de

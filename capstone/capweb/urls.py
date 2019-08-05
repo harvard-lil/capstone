@@ -1,7 +1,7 @@
 from capweb.views import MarkdownView
 from . import views
 from django.contrib.auth import views as auth_views
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.views.generic import TemplateView
 
@@ -87,6 +87,7 @@ urlpatterns = [
     ### admin stuff ###
     path('maintenance/', views.maintenance_mode , name='maintenance_mode'),
     path('data/<str:label>', views.snippet, name='data_snippet'),
+    re_path(r'^cms_files/', include('db_file_storage.urls')),
     path('screenshot/', views.screenshot, name='screenshot'),
 ]
 

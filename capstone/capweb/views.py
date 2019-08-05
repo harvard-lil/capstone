@@ -16,6 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from capweb.forms import ContactForm, MailingListSubscribe
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
+from capweb.models import GallerySection
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
 from capapi import serializers
@@ -134,13 +135,15 @@ def tools(request):
     })
 
 
-
 def gallery(request):
+    sections = GallerySection.objects.prefetch_related('entries').all()
     return render(request, 'gallery.html', {
+        'sections': sections,
         'email': settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/gallery.png',
         'meta_description': 'Sky is the limit! Here are some examples of what’s possible.'
     })
+
 
 
 def maintenance_mode(request):

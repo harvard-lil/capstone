@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
+    'db_file_storage', # for CMS images
     'simple_history',   # model versioning
     'bootstrap4',   # bootstrap form rendering
     'drf_yasg',   # API specification

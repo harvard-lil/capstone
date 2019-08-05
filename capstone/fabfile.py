@@ -135,7 +135,18 @@ def validate_private_volumes():
 
 @task
 def ingest_fixtures():
-    management.call_command('loaddata', 'capdb/fixtures/jurisdictions.json', 'capdb/fixtures/reporters.json', database='capdb')
+    management.call_command(
+        'loaddata',
+        'capdb/fixtures/jurisdictions.json',
+        'capdb/fixtures/reporters.json',
+        database='capdb')
+
+    management.call_command(
+        'loaddata',
+        'capweb/fixtures/gallery_sections.json',
+        'capweb/fixtures/gallery_entries.json',
+        'capweb/fixtures/gallery_pictures.json',
+        database='default')
 
 @task
 def ingest_metadata():
