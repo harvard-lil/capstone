@@ -28,11 +28,9 @@
     docs_page: "{% url "trends-docs" %}"
   };
 
-  {% autoescape off %}
   const snippets = {
-    jurisdictions: {% snippet 'search_jurisdiction_list' %}
+    jurisdictions: {% snippet 'search_jurisdiction_list' '[]' %}
   };
-  {% endautoescape %}
 </script>
 <noscript>
   This interface requires javascript, even for basic functionality. If javascript is not an option, your best
