@@ -1,12 +1,5 @@
 from rest_framework import permissions
 
-staff_level_permissions = [
-    'capdb.change_jurisdiction',
-    'capapi.add_capuser',
-    'capapi.change_capuser',
-    'capapi.delete_capuser',
-]
-
 class IsSafeMethodsUser(permissions.BasePermission):
     def has_permission(self, request, view):
         # we're a read-only operation here
