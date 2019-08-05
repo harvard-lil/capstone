@@ -1,9 +1,13 @@
+import json
 import logging
+import os
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
 
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.core import signing
+from django.core.signing import Signer
 from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
 from django.shortcuts import render
 from django.conf import settings
@@ -244,35 +248,63 @@ class MarkdownView(View):
         })
 
 
-_safe_domains = [h['subdomain']+settings.PARENT_HOST for h in settings.HOSTS.values()]
+_safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
 def screenshot(request):
     """
-        Return screenshot of submitted URL on our site, e.g. /screenshot/?url=<url>&target=<selector>&target=<selector>&wait=<selector>
+        Return screenshot of a given URL on this site. This is a light wrapper around "node scripts/screenshot.js".
 
-        This is a light wrapper around "node scripts/screenshot.js"
+        Do not generate URLs for this page directly, but by calling page_image_url(). This view requires a signed JSON
+        object within the ?payload= query parameter so it can't be called unexpectedly.
     """
     if not settings.SCREENSHOT_FEATURE:
         raise Http404
 
-    # validate that submitted URL is a complete URL on our site
-    url = request.GET.get('url')
-    if not url or not url.startswith('http://' if settings.DEBUG else 'https://') or not is_safe_url(url, _safe_domains):
+    # read payload
+    try:
+        payload = json.loads(Signer().unsign(request.GET.get('payload', '')))
+    except signing.BadSignature:
         return HttpResponseBadRequest()
+
+    ### NOTE: after this point, contents of 'payload' are verified as coming from a signed request we created,
+    # though the 'url' parameter may be partially user-controlled. ###
+
+    # validate that submitted URL is a complete URL on our site
+    url = payload.get('url')
+    if not url:
+        return HttpResponseBadRequest("URL parameter required.")
+    if not url.startswith('http://' if settings.DEBUG else 'https://'):
+        return HttpResponseBadRequest("Invalid URL protocol.")
+    if not is_safe_url(url, _safe_domains):
+        return HttpResponseBadRequest("URL should match one of these domains: %s" % _safe_domains)
 
     # apply target= and wait= query params
     command_args = []
-    for selector in request.GET.getlist('wait'):
+    for selector in payload.get('waits', []):
         command_args += ['--wait', selector]
-    for selector in request.GET.getlist('target'):
+    for selector in payload.get('targets', []):
         command_args += ['--target', selector]
+    timeout = payload.get('timeout', 10)
+
+    # disable puppeteer sandbox just for dockerized dev/test env
+    # this is needed because puppeteer can't run as root without --no-sandbox; the alternative would be to set up docker
+    # to not run as root
+    if os.environ.get('DOCKERIZED') and settings.DEBUG:
+        command_args += ['--no-sandbox']
 
     # get screenshot from node scripts/screenshot.js
+    subprocess_args = ['node', os.path.join(settings.BASE_DIR, 'scripts/screenshot.js'), '-m', str(timeout * 1000)] + command_args + [url]
+    print(" ".join(subprocess_args))
     try:
-        screenshot = subprocess.check_output(['node', 'scripts/screenshot.js', '-m', 10000] + command_args + [url], timeout=10)
+        screenshot = subprocess.check_output(subprocess_args, timeout=timeout)
         content_type = "image/png"
-    except subprocess.TimeoutExpired:
-        with staticfiles_storage.open('img/og_image/api.jpg') as screenshot_file:
+    except (subprocess.TimeoutExpired, subprocess.CalledProcessError) as e:
+        print("Using fallback for screenshot with payload %s: %s" % (payload, e))
+        fallback_path = payload.get('fallback')
+        if not fallback_path or not staticfiles_storage.exists(fallback_path):
+            fallback_path = 'img/og_image/api.jpg'
+        with staticfiles_storage.open(fallback_path) as screenshot_file:
             screenshot = screenshot_file.read()
-        content_type = "image/jpeg"
+        content_types_by_suffix = {'png': 'image/png', 'jpg': 'image/jpeg'}
+        content_type = content_types_by_suffix[fallback_path.rsplit('.', 1)[1]]
 
     return HttpResponse(screenshot, content_type=content_type)

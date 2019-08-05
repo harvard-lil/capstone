@@ -362,6 +362,7 @@
       </div>
     </div>
     <search-results ref="searchResults" :urls="urls"></search-results>
+    <div v-if="screenshotReady" id="screenshot-ready"></div> <!-- empty div to be detected when taking screenshot -->
   </div>
 </template>
 
@@ -409,6 +410,7 @@
       Chart.pluginService.register({
         beforeDraw: this.beforeDraw,
         afterLayout: this.afterLayout,
+        afterRender: this.afterRender,
       });
     },
     mounted: function () {
@@ -534,6 +536,7 @@
         previousSameYAxis: true,
         jurisdictions: [],
         jurisdictionLookup: {},
+        screenshotReady: false,  // whether page has rendered sufficiently to take screenshot
         urls: {},
         // colors via http://mkweb.bcgsc.ca/biovis2012/ and https://contrast-ratio.com/:
         // these colors work for color-blindness, and have contrast against white that is WCAG AA large or better
@@ -1129,7 +1132,10 @@
         this.$refs.searchResults.search(term, params, year-this.smoothingWindow, year+this.smoothingWindow);
       },
       beforeDraw(chart) {
-        /* draw the chart background (white background and credit line) */
+        /*
+          Runs before each chart.js animation frame.
+          Draw the chart background (white background and credit line).
+        */
         const ctx = chart.chart.ctx;
         const canvas = ctx.canvas;
         const w = canvas.clientWidth;
@@ -1151,8 +1157,15 @@
         this.chartHeight = max(200, min(availableHeight, 400));
       },
       afterLayout(chart) {
-        /* resize chart when legend height changes, so legend doesn't squeeze out the chart itself */
+        /*
+          Runs after chart.js calculates layout.
+          Resize chart when legend height changes, so legend doesn't squeeze out the chart itself.
+        */
         this.chartLegendHeight = chart.legend.height;
+      },
+      afterRender(chart) {
+        /* Runs after chart.js finishes animating an update. */
+        this.screenshotReady = true;  // let screenshot tool know that page is ready
       },
       clickHelpButton() {
         document.getElementById('helpPanelButton').click();
