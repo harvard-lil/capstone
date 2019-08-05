@@ -9,6 +9,9 @@
   p, ul {
     margin-bottom: 2rem;
   }
+  ul ul {
+    margin-bottom: 0;  /* no additional bottom margin within nested lists */
+  }
   p {
     margin-top: 1.25rem;
   }
