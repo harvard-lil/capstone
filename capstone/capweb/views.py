@@ -283,7 +283,7 @@ def screenshot(request):
         command_args += ['--wait', selector]
     for selector in payload.get('targets', []):
         command_args += ['--target', selector]
-    timeout = payload.get('timeout', 10)
+    timeout = payload.get('timeout', settings.SCREENSHOT_DEFAULT_TIMEOUT)
 
     # disable puppeteer sandbox just for dockerized dev/test env
     # this is needed because puppeteer can't run as root without --no-sandbox; the alternative would be to set up docker
