@@ -10,12 +10,10 @@
 {% block base_css %}{% stylesheet 'index' %}{% endblock %}
 {% block extra_head %}
   <script>
-    {% autoescape off %}
-      const mapSettings = {
-        "data": {% snippet 'map_numbers' %},
-        "jurisdictionUrl": "{% url "cite_home" host "cite" %}#JURISDICTION"
-      };
-    {% endautoescape %}
+    const mapSettings = {
+      "data": {% snippet 'map_numbers' '{}' %},
+      "jurisdictionUrl": "{% url "cite_home" host "cite" %}#JURISDICTION"
+    };
   </script>
   {% render_bundle 'map' %}
 {% endblock %}

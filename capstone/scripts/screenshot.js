@@ -20,6 +20,7 @@ program
   .option('-t, --target <selector>', 'target query selector to include in screenshot (can repeat)', collect, [])
   .option('-w, --wait <selector>', 'wait for query selector to appear (can repeat)', collect, [])
   .option('-m, --timeout <milliseconds>', 'milliseconds to wait before exiting with error code 1', 10000)
+  .option('--no-sandbox', 'run puppeteer with --no-sandbox flag (for debugging only!)')
   .option('-v, --verbose', 'verbose logging');
 program.parse(process.argv);
 
@@ -33,8 +34,11 @@ function debug(...args) {
 async function capture() {
 
   // open headless chrome
-  debug("opening browser");
-  const browser = await puppeteer.launch();
+  const puppeteerArgs = {};
+  if (!program.sandbox)
+    puppeteerArgs.args = ['--no-sandbox'];
+  debug("opening browser with args", puppeteerArgs);
+  const browser = await puppeteer.launch(puppeteerArgs);
   try {
 
     // load page
@@ -44,9 +48,10 @@ async function capture() {
     await page.goto(url);
 
     // wait for --wait selectors to load
-    if (program.wait.length) {
-      debug("waiting for elements to render:", program.wait);
-      await Promise.all(program.wait.map(page.waitForSelector));
+    const waitSelectors = program.wait.concat(program.target);
+    if (waitSelectors.length) {
+      debug("waiting for elements to render:", waitSelectors);
+      await Promise.all(waitSelectors.map(page.waitForSelector, page));
     }
 
     // get screenshot dimensions based on --target selectors
@@ -60,6 +65,7 @@ async function capture() {
           (target) => document.querySelector(target),
           target
         );
+        debug("got handle:", handle);
         return await handle.boundingBox();
       }));
       debug("got dimensions:", boxes);
