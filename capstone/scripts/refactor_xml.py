@@ -1568,9 +1568,14 @@ def write_to_db(volume_barcode, zip_path):
                 metadata_obj = CaseMetadata(case_id=case['id'], reporter=volume_obj.reporter, volume=volume_obj)
                 metadata_obj.save()
             case_objs.append(CaseStructure(metadata=metadata_obj, opinions=case['opinions'], ingest_source=ingest_source, ingest_path=case['path']))
-            initial_metadata_objs.append(CaseInitialMetadata(case=metadata_obj, metadata=case['metadata'].replace('\xad', ''), ingest_source=ingest_source, ingest_path=case['path']))
+
+            initial_metadata_objs.append(CaseInitialMetadata(
+                case = metadata_obj,
+                metadata = {k: ( v.replace('\xad', '') if isinstance(v, str) else v) for k, v in case['metadata'].items()},
+                ingest_source = ingest_source,
+                ingest_path = case['path']))
         case_objs = CaseStructure.objects.bulk_create(case_objs)
-        initial_metadata_objs = CaseInitialMetadata.objects.bulk_create(initial_metadata_objs)
+        CaseInitialMetadata.objects.bulk_create(initial_metadata_objs)
 
         # save join table between CaseStructure and PageStructure
         print("Saving join table")
