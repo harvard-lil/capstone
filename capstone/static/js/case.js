@@ -1,15 +1,10 @@
+import 'bootstrap/js/dist/tooltip'
+import 'popper.js'
+
 import Mark from 'mark.js';
-// function copyCitation() {
-//   /*
-//      This bit of script selects the citation input and copies it. It then informs the users that the citation was copied
-//      by applying the citation_copied class.
-//    */
-//   let citation_container = document.getElementById("citation_container");
-//   let cite = document.getElementById("citation_for_copy");
-//   cite.select();
-//   document.execCommand("copy");
-//   citation_container.classList.add("citation_copied");
-// }
+
+let caseContainer = document.querySelector(".case-container");
+let tooltip;
 
 function getSearchPhrase() {
   // get highlight parameter
@@ -17,11 +12,12 @@ function getSearchPhrase() {
   return urlParams.get('highlight');
 }
 
-let markInstance = new Mark(document.querySelector(".case-container"));
+let markInstance = new Mark(caseContainer);
 
 function highlightSearchedPhrase() {
   // highlight all instances of parameter
   let keyword = getSearchPhrase();
+  if (!keyword) return;
   let options = {
     separateWordSearch: false,
     diacritics: true,
@@ -29,6 +25,32 @@ function highlightSearchedPhrase() {
   };
 
   markInstance.mark(keyword, options);
+}
+
+caseContainer.addEventListener("mouseup", function () {
+
+  let selection = window.getSelection();
+  if (selection) {
+    // console.log("want to highlight", selection.getRangeAt(0).toString(), "?");
+    // debugger;
+    addTooltip(selection)
+  }
+
+});
+
+
+function addTooltip(selection) {
+  if (tooltip) {
+    tooltip.parentNode.removeChild(tooltip);
+  }
+  tooltip = document.createElement('a');
+  tooltip.href = '#';
+  tooltip.class = 'add-link-tooltip';
+  tooltip.dataset.toggle = "tooltip";
+  tooltip.dataset.placement = "top";
+  tooltip.title = 'add link!';
+  tooltip.innerText = "add link";
+  selection.focusNode.parentNode.insertBefore(tooltip, selection.focusNode.nextSibling);
 }
 
 highlightSearchedPhrase();

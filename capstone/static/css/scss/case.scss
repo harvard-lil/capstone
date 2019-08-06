@@ -1,3 +1,8 @@
+@import 'bootstrap/_functions.scss';
+@import 'bootstrap/_variables.scss';
+@import 'bootstrap/mixins';
+@import 'bootstrap/tooltip';
+
 @import "base.scss";
 
 .casebody {
