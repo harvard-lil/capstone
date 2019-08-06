@@ -2,7 +2,7 @@ import functools
 import json
 import re
 import socket
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from contextlib import contextmanager
 from functools import wraps
 from urllib.parse import urlencode
@@ -270,7 +270,7 @@ def page_image_url(url, targets=[], waits=[], fallback=None, timeout=None):
     """
         Generate a link to the /screenshot/ view for the given url and target.
     """
-    payload = {'url': url}
+    payload = OrderedDict({'url': url})
     if targets:
         payload['targets'] = targets
     if waits:
