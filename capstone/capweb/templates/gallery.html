@@ -45,7 +45,7 @@
   {% for section in sections %}
     <h2 class="subtitle mt-2 mt-lg-5 mb-0 pb-0" id="{{ section|slugify }}">{{ section }}</h2>
 
-    {% for entry in section.entries.all %}
+    {% for entry in section.entries.all|dictsort:"order" %}
       <div class="row mt-1 mt-md-3 mt-lg-5 mb-3 mb-lg-0">
         <div class="project-image d-none d-md-block col-md-2 pt-lg-0 pt-3">
           {% if entry.page_link %}

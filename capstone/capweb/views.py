@@ -136,7 +136,7 @@ def tools(request):
 
 
 def gallery(request):
-    sections = GallerySection.objects.prefetch_related('entries').all()
+    sections = GallerySection.objects.prefetch_related('entries').order_by('order')
     return render(request, 'gallery.html', {
         'sections': sections,
         'email': settings.DEFAULT_FROM_EMAIL,
