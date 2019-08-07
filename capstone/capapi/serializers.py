@@ -111,6 +111,7 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class CaseDocumentSerializer(DocumentSerializer):
+    frontend_url = serializers.SerializerMethodField()
 
     class Meta:
         document = CaseDocument
@@ -130,6 +131,11 @@ class CaseDocumentSerializer(DocumentSerializer):
             'jurisdiction',
             'frontend_url',
         )
+
+    def get_frontend_url(self, obj):
+        if not hasattr(self, '_frontend_url_base'):
+            CaseDocumentSerializer._frontend_url_base = reverse('cite_home', host='cite').rstrip('/')
+        return self._frontend_url_base + (obj.frontend_url or '')
 
 class CaseAllowanceMixin:
     """
