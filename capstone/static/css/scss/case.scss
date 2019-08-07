@@ -1,9 +1,8 @@
+@import "base.scss";
 @import 'bootstrap/_functions.scss';
 @import 'bootstrap/_variables.scss';
 @import 'bootstrap/mixins';
 @import 'bootstrap/tooltip';
-
-@import "base.scss";
 
 .casebody {
   img {
@@ -39,6 +38,15 @@ p {
   a {
     color: $color-blue;
   }
+}
+
+.tooltip {
+  cursor: pointer;
+}
+
+.offscreen {
+  position: absolute;
+  left: -999em;
 }
 
 .case-container {
