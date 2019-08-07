@@ -128,6 +128,7 @@ class CaseDocumentSerializer(DocumentSerializer):
             'reporter',
             'court',
             'jurisdiction',
+            'frontend_url',
         )
 
 class CaseAllowanceMixin:

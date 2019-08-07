@@ -22,6 +22,8 @@ class CaseDocument(DocType):
 
     name = fields.TextField()
 
+    frontend_url = fields.KeywordField()
+
     docket_numbers = fields.KeywordField(multi=True)
 
     volume = fields.ObjectField(properties={
