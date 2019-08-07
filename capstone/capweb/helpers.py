@@ -2,10 +2,13 @@ import functools
 import json
 import re
 import socket
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from contextlib import contextmanager
 from functools import wraps
+from urllib.parse import urlencode
+
 import markdown
+from django.core.signing import Signer
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from markdown.extensions.attr_list import AttrListExtension
@@ -262,3 +265,21 @@ def natural_sort_key(text):
             ['9 Foo', '9A Foo', '10 Foo']
     """
     return [int(part) if part.isdigit() else part for word in text.split() for part in re.split('(\d+)', word)]
+
+def page_image_url(url, targets=[], waits=[], fallback=None, timeout=None):
+    """
+        Generate a link to the /screenshot/ view for the given url and target.
+    """
+    payload = OrderedDict({'url': url})
+    if targets:
+        payload['targets'] = targets
+    if waits:
+        payload['waits'] = waits
+    if fallback:
+        payload['fallback'] = fallback
+    if timeout is not None:
+        payload['timeout'] = timeout
+    signed_payload = Signer().sign(json.dumps(payload))
+    return "%s?%s" % (reverse('screenshot'), urlencode({
+        'payload': signed_payload,
+    }))

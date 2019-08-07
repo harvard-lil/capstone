@@ -2,14 +2,22 @@ FROM python:3.5-stretch
 ENV PYTHONUNBUFFERED 1
 
 # Get build dependencies and packages required by the app
+# FIRST LINE:
 # redis-server for pytest-redis (https://github.com/ClearcodeHQ/pytest-redis/issues/108)
 # postgresql-client for manage.py dbshell
-# librocksdb5.17 et al. for python-rocksdb
 # libtiff-tools and pdftk for make_pdf.py (tiff2pdf, tiffcp, pdftk commands)
+# SECOND LINE:
+# librocksdb5.17 et al. for python-rocksdb
+# THIRD LINE:
+# extra requirements for the yarn puppeteer package, as discovered by running
+#  ldd /node_modules/puppeteer/.local-chromium/linux-672088/chrome-linux/chrome | grep not
+# and then looking for relevant packages listed in
+#  https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix
 RUN echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/backports.list
 RUN apt-get update \
     && apt-get install -y redis-server postgresql-client libtiff-tools pdftk \
-    && apt-get install -t stretch-backports -y librocksdb5.17 libzstd-dev liblz4-dev libgflags-dev libbz2-dev zlib1g-dev libsnappy-dev librocksdb-dev rocksdb-tools
+    && apt-get install -t stretch-backports -y librocksdb5.17 libzstd-dev liblz4-dev libgflags-dev libbz2-dev zlib1g-dev libsnappy-dev librocksdb-dev rocksdb-tools \
+    && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3
 
 # pip
 RUN mkdir /app

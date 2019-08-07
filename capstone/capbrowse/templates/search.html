@@ -27,24 +27,11 @@
     search_docs: "{% url 'search-docs' %}"
   };
 
-{% autoescape off %}
-    const choices = {
-      "jurisdiction": {% snippet 'search_jurisdiction_list' %},
-      "reporter": {% snippet 'search_reporter_list' %},
-      "whitelisted": [["true", "Whitelisted"], ["false", "Not Whitelisted"]]
-    };
-{% comment %}
-    /*
-       const choices = {
-      "jurisdiction": {% snippet 'search_jurisdiction_list' %},
-      "court": {% snippet 'search_court_list' %},
-      "reporter": {% snippet 'search_reporter_list' %},
-      "whitelisted": {"true": "Whitelisted", "false": "Not Whitelisted"}
-    };
-    */
-{% endcomment %}
-
-{% endautoescape %}
+  const choices = {
+    "jurisdiction": {% snippet 'search_jurisdiction_list' '[]' %},
+    "reporter": {% snippet 'search_reporter_list' '[]' %},
+    "whitelisted": [["true", "Whitelisted"], ["false", "Not Whitelisted"]]
+  };
 
   </script>
 <noscript>

@@ -615,3 +615,5 @@ PASSWORD_PROTECTED_PAGES = {
     # 'some_key': [],  # no passwords will work
     # 'some_key': None,  # no password will be requested
 }
+
+SCREENSHOT_DEFAULT_TIMEOUT = 30  # seconds

@@ -1,14 +1,16 @@
 from django import template
+from django.utils.safestring import mark_safe
+
 from capdb.models import Snippet
 
 register = template.Library()
 
 @register.simple_tag()
-def snippet(label):
+def snippet(label, default=""):
     """
-        Return contents of named Snippet. If Snippet is not found, return empty string.
+        Return contents of named Snippet. If Snippet is not found, return default.
     """
     try:
-        return Snippet.objects.get(label=label).contents
+        return mark_safe(Snippet.objects.get(label=label).contents)
     except Snippet.DoesNotExist:
-        return ""
+        return mark_safe(default)

@@ -1,11 +1,10 @@
-from urllib.parse import urlencode
 from collections import OrderedDict
 
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 
 from capdb.models import Jurisdiction, Court, Reporter
-from capweb.helpers import reverse
+from capweb.helpers import page_image_url
 
 
 def view_jurisdiction(request, jurisdiction_id):
@@ -71,10 +70,7 @@ def trends(request):
     else:
         title_suffix = ''
     if settings.SCREENSHOT_FEATURE:
-        page_image = "%s?%s" % (reverse('screenshot'), urlencode({
-            'url': request.build_absolute_uri(),
-            'target': '.graph-container',
-        }))
+        page_image = page_image_url(request.build_absolute_uri(), targets=['.graph-container'], waits=['#screenshot-ready'])
     else:
         page_image = None
     return render(request, "trends.html", {
