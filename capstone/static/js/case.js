@@ -41,40 +41,60 @@ caseContainer.addEventListener("mouseup", function () {
   let selection = window.getSelection();
   let selectedText = selection.getRangeAt(0).toString();
   if (selectedText) {
-    addTooltip(selection, selectedText)
+    addTooltip(selection, selectedText, 'copy URL')
+    onTooltipSuccess(selection, selectedText)
   }
-
 });
 
-function createTooltip(rect) {
+function createTooltip(rect, tooltipText) {
   let tt = document.createElement('a');
   tt.dataset.toggle = "tooltip";
-  tt.title = 'copy URL';
+  tt.title = tooltipText;
   tt.setAttribute('id', 'get-url-tooltip');
-  tt.style.position = 'fixed';
   tt.style.top = rect.top + 'px';
   tt.style.left = rect.left + 'px';
   tt.style.height = rect.height + 'px';
-  tt.style.width = rect.width + 'px';
+
+  // if width is larger than casebody width, assign it to casebody width
+  let casebodyWidth = document.querySelector(".casebody").offsetWidth;
+  tt.style.width = rect.width > casebodyWidth ? casebodyWidth + 'px' : rect.width + 'px';
   return tt;
 }
 
-function addTooltip(selection, selectedText) {
+function addTooltip(selection, selectedText, tooltipText, hideAfter) {
   let rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
   let t = document.getElementById("url-for-copy");
 
-  tooltip = createTooltip(rect);
+  tooltip = createTooltip(rect, tooltipText);
 
   // add tooltip and textarea right after selected text node for a11y
-  selection.focusNode.parentNode.insertBefore(tooltip, selection.focusNode.nextSibling);
-  selection.focusNode.parentNode.insertBefore(t, selection.focusNode.nextSibling);
-  $(tooltip).tooltip({placement: 'top', trigger: 'manual'}).tooltip('show');
+  selection.focusNode.parentNode.appendChild(t);
+  selection.focusNode.parentNode.appendChild(tooltip);
 
+  // if selected text is at the top of the page, place tooltip at bottom of
+  // selection so that it doesn't get lost in the nav bar
+  let placement = rect.top < 100 ? 'bottom' : 'top';
+  $(tooltip).tooltip({
+    placement: placement,
+    boundary: '.casebody',
+    trigger: 'manual',
+    container: selection.focusNode.parentNode
+  }).tooltip('show');
+  if (hideAfter) {
+    setTimeout(function () {
+      $(tooltip).tooltip('hide').remove()
+    }, 800);
+  }
+}
+
+function onTooltipSuccess(selection, selectedText) {
   // on tooltip div click, select text and update tooltip
   let createdtooltip_id = tooltip.attributes['aria-describedby'].value;
   let createdtooltip_el = document.getElementById(createdtooltip_id);
+
   createdtooltip_el.addEventListener('click', function (evt) {
     selectURLandHideTooltip(evt, selectedText);
+    addTooltip(selection, selectedText, 'copied!', true)
   });
 }
 
@@ -85,13 +105,6 @@ function selectURLandHideTooltip(evt, selectedText) {
   t.select();
   document.execCommand('copy');
   evt.preventDefault();
-
-  $(tooltip).attr('data-original-title', "copied!").tooltip('show');
-
-  // hide tooltip after successful copy
-  setTimeout(function () {
-    $(tooltip).tooltip('hide')
-  }, 800);
 }
 
 function getUpdatedURL(selectedText) {

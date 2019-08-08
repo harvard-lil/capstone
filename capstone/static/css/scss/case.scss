@@ -44,8 +44,12 @@ p {
   cursor: pointer;
 }
 
+#get-url-tooltip {
+  position: fixed;
+}
+
 .offscreen {
-  position: absolute;
+  position: absolute !important;
   left: -999em;
 }
 
@@ -187,6 +191,7 @@ section.head-matter {
 
 mark {
   background: $color-pink;
+  padding: 0;
 }
 
 .author {
