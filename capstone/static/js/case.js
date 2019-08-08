@@ -40,9 +40,10 @@ caseContainer.addEventListener("mouseup", function () {
   $(tooltip).tooltip('hide').remove();
   let selection = window.getSelection();
   let selectedText = selection.getRangeAt(0).toString();
+  let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
   if (selectedText) {
-    addTooltip(selection, selectedText, 'copy URL')
-    onTooltipSuccess(selection, selectedText)
+    addTooltip(selection, selectedBoundingBox, selectedText, 'copy URL')
+    onTooltipSuccess(selection, selectedBoundingBox, selectedText)
   }
 });
 
@@ -61,8 +62,8 @@ function createTooltip(rect, tooltipText) {
   return tt;
 }
 
-function addTooltip(selection, selectedText, tooltipText, hideAfter) {
-  let rect = window.getSelection().getRangeAt(0).getBoundingClientRect();
+function addTooltip(selection, selectedBoundingBox, selectedText, tooltipText, hideAfter) {
+  let rect = selectedBoundingBox;
   let t = document.getElementById("url-for-copy");
 
   tooltip = createTooltip(rect, tooltipText);
@@ -87,14 +88,14 @@ function addTooltip(selection, selectedText, tooltipText, hideAfter) {
   }
 }
 
-function onTooltipSuccess(selection, selectedText) {
+function onTooltipSuccess(selection, selectedBoundingBox, selectedText) {
   // on tooltip div click, select text and update tooltip
   let createdtooltip_id = tooltip.attributes['aria-describedby'].value;
   let createdtooltip_el = document.getElementById(createdtooltip_id);
 
   createdtooltip_el.addEventListener('click', function (evt) {
     selectURLandHideTooltip(evt, selectedText);
-    addTooltip(selection, selectedText, 'copied!', true)
+    addTooltip(selection, selectedBoundingBox, selectedText, 'copied!', true)
   });
 }
 
