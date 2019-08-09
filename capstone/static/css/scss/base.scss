@@ -106,6 +106,11 @@ button, .btn,
   border-radius: 0;
 }
 
+.alert {
+  border-radius: 0;
+  border: 0;
+}
+
 .highlighted {
   color: $color-magenta;
   font-weight: $font-weight-semibold;

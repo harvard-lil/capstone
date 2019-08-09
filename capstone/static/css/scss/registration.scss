@@ -36,6 +36,18 @@ label {
   margin-top: 1.5rem;
 }
 
+a.btn-danger {
+  color: $color-white;
+  &:hover, &:focus, &:active {
+    background: $color-red;
+    color: $color-white;
+  }
+}
+
+.btn-delete {
+  margin-top: 0;
+}
+
 .simple-subtitle {
   @include media-breakpoint-up(lg) {
     font-size: 45px;

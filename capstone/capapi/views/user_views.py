@@ -339,3 +339,13 @@ def reset_api_key(request):
         )
         return redirect('user-details')
     return render(request, 'registration/reset_api_key.html')
+
+
+@login_required()
+def delete_account(request):
+    if request.method == 'POST':
+        request.user.is_active = False
+        request.user.save()
+        return HttpResponseRedirect(reverse('home'))
+
+    return render(request, 'registration/delete_account.html')
