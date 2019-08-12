@@ -28,8 +28,7 @@ msgpack             # for storing data in KV store
 
 # Django stuff
 django
-django-storages==1.6.6 # Fix issues related to 1.7.x branch (https://github.com/harvard-lil/capstone/issues/745)
-boto3==1.7.84          # Fix issues related to 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
+django-storages
 whitenoise             # serve static assets
 https://github.com/jcushman/django-model-utils/archive/f2e97e41418788c81ee8e5ab1cec37ecff65a003.zip#egg=django-model-utils  # PR: https://github.com/jazzband/django-model-utils/pull/369
 django-simple-history  # model versioning
@@ -49,8 +48,8 @@ pytest-django      # testing
 pytest-xdist       # run tests in parallel with pytest -n
 pytest-cov         # record code coverage
 pytest-redis       # redisdb fixture
-moto==1.3.6        # Fix issues related to boto3 1.9.x branch (https://github.com/harvard-lil/capstone/issues/745)
-flake8==3.4.1      # Fix issues related to 3.6 branch (https://github.com/harvard-lil/capstone/issues/745)
+moto
+flake8
 factory-boy        # mocking
 pytest-factoryboy  # inject factory-boy factories into pytest fixtures
 bagit              # validate BagIt bag
@@ -69,7 +68,6 @@ djangorestframework
 django-bootstrap4   # render bootstrap forms in django templates
 drf-yasg            # expose API specification
 swagger_spec_validator  # optional package for schema validation by drf-yasg
-pyyaml==4.2b4       # only an indirect dependency; included here to pin beta version until 4.x released, as 3.x shows security warning on github
 https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.zip#egg=email-normalize  # Fix issues related to https://github.com/gmr/email-normalize/pull/3 (https://github.com/harvard-lil/capstone/issues/745)
 
 # File conversion
