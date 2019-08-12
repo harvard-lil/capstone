@@ -757,7 +757,7 @@ If you set the optional `jurisdiction` parameter, your results will be limited t
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `words`{: class="parameter-name" }
+* `q`{: class="parameter-name" }
 {: class="list-group-item" add_list_class="parameter-list" }
     * up to 3 space separated [strings](#def-string)
     {: class="param-data-type" }

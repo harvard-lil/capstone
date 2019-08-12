@@ -1508,7 +1508,7 @@ def write_to_db(volume_barcode, zip_path):
         with ZipFile(raw) as zip:
             volume = json.loads(zip.open('volume.json').read().decode('utf8'))
             pages = json.loads(zip.open('pages.json').read().decode('utf8'))
-            cases = json.loads(zip.open('cases.json').read().decode('utf8'))
+            cases = json.loads(zip.open('cases.json').read().decode('utf8').replace('\xad', ''))
             fonts_by_fake_id = json.loads(zip.open('fonts.json').read().decode('utf8'))
 
     # save CaseFonts
@@ -1568,7 +1568,7 @@ def write_to_db(volume_barcode, zip_path):
                 metadata_obj = CaseMetadata(case_id=case['id'], reporter=volume_obj.reporter, volume=volume_obj)
                 metadata_obj.save()
             case_objs.append(CaseStructure(metadata=metadata_obj, opinions=case['opinions'], ingest_source=ingest_source, ingest_path=case['path']))
-            initial_metadata_objs.append(CaseInitialMetadata(case=metadata_obj, metadata=case['metadata'].replace('\xad', ''), ingest_source=ingest_source, ingest_path=case['path']))
+            initial_metadata_objs.append(CaseInitialMetadata(case=metadata_obj, metadata=case['metadata'], ingest_source=ingest_source, ingest_path=case['path']))
         case_objs = CaseStructure.objects.bulk_create(case_objs)
         initial_metadata_objs = CaseInitialMetadata.objects.bulk_create(initial_metadata_objs)
 

@@ -1,4 +1,8 @@
 @import "base.scss";
+@import 'bootstrap/_functions.scss';
+@import 'bootstrap/_variables.scss';
+@import 'bootstrap/mixins';
+@import 'bootstrap/tooltip';
 
 .casebody {
   img {
@@ -34,6 +38,19 @@ p {
   a {
     color: $color-blue;
   }
+}
+
+.tooltip {
+  cursor: pointer;
+}
+
+#get-url-tooltip {
+  position: fixed;
+}
+
+.offscreen {
+  position: absolute !important;
+  left: -999em;
 }
 
 .case-container {
@@ -174,6 +191,7 @@ section.head-matter {
 
 mark {
   background: $color-pink;
+  padding: 0;
 }
 
 .author {

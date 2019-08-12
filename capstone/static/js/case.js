@@ -1,15 +1,11 @@
+import $ from 'jquery';
+import 'popper.js'
+import 'bootstrap/js/dist/tooltip'
+
 import Mark from 'mark.js';
-// function copyCitation() {
-//   /*
-//      This bit of script selects the citation input and copies it. It then informs the users that the citation was copied
-//      by applying the citation_copied class.
-//    */
-//   let citation_container = document.getElementById("citation_container");
-//   let cite = document.getElementById("citation_for_copy");
-//   cite.select();
-//   document.execCommand("copy");
-//   citation_container.classList.add("citation_copied");
-// }
+
+let caseContainer = document.querySelector(".case-container");
+let tooltip;
 
 function getSearchPhrase() {
   // get highlight parameter
@@ -17,18 +13,106 @@ function getSearchPhrase() {
   return urlParams.get('highlight');
 }
 
-let markInstance = new Mark(document.querySelector(".case-container"));
+let markInstance = new Mark(caseContainer);
 
-function highlightSearchedPhrase() {
+function highlightSearchedPhrase(keyphrase) {
+  // clear all previously highlighted
+  markInstance.unmark();
   // highlight all instances of parameter
-  let keyword = getSearchPhrase();
+  keyphrase = keyphrase || getSearchPhrase();
+  if (!keyphrase) return;
   let options = {
     separateWordSearch: false,
     diacritics: true,
     acrossElements: true
   };
 
-  markInstance.mark(keyword, options);
+  markInstance.mark(keyphrase, options);
+  scrollToFirstHighlighted();
+}
+
+function scrollToFirstHighlighted() {
+  let rect = document.querySelector("mark").getBoundingClientRect();
+  window.scrollTo({top: rect.top - 100})
+}
+
+caseContainer.addEventListener("mouseup", function () {
+  $(tooltip).tooltip('hide').remove();
+  let selection = window.getSelection();
+  let selectedText = selection.getRangeAt(0).toString();
+  let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
+  if (selectedText) {
+    addTooltip(selection, selectedBoundingBox, selectedText, 'copy URL')
+    onTooltipSuccess(selection, selectedBoundingBox, selectedText)
+  }
+});
+
+function createTooltip(rect, tooltipText) {
+  let tt = document.createElement('a');
+  tt.dataset.toggle = "tooltip";
+  tt.title = tooltipText;
+  tt.setAttribute('id', 'get-url-tooltip');
+  tt.style.top = rect.top + 'px';
+  tt.style.left = rect.left + 'px';
+  tt.style.height = rect.height + 'px';
+
+  // if width is larger than casebody width, assign it to casebody width
+  let casebodyWidth = document.querySelector(".casebody").offsetWidth;
+  tt.style.width = rect.width > casebodyWidth ? casebodyWidth + 'px' : rect.width + 'px';
+  return tt;
+}
+
+function addTooltip(selection, selectedBoundingBox, selectedText, tooltipText, hideAfter) {
+  let rect = selectedBoundingBox;
+  let t = document.getElementById("url-for-copy");
+
+  tooltip = createTooltip(rect, tooltipText);
+
+  // add tooltip and textarea right after selected text node for a11y
+  selection.focusNode.parentNode.appendChild(t);
+  selection.focusNode.parentNode.appendChild(tooltip);
+
+  // if selected text is at the top of the page, place tooltip at bottom of
+  // selection so that it doesn't get lost in the nav bar
+  let placement = rect.top < 100 ? 'bottom' : 'top';
+  $(tooltip).tooltip({
+    placement: placement,
+    boundary: '.casebody',
+    trigger: 'manual',
+    container: selection.focusNode.parentNode
+  }).tooltip('show');
+  if (hideAfter) {
+    setTimeout(function () {
+      $(tooltip).tooltip('hide').remove()
+    }, 800);
+  }
+}
+
+function onTooltipSuccess(selection, selectedBoundingBox, selectedText) {
+  // on tooltip div click, select text and update tooltip
+  let createdtooltip_id = tooltip.attributes['aria-describedby'].value;
+  let createdtooltip_el = document.getElementById(createdtooltip_id);
+
+  createdtooltip_el.addEventListener('click', function (evt) {
+    selectURLandHideTooltip(evt, selectedText);
+    addTooltip(selection, selectedBoundingBox, selectedText, 'copied!', true)
+  });
+}
+
+function selectURLandHideTooltip(evt, selectedText) {
+  let t = document.getElementById("url-for-copy");
+  let updatedUrl = getUpdatedURL(selectedText);
+  t.value = updatedUrl.href;
+  t.select();
+  document.execCommand('copy');
+  evt.preventDefault();
+}
+
+function getUpdatedURL(selectedText) {
+  let url = new URL(window.location.href);
+  url.searchParams.delete('highlight');
+  url.searchParams.append('highlight', selectedText);
+  return url
 }
 
 highlightSearchedPhrase();
