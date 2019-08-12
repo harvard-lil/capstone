@@ -345,6 +345,7 @@ def reset_api_key(request):
 def delete_account(request):
     if request.method == 'POST':
         request.user.is_active = False
+        request.user.deactivated_by_user = True
         request.user.save()
         return HttpResponseRedirect(reverse('home'))
 
