@@ -50,6 +50,7 @@ class JurisdictionViewSet(BaseViewSet):
 
 class VolumeViewSet(BaseViewSet):
     serializer_class = serializers.VolumeSerializer
+    filterset_class = filters.VolumeFilter
     queryset = models.VolumeMetadata.objects.order_by('pk').select_related(
         'reporter'
     ).prefetch_related('reporter__jurisdictions')

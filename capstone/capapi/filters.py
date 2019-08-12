@@ -21,7 +21,8 @@ def lazy_choices(queryset, id_attr, label_attr):
     return SimpleLazyObject(get_choices)
 jur_choices = lazy_choices(models.Jurisdiction.objects.all(), 'slug', 'name_long')
 court_choices = lazy_choices(models.Court.objects.all(), 'slug', 'name')
-reporter_choices = lazy_choices(models.Reporter.objects.all(), 'id', 'full_name')
+reporter_choices = lazy_choices(models.Reporter.objects.all(), 'id', 'short_name')
+
 
 class NoopMixin():
     """
@@ -73,6 +74,28 @@ class ReporterFilter(filters.FilterSet):
             'start_year',
             'end_year',
             'volume_count'
+        ]
+
+
+class VolumeFilter(filters.FilterSet):
+    jurisdictions = filters.MultipleChoiceFilter(
+        field_name='reporter__jurisdictions__slug',
+        choices=jur_choices)
+
+    reporter = filters.MultipleChoiceFilter(
+        field_name='reporter__short_name',
+        choices=reporter_choices)
+
+    volume_number = filters.NumberFilter(field_name='volume_number')
+    publication_year = filters.NumberFilter(field_name='publication_year')
+
+    class Meta:
+        model = models.VolumeMetadata
+        fields = [
+            'reporter',
+            'jurisdictions',
+            'volume_number',
+            'publication_year',
         ]
 
 
