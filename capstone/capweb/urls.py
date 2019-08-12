@@ -64,7 +64,7 @@ urlpatterns = [
     path('user/', include('django.contrib.auth.urls')),  # logout, password change, password reset
     path('user/details', user_views.user_details, name='user-details'),
     path('user/resend-verification/', user_views.resend_verification, name='resend-verification'),
-
+    path('user/delete-account', user_views.delete_account, name='delete_account'),
     # research access requests
     ]+([
         path('user/research/', TemplateView.as_view(template_name='research_request/index.html', extra_context={'HARVARD_RESEARCHER_FEATURE': settings.HARVARD_RESEARCHER_FEATURE}), name='research-options'),

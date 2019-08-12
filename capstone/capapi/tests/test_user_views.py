@@ -379,3 +379,22 @@ def test_affiliated_research_access_request(auth_client, contract_approver_auth_
         assert getattr(contract, k) == v
         assert v in message
         assert v in contract.contract_html
+
+
+@pytest.mark.django_db
+def test_delete_account(auth_user, auth_client):
+    assert auth_user.deactivated_by_user is False
+    response = auth_client.post(reverse('delete_account'))
+    check_response(response, status_code=302)
+    assert response.url == reverse('home')
+
+    response = auth_client.post(reverse('login'), {
+        'username': auth_user.email,
+        'password': 'Password2'
+    })
+    check_response(response)
+    assert "Please enter a correct email and password." in response.content.decode()
+
+    auth_user.refresh_from_db()
+    assert auth_user.deactivated_by_user is True
+    assert auth_user.deactivated_date
