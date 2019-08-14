@@ -1123,6 +1123,32 @@ class CaseMetadata(models.Model):
         """ Return correct value for .in_scope """
         return not self.duplicative and not self.duplicate and bool(self.jurisdiction_id) and bool(self.court_id)
 
+    def retrieve_and_store_images(self):
+        """Get all <img> tags in casebody, store file images in db"""
+        try:
+            casebody = self.body_cache.html
+        except CaseBodyCache.DoesNotExist:
+            casebody = generate_html(self.case_xml.extract_casebody())
+
+        casebody = BeautifulSoup(casebody, 'html.parser')
+
+        imgs = casebody.findAll('img')
+
+        for idx, img in enumerate(imgs):
+            frmt, data = img['src'].split(';base64,')
+            ext = frmt.split('/')[-1]
+            data_decoded = base64.b64decode(data)
+
+            width, height = struct.unpack('>ii', data_decoded[16:24])
+            case_img, created = CaseImage.objects.get_or_create(case=self,
+                                                                position_index=idx,
+                                                                width=width,
+                                                                height=height)
+            if created:
+                case_img.data = ContentFile(data_decoded, name='temp.' + ext)
+
+            case_img.save()
+
 
 class CaseXML(BaseXMLModel):
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',
