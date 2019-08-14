@@ -1182,3 +1182,22 @@ def update_in_scope(last_run_before=None):
 if __name__ == "__main__":
     from fabric.main import main
     main()
+    main()
+
+
+@task
+def retrieve_images_from_cases():
+    """
+    Retrieve all images from all cases, store in db
+    """
+    import itertools
+    from scripts.helpers import ordered_query_iterator
+    cases = CaseMetadata.objects.all().order_by('case_id')
+    cases = ordered_query_iterator(cases, chunk_size=10000)
+    for _ in tqdm(itertools.count()):
+        case_batch = list(itertools.islice(cases, 10000))
+        if not case_batch:
+            break
+
+        for case in tqdm(case_batch):
+            case.retrieve_and_store_images()
