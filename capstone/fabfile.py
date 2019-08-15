@@ -1181,7 +1181,7 @@ def update_in_scope(last_run_before=None):
 # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
 if __name__ == "__main__":
     from fabric.main import main
-    main()
+
     main()
 
 
