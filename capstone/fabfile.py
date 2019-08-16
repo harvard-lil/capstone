@@ -1177,27 +1177,10 @@ def delete_empty_courts(dry_run='true'):
 def update_in_scope(last_run_before=None):
     tasks.run_task_for_volumes(tasks.update_in_scope_for_vol, last_run_before=last_run_before)
 
-# allow tasks to be run as "python fabfile.py task"
-# this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
-if __name__ == "__main__":
-    from fabric.main import main
 
+if __name__ == "__main__":
+    # allow tasks to be run as "python fabfile.py task"
+    # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
+    from fabric.main import main
     main()
 
-
-@task
-def retrieve_images_from_cases():
-    """
-    Retrieve all images from all cases, store in db
-    """
-    import itertools
-    from scripts.helpers import ordered_query_iterator
-    cases = CaseMetadata.objects.all().order_by('case_id')
-    cases = ordered_query_iterator(cases, chunk_size=10000)
-    for _ in tqdm(itertools.count()):
-        case_batch = list(itertools.islice(cases, 10000))
-        if not case_batch:
-            break
-
-        for case in tqdm(case_batch):
-            case.retrieve_and_store_images()

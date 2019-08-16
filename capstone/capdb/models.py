@@ -1140,13 +1140,16 @@ class CaseMetadata(models.Model):
             data_decoded = base64.b64decode(data)
 
             width, height = struct.unpack('>ii', data_decoded[16:24])
-            case_img, created = CaseImage.objects.get_or_create(case=self,
-                                                                position_index=idx,
-                                                                width=width,
-                                                                height=height)
+            h = hashlib.new(name="md5", data=data_decoded).hexdigest()
+
+            case_img, created = CaseImage.objects.get_or_create(case=self, hash=h)
+
             if created:
                 case_img.data = ContentFile(data_decoded, name='temp.' + ext)
+                case_img.height = height
+                case_img.width = width
 
+            case_img.position_index = idx
             case_img.save()
 
 
@@ -1972,3 +1975,10 @@ class CaseImage(models.Model):
     data = models.FileField(storage=case_image_storage)
     width = models.IntegerField(blank=True, null=True)
     height = models.IntegerField(blank=True, null=True)
+    hash = models.CharField(max_length=1000)
+
+    def __str__(self):
+        return "%s %s" % (self.position_index, self.hash)
+
+
+
