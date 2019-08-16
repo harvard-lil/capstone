@@ -907,7 +907,7 @@ class CaseMetadata(models.Model):
         )
 
     def get_absolute_url(self):
-        return reverse('casemetadata-detail', args=[self.id], scheme="https")
+        return reverse('cases-detail', kwargs={'id': self.id}, scheme="https")
 
     def get_frontend_url(self, cite=None, disambiguate=False, include_host=True):
         """

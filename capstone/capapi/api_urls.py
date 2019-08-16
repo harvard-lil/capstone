@@ -7,9 +7,9 @@ from drf_yasg import openapi
 
 from capapi.views import api_views
 
-
 router = routers.DefaultRouter()
-router.register('cases', api_views.CaseViewSet)
+router.register('cases', api_views.CaseDocumentViewSet, basename="cases")
+router.register('db_cases', api_views.CaseViewSet, basename="casemetadata") # we're ES for case search, but need this for casemetadata-detail
 router.register('citations', api_views.CitationViewSet)
 router.register('jurisdictions', api_views.JurisdictionViewSet)
 router.register('courts', api_views.CourtViewSet)
@@ -17,10 +17,6 @@ router.register('volumes', api_views.VolumeViewSet)
 router.register('reporters', api_views.ReporterViewSet)
 router.register('bulk', api_views.CaseExportViewSet)
 router.register('ngrams', api_views.NgramViewSet, basename='ngrams')
-
-if settings.ELASTICSEARCH_API_ENABLE:
-    router.register('elastic_cases', api_views.CaseDocumentViewSet, basename="elastic_cases")
-
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -39,7 +35,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('v1/', include(router.urls)),
     # convenience pattern: catch all citations, redirect in CaseViewSet's retrieve
-    re_path(r'^v1/cases/(?P<id>[0-9A-Za-z\s\.]+)/$', api_views.CaseViewSet.as_view({'get': 'retrieve'}), name='casemetadata-get-cite'),
+    re_path(r'^v1/cases/(?P<id>[0-9A-Za-z\s\.]+)/$', api_views.CaseDocumentViewSet.as_view({'get': 'retrieve'}), name='case-get-cite'),
 
     ### Swagger/OpenAPI/ReDoc ###
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=None), name='schema-json'),

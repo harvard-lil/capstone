@@ -33,7 +33,7 @@ from django_elasticsearch_dsl_drf.filter_backends import (
     IdsFilterBackend,
     OrderingFilterBackend,
     DefaultOrderingFilterBackend,
-    SimpleQueryStringSearchFilterBackend)
+    CompoundSearchFilterBackend)
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
 
 
@@ -132,41 +132,42 @@ class CaseViewSet(BaseViewSet):
 
         return super(CaseViewSet, self).retrieve(*args, **kwargs)
 
-
-class CapSearchFilterBackend(SimpleQueryStringSearchFilterBackend):
-    search_param = 'q'
-
+class FilteringWithCiteNormalization(FilteringFilterBackend):
+    pass
 
 class CaseDocumentViewSet(BaseDocumentViewSet):
-    """The CaseDocument view."""
 
+    """The CaseDocument view."""
     document = CaseDocument
     serializer_class = CaseDocumentSerializer
     pagination_class = CapESCursorPagination
+
     lookup_field = 'id'
     filter_backends = [
-        FilteringFilterBackend,
-        IdsFilterBackend,
-        OrderingFilterBackend,
-        DefaultOrderingFilterBackend,
-        CapSearchFilterBackend,
+        CompoundSearchFilterBackend, # Facilitates FTS
+        FilteringFilterBackend, # Facilitates Filtering (Filters)
+        IdsFilterBackend, # Filtering based on IDs
+        OrderingFilterBackend, # Orders Document
+        DefaultOrderingFilterBackend # Must be last
     ]
+
     # Define search fields
     search_fields = (
         'name',
+        'name_abbreviation',
         'jurisdiction.name_long',
         'court.name',
         'casebody_data.text',
+        'docket_number',
     )
     simple_query_string_options = {
         "default_operator": "and",
     }
+
     # Define filter fields
     filter_fields = {
         'id': {
             'field': 'id',
-            # Note, that we limit the lookups of id field in this example,
-            # to `range`, `in`, `gt`, `gte`, `lt` and `lte` filters.
             'lookups': [
                 LOOKUP_FILTER_RANGE,
                 LOOKUP_QUERY_IN,
@@ -177,7 +178,18 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             ],
         },
         'name': 'name',
+        'name_abbreviation': 'name_abbreviation',
+        'court': 'court.slug',
+        'court_id': 'court.id',
+        'reporter': 'reporter.id',
+        'jurisdiction': 'jurisdiction.slug',
+        'docket_number': 'docket_number',
+        'cite': 'citations.cite',
+        'decision_date': 'decision_date',
+        'decision_date_min': {'field': 'decision_date', 'default_lookup': 'gte'},
+        'decision_date_max': {'field': 'decision_date', 'default_lookup': 'lte'},
     }
+
     # Define ordering fields
     ordering_fields = {
         'decision_date': 'decision_date',
@@ -185,7 +197,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'id': 'id',
     }
     # Specify default ordering
-    ordering = ('decision_date', 'name_abbreviation')
+    ordering = ('decision_date', 'id')
 
     def is_full_case_request(self):
         return True if self.request.query_params.get('full_case', 'false').lower() == 'true' else False
@@ -198,8 +210,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
     def filter_queryset(self, queryset):
         queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
-
         # exclude all values from casebody_data that we don't need to complete the request
+
         if self.is_full_case_request():
             data_formats = ["xml", "html", "structured", "text"]
             requested_format = self.request.query_params.get('body_format', 'structured')
@@ -208,6 +220,19 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             source_filter = {"excludes": "casebody_data.*"}
 
         return queryset.source(source_filter)
+
+    def retrieve(self, *args, **kwargs):
+        # for user's convenience, if user gets /cases/casecitation or /cases/Case Citation (or any non-numeric value)
+        # we redirect to /cases/?cite=casecitation
+        id = kwargs[self.lookup_field]
+        if re.search(r'\D', id):
+            normalized_cite = Citation.normalize_cite(id)
+            query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
+            new_url = reverse('cases-list') + "?" + query_string
+            return HttpResponseRedirect(new_url)
+
+        return super(CaseDocumentViewSet, self).retrieve(*args, **kwargs)
+
 
 class CaseExportViewSet(BaseViewSet):
     serializer_class = serializers.CaseExportSerializer

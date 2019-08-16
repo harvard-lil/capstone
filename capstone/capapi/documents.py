@@ -26,6 +26,8 @@ class CaseDocument(DocType):
 
     docket_numbers = fields.KeywordField(multi=True)
 
+    docket_number = fields.KeywordField()
+
     volume = fields.ObjectField(properties={
         "barcode": fields.TextField(),
         'volume_number': SuggestField(),
@@ -34,7 +36,6 @@ class CaseDocument(DocType):
     reporter = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "full_name": SuggestField(),
-        "short_name": SuggestField(),
     })
 
     court = fields.ObjectField(properties={
@@ -42,6 +43,11 @@ class CaseDocument(DocType):
         "slug": fields.KeywordField(),
         "name": fields.TextField(),
         "name_abbreviation": SuggestField(),
+    })
+
+    citations = fields.ObjectField(properties={
+        "type": fields.TextField(),
+        "cite": SuggestField(),
     })
 
     jurisdiction = fields.ObjectField(properties={
