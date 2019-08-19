@@ -131,7 +131,7 @@
         page_size: 10,
         fields: [],
         endpoints: {
-          elastic_cases: [
+          cases: [
             {
               name: "search",
               value: "",
