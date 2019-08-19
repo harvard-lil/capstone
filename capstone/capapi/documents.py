@@ -48,6 +48,7 @@ class CaseDocument(DocType):
     citations = fields.ObjectField(properties={
         "type": fields.TextField(),
         "cite": SuggestField(),
+        "normalized_cite": fields.KeywordField(),
     })
 
     jurisdiction = fields.ObjectField(properties={

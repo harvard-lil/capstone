@@ -133,7 +133,11 @@ class CaseViewSet(BaseViewSet):
         return super(CaseViewSet, self).retrieve(*args, **kwargs)
 
 class FilteringWithCiteNormalization(FilteringFilterBackend):
-    pass
+    def get_filter_query_params(self, request, view):
+        query_params = super().get_filter_query_params(request, view)
+        if 'cite' in query_params:
+            query_params['cite']['values'] = [Citation.normalize_cite(cite) for cite in query_params['cite']['values']]
+        return query_params
 
 class CaseDocumentViewSet(BaseDocumentViewSet):
 
@@ -145,7 +149,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     lookup_field = 'id'
     filter_backends = [
         CompoundSearchFilterBackend, # Facilitates FTS
-        FilteringFilterBackend, # Facilitates Filtering (Filters)
+        FilteringWithCiteNormalization, # Facilitates Filtering (Filters)
         IdsFilterBackend, # Filtering based on IDs
         OrderingFilterBackend, # Orders Document
         DefaultOrderingFilterBackend # Must be last
@@ -184,7 +188,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'reporter': 'reporter.id',
         'jurisdiction': 'jurisdiction.slug',
         'docket_number': 'docket_number',
-        'cite': 'citations.cite',
+        'cite': 'citations.normalized_cite',
         'decision_date': 'decision_date',
         'decision_date_min': {'field': 'decision_date', 'default_lookup': 'gte'},
         'decision_date_max': {'field': 'decision_date', 'default_lookup': 'lte'},
