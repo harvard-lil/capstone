@@ -289,21 +289,11 @@ def get_court_count_for_jur(jurisdiction_id):
     return results
 
 
-def call_per_volume_metadata(function, update_existing=False, *args, **kwargs):
-    """
-        Iterate through all volumes
-    """
-    query = VolumeMetadata.objects.all()
-    # launch a job for each volume:
-    for volume_id in query.values_list('pk', flat=True):
-        function.delay(volume_id, update_existing=update_existing, *args, **kwargs)
-
-
 def create_case_text_for_all_cases(update_existing=False):
     """
-        Call celery task for each volume
+        Call create_case_text for each volume
     """
-    call_per_volume_metadata(create_case_text, update_existing=update_existing)
+    run_task_for_volumes(create_case_text, update_existing=update_existing)
 
 
 @shared_task
@@ -328,7 +318,7 @@ def retrieve_images_from_all_cases(update_existing=False):
     """
         Call celery task to get images for each volume
     """
-    call_per_volume_metadata(retrieve_images_from_cases, update_existing=update_existing)
+    run_task_for_volumes(retrieve_images_from_cases, update_existing=update_existing)
 
 
 @shared_task

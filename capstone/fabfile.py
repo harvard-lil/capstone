@@ -1173,9 +1173,16 @@ def delete_empty_courts(dry_run='true'):
                 else:
                     print(" - Would reslug %s" % court_to_reslug)
 
+
 @task
 def update_in_scope(last_run_before=None):
     tasks.run_task_for_volumes(tasks.update_in_scope_for_vol, last_run_before=last_run_before)
+
+
+@task
+def retrieve_and_store_images(last_run_before=None):
+    """ Retrieve images from inside cases """
+    tasks.run_task_for_volumes(tasks.retrieve_images_from_cases, last_run_before=last_run_before)
 
 
 if __name__ == "__main__":
