@@ -117,6 +117,7 @@ class CaseDocumentSerializer(DocumentSerializer):
     volume = serializers.SerializerMethodField()
     court = serializers.SerializerMethodField()
     jurisdiction = serializers.SerializerMethodField()
+    citations = serializers.SerializerMethodField()
 
     class Meta:
         document = CaseDocument
@@ -144,6 +145,10 @@ class CaseDocumentSerializer(DocumentSerializer):
             "url": "{}{}".format(api_reverse('reporter-list'), obj.reporter['id']),
         }
         return return_dict
+
+    def get_citations(self, obj):
+        return_list = [ { 'type': citation['type'], 'cite': citation['cite'] } for citation in obj.citations ]
+        return return_list
 
     def get_volume(self, obj):
         return_dict = {
