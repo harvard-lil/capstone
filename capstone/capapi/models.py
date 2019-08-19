@@ -76,6 +76,9 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
     date_joined = models.DateTimeField(auto_now_add=True)
     agreed_to_tos = models.BooleanField(default=False)
 
+    deactivated_by_user = models.BooleanField(default=False)
+    deactivated_date = models.DateTimeField(null=True, auto_now_add=False)
+
     USERNAME_FIELD = 'email'
 
     objects = CapUserManager()
@@ -153,6 +156,8 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
     def save(self, *args, **kwargs):
         if self.tracker.has_changed('email'):
             self.normalized_email = self.normalize_email(self.email)
+        if self.tracker.has_changed('is_active') and not self.is_active:
+            self.deactivated_date = timezone.now()
         super(CapUser, self).save(*args, **kwargs)
 
     @staticmethod

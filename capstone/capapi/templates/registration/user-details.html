@@ -10,7 +10,13 @@
     </div>
     <div class="row">
       <div class="h6 col-sm-5">API Key:</div>
-      <div class="col-sm-7">{{ request.user.get_api_key }}</div>
+      <div class="col-sm-7">
+        {{ request.user.get_api_key }}
+        <a href="{% url "reset-api-key" %}"
+           class="btn btn-secondary">
+          Reset key
+        </a>
+      </div>
     </div>
     {% if request.user.unlimited_access or request.user.harvard_access %}
       <div class="row">
@@ -43,7 +49,8 @@
         <div class="h6 col-sm-5">Unmetered access request:</div>
         <div class="col-sm-7">
           {% if research_contract %}
-            You submitted an application for unmetered access on {{ research_contract.user_signature_date|date:"F j, Y" }}.
+            You submitted an application for unmetered access on
+            {{ research_contract.user_signature_date|date:"F j, Y" }}.
             {% if research_contract.status == "denied" %}
               Your application was denied by LexisNexis. Please contact us if you would like to discuss further options.
             {% else %}
@@ -65,15 +72,15 @@
         Change password
       </a>
 
-       <a href="{% url "reset-api-key" %}"
-         class="btn btn-secondary">
-        Reset API Key
-      </a>
       <a href="{% url "logout" %}"
          class="btn btn-primary">
         Log out
       </a>
-
+      <br/>
+      <a href="{% url "delete_account" %}"
+         class="btn btn-danger">
+        Delete account</a>
     </div>
+
   </div>
 {% endblock %}
