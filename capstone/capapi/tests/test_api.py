@@ -279,7 +279,8 @@ def test_authenticated_multiple_full_cases(auth_user, auth_client, three_cases, 
 
 
 # CITATION REDIRECTS
-@pytest.mark.django_db
+#@pytest.mark.django_db
+@pytest.mark.skip(reason="Skip this because we don't have testable data in ES.")
 def test_case_citation_redirect(client, citation):
     """Should allow various forms of citation, should redirect to normalized_cite"""
     url = api_reverse("cases-detail", args=[citation.normalized_cite])
@@ -292,9 +293,6 @@ def test_case_citation_redirect(client, citation):
     response = client.get(url, follow=True)
     check_response(response)
     content = response.json()['results']
-    if not content:
-        print("Skip this because we don't have testable data in ES.")
-        return
     case = citation.case
     # should only have one case returned
     assert len(content) == 1
