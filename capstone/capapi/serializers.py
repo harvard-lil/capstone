@@ -256,7 +256,6 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
             status = 'ok'
 
         if status == 'ok':
-
             body_format = request.query_params.get('body_format', None)
 
             if body_format == 'html':
@@ -271,9 +270,10 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                 }
             else:
                 return {
-                    'data': case.casebody_data['structured'],
+                    'data': case.casebody_data['text'].to_dict(),
                     'status': status
                 }
+
         return {'status': status, 'data': None}
 
 

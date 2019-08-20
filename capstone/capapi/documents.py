@@ -60,10 +60,9 @@ class CaseDocument(DocType):
     })
 
     casebody_data = fields.ObjectField(properties={
-        'text': fields.TextField(),
         'xml': fields.TextField(index=False),
         'html': fields.TextField(index=False),
-        'structured': fields.ObjectField(properties={
+        'text': fields.ObjectField(properties={
             'attorneys': fields.TextField(multi=True),
             'judges': fields.TextField(multi=True),
             'parties': fields.TextField(multi=True),
@@ -85,10 +84,9 @@ class CaseDocument(DocType):
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
         return {
-            'text': body.text,
             'xml': body.xml,
             'html': body.html,
-            'structured': body.json,
+            'text': body.json,
         }
 
     class Meta:

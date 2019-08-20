@@ -217,8 +217,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         # exclude all values from casebody_data that we don't need to complete the request
 
         if self.is_full_case_request():
-            data_formats = ["xml", "html", "structured", "text"]
-            requested_format = self.request.query_params.get('body_format', 'structured')
+            data_formats = ["xml", "html", "text"]
+            requested_format = self.request.query_params.get('body_format', 'text')
             source_filter = {"excludes": ["casebody_data.%s" % format for format in data_formats if format != requested_format]}
         else:
             source_filter = {"excludes": "casebody_data.*"}
