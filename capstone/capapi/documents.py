@@ -60,6 +60,7 @@ class CaseDocument(DocType):
     })
 
     casebody_data = fields.ObjectField(properties={
+        'unstructured_text': fields.TextField(),
         'xml': fields.TextField(index=False),
         'html': fields.TextField(index=False),
         'text': fields.ObjectField(properties={
@@ -87,6 +88,7 @@ class CaseDocument(DocType):
             'xml': body.xml,
             'html': body.html,
             'text': body.json,
+            'unstructured_text': body.text
         }
 
     class Meta:

@@ -161,7 +161,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'name_abbreviation',
         'jurisdiction.name_long',
         'court.name',
-        'casebody_data.text',
+        'casebody_data.unstructured_text',
         'docket_number',
     )
     simple_query_string_options = {
