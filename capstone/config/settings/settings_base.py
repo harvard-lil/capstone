@@ -607,8 +607,6 @@ ELASTICSEARCH_DSL={
     },
 }
 
-ELASTICSEARCH_API_ENABLE = True
-
 # for views decorated with @password_protected_page('some_key')
 PASSWORD_PROTECTED_PAGES = {
     # 'some_key': ['some', 'accepted', 'passwords'],
