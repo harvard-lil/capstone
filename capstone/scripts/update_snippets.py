@@ -34,7 +34,7 @@ def cases_by_decision_date_tsv():
                 group['decision_date'],
                 group['decision_date__count'],
                 '{}?decision_date_min={}&decision_date_max={}'.format(
-                    api_url('casemetadata-list'),
+                    api_url('cases-list'),
                     group['decision_date'],
                     group['decision_date']
                 )
@@ -59,7 +59,7 @@ def cases_by_jurisdiction_tsv():
                 jurisdiction.name,
                 jurisdiction.name_long,
                 jurisdiction.case_count,
-                "{}?jurisdiction={}".format(api_url('casemetadata-list'), jurisdiction.slug),
+                "{}?jurisdiction={}".format(api_url('cases-list'), jurisdiction.slug),
                 "{}{}".format(api_url('jurisdiction-list'), jurisdiction.pk)
             ]
         )
@@ -84,7 +84,7 @@ def cases_by_reporter_tsv():
                 reporter.short_name,
                 reporter.full_name,
                 reporter.case_count,
-                "{}?reporter={}".format(api_url('casemetadata-list'), reporter.pk),
+                "{}?reporter={}".format(api_url('cases-list'), reporter.pk),
                 "{}{}".format(api_url('reporter-list'), reporter.pk)
             ]
         )
