@@ -9,7 +9,6 @@ from capapi.views import api_views
 
 router = routers.DefaultRouter()
 router.register('cases', api_views.CaseDocumentViewSet, basename="cases")
-router.register('db_cases', api_views.CaseViewSet, basename="casemetadata") # we're ES for case search, but need this for casemetadata-detail
 router.register('citations', api_views.CitationViewSet)
 router.register('jurisdictions', api_views.JurisdictionViewSet)
 router.register('courts', api_views.CourtViewSet)
@@ -36,6 +35,8 @@ urlpatterns = [
     path('v1/', include(router.urls)),
     # convenience pattern: catch all citations, redirect in CaseDocumentViewSet's retrieve
     re_path(r'^v1/cases/(?P<id>[0-9A-Za-z\s\.]+)/$', api_views.CaseDocumentViewSet.as_view({'get': 'retrieve'}), name='case-get-cite'),
+    path('v1/db_cases/', api_views.CaseViewSet.as_view({'get': 'list'}), name='casemetadata-list'),
+    path('v1/db_cases/<id>', api_views.CaseViewSet.as_view({'get': 'retrieve'}), name='casemetadata-detail'),
 
     ### Swagger/OpenAPI/ReDoc ###
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=None), name='schema-json'),
