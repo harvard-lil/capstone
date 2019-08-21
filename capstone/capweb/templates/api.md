@@ -131,9 +131,6 @@ The default text format is best for natural language processing. Example respons
           }
       ],
       "judges": [],
-      "parties": [
-          "The People of the State of Illinois, Plaintiff-Appellee, v. Danny Tobin, Defendant-Appellant."
-      ],
       "attorneys": [
           "John D. Shulleriberger, Morton Zwick, ...",
           "Robert H. Rice, State’s Attorney, of Belleville, for the Peop ..."
@@ -143,7 +140,7 @@ The default text format is best for natural language processing. Example respons
 {: class="code-block" }
 
 In this example, `"head_matter"` is a string representing all text printed in the volume before the text prepared by 
-judges. `"opinions"` is an array containing a dictionary for each opinion in the case. `"judges"`, `"parties"`, and 
+judges. `"opinions"` is an array containing a dictionary for each opinion in the case. `"judges"`, and 
 `"attorneys"` are particular substrings from `"head_matter"` that we believe to refer to entities involved with the 
 case.
       
@@ -553,9 +550,6 @@ and result counts.
                   "text": <span class="json-data-type"><a href="#def-string">(string)</a></span>
               }
           ],
-          "parties": [
-              <span class="json-data-type"><a href="#def-string">(string)</a></span>
-          ]
       },
       "status": <span class="json-data-type">should be "ok"</span>
   }
