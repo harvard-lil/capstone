@@ -61,7 +61,7 @@ class CaseVolumeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.VolumeMetadata
-        fields = ('url', 'volume_number')
+        fields = ('url', 'barcode','volume_number')
 
 
 class CaseReporterSerializer(serializers.ModelSerializer):
@@ -70,6 +70,7 @@ class CaseReporterSerializer(serializers.ModelSerializer):
         model = models.Reporter
         fields = (
             'url',
+            'id',
             'full_name',
         )
 
@@ -142,6 +143,7 @@ class CaseDocumentSerializer(DocumentSerializer):
     def get_reporter(self, obj):
         return_dict = {
             "full_name": obj.reporter['full_name'],
+            "id": obj.reporter['id'],
             "url": "{}{}".format(api_reverse('reporter-list'), obj.reporter['id']),
         }
         return return_dict
@@ -153,6 +155,7 @@ class CaseDocumentSerializer(DocumentSerializer):
     def get_volume(self, obj):
         return_dict = {
             "volume_number": obj.volume['volume_number'],
+            "barcode": obj.volume['barcode'],
             "url": "{}{}".format(api_reverse('volumemetadata-list'), obj.volume['barcode']),
         }
         return return_dict
