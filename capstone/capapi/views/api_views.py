@@ -146,7 +146,15 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     serializer_class = CaseDocumentSerializer
     pagination_class = CapESCursorPagination
 
+    renderer_classes = (
+        renderers.JSONRenderer,
+        capapi_renderers.BrowsableAPIRenderer,
+        capapi_renderers.XMLRenderer,
+        capapi_renderers.HTMLRenderer,
+    )
+
     lookup_field = 'id'
+
     filter_backends = [
         CompoundSearchFilterBackend, # Facilitates FTS
         FilteringWithCiteNormalization, # Facilitates Filtering (Filters)

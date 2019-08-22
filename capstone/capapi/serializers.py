@@ -250,7 +250,6 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         list_serializer_class = ListSerializerWithCaseAllowance
 
     def get_casebody(self, case, check_permissions=True):
-
         # check permissions for full-text access to this case
         request = self.context.get('request')
         if check_permissions:
@@ -258,30 +257,36 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         else:
             status = 'ok'
 
+
+
         if status == 'ok':
             body_format = request.query_params.get('body_format', None)
-            response_format = request.query_params.get('format', None)
 
             if body_format == 'html':
-                return {
-                    'data': case.casebody_data['html'],
-                    'status': status
-                }
+                data = case.casebody_data['html']
             elif body_format == 'xml':
-                return {
-                    'data': case.casebody_data['xml'],
-                    'status': status
-                }
+                data = case.casebody_data['xml']
+            elif type(request.accepted_renderer) == HTMLRenderer:
+                data = case.casebody_data['html']
+
+            elif type(request.accepted_renderer) == XMLRenderer:
+                db_case = models.CaseMetadata.objects.select_related('case_xml').get(pk=case.id)
+                try:
+                    data = db_case.body_cache.xml
+                except CaseBodyCache.DoesNotExist:
+                    parsed_xml = db_case.case_xml.get_parsed_xml()
+                    db_case.case_xml.reorder_head_matter(parsed_xml)
+                    data = helpers.serialize_xml(parsed_xml)
             else:
                 try:
                     data = case.casebody_data['text'].to_dict()
                 except AttributeError:
                     data = case.casebody_data['text']
 
-                return {
-                    'data': data,
-                    'status': status
-                }
+            return {
+                'data': data,
+                'status': status
+            }
 
         return {'status': status, 'data': None}
 

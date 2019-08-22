@@ -55,7 +55,14 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             if key + 1 < citation_count:
                 citations += "; "
 
-        citation_full = data["name_abbreviation"] + ", " + official_citation + " (" + data["decision_date"][0:4] + ")"
+        try:
+            cit_year = data["decision_date"][0:4]
+            dec_date = parse_decision_date(data["decision_date"])
+        except TypeError:
+            cit_year = data["decision_date"].strftime('%Y')
+            dec_date = data["decision_date"].strftime('%b. %-d, %Y')
+
+        citation_full = data["name_abbreviation"] + ", " + official_citation + " (" + cit_year + ")"
         context = {
             **renderer_context,
             'citation': official_citation,
@@ -64,7 +71,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             'metadata': {
                 "name": data["name"],
                 "name_abbreviation": data["name_abbreviation"],
-                "decision_date": parse_decision_date(data["decision_date"]),
+                "decision_date": dec_date,
                 "docket_number": data["docket_number"],
                 "first_page": data["first_page"],
                 "last_page": data["last_page"],
@@ -89,7 +96,10 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             return template.render(context, renderer_context['request'])
 
         context['case_html'] = data['casebody']['data']
-        context['title'] = data['casebody']['title']
+        try:
+            context['title'] = data['casebody']['title']
+        except KeyError:
+            context['title'] = "{}, {}{}".format(context['metadata']['name_abbreviation'], citations, dec_date)
 
         return template.render(context, renderer_context['request'])
 
