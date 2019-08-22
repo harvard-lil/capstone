@@ -36,7 +36,7 @@ urlpatterns = [
     # convenience pattern: catch all citations, redirect in CaseDocumentViewSet's retrieve
     re_path(r'^v1/cases/(?P<id>[0-9A-Za-z\s\.]+)/$', api_views.CaseDocumentViewSet.as_view({'get': 'retrieve'}), name='case-get-cite'),
     path('v1/db_cases/', api_views.CaseViewSet.as_view({'get': 'list'}), name='casemetadata-list'),
-    path('v1/db_cases/<id>', api_views.CaseViewSet.as_view({'get': 'retrieve'}), name='casemetadata-detail'),
+    path('v1/db_cases/<id>/', api_views.CaseViewSet.as_view({'get': 'retrieve'}), name='casemetadata-detail'),
 
     ### Swagger/OpenAPI/ReDoc ###
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=None), name='schema-json'),
