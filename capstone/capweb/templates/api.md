@@ -387,7 +387,7 @@ This is the base [endpoint](#def-endpoint) of CAPAPI. It just lists all of the a
 Case Browse/Search Endpoint
 {: class="topic-header", id="endpoint-cases" }
 
-[{% api_url "api-root" %}]({% api_url "api-root" %})
+[{% api_url "cases-list" %}]({% api_url "cases-list" %})
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the numeric ID of your 
