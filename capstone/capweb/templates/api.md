@@ -411,7 +411,7 @@ Endpoint Parameters:
 {: class="list-group-item" add_list_class="parameter-list" }
     * An arbitrary [string](#def-string)
     {: class="param-data-type" }
-* `citation`{: class="parameter-name" }
+* `cite`{: class="parameter-name" }
 {: class="list-group-item" add_list_class="parameter-list" }
     * e.g. `1 Ill. 21`
     {: class="param-data-type" }
