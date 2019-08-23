@@ -276,7 +276,8 @@ class VolumeRenderer:
         """
         self.format = 'xml'
         self.original_xml = False
-        return self.render_markup(case).replace('\xad', '')
+
+        return "<?xml version='1.0' encoding='utf-8'?>\n{}".format(self.render_markup(case).replace('\xad', ''))
 
     def render_orig_xml(self, case):
         """
@@ -284,7 +285,7 @@ class VolumeRenderer:
         """
         self.format = 'xml'
         self.original_xml = True
-        return self.render_markup(case)
+        return "<?xml version='1.0' encoding='utf-8'?>\n{}".format(self.render_markup(case))
 
     def hydrate_opinions(self, opinions, blocks_by_id):
         """
