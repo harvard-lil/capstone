@@ -85,7 +85,6 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             if data['casebody']['status'] == 'error_auth_required':
                 context['reason'] = data['casebody']['status']
                 return template.render(context, renderer_context['request'])
-
             context['reason'] = 'other'
             context['message'] = data['casebody']['status']
             return template.render(context, renderer_context['request'])
