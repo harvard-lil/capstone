@@ -61,8 +61,7 @@
       </section>
     {% elif reason == 'other' %}
       <div class="alert-warning text-center">
-        <h6 class="case-viewing-error">
-          Could not load case body</h6>
+        <h6 class="case-viewing-error">Could not load case body: {{ message }}</h6>
       </div>
     {% else %}
       {{ case_html|safe }}
