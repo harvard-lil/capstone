@@ -862,7 +862,8 @@ websocket-client==0.54.0 \
     # via docker
 werkzeug==0.15.5 \
     --hash=sha256:87ae4e5b5366da2347eb3116c0e6c681a0e939a33b2805e2c0cbd282664932c4 \
-    --hash=sha256:a13b74dd3c45f758d4ebdb224be8f1ab8ef58b3c0ffc1783a8c7d9f4f50227e6
+    --hash=sha256:a13b74dd3c45f758d4ebdb224be8f1ab8ef58b3c0ffc1783a8c7d9f4f50227e6 \
+    # via moto
 whitenoise==4.1.2 \
     --hash=sha256:118ab3e5f815d380171b100b05b76de2a07612f422368a201a9ffdeefb2251c1 \
     --hash=sha256:42133ddd5229eeb6a0c9899496bdbe56c292394bf8666da77deeb27454c0456a
