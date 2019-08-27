@@ -46,13 +46,6 @@ urlpatterns = [
                                                       'message': 'We\'ll be in touch, shortly.'
                                                   }),  name='contact-success'),
 
-    path('subscribe/', views.subscribe, name='subscribe'),
-    path('subscribe-success/', TemplateView.as_view(template_name='form_success.html',
-                                                  extra_context={
-                                                      'form_title': 'subscribe',
-                                                      'message': 'We\'ll keep in touch.'
-                                                  }),  name='subscribe-success'),
-
     ### user account pages ###
 
     # All templates live in capapi/registration for now

@@ -581,11 +581,11 @@
           Follow our progress, contribute code, or just say hi!
         </div>
         <div class="col-8 offset-1 d-block d-md-none pb-4">
-          <form action="https://law.us3.list-manage.com/subscribe/post?u=4290964398813d739f2398db0&amp;id=e097736c6f"
+          <form action="https://law.us3.list-manage.com/subscribe/post?u={{ mailchimp_u }}&amp;id={{ mailchimp_id }}"
                 method="post" id="mc-embedded-subscribe-form-small" name="mc-embedded-subscribe-form-small"
                 class="validate" target="_blank" novalidate>
             <div style="position: absolute; left: -5000px;" aria-hidden="true">
-              <input type="text" name="b_4290964398813d739f2398db0_e097736c6f" tabindex="-1" value="">
+              <input type="text" name="b_{{ mailchimp_u }}_{{ mailchimp_id }}" tabindex="-1" value="">
             </div>
             <input type="email" name="EMAIL" class="form-control" placeholder="email" required="" title="">
             <div class="add">Add your email to keep in touch</div>
@@ -614,11 +614,11 @@
         </div>
         <div class="d-none d-md-block col-5 col-md-5 col-lg-3 offset-1 offset-sm-0">
 
-          <form action="https://law.us3.list-manage.com/subscribe/post?u=4290964398813d739f2398db0&amp;id=e097736c6f"
+          <form action="https://law.us3.list-manage.com/subscribe/post?u={{ mailchimp_u }}&amp;id={{ mailchimp_id }}"
                 method="post" id="mc-embedded-subscribe-form-large" name="mc-embedded-subscribe-form-large"
                 class="validate" target="_blank" novalidate>
             <div style="position: absolute; left: -5000px;" aria-hidden="true">
-              <input type="text" name="b_4290964398813d739f2398db0_e097736c6f" tabindex="-1" value="">
+              <input type="text" name="b_{{ mailchimp_u }}_{{ mailchimp_id }}" tabindex="-1" value="">
             </div>
             <input type="email" name="EMAIL" class="form-control" placeholder="mail" required="" title="">
             <div class="add">Add your email to keep in touch</div>
@@ -634,15 +634,5 @@
 
     <!-- END CONTACT -->
   </div>
-  <script>
-    // If there's an email validation error (i.e. it already exists,) this will scroll the user to the email
-    // sign-up form. It will also remove the /subscribe at the end of the URL because we're displaying the
-    // index view.
-    subscribe_validation_error = document.getElementsByClassName('alert-danger');
-    if (subscribe_validation_error.length > 0) {
-        history.replaceState({}, "Caselaw Access Project", "/");
-        subscribe_validation_error[0].scrollIntoView()
-    }
-  </script>
 {% endblock %}
 
