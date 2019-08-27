@@ -395,6 +395,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'test_data/bulk-data'),
         },
     },
+    'case_image_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/case-images'),
+        },
+    },
     'transfer_storage': {
         'class': 'CapFileStorage',
         'kwargs': {

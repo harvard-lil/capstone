@@ -1,8 +1,13 @@
+import re
 import pytest
 
-from scripts.helpers import nsmap
-from test_data.test_fixtures.factories import *
-from capdb.models import VolumeMetadata, CaseMetadata
+from django.utils.encoding import force_bytes
+
+from capdb.models import VolumeMetadata, CaseMetadata, CaseImage, CaseBodyCache, CaseXML, fetch_relations, Jurisdiction, \
+    Reporter, Court, EditLog
+from capdb.tasks import retrieve_images_from_cases
+from scripts.helpers import nsmap, parse_xml, serialize_xml
+
 
 ### helpers ###
 
@@ -570,3 +575,21 @@ def test_data_edit(volume_metadata):
     assert len(transactions) == 1
     volume_metadata.refresh_from_db()
     assert transactions[0].timestamp == volume_metadata.sys_period.lower
+
+
+@pytest.mark.django_db
+def test_retrieve_and_store_images(case, inline_image_src, django_assert_num_queries):
+    caseimages = CaseImage.objects.all()
+    assert len(caseimages) == 0
+
+    # index for first time
+    params = {"html": "<img src='image/png;base64,%s'>" % inline_image_src}
+    CaseBodyCache(metadata=case, **params).save()
+    with django_assert_num_queries(select=2, insert=1):
+        retrieve_images_from_cases(case.volume_id)
+    assert CaseImage.objects.count() == 1
+
+    # index for second time
+    with django_assert_num_queries(select=2, update=1):
+        retrieve_images_from_cases(case.volume_id)
+    assert CaseImage.objects.count() == 1

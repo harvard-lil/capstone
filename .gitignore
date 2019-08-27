@@ -21,6 +21,7 @@ capstone/test_data/zips/
 capstone/test_data/pdfs/
 capstone/test_data/bulk-data/
 capstone/test_data/ngrams/
+capstone/test_data/case-images/
 
 *.ipynb*
 *.lprof

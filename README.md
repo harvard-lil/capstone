@@ -62,7 +62,7 @@ https://case.law/
 This is a living, breathing corpus of data. While we've taken great pains to ensure its accuracy and integrity, two large components of this project, namely OCR and human review, are utterly fallible. When we were designing Capstone, we knew that one of its primary functions would be to facilitate safe, accountable updates. If you find any errors in the data, we would be extraordinarily grateful for your taking a moment to create an issue in this GitHub repository's issue tracker to report it. If you notice a large pattern of problems that would be better fixed programmatically, or have a very large number of modifications, describe it in an issue. If we need more information, we'll ask. We'll close the issue when the issue has been corrected.
 
 ### Errata <a id="errata"></a>
-These are known issues— there's no need to file an issue in the issue if you come across one. 
+These are known issues — there's no need to file an issue if you come across one of these. 
 - Missing Judges Tag: In many volumes, elements which should have the tag name `<judges>` instead have the tag name `<p>`. We're working on this one.
 - Nominative Case Citations: In many cases that come from nominative volumes, the citation format is wrong. We hope to have this corrected soon.
 - Jurisdictions: Though the jurisdiction values in our API metadata entries are normalized, we have not propagated those changes to the XML.
