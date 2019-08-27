@@ -41,7 +41,7 @@ In this case, you'd replace `your-api-token` with your API token from the [user 
 
 Each file that we offer for download is equivalent to a particular query to our API. For example, the file
 "Illinois-20180829-text.zip" contains all cases that would be returned by
-[an API query]({% api_url "casemetadata-list" %}?full_case=true&jurisdiction=ill&body_format=text)
+[an API query]({% api_url "cases-list" %}?full_case=true&jurisdiction=ill&body_format=text)
 with `full_case=true&jurisdiction=ill&body_format=text`. We offer files for each possible
 `jurisdiction` value and each possible `reporter` value, combined with
 `body_format=text` and `body_format=xml`.

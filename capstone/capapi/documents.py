@@ -22,7 +22,11 @@ class CaseDocument(DocType):
 
     name = fields.TextField()
 
+    frontend_url = fields.KeywordField()
+
     docket_numbers = fields.KeywordField(multi=True)
+
+    docket_number = fields.KeywordField()
 
     volume = fields.ObjectField(properties={
         "barcode": fields.TextField(),
@@ -32,7 +36,6 @@ class CaseDocument(DocType):
     reporter = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "full_name": SuggestField(),
-        "short_name": SuggestField(),
     })
 
     court = fields.ObjectField(properties={
@@ -40,6 +43,12 @@ class CaseDocument(DocType):
         "slug": fields.KeywordField(),
         "name": fields.TextField(),
         "name_abbreviation": SuggestField(),
+    })
+
+    citations = fields.ObjectField(properties={
+        "type": fields.TextField(),
+        "cite": SuggestField(),
+        "normalized_cite": fields.KeywordField(),
     })
 
     jurisdiction = fields.ObjectField(properties={
@@ -51,15 +60,14 @@ class CaseDocument(DocType):
     })
 
     casebody_data = fields.ObjectField(properties={
-        'text': fields.TextField(),
         'xml': fields.TextField(index=False),
         'html': fields.TextField(index=False),
-        'structured': fields.ObjectField(properties={
+        'text': fields.ObjectField(properties={
             'attorneys': fields.TextField(multi=True),
             'judges': fields.TextField(multi=True),
             'parties': fields.TextField(multi=True),
             'head_matter': fields.TextField(),
-            'opinions': fields.NestedField(properties={
+            'opinions': fields.ObjectField(multi=True, properties={
                 'author': fields.KeywordField(),
                 'text': fields.TextField(),
                 'type': fields.KeywordField(),
@@ -76,10 +84,9 @@ class CaseDocument(DocType):
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
         return {
-            'text': body.text,
             'xml': body.xml,
             'html': body.html,
-            'structured': body.json,
+            'text': body.json,
         }
 
     class Meta:

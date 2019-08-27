@@ -20,7 +20,7 @@ case text available as structured XML, presentation HTML, or plain text.
 To get started with the API, you can [explore it in your browser]({% api_url "api-root" %}), or reach it from the 
 command line. For example, here is a curl command to request a single case from Illinois:
 
-`curl "{% api_url "casemetadata-list" %}?jurisdiction=ill&page_size=1"`
+`curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"`
 {: class="code-block" }
 
 If you haven't used APIs before, you might want to check out our [search tool]({% url "search" %}) or jump down to our 
@@ -75,13 +75,13 @@ __Example:__ With an API key of `abcd12345`, you would pass `Token abcd12345` to
 
 A curl command would look like this:
   
-`curl -H "Authorization: Token abcd12345" "{% api_url "casemetadata-list" %}{{case_id}}/?full_case=true"`
+`curl -H "Authorization: Token abcd12345" "{% api_url "cases-list" %}{{case_id}}/?full_case=true"`
 {: class="code-block" }
 
 In a program, (python's request library in this example,) it would look something like this:
 
 `response = requests.get(
-    '{% api_url "casemetadata-list" %}{{case_id}}/?full_case=true',
+    '{% api_url "cases-list" %}{{case_id}}/?full_case=true',
     headers={'Authorization': 'Token abcd12345'}
 )`
 {: class="code-block" }
@@ -116,7 +116,7 @@ This is what you can expect from different format specifications using the `body
 Text Format (default)
 {: class="topic-header" }
 
-[{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true]({% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true)
+[{% api_url "cases-list" %}?jurisdiction=ill&full_case=true]({% api_url "cases-list" %}?jurisdiction=ill&full_case=true)
 {: class="example-link mt-0" }
 
 The default text format is best for natural language processing. Example response data:
@@ -148,7 +148,7 @@ case.
 XML Format
 {: class="topic-header" }
 
-[{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=xml]({% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=xml)
+[{% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=xml]({% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=xml)
 {: class="example-link mt-0" }
 
 The XML format is best if your analysis requires more information about pagination, formatting, or page layout. It 
@@ -161,7 +161,7 @@ response data:
 HTML Format
 {: class="topic-header" }
 
-[{% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html]({% api_url "casemetadata-list" %}?jurisdiction=ill&full_case=true&body_format=html)
+[{% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=html]({% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=html)
 {: class="example-link mt-0" }
       
 The HTML format is best if you want to show readable, formatted caselaw to humans. It represents a best-effort attempt 
@@ -177,7 +177,7 @@ to transform our XML-formatted data to semantic HTML ready for CSS formatting of
   
 Queries by default return 100 results per page, but you may request a smaller number using the `page_size` parameter:
   
-`curl "{% api_url "casemetadata-list" %}?jurisdiction=ill&page_size=1"`
+`curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"`
 {: class="code-block" }
   
 We use [cursor](#def-cursor)-based pagination, meaning we keep track of where you are in the results set on 
@@ -186,8 +186,8 @@ response:
   
 `{
   "count": 183149,
-  "next": "{% api_url "casemetadata-list" %}?cursor=cD0xODMyLTEyLTAx",
-  "previous": "{% api_url "casemetadata-list" %}?cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
+  "next": "{% api_url "cases-list" %}?cursor=cD0xODMyLTEyLTAx",
+  "previous": "{% api_url "cases-list" %}?cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
   ...
 }`
 {: class="code-block" }
@@ -271,7 +271,7 @@ comprehensive documentation about the URLs and their parameters.
 Retrieve a single case by ID
 {: class="topic-header" }
 
-[{% api_url "casemetadata-detail" case_id %}]({% api_url "casemetadata-detail" case_id %})
+[{% api_url "cases-detail" case_id %}]({% api_url "cases-detail" case_id %})
 {: class="example-link mt-0" }
 
 This example uses the [single case](#endpoint-case) endpoint, and will retrieve the metadata for a single 
@@ -282,19 +282,19 @@ Modification with Parameters:
 
 * **Standalone HTML-formatted Case**
 {: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "casemetadata-detail" case_id %}?full_case=true&format=html]({% api_url "casemetadata-detail" case_id %}?full_case=true&format=html)
+    * [{% api_url "cases-detail" case_id %}?full_case=true&format=html]({% api_url "cases-detail" case_id %}?full_case=true&format=html)
     {: add_list_class="example-mod-url" }
     * This will return a lightly styled, standalone HTML representation of the case with no accompanying metadata.
     {: add_list_class="example-mod-description" }
 * **Plain Text Case in JSON container with metadata**
 {: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "casemetadata-detail" case_id %}]({% api_url "casemetadata-detail" case_id %})
+    * [{% api_url "cases-detail" case_id %}]({% api_url "cases-detail" case_id %})
     {: add_list_class="example-mod-url" }
     * This will return a lightly styled, standalone HTML representation of the case with no accompanying metadata.
     {: add_list_class="example-mod-description" }
 * **Raw original XML document, with METS data**
 {: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "casemetadata-detail" case_id %}?full_case=true&body_format=xml]({% api_url "casemetadata-detail" case_id %}?full_case=true&body_format=xml)
+    * [{% api_url "cases-detail" case_id %}?full_case=true&body_format=xml]({% api_url "cases-detail" case_id %}?full_case=true&body_format=xml)
     {: add_list_class="example-mod-url" }
     * To get the document by itself, without the JSON enclosure and metadata, use the `format` parameter. Set it to HTML
      and get a display-ready, standalone HTML document.
@@ -305,7 +305,7 @@ Modification with Parameters:
 Retrieve a list of cases using a metadata filter
 {: class="topic-header" }
 
-[{% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}]({% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }})
+[{% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }}]({% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }})
 {: class="example-link mt-0" }
 
 This example uses the [cases](#endpoint-cases) endpoint, and will retrieve every case with the citation 
@@ -319,7 +319,7 @@ Modification with Parameters:
 
 * **Add a date range filter**
 {: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30]({% api_url "casemetadata-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30)
+    * [{% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30]({% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30)
     {: add_list_class="example-mod-url" }
     * You can combine any of these parameters to refine your search. Here, we have the same search as in the first 
     example, but will only receive results from within the specified dates.
@@ -330,7 +330,7 @@ Modification with Parameters:
 Simple Full-Text Search
 {: class="topic-header" }
 
-[{% api_url "casemetadata-list" %}?search=insurance]({% api_url "casemetadata-list" %}?search=insurance)
+[{% api_url "cases-list" %}?search=insurance]({% api_url "cases-list" %}?search=insurance)
 {: class="example-link mt-0" }
 
 This example performs a simple full-text case search which finds all cases containing the word "insurance." 
@@ -343,13 +343,13 @@ Modification with Parameters:
 
 * **Add Search Term**
 {: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "casemetadata-list" %}?search=insurance Peoria]({% api_url "casemetadata-list" %}?search=insurance Peoria)
+    * [{% api_url "cases-list" %}?search=insurance Peoria]({% api_url "cases-list" %}?search=insurance Peoria)
     {: add_list_class="example-mod-url" }
     * You can narrow your search results by adding terms, separated by spaces. This search will only include cases that contain both "insurance" and Peoria.
     {: add_list_class="example-mod-description" }
 * **Filter Search With Metadata**
 {: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill]({% api_url "casemetadata-list" %}?search=insurance Peoria&jurisdiction=ill)
+    * [{% api_url "cases-list" %}?search=insurance Peoria&jurisdiction=ill]({% api_url "cases-list" %}?search=insurance Peoria&jurisdiction=ill)
     {: add_list_class="example-mod-url" }
     * These queries can be filtered using other metadata fields. This query will perform the prior search while limiting
      the query to the Illinois jurisdiction.
@@ -384,7 +384,7 @@ This is the base [endpoint](#def-endpoint) of CAPAPI. It just lists all of the a
 Case Browse/Search Endpoint
 {: class="topic-header", id="endpoint-cases" }
 
-[{% api_url "api-root" %}]({% api_url "api-root" %})
+[{% api_url "cases-list" %}]({% api_url "cases-list" %})
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the numeric ID of your 
@@ -457,7 +457,7 @@ Endpoint Parameters:
 Single Case Endpoint
 {: class="topic-header", id="endpoint-case" }
 
-[{% api_url "casemetadata-detail" case_id %}]({% api_url "casemetadata-detail" case_id %})
+[{% api_url "cases-detail" case_id %}]({% api_url "cases-detail" case_id %})
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 Use this endpoint to retrieve a single case.
@@ -561,7 +561,7 @@ and result counts.
 Reporters Endpoint
 {: class="topic-header", id="endpoint-reporters" }
 
-[{% api_url "reporter-list" %}]({% api_url "reporter-list" %}){: class="endpoint-link" }
+[{% api_url "cases-list" %}]({% api_url "reporter-list" %}){: class="endpoint-link" }
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This will return a list of reporter series.

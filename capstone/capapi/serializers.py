@@ -61,7 +61,7 @@ class CaseVolumeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.VolumeMetadata
-        fields = ('url', 'volume_number')
+        fields = ('url', 'barcode','volume_number')
 
 
 class CaseReporterSerializer(serializers.ModelSerializer):
@@ -70,6 +70,7 @@ class CaseReporterSerializer(serializers.ModelSerializer):
         model = models.Reporter
         fields = (
             'url',
+            'id',
             'full_name',
         )
 
@@ -109,8 +110,15 @@ class CaseSerializer(serializers.HyperlinkedModelSerializer):
             CaseSerializer._frontend_url_base = reverse('cite_home', host='cite').rstrip('/')
         return self._frontend_url_base + (obj.frontend_url or '')
 
-
+# for elasticsearch
 class CaseDocumentSerializer(DocumentSerializer):
+    url = serializers.SerializerMethodField()
+    frontend_url = serializers.SerializerMethodField()
+    reporter = serializers.SerializerMethodField()
+    volume = serializers.SerializerMethodField()
+    court = serializers.SerializerMethodField()
+    jurisdiction = serializers.SerializerMethodField()
+    citations = serializers.SerializerMethodField()
 
     class Meta:
         document = CaseDocument
@@ -118,6 +126,7 @@ class CaseDocumentSerializer(DocumentSerializer):
             'id',
             'url',
             'name',
+            'citations',
             'name_abbreviation',
             'decision_date',
             'docket_number',
@@ -128,7 +137,59 @@ class CaseDocumentSerializer(DocumentSerializer):
             'reporter',
             'court',
             'jurisdiction',
+            'frontend_url',
         )
+
+    def get_reporter(self, obj):
+        return_dict = {
+            "full_name": obj.reporter['full_name'],
+            "id": obj.reporter['id'],
+            "url": "{}{}".format(api_reverse('reporter-list'), obj.reporter['id']),
+        }
+        return return_dict
+
+    def get_citations(self, obj):
+        return_list = [ { 'type': citation['type'], 'cite': citation['cite'] } for citation in obj.citations ]
+        return return_list
+
+    def get_volume(self, obj):
+        return_dict = {
+            "volume_number": obj.volume['volume_number'],
+            "barcode": obj.volume['barcode'],
+            "url": "{}{}".format(api_reverse('volumemetadata-list'), obj.volume['barcode']),
+        }
+        return return_dict
+
+    def get_court(self, obj):
+        return_dict = {
+            "id": obj.court['id'],
+            "slug": obj.court['slug'],
+            "name": obj.court['name'],
+            "name_abbreviation": obj.court['name_abbreviation'],
+            "url": "{}{}".format(api_reverse('court-list'), obj.court['slug']),
+        }
+        return return_dict
+
+    def get_jurisdiction(self, obj):
+        return_dict = {
+            "id": obj.jurisdiction['id'],
+            "slug": obj.jurisdiction['slug'],
+            "name": obj.jurisdiction['name'],
+            "name_long": obj.jurisdiction['name_long'],
+            "whitelisted": obj.jurisdiction['whitelisted'],
+            "url": "{}{}".format(api_reverse('jurisdiction-list'), obj.jurisdiction['slug']),
+        }
+        return return_dict
+
+    def get_frontend_url(self, obj):
+        if not hasattr(self, '_frontend_url_base'):
+            CaseDocumentSerializer._frontend_url_base = reverse('cite_home', host='cite').rstrip('/')
+        return self._frontend_url_base + (obj.frontend_url or '')
+
+    def get_url(self, obj):
+        if not hasattr(self, '_url_base'):
+            CaseDocumentSerializer._url_base = api_reverse('cases-list')
+        return self._url_base + (str(obj.id) or '')
 
 class CaseAllowanceMixin:
     """
@@ -189,7 +250,6 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         list_serializer_class = ListSerializerWithCaseAllowance
 
     def get_casebody(self, case, check_permissions=True):
-
         # check permissions for full-text access to this case
         request = self.context.get('request')
         if check_permissions:
@@ -197,25 +257,37 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         else:
             status = 'ok'
 
-        if status == 'ok':
 
+
+        if status == 'ok':
             body_format = request.query_params.get('body_format', None)
 
             if body_format == 'html':
-                return {
-                    'data': case.casebody_data['html'],
-                    'status': status
-                }
+                data = case.casebody_data['html']
             elif body_format == 'xml':
-                return {
-                    'data': case.casebody_data['xml'],
-                    'status': status
-                }
+                data = case.casebody_data['xml']
+            elif type(request.accepted_renderer) == HTMLRenderer:
+                data = case.casebody_data['html']
+
+            elif type(request.accepted_renderer) == XMLRenderer:
+                db_case = models.CaseMetadata.objects.select_related('case_xml').get(pk=case.id)
+                try:
+                    data = db_case.body_cache.xml
+                except CaseBodyCache.DoesNotExist:
+                    parsed_xml = db_case.case_xml.get_parsed_xml()
+                    db_case.case_xml.reorder_head_matter(parsed_xml)
+                    data = helpers.serialize_xml(parsed_xml)
             else:
-                return {
-                    'data': case.casebody_data['structured'].to_dict(),
-                    'status': status
-                }
+                try:
+                    data = case.casebody_data['text'].to_dict()
+                except AttributeError:
+                    data = case.casebody_data['text']
+
+            return {
+                'data': data,
+                'status': status
+            }
+
         return {'status': status, 'data': None}
 
 
@@ -433,6 +505,18 @@ class NoLoginCaseSerializer(CaseSerializerWithCasebody):
     def data(self):
         """ Skip tracking of download counts. """
         return super(serializers.HyperlinkedModelSerializer, self).data
+
+class NoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
+    def get_casebody(self, case):
+        """ Tell get_casebody not to check for case download permissions. """
+        return super().get_casebody(case, check_permissions=False)
+
+    @property
+    def data(self):
+        """ Skip tracking of download counts. """
+        return super(DocumentSerializer, self).data
+
+
 
 class BulkCaseSerializer(NoLoginCaseSerializer):
     court = BulkCourtSerializer(source='denormalized_court')
