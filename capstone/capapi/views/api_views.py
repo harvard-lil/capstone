@@ -169,7 +169,14 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'name_abbreviation',
         'jurisdiction.name_long',
         'court.name',
-        'casebody_data.unstructured_text',
+        'casebody_data.text.attorneys',
+        'casebody_data.text.judges',
+        'casebody_data.text.parties',
+        'casebody_data.text.head_matter',
+        'casebody_data.text.opinions.author',
+        'casebody_data.text.opinions.text',
+        'casebody_data.text.opinions.type',
+        'casebody_data.text.corrections',
         'docket_number',
     )
     simple_query_string_options = {
