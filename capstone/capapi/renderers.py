@@ -86,6 +86,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 context['reason'] = data['casebody']['status']
                 return template.render(context, renderer_context['request'])
             context['reason'] = 'other'
+            context['message'] = data['casebody']['status']
             return template.render(context, renderer_context['request'])
 
         context['case_html'] = data['casebody']['data']
