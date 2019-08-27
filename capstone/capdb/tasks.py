@@ -4,6 +4,7 @@ from time import sleep
 from celery import shared_task
 from celery.exceptions import Reject
 from django.db import connections
+from django.db.models import Prefetch
 from django.utils import timezone
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
@@ -322,19 +323,22 @@ def retrieve_images_from_all_cases(update_existing=False):
 
 
 @shared_task
+@transaction.atomic(using='capdb')
 def retrieve_images_from_cases(volume_id, update_existing=True):
     """
         Create or update case images for each volume
     """
     cases = CaseMetadata.objects.filter(volume_id=volume_id) \
-        .only('id') \
+        .only('body_cache__html') \
         .order_by('id') \
         .select_related('body_cache') \
+        .prefetch_related(Prefetch('caseimages', queryset=CaseImage.objects.only('hash', 'case'))) \
         .exclude(body_cache=None) \
-        .filter(body_cache__html__contains='<img')
+        .filter(body_cache__html__contains='<img') \
+        .select_for_update()
 
     if not update_existing:
         cases = cases.exclude(caseimages__isnull=False)
 
-    for case in ordered_query_iterator(cases):
+    for case in cases:
         case.retrieve_and_store_images()

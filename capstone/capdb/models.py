@@ -1131,27 +1131,35 @@ class CaseMetadata(models.Model):
             casebody = generate_html(self.case_xml.extract_casebody())
 
         casebody = BeautifulSoup(casebody, 'html.parser')
-
         imgs = casebody.findAll('img')
+        known_hashes = {c.hash for c in self.caseimages.all()}
 
         for idx, img in enumerate(imgs):
             frmt, data = img['src'].split(';base64,')
             ext = frmt.split('/')[-1]
             data_decoded = base64.b64decode(data)
-
-            width, height = struct.unpack('>ii', data_decoded[16:24])
             h = hashlib.new(name="md5", data=data_decoded).hexdigest()
 
-            case_img, created = CaseImage.objects.get_or_create(case=self, hash=h)
+            # handle existing images
+            if h in known_hashes:
+                CaseImage.objects.filter(case=self, hash=h).update(position_index=idx)
+                known_hashes.remove(h)
 
-            if created:
-                case_img.data = ContentFile(data_decoded, name='temp.' + ext)
-                case_img.height = height
-                case_img.width = width
+            # handle new images
+            else:
+                width, height = struct.unpack('>ii', data_decoded[16:24])
+                CaseImage(
+                    case=self,
+                    hash=h,
+                    data=ContentFile(data_decoded, name='%s-%s.%s' % (self.id, h, ext)),
+                    height=height,
+                    width=width,
+                    position_index=idx,
+                ).save()
 
-            case_img.position_index = idx
-            case_img.save()
-
+        # handle deleted images
+        if known_hashes:
+            CaseImage.objects.filter(case=self, hash__in=known_hashes).delete()
 
 class CaseXML(BaseXMLModel):
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',
@@ -1980,5 +1988,6 @@ class CaseImage(models.Model):
     def __str__(self):
         return "%s %s" % (self.position_index, self.hash)
 
-
+    class Meta:
+        unique_together = ['case', 'hash']
 
