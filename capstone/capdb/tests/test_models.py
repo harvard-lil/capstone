@@ -2,7 +2,7 @@ import pytest
 
 from scripts.helpers import nsmap
 from test_data.test_fixtures.factories import *
-from capdb.models import VolumeMetadata, CaseMetadata
+from capdb.models import VolumeMetadata, CaseMetadata, CaseImage, CaseBodyCache
 
 ### helpers ###
 
@@ -570,3 +570,17 @@ def test_data_edit(volume_metadata):
     assert len(transactions) == 1
     volume_metadata.refresh_from_db()
     assert transactions[0].timestamp == volume_metadata.sys_period.lower
+
+
+@pytest.mark.django_db
+def test_retrieve_and_store_images(case, inline_image_src):
+    caseimages = CaseImage.objects.all()
+    assert len(caseimages) == 0
+
+    params = {"html": "<img src='image/png;base64,%s'>" % inline_image_src}
+    CaseBodyCache(metadata=case, **params).save()
+
+    case.retrieve_and_store_images()
+    caseimages = CaseImage.objects.all()
+
+    assert len(caseimages) == 1

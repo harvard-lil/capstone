@@ -291,24 +291,20 @@ def get_court_count_for_jur(jurisdiction_id):
 
 def create_case_text_for_all_cases(update_existing=False):
     """
-        iterate through all volumes, call celery task for each volume
+        Call create_case_text for each volume
     """
-    query = VolumeMetadata.objects.all()
-
-    # launch a job for each volume:
-    for volume_id in query.values_list('pk', flat=True):
-        create_case_text.delay(volume_id, update_existing=update_existing)
+    run_task_for_volumes(create_case_text, update_existing=update_existing)
 
 
 @shared_task
 def create_case_text(volume_id, update_existing=False):
     """
-        create or update cases for each volume
+        Create or update cases for each volume
     """
-    cases = CaseMetadata.objects\
+    cases = CaseMetadata.objects \
         .in_scope() \
-        .order_by('id')\
-        .filter(volume_id=volume_id)\
+        .order_by('id') \
+        .filter(volume_id=volume_id) \
         .select_related('case_xml', 'case_text')
 
     if not update_existing:
@@ -317,3 +313,28 @@ def create_case_text(volume_id, update_existing=False):
     for case in ordered_query_iterator(cases):
         case.create_or_update_case_text()
 
+
+def retrieve_images_from_all_cases(update_existing=False):
+    """
+        Call celery task to get images for each volume
+    """
+    run_task_for_volumes(retrieve_images_from_cases, update_existing=update_existing)
+
+
+@shared_task
+def retrieve_images_from_cases(volume_id, update_existing=True):
+    """
+        Create or update case images for each volume
+    """
+    cases = CaseMetadata.objects.filter(volume_id=volume_id) \
+        .only('id') \
+        .order_by('id') \
+        .select_related('body_cache') \
+        .exclude(body_cache=None) \
+        .filter(body_cache__html__contains='<img')
+
+    if not update_existing:
+        cases = cases.exclude(caseimages__isnull=False)
+
+    for case in ordered_query_iterator(cases):
+        case.retrieve_and_store_images()
