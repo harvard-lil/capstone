@@ -1,5 +1,4 @@
 from collections import defaultdict
-from contextlib import contextmanager
 from urllib.parse import urlparse
 from time import time
 
@@ -246,6 +245,15 @@ def load_tracking_tool_database():
 @pytest.fixture
 def case(case_xml):
     return case_xml.metadata
+
+
+@pytest.fixture
+def case_metadata():
+    """
+        This should be provided by @register on CaseFactory, but for some reason that version currently fails to
+        pass itself to the RelatedFactory attributes, and thus throws an IntegrityError.
+    """
+    return CaseFactory()
 
 
 @pytest.fixture

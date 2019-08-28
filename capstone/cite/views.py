@@ -177,10 +177,12 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         api_request = Request(request, authenticators=[SessionAuthentication()])
         api_request.accepted_renderer = HTMLRenderer()
         serialized = serializer(case, context={'request': api_request})
-        context = {'request': api_request}
+        context = {'request': api_request, 'meta_tags': []}
         if not case.jurisdiction_whitelisted:
             # blacklisted cases shouldn't show cached version in google search results
-            context['meta_tags'] = [{"name": "googlebot", "content": "noarchive",}]
+            context['meta_tags'].append({"name": "googlebot", "content": "noarchive"})
+        if case.no_index:
+            context['meta_tags'].append({"name": "robots", "content": "noindex"})
         rendered = HTMLRenderer().render(serialized.data, renderer_context=context)
         return HttpResponse(rendered)
 

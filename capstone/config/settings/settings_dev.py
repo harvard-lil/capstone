@@ -50,22 +50,25 @@ TEST_SLOW_QUERIES_DB_NAME = 'capstone_test_queries'
 # avoid test errors when running tests locally, since pytest-django sets DEBUG=False and staticfiles/ doesn't exist
 STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
-
+# don't update elasticsearch index on dev when savings cases (this may want to change -- not sure)
+MAINTAIN_ELASTICSEARCH_INDEX = False
 
 # django-debug-toolbar
-try:
-    import debug_toolbar  # noqa
-    INSTALLED_APPS += (
-        'debug_toolbar',
-    )
-    MIDDLEWARE.insert(
-        MIDDLEWARE.index('django_hosts.middleware.HostsRequestMiddleware')+1,
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
-    DEBUG_TOOLBAR_CONFIG = {
-        'SHOW_TOOLBAR_CALLBACK': 'capweb.helpers.show_toolbar_callback'
-    }
-    INTERNAL_IPS = ['127.0.0.1']
-except ImportError:
-    pass
+import sys
+if 'pytest' not in sys.modules:  # don't run this from tests
+    try:
+            import debug_toolbar  # noqa
+            INSTALLED_APPS += (
+                'debug_toolbar',
+            )
+            MIDDLEWARE.insert(
+                MIDDLEWARE.index('django_hosts.middleware.HostsRequestMiddleware')+1,
+                'debug_toolbar.middleware.DebugToolbarMiddleware',
+            )
+            DEBUG_TOOLBAR_CONFIG = {
+                'SHOW_TOOLBAR_CALLBACK': 'capweb.helpers.show_toolbar_callback'
+            }
+            INTERNAL_IPS = ['127.0.0.1']
+    except ImportError:
+        pass
 

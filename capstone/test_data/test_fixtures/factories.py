@@ -1,10 +1,10 @@
 import os
 import binascii
 import random
-from datetime import timezone
 from pathlib import Path
 
 import factory
+from factory import post_generation
 from pytest_factoryboy import register
 
 from django.template.defaultfilters import slugify
@@ -118,6 +118,43 @@ class CourtFactory(factory.DjangoModelFactory):
 
 
 @register
+class TarFileFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = TarFile
+
+    volume = factory.SubFactory(VolumeFactory)
+    storage_path = 'unredacted/32044038597167_unredacted'
+    hash = '19dae083e7f93e7b7545e50e3ab445076f3f284a061d38e4731e7afeb81cdade'
+
+
+@register
+class CaseStructureFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = CaseStructure
+
+    opinions = []
+    ingest_path = 'casemets/32044038597167_unredacted_CASEMETS_0001.xml.gz'
+    ingest_source = factory.SubFactory(TarFileFactory)
+    metadata = None
+
+@register
+class CitationFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Citation
+
+    @factory.lazy_attribute
+    def type(self):
+        return random.choice(['official', 'parallel'])
+    cite = factory.LazyAttribute(lambda o: "%s U.S. %s" % (random.randint(1,999), random.randint(1, 999)))
+
+    # this should work, per https://factoryboy.readthedocs.io/en/latest/recipes.html#example-django-s-profile ,
+    # but actually it throws AttributeError: module has no attribute 'CaseFactory':
+    #  case = factory.SubFactory('test_data.test_fixtures.factories.CaseFactory', citations=None)
+    # Instead we can do this, as long as we only instantiate this as CitationFactory(case=obj):
+    case = None
+
+
+@register
 class CaseFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseMetadata
@@ -131,18 +168,14 @@ class CaseFactory(factory.DjangoModelFactory):
     court = factory.SubFactory(CourtFactory)
     volume = factory.SubFactory(VolumeFactory)
     reporter = factory.LazyAttribute(lambda o: o.volume.reporter)
+    structure = factory.RelatedFactory(CaseStructureFactory, 'metadata')
+    citations = factory.RelatedFactory(CitationFactory, 'case')
+    name_abbreviation = "Foo v. Bar"
 
+    @post_generation
+    def post(obj, create, extracted, **kwargs):
+        obj.frontend_url = obj.get_frontend_url(include_host=False)
 
-@register
-class CitationFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Citation
-
-    @factory.lazy_attribute
-    def type(self):
-        return random.choice(['official', 'parallel'])
-    case = factory.SubFactory(CaseFactory)
-    cite = factory.Faker('sentence', nb_words=5)
 
 _case_xml = Path(settings.BASE_DIR, "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml").read_text()
 

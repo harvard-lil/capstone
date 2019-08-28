@@ -65,6 +65,12 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
         new_class('CaseXMLInline', admin.StackedInline, model=CaseXML, raw_id_fields=['volume']),
     )
     fieldsets = (
+        ('Flags', {
+            'fields': ('duplicate', 'duplicate_of', 'no_index', 'no_index_notes', 'withdrawn', 'replaced_by', 'in_scope'),
+        }),
+        ('', {
+            'fields': ('frontend_url',)
+        }),
         ('Ingest metadata', {
             'fields': ('date_added',)
         }),
@@ -86,8 +92,15 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
                 'court_slug', 'court_name_abbreviation', 'court_name')
         }),
     )
+    raw_id_fields = ['duplicate_of', 'replaced_by', 'reporter', 'volume', 'court', 'jurisdiction']
     # mark all fields as readonly
-    readonly_fields = sum((f[1]['fields'] for f in fieldsets), ())
+    readonly_fields = sum((f[1]['fields'] for f in fieldsets[1:]), ())
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # handle changes to obj.withdrawn
+        if 'withdrawn' in form.changed_data or 'replaced_by' in form.changed_data:
+            obj.withdraw(obj.withdrawn, obj.replaced_by)
 
 
 class CasePageInline(admin.TabularInline):

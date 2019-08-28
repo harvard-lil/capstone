@@ -840,6 +840,10 @@ class CaseMetadata(models.Model):
     duplicative = models.BooleanField(default=False, help_text="True if case was not processed because it is an unofficial case in a regional reporter")
     duplicate = models.BooleanField(default=False, help_text="True if case was processed but is a duplicate of another preferred case")
     duplicate_of = models.ForeignKey("CaseMetadata", blank=True, null=True, on_delete=models.SET_NULL, related_name="duplicates")
+    withdrawn = models.BooleanField(default=False, help_text="True if case was withdrawn by the court")
+    replaced_by = models.ForeignKey("CaseMetadata", blank=True, null=True, on_delete=models.SET_NULL, related_name="replaced")
+    no_index = models.BooleanField(default=False, help_text="True if case should not be included in google index")
+    no_index_notes = models.TextField(blank=True, null=True, help_text="Reason no_index is true")
     in_scope = models.BooleanField(default=True, help_text="True if case should be included in public data")
     initial_metadata_synced = models.BooleanField(default=False)
 
@@ -937,6 +941,17 @@ class CaseMetadata(models.Model):
             url = '/'+url.split('/',3)[3]
         return url
 
+    def withdraw(self, new_value=True, replaced_by=None):
+        """ Mark this case as withdrawn by the court, and optionally replaced by a new case. """
+        self.withdrawn = new_value
+        self.replaced_by = replaced_by
+        self.save()
+        self.sync_case_body_cache()
+
+    def update_search_index(self):
+        from capapi.documents import CaseDocument  # local to avoid circular import
+        CaseDocument().update(self)
+
     def create_or_update_case_text(self, new_text=None):
         """ Create or update the related case_text object for this case_metadata. """
         if hasattr(self, 'case_text'):
@@ -1003,6 +1018,9 @@ class CaseMetadata(models.Model):
             CaseBodyCache(metadata=self, **params).save()
         else:
             CaseBodyCache.objects.filter(id=body_cache.id).update(**params)
+
+        if settings.MAINTAIN_ELASTICSEARCH_INDEX:
+            self.update_search_index()
 
     def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)

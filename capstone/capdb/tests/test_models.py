@@ -11,6 +11,7 @@ from scripts.helpers import nsmap, parse_xml, serialize_xml
 
 ### helpers ###
 
+
 @pytest.mark.django_db
 def test_fetch_relations(case, court, django_assert_num_queries):
     case = CaseMetadata.objects.get(pk=case.pk)
@@ -179,6 +180,17 @@ def test_denormalized_fields(case):
     court.save()
     case.refresh_from_db()
     assert case.court_name == court.name
+
+@pytest.mark.django_db
+def test_withdraw_case(case_factory):
+    withdrawn = case_factory()
+    replaced_by = case_factory()
+    withdrawn.withdraw(True, replaced_by)
+    assert withdrawn.withdrawn
+    assert withdrawn.replaced_by == replaced_by
+    assert 'This case was withdrawn and replaced' in withdrawn.body_cache.html
+    assert 'This case was withdrawn and replaced' in withdrawn.body_cache.xml
+
 
 ### Case Full Text Search ###
 @pytest.mark.django_db
@@ -593,3 +605,5 @@ def test_retrieve_and_store_images(case, inline_image_src, django_assert_num_que
     with django_assert_num_queries(select=2, update=1):
         retrieve_images_from_cases(case.volume_id)
     assert CaseImage.objects.count() == 1
+
+
