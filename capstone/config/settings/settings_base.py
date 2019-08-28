@@ -621,3 +621,9 @@ PASSWORD_PROTECTED_PAGES = {
 }
 
 SCREENSHOT_DEFAULT_TIMEOUT = 30  # seconds
+
+# For the mailchimp signup form on the homepage.
+MAILCHIMP = {
+    'u': '',
+    'id': ''
+}
