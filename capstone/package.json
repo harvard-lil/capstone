@@ -12,7 +12,7 @@
     "chart.js": "^2.8.0",
     "commander": "^2.20.0",
     "csv-stringify": "^5.3.0",
-    "eslint-utils": "1.4.1",
+    "eslint-utils": "^1.4.1",
     "jquery": "^3.3.1",
     "lodash.debounce": "^4.0.8",
     "mark.js": "^8.11.1",
