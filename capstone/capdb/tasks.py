@@ -8,6 +8,7 @@ from django.db.models import Prefetch
 from django.utils import timezone
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
+from urllib3.exceptions import ReadTimeoutError
 
 from capapi.documents import CaseDocument
 from scripts.helpers import ordered_query_iterator
@@ -87,7 +88,7 @@ def update_elasticsearch_for_vol(self, volume_id):
                 CaseDocument().update(cases)
                 VolumeMetadata.objects.filter(pk=volume_id).update(last_es_index=timezone.now())
                 return
-            except ElasticsearchException as e:
+            except (ElasticsearchException, ReadTimeoutError) as e:
                 if i == 9:
                     # If all 10 requests fail, re-add job to the back of the queue
                     if type(e) == BulkIndexError:
