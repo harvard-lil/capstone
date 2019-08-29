@@ -890,6 +890,7 @@ class CaseMetadata(models.Model):
         )
 
     objects = CaseMetadataQuerySet.as_manager()
+    history = TemporalHistoricalRecords()
 
     def __str__(self):
         return self.case_id
@@ -1573,6 +1574,7 @@ class Citation(models.Model):
     normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
     case = models.ForeignKey('CaseMetadata', related_name='citations', null=True, on_delete=models.SET_NULL)
     tracker = FieldTracker()
+    history = TemporalHistoricalRecords()
 
     def __str__(self):
         return str(self.cite)
