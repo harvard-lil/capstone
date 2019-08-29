@@ -323,23 +323,24 @@ def retrieve_images_from_all_cases(update_existing=False):
     run_task_for_volumes(retrieve_images_from_cases, update_existing=update_existing)
 
 
-@shared_task
+@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
 @transaction.atomic(using='capdb')
-def retrieve_images_from_cases(volume_id, update_existing=True):
+def retrieve_images_from_cases(self, volume_id, update_existing=True):
     """
         Create or update case images for each volume
     """
-    cases = CaseMetadata.objects.filter(volume_id=volume_id) \
-        .only('body_cache__html') \
-        .order_by('id') \
-        .select_related('body_cache') \
-        .prefetch_related(Prefetch('caseimages', queryset=CaseImage.objects.only('hash', 'case'))) \
-        .exclude(body_cache=None) \
-        .filter(body_cache__html__contains='<img') \
-        .select_for_update()
+    with record_task_status_for_volume(self, volume_id):
+        cases = CaseMetadata.objects.filter(volume_id=volume_id) \
+            .only('body_cache__html') \
+            .order_by('id') \
+            .select_related('body_cache') \
+            .prefetch_related(Prefetch('caseimages', queryset=CaseImage.objects.only('hash', 'case'))) \
+            .exclude(body_cache=None) \
+            .filter(body_cache__html__contains='<img') \
+            .select_for_update()
 
-    if not update_existing:
-        cases = cases.exclude(caseimages__isnull=False)
+        if not update_existing:
+            cases = cases.exclude(caseimages__isnull=False)
 
-    for case in cases:
-        case.retrieve_and_store_images()
+        for case in cases:
+            case.retrieve_and_store_images()

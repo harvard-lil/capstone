@@ -797,7 +797,6 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
         return reverse('court-detail', args=[self.pk], scheme="https")
 
 
-
 class CaseMetadataQuerySet(models.QuerySet):
     def in_scope(self):
         """
