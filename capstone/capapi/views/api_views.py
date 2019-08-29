@@ -152,6 +152,10 @@ class CAPFTSFilter(SimpleQueryStringSearchFilterBackend):
 class CaseDocumentViewSet(BaseDocumentViewSet):
 
     """The CaseDocument view."""
+
+    # this lets DRF handle 'not found' issues the way they they are with the DB back end
+    ignore = [404]
+
     document = CaseDocument
     serializer_class = CaseDocumentSerializer
     pagination_class = CapESCursorPagination
