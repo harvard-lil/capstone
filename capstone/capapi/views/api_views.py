@@ -33,7 +33,7 @@ from django_elasticsearch_dsl_drf.filter_backends import (
     IdsFilterBackend,
     OrderingFilterBackend,
     DefaultOrderingFilterBackend,
-    CompoundSearchFilterBackend)
+    SimpleQueryStringSearchFilterBackend)
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
 
 
@@ -146,6 +146,9 @@ class CAPFiltering(FilteringFilterBackend):
 
         return query_params
 
+class CAPFTSFilter(SimpleQueryStringSearchFilterBackend):
+    search_param = 'search'
+
 class CaseDocumentViewSet(BaseDocumentViewSet):
 
     """The CaseDocument view."""
@@ -163,7 +166,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     lookup_field = 'id'
 
     filter_backends = [
-        CompoundSearchFilterBackend, # Facilitates FTS
+        CAPFTSFilter, # Facilitates FTS
         CAPFiltering, # Facilitates Filtering (Filters)
         IdsFilterBackend, # Filtering based on IDs
         OrderingFilterBackend, # Orders Document
@@ -171,7 +174,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     ]
 
     # Define search fields
-    search_fields = (
+    simple_query_string_search_fields = (
         'name',
         'name_abbreviation',
         'jurisdiction.name_long',
