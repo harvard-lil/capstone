@@ -132,11 +132,18 @@ class CaseViewSet(BaseViewSet):
 
         return super(CaseViewSet, self).retrieve(*args, **kwargs)
 
-class FilteringWithCiteNormalization(FilteringFilterBackend):
+class CAPFiltering(FilteringFilterBackend):
     def get_filter_query_params(self, request, view):
         query_params = super().get_filter_query_params(request, view)
         if 'cite' in query_params:
             query_params['cite']['values'] = [Citation.normalize_cite(cite) for cite in query_params['cite']['values']]
+
+        if 'court_id' in query_params:
+            query_params['court_id']['values'] = [ court_id for court_id
+                                                   in query_params['court_id']['values'] if court_id.isdigit() ]
+            if len(query_params['court_id']['values']) < 1:
+                del query_params['court_id']
+
         return query_params
 
 class CaseDocumentViewSet(BaseDocumentViewSet):
@@ -157,7 +164,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
     filter_backends = [
         CompoundSearchFilterBackend, # Facilitates FTS
-        FilteringWithCiteNormalization, # Facilitates Filtering (Filters)
+        CAPFiltering, # Facilitates Filtering (Filters)
         IdsFilterBackend, # Filtering based on IDs
         OrderingFilterBackend, # Orders Document
         DefaultOrderingFilterBackend # Must be last
