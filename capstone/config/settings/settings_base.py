@@ -612,6 +612,7 @@ ELASTICSEARCH_DSL={
         'hosts': 'localhost:9200'
     },
 }
+MAINTAIN_ELASTICSEARCH_INDEX = True  # whether to update index when changing cases
 
 # for views decorated with @password_protected_page('some_key')
 PASSWORD_PROTECTED_PAGES = {

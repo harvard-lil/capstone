@@ -5,6 +5,8 @@ from lxml import etree, sax
 
 
 ### HELPERS ###
+from pyquery import PyQuery
+
 
 def iter_pars(opinions):
     """ Yield all paragraph dicts from a list of opinions. """
@@ -306,31 +308,40 @@ class VolumeRenderer:
 
         # <section class='case'>, or <casebody>
         case_el = self.make_case_el(case)
-        last_page_label = None
-        for opinion in self.opinions:
 
-            # <section class='opinion'>, or <opinion>
-            opinion_el = self.make_opinion_el(opinion)
-
-            # main paragraphs of opinion
-            if opinion.get('paragraphs'):
-                last_page_label = self.make_pars(opinion['paragraphs'], opinion_el, last_page_label=last_page_label, include_block_label=opinion['type']=='unprocessed')
-
-            # <aside class='footnote'>, or <footnote>
-            for footnote in opinion.get('footnotes', []):
-                footnote_el = self.make_footnote_el(footnote)
-                if footnote_el is None:
-                    continue
-                left_strip_text = None if self.original_xml else footnote.get('label', None)  # used for stripping footnote labels from text
-                self.make_pars(footnote['paragraphs'], footnote_el, left_strip_text=left_strip_text)
-                opinion_el.append(footnote_el)
-
-            # special handling -- for xml, head matter goes directly under <case>
-            if self.format == 'xml' and opinion['type'] in ('head', 'unprocessed', 'corrections'):
-                for el in opinion_el:
-                    case_el.append(el)
+        # handle withdrawn cases
+        if case.withdrawn:
+            if case.replaced_by:
+                PyQuery(case_el).html('<p>This case was withdrawn and replaced by <a href="%s">%s</a>.</p>' % (case.replaced_by.frontend_url, case.replaced_by.full_cite()))
             else:
-                case_el.append(opinion_el)
+                PyQuery(case_el).html('<p>This case was withdrawn by the court.</p>')
+
+        else:
+            last_page_label = None
+            for opinion in self.opinions:
+
+                # <section class='opinion'>, or <opinion>
+                opinion_el = self.make_opinion_el(opinion)
+
+                # main paragraphs of opinion
+                if opinion.get('paragraphs'):
+                    last_page_label = self.make_pars(opinion['paragraphs'], opinion_el, last_page_label=last_page_label, include_block_label=opinion['type']=='unprocessed')
+
+                # <aside class='footnote'>, or <footnote>
+                for footnote in opinion.get('footnotes', []):
+                    footnote_el = self.make_footnote_el(footnote)
+                    if footnote_el is None:
+                        continue
+                    left_strip_text = None if self.original_xml else footnote.get('label', None)  # used for stripping footnote labels from text
+                    self.make_pars(footnote['paragraphs'], footnote_el, left_strip_text=left_strip_text)
+                    opinion_el.append(footnote_el)
+
+                # special handling -- for xml, head matter goes directly under <case>
+                if self.format == 'xml' and opinion['type'] in ('head', 'unprocessed', 'corrections'):
+                    for el in opinion_el:
+                        case_el.append(el)
+                else:
+                    case_el.append(opinion_el)
 
         return etree.tostring(case_el, encoding=str, pretty_print=self.pretty_print)
 

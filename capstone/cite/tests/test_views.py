@@ -46,11 +46,11 @@ def test_series(client, django_assert_num_queries, volume_factory):
 
 
 @pytest.mark.django_db
-def test_volume(client, django_assert_num_queries, citation_factory):
+def test_volume(client, django_assert_num_queries, case_factory):
     """ Test /series/volume/ """
 
     # make sure we correctly handle multiple reporters with same slug
-    case_1, case_2, case_3 = [citation_factory().case for _ in range(3)]
+    case_1, case_2, case_3 = [case_factory() for _ in range(3)]
     for case in [case_2, case_3]:
         case.reporter.short_name_slug = case_1.reporter.short_name_slug
         case.reporter.save()
@@ -289,3 +289,12 @@ def test_schema_in_case_as_google_bot(client, case, monkeypatch):
     assert schema["author"]["name"] == case.court.name
     assert "hasPart" in schema
     assert schema["hasPart"]["isAccessibleForFree"] == 'False'
+
+
+@pytest.mark.django_db()
+def test_no_index(auth_client, case):
+    case.no_index = True
+    case.save()
+
+    response = auth_client.get(case.get_frontend_url())
+    check_response(response, content_includes='content="noindex"')
