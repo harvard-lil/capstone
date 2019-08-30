@@ -20,7 +20,7 @@ def SuggestField():
 class CaseDocument(DocType):
     name_abbreviation = SuggestField()
 
-    name = fields.TextField()
+    name = fields.TextField(index_phrases=True)
 
     frontend_url = fields.KeywordField()
 
@@ -66,10 +66,10 @@ class CaseDocument(DocType):
             'attorneys': fields.TextField(multi=True),
             'judges': fields.TextField(multi=True),
             'parties': fields.TextField(multi=True),
-            'head_matter': fields.TextField(),
+            'head_matter': fields.TextField(index_phrases=True),
             'opinions': fields.ObjectField(multi=True, properties={
                 'author': fields.KeywordField(),
-                'text': fields.TextField(),
+                'text': fields.TextField(index_phrases=True),
                 'type': fields.KeywordField(),
             }),
             'corrections': fields.TextField(),
