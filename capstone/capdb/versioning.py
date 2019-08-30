@@ -89,3 +89,11 @@ class TemporalHistoricalRecords(HistoricalRecords):
     def post_delete(self, *args, **kwargs):
         pass
 
+
+class TemporalQuerySet(models.QuerySet):
+    """
+        Necessary for bulk_insert to work on history-tracked models.
+    """
+    def _batched_insert(self, objs, fields, *args, **kwargs):
+        fields = [f for f in fields if f.name != 'sys_period']
+        return super()._batched_insert(objs, fields, *args, **kwargs)

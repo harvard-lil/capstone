@@ -24,7 +24,7 @@ from pyquery import PyQuery
 from bs4 import BeautifulSoup
 
 from capdb.storages import bulk_export_storage, case_image_storage
-from capdb.versioning import TemporalHistoricalRecords
+from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
 from scripts.generate_case_html import generate_html
@@ -503,6 +503,7 @@ class Reporter(models.Model):
     nominative_for = models.ForeignKey("Reporter", on_delete=models.DO_NOTHING, related_name='nominative_reporters', blank=True, null=True)
 
     history = TemporalHistoricalRecords()
+    objects = TemporalQuerySet.as_manager()
 
     def __str__(self):
         return "%s: %s %s-%s" % (self.short_name, self.full_name, self.start_year or '', self.end_year or '')
@@ -610,6 +611,7 @@ class VolumeMetadata(models.Model):
 
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
+    objects = TemporalQuerySet.as_manager()
 
     class Meta:
         verbose_name_plural = "Volumes"
@@ -676,6 +678,7 @@ class VolumeXML(BaseXMLModel):
 
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
+    objects = TemporalQuerySet.as_manager()
 
     def __str__(self):
         return self.metadata_id
@@ -797,7 +800,7 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
         return reverse('court-detail', args=[self.pk], scheme="https")
 
 
-class CaseMetadataQuerySet(models.QuerySet):
+class CaseMetadataQuerySet(TemporalQuerySet):
     def in_scope(self):
         """
             Return cases accessible from API
@@ -1188,6 +1191,7 @@ class CaseXML(BaseXMLModel):
 
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
+    objects = TemporalQuerySet.as_manager()
 
     @transaction.atomic(using='capdb')
     def save(self, update_related=True, *args, **kwargs):
@@ -1574,6 +1578,7 @@ class Citation(models.Model):
     case = models.ForeignKey('CaseMetadata', related_name='citations', null=True, on_delete=models.SET_NULL)
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
+    objects = TemporalQuerySet.as_manager()
 
     def __str__(self):
         return str(self.cite)
@@ -1602,6 +1607,7 @@ class PageXML(BaseXMLModel):
 
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
+    objects = TemporalQuerySet.as_manager()
 
     class Meta:
         ordering = ['barcode']

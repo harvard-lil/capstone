@@ -183,9 +183,10 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'name_abbreviation',
         'jurisdiction.name_long',
         'court.name',
-        'casebody_data.text.attorneys',
-        'casebody_data.text.judges',
-        'casebody_data.text.parties',
+        # these are included in head_matter or text:
+        # 'casebody_data.text.attorneys',
+        # 'casebody_data.text.judges',
+        # 'casebody_data.text.parties',
         'casebody_data.text.head_matter',
         'casebody_data.text.opinions.author',
         'casebody_data.text.opinions.text',
