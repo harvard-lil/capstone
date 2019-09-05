@@ -337,10 +337,10 @@ select {
   a {
     text-decoration: underline;
     font-size: $font-size-sm;
+    color: $color-violet-gray-dark;
   }
   .api_url_segment:hover {
-    background-color: $color-light-gray;
-    //font-weight: $font-weight-bold;
+    @extend .highlight-parameter;
   }
   .api_url_active {
     font-weight: bold;
@@ -365,16 +365,17 @@ select {
 }
 
 .queryfield_highlighted {
-  border: 4px solid $color-magenta;
+  @extend .highlight-parameter;
 }
 
 .querylabel_highlighted {
   font-weight: bold;
+  color: $color-violet-gray-dark;
 }
 
 .highlight-parameter {
-  font-weight: bold;
-  font-size: 1.125rem;
+  color: $color-white;
+  background-color: $color-violet-gray-dark;
 }
 
 #query-explainer-button {
