@@ -4,6 +4,7 @@
 @import "base.scss";
 @import 'footer/yellow';
 
+
 .row.alert-danger {
   padding: 10px 0;
   margin: 10px 0;
@@ -185,11 +186,6 @@
   padding-bottom: 0px;
 }
 
-.queryfield input.form-control[type="text"], input[type="text"], input[type="email"], textarea {
-  display: inline-block;
-  width: 100%;
-}
-
 select {
   width: 100%;
   border: 1px solid $color-violet-gray;
@@ -333,5 +329,64 @@ select {
   .see-cases {
     color: $color-violet;
     border-bottom: 2px solid $color-violet;
+  }
+}
+
+.query-explainer {
+
+  a {
+    text-decoration: underline;
+    font-size: $font-size-sm;
+  }
+  .api_url_segment:hover {
+    background-color: $color-light-gray;
+    //font-weight: $font-weight-bold;
+  }
+  .api_url_active {
+    font-weight: bold;
+  }
+  small {
+    line-height: 1.3;
+    display: block;
+    margin-bottom: 10px;
+    font-size: 60%;
+    letter-spacing: 0.01em;
+  }
+
+}
+
+.url-block {
+  background-color: $color-white;
+}
+
+.queryfield input.form-control[type="text"], input[type="text"], input[type="email"], textarea {
+  display: inline-block;
+  width: 100%;
+}
+
+.queryfield_highlighted {
+  border: 4px solid $color-magenta;
+}
+
+.querylabel_highlighted {
+  font-weight: bold;
+}
+
+.highlight-parameter {
+  font-weight: bold;
+  font-size: 1.125rem;
+}
+
+#query-explainer-button {
+  @extend .btn-tertiary;
+  border: 0;
+  background-color: $color-light-gray;
+  padding-right: 0;
+  margin-right: 0;
+  margin-top: 0;
+  &.active {
+    &:hover, &:active, &:focus {
+      background-position-x: -26px !important;
+    }
   }
 }
