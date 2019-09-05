@@ -1,6 +1,6 @@
 <template>
     <code>
-      <a id="query-explainer" :href="query_url" tabindex=0>
+      <a id="query-explainer" :href="query_url">
         <span>{{ base_url }}</span>
         <span v-for="(argument, index) in url_arguments"
               :key="index" class="api_url_segment"
