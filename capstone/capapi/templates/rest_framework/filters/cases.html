@@ -1,0 +1,25 @@
+<h2>Field filters</h2>
+<form class="form" action="" method="get">
+
+  {% for field_id, field_data in fields.items %}
+    {% if 'options' in field_data %}
+      <label for="id_{{ field_id }}">{{ field_data.label }}</label>
+
+      <select name="{{ field_id }}" id="id_{{ field_id }}">
+        <option value="">---------</option>
+        {% for option in field_data.options %}
+            <option value="{{ option.value }}" {{ option.selected }}>{{ option.label }}</option>
+        {% endfor %}
+      </select>
+
+    {% else %}
+      <p>
+        <label for="id_{{ field_id }}">{{  field_data.label }}</label>
+        <input type={{ field_data.type }} name="{{ field_id }}" id="id_{{ field_id }}" value="{{ field_data.value }}">
+      </p>
+    {% endif %}
+  {% endfor %}
+
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
