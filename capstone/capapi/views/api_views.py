@@ -6,6 +6,7 @@ from pathlib import Path
 
 from django.http import HttpResponseRedirect, FileResponse
 from django.utils.text import slugify
+from django.template import loader
 
 from rest_framework import viewsets, renderers, mixins
 from rest_framework.decorators import action
@@ -145,6 +146,113 @@ class CAPFiltering(FilteringFilterBackend):
                 del query_params['court_id']
 
         return query_params
+
+    def to_html(self, request, queryset, view):
+        """ This makes the html that goes inside the filters modal in the browsable API. Returns HTML string."""
+
+        query_params = self.get_filter_query_params(request, view)
+        filter_values = { param_name: param_data['values'] for param_name, param_data in query_params.items() }
+
+        # this is for the content of the dropdown menus for jurisdiction, court, and reporter
+        options = {}
+        options['jurisdiction'] = [ {
+                'value': jurisdiction[0],
+                'label': jurisdiction[1],
+                'selected': 'selected' if 'jurisdiction' in filter_values
+                                          and jurisdiction[0] in filter_values['jurisdiction'] else ''
+                }
+            for jurisdiction in filters.jur_choices]
+
+        options['court'] = [ {
+                'value': court[0],
+                'label': court[1],
+                'selected': 'selected' if 'court' in filter_values and court[0] in filter_values['court'] else ''
+                }
+            for court in filters.court_choices]
+        options['reporter'] = [{
+            'value': str(reporter[0]),
+            'label': reporter[1],
+            'selected': 'selected' if 'reporter' in filter_values
+                                      and str(reporter[0]) in filter_values['reporter'] else ''
+            }
+            for reporter in filters.reporter_choices]
+
+        # For fields that look better with custom labels
+        labels = {
+                  'reporter': 'Reporter Series',
+                  'decision_date_min': 'Earliest Decision Date (Format YYYY-MM-DD)',
+                  'decision_date_max': 'Latest Decision Date (Format YYYY-MM-DD)',
+                  'cite': 'Citation',
+                  'docket_number': 'Docket Number (contains)',
+                  'id': 'ID',
+                  'court_id': 'Court ID'
+                  }
+
+        # this creates a dictionary that holds each field and data about it
+        fields = {}
+        for f in view.filter_fields:
+            fields[f] = {}
+            fields[f]['id'] = f
+
+            if f.endswith('id'):
+                fields[f]['type'] = 'number'
+                fields[f]['step'] = 'any'
+            elif f not in options:
+                fields[f]['type'] = 'text'
+
+            if f in options:
+                fields[f]['options'] = options[f]
+
+            if f in filter_values:
+                fields[f]['value'] = ' '.join(filter_values[f])
+
+            fields[f]['label'] = labels[f] if f in labels else f.replace('_', ' ').title()
+
+        # full_case and body_format aren't part of the filters so I add them separately
+        full_case = True if 'full_case' in request.GET and request.GET['full_case'] != '' else False
+        fields['full_case'] = {
+            'id': 'full_case',
+            'label': 'Include full case text or just metadata?',
+            'options': [
+                {'value': 'true',
+                 'label': 'Full case text',
+                 'selected': 'selected' if  full_case else '',
+                 },
+                {'value': '',
+                 'label': 'Just metadata (default)',
+                 'selected': '' if  full_case else 'selected',
+                 }]
+        }
+
+        body_format = request.GET['body_format'] if 'body_format' in request.GET else ''
+        fields['body_format'] = {
+            'id': 'body_format',
+            'label': 'Format for case text (applies only if including case text):',
+            'options': [
+                {'value': 'text',
+                 'label': 'Text Only (default)',
+                 'selected': 'selected' if body_format == 'text' or body_format == '' else '',
+                 },
+                {'value': 'html',
+                 'label': 'HTML',
+                 'selected': 'selected' if body_format == 'html' else '',
+                 },
+                {'value': 'xml',
+                 'label': 'XML',
+                 'selected': 'selected' if body_format == 'xml' else '',
+                 }]
+        }
+
+        # search is also separate from a filter, so it needs to be added separately
+        fields['search'] = {
+            'id': 'search',
+            'value': request.query_params.get('search', ''),
+            'label': 'Full-Text Search',
+            'type': 'search'
+        }
+
+        template = loader.get_template('rest_framework/filters/cases.html')
+        return template.render({'fields': fields })
 
 class CAPFTSFilter(SimpleQueryStringSearchFilterBackend):
     search_param = 'search'
