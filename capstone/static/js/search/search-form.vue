@@ -1,4 +1,5 @@
 <template>
+
   <form @submit.prevent="$emit('new-search', fields, endpoint)" class="row">
     <div class="col-md-3">
       <h1 class="page-title">
@@ -39,7 +40,9 @@
           </div>
           <div class="row field-row"
                v-for="field in fields" :key="field.name"
-               v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }">
+               v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }"
+               @mouseover="highlightExplainer"
+               @mouseout="unhighlightExplainer">
             <div class="col-4 field_label_container">
               <label class="querylabel" :for="field['name']">
                 {{ field["label"] }}
@@ -48,7 +51,10 @@
             <div class="col-7">
               <template v-if="field['choices']">
                 <select v-model='field["value"]'
-                        :id='field["name"]'>
+                        :id='field["name"]'
+                        @change="valueUpdated"
+                        @focus="highlightExplainer"
+                        @blur="unhighlightExplainer">
                   <option v-for="choice in choices[field['choices']]"
                           :value="choice[0]" v-bind:key="choice[1]">
                     {{choice[1]}}
@@ -61,9 +67,12 @@
                        type="text"
                        :id='field["name"]'
                        :placeholder='field["format"] || false'
-                >
+                       v-on:keyup="valueUpdated"
+                       @focus="highlightExplainer"
+                       @blur="unhighlightExplainer">
               </template>
-              <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{field.info}}</small>
+              <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{field.info}}
+              </small>
               <div v-if="field_errors[field.name]" class="invalid-feedback">
                 {{ field_errors[field.name] }}
               </div>
@@ -78,31 +87,44 @@
           </div>
           <!--Buttons row-->
           <div class="row">
-        <div class="col-3"></div>
-        <div class="col-8">
-          <div class="submit-button-group">
-            <loading-button :showLoading="showLoading">Search</loading-button>
-          </div>
-          <div v-if="fields.length > 0" class="dropdown addfield">
-            <button class="dropdown-toggle add-field-button btn-secondary"
-                    type="button"
-                    id="dropdownMenuButton"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false">
-              Add Field&nbsp;
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <button class="dropdown-item" type="button"
-                      v-for="newfield in availableFields()" :key="newfield.name"
-                      @click="addField(newfield)">
-                {{ newfield.label }}
-              </button>
+            <div class="col-3"></div>
+            <div class="col-8">
+              <div class="submit-button-group">
+                <loading-button :showLoading="showLoading">Search</loading-button>
+              </div>
+              <div v-if="fields.length > 0" class="dropdown addfield">
+                <button class="dropdown-toggle add-field-button btn-secondary"
+                        type="button"
+                        id="dropdownMenuButton"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false">
+                  Add Field&nbsp;
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <button class="dropdown-item" type="button"
+                          v-for="newfield in availableFields()" :key="newfield.name"
+                          @click="addField(newfield)">
+                    {{ newfield.label }}
+                  </button>
+                </div>
+              </div>
+
             </div>
+            <div class="col-1"></div>
           </div>
-        </div>
-        <div class="col-1"></div>
-      </div>
+          <div class="row">
+            <div class="col-3"></div>
+            <div class="col-8">
+              <div class="submit-button-group">
+                <button id="query-explainer-button" class="mt-0" @click="toggleExplainer"
+                        v-if="show_explainer === true">HIDE API CALL
+                </button>
+                <button id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</button>
+              </div>
+            </div>
+            <div class="col-1"></div>
+          </div>
 
         </div>
         <div class="col-lg-5 search-disclaimer">
@@ -116,20 +138,37 @@
         </div>
       </div>
     </div>
+    <div class="col-9 offset-3 query-explainer" v-show="show_explainer">
+      <div class="row">
+        <div class="col-12">
+          <small id="help-text-search" class="form-text text-muted">
+            Hover over input boxes or url segments to expose their counterpart in your search query.
+          </small>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12 p-3 url-block">
+          <query-explainer :query_url="query_url"></query-explainer>
+        </div>
+      </div>
+    </div>
   </form>
 </template>
 <script>
   import searchroutes from "./search-routes"
   import LoadingButton from '../vue-shared/loading-button.vue';
+  import QueryExplainer from './query-explainer';
 
   export default {
-    components: {searchroutes, LoadingButton},
+    components: {searchroutes, LoadingButton, QueryExplainer},
     data: function () {
       return {
         query: [],
         newfield: null,
         page_size: 10,
         fields: [],
+        query_url: '',
+        show_explainer: false,
         endpoints: {
           cases: [
             {
@@ -295,8 +334,16 @@
 
       }
     },
+    watch: {
+      fields() {
+        this.valueUpdated()
+      }
+    },
     props: ['choices', 'search_error', 'field_errors', 'urls', 'showLoading', 'endpoint'],
     methods: {
+      valueUpdated() {
+        this.query_url = this.$parent.assembleUrl();
+      },
       removeField(field_name) {
         this.fields = this.fields.filter(field => field.name !== field_name);
       },
@@ -312,7 +359,22 @@
           Fields with hidden=true are excluded.
         */
         return this.endpoints[this.endpoint].filter(field => !field.hidden && !this.fields.includes(field));
-      }
+      },
+      highlightExplainer(event) {
+        var explainer_argument = document.getElementById("p_" + event.target.id);
+        if (explainer_argument) {
+          explainer_argument.classList.add('highlight-parameter');
+        }
+      },
+      unhighlightExplainer(event) {
+        var explainer_argument = document.getElementById("p_" + event.target.id);
+        if (explainer_argument) {
+          explainer_argument.classList.remove('highlight-parameter');
+        }
+      },
+      toggleExplainer() {
+        this.show_explainer = this.show_explainer ? false : true
+      },
     }
   }
 </script>
