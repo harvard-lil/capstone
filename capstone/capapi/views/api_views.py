@@ -156,25 +156,26 @@ class CAPFiltering(FilteringFilterBackend):
         # this is for the content of the dropdown menus for jurisdiction, court, and reporter
         options = {}
         options['jurisdiction'] = [ {
-                'value': jurisdiction.slug,
-                'label': jurisdiction.name_long,
+                'value': jurisdiction[0],
+                'label': jurisdiction[1],
                 'selected': 'selected' if 'jurisdiction' in filter_values
-                                          and jurisdiction.slug in filter_values['jurisdiction'] else ''
+                                          and jurisdiction[0] in filter_values['jurisdiction'] else ''
                 }
-            for jurisdiction in models.Jurisdiction.objects.all()]
+            for jurisdiction in filters.jur_choices]
+
         options['court'] = [ {
-                'value': court.slug,
-                'label': court.name,
-                'selected': 'selected' if 'court' in filter_values and court.slug in filter_values['court'] else ''
+                'value': court[0],
+                'label': court[1],
+                'selected': 'selected' if 'court' in filter_values and court[0] in filter_values['court'] else ''
                 }
-            for court in models.Court.objects.all()]
+            for court in filters.court_choices]
         options['reporter'] = [{
-            'value': str(reporter.id),
-            'label': reporter.short_name,
+            'value': str(reporter[0]),
+            'label': reporter[1],
             'selected': 'selected' if 'reporter' in filter_values
-                                      and str(reporter.id) in filter_values['reporter'] else ''
+                                      and str(reporter[0]) in filter_values['reporter'] else ''
             }
-            for reporter in models.Reporter.objects.all()]
+            for reporter in filters.reporter_choices]
 
         # For fields that look better with custom labels
         labels = {
