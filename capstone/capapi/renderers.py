@@ -56,13 +56,11 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 citations += "; "
 
         try:
-            cit_year = data["decision_date"][0:4]
             dec_date = parse_decision_date(data["decision_date"])
         except TypeError:
-            cit_year = data["decision_date"].strftime('%Y')
             dec_date = data["decision_date"].strftime('%b. %-d, %Y')
 
-        citation_full = data["name_abbreviation"] + ", " + official_citation + " (" + cit_year + ")"
+        citation_full = data.serializer._args[0].full_cite()
         context = {
             **renderer_context,
             'citation': official_citation,
