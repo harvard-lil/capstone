@@ -830,9 +830,9 @@ Endpoint Parameters:
 # Beginner's Introduction to APIs  {: class="subtitle" data-toc-label='Intro to APIs' }
   
 Are you a little lost in all the technical jargon, but still want to give the API a shot? This is a good place to start!
- This is by no means a complete introduction to using [APIs](#def-api), but it might be just enough to help situate a 
- technically inclined person who's a bit outside of their comfort zone. If you've had enough and would prefer to just 
- access the cases using a human-centric interface, please check out our [search tool]({% url 'search' %}). 
+This is by no means a complete introduction to using [APIs](#def-api), but it might be just enough to help situate a 
+technically inclined person who's a bit outside of their comfort zone. If you've had enough and would prefer to just 
+access the cases using a human-centric interface, please check out our [search tool]({% url 'search' %}). 
   
 Fundamentally, an API is no different from a regular website: A program on your computer, such as a web browser or 
 [curl](#def-curl) sends a bit of data to a [server](#def-server), the server processes that data, and then sends a 
@@ -901,8 +901,12 @@ old.
   
 So when you're working with CAPAPI, the same principles apply. Rather than http://www.google.com, you'll be using 
 {% api_url "api-root" %}. Rather than using the /search?q= endpoint and parameter, you'll be using one of our 
-[endpoints](#endpoints) and the parameters we've defined. One important difference is the purpose of the structured data
-we're returning, vs. the visual, browser-oriented data that google is returning with their search engine. 
+[endpoints](#endpoints) and the parameters we've defined. Would you like to see how this works in a real application? 
+Head over to our [search tool]({% url 'search' %}), click on the 'SHOW API CALL' link below the search button and 
+construct a query. The URL box below the search form will update as you change your search terms. You can hover over 
+each field in the URL to highlight its counterpart in the search form, or hover over each input box in the search form 
+to highlight its counterpart in the URL. When you've constructed the query, click on the API URL to head over to the 
+API, or click on the search button to use our search feature.
   
 When you perform a query in a web browser using our API, there are some links and buttons, but the data itself is in a 
 text-based format with lots of brackets and commas. This format is called JSON, or JavaScript Object Notation. We use 
