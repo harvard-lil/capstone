@@ -135,15 +135,34 @@ class CaseViewSet(BaseViewSet):
 
 class CAPFiltering(FilteringFilterBackend):
     def get_filter_query_params(self, request, view):
+        def lc_values(values):
+            return [value.lower() for value in values if isinstance(value, str)]
+
         query_params = super().get_filter_query_params(request, view)
         if 'cite' in query_params:
-            query_params['cite']['values'] = [Citation.normalize_cite(cite) for cite in query_params['cite']['values']]
+            query_params['cite']['values'] = [Citation.normalize_cite(cite) for cite in
+                                              lc_values(query_params['cite']['values']) ]
 
         if 'court_id' in query_params:
             query_params['court_id']['values'] = [ court_id for court_id
                                                    in query_params['court_id']['values'] if court_id.isdigit() ]
             if len(query_params['court_id']['values']) < 1:
                 del query_params['court_id']
+
+        if 'name' in query_params:
+            query_params['name']['values'] = lc_values(query_params['name']['values'])
+
+        if 'name_abbreviation' in query_params:
+            query_params['name_abbreviation']['values'] = lc_values(query_params['name_abbreviation']['values'])
+
+        if 'court' in query_params:
+            query_params['court']['values'] = lc_values(query_params['court']['values'])
+
+        if 'jurisdiction' in query_params:
+            query_params['jurisdiction']['values'] = lc_values(query_params['jurisdiction']['values'])
+
+        if 'docket_number' in query_params:
+            query_params['docket_number']['values'] = lc_values(query_params['docket_number']['values'])
 
         return query_params
 
