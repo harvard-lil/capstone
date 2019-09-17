@@ -5,7 +5,7 @@
     {% if 'options' in field_data %}
       <label for="id_{{ field_id }}">{{ field_data.label }}</label>
 
-      <select name="{{ field_id }}" id="id_{{ field_id }}">
+      <select name="{{ field_id }}" id="id_{{ field_id }}" class="mb-4">
         <option value="">---------</option>
         {% for option in field_data.options %}
             <option value="{{ option.value }}" {{ option.selected }}>{{ option.label }}</option>
@@ -14,8 +14,13 @@
 
     {% else %}
       <p>
-        <label for="id_{{ field_id }}">{{  field_data.label }}</label>
+        <label for="id_{{ field_id }}">{{ field_data.label }}</label>
         <input type={{ field_data.type }} name="{{ field_id }}" id="id_{{ field_id }}" value="{{ field_data.value }}">
+
+        {% if field_id == 'search' %}
+          <div class="helptext mt-2">Search for words separated by spaces. All words are required in results. Words less
+            than 3 characters are ignored.</div>
+        {% endif %}
       </p>
     {% endif %}
   {% endfor %}

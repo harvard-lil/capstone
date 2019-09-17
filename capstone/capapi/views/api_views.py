@@ -189,9 +189,26 @@ class CAPFiltering(FilteringFilterBackend):
                   }
 
         # this creates a dictionary that holds each field and data about it
-        fields = {}
+        fields = OrderedDict()
+        fields['cite']= {}
+        fields['name_abbreviation']= {}
+        fields['jurisdiction']= {}
+        fields['reporter']= {}
+        fields['decision_date_min']= {}
+        fields['decision_date_max']= {}
+        fields['docket_number']= {}
+        fields['court']= {}
+        fields['court_id']= {}
+        fields['search']= {}
+        fields['full_case']= {}
+        fields['body_format']= {}
+
         for f in view.filter_fields:
-            fields[f] = {}
+            if f not in fields:
+                if f == 'decision_date' or f == 'id' or f == 'name':
+                    continue
+                fields[f] = {}
+
             fields[f]['id'] = f
 
             if f.endswith('id'):
