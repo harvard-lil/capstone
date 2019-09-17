@@ -381,7 +381,7 @@ select {
 #query-explainer-button {
   @extend .btn-tertiary;
   border: 0;
-  background-color: $color-light-gray;
+  background-color: transparent;
   padding-right: 0;
   margin-right: 0;
   margin-top: 0;
