@@ -24,9 +24,9 @@ class CaseDocument(DocType):
 
     frontend_url = fields.KeywordField()
 
-    docket_numbers = fields.KeywordField(multi=True)
+    docket_numbers = fields.TextField(multi=True)
 
-    docket_number = fields.KeywordField()
+    docket_number = fields.TextField()
 
     volume = fields.ObjectField(properties={
         "barcode": fields.TextField(),
