@@ -272,6 +272,12 @@ class CAPFiltering(FilteringFilterBackend):
         return template.render({'fields': fields })
 
 class CAPFTSFilter(SimpleQueryStringSearchFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        # ignores empty searches
+        if 'search' in request.GET and request.GET['search'] is not '':
+            queryset = super().filter_queryset(request, queryset, view)
+        return queryset
+
     search_param = 'search'
 
 class CaseDocumentViewSet(BaseDocumentViewSet):
