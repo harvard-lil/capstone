@@ -57,7 +57,7 @@ def home(request):
     """ Base page -- list all of our jurisdictions and reporters. """
 
     # get reporters sorted by jurisdiction
-    reporters = Reporter.objects.prefetch_related('jurisdictions').order_by('short_name')
+    reporters = Reporter.objects.filter(is_nominative=False).prefetch_related('jurisdictions').order_by('short_name')
     reporters_by_jurisdiction = defaultdict(list)
     for reporter in reporters:
         for jurisdiction in reporter.jurisdictions.all():
@@ -77,7 +77,7 @@ def series(request, series_slug):
         return HttpResponseRedirect(helpers.reverse('series', args=[slugify(series_slug)], host='cite'))
     reporters = list(Reporter.objects
         .filter(short_name_slug=series_slug)
-        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None)))
+        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None).exclude(duplicate=True)))
         .order_by('full_name'))
     if not reporters:
         raise Http404

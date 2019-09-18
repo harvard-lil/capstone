@@ -500,7 +500,7 @@ def compress_volume(storage_name, volume_name):
                 sha_out.write(tar_out.hexdigest())
 
 @contextmanager
-def open_captar_volume(volume_path, delete_temp_on_error=True):
+def open_captar_volume(volume_path, delete_temp_on_error=True, raise_on_not_found=True):
     """
         Accessing individual parts of captar files is really slow if they're on S3. This copies them locally, if necessary.
         With delete_temp_on_error=False, we'll avoid deleting the temp dir afterward so the locally-copied files can
@@ -524,6 +524,8 @@ def open_captar_volume(volume_path, delete_temp_on_error=True):
             volume_storage = CaptarStorage(local_storage, volume_path)
             assert volume_storage.index
         except (FileNotFoundError, AssertionError):
+            if raise_on_not_found:
+                raise
             yield None
         else:
             yield volume_storage
@@ -561,7 +563,7 @@ def validate_volume(volume_path):
     try:
 
         # load tar file as a storage wrapper and get list of items
-        with open_captar_volume(volume_path) as volume_storage:
+        with open_captar_volume(volume_path, raise_on_not_found=False) as volume_storage:
             if not volume_storage:
                 raise ValidationResult("index_missing", "Failed to load index for %s" % volume_path)
             tar_items = set(volume_storage.iter_files_recursive(with_md5=True))
