@@ -221,6 +221,7 @@ def main(dry_run='true'):
                     nominative_cite = deepcopy(official_cite)
                     nominative_cite.cite = nominative_cite_prefix + old_page_num
                     nominative_cite.type = 'nominative'
+                    nominative_cite.pk = None
                     print("   - update %s to %s and %s" % (old_official_cite, official_cite, nominative_cite))
                     if dry_run == 'false':
                         official_cite.save()
