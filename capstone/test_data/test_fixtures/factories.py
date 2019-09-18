@@ -142,9 +142,7 @@ class CitationFactory(factory.DjangoModelFactory):
     class Meta:
         model = Citation
 
-    @factory.lazy_attribute
-    def type(self):
-        return random.choice(['official', 'parallel'])
+    type = 'official'
     cite = factory.LazyAttribute(lambda o: "%s U.S. %s" % (random.randint(1,999), random.randint(1, 999)))
 
     # this should work, per https://factoryboy.readthedocs.io/en/latest/recipes.html#example-django-s-profile ,

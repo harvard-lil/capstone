@@ -1570,7 +1570,7 @@ class CaseXML(BaseXMLModel):
 
 class Citation(models.Model):
     type = models.CharField(max_length=100,
-                            choices=(("official", "official"), ("parallel", "parallel")))
+                            choices=(("official", "official"), ("parallel", "parallel"), ("nominative", "nominative")))
     category = models.CharField(max_length=100, blank=True, null=True)  # this field and "type" are reversed from the values in CaseXML -- possibly should be switched back?
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
