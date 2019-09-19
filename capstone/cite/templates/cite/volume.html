@@ -29,7 +29,7 @@
     {% for volume, cases in volumes %}
       {% with volume.reporter as reporter %}
         <h3 class="subtitle">{{ reporter.short_name }}</h3>
-        <p>{{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})
+        <p>{{ reporter.full_name }} ({{ reporter.start_year|default:"" }}-{{ reporter.end_year|default:"" }})
           volume {{ volume.volume_number }}</p>
         <ul>
           {% for case in cases %}

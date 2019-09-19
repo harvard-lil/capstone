@@ -491,8 +491,10 @@ class Reporter(models.Model):
     full_name = models.CharField(max_length=1024, db_index=True)
     short_name = models.CharField(max_length=64)
     short_name_slug = models.CharField(max_length=64, blank=True, null=True, db_index=True)
-    start_year = models.IntegerField(blank=True, null=True)
-    end_year = models.IntegerField(blank=True, null=True)
+    start_year = models.IntegerField(blank=True, null=True, help_text="First year of cases for this reporter")
+    end_year = models.IntegerField(blank=True, null=True, help_text="Last year of cases for this reporter")
+    analyst_start_year = models.IntegerField(blank=True, null=True, help_text="Initial start year added by analyst.")
+    analyst_end_year = models.IntegerField(blank=True, null=True, help_text="Initial end year added by analyst.")
     volume_count = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -914,7 +916,7 @@ class CaseMetadata(models.Model):
     def full_cite(self):
         return "%s, %s%s" % (
             self.name_abbreviation,
-            ", ".join(cite.cite for cite in self.citations.all()),
+            ", ".join(cite.cite for cite in Citation.sorted_by_type(self.citations.all())),
             " (%s)" % self.decision_date.year if self.decision_date else ""
         )
 
@@ -1576,6 +1578,7 @@ class Citation(models.Model):
     duplicative = models.BooleanField(default=False)
     normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
     case = models.ForeignKey('CaseMetadata', related_name='citations', null=True, on_delete=models.SET_NULL)
+
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
     objects = TemporalQuerySet.as_manager()
@@ -1586,10 +1589,10 @@ class Citation(models.Model):
     class Meta:
         ordering = ['type']  # so official will come back before parallel
 
-    def save(self, force_insert=False, force_update=False, save_case=True, save_volume=True, *args, **kwargs):
+    def save(self, *args, **kwargs):
         if self.tracker.has_changed('cite'):
             self.normalized_cite = self.normalize_cite(self.cite)
-        super(Citation, self).save(force_insert, force_update, *args, **kwargs)
+        super(Citation, self).save(*args, **kwargs)
 
     @staticmethod
     def normalize_cite(cite):
@@ -1597,6 +1600,16 @@ class Citation(models.Model):
 
     def page_number(self):
         return self.cite.rsplit(' ', 1)[-1]
+
+    type_sort_order = {
+        "official": 1,
+        "nominative": 2,
+        "parallel": 3,
+    }
+
+    @classmethod
+    def sorted_by_type(cls, cites):
+        return sorted(cites, key=lambda c: c.type_sort_order[c.type])
 
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
@@ -1950,6 +1963,9 @@ class EditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     user_id = models.IntegerField(blank=True, null=True)
     description = models.TextField()
+
+    class Meta:
+        ordering = ['-timestamp']
 
     @contextmanager
     def record(self, auto_transaction=True):

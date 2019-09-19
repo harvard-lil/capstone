@@ -26,7 +26,7 @@
       {% for reporter in reporters %}
         <li>
           <strong><a href="{% url 'series' series_slug=reporter.short_name_slug host 'cite' %}">{{ reporter.short_name }}</a>:</strong>
-          {{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})
+          {{ reporter.full_name }} ({{ reporter.start_year|default:"" }}-{{ reporter.end_year|default:"" }})
         </li>
       {% endfor %}
     </ul>

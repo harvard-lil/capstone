@@ -1106,34 +1106,30 @@ def update_case_frontend_url(update_existing=False):
     """
     import itertools
     from scripts.helpers import ordered_query_iterator
-
     # get a set of all ambiguous_cites that appear more than once -- these should be linked by ID
     cursor = django.db.connections['capdb'].cursor()
     cursor.execute("SELECT DISTINCT a.cite FROM capdb_citation a, capdb_citation b WHERE a.cite=b.cite AND a.id<b.id")
     ambiguous_cites = {row[0] for row in cursor.fetchall()}
-
     # loop through all cites in batches of 10000
-    cites = Citation.objects.filter(type='official').select_related('case').order_by('case_id', 'type', 'id').only('cite', 'case__reporter_id', 'case__volume_id')
+    cites = Citation.objects.select_related('case').only('cite', 'case__reporter_id', 'case__volume_id').order_by('case_id', 'id')
     if not update_existing:
         cites = cites.filter(case__frontend_url=None)
     cites = ordered_query_iterator(cites, chunk_size=10000)
-    last_id = None
-    for _ in tqdm(itertools.count()):  # infinite loop with progress bar
-        cite_batch = list(itertools.islice(cites, 10000))
-        if not cite_batch:
-            break
-
-        # set frontend_url for each distinct case in batch
-        case_batch = []
-        for cite in cite_batch:
-            if cite.case_id == last_id:
-                continue
-            last_id = cite.case_id
-            case = cite.case
-            new_frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=cite.cite in ambiguous_cites)
-            if new_frontend_url != case.frontend_url:
-                case.frontend_url = new_frontend_url
-                case_batch.append(case)
+    cite_groups = itertools.groupby(cites, key=lambda cite: cite.case_id)
+    # set frontend_url for each case
+    case_batch = []
+    for k, cite_group in tqdm(cite_groups):
+        cite_group = list(cite_group)
+        cite = next((c for c in cite_group if c.type == 'official'), cite_group[0])
+        case = cite.case
+        new_frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=cite.cite in ambiguous_cites)
+        if new_frontend_url != case.frontend_url:
+            case.frontend_url = new_frontend_url
+            case_batch.append(case)
+            if len(case_batch) > 1000:
+                CaseMetadata.objects.bulk_update(case_batch, ['frontend_url'])
+                case_batch = []
+    if case_batch:
         CaseMetadata.objects.bulk_update(case_batch, ['frontend_url'])
 
 @task
@@ -1185,6 +1181,24 @@ def update_in_scope(last_run_before=None):
 def retrieve_and_store_images(last_run_before=None):
     """ Retrieve images from inside cases """
     tasks.run_task_for_volumes(tasks.retrieve_images_from_cases, last_run_before=last_run_before)
+
+
+@task
+def update_reporter_years():
+    """ Update Reporter.start_year and Reporter.end_year to match actual dates of cases. """
+    cursor = django.db.connections['capdb'].cursor()
+    cursor.execute("""
+        update capdb_reporter r
+        set start_year = new_start_year, end_year = new_end_year
+        from (
+                 select reporter_id,
+                        min(date_part('year', decision_date)) as new_start_year,
+                        max(date_part('year', decision_date)) as new_end_year
+                 from capdb_casemetadata
+                 group by reporter_id
+             ) as cases
+        where cases.reporter_id = r.id;
+    """)
 
 
 if __name__ == "__main__":

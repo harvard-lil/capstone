@@ -3,9 +3,10 @@ from django.forms.widgets import Textarea
 from django.utils.text import normalize_newlines
 from simple_history.admin import SimpleHistoryAdmin
 
+from capapi.models import CapUser
 from capapi.resources import CachedCountDefaultQuerySet
-from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, ProcessStep, BookRequest, \
-    TrackingToolUser, SlowQuery, Jurisdiction, CaseMetadata, CaseExport, Citation
+from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, \
+    SlowQuery, Jurisdiction, CaseMetadata, CaseExport, Citation, EditLog, EditLogTransaction
 
 
 ### helpers and setup ###
@@ -144,14 +145,26 @@ class SlowQueryAdmin(admin.ModelAdmin):
 class JurisdictionAdmin(admin.ModelAdmin):
     list_display = ['id', 'slug', 'name', 'name_long', 'whitelisted']
 
+
 @admin.register(CaseExport)
 class CaseExportAdmin(admin.ModelAdmin):
     list_display = ['id', 'export_date', 'filter_type', 'filter_id', 'file_name', 'file', 'public']
 
 
+@admin.register(EditLog)
+class EditLogAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'timestamp', 'description']
+    inlines = [new_class('EditLogTransactionInline', ReadonlyInlineMixin, admin.TabularInline, model=EditLogTransaction)]
+
+    def user(self, obj):
+        if not obj.user_id:
+            return "-"
+        return CapUser.objects.get(id=obj.user_id)
+
+
 # models with no admin class yet
 
 admin.site.register(VolumeMetadata)
-admin.site.register(ProcessStep)
-admin.site.register(BookRequest)
-admin.site.register(TrackingToolUser)
+# admin.site.register(ProcessStep)
+# admin.site.register(BookRequest)
+# admin.site.register(TrackingToolUser)

@@ -6,6 +6,7 @@ from django.http.response import HttpResponseBase
 from django.template import loader
 from rest_framework import renderers
 
+from capdb.models import Citation
 from capweb.helpers import cache_func
 from scripts.process_metadata import parse_decision_date
 
@@ -42,18 +43,13 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 return template.render(renderer_context, renderer_context['request'])
             return generate_html_error("Authentication Error", data['detail'])
 
-        official_cit_entries = [citation['cite'] for citation in data['citations'] if citation['type'] == 'official']
-        official_citation = official_cit_entries[0] if len(official_cit_entries[0]) > 0 else None
         template = loader.get_template('case.html')
 
         # TODO: add html renderer to court and others. For now here's a quick fix
         data['court']['url'] = data['court']['url'].split("format=html")[0]
-        citations = ""
-        citation_count = len(data['citations'])
-        for key, citation in enumerate(data['citations']):
-            citations += citation.get('cite')
-            if key + 1 < citation_count:
-                citations += "; "
+
+        sorted_cites = sorted(data['citations'], key=lambda c: Citation.type_sort_order[c['type']])
+        citations = ", ".join(c['cite'] for c in sorted_cites)
 
         try:
             cit_year = data["decision_date"][0:4]
@@ -62,11 +58,11 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             cit_year = data["decision_date"].strftime('%Y')
             dec_date = data["decision_date"].strftime('%b. %-d, %Y')
 
-        citation_full = data["name_abbreviation"] + ", " + official_citation + " (" + cit_year + ")"
+        citation_full = data["name_abbreviation"] + ", " + citations + " (" + cit_year + ")"
 
         context = {
             **renderer_context,
-            'citation': official_citation,
+            'citation': citations,
             'meta_description': "Full text of %s from the Caselaw Access Project." % citation_full,
             'frontend_url': data['frontend_url'],
             'metadata': {
