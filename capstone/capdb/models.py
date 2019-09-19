@@ -1951,6 +1951,9 @@ class EditLog(models.Model):
     user_id = models.IntegerField(blank=True, null=True)
     description = models.TextField()
 
+    class Meta:
+        ordering = ['-timestamp']
+
     @contextmanager
     def record(self, auto_transaction=True):
         """
