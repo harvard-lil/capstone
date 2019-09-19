@@ -1183,6 +1183,24 @@ def retrieve_and_store_images(last_run_before=None):
     tasks.run_task_for_volumes(tasks.retrieve_images_from_cases, last_run_before=last_run_before)
 
 
+@task
+def update_reporter_years():
+    """ Update Reporter.start_year and Reporter.end_year to match actual dates of cases. """
+    cursor = django.db.connections['capdb'].cursor()
+    cursor.execute("""
+        update capdb_reporter r
+        set start_year = new_start_year, end_year = new_end_year
+        from (
+                 select reporter_id,
+                        min(date_part('year', decision_date)) as new_start_year,
+                        max(date_part('year', decision_date)) as new_end_year
+                 from capdb_casemetadata
+                 group by reporter_id
+             ) as cases
+        where cases.reporter_id = r.id;
+    """)
+
+
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
     # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"

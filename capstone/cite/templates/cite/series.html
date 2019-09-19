@@ -22,7 +22,7 @@
     </nav>
     {% for reporter, volumes in reporters %}
       <h3 class="subtitle">{{ reporter.short_name }}</h3>
-      <p>{{ reporter.full_name }} ({{ reporter.start_year }}-{{ reporter.end_year }})</p>
+      <p>{{ reporter.full_name }} ({{ reporter.start_year|default:"" }}-{{ reporter.end_year|default:"" }})</p>
       <p>
         <strong>Volume number:</strong>
         {% for volume in volumes %}
