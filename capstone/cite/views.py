@@ -57,7 +57,7 @@ def home(request):
     """ Base page -- list all of our jurisdictions and reporters. """
 
     # get reporters sorted by jurisdiction
-    reporters = Reporter.objects.filter(is_nominative=False).prefetch_related('jurisdictions').order_by('short_name')
+    reporters = Reporter.objects.filter(is_nominative=False).exclude(start_year=None).prefetch_related('jurisdictions').order_by('short_name')
     reporters_by_jurisdiction = defaultdict(list)
     for reporter in reporters:
         for jurisdiction in reporter.jurisdictions.all():
