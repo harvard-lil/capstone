@@ -55,7 +55,8 @@ def get_word_baseline_offset(word, ttf_name, font_size):
     """
         Return maximum get_baseline_offset() for a set of characters.
     """
-    return max(get_baseline_offset(c, ttf_name, font_size) for c in set(word))
+    chars = set(word)
+    return max(get_baseline_offset(c, ttf_name, font_size) for c in chars) if chars else 0
 
 @shared_task(acks_late=True)
 def make_pdf(volume_path, show_words=False, replace_existing=False):
