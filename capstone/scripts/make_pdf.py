@@ -73,11 +73,12 @@ def make_pdf(volume_path, show_words=False, replace_existing=False):
     barcode = volume_barcode_from_folder(str(volume_path))
     draw_mode = None if show_words else 3
     pdf_path = volume_path.with_name("%s.pdf" % barcode)
+    pdf_path_string = str(pdf_path)
 
     # handle existing output file
-    if pdf_storage.exists(pdf_path):
+    if pdf_storage.exists(pdf_path_string):
         if replace_existing:
-            pdf_storage.delete(pdf_path)
+            pdf_storage.delete(pdf_path_string)
         else:
             return
 
