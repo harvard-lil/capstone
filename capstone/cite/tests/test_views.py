@@ -28,7 +28,7 @@ def test_series(client, django_assert_num_queries, volume_factory):
     volume_2.reporter.short_name_slug = volume_1.reporter.short_name_slug
     volume_2.reporter.save()
 
-    with django_assert_num_queries(select=2):
+    with django_assert_num_queries(select=4):
         response = client.get(reverse('series', args=[volume_1.reporter.short_name_slug], host='cite'))
     check_response(response)
     content = response.content.decode()
