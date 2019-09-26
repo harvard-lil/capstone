@@ -81,7 +81,7 @@ def series(request, series_slug):
         .order_by('full_name'))
     if not reporters:
         raise Http404
-    reporters = [(reporter, sorted(reporter.volumes.all(), key=lambda volume: natural_sort_key(volume.volume_number))) for reporter in reporters]
+    reporters = [(reporter, sorted(reporter.volumes.all().exclude(out_of_scope=True), key=lambda volume: natural_sort_key(volume.volume_number))) for reporter in reporters]
     return render(request, 'cite/series.html', {
         "reporters": reporters,
     })
