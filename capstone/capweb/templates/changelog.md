@@ -21,7 +21,7 @@ extra_head: {% stylesheet 'docs' %}
 		* increase the length of cursor strings
 		* invalidate old Postgres cursor strings
 * New IDs
-	* You may have notices that we've started including some new IDs in our API's case output. Volumes now include a unique 'barcode' value which (usually) corresponds to the barcode in our library's cataloging system. Reporter entries now include the reporter ID. These values were previously only available as part of the URL value. Thanks to [Mike Lissener](https://michaeljaylissner.com/) for pointing this one out.
+	* You may have notices that we've started including some new IDs in our API's case output. Volumes now include a unique 'barcode' value which (usually) corresponds to the barcode in our library's cataloging system. Reporter entries now include the reporter ID. These values were previously only available as part of the URL value. Thanks to [Mike Lissner](https://michaeljaylissner.com/) for pointing this one out.
 		
 **Data:**
 
