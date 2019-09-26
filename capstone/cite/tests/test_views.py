@@ -40,7 +40,7 @@ def test_series(client, django_assert_num_queries, volume_factory):
     series_slug = volume_1.reporter.short_name_slug.replace('-', '. ').upper()
     response = client.get(reverse('series', args=[series_slug], host='cite'))
     check_response(response, status_code=302)
-    with django_assert_num_queries(select=2):
+    with django_assert_num_queries(select=4):
         response = client.get(reverse('series', args=[series_slug], host='cite'), follow=True)
     check_response(response, status_code=200)
 
