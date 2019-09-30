@@ -9,6 +9,31 @@ top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
+# October 2, 2019
+
+**API:**
+
+* Elasticsearch
+	* We've switched the back end of the cases endpoint to Elasticsearch. We tried to maintain the same API interface and output that older Postgres back end had, but please let us know if anything is broken. 
+	This update will:
+		* increase performance
+		* pave the way for lots of new features and functionality
+		* increase the length of cursor strings
+		* invalidate old Postgres cursor strings
+* New IDs
+	* We've started including some new IDs in our API's case output. Volumes now include a unique 'barcode' value which (usually) corresponds to the barcode in our library's cataloging system. Reporter entries now include the reporter ID. These values were previously only available as part of the URL value. Thanks to [Mike Lissner](https://michaeljaylissner.com/) for pointing this one out.
+		
+**Data:**
+
+* Nominative Reporters
+	* We've cleaned up the nominative entries in our reporters table! This affects not only the reporters table but also corrects citations and volume metadata. 
+
+
+**Website:**
+
+* New Gallery Entries
+    * We've been adding some new entries to our [Gallery Page]({% url "contact" %}) so head on over and check 'em out.
+
 # July 31, 2019
 
 **Website:**
