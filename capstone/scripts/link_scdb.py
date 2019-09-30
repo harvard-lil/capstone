@@ -8,7 +8,7 @@ from pathlib import Path
 from django.conf import settings
 from tqdm import tqdm
 
-from capdb.models import CaseMetadata
+from capdb.models import Citation, EditLog
 
 """
     Usage: fab run_script:scripts.link_scdb
@@ -21,8 +21,8 @@ from capdb.models import CaseMetadata
                 \copy (select m.id, m.volume_id, cite, name, name_abbreviation, decision_date 
                 from capdb_casemetadata m, capdb_citation c where c.case_id=m.id and c.cite like '%U.S.%') 
                 To 'us_cites.csv' With CSV
-        - test_data/zips/SCDB_2018_02_caseCentered_Citation.csv, downloaded from http://scdb.wustl.edu/
-        - test_data/zips/SCDB_Legacy_04_caseCentered_Citation.csv, downloaded from http://scdb.wustl.edu/
+        - test_data/zips/SCDB_2019_01_caseCentered_Citation.csv, downloaded from http://scdb.wustl.edu/
+        - test_data/zips/SCDB_Legacy_05_caseCentered_Citation.csv, downloaded from http://scdb.wustl.edu/
         
     The script also requires access to CaseMetadata to fetch additional information about volumes.
     
@@ -69,6 +69,10 @@ def get_best_match(targets, candidates, word_counts, document_count, tf_threshol
         if best:
             return best
 
+def get_cite_reporter(cite):
+    """ Return "U.S." from "123 U.S. 456" by stripping off leading and trailing digits and whitespace. """
+    return re.sub(r'^\d+\s+|\s+\d+$', '', cite)
+
 # correct matches found while writing script
 manual_matches = {
     '2007-061': '3677184',
@@ -78,12 +82,13 @@ base_path = Path(settings.BASE_DIR, 'test_data/zips')
 # columns in us_cites.csv
 exported_columns = ['id', 'volume_id', 'cite', 'name', 'name_abbreviation', 'decision_date']
 
-def main():
+def main(dry_run=True, output_missing=False):
     # load data
     print("loading data")
+    # us_reporter = Reporter.objects.get(short_name='U.S.')
     cap_cites_path = base_path / 'us_cites.csv'
-    scdb_new_cites_path = base_path / 'SCDB_2018_02_caseCentered_Citation.csv'
-    scdb_old_cites_path = base_path / 'SCDB_Legacy_04_caseCentered_Citation.csv'
+    scdb_new_cites_path = base_path / 'SCDB_2019_01_caseCentered_Citation.csv'
+    scdb_old_cites_path = base_path / 'SCDB_Legacy_05_caseCentered_Citation.csv'
     cap_cites = list(csv.DictReader((l.replace('\xad', '') for l in cap_cites_path.open()), exported_columns))
     scdb_cites = list(csv.DictReader(scdb_new_cites_path.open(encoding='iso-8859-1'))) + list(csv.DictReader(scdb_old_cites_path.open(encoding='iso-8859-1')))
     scdb_cites = [c for c in scdb_cites if c['usCite']]
@@ -101,6 +106,7 @@ def main():
     ### first pass at checking for matches -- find all cases where cites are the same and titles are similar.
     # These are "strong" matches.
     print("checking for matches")
+    matched_cap_case_ids = set()
     for cap_cite in tqdm(cap_cites):
         cite = cap_cite['cite']
 
@@ -123,6 +129,7 @@ def main():
                 c = candidates_by_name[best[0]]
                 c['cap_cite'] = cap_cite
                 c['match_quality'] = 'strong'
+                matched_cap_case_ids.add(cap_cite['id'])
             else:
                 for c in candidates:
                     c.setdefault('failed_matches', []).append(cap_cite)
@@ -132,6 +139,50 @@ def main():
         c = scdb_cites_by_id[k]
         c['cap_cite'] = cap_cites_by_id[v]
         c['match_quality'] = 'confirmed'
+        matched_cap_case_ids.add(c['cap_cite']['id'])
+
+    # write SCDB cites to database
+    cite_objs = Citation.objects.filter(case_id__in=matched_cap_case_ids).select_related('case')
+    cite_objs_by_case_id = group_by(cite_objs, lambda c: c.case_id)
+    to_create = []
+    to_update = []
+    for scdb_cite in scdb_cites:
+        if 'cap_cite' not in scdb_cite:
+            continue
+        case_id = int(scdb_cite['cap_cite']['id'])
+        print("- %s" % case_id)
+        existing_cite_objs_by_reporter = {get_cite_reporter(c.cite): c for c in cite_objs_by_case_id[case_id]}
+        expected_cites = [['SCDB', 'SCDB %s' % scdb_cite['caseId'], 'vendor']]
+        for scdb_key, cite_type in [["usCite", "official"], ["sctCite", "parallel"], ["ledCite", "parallel"], ["lexisCite", "vendor"]]:
+            cite_val = scdb_cite[scdb_key]
+            expected_cites.append([get_cite_reporter(cite_val), cite_val, cite_type])
+        for reporter, cite_val, cite_type in expected_cites:
+            if reporter in existing_cite_objs_by_reporter:
+                new_cite = existing_cite_objs_by_reporter.pop(reporter)
+                if new_cite.cite == cite_val:
+                    if dry_run:
+                        print("  - not modifying existing cite %s" % cite_val)
+                        continue
+                old_cite_val = new_cite.cite
+                new_cite.cite = cite_val
+                to_update.append(new_cite)
+                if dry_run:
+                    print("  - would update cite from %s to %s" % (old_cite_val, new_cite.cite))
+            else:
+                new_cite = Citation(cite=cite_val, type=cite_type, case_id=case_id)
+                to_create.append(new_cite)
+                if dry_run:
+                    print("  - would create %s cite %s for case %s" % (new_cite.type, new_cite.cite, new_cite.case_id))
+        if existing_cite_objs_by_reporter:
+            print("  - WARNING: other cites: %s" % existing_cite_objs_by_reporter)
+
+    if not dry_run:
+        with EditLog(description='Add SCDB cites').record():
+            Citation.objects.bulk_create(to_create)
+            Citation.objects.bulk_update(to_update)
+
+    if not output_missing:
+        return
 
     ### second pass at checking for matches -- for all SCDB cites that don't have matches, fetch all cases we have for the
     # same volume, and look for similar titles. These are "weak" matches.
@@ -142,13 +193,16 @@ def main():
 
     # fetch all cases from the DB that belong to volumes where SCDB cases are missing
     target_volumes = set(c['volume_id'] for v in missing_by_volume for c in cap_cites_by_volume[v])
-    db_cases = CaseMetadata.objects.filter(volume_id__in=target_volumes).prefetch_related('citations')
-    for c in db_cases:
+    db_cites = Citation.objects.filter(cite__contains='U.S.', case__volume_id__in=target_volumes).select_related('case')
+    db_cases = []
+    for cite in db_cites:
         # conform DB objects to export format from csv
-        c.cite = c.citations.first().cite
+        c = cite.case
+        c.cite = cite
         c.decision_date = c.decision_date.strftime("%Y-%m-%d")
         c.name = c.name.replace('\xad', '')
         c.name_abbreviation = c.name_abbreviation.replace('\xad', '')
+        db_cases.append(c)
     db_cases_by_volume_id = group_by(db_cases, lambda d: d.volume_id)
 
     # check each missing SCDB cite for cases in the same volume with similar titles
@@ -168,6 +222,11 @@ def main():
                 m['cap_cite'] = {k: getattr(c, k) for k in exported_columns}
                 m['match_quality'] = 'weak'
 
+    # filter weak matches:
+    # - remove all "131 U.S. lxxxiii" roman numeral matches -- missing appendix
+    # - must not be already matched
+    # - must be from same volume and similar page number
+
     # output
     csv_out = csv.writer((base_path / 'scdb_cite_matchup.csv').open('w'))
     csv_out.writerow(['match quality', 'volume number', 'SCDB name', 'SCDB cite', 'SCDB date', 'SCDB ID', 'CAP name', 'CAP cite', 'CAP date', 'CAP ID', 'CAP vol id'])
@@ -175,4 +234,3 @@ def main():
         match = c.get('cap_cite')
         match_row = [match['name'], match['cite'], match['decision_date'], match['id'], match['volume_id']] if match else []
         csv_out.writerow([c.get('match_quality', 'none'), c['usCite'].split()[0], c['caseName'], c['usCite'], c['dateDecision'], c['caseId']]+match_row)
-
