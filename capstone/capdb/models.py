@@ -1,4 +1,5 @@
 import hashlib
+import itertools
 import json
 import math
 import re
@@ -922,6 +923,42 @@ class CaseMetadata(models.Model):
 
     def get_absolute_url(self):
         return reverse('cases-detail', kwargs={'id': self.id}, scheme="https")
+
+    @classmethod
+    def update_frontend_urls(cls, cite_strs, update_elasticsearch=True, batch_size=100):
+        """
+            Update frontend_url for all cases affected by a group of citation updates.
+            cite_strs should include both old and new citations. For example, if a case was corrected from
+            "124 Foo 456" to "123 Foo 456", cite_strs should include both strings.
+        """
+        for i in range(0, len(cite_strs), batch_size):
+            cites = Citation.objects.filter(cite__in=cite_strs[i:i+batch_size], type='official').order_by('cite').select_related('case__volume', 'case__reporter')
+            if update_elasticsearch:
+                cites = cites.select_related('case__court', 'case__jurisdiction', 'case__body_cache')
+            cite_groups = itertools.groupby(cites, key=lambda c: c.cite)
+            to_update = []
+
+            # go through each group of cases that share the same official cite, and set their frontend url.
+            # if more than one case in a group, then include disambiguation in the url.
+            for k, cite_group in cite_groups:
+                cite_group = list(cite_group)
+                disambiguate = len(cite_group) > 1
+                for cite in cite_group:
+                    case = cite.case
+                    new_frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=disambiguate)
+                    if new_frontend_url != case.frontend_url:
+                        case.frontend_url = new_frontend_url
+                        to_update.append(case)
+
+            if to_update:
+                cls.objects.bulk_update(to_update, ['frontend_url'])
+                if update_elasticsearch:
+                    cls.update_search_index_for_cases(to_update)
+
+    @classmethod
+    def update_search_index_for_cases(cls, cases):
+        from capapi.documents import CaseDocument  # avoid circular import
+        CaseDocument().update(cases)
 
     def get_frontend_url(self, cite=None, disambiguate=False, include_host=True):
         """

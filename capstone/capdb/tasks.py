@@ -78,7 +78,7 @@ def update_elasticsearch_for_vol(self, volume_id):
         cases = (CaseMetadata.objects
             .in_scope()
             .filter(volume_id=volume_id)
-            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'reporter', 'body_cache')
+            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache')
             .exclude(body_cache=None))
 
         # attempt to store 10 times, with linearly increasing backoff. this gives time for the bulk queue to be processed
