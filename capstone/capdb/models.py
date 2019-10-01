@@ -931,6 +931,10 @@ class CaseMetadata(models.Model):
             cite_strs should include both old and new citations. For example, if a case was corrected from
             "124 Foo 456" to "123 Foo 456", cite_strs should include both strings.
         """
+        # handle sets/iters
+        if type(cite_strs) != list:
+            cite_strs = list(cite_strs)
+
         for i in range(0, len(cite_strs), batch_size):
             cites = Citation.objects.filter(cite__in=cite_strs[i:i+batch_size], type='official').order_by('cite').select_related('case__volume', 'case__reporter')
             if update_elasticsearch:
@@ -953,10 +957,10 @@ class CaseMetadata(models.Model):
             if to_update:
                 cls.objects.bulk_update(to_update, ['frontend_url'])
                 if update_elasticsearch:
-                    cls.update_search_index_for_cases(to_update)
+                    cls.reindex_cases(to_update)
 
     @classmethod
-    def update_search_index_for_cases(cls, cases):
+    def reindex_cases(cls, cases):
         from capapi.documents import CaseDocument  # avoid circular import
         CaseDocument().update(cases)
 
