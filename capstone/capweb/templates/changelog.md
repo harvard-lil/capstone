@@ -9,7 +9,7 @@ top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
-# October 2, 2019
+# October 1, 2019
 
 **API:**
 
