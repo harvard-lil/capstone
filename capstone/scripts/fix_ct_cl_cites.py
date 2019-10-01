@@ -29,6 +29,7 @@ def main(dry_run='true'):
     bad_cases = set(c.case for c in bad_cites)
     to_delete = []
     to_update = []
+    to_reindex = []
     changed_cites = set()
     out = csv.writer(sys.stdout)
     out.writerow(['case.id', 'result', 'val1', 'val2'])
@@ -42,14 +43,13 @@ def main(dry_run='true'):
             old_val = first.cite
             first.cite = "122 Ct. Cl. 348"
             to_update.append(first)
-            if dry_run == 'true':
-                out.writerow([case.id, "special case", old_val, first.cite])
+            to_reindex.append(case)
+            out.writerow([case.id, "special case", old_val, first.cite])
             continue
 
         # we should always have one correct cite at the front of the list:
         if not re.match(r'\d+ Ct. Cl. \d+$', first.cite):
-            if dry_run == 'true':
-                out.writerow([case.id, "error", first, str(rest)])
+            out.writerow([case.id, "error", first, str(rest)])
             continue
 
         # handle skipping or updating F.2d cites:
@@ -58,8 +58,7 @@ def main(dry_run='true'):
 
             # type 2:
             if re.match(r'\d+ F.2d \d+$', second.cite):
-                if dry_run == 'true':
-                    out.writerow([case.id, "skip", second.cite])
+                out.writerow([case.id, "skip", second.cite])
                 continue
 
             # type 3:
@@ -67,18 +66,18 @@ def main(dry_run='true'):
                 old_val = second.cite
                 second.cite = old_val.split(';', 1)[0]
                 to_update.append(second)
+                to_reindex.append(case)
                 changed_cites.add(old_val)
                 changed_cites.add(second.cite)
-                if dry_run == 'true':
-                    out.writerow([case.id, "update", old_val, second.cite])
+                out.writerow([case.id, "update", old_val, second.cite])
                 continue
 
         # type 4:
         delete_cites = [c.cite for c in rest]
         changed_cites.update(delete_cites)
-        if dry_run == 'true':
-            out.writerow([case.id, "delete"]+delete_cites)
-        to_delete.append(rest)
+        out.writerow([case.id, "delete"]+delete_cites)
+        to_delete.extend(rest)
+        to_reindex.append(case)
 
     # apply edits:
     if dry_run == 'false':
@@ -86,7 +85,8 @@ def main(dry_run='true'):
                 description='Remove incorrectly-detected citations from Ct. Cl. reporter. '
                             'See https://github.com/harvard-lil/capstone/issues/1192'
         ).record():
-            Citation.objects.update(to_update)
+            Citation.objects.bulk_update(to_update, ['cite'])
             for obj in to_delete:
                 obj.delete()
             CaseMetadata.update_frontend_urls(changed_cites)
+            CaseMetadata.reindex_cases(to_reindex)
