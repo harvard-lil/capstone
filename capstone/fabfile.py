@@ -242,9 +242,13 @@ def populate_search_index(last_run_before=None):
         last_run_before=last_run_before)
 
 @task
-def rebuild_search_index():
-    management.call_command('search_index', '--delete')
-    management.call_command('search_index', '--create')
+def rebuild_search_index(force=False):
+    if force == True:
+        management.call_command('search_index', '--delete', '-f')
+        management.call_command('search_index', '--create', '-f')
+    else:
+        management.call_command('search_index', '--delete')
+        management.call_command('search_index', '--create')
     populate_search_index()
 
 @task
