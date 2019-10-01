@@ -1,0 +1,32 @@
+[
+  {
+    "model": "capdb.court",
+    "pk": 1,
+    "fields": {
+      "name": "Washington Court of Appeals",
+      "name_abbreviation": "Wash. Ct. App.",
+      "jurisdiction": 38,
+      "slug": "wash-ct-app"
+    }
+  },
+  {
+    "model": "capdb.court",
+    "pk": 2,
+    "fields": {
+      "name": "Illinois Appellate Court",
+      "name_abbreviation": "Ill. App. Ct.",
+      "jurisdiction": 29,
+      "slug": "ill-app-ct"
+    }
+  },
+  {
+    "model": "capdb.court",
+    "pk": 3,
+    "fields": {
+      "name": "Illinois Supreme Court",
+      "name_abbreviation": "Ill.",
+      "jurisdiction": 29,
+      "slug": "ill"
+    }
+  }
+]
