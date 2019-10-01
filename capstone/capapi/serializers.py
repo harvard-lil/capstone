@@ -144,7 +144,7 @@ class CaseDocumentSerializer(DocumentSerializer):
         return_dict = {
             "full_name": obj.reporter['full_name'],
             "id": obj.reporter['id'],
-            "url": "{}{}".format(api_reverse('reporter-list'), obj.reporter['id']),
+            "url": api_reverse('reporter-detail', [obj.reporter['id']]),
         }
         return return_dict
 
@@ -156,7 +156,8 @@ class CaseDocumentSerializer(DocumentSerializer):
         return_dict = {
             "volume_number": obj.volume['volume_number'],
             "barcode": obj.volume['barcode'],
-            "url": "{}{}".format(api_reverse('volumemetadata-list'), obj.volume['barcode']),
+            "url": api_reverse('volumemetadata-detail', [obj.volume['barcode']]),
+
         }
         return return_dict
 
@@ -166,7 +167,8 @@ class CaseDocumentSerializer(DocumentSerializer):
             "slug": obj.court['slug'],
             "name": obj.court['name'],
             "name_abbreviation": obj.court['name_abbreviation'],
-            "url": "{}{}".format(api_reverse('court-list'), obj.court['slug']),
+            "url": api_reverse('court-detail', [obj.court['id']]),
+
         }
         return return_dict
 
@@ -177,7 +179,7 @@ class CaseDocumentSerializer(DocumentSerializer):
             "name": obj.jurisdiction['name'],
             "name_long": obj.jurisdiction['name_long'],
             "whitelisted": obj.jurisdiction['whitelisted'],
-            "url": "{}{}".format(api_reverse('jurisdiction-list'), obj.jurisdiction['slug']),
+            "url": api_reverse('jurisdiction-detail', [obj.jurisdiction['slug']]),
         }
         return return_dict
 
@@ -187,9 +189,7 @@ class CaseDocumentSerializer(DocumentSerializer):
         return self._frontend_url_base + (obj.frontend_url or '')
 
     def get_url(self, obj):
-        if not hasattr(self, '_url_base'):
-            CaseDocumentSerializer._url_base = api_reverse('cases-list')
-        return self._url_base + (str(obj.id) or '')
+        return api_reverse('cases-detail', [obj.id])
 
 class CaseAllowanceMixin:
     """
