@@ -334,25 +334,35 @@ class FileObject:
 
 
 def download_files(request, filepath=""):
+    """
+    If directory requested: show list of files inside dir
+    If file requested: downloads file
+    """
     path = settings.STORAGES['download_files_storage']['kwargs']['location']
-
-    files = []
     absolute_path = os.path.join(path, filepath)
-    breadcrumbs = filepath.split('/')
-    readme = ""
+
+    # file requested
     if not os.path.isdir(absolute_path):
         f = FileWrapper(open(absolute_path, 'rb'))
         mime = magic.Magic(mime=True)
         content_type = mime.from_file(absolute_path)
         response = FileResponse(f, content_type=content_type)
         response['Content-Length'] = os.path.getsize(absolute_path)
-        response['Content-Disposition'] = 'attachment; filename="%s"' % breadcrumbs[-1]
+        response['Content-Disposition'] = 'attachment; filename="%s"' % filepath.split('/')[-1]
         response['X-Sendfile'] = absolute_path
         return response
 
+    # create clickable breadcrumbs
+    breadcrumb_parts = filepath.split('/')
+    breadcrumbs = []
+    for idx, breadcrumb in enumerate(breadcrumb_parts):
+        breadcrumbs.append({'name': breadcrumb,
+                            'path': "/".join(breadcrumb_parts[0:idx + 1])})
+
+    readme = ""
+    files = []
     for filename in os.listdir(absolute_path):
         if filename == "README.md":
-            readme_filename = filename
             with open(os.path.join(path, filename), "r") as f:
                 readme_content = f.read()
             readme, toc, meta = render_markdown(readme_content)
@@ -363,11 +373,11 @@ def download_files(request, filepath=""):
     context = {
         'files': files,
         'filepath': filepath,
+        'breadcrumbs': breadcrumbs,
     }
 
     if readme:
         context['readme'] = mark_safe(readme)
-        context['readme_filename'] = readme_filename
 
     return render(request, "file_download.html", context)
 

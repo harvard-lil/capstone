@@ -323,6 +323,12 @@ PIPELINE = {
                 'css/scss/cite.scss',
             },
             'output_filename': 'cite.css'
+        },
+        'file_download': {
+            'source_filenames': {
+                'css/scss/file_download.scss',
+            },
+            'output_filename': 'file_download.css'
         }
     },
     # These are not yet converted to vue/webpack:

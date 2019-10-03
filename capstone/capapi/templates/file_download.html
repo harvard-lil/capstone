@@ -1,15 +1,26 @@
-{% extends "layouts/centered.html" %}
+{% extends "layouts/wide.html" %}
 {% load pipeline %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
 
 {% load capweb_static %}
 
-{% block base_css %}{% stylesheet 'case' %}{% endblock %}
+{% block base_css %}{% stylesheet 'file_download' %}{% endblock %}
 {% block title %}Download files{% endblock %}
 
 {% block main_content %}
-  <h3><a href="../{{ filepath }}">{{ filepath }}</a></h3>
+  <nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    {% for breadcrumb in breadcrumbs %}
+      {% if forloop.last %}
+        <li class="breadcrumb-item active" aria-current="page">{{breadcrumb.name}}</li>
+      {% else %}
+        <li class="breadcrumb-item"><a href="{% url 'download-files' %}/{{ breadcrumb.path }}">{{breadcrumb.name}}</a></li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+</nav>
+
   <ul>{% for file in files %}
     {% if file.isdir %}
       <li>- <a href="{% url 'download-files' %}/{{ file.path }}">{{ file.name }}/</a></li>
@@ -20,7 +31,6 @@
   {% endfor %}</ul>
   {% if readme %}
     <hr/>
-    <h1>{{ readme_filename }}</h1>
     {{ readme }}
   {% endif %}
 {% endblock %}
