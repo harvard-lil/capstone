@@ -2,6 +2,7 @@ import bisect
 import re
 import urllib
 from collections import OrderedDict, defaultdict
+from functools import reduce
 from pathlib import Path
 
 from django.http import HttpResponseRedirect, FileResponse
@@ -138,6 +139,10 @@ class CAPFiltering(FilteringFilterBackend):
         def lc_values(values):
             return [value.lower() for value in values if isinstance(value, str)]
 
+        def tokenize(filter_values):
+            # takes each entry in filter_values and splits them on whitespace into separate entries
+            return reduce(lambda tokenized_list, current_term: tokenized_list + current_term.split(), filter_values, [])
+
         query_params = super().get_filter_query_params(request, view)
         if 'cite' in query_params:
             query_params['cite']['values'] = [Citation.normalize_cite(cite) for cite in
@@ -150,10 +155,12 @@ class CAPFiltering(FilteringFilterBackend):
                 del query_params['court_id']
 
         if 'name' in query_params:
-            query_params['name']['values'] = lc_values(query_params['name']['values'])
+            query_params['name']['values'] = lc_values(tokenize(query_params['name']['values']))
+            query_params['name']['lookup'] = 'in'
 
         if 'name_abbreviation' in query_params:
-            query_params['name_abbreviation']['values'] = lc_values(query_params['name_abbreviation']['values'])
+            query_params['name_abbreviation']['values'] = lc_values(tokenize(query_params['name_abbreviation']['values']))
+            query_params['name_abbreviation']['lookup'] = 'in'
 
         if 'court' in query_params:
             query_params['court']['values'] = lc_values(query_params['court']['values'])
@@ -162,7 +169,7 @@ class CAPFiltering(FilteringFilterBackend):
             query_params['jurisdiction']['values'] = lc_values(query_params['jurisdiction']['values'])
 
         if 'docket_number' in query_params:
-            query_params['docket_number']['values'] = lc_values(query_params['docket_number']['values'])
+            query_params['docket_number']['values'] = lc_values(tokenize(query_params['docket_number']['values']))
 
         return query_params
 
@@ -330,7 +337,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     # Define search fields
     simple_query_string_search_fields = (
         'name',
-        'name_abbreviation',
+        'name_abbreviation.suggest',
         'jurisdiction.name_long',
         'court.name',
         # these are included in head_matter or text:
