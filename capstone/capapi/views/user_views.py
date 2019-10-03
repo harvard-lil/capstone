@@ -361,7 +361,7 @@ def download_files(request, filepath=""):
         response = StreamingHttpResponse(FileWrapper(open(absolute_path, 'rb'), chunk_size), content_type=content_type)
         response['Content-Length'] = os.path.getsize(absolute_path)
         response['Content-Disposition'] = 'attachment; filename="%s"' % filepath.split('/')[-1]
-        response['X-Accel-Redirect'] = absolute_path
+
         return response
 
     # directory requested
