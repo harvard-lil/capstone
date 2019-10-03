@@ -140,8 +140,11 @@ class CAPFiltering(FilteringFilterBackend):
             return [value.lower() for value in values if isinstance(value, str)]
 
         def tokenize(filter_values):
-            # takes each entry in filter_values and splits them on whitespace into separate entries
-            return reduce(lambda tokenized_list, current_term: tokenized_list + current_term.split(), filter_values, [])
+            # takes each entry in filter_values and splits them on non alphanumeric characters into separate entries
+            output = reduce(
+                lambda tokenized_list, current_term: tokenized_list + re.split(r'[^a-zA-Z0-9]', current_term),
+                filter_values, [])
+            return(output)
 
         query_params = super().get_filter_query_params(request, view)
         if 'cite' in query_params:
