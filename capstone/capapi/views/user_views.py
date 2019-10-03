@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail, EmailMessage
 from django.db import transaction
-from django.http import HttpResponseRedirect, FileResponse
+from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template import loader
 from django.utils import timezone
@@ -333,7 +333,6 @@ class FileObject:
         self.isdir = os.path.isdir(abs_path)
 
 
-
 def download_files(request, filepath=""):
     """
     If directory requested: show list of files inside dir
@@ -343,6 +342,7 @@ def download_files(request, filepath=""):
     absolute_path = os.path.join(storage_path, filepath)
 
     allow_downloads = "restricted" not in absolute_path or request.user.unlimited_access_in_effect()
+
     # file requested
     if os.path.isfile(absolute_path):
         if not allow_downloads:
@@ -353,10 +353,12 @@ def download_files(request, filepath=""):
                 "title": "403 - Access to this file is restricted",
             }
             return render(request, "file_download_400.html", context, status=403)
-        f = FileWrapper(open(absolute_path, 'rb'))
+
         mime = magic.Magic(mime=True)
         content_type = mime.from_file(absolute_path)
-        response = FileResponse(f, content_type=content_type)
+        chunk_size = 8192
+
+        response = StreamingHttpResponse(FileWrapper(open(absolute_path, 'rb'), chunk_size), content_type=content_type)
         response['Content-Length'] = os.path.getsize(absolute_path)
         response['Content-Disposition'] = 'attachment; filename="%s"' % filepath.split('/')[-1]
         response['X-Accel-Redirect'] = absolute_path
@@ -364,6 +366,7 @@ def download_files(request, filepath=""):
 
     # directory requested
     elif os.path.isdir(absolute_path):
+
         # create clickable breadcrumbs
         breadcrumb_parts = filepath.split('/')
 
@@ -371,7 +374,7 @@ def download_files(request, filepath=""):
         for idx, breadcrumb in enumerate(breadcrumb_parts):
             if breadcrumb:
                 breadcrumbs.append({'name': breadcrumb,
-                                'path': "/".join(breadcrumb_parts[0:idx + 1])})
+                                    'path': "/".join(breadcrumb_parts[0:idx + 1])})
 
         readme = ""
         files = []
@@ -388,6 +391,7 @@ def download_files(request, filepath=""):
             'files': files,
             'allow_downloads': allow_downloads
         }
+
         if len(breadcrumbs) > 0:
             context['breadcrumbs'] = breadcrumbs
         if readme:

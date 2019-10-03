@@ -9,6 +9,11 @@ li.list-item {
   list-style-type: '- ';
 }
 
+.basic-page .main-content {
+  padding-top: 0;
+}
+
 nav[aria-label="breadcrumb"] ol {
   border-radius: 0;
 }
+
