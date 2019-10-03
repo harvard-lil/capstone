@@ -154,7 +154,7 @@ class CaseDocumentSerializer(DocumentSerializer):
 
     def get_volume(self, obj):
         return_dict = {
-            "volume_number": obj.volume['volume_number'],
+            "volume_number": obj.volume.get('volume_number'),
             "barcode": obj.volume['barcode'],
             "url": api_reverse('volumemetadata-detail', [obj.volume['barcode']]),
 
