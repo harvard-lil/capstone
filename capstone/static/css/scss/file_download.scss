@@ -1,6 +1,14 @@
 @import "base.scss";
 @import "bootstrap/breadcrumb";
 
+.top-section.compressed h1 {
+  padding-bottom: 0;
+}
+
 li.list-item {
   list-style-type: '- ';
+}
+
+nav[aria-label="breadcrumb"] ol {
+  border-radius: 0;
 }

@@ -9,6 +9,7 @@
 {% block title %}Download files{% endblock %}
 
 {% block main_content %}
+  {% if breadcrumbs %}
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       {% for breadcrumb in breadcrumbs %}
@@ -22,7 +23,7 @@
       {% endfor %}
     </ol>
   </nav>
-
+  {% endif %}
   <ul class="list-group">
     {% for file in files %}
       <li class="list-item">
@@ -31,7 +32,11 @@
             <strong>{{ file.name }}</strong>
           </a>
         {% else %}
-          <a href="{% url 'download-files' %}/{{ file.path }}">{{ file.name }}</a>
+          {% if allow_downloads %}
+            <a href="{% url 'download-files' %}/{{ file.path }}">{{ file.name }}</a>
+          {% else %}
+            {{ file.name }}
+          {% endif %}
         {% endif %}
       </li>
 

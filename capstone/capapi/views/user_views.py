@@ -325,12 +325,13 @@ class FileObject:
     name = ''
     path = ''
     isdir = False
-    full_path = ''
 
     def __init__(self, name, path):
         self.name = name
         self.path = os.path.join(path, name)
-        self.isdir = os.path.isdir(os.path.join(path, name))
+        abs_path = os.path.join(settings.STORAGES['download_files_storage']['kwargs']['location'], self.path)
+        self.isdir = os.path.isdir(abs_path)
+
 
 
 def download_files(request, filepath=""):
@@ -338,48 +339,69 @@ def download_files(request, filepath=""):
     If directory requested: show list of files inside dir
     If file requested: downloads file
     """
-    path = settings.STORAGES['download_files_storage']['kwargs']['location']
-    absolute_path = os.path.join(path, filepath)
+    storage_path = settings.STORAGES['download_files_storage']['kwargs']['location']
+    absolute_path = os.path.join(storage_path, filepath)
 
+    allow_downloads = "restricted" not in absolute_path or request.user.unlimited_access_in_effect()
     # file requested
-    if not os.path.isdir(absolute_path):
+    if os.path.isfile(absolute_path):
+        if not allow_downloads:
+            context = {
+                "filename": filepath,
+                "error": "If you believe you should have access to this file, "
+                         "please <a href='https://caselaw.freshdesk.com/support/tickets/new'>let us know</a>.",
+                "title": "403 - Access to this file is restricted",
+            }
+            return render(request, "file_download_400.html", context, status=403)
         f = FileWrapper(open(absolute_path, 'rb'))
         mime = magic.Magic(mime=True)
         content_type = mime.from_file(absolute_path)
         response = FileResponse(f, content_type=content_type)
         response['Content-Length'] = os.path.getsize(absolute_path)
         response['Content-Disposition'] = 'attachment; filename="%s"' % filepath.split('/')[-1]
-        response['X-Sendfile'] = absolute_path
+        response['X-Accel-Redirect'] = absolute_path
         return response
 
-    # create clickable breadcrumbs
-    breadcrumb_parts = filepath.split('/')
-    breadcrumbs = []
-    for idx, breadcrumb in enumerate(breadcrumb_parts):
-        breadcrumbs.append({'name': breadcrumb,
-                            'path': "/".join(breadcrumb_parts[0:idx + 1])})
+    # directory requested
+    elif os.path.isdir(absolute_path):
+        # create clickable breadcrumbs
+        breadcrumb_parts = filepath.split('/')
 
-    readme = ""
-    files = []
-    for filename in os.listdir(absolute_path):
-        if filename == "README.md":
-            with open(os.path.join(path, filename), "r") as f:
-                readme_content = f.read()
-            readme, toc, meta = render_markdown(readme_content)
+        breadcrumbs = []
+        for idx, breadcrumb in enumerate(breadcrumb_parts):
+            if breadcrumb:
+                breadcrumbs.append({'name': breadcrumb,
+                                'path': "/".join(breadcrumb_parts[0:idx + 1])})
 
-        fileobject = FileObject(name=filename, path=filepath)
-        files.append(fileobject)
+        readme = ""
+        files = []
+        for filename in os.listdir(absolute_path):
+            if filename == "README.md":
+                with open(os.path.join(absolute_path, filename), "r") as f:
+                    readme_content = f.read()
+                readme, toc, meta = render_markdown(readme_content)
 
-    context = {
-        'files': files,
-        'filepath': filepath,
-        'breadcrumbs': breadcrumbs,
-    }
+            fileobject = FileObject(name=filename, path=filepath)
+            files.append(fileobject)
 
-    if readme:
-        context['readme'] = mark_safe(readme)
+        context = {
+            'files': files,
+            'allow_downloads': allow_downloads
+        }
+        if len(breadcrumbs) > 0:
+            context['breadcrumbs'] = breadcrumbs
+        if readme:
+            context['readme'] = mark_safe(readme)
 
-    return render(request, "file_download.html", context)
+        return render(request, "file_download.html", context)
+
+    # path does not exist
+    else:
+        context = {
+            "title": "404 - File not found",
+            "error": "This file was not found in our system."
+        }
+        return render(request, "file_download_400.html", context, status=404)
 
 
 @login_required()
