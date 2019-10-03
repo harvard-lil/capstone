@@ -1,2 +1,6 @@
 @import "base.scss";
 @import "bootstrap/breadcrumb";
+
+li.list-item {
+  list-style-type: '- ';
+}

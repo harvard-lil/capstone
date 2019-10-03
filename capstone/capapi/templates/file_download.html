@@ -10,25 +10,33 @@
 
 {% block main_content %}
   <nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    {% for breadcrumb in breadcrumbs %}
-      {% if forloop.last %}
-        <li class="breadcrumb-item active" aria-current="page">{{breadcrumb.name}}</li>
-      {% else %}
-        <li class="breadcrumb-item"><a href="{% url 'download-files' %}/{{ breadcrumb.path }}">{{breadcrumb.name}}</a></li>
-      {% endif %}
+    <ol class="breadcrumb">
+      {% for breadcrumb in breadcrumbs %}
+        {% if forloop.last %}
+          <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.name }}</li>
+        {% else %}
+          <li class="breadcrumb-item">
+            <a href="{% url 'download-files' %}/{{ breadcrumb.path }}">{{ breadcrumb.name }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ol>
+  </nav>
+
+  <ul class="list-group">
+    {% for file in files %}
+      <li class="list-item">
+        {% if file.isdir %}
+          <a href="{% url 'download-files' %}/{{ file.path }}">
+            <strong>{{ file.name }}</strong>
+          </a>
+        {% else %}
+          <a href="{% url 'download-files' %}/{{ file.path }}">{{ file.name }}</a>
+        {% endif %}
+      </li>
+
     {% endfor %}
-  </ol>
-</nav>
-
-  <ul>{% for file in files %}
-    {% if file.isdir %}
-      <li>- <a href="{% url 'download-files' %}/{{ file.path }}">{{ file.name }}/</a></li>
-    {% else %}
-      <li>- <a href="{% url 'download-files' %}/{{ file.path }}">{{ file.name }}</a></li>
-    {% endif %}
-
-  {% endfor %}</ul>
+  </ul>
   {% if readme %}
     <hr/>
     {{ readme }}
