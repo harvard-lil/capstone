@@ -1,3 +1,5 @@
+import os
+import magic
 from collections import OrderedDict
 
 from django.conf import settings
@@ -5,10 +7,13 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail, EmailMessage
 from django.db import transaction
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, FileResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template import loader
 from django.utils import timezone
+from django.utils.safestring import mark_safe
+
+from wsgiref.util import FileWrapper
 
 from capapi import resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContractForm, \
@@ -16,7 +21,8 @@ from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContr
 from capapi.models import SiteLimits, CapUser, ResearchContract
 from capapi.resources import form_for_request
 from capdb.models import CaseExport
-from capweb.helpers import reverse, send_contact_email, user_has_harvard_email
+from capweb.helpers import reverse, send_contact_email, user_has_harvard_email, render_markdown
+
 
 
 def register_user(request):
@@ -313,6 +319,58 @@ def bulk(request):
     return render(request, 'bulk.html', {
         'exports': sorted_exports,
     })
+
+
+class FileObject:
+    name = ''
+    path = ''
+    isdir = False
+    full_path = ''
+
+    def __init__(self, name, path):
+        self.name = name
+        self.path = os.path.join(path, name)
+        self.isdir = os.path.isdir(os.path.join(path, name))
+
+
+def download_files(request, filepath=""):
+    path = settings.STORAGES['download_files_storage']['kwargs']['location']
+
+    files = []
+    absolute_path = os.path.join(path, filepath)
+    breadcrumbs = filepath.split('/')
+    readme = ""
+    if not os.path.isdir(absolute_path):
+        f = FileWrapper(open(absolute_path, 'rb'))
+        mime = magic.Magic(mime=True)
+        content_type = mime.from_file(absolute_path)
+        response = FileResponse(f, content_type=content_type)
+        response['Content-Length'] = os.path.getsize(absolute_path)
+        response['Content-Disposition'] = 'attachment; filename="%s"' % breadcrumbs[-1]
+        response['X-Sendfile'] = absolute_path
+        return response
+
+    for filename in os.listdir(absolute_path):
+        if filename == "README.md":
+            readme_filename = filename
+            with open(os.path.join(path, filename), "r") as f:
+                readme_content = f.read()
+            readme, toc, meta = render_markdown(readme_content)
+
+        fileobject = FileObject(name=filename, path=filepath)
+        files.append(fileobject)
+
+    context = {
+        'files': files,
+        'filepath': filepath,
+    }
+
+    if readme:
+        context['readme'] = mark_safe(readme)
+        context['readme_filename'] = readme_filename
+
+    return render(request, "file_download.html", context)
+
 
 @login_required()
 def reset_api_key(request):

@@ -1,0 +1,26 @@
+{% extends "layouts/centered.html" %}
+{% load pipeline %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% load capweb_static %}
+
+{% block base_css %}{% stylesheet 'case' %}{% endblock %}
+{% block title %}Download files{% endblock %}
+
+{% block main_content %}
+  <h3><a href="../{{ filepath }}">{{ filepath }}</a></h3>
+  <ul>{% for file in files %}
+    {% if file.isdir %}
+      <li>- <a href="{% url 'download-files' %}/{{ file.path }}">{{ file.name }}/</a></li>
+    {% else %}
+      <li>- <a href="{% url 'download-files' %}/{{ file.path }}">{{ file.name }}</a></li>
+    {% endif %}
+
+  {% endfor %}</ul>
+  {% if readme %}
+    <hr/>
+    <h1>{{ readme_filename }}</h1>
+    {{ readme }}
+  {% endif %}
+{% endblock %}
