@@ -434,8 +434,245 @@ def load_casebody_cache(load_tracking_tool_database):
     call_command('loaddata', 'test_data/volume_metadata.json', database='capdb')
     call_command('loaddata', 'test_data/case_metadata.json', database='capdb')
     call_command('loaddata', 'test_data/body_cache.json', database='capdb')
+    call_command('loaddata', 'test_data/citation.json', database='capdb')
 
 @pytest.fixture
 def ingest_elasticsearch(load_casebody_cache):
     fabfile.rebuild_search_index(force=True)
+
+
+@pytest.fixture
+def taylor_v_sprinkle(load_casebody_cache):
+    return {
+        "id": 312,
+        "case_id": "32044057891608_0001",
+        "frontend_url": "/ill/1/17/",
+        "first_page": "17",
+        "last_page": "18",
+        "publication_status": "published",
+        "jurisdiction": 29,
+        "judges": [],
+        "parties": [
+            "Jonathan Taylor, Appellant, v. Michael Sprinkle, Appellee."
+        ],
+        "opinions": [
+            {
+                "author": None,
+                "type": "majority"
+            }
+        ],
+        "attorneys": [],
+        "docket_number": "",
+        "docket_numbers": [],
+        "decision_date": "1819-12-01",
+        "decision_date_original": "1819-12",
+        "argument_date_original": None,
+        "court": 3,
+        "district_name": None,
+        "district_abbreviation": None,
+        "name": "Jonathan Taylor, Appellant, v. Michael Sprinkle, Appellee",
+        "name_abbreviation": "Taylor v. Sprinkle",
+        "volume": "32044057891608",
+        "reporter": 1058,
+        "date_added": "2019-10-01T17:03:17.852Z",
+        "duplicative": False,
+        "duplicate": False,
+        "duplicate_of": None,
+        "withdrawn": False,
+        "replaced_by": None,
+        "no_index": False,
+        "no_index_notes": None,
+        "in_scope": True,
+        "initial_metadata_synced": True,
+        "jurisdiction_name": "Ill.",
+        "jurisdiction_name_long": "Illinois",
+        "jurisdiction_slug": "ill",
+        "jurisdiction_whitelisted": True,
+        "court_name": "Illinois Supreme Court",
+        "court_name_abbreviation": "Ill.",
+        "court_slug": "ill",
+        "sys_period": "{\"bounds\": \"[)\", \"lower\": \"2019-10-01T17:54:28.706957+00:00\", \"upper\": null}"
+    }
+
+
+
+@pytest.fixture
+def home_insurance_co_of_new_york_v_kirk(load_casebody_cache):
+    return {
+        "id": 311,
+        "case_id": "32044057892259_0001",
+        "frontend_url": "/ill-app/23/19/",
+        "first_page": "19",
+        "last_page": "24",
+        "publication_status": "published",
+        "jurisdiction": 29,
+        "judges": [],
+        "parties": [
+            "The Home Insurance Company of New York v. John Kirk, for use of William Kirk."
+        ],
+        "opinions": [
+            {
+                "author": "Lacey, J.",
+                "type": "majority"
+            }
+        ],
+        "attorneys": [
+            "Mr. Walter Bennett, for appellant.",
+            "Messrs. J. A. Biely and Barnes & Barnes, for appellee."
+        ],
+        "docket_number": "",
+        "docket_numbers": [],
+        "decision_date": "1887-05-27",
+        "decision_date_original": "1887-05-27",
+        "argument_date_original": None,
+        "court": 2,
+        "district_name": None,
+        "district_abbreviation": None,
+        "name": "The Home Insurance Company of New York v. John Kirk, for use of William Kirk",
+        "name_abbreviation": "Home Insurance Co. of New York v. Kirk",
+        "volume": "32044057892259",
+        "reporter": 315,
+        "date_added": "2019-10-01T17:03:16.973Z",
+        "duplicative": False,
+        "duplicate": False,
+        "duplicate_of": None,
+        "withdrawn": False,
+        "replaced_by": None,
+        "no_index": False,
+        "no_index_notes": None,
+        "in_scope": True,
+        "initial_metadata_synced": True,
+        "jurisdiction_name": "Ill.",
+        "jurisdiction_name_long": "Illinois",
+        "jurisdiction_slug": "ill",
+        "jurisdiction_whitelisted": True,
+        "court_name": "Illinois Appellate Court",
+        "court_name_abbreviation": "Ill. App. Ct.",
+        "court_slug": "ill-app-ct",
+        "sys_period": "{\"bounds\": \"[)\", \"lower\": \"2019-10-01T17:54:28.706957+00:00\", \"upper\": null}"
+    }
+
+
+
+@pytest.fixture
+def in_re_the_marriage_of_lyle(load_casebody_cache):
+    return {
+        "id": 309,
+        "case_id": "WnApp_199_0036",
+        "frontend_url": "/wash-app/199/629/",
+        "first_page": "629",
+        "last_page": "634",
+        "publication_status": "published",
+        "jurisdiction": 38,
+        "judges": [
+            "Fearing, C.J., and Korsmo, J., concur."
+        ],
+        "parties": [
+            "In the Matter of the Marriage of Christy Lyle, Respondent, and Keith Lyle, Appellant."
+        ],
+        "opinions": [
+            {
+                "author": "Pennell, J.",
+                "type": "majority"
+            }
+        ],
+        "attorneys": [
+            "Matthew J. Dudley, for appellant.",
+            "Camerina I. Brokaw-Zorrozua (of Maxey Law Office PS), for respondent."
+        ],
+        "docket_number": "No. 33971-8-III",
+        "docket_numbers": [
+            "No. 33971-8-III"
+        ],
+        "decision_date": "2017-07-11",
+        "decision_date_original": "2017-07-11",
+        "argument_date_original": None,
+        "court": 1,
+        "district_name": None,
+        "district_abbreviation": None,
+        "name": "In the Matter of the Marriage of Christy Lyle, Respondent, and Keith Lyle, Appellant",
+        "name_abbreviation": "In re the Marriage of Lyle",
+        "volume": "WnApp_199",
+        "reporter": 477,
+        "date_added": "2019-10-01T17:03:15.620Z",
+        "duplicative": False,
+        "duplicate": False,
+        "duplicate_of": None,
+        "withdrawn": False,
+        "replaced_by": None,
+        "no_index": False,
+        "no_index_notes": None,
+        "in_scope": True,
+        "initial_metadata_synced": True,
+        "jurisdiction_name": "Wash.",
+        "jurisdiction_name_long": "Washington",
+        "jurisdiction_slug": "wash",
+        "jurisdiction_whitelisted": False,
+        "court_name": "Washington Court of Appeals",
+        "court_name_abbreviation": "Wash. Ct. App.",
+        "court_slug": "wash-ct-app",
+        "sys_period": "{\"bounds\": \"[)\", \"lower\": \"2019-10-01T17:54:28.706957+00:00\", \"upper\": null}"
+    }
+
+@pytest.fixture
+def es_non_whitelisted_case(in_re_the_marriage_of_lyle):
+    return in_re_the_marriage_of_lyle()
+
+@pytest.fixture
+def es_whitelisted_case(home_insurance_co_of_new_york_v_kirk):
+    return home_insurance_co_of_new_york_v_kirk()
+
+@pytest.fixture
+def es_three_cases(in_re_the_marriage_of_lyle, home_insurance_co_of_new_york_v_kirk, taylor_v_sprinkle):
+    return [in_re_the_marriage_of_lyle, home_insurance_co_of_new_york_v_kirk, taylor_v_sprinkle]
+
+
+@pytest.fixture
+def es_duplicative_case(load_casebody_cache):
+    return {
+        "id": "310",
+        "case_id": "32044061407086_0001",
+        "frontend_url": "/nw2d/60/1/",
+        "first_page": "1",
+        "last_page": "4",
+        "publication_status": None,
+        "jurisdiction": None,
+        "judges": None,
+        "parties": None,
+        "opinions": None,
+        "attorneys": None,
+        "docket_number": "",
+        "docket_numbers": None,
+        "decision_date": None,
+        "decision_date_original": "",
+        "argument_date_original": None,
+        "court": None,
+        "district_name": None,
+        "district_abbreviation": None,
+        "name": "",
+        "name_abbreviation": "",
+        "volume": "32044061407086",
+        "reporter": 892,
+        "date_added": "2019-10-01T17:03:16.271Z",
+        "duplicative": True,
+        "duplicate": False,
+        "duplicate_of": None,
+        "withdrawn": False,
+        "replaced_by": None,
+        "no_index": False,
+        "no_index_notes": None,
+        "in_scope": False,
+        "initial_metadata_synced": False,
+        "jurisdiction_name": None,
+        "jurisdiction_name_long": None,
+        "jurisdiction_slug": None,
+        "jurisdiction_whitelisted": None,
+        "court_name": None,
+        "court_name_abbreviation": None,
+        "court_slug": None,
+        "sys_period": "{\"bounds\": \"[)\", \"lower\": \"2019-10-01T17:54:28.706957+00:00\", \"upper\": null}"
+    }
+
+
+
 
