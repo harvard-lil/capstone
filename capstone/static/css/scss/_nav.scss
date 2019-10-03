@@ -45,7 +45,7 @@ nav[aria-label="main"] {
   a {
     border-bottom: 0;
   }
-  @include media-breakpoint-down(sm) {
+  @include media-breakpoint-down(lg) {
     font-size: 1.2rem;
   }
 }
