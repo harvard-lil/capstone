@@ -160,4 +160,4 @@ xmltodict==0.11.0
 zope.interface==4.6.0     # via datetime
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.0.1        # via cfn-lint, jsonschema, markdown, pytest, python-rocksdb, zope.interface
+# setuptools==41.2.0        # via cfn-lint, jsonschema, markdown, pytest, python-rocksdb, zope.interface

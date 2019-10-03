@@ -77,7 +77,7 @@ def series(request, series_slug):
         return HttpResponseRedirect(helpers.reverse('series', args=[slugify(series_slug)], host='cite'))
     reporters = list(Reporter.objects
         .filter(short_name_slug=series_slug)
-        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None).exclude(duplicate=True)))
+        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None).exclude(volume_number='').exclude(duplicate=True).exclude(out_of_scope=True)))
         .order_by('full_name'))
     if not reporters:
         raise Http404
