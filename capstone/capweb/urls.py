@@ -47,7 +47,7 @@ urlpatterns = [
                                                   }),  name='contact-success'),
     ### downloads ###
     path('download', user_views.download_files, name='download-files'),
-    re_path(r'download/(?P<filepath>.*)', user_views.download_files, name='download-files'),
+    re_path(r'download/(?P<filepath>.*)', user_views.download_files, name='download-files-in-path'),
 
     ### user account pages ###
 
