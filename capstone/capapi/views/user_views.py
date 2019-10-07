@@ -1,5 +1,4 @@
 import os
-import magic
 from collections import OrderedDict
 
 from django.conf import settings
@@ -353,7 +352,7 @@ def download_files(request, filepath=""):
                 "title": "403 - Access to this file is restricted",
             }
             return render(request, "file_download_400.html", context, status=403)
-
+        import magic
         mime = magic.Magic(mime=True)
         content_type = mime.from_file(absolute_path)
         chunk_size = 8192
