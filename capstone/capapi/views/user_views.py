@@ -335,8 +335,9 @@ class FileObject:
 def download_files(request, filepath=""):
     """
     If directory requested: show list of files inside dir
-    If file requested: downloads file
+    If file requested: download file
     """
+
     storage_path = settings.STORAGES['download_files_storage']['kwargs']['location']
     absolute_path = os.path.join(storage_path, filepath)
 
