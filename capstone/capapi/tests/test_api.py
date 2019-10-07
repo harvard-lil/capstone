@@ -5,13 +5,13 @@ from capapi import api_reverse
 from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
 
-from capdb.models import Citation
+from capdb.models import Citation, Jurisdiction
 
 @pytest.mark.django_db
-def test_flow(client, case):
+def test_flow(client, es_whitelisted_case):
     """user should be able to click through to get to different tables"""
     # start with case
-    response = client.get(api_reverse("casemetadata-detail", args=[case.pk]))
+    response = client.get(api_reverse("cases-detail", args=[es_whitelisted_case['id']]))
     check_response(response)
     content = response.json()
     # onwards to court
@@ -25,21 +25,18 @@ def test_flow(client, case):
     response = client.get(jurisdiction_url)
     check_response(response)
     content = response.json()
-    assert content.get("name") == case.jurisdiction.name
+    assert content.get("name") == es_whitelisted_case['jurisdiction_name']
 
 
 @pytest.mark.django_db
-def test_jurisdiction_redirect(client, case, jurisdiction):
-    jurisdiction.name = 'Neb.'
-    jurisdiction.slug = 'neb'
-    jurisdiction.save()
-    case.jurisdiction = jurisdiction
-    case.save()
+def test_jurisdiction_redirect(client, es_non_whitelisted_case):
 
-    response = client.get(api_reverse("casemetadata-list"), {"jurisdiction": jurisdiction.name}, follow=True)
+    jurisdiction = Jurisdiction.objects.get(slug=es_non_whitelisted_case['jurisdiction_slug'])
+
+    response = client.get(api_reverse("cases-list"), {"jurisdiction": jurisdiction.name}, follow=True)
     query_string = response.request.get('QUERY_STRING')
     query, jurisdiction_name = query_string.split('=')
-    assert jurisdiction_name == jurisdiction.slug
+    assert jurisdiction_name == jurisdiction.name
 
 
 # RESOURCE ENDPOINTS
@@ -71,17 +68,6 @@ def test_model_endpoint(request, client, fixture_name, detail_attr, comparison_a
     check_response(response)
     results = response.json()
     assert results[comparison_attr] == getattr(instance, comparison_attr)
-
-@pytest.mark.django_db
-def test_cases_count_cache(client, three_cases, django_assert_num_queries):
-    # fetching same endpoint a second time should have one less query, because queryset.count() is cached
-    with django_assert_num_queries(select=3):
-        response = client.get(api_reverse('casemetadata-list'))
-        assert response.json()['count'] == 3
-    with django_assert_num_queries(select=2):
-        response = client.get(api_reverse('casemetadata-list'))
-        assert response.json()['count'] == 3
-
 
 # REQUEST AUTHORIZATION
 @pytest.mark.django_db
@@ -168,7 +154,7 @@ def test_unlimited_access(auth_user, auth_client, es_non_whitelisted_case):
     auth_user.unlimited_access = True
     auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
     auth_user.save()
-    case_url = api_reverse("casemetadata-detail", args=[es_non_whitelisted_case['id']])
+    case_url = api_reverse("cases-detail", args=[es_non_whitelisted_case['id']])
 
     response = auth_client.get(case_url, {"full_case": "true"})
     check_response(response)
@@ -241,7 +227,7 @@ def test_harvard_access(request, es_non_whitelisted_case, client_fixture_name):
 def test_authenticated_multiple_full_cases(auth_user, auth_client, ingest_elasticsearch):
     ### mixed requests should be counted only for blacklisted cases
 
-    response = auth_client.get(api_reverse("casemetadata-list"), {"full_case": "true"})
+    response = auth_client.get(api_reverse("cases-list"), {"full_case": "true"})
     check_response(response)
     assert response.json()['count'] == 3
 
@@ -287,8 +273,6 @@ def test_case_citation_redirect(client, in_re_the_marriage_of_lyle, taylor_v_spr
 
     # citation redirect should work with periods in the url, too
     citation = Citation.objects.get(case_id=taylor_v_sprinkle['id'])
-    import ipdb
-    ipdb.set_trace()
     url = api_reverse("case-get-cite", args=[citation.cite])
     response = client.get(url)
     check_response(response, status_code=302)
