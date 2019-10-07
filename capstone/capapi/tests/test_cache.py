@@ -6,7 +6,7 @@ from django.http import SimpleCookie
 from capapi.resources import api_reverse  # noqa -- this is dynamically used by test_cache_headers
 from capapi.tests.helpers import is_cached, check_response
 from capweb.helpers import reverse
-
+from capdb.models import CaseMetadata
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("view_name, cache_clients, get_kwargs", [
@@ -70,23 +70,21 @@ def test_cache_headers(case, request, settings,
     )
 
 @pytest.mark.django_db
-def test_cache_case_cite(client, case, settings):
+def test_cache_case_cite(client, es_whitelisted_case, es_non_whitelisted_case, settings):
     """ Single-case cite.case.law page should be cached only if case is whitelisted. """
     settings.SET_CACHE_CONTROL_HEADER = True
-    url = case.get_frontend_url()
+
+    url = CaseMetadata.objects.get(pk=es_whitelisted_case['id']).get_frontend_url()
 
     # whitelisted case is cached
-    case.jurisdiction.whitelisted = True
-    case.jurisdiction.save()
     response = client.get(url)
-    check_response(response, content_includes=case.name)
+    check_response(response, content_includes=es_whitelisted_case['name'])
     assert is_cached(response)
 
     # non-whitelisted case not cached
-    case.jurisdiction.whitelisted = False
-    case.jurisdiction.save()
+    url = CaseMetadata.objects.get(pk=es_non_whitelisted_case['id']).get_frontend_url()
     response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
-    check_response(response, content_includes=case.name)
+    check_response(response, content_includes=es_non_whitelisted_case['name'])
     assert not is_cached(response)
 
 @pytest.mark.django_db
