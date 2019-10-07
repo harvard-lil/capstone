@@ -21,11 +21,11 @@ from capweb.helpers import reverse
     ("user-details",        [],                                               {}),
 
     # api views are cached for both logged in and logged out
-    ("casemetadata-list",   ["client", "auth_client", "token_auth_client"],   {"reverse_func": "api_reverse"}),
-    ("casemetadata-list",   ["client", "auth_client", "token_auth_client"],   {"HTTP_ACCEPT": "text/html", "reverse_func": "api_reverse"}),
+    ("cases-list",   ["client", "auth_client", "token_auth_client"],   {"reverse_func": "api_reverse"}),
+    ("cases-list",   ["client", "auth_client", "token_auth_client"],   {"HTTP_ACCEPT": "text/html", "reverse_func": "api_reverse"}),
 
     # api views that depend on the user account are cached only for logged out
-    ("casemetadata-list",   ["client"],                                       {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
+    ("cases-list",   ["client"],                                       {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
 
     # bulk list cacheable only for logged-out users
     ("bulk-download",       ["client"],                                       {}),
