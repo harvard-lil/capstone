@@ -1163,7 +1163,7 @@
         */
         this.chartLegendHeight = chart.legend.height;
       },
-      afterRender(chart) {
+      afterRender() {
         /* Runs after chart.js finishes animating an update. */
         this.screenshotReady = true;  // let screenshot tool know that page is ready
       },
