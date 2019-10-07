@@ -616,11 +616,11 @@ def in_re_the_marriage_of_lyle(load_casebody_cache):
 
 @pytest.fixture
 def es_non_whitelisted_case(in_re_the_marriage_of_lyle):
-    return in_re_the_marriage_of_lyle()
+    return in_re_the_marriage_of_lyle
 
 @pytest.fixture
 def es_whitelisted_case(home_insurance_co_of_new_york_v_kirk):
-    return home_insurance_co_of_new_york_v_kirk()
+    return home_insurance_co_of_new_york_v_kirk
 
 @pytest.fixture
 def es_three_cases(in_re_the_marriage_of_lyle, home_insurance_co_of_new_york_v_kirk, taylor_v_sprinkle):
@@ -672,7 +672,5 @@ def es_duplicative_case(load_casebody_cache):
         "court_slug": None,
         "sys_period": "{\"bounds\": \"[)\", \"lower\": \"2019-10-01T17:54:28.706957+00:00\", \"upper\": null}"
     }
-
-
 
 
