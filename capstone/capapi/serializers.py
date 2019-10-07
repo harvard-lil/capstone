@@ -2,6 +2,7 @@ import logging
 import re
 
 from django.db import transaction
+from elasticsearch_dsl import AttrDict
 from rest_framework import serializers
 from rest_framework.reverse import reverse as api_reverse
 from rest_framework.serializers import ListSerializer
@@ -154,7 +155,9 @@ class CaseDocumentSerializer(DocumentSerializer):
 
     def get_volume(self, obj):
         return_dict = {
-            "volume_number": obj.volume['volume_number'],
+            # obj.volume.volume_number is not necessarily set, and obj.volume may be a dict or an AttrDict, so we need
+            # to try two different ways to fetch an optional value:
+            "volume_number": getattr(obj.volume, 'volume_number', None) if type(obj.volume) == AttrDict else obj.volume.get('volume_number'),
             "barcode": obj.volume['barcode'],
             "url": api_reverse('volumemetadata-detail', [obj.volume['barcode']]),
 
