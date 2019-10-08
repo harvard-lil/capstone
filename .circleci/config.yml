@@ -50,7 +50,7 @@ jobs:
             docker-compose up -d
             docker-compose exec web ./manage.py collectstatic --noinput   # collect static files
             mkdir -p junit/pytest                            # storage for circleci test info
-            docker-compose run web pytest \
+            docker-compose exec web pytest \
               --junitxml=junit/pytest/test-results.xml       `# write test results so they can be displayed by circleci` \
               --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
               --fail-on-template-vars
