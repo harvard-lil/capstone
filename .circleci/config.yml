@@ -26,7 +26,7 @@ jobs:
       # This block shaves a minute or two off of the test runtime by using cached docker images.
       # Otherwise we could omit this step entirely and let `docker-compose run` build what it needs to.
       - restore_cache:
-          key: docker-images-{{ checksum "docker-compose.yml" }}
+          key: docker-images-{{ checksum "docker-compose.yml" }}-$CACHE_VERSION
       - run:
           name: "Build docker images"
           command: |
