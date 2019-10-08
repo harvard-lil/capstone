@@ -47,8 +47,8 @@ jobs:
       - run:
           name: "Test"
           command: |
+            sysctl -w vm.max_map_count=262144                # for elasticsearch's bootstrap check
             docker-compose up -d
-            sleep 5
             docker-compose exec web ./manage.py collectstatic --noinput   # collect static files
             mkdir -p junit/pytest                            # storage for circleci test info
             docker-compose exec web pytest \
