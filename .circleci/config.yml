@@ -47,6 +47,7 @@ jobs:
       - run:
           name: "Test"
           command: |
+            docker-compose up -d
             docker-compose run web ./manage.py collectstatic --noinput   # collect static files
             mkdir -p junit/pytest                            # storage for circleci test info
             docker-compose run web pytest \
