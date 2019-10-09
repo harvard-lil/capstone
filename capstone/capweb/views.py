@@ -4,24 +4,28 @@ import os
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
+from wsgiref.util import FileWrapper
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core import signing
 from django.core.signing import Signer
-from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, HttpResponse, Http404, \
+    HttpResponseBadRequest, StreamingHttpResponse
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.http import is_safe_url
-from django.utils.safestring import mark_safe
 from django.views import View
+from django.utils.safestring import mark_safe
+
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
 from capweb.models import GallerySection
 
 from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
+from capdb.storages import download_files_storage
 from capapi import serializers
 from capapi.resources import form_for_request
 
@@ -280,3 +284,90 @@ def screenshot(request):
         content_type = content_types_by_suffix[fallback_path.rsplit('.', 1)[1]]
 
     return HttpResponse(screenshot, content_type=content_type)
+
+
+class FileObject:
+    name = ''
+    path = ''
+    isdir = False
+
+    def __init__(self, name, path):
+        self.name = name
+        self.path = os.path.join(path, name)
+        self.isdir = download_files_storage.isdir(self.path)
+
+
+def download_files(request, filepath=""):
+    """
+    If directory requested: show list of files inside dir
+    If file requested: download file
+    """
+
+    absolute_path = download_files_storage.path(filepath)
+
+    allow_downloads = "restricted" not in absolute_path or request.user.unlimited_access_in_effect()
+
+    # file requested
+    if download_files_storage.isfile(filepath):
+        if not allow_downloads:
+            context = {
+                "filename": filepath,
+                "error": "If you believe you should have access to this file, "
+                         "please <a href='https://caselaw.freshdesk.com/support/tickets/new'>let us know</a>.",
+                "title": "403 - Access to this file is restricted",
+            }
+            return render(request, "file_download_400.html", context, status=403)
+        import magic
+        mime = magic.Magic(mime=True)
+        content_type = mime.from_file(absolute_path)
+        chunk_size = 8192
+
+        response = StreamingHttpResponse(FileWrapper(open(absolute_path, 'rb'), chunk_size), content_type=content_type)
+        response['Content-Length'] = download_files_storage.getsize(absolute_path)
+        response['Content-Disposition'] = 'attachment; filename="%s"' % filepath.split('/')[-1]
+
+        return response
+
+    # directory requested
+    elif download_files_storage.isdir(filepath):
+
+        # create clickable breadcrumbs
+        breadcrumb_parts = filepath.split('/')
+
+        breadcrumbs = []
+        for idx, breadcrumb in enumerate(breadcrumb_parts):
+            if breadcrumb:
+                breadcrumbs.append({'name': breadcrumb,
+                                    'path': "/".join(breadcrumb_parts[0:idx + 1])})
+
+        readme = ""
+        files = []
+        for filename in download_files_storage.listdir(filepath):
+            if filename == "README.md":
+                local_filepath = os.path.join(absolute_path, filename)
+                with open(download_files_storage.path(local_filepath), "r") as f:
+                    readme_content = f.read()
+                readme, toc, meta = render_markdown(readme_content)
+
+            fileobject = FileObject(path=filepath, name=filename)
+            files.append(fileobject)
+
+        context = {
+            'files': files,
+            'allow_downloads': allow_downloads
+        }
+
+        if len(breadcrumbs) > 0:
+            context['breadcrumbs'] = breadcrumbs
+        if readme:
+            context['readme'] = mark_safe(readme)
+
+        return render(request, "file_download.html", context)
+
+    # path does not exist
+    else:
+        context = {
+            "title": "404 - File not found",
+            "error": "This file was not found in our system."
+        }
+        return render(request, "file_download_400.html", context, status=404)
