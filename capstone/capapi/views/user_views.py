@@ -1,4 +1,3 @@
-import os
 from collections import OrderedDict
 
 from django.conf import settings
@@ -314,7 +313,6 @@ def bulk(request):
     return render(request, 'bulk.html', {
         'exports': sorted_exports,
     })
-
 
 @login_required()
 def reset_api_key(request):

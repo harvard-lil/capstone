@@ -334,7 +334,10 @@ def download_files(request, filepath=""):
         # create clickable breadcrumbs
         breadcrumb_parts = filepath.split('/')
 
-        breadcrumbs = []
+        breadcrumbs = [{
+            'name': '.',
+            'path': ''
+        }]
         for idx, breadcrumb in enumerate(breadcrumb_parts):
             if breadcrumb:
                 breadcrumbs.append({'name': breadcrumb,
