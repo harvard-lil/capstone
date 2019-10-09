@@ -342,14 +342,13 @@ def download_files(request, filepath=""):
 
         readme = ""
         files = []
-        for filename in download_files_storage.listdir(filepath):
-            if filename == "README.md":
-                local_filepath = os.path.join(absolute_path, filename)
-                with open(download_files_storage.path(local_filepath), "r") as f:
+        for filename in list(download_files_storage.iter_files(filepath)):
+            if "README.md" in filename:
+                with open(download_files_storage.path(filename), "r") as f:
                     readme_content = f.read()
                 readme, toc, meta = render_markdown(readme_content)
-
-            fileobject = FileObject(path=filepath, name=filename)
+            file_parts = filename.split('/')
+            fileobject = FileObject(path="/".join(file_parts[0:-1]), name=file_parts[-1])
             files.append(fileobject)
 
         context = {

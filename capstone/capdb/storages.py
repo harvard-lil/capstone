@@ -47,10 +47,6 @@ class CapStorageMixin(object):
     def getsize(self, path):
         return os.path.getsize(self.path(path))
 
-    def listdir(self, path):
-        return os.listdir(self.path(path))
-
-
 
 class CapS3Storage(CapStorageMixin, S3Boto3Storage):
     def _fix_path(self, path):
