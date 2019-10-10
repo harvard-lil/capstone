@@ -238,7 +238,7 @@ def test_authenticated_multiple_full_cases(auth_user, auth_client, ingest_elasti
 
 # CITATION REDIRECTS
 @pytest.mark.django_db
-def test_case_citation_redirect(client, in_re_the_marriage_of_lyle, taylor_v_sprinkle, ingest_elasticsearch):
+def test_case_citation_redirect(client, in_re_the_marriage_of_lyle, taylor_v_sprinkle):
     """Should allow various forms of citation, should redirect to normalized_cite"""
     citation = Citation.objects.get(case_id=in_re_the_marriage_of_lyle['id'])
     url = api_reverse("cases-detail", args=[citation.normalized_cite])
@@ -326,7 +326,7 @@ def test_full_text_search(client, home_insurance_co_of_new_york_v_kirk):
 
 # FILTERING
 @pytest.mark.django_db
-def test_filter_case(client, ingest_elasticsearch, es_three_cases):
+def test_filter_case(client, es_three_cases):
     search_url = api_reverse("cases-list")
 
 

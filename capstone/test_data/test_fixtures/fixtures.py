@@ -434,7 +434,7 @@ def ingest_elasticsearch(load_tracking_tool_database):
     call_command('loaddata', 'test_data/case_metadata.json', database='capdb')
     call_command('loaddata', 'test_data/body_cache.json', database='capdb')
     call_command('loaddata', 'test_data/citation.json', database='capdb')
-    fabfile.populate_search_index_synchronous()
+    fabfile.rebuild_search_index(synchronous=True, force=True)
     yield
     call_command('search_index', '--delete', '-f')
 

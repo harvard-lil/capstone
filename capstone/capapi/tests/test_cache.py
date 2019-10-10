@@ -36,7 +36,7 @@ from capdb.models import CaseMetadata
     ("caseexport-download", [],                                               {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
 ])
 @pytest.mark.parametrize("client_fixture_name", ["client", "auth_client", "token_auth_client"])
-def test_cache_headers(case, request, settings,
+def test_cache_headers(ingest_elasticsearch, request, settings,
                        client_fixture_name,
                        view_name, cache_clients, get_kwargs):
 
