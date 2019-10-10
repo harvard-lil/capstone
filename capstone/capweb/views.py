@@ -334,10 +334,7 @@ def download_files(request, filepath=""):
         # create clickable breadcrumbs
         breadcrumb_parts = filepath.split('/')
 
-        breadcrumbs = [{
-            'name': '.',
-            'path': ''
-        }]
+        breadcrumbs = []
         for idx, breadcrumb in enumerate(breadcrumb_parts):
             if breadcrumb:
                 breadcrumbs.append({'name': breadcrumb,
@@ -360,7 +357,8 @@ def download_files(request, filepath=""):
         }
 
         if len(breadcrumbs) > 0:
-            context['breadcrumbs'] = breadcrumbs
+            # Add home path to root folder if breadcrumbs exist
+            context['breadcrumbs'] = [{'name': 'home', 'path': ''}] + breadcrumbs
         if readme:
             context['readme'] = mark_safe(readme)
 
