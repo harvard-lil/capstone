@@ -13,6 +13,10 @@
 {% block main_content %}
   Email us at <a class="contact_email" href="mailto:{{ email }}">{{ email }}</a> or fill out this form.
   <br/><br/>
+  <small>If you're reporting a problem with the case data, including typos or OCR problems in cases, please read the
+    <a href="{% url 'api' %}#reporting-problems-and-enhancement-requests">Reporting Problems section of our API docs.
+    </a> before submitting this form.</small>
+  <br/><br/>
   <form action="{% url 'contact' %}" method="post">
     {% csrf_token %}
     {% bootstrap_form form %}
