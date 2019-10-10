@@ -6,9 +6,10 @@ from math import log
 from pathlib import Path
 
 from django.conf import settings
+from django.db import connections
 from tqdm import tqdm
 
-from capdb.models import Citation, EditLog
+from capdb.models import Citation, EditLog, Reporter, CaseMetadata
 
 """
     Usage: fab run_script:scripts.link_scdb
@@ -82,11 +83,56 @@ base_path = Path(settings.BASE_DIR, 'test_data/zips')
 # columns in us_cites.csv
 exported_columns = ['id', 'volume_id', 'cite', 'name', 'name_abbreviation', 'decision_date']
 
-def main(dry_run=True, output_missing=False):
+def manual_pre_edits(dry_run='true'):
+    """
+        These fixes were determined from inspecting the initial output of main() for error messages.
+    """
+
+    ## delete "U. S." cites and manually detected typo cites
+
+    to_delete = []
+    changed_cites = []
+    to_reindex = []
+    potential_matches = list(Citation.objects.filter(cite__contains=' U. S. '))
+    actual_matches = [c for c in potential_matches if ';' not in c.cite and re.match(r'\d+ U\. S\. \d+', c.cite)]
+    actual_matches += [
+        Citation.objects.get(case_id=1493694, cite="822 F.2d 52"),
+        Citation.objects.get(case_id=6210086, cite="For"),
+    ]
+    for cite in actual_matches:
+        print("Would delete %s" % cite)
+        to_delete.append(cite)
+        changed_cites.append(cite.cite)
+        to_reindex.append(cite.case)
+
+    if dry_run == 'false':
+        with EditLog(
+            description='Delete incorrectly identified cites matching "\d+ U. S. \d+" (extra space). '
+            'These all refer to prior history of the case.'
+        ).record():
+            for cite in to_delete:
+                cite.delete()
+            CaseMetadata.update_frontend_urls(changed_cites)
+            CaseMetadata.reindex_cases(to_reindex)
+
+def main(dry_run='true', output_missing='false'):
+    # download data
+    cap_cites_path = base_path / 'us_cites.csv'
+    if not cap_cites_path.exists():
+        print("pre-loading cap cites")
+        us_reporter = Reporter.objects.get(short_name='U.S.')
+        with connections['capdb'].cursor() as cursor:
+            cursor.execute("""
+                select m.id, m.volume_id, cite, name, name_abbreviation, decision_date 
+                from capdb_casemetadata m, capdb_citation c where m.reporter_id=%s and c.case_id=m.id and c.cite like '%%U.S.%%'
+            """, [us_reporter.id])
+            with cap_cites_path.open('w') as out_file:
+                csv_writer = csv.writer(out_file)
+                for row in cursor.fetchall():
+                    csv_writer.writerow(row)
+
     # load data
     print("loading data")
-    # us_reporter = Reporter.objects.get(short_name='U.S.')
-    cap_cites_path = base_path / 'us_cites.csv'
     scdb_new_cites_path = base_path / 'SCDB_2019_01_caseCentered_Citation.csv'
     scdb_old_cites_path = base_path / 'SCDB_Legacy_05_caseCentered_Citation.csv'
     cap_cites = list(csv.DictReader((l.replace('\xad', '') for l in cap_cites_path.open()), exported_columns))
@@ -142,6 +188,8 @@ def main(dry_run=True, output_missing=False):
         matched_cap_case_ids.add(c['cap_cite']['id'])
 
     # write SCDB cites to database
+    print("Applying corrections")
+    edit_out = csv.writer((base_path / 'scdb_cite_edits.csv').open('w'))
     cite_objs = Citation.objects.filter(case_id__in=matched_cap_case_ids).select_related('case')
     cite_objs_by_case_id = group_by(cite_objs, lambda c: c.case_id)
     to_create = []
@@ -150,7 +198,6 @@ def main(dry_run=True, output_missing=False):
         if 'cap_cite' not in scdb_cite:
             continue
         case_id = int(scdb_cite['cap_cite']['id'])
-        print("- %s" % case_id)
         existing_cite_objs_by_reporter = {get_cite_reporter(c.cite): c for c in cite_objs_by_case_id[case_id]}
         expected_cites = [['SCDB', 'SCDB %s' % scdb_cite['caseId'], 'vendor']]
         for scdb_key, cite_type in [["usCite", "official"], ["sctCite", "parallel"], ["ledCite", "parallel"], ["lexisCite", "vendor"]]:
@@ -160,28 +207,24 @@ def main(dry_run=True, output_missing=False):
             if reporter in existing_cite_objs_by_reporter:
                 new_cite = existing_cite_objs_by_reporter.pop(reporter)
                 if new_cite.cite == cite_val:
-                    if dry_run:
-                        print("  - not modifying existing cite %s" % cite_val)
-                        continue
-                old_cite_val = new_cite.cite
-                new_cite.cite = cite_val
-                to_update.append(new_cite)
-                if dry_run:
-                    print("  - would update cite from %s to %s" % (old_cite_val, new_cite.cite))
+                    edit_out.writerow([case_id, 'skip', new_cite.id, cite_val])
+                else:
+                    edit_out.writerow([case_id, 'update', new_cite.id, new_cite.cite, cite_val])
+                    new_cite.cite = cite_val
+                    to_update.append(new_cite)
             else:
                 new_cite = Citation(cite=cite_val, type=cite_type, case_id=case_id)
                 to_create.append(new_cite)
-                if dry_run:
-                    print("  - would create %s cite %s for case %s" % (new_cite.type, new_cite.cite, new_cite.case_id))
+                edit_out.writerow([case_id, 'create', new_cite.type, new_cite.cite])
         if existing_cite_objs_by_reporter:
-            print("  - WARNING: other cites: %s" % existing_cite_objs_by_reporter)
+            edit_out.writerow([case_id, 'warning', 'ignored cite']+[c.cite for c in existing_cite_objs_by_reporter.values()])
 
-    if not dry_run:
+    if dry_run == 'false':
         with EditLog(description='Add SCDB cites').record():
             Citation.objects.bulk_create(to_create)
             Citation.objects.bulk_update(to_update)
 
-    if not output_missing:
+    if output_missing != 'true':
         return
 
     ### second pass at checking for matches -- for all SCDB cites that don't have matches, fetch all cases we have for the
@@ -196,6 +239,10 @@ def main(dry_run=True, output_missing=False):
     db_cites = Citation.objects.filter(cite__contains='U.S.', case__volume_id__in=target_volumes).select_related('case')
     db_cases = []
     for cite in db_cites:
+        # skip cases already affirmatively matched
+        if str(cite.id) in matched_cap_case_ids:
+            continue
+
         # conform DB objects to export format from csv
         c = cite.case
         c.cite = cite
@@ -215,17 +262,15 @@ def main(dry_run=True, output_missing=False):
                 cases_by_name[c.name_abbreviation.lower()] = c
 
             for m in missing:
+                if re.match(r'131 U\.S\. [a-z]+$', m['usCite']):
+                    # special case -- skip cites like "131 U.S. lxxxiii", as we know we don't have them
+                    continue
                 best = get_best_match([m['caseName']], cases_by_name.keys(), word_counts, document_count, tf_threshold=10)
                 if not best:
                     continue
                 c = cases_by_name[best[0]]
                 m['cap_cite'] = {k: getattr(c, k) for k in exported_columns}
                 m['match_quality'] = 'weak'
-
-    # filter weak matches:
-    # - remove all "131 U.S. lxxxiii" roman numeral matches -- missing appendix
-    # - must not be already matched
-    # - must be from same volume and similar page number
 
     # output
     csv_out = csv.writer((base_path / 'scdb_cite_matchup.csv').open('w'))

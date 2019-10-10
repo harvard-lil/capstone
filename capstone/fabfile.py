@@ -527,14 +527,17 @@ def show_slow_queries(server='capstone'):
         if not created:
             saved_query.save(update_fields=['last_seen'])
 
-        queries.append({
-            'fallback': saved_query.label or query,
-            'title': "%d call%s, %.1f ms, %.1f ms/query" % (
-                call_count, "" if call_count == 1 else "s", run_time, run_time/float(call_count)
-            ),
-            'text': saved_query.label or "```%s```" % query
-        })
-    print(json.dumps({'text': heading, 'attachments': queries}))
+        if run_time/float(call_count) > 100.0:
+            queries.append({
+                'fallback': saved_query.label or query,
+                'title': "%d call%s, %.1f ms, %.1f ms/query" % (
+                    call_count, "" if call_count == 1 else "s", run_time, run_time/float(call_count)
+                ),
+                'text': saved_query.label or "```%s```" % query
+            })
+
+    if queries:
+        print(json.dumps({'text': heading, 'attachments': queries}))
     cursor.execute("select pg_stat_statements_reset();")
 
 
