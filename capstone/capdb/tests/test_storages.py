@@ -25,3 +25,26 @@ def base_test_iter_files(storage):
     assert set(file_names) == set(storage.iter_files_recursive())
     assert set(sub_dir) == set(storage.iter_files_recursive('d'))
 
+
+def test_isfile(file_storage):
+    file_names = ['a/b.txt', 'c.txt']
+    for file_name in file_names:
+        file_storage.save(file_name, BytesIO(b'content'))
+
+    assert file_storage.isfile('a/b.txt')
+    assert file_storage.isfile('c.txt')
+
+    assert not file_storage.isfile('a')
+
+
+def test_isdir(file_storage):
+    file_storage.save('a/b.txt', BytesIO(b'content'))
+
+    assert file_storage.isdir('a')
+    assert not file_storage.isdir('a/b.txt')
+
+
+def test_getsize(file_storage):
+    file_storage.save('a/b.txt', BytesIO(b'content'))
+
+    assert file_storage.getsize('a/b.txt') == 7
