@@ -14,6 +14,7 @@ import django.apps
 from django.utils.functional import SimpleLazyObject
 from moto import mock_s3
 from rest_framework.test import APIRequestFactory, APIClient
+from elasticsearch_dsl import Index as es_index
 
 # Before importing any of our code, mock capdb.storages redis clients.
 # Do this here so anything that gets imported later will get the mocked versions.
@@ -434,7 +435,12 @@ def ingest_elasticsearch(load_tracking_tool_database):
     call_command('loaddata', 'test_data/case_metadata.json', database='capdb')
     call_command('loaddata', 'test_data/body_cache.json', database='capdb')
     call_command('loaddata', 'test_data/citation.json', database='capdb')
-    fabfile.rebuild_search_index(synchronous=True, force=True)
+    fabfile.rebuild_search_index(force=True)
+
+    # Make sure these cases are accessible
+    while es_index("cases_test").stats()['_all']['total']['docs']['count'] < 3:
+        continue
+
     yield
     call_command('search_index', '--delete', '-f')
 
