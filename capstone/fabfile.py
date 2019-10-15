@@ -242,23 +242,13 @@ def populate_search_index(last_run_before=None):
         last_run_before=last_run_before)
 
 @task
-def populate_search_index_synchronous(last_run_before=None):
-    tasks.run_task_for_volumes(
-        tasks.update_elasticsearch_for_vol,
-        VolumeMetadata.objects.exclude(xml_metadata=None).exclude(out_of_scope=True),
-        last_run_before=last_run_before, synchronous=True)
-
-@task
-def rebuild_search_index(force=False, synchronous=False):
+def rebuild_search_index(force=False):
     if force:
         management.call_command('search_index', '--delete', '-f')
         management.call_command('search_index', '--create', '-f')
     else:
         management.call_command('search_index', '--delete')
         management.call_command('search_index', '--create')
-    if synchronous:
-        populate_search_index_synchronous()
-        return
     populate_search_index()
 
 @task

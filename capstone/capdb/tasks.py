@@ -32,9 +32,6 @@ def run_task_for_volumes(task, volumes=None, last_run_before=None, synchronous=F
             "task_statuses__%s__timestamp__gte" % task.name: last_run_before
         })
     for volume_id in volumes.values_list('pk', flat=True):
-        if synchronous:
-            task(volume_id, **kwargs)
-            continue
         task.delay(volume_id, **kwargs)
 
 @contextmanager
