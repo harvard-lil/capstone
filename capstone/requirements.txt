@@ -256,9 +256,9 @@ django-storages==1.7.1 \
 django-webpack-loader==0.6.0 \
     --hash=sha256:60bab6b9a037a5346fad12d2a70a6bc046afb33154cf75ed640b93d3ebd5f520 \
     --hash=sha256:970b968c2a8975fb7eff56a3bab5d0d90d396740852d1e0c50c5cfe2b824199a
-django==2.2.6 \
-    --hash=sha256:4025317ca01f75fc79250ff7262a06d8ba97cd4f82e93394b2a0a6a4a925caeb \
-    --hash=sha256:a8ca1033acac9f33995eb2209a6bf18a4681c3e5269a878e9a7e0b7384ed1ca3
+django==2.2.5 \
+    --hash=sha256:148a4a2d1a85b23883b0a4e99ab7718f518a83675e4485e44dc0c1d36988c5fa \
+    --hash=sha256:deb70aa038e59b58593673b15e9a711d1e5ccd941b5973b30750d5d026abfd56
 djangorestframework-filters==1.0.0.dev0 \
     --hash=sha256:d53692f9f0dfcdc1df4e890787f7212c3602476b85faffdefec02e2bc386c5b6 \
     --hash=sha256:dfb58706f5f00ce72a01968d99fcc3e500bdeaaa275568fd60ae868bf2b90aad
@@ -709,6 +709,9 @@ python-jose==2.0.2 \
     --hash=sha256:391f860dbe274223d73dd87de25e4117bf09e8fe5f93a417663b1f2d7b591165 \
     --hash=sha256:3b35cdb0e55a88581ff6d3f12de753aa459e940b50fe7ca5aa25149bc94cb37b \
     # via moto
+python-magic==0.4.15 \
+    --hash=sha256:f2674dcfad52ae6c49d4803fa027809540b130db1dec928cfbb9240316831375 \
+    --hash=sha256:f3765c0f582d2dfc72c15f3b5a82aecfae9498bd29ca840d72f37d7bd38bfcd5
 python-redis-lock==3.3.1 \
     --hash=sha256:5316d473ce6ce86a774b9f9c110d84c3a9bd1a2abfda5d99e9c0c8a872a8e6d6 \
     --hash=sha256:f0649c49341fa943f19b8fbe93c3457df8a0a85006c88134465a16401fd1e553
@@ -905,7 +908,7 @@ zope.interface==4.6.0 \
     # via datetime
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==41.0.1 \
-    --hash=sha256:a222d126f5471598053c9a77f4b5d4f26eaa1f150ad6e01dcf1a42e185d05613 \
-    --hash=sha256:c7769ce668c7a333d84e17fe8b524b1c45e7ee9f7908ad0a73e1eda7e6a5aebf \
+setuptools==41.4.0 \
+    --hash=sha256:7eae782ccf36b790c21bde7d86a4f303a441cd77036b25c559a602cf5186ce4d \
+    --hash=sha256:8d01f7ee4191d9fdcd9cc5796f75199deccb25b154eba82d44d6a042cf873670 \
     # via cfn-lint, jsonschema, markdown, pytest, python-rocksdb, zope.interface

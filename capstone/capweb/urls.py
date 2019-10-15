@@ -45,6 +45,9 @@ urlpatterns = [
                                                       'form_title': 'contact',
                                                       'message': 'We\'ll be in touch, shortly.'
                                                   }),  name='contact-success'),
+    ### downloads ###
+    path('download', views.download_files, name='download-files'),
+    re_path(r'download/(?P<filepath>.*)', views.download_files, name='download-files-in-path'),
 
     ### user account pages ###
 

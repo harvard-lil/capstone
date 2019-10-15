@@ -323,6 +323,12 @@ PIPELINE = {
                 'css/scss/cite.scss',
             },
             'output_filename': 'cite.css'
+        },
+        'file_download': {
+            'source_filenames': {
+                'css/scss/file_download.scss',
+            },
+            'output_filename': 'file_download.css'
         }
     },
     # These are not yet converted to vue/webpack:
@@ -413,6 +419,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'test_data/ngrams'),
         }
     },
+    'download_files_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'test_data/downloads'),
+        }
+    }
 }
 
 INVENTORY = {
