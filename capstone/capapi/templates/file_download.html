@@ -37,7 +37,7 @@
           {% else %}
             {{ file.name }}
           {% endif %}
-            ({{ file.size | filesizeformat }})
+            <span class="file-size small color-gray">{{ file.size | filesizeformat }}</span>
         {% endif %}
       </li>
 
