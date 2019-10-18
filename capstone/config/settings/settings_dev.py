@@ -53,10 +53,13 @@ STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 # don't update elasticsearch index on dev when savings cases (this may want to change -- not sure)
 MAINTAIN_ELASTICSEARCH_INDEX = False
 
+ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases_test'
+
 # django-debug-toolbar
 import sys
 if 'pytest' not in sys.modules:  # don't run this from tests
     try:
+            ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases'
             import debug_toolbar  # noqa
             INSTALLED_APPS += (
                 'debug_toolbar',

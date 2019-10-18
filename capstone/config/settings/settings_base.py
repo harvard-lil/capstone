@@ -626,6 +626,10 @@ ELASTICSEARCH_DSL={
 }
 MAINTAIN_ELASTICSEARCH_INDEX = True  # whether to update index when changing cases
 
+ELASTICSEARCH_INDEXES={
+    'cases_endpoint': 'cases',
+}
+
 # for views decorated with @password_protected_page('some_key')
 PASSWORD_PROTECTED_PAGES = {
     # 'some_key': ['some', 'accepted', 'passwords'],

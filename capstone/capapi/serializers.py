@@ -170,7 +170,7 @@ class CaseDocumentSerializer(DocumentSerializer):
             "slug": obj.court['slug'],
             "name": obj.court['name'],
             "name_abbreviation": obj.court['name_abbreviation'],
-            "url": api_reverse('court-detail', [obj.court['id']]),
+            "url": api_reverse('court-detail', [obj.court['slug']]),
 
         }
         return return_dict
