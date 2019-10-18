@@ -23,7 +23,7 @@ RUN apt-get update \
 RUN mkdir /app
 WORKDIR /app
 COPY requirements.txt /app
-RUN pip install pip==19.2.3 \
+RUN pip install -U pip \
     && pip install -r requirements.txt --src /usr/local/src \
     && rm requirements.txt
 
