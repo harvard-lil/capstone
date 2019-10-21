@@ -1,7 +1,10 @@
 from django_elasticsearch_dsl import DocType, Index, fields
 from capdb.models import CaseMetadata
+from django.conf import settings
 
-case = Index('cases')
+index = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
+
+case = Index(index)
 
 case.settings(
     number_of_shards=1,
