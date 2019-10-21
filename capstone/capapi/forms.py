@@ -39,7 +39,7 @@ class RegisterUserForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # set label here because reverse() isn't ready when defining the class
-        self.fields['mailing_list'].label = mark_safe("Please send me news about this project and directly related topics.")
+        self.fields['mailing_list'].label = mark_safe("<small>(optional)</small> Sign me up for the CAP newsletter: Lawvocado.")
         self.fields['agreed_to_tos'].label = mark_safe("I have read and agree to the <a href='%s' target='_blank'>Terms of Use</a>." % reverse('terms'))
 
     class Meta:
