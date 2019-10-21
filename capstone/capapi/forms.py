@@ -4,6 +4,9 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.text import format_lazy
+from django.conf import settings
+
+from mailchimp3 import MailChimp
 
 from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract
 from capweb.helpers import reverse, reverse_lazy
@@ -31,15 +34,17 @@ class ResendVerificationForm(forms.Form):
 
 class RegisterUserForm(UserCreationForm):
     agreed_to_tos = forms.BooleanField()
+    mailing_list = forms.BooleanField(initial=False, required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # set label here because reverse() isn't ready when defining the class
+        self.fields['mailing_list'].label = mark_safe("Please send me news about this project and directly related topics.")
         self.fields['agreed_to_tos'].label = mark_safe("I have read and agree to the <a href='%s' target='_blank'>Terms of Use</a>." % reverse('terms'))
 
     class Meta:
         model = CapUser
-        fields = ["email", "first_name", "last_name", "password1", "password2", "agreed_to_tos"]
+        fields = ["email", "first_name", "last_name", "password1", "password2", "agreed_to_tos", "mailing_list"]
 
     def clean_email(self):
         """ Ensure that email address doesn't match an existing CapUser.normalized_email. """
@@ -53,6 +58,14 @@ class RegisterUserForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit)
         user.create_nonce()
+        if settings.MAILCHIMP['api_key'] is not '' and self.cleaned_data['mailing_list']:
+            mc_client = MailChimp(mc_api=settings.MAILCHIMP['api_key'], mc_user=settings.MAILCHIMP['api_user'])
+            mc_client.lists.members.create(
+                settings.MAILCHIMP['id'], {
+                    'email_address': user.email,
+                    'merge_fields': {'LNAME': user.first_name, 'FNAME': user.last_name},
+                    'status': 'pending'
+                })
         return user
 
 
