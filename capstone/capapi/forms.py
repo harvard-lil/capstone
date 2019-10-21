@@ -58,6 +58,7 @@ class RegisterUserForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit)
         user.create_nonce()
+        # This will sign them up for the mailing list if they selected the mailing_list checkbox.
         if settings.MAILCHIMP['api_key'] is not '' and self.cleaned_data['mailing_list']:
             mc_client = MailChimp(mc_api=settings.MAILCHIMP['api_key'], mc_user=settings.MAILCHIMP['api_user'])
             mc_client.lists.members.create(
