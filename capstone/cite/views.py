@@ -14,8 +14,11 @@ from django.utils import timezone
 from django.utils.http import is_safe_url
 from django.utils.text import slugify
 from rest_framework.request import Request
+from elasticsearch.exceptions import NotFoundError
+
 
 from capapi import serializers
+from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
 from capapi.renderers import HTMLRenderer
 from capdb.models import Reporter, VolumeMetadata, Citation, CaseMetadata
@@ -123,26 +126,24 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
 
     ### try to look up citation
     full_cite = "%s %s %s" % (volume_number, series_slug.replace('-', ' ').title(), page_number)
+    normalized_cite = re.sub(r'[^0-9a-z]', '', full_cite.lower())
+
     if case_id:
-        citation = Citation.objects.filter(case__id=case_id, case__in_scope=True).first()
-        citations = [citation] if citation else []
+        try:
+            cases = [ CaseDocument.get(id=case_id) ]
+        except NotFoundError:
+            cases = CaseDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
     else:
-        normalized_cite = re.sub(r'[^0-9a-z]', '', full_cite.lower())
-        citations = list(Citation.objects.filter(normalized_cite=normalized_cite, duplicative=False, case__in_scope=True))
+        cases = CaseDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
 
     ### handle case where we found a unique case with that citation
-    if len(citations) == 1:
+    if cases and len(cases) == 1:
 
-        # look up case data
-        case = CaseMetadata.objects\
-            .select_related('case_xml', 'body_cache', 'volume', 'reporter')\
-            .prefetch_related('citations')\
-            .defer('body_cache__xml', 'body_cache__text', 'body_cache__json') \
-            .get(citations=citations[0])
+        case = cases[0]
 
         # handle whitelisted case or logged-in user
-        if case.jurisdiction_whitelisted or request.user.is_authenticated:
-            serializer = serializers.CaseSerializerWithCasebody
+        if case.jurisdiction.whitelisted or request.user.is_authenticated:
+            serializer = serializers.CaseDocumentSerializerWithCasebody
 
         # handle logged-out user with cookies set up already
         elif 'case_allowance_remaining' in request.session and request.COOKIES.get('not_a_bot', 'no') == 'yes':
@@ -157,15 +158,15 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
                 # if quota remaining, serialize without checking credentials
                 if cases_remaining > 0:
                     session['case_allowance_remaining'] = cases_remaining - 1
-                    serializer = serializers.NoLoginCaseSerializer
+                    serializer = serializers.NoLoginCaseDocumentSerializer
 
                 # if quota used up, use regular serializer that checks credentials
                 else:
-                    serializer = serializers.CaseSerializerWithCasebody
+                    serializer = serializers.CaseDocumentSerializerWithCasebody
 
         # handle google crawler
         elif helpers.is_google_bot(request):
-            serializer = serializers.NoLoginCaseSerializer
+            serializer = serializers.NoLoginCaseDocumentSerializer
 
         # if non-whitelisted case, not logged in, and no cookies set up, redirect to ?set_cookie=1
         else:
@@ -178,23 +179,23 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         api_request.accepted_renderer = HTMLRenderer()
         serialized = serializer(case, context={'request': api_request})
         context = {'request': api_request, 'meta_tags': []}
-        if not case.jurisdiction_whitelisted:
+        if not case.jurisdiction.whitelisted:
             # blacklisted cases shouldn't show cached version in google search results
             context['meta_tags'].append({"name": "googlebot", "content": "noarchive"})
-        if case.no_index:
-            context['meta_tags'].append({"name": "robots", "content": "noindex"})
+
+        # This should probably change
+        if hasattr(case, 'no_index'):
+            if case.no_index:
+                context['meta_tags'].append({"name": "robots", "content": "noindex"})
+        else:
+            if CaseMetadata.objects.get(pk=case.id).no_index:
+                context['meta_tags'].append({"name": "robots", "content": "noindex"})
+
         rendered = HTMLRenderer().render(serialized.data, renderer_context=context)
         return HttpResponse(rendered)
 
     ### handle non-unique citation (zero or multiple)
     else:
-        if citations:
-            cases = (CaseMetadata.objects
-                .filter(citations__in=citations)
-                .select_related('reporter')
-                .prefetch_related('citations'))
-        else:
-            cases = []
 
         reporter = Reporter.objects.filter(short_name_slug=slugify(series_slug)).first()
         series = reporter.short_name if reporter else series_slug
