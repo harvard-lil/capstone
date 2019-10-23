@@ -104,3 +104,10 @@ class CaseDocument(DocType):
         ]
         ignore_signals = True
         auto_refresh = False
+
+    def full_cite(self):
+        return "%s, %s%s" % (
+            self.name_abbreviation,
+            ", ".join(cite.cite for cite in self.citations),
+            " (%s)" % self.decision_date.year if self.decision_date else ""
+        )
