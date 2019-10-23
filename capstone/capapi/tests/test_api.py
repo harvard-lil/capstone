@@ -44,7 +44,6 @@ def test_jurisdiction_redirect(client, es_non_whitelisted_case):
 @pytest.mark.parametrize("fixture_name, detail_attr, comparison_attr", [
     ("jurisdiction", "slug", "name_long"),
     ("court", "slug", "name"),
-    ("case", "pk", "name_abbreviation"),
     ("reporter", "pk", "full_name"),
     ("volume_metadata", "pk", "title"),
     ("case_export", "pk", "file_name"),
@@ -69,6 +68,19 @@ def test_model_endpoint(request, client, fixture_name, detail_attr, comparison_a
     results = response.json()
     assert results[comparison_attr] == getattr(instance, comparison_attr)
 
+@pytest.mark.django_db
+def test_cases_endpoint(client, es_whitelisted_case):
+    # test list endpoint
+    case_list_url = api_reverse("cases-list")
+    response = client.get(case_list_url)
+    assert response.json()['count'] == 3
+
+    # test detail endpoint
+    response = client.get(api_reverse("cases-detail", args=[es_whitelisted_case['id']]))
+    check_response(response)
+    results = response.json()
+    assert results['name'] == es_whitelisted_case['name']
+
 # REQUEST AUTHORIZATION
 @pytest.mark.django_db
 def test_unauthorized_request(cap_user, client, es_non_whitelisted_case):
@@ -79,12 +91,6 @@ def test_unauthorized_request(cap_user, client, es_non_whitelisted_case):
 
     cap_user.refresh_from_db()
     assert cap_user.case_allowance_remaining == cap_user.total_case_allowance
-
-@pytest.mark.django_db
-def test_es_index_creation(client, ingest_elasticsearch):
-    case_list_url = api_reverse("cases-list")
-    response = client.get(case_list_url)
-    assert response.json()['count'] == 3
 
 @pytest.mark.django_db
 def test_unauthenticated_full_case(es_whitelisted_case, es_non_whitelisted_case, client):
