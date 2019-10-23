@@ -154,13 +154,17 @@ class CaseDocumentSerializer(DocumentSerializer):
         return return_list
 
     def get_volume(self, obj):
-        return_dict = {
-            # obj.volume.volume_number is not necessarily set, and obj.volume may be a dict or an AttrDict, so we need
-            # to try two different ways to fetch an optional value:
-            "volume_number": getattr(obj.volume, 'volume_number', None) if type(obj.volume) == AttrDict else obj.volume.get('volume_number'),
-            "barcode": obj.volume['barcode'],
-            "url": api_reverse('volumemetadata-detail', [obj.volume['barcode']]),
 
+        volume_number = None
+        if hasattr(obj.volume, 'volume_number'):
+            volume_number = getattr(obj.volume, 'volume_number', None)
+        elif hasattr(obj.volume, 'get'):
+            volume_number = obj.volume.get('volume_number')
+
+        return_dict = {
+            "barcode": obj.volume['barcode'],
+            "volume_number": volume_number,
+            "url": api_reverse('volumemetadata-detail', [obj.volume['barcode']]),
         }
         return return_dict
 
