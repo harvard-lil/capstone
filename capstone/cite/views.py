@@ -21,7 +21,7 @@ from capapi import serializers
 from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
 from capapi.renderers import HTMLRenderer
-from capdb.models import Reporter, VolumeMetadata, Citation, CaseMetadata
+from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 from capweb import helpers
 
 ### helpers ###
