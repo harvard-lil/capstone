@@ -60,6 +60,9 @@ caseContainer.addEventListener("mouseup", function (event) {
   $(contextMenu).hide();
   let selection = window.getSelection();
   selectedText = selection.getRangeAt(0).toString();
+  let encodedSelectedText = encodeURIComponent(selectedText);
+  $(copySearchGoogleBtn).attr("href", "https://www.google.com/search?hl=en&q=" + encodedSelectedText);
+  $(copySearchDDGBtn).attr("href", "https://duckduckgo.com/?q=" + encodedSelectedText);
   let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
   if (selectedText) {
     showContextMenu(selection, selectedBoundingBox, event);
@@ -88,7 +91,6 @@ function copyText(evt, textToCopy) {
   t.value = textToCopy;
   t.select();
   document.execCommand('copy');
-
 }
 
 function getUpdatedURL(selectedText) {
