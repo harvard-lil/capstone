@@ -2,7 +2,6 @@ import logging
 import re
 
 from django.db import transaction
-from elasticsearch_dsl import AttrDict
 from rest_framework import serializers
 from rest_framework.reverse import reverse as api_reverse
 from rest_framework.serializers import ListSerializer
