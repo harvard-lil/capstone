@@ -68,6 +68,31 @@
       {{ case_html|safe }}
     {% endif %}
   <textarea id="url-for-copy" class="offscreen" aria-hidden="true"></textarea>
+  <nav class="context-menu">
+  <ul class="list-group">
+    <li class="list-item copied-successfully">Copied!</li>
+    <li class="list-item">
+      <a href="#" class="context-menu-link" id="copy-url">
+        Copy URL
+      </a>
+    </li>
+    <li class="list-item">
+      <a href="#" class="context-menu-link" id="copy-text">
+        Copy text
+      </a>
+    </li>
+    <li class="list-item">
+      <a href="#" class="context-menu-link" id="search-google">
+        Search Google
+      </a>
+    </li>
+    <li class="list-item">
+      <a href="#" class="context-menu-link" id="search-ddg">
+        Search DuckDuckGo
+      </a>
+    </li>
+  </ul>
+</nav>
   </div>
   <script type="application/ld+json">
  {

@@ -54,6 +54,22 @@ p {
   cursor: pointer;
 }
 
+.context-menu {
+  position: fixed;
+  left: -4000px;
+  border: 1px solid $color-blue;
+  background-color: $color-white;
+  z-index: 999;
+  li {
+    border-bottom: 1px solid $color-blue;
+    padding-left: 0.3em;
+    padding-right: 0.3em;
+  }
+  .copied-successfully {
+    display: none;
+  }
+}
+
 #get-url-tooltip {
   position: fixed;
 }

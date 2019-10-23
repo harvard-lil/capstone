@@ -5,7 +5,27 @@ import 'bootstrap/js/dist/tooltip'
 import Mark from 'mark.js';
 
 let caseContainer = document.querySelector(".case-container");
-let tooltip;
+let contextMenu = document.querySelector(".context-menu");
+let selectedText = "";
+let copiedSuccessfullyText = document.querySelector(".copied-successfully");
+let copyURLBtn = document.getElementById("copy-url");
+copyURLBtn.addEventListener("click", function (event) {
+  event.preventDefault();
+  let updatedUrl = getUpdatedURL(selectedText);
+  copyText(event, updatedUrl.href);
+  successCall();
+});
+
+let copyTextBtn = document.getElementById("copy-text");
+copyTextBtn.addEventListener("click", function (event) {
+  event.preventDefault();
+  copyText(event, selectedText);
+  successCall();
+});
+
+let copySearchGoogleBtn = document.getElementById("search-google");
+let copySearchDDGBtn = document.getElementById("search-ddg");
+
 
 function getSearchPhrase() {
   // get highlight parameter
@@ -36,76 +56,39 @@ function scrollToFirstHighlighted() {
   window.scrollTo({top: rect.top - 100})
 }
 
-caseContainer.addEventListener("mouseup", function () {
-  $(tooltip).tooltip('hide').remove();
+caseContainer.addEventListener("mouseup", function (event) {
+  $(contextMenu).hide();
   let selection = window.getSelection();
-  let selectedText = selection.getRangeAt(0).toString();
+  selectedText = selection.getRangeAt(0).toString();
   let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
   if (selectedText) {
-    addTooltip(selection, selectedBoundingBox, selectedText, 'copy URL')
-    onTooltipSuccess(selection, selectedBoundingBox, selectedText)
+    showContextMenu(selection, selectedBoundingBox, event);
   }
 });
 
-function createTooltip(rect, tooltipText) {
-  let tt = document.createElement('a');
-  tt.dataset.toggle = "tooltip";
-  tt.title = tooltipText;
-  tt.setAttribute('id', 'get-url-tooltip');
-  tt.style.top = rect.top + 'px';
-  tt.style.left = rect.left + 'px';
-  tt.style.height = rect.height + 'px';
-
-  // if width is larger than casebody width, assign it to casebody width
-  let casebodyWidth = document.querySelector(".casebody").offsetWidth;
-  tt.style.width = rect.width > casebodyWidth ? casebodyWidth + 'px' : rect.width + 'px';
-  return tt;
+function showContextMenu(selection, selectedBoundingBox) {
+  $(contextMenu).css({
+    left: selectedBoundingBox.x + (selectedBoundingBox.width / 2) + 'px',
+    top: selectedBoundingBox.y + selectedBoundingBox.height + 'px'
+  }).show();
+  selection.focusNode.parentNode.appendChild(contextMenu);
 }
 
-function addTooltip(selection, selectedBoundingBox, selectedText, tooltipText, hideAfter) {
-  let rect = selectedBoundingBox;
+function successCall() {
+  $(copiedSuccessfullyText).show();
+  setTimeout(()=>{
+    $(contextMenu).hide();
+    $(copiedSuccessfullyText).hide();
+  }, 1000);
+}
+
+function copyText(evt, textToCopy) {
   let t = document.getElementById("url-for-copy");
-
-  tooltip = createTooltip(rect, tooltipText);
-
-  // add tooltip and textarea right after selected text node for a11y
-  selection.focusNode.parentNode.appendChild(t);
-  selection.focusNode.parentNode.appendChild(tooltip);
-
-  // if selected text is at the top of the page, place tooltip at bottom of
-  // selection so that it doesn't get lost in the nav bar
-  let placement = rect.top < 100 ? 'bottom' : 'top';
-  $(tooltip).tooltip({
-    placement: placement,
-    boundary: '.casebody',
-    trigger: 'manual',
-    container: selection.focusNode.parentNode
-  }).tooltip('show');
-  if (hideAfter) {
-    setTimeout(function () {
-      $(tooltip).tooltip('hide').remove()
-    }, 800);
-  }
-}
-
-function onTooltipSuccess(selection, selectedBoundingBox, selectedText) {
-  // on tooltip div click, select text and update tooltip
-  let createdtooltip_id = tooltip.attributes['aria-describedby'].value;
-  let createdtooltip_el = document.getElementById(createdtooltip_id);
-
-  createdtooltip_el.addEventListener('click', function (evt) {
-    selectURLandHideTooltip(evt, selectedText);
-    addTooltip(selection, selectedBoundingBox, selectedText, 'copied!', true)
-  });
-}
-
-function selectURLandHideTooltip(evt, selectedText) {
-  let t = document.getElementById("url-for-copy");
-  let updatedUrl = getUpdatedURL(selectedText);
-  t.value = updatedUrl.href;
+  evt.preventDefault();
+  t.value = textToCopy;
   t.select();
   document.execCommand('copy');
-  evt.preventDefault();
+
 }
 
 function getUpdatedURL(selectedText) {
