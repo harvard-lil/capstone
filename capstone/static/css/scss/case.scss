@@ -62,11 +62,18 @@ p {
   z-index: 999;
   li {
     border-bottom: 1px solid $color-blue;
-    padding-left: 0.3em;
-    padding-right: 0.3em;
+    a {
+      z-index: 999;
+      width: 100%;
+      height: 100%;
+      display: inline-block;
+      padding: 0.3em;
+    }
+
   }
   .copied-successfully {
     display: none;
+    padding: 0.3em;
   }
 }
 
