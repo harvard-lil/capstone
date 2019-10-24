@@ -50,8 +50,8 @@ function successCall() {
 }
 
 function copyText(evt, textToCopy) {
-  let t = $("#text-for-copy");
-  t.val = textToCopy;
+  let t = document.getElementById("text-for-copy");
+  t.value = textToCopy;
   t.select();
   document.execCommand('copy');
   evt.preventDefault()

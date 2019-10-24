@@ -56,7 +56,7 @@ p {
 
 .context-menu {
   position: fixed;
-  left: -4000px;
+  left: -999em;
   border: 1px solid $color-blue;
   background-color: $color-white;
   z-index: 999;
@@ -77,12 +77,9 @@ p {
   }
 }
 
-#get-url-tooltip {
-  position: fixed;
-}
 
 .offscreen {
-  position: absolute !important;
+  position: fixed !important;
   left: -999em;
 }
 
