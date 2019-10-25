@@ -63,7 +63,11 @@ let vueConfig = {
     headers: { 'Access-Control-Allow-Origin': '*' },
     allowedHosts: [
         '.case.test'
-    ]
+    ],
+    watchOptions: {
+      poll: true
+    }
+
   },
 
   chainWebpack: config => {
