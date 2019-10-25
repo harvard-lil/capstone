@@ -1,0 +1,25 @@
+<html>
+<head>
+  <script
+			  src="https://code.jquery.com/jquery-3.4.1.js"
+			  integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+			  crossorigin="anonymous"></script>
+
+</head>
+<body>
+<button id="b">
+hello!
+</button>
+<div id="target">
+  Right-click here
+</div>
+</body>
+<script>
+  $("#b").contextmenu(()=>{
+    console.log("context menu!")
+  })
+  $( "#target" ).contextmenu(function() {
+  alert( "Handler for .contextmenu() called." );
+});
+</script>
+</html>
