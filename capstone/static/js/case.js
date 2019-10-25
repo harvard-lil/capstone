@@ -1,10 +1,13 @@
 import $ from 'jquery';
 import Mark from 'mark.js';
+import debounce from 'lodash.debounce';
+
 
 let caseContainer = document.querySelector(".case-container");
 let contextMenu = document.querySelector(".context-menu");
-let selectedText = "";
 let copiedSuccessfullyText = document.querySelector(".copied-successfully");
+let selectedText, selection;
+
 
 $(contextMenu).on('click', '#copy-url', (event) => {
   event.preventDefault();
@@ -19,26 +22,34 @@ $(contextMenu).on('click', '#copy-text', (event) => {
   successCall();
 });
 
-caseContainer.addEventListener("mouseup", function (event) {
-  $(contextMenu).hide();
-  let selection = window.getSelection();
+document.addEventListener('selectionchange', debounce(() => {
+  if (selectedText && contextMenuIsFocusedElement()) {
+    // if menu is currently focused, don't close menu!
+    return;
+  }
+  selection = window.getSelection();
   selectedText = selection.getRangeAt(0).toString();
+  $(contextMenu).hide();
+  // update search URLs
   let encodedSelectedText = encodeURIComponent(selectedText);
   $("#search-google").attr("href", "https://www.google.com/search?hl=en&q=" + encodedSelectedText);
   $("#search-ddg").attr("href", "https://duckduckgo.com/?q=" + encodedSelectedText);
-  let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
   if (selectedText) {
-    showContextMenu(selection, selectedBoundingBox, event);
+    showContextMenu();
   }
-});
+}, 50));
 
-function showContextMenu(selection, selectedBoundingBox) {
+function showContextMenu() {
+  let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
   $(contextMenu).css({
     left: selectedBoundingBox.x + (selectedBoundingBox.width / 2) + 'px',
     top: selectedBoundingBox.y + selectedBoundingBox.height + 'px'
   }).show();
-  // TODO: the following makes this feature accessible but it only works in Firefox
-  // selection.focusNode.parentNode.appendChild(contextMenu);
+  $(selection.focusNode.nextElementSibling).before(contextMenu)
+}
+
+function contextMenuIsFocusedElement() {
+  return document.activeElement.className.indexOf("context-menu") > -1;
 }
 
 function successCall() {
@@ -63,7 +74,6 @@ function getUpdatedURL(selectedText) {
   url.searchParams.append('highlight', selectedText);
   return url
 }
-
 
 ////// Find URL highlighted query in text
 
