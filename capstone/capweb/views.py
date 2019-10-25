@@ -290,11 +290,13 @@ class FileObject:
     name = ''
     path = ''
     isdir = False
+    size = 0
 
     def __init__(self, name, path):
         self.name = name
         self.path = os.path.join(path, name)
         self.isdir = download_files_storage.isdir(self.path)
+        self.size = os.path.getsize(download_files_storage.path(self.path))
 
 
 def download_files(request, filepath=""):

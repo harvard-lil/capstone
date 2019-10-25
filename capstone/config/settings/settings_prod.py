@@ -114,5 +114,7 @@ CACHES = {
 
 MAILCHIMP = {
     'u': '4290964398813d739f2398db0',
-    'id': 'e097736c6f'
+    'id': 'e097736c6f',
+    'api_user': '',
+    'api_key': ''
 }

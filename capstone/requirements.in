@@ -6,6 +6,7 @@ tqdm                # script progress bars
 wrapt               # object proxying
 nltk                # tokenizing for ngrams
 netaddr             # checking IP address in range
+mailchimp3          # for signing people up for lawvocado when they register
 
 # celery
 celery[redis,sqs]       # task queue
