@@ -60,6 +60,8 @@ p {
   border: 1px solid $color-blue;
   background-color: $color-white;
   z-index: 999;
+  text-align: left;
+  font-size: 1em;
   li {
     border-bottom: 1px solid $color-blue;
     a {
