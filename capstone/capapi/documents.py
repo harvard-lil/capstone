@@ -1,6 +1,11 @@
+import re
+
 from django_elasticsearch_dsl import DocType, Index, fields
-from capdb.models import CaseMetadata
 from django.conf import settings
+from django.utils.text import slugify
+
+from capdb.models import CaseMetadata
+from capweb.helpers import reverse
 
 index = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
 
@@ -101,6 +106,8 @@ class CaseDocument(DocType):
             'decision_date',
             'duplicative',
             'date_added',
+            'no_index',
+            'no_index_notes',
         ]
         ignore_signals = True
         auto_refresh = False
@@ -111,3 +118,26 @@ class CaseDocument(DocType):
             ", ".join(cite.cite for cite in self.citations),
             " (%s)" % self.decision_date.year if self.decision_date else ""
         )
+
+    def get_frontend_url(self, disambiguate=False, include_host=True):
+
+        """
+            Return cite.case.law cite for this case, like /series/volnum/pagenum/.
+            If disambiguate is true, return /series/volnum/pagenum/id/.
+        """
+        cite = self.citations[0].cite
+        # try to match "(volnumber) (series) (pagenumber)"
+        m = re.match(r'(\S+)\s+(.+?)\s+(\S+)$', cite)
+        if not m:
+            # if cite doesn't match the expected format, always disambiguate so URL resolution doesn't depend on cite value
+            disambiguate = True
+            # try to match "(year)-(series)-(case index)", e.g. "2017-Ohio-5699" and "2015-NMCA-053"
+            m = re.match(r'(\S+)-(.+?)-(\S+)$', cite)
+
+        cite_parts = m.groups() if m else [self.volume.volume_number, self.reporter.short_name, self.first_page]
+        args = [slugify(cite_parts[1]), cite_parts[0], cite_parts[2]] + ([self.id] if disambiguate else [])
+        url = reverse('citation', args=args, host='cite')
+        if not include_host:
+            # strip https://cite.case.law prefix so stored value can be moved between servers
+            url = '/'+url.split('/',3)[3]
+        return url
