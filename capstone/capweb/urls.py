@@ -48,6 +48,7 @@ urlpatterns = [
     ### downloads ###
     path('download', views.download_files, name='download-files'),
     re_path(r'download/(?P<filepath>.*)', views.download_files, name='download-files-in-path'),
+    path('download_contents', views.download_contents_file, name='download-contents'),
 
     ### user account pages ###
 

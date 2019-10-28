@@ -1,6 +1,7 @@
+import os
 import json
 import logging
-import os
+import tempfile
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
@@ -355,7 +356,8 @@ def download_files(request, filepath=""):
 
         context = {
             'files': files,
-            'allow_downloads': allow_downloads
+            'allow_downloads': allow_downloads,
+            'isroot': filepath == ""
         }
 
         if len(breadcrumbs) > 0:
@@ -373,3 +375,17 @@ def download_files(request, filepath=""):
             "error": "This file was not found in our system."
         }
         return render(request, "file_download_400.html", context, status=404)
+
+
+def download_contents_file(request, filepath=""):
+    absolute_path = download_files_storage.path(filepath)
+    with tempfile.TemporaryFile() as tf:
+        for root, dirs, files in os.walk(absolute_path):
+            for name in files:
+                tf.write(b"%s\n" % download_files_storage.relpath(os.path.join(root, name)).encode())
+            for name in dirs:
+                tf.write(b"%s\n" % download_files_storage.relpath(os.path.join(root, name)).encode())
+        tf.seek(0)
+        response = HttpResponse(tf.read(), content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=file_listings.csv'
+        return response

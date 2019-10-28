@@ -24,6 +24,11 @@
     </ol>
   </nav>
   {% endif %}
+  {% if isroot %}
+      <a class="dl-list-of-contents" href="{% url 'download-contents' %}">
+        Download a full list of contents
+      </a><br/><br/>
+  {% endif %}
   <ul class="list-group">
     {% for file in files %}
       <li class="list-item">
