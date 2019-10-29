@@ -8,7 +8,7 @@
   {% if not cases %}
     {{ full_cite }}
   {% else %}
-    {{ cases.0.citations.first }}
+    {{ cases.0.citations.0 }}
   {% endif %}
 {% endblock %}
 {% block meta_description %}Caselaw Access Project cases{% endblock %}
