@@ -15,6 +15,7 @@ from django.utils.functional import SimpleLazyObject
 from moto import mock_s3
 from rest_framework.test import APIRequestFactory, APIClient
 from elasticsearch_dsl import Index as es_index
+from capapi.documents import CaseDocument
 
 # Before importing any of our code, mock capdb.storages redis clients.
 # Do this here so anything that gets imported later will get the mocked versions.
@@ -676,5 +677,17 @@ def es_duplicative_case(ingest_elasticsearch):
         "court_slug": None,
         "sys_period": "{\"bounds\": \"[)\", \"lower\": \"2019-10-01T17:54:28.706957+00:00\", \"upper\": null}"
     }
+
+@pytest.fixture
+def case_document(es_whitelisted_case):
+    return CaseDocument.get(id=es_whitelisted_case['id'])
+
+@pytest.fixture
+def duplicative_case_document(es_duplicative_case):
+    return CaseDocument.get(id=es_duplicative_case['id'])
+
+@pytest.fixture
+def three_case_documents(es_three_cases):
+    return [CaseDocument.get(id=case['id']) for case in es_three_cases]
 
 
