@@ -7,6 +7,8 @@ from django.utils.text import slugify
 from capapi.tests.helpers import check_response, is_cached
 from capweb.helpers import reverse
 from capweb import helpers
+from retry import retry
+
 
 from scripts.helpers import parse_xml
 
@@ -83,72 +85,83 @@ def test_volume(client, django_assert_num_queries, case_factory):
 
 
 @pytest.mark.django_db
-def test_case_not_found(client, django_assert_num_queries):
+def test_case_not_found(client, ingest_elasticsearch, django_assert_num_queries):
     """ Test /series/volume/case/ not found """
-    with django_assert_num_queries(select=2):
+    with django_assert_num_queries(select=1):
         response = client.get(reverse('citation', args=['fake', '123', '456'], host='cite'))
     check_response(response, content_includes='Citation "123 Fake 456" was not found')
 
 
 @pytest.mark.django_db
-def test_cases_multiple(client, django_assert_num_queries, three_cases):
+def test_cases_multiple(client, django_assert_num_queries, three_case_documents):
     """ Test /series/volume/case/ with multiple matching cases """
-    first_case = three_cases[0]
-    cite = first_case.citations.first()
-    for i, case in enumerate(three_cases[1:]):
-        case.citations.all().delete()
-        cite.pk = None
-        cite.case = case
-        cite.save()
-        case.name_abbreviation += str(i)
+    first_case = three_case_documents[0]
+    cite = {'type': 'official', 'cite': '23 Ill. App. 19', 'normalized_cite': '23illapp19'}
+    for i, case in enumerate(three_case_documents):
+        case.citations = [cite]
         case.save()
-    cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
-    with django_assert_num_queries(select=4):
+    cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite['cite']).groups()
+
+    @retry(tries=10, delay=1)
+    def multiple_results(client, cite_parts, three_case_documents):
         response = client.get(
-            reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite'))
-    check_response(response, content_includes='Multiple cases match')
-    content = response.content.decode()
-    for case in three_cases:
-        assert case.name_abbreviation in content
+            reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite'), follow=True)
+
+        check_response(response, content_includes='Multiple cases match')
+        content = response.content.decode()
+        for case in three_case_documents:
+            assert case.name_abbreviation in content
+
+    multiple_results(client, cite_parts, three_case_documents)
 
     # load one of the results
     first_case.jurisdiction.whitelisted = True
-    first_case.jurisdiction.save()
-    response = client.get(
-        reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2], first_case.id], host='cite'))
-    check_response(response)
+    first_case.save()
 
+    @retry(tries=10, delay=1)
+    def one_of_the_results(client, cite_parts, first_case):
+        response = client.get(
+            reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2], first_case.id], host='cite'))
+        check_response(response)
+
+    one_of_the_results(client, cite_parts, first_case)
+
+
+
+@retry(tries=10, delay=1)
+def retrieve_and_check_response_content(client, url, content_includes, follow=False):
+    # this should be used right after an elasticsearch save, so it will retry if
+    # what we're looking for isn't immediately available
+
+    response = client.get(url, follow=follow)
+    check_response(response, content_includes=content_includes)
 
 @pytest.mark.django_db
-def test_single_case(client, auth_client, django_assert_num_queries, case):
+def test_single_case(client, auth_client, case_document):
     """ Test /series/volume/case/ with one matching case """
 
     # setup
-    url = case.get_frontend_url()
-    parsed = parse_xml(case.case_xml.orig_xml)
+    url = case_document.get_frontend_url()
+    parsed = parse_xml(case_document.casebody_data.xml)
     case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
 
     ### can load whitelisted case
 
-    case.jurisdiction.whitelisted = True
-    case.jurisdiction.save()
-    with django_assert_num_queries(select=3):
-        response = client.get(url)
-    check_response(response, content_includes=case_text)
+    case_document.jurisdiction.whitelisted = True
+    case_document.save()
+
+    retrieve_and_check_response_content(client, url, case_text)
 
     ### can load blacklisted case while logged out, via redirect
 
-    case.jurisdiction.whitelisted = False
-    case.jurisdiction.save()
+    case_document.jurisdiction.whitelisted = False
+    case_document.save()
 
     # first we get redirect to JS page
-    with django_assert_num_queries(select=3):
-        response = client.get(url, follow=True)
-    check_response(response, content_includes="Click here to continue")
+    retrieve_and_check_response_content(client, url, "Click here to continue", follow=True)
 
     # POSTing will set our cookies and let the case load
-    with django_assert_num_queries(select=3):
-        response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
+    response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
     check_response(response, content_includes=case_text)
     session = client.session
     assert session['case_allowance_remaining'] == settings.API_CASE_DAILY_ALLOWANCE - 1
@@ -185,9 +198,9 @@ def test_single_case(client, auth_client, django_assert_num_queries, case):
 
 
 @pytest.mark.django_db
-def test_case_series_name_redirect(client, django_assert_num_queries, case):
+def test_case_series_name_redirect(client, case_document):
     """ Test /series/volume/case/ with series redirect when not slugified"""
-    cite = case.citations.first()
+    cite = case_document.citations[0]
     cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
 
     # series is not slugified, expect redirect
@@ -201,7 +214,7 @@ def test_case_series_name_redirect(client, django_assert_num_queries, case):
 
     # series redirect works with case_id
     response = client.get(
-        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2], case.id], host='cite'))
+        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2], case_document.id], host='cite'))
     check_response(response, status_code=302)
 
     response = client.get(
@@ -216,52 +229,72 @@ def get_schema(response):
     script = scripts[0]
     return json.loads(script.text)
 
-
 @pytest.mark.django_db
-def test_schema_in_case(client, case):
+def test_schema_in_case(client, case_document):
+    # I moved much of this functionality into separate functions with the @retry decorator because
+    # it might take a few seconds for the new data to be available in the API after the record is saved
+    @retry(tries=10, delay=1)
+    def check_wl_schema(client, case_document, content_includes, url):
+        response = client.get(url)
+        check_response(response, content_includes=content_includes)
+
+        schema = get_schema(response)
+        assert schema["headline"] == case_document.name_abbreviation
+        assert schema["author"]["name"] == case_document.court.name
+
+        # if case is whitelisted, extra info about inaccessibility is not needed
+        # https://developers.google.com/search/docs/data-types/paywalled-content
+        assert "hasPart" not in schema
+
+    @retry(tries=10, delay=1)
+    def check_bl_schema(client, case_document, content_includes, url):
+        response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
+        check_response(response, content_includes=content_includes)
+        schema = get_schema(response)
+        assert schema["headline"] == case_document.name_abbreviation
+        assert schema["author"]["name"] == case_document.court.name
+
+        # if case is blacklisted, we include more data
+        assert "hasPart" in schema
+        assert schema["hasPart"]["isAccessibleForFree"] == 'False'
+
     # setup
-    url = case.get_frontend_url()
-    parsed = parse_xml(case.case_xml.orig_xml)
+    url = case_document.get_frontend_url()
+    parsed = parse_xml(case_document.casebody_data.xml)
     case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
 
     ### whitelisted case
 
-    case.jurisdiction.whitelisted = True
-    case.jurisdiction.save()
+    case_document.jurisdiction.whitelisted = True
+    case_document.save()
 
-    response = client.get(url)
-    check_response(response, content_includes=case_text)
-
-    schema = get_schema(response)
-    assert schema["headline"] == case.name_abbreviation
-    assert schema["author"]["name"] == case.court.name
-
-    # if case is whitelisted, extra info about inaccessibility is not needed
-    # https://developers.google.com/search/docs/data-types/paywalled-content
-    assert "hasPart" not in schema
+    check_wl_schema(client, case_document, case_text, url)
 
     ### blacklisted case
 
-    case.jurisdiction.whitelisted = False
-    case.jurisdiction.save()
+    case_document.jurisdiction.whitelisted = False
+    case_document.save()
 
-    response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
-    check_response(response, content_includes=case_text)
+    check_bl_schema(client, case_document, case_text, url)
 
-    schema = get_schema(response)
-    assert schema["headline"] == case.name_abbreviation
-    assert schema["author"]["name"] == case.court.name
-
-    # if case is blacklisted, we include more data
-    assert "hasPart" in schema
-    assert schema["hasPart"]["isAccessibleForFree"] == 'False'
 
 
 @pytest.mark.django_db()
-def test_schema_in_case_as_google_bot(client, case, monkeypatch):
+def test_schema_in_case_as_google_bot(client, case_document, monkeypatch):
+    @retry(tries=10, delay=1)
+    def post_save(client, case_document, case_text):
+        response = client.get(case_document.get_frontend_url(), follow=True)
+        assert not is_cached(response)
+
+        # show cases anyway
+        check_response(response, content_includes=case_text)
+        schema = get_schema(response)
+        assert schema["headline"] == case_document.name_abbreviation
+        assert schema["author"]["name"] == case_document.court.name
+        assert "hasPart" in schema
+        assert schema["hasPart"]["isAccessibleForFree"] == 'False'
     # setup
-    url = case.get_frontend_url()
-    parsed = parse_xml(case.case_xml.orig_xml)
+    parsed = parse_xml(case_document.casebody_data.xml)
     case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
 
     def mock_is_google_bot(request):
@@ -275,26 +308,17 @@ def test_schema_in_case_as_google_bot(client, case, monkeypatch):
     session.save()
     assert session['case_allowance_remaining'] == 0
 
-    case.jurisdiction.whitelisted = False
-    case.jurisdiction.save()
+    case_document.jurisdiction.whitelisted = False
+    case_document.save()
 
-    response = client.get(url, follow=True)
+    post_save(client, case_document, case_text)
 
-    assert not is_cached(response)
 
-    # show cases anyway
-    check_response(response, content_includes=case_text)
-    schema = get_schema(response)
-    assert schema["headline"] == case.name_abbreviation
-    assert schema["author"]["name"] == case.court.name
-    assert "hasPart" in schema
-    assert schema["hasPart"]["isAccessibleForFree"] == 'False'
 
 
 @pytest.mark.django_db()
-def test_no_index(auth_client, case):
-    case.no_index = True
-    case.save()
+def test_no_index(auth_client, case_document):
+    case_document.no_index = True
+    case_document.save()
 
-    response = auth_client.get(case.get_frontend_url())
-    check_response(response, content_includes='content="noindex"')
+    retrieve_and_check_response_content(auth_client, case_document.get_frontend_url(),'content="noindex"' )
