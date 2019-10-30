@@ -387,5 +387,5 @@ def download_contents_file(request, filepath=""):
                 tf.write(b"%s\n" % download_files_storage.relpath(os.path.join(root, name)).encode())
         tf.seek(0)
         response = HttpResponse(tf.read(), content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=file_listings.csv'
+        response['Content-Disposition'] = 'attachment; filename=manifest.csv'
         return response

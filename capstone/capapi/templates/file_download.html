@@ -10,26 +10,28 @@
 
 {% block main_content %}
   {% if breadcrumbs %}
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      {% for breadcrumb in breadcrumbs %}
-        {% if forloop.last %}
-          <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.name }}</li>
-        {% else %}
-          <li class="breadcrumb-item">
-            <a href="{% url 'download-files' %}/{{ breadcrumb.path }}">{{ breadcrumb.name }}</a>
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ol>
-  </nav>
-  {% endif %}
-  {% if isroot %}
-      <a class="dl-list-of-contents" href="{% url 'download-contents' %}">
-        Download a full list of contents
-      </a><br/><br/>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          {% if forloop.last %}
+            <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.name }}</li>
+          {% else %}
+            <li class="breadcrumb-item">
+              <a href="{% url 'download-files' %}/{{ breadcrumb.path }}">{{ breadcrumb.name }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+    </nav>
   {% endif %}
   <ul class="list-group">
+    {% if isroot %}
+      <li class="list-item">
+        <a href="{% url 'download-contents' %}">
+          manifest.csv
+        </a>
+      </li>
+    {% endif %}
     {% for file in files %}
       <li class="list-item">
         {% if file.isdir %}
@@ -42,7 +44,7 @@
           {% else %}
             {{ file.name }}
           {% endif %}
-            <span class="file-size small color-gray">{{ file.size | filesizeformat }}</span>
+          <span class="file-size small color-gray">{{ file.size | filesizeformat }}</span>
         {% endif %}
       </li>
 
