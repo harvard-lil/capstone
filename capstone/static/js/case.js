@@ -2,7 +2,6 @@ import $ from 'jquery';
 import Mark from 'mark.js';
 import debounce from 'lodash.debounce';
 
-
 let caseContainer = document.querySelector(".case-container");
 let contextMenu = document.querySelector(".context-menu");
 let copiedSuccessfullyText = document.querySelector(".copied-successfully");
@@ -29,6 +28,7 @@ document.addEventListener('selectionchange', debounce(() => {
   }
   selection = window.getSelection();
   selectedText = selection.getRangeAt(0).toString();
+
   $(contextMenu).hide();
   // update search URLs
   let encodedSelectedText = encodeURIComponent(selectedText);
@@ -37,7 +37,7 @@ document.addEventListener('selectionchange', debounce(() => {
   if (selectedText) {
     showContextMenu();
   }
-}, 50));
+}, 200));
 
 function showContextMenu() {
   let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
@@ -45,7 +45,10 @@ function showContextMenu() {
     left: selectedBoundingBox.x + (selectedBoundingBox.width / 2) + 'px',
     top: selectedBoundingBox.y + selectedBoundingBox.height + 'px'
   }).show();
+
+  insertFocusableElement();
   $(selection.focusNode.nextElementSibling).before(contextMenu)
+
 }
 
 function contextMenuIsFocusedElement() {
@@ -57,6 +60,7 @@ function successCall() {
   setTimeout(()=>{
     $(contextMenu).hide();
     $(copiedSuccessfullyText).hide();
+    $('.focusable-element').focus().remove();
   }, 1000);
 }
 
@@ -74,6 +78,24 @@ function getUpdatedURL(selectedText) {
   url.searchParams.append('highlight', selectedText);
   return url
 }
+
+
+function insertFocusableElement() {
+  // After context menu is hidden, cursor should be on focusable element
+  // Thanks to http://jsfiddle.net/hjfVw/
+  let html = "<span class='focusable-element' tabindex='-1'></span>";
+  if (selection.getRangeAt && selection.rangeCount) {
+    let range = selection.getRangeAt(selection);
+    let docFrag = range.createContextualFragment(html);
+    range.insertNode(docFrag);
+  } else if (document.selection && document.selection.createRange) {
+    // IE < 9
+    let range = document.selection.createRange();
+    range.pasteHTML(html);
+  }
+}
+
+
 
 ////// Find URL highlighted query in text
 
