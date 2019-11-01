@@ -169,5 +169,5 @@ class CommonMiddleware(DjangoCommonMiddleware):
     def process_response(self, request, response):
         response = super().process_response(request, response)
         if request.host.name == 'api':
-            response['Access-Control-Allow-Origin'] = '*'
+            response["Access-Control-Allow-Origin"] = "*"
         return response

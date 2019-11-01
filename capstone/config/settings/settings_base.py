@@ -89,7 +89,7 @@ MIDDLEWARE = [
     'capapi.middleware.cache_header_middleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # custom CommonMiddleware for adding CORS header on redirects
+    # custom CommonMiddleware for adding CORS header in API
     'capapi.middleware.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'capapi.middleware.AuthenticationMiddleware',
