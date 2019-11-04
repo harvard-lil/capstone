@@ -1,13 +1,13 @@
 import re
 import time
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from contextlib import contextmanager
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils import timezone
@@ -16,17 +16,12 @@ from django.utils.text import slugify
 from rest_framework.request import Request
 from elasticsearch.exceptions import NotFoundError
 
-
 from capapi import serializers
 from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
 from capapi.renderers import HTMLRenderer
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 from capweb import helpers
-
-### helpers ###
-from capweb.helpers import natural_sort_key
-
 
 def safe_redirect(request):
     """ Redirect to request.GET['next'] if it exists and is safe, or else to '/' """
@@ -75,34 +70,59 @@ def home(request):
 
 def series(request, series_slug):
     """ /<series_slug>/ -- list all volumes for each series with that slug (typically only one). """
-    # redirect if series slug is in the wrong format
     if slugify(series_slug) != series_slug:
         return HttpResponseRedirect(helpers.reverse('series', args=[slugify(series_slug)], host='cite'))
-    reporters = list(Reporter.objects
-        .filter(short_name_slug=series_slug)
-        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None).exclude(volume_number='').exclude(duplicate=True).exclude(out_of_scope=True)))
-        .order_by('full_name'))
+    reporters = Reporter.objects.filter(short_name_slug=series_slug).all()
     if not reporters:
         raise Http404
-    reporters = [(reporter, sorted(reporter.volumes.all(), key=lambda volume: natural_sort_key(volume.volume_number))) for reporter in reporters]
+
+    cases_by_reporter = OrderedDict()
+    for reporter in reporters:
+        cases = CaseDocument.search().query("term", reporter__id=reporter.id).extra(size=0)
+        cases.aggs.bucket('vols', 'terms', field='volume.volume_number.raw')
+        cases_by_reporter[reporter] = [ bucket['key'] for bucket in cases.execute().aggs.vols.buckets ]
+        short_name_slug = reporter.short_name_slug
+        short_name = reporter.short_name
+
     return render(request, 'cite/series.html', {
-        "reporters": reporters,
+        "reporters": cases_by_reporter,
+        "short_name_slug": short_name_slug,
+        "short_name": short_name,
     })
+
 
 def volume(request, series_slug, volume_number):
     """ /<series_slug>/<volume_number>/ -- list all cases for given volumes (typically only one). """
     # redirect if series slug is in the wrong format
+
     if slugify(series_slug) != series_slug:
         return HttpResponseRedirect(helpers.reverse('volume', args=[slugify(series_slug), volume_number], host='cite'))
-    volumes = list(VolumeMetadata.objects
-        .filter(reporter__short_name_slug=slugify(series_slug), volume_number=volume_number)
-        .select_related('reporter')
-        .prefetch_related(
-            Prefetch('case_metadatas', queryset=CaseMetadata.objects.in_scope().prefetch_related('citations'))
-        ))
-    if not volumes:
+
+    cases_query = CaseDocument.search()\
+        .filter("term", volume__volume_number__raw=volume_number)\
+        .filter("term", reporter__short_name_slug__raw=series_slug)\
+        .sort('first_page')\
+        .extra(size=10000)
+    cases_query.aggs.bucket('vols', 'terms', field='volume.barcode')
+    cases = cases_query.execute()
+
+    if len(cases) == 0:
         raise Http404
-    volumes = [(volume, sorted(volume.case_metadatas.all(), key=lambda case: natural_sort_key(case.first_page or ''))) for volume in volumes]
+
+    volume_filters = None
+    for vol in cases.aggs.vols.buckets:
+        if volume_filters is None:
+            volume_filters = Q(barcode=vol.key)
+        else:
+            volume_filters = volume_filters | Q(barcode=vol.key)
+    vols = VolumeMetadata.objects.select_related('reporter').filter(volume_filters).all()
+    if not vols:
+        raise Http404
+
+    volumes = [(volume, [ case for case in cases if case.volume.barcode == volume.barcode])
+        for volume in vols ]
+
+
     return render(request, 'cite/volume.html', {
         "volumes": volumes,
     })
@@ -122,7 +142,6 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
             return HttpResponseRedirect(helpers.reverse('citation',
                                                         args=[slugify(series_slug), volume_number, page_number],
                                                         host='cite'))
-
 
     ### try to look up citation
     full_cite = "%s %s %s" % (volume_number, series_slug.replace('-', ' ').title(), page_number)

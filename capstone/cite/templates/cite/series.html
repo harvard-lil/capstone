@@ -3,7 +3,7 @@
 
 {% block base_css %}{% stylesheet 'cite' %}{% endblock %}
 
-{% block title %}Reporter: {{ reporters.0.0.short_name }}{% endblock %}
+{% block title %}Reporter: {{ short_name }}{% endblock %}
 {% block meta_description %}Caselaw Access Project cases{% endblock %}
 
 {% block content %}
@@ -14,19 +14,19 @@
           <a href="/">Browse</a>
         </li>
         <li class="breadcrumb-item active" aria-current="page">
-          <a href="/{{ reporters.0.0.short_name_slug }}">
-            Reporter {{ reporters.0.0.short_name }}
+          <a href="/{{ short_name_slug }}">
+            Reporter {{ short_name }}
           </a>
         </li>
       </ol>
     </nav>
-    {% for reporter, volumes in reporters %}
+    {% for reporter, volumes in reporters.items %}
       <h3 class="subtitle">{{ reporter.short_name }}</h3>
       <p>{{ reporter.full_name }} ({{ reporter.start_year|default:"" }}-{{ reporter.end_year|default:"" }})</p>
       <p>
         <strong>Volume number:</strong>
         {% for volume in volumes %}
-          <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number=volume.volume_number host 'cite' %}">{{ volume.volume_number }}</a>
+          <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number=volume host 'cite' %}">{{ volume }}</a>
         {% endfor %}
       </p>
     {% endfor %}

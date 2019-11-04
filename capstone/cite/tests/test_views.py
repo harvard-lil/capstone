@@ -10,6 +10,7 @@ from capweb import helpers
 from retry import retry
 
 
+from fabfile import rebuild_search_index
 from scripts.helpers import parse_xml
 
 
@@ -22,7 +23,8 @@ def test_home(client, django_assert_num_queries, ingest_metadata):
 
 
 @pytest.mark.django_db
-def test_series(client, django_assert_num_queries, volume_factory):
+def test_series(client, django_assert_num_queries, volume_factory, case_document):
+
     """ Test /series/ """
 
     # make sure we correctly handle multiple reporters with same slug
@@ -30,56 +32,56 @@ def test_series(client, django_assert_num_queries, volume_factory):
     volume_2.reporter.short_name_slug = volume_1.reporter.short_name_slug
     volume_2.reporter.save()
 
-    with django_assert_num_queries(select=2):
+    rebuild_search_index(force=True)
+
+    @retry(tries=10, delay=1)
+    def check_series(client, volume_1):
         response = client.get(reverse('series', args=[volume_1.reporter.short_name_slug], host='cite'))
-    check_response(response)
-    content = response.content.decode()
-    for vol in (volume_1, volume_2):
-        assert vol.volume_number in content
-        assert vol.reporter.full_name in content
+        check_response(response)
+        content = response.content.decode()
+        for vol in (volume_1, volume_2):
+            assert vol.volume_number in content
+            assert vol.reporter.full_name in content
 
     # make sure we redirect if series is not slugified
-    series_slug = volume_1.reporter.short_name_slug.replace('-', '. ').upper()
+    series_slug = case_document.reporter.short_name_slug.replace('-', '. ').upper()
     response = client.get(reverse('series', args=[series_slug], host='cite'))
     check_response(response, status_code=302)
-    with django_assert_num_queries(select=2):
-        response = client.get(reverse('series', args=[series_slug], host='cite'), follow=True)
+    response = client.get(reverse('series', args=[series_slug], host='cite'), follow=True)
     check_response(response, status_code=200)
 
 
 @pytest.mark.django_db
-def test_volume(client, django_assert_num_queries, case_factory):
+def test_volume(client, django_assert_num_queries, three_case_documents):
     """ Test /series/volume/ """
 
     # make sure we correctly handle multiple reporters with same slug
-    case_1, case_2, case_3 = [case_factory() for _ in range(3)]
+    case_1, case_2, case_3 = three_case_documents
     for case in [case_2, case_3]:
         case.reporter.short_name_slug = case_1.reporter.short_name_slug
-        case.reporter.save()
+        case.save()
         case.volume.volume_number = case_1.volume.volume_number
-        case.volume.save()
+        case.save()
 
-    # make sure we exclude dupes
-    case_3.duplicative = True
-    case_3.save()
+    @retry(tries=10, delay=1)
+    def get_volume_page(client, case_1, case_2):
+        with django_assert_num_queries(select=1):
+            response = client.get(
+                reverse('volume', args=[case_1.reporter.short_name_slug, case_1.volume.volume_number], host='cite'))
+        check_response(response)
 
-    with django_assert_num_queries(select=3):
-        response = client.get(
-            reverse('volume', args=[case_1.reporter.short_name_slug, case_1.volume.volume_number], host='cite'))
-    check_response(response)
-    content = response.content.decode()
-    for case in (case_1, case_2):
-        assert case.volume.volume_number in content
-        assert case.reporter.full_name in content
-        assert case.citations.first().cite in content
-
-    assert case_3.citations.first().cite not in content
+        content = response.content.decode()
+        for case in (case_1, case_2):
+            assert case.volume.volume_number in content
+            assert case.reporter.full_name in content
+            assert case.citations[0].cite in content
+    get_volume_page(client, case_1, case_2)
 
     # make sure we redirect if reporter name / series is not slugified
     series_slug = case_1.reporter.short_name_slug.replace('-', '. ').upper()
     response = client.get(reverse('volume', args=[series_slug, case_1.volume.volume_number], host='cite'))
     check_response(response, status_code=302)
-    with django_assert_num_queries(select=3):
+    with django_assert_num_queries(select=1):
         response = client.get(reverse('volume', args=[series_slug, case_1.volume.volume_number], host='cite'), follow=True)
     check_response(response, status_code=200)
 
