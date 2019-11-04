@@ -31,19 +31,28 @@ class CaseDocument(DocType):
     name = fields.TextField(index_phrases=True)
 
     frontend_url = fields.KeywordField()
+    last_page = fields.KeywordField()
+    first_page = fields.KeywordField()
+    no_index = fields.KeywordField()
+    duplicative = fields.KeywordField()
+    no_index_notes = fields.KeywordField()
 
     docket_numbers = fields.TextField(multi=True)
 
     docket_number = fields.TextField()
 
     volume = fields.ObjectField(properties={
-        "barcode": fields.TextField(),
+        "barcode": fields.KeywordField(),
         'volume_number': SuggestField(),
     })
 
     reporter = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "full_name": SuggestField(),
+        "short_name": SuggestField(),
+        "short_name_slug": SuggestField(),
+        "start_year": fields.KeywordField(),
+        "end_year": fields.KeywordField(),
     })
 
     court = fields.ObjectField(properties={
@@ -101,13 +110,8 @@ class CaseDocument(DocType):
         model = CaseMetadata
         fields = [
             'id',
-            'last_page',
-            'first_page',
             'decision_date',
-            'duplicative',
             'date_added',
-            'no_index',
-            'no_index_notes',
         ]
         ignore_signals = True
         auto_refresh = False
