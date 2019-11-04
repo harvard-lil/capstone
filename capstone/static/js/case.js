@@ -7,7 +7,6 @@ let contextMenu = document.querySelector(".context-menu");
 let copiedSuccessfullyText = document.querySelector(".copied-successfully");
 let selectedText, selection;
 
-
 $(contextMenu).on('click', '#copy-url', (event) => {
   event.preventDefault();
   let updatedUrl = getUpdatedURL(selectedText);
@@ -15,9 +14,10 @@ $(contextMenu).on('click', '#copy-url', (event) => {
   successCall();
 });
 
-$(contextMenu).on('click', '#copy-text', (event) => {
+$(contextMenu).on('click', '#copy-cite', (event) => {
   event.preventDefault();
-  copyText(event, selectedText);
+  let formattedCitation = formatCitation();
+  copyText(event, formattedCitation);
   successCall();
 });
 
@@ -32,8 +32,8 @@ document.addEventListener('selectionchange', debounce(() => {
   $(contextMenu).hide();
   // update search URLs
   let encodedSelectedText = encodeURIComponent(selectedText);
-  $("#search-google").attr("href", "https://www.google.com/search?hl=en&q=" + encodedSelectedText);
-  $("#search-ddg").attr("href", "https://duckduckgo.com/?q=" + encodedSelectedText);
+
+  $("#search-cap").attr("href", search_url + "?page=1&search=" + encodedSelectedText); // eslint-disable-line
   if (selectedText) {
     showContextMenu();
   }
@@ -79,7 +79,6 @@ function getUpdatedURL(selectedText) {
   return url
 }
 
-
 function insertFocusableElement() {
   // After context menu is hidden, cursor should be on focusable element
   // Thanks to http://jsfiddle.net/hjfVw/
@@ -95,6 +94,11 @@ function insertFocusableElement() {
   }
 }
 
+function formatCitation() {
+  // Returns: "Selected quotation" name_abbreviation, official_citation, (<year>)
+  // TODO: add pin cite to citation
+  return "\"" + selectedText + "\" " + full_cite; // eslint-disable-line
+}
 
 
 ////// Find URL highlighted query in text

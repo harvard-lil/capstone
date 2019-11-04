@@ -77,18 +77,13 @@
           </a>
         </li>
         <li class="list-item">
-          <a href="#" class="btn-default context-menu-link" id="copy-text">
-            Copy text
+          <a href="#" class="btn-default context-menu-link" id="copy-cite">
+            Copy cite
           </a>
         </li>
         <li class="list-item">
-          <a href="#" target="_blank" class="btn-default context-menu-link" id="search-google">
-            Search Google
-          </a>
-        </li>
-        <li class="list-item">
-          <a href="#" target="_blank" class="btn-default context-menu-link" id="search-ddg">
-            Search DuckDuckGo
+          <a href="{% url "search" %}" target="_blank" class="btn-default context-menu-link" id="search-cap">
+            Search CAP
           </a>
         </li>
       </ul>
@@ -138,6 +133,10 @@
 
 
 
+  </script>
+  <script>
+  const search_url = "{% url "search" %}#/cases",
+      full_cite = "{{ citation_full }}";
   </script>
   {% render_bundle 'case' %}
 
