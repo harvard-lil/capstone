@@ -25,13 +25,6 @@
     </nav>
   {% endif %}
   <ul class="list-group">
-    {% if isroot %}
-      <li class="list-item">
-        <a href="{% url 'download-contents' %}">
-          manifest.csv
-        </a>
-      </li>
-    {% endif %}
     {% for file in files %}
       <li class="list-item">
         {% if file.isdir %}
@@ -44,7 +37,9 @@
           {% else %}
             {{ file.name }}
           {% endif %}
-          <span class="file-size small color-gray">{{ file.size | filesizeformat }}</span>
+          {% if file.size %}
+            <span class="file-size small color-gray">{{ file.size | filesizeformat }}</span>
+          {% endif %}
         {% endif %}
       </li>
 
