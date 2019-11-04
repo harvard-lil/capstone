@@ -1510,7 +1510,6 @@ def write_to_db(volume_barcode, zip_path):
             pages = json.loads(zip.open('pages.json').read().decode('utf8'))
             cases = json.loads(zip.open('cases.json').read().decode('utf8').replace('\xad', ''))
             fonts_by_fake_id = json.loads(zip.open('fonts.json').read().decode('utf8'))
-
     # save CaseFonts
     # do this outside the transaction so volumes can see the same fonts while importing in parallel
     print("Saving fonts")
@@ -1531,6 +1530,13 @@ def write_to_db(volume_barcode, zip_path):
             volume_obj = VolumeMetadata(barcode=volume_barcode)
             volume_obj.reporter, _ = Reporter.objects.get_or_create(short_name=volume['metadata']['reporter']['abbreviation'], defaults={'full_name': volume['metadata']['reporter']['name'], 'updated_at': timezone.now(), 'created_at': timezone.now(), 'hollis':[]})
         volume_obj.xml_metadata = volume['metadata']
+
+        # in the token stream data structure, volume_number is stored under reporter, so it doesn't make it to the
+        # volume metadata unless explicitly set.
+        if not volume_obj.volume_number and \
+                'volume_number' in volume['metadata']['reporter'] and \
+                volume['metadata']['reporter']['volume_number']:
+            volume_obj.volume_number = volume['metadata']['reporter']['volume_number']
         volume_obj.save()
 
         # save TarFile

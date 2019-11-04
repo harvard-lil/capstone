@@ -35,7 +35,7 @@ services:
           - 9200:9200
     worker:
         build: .
-        image: capstone:0.3.56-03ad62c9797efba73606376eee5ab7c6
+        image: capstone:0.3.57-8a71e30ab94f4464b5d14e9bed9ad669
         volumes:
             # NAMED VOLUMES
             # Use a named, persistent volume so that the node_modules directory,
