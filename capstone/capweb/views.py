@@ -1,7 +1,10 @@
+import io
+import os
+import csv
 import json
 import logging
-import os
 import subprocess
+from datetime import datetime
 from collections import OrderedDict
 from pathlib import Path
 from wsgiref.util import FileWrapper
@@ -286,19 +289,6 @@ def screenshot(request):
     return HttpResponse(screenshot, content_type=content_type)
 
 
-class FileObject:
-    name = ''
-    path = ''
-    isdir = False
-    size = 0
-
-    def __init__(self, name, path):
-        self.name = name
-        self.path = os.path.join(path, name)
-        self.isdir = download_files_storage.isdir(self.path)
-        self.size = os.path.getsize(download_files_storage.path(self.path))
-
-
 def download_files(request, filepath=""):
     """
     If directory requested: show list of files inside dir
@@ -349,13 +339,30 @@ def download_files(request, filepath=""):
                 with open(download_files_storage.path(filename), "r") as f:
                     readme_content = f.read()
                 readme, toc, meta = render_markdown(readme_content)
-            file_parts = filename.split('/')
-            fileobject = FileObject(path="/".join(file_parts[0:-1]), name=file_parts[-1])
+
+            fileobject = {
+                "name": filename.split('/')[-1],
+                "path": filename,
+                "is_dir": download_files_storage.isdir(filename),
+                "size": download_files_storage.getsize(filename)
+            }
+
             files.append(fileobject)
+
+        # if we're  in the root folder, also add a manifest.csv
+        if filepath == "":
+            files.append({
+                "name": "manifest.csv",
+                "path": "manifest.csv",
+                "is_dir": False,
+            })
+
+        # sort files alphabetically
+        files = sorted(files, key=lambda x: x["name"].lower())
 
         context = {
             'files': files,
-            'allow_downloads': allow_downloads
+            'allow_downloads': allow_downloads,
         }
 
         if len(breadcrumbs) > 0:
@@ -373,3 +380,29 @@ def download_files(request, filepath=""):
             "error": "This file was not found in our system."
         }
         return render(request, "file_download_400.html", context, status=404)
+
+
+def download_manifest_file(request, filepath=""):
+    output = io.StringIO()
+    fieldnames = ["path", "size", "last_modified"]
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer.writeheader()
+    absolute_path = download_files_storage.path(filepath)
+
+    def write_file_info(abs_filepath):
+        fp = download_files_storage.relpath(abs_filepath)
+        return {
+            "path": fp,
+            "size": download_files_storage.getsize(fp),
+            "last_modified": str(datetime.utcfromtimestamp(download_files_storage.getmtime(fp)))
+        }
+
+    for root, dirs, files in os.walk(absolute_path):
+        for name in files:
+            writer.writerow(write_file_info(os.path.join(root, name)))
+        for name in dirs:
+            writer.writerow(write_file_info(os.path.join(root, name)))
+
+    response = HttpResponse(output.getvalue(), content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=manifest.csv'
+    return response

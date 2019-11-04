@@ -10,19 +10,19 @@
 
 {% block main_content %}
   {% if breadcrumbs %}
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      {% for breadcrumb in breadcrumbs %}
-        {% if forloop.last %}
-          <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.name }}</li>
-        {% else %}
-          <li class="breadcrumb-item">
-            <a href="{% url 'download-files' %}/{{ breadcrumb.path }}">{{ breadcrumb.name }}</a>
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ol>
-  </nav>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          {% if forloop.last %}
+            <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.name }}</li>
+          {% else %}
+            <li class="breadcrumb-item">
+              <a href="{% url 'download-files' %}/{{ breadcrumb.path }}">{{ breadcrumb.name }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+    </nav>
   {% endif %}
   <ul class="list-group">
     {% for file in files %}
@@ -37,7 +37,9 @@
           {% else %}
             {{ file.name }}
           {% endif %}
+          {% if file.size %}
             <span class="file-size small color-gray">{{ file.size | filesizeformat }}</span>
+          {% endif %}
         {% endif %}
       </li>
 

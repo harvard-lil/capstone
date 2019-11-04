@@ -3,6 +3,7 @@ from werkzeug.http import parse_range_header
 
 from django.conf import settings
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
+from django.middleware.common import CommonMiddleware as DjangoCommonMiddleware
 from django.utils.cache import patch_cache_control
 
 from .resources import wrap_user
@@ -160,13 +161,13 @@ class RangeRequestMiddleware:
 
 ### access control header middleware ###
 
-def access_control_middleware(get_response):
+class CommonMiddleware(DjangoCommonMiddleware):
     """
-        Set `Access-Control-Allow-Origin: *` for API responses.
+       Set `Access-Control-Allow-Origin: *` for API responses,
+       including redirects.
     """
-    def middleware(request):
-        response = get_response(request)
+    def process_response(self, request, response):
+        response = super().process_response(request, response)
         if request.host.name == 'api':
             response["Access-Control-Allow-Origin"] = "*"
         return response
-    return middleware
