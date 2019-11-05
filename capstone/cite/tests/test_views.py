@@ -23,7 +23,7 @@ def test_home(client, django_assert_num_queries, ingest_metadata):
 
 
 @pytest.mark.django_db
-def test_series(client, django_assert_num_queries, volume_factory, case_document):
+def test_series(client, django_assert_num_queries, volume_factory, whitelisted_case_document):
 
     """ Test /series/ """
 
@@ -44,7 +44,7 @@ def test_series(client, django_assert_num_queries, volume_factory, case_document
             assert vol.reporter.full_name in content
 
     # make sure we redirect if series is not slugified
-    series_slug = case_document.reporter.short_name_slug.replace('-', '. ').upper()
+    series_slug = whitelisted_case_document.reporter.short_name_slug.replace('-', '. ').upper()
     response = client.get(reverse('series', args=[series_slug], host='cite'))
     check_response(response, status_code=302)
     response = client.get(reverse('series', args=[series_slug], host='cite'), follow=True)
@@ -139,25 +139,25 @@ def retrieve_and_check_response_content(client, url, content_includes, follow=Fa
     check_response(response, content_includes=content_includes)
 
 @pytest.mark.django_db
-def test_single_case(client, auth_client, case_document):
+def test_single_case(client, auth_client, whitelisted_case_document):
     """ Test /series/volume/case/ with one matching case """
 
     # setup
-    url = case_document.get_frontend_url()
-    parsed = parse_xml(case_document.casebody_data.xml)
+    url = whitelisted_case_document.get_frontend_url()
+    parsed = parse_xml(whitelisted_case_document.casebody_data.xml)
     case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
 
     ### can load whitelisted case
 
-    case_document.jurisdiction.whitelisted = True
-    case_document.save()
+    whitelisted_case_document.jurisdiction.whitelisted = True
+    whitelisted_case_document.save()
 
     retrieve_and_check_response_content(client, url, case_text)
 
     ### can load blacklisted case while logged out, via redirect
 
-    case_document.jurisdiction.whitelisted = False
-    case_document.save()
+    whitelisted_case_document.jurisdiction.whitelisted = False
+    whitelisted_case_document.save()
 
     # first we get redirect to JS page
     retrieve_and_check_response_content(client, url, "Click here to continue", follow=True)
@@ -200,9 +200,9 @@ def test_single_case(client, auth_client, case_document):
 
 
 @pytest.mark.django_db
-def test_case_series_name_redirect(client, case_document):
+def test_case_series_name_redirect(client, whitelisted_case_document):
     """ Test /series/volume/case/ with series redirect when not slugified"""
-    cite = case_document.citations[0]
+    cite = whitelisted_case_document.citations[0]
     cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
 
     # series is not slugified, expect redirect
@@ -216,7 +216,7 @@ def test_case_series_name_redirect(client, case_document):
 
     # series redirect works with case_id
     response = client.get(
-        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2], case_document.id], host='cite'))
+        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2], whitelisted_case_document.id], host='cite'))
     check_response(response, status_code=302)
 
     response = client.get(
@@ -232,7 +232,7 @@ def get_schema(response):
     return json.loads(script.text)
 
 @pytest.mark.django_db
-def test_schema_in_case(client, case_document):
+def test_schema_in_case(client, whitelisted_case_document):
     # I moved much of this functionality into separate functions with the @retry decorator because
     # it might take a few seconds for the new data to be available in the API after the record is saved
     @retry(tries=10, delay=1)
@@ -261,28 +261,28 @@ def test_schema_in_case(client, case_document):
         assert schema["hasPart"]["isAccessibleForFree"] == 'False'
 
     # setup
-    url = case_document.get_frontend_url()
-    parsed = parse_xml(case_document.casebody_data.xml)
+    url = whitelisted_case_document.get_frontend_url()
+    parsed = parse_xml(whitelisted_case_document.casebody_data.xml)
     case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
 
     ### whitelisted case
 
-    case_document.jurisdiction.whitelisted = True
-    case_document.save()
+    whitelisted_case_document.jurisdiction.whitelisted = True
+    whitelisted_case_document.save()
 
-    check_wl_schema(client, case_document, case_text, url)
+    check_wl_schema(client, whitelisted_case_document, case_text, url)
 
     ### blacklisted case
 
-    case_document.jurisdiction.whitelisted = False
-    case_document.save()
+    whitelisted_case_document.jurisdiction.whitelisted = False
+    whitelisted_case_document.save()
 
-    check_bl_schema(client, case_document, case_text, url)
+    check_bl_schema(client, whitelisted_case_document, case_text, url)
 
 
 
 @pytest.mark.django_db()
-def test_schema_in_case_as_google_bot(client, case_document, monkeypatch):
+def test_schema_in_case_as_google_bot(client, whitelisted_case_document, monkeypatch):
     @retry(tries=10, delay=1)
     def post_save(client, case_document, case_text):
         response = client.get(case_document.get_frontend_url(), follow=True)
@@ -296,7 +296,7 @@ def test_schema_in_case_as_google_bot(client, case_document, monkeypatch):
         assert "hasPart" in schema
         assert schema["hasPart"]["isAccessibleForFree"] == 'False'
     # setup
-    parsed = parse_xml(case_document.casebody_data.xml)
+    parsed = parse_xml(whitelisted_case_document.casebody_data.xml)
     case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
 
     def mock_is_google_bot(request):
@@ -310,17 +310,17 @@ def test_schema_in_case_as_google_bot(client, case_document, monkeypatch):
     session.save()
     assert session['case_allowance_remaining'] == 0
 
-    case_document.jurisdiction.whitelisted = False
-    case_document.save()
+    whitelisted_case_document.jurisdiction.whitelisted = False
+    whitelisted_case_document.save()
 
-    post_save(client, case_document, case_text)
+    post_save(client, whitelisted_case_document, case_text)
 
 
 
 
 @pytest.mark.django_db()
-def test_no_index(auth_client, case_document):
-    case_document.no_index = True
-    case_document.save()
+def test_no_index(auth_client, whitelisted_case_document):
+    whitelisted_case_document.no_index = True
+    whitelisted_case_document.save()
 
-    retrieve_and_check_response_content(auth_client, case_document.get_frontend_url(),'content="noindex"' )
+    retrieve_and_check_response_content(auth_client, whitelisted_case_document.get_frontend_url(), 'content="noindex"')
