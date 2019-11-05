@@ -13,6 +13,11 @@ from retry import retry
 from fabfile import rebuild_search_index
 from scripts.helpers import parse_xml
 
+## TIMING ##
+# I moved a quite a few blocks of code into separate function with the @retry decorator because
+# the elaasticserach-dsl will return the function before the data is available through the API.
+# If you're making new tests and you wish to use the modify/save/test workflow, put the tests
+# immediately following the save in a separate function with the retry decorator.
 
 @pytest.mark.django_db
 def test_home(client, django_assert_num_queries, ingest_metadata):
@@ -36,6 +41,7 @@ def test_series(client, django_assert_num_queries, volume_factory, whitelisted_c
 
     @retry(tries=10, delay=1)
     def check_series(client, volume_1):
+        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
         response = client.get(reverse('series', args=[volume_1.reporter.short_name_slug], host='cite'))
         check_response(response)
         content = response.content.decode()
@@ -65,6 +71,7 @@ def test_volume(client, django_assert_num_queries, three_case_documents):
 
     @retry(tries=10, delay=1)
     def get_volume_page(client, case_1, case_2):
+        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
         with django_assert_num_queries(select=1):
             response = client.get(
                 reverse('volume', args=[case_1.reporter.short_name_slug, case_1.volume.volume_number], host='cite'))
@@ -106,6 +113,7 @@ def test_cases_multiple(client, django_assert_num_queries, three_case_documents)
 
     @retry(tries=10, delay=1)
     def multiple_results(client, cite_parts, three_case_documents):
+        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
         response = client.get(
             reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite'), follow=True)
 
@@ -122,6 +130,7 @@ def test_cases_multiple(client, django_assert_num_queries, three_case_documents)
 
     @retry(tries=10, delay=1)
     def one_of_the_results(client, cite_parts, first_case):
+        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
         response = client.get(
             reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2], first_case.id], host='cite'))
         check_response(response)
@@ -132,8 +141,7 @@ def test_cases_multiple(client, django_assert_num_queries, three_case_documents)
 
 @retry(tries=10, delay=1)
 def retrieve_and_check_response_content(client, url, content_includes, follow=False):
-    # this should be used right after an elasticsearch save, so it will retry if
-    # what we're looking for isn't immediately available
+    # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
 
     response = client.get(url, follow=follow)
     check_response(response, content_includes=content_includes)
@@ -233,10 +241,9 @@ def get_schema(response):
 
 @pytest.mark.django_db
 def test_schema_in_case(client, whitelisted_case_document):
-    # I moved much of this functionality into separate functions with the @retry decorator because
-    # it might take a few seconds for the new data to be available in the API after the record is saved
     @retry(tries=10, delay=1)
     def check_wl_schema(client, case_document, content_includes, url):
+        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
         response = client.get(url)
         check_response(response, content_includes=content_includes)
 
@@ -250,6 +257,7 @@ def test_schema_in_case(client, whitelisted_case_document):
 
     @retry(tries=10, delay=1)
     def check_bl_schema(client, case_document, content_includes, url):
+        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
         response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
         check_response(response, content_includes=content_includes)
         schema = get_schema(response)
@@ -285,6 +293,7 @@ def test_schema_in_case(client, whitelisted_case_document):
 def test_schema_in_case_as_google_bot(client, whitelisted_case_document, monkeypatch):
     @retry(tries=10, delay=1)
     def post_save(client, case_document, case_text):
+        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
         response = client.get(case_document.get_frontend_url(), follow=True)
         assert not is_cached(response)
 
