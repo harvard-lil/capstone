@@ -1,11 +1,107 @@
 import $ from 'jquery';
-import 'popper.js'
-import 'bootstrap/js/dist/tooltip'
-
 import Mark from 'mark.js';
+import debounce from 'lodash.debounce';
 
 let caseContainer = document.querySelector(".case-container");
-let tooltip;
+let contextMenu = document.querySelector(".context-menu");
+let copiedSuccessfullyText = document.querySelector(".copied-successfully");
+let selectedText, selection;
+
+$(contextMenu).on('click', '#copy-url', (event) => {
+  event.preventDefault();
+  let updatedUrl = getUpdatedURL(selectedText);
+  copyText(event, updatedUrl.href);
+  successCall();
+});
+
+$(contextMenu).on('click', '#copy-cite', (event) => {
+  event.preventDefault();
+  let formattedCitation = formatCitation();
+  copyText(event, formattedCitation);
+  successCall();
+});
+
+document.addEventListener('selectionchange', debounce(() => {
+  if (selectedText && contextMenuIsFocusedElement()) {
+    // if menu is currently focused, don't close menu!
+    return;
+  }
+  selection = window.getSelection();
+  selectedText = selection.getRangeAt(0).toString();
+
+  $(contextMenu).hide();
+  // update search URLs
+  let encodedSelectedText = encodeURIComponent(selectedText);
+
+  $("#search-cap").attr("href", search_url + "?page=1&search=" + encodedSelectedText); // eslint-disable-line
+  if (selectedText) {
+    showContextMenu();
+  }
+}, 200));
+
+function showContextMenu() {
+  let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
+  $(contextMenu).css({
+    left: selectedBoundingBox.x + (selectedBoundingBox.width / 2) + 'px',
+    top: selectedBoundingBox.y + selectedBoundingBox.height + 'px'
+  }).show();
+
+  insertFocusableElement();
+  $(selection.focusNode.nextElementSibling).before(contextMenu)
+
+}
+
+function contextMenuIsFocusedElement() {
+  return document.activeElement.className.indexOf("context-menu") > -1;
+}
+
+function successCall() {
+  $(copiedSuccessfullyText).show();
+  setTimeout(()=>{
+    $(contextMenu).hide();
+    $(copiedSuccessfullyText).hide();
+    $('.focusable-element').focus().remove();
+  }, 1000);
+}
+
+function copyText(evt, textToCopy) {
+  let t = document.getElementById("text-for-copy");
+  t.value = textToCopy;
+  t.select();
+  document.execCommand('copy');
+  evt.preventDefault()
+}
+
+function getUpdatedURL(selectedText) {
+  let url = new URL(window.location.href);
+  url.searchParams.delete('highlight');
+  url.searchParams.append('highlight', selectedText);
+  return url
+}
+
+function insertFocusableElement() {
+  // After context menu is hidden, cursor should be on focusable element
+  // Thanks to http://jsfiddle.net/hjfVw/
+  let html = "<span class='focusable-element' tabindex='-1'></span>";
+  if (selection.getRangeAt && selection.rangeCount) {
+    let range = selection.getRangeAt(selection);
+    let docFrag = range.createContextualFragment(html);
+    range.insertNode(docFrag);
+  } else if (document.selection && document.selection.createRange) {
+    // IE < 9
+    let range = document.selection.createRange();
+    range.pasteHTML(html);
+  }
+}
+
+function formatCitation() {
+  // Returns: "Selected quotation" name_abbreviation, official_citation, (<year>)
+  // TODO: add pin cite to citation
+  return "\"" + selectedText + "\" " + full_cite; // eslint-disable-line
+}
+
+
+////// Find URL highlighted query in text
 
 function getSearchPhrase() {
   // get highlight parameter
@@ -34,85 +130,6 @@ function highlightSearchedPhrase(keyphrase) {
 function scrollToFirstHighlighted() {
   let rect = document.querySelector("mark").getBoundingClientRect();
   window.scrollTo({top: rect.top - 100})
-}
-
-caseContainer.addEventListener("mouseup", function () {
-  $(tooltip).tooltip('hide').remove();
-  let selection = window.getSelection();
-  let selectedText = selection.getRangeAt(0).toString();
-  let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
-  if (selectedText) {
-    addTooltip(selection, selectedBoundingBox, selectedText, 'copy URL')
-    onTooltipSuccess(selection, selectedBoundingBox, selectedText)
-  }
-});
-
-function createTooltip(rect, tooltipText) {
-  let tt = document.createElement('a');
-  tt.dataset.toggle = "tooltip";
-  tt.title = tooltipText;
-  tt.setAttribute('id', 'get-url-tooltip');
-  tt.style.top = rect.top + 'px';
-  tt.style.left = rect.left + 'px';
-  tt.style.height = rect.height + 'px';
-
-  // if width is larger than casebody width, assign it to casebody width
-  let casebodyWidth = document.querySelector(".casebody").offsetWidth;
-  tt.style.width = rect.width > casebodyWidth ? casebodyWidth + 'px' : rect.width + 'px';
-  return tt;
-}
-
-function addTooltip(selection, selectedBoundingBox, selectedText, tooltipText, hideAfter) {
-  let rect = selectedBoundingBox;
-  let t = document.getElementById("url-for-copy");
-
-  tooltip = createTooltip(rect, tooltipText);
-
-  // add tooltip and textarea right after selected text node for a11y
-  selection.focusNode.parentNode.appendChild(t);
-  selection.focusNode.parentNode.appendChild(tooltip);
-
-  // if selected text is at the top of the page, place tooltip at bottom of
-  // selection so that it doesn't get lost in the nav bar
-  let placement = rect.top < 100 ? 'bottom' : 'top';
-  $(tooltip).tooltip({
-    placement: placement,
-    boundary: '.casebody',
-    trigger: 'manual',
-    container: selection.focusNode.parentNode
-  }).tooltip('show');
-  if (hideAfter) {
-    setTimeout(function () {
-      $(tooltip).tooltip('hide').remove()
-    }, 800);
-  }
-}
-
-function onTooltipSuccess(selection, selectedBoundingBox, selectedText) {
-  // on tooltip div click, select text and update tooltip
-  let createdtooltip_id = tooltip.attributes['aria-describedby'].value;
-  let createdtooltip_el = document.getElementById(createdtooltip_id);
-
-  createdtooltip_el.addEventListener('click', function (evt) {
-    selectURLandHideTooltip(evt, selectedText);
-    addTooltip(selection, selectedBoundingBox, selectedText, 'copied!', true)
-  });
-}
-
-function selectURLandHideTooltip(evt, selectedText) {
-  let t = document.getElementById("url-for-copy");
-  let updatedUrl = getUpdatedURL(selectedText);
-  t.value = updatedUrl.href;
-  t.select();
-  document.execCommand('copy');
-  evt.preventDefault();
-}
-
-function getUpdatedURL(selectedText) {
-  let url = new URL(window.location.href);
-  url.searchParams.delete('highlight');
-  url.searchParams.append('highlight', selectedText);
-  return url
 }
 
 highlightSearchedPhrase();
