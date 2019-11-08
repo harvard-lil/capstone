@@ -19,6 +19,9 @@ from scripts.helpers import parse_xml
 # If you're making new tests and you wish to use the modify/save/test workflow, put the tests
 # immediately following the save in a separate function with the retry decorator.
 
+def full_url(document):
+    return "{}{}".format(reverse('cite_home'), document.frontend_url.replace('/', '', 1))
+
 @pytest.mark.django_db
 def test_home(client, django_assert_num_queries, ingest_metadata):
     """ Test / """
@@ -151,7 +154,7 @@ def test_single_case(client, auth_client, whitelisted_case_document):
     """ Test /series/volume/case/ with one matching case """
 
     # setup
-    url = whitelisted_case_document.get_frontend_url()
+    url = full_url(whitelisted_case_document)
     parsed = parse_xml(whitelisted_case_document.casebody_data.xml)
     case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
 
@@ -269,7 +272,7 @@ def test_schema_in_case(client, whitelisted_case_document):
         assert schema["hasPart"]["isAccessibleForFree"] == 'False'
 
     # setup
-    url = whitelisted_case_document.get_frontend_url()
+    url = full_url(whitelisted_case_document)
     parsed = parse_xml(whitelisted_case_document.casebody_data.xml)
     case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
 
@@ -294,7 +297,7 @@ def test_schema_in_case_as_google_bot(client, whitelisted_case_document, monkeyp
     @retry(tries=10, delay=1)
     def post_save(client, case_document, case_text):
         # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
-        response = client.get(case_document.get_frontend_url(), follow=True)
+        response = client.get(full_url(case_document), follow=True)
         assert not is_cached(response)
 
         # show cases anyway
@@ -331,5 +334,4 @@ def test_schema_in_case_as_google_bot(client, whitelisted_case_document, monkeyp
 def test_no_index(auth_client, whitelisted_case_document):
     whitelisted_case_document.no_index = True
     whitelisted_case_document.save()
-
-    retrieve_and_check_response_content(auth_client, whitelisted_case_document.get_frontend_url(), 'content="noindex"')
+    retrieve_and_check_response_content(auth_client, full_url(whitelisted_case_document), 'content="noindex"')
