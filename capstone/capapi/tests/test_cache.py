@@ -70,21 +70,21 @@ def test_cache_headers(ingest_elasticsearch, request, settings,
     )
 
 @pytest.mark.django_db
-def test_cache_case_cite(client, es_whitelisted_case, es_non_whitelisted_case, settings):
+def test_cache_case_cite(client, whitelisted_case_document, non_whitelisted_case_document, settings):
     """ Single-case cite.case.law page should be cached only if case is whitelisted. """
     settings.SET_CACHE_CONTROL_HEADER = True
 
-    url = CaseMetadata.objects.get(pk=es_whitelisted_case['id']).get_frontend_url()
+    url = CaseMetadata.objects.get(pk=whitelisted_case_document.id).get_frontend_url()
 
     # whitelisted case is cached
     response = client.get(url)
-    check_response(response, content_includes=es_whitelisted_case['name'])
+    check_response(response, content_includes=whitelisted_case_document.name)
     assert is_cached(response)
 
     # non-whitelisted case not cached
-    url = CaseMetadata.objects.get(pk=es_non_whitelisted_case['id']).get_frontend_url()
+    url = CaseMetadata.objects.get(pk=non_whitelisted_case_document.id).get_frontend_url()
     response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
-    check_response(response, content_includes=es_non_whitelisted_case['name'])
+    check_response(response, content_includes=non_whitelisted_case_document.name)
     assert not is_cached(response)
 
 @pytest.mark.django_db

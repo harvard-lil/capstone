@@ -1,6 +1,7 @@
 from django_elasticsearch_dsl import DocType, Index, fields
-from capdb.models import CaseMetadata
 from django.conf import settings
+
+from capdb.models import CaseMetadata
 
 index = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
 
@@ -26,19 +27,28 @@ class CaseDocument(DocType):
     name = fields.TextField(index_phrases=True)
 
     frontend_url = fields.KeywordField()
+    last_page = fields.KeywordField()
+    first_page = fields.KeywordField()
+    no_index = fields.KeywordField()
+    duplicative = fields.KeywordField()
+    no_index_notes = fields.KeywordField()
 
     docket_numbers = fields.TextField(multi=True)
 
     docket_number = fields.TextField()
 
     volume = fields.ObjectField(properties={
-        "barcode": fields.TextField(),
+        "barcode": fields.KeywordField(),
         'volume_number': SuggestField(),
     })
 
     reporter = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "full_name": SuggestField(),
+        "short_name": SuggestField(),
+        "short_name_slug": SuggestField(),
+        "start_year": fields.KeywordField(),
+        "end_year": fields.KeywordField(),
     })
 
     court = fields.ObjectField(properties={
@@ -96,11 +106,16 @@ class CaseDocument(DocType):
         model = CaseMetadata
         fields = [
             'id',
-            'last_page',
-            'first_page',
             'decision_date',
-            'duplicative',
             'date_added',
         ]
         ignore_signals = True
         auto_refresh = False
+
+    def full_cite(self):
+        return "%s, %s%s" % (
+            self.name_abbreviation,
+            ", ".join(cite.cite for cite in self.citations),
+            " (%s)" % self.decision_date.year if self.decision_date else ""
+        )
+
