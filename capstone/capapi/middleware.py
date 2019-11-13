@@ -170,4 +170,5 @@ class CommonMiddleware(DjangoCommonMiddleware):
         response = super().process_response(request, response)
         if request.host.name == 'api':
             response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Headers"] = "Authorization"
         return response
