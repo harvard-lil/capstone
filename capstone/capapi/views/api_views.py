@@ -6,7 +6,6 @@ from functools import reduce
 from pathlib import Path
 
 from django.http import HttpResponseRedirect, FileResponse
-from django.utils.text import slugify
 from django.template import loader
 
 from rest_framework import viewsets, renderers, mixins
@@ -75,64 +74,6 @@ class CitationViewSet(BaseViewSet):
     serializer_class = serializers.CitationWithCaseSerializer
     queryset = models.Citation.objects.order_by('pk')
 
-
-class CaseViewSet(BaseViewSet):
-    serializer_class = serializers.CaseSerializer
-    queryset = models.CaseMetadata.objects.in_scope().select_related(
-        'volume',
-        'reporter',
-    ).prefetch_related(
-        'citations'
-    ).order_by(
-        'decision_date', 'id'  # include id to get consistent ordering for cases with same date
-    )
-
-    renderer_classes = (
-        renderers.JSONRenderer,
-        capapi_renderers.BrowsableAPIRenderer,
-        capapi_renderers.XMLRenderer,
-        capapi_renderers.HTMLRenderer,
-    )
-    filterset_class = filters.CaseFilter
-    lookup_field = 'id'
-
-    def is_full_case_request(self):
-        return True if self.request.query_params.get('full_case', 'false').lower() == 'true' else False
-
-    def get_queryset(self):
-        if self.is_full_case_request():
-            return self.queryset.select_related('case_xml', 'body_cache')
-        else:
-            return self.queryset
-
-    def get_serializer_class(self, *args, **kwargs):
-        if self.is_full_case_request():
-            return serializers.CaseSerializerWithCasebody
-        else:
-            return self.serializer_class
-
-    def list(self, *args, **kwargs):
-        jur_value = self.request.query_params.get('jurisdiction', None)
-        jur_slug = slugify(jur_value)
-
-        if not jur_value or jur_slug == jur_value:
-            return super(CaseViewSet, self).list(*args, **kwargs)
-
-        query_string = urllib.parse.urlencode(dict(self.request.query_params, jurisdiction=jur_slug), doseq=True)
-        new_url = reverse('casemetadata-list') + "?" + query_string
-        return HttpResponseRedirect(new_url)
-
-    def retrieve(self, *args, **kwargs):
-        # for user's convenience, if user gets /cases/casecitation or /cases/Case Citation (or any non-numeric value)
-        # we redirect to /cases/?cite=casecitation
-        id = kwargs[self.lookup_field]
-        if re.search(r'\D', id):
-            normalized_cite = Citation.normalize_cite(id)
-            query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
-            new_url = reverse('casemetadata-list') + "?" + query_string
-            return HttpResponseRedirect(new_url)
-
-        return super(CaseViewSet, self).retrieve(*args, **kwargs)
 
 class CAPFiltering(FilteringFilterBackend):
     def get_filter_query_params(self, request, view):
