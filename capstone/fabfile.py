@@ -28,7 +28,7 @@ from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Reporter, Citation, CaseMetadata, \
+from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Citation, CaseMetadata, \
     Court
 
 import capdb.tasks as tasks
@@ -425,10 +425,9 @@ def bag_jurisdiction(name):
     export.export_cases_by_jurisdiction.delay(jurisdiction.pk)
 
 @task
-def bag_reporter(slug):
+def bag_reporter(reporter_id):
     """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
-    reporter = Reporter.objects.get(slug=slug)
-    export.export_cases_by_reporter.delay(reporter.pk)
+    export.export_cases_by_reporter.delay(reporter_id)
 
 @task
 def bag_all_cases(before_date=None):
