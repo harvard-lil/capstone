@@ -1,6 +1,6 @@
 import re
 import time
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from contextlib import contextmanager
 from urllib.parse import urlencode
 
