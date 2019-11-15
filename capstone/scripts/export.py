@@ -9,11 +9,11 @@ from celery import shared_task
 from django.core.files import File
 from django.utils import timezone
 
-from capapi.serializers import BulkCaseSerializer
-from capapi.views.api_views import CaseViewSet
+from capapi.serializers import BulkCaseDocumentSerializer
 from capdb.models import Jurisdiction, Reporter, CaseExport
-from scripts.helpers import HashingFile, ordered_query_iterator
+from scripts.helpers import HashingFile
 
+from capapi.documents import CaseDocument
 
 def export_all(before_date=None):
     """
@@ -35,9 +35,12 @@ def export_cases_by_jurisdiction(id):
         Write a .jsonl.gz file with all cases for jurisdiction.
     """
     jurisdiction = Jurisdiction.objects.get(pk=id)
-    cases = CaseViewSet.queryset.filter(jurisdiction=jurisdiction)
+    cases = CaseDocument.search().filter("term", jurisdiction__id=id)
+    if cases.count() == 0:
+        print("WARNING: Jurisdiction '{}' contains NO CASES.".format(jurisdiction.name))
+        return
     out_path = "{}-{:%Y%m%d}".format(jurisdiction.name_long, timezone.now())
-    export_queryset(cases, out_path, jurisdiction, public=jurisdiction.whitelisted)
+    export_case_documents(cases, out_path, jurisdiction, public=jurisdiction.whitelisted)
 
 @shared_task
 def export_cases_by_reporter(id):
@@ -45,9 +48,12 @@ def export_cases_by_reporter(id):
         Write a .jsonl.gz file with all cases for reporter.
     """
     reporter = Reporter.objects.get(pk=id)
-    cases = CaseViewSet.queryset.filter(reporter=reporter)
+    cases = CaseDocument.search().filter("term", reporter__id=id)
+    if cases.count() == 0:
+        print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
+        return
     out_path = "{}-{:%Y%m%d}".format(reporter.short_name, timezone.now())
-    export_queryset(cases, out_path, reporter, public=False)
+    export_case_documents(cases, out_path, reporter, public=False)
 
 def try_to_close(file_handle):
     """
@@ -60,16 +66,14 @@ def try_to_close(file_handle):
         except Exception:
             pass
 
-def export_queryset(queryset, dir_name, filter_item, public=False):
+def export_case_documents(cases, dir_name, filter_item, public=False):
     """
         Export cases in queryset to dir_name.zip.
         filter_item is the Jurisdiction or Reporter used to select the cases.
         public controls whether export is downloadable by non-researchers.
     """
+
     formats = {'xml': {}, 'text': {}}
-    
-    # we can safely select_related case_xml because we fetch these in blocks of 1000 via ordered_query_iterator
-    queryset = queryset.select_related('case_xml', 'body_cache').order_by('id')
 
     try:
         # set up vars for each format
@@ -105,9 +109,10 @@ def export_queryset(queryset, dir_name, filter_item, public=False):
             vars['compressed_data_file'] = lzma.open(vars['hashing_data_file'], "w")
 
         # write each case
-        for item in ordered_query_iterator(queryset):
+        for item in cases.scan():
             for format_name, vars in formats.items():
-                serializer = BulkCaseSerializer(item, context={'request': vars['fake_request']})
+                serializer = BulkCaseDocumentSerializer(item, context={'request': vars['fake_request']})
+
                 vars['compressed_data_file'].write(bytes(json.dumps(serializer.data), 'utf8'))
                 vars['compressed_data_file'].write(b'\n')
 
@@ -138,4 +143,3 @@ def export_queryset(queryset, dir_name, filter_item, public=False):
         for format_name, vars in formats.items():
             for file_handle in ('compressed_data_file', 'data_file', 'archive', 'out_spool'):
                 try_to_close(vars.get(file_handle))
-

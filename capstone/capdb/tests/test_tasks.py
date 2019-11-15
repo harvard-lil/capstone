@@ -9,7 +9,7 @@ from django.db import connections, utils
 import json
 from datetime import datetime
 
-from capdb.models import CaseMetadata, Court, Reporter, Citation
+from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction
 from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, get_reporter_count_for_jur
 
 import fabfile
@@ -67,24 +67,20 @@ def check_exports(case, filter_item, tmpdir):
 
 
 @pytest.mark.django_db
-def test_bag_jurisdiction(case_xml, tmpdir, django_assert_num_queries):
-    # setup
-    case = case_xml.metadata
-    jurisdiction = case.jurisdiction
-    jurisdiction.whitelisted = False
-    jurisdiction.save()
+def test_bag_jurisdiction(non_whitelisted_case_document, tmpdir, django_assert_num_queries):
 
+    jurisdiction = Jurisdiction.objects.get(pk=non_whitelisted_case_document.jurisdiction.id)
     # bag the jurisdiction
-    with django_assert_num_queries(select=4, insert=2):
-        fabfile.bag_jurisdiction(jurisdiction.name)
-    check_exports(case, jurisdiction, tmpdir)
+    with django_assert_num_queries(select=2, insert=2):
+        fabfile.bag_jurisdiction(non_whitelisted_case_document.jurisdiction.name)
+    check_exports(non_whitelisted_case_document, jurisdiction, tmpdir)
 
 
 @pytest.mark.django_db
-def test_bag_reporter(case_xml, tmpdir):
-    reporter = case_xml.metadata.reporter
-    fabfile.bag_reporter(reporter.full_name)
-    check_exports(case_xml.metadata, reporter, tmpdir)
+def test_bag_reporter(non_whitelisted_case_document, tmpdir):
+    reporter = Reporter.objects.get(pk=non_whitelisted_case_document.reporter.id)
+    fabfile.bag_reporter(reporter.id)
+    check_exports(non_whitelisted_case_document, reporter, tmpdir)
 
 
 @pytest.mark.django_db
