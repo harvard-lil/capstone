@@ -1,13 +1,13 @@
 import re
 import time
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from contextlib import contextmanager
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils import timezone
@@ -22,6 +22,9 @@ from capapi.authentication import SessionAuthentication
 from capapi.renderers import HTMLRenderer
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 from capweb import helpers
+
+### helpers ###
+from capweb.helpers import natural_sort_key
 
 def safe_redirect(request):
     """ Redirect to request.GET['next'] if it exists and is safe, or else to '/' """
@@ -70,26 +73,20 @@ def home(request):
 
 def series(request, series_slug):
     """ /<series_slug>/ -- list all volumes for each series with that slug (typically only one). """
+    # redirect if series slug is in the wrong format
+
     if slugify(series_slug) != series_slug:
         return HttpResponseRedirect(helpers.reverse('series', args=[slugify(series_slug)], host='cite'))
-    reporters = Reporter.objects.filter(short_name_slug=series_slug).all()
+    reporters = list(Reporter.objects
+        .filter(short_name_slug=series_slug)
+        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None).exclude(volume_number='').exclude(duplicate=True).exclude(out_of_scope=True)))
+        .order_by('full_name'))
     if not reporters:
         raise Http404
-
-    cases_by_reporter = OrderedDict()
-    for reporter in reporters:
-        cases = CaseDocument.search().query("term", reporter__id=reporter.id).extra(size=0)
-        cases.aggs.bucket('vols', 'terms', field='volume.volume_number.raw')
-        cases_by_reporter[reporter] = [ bucket['key'] for bucket in cases.execute().aggs.vols.buckets ]
-        short_name_slug = reporter.short_name_slug
-        short_name = reporter.short_name
-
+    reporters = [(reporter, sorted(reporter.volumes.all(), key=lambda volume: natural_sort_key(volume.volume_number))) for reporter in reporters]
     return render(request, 'cite/series.html', {
-        "reporters": cases_by_reporter,
-        "short_name_slug": short_name_slug,
-        "short_name": short_name,
+        "reporters": reporters,
     })
-
 
 def volume(request, series_slug, volume_number):
     """ /<series_slug>/<volume_number>/ -- list all cases for given volumes (typically only one). """
@@ -119,9 +116,7 @@ def volume(request, series_slug, volume_number):
     if not vols:
         raise Http404
 
-    volumes = [(volume, [ case for case in cases if case.volume.barcode == volume.barcode])
-        for volume in vols ]
-
+    volumes = [(volume, [ case for case in sorted(cases, key=lambda case: natural_sort_key(case.first_page or '')) if case.volume.barcode == volume.barcode]) for volume in vols ]
 
     return render(request, 'cite/volume.html', {
         "volumes": volumes,
