@@ -21,6 +21,14 @@ $(contextMenu).on('click', '#copy-cite', (event) => {
   successCall();
 });
 
+// This is a workaround: If there are other tab-able elements (like page labels, footnote markers, etc)
+// tabbing will take user away from context menu and go straight to those elements
+document.addEventListener('keydown', (event) => {
+  if (event.keyCode === 9 && contextMenuIsShown() && !contextMenuIsFocusedElement()) {
+    $('.context-menu').focus();
+  }
+});
+
 document.addEventListener('selectionchange', debounce(() => {
   if (selectedText && contextMenuIsFocusedElement()) {
     // if menu is currently focused, don't close menu!
@@ -50,6 +58,10 @@ function showContextMenu() {
 
 function contextMenuIsFocusedElement() {
   return document.activeElement.className.indexOf("context-menu") > -1;
+}
+
+function contextMenuIsShown() {
+  return $('.context-menu').is(":visible");
 }
 
 function successCall() {
