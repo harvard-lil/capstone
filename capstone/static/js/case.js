@@ -91,7 +91,7 @@ function insertFocusableElement() {
   } else if (document.selection && document.selection.createRange) {
     // IE < 9
     let range = document.selection.createRange();
-    range.pasteHTML(html);
+    range.pasteHTML(focusableElement);
   }
 }
 
