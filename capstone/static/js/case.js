@@ -28,7 +28,6 @@ document.addEventListener('selectionchange', debounce(() => {
   }
   selection = window.getSelection();
   selectedText = selection.getRangeAt(0).toString();
-
   $(contextMenu).hide();
   // update search URLs
   let encodedSelectedText = encodeURIComponent(selectedText);
@@ -37,18 +36,16 @@ document.addEventListener('selectionchange', debounce(() => {
   if (selectedText) {
     showContextMenu();
   }
-}, 200));
+}, 300));
 
 function showContextMenu() {
   let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
+  insertFocusableElement();
   $(contextMenu).css({
     left: selectedBoundingBox.x + (selectedBoundingBox.width / 2) + 'px',
     top: selectedBoundingBox.y + selectedBoundingBox.height + 'px'
   }).show();
-
-  insertFocusableElement();
-  $(selection.focusNode.nextElementSibling).before(contextMenu)
-
+  $(selection.focusNode.parentNode).after(contextMenu);
 }
 
 function contextMenuIsFocusedElement() {
@@ -57,7 +54,7 @@ function contextMenuIsFocusedElement() {
 
 function successCall() {
   $(copiedSuccessfullyText).show();
-  setTimeout(()=>{
+  setTimeout(() => {
     $(contextMenu).hide();
     $(copiedSuccessfullyText).hide();
     $('.focusable-element').focus().remove();
@@ -82,10 +79,14 @@ function getUpdatedURL(selectedText) {
 function insertFocusableElement() {
   // After context menu is hidden, cursor should be on focusable element
   // Thanks to http://jsfiddle.net/hjfVw/
-  let html = "<span class='focusable-element' tabindex='-1'></span>";
+
+  // remove any existing elements
+  $('.focusable-element').remove();
+
+  let focusableElement = "<span class='focusable-element' tabindex='-1'></span>";
   if (selection.getRangeAt && selection.rangeCount) {
     let range = selection.getRangeAt(selection);
-    let docFrag = range.createContextualFragment(html);
+    let docFrag = range.createContextualFragment(focusableElement);
     range.insertNode(docFrag);
   } else if (document.selection && document.selection.createRange) {
     // IE < 9

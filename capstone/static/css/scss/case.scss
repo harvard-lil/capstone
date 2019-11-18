@@ -55,15 +55,19 @@ p {
 }
 
 .context-menu {
-  position: fixed;
+  position: fixed !important;
+  width: 100px;
   left: -999em;
   border: 1px solid $color-blue;
   background-color: $color-white;
   z-index: 999;
   text-align: left;
   font-size: 1em;
+  font-style: normal;
+
   li {
     border-bottom: 1px solid $color-blue;
+
     a {
       z-index: 999;
       width: 100%;
@@ -71,14 +75,12 @@ p {
       display: inline-block;
       padding: 0.3em;
     }
-
   }
   .copied-successfully {
     display: none;
     padding: 0.3em;
   }
 }
-
 
 .offscreen {
   position: fixed !important;
