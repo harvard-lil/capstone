@@ -55,7 +55,7 @@ urlpatterns = [
     ### downloads ###
     path('download', views.download_files, name='download-files'),
     path('download/manifest.csv', views.download_manifest_file, name='download-contents'),
-    re_path(r'download/(?P<filepath>.*)', views.download_files, name='download-files-in-path'),
+    re_path(r'^download/(?P<filepath>.*)', views.download_files, name='download-files-in-path'),
 
     ### user account pages ###
 
