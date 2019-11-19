@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.forms.widgets import Textarea
 from django.utils.text import normalize_newlines
@@ -67,7 +68,7 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
     )
     fieldsets = (
         ('Flags', {
-            'fields': ('duplicate', 'duplicate_of', 'no_index', 'no_index_notes', 'withdrawn', 'replaced_by', 'in_scope'),
+            'fields': ('duplicate', 'duplicate_of', 'no_index', 'no_index_notes', 'robots_txt_until', 'withdrawn', 'replaced_by', 'in_scope'),
         }),
         ('', {
             'fields': ('frontend_url',)
@@ -102,6 +103,8 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
         # handle changes to obj.withdrawn
         if 'withdrawn' in form.changed_data or 'replaced_by' in form.changed_data:
             obj.withdraw(obj.withdrawn, obj.replaced_by)
+        if settings.MAINTAIN_ELASTICSEARCH_INDEX:
+            obj.update_search_index()
 
 
 class CasePageInline(admin.TabularInline):

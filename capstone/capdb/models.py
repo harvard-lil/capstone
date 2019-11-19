@@ -851,6 +851,7 @@ class CaseMetadata(models.Model):
     no_index_notes = models.TextField(blank=True, null=True, help_text="Reason no_index is true")
     in_scope = models.BooleanField(default=True, help_text="True if case should be included in public data")
     initial_metadata_synced = models.BooleanField(default=False)
+    robots_txt_until = models.DateTimeField(blank=True, null=True, help_text="Frontend URL for this case will be included in robots.txt until this date")
 
     # denormalized fields -
     # these should not be set directly, but are automatically copied from self.jurisdiction by database triggers
@@ -901,12 +902,14 @@ class CaseMetadata(models.Model):
         return self.case_id
 
     class Meta:
-        # partial indexes to allow fetching in_scope cases, with optional filter by reporter/jurisdiction/court
         indexes = [
+            # partial indexes to allow fetching in_scope cases, with optional filter by reporter/jurisdiction/court
             models.Index(name='idx_in_scope', fields=('decision_date', 'id'), condition=Q(in_scope=True)),
             models.Index(name='idx_in_scope_reporter', fields=('reporter', 'decision_date', 'id'), condition=Q(in_scope=True)),
             models.Index(name='idx_in_scope_jurisdiction', fields=('jurisdiction_slug', 'decision_date', 'id'), condition=Q(in_scope=True)),
             models.Index(name='idx_in_scope_court', fields=('court_slug', 'decision_date', 'id'), condition=Q(in_scope=True)),
+            # partial index for robots_txt_until cases
+            models.Index(name='idx_robots_txt_until', fields=('robots_txt_until',), condition=~Q(robots_txt_until=None)),
         ]
 
     def save(self, *args, **kwargs):
