@@ -45,10 +45,17 @@ urlpatterns = [
                                                       'form_title': 'contact',
                                                       'message': 'We\'ll be in touch, shortly.'
                                                   }),  name='contact-success'),
+
+    ### admin stuff ###
+    path('maintenance/', views.maintenance_mode , name='maintenance_mode'),
+    path('data/<str:label>', views.snippet, name='data_snippet'),
+    re_path(r'^cms_files/', include('db_file_storage.urls')),
+    path('screenshot/', views.screenshot, name='screenshot'),
+
     ### downloads ###
     path('download', views.download_files, name='download-files'),
     path('download/manifest.csv', views.download_manifest_file, name='download-contents'),
-    re_path(r'download/(?P<filepath>.*)', views.download_files, name='download-files-in-path'),
+    re_path(r'^download/(?P<filepath>.*)', views.download_files, name='download-files-in-path'),
 
     ### user account pages ###
 
@@ -79,14 +86,7 @@ urlpatterns = [
     ] if settings.NEW_RESEARCHER_FEATURE else [
         path('user/research/', user_views.request_legacy_research_access, name='unaffiliated-research-request'),
         path('user/research/success/', TemplateView.as_view(template_name='research_request/unaffiliated_research_request_success.html'), name='unaffiliated-research-request-success'),
-    ])+[
-
-    ### admin stuff ###
-    path('maintenance/', views.maintenance_mode , name='maintenance_mode'),
-    path('data/<str:label>', views.snippet, name='data_snippet'),
-    re_path(r'^cms_files/', include('db_file_storage.urls')),
-    path('screenshot/', views.screenshot, name='screenshot'),
-]
+    ])
 
 if settings.DEBUG:
     # debugging routes to see error pages
