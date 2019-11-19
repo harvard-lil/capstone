@@ -1,8 +1,11 @@
 import re
 import json
+from datetime import timedelta
+
 import pytest
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.utils import timezone
 from django.utils.text import slugify
 from capapi.tests.helpers import check_response, is_cached
 from capweb.helpers import reverse
@@ -327,11 +330,29 @@ def test_schema_in_case_as_google_bot(client, whitelisted_case_document, monkeyp
 
     post_save(client, whitelisted_case_document, case_text)
 
-
-
-
 @pytest.mark.django_db()
 def test_no_index(auth_client, whitelisted_case_document):
     whitelisted_case_document.no_index = True
     whitelisted_case_document.save()
     retrieve_and_check_response_content(auth_client, full_url(whitelisted_case_document), 'content="noindex"')
+
+@pytest.mark.django_db()
+def test_robots(client, case):
+    # default version is empty:
+    url = reverse('robots', host='cite')
+    response = client.get(url)
+    check_response(response, content_type="text/plain")
+    assert response.content.decode() == 'user-agent: *\n'
+
+    # case with robots_txt_until in future is included:
+    case.no_index = True
+    case.robots_txt_until = timezone.now() + timedelta(days=1)
+    case.save()
+    check_response(client.get(url), content_includes="disallow: %s" % case.frontend_url, content_type="text/plain")
+
+    # case with robots_txt_until in future is excluded:
+    case.robots_txt_until = timezone.now() - timedelta(days=1)
+    case.save()
+    response = client.get(url)
+    check_response(response, content_type="text/plain")
+    assert response.content.decode() == 'user-agent: *\n'
