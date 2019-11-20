@@ -190,7 +190,7 @@ class CAPFiltering(FilteringFilterBackend):
             if f in options:
                 fields[f]['options'] = options[f]
             else:
-                fields[f]['value'] = None
+                fields[f]['value'] = ''
 
             if f in filter_values:
                 fields[f]['value'] = ' '.join(filter_values[f])
