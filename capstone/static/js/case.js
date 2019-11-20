@@ -21,6 +21,14 @@ $(contextMenu).on('click', '#copy-cite', (event) => {
   successCall();
 });
 
+// This is a workaround: If there are other tab-able elements (like page labels, footnote markers, etc)
+// tabbing will take user away from context menu and go straight to those elements
+document.addEventListener('keydown', (event) => {
+  if (event.keyCode === 9 && contextMenuIsShown() && !contextMenuIsFocusedElement()) {
+    $('.context-menu').focus();
+  }
+});
+
 document.addEventListener('selectionchange', debounce(() => {
   if (selectedText && contextMenuIsFocusedElement()) {
     // if menu is currently focused, don't close menu!
@@ -28,7 +36,6 @@ document.addEventListener('selectionchange', debounce(() => {
   }
   selection = window.getSelection();
   selectedText = selection.getRangeAt(0).toString();
-
   $(contextMenu).hide();
   // update search URLs
   let encodedSelectedText = encodeURIComponent(selectedText);
@@ -37,27 +44,29 @@ document.addEventListener('selectionchange', debounce(() => {
   if (selectedText) {
     showContextMenu();
   }
-}, 200));
+}, 300));
 
 function showContextMenu() {
   let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
+  insertFocusableElement();
   $(contextMenu).css({
     left: selectedBoundingBox.x + (selectedBoundingBox.width / 2) + 'px',
     top: selectedBoundingBox.y + selectedBoundingBox.height + 'px'
   }).show();
-
-  insertFocusableElement();
-  $(selection.focusNode.nextElementSibling).before(contextMenu)
-
+  $(selection.focusNode.parentNode).after(contextMenu);
 }
 
 function contextMenuIsFocusedElement() {
   return document.activeElement.className.indexOf("context-menu") > -1;
 }
 
+function contextMenuIsShown() {
+  return $('.context-menu').is(":visible");
+}
+
 function successCall() {
   $(copiedSuccessfullyText).show();
-  setTimeout(()=>{
+  setTimeout(() => {
     $(contextMenu).hide();
     $(copiedSuccessfullyText).hide();
     $('.focusable-element').focus().remove();
@@ -82,15 +91,19 @@ function getUpdatedURL(selectedText) {
 function insertFocusableElement() {
   // After context menu is hidden, cursor should be on focusable element
   // Thanks to http://jsfiddle.net/hjfVw/
-  let html = "<span class='focusable-element' tabindex='-1'></span>";
+
+  // remove any existing elements
+  $('.focusable-element').remove();
+
+  let focusableElement = "<span class='focusable-element' tabindex='-1'></span>";
   if (selection.getRangeAt && selection.rangeCount) {
     let range = selection.getRangeAt(selection);
-    let docFrag = range.createContextualFragment(html);
+    let docFrag = range.createContextualFragment(focusableElement);
     range.insertNode(docFrag);
   } else if (document.selection && document.selection.createRange) {
     // IE < 9
     let range = document.selection.createRange();
-    range.pasteHTML(html);
+    range.pasteHTML(focusableElement);
   }
 }
 
