@@ -20,7 +20,7 @@ xmltodict
 https://github.com/gawel/pyquery/archive/2351446c56d5c3df93e3fd81a2b828cf00e3b648.zip#egg=pyquery  # Can be dropped on release of 1.4.1 (https://github.com/gawel/pyquery/pull/183)
 
 # database
-psycopg2  --no-binary psycopg2           # postgres connector
+psycopg2            # postgres connector
 mysqlclient         # mysql connector
 redis               # redis connector
 python-redis-lock   # cross-process locks
