@@ -68,7 +68,8 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
     )
     fieldsets = (
         ('Flags', {
-            'fields': ('duplicate', 'duplicate_of', 'no_index', 'no_index_notes', 'robots_txt_until', 'withdrawn', 'replaced_by', 'in_scope'),
+            'fields': ('duplicate', 'duplicate_of', 'no_index',  'no_index_notes', 'no_index_redacted', 'no_index_elided',
+                       'withdrawn', 'replaced_by', 'in_scope', 'custom_footer_message',),
         }),
         ('', {
             'fields': ('frontend_url',)
