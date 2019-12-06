@@ -194,7 +194,61 @@ response:
 
 Responses also include a `"count"` key. Occasionally this may show `"count": null`, indicating that the total count for
 a particular query has not yet been calculated.
+
+
+
+{# ====> Sorting <==== #}
+# Sorting Cases {: class="subtitle" data-toc-label='Sorting' }
+
+The ordering argument only works with the cases endpoint.
+{: class="highlighted" }
   
+You can sort your search in the cases endpoint using the "ordering" argument. To order your results in ascending order, 
+supply the ordering argument with the field on which you'd like to sort your results. For example, if you'd like to 
+search for the term 'baronetcy' with the oldest cases appearing first, supply the following query: 
+
+`{% api_url "cases-list" %}?search=baronetcy&ordering=decision_date`
+{: class="code-block" }
+
+You'll get the following results:
+
+`  {
+    "count": 5,
+    "next": null,
+    "previous": null,
+    "facets": {},
+    "results": [
+        {
+            "id": 12079364,
+            "url": "https://api.case.law/v1/cases/12079364/",
+            "name": "Clarke v. Nicholls",
+            "name_abbreviation": "Clarke v. Nicholls",
+            "decision_date": "1671-10-31",
+            ...`
+{: class="code-block" }
+
+You can also sort in descending order by adding a minus sign before the field on which you'd like to sort. To perform 
+the same search sorted in descending order, that is, seeing the newest cases first, then use this query:
+
+`{% api_url "cases-list" %}?search=baronetcy&ordering=-decision_date`
+{: class="code-block" }
+
+The results are now sorted in reverse order:
+`  {
+    "count": 5,
+    "next": null,
+    "previous": null,
+    "facets": {},
+    "results": [
+        {
+            "id": 4196848,
+            "url": "https://api.case.law/v1/cases/4196848/",
+            "name": "CANAL+ IMAGE UK LTD., Plaintiff, v. Steven LUTVAK and Robert L. Freedman, Defendants",
+            "name_abbreviation": "Canal+ Image UK Ltd. v. Lutvak",
+            "decision_date": "2011-03-29",
+            ...`
+{: class="code-block" }
+
 
 {# ==============> ACCESS LIMITS <============== #}
 # Access Limits {: class="subtitle" }
@@ -451,6 +505,13 @@ Endpoint Parameters:
     {: class="param-data-type" }
     * This field contains a value that we generate which will bring you to a specific page of results.
     {: class="param-description" }
+* `ordering`{: class="parameter-name" }
+{: class="list-group-item" add_list_class="parameter-list" }
+    * a field name
+    {: class="param-data-type" }
+    * Pass this parameter a field name to sort your results in ascending order on that field. Prepend it with a minus 
+    sign to sort in reverse order. See [Sorting](#sorting-cases) for more details.
+    {: class="param-description" }    
             
             
 {# ==============> CASE <============== #}
