@@ -204,7 +204,7 @@ text of cases to no more than 500 cases per person, per day. This limitation doe
 [researchers](#def-researchers) who agree to certain restrictions on use and redistribution. Nor does this restriction 
 apply to cases issued in [jurisdictions](#def-jurisdiction) that make their newly issued cases freely 
 available online in an authoritative, citable, machine-readable format. We call these 
-[whitelisted](#def-whitelisted) jurisdictions. Currently, Illinois and Arkansas are the only whitelisted
+[whitelisted](#def-whitelisted) jurisdictions. Currently, Illinois, Arkansas and New Mexico are the only whitelisted
 jurisdictions.
   
 We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal level,
@@ -305,11 +305,11 @@ Modification with Parameters:
 Retrieve a list of cases using a metadata filter
 {: class="topic-header" }
 
-[{% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }}]({% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }})
+[{% api_url "cases-list" %}?cite={{ citation }}]({% api_url "cases-list" %}?cite={{ citation }})
 {: class="example-link mt-0" }
 
 This example uses the [cases](#endpoint-cases) endpoint, and will retrieve every case with the citation 
-{{ case_metadata.citations.0.cite }}. 
+{{ citation }}. 
 
 There are many parameters with which you can filter the cases result. Check the 
 [cases](#endpoint-cases) endpoint documentation for a complete list of the parameters, and what values they accept.
@@ -319,7 +319,7 @@ Modification with Parameters:
 
 * **Add a date range filter**
 {: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30]({% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30)
+    * [{% api_url "cases-list" %}?cite={{ citation }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30]({% api_url "cases-list" %}?cite={{ citation }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30)
     {: add_list_class="example-mod-url" }
     * You can combine any of these parameters to refine your search. Here, we have the same search as in the first 
     example, but will only receive results from within the specified dates.

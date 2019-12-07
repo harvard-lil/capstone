@@ -27,10 +27,12 @@ from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
 from capweb.models import GallerySection
 
-from capdb.models import CaseMetadata, Jurisdiction, Reporter, Snippet
+from capdb.models import Jurisdiction, Reporter, Snippet
 from capdb.storages import download_files_storage
-from capapi import serializers
 from capapi.resources import form_for_request
+from capapi.documents import CaseDocument
+
+from elasticsearch.exceptions import NotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -158,23 +160,14 @@ def limericks(request):
 
 
 def api(request):
-    # TODO: Trim what we don't need here
     try:
-        case = CaseMetadata.objects.get(id=settings.API_DOCS_CASE_ID)
-    except CaseMetadata.DoesNotExist:
-        case = CaseMetadata.objects.filter(duplicative=False).first()
-    reporter = Reporter.objects.first()
-    reporter_metadata = serializers.ReporterSerializer(reporter, context={'request': request}).data
-    case_metadata = serializers.CaseSerializer(case, context={'request': request}).data
-    whitelisted_jurisdictions = Jurisdiction.objects.filter(whitelisted=True).values('name_long', 'name')
+        case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
+    except NotFoundError:
+        case = CaseDocument.search().filter("term", jurisdiction__slug="ill").execute()[0]
 
     markdown_doc = render_to_string("api.md", {
-        "case_metadata": case_metadata,
-        "case_id": case_metadata['id'],
-        "case_jurisdiction": case_metadata['jurisdiction'],
-        "reporter_id": reporter_metadata['id'],
-        "reporter_metadata": reporter_metadata,
-        "whitelisted_jurisdictions": whitelisted_jurisdictions,
+        "citation": case.citations[0].cite,
+        "case_id": case.id,
     }, request)
 
     # render markdown document to html
