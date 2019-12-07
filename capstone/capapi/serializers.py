@@ -42,16 +42,6 @@ class JurisdictionSerializer(serializers.ModelSerializer):
         model = models.Jurisdiction
         fields = ('url', 'id', 'slug', 'name', 'name_long', 'whitelisted')
 
-
-class CourtSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
-        view_name="court-detail",
-        lookup_field='slug')
-
-    class Meta:
-        model = models.Court
-        fields = ('url', 'id', 'slug', 'name', 'name_abbreviation')
-
 # for elasticsearch
 class CaseDocumentSerializer(DocumentSerializer):
     url = serializers.SerializerMethodField()
