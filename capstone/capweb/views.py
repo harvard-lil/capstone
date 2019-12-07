@@ -27,7 +27,7 @@ from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
 from capweb.models import GallerySection
 
-from capdb.models import Jurisdiction, Reporter, Snippet
+from capdb.models import Snippet
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request
 from capapi.documents import CaseDocument
