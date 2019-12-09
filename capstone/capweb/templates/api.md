@@ -194,7 +194,55 @@ response:
 
 Responses also include a `"count"` key. Occasionally this may show `"count": null`, indicating that the total count for
 a particular query has not yet been calculated.
+
+
+
+{# ====> Search <==== #}
+# Searching Cases {: class="subtitle" data-toc-label='Search' }
+
+Our [cases endpoint](#endpoint-cases) supports full-text search through the `search` parameter. For example, if you'd
+like to search for all cases that contain the word 'baronetcy', use the following query:
+
+`{% api_url "cases-list" %}?search=baronetcy`
+{: class="code-block" }
+
+Sorting
+{: class="topic-header" }
+
+The ordering argument only works with the cases endpoint.
+{: class="highlighted" }
   
+You can sort your search in the cases endpoint using the `ordering` argument. To order your results in ascending order, 
+supply the ordering argument with the field on which you'd like to sort your results. For example, if you'd like to 
+search for the term 'baronetcy' with the oldest cases appearing first, supply the following query: 
+
+`{% api_url "cases-list" %}?search=baronetcy&ordering=decision_date`
+{: class="code-block" }
+
+You can also sort in descending order by adding a minus sign before the field on which you'd like to sort. To perform 
+the same search sorted in descending order, that is, seeing the newest cases first, then use this query:
+
+`{% api_url "cases-list" %}?search=baronetcy&ordering=-decision_date`
+{: class="code-block" }
+
+Phrase Search
+{: class="topic-header" }
+
+We also support phrase search. To search our corpus for the phrase, "a pox on both your houses", simply enclose it in
+double quotes:
+
+`{% api_url "cases-list" %}?search="a pox on both your houses"`
+{: class="code-block" }
+
+Exclusion
+{: class="topic-header" }
+
+You can also exclude terms from your search by prepending them with a minus sign. For example, if you wanted to
+search for all cases containing the phrase "insurance fraud" but wanted to exclude the word automobile, pass both 
+"insurance fraud" and -automobile to the search parameter:
+
+`{% api_url "cases-list" %}?search="insurance fraud"-automobile`
+{: class="code-block" }
 
 {# ==============> ACCESS LIMITS <============== #}
 # Access Limits {: class="subtitle" }
@@ -327,7 +375,7 @@ Modification with Parameters:
 
 
 {# ====> Full Text Search <==== #}
-Simple Full-Text Search
+Full-Text Search
 {: class="topic-header" }
 
 [{% api_url "cases-list" %}?search=insurance]({% api_url "cases-list" %}?search=insurance)
@@ -335,7 +383,10 @@ Simple Full-Text Search
 
 This example performs a simple full-text case search which finds all cases containing the word "insurance." 
 
-There are many parameters with which you can filter the cases result. Check the [cases](#endpoint-cases) endpoint 
+We support searching by phrase, exclusion, and some other full-text-search functionality. Check out our 
+[search](#search) section for more information.
+
+There are also many parameters with which you can filter the cases result. Check the [cases](#endpoint-cases) endpoint 
 documentation for a complete list of the parameters, and what values they accept.
 
 Modification with Parameters:
@@ -451,6 +502,13 @@ Endpoint Parameters:
     {: class="param-data-type" }
     * This field contains a value that we generate which will bring you to a specific page of results.
     {: class="param-description" }
+* `ordering`{: class="parameter-name" }
+{: class="list-group-item" add_list_class="parameter-list" }
+    * a field name
+    {: class="param-data-type" }
+    * Pass this parameter a field name to sort your results in ascending order on that field. Prepend it with a minus 
+    sign to sort in reverse order. See [Search](#search) for more details.
+    {: class="param-description" }    
             
             
 {# ==============> CASE <============== #}
