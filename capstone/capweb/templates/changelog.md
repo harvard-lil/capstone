@@ -9,6 +9,17 @@ top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
+
+# December 6, 2019
+
+**Website:**
+
+* API Documentation
+    * Added search section documenting new features in our Elasticsearch-backed cases endpoint:
+        * Phrase Searching
+        * Search Exclusion
+        * Sorting
+
 # October 1, 2019
 
 **API:**

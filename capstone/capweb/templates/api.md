@@ -194,7 +194,55 @@ response:
 
 Responses also include a `"count"` key. Occasionally this may show `"count": null`, indicating that the total count for
 a particular query has not yet been calculated.
+
+
+
+{# ====> Search <==== #}
+# Searching Cases {: class="subtitle" data-toc-label='Search' }
+
+Our [cases endpoint](#endpoint-cases) supports full-text search through the `search` parameter. For example, if you'd
+like to search for all cases that contain the word 'baronetcy', use the following query:
+
+`{% api_url "cases-list" %}?search=baronetcy`
+{: class="code-block" }
+
+Sorting
+{: class="topic-header" }
+
+The ordering argument only works with the cases endpoint.
+{: class="highlighted" }
   
+You can sort your search in the cases endpoint using the `ordering` argument. To order your results in ascending order, 
+supply the ordering argument with the field on which you'd like to sort your results. For example, if you'd like to 
+search for the term 'baronetcy' with the oldest cases appearing first, supply the following query: 
+
+`{% api_url "cases-list" %}?search=baronetcy&ordering=decision_date`
+{: class="code-block" }
+
+You can also sort in descending order by adding a minus sign before the field on which you'd like to sort. To perform 
+the same search sorted in descending order, that is, seeing the newest cases first, then use this query:
+
+`{% api_url "cases-list" %}?search=baronetcy&ordering=-decision_date`
+{: class="code-block" }
+
+Phrase Search
+{: class="topic-header" }
+
+We also support phrase search. To search our corpus for the phrase, "a pox on both your houses", simply enclose it in
+double quotes:
+
+`{% api_url "cases-list" %}?search="a pox on both your houses"`
+{: class="code-block" }
+
+Exclusion
+{: class="topic-header" }
+
+You can also exclude terms from your search by prepending them with a minus sign. For example, if you wanted to
+search for all cases containing the phrase "insurance fraud" but wanted to exclude the word automobile, pass both 
+"insurance fraud" and -automobile to the search parameter:
+
+`{% api_url "cases-list" %}?search="insurance fraud"-automobile`
+{: class="code-block" }
 
 {# ==============> ACCESS LIMITS <============== #}
 # Access Limits {: class="subtitle" }
@@ -204,7 +252,7 @@ text of cases to no more than 500 cases per person, per day. This limitation doe
 [researchers](#def-researchers) who agree to certain restrictions on use and redistribution. Nor does this restriction 
 apply to cases issued in [jurisdictions](#def-jurisdiction) that make their newly issued cases freely 
 available online in an authoritative, citable, machine-readable format. We call these 
-[whitelisted](#def-whitelisted) jurisdictions. Currently, Illinois and Arkansas are the only whitelisted
+[whitelisted](#def-whitelisted) jurisdictions. Currently, Illinois, Arkansas and New Mexico are the only whitelisted
 jurisdictions.
   
 We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal level,
@@ -305,11 +353,11 @@ Modification with Parameters:
 Retrieve a list of cases using a metadata filter
 {: class="topic-header" }
 
-[{% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }}]({% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }})
+[{% api_url "cases-list" %}?cite={{ citation }}]({% api_url "cases-list" %}?cite={{ citation }})
 {: class="example-link mt-0" }
 
 This example uses the [cases](#endpoint-cases) endpoint, and will retrieve every case with the citation 
-{{ case_metadata.citations.0.cite }}. 
+{{ citation }}. 
 
 There are many parameters with which you can filter the cases result. Check the 
 [cases](#endpoint-cases) endpoint documentation for a complete list of the parameters, and what values they accept.
@@ -319,7 +367,7 @@ Modification with Parameters:
 
 * **Add a date range filter**
 {: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30]({% api_url "cases-list" %}?cite={{ case_metadata.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30)
+    * [{% api_url "cases-list" %}?cite={{ citation }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30]({% api_url "cases-list" %}?cite={{ citation }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30)
     {: add_list_class="example-mod-url" }
     * You can combine any of these parameters to refine your search. Here, we have the same search as in the first 
     example, but will only receive results from within the specified dates.
@@ -327,7 +375,7 @@ Modification with Parameters:
 
 
 {# ====> Full Text Search <==== #}
-Simple Full-Text Search
+Full-Text Search
 {: class="topic-header" }
 
 [{% api_url "cases-list" %}?search=insurance]({% api_url "cases-list" %}?search=insurance)
@@ -335,7 +383,10 @@ Simple Full-Text Search
 
 This example performs a simple full-text case search which finds all cases containing the word "insurance." 
 
-There are many parameters with which you can filter the cases result. Check the [cases](#endpoint-cases) endpoint 
+We support searching by phrase, exclusion, and some other full-text-search functionality. Check out our 
+[search](#search) section for more information.
+
+There are also many parameters with which you can filter the cases result. Check the [cases](#endpoint-cases) endpoint 
 documentation for a complete list of the parameters, and what values they accept.
 
 Modification with Parameters:
@@ -451,6 +502,13 @@ Endpoint Parameters:
     {: class="param-data-type" }
     * This field contains a value that we generate which will bring you to a specific page of results.
     {: class="param-description" }
+* `ordering`{: class="parameter-name" }
+{: class="list-group-item" add_list_class="parameter-list" }
+    * a field name
+    {: class="param-data-type" }
+    * Pass this parameter a field name to sort your results in ascending order on that field. Prepend it with a minus 
+    sign to sort in reverse order. See [Search](#search) for more details.
+    {: class="param-description" }    
             
             
 {# ==============> CASE <============== #}
