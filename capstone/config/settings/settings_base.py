@@ -494,11 +494,15 @@ LOGGING = {
             'filename': '/tmp/capapi.log',
             'delay': True
         },
-
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'capapi.reporter.CustomAdminEmailHandler'
         },
     },
     'loggers': {
@@ -533,6 +537,11 @@ LOGGING = {
         'verbose': {
             'format': '%(asctime)s %(levelname)s module=%(module)s, '
             'process_id=%(process)d, %(message)s'
+        }
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
         }
     },
 }
