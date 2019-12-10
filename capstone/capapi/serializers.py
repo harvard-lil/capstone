@@ -1,3 +1,4 @@
+import re
 import logging
 
 from django.db import transaction
@@ -242,9 +243,11 @@ class CaseAllowanceMixin:
 
         return result
 
+
 class ListSerializerWithCaseAllowance(CaseAllowanceMixin, ListSerializer):
     """ Custom ListSerializer for CaseDocumentSerializerWithCasebody that enforces CaseAllowance. """
     pass
+
 
 class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSerializer):
     casebody = serializers.SerializerMethodField()
@@ -262,13 +265,12 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         else:
             status = 'ok'
 
-
-
         if status == 'ok':
             body_format = request.query_params.get('body_format', None)
-
             if body_format == 'html':
                 data = case.casebody_data['html']
+                if case.no_index_redacted:
+                    print("no index redacted!")
             elif body_format == 'xml':
                 data = case.casebody_data['xml']
             elif type(request.accepted_renderer) == HTMLRenderer:
@@ -288,14 +290,26 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                 except AttributeError:
                     data = case.casebody_data['text']
 
+            if type(request.accepted_renderer) == HTMLRenderer:
+                db_case = models.CaseMetadata.objects.get(pk=case.id)
+                # redaction_reasons = []
+                print(">>>>>in serializer", db_case.no_index_redacted)
+                if db_case.no_index_redacted:
+                    redaction_count = 0
+                    for redaction, val in db_case.no_index_redacted.items():
+                        data = re.sub(redaction, "<span class='redacted-text' data-redaction-id='%s'>%s</span>" % (redaction_count, val), case.casebody_data['html'])
+                        # redaction_reasons
+                        redaction_count += 1
+                # TODO: add elided
+                print("new txt?", data)
+                # if footer? return with footer
+                # if not footer, create footer default
             return {
                 'data': data,
                 'status': status
             }
 
         return {'status': status, 'data': None}
-
-
 
 
 class VolumeSerializer(serializers.ModelSerializer):

@@ -200,18 +200,22 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         # render case using API serializer
         api_request = Request(request, authenticators=[SessionAuthentication()])
         api_request.accepted_renderer = HTMLRenderer()
-        serialized = serializer(case, context={'request': api_request})
+
         context = {'request': api_request, 'meta_tags': []}
+
         if not case.jurisdiction.whitelisted:
             # blacklisted cases shouldn't show cached version in google search results
             context['meta_tags'].append({"name": "googlebot", "content": "noarchive"})
 
+        serialized = serializer(case, context={'request': api_request})
+        print("heello we're in views!")
         # This should probably change
         if hasattr(case, 'no_index'):
             if case.no_index:
                 context['meta_tags'].append({"name": "robots", "content": "noindex"})
         else:
-            if CaseMetadata.objects.get(pk=case.id).no_index:
+            case_metadata = CaseMetadata.objects.get(pk=case.id)
+            if case_metadata.no_index:
                 context['meta_tags'].append({"name": "robots", "content": "noindex"})
 
         rendered = HTMLRenderer().render(serialized.data, renderer_context=context)
