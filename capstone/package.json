@@ -17,6 +17,7 @@
     "lodash.debounce": "^4.0.8",
     "mark.js": "^8.11.1",
     "puppeteer": "^1.18.1",
+    "serialize-javascript": "^2.1.1",
     "tone": "^13.4.9",
     "vue": "^2.5.17",
     "vue-chartjs": "^3.4.2",
