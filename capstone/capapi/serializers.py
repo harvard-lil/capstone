@@ -1,3 +1,4 @@
+import re
 import logging
 
 from django.db import transaction
@@ -288,14 +289,38 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                 except AttributeError:
                     data = case.casebody_data['text']
 
+            if type(request.accepted_renderer) == HTMLRenderer:
+                db_case = models.CaseMetadata.objects.get(pk=case.id)
+                custom_footer_message = db_case.custom_footer_message
+                if db_case.no_index_redacted:
+                    redaction_count = 0
+                    for redaction, val in db_case.no_index_redacted.items():
+                        data = re.sub(redaction, "<span class='redacted-text' data-redaction-id='%s'>%s</span>" %
+                                      (redaction_count, val), case.casebody_data['html'])
+                        redaction_count += 1
+
+                if db_case.no_index_elided:
+                    elision_count = 0
+                    for elision, val in db_case.no_index_elided.items():
+                        data = re.sub(elision, "<span class='elided-text' data-elision-reason='%s' "
+                                               "data-hidden-text='%s' data-elision-id='%s'>"
+                                               "<span class='elision-help-text' style='display: ""none'>hide</span>"
+                                               "...</span>" %
+                                      (val, elision, elision_count), data)
+                        elision_count += 1
+
+                if not custom_footer_message and (db_case.no_index_redacted or db_case.no_index_elided):
+                    if db_case.no_index_redacted:
+                        custom_footer_message += "Some text has been redacted by request of participating parties. \n"
+                    if db_case.no_index_elided:
+                        custom_footer_message += "Some text has been elided by request of participating parties. \n"
+
             return {
                 'data': data,
                 'status': status
             }
 
         return {'status': status, 'data': None}
-
-
 
 
 class VolumeSerializer(serializers.ModelSerializer):

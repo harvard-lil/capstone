@@ -5,6 +5,8 @@ import debounce from 'lodash.debounce';
 let caseContainer = document.querySelector(".case-container");
 let contextMenu = document.querySelector(".context-menu");
 let copiedSuccessfullyText = document.querySelector(".copied-successfully");
+let elidedText = $(".elided-text");
+
 let selectedText, selection;
 
 $(contextMenu).on('click', '#copy-url', (event) => {
@@ -45,6 +47,19 @@ document.addEventListener('selectionchange', debounce(() => {
     showContextMenu();
   }
 }, 300));
+
+// handle elisions
+$(elidedText).on('click', (evt) => {
+  if ($(evt.target).hasClass('shown')) {
+    $(evt.target).find('.elision-help-text').hide();
+    $(evt.target).text('...');
+    $(evt.target).removeClass('shown')
+  } else {
+    $(evt.target).addClass('shown');
+    $(evt.target).find('.elision-help-text').show();
+    $(evt.target).text($(evt.target).attr('data-hidden-text'));
+  }
+});
 
 function showContextMenu() {
   let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
