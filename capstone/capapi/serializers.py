@@ -263,8 +263,6 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         else:
             status = 'ok'
 
-
-
         if status == 'ok':
             body_format = request.query_params.get('body_format', None)
 
@@ -289,6 +287,7 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                 except AttributeError:
                     data = case.casebody_data['text']
 
+            # insert elisions and redactions
             if type(request.accepted_renderer) == HTMLRenderer:
                 db_case = models.CaseMetadata.objects.get(pk=case.id)
                 custom_footer_message = db_case.custom_footer_message
@@ -302,18 +301,13 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                 if db_case.no_index_elided:
                     elision_count = 0
                     for elision, val in db_case.no_index_elided.items():
-                        data = re.sub(elision, "<span class='elided-text' data-elision-reason='%s' "
+                        data = re.sub(elision, "<span class='elision-help-text' style='display: ""none'>hide</span>"
+                                               "<span class='elided-text' data-elision-reason='%s' "
+                                               "role='button' tabindex='0'"
                                                "data-hidden-text='%s' data-elision-id='%s'>"
-                                               "<span class='elision-help-text' style='display: ""none'>hide</span>"
                                                "...</span>" %
                                       (val, elision, elision_count), data)
                         elision_count += 1
-
-                if not custom_footer_message and (db_case.no_index_redacted or db_case.no_index_elided):
-                    if db_case.no_index_redacted:
-                        custom_footer_message += "Some text has been redacted by request of participating parties. \n"
-                    if db_case.no_index_elided:
-                        custom_footer_message += "Some text has been elided by request of participating parties. \n"
 
             return {
                 'data': data,

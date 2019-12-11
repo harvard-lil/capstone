@@ -50,15 +50,12 @@ document.addEventListener('selectionchange', debounce(() => {
 
 // handle elisions
 $(elidedText).on('click', (evt) => {
-  if ($(evt.target).hasClass('shown')) {
-    $(evt.target).find('.elision-help-text').hide();
-    $(evt.target).text('...');
-    $(evt.target).removeClass('shown')
-  } else {
-    $(evt.target).addClass('shown');
-    $(evt.target).find('.elision-help-text').show();
-    $(evt.target).text($(evt.target).attr('data-hidden-text'));
-  }
+  showOrHideElision(evt.target);
+});
+
+$(elidedText).on('keypress', (evt) => {
+  if (evt.which === 13)
+    showOrHideElision(evt.target);
 });
 
 function showContextMenu() {
@@ -128,6 +125,17 @@ function formatCitation() {
   return "\"" + selectedText + "\" " + full_cite; // eslint-disable-line
 }
 
+
+// Elisions
+function showOrHideElision(el) {
+  if ($(el).hasClass('shown')) {
+    $(el).text('...');
+    $(el).removeClass('shown')
+  } else {
+    $(el).addClass('shown');
+    $(el).text($(el).attr('data-hidden-text'));
+  }
+}
 
 ////// Find URL highlighted query in text
 
