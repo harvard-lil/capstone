@@ -290,7 +290,7 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
             # insert elisions and redactions
             if type(request.accepted_renderer) == HTMLRenderer:
                 db_case = models.CaseMetadata.objects.get(pk=case.id)
-                custom_footer_message = db_case.custom_footer_message
+
                 if db_case.no_index_redacted:
                     redaction_count = 0
                     for redaction, val in db_case.no_index_redacted.items():
@@ -308,7 +308,9 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                                                "...</span>" %
                                       (val, elision, elision_count), data)
                         elision_count += 1
-
+                if db_case.custom_footer_message:
+                    custom_footer_message = re.sub(r'\n','<br/>', db_case.custom_footer_message)
+                    data += "<hr/><footer class='custom-case-footer'>%s</footer>" % custom_footer_message
             return {
                 'data': data,
                 'status': status

@@ -359,3 +359,11 @@ mark {
   color: $color-blue;
   padding: 2px 5px;
 }
+
+.custom-case-footer {
+  width: 100%;
+  background-color: transparent;
+  font-size: $font-size-sm;
+  line-height: 1.7em;
+  text-align: center;
+}
