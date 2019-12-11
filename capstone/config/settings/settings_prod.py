@@ -118,3 +118,25 @@ MAILCHIMP = {
     'api_user': '',
     'api_key': ''
 }
+
+# logging
+LOGGING['loggers'] = {
+    'django': {
+        'handlers': ['mail_admins'],
+        'level': 'INFO',
+        'propagate': True,
+    },
+    'django.request': {
+        'handlers': ['mail_admins'],
+        'level': 'ERROR',
+        'propagate': False,
+    },
+}
+
+## logging errors via email requires these to be set:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST = 'smtp.example.com'
+# EMAIL_HOST_USER = 'smtpuser'
+# EMAIL_HOST_PASSWORD = 'smtppw'
