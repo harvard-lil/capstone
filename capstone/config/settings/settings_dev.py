@@ -75,3 +75,9 @@ if 'pytest' not in sys.modules:  # don't run this from tests
     except ImportError:
         pass
 
+
+# Print sent emails to the console, for debugging
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For testing error reporting
+ADMINS = [('John', 'john@example.com'), ('Mary', 'mary@example.com')]

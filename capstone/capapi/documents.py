@@ -1,4 +1,4 @@
-from django_elasticsearch_dsl import DocType, Index, fields
+from django_elasticsearch_dsl import Document as DocType, Index, fields
 from django.conf import settings
 
 from capdb.models import CaseMetadata
@@ -102,7 +102,7 @@ class CaseDocument(DocType):
             'text': body.json,
         }
 
-    class Meta:
+    class Django:
         model = CaseMetadata
         fields = [
             'id',
@@ -111,6 +111,24 @@ class CaseDocument(DocType):
         ]
         ignore_signals = True
         auto_refresh = False
+
+    class Index:
+        name = index
+
+    def to_dict(self, skip_empty=False):
+        # we need to do this until elasticsearch_dsl propagates skip_empty=False to the serialization that happens in
+        # embedded objects.
+        doc = super(CaseDocument, self).to_dict(skip_empty=skip_empty)
+        doc['volume'] = self.volume.to_dict(skip_empty=skip_empty)
+        doc['reporter'] = self.reporter.to_dict(skip_empty=skip_empty)
+        doc['court'] = self.court.to_dict(skip_empty=skip_empty)
+        doc['reporter'] = self.reporter.to_dict(skip_empty=skip_empty)
+        doc['jurisdiction'] = self.jurisdiction.to_dict(skip_empty=skip_empty)
+        doc['casebody_data']['text'] = self.casebody_data.text.to_dict(skip_empty=skip_empty)
+        doc['casebody_data']['text']['opinions'] = [ op.to_dict(skip_empty=skip_empty) for op in self.casebody_data['text'].opinions ]
+        return doc
+
+
 
     def full_cite(self):
         return "%s, %s%s" % (
