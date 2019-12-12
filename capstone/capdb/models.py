@@ -532,6 +532,7 @@ class VolumeMetadata(models.Model):
 
     reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='volumes')
     volume_number = models.CharField(max_length=64, blank=True, null=True)
+    volume_number_slug = models.CharField(max_length=64, blank=True, null=True)
     nominative_reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='nominative_volumes', blank=True, null=True)
     nominative_volume_number = models.CharField(max_length=1024, blank=True, null=True)
 
@@ -651,6 +652,8 @@ class VolumeMetadata(models.Model):
             self.save()
             self.case_metadatas.update(reporter=reporter)
 
+    def update_volume_number_slug(self, override=None):
+        self.volume_number_slug = slugify(self.volume_number if override == None else override)
 
 class TrackingToolLog(models.Model):
     volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
