@@ -149,6 +149,7 @@
   background-color: $color-tan;
   .case-container {
     @extend .col-centered;
+    min-width: 80%;
     @include media-breakpoint-down(md) {
       @include make-col(11);
       padding: 1em;
