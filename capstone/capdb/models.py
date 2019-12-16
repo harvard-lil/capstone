@@ -850,8 +850,8 @@ class CaseMetadata(models.Model):
     no_index = models.BooleanField(default=False, help_text="True if case should not be included in google index")
     no_index_notes = models.TextField(blank=True, null=True, help_text="Reason no_index is true")
 
-    no_index_elided = JSONField(blank=True, null=True, help_text="Text to be shown on click")
-    no_index_redacted = JSONField(blank=True, null=True, help_text="Text to be hidden from view")
+    no_index_elided = JSONField(blank=True, null=True, help_text="Elided text will be shown on click. Example: {\"Text to elide (must be exact match)\": \"Extra text that's currently not used. Can be left as empty string.\"}")
+    no_index_redacted = JSONField(blank=True, null=True, help_text="Redacted text will be hidden from view and replaced with key's value specified above. Example: {\"Text to redact (must be exact match)\": \"Text to replace redacted text.\"}")
 
     in_scope = models.BooleanField(default=True, help_text="True if case should be included in public data")
     initial_metadata_synced = models.BooleanField(default=False)
@@ -921,14 +921,6 @@ class CaseMetadata(models.Model):
     def save(self, *args, **kwargs):
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
-
-        # Add a custom footer message to instance if redactions or elisions exist but no text is provided
-        if not self.custom_footer_message and (self.no_index_redacted or self.no_index_elided):
-            if self.no_index_redacted:
-                self.custom_footer_message += "Some text has been redacted by request of participating parties. \n"
-            if self.no_index_elided:
-                self.custom_footer_message += "Some text has been elided by request of participating parties. \n"
-
         super().save(*args, **kwargs)
 
     def full_cite(self):
