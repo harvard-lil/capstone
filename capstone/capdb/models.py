@@ -849,9 +849,15 @@ class CaseMetadata(models.Model):
     replaced_by = models.ForeignKey("CaseMetadata", blank=True, null=True, on_delete=models.SET_NULL, related_name="replaced")
     no_index = models.BooleanField(default=False, help_text="True if case should not be included in google index")
     no_index_notes = models.TextField(blank=True, null=True, help_text="Reason no_index is true")
+
+    no_index_elided = JSONField(blank=True, null=True, help_text="Text to be shown on click")
+    no_index_redacted = JSONField(blank=True, null=True, help_text="Text to be hidden from view")
+
     in_scope = models.BooleanField(default=True, help_text="True if case should be included in public data")
     initial_metadata_synced = models.BooleanField(default=False)
     robots_txt_until = models.DateTimeField(blank=True, null=True, help_text="Frontend URL for this case will be included in robots.txt until this date")
+
+    custom_footer_message = models.TextField(blank=True, null=True, help_text="If not provided, custom footer will be filled with default text if elisions or redactions exist")
 
     # denormalized fields -
     # these should not be set directly, but are automatically copied from self.jurisdiction by database triggers
@@ -915,6 +921,14 @@ class CaseMetadata(models.Model):
     def save(self, *args, **kwargs):
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
+
+        # Add a custom footer message to instance if redactions or elisions exist but no text is provided
+        if not self.custom_footer_message and (self.no_index_redacted or self.no_index_elided):
+            if self.no_index_redacted:
+                self.custom_footer_message += "Some text has been redacted by request of participating parties. \n"
+            if self.no_index_elided:
+                self.custom_footer_message += "Some text has been elided by request of participating parties. \n"
+
         super().save(*args, **kwargs)
 
     def full_cite(self):

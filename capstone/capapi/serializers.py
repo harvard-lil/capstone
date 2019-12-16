@@ -1,3 +1,4 @@
+import re
 import logging
 
 from django.db import transaction
@@ -195,8 +196,6 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         else:
             status = 'ok'
 
-
-
         if status == 'ok':
             body_format = request.query_params.get('body_format', None)
 
@@ -221,14 +220,36 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                 except AttributeError:
                     data = case.casebody_data['text']
 
+            # insert elisions and redactions
+            if type(request.accepted_renderer) == HTMLRenderer:
+                db_case = models.CaseMetadata.objects.get(pk=case.id)
+
+                if db_case.no_index_redacted:
+                    redaction_count = 0
+                    for redaction, val in db_case.no_index_redacted.items():
+                        data = re.sub(redaction, "<span class='redacted-text' data-redaction-id='%s'>%s</span>" %
+                                      (redaction_count, val), case.casebody_data['html'])
+                        redaction_count += 1
+
+                if db_case.no_index_elided:
+                    elision_count = 0
+                    for elision, val in db_case.no_index_elided.items():
+                        data = re.sub(elision, "<span class='elision-help-text' style='display: ""none'>hide</span>"
+                                               "<span class='elided-text' data-elision-reason='%s' "
+                                               "role='button' tabindex='0'"
+                                               "data-hidden-text='%s' data-elision-id='%s'>"
+                                               "...</span>" %
+                                      (val, elision, elision_count), data)
+                        elision_count += 1
+                if db_case.custom_footer_message:
+                    custom_footer_message = re.sub(r'\n','<br/>', db_case.custom_footer_message)
+                    data += "<hr/><footer class='custom-case-footer'>%s</footer>" % custom_footer_message
             return {
                 'data': data,
                 'status': status
             }
 
         return {'status': status, 'data': None}
-
-
 
 
 class VolumeSerializer(serializers.ModelSerializer):

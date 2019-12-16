@@ -5,6 +5,8 @@ import debounce from 'lodash.debounce';
 let caseContainer = document.querySelector(".case-container");
 let contextMenu = document.querySelector(".context-menu");
 let copiedSuccessfullyText = document.querySelector(".copied-successfully");
+let elidedText = $(".elided-text");
+
 let selectedText, selection;
 
 $(contextMenu).on('click', '#copy-url', (event) => {
@@ -45,6 +47,16 @@ document.addEventListener('selectionchange', debounce(() => {
     showContextMenu();
   }
 }, 300));
+
+// handle elisions
+$(elidedText).on('click', (evt) => {
+  showOrHideElision(evt.target);
+});
+
+$(elidedText).on('keypress', (evt) => {
+  if (evt.which === 13)
+    showOrHideElision(evt.target);
+});
 
 function showContextMenu() {
   let selectedBoundingBox = selection.getRangeAt(0).getBoundingClientRect();
@@ -113,6 +125,17 @@ function formatCitation() {
   return "\"" + selectedText + "\" " + full_cite; // eslint-disable-line
 }
 
+
+// Elisions
+function showOrHideElision(el) {
+  if ($(el).hasClass('shown')) {
+    $(el).text('...');
+    $(el).removeClass('shown')
+  } else {
+    $(el).addClass('shown');
+    $(el).text($(el).attr('data-hidden-text'));
+  }
+}
 
 ////// Find URL highlighted query in text
 
