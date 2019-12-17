@@ -6,6 +6,7 @@ from celery.exceptions import Reject
 from django.db import connections
 from django.db.models import Prefetch
 from django.utils import timezone
+from django.utils.text import slugify
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
@@ -113,6 +114,19 @@ def sync_from_initial_metadata_for_vol(self, volume_id, force):
             .exclude(structure=None))
         for c in cases:
             c.sync_from_initial_metadata(force=force)
+
+
+@shared_task()  # use acks_late for tasks that can be safely re-run if they fail
+def update_volume_number_slugs(barcode):
+    vol = VolumeMetadata.objects.prefetch_related("case_metadatas__citations").get(pk=barcode)
+    original_slug = vol.volume_number_slug
+    if vol.volume_number_slug != slugify(vol.volume_number):
+        vol.volume_number_slug = slugify(vol.volume_number)
+        vol.save()
+        CaseMetadata.update_frontend_urls([ case.citations.first().cite for case in vol.case_metadatas.all() ])
+
+        print("Changing {} to {} ({}) required modifying {} case for {}".format(
+            original_slug, vol.volume_number_slug, vol.volume_number, vol.case_metadatas.count(), barcode))
 
 
 @shared_task
