@@ -73,8 +73,8 @@ def test_volume(client, django_assert_num_queries, three_case_documents):
         case.reporter.short_name_slug = case_1.reporter.short_name_slug
         case.save()
         case.volume.volume_number = case_1.volume.volume_number
+        case.volume.volume_number_slug = case_1.volume.volume_number_slug
         case.save()
-
     @retry(tries=10, delay=1)
     def get_volume_page(client, case_1, case_2):
         # to see why this is split out into a function, see the ## TIMING ## note at the top of the module

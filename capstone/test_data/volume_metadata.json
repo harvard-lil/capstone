@@ -5,6 +5,7 @@
     "fields": {
       "reporter": 1058,
       "volume_number": "1",
+      "volume_number_slug": "1",
       "nominative_reporter": null,
       "nominative_volume_number": null,
       "hollis_number": "005821473",
@@ -102,6 +103,7 @@
     "fields": {
       "reporter": 315,
       "volume_number": "23",
+      "volume_number_slug": "23",
       "nominative_reporter": null,
       "nominative_volume_number": null,
       "hollis_number": "005457617",
@@ -199,6 +201,7 @@
     "fields": {
       "reporter": 892,
       "volume_number": "60",
+      "volume_number_slug": "60",
       "nominative_reporter": null,
       "nominative_volume_number": null,
       "hollis_number": "000114134",
@@ -264,6 +267,7 @@
     "fields": {
       "reporter": 477,
       "volume_number": "199",
+      "volume_number_slug": "199",
       "nominative_reporter": null,
       "nominative_volume_number": null,
       "hollis_number": null,

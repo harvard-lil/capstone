@@ -167,7 +167,7 @@ def test_get_reporter_count_for_jur(reporter, jurisdiction):
 
 @pytest.mark.django_db
 def test_update_case_frontend_url(case_factory):
-    case_metadata = case_factory()
+    case_metadata = case_factory(citations__cite="123 Test 456", volume__volume_number="123", citations__type="official")
     citation = case_metadata.citations.first()
     citation.cite = "123 Test 456"
     citation.type = "official"
@@ -180,6 +180,9 @@ def test_update_case_frontend_url(case_factory):
 
 @pytest.mark.django_db
 def test_update_case_frontend_url_hyphen_cite(case_metadata):
+    case_metadata.volume.volume_number = "123"
+    case_metadata.volume.save()
+
     citation = case_metadata.citations.first()
     citation.cite = "123-Test-456"
     citation.save()

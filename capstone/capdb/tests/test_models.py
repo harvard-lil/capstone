@@ -193,14 +193,16 @@ def test_withdraw_case(case_factory):
 
 @pytest.mark.django_db
 def test_update_frontend_urls(case_factory, django_assert_num_queries):
-    case1 = case_factory(citations__cite="123 Test 456", citations__type="official")
-    case2 = case_factory(citations__cite="124 Test 456", citations__type="official")
+    case1 = case_factory(citations__cite="123 Test 456", volume__volume_number="123", citations__type="official")
+    case2 = case_factory(citations__cite="124 Test 456", volume__volume_number="124", citations__type="official")
     cite2 = case2.citations.first()
 
     assert case1.frontend_url == "/test/123/456/"
     assert case2.frontend_url == "/test/124/456/"
 
     cite2.cite = "123 Test 456"
+    case2.volume.volume_number = "123"
+    case2.volume.save()
     cite2.save()
     with django_assert_num_queries(select=1, update=1):
         CaseMetadata.update_frontend_urls(["124 Test 456", "123 Test 456"], update_elasticsearch=False)
@@ -212,6 +214,8 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
 
     cite2.cite = "124 Test 456"
     cite2.save()
+    case2.volume.volume_number = "124"
+    case2.volume.save()
     CaseMetadata.update_frontend_urls(["124 Test 456", "123 Test 456"], update_elasticsearch=False)
     case1.refresh_from_db()
     case2.refresh_from_db()
