@@ -97,15 +97,15 @@ def series(request, series_slug):
         "reporters": reporters,
     })
 
-def volume(request, series_slug, volume_number):
+def volume(request, series_slug, volume_number_slug):
     """ /<series_slug>/<volume_number>/ -- list all cases for given volumes (typically only one). """
     # redirect if series slug is in the wrong format
 
     if slugify(series_slug) != series_slug:
-        return HttpResponseRedirect(helpers.reverse('volume', args=[slugify(series_slug), volume_number], host='cite'))
+        return HttpResponseRedirect(helpers.reverse('volume', args=[slugify(series_slug), volume_number_slug], host='cite'))
 
     cases_query = CaseDocument.search()\
-        .filter("term", volume__volume_number__raw=volume_number)\
+        .filter("term", volume__volume_number_slug=volume_number_slug)\
         .filter("term", reporter__short_name_slug__raw=series_slug)\
         .sort('first_page')\
         .extra(size=10000)
