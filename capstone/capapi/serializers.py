@@ -241,6 +241,14 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                                                "...</span>" %
                                       (val, elision, elision_count), data)
                         elision_count += 1
+
+                # Add a custom footer message if redactions or elisions exist but no text is provided
+                if not db_case.custom_footer_message and (db_case.no_index_redacted or db_case.no_index_elided):
+                    if db_case.no_index_redacted:
+                        db_case.custom_footer_message += "Some text has been redacted by request of participating parties. \n"
+                    if db_case.no_index_elided:
+                        db_case.custom_footer_message += "Some text has been elided by request of participating parties. \n"
+
                 if db_case.custom_footer_message:
                     custom_footer_message = re.sub(r'\n','<br/>', db_case.custom_footer_message)
                     data += "<hr/><footer class='custom-case-footer'>%s</footer>" % custom_footer_message
