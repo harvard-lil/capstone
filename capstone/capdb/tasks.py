@@ -116,17 +116,20 @@ def sync_from_initial_metadata_for_vol(self, volume_id, force):
             c.sync_from_initial_metadata(force=force)
 
 
-@shared_task()  # use acks_late for tasks that can be safely re-run if they fail
+@shared_task()
 def update_volume_number_slugs(barcode):
     vol = VolumeMetadata.objects.prefetch_related("case_metadatas__citations").get(pk=barcode)
     original_slug = vol.volume_number_slug
-    if vol.volume_number_slug != slugify(vol.volume_number):
-        vol.volume_number_slug = slugify(vol.volume_number)
+    new_slug = slugify(vol.volume_number)
+    if vol.volume_number_slug != new_slug:
+        vol.volume_number_slug = new_slug
         vol.save()
+
+        # this performs a re-index on the elasticsearch CaseDocuments so there's no need to update the slug manually
         CaseMetadata.update_frontend_urls([ case.citations.first().cite for case in vol.case_metadatas.all() ])
 
-        print("Changing {} to {} ({}) required modifying {} case for {}".format(
-            original_slug, vol.volume_number_slug, vol.volume_number, vol.case_metadatas.count(), barcode))
+        print("Changing {} to {} ({}) required modifying {} cases for {}".format(
+            original_slug, vol.volume_number, vol.volume_number_slug, vol.case_metadatas.count(), barcode))
 
 
 @shared_task

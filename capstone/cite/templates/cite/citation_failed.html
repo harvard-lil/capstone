@@ -26,12 +26,12 @@
           </a>
         </li>
         <li class="breadcrumb-item">
-          <a href="/{{ series_slug }}/{{ volume_number }}">
-            Volume {{ volume_number }}
+          <a href="/{{ series_slug }}/{{ volume_number_slug }}">
+            Volume {{ volume_number_slug }}
           </a>
         </li>
         <li class="breadcrumb-item active" aria-current="page">
-          <a href="/{{ series_slug }}/{{ volume_number }}/{{ page_number }}">Page {{ page_number }}</a>
+          <a href="/{{ series_slug }}/{{ volume_number_slug }}/{{ page_number }}">Page {{ page_number }}</a>
         </li>
       </ol>
     </nav>
@@ -43,7 +43,7 @@
           <li>
             <a class="btn btn-primary"
                target="_blank"
-               href="https://www.courtlistener.com/c/{{ series }}/{{ volume_number }}/{{ page_number }}">
+               href="https://www.courtlistener.com/c/{{ series }}/{{ volume_number_slug }}/{{ page_number }}">
               CourtListener
             </a>
           </li>
@@ -60,7 +60,7 @@
         <ul>
           {% for case in cases %}
             <li>
-              <a href="{% url 'citation' series_slug=series_slug volume_number=volume_number page_number=page_number case_id=case.id host 'cite' %}">{{ case.full_cite }}</a>
+              <a href="{% url 'citation' series_slug=series_slug volume_number_slug=volume_number_slug page_number=page_number case_id=case.id host 'cite' %}">{{ case.full_cite }}</a>
             </li>
           {% endfor %}
         </ul>
