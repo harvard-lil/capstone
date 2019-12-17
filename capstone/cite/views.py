@@ -97,11 +97,11 @@ def series(request, series_slug):
         "reporters": reporters,
     })
 
-def volume(request, series_slug, volume_number_maybe_unslugged):
+def volume(request, series_slug, volume_number_slug):
     """ /<series_slug>/<volume_number>/ -- list all cases for given volumes (typically only one). """
 
     # this is to preserve compatibility with old links based on the unslugged volume number
-    volume_number_slug = slugify(volume_number_maybe_unslugged)
+    volume_number_slug = slugify(volume_number_slug)
 
     # redirect if series slug is in the wrong format
 
@@ -135,14 +135,14 @@ def volume(request, series_slug, volume_number_maybe_unslugged):
         "volumes": volumes,
     })
 
-def citation(request, series_slug, volume_number_maybe_unslugged, page_number, case_id=None):
+def citation(request, series_slug, volume_number_slug, page_number, case_id=None):
     """
         /<series_slug>/<volume_number>/<page_number>/                       -- show requested case (or list of cases, or case not found page).
         /<series_slug>/<volume_number>/<page_number>/<case_id>/             -- show requested case, using case_id to find one of multiple cases at this cite
     """
 
     # this is to preserve compatibility with old links based on the unslugged volume number
-    volume_number_slug = slugify(volume_number_maybe_unslugged)
+    volume_number_slug = slugify(volume_number_slug)
 
     # redirect if series slug is in the wrong format
     if slugify(series_slug) != series_slug:
