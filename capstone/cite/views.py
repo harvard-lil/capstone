@@ -100,13 +100,10 @@ def series(request, series_slug):
 def volume(request, series_slug, volume_number_slug):
     """ /<series_slug>/<volume_number>/ -- list all cases for given volumes (typically only one). """
 
-    # this is to preserve compatibility with old links based on the unslugged volume number
-    volume_number_slug = slugify(volume_number_slug)
+    # redirect if series slug or volume number slug is in the wrong format
 
-    # redirect if series slug is in the wrong format
-
-    if slugify(series_slug) != series_slug:
-        return HttpResponseRedirect(helpers.reverse('volume', args=[slugify(series_slug), volume_number_slug], host='cite'))
+    if slugify(series_slug) != series_slug or slugify(volume_number_slug) != volume_number_slug:
+        return HttpResponseRedirect(helpers.reverse('volume', args=[slugify(series_slug), slugify(volume_number_slug)], host='cite'))
 
     cases_query = CaseDocument.search()\
         .filter("term", volume__volume_number_slug=volume_number_slug)\
@@ -141,18 +138,15 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         /<series_slug>/<volume_number>/<page_number>/<case_id>/             -- show requested case, using case_id to find one of multiple cases at this cite
     """
 
-    # this is to preserve compatibility with old links based on the unslugged volume number
-    volume_number_slug = slugify(volume_number_slug)
-
-    # redirect if series slug is in the wrong format
-    if slugify(series_slug) != series_slug:
+    # redirect if series slug or volume number slug is in the wrong format
+    if slugify(series_slug) != series_slug or slugify(volume_number_slug) != volume_number_slug:
         if case_id:
             return HttpResponseRedirect(helpers.reverse('citation',
-                                                    args=[slugify(series_slug), volume_number_slug, page_number, case_id],
+                                                    args=[slugify(series_slug), slugify(volume_number_slug), page_number, case_id],
                                                     host='cite'))
         else:
             return HttpResponseRedirect(helpers.reverse('citation',
-                                                        args=[slugify(series_slug), volume_number_slug, page_number],
+                                                        args=[slugify(series_slug), slugify(volume_number_slug), page_number],
                                                         host='cite'))
 
     ### try to look up citation
