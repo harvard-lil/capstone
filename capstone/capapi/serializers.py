@@ -175,9 +175,11 @@ class CaseAllowanceMixin:
 
         return result
 
+
 class ListSerializerWithCaseAllowance(CaseAllowanceMixin, ListSerializer):
     """ Custom ListSerializer for CaseDocumentSerializerWithCasebody that enforces CaseAllowance. """
     pass
+
 
 class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSerializer):
     casebody = serializers.SerializerMethodField()
@@ -189,13 +191,12 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
 
     def get_casebody(self, case, check_permissions=True):
         # check permissions for full-text access to this case
+
         request = self.context.get('request')
         if check_permissions:
             status = check_update_case_permissions(request, case)
         else:
             status = 'ok'
-
-
 
         if status == 'ok':
             body_format = request.query_params.get('body_format', None)
@@ -227,8 +228,6 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
             }
 
         return {'status': status, 'data': None}
-
-
 
 
 class VolumeSerializer(serializers.ModelSerializer):

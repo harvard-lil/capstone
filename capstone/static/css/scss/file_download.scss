@@ -5,8 +5,11 @@
   padding-bottom: 0;
 }
 
-li.list-item {
-  list-style-type: '- ';
+li{
+  list-style-type: none;
+  &::before {
+    content: "- ";
+  }
 }
 
 .basic-page .main-content {

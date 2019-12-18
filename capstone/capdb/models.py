@@ -857,9 +857,15 @@ class CaseMetadata(models.Model):
     replaced_by = models.ForeignKey("CaseMetadata", blank=True, null=True, on_delete=models.SET_NULL, related_name="replaced")
     no_index = models.BooleanField(default=False, help_text="True if case should not be included in google index")
     no_index_notes = models.TextField(blank=True, null=True, help_text="Reason no_index is true")
+
+    no_index_elided = JSONField(blank=True, null=True, help_text="Elided text will be shown on click. Example: {\"Text to elide (must be exact match)\": \"Extra text that's currently not used. Can be left as empty string.\"}")
+    no_index_redacted = JSONField(blank=True, null=True, help_text="Redacted text will be hidden from view and replaced with key's value specified above. Example: {\"Text to redact (must be exact match)\": \"Text to replace redacted text.\"}")
+
     in_scope = models.BooleanField(default=True, help_text="True if case should be included in public data")
     initial_metadata_synced = models.BooleanField(default=False)
     robots_txt_until = models.DateTimeField(blank=True, null=True, help_text="Frontend URL for this case will be included in robots.txt until this date")
+
+    custom_footer_message = models.TextField(blank=True, null=True, help_text="If not provided, custom footer will be filled with default text if elisions or redactions exist")
 
     # denormalized fields -
     # these should not be set directly, but are automatically copied from self.jurisdiction by database triggers

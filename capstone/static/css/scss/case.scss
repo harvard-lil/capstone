@@ -337,3 +337,33 @@ mark {
 .head-matter > *, .opinion > * {
   position: relative;
 }
+
+.redacted-text {
+  &::before {
+    content: "[ "
+  }
+  &::after {
+    content: " ]"
+  }
+  background-color: $color-tan;
+  color: $color-black;
+  opacity: 0.8;
+  font-weight: $font-weight-regular;
+  font-style: normal;
+  padding: 2px 5px;
+}
+
+.elided-text {
+  cursor: pointer;
+  background-color: $color-tan;
+  color: $color-blue;
+  padding: 2px 5px;
+}
+
+.custom-case-footer {
+  width: 100%;
+  background-color: transparent;
+  font-size: $font-size-sm;
+  line-height: 1.7em;
+  text-align: center;
+}
