@@ -202,6 +202,9 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
         api_request.accepted_renderer = HTMLRenderer()
         serialized = serializer(case, context={'request': api_request})
         context = {'request': api_request, 'meta_tags': []}
+
+        db_case = CaseMetadata.objects.get(pk=case.id)
+
         if not case.jurisdiction.whitelisted:
             # blacklisted cases shouldn't show cached version in google search results
             context['meta_tags'].append({"name": "googlebot", "content": "noarchive"})
@@ -211,10 +214,54 @@ def citation(request, series_slug, volume_number, page_number, case_id=None):
             if case.no_index:
                 context['meta_tags'].append({"name": "robots", "content": "noindex"})
         else:
-            if CaseMetadata.objects.get(pk=case.id).no_index:
+            if db_case.no_index:
                 context['meta_tags'].append({"name": "robots", "content": "noindex"})
 
-        rendered = HTMLRenderer().render(serialized.data, renderer_context=context)
+        # insert redactions and elisions
+        serialized_data = serialized.data
+        data = serialized_data['casebody']['data']
+        case_name = serialized_data['name']
+
+        if db_case.no_index_redacted:
+            redaction_count = 0
+            for redaction, val in db_case.no_index_redacted.items():
+                # redact from case body
+                data = re.sub(redaction, "<span class='redacted-text' data-redaction-id='%s'>%s</span>" %
+                              (redaction_count, val), data)
+                redaction_count += 1
+                # redact from name
+                case_name = re.sub(redaction, "[ %s ]" % val, case_name)
+
+        if db_case.no_index_elided:
+            elision_count = 0
+            for elision, val in db_case.no_index_elided.items():
+                # elide from case body
+                data = re.sub(elision, "<span class='elision-help-text' style='display: ""none'>hide</span>"
+                                       "<span class='elided-text' data-elision-reason='%s' "
+                                       "role='button' tabindex='0'"
+                                       "data-hidden-text='%s' data-elision-id='%s'>"
+                                       "...</span>" %
+                              (val, elision, elision_count), data)
+
+                elision_count += 1
+                # elide from name
+                case_name = re.sub(elision, "...", case_name)
+
+        # Add a custom footer message if redactions or elisions exist but no text is provided
+        if not db_case.custom_footer_message and (db_case.no_index_redacted or db_case.no_index_elided):
+            if db_case.no_index_redacted:
+                db_case.custom_footer_message += "Some text has been redacted by request of participating parties. \n"
+            if db_case.no_index_elided:
+                db_case.custom_footer_message += "Some text has been elided by request of participating parties. \n"
+
+        if db_case.custom_footer_message:
+            custom_footer_message = re.sub(r'\n', '<br/>', db_case.custom_footer_message)
+            data += "<hr/><footer class='custom-case-footer'>%s</footer>" % custom_footer_message
+
+        serialized_data['casebody']['data'] = data
+        serialized_data['name'] = case_name
+
+        rendered = HTMLRenderer().render(serialized_data, renderer_context=context)
         return HttpResponse(rendered)
 
     ### handle non-unique citation (zero or multiple)
