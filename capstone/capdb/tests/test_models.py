@@ -2,6 +2,7 @@ import re
 import pytest
 
 from django.utils.encoding import force_bytes
+from django.utils.text import slugify
 
 from capdb.models import VolumeMetadata, CaseMetadata, CaseImage, CaseBodyCache, CaseXML, fetch_relations, Jurisdiction, \
     Reporter, Court, EditLog
@@ -637,4 +638,21 @@ def test_retrieve_and_store_images(case, inline_image_src, django_assert_num_que
         retrieve_images_from_cases(case.volume_id)
     assert CaseImage.objects.count() == 1
 
+
+@pytest.mark.django_db
+def test_volume_save_slug_update(case):
+    original_volume_number = case.volume.volume_number
+    case.volume.volume_number = "77777"
+    case.volume.save(update_volume_number_slug=False)
+    case.volume.refresh_from_db()
+
+    assert case.volume.volume_number != original_volume_number
+    assert slugify(case.volume.volume_number) != case.volume.volume_number_slug
+
+    case.volume.volume_number = "88888"
+    case.volume.save()
+    case.volume.refresh_from_db()
+
+    assert case.volume.volume_number == "88888"
+    assert slugify(case.volume.volume_number) == case.volume.volume_number_slug
 
