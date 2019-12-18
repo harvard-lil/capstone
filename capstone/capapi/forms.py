@@ -4,9 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.text import format_lazy
-from django.conf import settings
 
-from mailchimp3 import MailChimp
 
 from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract
 from capweb.helpers import reverse, reverse_lazy
@@ -58,15 +56,6 @@ class RegisterUserForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit)
         user.create_nonce()
-        # This will sign them up for the mailing list if they selected the mailing_list checkbox.
-        if settings.MAILCHIMP['api_key'] is not '' and self.cleaned_data['mailing_list']:
-            mc_client = MailChimp(mc_api=settings.MAILCHIMP['api_key'], mc_user=settings.MAILCHIMP['api_user'])
-            mc_client.lists.members.create(
-                settings.MAILCHIMP['id'], {
-                    'email_address': user.email,
-                    'merge_fields': {'LNAME': user.first_name, 'FNAME': user.last_name},
-                    'status': 'pending'
-                })
         return user
 
 

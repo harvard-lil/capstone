@@ -10,6 +10,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.template import loader
 from django.utils import timezone
 
+from mailchimp3 import MailChimp
+
 from capapi import resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContractForm, \
     HarvardContractForm, UnaffiliatedResearchRequestForm, ResearchRequestForm
@@ -52,6 +54,15 @@ def verify_user(request, user_id, activation_nonce):
         if site_limits.daily_signups < site_limits.daily_signup_limit:
             user.total_case_allowance = user.case_allowance_remaining = settings.API_CASE_DAILY_ALLOWANCE
             user.save()
+            # This will sign them up for the mailing list if they selected the mailing_list checkbox.
+            if settings.MAILCHIMP['api_key']:
+                mc_client = MailChimp(mc_api=settings.MAILCHIMP['api_key'], mc_user=settings.MAILCHIMP['api_user'])
+                mc_client.lists.members.create(
+                    settings.MAILCHIMP['id'], {
+                        'email_address': user.email,
+                        'merge_fields': {'LNAME': user.first_name, 'FNAME': user.last_name},
+                        'status': 'subscribed'
+                    })
     return render(request, 'registration/verified.html', {
         'contact_email': settings.DEFAULT_FROM_EMAIL,
         'error': error,
