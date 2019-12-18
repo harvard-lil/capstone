@@ -981,8 +981,10 @@ class CaseMetadata(models.Model):
             If disambiguate is true, return /series/volnum/pagenum/id/.
         """
         cite = cite or self.citations.first()
-        # try to match "(volnumber) (series) (pagenumber)"
-        m = re.match(r'(\S+)\s+(.+?)\s+(\S+)$', cite.cite)
+
+        # try to match "(volnumber) (Series) (pagenumber)"
+        m = re.match(r'^(\S+)\s+([A-Z].+?)\s+(\S+)$', cite.cite)
+
         if not m:
             # if cite doesn't match the expected format, always disambiguate so URL resolution doesn't depend on cite value
             disambiguate = True
