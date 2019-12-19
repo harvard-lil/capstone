@@ -32,7 +32,7 @@ class ResendVerificationForm(forms.Form):
 
 class RegisterUserForm(UserCreationForm):
     agreed_to_tos = forms.BooleanField()
-    mailing_list = forms.BooleanField(initial=False, required=False)
+    mailing_list = forms.BooleanField(initial=True, required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
