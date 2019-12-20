@@ -51,6 +51,7 @@ class CaseDocumentSerializer(DocumentSerializer):
     court = serializers.SerializerMethodField()
     jurisdiction = serializers.SerializerMethodField()
     citations = serializers.SerializerMethodField()
+    decision_date = serializers.SerializerMethodField()
 
     class Meta:
         document = CaseDocument
@@ -128,6 +129,9 @@ class CaseDocumentSerializer(DocumentSerializer):
 
     def get_url(self, obj):
         return api_reverse('cases-detail', [obj.id])
+
+    def get_decision_date(self, obj):
+        return obj.decision_date_original
 
 class CaseAllowanceMixin:
     """
