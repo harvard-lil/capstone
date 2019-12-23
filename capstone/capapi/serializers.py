@@ -132,15 +132,8 @@ class CaseDocumentSerializer(DocumentSerializer):
         return api_reverse('cases-detail', [obj.id])
 
     def get_highlights(self, obj):
-        #import itertools
         if hasattr(obj.meta, 'highlight'):
-
             return [ values for field_name in obj.meta.highlight for values in obj.meta.highlight[field_name] ]
-            #for field_name in obj.meta.highlight:
-            #    print(field_name)
-            #    print(obj.meta.highlight[field_name])
-            #return list(itertools.chain.from_dict(obj.meta.highlight))
-            # return [ obj.meta.highlight[thing] for thing in obj.meta.highlight ]
         return []
 
 
