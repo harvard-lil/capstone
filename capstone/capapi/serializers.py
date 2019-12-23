@@ -51,7 +51,7 @@ class CaseDocumentSerializer(DocumentSerializer):
     court = serializers.SerializerMethodField()
     jurisdiction = serializers.SerializerMethodField()
     citations = serializers.SerializerMethodField()
-    highlights = serializers.SerializerMethodField()
+    preview = serializers.SerializerMethodField()
 
     class Meta:
         document = CaseDocument
@@ -86,8 +86,6 @@ class CaseDocumentSerializer(DocumentSerializer):
         return return_list
 
     def get_volume(self, obj):
-        #import ipdb
-        #ipdb.set_trace()
         volume_number = None
         if hasattr(obj.volume, 'volume_number'):
             volume_number = getattr(obj.volume, 'volume_number', None)
@@ -131,7 +129,7 @@ class CaseDocumentSerializer(DocumentSerializer):
     def get_url(self, obj):
         return api_reverse('cases-detail', [obj.id])
 
-    def get_highlights(self, obj):
+    def get_preview(self, obj):
         if hasattr(obj.meta, 'highlight'):
             return [ values for field_name in obj.meta.highlight for values in obj.meta.highlight[field_name] ]
         return []
