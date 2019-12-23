@@ -32,6 +32,12 @@
         </a>
       </span>
     </div>
+    <div class="row" v-if="result.preview.length > 0">
+      <span class="previews">
+        <span class="preview_set_elipsis"> ... </span><span
+            v-for="(preview, index) in result.preview" v-bind:key="index" class="preview" v-html="preview"></span><br>
+      </span>
+    </div>
   </li>
 </template>
 

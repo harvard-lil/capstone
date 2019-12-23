@@ -330,6 +330,16 @@ select {
     color: $color-violet;
     border-bottom: 2px solid $color-violet;
   }
+  .preview, .preview_set_elipsis {
+    color: $color-medium-gray;
+    font-size: $font-size-sm;
+  }
+  .preview:after{
+    content: ' ... ';
+  }
+  .search_highlight {
+    font-weight: bold;
+  }
 }
 
 .query-explainer {
