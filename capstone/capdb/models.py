@@ -989,13 +989,14 @@ class CaseMetadata(models.Model):
         cite = cite or self.citations.first()
 
         # try to match "(volnumber) (Series) (pagenumber)"
-        m = re.match(r'^(\S+)\s+([A-Z].+?)\s+(\S+)$', cite.cite)
+        m = re.match(r'^(\S+(?: Suppl\.| 1/2)?)\s+([A-Z].+?)\s+(\S+)$', cite.cite)
 
         if not m:
             # if cite doesn't match the expected format, always disambiguate so URL resolution doesn't depend on cite value
             disambiguate = True
             # try to match "(year)-(series)-(case index)", e.g. "2017-Ohio-5699" and "2015-NMCA-053"
             m = re.match(r'(\S+)-(.+?)-(\S+)$', cite.cite)
+            print("wow")
         # TODO: final fallback value is wrong, because first_page is the physical page count and not the page label
         # after token streams are in, we should be able to retrieve the actual page label instead
         volume_number, rep_short_nm, fp = m.groups() if m else [self.volume.volume_number_slug, self.reporter.short_name, self.first_page]
