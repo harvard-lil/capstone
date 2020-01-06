@@ -999,10 +999,7 @@ class CaseMetadata(models.Model):
             print("wow")
         # TODO: final fallback value is wrong, because first_page is the physical page count and not the page label
         # after token streams are in, we should be able to retrieve the actual page label instead
-        volume_number, rep_short_nm, fp = m.groups() if m else [self.volume.volume_number_slug, self.reporter.short_name, self.first_page]
-
-        if self.volume.volume_number_slug:
-            volume_number = self.volume.volume_number_slug
+        volume_number, rep_short_nm, fp = m.groups() if m else [slugify(self.volume.volume_number), self.reporter.short_name, self.first_page]
 
         args = [slugify(rep_short_nm), volume_number, fp] + ([self.id] if disambiguate else [])
         url = reverse('citation', args=args, host='cite')
