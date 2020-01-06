@@ -108,6 +108,7 @@ class CaseDocument(DocType):
         fields = [
             'id',
             'decision_date',
+            'decision_date_original',
             'date_added',
         ]
         ignore_signals = True
