@@ -57,7 +57,7 @@ def test_registration_flow(client, non_whitelisted_case_document):
     verify_email = mail.outbox[0].body
     verify_url = re.findall(r'https://\S+', verify_email)[0]
     response = client.get(verify_url)
-    check_response(response, content_includes="Thank you for verifying")
+    check_response(response, content_includes="We've verified your email address.")
     user.refresh_from_db()
     assert user.email_verified
     assert user.auth_token

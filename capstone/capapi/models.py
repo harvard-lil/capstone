@@ -76,6 +76,10 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
     date_joined = models.DateTimeField(auto_now_add=True)
     agreed_to_tos = models.BooleanField(default=False)
 
+    # this has not been backfilled to be accurate for people who signed up for the mailing list before late dec of 2019
+    # you should use the MailChimp campaign for a more accurate list.
+    mailing_list = models.BooleanField(default=False)
+
     deactivated_by_user = models.BooleanField(default=False)
     deactivated_date = models.DateTimeField(null=True, auto_now_add=False)
 
