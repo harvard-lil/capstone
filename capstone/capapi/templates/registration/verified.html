@@ -1,13 +1,24 @@
 {% extends "registration/base.html" %}
 
-{% block title %}Verified!{% endblock %}
-{% block meta_description %}You are a verified user of the Caselaw Access Project API guide{% endblock %}
+{% block title %}
+  {% if error %}
+    Not Verified&mdash;
+  {% else %}
+    Verified&mdash;
+  {% endif %}
+{% endblock %}
+
+
+{% block meta_description %}Caselaw Access Project: Email Verification{% endblock %}
 
 {% block main_content %}
   {% if error %}
     <div class="alert alert-warning">{{ error }}</div>
   {% else %}
-    <h4>Thank you for verifying your email address. </h4>
+    <h4>We've verified your email address.</h4>
+    <p>
+      {{ mailing_list_message }}
+    </p>
     <p>
       You can now <a href="{% url "login" %}">log in</a>.
     </p>

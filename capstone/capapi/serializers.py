@@ -52,6 +52,7 @@ class CaseDocumentSerializer(DocumentSerializer):
     jurisdiction = serializers.SerializerMethodField()
     citations = serializers.SerializerMethodField()
     preview = serializers.SerializerMethodField()
+    decision_date = serializers.SerializerMethodField()
 
     class Meta:
         document = CaseDocument
@@ -134,6 +135,8 @@ class CaseDocumentSerializer(DocumentSerializer):
             return [ values for field_name in obj.meta.highlight for values in obj.meta.highlight[field_name] ]
         return []
 
+    def get_decision_date(self, obj):
+        return obj.decision_date_original
 
 class CaseAllowanceMixin:
     """

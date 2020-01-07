@@ -10,6 +10,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.template import loader
 from django.utils import timezone
 
+from mailchimp3 import MailChimp
+
 from capapi import resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContractForm, \
     HarvardContractForm, UnaffiliatedResearchRequestForm, ResearchRequestForm
@@ -17,6 +19,8 @@ from capapi.models import SiteLimits, CapUser, ResearchContract
 from capapi.resources import form_for_request
 from capdb.models import CaseExport
 from capweb.helpers import reverse, send_contact_email, user_has_harvard_email
+
+from mailchimp3.mailchimpclient import MailChimpError
 
 
 def register_user(request):
@@ -39,6 +43,8 @@ def register_user(request):
 def verify_user(request, user_id, activation_nonce):
     """ Verify email and assign api token """
     try:
+        mailing_list_message = "We have not signed you up for our newsletter, Lawvocado. Sign up any time from" \
+                               "our homepage."
         user = CapUser.objects.get(pk=user_id)
         user.authenticate_user(activation_nonce=activation_nonce)
     except (CapUser.DoesNotExist, PermissionDenied):
@@ -52,10 +58,45 @@ def verify_user(request, user_id, activation_nonce):
         if site_limits.daily_signups < site_limits.daily_signup_limit:
             user.total_case_allowance = user.case_allowance_remaining = settings.API_CASE_DAILY_ALLOWANCE
             user.save()
+
+            # This will sign them up for the mailing list if they selected the mailing_list checkbox.
+            if settings.MAILCHIMP['api_key'] and user.mailing_list:
+                def send_error_report_email(user_email, exception):
+                    msg = EmailMessage('Mailing List Signup Error',
+                                       str({"user": user_email, "exception": exception}),
+                                       settings.DEFAULT_FROM_EMAIL, [settings.DEFAULT_FROM_EMAIL])
+                    msg.content_subtype = "text/plain"
+                    msg.send()
+
+                try:
+                    mc_client = MailChimp(mc_api=settings.MAILCHIMP['api_key'], mc_user=settings.MAILCHIMP['api_user'])
+                    mc_client.lists.members.create(
+                        settings.MAILCHIMP['id'], {
+                            'email_address': user.email,
+                            'merge_fields': {'LNAME': user.first_name, 'FNAME': user.last_name},
+                            'status': 'subscribed'
+                        })
+                    mailing_list_message = "Also, thanks for signing up for our newsletter, Lawvocado."
+                except MailChimpError as e:
+                    mailing_list_message = "Also, there was a problem adding you to the Lawvocado mailing list. We've " \
+                                           "emailed the CAP dev team and will get back to you, if necessary."
+
+                    if e.args[0]['status'] == 400:
+                        if e.args[0]['title'] == 'Member Exists':
+                            mailing_list_message = "Also, thanks for your continued interest in our newsletter, " \
+                                                   "Lawvocado. We'll keep you on our list."
+                        else:
+                            send_error_report_email(user.email, e.args[0])
+                    else:
+                        send_error_report_email(user.email, e.args[0])
+                except Exception as e:
+                    send_error_report_email(user.email, e)
+
     return render(request, 'registration/verified.html', {
         'contact_email': settings.DEFAULT_FROM_EMAIL,
         'error': error,
-        'page_name': 'user-verify'
+        'page_name': 'user-verify',
+        'mailing_list_message': mailing_list_message
     })
 
 
