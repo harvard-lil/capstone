@@ -118,7 +118,7 @@ def sync_from_initial_metadata_for_vol(self, volume_id, force):
 
 @shared_task()
 def update_volume_number_slugs(barcode):
-    vol = VolumeMetadata.objects.prefetch_related("case_metadatas__citations").get(pk=barcode)
+    vol = VolumeMetadata.objects.get(pk=barcode)
     original_slug = vol.volume_number_slug
     new_slug = slugify(vol.volume_number)
     if vol.volume_number_slug != new_slug:
