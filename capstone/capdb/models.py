@@ -996,14 +996,12 @@ class CaseMetadata(models.Model):
             disambiguate = True
             # try to match "(year)-(series)-(case index)", e.g. "2017-Ohio-5699" and "2015-NMCA-053"
             m = re.match(r'(\S+)-(.+?)-(\S+)$', cite.cite)
-            print("wow")
+            
         # TODO: final fallback value is wrong, because first_page is the physical page count and not the page label
         # after token streams are in, we should be able to retrieve the actual page label instead
-        volume_number, rep_short_nm, fp = m.groups() if m else [slugify(self.volume.volume_number), self.reporter.short_name, self.first_page]
+        volume_number, rep_short_nm, fp = m.groups() if m else [self.volume.volume_number, self.reporter.short_name, self.first_page]
 
-        volume_number = slugify(volume_number)
-
-        args = [slugify(rep_short_nm), volume_number, fp] + ([self.id] if disambiguate else [])
+        args = [slugify(rep_short_nm), slugify(volume_number), fp] + ([self.id] if disambiguate else [])
         url = reverse('citation', args=args, host='cite')
         if not include_host:
             # strip https://cite.case.law prefix so stored value can be moved between servers
