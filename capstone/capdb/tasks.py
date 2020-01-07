@@ -6,6 +6,7 @@ from celery.exceptions import Reject
 from django.db import connections
 from django.db.models import Prefetch
 from django.utils import timezone
+from django.utils.text import slugify
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
@@ -113,6 +114,27 @@ def sync_from_initial_metadata_for_vol(self, volume_id, force):
             .exclude(structure=None))
         for c in cases:
             c.sync_from_initial_metadata(force=force)
+
+
+@shared_task()
+def update_volume_number_slugs(barcode):
+    vol = VolumeMetadata.objects.get(pk=barcode)
+    original_slug = vol.volume_number_slug
+    new_slug = slugify(vol.volume_number)
+    if vol.volume_number_slug != new_slug:
+        vol.volume_number_slug = new_slug
+        vol.save()
+        # if the volume number and volume number slug aren't the same, the cases' frontend_url needs to be updated.
+        # Else, just, just reindex the cases as they are to give ES the new slug value
+        if vol.volume_number != new_slug:
+            # this performs a re-index on the elasticsearch CaseDocuments so there's no need to update the slug manually
+            CaseMetadata.update_frontend_urls([ case.citations.first().cite for case in vol.case_metadatas.all() ])
+            print("Changing {} to {} ({}) required modifying {} cases for {}".format(
+                original_slug, vol.volume_number, vol.volume_number_slug, vol.case_metadatas.count(), barcode))
+        else:
+            print("Updated {} Model and ES with new slug value.".format(barcode))
+            update_elasticsearch_for_vol(vol.barcode)
+
 
 
 @shared_task

@@ -40,6 +40,7 @@ class CaseDocument(DocType):
     volume = fields.ObjectField(properties={
         "barcode": fields.KeywordField(),
         'volume_number': SuggestField(),
+        'volume_number_slug': fields.KeywordField(),
     })
 
     reporter = fields.ObjectField(properties={

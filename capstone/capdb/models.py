@@ -532,6 +532,7 @@ class VolumeMetadata(models.Model):
 
     reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='volumes')
     volume_number = models.CharField(max_length=64, blank=True, null=True)
+    volume_number_slug = models.CharField(max_length=64, blank=True, null=True)
     nominative_reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='nominative_volumes', blank=True, null=True)
     nominative_volume_number = models.CharField(max_length=1024, blank=True, null=True)
 
@@ -651,6 +652,13 @@ class VolumeMetadata(models.Model):
             self.save()
             self.case_metadatas.update(reporter=reporter)
 
+    def update_volume_number_slug(self):
+        self.volume_number_slug = slugify(self.volume_number)
+
+    def save(self, *args, update_volume_number_slug = True, **kwargs):
+        if update_volume_number_slug:
+            self.update_volume_number_slug()
+        super().save(*args, **kwargs)
 
 class TrackingToolLog(models.Model):
     volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
@@ -979,17 +987,21 @@ class CaseMetadata(models.Model):
             If disambiguate is true, return /series/volnum/pagenum/id/.
         """
         cite = cite or self.citations.first()
-        # try to match "(volnumber) (series) (pagenumber)"
-        m = re.match(r'(\S+)\s+(.+?)\s+(\S+)$', cite.cite)
+
+        # try to match "(volnumber) (Series) (pagenumber)"
+        m = re.match(r'^(\S+(?: Suppl\.| 1/2)?)\s+([A-Z].+?)\s+(\S+)$', cite.cite)
+
         if not m:
             # if cite doesn't match the expected format, always disambiguate so URL resolution doesn't depend on cite value
             disambiguate = True
             # try to match "(year)-(series)-(case index)", e.g. "2017-Ohio-5699" and "2015-NMCA-053"
             m = re.match(r'(\S+)-(.+?)-(\S+)$', cite.cite)
+            
         # TODO: final fallback value is wrong, because first_page is the physical page count and not the page label
         # after token streams are in, we should be able to retrieve the actual page label instead
-        cite_parts = m.groups() if m else [self.volume.volume_number, self.reporter.short_name, self.first_page]
-        args = [slugify(cite_parts[1]), cite_parts[0], cite_parts[2]] + ([self.id] if disambiguate else [])
+        volume_number, rep_short_nm, fp = m.groups() if m else [self.volume.volume_number, self.reporter.short_name, self.first_page]
+
+        args = [slugify(rep_short_nm), slugify(volume_number), fp] + ([self.id] if disambiguate else [])
         url = reverse('citation', args=args, host='cite')
         if not include_host:
             # strip https://cite.case.law prefix so stored value can be moved between servers
