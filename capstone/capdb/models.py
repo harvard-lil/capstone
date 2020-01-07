@@ -1001,6 +1001,9 @@ class CaseMetadata(models.Model):
         # after token streams are in, we should be able to retrieve the actual page label instead
         volume_number, rep_short_nm, fp = m.groups() if m else [slugify(self.volume.volume_number), self.reporter.short_name, self.first_page]
 
+        if volume_number != slugify(volume_number):
+            volume_number = slugify(self.volume.volume_number)
+
         args = [slugify(rep_short_nm), volume_number, fp] + ([self.id] if disambiguate else [])
         url = reverse('citation', args=args, host='cite')
         if not include_host:
