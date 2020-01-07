@@ -12,7 +12,7 @@
         {{ formatDate(result.decision_date) }}
       </div>
     </div>
-    <div class="row">
+    <div class="row metadata-row">
       <span v-for="(citation, index) in result.citations"
             v-bind:key="citation.cite"
             class="result-citation">

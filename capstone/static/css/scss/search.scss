@@ -310,6 +310,10 @@ select {
     a {
       border-bottom: 2px solid $color-blue;
     }
+    padding-bottom: 5px;
+  }
+  .metadata-row {
+    margin-bottom: 10px;
   }
   .result-citation {
     color: $color-black;
