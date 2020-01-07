@@ -12,7 +12,7 @@
         {{ formatDate(result.decision_date) }}
       </div>
     </div>
-    <div class="row">
+    <div class="row metadata-row">
       <span v-for="(citation, index) in result.citations"
             v-bind:key="citation.cite"
             class="result-citation">
@@ -30,6 +30,12 @@
         <a class="simple" target="_blank" :href="result.jurisdiction.url">
           {{result.jurisdiction.name_long}}
         </a>
+      </span>
+    </div>
+    <div class="row" v-if="result.preview.length > 0">
+      <span class="previews">
+        <span class="preview_set_elipsis"> ... </span><span
+            v-for="(preview, index) in result.preview" v-bind:key="index" class="preview" v-html="preview"></span><br>
       </span>
     </div>
   </li>
