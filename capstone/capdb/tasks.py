@@ -133,7 +133,7 @@ def update_volume_number_slugs(barcode):
                 original_slug, vol.volume_number, vol.volume_number_slug, vol.case_metadatas.count(), barcode))
         else:
             print("Updated {} Model and ES with new slug value.".format(barcode))
-            update_elasticsearch_for_vol(vol.id)
+            update_elasticsearch_for_vol(vol.barcode)
 
 
 

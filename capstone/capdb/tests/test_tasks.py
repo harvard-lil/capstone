@@ -210,6 +210,7 @@ def test_update_volume_number_slugs(three_case_documents):
     case2 = CaseMetadata.objects.get(pk=casedoc2.id)
 
     casedoc1.frontend_url = None
+    casedoc1.citations.cite = None
     casedoc1.save()
     casedoc2.frontend_url = None
     casedoc2.save()
@@ -217,6 +218,9 @@ def test_update_volume_number_slugs(three_case_documents):
     case1.volume.volume_number_slug = None
     case1.volume.save(update_volume_number_slug=False)
     case2.volume.volume_number = "5 1/2"
+    c2c = case2.citations.first()
+    c2c.cite = case2.full_cite()
+    c2c.save()
     case2.volume.save(update_volume_number_slug=False)
 
     fabfile.update_volume_number_slugs(update_existing=True)
