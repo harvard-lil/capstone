@@ -252,8 +252,8 @@ text of cases to no more than 500 cases per person, per day. This limitation doe
 [researchers](#def-researchers) who agree to certain restrictions on use and redistribution. Nor does this restriction 
 apply to cases issued in [jurisdictions](#def-jurisdiction) that make their newly issued cases freely 
 available online in an authoritative, citable, machine-readable format. We call these 
-[whitelisted](#def-whitelisted) jurisdictions. Currently, Illinois, Arkansas and New Mexico are the only whitelisted
-jurisdictions.
+[whitelisted](#def-whitelisted) jurisdictions. Currently, Illinois, Arkansas, New Mexico, and North Carolina
+are the only whitelisted jurisdictions.
   
 We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal level,
 we'd love to talk to you about making the transition to digital-first publishing. Please 
