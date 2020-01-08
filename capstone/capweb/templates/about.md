@@ -30,7 +30,7 @@ CAP does not include:
 * Cases not designated as officially published, such as most lower court decisions.
 * Non-published trial documents such as party filings, orders, and exhibits.
 * Parallel versions of cases from regional reporters, unless those cases were designated by a court as official.
-* Cases officially published in digital form, such as recent cases from Illinois and Arkansas.
+* Cases officially published in digital form, such as recent cases from Illinois, Arkansas, New Mexico, and North Carolina.
 {: add_list_class="spacious-list bullets" }
 
 Cases published after 1922 do not include headnotes.
@@ -104,9 +104,9 @@ Access limitations on full text and bulk data are a component of Harvard’s col
 (now part of Lexis-Nexis). These limitations will end, at the latest, in March of 2024. In addition, these limitations 
 apply only to cases from jurisdictions that continue to publish their official case law in print form. Once a 
 jurisdiction transitions from print-first publishing to digital-first publishing, these limitations cease. Thus far, 
-Illinois and Arkansas have made this important and positive shift and, as a result, all historical cases from these 
-jurisdictions are freely available to the public without restriction. We hope many other jurisdictions will follow 
-their example soon.
+Illinois, Arkansas, New Mexico, and North Carolina have made this important and positive shift and, as a result,
+all historical cases from these jurisdictions are freely available to the public without restriction. We hope many
+other jurisdictions will follow their example soon.
 
 
 # Press {: class="subtitle" } 
