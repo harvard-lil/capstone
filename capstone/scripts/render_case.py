@@ -443,7 +443,7 @@ class VolumeRenderer:
 
                 # write <img>
                 if block.get('format') == 'image' and not (self.redacted and block.get('redacted')):
-                    if self.format == 'xml':
+                    if self.original_xml:
                         tag_stack.append((handler.characters, ('[[Image here]]',)))
                     else:
                         tag_stack.append((handler.startElement, ('img', {'src': 'data:'+block['data'], 'class': block['class'], 'width': str(round(block['rect'][2])), 'height': str(round(block['rect'][3]))},)))
