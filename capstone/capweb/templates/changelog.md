@@ -10,6 +10,32 @@ row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
 
+# January, 09, 2020
+
+**API**
+
+* Cases Endpoint
+    * Reverted to using a `decision_date` format that reflects the granularity of the original data. In the original 
+    data, some of the decision dates specify only a year and month, but not a day. To make these findable in a 
+    standardized date index, we set those to the first of the month. When we switched over to elasticsearch, we served
+    the full date with the possibly inaccurate first-of-the-month date field in `decision_date.` We've reverted to using
+    the original date without the day.
+    * New `preview` field. If you use the full-text search feature, you'll now get an array of matches in-context. The
+    actual word or phrase match is surrounded in html emphasis tags. For example, if you performed a full-text 
+    search for the word `judge`, the preview field in one of your hits would look like this:
+    
+`[ "DEWEY, District <em class='search_highlight'>Judge</em>.", 
+"<em class='search_highlight'>Judge</em> Reeves of Kansas City, Mo., in 1938, in a bankruptcy proceeding entitled “In the Matter of Irving"
+]`
+{: class="code-block" }
+
+**Website:**
+
+* Search Documentation
+    * Added search section documenting new features in our Elasticsearch-backed cases endpoint:
+        * Phrase Searching
+        * Search Exclusion
+
 # December 6, 2019
 
 **Website:**
