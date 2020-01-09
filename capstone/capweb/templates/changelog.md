@@ -21,7 +21,7 @@ extra_head: {% stylesheet 'docs' %}
     the full date with the possibly inaccurate first-of-the-month date field in `decision_date.` We've reverted to using
     the original date without the day.
     * New `preview` field. If you use the full-text search feature, you'll now get an array of matches in-context. The
-    For actual word or phrase match is surrounded in html emphasis tags. For example, if you performed a full-text 
+    actual word or phrase match is surrounded in html emphasis tags. For example, if you performed a full-text 
     search for the word `judge`, the preview field in one of your hits would look like this:
     
 `[ "DEWEY, District <em class='search_highlight'>Judge</em>.", 
