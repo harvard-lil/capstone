@@ -65,11 +65,12 @@ class ReporterFilter(filters.FilterSet):
 
 class VolumeFilter(filters.FilterSet):
     jurisdictions = filters.MultipleChoiceFilter(
+        label='Jurisdiction',
         field_name='reporter__jurisdictions__slug',
         choices=jur_choices)
 
     reporter = filters.MultipleChoiceFilter(
-        field_name='reporter__short_name',
+        field_name='reporter',
         choices=reporter_choices)
 
     volume_number = filters.NumberFilter(field_name='volume_number')
