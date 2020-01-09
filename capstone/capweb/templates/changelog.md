@@ -10,7 +10,7 @@ row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
 
-# January, 09, 2020
+# January 9, 2020
 
 **API**
 
