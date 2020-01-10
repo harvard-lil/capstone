@@ -265,7 +265,14 @@
   <script src="{% static "rest_framework/js/ajax-form.js" %}"></script>
   <script src="{% static "rest_framework/js/csrf.js" %}"></script>
   <script src="{% static "rest_framework/js/bootstrap.min.js" %}"></script>
-  <script src="{% static "rest_framework/js/prettify-min.js" %}"></script>
+
+  {# make the prettyPrint() function call in rest_framework/js/default.js a no-op, as it is currently causing CPU hangs in Chrome #}
+  {# see https://github.com/encode/django-rest-framework/issues/1137 #}
+  {# <script src="{% static "rest_framework/js/prettify-min.js" %}"></script> #}
+  <script>
+    function prettyPrint() {}
+  </script>
+
   <script src="{% static "rest_framework/js/default.js" %}"></script>
   <script>
     $(document).ready(function () {
