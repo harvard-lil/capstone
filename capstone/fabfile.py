@@ -1218,6 +1218,31 @@ def update_reporter_years():
     """)
 
 
+@task
+def check_existing_emails():
+    """
+        Report mailgun validity of all existing email accounts.
+    """
+    import requests
+    import time
+    emails = CapUser.objects.filter(is_active=True).values_list('email', flat=True)
+    response = requests.post(
+        "https://api.mailgun.net/v4/address/validate/bulk/emails",
+        files={'file': ('report.csv', 'email\n%s\n' % "\n".join(emails))},
+        auth=('api', settings.MAILGUN_API_KEY))
+    print(response.json())
+    while True:
+        response = requests.get("https://api.mailgun.net/v4/address/validate/bulk/emails", auth=('api', settings.MAILGUN_API_KEY))
+        print(response.json())
+        if response.json()['status'] == 'uploaded':
+            break
+        time.sleep(1)
+    response = requests.get(response.json()['download_url']['csv'])
+    with open('email_report.csv.zip', 'wb') as out:
+        out.write(response.content)
+
+
+
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
     # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"

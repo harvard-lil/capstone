@@ -63,9 +63,11 @@ class RegisterUserForm(UserCreationForm):
                 response.raise_for_status()
             except requests.RequestException:
                 raise forms.ValidationError("Cannot connect to email validation server. If this problem persists, please contact us.")
-            if response.json()['result'] != 'deliverable':
-                print("Invalid email address: %s" % response.json())
-                raise forms.ValidationError("This email address appears to be invalid. If you believe this is an error, please contact us.")
+            response_json = response.json()
+            if response_json['result'] == 'undeliverable' or (response_json['result'] == 'do_not_send' and 'mailbox_is_disposable_address' in response_json['reason']):
+                # reject undeliverable addresses and disposable addresses
+                print("Invalid email address: %s" % response_json)
+                raise forms.ValidationError("This email address is invalid. If you believe this is an error, please contact us.")
 
         return email
 
