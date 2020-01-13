@@ -11,8 +11,7 @@ from scripts.helpers import parse_xml, serialize_xml
     'case_xml',
     'page_xml'
 ])
-@pytest.mark.django_db(transaction=True)
-def test_versioning(versioned_fixture_name, request):
+def test_versioning(transactional_db, versioned_fixture_name, request):
     # load initial volume_xml/case_xml/page_xml
     versioned_instance = request.getfuncargvalue(versioned_fixture_name)
     original_instance = deepcopy(versioned_instance)

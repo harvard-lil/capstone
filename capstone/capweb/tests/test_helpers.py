@@ -1,5 +1,7 @@
 import pytest
 import socket
+
+from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory
 from capweb.helpers import is_google_bot
 
@@ -8,7 +10,7 @@ user_agent_other = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:67.0) Gecko
 
 
 @pytest.mark.django_db
-def x_test_is_google_bot_with_dns_lookup(anonymous_user):
+def x_test_is_google_bot_with_dns_lookup():
     """
     This test is brittle and assumes Google's IP address. It will perform an DNS lookup.
 
@@ -24,7 +26,7 @@ def x_test_is_google_bot_with_dns_lookup(anonymous_user):
     """
 
     request = RequestFactory().get('/')
-    request.user = anonymous_user
+    request.user = AnonymousUser()
 
     # User agent and IP look like Google
     request.META["HTTP_USER_AGENT"] = user_agent_google
@@ -43,7 +45,7 @@ def x_test_is_google_bot_with_dns_lookup(anonymous_user):
 
 
 @pytest.mark.django_db
-def test_is_google_bot_without_dns_lookup(monkeypatch, anonymous_user):
+def test_is_google_bot_without_dns_lookup(monkeypatch):
     """
     Stubbing out DNS lookup, returning a google bot host string.
 
@@ -54,7 +56,7 @@ def test_is_google_bot_without_dns_lookup(monkeypatch, anonymous_user):
 
     monkeypatch.setattr(socket, "gethostbyaddr", mock_get_googlehost)
     request = RequestFactory().get('/')
-    request.user = anonymous_user
+    request.user = AnonymousUser()
 
     # User agent and IP look like Google
     request.META["HTTP_USER_AGENT"] = user_agent_google

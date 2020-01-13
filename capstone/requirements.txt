@@ -336,7 +336,7 @@ img2pdf==0.3.3 \
     --hash=sha256:9d77c17ee65a736abe92ef8cba9cca009c064ea4ed74492c01aea596e41856cf
 inflection==0.3.1 \
     --hash=sha256:18ea7fb7a7d152853386523def08736aa8c32636b047ade55f7578c4edeb16ca \
-    # via drf-yasg, pytest-factoryboy
+    # via drf-yasg
 itypes==1.1.0 \
     --hash=sha256:c6e77bb9fd68a4bfeb9d958fea421802282451a25bac4913ec94db82a899c073 \
     # via coreapi
@@ -662,8 +662,6 @@ pytest-cov==2.6.1 \
 pytest-django==3.4.5 \
     --hash=sha256:1a5d33be930e3172fa238643a380414dc369fe8fa4b3c3de25e59ed142950736 \
     --hash=sha256:e88e471d3d0f9acfb6293bb03d0ee8a33ed978734e92ea6b5312163a6c9e87cc
-pytest-factoryboy==2.0.3 \
-    --hash=sha256:ffef3fb7ddec1299d3df0d334846259023f3d1da5ab887ad880139a8253a5a1a
 pytest-forked==1.0.1 \
     --hash=sha256:260d03fbd38d5ce41a657759e8d19bc7c8cfa6d0dcfa36c0bc9742d33bc30742 \
     --hash=sha256:8d05c2e6f33cd4422571b2b1bb309720c398b0549cff499e3e4cde661875ab54 \
