@@ -655,3 +655,6 @@ MAILCHIMP = {
     'api_user': '',
     'api_key': ''
 }
+
+MAILGUN_API_KEY = ''
+VALIDATE_EMAIL_SIGNUPS = False

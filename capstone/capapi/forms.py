@@ -1,10 +1,11 @@
 import re
+import requests
 
+from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.text import format_lazy
-
 
 from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract
 from capweb.helpers import reverse, reverse_lazy
@@ -51,6 +52,21 @@ class RegisterUserForm(UserCreationForm):
             raise forms.ValidationError("Email address may not contain spaces.")
         if CapUser.objects.filter(normalized_email=CapUser.normalize_email(email)).exists():
             raise forms.ValidationError("A user with the same email address has already registered.")
+
+        # validate email against mailgun api
+        if settings.VALIDATE_EMAIL_SIGNUPS:
+            try:
+                response = requests.get(
+                    "https://api.mailgun.net/v4/address/validate",
+                    auth=("api", settings.MAILGUN_API_KEY),
+                    params={"address": email})
+                response.raise_for_status()
+            except requests.RequestException:
+                raise forms.ValidationError("Cannot connect to email validation server. If this problem persists, please contact us.")
+            if response.json()['result'] != 'deliverable':
+                print("Invalid email address: %s" % response.json())
+                raise forms.ValidationError("This email address appears to be invalid. If you believe this is an error, please contact us.")
+
         return email
 
     def save(self, commit=True):
