@@ -283,3 +283,11 @@ def page_image_url(url, targets=[], waits=[], fallback=None, timeout=None):
     return "%s?%s" % (reverse('screenshot'), urlencode({
         'payload': signed_payload,
     }))
+
+
+def is_browser_request(request):
+    """
+    Simple approximate check to differentiate between command line and browser requests
+    """
+    return request.headers.get('Cookie') and not request.headers.get('Authorization')
+    
