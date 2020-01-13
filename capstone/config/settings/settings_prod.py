@@ -119,6 +119,8 @@ MAILCHIMP = {
     'api_key': ''
 }
 
+VALIDATE_EMAIL_SIGNUPS = True
+
 # logging
 LOGGING['loggers'] = {
     'django': {
