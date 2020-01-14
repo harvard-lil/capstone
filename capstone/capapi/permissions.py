@@ -1,5 +1,8 @@
 from rest_framework import permissions
 
+from capdb.models import CaseMetadata
+
+
 class IsSafeMethodsUser(permissions.BasePermission):
     def has_permission(self, request, view):
         # we're a read-only operation here
@@ -16,31 +19,29 @@ def check_update_case_permissions(request, case):
     """
         checks permissions, returns a status, and if appropriate, updates allowance
     """
-
-    casebody_permissions = {
-        "ok": "ok",
-        "auth": "error_auth_required",
-        "limit": "error_limit_exceeded",
-        "unk": "error_unknown",
-        "sitelimit": "error_sitewide_limit_exceeded"
-    }
     if 'id' not in case.jurisdiction:
-        status = casebody_permissions["unk"]
+        status = "error_unknown"
 
     elif case.jurisdiction['whitelisted']:
-        status = casebody_permissions["ok"]
+        status = "ok"
 
     elif request.user.is_anonymous:
-        status = casebody_permissions["auth"]
+        status = "error_auth_required"
 
     elif request.site_limits.daily_downloads >= request.site_limits.daily_download_limit:
-        status = casebody_permissions["sitelimit"]
+        status = "error_sitewide_limit_exceeded"
+
+    elif 'recovery_key' in request.GET:
+        if CaseMetadata(id=case.id).valid_recovery_key(request.user, request.GET['recovery_key']):
+            status = "ok"
+        else:
+            status = "error_invalid_recovery_key"
 
     else:
         try:
             request.user.update_case_allowance(case_count=1, save=False)
-            status = casebody_permissions["ok"]
+            status = "ok"
         except AttributeError:
-            status = casebody_permissions["limit"]
+            status = "error_limit_exceeded"
 
     return status

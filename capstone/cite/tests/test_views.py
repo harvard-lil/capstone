@@ -34,12 +34,12 @@ def test_home(client, django_assert_num_queries, ingest_metadata):
 
 
 @pytest.mark.django_db
-def test_series(client, django_assert_num_queries, volume_factory, whitelisted_case_document):
+def test_series(client, django_assert_num_queries, volume_metadata_factory, whitelisted_case_document):
 
     """ Test /series/ """
 
     # make sure we correctly handle multiple reporters with same slug
-    volume_1, volume_2 = [volume_factory() for _ in range(2)]
+    volume_1, volume_2 = [volume_metadata_factory() for _ in range(2)]
     volume_2.reporter.short_name_slug = volume_1.reporter.short_name_slug
     volume_2.reporter.save()
 

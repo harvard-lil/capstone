@@ -52,7 +52,6 @@ pytest-redis       # redisdb fixture
 moto
 flake8
 factory-boy        # mocking
-pytest-factoryboy  # inject factory-boy factories into pytest fixtures
 bagit              # validate BagIt bag
 flaky              # retry flaky tests
 retry              # re-run blocks of code until the ES index updates, but fail if they don't end up working

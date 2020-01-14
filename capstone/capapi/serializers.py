@@ -8,7 +8,7 @@ from rest_framework.serializers import ListSerializer
 from capapi.models import SiteLimits
 from capapi.renderers import HTMLRenderer, XMLRenderer
 from capdb import models
-from capdb.models import CaseBodyCache
+from capdb.models import CaseBodyCache, CaseMetadata
 from capweb.helpers import reverse
 from scripts import helpers
 from .permissions import check_update_case_permissions
@@ -231,10 +231,15 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                 except AttributeError:
                     data = case.casebody_data['text']
 
-            return {
+            out = {
                 'data': data,
                 'status': status
             }
+
+            if check_permissions and not case.jurisdiction['whitelisted'] and 'request' in self.context:
+                out['recovery_key'] = CaseMetadata(id=case.id).get_recovery_key(self.context['request'].user)
+
+            return out
 
         return {'status': status, 'data': None}
 

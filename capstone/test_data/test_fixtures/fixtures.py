@@ -263,20 +263,36 @@ def three_cases():
     return [CaseXMLFactory().metadata for _ in range(3)]
 
 
-@pytest.fixture
-def auth_user(token):
-    token.user.email_verified = True
-    token.user.save()
-    return token.user
-
-
 class CapClient(APIClient):
     def generic(self, method, path, *args, **kwargs):
-        # make test client use domain portion of path to set HTTP_HOST, so subdomain routing works
+        """
+            make test client use domain portion of path to set HTTP_HOST, so subdomain routing works
+        """
         parsed = urlparse(str(path))
         if parsed.netloc:
             kwargs.setdefault('HTTP_HOST', parsed.netloc)
         return super().generic(method, path, *args, **kwargs)
+
+    def request(self, *args, **kwargs):
+        """
+            Allow caller to specify a user login for a particular request with an
+            `as_user` parameter, like `client.get(url, as_user=user).
+        """
+        as_user = kwargs.pop('as_user', None)
+        if as_user:
+            # If as_user is provided, store the current value of the session cookie, call force_login, and then
+            # reset the current value after the request is over.
+            previous_session = self.cookies.get(settings.SESSION_COOKIE_NAME)
+            self.force_login(as_user)
+            try:
+                return super().request(*args, **kwargs)
+            finally:
+                if previous_session:
+                    self.cookies[settings.SESSION_COOKIE_NAME] = previous_session
+                else:
+                    self.cookies.pop(settings.SESSION_COOKIE_NAME)
+        else:
+            return super().request(*args, **kwargs)
 
 
 @pytest.fixture
@@ -284,14 +300,18 @@ def client():
     return CapClient()
 
 
+def client_with_user(user):
+    client = CapClient()
+    client.force_login(user=user)
+    # make user available to tests
+    client.auth_user = user
+    return client
+
+
 @pytest.fixture
 def auth_client(auth_user):
     """ Return client authenticated as auth_user, via Django session. """
-    client = CapClient()
-    client.force_login(user=auth_user)
-    # make user available to tests
-    client.auth_user = auth_user
-    return client
+    return client_with_user(auth_user)
 
 
 @pytest.fixture
@@ -305,72 +325,26 @@ def token_auth_client(auth_user):
 
 
 @pytest.fixture
-def unlimited_auth_client(auth_client):
-    user = auth_client.auth_user
-    user.unlimited_access = True
-    user.unlimited_access_until = timezone.now() + timedelta(days=1)
-    user.save()
-    return auth_client
+def unlimited_auth_client(auth_user_factory):
+    return client_with_user(auth_user_factory(
+        unlimited_access=True,
+        unlimited_access_until=timezone.now() + timedelta(days=1)
+    ))
 
 
 @pytest.fixture
-def contract_approver_auth_client():
-    client = CapClient()
-    user = CapUserFactory(email_verified=True)
-    client.force_login(user)
-    client.auth_user = user
-    user.groups.add(Group.objects.get_or_create(name='contract_approvers')[0])
-    return client
+def contract_approver_auth_client(contract_approver_user_factory):
+    return client_with_user(contract_approver_user_factory())
+
+
+@pytest.fixture()
+def admin_client(admin_user_factory):
+    return client_with_user(admin_user_factory())
 
 
 @pytest.fixture
 def api_request_factory():
     return APIRequestFactory()
-
-
-@pytest.fixture()
-def admin_user(db, django_user_model, django_username_field):
-    # Overwrite of pytest's Django admin_user fixture because
-    # we're using email as username_field
-    UserModel = django_user_model
-    username_field = django_username_field
-
-    try:
-        user = UserModel._default_manager.get(**{username_field: 'admin@example.com'})
-    except UserModel.DoesNotExist:
-        extra_fields = {}
-        user = UserModel._default_manager.create_superuser(
-            'test_admin_user@example.com', 'password', **extra_fields)
-    return user
-
-
-@pytest.fixture()
-def staff_user(cap_user):
-    cap_user.is_staff = True
-    cap_user.save()
-    return cap_user
-
-
-@pytest.fixture
-def anonymous_user(client):
-    user = auth.get_user(client)
-    return user
-
-
-@pytest.fixture()
-def anonymous_client(client, anonymous_user):
-    client.user = anonymous_user
-    return client
-
-
-@pytest.fixture()
-def admin_client(db, admin_user):
-    # Overwrite of pytest's Django admin_client
-    from django.test.client import Client
-
-    client = Client()
-    client.login(email=admin_user.email, password='password')
-    return client
 
 
 @pytest.fixture()

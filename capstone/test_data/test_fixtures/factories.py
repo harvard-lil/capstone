@@ -2,10 +2,10 @@ import os
 import binascii
 import random
 from pathlib import Path
-
 import factory
+from django.contrib.auth.models import Group
 from factory import post_generation
-from pytest_factoryboy import register
+import pytest
 
 from django.template.defaultfilters import slugify
 
@@ -13,10 +13,48 @@ from capapi.models import *
 from capdb.models import *
 
 
+### internal helpers ###
+
+def register(cls):
+    """
+        Decorator to take a factory class and inject test fixtures. For example,
+
+            @register
+            class UserFactory
+
+        will inject the fixtures "user_factory" (equivalent to UserFactory) and "user" (equivalent to UserFactory()).
+
+        This is basically the same as the @register decorator provided by the pytest_factoryboy package,
+        but because it's simpler it seems to work better with RelatedFactory and SubFactory.
+    """
+    camel_case_name = re.sub('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))', r'_\1', cls.__name__).lower()
+
+    @pytest.fixture
+    def factory_fixture(db):
+        return cls
+
+    @pytest.fixture
+    def instance_fixture(db):
+        return cls()
+
+    globals()[camel_case_name] = factory_fixture
+    globals()[camel_case_name.rsplit('_factory', 1)[0]] = instance_fixture
+
+    return cls
+
+
 ### factories ###
 
-# Calling @pytest_factoryboy.register on each factory exposes it as a pytest fixture.
-# For example, CapUserFactory will be available as the fixture "cap_user".
+
+@register
+class TokenFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Token
+
+    key = factory.Sequence(lambda n: binascii.hexlify(os.urandom(20)).decode())
+    created = timezone.now()
+    # user = factory.SubFactory('test_data.test_fixtures.factories.CapUserFactory')
+
 
 @register
 class CapUserFactory(factory.DjangoModelFactory):
@@ -35,16 +73,25 @@ class CapUserFactory(factory.DjangoModelFactory):
     email_verified = False
     nonce_expires = timezone.now() + timedelta(hours=24)
     activation_nonce = factory.Sequence(lambda n: '%08d' % n)
+    auth_token = factory.RelatedFactory(TokenFactory, 'user')
 
 
 @register
-class TokenFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Token
+class AuthUserFactory(CapUserFactory):
+    email_verified = True
 
-    user = factory.SubFactory(CapUserFactory)
-    key = factory.Sequence(lambda n: binascii.hexlify(os.urandom(20)).decode())
-    created = timezone.now()
+
+@register
+class AdminUserFactory(AuthUserFactory):
+    is_staff = True
+    is_superuser = True
+
+
+@register
+class ContractApproverUserFactory(AuthUserFactory):
+    @post_generation
+    def add_group(obj, create, extracted, **kwargs):
+        obj.groups.add(Group.objects.get_or_create(name='contract_approvers')[0])
 
 
 @register
@@ -66,12 +113,8 @@ class JurisdictionFactory(factory.DjangoModelFactory):
 
     name = factory.Faker('sentence', nb_words=2)
     name_long = factory.Faker('sentence', nb_words=4)
+    slug = factory.Sequence(lambda n: 'slug-%s' % n)
 
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        """Making sure our slugs are pretty random so we don't run into IntegrityErrors on save."""
-        kwargs['slug'] = '%s-%s' % (slugify(kwargs['name']), random.randrange(1000000000))
-        return super()._create(model_class, *args, **kwargs)
 
 @register
 class ReporterFactory(factory.DjangoModelFactory):
@@ -87,7 +130,7 @@ class ReporterFactory(factory.DjangoModelFactory):
     hollis = []
 
 @register
-class VolumeFactory(factory.DjangoModelFactory):
+class VolumeMetadataFactory(factory.DjangoModelFactory):
     class Meta:
         model = VolumeMetadata
     barcode = factory.Faker('ean', length=13)
@@ -104,7 +147,7 @@ class VolumeXMLFactory(factory.DjangoModelFactory):
 
     orig_xml = factory.Sequence(lambda n: _volume_xml + ' ' * n)  # avoid identical md5 values
     s3_key = factory.Sequence(lambda n: '%08d' % n)
-    metadata = factory.SubFactory(VolumeFactory)
+    metadata = factory.SubFactory(VolumeMetadataFactory)
 
 
 @register
@@ -122,7 +165,7 @@ class TarFileFactory(factory.DjangoModelFactory):
     class Meta:
         model = TarFile
 
-    volume = factory.SubFactory(VolumeFactory)
+    volume = factory.SubFactory(VolumeMetadataFactory)
     storage_path = 'unredacted/32044038597167_unredacted'
     hash = '19dae083e7f93e7b7545e50e3ab445076f3f284a061d38e4731e7afeb81cdade'
 
@@ -164,7 +207,7 @@ class CaseFactory(factory.DjangoModelFactory):
     case_id = factory.Sequence(lambda n: '%08d' % n)
     decision_date = factory.Faker("date_this_century", before_today=True, after_today=False)
     court = factory.SubFactory(CourtFactory)
-    volume = factory.SubFactory(VolumeFactory)
+    volume = factory.SubFactory(VolumeMetadataFactory)
     reporter = factory.LazyAttribute(lambda o: o.volume.reporter)
     structure = factory.RelatedFactory(CaseStructureFactory, 'metadata')
     citations = factory.RelatedFactory(CitationFactory, 'case')

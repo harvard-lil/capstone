@@ -42,7 +42,6 @@ $$
 
     // update destination fields
     var sql = 'UPDATE ' + dest_table + ' SET ' + dest_columns.join(', ') + ' WHERE ' + dest_id_column + '=$' + (index+1);
-    plv8.elog(WARNING, sql, JSON.stringify(dest_values));
     plv8.execute(sql, dest_values);
   }
 

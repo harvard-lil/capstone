@@ -43,8 +43,7 @@ def register_user(request):
 def verify_user(request, user_id, activation_nonce):
     """ Verify email and assign api token """
     try:
-        mailing_list_message = "We have not signed you up for our newsletter, Lawvocado. Sign up any time from" \
-                               "our homepage."
+        mailing_list_message = "We have not signed you up for our newsletter, Lawvocado. Sign up any time from our homepage."
         user = CapUser.objects.get(pk=user_id)
         user.authenticate_user(activation_nonce=activation_nonce)
     except (CapUser.DoesNotExist, PermissionDenied):
