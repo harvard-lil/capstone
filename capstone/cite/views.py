@@ -77,7 +77,7 @@ def robots(request):
     """
     return HttpResponse("\n".join(
         ["user-agent: *"]+
-        ["disallow: %s" % c.frontend_url for c in CaseMetadata.objects.filter(robots_txt_until__gte=timezone.now(), no_index=True)]
+        ["disallow: %s" % c.frontend_url for c in CaseMetadata.objects.filter(robots_txt_until__gte=timezone.now())]
     )+"\n", content_type="text/plain")
 
 def series(request, series_slug):
