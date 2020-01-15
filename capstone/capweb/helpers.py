@@ -2,6 +2,7 @@ import functools
 import json
 import re
 import socket
+import requests
 from collections import namedtuple, OrderedDict
 from contextlib import contextmanager
 from functools import wraps
@@ -16,9 +17,11 @@ from markdown.extensions.toc import TocExtension
 from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
 
-import requests
-import django_hosts
+from rest_framework.negotiation import DefaultContentNegotiation
+from rest_framework import renderers
+from rest_framework.request import Request as RestRequest
 
+import django_hosts
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.core.cache import caches
@@ -287,7 +290,7 @@ def page_image_url(url, targets=[], waits=[], fallback=None, timeout=None):
 
 def is_browser_request(request):
     """
-    Simple approximate check to differentiate between command line and browser requests
+    Differentiate between command line and browser requests
     """
-    return request.headers.get('Cookie') and not request.headers.get('Authorization')
-    
+    drf_renderer = DefaultContentNegotiation().select_renderer(RestRequest(request), [renderers.JSONRenderer, renderers.TemplateHTMLRenderer])
+    return drf_renderer[0] is renderers.TemplateHTMLRenderer
