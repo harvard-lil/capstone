@@ -11,6 +11,7 @@ from io import BytesIO
 from zipfile import ZipFile, ZIP_BZIP2
 from pathlib import Path
 from PIL import Image
+from pyquery import PyQuery
 from celery import shared_task
 from diff_match_patch import diff_match_patch
 from lxml import etree
@@ -210,17 +211,16 @@ def diff_strings(text1, text2):
         Example:
             >>> blocks_text = "1234a5678a1234b5678"
             >>> case_text = "1234c5678c12345678d"
-            >>> diff_strings(blocks_text, case_text)
-            [('equal', 0, 4, 0, 4),
-             ('replace', 4, 5, 4, 5),
-             ('equal', 5, 9, 5, 9),
-             ('replace', 9, 10, 9, 10),
-             ('equal', 10, 14, 10, 14),
-             ('delete', 14, 15, 14, 14),
-             ('equal', 15, 19, 14, 18),
-             ('insert', 19, 19, 18, 19)]
-            >>> diff_strings(blocks_text, case_text) == difflib.SequenceMatcher(None, text1, text2).get_opcodes()
-            True
+            >>> assert diff_strings(blocks_text, case_text) == [
+            ...     ('equal', 0, 4, 0, 4),
+            ...     ('replace', 4, 5, 4, 5),
+            ...     ('equal', 5, 9, 5, 9),
+            ...     ('replace', 9, 10, 9, 10),
+            ...     ('equal', 10, 14, 10, 14),
+            ...     ('delete', 14, 15, 14, 14),
+            ...     ('equal', 15, 19, 14, 18),
+            ...     ('insert', 19, 19, 18, 19)]
+            >>> assert diff_strings(blocks_text, case_text) == difflib.SequenceMatcher(None, blocks_text, case_text).get_opcodes()
     """
     # get diff
     diff = diff_match_patch().diff_main(text1, text2)
@@ -250,8 +250,8 @@ def diff_strings(text1, text2):
 def tokenize_element(parent):
     """
         Tokenize the contents of an lxml Element. Example:
-        >>> tokenize_element(etree.XML("<p>text <footnotemark ref='foo'>1</footnotemark> text</p>"))
-        ['text ', ['footnotemark', {'ref':'foo'}], '1', ['/footnotemark'], ' text']
+        >>> assert list(tokenize_element(etree.XML("<p>text <footnotemark ref='foo'>1</footnotemark> text</p>"))) == [
+        ...     'text ', ['footnotemark', {'ref':'foo'}], '1', ['/footnotemark'], ' text']
     """
     yield parent.text
     for el in parent:
@@ -266,10 +266,8 @@ def insert_tags(block, i, offset, new_tokens):
         Return change in length of block.
         Example:
         >>> block = ['foo', 'bar']
-        >>> insert_tags(block, 1, 2, [['new'], ['stuff']])
-        3
-        >>> blocks
-        ['foo', 'ba', ['new'], ['stuff'], 'r']
+        >>> assert insert_tags(block, 1, 2, [['new'], ['stuff']]) == 3
+        >>> assert block == ['foo', 'ba', ['new'], ['stuff'], 'r']
     """
     text = block[i]
     to_insert = [token for token in [text[:offset]]+new_tokens+[text[offset:]] if token]
@@ -295,17 +293,18 @@ def index_blocks(blocks):
             (b) the offsets mapping from that text back to each string in the blocks
             (c) a lookup of the strings themselves
             (d) a list of all tag marker names in the text
+
         Example:
-            >>> blocks = [[tag_marker_lookup['bracketnum']+'foo'+tag_marker_lookup['/bracketnum'], ['tag'], 'bar'], ['baz']]
-            >>> blocks_text, blocks_offsets, blocks_lookup, block_tag_names = index_blocks(blocks)
-            >>> blocks_text
-            'foobarbaz'
-            >>> blocks_offsets
-            [0, 3, 6]
-            >>> blocks_lookup
-            [[0, ['foo', ['tag'], 'bar'], 0], [3, ['foo', ['tag'], 'bar'], 2], [6, ['baz'], 0]]
-            >>> block_tag_names
-            ['bracketnum', '/bracketnum']
+        >>> blocks = [[tag_marker_lookup['bracketnum']+'foo'+tag_marker_lookup['/bracketnum'], ['tag'], 'bar'], ['baz']]
+        >>> blocks_text, blocks_offsets, blocks_lookup, block_tag_names = index_blocks(blocks)
+        >>> assert blocks_text == '%sfoo%sbarbaz' % (tag_marker, tag_marker)
+        >>> assert blocks_offsets == [0, 5, 8]
+        >>> assert blocks_lookup == [
+        ...     (0, ['%sfoo%s' % (tag_marker, tag_marker), ['tag'], 'bar'], 0),
+        ...     (5, ['%sfoo%s' % (tag_marker, tag_marker), ['tag'], 'bar'], 2),
+        ...     (8, ['baz'], 0)]
+        >>> assert block_tag_names == ['bracketnum', '/bracketnum']
+
         This allows us to start from the combined text and use it to modify the individual strings in the blocks object.
         For example, if we want to modify blocks_text[5] (an 'r'), we can search blocks_offsets to figure out that it is part
         of entry 1 (because it is after 3 and before 6), and then use blocks_lookup[1] to update the original string.
@@ -335,11 +334,10 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
         Given a list of blocks of tokens from ALTO, and a single tokenized paragraph from CaseMETS, add 'edit' tags to
         make the ALTO text match the case text. Then import all tags from the CaseMETS (such as footnotemark) into the
         ALTO. Example:
-            >>> alto_blocks = [[["baz"], "abc-", "def"], ["gh-i", "jkl", ["/baz"]]]
-            >>> case_tokens = [["bar"], "abcd", ["foo"], "efg", ['/foo'], "hijkl", ["/bar"]]
-            >>> sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens)
-            >>> blocks
-            [[['baz'], ['bar'], 'abc', ['edit', {'was': '-'}], ['/edit'], 'd', ['foo'], 'ef'], [['edit', {'was': '-'}], ['/edit'], 'g', ['/foo'], 'hi', 'jkl', ['/bar'], ['/baz']]]
+        >>> alto_blocks = [[["baz"], "abc-", "def"], ["gh-i", "jkl", ["/baz"]]]
+        >>> case_tokens = [["bar"], "abcd", ["foo"], "efg", ['/foo'], "hijkl", ["/bar"]]
+        >>> sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens)
+        >>> assert alto_blocks == [[['baz'], ['edit', {'was': ''}], ['bar'], ['/edit'], 'abc', ['edit', {'was': '-'}], ['/edit'], 'd', ['edit', {'was': ''}], ['foo'], ['/edit'], 'ef'], ['g', ['edit', {'was': ''}], ['/foo'], ['/edit'], 'h', ['edit', {'was': '-'}], ['/edit'], 'i', 'jkl', ['edit', {'was': ''}], ['/bar'], ['/edit'], ['/baz']]]
     """
 
     ## initial indexing ##
@@ -504,15 +502,15 @@ def sync_alto_blocks_with_case_paragraphs(pars, blocks_by_id, case_id_to_alto_id
 def extract_paragraphs(children, case_id_to_alto_ids, blocks_by_id):
     """
         Extract paragraph and footnote structures from a list of CaseMETS paragraphs and footnotes as PyQuery elements.
+
         Example:
-            >>> children = PyQuery("<opinion><author id='1'>text</author><footnote id='footnote_1_1'><p id='2'>footnote text</p></footnote></opinion>").children().items()
-            >>> paragraphs, footnotes, paragraph_els = extract_paragraphs(children, case_id_to_alto_ids, blocks_by_id)
-            >>> paragraphs
-            [{'id': 1, 'class': 'author', 'block_ids':[1]}]
-            >>> footnotes
-            [{'id': 'footnote_1_1', 'paragraphs': [{'id': 2, 'class': 'p', 'block_ids':[2, 3]}]
-            >>> paragraph_els
-            [<PyQuery ...>, <PyQuery ...>]
+        >>> doc = PyQuery("<opinion><author id='1'>text</author><footnote id='footnote_1_1'><p id='2'>footnote text</p></footnote></opinion>")
+        >>> case_id_to_alto_ids = {'1': [1], 'footnote_1_1': [1], '2': [1]}
+        >>> blocks_by_id = {1: {}}
+        >>> paragraphs, footnotes, paragraph_els = extract_paragraphs(doc.children().items(), case_id_to_alto_ids, blocks_by_id)
+        >>> assert paragraphs == [{'id': '1', 'class': 'author', 'block_ids':[1]}]
+        >>> assert footnotes == [{'id': 'footnote_1_1', 'paragraphs': [{'block_ids': [1], 'id': '2', 'class': 'p'}]}]
+        >>> assert paragraph_els == [doc('author'), doc('p')]
     """
     paragraphs = []
     footnotes = []

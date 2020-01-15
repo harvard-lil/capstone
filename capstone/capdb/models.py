@@ -1253,6 +1253,7 @@ class CaseMetadata(models.Model):
 
             >>> from capapi.models import CapUser
             >>> CaseMetadata(id=1).get_recovery_key(CapUser(id=1))
+            '8Bw1MkrSOevTYqRC0y4L6QbwtMY'
         """
         return Signer(salt='recovery_key').sign('%s-%s' % (user.id, self.id)).split(':', 1)[1]
 
@@ -1923,20 +1924,25 @@ class PageStructure(models.Model):
     def encrypt(self, key=settings.REDACTION_KEY):
         """
             Encrypt a page dictionary. Example:
-                >>> page = Page(blocks=[ \
-                    {'format': 'image', 'redacted':True, 'data':'unencrypted'}, \
-                    {'redacted':True, 'tokens': ['text']}, \
-                    {'tokens': ['text', ['redact'], 'text', ['/redact']]}, \
-                    ])
-                >>> page.encrypt(key)
-                >>> page.blocks
-                [
-                    {'format': 'image', 'redacted':True, 'data':['enc', {'i':0}]},
-                    {'redacted':True, 'tokens': [['enc', {'i':1}]]},
-                    {'tokens': ['text', ['redact'], ['enc', {'i':1}], ['/redact']]},
-                ]
-                >>> page.encrypted_strings
-                <encrypted JSON array containing the decrypted strings for each index value>
+            >>> key = b'CGiDpvmQr8NlDnamAhr6Idv8NR+zwpY5i9zEfuWoZSI='
+            >>> page = PageStructure(blocks=[ \
+                {'format': 'image', 'redacted':True, 'data':'unencrypted'}, \
+                {'redacted':True, 'tokens': ['text']}, \
+                {'tokens': ['text', ['redact'], 'text', ['/redact']]}, \
+                ])
+            >>> page.encrypt(key)
+            >>> assert page.blocks == [
+            ...     {'format': 'image', 'redacted':True, 'data':['enc', {'i':1}]},
+            ...     {'redacted':True, 'tokens': [['enc', {'i':0}]]},
+            ...     {'tokens': ['text', ['redact'], ['enc', {'i':0}], ['/redact']]},
+            ... ]
+            >>> assert len(page.encrypted_strings) == 84
+            >>> page.decrypt(key)
+            >>> assert page.blocks == [
+            ...     {'format': 'image', 'data': 'unencrypted', 'redacted': True},
+            ...     {'tokens': ['text'], 'redacted': True},
+            ...     {'tokens': ['text', ['redact'], 'text', ['/redact']]}
+            ... ]
         """
         if self.encrypted_strings:
             raise ValueError("Cannot encrypt page with existing 'encrypted_strings' value.")
@@ -1969,7 +1975,7 @@ class PageStructure(models.Model):
                         redacted_span = False
 
         # update references with correct i values
-        string_vals = list(strings.keys())
+        string_vals = sorted(strings.keys())  # sorted so indexes are stable for testing
         for i, val in enumerate(string_vals):
             strings[val][1]['i'] = i
 
