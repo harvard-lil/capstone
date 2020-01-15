@@ -24,7 +24,7 @@ from django.utils.safestring import mark_safe
 
 
 from capweb.forms import ContactForm
-from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
+from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request
 from capweb.models import GallerySection
 
 from capdb.models import Snippet
@@ -288,12 +288,16 @@ def download_files(request, filepath=""):
     If file requested: download file
     """
 
+    if "manifest.csv" in filepath or "manifest.json" in filepath:
+        return download_manifest_file(request, filepath=filepath)
+
     absolute_path = download_files_storage.path(filepath)
 
     allow_downloads = "restricted" not in absolute_path or request.user.unlimited_access_in_effect()
 
     # file requested
     if download_files_storage.isfile(filepath):
+
         if not allow_downloads:
             context = {
                 "filename": filepath,
@@ -302,6 +306,7 @@ def download_files(request, filepath=""):
                 "title": "403 - Access to this file is restricted",
             }
             return render(request, "file_download_400.html", context, status=403)
+
         import magic
         mime = magic.Magic(mime=True)
         content_type = mime.from_file(absolute_path)
@@ -349,6 +354,12 @@ def download_files(request, filepath=""):
                 "path": "manifest.csv",
                 "is_dir": False,
             })
+            files.append({
+                "name": "manifest.json",
+                "path": "manifest.json",
+                "is_dir": False,
+            })
+
 
         # sort files alphabetically
         files = sorted(files, key=lambda x: x["name"].lower())
@@ -364,7 +375,10 @@ def download_files(request, filepath=""):
         if readme:
             context['readme'] = mark_safe(readme)
 
-        return render(request, "file_download.html", context)
+        if is_browser_request(request):
+            return render(request, "file_download.html", context)
+        else:
+            return HttpResponse(json.dumps(context), content_type='application/json')
 
     # path does not exist
     else:
@@ -372,30 +386,63 @@ def download_files(request, filepath=""):
             "title": "404 - File not found",
             "error": "This file was not found in our system."
         }
-        return render(request, "file_download_400.html", context, status=404)
+        if is_browser_request(request):
+            return render(request, "file_download_400.html", context, status=404)
+        else:
+            return HttpResponse(json.dumps(context), content_type='application/json')
 
 
 def download_manifest_file(request, filepath=""):
-    output = io.StringIO()
-    fieldnames = ["path", "size", "last_modified"]
-    writer = csv.DictWriter(output, fieldnames=fieldnames)
-    writer.writeheader()
+    filename = "manifest"
     absolute_path = download_files_storage.path(filepath)
+    manifest_dir = absolute_path.split('%s.' % filename)[0]
 
-    def write_file_info(abs_filepath):
+    def get_file_info(abs_filepath):
         fp = download_files_storage.relpath(abs_filepath)
         return {
             "path": fp,
             "size": download_files_storage.getsize(fp),
-            "last_modified": str(datetime.utcfromtimestamp(download_files_storage.getmtime(fp)))
+            "last_modified": str(datetime.utcfromtimestamp(download_files_storage.getmtime(fp)))}
+
+    # send back file for downloading
+    output = io.StringIO()
+    fieldnames = ["path", "size", "last_modified"]
+
+    # if csv requested
+    if "%s.csv" % filename in filepath:
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        for root, dirs, files in os.walk(manifest_dir):
+            for name in files:
+                writer.writerow(get_file_info(os.path.join(root, name)))
+            for name in dirs:
+                writer.writerow(get_file_info(os.path.join(root, name)))
+
+        response = HttpResponse(output.getvalue(), content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename='+filepath
+    # if json requested
+    elif "%s.json" % filename in filepath:
+        all_files = []
+        for root, dirs, files in os.walk(manifest_dir):
+            for name in files:
+                all_files.append(get_file_info(os.path.join(root, name)))
+            for name in dirs:
+                all_files.append(get_file_info(os.path.join(root, name)))
+        if is_browser_request(request):
+            json.dump(all_files, output)
+            response = HttpResponse(output.getvalue(), content_type='application/json')
+            response['Content-Disposition'] = 'attachment; filename=' + filepath
+        else:
+            response = HttpResponse(json.dumps(all_files), content_type='application/json')
+    # if another file requested
+    else:
+        context = {
+            "title": "404 - File not found",
+            "error": "This file was not found in our system."
         }
+        if is_browser_request(request):
+            response = render(request, "file_download_400.html", context, status=404)
+        else:
+            response = HttpResponse(json.dumps(context), content_type='application/json')
 
-    for root, dirs, files in os.walk(absolute_path):
-        for name in files:
-            writer.writerow(write_file_info(os.path.join(root, name)))
-        for name in dirs:
-            writer.writerow(write_file_info(os.path.join(root, name)))
-
-    response = HttpResponse(output.getvalue(), content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=manifest.csv'
     return response

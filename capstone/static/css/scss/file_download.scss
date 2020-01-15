@@ -4,11 +4,12 @@
 .top-section.compressed h1 {
   padding-bottom: 0;
 }
-
-li{
-  list-style-type: none;
-  &::before {
-    content: "- ";
+ul.download-files-list {
+  li{
+    list-style-type: none;
+    &::before {
+      content: "- ";
+    }
   }
 }
 
