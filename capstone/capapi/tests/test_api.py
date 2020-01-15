@@ -154,45 +154,6 @@ def test_authenticated_full_case_blacklisted(auth_user, auth_client, non_whiteli
 
 
 @pytest.mark.django_db
-def test_recovery_key(auth_user, auth_client, non_whitelisted_case_document, auth_user_factory):
-    ### blacklisted jurisdiction cases should be counted against the user
-
-    # initial fetch
-    url = api_reverse("cases-detail", args=[non_whitelisted_case_document.id])
-    kwargs = {"full_case": "true"}
-    response = auth_client.get(url, kwargs)
-    check_response(response)
-    result = response.json()
-    assert result['casebody']['status'] == 'ok'
-    recovery_key = result['casebody']['recovery_key']
-
-    # make sure the auth_user's case download number has gone down by 1
-    auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 1
-
-    # fetch again with recovery key -- allowance doesn't go down
-    response = auth_client.get(url, {'recovery_key': recovery_key, **kwargs})
-    result = response.json()
-    assert result['casebody']['status'] == 'ok'
-    auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 1
-
-    # cannot fetch with invalid key
-    response = auth_client.get(url, {'recovery_key': recovery_key+'1', **kwargs})
-    result = response.json()
-    assert result['casebody']['status'] == 'error_invalid_recovery_key'
-    assert result['casebody']['data'] is None
-    auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 1
-
-    # cannot fetch as another user
-    response = auth_client.get(url, {'recovery_key': recovery_key, **kwargs}, as_user=auth_user_factory())
-    result = response.json()
-    assert result['casebody']['status'] == 'error_invalid_recovery_key'
-    assert result['casebody']['data'] is None
-
-
-@pytest.mark.django_db
 def test_unlimited_access(auth_user, auth_client, non_whitelisted_case_document):
     ### user with unlimited access should not have blacklisted cases count against them
     auth_user.total_case_allowance = settings.API_CASE_DAILY_ALLOWANCE

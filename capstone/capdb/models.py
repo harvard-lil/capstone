@@ -7,23 +7,22 @@ from contextlib import contextmanager
 import struct
 import base64
 import nacl
-import nacl.encoding
-import nacl.secret
-from lxml import etree
-from model_utils import FieldTracker
-from pyquery import PyQuery
-from bs4 import BeautifulSoup
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
 import django.contrib.postgres.search as pg_search
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.signing import Signer, BadSignature
 from django.db import models, IntegrityError, transaction
 from django.db.models import Q
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from django.core.files.base import ContentFile
+from lxml import etree
+from model_utils import FieldTracker
+import nacl.encoding
+import nacl.secret
+from pyquery import PyQuery
+from bs4 import BeautifulSoup
 
 from capdb.storages import bulk_export_storage, case_image_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
@@ -1246,34 +1245,6 @@ class CaseMetadata(models.Model):
         # handle deleted images
         if known_hashes:
             CaseImage.objects.filter(case=self, hash__in=known_hashes).delete()
-
-    def get_recovery_key(self, user):
-        """
-            Get a recovery key that can be used to re-fetch this case by this user.
-
-            >>> from capapi.models import CapUser
-            >>> CaseMetadata(id=1).get_recovery_key(CapUser(id=1))
-            '8Bw1MkrSOevTYqRC0y4L6QbwtMY'
-        """
-        return Signer(salt='recovery_key').sign('%s-%s' % (user.id, self.id)).split(':', 1)[1]
-
-    def valid_recovery_key(self, user, key):
-        """
-            Return True if key is a valid recovery key for this user and case.
-
-            >>> from capapi.models import CapUser
-            >>> user = CapUser(id=1)
-            >>> case = CaseMetadata(id=1)
-            >>> key = case.get_recovery_key(user)
-            >>> assert case.valid_recovery_key(user, key)
-            >>> assert not case.valid_recovery_key(user, key+'1')
-            >>> assert not case.valid_recovery_key(CapUser(id=2), key)
-        """
-        try:
-            Signer(salt='recovery_key').unsign('%s-%s:%s' % (user.id, self.id, key))
-            return True
-        except BadSignature:
-            return False
 
 
 class CaseXML(BaseXMLModel):
