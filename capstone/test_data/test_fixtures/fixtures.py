@@ -22,11 +22,9 @@ from capapi.documents import CaseDocument
 import capdb.storages
 
 
-def raise_not_implemented(): raise NotImplementedError("Cannot access redis client outside of test")
-
-
-capdb.storages.redis_client = SimpleLazyObject(raise_not_implemented)
-capdb.storages.redis_ingest_client = SimpleLazyObject(raise_not_implemented)
+# make sure redis isn't accessed outside of tests with redis fixture
+capdb.storages.redis_client = SimpleLazyObject(lambda: None)
+capdb.storages.redis_ingest_client = SimpleLazyObject(lambda: None)
 
 # our packages
 import fabfile

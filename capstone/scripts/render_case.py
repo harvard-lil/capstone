@@ -25,8 +25,7 @@ def filter_tokens(block, tags, redacted=True):
     """
         Filter a list of tokens and yield only text strings and tags included in `tags`. If redacted=True, filter out
         everything between ['redact'] tags. Example:
-        >>> list(filter_tokens(['text', ['foo'], ['bar'], ['redact'], 'text2', ['redact']], {'foo'}))
-        ['text', ['foo']]
+        >>> assert list(filter_tokens({'tokens':  ['text', ['foo'], ['bar'], ['redact'], 'text2', ['redact']]}, {'foo'})) == ['text', ['foo']]
     """
     tokens = block.get('tokens')
     if not tokens:
