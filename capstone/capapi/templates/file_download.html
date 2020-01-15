@@ -27,7 +27,7 @@
   <ul class="list-group download-files-list">
     {% for file in files %}
       <li class="list-item">
-        {% if file.isdir %}
+        {% if file.is_dir %}
           <a href="{% url 'download-files' %}/{{ file.path }}">
             <strong>{{ file.name }}/</strong>
           </a>
