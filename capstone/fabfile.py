@@ -1106,17 +1106,6 @@ def sync_from_initial_metadata(last_run_before=None, force=False):
     )
 
 @task
-def update_volume_number_slugs(update_existing=False):
-    volumes = VolumeMetadata.objects.exclude(volume_number__isnull=True)
-    if not update_existing:
-        volumes = volumes.filter(volume_number_slug=None)
-
-    tasks.run_task_for_volumes(
-        tasks.update_volume_number_slugs,
-        volumes
-    )
-
-@task
 def update_case_frontend_url(update_existing=False):
     """
         Update CaseMetadata.frontend_url value for all cases.
