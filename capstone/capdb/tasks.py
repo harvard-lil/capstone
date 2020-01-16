@@ -6,7 +6,6 @@ from celery.exceptions import Reject
 from django.db import connections
 from django.db.models import Prefetch
 from django.utils import timezone
-from django.utils.text import slugify
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
@@ -116,44 +115,47 @@ def sync_from_initial_metadata_for_vol(self, volume_id, force):
             c.sync_from_initial_metadata(force=force)
 
 
-@shared_task()
-def update_volume_number_slugs(barcode):
-    vol = VolumeMetadata.objects.get(pk=barcode)
-    original_slug = vol.volume_number_slug
-    new_slug = slugify(vol.volume_number)
-    if vol.volume_number_slug != new_slug:
-        vol.volume_number_slug = new_slug
-        vol.save()
-        # if the volume number and volume number slug aren't the same, the cases' frontend_url needs to be updated.
-        # Else, just, just reindex the cases as they are to give ES the new slug value
-        if vol.volume_number != new_slug:
-            # this performs a re-index on the elasticsearch CaseDocuments so there's no need to update the slug manually
-            CaseMetadata.update_frontend_urls([ case.citations.first().cite for case in vol.case_metadatas.all() ])
-            print("Changing {} to {} ({}) required modifying {} cases for {}".format(
-                original_slug, vol.volume_number, vol.volume_number_slug, vol.case_metadatas.count(), barcode))
-        else:
-            print("Updated {} Model and ES with new slug value.".format(barcode))
-            update_elasticsearch_for_vol(vol.barcode)
-
-
-
-@shared_task
-def sync_case_body_cache_for_vol(volume_id, rerender=True):
+@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
     """
         call sync_case_body_cache on cases in given volume
     """
-    volume = VolumeMetadata.objects.get(pk=volume_id)
-    pages = list(volume.page_structures.all())
-    blocks_by_id = PageStructure.blocks_by_id(pages)
-    fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
-    labels_by_block_id = PageStructure.labels_by_block_id(pages)
+    with record_task_status_for_volume(self, volume_id):
+        volume = VolumeMetadata.objects.get(pk=volume_id)
+        pages = list(volume.page_structures.all())
+        blocks_by_id = PageStructure.blocks_by_id(pages)
+        fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
+        labels_by_block_id = PageStructure.labels_by_block_id(pages)
 
-    query = volume.case_metadatas\
-        .select_related('structure', 'body_cache')\
-        .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json')
+        query = volume.case_metadatas\
+            .select_related('structure', 'body_cache')\
+            .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json')
 
-    for case_metadata in query:
-        case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender)
+        for case_metadata in query:
+            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender)
+
+
+@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def sync_xml_image_case_body_cache_for_vol(self, volume_id, rerender=True):
+    """
+        One-off to call sync_case_body_cache on cases in given volume only if they contain images,
+        because images were previously missing from xml.
+    """
+    with record_task_status_for_volume(self, volume_id):
+        volume = VolumeMetadata.objects.get(pk=volume_id)
+        pages = list(volume.page_structures.all())
+        blocks_by_id = PageStructure.blocks_by_id(pages)
+        fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
+        labels_by_block_id = PageStructure.labels_by_block_id(pages)
+
+        query = (volume.case_metadatas
+            .filter(body_cache__html__contains='<img')
+            .select_related('structure', 'body_cache')
+            .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json')
+         )
+
+        for case_metadata in query:
+            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender)
 
 
 def create_case_metadata_from_all_vols(update_existing=False):

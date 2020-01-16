@@ -8,11 +8,9 @@ import gzip
 import json
 from datetime import datetime
 from django.db import connections, utils
-from django.utils.text import slugify
 
 from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction
 from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, get_reporter_count_for_jur
-from capapi.documents import CaseDocument
 
 import fabfile
 
@@ -201,38 +199,5 @@ def test_update_case_frontend_url_bad_cite(case_metadata):
     fabfile.update_case_frontend_url(update_existing=True)
     case_metadata.refresh_from_db()
     assert case_metadata.frontend_url == "/%s/%s/%s/%s/" % (case_metadata.reporter.short_name_slug, case_metadata.volume.volume_number, case_metadata.first_page, citation.case_id)
-
-@pytest.mark.django_db
-def test_update_volume_number_slugs(three_case_documents):
-    casedoc1 = three_case_documents[0]
-    casedoc2 = three_case_documents[1]
-    case1 = CaseMetadata.objects.get(pk=casedoc1.id)
-    case2 = CaseMetadata.objects.get(pk=casedoc2.id)
-
-    casedoc1.frontend_url = None
-    casedoc1.citations.cite = None
-    casedoc1.save()
-    casedoc2.frontend_url = None
-    casedoc2.save()
-
-    case1.volume.volume_number_slug = None
-    case1.volume.save(update_volume_number_slug=False)
-    case2.volume.volume_number = "5 1/2"
-    c2c = case2.citations.first()
-    c2c.cite = case2.full_cite()
-    c2c.save()
-    case2.volume.save(update_volume_number_slug=False)
-
-    fabfile.update_volume_number_slugs(update_existing=True)
-
-    case1.volume.refresh_from_db()
-    case2.volume.refresh_from_db()
-    casedoc1 = CaseDocument.get(id=casedoc1.id)
-    casedoc2 = CaseDocument.get(id=casedoc2.id)
-
-    assert slugify(case1.volume.volume_number) == case1.volume.volume_number_slug == casedoc1.volume.volume_number_slug
-    assert slugify(case2.volume.volume_number) == case2.volume.volume_number_slug == casedoc2.volume.volume_number_slug
-    assert casedoc1.frontend_url
-    assert casedoc2.frontend_url
 
 
