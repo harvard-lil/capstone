@@ -202,7 +202,8 @@ def main(dry_run='true', output_missing='false'):
         expected_cites = [['SCDB', 'SCDB %s' % scdb_cite['caseId'], 'vendor']]
         for scdb_key, cite_type in [["usCite", "official"], ["sctCite", "parallel"], ["ledCite", "parallel"], ["lexisCite", "vendor"]]:
             cite_val = scdb_cite[scdb_key]
-            expected_cites.append([get_cite_reporter(cite_val), cite_val, cite_type])
+            if cite_val:
+                expected_cites.append([get_cite_reporter(cite_val), cite_val, cite_type])
         for reporter, cite_val, cite_type in expected_cites:
             if reporter in existing_cite_objs_by_reporter:
                 new_cite = existing_cite_objs_by_reporter.pop(reporter)
@@ -213,7 +214,7 @@ def main(dry_run='true', output_missing='false'):
                     new_cite.cite = cite_val
                     to_update.append(new_cite)
             else:
-                new_cite = Citation(cite=cite_val, type=cite_type, case_id=case_id)
+                new_cite = Citation(cite=cite_val, type=cite_type, case_id=case_id, normalized_cite=Citation.normalize_cite(cite_val))
                 to_create.append(new_cite)
                 edit_out.writerow([case_id, 'create', new_cite.type, new_cite.cite])
         if existing_cite_objs_by_reporter:
@@ -222,7 +223,7 @@ def main(dry_run='true', output_missing='false'):
     if dry_run == 'false':
         with EditLog(description='Add SCDB cites').record():
             Citation.objects.bulk_create(to_create)
-            Citation.objects.bulk_update(to_update)
+            Citation.objects.bulk_update(to_update, ['cite'])
             if settings.MAINTAIN_ELASTICSEARCH_INDEX:
                 CaseMetadata.reindex_cases(CaseMetadata.objects.filter(id__in=[c.case_id for c in to_create]+[c.case_id for c in to_update]))
 
