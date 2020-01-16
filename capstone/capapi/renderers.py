@@ -45,11 +45,9 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
 
         template = loader.get_template('case.html')
 
-        # TODO: add html renderer to court and others. For now here's a quick fix
-        data['court']['url'] = data['court']['url'].split("format=html")[0]
-
         sorted_cites = sorted(data['citations'], key=lambda c: Citation.citation_type_sort_order[c['type']])
         citations = ", ".join(c['cite'] for c in sorted_cites)
+        non_vendor_citations = ", ".join(c['cite'] for c in sorted_cites if c['type'] != 'vendor')
 
         try:
             cit_year = data["decision_date"][0:4]
@@ -58,7 +56,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             cit_year = data["decision_date"].strftime('%Y')
             dec_date = data["decision_date"].strftime('%b. %-d, %Y')
 
-        citation_full = data["name_abbreviation"] + ", " + citations + " (" + cit_year + ")"
+        citation_full = data["name_abbreviation"] + ", " + non_vendor_citations + " (" + cit_year + ")"
 
         context = {
             **renderer_context,
@@ -78,6 +76,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
                 "court": data["court"],
                 "jurisdiction": data["jurisdiction"]},
             'citation_full': citation_full,
+            'id': data['id'],
         }
 
         # if user requested format=html without requesting full casebody
