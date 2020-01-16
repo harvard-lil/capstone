@@ -32,15 +32,11 @@ footer {
     }
   }
   @include media-breakpoint-down(xs) {
-    nav[aria-label="footer"] {
-      display: none;
-    }
-    .col {
-      @include make-col(12);
+    .col-sm p, .col-sm nav {
       text-align: center;
     }
     .lil-logo {
-      margin: 0 auto;
+      margin: 0 auto 1.5rem;
     }
     .social {
       margin: 2rem auto;
