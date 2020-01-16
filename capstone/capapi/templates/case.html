@@ -2,6 +2,7 @@
 {% load pipeline %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
+{% load api_url %}
 
 {% load capweb_static %}
 
@@ -21,9 +22,14 @@
         </div>
       {% endif %}
       <div class="full_cite">{{ citation_full }}</div>
+      <div class="small">
+        <a href="{% api_url 'cases-detail' id %}">view API</a>
+        {% if request.user.is_staff %}
+          • <a href="{% url 'admin:capdb_casemetadata_change' id %}">Django admin</a>
+        {% endif %}
+      </div>
       <div class="court">
-        <a href="{{ metadata.court.url }}">
-          {{ metadata.court.name }}</a>
+        {{ metadata.court.name }}
       </div>
       <h4 class="case-name">{{ metadata.name }}</h4>
       <div class="citations">
