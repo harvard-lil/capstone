@@ -48,7 +48,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
         # TODO: add html renderer to court and others. For now here's a quick fix
         data['court']['url'] = data['court']['url'].split("format=html")[0]
 
-        sorted_cites = sorted(data['citations'], key=lambda c: Citation.type_sort_order[c['type']])
+        sorted_cites = sorted(data['citations'], key=lambda c: Citation.citation_type_sort_order[c['type']])
         citations = ", ".join(c['cite'] for c in sorted_cites)
 
         try:

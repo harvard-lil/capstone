@@ -1632,10 +1632,11 @@ class CaseXML(BaseXMLModel):
                     raise Exception("Unable to locate previous element %s for element %s" % (previous_id_lookup[el.attr.id], el.attr.id))
                 casebody('[id="%s"]' % previous_id_lookup[el.attr.id]).after(el)
 
-
 class Citation(models.Model):
-    type = models.CharField(max_length=100,
-                            choices=(("official", "official"), ("parallel", "parallel"), ("nominative", "nominative")))
+    citation_types = ("official", "nominative", "parallel", "vendor")  # citation types in sort order
+    citation_type_sort_order = {citation_type: i for i, citation_type in enumerate(citation_types)}
+
+    type = models.CharField(max_length=100, choices=list(zip(citation_types, citation_types)))
     category = models.CharField(max_length=100, blank=True, null=True)  # this field and "type" are reversed from the values in CaseXML -- possibly should be switched back?
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
@@ -1664,15 +1665,9 @@ class Citation(models.Model):
     def page_number(self):
         return self.cite.rsplit(' ', 1)[-1]
 
-    type_sort_order = {
-        "official": 1,
-        "nominative": 2,
-        "parallel": 3,
-    }
-
     @classmethod
     def sorted_by_type(cls, cites):
-        return sorted(cites, key=lambda c: c.type_sort_order[c.type])
+        return sorted(cites, key=lambda c: cls.citation_type_sort_order[c.type])
 
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
