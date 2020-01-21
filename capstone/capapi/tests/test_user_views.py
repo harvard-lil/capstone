@@ -136,7 +136,7 @@ def test_view_user_details(auth_user, auth_client):
     response = auth_client.get(reverse('user-details'))
     check_response(response)
     content = re.sub(r'\s+', ' ', response.content.decode()).strip()
-    assert "Unmetered access:" in content
+    assert "Unmetered access" in content
 
 ### test reset api key ###
 

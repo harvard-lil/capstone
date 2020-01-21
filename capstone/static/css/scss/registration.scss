@@ -2,6 +2,21 @@
 @import "bootstrap/forms";
 @import "footer/black";
 
+.top-section.compressed {
+  @include media-breakpoint-up(md) {
+    border-bottom: 1px solid #E7E7ED;
+  }
+}
+.main-content {
+  padding-top: 2.5rem;
+  @include media-breakpoint-down(md) {
+    padding-top: 1rem !important;
+  }
+}
+
+.h5 {
+  font-weight: $font-weight-bold;
+}
 .content {
   margin: 0 auto;
   @include make-col(9);
@@ -32,20 +47,15 @@ label {
   }
 }
 
+.delete-account-link {
+  color: $color-red !important;
+}
+
 .btn {
   margin-top: 1.5rem;
-}
-
-a.btn-danger {
-  color: $color-white;
-  &:hover, &:focus, &:active {
-    background: $color-red;
-    color: $color-white;
+  &.btn-delete {
+    margin-top: 0;
   }
-}
-
-.btn-delete {
-  margin-top: 0;
 }
 
 .simple-subtitle {
@@ -65,4 +75,9 @@ a.btn-danger {
   height: 15em;
   overflow: scroll;
   border: 1px black solid;
+}
+
+.case-number {
+  font-weight: $font-weight-bold;
+  color: $color-violet-gray-dark;
 }
