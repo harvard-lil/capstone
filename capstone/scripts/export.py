@@ -4,16 +4,17 @@ import tempfile
 import zipfile
 from collections import namedtuple
 from pathlib import Path
-
 from celery import shared_task
+
 from django.core.files import File
 from django.utils import timezone
 
-from capapi.serializers import BulkCaseDocumentSerializer
+from capapi.documents import CaseDocument
+from capapi.serializers import NoLoginCaseDocumentSerializer
 from capdb.models import Jurisdiction, Reporter, CaseExport
 from scripts.helpers import HashingFile
 
-from capapi.documents import CaseDocument
+
 
 def export_all(before_date=None):
     """
@@ -111,7 +112,7 @@ def export_case_documents(cases, dir_name, filter_item, public=False):
         # write each case
         for item in cases.scan():
             for format_name, vars in formats.items():
-                serializer = BulkCaseDocumentSerializer(item, context={'request': vars['fake_request']})
+                serializer = NoLoginCaseDocumentSerializer(item, context={'request': vars['fake_request']})
 
                 vars['compressed_data_file'].write(bytes(json.dumps(serializer.data), 'utf8'))
                 vars['compressed_data_file'].write(b'\n')

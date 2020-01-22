@@ -327,9 +327,3 @@ class NoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
     def data(self):
         """ Skip tracking of download counts. """
         return super(DocumentSerializer, self).data
-
-class BulkCaseDocumentSerializer(NoLoginCaseDocumentSerializer):
-    decision_date = serializers.SerializerMethodField()
-    def get_decision_date(self, obj):
-        return str(obj.decision_date.date())
-
