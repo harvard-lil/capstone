@@ -133,13 +133,13 @@
       <pre class="prettyprint"><b>{{ request.method }}</b> {{ request.get_full_path }}</pre>
     </div>
 
-    <div class="response-info" aria-label="{% trans "response info" %}">
-        <pre class="prettyprint"><span
-                class="meta nocode"><b>HTTP {{ response.status_code }} {{ response.status_text }}</b>
-          {% for key, val in response_headers|items %}
-            <b>{{ key }}:</b><span class="lit">{{ val|break_long_headers|urlize_quoted_links }}</span>{% endfor %}
-
-  </span>{{ content|urlize_url_fields_only }}</pre>
+    <div class="response-info prettyprint" aria-label="{% trans "response info" %}">
+      <b>HTTP {{ response.status_code }} {{ response.status_text }}</b><br>
+      {% for key, val in response_headers|items %}
+        <b>{{ key }}:</b> <span class="lit">{{ val|break_long_headers|urlize_quoted_links }}</span><br>
+      {% endfor %}
+      <br>
+      <pre>{{ content|urlize_url_fields_only }}</pre>
     </div>
   </div>
 
