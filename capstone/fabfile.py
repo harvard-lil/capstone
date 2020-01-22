@@ -1014,7 +1014,7 @@ def make_pdfs(volume_path=None, replace_existing=False):
     from itertools import chain
 
     if volume_path:
-        make_pdf.delay(volume_path)
+        make_pdf.delay(volume_path, replace_existing=replace_existing)
     else:
         print("Adding volumes to celery queue:")
         for barcode, volume_path in tqdm(chain(up_to_date_volumes(captar_storage.iter_files('redacted')), up_to_date_volumes(captar_storage.iter_files('unredacted')))):
