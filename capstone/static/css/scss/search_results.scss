@@ -1,0 +1,55 @@
+@import 'variables';
+
+/* RESULTS */
+// used in various places that show lists of cases
+
+.result {
+  @extend h6;
+  margin-bottom: 3rem;
+  .row {
+    margin-bottom: 5px;
+  }
+  .result-data-label {
+    color: $color-violet-gray;
+    font-weight: $font-weight-semibold;
+  }
+  .result-title {
+    font-size: 1.2em;
+    a {
+      border-bottom: 2px solid $color-blue;
+    }
+    padding-bottom: 5px;
+  }
+  .metadata-row {
+    margin-bottom: 10px;
+  }
+  .result-citation {
+    color: $color-black;
+  }
+  .volume {
+    color: $color-violet-gray;
+  }
+  .decision-date {
+    font-size: 0.7em;
+    @include media-breakpoint-up(md) {
+      text-align: right;
+    }
+  }
+  .result-name {
+    overflow: scroll;
+  }
+  .see-cases {
+    color: $color-violet;
+    border-bottom: 2px solid $color-violet;
+  }
+  .preview, .preview_set_elipsis {
+    color: $color-medium-gray;
+    font-size: $font-size-sm;
+  }
+  .preview:after{
+    content: ' ... ';
+  }
+  .search_highlight {
+    font-weight: bold;
+  }
+}

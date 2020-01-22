@@ -1,0 +1,80 @@
+{% extends "layouts/wide.html" %}
+{% load pipeline %}
+{% block full_content_style %}bg-white{% endblock %}
+{% block base_css %}{% stylesheet 'registration' %}{% endblock %}
+
+{% block title %}User history{% endblock %}
+
+{% block explainer %}
+  {% if user.has_tracked_history %}
+    {% if not user.track_history %}
+      We are not currently tracking your history, but we have some saved entries. You can delete these entries on
+        your account page.
+    {% else %}
+      View the cases you have accessed.
+    {% endif %}
+  {% else %}
+    {% if not user.track_history %}
+      We are not tracking your history. You can enable history tracking on your account page.
+    {% else %}
+      We are tracking your history, but you have not yet loaded any cases.
+    {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block main_content %}
+  {% if results %}
+    <div class="row mb-5">
+      <div class="col-6">
+        <a {% if previous %}href="?{{ previous }}"{% endif %} class="btn btn-sm {% if not previous %}disabled{% endif %}">
+          &laquo; More recent entries
+        </a>
+      </div>
+      <div class="col-6 text-right">
+        <a {% if next %}href="?{{ next }}"{% endif %} class="btn btn-sm {% if not next %}disabled{% endif %}">
+          Earlier entries &raquo;
+        </a>
+      </div>
+    </div>
+
+    <ul class="results-list">
+      {% for result in results %}
+        <li class="result">
+          <div class="h5">{{ result.date}}</div>
+          <div class="result-title row">
+            <div class="col-md-9">
+              <a target="_blank" href="{{ result.case.frontend_url }}" class="simple">
+                {{ result.case.name|truncatewords:30 }}
+              </a>
+            </div>
+{#            <div class="col-md-3 decision-date">{{ result.case.decision_date }}</div>#}
+          </div>
+          <div class="row metadata-row">
+            <span class="result-citation">
+              {% for cite in result.case.citations %}
+                {{ cite.cite }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </span>
+            &nbsp;&middot;&nbsp;
+            <span class="court">{{ result.case.court.name }}</span>
+            &nbsp;&middot;&nbsp;
+            <span class="jurisdiction">{{ result.case.jurisdiction.name_long }}</span>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="row">
+      <div class="col-6">
+        <a {% if previous %}href="?{{ previous }}"{% endif %} class="btn btn-sm {% if not previous %}disabled{% endif %}">
+          &laquo; More recent entries
+        </a>
+      </div>
+      <div class="col-6 text-right">
+        <a {% if next %}href="?{{ next }}"{% endif %} class="btn btn-sm {% if not next %}disabled{% endif %}">
+          Earlier entries &raquo;
+        </a>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

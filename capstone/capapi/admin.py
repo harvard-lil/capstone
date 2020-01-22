@@ -44,6 +44,7 @@ class CapUserAdmin(UserAdmin):
                 'first_name',
                 'last_name',
                 'date_joined',
+                'track_history',
             )
         }),
         ('Permissions', {

@@ -66,6 +66,7 @@ urlpatterns = [
     # override default Django login view to use custom LoginForm
     path('user/', include('django.contrib.auth.urls')),  # logout, password change, password reset
     path('user/details', user_views.user_details, name='user-details'),
+    path('user/history', user_views.user_history, name='user-history'),
     path('user/resend-verification/', user_views.resend_verification, name='resend-verification'),
     path('user/delete-account', user_views.delete_account, name='delete_account'),
     # research access requests

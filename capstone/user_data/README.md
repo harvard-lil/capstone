@@ -1,0 +1,1 @@
+This app tracks user data that can be deleted on demand by the user, and therefore has a separate backup policy.

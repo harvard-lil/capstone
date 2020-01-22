@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django_sql_trace',
     'capweb',
     'cite',
+    'user_data',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
@@ -172,16 +173,25 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     },
+    'user_data': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'cap_user_data',
+        'USER': 'postgres',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '',
+    },
     'tracking_tool': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'test_data/tracking_tool.sqlite'),
-    }
+    },
 }
 
 # make sure tracking_tool and capdb apps use the correct DBs:
 DATABASE_ROUTERS = [
     'tracking_tool.routers.TrackingToolDatabaseRouter',
     'capdb.routers.CapDBRouter',
+    'user_data.routers.UserDataRouter',
 ]
 
 # Password validation

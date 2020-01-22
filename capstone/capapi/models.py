@@ -75,6 +75,8 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
 
     date_joined = models.DateTimeField(auto_now_add=True)
     agreed_to_tos = models.BooleanField(default=False)
+    track_history = models.BooleanField(default=False, help_text="Whether to record cases accessed by this user")
+    has_tracked_history = models.BooleanField(default=False, help_text="Whether this user has history entries")
 
     # this has not been backfilled to be accurate for people who signed up for the mailing list before late dec of 2019
     # you should use the MailChimp campaign for a more accurate list.
