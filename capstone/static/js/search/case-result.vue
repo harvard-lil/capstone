@@ -18,10 +18,10 @@
             class="result-citation">
         {{ citation.cite }}<span v-if="index+1 < result.citations.length">, </span>
       </span>
-      <span class="court" target="_blank"
+      <span class="court"
             v-if="result.court">
       &nbsp;&middot;
-        <a class="simple" :href="result.court.url">
+        <a class="simple" target="_blank" :href="result.court.url">
           {{ result.court.name }}
         </a>
       </span>
