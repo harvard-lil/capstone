@@ -233,21 +233,18 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
                 redaction_count += 1
                 # redact from name
                 case_name = re.sub(redaction, "[ %s ]" % val, case_name)
-
+        elision_span = "<span class='elision-help-text' style='display: none'>hide</span><span class='elided-text' data-elision-reason='%s' role='button' tabindex='0' data-hidden-text='%s' data-elision-id='%s'>...</span>"
         if db_case.no_index_elided:
             elision_count = 0
             for elision, val in db_case.no_index_elided.items():
                 # elide from case body
-                data = re.sub(elision, "<span class='elision-help-text' style='display: ""none'>hide</span>"
-                                       "<span class='elided-text' data-elision-reason='%s' "
-                                       "role='button' tabindex='0'"
-                                       "data-hidden-text='%s' data-elision-id='%s'>"
-                                       "...</span>" %
-                              (val, elision, elision_count), data)
+
+                data = re.sub(elision, elision_span % (val, elision, elision_count), data)
 
                 elision_count += 1
+
                 # elide from name
-                case_name = re.sub(elision, "...", case_name)
+                case_name = re.sub(elision, elision_span % (val, elision, elision_count), case_name)
 
         # Add a custom footer message if redactions or elisions exist but no text is provided
         if not db_case.custom_footer_message and (db_case.no_index_redacted or db_case.no_index_elided):
