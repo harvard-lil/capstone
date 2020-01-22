@@ -6,6 +6,8 @@ from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
 
 from capdb.models import Citation, Jurisdiction
+from user_data.models import UserHistory
+
 
 @pytest.mark.django_db
 def test_flow(client, whitelisted_case_document):
@@ -151,6 +153,58 @@ def test_authenticated_full_case_blacklisted(auth_user, auth_client, non_whiteli
     # make sure the auth_user's case download number has gone down by 1
     auth_user.refresh_from_db()
     assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 1
+
+
+@pytest.mark.django_db
+def test_track_history(auth_user, auth_client, non_whitelisted_case_document, auth_user_factory):
+    # initial fetch
+    url = api_reverse("cases-detail", args=[non_whitelisted_case_document.id])
+    kwargs = {"full_case": "true"}
+    response = auth_client.get(url, kwargs)
+    check_response(response)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
+
+    # make sure the auth_user's case download number has gone down by 1
+    auth_user.refresh_from_db()
+    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 1
+
+    # make sure no history is tracked
+    assert UserHistory.objects.count() == 0
+
+    # fetch with history tracking
+    auth_user.track_history = True
+    auth_user.save()
+    response = auth_client.get(url, kwargs)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
+
+    # make sure the auth_user's case download number has gone down by 1
+    auth_user.refresh_from_db()
+    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 2
+
+    # history object now exists
+    assert [(h.case_id, h.user_id) for h in UserHistory.objects.all()] == [(non_whitelisted_case_document.id, auth_user.id)]
+
+    # fetch again with history tracking
+    auth_user.track_history = True
+    auth_user.save()
+    response = auth_client.get(url, kwargs)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
+
+    # download number has not gone down after second fetch with history tracking
+    auth_user.refresh_from_db()
+    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 2
+
+    # user can still fetch this case even when quota exhausted
+    auth_user.case_allowance_remaining = 0
+    auth_user.save()
+    response = auth_client.get(url, kwargs)
+    result = response.json()
+    assert result['casebody']['status'] == 'ok'
+    auth_user.refresh_from_db()
+    assert auth_user.case_allowance_remaining == 0
 
 
 @pytest.mark.django_db

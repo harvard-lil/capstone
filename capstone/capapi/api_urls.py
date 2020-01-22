@@ -16,6 +16,7 @@ router.register('volumes', api_views.VolumeViewSet)
 router.register('reporters', api_views.ReporterViewSet)
 router.register('bulk', api_views.CaseExportViewSet)
 router.register('ngrams', api_views.NgramViewSet, basename='ngrams')
+router.register('user_history', api_views.UserHistoryViewSet)
 
 schema_view = get_schema_view(
     openapi.Info(

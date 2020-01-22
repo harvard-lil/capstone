@@ -4,14 +4,18 @@ import urllib
 from collections import OrderedDict, defaultdict
 from functools import reduce
 from pathlib import Path
-
-from django.http import HttpResponseRedirect, FileResponse
-from django.template import loader
-
 from rest_framework import viewsets, renderers, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from django_elasticsearch_dsl_drf.constants import LOOKUP_FILTER_RANGE, LOOKUP_QUERY_IN, LOOKUP_QUERY_GT, \
+    LOOKUP_QUERY_GTE, LOOKUP_QUERY_LT, LOOKUP_QUERY_LTE
+from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, IdsFilterBackend, \
+    OrderingFilterBackend, DefaultOrderingFilterBackend, SimpleQueryStringSearchFilterBackend, HighlightBackend
+from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
+
+from django.http import HttpResponseRedirect, FileResponse
+from django.template import loader
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument
@@ -21,22 +25,7 @@ from capapi.middleware import add_cache_header
 from capdb import models
 from capdb.models import Citation
 from capdb.storages import ngram_kv_store_ro
-
-from django_elasticsearch_dsl_drf.constants import (
-    LOOKUP_FILTER_RANGE,
-    LOOKUP_QUERY_IN,
-    LOOKUP_QUERY_GT,
-    LOOKUP_QUERY_GTE,
-    LOOKUP_QUERY_LT,
-    LOOKUP_QUERY_LTE)
-from django_elasticsearch_dsl_drf.filter_backends import (
-    FilteringFilterBackend,
-    IdsFilterBackend,
-    OrderingFilterBackend,
-    DefaultOrderingFilterBackend,
-    SimpleQueryStringSearchFilterBackend,
-    HighlightBackend)
-from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
+from user_data.models import UserHistory
 
 
 class BaseViewSet(viewsets.ReadOnlyModelViewSet):
@@ -601,3 +590,15 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         return Response(paginated)
 
+
+class UserHistoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    http_method_names = ['get']
+    queryset = UserHistory.objects.all()
+    filterset_class = filters.UserHistoryFilter
+    serializer_class = serializers.UserHistorySerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_anonymous:
+            return self.queryset.none()
+        return self.queryset.filter(user_id=user.id)

@@ -28,7 +28,7 @@ def run_task_for_volumes(task, volumes=None, last_run_before=None, synchronous=F
         volumes = VolumeMetadata.objects.all()
     if last_run_before:
         volumes = volumes.exclude(**{
-            "task_statuses__%s__success" % task.name: True,
+            "task_statuses__%s__has_key" % task.name: "success",
             "task_statuses__%s__timestamp__gte" % task.name: last_run_before
         })
     for volume_id in volumes.values_list('pk', flat=True):

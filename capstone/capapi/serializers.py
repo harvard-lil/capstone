@@ -4,20 +4,53 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.reverse import reverse as api_reverse
 from rest_framework.serializers import ListSerializer
+from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
-from capapi.models import SiteLimits
-from capapi.renderers import HTMLRenderer, XMLRenderer
+from .models import SiteLimits
+from .renderers import HTMLRenderer, XMLRenderer
+from .documents import CaseDocument
 from capdb import models
-from capdb.models import CaseBodyCache
 from capweb.helpers import reverse
-from scripts import helpers
-from .permissions import check_update_case_permissions
+from user_data.models import UserHistory
 
 logger = logging.getLogger(__name__)
 
-from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
-from .documents import CaseDocument
+class UserHistoryMixin:
+    """
+        Mixin because we have to apply this to the regular serializer and also the list serializer.
+    """
+    @property
+    def data(self):
+        """
+            After serializing user history data, we have records like {'case_id': 123, 'date': <date>}.
+            Extract all of the 'case_id' fields and use CaseDocument.mget to fetch the case metadata
+            for each case.
+        """
+        result = super().data
+        records = result if hasattr(self, 'many') else [result]
+        if records:
+            cases = CaseDocument.mget([r['case_id'] for r in records])
+            cases_by_id = {c.id: c for c in cases}
+            for r in records:
+                case = cases_by_id.get(r['case_id'])
+                if case:
+                    r['case'] = CaseDocumentSerializer(case).data
+                else:
+                    r['case'] = None
+        return result
+
+
+class UserHistoryListSerializer(UserHistoryMixin, ListSerializer):
+    pass
+
+
+class UserHistorySerializer(UserHistoryMixin, serializers.ModelSerializer):
+    class Meta:
+        model = UserHistory
+        fields = ('date', 'case_id')
+        list_serializer_class = UserHistoryListSerializer
+
 
 class CitationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -149,37 +182,54 @@ class CaseAllowanceMixin:
     @property
     def data(self):
         request = self.context.get('request')
+        user = request.user
 
-        if request.user.is_anonymous:
+        if user.is_anonymous:
             # logged out users won't get any blacklisted case bodies, so nothing to update
             return super().data
 
         # set request.site_limits so it can be checked later in check_update_case_permissions()
         request.site_limits = SiteLimits.get()
 
-        with transaction.atomic():
+        with transaction.atomic(), transaction.atomic(using='user_data'):
             # for logged-in users, fetch the current user data here inside a transaction, using select_for_update
             # to lock the row so we don't collide with any simultaneous requests
-            user = request.user.__class__.objects.select_for_update().get(pk=request.user.pk)
+            refreshed_user = user.__class__.objects.select_for_update().get(pk=user.pk)
 
             # update the info for the existing user model, in case it's changed since the request began
-            if not request.user.unlimited_access_in_effect():
-                request.user.case_allowance_remaining = user.case_allowance_remaining
-                request.user.case_allowance_last_updated = user.case_allowance_last_updated
-                request.user.update_case_allowance(save=False)  # for SiteLimits, make sure we start with up-to-date case_allowance_remaining
-                allowance_before = request.user.case_allowance_remaining
+            if not user.unlimited_access_in_effect():
+                user.case_allowance_remaining = refreshed_user.case_allowance_remaining
+                user.case_allowance_last_updated = refreshed_user.case_allowance_last_updated
+                user.has_tracked_history = refreshed_user.has_tracked_history
+                user.update_case_allowance(save=False)  # for SiteLimits, make sure we start with up-to-date case_allowance_remaining
+                allowance_before = user.case_allowance_remaining
+
+            # pre-fetch IDs of any blacklisted cases in our results that this user has already accessed
+            if user.has_tracked_history:
+                instances = self.instance if hasattr(self, 'many') else [self.instance]  # self.many means this is a list view
+                case_ids = [case.id for case in instances if not case.jurisdiction['whitelisted']]
+                allowed_case_ids = set(UserHistory.objects.filter(case_id__in=case_ids, user_id=user.id).values_list('case_id', flat=True).distinct())
+                self.context['allowed_case_ids'] = allowed_case_ids
 
             result = super().data
+
+            # store history
+            if user.track_history:
+                cases = result if hasattr(self, 'many') else [result]  # self.many means this is a list view
+                to_create = [UserHistory(user_id=user.id, case_id=c['id']) for c in cases if c['casebody']['status'] == 'ok']
+                if to_create:
+                    UserHistory.objects.bulk_create(to_create)
+                    user.has_tracked_history = True
 
             # if user's case allowance was updated, save
             # (this works because it's part of the same transaction with the select_for_update --
             # we don't have to use the same object)
-            if request.user.tracker.changed():
-                request.user.save()
+            if user.tracker.changed():
+                user.save()
 
         # update site-wide limits
-        if not request.user.unlimited_access_in_effect():
-            cases_sent = allowance_before - request.user.case_allowance_remaining
+        if not user.unlimited_access_in_effect():
+            cases_sent = allowance_before - user.case_allowance_remaining
             SiteLimits.add_values(daily_downloads=cases_sent)
 
         return result
@@ -199,44 +249,44 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         list_serializer_class = ListSerializerWithCaseAllowance
 
     def get_casebody(self, case, check_permissions=True):
-        # check permissions for full-text access to this case
-
         request = self.context.get('request')
-        if check_permissions:
-            status = check_update_case_permissions(request, case)
-        else:
-            status = 'ok'
 
+        # check permissions for full-text access to this case
+        if not check_permissions:
+            status = 'ok'
+        elif 'id' not in case.jurisdiction:
+            status = "error_unknown"
+        elif case.jurisdiction['whitelisted']:
+            status = "ok"
+        elif request.user.is_anonymous:
+            status = "error_auth_required"
+        elif request.user.has_tracked_history and case.id in self.context['allowed_case_ids']:
+            print("allowing %s because of track_history" % case.id)
+            status = "ok"
+        elif request.site_limits.daily_downloads >= request.site_limits.daily_download_limit:
+            status = "error_sitewide_limit_exceeded"
+        else:
+            try:
+                request.user.update_case_allowance(case_count=1, save=False)
+                status = "ok"
+            except AttributeError:
+                status = "error_limit_exceeded"
+
+        # render case
+        data = None
         if status == 'ok':
             body_format = request.query_params.get('body_format', None)
-
-            if body_format == 'html':
+            if body_format == 'html' or type(request.accepted_renderer) == HTMLRenderer:
                 data = case.casebody_data['html']
-            elif body_format == 'xml':
+            elif body_format == 'xml' or type(request.accepted_renderer) == XMLRenderer:
                 data = case.casebody_data['xml']
-            elif type(request.accepted_renderer) == HTMLRenderer:
-                data = case.casebody_data['html']
-
-            elif type(request.accepted_renderer) == XMLRenderer:
-                db_case = models.CaseMetadata.objects.select_related('case_xml').get(pk=case.id)
-                try:
-                    data = db_case.body_cache.xml
-                except CaseBodyCache.DoesNotExist:
-                    parsed_xml = db_case.case_xml.get_parsed_xml()
-                    db_case.case_xml.reorder_head_matter(parsed_xml)
-                    data = helpers.serialize_xml(parsed_xml)
             else:
                 try:
                     data = case.casebody_data['text'].to_dict()
                 except AttributeError:
                     data = case.casebody_data['text']
 
-            return {
-                'data': data,
-                'status': status
-            }
-
-        return {'status': status, 'data': None}
+        return {'status': status, 'data': data}
 
 
 class VolumeSerializer(serializers.ModelSerializer):
@@ -318,6 +368,7 @@ class CaseExportSerializer(serializers.ModelSerializer):
     def get_download_url(self, obj):
         return api_reverse('caseexport-download', kwargs={'pk': obj.pk}, request=self.context.get('request'))
 
+
 class NoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
     def get_casebody(self, case):
         """ Tell get_casebody not to check for case download permissions. """
@@ -327,9 +378,3 @@ class NoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
     def data(self):
         """ Skip tracking of download counts. """
         return super(DocumentSerializer, self).data
-
-class BulkCaseDocumentSerializer(NoLoginCaseDocumentSerializer):
-    decision_date = serializers.SerializerMethodField()
-    def get_decision_date(self, obj):
-        return str(obj.decision_date.date())
-

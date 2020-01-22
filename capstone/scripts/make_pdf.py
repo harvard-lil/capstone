@@ -95,12 +95,12 @@ def make_pdf(volume_path, show_words=False, replace_existing=False):
             pages = (page.get_parsed_xml() for page in PageXML.objects.filter(volume__metadata=volume_metadata).defer('orig_xml'))
             # read case metadata to add bookmarks to PDF
             bookmarks = []
-            for i, case in enumerate(volume_metadata.case_metadatas.prefetch_related(Prefetch('citations', queryset=Citation.objects.filter(type='official'))).all()):
-                page = int(case.first_page)
+            for i, case in enumerate(volume_metadata.case_metadatas.prefetch_related(Prefetch('citations')).all()):
+                page = case.structure.pages.order_by('order')[:1].values_list('order', flat=True)[0] - 1
                 if case.duplicative:
                     cite = "Case %s" % (i+1)
                 else:
-                    cite = case.citations.all()[0].cite
+                    cite = ", ".join(c.cite for c in Citation.sorted_by_type(case.citations.all()))
                 bookmarks.append((page, cite))
         else:
             parsed = parse(volume_storage, paths['volume'][0])

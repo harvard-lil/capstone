@@ -1,15 +1,17 @@
 from functools import lru_cache
+import rest_framework_filters as filters
 
 from django.utils.functional import SimpleLazyObject
 
-import rest_framework_filters as filters
-
 from capdb import models
+from user_data.models import UserHistory
 
 
 ### HELPERS ###
 
 # lazy load and cache choices so we don't get an error if this file is imported when database tables don't exist yet
+
+
 def lazy_choices(queryset, id_attr, label_attr):
     @lru_cache(None)
     def get_choices():
@@ -137,3 +139,10 @@ class NgramFilter(filters.FilterSet):
         fields = ['q', 'jurisdiction', 'year']
 
 
+class UserHistoryFilter(filters.FilterSet):
+    case_id = filters.NumberFilter()
+    date = filters.DateTimeFromToRangeFilter()
+
+    class Meta:
+        model = UserHistory
+        fields = ['case_id', 'date']

@@ -34,7 +34,7 @@ nav[aria-label="main"] ~ .container {
     padding: 3px 7px;
     cursor: pointer;
     border: 2px solid $color-violet;
-     > a {
+    > a {
       border-bottom: 0;
       color: $color-white;
       font-weight: $font-weight-semibold;
@@ -46,7 +46,9 @@ nav[aria-label="main"] ~ .container {
         color: $color-violet;
       }
     }
-
+    &.disabled {
+      display: none;
+    }
   }
 
   .prettyprint {
@@ -91,7 +93,11 @@ nav[aria-label="main"] ~ .container {
       clear: both;
     }
   }
+}
 
+.request-info, .response-info {
+  font-family: $font-family-monospace;
+  font-size: 1rem;
 }
 
 // hide "Get" button -- button itself doesn't do anything, and dropdown is broken from including bootstrap 4 instead of 3

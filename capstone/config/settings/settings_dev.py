@@ -22,6 +22,8 @@ if os.environ.get('DOCKERIZED'):
     DATABASES['default']['HOST'] = 'db'
     DATABASES['capdb']['PASSWORD'] = 'password'
     DATABASES['capdb']['HOST'] = 'db'
+    DATABASES['user_data']['PASSWORD'] = 'password'
+    DATABASES['user_data']['HOST'] = 'db'
     REDIS_HOST = 'redis'
 
     # this will only be used if CELERY_TASK_ALWAYS_EAGER = False

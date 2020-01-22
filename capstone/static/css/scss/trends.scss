@@ -4,6 +4,7 @@
 @import "bootstrap/utilities/align";
 @import "base.scss";
 @import 'footer/yellow';
+@import "search_results";
 
 .basic-page {
   .main-content {
@@ -227,43 +228,5 @@ form {
   h2 {
     font-size: 2em;
     margin-bottom: 1em;
-  }
-}
-
-// copied from search.scss
-.result {
-  @extend h6;
-  margin-bottom: 1.5rem;
-  .row {
-    margin-bottom: 5px;
-  }
-  .result-data-label {
-    color: $color-violet-gray;
-    font-weight: $font-weight-semibold;
-  }
-  .result-title {
-    font-size: 1.2em;
-    a {
-      border-bottom: 2px solid $color-blue;
-    }
-  }
-  .result-citation {
-    color: $color-black;
-  }
-  .volume {
-    color: $color-violet-gray;
-  }
-  .decision-date {
-    font-size: 0.7em;
-    @include media-breakpoint-up(md) {
-      text-align: right;
-    }
-  }
-  .result-name {
-    overflow: scroll;
-  }
-  .see-cases {
-    color: $color-violet;
-    border-bottom: 2px solid $color-violet;
   }
 }

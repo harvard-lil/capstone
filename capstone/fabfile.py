@@ -229,6 +229,7 @@ def migrate():
 
     management.call_command('migrate', database="default")
     management.call_command('migrate', database="capdb")
+    management.call_command('migrate', database="user_data")
     if settings.USE_TEST_TRACKING_TOOL_DB:
         management.call_command('migrate', database="tracking_tool")
 
@@ -1014,7 +1015,7 @@ def make_pdfs(volume_path=None, replace_existing=False):
     from itertools import chain
 
     if volume_path:
-        make_pdf.delay(volume_path)
+        make_pdf.delay(volume_path, replace_existing=replace_existing)
     else:
         print("Adding volumes to celery queue:")
         for barcode, volume_path in tqdm(chain(up_to_date_volumes(captar_storage.iter_files('redacted')), up_to_date_volumes(captar_storage.iter_files('unredacted')))):

@@ -1,6 +1,7 @@
 @import "base.scss";
 @import "bootstrap/forms";
 @import "footer/black";
+@import "search_results";
 
 .top-section.compressed {
   @include media-breakpoint-up(md) {
@@ -44,6 +45,16 @@ label {
   }
   .row {
     margin-bottom: 1.2rem;
+  }
+}
+
+.history-form {
+  label {
+    font-family: inherit;
+  }
+  &, label, input, button {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
   }
 }
 

@@ -1,4 +1,8 @@
 from collections import OrderedDict
+from datetime import datetime
+
+from mailchimp3 import MailChimp
+from mailchimp3.mailchimpclient import MailChimpError
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -10,17 +14,15 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.template import loader
 from django.utils import timezone
 
-from mailchimp3 import MailChimp
-
 from capapi import resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContractForm, \
-    HarvardContractForm, UnaffiliatedResearchRequestForm, ResearchRequestForm
+    HarvardContractForm, UnaffiliatedResearchRequestForm, ResearchRequestForm, UserSettingsForm
 from capapi.models import SiteLimits, CapUser, ResearchContract
 from capapi.resources import form_for_request
+from capapi.views.api_views import UserHistoryViewSet
 from capdb.models import CaseExport
 from capweb.helpers import reverse, send_contact_email, user_has_harvard_email
-
-from mailchimp3.mailchimpclient import MailChimpError
+from user_data.models import UserHistory
 
 
 def register_user(request):
@@ -127,14 +129,39 @@ def resend_verification(request):
 @login_required
 def user_details(request):
     """ Show user details """
+    user_form = form_for_request(request, UserSettingsForm, instance=request.user)
+
+    # handle updating or deleting user history settings
+    if request.method == 'POST':
+        if request.POST.get('delete') == 'true':
+            UserHistory.objects.filter(user_id=request.user.id).delete()
+            request.user.has_tracked_history = False
+            request.user.save()
+        elif user_form.is_valid():
+            user_form.save()
+
     request.user.update_case_allowance()
     context = {
         'page_name': 'user-details',
         'research_contract': request.user.research_contracts.first(),
         'research_request': request.user.research_requests.first(),
         'NEW_RESEARCHER_FEATURE': settings.NEW_RESEARCHER_FEATURE,
+        'user_form': user_form,
     }
     return render(request, 'registration/user-details.html', context)
+
+
+@login_required
+def user_history(request):
+    """ Show user history. """
+    data = UserHistoryViewSet.as_view({'get': 'list'})(request).data
+    for result in data['results']:
+        result['date'] = datetime.strptime(result['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    return render(request, 'registration/user-history.html', {
+        'next': data['next'].split('?')[1] if data['next'] else None,
+        'previous': data['previous'].split('?')[1] if data['previous'] else None,
+        'results': data['results'],
+    })
 
 
 @login_required
