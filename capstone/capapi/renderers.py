@@ -57,6 +57,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             dec_date = data["decision_date"].strftime('%b. %-d, %Y')
 
         citation_full = data["name_abbreviation"] + ", " + non_vendor_citations + " (" + cit_year + ")"
+        name_with_html_markup = data["name_with_html_markup"] if "name_with_html_markup" in data.keys() else data["name"]
 
         context = {
             **renderer_context,
@@ -65,7 +66,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             'frontend_url': data['frontend_url'],
             'metadata': {
                 "name": data["name"],
-                "name_with_html_markup": data["name_with_html_markup"],
+                "name_with_html_markup": name_with_html_markup,
                 "name_abbreviation": data["name_abbreviation"],
                 "decision_date": dec_date,
                 "docket_number": data["docket_number"],
