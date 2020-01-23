@@ -222,7 +222,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         # insert redactions and elisions
         serialized_data = serialized.data
         data = serialized_data['casebody']['data']
-        case_name = serialized_data['name']
+        case_name_with_markup = serialized_data['name']
 
         if db_case.no_index_redacted:
             redaction_count = 0
@@ -231,20 +231,32 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
                 data = re.sub(redaction, "<span class='redacted-text' data-redaction-id='%s'>%s</span>" %
                               (redaction_count, val), data)
                 redaction_count += 1
+
                 # redact from name
-                case_name = re.sub(redaction, "[ %s ]" % val, case_name)
+                case_name_with_markup = re.sub(redaction, "[ %s ]" % val, case_name_with_markup)
+                serialized_data['name_abbreviation'] = re.sub(redaction, "[ %s ]" % val, serialized_data['name_abbreviation'])
+            # Also save as name for indexing
+            serialized_data['name'] = case_name_with_markup
+
+
         elision_span = "<span class='elision-help-text' style='display: none'>hide</span><span class='elided-text' data-elision-reason='%s' role='button' tabindex='0' data-hidden-text='%s' data-elision-id='%s'>...</span>"
         if db_case.no_index_elided:
             elision_count = 0
             for elision, val in db_case.no_index_elided.items():
-                # elide from case body
 
+                # elide from case body
                 data = re.sub(elision, elision_span % (val, elision, elision_count), data)
 
                 elision_count += 1
 
-                # elide from name
-                case_name = re.sub(elision, elision_span % (val, elision, elision_count), case_name)
+                # elide from name with html markup
+                case_name_with_markup = re.sub(elision, elision_span % (val, elision, elision_count), case_name_with_markup)
+
+                # add elisions without html markup to case name and name_abbreviation for indexing
+                serialized_data['name'] = re.sub(elision, "...", serialized_data['name'])
+                serialized_data['name_abbreviation'] = re.sub(elision, "...", serialized_data['name_abbreviation'])
+
+        serialized_data['name_with_html_markup'] = case_name_with_markup
 
         # Add a custom footer message if redactions or elisions exist but no text is provided
         if not db_case.custom_footer_message and (db_case.no_index_redacted or db_case.no_index_elided):
@@ -258,7 +270,6 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
             data += "<hr/><footer class='custom-case-footer'>%s</footer>" % custom_footer_message
 
         serialized_data['casebody']['data'] = data
-        serialized_data['name'] = case_name
 
         rendered = HTMLRenderer().render(serialized_data, renderer_context=context)
         return HttpResponse(rendered)
