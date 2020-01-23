@@ -180,6 +180,12 @@
               info: "Terms stemmed and combined using AND. Words in quotes searched as phrases."
             },
             {
+              name: "ordering",
+              value: "relevance",
+              label: "Result Sorting",
+              choices: 'sort',
+            },
+            {
               name: "name_abbreviation",
               label: "Case Name Abbreviation",
               value: "",
