@@ -122,9 +122,3 @@ class HarvardContractForm(forms.ModelForm):
     class Meta:
         model = HarvardContract
         fields = ["name", "title", "area_of_interest"]
-
-
-class UserSettingsForm(forms.ModelForm):
-    class Meta:
-        model = CapUser
-        fields = ["track_history"]
