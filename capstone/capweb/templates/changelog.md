@@ -9,6 +9,12 @@ top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
+# January 9, 2020
+
+**API**
+
+* Cases Endpoint and Search
+    * Default sort for full-text search is now relevance, rather than decision date.
 
 # January 9, 2020
 
