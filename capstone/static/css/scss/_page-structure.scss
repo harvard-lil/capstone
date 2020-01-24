@@ -169,6 +169,10 @@
 
 }
 
+.top-section > .section-intro {
+  width: 100%;
+}
+
 .top-section > .section-intro > .content {
   z-index: 1;
   @include make-col-offset(1);

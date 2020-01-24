@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>info-24px</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Pages" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="User-Account-Copy" transform="translate(-777.000000, -440.000000)" fill="#0075FF" fill-rule="nonzero">
+            <g id="info-24px" transform="translate(777.000000, 440.000000)">
+                <path d="M10,0 C4.48,0 0,4.48 0,10 C0,15.52 4.48,20 10,20 C15.52,20 20,15.52 20,10 C20,4.48 15.52,0 10,0 Z M11,15 L9,15 L9,9 L11,9 L11,15 Z M11,7 L9,7 L9,5 L11,5 L11,7 Z" id="Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>

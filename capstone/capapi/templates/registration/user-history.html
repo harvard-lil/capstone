@@ -1,104 +1,120 @@
-{% extends "layouts/wide.html" %}
-{% load pipeline %}
-{% block full_content_style %}bg-white{% endblock %}
-{% block base_css %}{% stylesheet 'registration' %}{% endblock %}
+{% extends "registration/base.html" %}
+{% load static %}
 
 {% block title %}User history{% endblock %}
 
 {% block explainer %}
-  View the cases you have accessed.
+View the cases you have accessed.
 {% endblock %}
 
 {% block main_content %}
-  <p class="mb-0">
-    {% if user.track_history %}
+<div class="mb-0">
+    <div class="col-7 alert-primary p-2 pb-1">
+      {% if user.track_history %}
       We are currently tracking which cases you access.
-    {% else %}
+      {% else %}
       We are not currently tracking which cases you access.
-    {% endif %}
-    <button class="btn btn-link p-0 m-0" type="button" data-toggle="collapse" data-target="#track-history-info" aria-expanded="false" aria-controls="track-history-info">
-      What does this mean?
-    </button>
-  </p>
-  <div class="collapse" id="track-history-info">
-    <div class="card card-body">
-      <ul class="bullets">
-        <li>
-          Tracking the cases you access allows us to enable optional features for your account, such as the
-          ability to provide the same case repeatedly without counting it separately against your daily quota.
-        </li>
-        <li>We only track the cases you access if you specifically tell us to do so.</li>
-        <li>We only use the list of cases you access to enable optional features.</li>
-        <li>
-          We will not review or disclose the list of cases you access unless compelled by law, or to investigate
-          violations of our terms of use.
-        </li>
-        <li>You can permanently delete your history from our servers at any time.</li>
-      </ul>
+      {% endif %}
+        <button type="button" aria-expanded="false" data-target="#track-history-info"
+               data-toggle="collapse" class="float-left secret-button d-md-inline"
+               tabindex="0"
+               aria-hidden="true">
+          <img class="mb-2"
+               alt="Information on tracking history"
+               src='{% static "img/info-24px.svg" %}'/> </button>
     </div>
-  </div>
-  <form class="history-form" method="POST">
+    <br/>
+</div>
+
+<div class="collapse" id="track-history-info">
+    <div class="card card-body">
+        <ul class="bullets">
+            <li>
+                Tracking the cases you access allows us to enable optional features for your account, such as the
+                ability to provide the same case repeatedly without counting it separately against your daily quota.
+            </li>
+            <li>We only track the cases you access if you specifically tell us to do so.</li>
+            <li>We only use the list of cases you access to enable optional features.</li>
+            <li>
+                We will not review or disclose the list of cases you access unless compelled by law, or to investigate
+                violations of our terms of use.
+            </li>
+            <li>You can permanently delete your history from our servers at any time.</li>
+        </ul>
+    </div>
+</div>
+<form class="history-form" method="POST">
     {% csrf_token %}
     <button type="submit" name="toggle_tracking" value="true" class="btn btn-secondary m-0">
-      {% if user.track_history %}
+        {% if user.track_history %}
         Pause tracking
-      {% elif user.has_tracked_history %}
+        {% elif user.has_tracked_history %}
         Resume tracking
-      {% else %}
+        {% else %}
         Start tracking
-      {% endif %}
+        {% endif %}
     </button>
-    <button type="button" class="btn btn-outline-danger m-0" data-toggle="modal" data-target="#delete-modal" {% if not user.has_tracked_history %}disabled{% endif %}>
-      Delete history
+    <button type="button" class="btn btn-outline-danger m-0" data-toggle="modal" data-target="#delete-modal"
+            {% if not user.has_tracked_history %}disabled{% endif %}>
+        Delete history
     </button>
-    <div class="modal" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="delete-modal-label" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="delete-modal-label">Delete history</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            Really delete your history?
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-danger" name="delete" value="true">Delete</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </form>
-
-  {% if results %}
-    <div class="row mb-5">
-      <div class="col-6">
-        <a {% if previous %}href="?{{ previous }}"{% endif %} class="btn btn-sm {% if not previous %}disabled{% endif %}">
-          &laquo; Newer entries
-        </a>
-      </div>
-      <div class="col-6 text-right">
-        <a {% if next %}href="?{{ next }}"{% endif %} class="btn btn-sm {% if not next %}disabled{% endif %}">
-          Older entries &raquo;
-        </a>
-      </div>
-    </div>
-
-    <ul class="results-list">
-      {% for result in results %}
-        <li class="result">
-          <div class="h5">{{ result.date}}</div>
-          <div class="result-title row">
-            <div class="col-md-9">
-              <a target="_blank" href="{{ result.case.frontend_url }}" class="simple">
-                {{ result.case.name|truncatewords:30 }}
-              </a>
+    <div class="modal" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="delete-modal-label"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="delete-modal-label">Delete history</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Really delete your history?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" name="delete" value="true">Delete</button>
+                </div>
             </div>
-{#            <div class="col-md-3 decision-date">{{ result.case.decision_date }}</div>#}
-          </div>
-          <div class="row metadata-row">
+        </div>
+    </div>
+</form>
+
+{% if results %}
+<div class="row mb-5">
+    {% if previous %}
+    <div class="col-6">
+        <a {% if previous %}href="?{{ previous }}" {% endif %} class="btn btn-sm p-0">
+            &laquo; Newer entries
+        </a>
+    </div>
+    {% endif %}
+    {% if next %}
+    <div class="col-6 text-right">
+        <a {% if next %}href="?{{ next }}" {% endif %} class="btn btn-sm p-0 ">
+            Older entries &raquo;
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<ul class="results-list">
+    {% for result in results %}
+    <li class="result">
+        <!--          <div class="h5"></div>-->
+        <div class="result-title row">
+            <div class="col-md-12 decision-date text-left">
+                Last accessed {{ result.date}}
+            </div>
+            <div class="col-md-12">
+                <a target="_blank" href="{{ result.case.frontend_url }}" class="simple">
+                    {{ result.case.name|truncatewords:30 }}
+                </a>
+            </div>
+
+            <!--<div class="col-md-3 decision-date">{{ result.case.decision_date }}</div>-->
+        </div>
+        <div class="row metadata-row">
             <span class="result-citation">
               {% for cite in result.case.citations %}
                 {{ cite.cite }}{% if not forloop.last %}, {% endif %}
@@ -108,24 +124,28 @@
             <span class="court">{{ result.case.court.name }}</span>
             &nbsp;&middot;&nbsp;
             <span class="jurisdiction">{{ result.case.jurisdiction.name_long }}</span>
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
 
-    <div class="row">
-      <div class="col-6">
-        <a {% if previous %}href="?{{ previous }}"{% endif %} class="btn btn-sm {% if not previous %}disabled{% endif %}">
-          &laquo; Newer entries
+<div class="row">
+    {% if previous %}
+    <div class="col-6">
+        <a {% if previous %}href="?{{ previous }}" {% endif %} class="btn btn-sm">
+            &laquo; Newer entries
         </a>
-      </div>
-      <div class="col-6 text-right">
-        <a {% if next %}href="?{{ next }}"{% endif %} class="btn btn-sm {% if not next %}disabled{% endif %}">
-          Older entries &raquo;
-        </a>
-      </div>
     </div>
-  {% else %}
-    <p>No history entries</p>
-  {% endif %}
+    {% endif %}
+    {% if next %}
+    <div class="col-6 text-right">
+        <a {% if next %}href="?{{ next }}" {% endif %} class="btn btn-sm">
+            Older entries &raquo;
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<p>No history entries</p>
+{% endif %}
 {% endblock %}

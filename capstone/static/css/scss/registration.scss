@@ -3,13 +3,19 @@
 @import "footer/black";
 @import "search_results";
 
+#sidebar-menu {
+  display: none;
+}
+
 .top-section.compressed {
   @include media-breakpoint-up(md) {
     border-bottom: 1px solid #E7E7ED;
   }
 }
+
 .main-content {
   padding-top: 2.5rem;
+  margin: 0 auto;
   @include media-breakpoint-down(md) {
     padding-top: 1rem !important;
   }
@@ -18,12 +24,14 @@
 .h5 {
   font-weight: $font-weight-bold;
 }
+
 .content {
   margin: 0 auto;
   @include make-col(9);
   @include media-breakpoint-down(md) {
     @include make-col(12);
   }
+
   a:hover, a:focus, a:active {
     color: $color-blue;
   }
@@ -43,6 +51,7 @@ label {
     color: $color-violet;
     margin-bottom: 1rem;
   }
+
   .row {
     margin-bottom: 1.2rem;
   }
@@ -52,6 +61,7 @@ label {
   label {
     font-family: inherit;
   }
+
   &, label, input, button {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
@@ -64,6 +74,7 @@ label {
 
 .btn {
   margin-top: 1.5rem;
+
   &.btn-delete {
     margin-top: 0;
   }
@@ -91,4 +102,18 @@ label {
 .case-number {
   font-weight: $font-weight-bold;
   color: $color-violet-gray-dark;
+}
+
+// search history page
+.results-list {
+  .result-title {
+    line-height: 1.6em;
+  }
+}
+
+.secret-button {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
 }
