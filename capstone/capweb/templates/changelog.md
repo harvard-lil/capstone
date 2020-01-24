@@ -13,8 +13,11 @@ extra_head: {% stylesheet 'docs' %}
 
 **API**
 
-* Cases Endpoint and Search
+* Cases Endpoint
     * Default sort for full-text search is now relevance, rather than decision date.
+* Search
+    * Default sort for full-text search is now relevance, rather than decision date.
+    * Added Sorting field to case endpoint searches. You can now sort by decision date, and relevance.
 
 # January 9, 2020
 
