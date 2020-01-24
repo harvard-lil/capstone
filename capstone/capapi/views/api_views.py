@@ -326,7 +326,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'id': 'id',
     }
     # Specify default ordering
-    ordering = ('_score', 'decision_date', 'id')
+    ordering = ('relevance', 'decision_date', 'id')
 
     highlight_fields = {
         'casebody_data.text.head_matter': {
