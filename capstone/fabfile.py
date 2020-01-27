@@ -1191,21 +1191,30 @@ def retrieve_and_store_images(last_run_before=None):
 
 
 @task
-def update_reporter_years():
-    """ Update Reporter.start_year and Reporter.end_year to match actual dates of cases. """
+def update_reporter_years(reporter_id=None):
+    """
+        Update Reporter.start_year and Reporter.end_year to match actual dates of cases.
+        If reporter_id is supplied, only update that reporter.
+    """
     cursor = django.db.connections['capdb'].cursor()
     cursor.execute("""
         update capdb_reporter r
         set start_year = new_start_year, end_year = new_end_year
-        from (
-                 select reporter_id,
+        from capdb_reporter r2
+        left join (
+                 select c.reporter_id,
                         min(date_part('year', decision_date)) as new_start_year,
                         max(date_part('year', decision_date)) as new_end_year
-                 from capdb_casemetadata
-                 group by reporter_id
-             ) as cases
-        where cases.reporter_id = r.id;
-    """)
+                 from capdb_casemetadata c, capdb_volumemetadata v
+                 where v.barcode=c.volume_id and c.in_scope is true and v.out_of_scope is false
+                 %s
+                 group by c.reporter_id
+             ) as cases on cases.reporter_id = r2.id
+        where r2.id=r.id %s;
+    """ % (
+        ("and c.reporter_id=%s" % reporter_id) if reporter_id else '',
+        ("and r.id=%s" % reporter_id) if reporter_id else '',
+    ))
 
 
 @task
