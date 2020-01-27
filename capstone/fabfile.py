@@ -800,11 +800,6 @@ def list_missing_captar_volumes():
         else:
             print("- all volumes finished")
 
-@task
-def create_case_text_for_all_cases(update_existing=False):
-    update_existing = True if update_existing else False
-    tasks.create_case_text_for_all_cases(update_existing=update_existing)
-
 
 @task
 def ngram_jurisdictions(slug=None):

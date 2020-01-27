@@ -223,7 +223,6 @@ def ngrammed_cases(mock_ngram_storage, three_cases, jurisdiction):
     ]
     for case, (jur, text, year) in zip(three_cases, case_settings):
         case.jurisdiction = jur
-        case.jurisdiction_slug = jur.slug  # something about the test env is stopping the trigger from setting this
         case.decision_date = case.decision_date.replace(year=year)
         case.save()
         CaseBodyCache(metadata=case, text=text).save()

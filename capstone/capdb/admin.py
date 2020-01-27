@@ -88,13 +88,6 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
                        'docket_number', 'decision_date', 'decision_date_original', 'name_abbreviation',
                        'name', 'case_id', 'last_page', 'first_page', 'duplicative'),
         }),
-        ('Denormalized fields', {
-            'description': "Copies of data from related models.",
-            'classes': ('collapse',),
-            'fields': (
-                'jurisdiction_name', 'jurisdiction_whitelisted', 'jurisdiction_slug', 'jurisdiction_name_long',
-                'court_slug', 'court_name_abbreviation', 'court_name')
-        }),
     )
     raw_id_fields = ['duplicate_of', 'replaced_by', 'reporter', 'volume', 'court', 'jurisdiction']
     # mark all fields as readonly

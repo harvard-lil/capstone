@@ -137,52 +137,6 @@ def test_create_or_update_metadata(ingest_case_xml):
         assert case.metadata.opinions[0]['author'] == new_author
 
 @pytest.mark.django_db
-def test_denormalized_fields(case):
-    jurisdiction = case.jurisdiction
-    jurisdiction.whitelisted = True
-    jurisdiction.save()
-
-    # if source is set to none, destination fields should be nulled out
-    case.jurisdiction = None
-    case.save()
-    case.refresh_from_db()
-    assert case.jurisdiction_name is None
-    assert case.jurisdiction_whitelisted is None
-
-    # if source foreign key is changed, destination fields should be updated
-    case.jurisdiction = jurisdiction
-    case.save()
-    case.refresh_from_db()
-    assert case.jurisdiction_name == jurisdiction.name
-    assert case.jurisdiction_whitelisted == jurisdiction.whitelisted
-
-    # if source fields are changed, destination fields should be updated
-    jurisdiction.whitelisted = False
-    jurisdiction.name = 'foo'
-    jurisdiction.save()
-    case.refresh_from_db()
-    assert case.jurisdiction_name == jurisdiction.name
-    assert case.jurisdiction_whitelisted == jurisdiction.whitelisted
-    
-    court = case.court
-    case.court = None
-    case.save()
-    case.refresh_from_db()
-    assert case.court_name is None
-    assert case.court_name_abbreviation is None
-
-    # if source foreign key is changed, destination fields should be updated
-    case.court = court
-    case.save()
-    case.refresh_from_db()
-    assert case.court_name == court.name
-    assert case.court_slug == court.slug
-    court.name = 'foo'
-    court.save()
-    case.refresh_from_db()
-    assert case.court_name == court.name
-
-@pytest.mark.django_db
 def test_withdraw_case(case_factory):
     withdrawn = case_factory()
     replaced_by = case_factory()
@@ -223,20 +177,6 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
 
     assert case1.frontend_url == "/test/123/456/"
     assert case2.frontend_url == "/test/124/456/"
-
-### Case Full Text Search ###
-@pytest.mark.django_db
-def test_fts_create_index(ingest_case_xml):
-    case_text = ingest_case_xml.metadata.case_text
-
-    assert '4rgum3nt' not in case_text.tsv
-    # change a word in the case XML
-    ingest_case_xml.orig_xml = ingest_case_xml.orig_xml.replace('argument', '4rgum3nt')
-    ingest_case_xml.save()
-
-    # make sure the change was saved in the case_xml
-    case_text.refresh_from_db()
-    assert '4rgum3nt' in case_text.tsv
 
 ### CaseXML ###
 
@@ -280,7 +220,7 @@ def test_checksums_update_casebody_modify_word(ingest_case_xml, django_assert_nu
     updated_text = parsed_case_xml('casebody|p[id="b17-6"]').text().replace('argument', '4rgUm3nt')
     parsed_case_xml('casebody|p[id="b17-6"]').text(updated_text)
     ingest_case_xml.orig_xml = serialize_xml(parsed_case_xml)
-    with django_assert_num_queries(select=6, update=5):
+    with django_assert_num_queries(select=5, update=4):
         ingest_case_xml.save()
 
     # make sure the change was saved in the case_xml
