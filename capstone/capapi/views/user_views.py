@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from copy import copy
 from datetime import datetime
 
 from mailchimp3 import MailChimp
@@ -16,7 +17,7 @@ from django.utils import timezone
 
 from capapi import resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContractForm, \
-    HarvardContractForm, UnaffiliatedResearchRequestForm, ResearchRequestForm, UserSettingsForm
+    HarvardContractForm, UnaffiliatedResearchRequestForm, ResearchRequestForm
 from capapi.models import SiteLimits, CapUser, ResearchContract
 from capapi.resources import form_for_request
 from capapi.views.api_views import UserHistoryViewSet
@@ -129,24 +130,12 @@ def resend_verification(request):
 @login_required
 def user_details(request):
     """ Show user details """
-    user_form = form_for_request(request, UserSettingsForm, instance=request.user)
-
-    # handle updating or deleting user history settings
-    if request.method == 'POST':
-        if request.POST.get('delete') == 'true':
-            UserHistory.objects.filter(user_id=request.user.id).delete()
-            request.user.has_tracked_history = False
-            request.user.save()
-        elif user_form.is_valid():
-            user_form.save()
-
     request.user.update_case_allowance()
     context = {
         'page_name': 'user-details',
         'research_contract': request.user.research_contracts.first(),
         'research_request': request.user.research_requests.first(),
         'NEW_RESEARCHER_FEATURE': settings.NEW_RESEARCHER_FEATURE,
-        'user_form': user_form,
     }
     return render(request, 'registration/user-details.html', context)
 
@@ -154,9 +143,26 @@ def user_details(request):
 @login_required
 def user_history(request):
     """ Show user history. """
-    data = UserHistoryViewSet.as_view({'get': 'list'})(request).data
+    # handle updating or deleting user history settings
+    if request.method == 'POST':
+        user = request.user
+        if request.POST.get('delete') == 'true':
+            UserHistory.objects.filter(user_id=user.id).delete()
+            user.has_tracked_history = False
+            user.save()
+        elif request.POST.get('toggle_tracking') == 'true':
+            user.track_history = not user.track_history
+            user.save()
+
+    # get history data from API
+    api_request = copy(request)
+    api_request.method = 'GET'
+    data = UserHistoryViewSet.as_view({'get': 'list'})(api_request).data
+
+    # parse dates
     for result in data['results']:
         result['date'] = datetime.strptime(result['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
+
     return render(request, 'registration/user-history.html', {
         'next': data['next'].split('?')[1] if data['next'] else None,
         'previous': data['previous'].split('?')[1] if data['previous'] else None,
