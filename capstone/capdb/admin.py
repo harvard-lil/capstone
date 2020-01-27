@@ -167,9 +167,10 @@ class EditLogAdmin(admin.ModelAdmin):
         return CapUser.objects.get(id=obj.user_id)
 
 
-# models with no admin class yet
-
-admin.site.register(VolumeMetadata)
-# admin.site.register(ProcessStep)
-# admin.site.register(BookRequest)
-# admin.site.register(TrackingToolUser)
+@admin.register(VolumeMetadata)
+class VolumeMetadataAdmin(admin.ModelAdmin):
+    raw_id_fields = ['duplicate_of', 'reporter', 'nominative_reporter', 'request']
+    list_display = ['pk', 'volume_number', 'reporter', 'out_of_scope', 'duplicate']
+    list_select_related = ['reporter']
+    ordering = ['reporter__full_name', 'volume_number']
+    search_fields = ['reporter__short_name', 'reporter__full_name']
