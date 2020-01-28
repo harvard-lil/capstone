@@ -242,6 +242,15 @@ class CAPFTSFilter(SimpleQueryStringSearchFilterBackend):
 
     search_param = 'search'
 
+class CAPOrderingFilterBackend(OrderingFilterBackend):
+    @classmethod
+    def transform_ordering_params(cls, ordering_params, ordering_fields):
+        # changes relevance to -relevance (and vice versa) to avoid the rather unintuitive reverse-relevance sort
+        # when sort=relevance
+        return super(OrderingFilterBackend, cls).transform_ordering_params(
+            ['relevance' if sort == '-relevance' else '-relevance' if sort == 'relevance' else sort for sort in ordering_params],
+            ordering_fields)
+
 class CaseDocumentViewSet(BaseDocumentViewSet):
 
     """The CaseDocument view."""
@@ -266,7 +275,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         CAPFTSFilter, # Facilitates FTS
         CAPFiltering, # Facilitates Filtering (Filters)
         IdsFilterBackend, # Filtering based on IDs
-        OrderingFilterBackend, # Orders Document
+        CAPOrderingFilterBackend, # Orders Document
         HighlightBackend, # for search preview
         DefaultOrderingFilterBackend # Must be last
     ]
@@ -325,8 +334,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'name_abbreviation': 'name_abbreviation.raw',
         'id': 'id',
     }
-    # Specify default ordering
-    ordering = ('relevance', 'decision_date', 'id')
+    # Specify default ordering. Relevance is a synonym for score, so we reverse it. It's reversed in the user-specified
+    # ordering backend.
+    ordering = ('-relevance', 'decision_date', 'id')
 
     highlight_fields = {
         'casebody_data.text.head_matter': {
