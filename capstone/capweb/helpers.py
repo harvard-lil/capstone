@@ -101,7 +101,8 @@ def show_toolbar_callback(request):
         Whether to show django-debug-toolbar.
         This adds an optout for urls with ?no_toolbar
     """
-    return False if 'no_toolbar' in request.GET else bool(settings.DEBUG)
+    from debug_toolbar.middleware import show_toolbar
+    return False if 'no_toolbar' in request.GET else show_toolbar(request)
 
 
 class StatementTimeout(Exception):
@@ -266,7 +267,7 @@ def natural_sort_key(text):
             >>> sorted(["9 Foo", "10 Foo", "9A Foo"], key=natural_sort_key)
             ['9 Foo', '9A Foo', '10 Foo']
     """
-    return [int(part) if part.isdigit() else part for word in text.split() for part in re.split('(\d+)', word) if part is not '']
+    return [int(part) if part.isdigit() else part for word in text.split() for part in re.split('(\d+)', word)]
 
 def page_image_url(url, targets=[], waits=[], fallback=None, timeout=None):
     """
