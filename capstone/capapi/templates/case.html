@@ -31,7 +31,9 @@
       <div class="court">
         {{ metadata.court.name }}
       </div>
-      <h4 class="case-name">{{ metadata.name }}</h4>
+      <h4 class="case-name">
+        {{ metadata.name_with_html_markup|safe }}
+      </h4>
       <div class="citations">
         {{ metadata.citations }}
       </div>

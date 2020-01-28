@@ -101,8 +101,7 @@ def show_toolbar_callback(request):
         Whether to show django-debug-toolbar.
         This adds an optout for urls with ?no_toolbar
     """
-    from debug_toolbar.middleware import show_toolbar
-    return False if 'no_toolbar' in request.GET else show_toolbar(request)
+    return False if 'no_toolbar' in request.GET else bool(settings.DEBUG)
 
 
 class StatementTimeout(Exception):

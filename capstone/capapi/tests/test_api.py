@@ -493,7 +493,7 @@ def test_ngrams_api(client, ngrammed_cases):
             'total': [{'year': '2000', 'count': [2, 9], 'doc_count': [2, 3]}]}}
 
     # check result counts when filtering by jurisdiction
-    json = client.get(api_reverse('ngrams-list'), {'q': 'one two', 'jurisdiction': ngrammed_cases[1].jurisdiction_slug}).json()
+    json = client.get(api_reverse('ngrams-list'), {'q': 'one two', 'jurisdiction': ngrammed_cases[1].jurisdiction.slug}).json()
     assert json['results'] == {
         'one two': {
             'jur1': [{'year': '2000', 'count': [1, 6], 'doc_count': [1, 2]}]}}

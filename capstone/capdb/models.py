@@ -10,7 +10,6 @@ import nacl
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
-import django.contrib.postgres.search as pg_search
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.db.models import Q
@@ -867,48 +866,6 @@ class CaseMetadata(models.Model):
 
     custom_footer_message = models.TextField(blank=True, null=True, help_text="If not provided, custom footer will be filled with default text if elisions or redactions exist")
 
-    # denormalized fields -
-    # these should not be set directly, but are automatically copied from self.jurisdiction by database triggers
-    denormalized_fields = {
-        'jurisdiction_slug': 'jurisdiction__slug',
-        'jurisdiction_name': 'jurisdiction__name',
-        'jurisdiction_name_long': 'jurisdiction__name_long',
-        'jurisdiction_whitelisted': 'jurisdiction__whitelisted',
-        'court_name': 'court__name',
-        'court_name_abbreviation': 'court__name_abbreviation',
-        'court_slug': 'court__slug',
-    }
-
-    jurisdiction_name = models.CharField(blank=True, null=True, max_length=100)
-    jurisdiction_name_long = models.CharField(blank=True, null=True, max_length=100)
-    jurisdiction_slug = models.CharField(blank=True, null=True, max_length=255)
-    jurisdiction_whitelisted = models.NullBooleanField(blank=True, null=True)
-
-    court_name = models.CharField(blank=True, null=True, max_length=255)
-    court_name_abbreviation = models.CharField(blank=True, null=True, max_length=100)
-    court_slug = models.CharField(blank=True, null=True, max_length=255)
-
-    @property
-    def denormalized_jurisdiction(self):
-        """
-            Equivalent to self.jurisdiction, but populated based on denormalized fields.
-        """
-        return Jurisdiction(
-            id=self.jurisdiction_id,
-            slug=self.jurisdiction_slug,
-            name=self.jurisdiction_name,
-            name_long=self.jurisdiction_name_long,
-            whitelisted=self.jurisdiction_whitelisted)
-
-    @property
-    def denormalized_court(self):
-        return Court(
-            id=self.court_id,
-            slug=self.court_slug,
-            name=self.court_name,
-            name_abbreviation=self.court_name_abbreviation,
-        )
-
     objects = CaseMetadataQuerySet.as_manager()
     history = TemporalHistoricalRecords()
 
@@ -917,11 +874,6 @@ class CaseMetadata(models.Model):
 
     class Meta:
         indexes = [
-            # partial indexes to allow fetching in_scope cases, with optional filter by reporter/jurisdiction/court
-            models.Index(name='idx_in_scope', fields=('decision_date', 'id'), condition=Q(in_scope=True)),
-            models.Index(name='idx_in_scope_reporter', fields=('reporter', 'decision_date', 'id'), condition=Q(in_scope=True)),
-            models.Index(name='idx_in_scope_jurisdiction', fields=('jurisdiction_slug', 'decision_date', 'id'), condition=Q(in_scope=True)),
-            models.Index(name='idx_in_scope_court', fields=('court_slug', 'decision_date', 'id'), condition=Q(in_scope=True)),
             # partial index for robots_txt_until cases
             models.Index(name='idx_robots_txt_until', fields=('robots_txt_until',), condition=~Q(robots_txt_until=None)),
         ]
@@ -1018,23 +970,6 @@ class CaseMetadata(models.Model):
     def update_search_index(self):
         from capapi.documents import CaseDocument  # local to avoid circular import
         CaseDocument().update(self)
-
-    def create_or_update_case_text(self, new_text=None):
-        """ Create or update the related case_text object for this case_metadata. """
-        if hasattr(self, 'case_text'):
-            case_text = self.case_text
-        else:
-            case_text = CaseText(metadata=self)
-
-        if new_text is None:
-            try:
-                new_text = self.structure.extract_text()
-            except CaseStructure.DoesNotExist:
-                new_text = self.case_xml.extract_casebody().text()
-
-        if new_text != case_text.text:
-            case_text.text = new_text
-            case_text.save()
 
     def get_hydrated_structure(self):
         """
@@ -1492,11 +1427,6 @@ class CaseXML(BaseXMLModel):
 
         case_metadata.save()
 
-        ### handle case_text
-
-        if not duplicative_case:
-            case_metadata.create_or_update_case_text(new_text=parsed("casebody|casebody").text())
-
         ### Handle citations
 
         # fetch any existing cites from the database
@@ -1733,15 +1663,6 @@ class SlowQuery(models.Model):
 
     def __str__(self):
         return self.label or self.query
-
-
-class CaseText(models.Model):
-    """
-    Plain-text rendition of a case for full-text search. Function-based Gin index is created by manual migrations.
-    """
-    text = models.TextField(blank=True, null=True)
-    metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_text', on_delete=models.SET_NULL)
-    tsv = pg_search.SearchVectorField(blank=True,null=True)
 
 
 class CaseExportQuerySet(models.QuerySet):
