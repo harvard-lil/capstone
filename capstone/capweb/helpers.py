@@ -267,7 +267,7 @@ def natural_sort_key(text):
             >>> sorted(["9 Foo", "10 Foo", "9A Foo"], key=natural_sort_key)
             ['9 Foo', '9A Foo', '10 Foo']
     """
-    return [int(part) if part.isdigit() else part for word in text.split() for part in re.split('(\d+)', word)]
+    return [int(part) if part.isdigit() else part for word in text.split() for part in re.split('(\d+)', word) if part is not '']
 
 def page_image_url(url, targets=[], waits=[], fallback=None, timeout=None):
     """

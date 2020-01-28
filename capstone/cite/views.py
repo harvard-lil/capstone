@@ -15,6 +15,7 @@ from django.utils.http import is_safe_url
 from django.utils.text import slugify
 from rest_framework.request import Request
 from elasticsearch.exceptions import NotFoundError
+from natsort import natsorted
 
 from capapi import serializers
 from capapi.documents import CaseDocument
@@ -23,8 +24,6 @@ from capapi.renderers import HTMLRenderer
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 from capweb import helpers
 
-### helpers ###
-from capweb.helpers import natural_sort_key
 
 def safe_redirect(request):
     """ Redirect to request.GET['next'] if it exists and is safe, or else to '/' """
@@ -92,7 +91,7 @@ def series(request, series_slug):
         .order_by('full_name'))
     if not reporters:
         raise Http404
-    reporters = [(reporter, sorted(reporter.volumes.all(), key=lambda volume: natural_sort_key(volume.volume_number))) for reporter in reporters]
+    reporters = [(reporter, natsorted(reporter.volumes.all(), key=lambda volume: volume.volume_number)) for reporter in reporters]
     return render(request, 'cite/series.html', {
         "reporters": reporters,
     })
@@ -126,7 +125,7 @@ def volume(request, series_slug, volume_number_slug):
     if not vols:
         raise Http404
 
-    volumes = [(volume, [ case for case in sorted(cases, key=lambda case: natural_sort_key(case.first_page or '')) if case.volume.barcode == volume.barcode]) for volume in vols ]
+    volumes = [(volume, [ case for case in natsorted(cases, key=lambda case: case.first_page) if case.volume.barcode == volume.barcode]) for volume in vols ]
 
     return render(request, 'cite/volume.html', {
         "volumes": volumes,
