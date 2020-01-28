@@ -33,8 +33,7 @@ from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdic
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
-    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars, \
-    update_snippets
+    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, update_snippets
 from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace, volume_barcode_from_folder, \
     up_to_date_volumes, storage_lookup
 
@@ -801,15 +800,6 @@ def list_missing_captar_volumes():
         else:
             print("- all volumes finished")
 
-@task
-def create_case_text_for_all_cases(update_existing=False):
-    update_existing = True if update_existing else False
-    tasks.create_case_text_for_all_cases(update_existing=update_existing)
-
-@task
-def count_chars_in_all_cases(path="/tmp/counts"):
-    count_chars.count_chars_in_all_cases(path)
-
 
 @task
 def ngram_jurisdictions(slug=None):
@@ -869,42 +859,6 @@ def run_edit_script(script=None, dry_run='true', **kwargs):
         print("Script not found. Attempted to import %s" % import_path)
     else:
         method(dry_run=dry_run, **kwargs)
-
-
-@task
-def report_multiple_jurisdictions(out_path="court_jurisdictions.csv"):
-    """
-        Write a CSV report of courts with multiple jurisdictions.
-    """
-    from capweb.helpers import select_raw_sql
-
-    # select distinct cm.court_id from capdb_casemetadata cm, capdb_court c where cm.court_id=c.id and c.jurisdiction_id != cm.jurisdiction_id;
-    court_ids = {
-    8770, 8775, 8797, 8802, 8805, 8815, 8818, 8823, 8826, 8829, 8832, 8840, 8847, 8847, 8864, 8894, 8910, 8910, 8933,
-    8944, 8954, 8962, 8973, 8977, 8978, 8978, 8981, 8991, 8991, 8992, 9000, 9004, 9009, 9016, 9018, 9020, 9021, 9022,
-    9026, 9027, 9029, 9034, 9039, 9041, 9044, 9045, 9048, 9049, 9051, 9056, 9058, 9059, 9062, 9063, 9065, 9066, 9068,
-    9071, 9074, 9076, 9081, 9081, 9083, 9085, 9086, 9089, 9092, 9094, 9099, 9103, 9104, 9104, 9107, 9112, 9114, 9130,
-    9131, 9132, 9138, 9138, 9141, 9148, 9149, 9153, 9158, 9181, 9198, 9200, 9204, 9212, 9223, 9223, 9225, 9229, 9252,
-    9266, 9270, 9274, 9297, 9302, 9310, 9311, 9318, 9328, 9341, 9353, 9358, 9385, 9386, 9388, 9389, 9395, 9424, 9426,
-    9429, 9434, 9434, 9444, 9444, 9447, 9455, 9465, 9480, 9485, 9494, 9509, 9509, 9511, 9511, 9511, 9513, 9524, 9534,
-    9540, 9549, 9551, 9554, 9620, 9708, 9725, 9805, 9846, 9874, 9892, 9906, 9907, 9929, 9948, 9976, 9999, 10006, 10076,
-    10101, 10108, 10111, 10117, 10152, 10152, 10179, 10312, 10363, 10451, 10497, 10597, 10888, 11154, 11211, 11274,
-    11277, 11613, 11696, 11757, 11860, 11887, 11933, 11933, 11942, 11944, 11969, 11976, 11985, 11987, 11987, 12083,
-    12104, 12136, 12997, 13048, 13076, 13083, 13093, 13097, 13100, 13104, 13132, 13148, 13205, 13326, 13390, 13393,
-    13428, 13438, 13543, 13543, 13565, 13570, 13797, 14005, 14156, 14236, 14272, 14337, 14473, 14476, 14477, 14490,
-    14607, 14978, 14986, 15006, 15006, 15007, 15016, 15201, 15300, 15344, 15741, 15767, 16436, 16657, 16681, 16686,
-    17013, 17111, 17229, 17308, 17319, 17329, 17329, 17627, 18775, 18961, 18968, 20164}
-    with open(out_path, 'w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile)
-        for court_id in tqdm(court_ids):
-            rows = select_raw_sql("select count(m), jurisdiction_slug, court_name, court_slug "
-                                  "from capdb_casemetadata m where court_id=%s "
-                                  "group by jurisdiction_slug, court_name, court_slug",
-                                  [court_id], using='capdb')
-            csv_writer.writerow([rows[0].court_name])
-            for row in rows:
-                url = "https://api.case.law/v1/cases/?court=%s&jurisdiction=%s" % (row.court_slug, row.jurisdiction_slug)
-                csv_writer.writerow([row.jurisdiction_slug, row.count, url])
 
 @task
 def update_all_snippets():

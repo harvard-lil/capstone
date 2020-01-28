@@ -1,18 +1,16 @@
 from datetime import datetime
 from time import sleep
-
 from celery import shared_task
 from celery.exceptions import Reject
-from django.db import connections
-from django.db.models import Prefetch
-from django.utils import timezone
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
 
-from capapi.documents import CaseDocument
-from scripts.helpers import ordered_query_iterator
+from django.db import connections
+from django.db.models import Prefetch
+from django.utils import timezone
 
+from capapi.documents import CaseDocument
 from capdb.models import *
 
 
@@ -313,31 +311,6 @@ def get_court_count_for_jur(jurisdiction_id):
     }
 
     return results
-
-
-def create_case_text_for_all_cases(update_existing=False):
-    """
-        Call create_case_text for each volume
-    """
-    run_task_for_volumes(create_case_text, update_existing=update_existing)
-
-
-@shared_task
-def create_case_text(volume_id, update_existing=False):
-    """
-        Create or update cases for each volume
-    """
-    cases = CaseMetadata.objects \
-        .in_scope() \
-        .order_by('id') \
-        .filter(volume_id=volume_id) \
-        .select_related('case_xml', 'case_text')
-
-    if not update_existing:
-        cases = cases.filter(case_text=None)
-
-    for case in ordered_query_iterator(cases):
-        case.create_or_update_case_text()
 
 
 def retrieve_images_from_all_cases(update_existing=False):

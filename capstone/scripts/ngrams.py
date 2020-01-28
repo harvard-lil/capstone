@@ -91,7 +91,7 @@ def ngram_jurisdictions(slug=None, max_n=3):
             continue
 
         # get year range
-        case_query = CaseMetadata.objects.in_scope().filter(jurisdiction_slug=jurisdiction.slug)
+        case_query = CaseMetadata.objects.in_scope().filter(jurisdiction__slug=jurisdiction.slug)
         first_year = case_query.order_by('decision_date', 'id').first().decision_date.year
         last_year = case_query.order_by('-decision_date', '-id').first().decision_date.year
 
@@ -136,7 +136,7 @@ def ngram_worker(ngram_worker_offsets, ngram_worker_lock, queue, jurisdiction_id
     counters = {n: {'total_tokens':0, 'total_documents':0, 'instances': Counter(), 'documents': Counter()} for n in range(1, max_n + 1)}
     queryset = CaseBodyCache.objects.filter(
         metadata__duplicative=False, metadata__jurisdiction__isnull=False, metadata__court__isnull=False,
-        metadata__decision_date__year=year, metadata__jurisdiction_slug=jurisdiction_slug
+        metadata__decision_date__year=year, metadata__jurisdiction__slug=jurisdiction_slug
     ).only('text').order_by('id')
     for case_text in tqdm(ordered_query_iterator(queryset), desc="Ngram %s" % desc, position=pos, mininterval=.5):
         tokens = list(tokenize(case_text.text))
