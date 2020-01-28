@@ -9,6 +9,7 @@ top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
+<!-- UNRELEASED
 # January 24, 2020
 
 **API**
@@ -18,6 +19,20 @@ extra_head: {% stylesheet 'docs' %}
 * Search
     * Default sort for full-text search is now relevance, rather than decision date.
     * Added Sorting field to case endpoint searches. You can now sort by decision date, and relevance.
+-->
+
+# January 16, 2020
+
+**Data:**
+
+* 99% of US Supreme Court cases have been matched to [SCDB](http://scdb.wustl.edu/), and now have SCDB citations like 
+  "SCDB 1970-131" as well as parallel citations drawn from SCDB. Add a new "vendor" category of citations, used for
+  citations to other vendors' databases.
+* Include `<img>` tags in case XML output, identical to existing `<img>` tags in HTML output.
+
+**Website:**
+
+* Case HTML pages now include a link to the case in the API.
 
 # January 9, 2020
 
