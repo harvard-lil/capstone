@@ -320,12 +320,13 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
     # Define ordering fields
     ordering_fields = {
+        'relevance': '_score',
         'decision_date': 'decision_date',
         'name_abbreviation': 'name_abbreviation.raw',
         'id': 'id',
     }
     # Specify default ordering
-    ordering = ('decision_date', 'id')
+    ordering = ('relevance', 'decision_date', 'id')
 
     highlight_fields = {
         'casebody_data.text.head_matter': {
