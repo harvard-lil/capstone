@@ -364,6 +364,17 @@ def test_body_format_default(auth_client, non_whitelisted_case_document):
     assert opinion["text"]
 
 @pytest.mark.django_db
+def test_body_format_unrecognized(auth_client, non_whitelisted_case_document):
+    data = get_casebody_data_with_format(auth_client, non_whitelisted_case_document.id, "uh_oh_not_a_real_format")
+    assert type(data["judges"]) is list
+    assert type(data["attorneys"]) is list
+    assert type(data["parties"]) is list
+    opinion = data["opinions"][0]
+    assert set(opinion.keys()) == {'type', 'author', 'text'}
+    assert opinion["text"]
+
+
+@pytest.mark.django_db
 def test_body_format_xml(auth_client, non_whitelisted_case_document):
     data = get_casebody_data_with_format(auth_client, non_whitelisted_case_document.id, "xml")
     assert "<?xml version=" in data
