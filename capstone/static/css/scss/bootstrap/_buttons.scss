@@ -135,3 +135,9 @@ input[type="button"] {
     width: 100%;
   }
 }
+
+// danger buttons
+.btn-outline-danger {
+  border: 2px solid $color-red;
+  color: $color-red;
+}
