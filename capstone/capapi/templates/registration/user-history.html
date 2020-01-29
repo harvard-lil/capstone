@@ -84,14 +84,14 @@ View the cases you have accessed.
 <div class="row mb-5">
     {% if previous %}
     <div class="col-6">
-        <a {% if previous %}href="?{{ previous }}" {% endif %} class="btn btn-sm p-0">
+        <a href="?{{ previous }}" class="btn btn-sm p-0">
             &laquo; Newer entries
         </a>
     </div>
     {% endif %}
     {% if next %}
     <div class="col-6 text-right">
-        <a {% if next %}href="?{{ next }}" {% endif %} class="btn btn-sm p-0 ">
+        <a href="?{{ next }}" class="btn btn-sm p-0 ">
             Older entries &raquo;
         </a>
     </div>
@@ -101,7 +101,6 @@ View the cases you have accessed.
 <ul class="results-list">
     {% for result in results %}
     <li class="result">
-        <!--          <div class="h5"></div>-->
         <div class="result-title row">
             <div class="col-md-12 decision-date text-left">
                 Last accessed {{ result.date}}
@@ -111,8 +110,6 @@ View the cases you have accessed.
                     {{ result.case.name|truncatewords:30 }}
                 </a>
             </div>
-
-            <!--<div class="col-md-3 decision-date">{{ result.case.decision_date }}</div>-->
         </div>
         <div class="row metadata-row">
             <span class="result-citation">
@@ -132,14 +129,14 @@ View the cases you have accessed.
 <div class="row">
     {% if previous %}
     <div class="col-6">
-        <a {% if previous %}href="?{{ previous }}" {% endif %} class="btn btn-sm">
+        <a href="?{{ previous }}" class="btn btn-sm">
             &laquo; Newer entries
         </a>
     </div>
     {% endif %}
     {% if next %}
     <div class="col-6 text-right">
-        <a {% if next %}href="?{{ next }}" {% endif %} class="btn btn-sm">
+        <a href="?{{ next }}" class="btn btn-sm">
             Older entries &raquo;
         </a>
     </div>
