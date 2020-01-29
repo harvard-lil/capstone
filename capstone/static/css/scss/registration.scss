@@ -111,6 +111,13 @@ label {
   }
 }
 
+.entries.col-6 {
+  margin-left: -10px;
+}
+.entries.col-6.text-right {
+  margin-left: 10px;
+}
+
 .secret-button {
   margin: 0;
   padding: 0;

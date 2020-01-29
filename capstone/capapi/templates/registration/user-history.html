@@ -9,14 +9,14 @@ View the cases you have accessed.
 
 {% block main_content %}
 <div class="mb-0">
-    <div class="col-7 alert-primary p-2 pb-1">
+    <div class="col-xl-7 col-lg-11 col-sm-9 col-xs-11 alert-primary p-2 pb-1">
       {% if user.track_history %}
       We are currently tracking which cases you access.
       {% else %}
       We are not currently tracking which cases you access.
       {% endif %}
         <button type="button" aria-expanded="false" data-target="#track-history-info"
-               data-toggle="collapse" class="float-left secret-button d-md-inline"
+               data-toggle="collapse" class="secret-button d-md-inline"
                tabindex="0"
                aria-hidden="true">
           <img class="mb-2"
@@ -83,14 +83,14 @@ View the cases you have accessed.
 {% if results %}
 <div class="row mb-5">
     {% if previous %}
-    <div class="col-6">
+    <div class="entries col-6">
         <a href="?{{ previous }}" class="btn btn-sm p-0">
             &laquo; Newer entries
         </a>
     </div>
     {% endif %}
     {% if next %}
-    <div class="col-6 text-right">
+    <div class="entries col-12 text-right">
         <a href="?{{ next }}" class="btn btn-sm p-0 ">
             Older entries &raquo;
         </a>
@@ -128,14 +128,14 @@ View the cases you have accessed.
 
 <div class="row">
     {% if previous %}
-    <div class="col-6">
+    <div class="entries col-6">
         <a href="?{{ previous }}" class="btn btn-sm">
             &laquo; Newer entries
         </a>
     </div>
     {% endif %}
     {% if next %}
-    <div class="col-6 text-right">
+    <div class="entries col-12 text-right">
         <a href="?{{ next }}" class="btn btn-sm">
             Older entries &raquo;
         </a>
