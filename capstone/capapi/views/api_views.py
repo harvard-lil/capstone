@@ -380,12 +380,18 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
     def filter_queryset(self, queryset):
         queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
-        # exclude all values from casebody_data that we don't need to complete the request
 
+        # exclude all values from casebody_data that we don't need to complete the request
         if self.is_full_case_request():
-            data_formats = ["xml", "html", "text"]
-            requested_format = self.request.query_params.get('body_format', 'text')
-            source_filter = {"excludes": ["casebody_data.%s" % format for format in data_formats if format != requested_format]}
+            data_formats_to_exlude = ["text",  "html", "xml"]
+
+            try:
+                data_formats_to_exlude.remove(self.request.query_params.get('body_format', 'text'))
+            except ValueError:
+                # defaults to sending text if it's a full case request with no body_format specified.
+                data_formats_to_exlude.remove('text')
+
+            source_filter = {"excludes": ["casebody_data.%s" % format for format in data_formats_to_exlude]}
         else:
             source_filter = {"excludes": "casebody_data.*"}
 
