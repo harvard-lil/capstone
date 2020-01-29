@@ -89,8 +89,9 @@ View the cases you have accessed.
         </a>
     </div>
     {% endif %}
+
     {% if next %}
-    <div class="entries col-12 text-right">
+    <div {% if previous %}class="entries col-6 text-right"{% else %}class="entries col-12 text-right"{% endif %}>
         <a href="?{{ next }}" class="btn btn-sm p-0 ">
             Older entries &raquo;
         </a>
@@ -135,7 +136,7 @@ View the cases you have accessed.
     </div>
     {% endif %}
     {% if next %}
-    <div class="entries col-12 text-right">
+    <div {% if previous %}class="entries col-6 text-right"{% else %}class="entries col-12 text-right"{% endif %}>
         <a href="?{{ next }}" class="btn btn-sm">
             Older entries &raquo;
         </a>
