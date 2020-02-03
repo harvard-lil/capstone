@@ -50,16 +50,28 @@ def test_footer(client):
 
 
 @pytest.mark.django_db
-def test_contact(client, auth_client):
+def test_contact(client, auth_client, mailoutbox):
+    # email field is empty if logged out
     response = client.get(reverse('contact'))
     soup = BeautifulSoup(response.content.decode(), 'html.parser')
-    email = soup.find('a', {'class': 'contact_email'})
-    assert email.get('href').split("mailto:")[1] == settings.DEFAULT_FROM_EMAIL
     assert not soup.find('input', {'id': 'id_email'}).get('value')
 
+    # email field is filled if logged in
     response = auth_client.get(reverse('contact'))
     soup = BeautifulSoup(response.content.decode(), 'html.parser')
     assert soup.find('input', {'id': 'id_email'}).get('value') == auth_client.auth_user.email
+
+    # submitting form will send an email
+    post_vals = {'subject': 'subject', 'box2': 'body', 'email': 'foo@example.com'}
+    response = client.post(reverse('contact'), post_vals)
+    check_response(response, status_code=302)
+    assert len(mailoutbox) == 1
+
+    # submitting box1 will not send an email
+    post_vals = {'subject': 'subject', 'box1': 'body', 'box2': 'body', 'email': 'foo@example.com'}
+    response = client.post(reverse('contact'), post_vals)
+    check_response(response, status_code=302)  # form pretends to succeed
+    assert len(mailoutbox) == 1
 
 
 def test_screenshot(client, live_server, settings, ngrammed_cases):

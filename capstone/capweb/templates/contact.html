@@ -19,7 +19,7 @@
     before submitting this form.
   </small>
   <br/><br/>
-  <form action="{% url 'contact' %}" method="post">
+  <form action="{% url 'contact' %}" method="post" class="contact-form">
     {% csrf_token %}
     {% bootstrap_form form %}
     <br/>

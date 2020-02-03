@@ -93,8 +93,13 @@ def contact(request):
 
     if request.method == 'POST' and form.is_valid():
         data = form.data
-        send_contact_email(data.get('subject'), data.get('message'), data.get('email'))
-        logger.info("sent contact email: %s" % data)
+        # Only send email if box2 is filled out and box1 is not.
+        # box1 is display: none, so should never be filled out except by spam bots.
+        if data.get('box2') and not data.get('box1'):
+            send_contact_email(data.get('subject'), data.get('box2'), data.get('email'))
+            logger.info("sent contact email: %s" % data)
+        else:
+            logger.info("suppressing invalid contact email: %s" % data)
         return HttpResponseRedirect(reverse('contact-success'))
 
     email_from = request.user.email if request.user.is_authenticated else ""
