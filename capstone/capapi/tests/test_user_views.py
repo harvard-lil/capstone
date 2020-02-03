@@ -116,6 +116,23 @@ def test_resend_verification(client, mailoutbox):
     # same verification email sent
     assert mailoutbox[0].body == mailoutbox[1].body
 
+@pytest.mark.django_db
+def test_registration_after_login(auth_user, auth_client):
+    response = auth_client.get(reverse('user-details'))
+    check_response(response)
+
+    # try going to the registration page
+    # get directed to the details page instead
+    response = auth_client.get(reverse('register'))
+    check_response(response, status_code=302)
+    assert response.url == reverse('user-details')
+
+    # make sure registration is still reachable after logging out
+    auth_client.logout()
+    response = auth_client.get(reverse('register'))
+    check_response(response, status_code=200)
+    assert "<title>Register | Caselaw Access Project</title>" in response.content.decode()
+
 
 ### view account details ###
 

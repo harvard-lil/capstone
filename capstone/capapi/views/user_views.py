@@ -28,8 +28,10 @@ from user_data.models import UserHistory
 
 def register_user(request):
     """ Create new user """
-    form = form_for_request(request, RegisterUserForm)
+    if not request.user.is_anonymous:
+        return HttpResponseRedirect(reverse('user-details'))
 
+    form = form_for_request(request, RegisterUserForm)
     if request.method == 'POST' and form.is_valid():
         form.save()
         resources.send_new_signup_email(request, form.instance)
