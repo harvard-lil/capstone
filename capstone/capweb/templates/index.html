@@ -107,9 +107,8 @@
           <div class="col-3 offset-md-1 pr-3">
 
             <div class="boxcontainer text-white state-numbers-boxcontainer mt-2 mb-4">
-              <div class="boxcontainer-header bg-transparent mb-2">State</div>
               <div class="boxcontainer-body bg-black p-3 pt-2 pb-2">
-                <h5 class="boxcontainer-title pb-1 jur_name">Overall</h5>
+                <h5 class="boxcontainer-title pb-1 jur_name">State and Federal Totals</h5>
 
                 <div class="number-set mt-3 p-0">
                   <p class="boxcontainer-text figure mb-0 num_cases">{{ state.cases }}</p>
@@ -123,14 +122,11 @@
 
                 <div class="number-set p-0">
                   <p class="boxcontainer-text figure mb-0 num_pages">{{ state.pages_scanned }}</p>
-                  <p class="boxcontainer-text label">Pages Scanned</p>
+                  <p class="boxcontainer-text label">Pages scanned</p>
                 </div>
               </div>
-            </div>
-
-            <div class="boxcontainer text-white federal-numbers-boxcontainer mb-3">
-              <div class="boxcontainer-header bg-transparent mb-2">Federal</div>
               <div class="boxcontainer-body bg-black p-3 pt-2">
+                <h5 class="boxcontainer-title pb-1 federal">Federal Totals</h5>
 
                 <div class="number-set">
                   <p class="boxcontainer-text figure mb-0">{{ federal.cases|format_number }}</p>
@@ -144,7 +140,7 @@
 
                 <div class="number-set">
                   <p class="boxcontainer-text figure mb-0">{{ federal.pages_scanned|format_number }}</p>
-                  <p class="boxcontainer-text label">Pages Scanned</p>
+                  <p class="boxcontainer-text label">Pages scanned</p>
                 </div>
               </div>
             </div>
