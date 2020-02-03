@@ -31,3 +31,13 @@ input, textarea {
     font-size: 0.9rem;
   }
 }
+
+.contact-form {
+  // hide box1 so it will only be filled by spam bots
+  label[for="id_box1"] {
+    display: none;
+  }
+  textarea[name="box1"] {
+    display: none;
+  }
+}

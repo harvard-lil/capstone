@@ -43,7 +43,7 @@ urlpatterns = [
     path('contact-success/', TemplateView.as_view(template_name='form_success.html',
                                                   extra_context={
                                                       'form_title': 'contact',
-                                                      'message': 'We\'ll be in touch, shortly.'
+                                                      'message': 'We\'ll be in touch shortly.'
                                                   }),  name='contact-success'),
 
     ### admin stuff ###
