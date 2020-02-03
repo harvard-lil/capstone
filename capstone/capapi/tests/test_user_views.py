@@ -74,6 +74,9 @@ def test_registration_flow(client, non_whitelisted_case_document):
     response = client.get(api_reverse('cases-detail', kwargs={'id': non_whitelisted_case_document.id}), {'full_case':'true'})
     check_response(response, content_includes="ok")
 
+    # logout to attempt new registration
+    client.logout()
+
     # can't register with similar email addresses
     response = client.post(reverse('register'), {
         'email': email.replace('new_user', 'new_user+stuff'),
