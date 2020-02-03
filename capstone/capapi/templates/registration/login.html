@@ -11,10 +11,6 @@
         Your account doesn't have access to this page. To proceed,
         please login with an account that has access.
       </div>
-    {% else %}
-      <div class="alert alert-warning">
-        Please login to see this page.
-      </div>
     {% endif %}
   {% endif %}
 
@@ -25,7 +21,7 @@
             class="btn btn-primary">
       Log in
     </button>
-    <input type="hidden" name="next" value="{{ request.META.HTTP_REFERER }}" />
+    <input type="hidden" name="next" value="{{next}}" />
   </form>
   <p>
     Don't have an account?
