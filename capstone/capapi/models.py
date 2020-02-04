@@ -1,20 +1,15 @@
 from datetime import timedelta
 import uuid
-import logging
-
 import email_normalize
+from netaddr import IPAddress, AddrFormatError, IPNetwork
+from model_utils import FieldTracker
+from rest_framework.authtoken.models import Token
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AnonymousUser, PermissionsMixin
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.utils import timezone
 from django.conf import settings
-from netaddr import IPAddress, AddrFormatError, IPNetwork
-
-from model_utils import FieldTracker
-
-from rest_framework.authtoken.models import Token
-
-logger = logging.getLogger(__name__)
 
 
 class CapUserManager(BaseUserManager):

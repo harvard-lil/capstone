@@ -1,4 +1,3 @@
-import logging
 from werkzeug.http import parse_range_header
 
 from django.conf import settings
@@ -7,8 +6,7 @@ from django.middleware.common import CommonMiddleware as DjangoCommonMiddleware
 from django.utils.cache import patch_cache_control
 
 from .resources import wrap_user
-
-logger = logging.getLogger(__name__)
+from config.logging import logger
 
 
 ### cache_header_middleware ###
@@ -78,7 +76,7 @@ def cache_header_middleware(get_response):
 
         # If all tests pass, we can set the Cache-Control header
         cache_response = all(view_tests.values())
-        logger.info("Cacheable response: %s (%s)" % (cache_response, view_tests))
+        logger.debug("Cacheable response: %s (%s)" % (cache_response, view_tests))
         if cache_response:
             add_cache_header(response)
         else:

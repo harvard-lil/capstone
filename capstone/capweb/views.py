@@ -2,7 +2,6 @@ import io
 import os
 import csv
 import json
-import logging
 import subprocess
 from datetime import datetime
 from collections import OrderedDict
@@ -22,7 +21,6 @@ from django.utils.http import is_safe_url
 from django.views import View
 from django.utils.safestring import mark_safe
 
-
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request
 from capweb.models import GallerySection
@@ -31,10 +29,9 @@ from capdb.models import Snippet
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request
 from capapi.documents import CaseDocument
+from config.logging import logger
 
 from elasticsearch.exceptions import NotFoundError
-
-logger = logging.getLogger(__name__)
 
 
 def index(request):
