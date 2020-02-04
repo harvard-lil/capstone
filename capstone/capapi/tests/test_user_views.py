@@ -74,6 +74,9 @@ def test_registration_flow(client, non_whitelisted_case_document):
     response = client.get(api_reverse('cases-detail', kwargs={'id': non_whitelisted_case_document.id}), {'full_case':'true'})
     check_response(response, content_includes="ok")
 
+    # logout to attempt new registration
+    client.logout()
+
     # can't register with similar email addresses
     response = client.post(reverse('register'), {
         'email': email.replace('new_user', 'new_user+stuff'),
@@ -115,6 +118,23 @@ def test_resend_verification(client, mailoutbox):
 
     # same verification email sent
     assert mailoutbox[0].body == mailoutbox[1].body
+
+@pytest.mark.django_db
+def test_registration_after_login(auth_user, auth_client):
+    response = auth_client.get(reverse('user-details'))
+    check_response(response)
+
+    # try going to the registration page
+    # get directed to the details page instead
+    response = auth_client.get(reverse('register'))
+    check_response(response, status_code=302)
+    assert response.url == reverse('user-details')
+
+    # make sure registration is still reachable after logging out
+    auth_client.logout()
+    response = auth_client.get(reverse('register'))
+    check_response(response, status_code=200)
+    assert "<title>Register | Caselaw Access Project</title>" in response.content.decode()
 
 
 ### view account details ###
