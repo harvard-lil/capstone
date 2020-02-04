@@ -497,12 +497,6 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'api': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/tmp/capapi.log',
-            'delay': True
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -515,38 +509,32 @@ LOGGING = {
         },
     },
     'loggers': {
-        'capapi': {
-            'handlers': ['api'],
+        # only show warnings for third-party apps
+        '': {
+            'level': 'WARNING',
+            'handlers': ['console', 'mail_admins'],
+        },
+        # not sure why we wanted to show debug messages for celery, but apparently we did
+        'celery': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'DEBUG',
             'propagate': False,
         },
-        'django': {
-            'handlers': ['console'],
-            'propagate': True,
-        },
-        'celery': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-        # silence boto3 info logging -- see https://github.com/boto/boto3/issues/521
-        'boto3': {
-            'level': 'WARNING',
-        },
-        'botocore': {
-            'level': 'WARNING',
-        },
-        'nose': {
-            'level': 'WARNING',
-        },
-        's3transfer': {
-            'level': 'WARNING',
-        },
+        # show info for our first-party apps
+        **{
+            app_name: {
+                'level': 'INFO',
+                'handlers': ['console', 'mail_admins'],
+                'propagate': False,
+            } for app_name in ('capapi', 'capbrowse', 'capdb', 'capweb', 'cite', 'config', 'user_data')},
     },
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s %(levelname)s module=%(module)s, '
-            'process_id=%(process)d, %(message)s'
-        }
+            'format': ('%(asctime)s [%(process)d] [%(levelname)s] ' +
+                       'pathname=%(pathname)s lineno=%(lineno)s ' +
+                       'funcname=%(funcName)s %(message)s'),
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
     },
     'filters': {
         'require_debug_false': {
@@ -554,7 +542,6 @@ LOGGING = {
         }
     },
 }
-
 
 # if celery is launched with --autoscale=1000, celery will autoscale to 1000 but limited by system resources:
 CELERY_WORKER_AUTOSCALER = 'celery_resource_autoscaler:ResourceAutoscaler'
