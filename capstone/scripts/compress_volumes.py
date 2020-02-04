@@ -1,7 +1,6 @@
 import csv
 import gzip
 import json
-import logging
 import tarfile
 import tempfile
 import os
@@ -24,17 +23,10 @@ from django.template.defaultfilters import filesizeformat
 from capdb.storages import captar_storage, get_storage, CaptarStorage, CapS3Storage, CapFileStorage
 from scripts.helpers import copy_file, parse_xml, resolve_namespace, serialize_xml, HashingFile, \
     volume_barcode_from_folder, storage_lookup
+from config.logging import logger
 
-# logging
-# disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
 
-logging.getLogger('boto3').setLevel(logging.WARNING)
-logging.getLogger('botocore').setLevel(logging.WARNING)
-logging.getLogger('nose').setLevel(logging.WARNING)
-logging.getLogger('s3transfer').setLevel(logging.WARNING)
-logger = logging.getLogger(__name__)
 info = logger.info
-info = print
 
 
 # separate function to check .tar integrity against volmets

@@ -121,20 +121,6 @@ MAILCHIMP = {
 
 VALIDATE_EMAIL_SIGNUPS = True
 
-# logging
-LOGGING['loggers'] = {
-    'django': {
-        'handlers': ['mail_admins'],
-        'level': 'INFO',
-        'propagate': True,
-    },
-    'django.request': {
-        'handlers': ['mail_admins'],
-        'level': 'ERROR',
-        'propagate': False,
-    },
-}
-
 ## logging errors via email requires these to be set:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_PORT = 587

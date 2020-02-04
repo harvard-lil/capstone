@@ -1,5 +1,3 @@
-import logging
-
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.reverse import reverse as api_reverse
@@ -12,8 +10,6 @@ from .documents import CaseDocument
 from capdb import models
 from capweb.helpers import reverse
 from user_data.models import UserHistory
-
-logger = logging.getLogger(__name__)
 
 
 class UserHistoryMixin:

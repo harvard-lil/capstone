@@ -1,7 +1,6 @@
 import hashlib
 import json
 from datetime import datetime
-import logging
 import zipfile
 import tempfile
 from wsgiref.util import FileWrapper
@@ -20,8 +19,7 @@ from django_hosts import reverse as django_hosts_reverse
 
 from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
-
-logger = logging.getLogger(__name__)
+from config.logging import logger
 
 
 def create_zip_filename(case_list):
