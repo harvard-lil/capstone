@@ -304,7 +304,7 @@ def download_files(request, filepath=""):
             context = {
                 "filename": filepath,
                 "error": "If you believe you should have access to this file, "
-                         "please <a href='https://caselaw.freshdesk.com/support/tickets/new'>let us know</a>.",
+                         "please <a href='mailto:info@case.law'>let us know at info@case.law</a>.",
                 "title": "403 - Access to this file is restricted",
             }
             return render(request, "file_download_400.html", context, status=403)
