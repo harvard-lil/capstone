@@ -160,6 +160,12 @@ def limericks(request):
         'meta_description': 'Generate rhymes using caselaw!'
     })
 
+def test404(request):
+    return render(request, '404.html', {
+        'page_image': 'img/og_image/limericks.png',
+        'meta_description': 'Generate rhymes using caselaw!'
+    })
+
 
 def api(request):
     try:
@@ -304,7 +310,7 @@ def download_files(request, filepath=""):
             context = {
                 "filename": filepath,
                 "error": "If you believe you should have access to this file, "
-                         "please <a href='mailto:info@case.law'>let us know at info@case.law</a>.",
+                         "please let is know at <a href='mailto:info@case.law'>info@case.law</a>.",
                 "title": "403 - Access to this file is restricted",
             }
             return render(request, "file_download_400.html", context, status=403)
