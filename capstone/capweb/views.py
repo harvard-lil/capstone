@@ -160,12 +160,6 @@ def limericks(request):
         'meta_description': 'Generate rhymes using caselaw!'
     })
 
-def test404(request):
-    return render(request, '404.html', {
-        'page_image': 'img/og_image/limericks.png',
-        'meta_description': 'Generate rhymes using caselaw!'
-    })
-
 
 def api(request):
     try:
