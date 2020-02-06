@@ -1,5 +1,5 @@
 This directory contains two ZIP files of images present in
-U.S. caselaw.
+U.S. caselaw. These images were included in published court opinions. Please note, however, we have not independently viewed the images and cannot verify their suitability for any use.
 
 Scope
 -----
