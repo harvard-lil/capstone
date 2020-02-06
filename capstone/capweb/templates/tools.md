@@ -43,6 +43,12 @@ Browse and cite all of our cases sorted by jurisdiction, series, and volume.
 [BROWSE]({% url "cite_home" host "cite" %}){: class="btn-primary" }
 {: class="btn-group" }
 
+# Download {: class="subtitle" }
+Our downloads directory includes derivative datasets, bulk exports, and summaries from the Caselaw Access Project. 
+
+[DOWNLOADS]({% url "download-files" %}){: class="btn-primary" }
+{: class="btn-group" }
+
 # Historical Trends {: class="subtitle" }
 Explore the data by looking at how usage of text changes over time.
     
