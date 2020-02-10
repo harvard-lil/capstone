@@ -60,6 +60,7 @@ STORAGES = {
         'class': 'CapFileStorage',
         'kwargs': {
             'location': os.path.join(BASE_DIR, 'downloads'),
+            'base_url': 'https://case.law/download/',
         }
     },
 
