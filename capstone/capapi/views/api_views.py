@@ -4,7 +4,7 @@ import urllib
 from collections import OrderedDict, defaultdict
 from functools import reduce
 from pathlib import Path
-from rest_framework import viewsets, renderers, mixins
+from rest_framework import viewsets, renderers, mixins, exceptions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -78,6 +78,13 @@ class CAPFiltering(FilteringFilterBackend):
             return(output)
 
         query_params = super().get_filter_query_params(request, view)
+
+        for suffix in ['min', 'max']:
+            date_param = 'decision_date_{}'.format(suffix)
+            if date_param in query_params:
+                if not re.match(r'\d\d\d\d-\d\d-\d\d', query_params[date_param]['values'][0]):
+                    raise exceptions.ParseError('Invalid date format: must be YYYY-MM-DD')
+
         if 'cite' in query_params:
             query_params['cite']['values'] = [Citation.normalize_cite(cite) for cite in
                                               lc_values(query_params['cite']['values']) ]
