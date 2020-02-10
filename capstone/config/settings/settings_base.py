@@ -10,6 +10,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test']
 ADMINS = [('Caselaw Access Project', 'info@case.law')]
 
 AUTH_USER_MODEL = 'capapi.CapUser'
+LOGIN_REDIRECT_URL = '/'
 
 # Application definition
 
