@@ -136,6 +136,22 @@ def test_registration_after_login(auth_user, auth_client):
     check_response(response, status_code=200)
     assert "<title>Register | Caselaw Access Project</title>" in response.content.decode()
 
+@pytest.mark.django_db
+def test_redirect_following_login(auth_user, auth_client):
+    """if ?next=url is not set, user gets directed to '/' after login"""
+    auth_client.logout()
+    response = auth_client.get(reverse('login'))
+    check_response(response)
+    password = 'pass'
+    assert auth_user.check_password(password)
+
+    response = auth_client.post(reverse('login'), {
+        'username': auth_user.email,
+        'password': password})
+
+    check_response(response, status_code=302)
+    assert response.url == '/'
+
 
 ### view account details ###
 
