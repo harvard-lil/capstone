@@ -38,18 +38,6 @@ class CapStorageMixin(object):
         """
         return ("django.core.files.storage.FileSystemStorage", [], {})
 
-    def isdir(self, path):
-        return os.path.isdir(self.path(path))
-
-    def isfile(self, path):
-        return os.path.isfile(self.path(path))
-
-    def getsize(self, path):
-        return os.path.getsize(self.path(path))
-
-    def getmtime(self, path):
-        return os.path.getmtime(self.path(path))
-
 
 class CapS3Storage(CapStorageMixin, S3Boto3Storage):
     def _fix_path(self, path):
@@ -167,6 +155,12 @@ class CapFileStorage(CapStorageMixin, FileSystemStorage):
     def tag_file(self, path, key, value):
         """ For file storage, tags don't work. """
         return False
+
+    def isdir(self, path):
+        return os.path.isdir(self.path(path))
+
+    def isfile(self, path):
+        return os.path.isfile(self.path(path))
 
 
 class CaptarFile(File):

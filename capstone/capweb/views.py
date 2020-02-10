@@ -3,7 +3,6 @@ import os
 import csv
 import json
 import subprocess
-from datetime import datetime
 from collections import OrderedDict
 from pathlib import Path
 from wsgiref.util import FileWrapper
@@ -315,7 +314,7 @@ def download_files(request, filepath=""):
         chunk_size = 8192
 
         response = StreamingHttpResponse(FileWrapper(open(absolute_path, 'rb'), chunk_size), content_type=content_type)
-        response['Content-Length'] = download_files_storage.getsize(absolute_path)
+        response['Content-Length'] = download_files_storage.size(absolute_path)
         response['Content-Disposition'] = 'attachment; filename="%s"' % filepath.split('/')[-1]
 
         return response
@@ -344,7 +343,7 @@ def download_files(request, filepath=""):
                 "name": filename.split('/')[-1],
                 "path": filename,
                 "is_dir": download_files_storage.isdir(filename),
-                "size": download_files_storage.getsize(filename)
+                "size": download_files_storage.size(filename)
             }
 
             files.append(fileobject)
@@ -403,8 +402,8 @@ def download_manifest_file(request, filepath=""):
         fp = download_files_storage.relpath(abs_filepath)
         return {
             "path": fp,
-            "size": download_files_storage.getsize(fp),
-            "last_modified": str(datetime.utcfromtimestamp(download_files_storage.getmtime(fp)))}
+            "size": download_files_storage.size(fp),
+            "last_modified": download_files_storage.get_modified_time(fp).isoformat()}
 
     # send back file for downloading
     output = io.StringIO()

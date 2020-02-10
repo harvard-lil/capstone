@@ -42,9 +42,3 @@ def test_isdir(file_storage):
 
     assert file_storage.isdir('a')
     assert not file_storage.isdir('a/b.txt')
-
-
-def test_getsize(file_storage):
-    file_storage.save('a/b.txt', BytesIO(b'content'))
-
-    assert file_storage.getsize('a/b.txt') == 7
