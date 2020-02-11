@@ -33,7 +33,8 @@ django
 django-storages
 whitenoise             # serve static assets
 https://github.com/jcushman/django-model-utils/archive/f2e97e41418788c81ee8e5ab1cec37ecff65a003.zip#egg=django-model-utils  # PR: https://github.com/jazzband/django-model-utils/pull/369
-django-simple-history  # model versioning
+#django-simple-history  # model versioning
+https://github.com/jcushman/django-simple-history/archive/fbce3c40c1c5b3e3c0c905bcb1ca56976b227798.zip#egg=django-simple-history  # PR: https://github.com/treyhunner/django-simple-history/pull/625
 django-redis           # use redis as Django cache backend
 django-hosts           # URL routing across subdomains
 django-webpack-loader  # include assets from webpack

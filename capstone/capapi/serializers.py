@@ -294,6 +294,7 @@ class VolumeSerializer(serializers.ModelSerializer):
     volume_number = serializers.ReadOnlyField(source='xml_volume_number')
     publisher = serializers.ReadOnlyField(source='xml_publisher')
     publication_year = serializers.ReadOnlyField(source='xml_publication_year')
+    pdf_url = serializers.FileField(source='pdf_file')
 
     class Meta:
         model = models.VolumeMetadata
@@ -312,6 +313,7 @@ class VolumeSerializer(serializers.ModelSerializer):
             'reporter',
             'reporter_url',
             'jurisdictions',
+            'pdf_url',
         )
 
 

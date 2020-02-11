@@ -253,9 +253,8 @@ django-pipeline==1.6.14 \
 django-redis==4.10.0 \
     --hash=sha256:af0b393864e91228dd30d8c85b5c44d670b5524cb161b7f9e41acc98b6e5ace7 \
     --hash=sha256:f46115577063d00a890867c6964ba096057f07cb756e78e0503b89cd18e4e083
-django-simple-history==2.7.0 \
-    --hash=sha256:2f35bbb2ac37ae726ce4ef4a8cc053ede5f881a6985f5445f438dc297b12e7c5 \
-    --hash=sha256:7ba6220ed2ef3562ed8de9c66551da2a25d26b969f94226d41342769c3782630
+https://github.com/jcushman/django-simple-history/archive/fbce3c40c1c5b3e3c0c905bcb1ca56976b227798.zip#egg=django-simple-history \
+    --hash=sha256:80be61eababfbffb5a1d82422debb5780a6eee71fe4cf1bf5abaa6623ba52e52
 django-storages==1.7.1 \
     --hash=sha256:8e35d2c7baeda5dc6f0b4f9a0fc142d25f9a1bf72b8cebfcbc5db4863abc552d \
     --hash=sha256:b1a63cd5ea286ee5a9fb45de6c3c5c0ae132d58308d06f1ce9865cfcd5e470a7

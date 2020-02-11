@@ -1195,6 +1195,62 @@ def check_existing_emails():
         out.write(response.content)
 
 
+@task
+def download_pdfs(jurisdiction=None):
+    """
+        Download all PDFs, or all for a jurisdiction, to download_files_storage.
+    """
+    from capdb.storages import pdf_storage, download_files_storage
+    from scripts.helpers import volume_barcode_from_folder
+    from capdb.models import TarFile
+    from pathlib import Path
+    import re
+
+    # find each PDF by checking TarFile, since we have a 1-to-1 mapping between tar files and PDFs
+    tar_files = (TarFile.objects.filter(
+            volume__reporter__jurisdictions__whitelisted=True,
+            volume__out_of_scope=False,
+            volume__pdf_file=None,
+        ).select_related('volume__reporter', 'volume__nominative_reporter')
+        .prefetch_related('volume__reporter__jurisdictions')
+        .order_by('volume__reporter__jurisdictions__slug', 'volume__pk'))
+    if jurisdiction:
+        tar_files = tar_files.filter(volume__reporter__jurisdictions__slug=jurisdiction)
+
+    for tar_file in tar_files:
+        # get info about this volume
+        barcode = volume_barcode_from_folder(tar_file.storage_path)
+        source_path = str(Path(tar_file.storage_path).with_name("%s.pdf" % barcode))
+        print("Downloading %s ..." % source_path)
+        volume = tar_file.volume
+        reporter = volume.reporter
+        jurisdiction = reporter.jurisdictions.first()
+
+        # generate a path for the PDF, like:
+        # PDFs / open / North Carolina / N.C. / 1 N.C. (1 Tay.).pdf
+        new_name_prefix = '%s %s' % (volume.volume_number, reporter.short_name)
+        if volume.nominative_reporter:
+            new_name_prefix += ' (%s %s)' % (volume.nominative_volume_number, volume.nominative_reporter.short_name)
+        new_name_prefix = re.sub(r'[\\/:*?"<>|]', '-', new_name_prefix)  # replace windows-illegal characters with -
+        open_or_restricted = 'open' if jurisdiction.whitelisted else 'restricted'
+        for i in range(10):
+            # retry so we can append ' a', ' b', etc. for duplicate volumes
+            new_name = new_name_prefix + (' %s' % chr(97+i-1) if i else '') + '.pdf'
+            new_name = new_name.replace('..', '.')  # avoid double period in '1 Mass..pdf'
+            new_path = Path('PDFs', open_or_restricted, jurisdiction.name_long, reporter.short_name, new_name)
+            if not download_files_storage.exists(str(new_path)):
+                break
+        else:
+            raise Exception("Failed to find a non-existent path for %s" % new_path)
+
+        # copy file
+        copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=download_files_storage)
+
+        # save PDF location on volume model
+        volume.pdf_file.name = new_path
+        volume.save()
+        print("  - Downloaded to %s" % new_path)
+
 
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"

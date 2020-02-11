@@ -23,7 +23,7 @@ import nacl.secret
 from pyquery import PyQuery
 from bs4 import BeautifulSoup
 
-from capdb.storages import bulk_export_storage, case_image_storage
+from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
@@ -595,6 +595,7 @@ class VolumeMetadata(models.Model):
     xml_checksums_need_update = models.BooleanField(default=False,
                                                     help_text="Whether checksums in volume_xml match current values in "
                                                                "related case_xml and page_xml data.")
+    pdf_file = models.FileField(blank=True, null=True, storage=download_files_storage, help_text="Exported volume PDF")
 
     # values extracted from VolumeXML
     xml_start_year = models.IntegerField(blank=True, null=True)
@@ -1731,7 +1732,7 @@ class TarFile(models.Model):
     """
         A captar file that was used for ingest.
     """
-    volume = models.ForeignKey(VolumeMetadata, on_delete=models.DO_NOTHING)
+    volume = models.OneToOneField(VolumeMetadata, on_delete=models.DO_NOTHING, related_name='tar_file')
     storage_path = models.CharField(max_length=1000)
     hash = models.CharField(max_length=1000)
 

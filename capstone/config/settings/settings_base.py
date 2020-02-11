@@ -435,6 +435,7 @@ STORAGES = {
         'class': 'CapFileStorage',
         'kwargs': {
             'location': os.path.join(BASE_DIR, 'test_data/downloads'),
+            'base_url': 'http://case.test:8000/download/',
         }
     }
 }
@@ -562,6 +563,7 @@ SILENCED_SYSTEM_CHECKS = [
     "models.E004"   # For our history tables, the "id" field should not be a primary key. This disables the Django system
                     # check that required "id" fields to be primary keys.
 ]
+SIMPLE_HISTORY_FILEFIELD_TO_CHARFIELD = True
 
 # cache headers
 SET_CACHE_CONTROL_HEADER = False  # whether to set a cache-control header on all cacheable views

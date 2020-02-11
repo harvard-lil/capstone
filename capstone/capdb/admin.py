@@ -167,3 +167,16 @@ class VolumeMetadataAdmin(admin.ModelAdmin):
     list_select_related = ['reporter']
     ordering = ['reporter__full_name', 'volume_number']
     search_fields = ['reporter__short_name', 'reporter__full_name']
+    fieldsets = (
+        ('', {
+            'fields': (
+                'barcode', 'out_of_scope', 'title', 'reporter', 'volume_number', 'nominative_reporter', 'nominative_volume_number',
+                'duplicate', 'duplicate_of',
+                'pdf_file',
+                'task_statuses', 'xml_metadata',
+                'ingest_status', 'ingest_errors',
+                'notes',
+            ),
+        }),
+    )
+    readonly_fields = ['barcode', 'task_statuses', 'xml_metadata', 'ingest_status', 'ingest_errors']
