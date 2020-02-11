@@ -1,4 +1,6 @@
 import os
+from copy import deepcopy
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -494,55 +496,51 @@ REDIS_DEFAULT_DB = 0
 REDIS_INGEST_DB = 1         # database for temporary data created during the S3 ingest process
 REDIS_DJANGO_CACHE_DB = 2   # database for django's cache framework
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
-        },
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'capapi.reporter.CustomAdminEmailHandler'
-        },
+# logging
+# import and modify Django's default logging so we can cleanly override its default behavior --
+# see https://lincolnloop.com/blog/disabling-error-emails-django/ for discussion of this approach
+from django.utils.log import DEFAULT_LOGGING
+LOGGING = deepcopy(DEFAULT_LOGGING)
+LOGGING['handlers'] = {
+    **LOGGING['handlers'],
+    # log everything to console on both dev and prod
+    'console': {
+        'level': 'DEBUG',
+        'class': 'logging.StreamHandler',
+        'formatter': 'verbose',
     },
-    'loggers': {
-        # only show warnings for third-party apps
-        '': {
-            'level': 'WARNING',
-            'handlers': ['console', 'mail_admins'],
-        },
-        # not sure why we wanted to show debug messages for celery, but apparently we did
-        'celery': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        # show info for our first-party apps
-        **{
-            app_name: {
-                'level': 'INFO',
-                'handlers': ['console', 'mail_admins'],
-                'propagate': False,
-            } for app_name in ('capapi', 'capbrowse', 'capdb', 'capweb', 'cite', 'config', 'user_data')},
-    },
-    'formatters': {
-        'verbose': {
-            'format': ('%(asctime)s [%(process)d] [%(levelname)s] ' +
-                       'pathname=%(pathname)s lineno=%(lineno)s ' +
-                       'funcname=%(funcName)s %(message)s'),
-            'datefmt': '%Y-%m-%d %H:%M:%S'
-        },
-    },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+    # custom error email template
+    'mail_admins': {
+        'level': 'ERROR',
+        'filters': ['require_debug_false'],
+        'class': 'capapi.reporter.CustomAdminEmailHandler'
     },
 }
+LOGGING['loggers'] = {
+    **LOGGING['loggers'],
+    # only show warnings for third-party apps
+    '': {
+        'level': 'WARNING',
+        'handlers': ['console', 'mail_admins'],
+    },
+    # disable django's built-in handlers to avoid double emails
+    'django': {'level': 'WARNING'},
+    # not sure why we wanted to show debug messages for celery, but apparently we did
+    'celery': {'level': 'DEBUG'},
+    # show info for our first-party apps
+    **{
+        app_name: {'level': 'INFO'}
+        for app_name in ('capapi', 'capbrowse', 'capdb', 'capweb', 'cite', 'config', 'user_data')
+    },
+}
+LOGGING['formatters'] = {
+    **LOGGING['formatters'],
+    'verbose': {
+        'format': '%(asctime)s [%(process)d] [%(levelname)s] %(pathname)s:%(lineno)s %(message)s',
+        'datefmt': '%Y-%m-%d %H:%M:%S'
+    },
+}
+
 
 # if celery is launched with --autoscale=1000, celery will autoscale to 1000 but limited by system resources:
 CELERY_WORKER_AUTOSCALER = 'celery_resource_autoscaler:ResourceAutoscaler'
