@@ -1235,7 +1235,7 @@ def download_pdfs(jurisdiction=None):
         open_or_restricted = 'open' if jurisdiction.whitelisted else 'restricted'
         for i in range(10):
             # retry so we can append ' a', ' b', etc. for duplicate volumes
-            new_name = new_name_prefix + (' %s' % chr(97+i-1) if i else '') + '.pdf'
+            new_name = new_name_prefix + (' %s' % chr(97+i) if i else '') + '.pdf'
             new_name = new_name.replace('..', '.')  # avoid double period in '1 Mass..pdf'
             new_path = Path('PDFs', open_or_restricted, jurisdiction.name_long, reporter.short_name, new_name)
             if not download_files_storage.exists(str(new_path)):
@@ -1247,7 +1247,7 @@ def download_pdfs(jurisdiction=None):
         copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=download_files_storage)
 
         # save PDF location on volume model
-        volume.pdf_file.name = new_path
+        volume.pdf_file.name = str(new_path)
         volume.save()
         print("  - Downloaded to %s" % new_path)
 

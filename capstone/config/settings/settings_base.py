@@ -434,7 +434,7 @@ STORAGES = {
     'download_files_storage': {
         'class': 'CapFileStorage',
         'kwargs': {
-            'location': os.path.join(BASE_DIR, 'test_data/downloads'),
+            'location': os.path.join(BASE_DIR, 'downloads'),
             'base_url': 'http://case.test:8000/download/',
         }
     }

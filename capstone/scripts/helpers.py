@@ -1,12 +1,13 @@
 import hashlib
-import shutil
 from pathlib import Path
-
-from django.db.models import Q
 from lxml import etree
 from pyquery import PyQuery
 
+from django.core.files.storage import FileSystemStorage
+from django.db.models import Q
+
 from capdb.storages import ingest_storage, private_ingest_storage
+
 
 nsmap = {
     'duplicative': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body_Duplicative:v1',
@@ -211,15 +212,18 @@ def serialize_xml(xml):
     return b''.join([etree.tostring(e, encoding='utf-8', xml_declaration=True) for e in xml]) + b'\n'
 
 
+_root_file_system_storage = FileSystemStorage('/')
+
+
 def copy_file(from_path, to_path, from_storage=None, to_storage=None):
     """
         Copy contents of from_path to to_path, optionally using storages instead of filesystem open().
+        Will use a modified name if to_path already exists.
     """
-    from_open = from_storage.open if from_storage else open
-    to_open = to_storage.open if to_storage else open
-    with from_open(str(from_path), "rb") as in_file:
-        with to_open(str(to_path), "wb") as out_file:
-            shutil.copyfileobj(in_file, out_file)
+    from_storage = from_storage or _root_file_system_storage
+    to_storage = to_storage or _root_file_system_storage
+    to_storage.save(str(to_path), from_storage.open(str(from_path)))
+
 
 def ordered_query_iterator(queryset, chunk_size=1000):
     """
