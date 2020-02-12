@@ -321,6 +321,8 @@ def download_files(request, filepath=""):
 
     # directory requested
     elif download_files_storage.isdir(filepath):
+        if filepath and not filepath.endswith('/'):
+            return HttpResponseRedirect(reverse('download-files', args=[filepath+'/']))
 
         # create clickable breadcrumbs
         breadcrumb_parts = filepath.split('/')
@@ -338,11 +340,13 @@ def download_files(request, filepath=""):
                 with open(download_files_storage.path(filename), "r") as f:
                     readme_content = f.read()
                 readme, toc, meta = render_markdown(readme_content)
+                continue
 
+            is_dir = download_files_storage.isdir(filename)
             fileobject = {
                 "name": filename.split('/')[-1],
-                "path": filename,
-                "is_dir": download_files_storage.isdir(filename),
+                "path": filename + ('/' if is_dir else ''),
+                "is_dir": is_dir,
                 "size": download_files_storage.size(filename)
             }
 

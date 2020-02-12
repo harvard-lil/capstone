@@ -17,7 +17,7 @@
             <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.name }}</li>
           {% else %}
             <li class="breadcrumb-item">
-              <a href="{% url 'download-files' %}/{{ breadcrumb.path }}">{{ breadcrumb.name }}</a>
+              <a href="{% url 'download-files' breadcrumb.path %}">{{ breadcrumb.name }}</a>
             </li>
           {% endif %}
         {% endfor %}
@@ -28,12 +28,12 @@
     {% for file in files %}
       <li class="list-item">
         {% if file.is_dir %}
-          <a href="{% url 'download-files' %}/{{ file.path }}">
+          <a href="{% url 'download-files' file.path %}">
             <strong>{{ file.name }}/</strong>
           </a>
         {% else %}
           {% if allow_downloads %}
-            <a href="{% url 'download-files' %}/{{ file.path }}">{{ file.name }}</a>
+            <a href="{% url 'download-files' file.path %}">{{ file.name }}</a>
           {% else %}
             {{ file.name }}
           {% endif %}
@@ -47,6 +47,8 @@
   </ul>
   {% if readme %}
     <hr/>
-    {{ readme }}
+    <div class="markdown">
+      {{ readme }}
+    </div>
   {% endif %}
 {% endblock %}
