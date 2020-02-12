@@ -1201,28 +1201,21 @@ def download_pdfs(jurisdiction=None):
         Download all PDFs, or all for a jurisdiction, to download_files_storage.
     """
     from capdb.storages import pdf_storage, download_files_storage
-    from scripts.helpers import volume_barcode_from_folder
-    from capdb.models import TarFile
     from pathlib import Path
     import re
 
     # find each PDF by checking TarFile, since we have a 1-to-1 mapping between tar files and PDFs
-    tar_files = (TarFile.objects.filter(
-            volume__reporter__jurisdictions__whitelisted=True,
-            volume__out_of_scope=False,
-            volume__pdf_file=None,
-        ).select_related('volume__reporter', 'volume__nominative_reporter')
-        .prefetch_related('volume__reporter__jurisdictions')
-        .order_by('volume__reporter__jurisdictions__slug', 'volume__pk'))
+    volumes = (VolumeMetadata.objects.filter(out_of_scope=False, pdf_file=None)
+        .select_related('reporter', 'nominative_reporter')
+        .prefetch_related('reporter__jurisdictions')
+        .order_by('reporter__jurisdictions__slug', 'pk'))
     if jurisdiction:
-        tar_files = tar_files.filter(volume__reporter__jurisdictions__slug=jurisdiction)
+        volumes = volumes.filter(reporter__jurisdictions__slug=jurisdiction)
 
-    for tar_file in tar_files:
+    for volume in volumes:
         # get info about this volume
-        barcode = volume_barcode_from_folder(tar_file.storage_path)
-        source_path = str(Path(tar_file.storage_path).with_name("%s.pdf" % barcode))
+        source_path = "redacted/%s.pdf" % volume.pk
         print("Downloading %s ..." % source_path)
-        volume = tar_file.volume
         reporter = volume.reporter
         jurisdiction = reporter.jurisdictions.first()
 
@@ -1243,13 +1236,22 @@ def download_pdfs(jurisdiction=None):
         else:
             raise Exception("Failed to find a non-existent path for %s" % new_path)
 
-        # copy file
-        copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=download_files_storage)
+        try:
+            # copy file
+            try:
+                copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=download_files_storage)
+            except IOError:
+                print("  - ERROR: source file not found")
+                continue
 
-        # save PDF location on volume model
-        volume.pdf_file.name = str(new_path)
-        volume.save()
-        print("  - Downloaded to %s" % new_path)
+            # save PDF location on volume model
+            volume.pdf_file.name = str(new_path)
+            volume.save()
+            print("  - Downloaded to %s" % new_path)
+        except:
+            # clean up partial downloads if process is killed
+            download_files_storage.delete(new_path)
+            raise
 
 
 if __name__ == "__main__":
