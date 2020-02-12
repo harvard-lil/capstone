@@ -5,9 +5,10 @@ page_image: img/og_image/tools.png
 meta_description: Tools for accessing caselaw
 {% spaceless %}
 explainer: The capstone of the Caselaw Access Project is a robust set of tools which facilitate access to the cases
-    and their associated metadata. We currently offer five ways to access the data:
+    and their associated metadata. We currently offer six ways to access the data:
     <a href="{% api_url "api-root" %}">API</a>, <a href="{% url "bulk-download" %}">bulk downloads</a>,
-    <a href="{% url "search" %}">search</a>, <a href="{% url "cite_home" host "cite" %}">browse</a>, and a
+    <a href="{% url "search" %}">search</a>, <a href="{% url "cite_home" host "cite" %}">browse</a>,
+    <a href="{% url "download-files" "" %}">derivative downloads</a>, and a
     <a href="{% url "trends" %}">historical trends viewer</a>.
 {% endspaceless %}
 top_section_style: bg-black
