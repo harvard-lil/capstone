@@ -17,7 +17,9 @@ urlpatterns = [
     path('tools/', views.tools, name='tools'),
     path('gallery/', views.gallery, name='gallery'),
     path('api/', views.api, name='api'),
+    path('search/', views.search, name='search'),
     path('search-docs/', MarkdownView.as_view(template_name='search_docs.md'), name='search-docs'),
+    path('trends/', views.trends, name='trends'),
     path('trends-docs/', MarkdownView.as_view(template_name='trends_docs.md'), name='trends-docs'),
     path('action/', MarkdownView.as_view(template_name='action/index.md'), name='action'),
     path('action/guidelines/', MarkdownView.as_view(template_name='action/guidelines.md'), name='action-guidelines'),
@@ -26,6 +28,9 @@ urlpatterns = [
     path('action/case-study-canada/', MarkdownView.as_view(template_name='action/case-study-canada.md'), name='action-case-study-canada'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt',
                                             content_type='text/plain'), name='robots'),
+    path('view/court/<int:court_id>/', views.view_court, name='view_court'),
+    path('view/reporter/<int:reporter_id>/', views.view_reporter, name='view_reporter'),
+    path('view/jurisdiction/<int:jurisdiction_id>/', views.view_jurisdiction, name='view_jurisdiction'),
 
     ### bulk data ###
     path('bulk/download/', user_views.bulk, name='bulk-download'),

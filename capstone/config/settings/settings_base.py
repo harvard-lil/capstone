@@ -134,8 +134,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates'),
-                 os.path.join(BASE_DIR, 'capweb', 'templates'),
-                 os.path.join(BASE_DIR, 'capbrowse', 'templates')], # required by DRF for some reason
+                 os.path.join(BASE_DIR, 'capweb', 'templates')], # required by DRF for some reason
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -531,7 +530,7 @@ LOGGING['loggers'] = {
     # show info for our first-party apps
     **{
         app_name: {'level': 'INFO'}
-        for app_name in ('capapi', 'capbrowse', 'capdb', 'capweb', 'cite', 'config', 'user_data')
+        for app_name in ('capapi', 'capdb', 'capweb', 'cite', 'config', 'user_data')
     },
 }
 LOGGING['formatters'] = {
