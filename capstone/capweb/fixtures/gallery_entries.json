@@ -70,10 +70,10 @@
   "fields": {
     "title": "CAP Search",
     "section": 1,
-    "content": "Our own search utility is a CAPAPI consumer written in Vue with a smattering of python on the back end. Most of the relevant code can be found in the `capbrowse` app in Capstone, our larger codebase for case management.",
+    "content": "Our own search utility is a CAPAPI consumer written in javascript.",
     "image": "capweb.CMSPicture/bytes/filename/mimetype/cap-search.png",
     "page_link": "search",
-    "repo_link": "https://github.com/harvard-lil/capstone/tree/develop/capstone/capbrowse",
+    "repo_link": "https://github.com/harvard-lil/capstone/tree/develop/capstone/static/js/search",
     "order": 20
   }
 },

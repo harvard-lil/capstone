@@ -22,10 +22,11 @@ from django.views import View
 from django.utils.safestring import mark_safe
 
 from capweb.forms import ContactForm
-from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request
+from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
+    page_image_url
 from capweb.models import GallerySection
 
-from capdb.models import Snippet
+from capdb.models import Snippet, Court, Reporter, Jurisdiction
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request
 from capapi.documents import CaseDocument
@@ -446,3 +447,75 @@ def download_manifest_file(request, filepath=""):
             response = HttpResponse(json.dumps(context), content_type='application/json')
 
     return response
+
+
+def view_jurisdiction(request, jurisdiction_id):
+    jurisdiction = get_object_or_404(Jurisdiction, pk=jurisdiction_id)
+
+    fields = OrderedDict([
+        ("ID", jurisdiction.id),
+        ("Name", jurisdiction.name),
+        ("Long Name", jurisdiction.name_long),
+        ("Slug", jurisdiction.slug),
+        ("whitelisted", jurisdiction.whitelisted),
+    ])
+    return render(request, "view_metadata.html", {
+        'fields': fields,
+        'type': 'jurisdiction',
+        'title': jurisdiction.name
+    })
+
+
+def view_reporter(request, reporter_id):
+    reporter = get_object_or_404(Reporter, pk=reporter_id)
+    fields = OrderedDict([
+        ("ID", reporter.id),
+        ("Full Name", reporter.full_name),
+        ("Short Name", reporter.short_name),
+        ("Start Year", reporter.start_year),
+        ("End Year", reporter.end_year),
+        ("Volume Count", reporter.volume_count),
+    ])
+
+    return render(request, "view_metadata.html", {
+        'fields': fields,
+        'type': 'reporter',
+        'title': reporter.short_name
+    })
+
+
+def view_court(request, court_id):
+    court = get_object_or_404(Court, pk=court_id)
+    fields = OrderedDict([
+        ("ID", court.id),
+        ("Name", court.name),
+        ("Name Abbreviation", court.name_abbreviation),
+        ("Jurisdiction", court.jurisdiction.name),
+        ("Slug", court.slug),
+    ])
+
+    return render(request, "view_metadata.html", {
+        'fields': fields,
+        'type': 'court',
+        'title': court.name_abbreviation
+    })
+
+
+def search(request):
+    return render(request, "search.html")
+
+
+def trends(request):
+    q = request.GET.get('q')
+    if q:
+        title_suffix = ' for "%s"' % q
+    else:
+        title_suffix = ''
+    if settings.SCREENSHOT_FEATURE:
+        page_image = page_image_url(request.build_absolute_uri(), targets=['.graph-container'], waits=['#screenshot-ready'])
+    else:
+        page_image = None
+    return render(request, "trends.html", {
+        'title': 'Historical Trends' + title_suffix,
+        'page_image': page_image,
+    })
