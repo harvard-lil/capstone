@@ -6,6 +6,7 @@ import subprocess
 from collections import OrderedDict
 from pathlib import Path
 from wsgiref.util import FileWrapper
+from natsort import natsorted
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core import signing
@@ -315,7 +316,6 @@ def download_files(request, filepath=""):
 
         response = StreamingHttpResponse(FileWrapper(open(absolute_path, 'rb'), chunk_size), content_type=content_type)
         response['Content-Length'] = download_files_storage.size(absolute_path)
-        response['Content-Disposition'] = 'attachment; filename="%s"' % filepath.split('/')[-1]
 
         return response
 
@@ -367,7 +367,7 @@ def download_files(request, filepath=""):
 
 
         # sort files alphabetically
-        files = sorted(files, key=lambda x: x["name"].lower())
+        files = natsorted(files, key=lambda x: x["name"].lower())
 
         context = {
             'files': files,
@@ -410,11 +410,11 @@ def download_manifest_file(request, filepath=""):
             "last_modified": download_files_storage.get_modified_time(fp).isoformat()}
 
     # send back file for downloading
-    output = io.StringIO()
     fieldnames = ["path", "size", "last_modified"]
 
     # if csv requested
     if "%s.csv" % filename in filepath:
+        output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=fieldnames)
         writer.writeheader()
         for root, dirs, files in os.walk(manifest_dir):
@@ -422,9 +422,8 @@ def download_manifest_file(request, filepath=""):
                 writer.writerow(get_file_info(os.path.join(root, name)))
             for name in dirs:
                 writer.writerow(get_file_info(os.path.join(root, name)))
-
         response = HttpResponse(output.getvalue(), content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename='+filepath
+
     # if json requested
     elif "%s.json" % filename in filepath:
         all_files = []
@@ -433,12 +432,8 @@ def download_manifest_file(request, filepath=""):
                 all_files.append(get_file_info(os.path.join(root, name)))
             for name in dirs:
                 all_files.append(get_file_info(os.path.join(root, name)))
-        if is_browser_request(request):
-            json.dump(all_files, output)
-            response = HttpResponse(output.getvalue(), content_type='application/json')
-            response['Content-Disposition'] = 'attachment; filename=' + filepath
-        else:
-            response = HttpResponse(json.dumps(all_files), content_type='application/json')
+        response = HttpResponse(json.dumps(all_files), content_type='application/json')
+
     # if another file requested
     else:
         context = {
