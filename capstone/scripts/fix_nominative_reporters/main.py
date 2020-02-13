@@ -2,9 +2,9 @@ import csv
 import re
 from copy import deepcopy
 from pathlib import Path
+from natsort import natsorted
 
 from capdb.models import Reporter, EditLog, VolumeMetadata, Citation
-from capweb.helpers import natural_sort_key
 
 """
     This script fixes our handling of nominative reporters. We currently handle nominative reporters like this:
@@ -139,8 +139,7 @@ def main(dry_run='true'):
             ## prepare to process each volume in nominative reporter
 
             print("- update volumes")
-            volumes = list(nominative_reporter.volumes.filter(duplicate=False).order_by('volume_number'))
-            volumes.sort(key=lambda v: natural_sort_key(v.volume_number))
+            volumes = natsorted(nominative_reporter.volumes.filter(duplicate=False).order_by('volume_number'), key=lambda v: v.volume_number)
             last_volume_numbers = []
             volume_index = 0
 
