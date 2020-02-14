@@ -26,7 +26,7 @@ def full_url(document):
     return "{}{}".format(reverse('cite_home'), document.frontend_url.replace('/', '', 1))
 
 @pytest.mark.django_db
-def test_home(client, django_assert_num_queries, ingest_metadata):
+def test_home(client, django_assert_num_queries, ingest_django_fixtures):
     """ Test / """
     with django_assert_num_queries(select=2):
         response = client.get(reverse('cite_home', host='cite'))

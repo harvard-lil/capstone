@@ -63,6 +63,6 @@ def test_search_reporter_list(ingest_case_xml):
     update_snippets.search_reporter_list()
     reporters = Snippet.objects.get(label='search_reporter_list')
     parsed = json.loads(reporters.contents)
-    assert len(parsed) == 647
+    assert len(parsed) == 649
     assert parsed[-1][1] == 'York Leg. Rec.- York Legal Record'
 

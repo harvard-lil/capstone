@@ -1,8 +1,7 @@
 import pytest
 
 import fabfile
-from capdb.models import TrackingToolUser, BookRequest, ProcessStep, TrackingToolLog, VolumeMetadata, PageXML, \
-    CaseXML
+from capdb.models import VolumeMetadata, PageXML, CaseXML
 from scripts.helpers import parse_xml, serialize_xml
 
 @pytest.mark.django_db
@@ -13,10 +12,6 @@ def test_ingested_xml(ingest_volume_xml):
     # volume metadata
     assert ingest_volume_xml.metadata.hollis_number == "005457617"
     assert ingest_volume_xml.metadata.rare is False  # boolean conversion
-
-    # tracking tool relationships
-    assert ingest_volume_xml.metadata.reporter.full_name == "Illinois Appellate Court Reports"
-    assert ingest_volume_xml.metadata.tracking_tool_logs.first().pstep.pk == 'Prqu'
 
     # case and page relationships
     assert ingest_volume_xml.case_xmls.count() == 1
@@ -72,29 +67,3 @@ def test_update_dup_checking(ingest_volume_xml, ingest_case_xml):
 
     assert 'Inversion' not in ingest_case_xml.orig_xml
     assert 'Inversion' not in page_xml.orig_xml
-
-@pytest.mark.django_db
-def test_sync_metadata(ingest_metadata):
-    # helper to get count of all migrated models
-    models = [VolumeMetadata, TrackingToolLog, ProcessStep, BookRequest, TrackingToolUser]
-    def get_counts():
-        return {Model: Model.objects.count() for Model in models}
-
-    # get count for each model following initial ingest_metadata() fixture
-    orig_counts = get_counts()
-
-    # make sure they all loaded
-    for Model, count in orig_counts.items():
-        assert count > 0, "%s did not load any items during ingest_metadata" % Model
-
-    # delete a couple of objects
-    for Model in [TrackingToolLog, BookRequest]:
-        Model.objects.first().delete()
-
-    # sync metadata
-    fabfile.sync_metadata()
-
-    # make sure deleted objects were restored
-    new_counts = get_counts()
-    assert new_counts == orig_counts
-

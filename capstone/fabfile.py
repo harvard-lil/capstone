@@ -1,5 +1,4 @@
 import csv
-import glob
 import gzip
 import hashlib
 import os
@@ -32,9 +31,9 @@ from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdic
     Court
 
 import capdb.tasks as tasks
-from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
+from scripts import set_up_postgres, data_migrations, ingest_by_manifest, mass_update, \
     validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, update_snippets
-from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace, volume_barcode_from_folder, \
+from scripts.helpers import parse_xml, serialize_xml, copy_file, volume_barcode_from_folder, \
     up_to_date_volumes, storage_lookup
 
 
@@ -132,33 +131,44 @@ def validate_private_volumes():
     """ Confirm that all volmets files in private S3 bin match S3 inventory. """
     validate_private_volumes_script.validate_private_volumes()
 
+
+fixtures = [
+    ('default', 'capweb', ('galleryentry', 'cmspicture', 'gallerysection')),
+    ('capdb', 'capdb', ('jurisdiction', 'reporter', 'volumemetadata')),
+]
+
 @task
 def ingest_fixtures():
-    management.call_command(
-        'loaddata',
-        'capdb/fixtures/jurisdictions.json',
-        'capdb/fixtures/reporters.json',
-        database='capdb')
+    for db, app, models in fixtures:
+        management.call_command('loaddata', *models, database=db)
 
-    management.call_command(
-        'loaddata',
-        'capweb/fixtures/gallery_sections.json',
-        'capweb/fixtures/gallery_entries.json',
-        'capweb/fixtures/gallery_pictures.json',
-        database='default')
 
 @task
-def ingest_metadata():
-    ingest_fixtures()
-    ingest_tt_data.ingest(False)
+def update_fixtures():
+    from django.core import serializers
 
-@task
-def sync_metadata():
-    """
-    Takes data from tracking tool db and translates them to the postgres db.
-    Changes field names according to maps listed at the top of ingest_tt_data script.
-    """
-    ingest_tt_data.ingest(True)
+    # write full tables
+    for db, app, models in fixtures:
+        for model in models:
+            if model == 'volumemetadata':
+                continue  # handle specially below
+            output_path = Path(settings.BASE_DIR, '%s/fixtures/%s.%s.json.gz' % (app, model, db))
+            print("Exporting %s to %s" % (model, output_path))
+            with gzip.open(str(output_path), 'wt') as out:
+                management.call_command('dumpdata', '%s.%s' % (app, model), database=db, stdout=out, indent=2)
+
+    # write selected volumes with associated relationships
+    barcodes = ('32044057891608', '32044061407086', '32044057892259', 'WnApp_199')
+    to_serialize = set()
+    for volume in VolumeMetadata.objects.filter(pk__in=barcodes).select_related('request', 'created_by'):
+        to_serialize.add(volume)
+        if volume.request:
+            to_serialize.add(volume.request)
+        if volume.created_by:
+            to_serialize.add(volume.created_by)
+    serializer = serializers.get_serializer("json")()
+    with gzip.open(str(Path(settings.BASE_DIR, "capdb/fixtures/volumemetadata.capdb.json.gz")), "wt") as out:
+        serializer.serialize(to_serialize, stream=out, indent=2)
 
 @task
 def run_pending_migrations():
@@ -229,8 +239,6 @@ def migrate():
     management.call_command('migrate', database="default")
     management.call_command('migrate', database="capdb")
     management.call_command('migrate', database="user_data")
-    if settings.USE_TEST_TRACKING_TOOL_DB:
-        management.call_command('migrate', database="tracking_tool")
 
     update_postgres_env()
 
@@ -253,9 +261,7 @@ def rebuild_search_index(force=False):
 
 @task
 def load_test_data():
-    if settings.USE_TEST_TRACKING_TOOL_DB:
-        management.call_command('loaddata', 'test_data/tracking_tool.json', database="tracking_tool")
-    ingest_metadata()
+    ingest_fixtures()
     total_sync_with_s3()
 
 
@@ -290,133 +296,6 @@ def validate_casemets_alto_link(sample_size=100000):
     print("Tested these CaseXML IDs:")
     print(tested)
 
-
-
-@task
-def add_test_case(*barcodes):
-    """
-        Write test data and fixtures for given volume and case. Example: fab add_test_case:32044057891608_0001
-
-        NOTE:
-            DATABASES['tracking_tool'] must point to real tracking tool db.
-            STORAGES['ingest_storage'] must point to real harvard-ftl-shared.
-
-        Output is stored in test_data/tracking_tool.json and test_data/from_vendor.
-        Tracking tool user details are anonymized.
-    """
-
-    from django.core import serializers
-    from tracking_tool.models import Volumes, Reporters, BookRequests, Pstep, Eventloggers, Hollis, Users
-    from capdb.storages import ingest_storage
-
-    ## write S3 files to local disk
-
-    for barcode in barcodes:
-
-        print("Writing data for", barcode)
-
-        volume_barcode, case_number = barcode.rsplit('_', 1)
-
-        # get volume dir
-        source_volume_dirs = list(ingest_storage.iter_files(volume_barcode, partial_path=True))
-        if not source_volume_dirs:
-            print("ERROR: Can't find volume %s. Skipping!" % volume_barcode)
-        source_volume_dir = sorted(source_volume_dirs, reverse=True)[0]
-
-        # make local dir
-        dest_volume_dir = os.path.join(settings.BASE_DIR, 'test_data/from_vendor/%s' % os.path.basename(source_volume_dir))
-        os.makedirs(dest_volume_dir, exist_ok=True)
-
-        # copy volume-level files
-        for source_volume_path in ingest_storage.iter_files(source_volume_dir):
-            dest_volume_path = os.path.join(dest_volume_dir, os.path.basename(source_volume_path))
-            if '.' in os.path.basename(source_volume_path):
-                # files
-                copy_file(source_volume_path, dest_volume_path, from_storage=ingest_storage)
-            else:
-                # dirs
-                os.makedirs(dest_volume_path, exist_ok=True)
-
-        # read volmets xml
-        source_volmets_path = glob.glob(os.path.join(dest_volume_dir, '*.xml'))[0]
-        with open(source_volmets_path) as volmets_file:
-            volmets_xml = parse_xml(volmets_file.read())
-
-        # copy case file and read xml
-        source_case_path = volmets_xml.find('mets|file[ID="casemets_%s"] > mets|FLocat' % case_number).attr(resolve_namespace('xlink|href'))
-        source_case_path = os.path.join(source_volume_dir, source_case_path)
-        dest_case_path = os.path.join(dest_volume_dir, source_case_path[len(source_volume_dir)+1:])
-        copy_file(source_case_path, dest_case_path, from_storage=ingest_storage)
-        with open(dest_case_path) as case_file:
-            case_xml = parse_xml(case_file.read())
-
-        # copy support files for case
-        for flocat_el in case_xml.find('mets|FLocat'):
-            source_path = os.path.normpath(os.path.join(os.path.dirname(source_case_path), flocat_el.attrib[resolve_namespace('xlink|href')]))
-            dest_path = os.path.join(dest_volume_dir, source_path[len(source_volume_dir) + 1:])
-            copy_file(source_path, dest_path, from_storage=ingest_storage)
-
-        # remove unused files from volmets
-        local_files = glob.glob(os.path.join(dest_volume_dir, '*/*'))
-        local_files = [x[len(dest_volume_dir)+1:] for x in local_files]
-        for flocat_el in volmets_xml.find('mets|FLocat'):
-            if not flocat_el.attrib[resolve_namespace('xlink|href')] in local_files:
-                file_el = flocat_el.getparent()
-                file_el.getparent().remove(file_el)
-        with open(source_volmets_path, "wb") as out_file:
-            out_file.write(serialize_xml(volmets_xml))
-
-    ## load metadata into JSON fixtures from tracking tool
-
-    to_serialize = set()
-    user_ids = set()
-    volume_barcodes = [
-        volume_barcode_from_folder(os.path.basename(d)) for d in
-        glob.glob(os.path.join(settings.BASE_DIR, 'test_data/from_vendor/*'))
-    ]
-
-    for volume_barcode in volume_barcodes:
-
-        print("Updating metadata for", volume_barcode)
-
-        try:
-            tt_volume = Volumes.objects.get(bar_code=volume_barcode)
-        except Volumes.DoesNotExist:
-            raise Exception("Volume %s not found in the tracking tool -- is settings.py configured to point to live tracking tool data?" % volume_barcode)
-        to_serialize.add(tt_volume)
-
-        user_ids.add(tt_volume.created_by)
-
-        tt_reporter = Reporters.objects.get(id=tt_volume.reporter_id)
-        to_serialize.add(tt_reporter)
-
-        to_serialize.update(Hollis.objects.filter(reporter_id=tt_reporter.id))
-
-        request = BookRequests.objects.get(id=tt_volume.request_id)
-        request.from_field = request.recipients = 'example@example.com'
-        to_serialize.add(request)
-
-        for event in Eventloggers.objects.filter(bar_code=tt_volume.bar_code):
-            if not event.updated_at:
-                event.updated_at = event.created_at
-            to_serialize.add(event)
-            user_ids.add(event.created_by)
-            if event.pstep_id:
-                pstep = Pstep.objects.get(step_id=event.pstep_id)
-                to_serialize.add(pstep)
-
-    for i, user in enumerate(Users.objects.filter(id__in=user_ids)):
-        user.email = "example%s@example.com" % i
-        user.password = 'password'
-        user.remember_token = ''
-        to_serialize.add(user)
-
-    serializer = serializers.get_serializer("json")()
-    with open(os.path.join(settings.BASE_DIR, "test_data/tracking_tool.json"), "w") as out:
-        serializer.serialize(to_serialize, stream=out, indent=2)
-
-    ## update inventory files
-    write_inventory_files()
 
 @task
 def bag_jurisdiction(name):
@@ -566,15 +445,6 @@ def create_case_fixtures_for_benchmarking(amount=50000, randomize_casemets=False
     This tasks assumes the existence of some casemet xmls in test_data
 
     Make sure that you have the necessary jurisdictions for this task.
-    It might be a good idea to:
-        1. point tracking_tool to prod (WARNING: you are dealing with prod data be very very careful!)
-        2. go to ingest_tt_data.py's `ingest` method and comment out all
-            copyModel statements except
-            `copyModel(Reporters, Reporter, reporter_field_map, dupcheck)`
-            since Reporter is required for populating jurisdictions
-
-        3. run `fab ingest_metadata`
-        4. remove pointer to prod tracking_tool db!!
     """
     from test_data.test_fixtures.factories import CaseXMLFactory
     if randomize_casemets:

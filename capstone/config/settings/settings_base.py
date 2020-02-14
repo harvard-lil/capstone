@@ -36,7 +36,6 @@ INSTALLED_APPS = [
 
     # ours
     'capdb',
-    'tracking_tool',
     'capapi',
     'django_sql_trace',
     'capweb',
@@ -156,7 +155,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-USE_TEST_TRACKING_TOOL_DB = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -182,15 +180,10 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     },
-    'tracking_tool': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'test_data/tracking_tool.sqlite'),
-    },
 }
 
 # make sure tracking_tool and capdb apps use the correct DBs:
 DATABASE_ROUTERS = [
-    'tracking_tool.routers.TrackingToolDatabaseRouter',
     'capdb.routers.CapDBRouter',
     'user_data.routers.UserDataRouter',
 ]
