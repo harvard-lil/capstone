@@ -137,7 +137,6 @@ def user_details(request):
         'page_name': 'user-details',
         'research_contract': request.user.research_contracts.first(),
         'research_request': request.user.research_requests.first(),
-        'NEW_RESEARCHER_FEATURE': settings.NEW_RESEARCHER_FEATURE,
     }
     return render(request, 'registration/user-details.html', context)
 
@@ -231,10 +230,7 @@ def request_legacy_research_access(request):
 
         return HttpResponseRedirect(reverse('unaffiliated-research-request-success'))
 
-    return render(request, 'research_request/unaffiliated_research_request.html', {
-        'form': form,
-        'NEW_RESEARCHER_FEATURE': settings.NEW_RESEARCHER_FEATURE,
-    })
+    return render(request, 'research_request/unaffiliated_research_request.html', {'form': form})
 
 
 @login_required
@@ -256,10 +252,7 @@ def request_unaffiliated_research_access(request):
 
         return HttpResponseRedirect(reverse('unaffiliated-research-request-success'))
 
-    return render(request, 'research_request/unaffiliated_research_request.html', {
-        'form': form,
-        'NEW_RESEARCHER_FEATURE': settings.NEW_RESEARCHER_FEATURE,
-    })
+    return render(request, 'research_request/unaffiliated_research_request.html', {'form': form})
 
 
 @login_required

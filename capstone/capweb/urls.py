@@ -73,24 +73,19 @@ urlpatterns = [
     path('user/history', user_views.user_history, name='user-history'),
     path('user/resend-verification/', user_views.resend_verification, name='resend-verification'),
     path('user/delete-account', user_views.delete_account, name='delete_account'),
+
     # research access requests
-    ]+([
-        path('user/research/', TemplateView.as_view(template_name='research_request/index.html', extra_context={'HARVARD_RESEARCHER_FEATURE': settings.HARVARD_RESEARCHER_FEATURE}), name='research-options'),
-        path('user/research/approve/', user_views.approve_research_access, name='research-approval'),
-        path('user/research/affiliated/', user_views.request_affiliated_research_access, name='affiliated-research-request'),
-        path('user/research/affiliated-success/', TemplateView.as_view(template_name='research_request/affiliated_research_request_success.html'), name='affiliated-research-request-success'),
-        path('user/research/unaffiliated/', user_views.request_unaffiliated_research_access, name='unaffiliated-research-request'),
-        path('user/research/unaffiliated-success/', TemplateView.as_view(template_name='research_request/unaffiliated_research_request_success.html'), name='unaffiliated-research-request-success'),
-        ]+([
-            path('user/research/harvard-intro/', user_views.request_harvard_research_access_intro, name='harvard-research-request-intro'),
-            path('user/research/non-harvard-email/', TemplateView.as_view(template_name='research_request/non_harvard_email.html'), name='non-harvard-email'),
-            path('user/research/harvard/', user_views.request_harvard_research_access, name='harvard-research-request'),
-            path('user/research/harvard-success/', TemplateView.as_view(template_name='research_request/harvard_research_request_success.html'), name='harvard-research-request-success'),
-        ] if settings.HARVARD_RESEARCHER_FEATURE else [])+[
-    ] if settings.NEW_RESEARCHER_FEATURE else [
-        path('user/research/', user_views.request_legacy_research_access, name='unaffiliated-research-request'),
-        path('user/research/success/', TemplateView.as_view(template_name='research_request/unaffiliated_research_request_success.html'), name='unaffiliated-research-request-success'),
-    ])
+    path('user/research/', TemplateView.as_view(template_name='research_request/index.html'), name='research-options'),
+    path('user/research/approve/', user_views.approve_research_access, name='research-approval'),
+    path('user/research/affiliated/', user_views.request_affiliated_research_access, name='affiliated-research-request'),
+    path('user/research/affiliated-success/', TemplateView.as_view(template_name='research_request/affiliated_research_request_success.html'), name='affiliated-research-request-success'),
+    path('user/research/unaffiliated/', user_views.request_unaffiliated_research_access, name='unaffiliated-research-request'),
+    path('user/research/unaffiliated-success/', TemplateView.as_view(template_name='research_request/unaffiliated_research_request_success.html'), name='unaffiliated-research-request-success'),
+    path('user/research/harvard-intro/', user_views.request_harvard_research_access_intro, name='harvard-research-request-intro'),
+    path('user/research/non-harvard-email/', TemplateView.as_view(template_name='research_request/non_harvard_email.html'), name='non-harvard-email'),
+    path('user/research/harvard/', user_views.request_harvard_research_access, name='harvard-research-request'),
+    path('user/research/harvard-success/', TemplateView.as_view(template_name='research_request/harvard_research_request_success.html'), name='harvard-research-request-success'),
+]
 
 if settings.DEBUG:
     # debugging routes to see error pages

@@ -68,9 +68,7 @@
             You submitted a request for unmetered access on {{ research_request.submitted_date }}
           {% else %}
             Are you a research scholar? <br/>
-            <a href="{% if NEW_RESEARCHER_FEATURE %}{% url 'research-options' %}{% else %}{% url 'unaffiliated-research-request' %}{% endif %}">
-              Request access
-            </a>
+            <a href="{% url 'research-options' %}">Request access</a>
           {% endif %}
         </div>
       </div>
