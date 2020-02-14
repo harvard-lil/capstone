@@ -96,7 +96,6 @@ MIDDLEWARE = [
     'capapi.middleware.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'capapi.middleware.AuthenticationMiddleware',
-    'capapi.middleware.RangeRequestMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
@@ -584,7 +583,6 @@ NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
 NGRAM_THREAD_COUNT = 4
 
 # feature flags
-RANGE_REQUEST_FEATURE = False
 SCREENSHOT_FEATURE = False
 
 HARVARD_IP_RANGES = """

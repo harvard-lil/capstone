@@ -257,39 +257,6 @@ def test_case_export_download(request, client_fixture, export_fixture, status_co
     else:
         check_response(response, status_code=status_code)
 
-@pytest.mark.parametrize("client_fixture, export_fixture, range_header, status_code, size, content", [
-    ("client", "case_export", "bytes=5-6", 206, 2, "zi"),
-    ("client", "case_export", "bytes=5-", 206, 11, "zip content"),
-    ("client", "case_export", "bytes=5-15", 206, 11, "zip content"),
-    ("client", "case_export", "bytes=5-100", 206, 11, "zip content"),
-    ("client", "case_export", "bytes=-6", 206, 6, "ontent"),
-    ("client", "case_export", "bytes=0-6", 206, 7, "fake zi"),
-    ("client", "case_export", "bytes=0-", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=0-100", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=0-15", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=0-14", 206, 15, "fake zip conten"),
-    ("client", "case_export", "bytes=10-0", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=20-", 416, 16, "fake zip content"),
-    ("client", "case_export", "bytes=-20", 416, 16, "fake zip content"),
-    ("client", "case_export", "bytes=-", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=hello", 200, 16, "fake zip content"),
-    ("client", "case_export", "hello=world", 200, 16, "fake zip content"),
-])
-@pytest.mark.django_db
-def test_ranged_case_export_download(request, client_fixture, export_fixture, range_header, status_code, size, content, settings):
-    settings.RANGE_REQUEST_FEATURE = True
-    client = request.getfuncargvalue(client_fixture)
-    export = request.getfuncargvalue(export_fixture)
-    response = client.get(api_reverse('caseexport-download', args=[export.pk]),
-                          HTTP_RANGE=range_header)
-    response_content = list(response.streaming_content)[0]
-    if status_code in [200, 416]:
-        check_response(response, status_code=status_code, content_type='application/zip')
-    else:
-        assert response.status_code == status_code
-        assert len(response_content) == size
-        assert response_content == bytes(content, 'utf8')
-
 ### research access request ###
 
 @pytest.mark.django_db
