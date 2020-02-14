@@ -12,7 +12,7 @@ extra_head: {% stylesheet 'docs' %}
 <!-- UNRELEASED
 # January 24, 2020
 
-**API**
+**API:**
 
 * Cases Endpoint
     * Default sort for full-text search is now relevance, rather than decision date.
@@ -20,6 +20,12 @@ extra_head: {% stylesheet 'docs' %}
     * Default sort for full-text search is now relevance, rather than decision date.
     * Added Sorting field to case endpoint searches. You can now sort by decision date, and relevance.
 -->
+
+# January 19, 2020
+
+**Security:**
+
+* Add a dmarc record for the case.law domain. Thanks to Kashif Shoukat for the suggestion!
 
 # January 16, 2020
 
