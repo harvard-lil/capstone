@@ -66,7 +66,7 @@ def verify_user(request, user_id, activation_nonce):
             # This will sign them up for the mailing list if they selected the mailing_list checkbox.
             if settings.MAILCHIMP['api_key'] and user.mailing_list:
                 def send_error_report_email(user_email, exception):
-                    msg = EmailMessage('Mailing List Signup Error',
+                    msg = EmailMessage('Mailing List Signup Error: {}'.format(user_email),
                                        str({"user": user_email, "exception": exception}),
                                        settings.DEFAULT_FROM_EMAIL, [settings.DEFAULT_FROM_EMAIL])
                     msg.content_subtype = "text/plain"
@@ -202,7 +202,8 @@ def request_harvard_research_access(request):
             'contract_html': contract.contract_html,
             'signed_date': contract.user_signature_date,
         })
-        msg = EmailMessage('CAP Bulk Access Agreement', message, settings.DEFAULT_FROM_EMAIL, [settings.DEFAULT_FROM_EMAIL, request.user.email])
+        subject = 'CAP Bulk Access Agreement for {}'.format(name)
+        msg = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [settings.DEFAULT_FROM_EMAIL, request.user.email])
         msg.content_subtype = "html"  # Main content is text/html
         msg.send()
 
@@ -226,7 +227,8 @@ def request_legacy_research_access(request):
         message = loader.get_template('research_request/emails/legacy_request_email.txt').render({
             'data': form.cleaned_data,
         })
-        send_contact_email('CAP research scholar application', message, request.user.email)
+        subject = 'CAP research scholar application for {}'.format(name)
+        send_contact_email(subject, message, request.user.email)
 
         return HttpResponseRedirect(reverse('unaffiliated-research-request-success'))
 
@@ -248,7 +250,8 @@ def request_unaffiliated_research_access(request):
         message = loader.get_template('research_request/emails/unaffiliated_request_email.txt').render({
             'data': form.cleaned_data,
         })
-        send_contact_email('CAP independent research scholar application', message, request.user.email)
+        subject = 'CAP independent research scholar application for {}'.format(name)
+        send_contact_email(subject, message, request.user.email)
 
         return HttpResponseRedirect(reverse('unaffiliated-research-request-success'))
 
@@ -276,7 +279,8 @@ def request_affiliated_research_access(request):
         })
         emails = [settings.DEFAULT_FROM_EMAIL] + \
                  [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
-        send_mail('CAP research contract application', message, settings.DEFAULT_FROM_EMAIL, emails)
+        subject = 'CAP research scholar application for {}'.format(name)
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, emails)
 
         return HttpResponseRedirect(reverse('affiliated-research-request-success'))
 
@@ -313,7 +317,8 @@ def approve_research_access(request):
                 })
                 emails = [contract.user.email, settings.DEFAULT_FROM_EMAIL] + \
                          [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
-                msg = EmailMessage('CAP Bulk Access Agreement', message, settings.DEFAULT_FROM_EMAIL, emails)
+                subject = 'CAP Bulk Access Agreement for {} {}'.format(contract.user.first_name, contract.user.last_name)
+                msg = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, emails)
                 msg.content_subtype = "html"  # Main content is text/html
                 msg.send()
 
@@ -337,7 +342,9 @@ def approve_research_access(request):
             })
             emails = [contract.user.email, settings.DEFAULT_FROM_EMAIL] + \
                      [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
-            send_mail('Your CAP unmetered access application has been denied', message, settings.DEFAULT_FROM_EMAIL, emails)
+            subject = 'CAP unmetered access application denied for {} {}'.format(contract.user.first_name,
+                                                                                 contract.user.last_name)
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, emails)
 
             # show status message
             approver_message = "Research access for %s denied" % contract.name
@@ -399,7 +406,7 @@ def reset_api_key(request):
         "School Library Innovation Lab")
 
         send_mail(
-            'Case.law: API Key Reset',
+            'Case.law: API Key Reset for {} {}'.format(request.user.first_name, request.user.last_name),
             message.format(request.user.first_name, request.user.last_name),
             settings.DEFAULT_FROM_EMAIL, # from email
             [ settings.DEFAULT_FROM_EMAIL, request.user.email ], #to email, (sends a copy to us)
