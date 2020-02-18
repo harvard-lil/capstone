@@ -104,7 +104,11 @@ function addJurHrefs() {
       if (child.classList && child.classList.value.substring("state") !== -1) {
         // mapSettings lives in index.html, which calls this js file. eslint hates that.
         // eslint-disable-next-line
-        el.setAttribute("href", mapSettings.jurisdictionUrl.replace("JURISDICTION", jurisdiction_translation[child.id]['slug']));
+        let childID = child.id;
+        if (childID.indexOf('Dakota-Territory') > -1) {
+          childID = 'Dakota-Territory'
+        }
+        el.setAttribute("href", mapSettings.jurisdictionUrl.replace("JURISDICTION", jurisdiction_translation[childID]['slug']));
         el.setAttribute("target", "_blank");
       }
     });
