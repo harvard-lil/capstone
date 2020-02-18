@@ -276,8 +276,7 @@ will be installed by set_up_postgres.py; this is handy for development.
 To write test data and fixtures for given volume and case:
 run the fab command `fab add_test_case` with a volume barcode
 (like `fab add_test_case:32044057891608_0001`)
-- In settings.py, you will need to point DATABASES['tracking_tool'] to the real tracking tool db
-- You will also need to point STORAGES['ingest_storage'] to real harvard-ftl-shared
+- You will need to point STORAGES['ingest_storage'] to real harvard-ftl-shared
 
 ### Working with javascript <a id="working-with-javascript"></a>
 

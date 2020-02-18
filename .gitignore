@@ -13,7 +13,6 @@ celerybeat-schedule.db
 # pytest
 .cache
 .pytest_cache
-tracking_tool.sqlite
 .coverage
 
 capstone/bulk-data/
