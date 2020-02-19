@@ -8,6 +8,7 @@ from django.views.generic import TemplateView
 from capapi.views import user_views
 from capapi.forms import LoginForm
 
+from capweb.helpers import safe_domains
 
 
 urlpatterns = [
@@ -63,7 +64,7 @@ urlpatterns = [
     ### user account pages ###
 
     # All templates live in capapi/registration for now
-    path('user/login/', auth_views.LoginView.as_view(form_class=LoginForm), name='login'),
+    path('user/login/', auth_views.LoginView.as_view(form_class=LoginForm, success_url_allowed_hosts=safe_domains), name='login'),
     path('user/register/', user_views.register_user, name='register'),
     path('user/verify-user/<int:user_id>/<activation_nonce>/', user_views.verify_user, name='verify-user'),
     path('user/reset-api-key/', user_views.reset_api_key, name='reset-api-key'),

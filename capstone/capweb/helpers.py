@@ -287,3 +287,6 @@ def is_browser_request(request):
     """
     drf_renderer = DefaultContentNegotiation().select_renderer(RestRequest(request), [renderers.JSONRenderer, renderers.TemplateHTMLRenderer])
     return drf_renderer[0] is renderers.TemplateHTMLRenderer
+
+
+safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
