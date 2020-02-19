@@ -2,7 +2,6 @@ import bisect
 import re
 import urllib
 from collections import OrderedDict, defaultdict
-from functools import reduce
 from pathlib import Path
 from rest_framework import viewsets, renderers, mixins, exceptions
 from rest_framework.decorators import action
@@ -72,10 +71,7 @@ class CAPFiltering(FilteringFilterBackend):
 
         def tokenize(filter_values):
             # takes each entry in filter_values and splits them on non alphanumeric characters into separate entries
-            output = reduce(
-                lambda tokenized_list, current_term: tokenized_list + re.split(r'[^a-zA-Z0-9]', current_term),
-                filter_values, [])
-            return(output)
+            return [s for current_term in filter_values for s in re.split(r'[^a-zA-Z0-9]+', current_term) if s]
 
         query_params = super().get_filter_query_params(request, view)
 
