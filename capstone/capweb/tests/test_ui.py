@@ -79,7 +79,7 @@ def test_screenshot(client, live_server, settings, ngrammed_cases):
     settings.SCREENSHOT_FEATURE = True
     settings.DEBUG = True  # so view expects an http url
     live_server_port = live_server.url.rsplit(':', 1)[1]
-    with mock.patch('capweb.views._safe_domains', ['case.test:%s' % live_server_port]):
+    with mock.patch('capweb.views.safe_domains', ['case.test:%s' % live_server_port]):
 
         # url we want a screenshot of -- .graph-container in /trends/?q=the
         target_url = reverse('trends', port=live_server_port).replace(':8000', '') + '?q=the'

@@ -23,7 +23,7 @@ from django.utils.safestring import mark_safe
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
-    page_image_url
+    page_image_url, safe_domains
 from capweb.models import GallerySection
 
 from capdb.models import Snippet, Court, Reporter, Jurisdiction
@@ -223,7 +223,6 @@ class MarkdownView(View):
         })
 
 
-_safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
 def screenshot(request):
     """
         Return screenshot of a given URL on this site. This is a light wrapper around "node scripts/screenshot.js".
@@ -249,8 +248,8 @@ def screenshot(request):
         return HttpResponseBadRequest("URL parameter required.")
     if not url.startswith('http://' if settings.DEBUG else 'https://'):
         return HttpResponseBadRequest("Invalid URL protocol.")
-    if not is_safe_url(url, _safe_domains):
-        return HttpResponseBadRequest("URL should match one of these domains: %s" % _safe_domains)
+    if not is_safe_url(url, safe_domains):
+        return HttpResponseBadRequest("URL should match one of these domains: %s" % safe_domains)
 
     # apply target= and wait= query params
     command_args = []
