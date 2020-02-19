@@ -57,6 +57,23 @@ def record_task_status_for_volume(task, volume_id):
 
 ### TASKS ###
 
+@shared_task(bind=True, acks_late=True)
+def remove_ssn_in_volume(self, volume_id):
+    with record_task_status_for_volume(self, volume_id):
+        # fetch cases
+        cases = CaseMetadata.objects.filter(
+            Q(name__regex=r'\y\d\d\d-\d\d\-\d\d\d\d\y') |
+            Q(body_cache__text__regex=r'\y\d\d\d-\d\d\-\d\d\d\d\y'),
+            volume_id=volume_id).select_related('body_cache')
+        for case in cases:
+            for match in set(re.findall(r'\b\d\d\d-\d\d-\d\d\d\d\b', case.body_cache.text + case.name)):
+                replacement = case.no_index_redacted or {}
+                if match in replacement:
+                    continue
+                replacement[match] = "XXX-XX-XXXX"
+                case.no_index_redacted = replacement
+                case.save()
+
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
 def update_in_scope_for_vol(self, volume_id):
     """

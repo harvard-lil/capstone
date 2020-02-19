@@ -1013,6 +1013,9 @@ def retrieve_and_store_images(last_run_before=None):
     """ Retrieve images from inside cases """
     tasks.run_task_for_volumes(tasks.retrieve_images_from_cases, last_run_before=last_run_before)
 
+@task
+def redact_ssns(last_run_before=None):
+    tasks.run_task_for_volumes(tasks.remove_ssn_in_volume, last_run_before=last_run_before)
 
 @task
 def update_reporter_years(reporter_id=None):
