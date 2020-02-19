@@ -1,19 +1,16 @@
-import pytest
 from flaky import flaky
 
 from capapi import api_reverse
 from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
-
-from capdb.models import Citation, Jurisdiction
 from user_data.models import UserHistory
 
 
 @pytest.mark.django_db
-def test_flow(client, whitelisted_case_document):
+def test_flow(client, unrestricted_case, elasticsearch):
     """user should be able to click through to get to different tables"""
     # start with case
-    response = client.get(api_reverse("cases-detail", args=[whitelisted_case_document.id]))
+    response = client.get(api_reverse("cases-detail", args=[unrestricted_case.id]))
     check_response(response)
     content = response.json()
     # onwards to court
@@ -27,14 +24,12 @@ def test_flow(client, whitelisted_case_document):
     response = client.get(jurisdiction_url)
     check_response(response)
     content = response.json()
-    assert content.get("name") == whitelisted_case_document.jurisdiction.name
+    assert content.get("name") == unrestricted_case.jurisdiction.name
 
 
 @pytest.mark.django_db
-def test_jurisdiction_redirect(client, non_whitelisted_case_document):
-
-    jurisdiction = Jurisdiction.objects.get(slug=non_whitelisted_case_document.jurisdiction.slug)
-
+def test_jurisdiction_redirect(client, restricted_case, elasticsearch):
+    jurisdiction = restricted_case.jurisdiction
     response = client.get(api_reverse("cases-list"), {"jurisdiction": jurisdiction.name}, follow=True)
     query_string = response.request.get('QUERY_STRING')
     query, jurisdiction_name = query_string.split('=')
@@ -71,38 +66,38 @@ def test_model_endpoint(request, client, fixture_name, detail_attr, comparison_a
     assert results[comparison_attr] == getattr(instance, comparison_attr)
 
 @pytest.mark.django_db
-def test_cases_endpoint(client, whitelisted_case_document):
+def test_cases_endpoint(client, unrestricted_case, elasticsearch):
     # test list endpoint
     case_list_url = api_reverse("cases-list")
     response = client.get(case_list_url)
-    assert response.json()['count'] == 3
+    assert response.json()['count'] == 1
 
     # test detail endpoint
-    response = client.get(api_reverse("cases-detail", args=[whitelisted_case_document.id]))
+    response = client.get(api_reverse("cases-detail", args=[unrestricted_case.id]))
     check_response(response)
     results = response.json()
-    assert results['name'] == whitelisted_case_document.name
+    assert results['name'] == unrestricted_case.name
 
 # REQUEST AUTHORIZATION
 @pytest.mark.django_db
-def test_unauthorized_request(cap_user, client, non_whitelisted_case_document):
+def test_unauthorized_request(cap_user, client, restricted_case, elasticsearch):
     assert cap_user.case_allowance_remaining == cap_user.total_case_allowance
     client.credentials(HTTP_AUTHORIZATION='Token fake')
-    response = client.get(api_reverse("cases-detail", args=[non_whitelisted_case_document.id]), {"full_case": "true"})
+    response = client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"full_case": "true"})
     check_response(response, status_code=401)
 
     cap_user.refresh_from_db()
     assert cap_user.case_allowance_remaining == cap_user.total_case_allowance
 
 @pytest.mark.django_db
-def test_unauthenticated_full_case(whitelisted_case_document, non_whitelisted_case_document, client):
+def test_unauthenticated_full_case(unrestricted_case, restricted_case, client, elasticsearch):
     """
     we should allow users to get full case without authentication
     if case is whitelisted
     we should allow users to see why they couldn't get full case
     if case is blacklisted
     """
-    case_url = api_reverse("cases-detail", args=[whitelisted_case_document.id])
+    case_url = api_reverse("cases-detail", args=[unrestricted_case.id])
 
     response = client.get(case_url, {"full_case": "true"})
     check_response(response)
@@ -110,7 +105,7 @@ def test_unauthenticated_full_case(whitelisted_case_document, non_whitelisted_ca
     assert "casebody" in content
     assert type(content['casebody']['data']) is dict
 
-    case_url = api_reverse("cases-detail", args=[non_whitelisted_case_document.id])
+    case_url = api_reverse("cases-detail", args=[restricted_case.id])
     response = client.get(case_url, {"full_case": "true"})
     check_response(response)
     content = response.json()
@@ -126,10 +121,10 @@ def test_unauthenticated_full_case(whitelisted_case_document, non_whitelisted_ca
 
 
 @pytest.mark.django_db
-def test_authenticated_full_case_whitelisted(auth_user, auth_client, whitelisted_case_document):
+def test_authenticated_full_case_whitelisted(auth_user, auth_client, unrestricted_case, elasticsearch):
     ### whitelisted jurisdiction should not be counted against the user
 
-    response = auth_client.get(api_reverse("cases-detail", args=[whitelisted_case_document.id]), {"full_case": "true"})
+    response = auth_client.get(api_reverse("cases-detail", args=[unrestricted_case.id]), {"full_case": "true"})
     check_response(response)
     result = response.json()
     casebody = result['casebody']
@@ -142,10 +137,10 @@ def test_authenticated_full_case_whitelisted(auth_user, auth_client, whitelisted
 
 
 @pytest.mark.django_db
-def test_authenticated_full_case_blacklisted(auth_user, auth_client, non_whitelisted_case_document):
+def test_authenticated_full_case_blacklisted(auth_user, auth_client, restricted_case, elasticsearch):
     ### blacklisted jurisdiction cases should be counted against the user
 
-    response = auth_client.get(api_reverse("cases-detail", args=[non_whitelisted_case_document.id]), {"full_case": "true"})
+    response = auth_client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"full_case": "true"})
     check_response(response)
     result = response.json()
     assert result['casebody']['status'] == 'ok'
@@ -156,9 +151,9 @@ def test_authenticated_full_case_blacklisted(auth_user, auth_client, non_whiteli
 
 
 @pytest.mark.django_db
-def test_track_history(auth_user, auth_client, non_whitelisted_case_document, auth_user_factory):
+def test_track_history(auth_user, auth_client, restricted_case, elasticsearch):
     # initial fetch
-    url = api_reverse("cases-detail", args=[non_whitelisted_case_document.id])
+    url = api_reverse("cases-detail", args=[restricted_case.id])
     kwargs = {"full_case": "true"}
     response = auth_client.get(url, kwargs)
     check_response(response)
@@ -184,7 +179,7 @@ def test_track_history(auth_user, auth_client, non_whitelisted_case_document, au
     assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 2
 
     # history object now exists
-    assert [(h.case_id, h.user_id) for h in UserHistory.objects.all()] == [(non_whitelisted_case_document.id, auth_user.id)]
+    assert [(h.case_id, h.user_id) for h in UserHistory.objects.all()] == [(restricted_case.id, auth_user.id)]
 
     # fetch again with history tracking
     auth_user.track_history = True
@@ -208,13 +203,13 @@ def test_track_history(auth_user, auth_client, non_whitelisted_case_document, au
 
 
 @pytest.mark.django_db
-def test_unlimited_access(auth_user, auth_client, non_whitelisted_case_document):
+def test_unlimited_access(auth_user, auth_client, restricted_case, elasticsearch):
     ### user with unlimited access should not have blacklisted cases count against them
     auth_user.total_case_allowance = settings.API_CASE_DAILY_ALLOWANCE
     auth_user.unlimited_access = True
     auth_user.unlimited_access_until = timedelta(hours=24) + timezone.now()
     auth_user.save()
-    case_url = api_reverse("cases-detail", args=[non_whitelisted_case_document.id])
+    case_url = api_reverse("cases-detail", args=[restricted_case.id])
 
     response = auth_client.get(case_url, {"full_case": "true"})
     check_response(response)
@@ -247,14 +242,14 @@ def test_unlimited_access(auth_user, auth_client, non_whitelisted_case_document)
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("client_fixture_name", ["auth_client", "token_auth_client"])
-def test_harvard_access(request, non_whitelisted_case_document, client_fixture_name):
+def test_harvard_access(request, restricted_case, client_fixture_name, elasticsearch):
     ### user with harvard access can download from harvard IPs, even without case allowance
     client = request.getfuncargvalue(client_fixture_name)
     user = client.auth_user
     user.harvard_access = True
     user.case_allowance_remaining = 1
     user.save()
-    case_url = api_reverse("cases-detail", args=[non_whitelisted_case_document.id])
+    case_url = api_reverse("cases-detail", args=[restricted_case.id])
 
     # request works when IP address provided
     response = client.get(case_url, {"full_case": "true"}, HTTP_X_FORWARDED_FOR='128.103.1.1')
@@ -284,8 +279,11 @@ def test_harvard_access(request, non_whitelisted_case_document, client_fixture_n
 
 
 @pytest.mark.django_db
-def test_authenticated_multiple_full_cases(auth_user, auth_client, ingest_elasticsearch):
+def test_authenticated_multiple_full_cases(auth_user, auth_client, case_factory, elasticsearch):
     ### mixed requests should be counted only for blacklisted cases
+
+    [case_factory(jurisdiction__whitelisted=False) for i in range(2)]
+    [case_factory(jurisdiction__whitelisted=True) for i in range(1)]
 
     response = auth_client.get(api_reverse("cases-list"), {"full_case": "true"})
     check_response(response)
@@ -293,20 +291,20 @@ def test_authenticated_multiple_full_cases(auth_user, auth_client, ingest_elasti
 
     # make sure the auth_user's case download number has gone down by 2
     auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 1
+    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 2
 
 
 # CITATION REDIRECTS
 @pytest.mark.django_db
-def test_case_citation_redirect(client, in_re_the_marriage_of_lyle, taylor_v_sprinkle):
+def test_case_citation_redirect(client, case_factory, elasticsearch):
     """Should allow various forms of citation, should redirect to normalized_cite"""
-    citation = Citation.objects.get(case_id=in_re_the_marriage_of_lyle['id'])
+    case = case_factory(citations__cite='123 Mass. App. 456')
+    citation = case.citations.first()
     url = api_reverse("cases-detail", args=[citation.normalized_cite])
 
     # should have received a redirect
     response = client.get(url)
     check_response(response, status_code=302)
-
 
     response = client.get(url, follow=True)
     check_response(response)
@@ -331,18 +329,6 @@ def test_case_citation_redirect(client, in_re_the_marriage_of_lyle, taylor_v_spr
     assert len(content) == 1
     assert content[0]['id'] == case.id
 
-    # citation redirect should work with periods in the url, too
-    citation = Citation.objects.get(case_id=taylor_v_sprinkle['id'])
-    url = api_reverse("case-get-cite", args=[citation.cite])
-    response = client.get(url)
-    check_response(response, status_code=302)
-    response = client.get(url, follow=True)
-    check_response(response)
-    content = response.json()['results']
-    case = citation.case
-    assert len(content) == 1
-    assert content[0]['id'] == case.id
-
 
 # FORMATS
 def get_casebody_data_with_format(client, case_id, body_format):
@@ -354,8 +340,8 @@ def get_casebody_data_with_format(client, case_id, body_format):
     return casebody['data']
 
 @pytest.mark.django_db
-def test_body_format_default(auth_client, non_whitelisted_case_document):
-    data = get_casebody_data_with_format(auth_client, non_whitelisted_case_document.id, "")
+def test_body_format_default(auth_client, restricted_case, elasticsearch):
+    data = get_casebody_data_with_format(auth_client, restricted_case.id, "")
     assert type(data["judges"]) is list
     assert type(data["attorneys"]) is list
     assert type(data["parties"]) is list
@@ -364,8 +350,8 @@ def test_body_format_default(auth_client, non_whitelisted_case_document):
     assert opinion["text"]
 
 @pytest.mark.django_db
-def test_body_format_unrecognized(auth_client, non_whitelisted_case_document):
-    data = get_casebody_data_with_format(auth_client, non_whitelisted_case_document.id, "uh_oh_not_a_real_format")
+def test_body_format_unrecognized(auth_client, restricted_case, elasticsearch):
+    data = get_casebody_data_with_format(auth_client, restricted_case.id, "uh_oh_not_a_real_format")
     assert type(data["judges"]) is list
     assert type(data["attorneys"]) is list
     assert type(data["parties"]) is list
@@ -375,21 +361,21 @@ def test_body_format_unrecognized(auth_client, non_whitelisted_case_document):
 
 
 @pytest.mark.django_db
-def test_body_format_xml(auth_client, non_whitelisted_case_document):
-    data = get_casebody_data_with_format(auth_client, non_whitelisted_case_document.id, "xml")
+def test_body_format_xml(auth_client, restricted_case, elasticsearch):
+    data = get_casebody_data_with_format(auth_client, restricted_case.id, "xml")
     assert "<?xml version=" in data
 
 @pytest.mark.django_db
-def test_body_format_html(auth_client, non_whitelisted_case_document):
-    data = get_casebody_data_with_format(auth_client, non_whitelisted_case_document.id, "html")
-    assert "</h4>" in data
+def test_body_format_html(auth_client, restricted_case, elasticsearch):
+    data = get_casebody_data_with_format(auth_client, restricted_case.id, "html")
+    assert restricted_case.body_cache.html in data
 
 @pytest.mark.django_db
-def test_full_text_search(client, home_insurance_co_of_new_york_v_kirk):
+def test_full_text_search(client, case, elasticsearch):
     # filtering case with full-text search
-    response = client.get(api_reverse("cases-list"), {"search": "Home Insurance"})
+    response = client.get(api_reverse("cases-list"), {"search": case.name})
     content = response.json()
-    assert [home_insurance_co_of_new_york_v_kirk['id']] == [result['id'] for result in content['results']]
+    assert [case.id] == [result['id'] for result in content['results']]
     response = client.get(api_reverse("cases-list"), {"search": "Some other search that doesn't work"})
     content = response.json()
     assert content == { "count":0, "next": None, "previous": None, "facets": {}, "results": []}
@@ -397,32 +383,23 @@ def test_full_text_search(client, home_insurance_co_of_new_york_v_kirk):
 
 # FILTERING
 @pytest.mark.django_db
-def test_filter_case(client, three_case_documents):
+def test_filter_case(client, case_factory, elasticsearch):
+    cases = [case_factory() for _ in range(3)]
     search_url = api_reverse("cases-list")
 
-
-    # filtering case by court
-    response = client.get(search_url, {"court": 'ill'}, follow=True)
-    content = response.json()
-    assert content['count'] == 1
-    results = set([ result['court']['slug'] for result in content['results'] ])
-    assert results == {'ill'}
-
-
     # filtering case by name_abbreviation
-    case_to_test = three_case_documents[0]
+    case_to_test = cases[0]
     response = client.get(search_url, {"name_abbreviation": case_to_test.name_abbreviation})
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
-
 
     # filtering case by name_abbreviation lowercased substring
     response = client.get(search_url, {"name_abbreviation": case_to_test.name_abbreviation.lower()})
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
 
-    # filtering case by court substring
-    case_to_test = three_case_documents[2]
+    # filtering case by court slug
+    case_to_test = cases[2]
     response = client.get(search_url, {"court": case_to_test.court.slug})
     content = response.json()
     assert [case_to_test.id] == [result['id'] for result in content['results']]
@@ -442,26 +419,26 @@ def test_filter_case(client, three_case_documents):
     # filtering by decision_date
     # make sure that we can filter by decision_date's datefield
     # but we get decision_date_original string in response
-    case_to_test = three_case_documents[0]
-    response = client.get(search_url, {"decision_date_min": "2017-07-11", "decision_date_max": "2017-07-11"})
+    case_to_test = cases[0]
+    decision_date = case_to_test.decision_date_original
+    response = client.get(search_url, {"decision_date_min": decision_date, "decision_date_max": decision_date})
     content = response.json()
     result = content['results'][0]
     assert case_to_test.id == result['id']
 
     # by jurisdiction
-    response = client.get(search_url, {"jurisdiction": 'ill'}, follow=True)
+    response = client.get(search_url, {"jurisdiction": case_to_test.jurisdiction.slug}, follow=True)
     content = response.json()
-    assert content['count'] == 2
+    assert content['count'] == 1
     jurisdictions = set([ result['jurisdiction']['slug'] for result in content['results'] ])
-    assert jurisdictions == {'ill'}
+    assert jurisdictions == {case_to_test.jurisdiction.slug}
 
     # by docket_number
-    case_to_test = three_case_documents[0]
+    case_to_test = cases[0]
     response = client.get(search_url, {"docket_number": case_to_test.docket_number})
     content = response.json()
     result = content['results'][0]
     assert case_to_test.docket_number == result['docket_number']
-
 
 
 @pytest.mark.django_db
@@ -525,16 +502,18 @@ def test_ngrams_api(client, ngrammed_cases):
     ('xml', 'application/xml'),
     ('json', 'application/json'),
 ])
-def test_formats(client, auth_client, whitelisted_case_document, format, content_type):
+def test_formats(client, auth_client, restricted_case, format, content_type, elasticsearch):
     # test format without api_key
-    response = client.get(api_reverse("cases-detail", args=[whitelisted_case_document.id]), {"format": format, "full_case": "true"})
+    response = client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"format": format, "full_case": "true"})
     check_response(response, content_type=content_type)
     response_content = response.content.decode()
     assert 'error' in response_content.lower()
 
     # test full, authorized case
-    response = auth_client.get(api_reverse("cases-detail", args=[whitelisted_case_document.id]), {"format": format, "full_case": "true"})
-    check_response(response, content_type=content_type, content_includes=whitelisted_case_document.name)
+    response = auth_client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"format": format, "full_case": "true"})
+    body_cache = restricted_case.body_cache
+    expected_content = body_cache.html if format == 'html' else body_cache.xml if format == 'xml' else body_cache.json['opinions'][0]['text']
+    check_response(response, content_type=content_type, content_includes=expected_content)
 
 
 # API SPECIFICATION ENDPOINTS
@@ -557,7 +536,9 @@ def test_redoc(client):
 
 # PAGINATION
 @pytest.mark.django_db
-def test_pagination(client, three_case_documents):
+def test_pagination(client, case_factory, elasticsearch):
+    cases = [case_factory() for _ in range(3)]
+
     ids = []
 
     response = client.get(api_reverse("cases-list"), {"page_size": 1})
@@ -576,4 +557,4 @@ def test_pagination(client, three_case_documents):
     ids.append(content['results'][0]['id'])
     assert content['next'] is None
 
-    assert set(ids) == set(case.id for case in three_case_documents)
+    assert set(ids) == set(case.id for case in cases)

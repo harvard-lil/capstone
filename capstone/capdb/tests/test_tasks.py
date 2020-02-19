@@ -67,20 +67,20 @@ def check_exports(case, filter_item, tmpdir):
 
 
 @pytest.mark.django_db
-def test_bag_jurisdiction(non_whitelisted_case_document, tmpdir, django_assert_num_queries):
+def test_bag_jurisdiction(restricted_case, tmpdir, django_assert_num_queries, elasticsearch):
 
-    jurisdiction = Jurisdiction.objects.get(pk=non_whitelisted_case_document.jurisdiction.id)
+    jurisdiction = Jurisdiction.objects.get(pk=restricted_case.jurisdiction.id)
     # bag the jurisdiction
     with django_assert_num_queries(select=2, insert=2):
-        fabfile.bag_jurisdiction(non_whitelisted_case_document.jurisdiction.name)
-    check_exports(non_whitelisted_case_document, jurisdiction, tmpdir)
+        fabfile.bag_jurisdiction(restricted_case.jurisdiction.name)
+    check_exports(restricted_case, jurisdiction, tmpdir)
 
 
 @pytest.mark.django_db
-def test_bag_reporter(non_whitelisted_case_document, tmpdir):
-    reporter = Reporter.objects.get(pk=non_whitelisted_case_document.reporter.id)
+def test_bag_reporter(restricted_case, tmpdir, elasticsearch):
+    reporter = Reporter.objects.get(pk=restricted_case.reporter.id)
     fabfile.bag_reporter(reporter.id)
-    check_exports(non_whitelisted_case_document, reporter, tmpdir)
+    check_exports(restricted_case, reporter, tmpdir)
 
 
 @pytest.mark.django_db

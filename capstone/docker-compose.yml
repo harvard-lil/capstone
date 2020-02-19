@@ -25,6 +25,7 @@ services:
           - node.name=es01
           - bootstrap.memory_lock=true
           - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+          - discovery.type=single-node
         ulimits:
           memlock:
             soft: -1
@@ -84,6 +85,10 @@ services:
         ports:
             - "8000:8000"
             - "8080:8080"
+        # allow profiling with py-spy
+        # https://github.com/benfred/py-spy#how-do-i-run-py-spy-in-docker
+        cap_add:
+            - SYS_PTRACE
 #        mem_limit: 128M
 
 volumes:
