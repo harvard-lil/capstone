@@ -58,7 +58,7 @@ def record_task_status_for_volume(task, volume_id):
 ### TASKS ###
 
 @shared_task(bind=True, acks_late=True)
-def remoe_ssn_in_volume(self, volume_id):
+def remove_ssn_in_volume(self, volume_id):
     with record_task_status_for_volume(self, volume_id):
         # fetch cases
         cases = CaseMetadata.objects.filter(
