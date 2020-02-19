@@ -260,6 +260,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
         # Add a custom footer message if redactions or elisions exist but no text is provided
         if not db_case.custom_footer_message and (db_case.no_index_redacted or db_case.no_index_elided):
+            db_case.custom_footer_message = ''
             if db_case.no_index_redacted:
                 db_case.custom_footer_message += "Some text has been redacted by request of participating parties. \n"
             if db_case.no_index_elided:
