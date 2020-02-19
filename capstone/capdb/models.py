@@ -882,6 +882,8 @@ class CaseMetadata(models.Model):
     def save(self, *args, **kwargs):
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
+        if settings.MAINTAIN_ELASTICSEARCH_INDEX and not getattr(kwargs, 'no_reindex', False) and self.pk and hasattr(self, 'body_cache'):
+            self.update_search_index()
         super().save(*args, **kwargs)
 
     def full_cite(self):
