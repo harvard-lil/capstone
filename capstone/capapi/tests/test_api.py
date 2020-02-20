@@ -27,15 +27,6 @@ def test_flow(client, unrestricted_case, elasticsearch):
     assert content.get("name") == unrestricted_case.jurisdiction.name
 
 
-@pytest.mark.django_db
-def test_jurisdiction_redirect(client, restricted_case, elasticsearch):
-    jurisdiction = restricted_case.jurisdiction
-    response = client.get(api_reverse("cases-list"), {"jurisdiction": jurisdiction.name}, follow=True)
-    query_string = response.request.get('QUERY_STRING')
-    query, jurisdiction_name = query_string.split('=')
-    assert jurisdiction_name == jurisdiction.name
-
-
 # RESOURCE ENDPOINTS
 @pytest.mark.django_db
 @pytest.mark.parametrize("fixture_name, detail_attr, comparison_attr", [
