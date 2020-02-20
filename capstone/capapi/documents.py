@@ -130,8 +130,6 @@ class CaseDocument(DocType):
         doc['casebody_data']['text']['opinions'] = [ op.to_dict(skip_empty=skip_empty) for op in self.casebody_data['text'].opinions ]
         return doc
 
-
-
     def full_cite(self):
         return "%s, %s%s" % (
             self.name_abbreviation,

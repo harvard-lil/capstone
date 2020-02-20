@@ -1,26 +1,10 @@
 import os
-import pytest
 import datetime
 
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import read_file
 from scripts import process_metadata
 
-
-@pytest.mark.django_db
-def test_get_single_case_metadata(ingest_case_xml):
-    case, parsed = process_metadata.get_case_metadata(ingest_case_xml.orig_xml)
-
-    assert case['duplicative'] is False
-
-    assert type(case["parties"]) is list
-    parties = case["parties"]
-    assert "John Kirk" in parties[0]
-
-    assert type(case['decision_date']) is datetime.date
-    assert type(case['decision_date_original']) is str
-
-    assert case['jurisdiction'] == 'Illinois'
 
 def test_fix_court_tag():
     to_check = (

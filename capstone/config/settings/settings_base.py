@@ -617,6 +617,7 @@ ELASTICSEARCH_DSL={
         'hosts': 'localhost:9200'
     },
 }
+ELASTICSEARCH_DSL_AUTO_REFRESH = False  # don't force a reindex on every write to ES; let ES do it routinely instead
 MAINTAIN_ELASTICSEARCH_INDEX = True  # whether to update index when changing cases
 
 ELASTICSEARCH_INDEXES={

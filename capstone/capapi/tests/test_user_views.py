@@ -17,7 +17,7 @@ from capweb.helpers import reverse
 ### register, verify email address, login ###
 
 @pytest.mark.django_db
-def test_registration_flow(client, non_whitelisted_case_document):
+def test_registration_flow(client, restricted_case, elasticsearch):
 
     # can't register without agreeing to TOS
     email = 'new_user@gmail.com'
@@ -71,7 +71,7 @@ def test_registration_flow(client, non_whitelisted_case_document):
     check_response(response, status_code=302)
 
     # can fetch blacklisted case
-    response = client.get(api_reverse('cases-detail', kwargs={'id': non_whitelisted_case_document.id}), {'full_case':'true'})
+    response = client.get(api_reverse('cases-detail', kwargs={'id': restricted_case.id}), {'full_case':'true'})
     check_response(response, content_includes="ok")
 
     # logout to attempt new registration

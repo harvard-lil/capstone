@@ -27,7 +27,6 @@ from capdb.storages import bulk_export_storage, case_image_storage, download_fil
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
-from scripts.generate_case_html import generate_html
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
@@ -882,6 +881,8 @@ class CaseMetadata(models.Model):
     def save(self, *args, **kwargs):
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
+        if settings.MAINTAIN_ELASTICSEARCH_INDEX and not getattr(kwargs, 'no_reindex', False) and self.pk and hasattr(self, 'body_cache'):
+            self.update_search_index()
         super().save(*args, **kwargs)
 
     def full_cite(self):
@@ -1146,11 +1147,7 @@ class CaseMetadata(models.Model):
 
     def retrieve_and_store_images(self):
         """Get all <img> tags in casebody, store file images in db"""
-        try:
-            casebody = self.body_cache.html
-        except CaseBodyCache.DoesNotExist:
-            casebody = generate_html(self.case_xml.extract_casebody())
-
+        casebody = self.body_cache.html
         casebody = BeautifulSoup(casebody, 'html.parser')
         imgs = casebody.findAll('img')
         known_hashes = {c.hash for c in self.caseimages.all()}
