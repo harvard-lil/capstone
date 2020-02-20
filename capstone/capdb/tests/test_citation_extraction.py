@@ -15,13 +15,13 @@ def test_extract_citation():
     case_text_no_citations = "Assault and Battery, § 14.\n" \
                              "In our opinion the true rule is stated by " \
                              "Mr. Bishop in his work on Criminal Law (vol. 2, 8th ed., § 32) in"
-    citations = extract(case_text_with_citations)
-    assert len(citations) == 4
+    hits, misses = extract(case_text_with_citations)
+    assert len(hits.keys()) == 4
 
-    def assert_exists(citation):
-        assert citation in citations
+    def assert_found_in_case(citation):
+        assert citation in hits
 
-    [assert_exists(actual_citation) for actual_citation in actual_citations]
+    [assert_found_in_case(cite) for cite in actual_citations]
 
-    citations = extract(case_text_no_citations)
-    assert len(citations) == 0
+    hits, misses = extract(case_text_no_citations)
+    assert len(hits) == 0
