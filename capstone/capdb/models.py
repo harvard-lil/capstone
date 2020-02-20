@@ -988,6 +988,7 @@ class CaseMetadata(models.Model):
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
         """
+
         # if rerender is false, just regenerate json and text attributes from existing html
         if not rerender:
             try:
@@ -1010,9 +1011,30 @@ class CaseMetadata(models.Model):
         xml = renderer.render_xml(self)
         json, text = self.get_json_from_html(html)
 
-        ## save
+        def filter_redacted(item, replacements):
+            if not replacements:
+                return item
 
-        params = {'text': text, 'html': html, 'xml': xml, 'json': json}
+            if isinstance(item, str):
+                for replacement in replacements.items():
+                    item = item.replace(replacement[0], replacement[1])
+            elif isinstance(item, list):
+                item = [filter_redacted(inner_item, replacements) for inner_item in item]
+            elif isinstance(item, dict):
+                item = {name: filter_redacted(inner_item, replacements) for (name, inner_item) in item.items()}
+            elif not item:
+                return item
+            else:
+                raise Exception("Unexpected redaction format")
+            return item
+
+        ## save
+        params = {
+            'text': filter_redacted(text, self.no_index_redacted),
+            'html': filter_redacted(html, self.no_index_redacted),
+            'xml': filter_redacted(xml, self.no_index_redacted),
+            'json': filter_redacted(json, self.no_index_redacted)
+        }
         # use this approach, instead of update_or_create, to reduce sql traffic:
         #   - avoid causing a select (if the body_cache has already been populated with select_related)
         #   - avoid hydrating the params via save(), if they were loaded with defer()
