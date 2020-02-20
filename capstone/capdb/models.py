@@ -1634,6 +1634,19 @@ class PageXML(BaseXMLModel):
         return short_id_from_s3_key(self.s3_key)
 
 
+class ExtractedCitation(models.Model):
+    original_cite = models.CharField(max_length=10000, db_index=True, unique=True)
+    reporter_match = models.ForeignKey(Reporter, null=True, on_delete=models.DO_NOTHING, related_name='extractedcitations')
+    reporter_original_string = models.CharField(max_length=200)
+    citation_match = models.ForeignKey(Citation, null=True, on_delete=models.DO_NOTHING, related_name='extractedcitations')
+    case_origins = models.ManyToManyField(CaseMetadata, related_name='extractedcitations')
+    volume_match = models.ForeignKey(VolumeMetadata, null=True, on_delete=models.DO_NOTHING, related_name='extractedcitations')
+    volume_original_number = models.CharField(max_length=64, blank=True, null=True)
+    page_original_number = models.SmallIntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return self.original_cite
+
 
 class DataMigration(models.Model):
     data_migration_timestamp = models.DateTimeField(auto_now_add=True)
