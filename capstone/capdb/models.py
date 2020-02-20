@@ -1012,6 +1012,9 @@ class CaseMetadata(models.Model):
         json, text = self.get_json_from_html(html)
 
         def filter_redacted(item, replacements):
+            if not replacements:
+                return item
+
             if isinstance(item, str):
                 for replacement in replacements.items():
                     item = item.replace(replacement[0], replacement[1])
