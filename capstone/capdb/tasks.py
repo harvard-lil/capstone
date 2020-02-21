@@ -66,7 +66,7 @@ def remove_id_number_in_volume(self, volume_id):
         # a-number
         (r'\yA\d{2} *[-—] *\d{8,9}\y',
          r'\bA\d{2} *[-—] *\d{8,9}\b',
-         'XX-XXXXXXXXX'),
+         'AXX-XXXXXXXXX'),
         # ssn
         (r'\y\d{3} *[-—] *\d{2} *[-—] *\d{4}\y',
          r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\b',
