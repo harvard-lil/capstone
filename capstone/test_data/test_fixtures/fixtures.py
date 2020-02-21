@@ -2,31 +2,41 @@ from collections import defaultdict
 from functools import wraps
 from urllib.parse import urlparse
 from time import time
-
+from xdist.scheduler import LoadFileScheduling
 import mock
+from moto import mock_s3
+
 from django.core.signals import request_started, request_finished
 from django.core.cache import cache as django_cache
 from django.core.management import call_command
 from django.db import connections
 import django.apps
 from django.utils.functional import SimpleLazyObject
-from moto import mock_s3
 from rest_framework.test import APIRequestFactory, APIClient
-from elasticsearch_dsl import Index as es_index
-from capapi.documents import CaseDocument
 
 # Before importing any of our code, mock capdb.storages redis clients.
 # Do this here so anything that gets imported later will get the mocked versions.
 import capdb.storages
-
-
-# make sure redis isn't accessed outside of tests with redis fixture
 capdb.storages.redis_client = SimpleLazyObject(lambda: None)
 capdb.storages.redis_ingest_client = SimpleLazyObject(lambda: None)
 
 # our packages
 import fabfile
 from .factories import *
+
+
+### Pytest scheduling ###
+
+def pytest_xdist_make_scheduler(config, log):
+    """
+        pytest-django doesn't currently work with pytest-xdist and multiple databases.
+        This allows us to run some tests in parallel anyway, by naming tests that don't access the database with
+        "__parallel", putting them into a separate bucket and then running "pytest -n 2".
+    """
+    class ParallelScheduling(LoadFileScheduling):
+        def _split_scope(self, nodeid):
+            return 'parallel' if '__parallel' in nodeid else 'primary'
+    return ParallelScheduling(config, log)
 
 
 ### Database setup ###

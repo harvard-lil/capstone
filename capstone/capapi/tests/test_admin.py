@@ -3,7 +3,7 @@ import pytest
 from django.contrib.auth.models import Permission
 
 
-def test_admin_view(admin_client):
+def test_admin_view__parallel(admin_client):
     response = admin_client.get('/admin/')
     assert response.status_code == 200
 
