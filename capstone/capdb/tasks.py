@@ -64,14 +64,14 @@ def remove_id_number_in_volume(self, volume_id):
     # regex, a Python regex, and replacement text
     regex_placeholders = [
         # a-number
-        (r'\bA\d{2} *[-—] *\d{8,9}\y',
+        (r'\yA\d{2} *[-—] *\d{8,9}\y',
          r'\bA\d{2} *[-—] *\d{8,9}\b',
          'XXX-XXXXXXXXX'),
         # ssn
-        (r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\y',
+        (r'\y\d{3} *[-—] *\d{2} *[-—] *\d{4}\y',
          r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\b',
          'XXX-XX-XXXX'),
-        (r'\b\d{3} +\d{2} +\d{4}\y',
+        (r'\y\d{3} +\d{2} +\d{4}\y',
          r'\b\d{3} +\d{2} +\d{4}\b',
          'XXX XX XXXX'),
     ]
