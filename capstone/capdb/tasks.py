@@ -5,9 +5,10 @@ from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
+import operator
 
 from django.db import connections
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django.utils import timezone
 
 from capapi.documents import CaseDocument
@@ -58,21 +59,41 @@ def record_task_status_for_volume(task, volume_id):
 ### TASKS ###
 
 @shared_task(bind=True, acks_late=True)
-def remove_ssn_in_volume(self, volume_id):
+def remove_id_number_in_volume(self, volume_id):
+    # for each kind of number/replacement, we have a Postgres
+    # regex, a Python regex, and replacement text
+    regex_placeholders = [
+        # a-number
+        (r'\yA\d{2} *[-—] *\d{8,9}\y',
+         r'\bA\d{2} *[-—] *\d{8,9}\b',
+         'XX-XXXXXXXXX'),
+        # ssn
+        (r'\y\d{3} *[-—] *\d{2} *[-—] *\d{4}\y',
+         r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\b',
+         'XXX-XX-XXXX'),
+        (r'\y\d{3} +\d{2} +\d{4}\y',
+         r'\b\d{3} +\d{2} +\d{4}\b',
+         'XXX XX XXXX'),
+    ]
+    filters = [query for queries in [
+        [Q(name__regex=postgres_regex),
+         Q(body_cache__text__regex=postgres_regex)]
+        for postgres_regex, _, _ in regex_placeholders] for query in queries]
     with record_task_status_for_volume(self, volume_id):
         # fetch cases
         cases = CaseMetadata.objects.filter(
-            Q(name__regex=r'\y\d\d\d-\d\d\-\d\d\d\d\y') |
-            Q(body_cache__text__regex=r'\y\d\d\d-\d\d\-\d\d\d\d\y'),
+            reduce(operator.or_, filters),
             volume_id=volume_id).select_related('body_cache')
         for case in cases:
-            for match in set(re.findall(r'\b\d\d\d-\d\d-\d\d\d\d\b', case.body_cache.text + case.name)):
-                replacement = case.no_index_redacted or {}
-                if match in replacement:
-                    continue
-                replacement[match] = "XXX-XX-XXXX"
-                case.no_index_redacted = replacement
-                case.save()
+            for _, python_regex, placeholder in regex_placeholders:
+                for match in set(re.findall(python_regex, case.body_cache.text + case.name)):
+                    replacement = case.no_index_redacted or {}
+                    if match in replacement:
+                        continue
+                    replacement[match] = placeholder
+                    case.no_index_redacted = replacement
+                    case.save()
+
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
 def update_in_scope_for_vol(self, volume_id):
