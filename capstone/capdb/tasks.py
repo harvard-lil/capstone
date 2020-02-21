@@ -5,9 +5,10 @@ from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
+import operator
 
 from django.db import connections
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django.utils import timezone
 
 from capapi.documents import CaseDocument
@@ -59,26 +60,33 @@ def record_task_status_for_volume(task, volume_id):
 
 @shared_task(bind=True, acks_late=True)
 def remove_id_number_in_volume(self, volume_id):
+    # for each kind of number/replacement, we have a Postgres
+    # regex, a Python regex, and replacement text
     regex_placeholders = [
         # a-number
-        (r'\bA\d{2} *[-—] *\d{8,9}\b', 'XXX-XXXXXXXXX'),
+        (r'\bA\d{2} *[-—] *\d{8,9}\y',
+         r'\bA\d{2} *[-—] *\d{8,9}\b',
+         'XXX-XXXXXXXXX'),
         # ssn
-        (r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\b', 'XXX-XX-XXXX'),
-        (r'\b\d{3} +\d{2} +\d{4}\b', 'XXX XX XXXX')
+        (r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\y',
+         r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\b',
+         'XXX-XX-XXXX'),
+        (r'\b\d{3} +\d{2} +\d{4}\y',
+         r'\b\d{3} +\d{2} +\d{4}\b',
+         'XXX XX XXXX'),
     ]
+    filters = [query for queries in [
+        [Q(name__regex=postgres_regex),
+         Q(body_cache__text__regex=postgres_regex)]
+        for postgres_regex, _, _ in regex_placeholders] for query in queries]
     with record_task_status_for_volume(self, volume_id):
         # fetch cases
         cases = CaseMetadata.objects.filter(
-            Q(name__regex=regex_placeholders[0][0]) |
-            Q(body_cache__text__regex=regex_placeholders[0][0]) |
-            Q(name__regex=regex_placeholders[1][0]) |
-            Q(body_cache__text__regex=regex_placeholders[1][0]) |
-            Q(name__regex=regex_placeholders[2][0]) |
-            Q(body_cache__text__regex=regex_placeholders[2][0]),
+            reduce(operator.or_, filters),
             volume_id=volume_id).select_related('body_cache')
         for case in cases:
-            for regex, placeholder in regex_placeholders:
-                for match in set(re.findall(regex, case.body_cache.text + case.name)):
+            for _, python_regex, placeholder in regex_placeholders:
+                for match in set(re.findall(python_regex, case.body_cache.text + case.name)):
                     replacement = case.no_index_redacted or {}
                     if match in replacement:
                         continue
