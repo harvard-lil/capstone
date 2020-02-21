@@ -5,6 +5,7 @@ from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
+from functools import reduce
 import operator
 
 from django.db import connections
