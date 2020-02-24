@@ -286,7 +286,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     # Define search fields
     simple_query_string_search_fields = (
         'name',
-        'name_abbreviation.suggest',
+        'name_abbreviation',
         'jurisdiction.name_long',
         'court.name',
         # these are included in head_matter or text:

@@ -13,7 +13,10 @@ case.settings(
 )
 
 def SuggestField():
-    return fields.StringField(
+    """
+        Query 'foo' to get the TextField, or 'foo.raw' to get the KeywordField, or 'foo.suggest' to get the CompletionField.
+    """
+    return fields.TextField(
         fields={
             'raw': fields.KeywordField(),
             'suggest': fields.CompletionField(),
