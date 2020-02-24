@@ -362,11 +362,32 @@ def test_body_format_html(auth_client, restricted_case, elasticsearch):
     assert restricted_case.body_cache.html in data
 
 @pytest.mark.django_db
-def test_full_text_search(client, case, elasticsearch):
-    # filtering case with full-text search
-    response = client.get(api_reverse("cases-list"), {"search": case.name})
+def test_full_text_search(client, case_factory, elasticsearch):
+    case1 = case_factory(name_abbreviation="111 222 333 555666")
+    case2 = case_factory(name_abbreviation="111 stop 222 444 555777")
+    case_factory(name_abbreviation="nothing matching")
+
+    # AND queries
+    response = client.get(api_reverse("cases-list"), {"search": "111 222"})
     content = response.json()
-    assert [case.id] == [result['id'] for result in content['results']]
+    assert {case1.id, case2.id} == set(result['id'] for result in content['results'])
+
+    # OR queries
+    response = client.get(api_reverse("cases-list"), {"search": "333 | 444"})
+    content = response.json()
+    assert {case1.id, case2.id} == set(result['id'] for result in content['results'])
+
+    # phrase search
+    response = client.get(api_reverse("cases-list"), {"search": '"111 222"'})
+    content = response.json()
+    assert {case1.id} == set(result['id'] for result in content['results'])
+
+    # prefix search
+    response = client.get(api_reverse("cases-list"), {"search": '555*'})
+    content = response.json()
+    assert {case1.id, case2.id} == set(result['id'] for result in content['results'])
+
+    # empty search
     response = client.get(api_reverse("cases-list"), {"search": "Some other search that doesn't work"})
     content = response.json()
     assert content == { "count":0, "next": None, "previous": None, "facets": {}, "results": []}

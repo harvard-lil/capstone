@@ -302,7 +302,8 @@ class CaseFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseMetadata
 
-    name = factory.Faker('sentence', nb_words=5)
+    name = factory.Sequence(lambda n: 'First Foo%s versus First Bar%s' % (n, n))
+    name_abbreviation = factory.Sequence(lambda n: 'Foo%s v. Bar%s' % (n, n))
     jurisdiction = factory.SubFactory(JurisdictionFactory)
     first_page = factory.Sequence(lambda n: str((n+1)*4))
     last_page = factory.LazyAttribute(lambda o: str(int(o.first_page)+4))
@@ -315,7 +316,6 @@ class CaseFactory(factory.DjangoModelFactory):
     structure = factory.RelatedFactory(CaseStructureFactory, 'metadata')
     citations = factory.RelatedFactory(CitationFactory, 'case')
     body_cache = factory.RelatedFactory(CaseBodyCacheFactory, 'metadata')
-    name_abbreviation = factory.Sequence(lambda n: 'Foo%s v. Bar%s' % (n, n))
 
     @post_generation
     def post(obj, create, extracted, **kwargs):
