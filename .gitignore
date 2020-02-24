@@ -22,6 +22,7 @@ capstone/test_data/bulk-data/
 capstone/test_data/ngrams/
 capstone/test_data/case-images/
 capstone/test_data/downloads/
+capstone/test_data/GeoLite2-City.mmdb
 *.ipynb*
 *.lprof
 

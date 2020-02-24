@@ -23,6 +23,8 @@ from capapi.authentication import SessionAuthentication
 from capapi.renderers import HTMLRenderer
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 from capweb import helpers
+from cite.helpers import geolocate
+from config.logging import logger
 
 
 def safe_redirect(request):
@@ -271,6 +273,16 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
             data += "<hr/><footer class='custom-case-footer'>%s</footer>" % custom_footer_message
 
         serialized_data['casebody']['data'] = data
+
+        if settings.GEOLOCATION_FEATURE and request.user.ip_address:
+            try:
+                location = geolocate(request.user.ip_address)
+                state = location.subdivisions.most_specific.name
+                country = location.country.name
+                location_str = state if country == "United States" else "%s, %s" % (state, country)
+                logger.info("Someone from %s read a case from %s." % (location_str, case.court.name))
+            except Exception as e:
+                logger.warning("Unable to geolocate %s: %s" % (request.user.ip_address, e))
 
         rendered = HTMLRenderer().render(serialized_data, renderer_context=context)
         return HttpResponse(rendered)
