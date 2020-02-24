@@ -7,6 +7,7 @@ from datetime import datetime
 import django
 import json
 from random import randrange, randint
+from multiprocessing import Pool
 from pathlib import Path
 from celery import shared_task, group
 from tqdm import tqdm
@@ -33,6 +34,8 @@ from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdic
 import capdb.tasks as tasks
 from scripts import set_up_postgres, data_migrations, ingest_by_manifest, mass_update, \
     validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, update_snippets
+from scripts.extract_citations import extract_citations
+
 from scripts.helpers import parse_xml, serialize_xml, copy_file, volume_barcode_from_folder, \
     up_to_date_volumes, storage_lookup
 
@@ -1122,6 +1125,14 @@ def download_pdfs(jurisdiction=None):
             # clean up partial downloads if process is killed
             download_files_storage.delete(new_path)
             raise
+
+@task
+def extract_all_citations():
+    jurisdictions = Jurisdiction.objects.all().order_by('slug')
+    for jurisdiction in jurisdictions:
+        casemets = CaseMetadata.objects.in_scope().filter(jurisdiction=jurisdiction).order_by('decision_date')
+        with Pool(5) as p:
+            p.map(extract_citations, list(casemets))
 
 
 if __name__ == "__main__":

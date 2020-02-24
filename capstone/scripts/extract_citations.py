@@ -1,6 +1,16 @@
 import re
+from queue import Queue
+from threading import Thread
+import traceback
+from multiprocessing import Process, Manager
+from multiprocessing.pool import Pool
+from tqdm import tqdm
+from django.conf import settings
+
 from reporters_db import REPORTERS, VARIATIONS_ONLY
-from capdb.models import ExtractedCitation, Reporter, VolumeMetadata, Citation
+from capdb.models import ExtractedCitation, Reporter, VolumeMetadata, Citation, Jurisdiction, CaseMetadata, CaseBodyCache
+from scripts.helpers import ordered_query_iterator
+from scripts.generate_case_html import generate_html
 
 
 def extract(case_text):
@@ -28,31 +38,46 @@ def extract(case_text):
     return citation_hits, citation_misses
 
 
-def extract_citations(casebody_cache):
-    hits, misses = extract(casebody_cache.text)
+def extract_citations(casemet):
+    print("extract_citations", casemet)
+    try:
+        casebody_cache = CaseBodyCache.objects.get(metadata=casemet)
+        hits, misses = extract(casebody_cache.text)
+    except CaseBodyCache.DoesNotExist:
+        try:
+            casebody = generate_html(casemet.case_xml.extract_casebody())
+            hits, misses = extract(casebody)
+        except:
+            return
+
     # TODO: decide what to do with the misses
     for (citation, reporter_str) in hits.items():
 
         cite, created = ExtractedCitation.objects.get_or_create(original_cite=citation)
-        cite.case_origins.add(casebody_cache.metadata.id)
+        print("extracted citation, cite:", cite)
+        cite.case_origins.add(casemet.id)
+        cite.save()
+        print(cite, "exists")
         reporter = find_reporter_match(reporter_str)
+        print("found reporter match", reporter)
+        if not reporter:
+            reporters_to_check = []
+            for rep_instance in REPORTERS[reporter_str]:
+                reporters_to_check += list(rep_instance['variations'].keys())
+            print("reporters to check:", reporters_to_check)
+            for variation in reporters_to_check:
+                reporter = find_reporter_match(variation)
+                if reporter:
+                    print("found reporter!", reporter)
+                    break
 
-        if not reporter:
-            reporter_instances = REPORTERS[reporter_str]
-            for reporter_instance in reporter_instances:
-                for variation in reporter_instance['variations']:
-                    reporter = find_reporter_match(variation)
-                    if reporter:
-                        break
-        if not reporter:
-            # TODO: add citation to list of misses
-            return
+
         citation_parts = citation.split(" ")
 
         cite.reporter_original_string = " ".join(citation_parts[1:-1])
-        cite.reporter = reporter
+        cite.reporter_match = reporter
         cite.volume_original_number = citation_parts[0]
-
+        cite.save()
         try:
             cite.volume_match = VolumeMetadata.objects.get(reporter=reporter, volume_number=citation_parts[0])
         except VolumeMetadata.DoesNotExist:
@@ -63,10 +88,6 @@ def extract_citations(casebody_cache):
             cite.citation_match = Citation.objects.get(cite=citation)
         except Citation.DoesNotExist:
             pass
-        cite.save()
-
-
-
 
 def find_reporter_match(reporter_str):
     try:
