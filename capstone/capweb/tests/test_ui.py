@@ -70,7 +70,7 @@ def test_contact(client, auth_client, mailoutbox):
     assert len(mailoutbox) == 1
 
 
-def test_screenshot(client, live_server, settings, ngrammed_cases):
+def test_screenshot__parallel(client, live_server, settings, ngrammed_cases):
     # set up conditions for /screenshot/ route to work
     settings.SCREENSHOT_FEATURE = True
     settings.DEBUG = True  # so view expects an http url
