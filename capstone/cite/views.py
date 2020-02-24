@@ -274,9 +274,11 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
         serialized_data['casebody']['data'] = data
 
-        if settings.GEOLOCATION_FEATURE and request.user.ip_address:
+        if settings.GEOLOCATION_FEATURE and request.META.get('HTTP_X_FORWARDED_FOR'):
+            # Trust x-forwarded-for in this case because we don't mind being lied to, and would rather show accurate
+            # results for users using honest proxies.
             try:
-                location = geolocate(request.user.ip_address)
+                location = geolocate(request.META['HTTP_X_FORWARDED_FOR'].split(',')[-1])
                 state = location.subdivisions.most_specific.name
                 country = location.country.name
                 location_str = state if country == "United States" else "%s, %s" % (state, country)

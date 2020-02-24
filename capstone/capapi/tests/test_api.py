@@ -243,7 +243,7 @@ def test_harvard_access(request, restricted_case, client_fixture_name, elasticse
     case_url = api_reverse("cases-detail", args=[restricted_case.id])
 
     # request works when IP address provided
-    response = client.get(case_url, {"full_case": "true"}, HTTP_X_FORWARDED_FOR='128.103.1.1')
+    response = client.get(case_url, {"full_case": "true"}, HTTP_CF_CONNECTING_IP='128.103.1.1')
     check_response(response)
     result = response.json()
     assert result['casebody']['status'] == 'ok'
@@ -253,7 +253,7 @@ def test_harvard_access(request, restricted_case, client_fixture_name, elasticse
     assert user.case_allowance_remaining == 1
 
     # request succeeds when IP address is wrong, using case allowance
-    response = client.get(case_url, {"full_case": "true"}, HTTP_X_FORWARDED_FOR='1.1.1.1')
+    response = client.get(case_url, {"full_case": "true"}, HTTP_CF_CONNECTING_IP='1.1.1.1')
     check_response(response)
     result = response.json()
     assert result['casebody']['status'] == 'ok'
@@ -263,7 +263,7 @@ def test_harvard_access(request, restricted_case, client_fixture_name, elasticse
     assert user.case_allowance_remaining == 0
 
     # request fails when case allowance exhausted
-    response = client.get(case_url, {"full_case": "true"}, HTTP_X_FORWARDED_FOR='1.1.1.1')
+    response = client.get(case_url, {"full_case": "true"}, HTTP_CF_CONNECTING_IP='1.1.1.1')
     check_response(response)
     result = response.json()
     assert result['casebody']['status'] != 'ok'
