@@ -89,7 +89,7 @@ def wrap_user(request, user):
     """
     def inner_wrap_user():
         wrapped_user = TrackingWrapper(user)
-        wrapped_user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
+        wrapped_user.ip_address = request.META.get('HTTP_CF_CONNECTING_IP')
         return wrapped_user
     return SimpleLazyObject(inner_wrap_user)
 
