@@ -437,6 +437,8 @@ INVENTORY = {
     'private_manifest_path_prefix': 'inventory/',
 }
 
+GEOIP_PATH = os.path.join(BASE_DIR, 'test_data/GeoLite2-City.mmdb')
+
 ### CELERY ###
 from celery.schedules import crontab
 CELERY_BROKER_URL = 'redis://'

@@ -1,6 +1,7 @@
 import re
 import json
 from datetime import timedelta
+from pathlib import Path
 import pytest
 from bs4 import BeautifulSoup
 
@@ -110,9 +111,6 @@ def test_single_case(client, auth_client, unrestricted_case, restricted_case, el
     """ Test /series/volume/case/ with one matching case """
 
     ### can load whitelisted case
-
-    unrestricted_case.jurisdiction.whitelisted = True
-    unrestricted_case.save()
     check_response(client.get(full_url(unrestricted_case)), content_includes=unrestricted_case.body_cache.html)
 
     ### can load blacklisted case while logged out, via redirect
@@ -271,3 +269,14 @@ def test_robots(client, case):
     response = client.get(url)
     check_response(response, content_type="text/plain")
     assert response.content.decode() == 'user-agent: *\n'
+
+
+@pytest.mark.django_db
+def test_geolocation_log(client, unrestricted_case, elasticsearch, settings, caplog):
+    """ Test state-level geolocation logging in case browser """
+    if not Path(settings.GEOIP_PATH).exists():
+        # only test geolocation if database file is available
+        return
+    settings.GEOLOCATION_FEATURE = True
+    check_response(client.get(full_url(unrestricted_case), HTTP_X_FORWARDED_FOR='128.103.1.1'))
+    assert "Someone from Massachusetts, United States read a case" in caplog.text

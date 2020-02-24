@@ -279,9 +279,9 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
             # results for users using honest proxies.
             try:
                 location = geolocate(request.META['HTTP_X_FORWARDED_FOR'].split(',')[-1])
-                state = location.subdivisions.most_specific.name
-                country = location.country.name
-                location_str = state if country == "United States" else "%s, %s" % (state, country)
+                location_str = location.country.name
+                if location.subdivisions:
+                    location_str = "%s, %s" % (location.subdivisions.most_specific.name, location_str)
                 logger.info("Someone from %s read a case from %s." % (location_str, case.court.name))
             except Exception as e:
                 logger.warning("Unable to geolocate %s: %s" % (request.user.ip_address, e))
