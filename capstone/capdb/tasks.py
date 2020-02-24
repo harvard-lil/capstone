@@ -1,3 +1,4 @@
+from copy import copy
 from datetime import datetime
 from time import sleep
 from celery import shared_task
@@ -5,8 +6,6 @@ from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
-from functools import reduce
-import operator
 
 from django.db import connections
 from django.db.models import Prefetch, Q
@@ -61,39 +60,38 @@ def record_task_status_for_volume(task, volume_id):
 
 @shared_task(bind=True, acks_late=True)
 def remove_id_number_in_volume(self, volume_id):
-    # for each kind of number/replacement, we have a Postgres
-    # regex, a Python regex, and replacement text
-    regex_placeholders = [
+    # patterns to replace
+    regexes = [
         # a-number
-        (r'\yA\d{2} *[-—] *\d{8,9}\y',
-         r'\bA\d{2} *[-—] *\d{8,9}\b',
-         'AXX-XXXXXXXXX'),
+        r'\bA *[-—] *\d{8,9}\b',
+        r'\bA\d{8,9}\b',
         # ssn
-        (r'\y\d{3} *[-—] *\d{2} *[-—] *\d{4}\y',
-         r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\b',
-         'XXX-XX-XXXX'),
-        (r'\y\d{3} +\d{2} +\d{4}\y',
-         r'\b\d{3} +\d{2} +\d{4}\b',
-         'XXX XX XXXX'),
+        r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\b',
+        r'\b\d{3} +\d{2} +\d{4}\b',
     ]
-    filters = [query for queries in [
-        [Q(name__regex=postgres_regex),
-         Q(body_cache__text__regex=postgres_regex)]
-        for postgres_regex, _, _ in regex_placeholders] for query in queries]
+
+    # database filter for text matching any of those patterns
+    filters = Q()
+    for regex in regexes:
+        postgres_regex = regex.replace(r'\b', r'\y')  # postgres uses \y instead of \b for boundaries
+        filters |= Q(name__regex=postgres_regex) | Q(body_cache__text__regex=postgres_regex)
+    cases = (CaseMetadata.objects
+                 .filter(filters, volume_id=volume_id)
+                 .select_related('body_cache')
+                 .only('body_cache__text'))
+
+    # set no_index_redacted for each matching case
     with record_task_status_for_volume(self, volume_id):
-        # fetch cases
-        cases = CaseMetadata.objects.filter(
-            reduce(operator.or_, filters),
-            volume_id=volume_id).select_related('body_cache')
         for case in cases:
-            for _, python_regex, placeholder in regex_placeholders:
-                for match in set(re.findall(python_regex, case.body_cache.text + case.name)):
-                    replacement = case.no_index_redacted or {}
+            replacement = copy(case.no_index_redacted) if case.no_index_redacted else {}
+            for regex in regexes:
+                for match in set(re.findall(regex, case.body_cache.text + case.name)):
                     if match in replacement:
                         continue
-                    replacement[match] = placeholder
-                    case.no_index_redacted = replacement
-                    case.save()
+                    replacement[match] = re.sub(r'\d', 'X', match)
+            if replacement != case.no_index_redacted:
+                case.no_index_redacted = replacement
+                case.save()
 
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
