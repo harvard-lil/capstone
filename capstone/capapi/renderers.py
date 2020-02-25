@@ -6,10 +6,10 @@ from django.http.response import HttpResponseBase
 from django.template import loader
 from rest_framework import renderers
 
-from capdb.models import Citation
+from capdb.models import Citation, CaseMetadata
 from capweb.helpers import cache_func
 from scripts.process_metadata import parse_decision_date
-
+from scripts.helpers import filter_redacted
 
 
 class XMLRenderer(renderers.BaseRenderer):
@@ -59,13 +59,14 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
         citation_full = data["name_abbreviation"] + ", " + non_vendor_citations + " (" + cit_year + ")"
         name_with_html_markup = data["name_with_html_markup"] if "name_with_html_markup" in data.keys() else data["name"]
 
+        no_index_redacted = models.CaseMetadata.objects.values_list('no_index_redacted', flat=True).get(pk=case.id)
         context = {
             **renderer_context,
             'citation': citations,
             'meta_description': "Full text of %s from the Caselaw Access Project." % citation_full,
             'frontend_url': data['frontend_url'],
             'metadata': {
-                "name": data["name"],
+                "name": filter_redacted(data["name"], no_index_redacted),
                 "name_with_html_markup": name_with_html_markup,
                 "name_abbreviation": data["name_abbreviation"],
                 "decision_date": dec_date,
@@ -94,7 +95,7 @@ class HTMLRenderer(renderers.StaticHTMLRenderer):
             context['message'] = data['casebody']['status']
             return template.render(context, renderer_context['request'])
 
-        context['case_html'] = data['casebody']['data']
+        context['case_html'] = filter_redacted(data['casebody']['data'], no_index_redacted)
         try:
             context['title'] = data['casebody']['title']
         except KeyError:
