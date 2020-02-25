@@ -246,7 +246,7 @@ def screenshot(request):
     url = payload.get('url')
     if not url:
         return HttpResponseBadRequest("URL parameter required.")
-    if not url.startswith('http://' if settings.DEBUG else 'https://'):
+    if not url.startswith('https://' if settings.MAKE_HTTPS_URLS else 'http://'):
         return HttpResponseBadRequest("Invalid URL protocol.")
     if not is_safe_url(url, safe_domains):
         return HttpResponseBadRequest("URL should match one of these domains: %s" % safe_domains)

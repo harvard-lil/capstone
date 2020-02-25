@@ -17,6 +17,8 @@ CELERY_TASK_ALWAYS_EAGER = True
 # propagate exceptions
 CELERY_TASK_EAGER_PROPAGATES = True
 
+MAKE_HTTPS_URLS = False
+
 if os.environ.get('DOCKERIZED'):
     DATABASES['default']['PASSWORD'] = 'password'
     DATABASES['default']['HOST'] = 'db'
@@ -60,6 +62,7 @@ if 'pytest' in sys.modules:
     ## settings only for tests
     MAINTAIN_ELASTICSEARCH_INDEX = False  # tests must opt in
     ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases_test'
+    STORAGES['download_files_storage']['kwargs']['location'] = os.path.join(BASE_DIR, 'test_data/downloads')
 
     # don't waste time on whitenoise for tests
     MIDDLEWARE = [i for i in MIDDLEWARE if not i.startswith('whitenoise.')]

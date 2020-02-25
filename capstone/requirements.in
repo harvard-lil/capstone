@@ -82,6 +82,7 @@ Pillow
 diff-match-patch
 Markdown
 python-magic
+PyMuPDF
 
 # maintenance page
 webpage2html # save target page as string

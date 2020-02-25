@@ -551,6 +551,7 @@ CELERY_RESOURCE_LIMITS = [
 
 # security
 SECURE_CONTENT_TYPE_NOSNIFF = True
+MAKE_HTTPS_URLS = True
 
 SILENCED_SYSTEM_CHECKS = [
     "models.E004"   # For our history tables, the "id" field should not be a primary key. This disables the Django system

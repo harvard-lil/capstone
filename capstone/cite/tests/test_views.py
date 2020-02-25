@@ -9,6 +9,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from capapi.tests.helpers import check_response, is_cached
+from capdb.models import PageStructure
 from capweb.helpers import reverse
 from capweb import helpers
 
@@ -107,29 +108,44 @@ def test_cases_multiple(client, django_assert_num_queries, case_factory, elastic
 
 
 @pytest.mark.django_db
-def test_single_case(client, auth_client, unrestricted_case, restricted_case, elasticsearch):
+@pytest.mark.parametrize('response_type', ['html', 'pdf'])
+def test_single_case(client, auth_client, case_factory, elasticsearch, response_type, django_assert_num_queries):
     """ Test /series/volume/case/ with one matching case """
 
+    # set up for viewing html or pdf
+    case_text = "Case HTML"
+    unrestricted_case = case_factory(jurisdiction__whitelisted=True, body_cache__html=case_text, volume__pdf_file='fake_volume.pdf')
+    restricted_case = case_factory(jurisdiction__whitelisted=False, body_cache__html=case_text, volume__pdf_file='fake_volume.pdf')
+    if response_type == 'pdf':
+        # all cases run from page 2 to page 2 of fake_volume.pdf
+        PageStructure.objects.update(order=2)
+        case_text = "Page 2"
+        unrestricted_url = unrestricted_case.get_pdf_url()
+        url = restricted_case.get_pdf_url()
+        content_type = 'application/pdf'
+    else:
+        unrestricted_url = full_url(unrestricted_case)
+        url = full_url(restricted_case)
+        content_type = None
+
     ### can load whitelisted case
-    check_response(client.get(full_url(unrestricted_case)), content_includes=unrestricted_case.body_cache.html)
+    with django_assert_num_queries(select=(2 if response_type == 'html' else 3)):
+        check_response(client.get(unrestricted_url), content_includes=case_text, content_type=content_type)
 
     ### can load blacklisted case while logged out, via redirect
-
-    url = full_url(restricted_case)
-    case_text = restricted_case.body_cache.html
 
     # first we get redirect to JS page
     check_response(client.get(url, follow=True), content_includes="Click here to continue")
 
     # POSTing will set our cookies and let the case load
     response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
-    check_response(response, content_includes=case_text)
+    check_response(response, content_includes=case_text, content_type=content_type)
     session = client.session
     assert session['case_allowance_remaining'] == settings.API_CASE_DAILY_ALLOWANCE - 1
 
     # we can now load directly
     response = client.get(url)
-    check_response(response, content_includes=case_text)
+    check_response(response, content_includes=case_text, content_type=content_type)
     session = client.session
     assert session['case_allowance_remaining'] == settings.API_CASE_DAILY_ALLOWANCE - 2
 
@@ -137,23 +153,26 @@ def test_single_case(client, auth_client, unrestricted_case, restricted_case, el
     session['case_allowance_remaining'] = 0
     session.save()
     response = client.get(url)
-    check_response(response)
-    assert case_text not in response.content.decode()
+    if response_type == 'pdf':
+        assert response.status_code == 302  # PDFs redirect back to HTML version if quota exhausted
+    else:
+        check_response(response)
+        assert case_text not in response.content.decode()
     session = client.session
     assert session['case_allowance_remaining'] == 0
 
-    # check daily quota resettest_unlimited_access
+    # check daily quota reset
     session['case_allowance_last_updated'] -= 60 * 60 * 24 + 1
     session.save()
     response = client.get(url)
-    check_response(response, content_includes=case_text)
+    check_response(response, content_includes=case_text, content_type=content_type)
     session = client.session
     assert session['case_allowance_remaining'] == settings.API_CASE_DAILY_ALLOWANCE - 1
 
     ### can load normally as logged-in user
 
     response = auth_client.get(url)
-    check_response(response, content_includes=case_text)
+    check_response(response, content_includes=case_text, content_type=content_type)
     auth_client.auth_user.refresh_from_db()
     assert auth_client.auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
 
