@@ -2,6 +2,7 @@ from django_elasticsearch_dsl import Document as DocType, Index, fields
 from django.conf import settings
 
 from capdb.models import CaseMetadata
+from scripts.helpers import filter_redacted
 
 index = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
 
@@ -98,13 +99,16 @@ class CaseDocument(DocType):
             return { 'docket_numbers': None }
         return instance.docket_numbers
 
+    def prepare_name(self, instance):
+        return filter_redacted(instance.name, instance.no_index_redacted)
+
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
-        return {
+        return filter_redacted({
             'xml': body.xml,
             'html': body.html,
             'text': body.json,
-        }
+        }, instance.no_index_redacted)
 
     class Django:
         model = CaseMetadata

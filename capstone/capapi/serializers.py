@@ -10,7 +10,7 @@ from .documents import CaseDocument
 from capdb import models
 from capweb.helpers import reverse
 from user_data.models import UserHistory
-
+from scripts.helpers import filter_redacted
 
 class UserHistoryMixin:
     """
@@ -167,6 +167,12 @@ class CaseDocumentSerializer(DocumentSerializer):
     def get_decision_date(self, obj):
         return obj.decision_date_original
 
+    def get_name(self, obj):
+        no_index_redacted = models.CaseMetadata.objects.values_list('no_index_redacted', flat=True).get(pk=obj.id)
+        if no_index_redacted:
+            return filter_redacted(obj.name, no_index_redacted)
+        return obj.name
+
 class CaseAllowanceMixin:
     """
         When we serialize case bodies for delivery to the client, we need to make sure, in a race-condition-free
@@ -246,7 +252,6 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
 
     def get_casebody(self, case, check_permissions=True):
         request = self.context.get('request')
-
         # check permissions for full-text access to this case
         if not check_permissions:
             status = 'ok'
@@ -281,6 +286,10 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
                     data = case.casebody_data['text'].to_dict()
                 except AttributeError:
                     data = case.casebody_data['text']
+
+        no_index_redacted = models.CaseMetadata.objects.values_list('no_index_redacted', flat=True).get(pk=case.id)
+        if no_index_redacted:
+            return {'status': status, 'data': filter_redacted(data, no_index_redacted)}
 
         return {'status': status, 'data': data}
 

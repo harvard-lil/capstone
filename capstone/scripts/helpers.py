@@ -393,3 +393,29 @@ def fix_image_file_name(barcode, file_name):
         path actually exists.
     """
     return '%s_%s' % (barcode, file_name.split('_', 1)[1])
+
+
+def filter_redacted(item, replacements):
+    """ filters out terms in 'item' with the {'original_text': and 'replacement_text' }
+    >>> filter_redacted("Hello, what's your name?", {'name': 'game', 'Hello': 'Wow'})
+    "Wow, what's your game?"
+
+    >>> filter_redacted({"test": "Hello, what's your name?" }, {'name': 'game', 'Hello': 'Wow'})
+    {'test': "Wow, what's your game?"}
+    """
+
+    if not replacements:
+        return item
+
+    if isinstance(item, str):
+        for replacement in replacements.items():
+            item = item.replace(replacement[0], replacement[1])
+    elif isinstance(item, list):
+        item = [filter_redacted(inner_item, replacements) for inner_item in item]
+    elif isinstance(item, dict):
+        item = {name: filter_redacted(inner_item, replacements) for (name, inner_item) in item.items()}
+    elif not item:
+        return item
+    else:
+        raise Exception("Unexpected redaction format")
+    return item

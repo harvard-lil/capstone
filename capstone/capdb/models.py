@@ -30,7 +30,7 @@ from scripts import render_case
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
-                             short_id_from_s3_key)
+                             short_id_from_s3_key, filter_redacted)
 from scripts.process_metadata import get_case_metadata, parse_decision_date
 
 
@@ -988,7 +988,6 @@ class CaseMetadata(models.Model):
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
         """
-
         # if rerender is false, just regenerate json and text attributes from existing html
         if not rerender:
             try:
@@ -1010,23 +1009,6 @@ class CaseMetadata(models.Model):
         html = renderer.render_html(self)
         xml = renderer.render_xml(self)
         json, text = self.get_json_from_html(html)
-
-        def filter_redacted(item, replacements):
-            if not replacements:
-                return item
-
-            if isinstance(item, str):
-                for replacement in replacements.items():
-                    item = item.replace(replacement[0], replacement[1])
-            elif isinstance(item, list):
-                item = [filter_redacted(inner_item, replacements) for inner_item in item]
-            elif isinstance(item, dict):
-                item = {name: filter_redacted(inner_item, replacements) for (name, inner_item) in item.items()}
-            elif not item:
-                return item
-            else:
-                raise Exception("Unexpected redaction format")
-            return item
 
         ## save
         params = {
