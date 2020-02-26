@@ -1019,23 +1019,6 @@ class CaseMetadata(models.Model):
         xml = renderer.render_xml(self)
         json, text = self.get_json_from_html(html)
 
-        def filter_redacted(item, replacements):
-            if not replacements:
-                return item
-
-            if isinstance(item, str):
-                for replacement in replacements.items():
-                    item = item.replace(replacement[0], replacement[1])
-            elif isinstance(item, list):
-                item = [filter_redacted(inner_item, replacements) for inner_item in item]
-            elif isinstance(item, dict):
-                item = {name: filter_redacted(inner_item, replacements) for (name, inner_item) in item.items()}
-            elif not item:
-                return item
-            else:
-                raise Exception("Unexpected redaction format")
-            return item
-
         ## save
         params = {
             'text': text,
