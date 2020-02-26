@@ -73,7 +73,7 @@ def test_contact(client, auth_client, mailoutbox):
 def test_screenshot__parallel(client, live_server, settings, ngrammed_cases):
     # set up conditions for /screenshot/ route to work
     settings.SCREENSHOT_FEATURE = True
-    settings.DEBUG = True  # so view expects an http url
+    settings.DEBUG = True  # so view runs browser unsandboxed for docker
     live_server_port = live_server.url.rsplit(':', 1)[1]
     with mock.patch('capweb.views.safe_domains', ['case.test:%s' % live_server_port]):
 

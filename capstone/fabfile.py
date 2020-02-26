@@ -1049,7 +1049,7 @@ def download_pdfs(jurisdiction=None):
     import re
 
     # find each PDF by checking TarFile, since we have a 1-to-1 mapping between tar files and PDFs
-    volumes = (VolumeMetadata.objects.filter(out_of_scope=False, pdf_file=None)
+    volumes = (VolumeMetadata.objects.filter(out_of_scope=False, pdf_file='')
         .select_related('reporter', 'nominative_reporter')
         .prefetch_related('reporter__jurisdictions')
         .order_by('reporter__jurisdictions__slug', 'pk'))

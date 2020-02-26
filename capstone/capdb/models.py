@@ -6,7 +6,14 @@ import re
 from contextlib import contextmanager
 import struct
 import base64
+import fitz
+from lxml import etree
+from model_utils import FieldTracker
 import nacl
+import nacl.encoding
+import nacl.secret
+from pyquery import PyQuery
+from bs4 import BeautifulSoup
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
@@ -16,12 +23,6 @@ from django.db.models import Q
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from django.core.files.base import ContentFile
-from lxml import etree
-from model_utils import FieldTracker
-import nacl.encoding
-import nacl.secret
-from pyquery import PyQuery
-from bs4 import BeautifulSoup
 
 from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
@@ -594,7 +595,7 @@ class VolumeMetadata(models.Model):
     xml_checksums_need_update = models.BooleanField(default=False,
                                                     help_text="Whether checksums in volume_xml match current values in "
                                                                "related case_xml and page_xml data.")
-    pdf_file = models.FileField(blank=True, null=True, storage=download_files_storage, help_text="Exported volume PDF")
+    pdf_file = models.FileField(blank=True, storage=download_files_storage, help_text="Exported volume PDF")
 
     # values extracted from VolumeXML
     xml_start_year = models.IntegerField(blank=True, null=True)
@@ -962,6 +963,13 @@ class CaseMetadata(models.Model):
             url = '/'+url.split('/',3)[3]
         return url
 
+    def get_full_frontend_url(self):
+        return reverse('cite_home') + self.frontend_url
+
+    def get_pdf_url(self):
+        pdf_name = re.sub(r'[\\/:*?"<>|]', '_', self.full_cite()) + ".pdf"
+        return reverse('case_pdf', [self.pk, pdf_name])
+
     def withdraw(self, new_value=True, replaced_by=None):
         """ Mark this case as withdrawn by the court, and optionally replaced by a new case. """
         self.withdrawn = new_value
@@ -1200,6 +1208,17 @@ class CaseMetadata(models.Model):
         # handle deleted images
         if known_hashes:
             CaseImage.objects.filter(case=self, hash__in=known_hashes).delete()
+
+    def get_pdf(self):
+        """
+            Return PDF for this case from volume PDF. `fitz` is the PyMuPDF library.
+        """
+        if not self.volume.pdf_file:
+            raise ValueError("Cannot get case PDF for volume with no PDF")
+        page_range = PageStructure.objects.filter(cases__metadata=self).aggregate(models.Min('order'), models.Max('order'))
+        doc = fitz.open(self.volume.pdf_file.path)
+        doc.select(range(page_range['order__min']-1, page_range['order__max']))
+        return doc.write(garbage=2)
 
 
 class CaseXML(BaseXMLModel):
