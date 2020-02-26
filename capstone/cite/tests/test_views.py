@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 from bs4 import BeautifulSoup
 
-from django.conf import settings
 from django.utils import timezone
 
 from capapi.tests.helpers import check_response, is_cached
@@ -109,8 +108,10 @@ def test_cases_multiple(client, django_assert_num_queries, case_factory, elastic
 
 @pytest.mark.django_db
 @pytest.mark.parametrize('response_type', ['html', 'pdf'])
-def test_single_case(client, auth_client, case_factory, elasticsearch, response_type, django_assert_num_queries):
+def test_single_case(client, auth_client, case_factory, elasticsearch, response_type, django_assert_num_queries, settings):
     """ Test /series/volume/case/ with one matching case """
+
+    settings.CASE_PDF_FEATURE = True
 
     # set up for viewing html or pdf
     case_text = "Case HTML"
