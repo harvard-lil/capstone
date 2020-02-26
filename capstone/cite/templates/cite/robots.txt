@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /pdf/
+{% for case in cases %}Disallow: {{ case.frontend_url }}
+{% endfor %}

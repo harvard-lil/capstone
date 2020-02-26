@@ -76,10 +76,9 @@ def robots(request):
     """
         Disallow all URLs with no_index=True and robots_txt_until >= now.
     """
-    return HttpResponse("\n".join(
-        ["user-agent: *"]+
-        ["disallow: %s" % c.frontend_url for c in CaseMetadata.objects.filter(robots_txt_until__gte=timezone.now())]
-    )+"\n", content_type="text/plain")
+    return render(request, "cite/robots.txt", {
+        'cases': CaseMetadata.objects.filter(robots_txt_until__gte=timezone.now()),
+    }, content_type="text/plain")
 
 def series(request, series_slug):
     """ /<series_slug>/ -- list all volumes for each series with that slug (typically only one). """
