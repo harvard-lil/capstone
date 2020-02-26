@@ -270,24 +270,24 @@ def test_no_index(auth_client, case_factory, elasticsearch):
 
 @pytest.mark.django_db()
 def test_robots(client, case):
+    case_string = "Disallow: %s" % case.frontend_url
+
     # default version is empty:
     url = reverse('robots', host='cite')
     response = client.get(url)
-    check_response(response, content_type="text/plain")
-    assert response.content.decode() == 'user-agent: *\n'
+    check_response(response, content_type="text/plain", content_includes='User-agent: *', content_excludes=case_string)
 
     # case with robots_txt_until in future is included:
     case.no_index = True
     case.robots_txt_until = timezone.now() + timedelta(days=1)
     case.save()
-    check_response(client.get(url), content_includes="disallow: %s" % case.frontend_url, content_type="text/plain")
+    check_response(client.get(url), content_type="text/plain", content_includes=case_string)
 
-    # case with robots_txt_until in future is excluded:
+    # case with robots_txt_until in past is excluded:
     case.robots_txt_until = timezone.now() - timedelta(days=1)
     case.save()
     response = client.get(url)
-    check_response(response, content_type="text/plain")
-    assert response.content.decode() == 'user-agent: *\n'
+    check_response(response, content_type="text/plain", content_includes='User-agent: *', content_excludes=case_string)
 
 
 @pytest.mark.django_db
