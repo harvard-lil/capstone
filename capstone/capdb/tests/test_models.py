@@ -71,22 +71,6 @@ def test_withdraw_case(case_factory):
     assert 'This case was withdrawn and replaced' in withdrawn.body_cache.xml
 
 @pytest.mark.django_db
-def test_sync_case_body_cache_redaction(case_factory):
-    test_case = case_factory()
-    initial_case_text = test_case.body_cache.text
-    initial_opinion_text = test_case.body_cache.json['opinions'][0]['text']
-    assert 'text' in initial_case_text
-    assert 'text' in initial_opinion_text
-    test_case.no_index_redacted = {'text': 'toast'}
-    test_case.sync_case_body_cache()
-    final_case_text = test_case.body_cache.text
-    final_opinion_text = test_case.body_cache.json['opinions'][0]['text']
-    assert initial_case_text.replace('toast', 'text') == final_case_text
-    assert initial_opinion_text.replace('toast', 'text') == final_opinion_text
-
-
-
-@pytest.mark.django_db
 def test_update_frontend_urls(case_factory, django_assert_num_queries):
     case1 = case_factory(citations__cite="123 Test 456", volume__volume_number="123", citations__type="official")
     case2 = case_factory(citations__cite="124 Test 456", volume__volume_number="124", citations__type="official")

@@ -146,11 +146,11 @@ class CaseDocument(DocType):
     @staticmethod
     def filter_redacted(item, replacements):
         """ filters out terms in 'item' with the {'original_text': and 'replacement_text' }
-        >>> filter_redacted("Hello, what's your name?", {'name': 'game', 'Hello': 'Wow'})
-        "Wow, what's your game?"
+        >>> CaseDocument.filter_redacted("Hello, what's your name?", {'name': 'game', 'Hello': 'Wow'})
+        "[ Wow ], what's your [ game ]?"
 
-        >>> filter_redacted({"test": "Hello, what's your name?" }, {'name': 'game', 'Hello': 'Wow'})
-        {'test': "Wow, what's your game?"}
+        >>> CaseDocument.filter_redacted({"test": "Hello, what's your name?" }, {'name': 'game', 'Hello': 'Wow'})
+        {'test': "[ Wow ], what's your [ game ]?"}
         """
 
         if not replacements:
