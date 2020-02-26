@@ -146,6 +146,7 @@ class VolumeMetadataFactory(factory.DjangoModelFactory):
     created_by = factory.SubFactory(TrackingToolUserFactory)
     reporter = factory.SubFactory(ReporterFactory)
     volume_number = factory.Sequence(lambda n: str(n))
+    pdf_file = 'fake_volume.pdf'  # stored in test_data/downloads/
 
 _volume_xml = Path(settings.BASE_DIR, "test_data/from_vendor/32044057892259_redacted/32044057892259_redacted_METS.xml").read_text()
 
@@ -307,6 +308,8 @@ class CaseFactory(factory.DjangoModelFactory):
     jurisdiction = factory.SubFactory(JurisdictionFactory)
     first_page = factory.Sequence(lambda n: str((n+1)*4))
     last_page = factory.LazyAttribute(lambda o: str(int(o.first_page)+4))
+    first_page_order = factory.LazyAttribute(lambda o: int(o.first_page)+2)
+    last_page_order = factory.LazyAttribute(lambda o: int(o.last_page)+2)
     case_id = factory.Sequence(lambda n: '%08d' % n)
     decision_date = factory.Sequence(lambda n: date(1900+(n%100), 1, 1))
     decision_date_original = factory.LazyAttribute(lambda o: o.decision_date.strftime("%Y-%m-%d"))

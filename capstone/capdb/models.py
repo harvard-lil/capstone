@@ -825,8 +825,10 @@ class CaseMetadataQuerySet(TemporalQuerySet):
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, unique=True)
     frontend_url = models.CharField(max_length=255, null=True, blank=True)
-    first_page = models.CharField(max_length=255, null=True, blank=True)
-    last_page = models.CharField(max_length=255, null=True, blank=True)
+    first_page = models.CharField(max_length=255, null=True, blank=True, help_text='Label of first page')
+    last_page = models.CharField(max_length=255, null=True, blank=True, help_text='Label of first page')
+    first_page_order = models.SmallIntegerField(null=True, blank=True, help_text='1-based page order of first page')
+    last_page_order = models.SmallIntegerField(null=True, blank=True, help_text='1-based page order of last page')
     publication_status = models.CharField(max_length=255, null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
@@ -1215,9 +1217,8 @@ class CaseMetadata(models.Model):
         """
         if not self.volume.pdf_file:
             raise ValueError("Cannot get case PDF for volume with no PDF")
-        page_range = PageStructure.objects.filter(cases__metadata=self).aggregate(models.Min('order'), models.Max('order'))
         doc = fitz.open(self.volume.pdf_file.path)
-        doc.select(range(page_range['order__min']-1, page_range['order__max']))
+        doc.select(range(self.first_page_order-1, self.last_page_order))
         return doc.write(garbage=2)
 
 

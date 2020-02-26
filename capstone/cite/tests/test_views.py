@@ -9,7 +9,6 @@ from django.conf import settings
 from django.utils import timezone
 
 from capapi.tests.helpers import check_response, is_cached
-from capdb.models import PageStructure
 from capweb.helpers import reverse
 from capweb import helpers
 
@@ -114,11 +113,9 @@ def test_single_case(client, auth_client, case_factory, elasticsearch, response_
 
     # set up for viewing html or pdf
     case_text = "Case HTML"
-    unrestricted_case = case_factory(jurisdiction__whitelisted=True, body_cache__html=case_text, volume__pdf_file='fake_volume.pdf')
-    restricted_case = case_factory(jurisdiction__whitelisted=False, body_cache__html=case_text, volume__pdf_file='fake_volume.pdf')
+    unrestricted_case = case_factory(jurisdiction__whitelisted=True, body_cache__html=case_text, first_page_order=2, last_page_order=2)
+    restricted_case = case_factory(jurisdiction__whitelisted=False, body_cache__html=case_text, first_page_order=2, last_page_order=2)
     if response_type == 'pdf':
-        # all cases run from page 2 to page 2 of fake_volume.pdf
-        PageStructure.objects.update(order=2)
         case_text = "Page 2"
         unrestricted_url = unrestricted_case.get_pdf_url()
         url = restricted_case.get_pdf_url()
@@ -129,7 +126,7 @@ def test_single_case(client, auth_client, case_factory, elasticsearch, response_
         content_type = None
 
     ### can load whitelisted case
-    with django_assert_num_queries(select=(2 if response_type == 'html' else 3)):
+    with django_assert_num_queries(select=2):
         check_response(client.get(unrestricted_url), content_includes=case_text, content_type=content_type)
 
     ### can load blacklisted case while logged out, via redirect
