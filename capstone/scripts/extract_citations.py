@@ -1,16 +1,7 @@
 import re
-from queue import Queue
-from threading import Thread
-import traceback
-from multiprocessing import Process, Manager
-from multiprocessing.pool import Pool
-from tqdm import tqdm
-from django.conf import settings
-
+from capapi.documents import CaseDocument
 from reporters_db import REPORTERS, VARIATIONS_ONLY
 from capdb.models import ExtractedCitation, Reporter, VolumeMetadata, Citation, Jurisdiction, CaseMetadata, CaseBodyCache
-from scripts.helpers import ordered_query_iterator
-from scripts.generate_case_html import generate_html
 
 
 def extract(case_text):
@@ -34,67 +25,85 @@ def extract(case_text):
             citation_hits[citation] = VARIATIONS_ONLY[rep_short_name][0]
         else:
             citation_misses.append(citation)
-
     return citation_hits, citation_misses
 
 
-def extract_citations(casemet):
-    print("extract_citations", casemet)
-    try:
-        casebody_cache = CaseBodyCache.objects.get(metadata=casemet)
-        hits, misses = extract(casebody_cache.text)
-    except CaseBodyCache.DoesNotExist:
-        try:
-            casebody = generate_html(casemet.case_xml.extract_casebody())
-            hits, misses = extract(casebody)
-        except:
-            return
+def get_buckets():
+    reporters = Reporter.objects.all()
+    for rep in reporters:
+        for vol in VolumeMetadata.objects.filter(reporter=rep):
+            try:
+                cases_query = CaseDocument.search().filter("term", volume_id=vol.id).sort('first_page')\
+                    .source(['casebody_data.text.opinions.text', 'casebody_data.text.headmatter', 'id'])
+                cases_query.aggs.bucket('vols', 'terms', field='volume.id')
+                cases = cases_query.execute()
+                if len(cases) > 0:
+                    return cases
+            except:
+                pass
+
+
+def extract_citations_from_casedoc(casedoc):
+    casetext = ""
+
+    if casedoc.casebody_data.text.head_matter:
+        casetext += casedoc.casebody_data.text.head_matter
+    for opinion in casedoc.casebody_data.text.opinions:
+        casetext += opinion.text
+    hits, misses = extract(casetext)
+    print(hits)
 
     # TODO: decide what to do with the misses
     for (citation, reporter_str) in hits.items():
-
+        print("1. matched reporter string:", citation, reporter_str)
         cite, created = ExtractedCitation.objects.get_or_create(original_cite=citation)
-        print("extracted citation, cite:", cite)
-        cite.case_origins.add(casemet.id)
+        print("2. extracted citation, cite:", cite, created)
+        cite.case_origins.add(casedoc.id)
         cite.save()
-        print(cite, "exists")
-        reporter = find_reporter_match(reporter_str)
-        print("found reporter match", reporter)
-        if not reporter:
+        if created or not cite.reporter:
             reporters_to_check = []
             for rep_instance in REPORTERS[reporter_str]:
                 reporters_to_check += list(rep_instance['variations'].keys())
-            print("reporters to check:", reporters_to_check)
-            for variation in reporters_to_check:
-                reporter = find_reporter_match(variation)
-                if reporter:
-                    print("found reporter!", reporter)
-                    break
-
-
+            print("3. reporters to check:", reporters_to_check)
+            reporter = find_reporter_match(reporter_str, reporters_to_check)
+            print("4. matched reporter found?", reporter)
+            if reporter:
+                cite.reporter_match = reporter
         citation_parts = citation.split(" ")
-
-        cite.reporter_original_string = " ".join(citation_parts[1:-1])
-        cite.reporter_match = reporter
-        cite.volume_original_number = citation_parts[0]
-        cite.save()
-        try:
-            cite.volume_match = VolumeMetadata.objects.get(reporter=reporter, volume_number=citation_parts[0])
-        except VolumeMetadata.DoesNotExist:
-            pass
+        if created or not cite.reporter_original_string:
+            cite.reporter_original_string = " ".join(citation_parts[1:-1])
+        if created or not cite.volume_original_number:
+            cite.volume_original_number = citation_parts[0]
+        if created and reporter:
+            try:
+                cite.volume_match = VolumeMetadata.objects.get(
+                    reporter=reporter,
+                    volume_number=citation_parts[0]
+                )
+            except VolumeMetadata.DoesNotExist:
+                pass
 
         cite.page_original_number = citation_parts[-1]
         try:
             cite.citation_match = Citation.objects.get(cite=citation)
         except Citation.DoesNotExist:
             pass
+        cite.save()
 
-def find_reporter_match(reporter_str):
+
+def find_reporter_match(reporter_str, remaining_list_to_check):
+    print(">>>>>>>>>>", reporter_str, remaining_list_to_check)
     try:
         reporter = Reporter.objects.get(short_name=reporter_str)
         return reporter
     except Reporter.DoesNotExist:
-        return False
+        # TODO: going from, potentially, least likely to most. Need to reverse!
+        if len(remaining_list_to_check):
+            find_reporter_match(remaining_list_to_check.pop(), remaining_list_to_check)
+        else:
+            return
+
+
 
 
 

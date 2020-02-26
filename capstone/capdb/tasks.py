@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from capapi.documents import CaseDocument
 from capdb.models import *
-
+from scripts.extract_citations import extract_citations_from_casedoc
 
 ### HELPERS ###
 
@@ -341,3 +341,27 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 
         for case in cases:
             case.retrieve_and_store_images()
+
+
+
+@shared_task(bind=True)
+def extract_citations_per_vol(self, volume_id):
+    from celery.contrib import rdb
+    print("in task", volume_id)
+
+    try:
+        cases_query = CaseDocument.search() \
+            .filter("term", volume__barcode=volume_id)\
+            .sort('first_page')\
+            .source(['casebody_data.text.opinions.text', 'casebody_data.text.headmatter', 'id'])
+        cases_query.aggs.bucket('vols', 'terms', field='volume.id')
+
+        cases = cases_query.execute()
+        print("extract_citations_from_casedoc", extract_citations_from_casedoc, len(cases))
+        for casedoc in cases:
+            extract_citations_from_casedoc(casedoc)
+    except:
+        print("getting error")
+        pass
+
+
