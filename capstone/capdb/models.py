@@ -1038,10 +1038,10 @@ class CaseMetadata(models.Model):
 
         ## save
         params = {
-            'text': filter_redacted(text, self.no_index_redacted),
-            'html': filter_redacted(html, self.no_index_redacted),
-            'xml': filter_redacted(xml, self.no_index_redacted),
-            'json': filter_redacted(json, self.no_index_redacted)
+            'text': text,
+            'html': html,
+            'xml': xml,
+            'json': json,
         }
         # use this approach, instead of update_or_create, to reduce sql traffic:
         #   - avoid causing a select (if the body_cache has already been populated with select_related)
