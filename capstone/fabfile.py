@@ -1098,6 +1098,27 @@ def download_pdfs(jurisdiction=None):
             raise
 
 
+@task
+def populate_case_page_order():
+    """
+        Set all CaseMetadata.first_page_order and .last_page_order values based on PageStructure.
+    """
+    cursor = django.db.connections['capdb'].cursor()
+    cursor.execute("""
+        UPDATE capdb_casemetadata m 
+        SET first_page_order=j.first_page_order, last_page_order=j.last_page_order 
+        FROM 
+            capdb_casestructure c, 
+            (
+                SELECT min(p.order) as first_page_order, max(p.order) as last_page_order, cp.casestructure_id 
+                FROM capdb_pagestructure p, capdb_casestructure_pages cp 
+                WHERE p.id=cp.pagestructure_id 
+                GROUP BY cp.casestructure_id
+            ) j 
+        WHERE c.metadata_id=m.id and c.id=j.casestructure_id
+    """)
+
+
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
     # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"

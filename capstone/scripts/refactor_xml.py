@@ -1579,10 +1579,18 @@ def write_to_db(volume_barcode, zip_path):
         # save join table between CaseStructure and PageStructure
         print("Saving join table")
         page_objs_by_block_id = {block['id']:p for p in page_objs for block in p.blocks}
-        links = {(case.id, page_objs_by_block_id[block_id].id)
-                 for case in case_objs
-                 for par in iter_pars(case.opinions)
-                 for block_id in par['block_ids']}
+        links = set()
+        for case in case_objs:
+            metadata_obj = case.metadata
+            for par in iter_pars(case.opinions):
+                for block_id in par['block_ids']:
+                    page_obj = page_objs_by_block_id[block_id]
+                    links.add((case.id, page_obj.id))
+                    # update CaseMetadata first and last order fields
+                    if not metadata_obj.first_page_order or metadata_obj.first_page_order > page_obj.order:
+                        metadata_obj.first_page_order = page_obj.order
+                    if not metadata_obj.last_page_order or metadata_obj.last_page_order < page_obj.order:
+                        metadata_obj.last_page_order = page_obj.order
         link_objs = [CaseStructure.pages.through(casestructure_id=case_id, pagestructure_id=page_id) for case_id, page_id in links]
         CaseStructure.pages.through.objects.bulk_create(link_objs)
 
