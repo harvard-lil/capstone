@@ -32,7 +32,7 @@
     {% if page_url %}
       <meta property="og:url" content="{{ page_url }}">
     {% else %}
-      <meta property="og:url" content="{{ request.build_absolute_uri }}">
+      {% if request %}<meta property="og:url" content="{{ request.build_absolute_uri }}">{% endif %}
     {% endif %}
 
     <meta property="og:type" content="article">

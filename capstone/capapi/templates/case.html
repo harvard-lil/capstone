@@ -23,7 +23,14 @@
       {% endif %}
       <div class="full_cite">{{ citation_full }}</div>
       <div class="small">
-        <a href="{% api_url 'cases-detail' id %}">view API</a>
+        {% if request.user.is_authenticated or metadata.jurisdiction.whitelisted %}
+          <a href="{% api_url 'cases-detail' id %}?full_case=true">view API</a>
+        {% else %}
+          <a href="{% api_url 'cases-detail' id %}">view API</a>
+        {% endif %}
+        {% if can_render_pdf %}
+          • <a href="{{ db_case.get_pdf_url }}">view PDF</a>
+        {% endif %}
         {% if request.user.is_staff %}
           • <a href="{% url 'admin:capdb_casemetadata_change' id %}">Django admin</a>
         {% endif %}

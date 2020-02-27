@@ -78,7 +78,7 @@ def reverse(*args, **kwargs):
     """
         Wrap django_hosts.reverse() to try all known hosts.
     """
-    kwargs.setdefault('scheme', 'http' if settings.DEBUG else 'https')
+    kwargs.setdefault('scheme', 'https' if settings.MAKE_HTTPS_URLS else 'http')
 
     # if host is provided, just use that
     if 'host' in kwargs:
@@ -287,3 +287,6 @@ def is_browser_request(request):
     """
     drf_renderer = DefaultContentNegotiation().select_renderer(RestRequest(request), [renderers.JSONRenderer, renderers.TemplateHTMLRenderer])
     return drf_renderer[0] is renderers.TemplateHTMLRenderer
+
+
+safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]

@@ -36,7 +36,7 @@ from capdb.models import CaseMetadata
     ("caseexport-download", [],                                               {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
 ])
 @pytest.mark.parametrize("client_fixture_name", ["client", "auth_client", "token_auth_client"])
-def test_cache_headers(ingest_elasticsearch, request, settings,
+def test_cache_headers(request, settings, elasticsearch,
                        client_fixture_name,
                        view_name, cache_clients, get_kwargs):
 
@@ -70,21 +70,21 @@ def test_cache_headers(ingest_elasticsearch, request, settings,
     )
 
 @pytest.mark.django_db
-def test_cache_case_cite(client, whitelisted_case_document, non_whitelisted_case_document, settings):
+def test_cache_case_cite(client, unrestricted_case, restricted_case, settings, elasticsearch):
     """ Single-case cite.case.law page should be cached only if case is whitelisted. """
     settings.SET_CACHE_CONTROL_HEADER = True
 
-    url = CaseMetadata.objects.get(pk=whitelisted_case_document.id).get_frontend_url()
+    url = CaseMetadata.objects.get(pk=unrestricted_case.id).get_frontend_url()
 
     # whitelisted case is cached
     response = client.get(url)
-    check_response(response, content_includes=whitelisted_case_document.name)
+    check_response(response, content_includes=unrestricted_case.name)
     assert is_cached(response)
 
     # non-whitelisted case not cached
-    url = CaseMetadata.objects.get(pk=non_whitelisted_case_document.id).get_frontend_url()
+    url = CaseMetadata.objects.get(pk=restricted_case.id).get_frontend_url()
     response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
-    check_response(response, content_includes=non_whitelisted_case_document.name)
+    check_response(response, content_includes=restricted_case.name)
     assert not is_cached(response)
 
 @pytest.mark.django_db

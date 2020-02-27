@@ -6,8 +6,7 @@ import pathlib
 from datetime import datetime
 import django
 import json
-from random import randrange, randint
-from multiprocessing import Pool
+from random import randint
 from pathlib import Path
 from celery import shared_task, group
 from tqdm import tqdm
@@ -32,9 +31,8 @@ from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdic
     Court
 
 import capdb.tasks as tasks
-from scripts import set_up_postgres, data_migrations, ingest_by_manifest, mass_update, \
-    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, update_snippets
-
+from scripts import set_up_postgres, data_migrations, ingest_by_manifest, \
+    validate_private_volumes as validate_private_volumes_script, export, update_snippets
 from scripts.helpers import parse_xml, serialize_xml, copy_file, volume_barcode_from_folder, \
     up_to_date_volumes, storage_lookup
 
@@ -208,12 +206,6 @@ def create_or_update_case_metadata(update_existing=False):
     tasks.create_case_metadata_from_all_vols(update_existing=update_existing)
 
 @task
-def rename_tags_from_json_id_list(json_path, tag=None):
-    with open(os.path.abspath(os.path.expanduser(json_path))) as data_file:
-        parsed_json = json.load(data_file)
-    mass_update.rename_casebody_tags_from_json_id_list(parsed_json, tag)
-
-@task
 def init_dev_db():
     """
         Set up new dev database.
@@ -248,7 +240,7 @@ def migrate():
 def populate_search_index(last_run_before=None):
     tasks.run_task_for_volumes(
         tasks.update_elasticsearch_for_vol,
-        VolumeMetadata.objects.exclude(xml_metadata=None).exclude(out_of_scope=True),
+        VolumeMetadata.objects.exclude(out_of_scope=True),
         last_run_before=last_run_before)
 
 @task
@@ -274,29 +266,6 @@ def add_permissions_groups():
     """
     # add capapi groups
     management.call_command('loaddata', 'capapi/fixtures/groups.yaml')
-
-
-@task
-def validate_casemets_alto_link(sample_size=100000):
-    """
-    Will test a random sample of cases.
-    Tests 100,000 by default, but you can specify a sample set size on the command line. For example, to test 14 cases:
-    fab validate_casemets_alto_link:14
-    """
-    sample_size = int(sample_size) if int(sample_size) < CaseXML.objects.all().count() else CaseXML.objects.all().count()
-    tested = []
-    while len(tested) < sample_size:
-        try:
-            key = randrange(1, CaseXML.objects.last().id + 1)
-            while key in tested:
-                key = randrange(1, CaseXML.objects.last().id + 1)
-            tested.append(key)
-            case_xml = CaseXML.objects.get(pk=key)
-            print(compare_alto_case.validate(case_xml))
-        except CaseXML.DoesNotExist:
-            continue
-    print("Tested these CaseXML IDs:")
-    print(tested)
 
 
 @task
@@ -1015,6 +984,9 @@ def retrieve_and_store_images(last_run_before=None):
     """ Retrieve images from inside cases """
     tasks.run_task_for_volumes(tasks.retrieve_images_from_cases, last_run_before=last_run_before)
 
+@task
+def redact_id_numbers(last_run_before=None):
+    tasks.run_task_for_volumes(tasks.remove_id_number_in_volume, last_run_before=last_run_before)
 
 @task
 def update_reporter_years(reporter_id=None):
@@ -1077,7 +1049,7 @@ def download_pdfs(jurisdiction=None):
     import re
 
     # find each PDF by checking TarFile, since we have a 1-to-1 mapping between tar files and PDFs
-    volumes = (VolumeMetadata.objects.filter(out_of_scope=False, pdf_file=None)
+    volumes = (VolumeMetadata.objects.filter(out_of_scope=False, pdf_file='')
         .select_related('reporter', 'nominative_reporter')
         .prefetch_related('reporter__jurisdictions')
         .order_by('reporter__jurisdictions__slug', 'pk'))
@@ -1125,10 +1097,26 @@ def download_pdfs(jurisdiction=None):
             download_files_storage.delete(new_path)
             raise
 
+
 @task
-def extract_all_citations(last_run_before=None):
-    """ extract citations """
-    tasks.run_task_for_volumes(tasks.extract_citations_per_vol, last_run_before=last_run_before)
+def populate_case_page_order():
+    """
+        Set all CaseMetadata.first_page_order and .last_page_order values based on PageStructure.
+    """
+    cursor = django.db.connections['capdb'].cursor()
+    cursor.execute("""
+        UPDATE capdb_casemetadata m 
+        SET first_page_order=j.first_page_order, last_page_order=j.last_page_order 
+        FROM 
+            capdb_casestructure c, 
+            (
+                SELECT min(p.order) as first_page_order, max(p.order) as last_page_order, cp.casestructure_id 
+                FROM capdb_pagestructure p, capdb_casestructure_pages cp 
+                WHERE p.id=cp.pagestructure_id 
+                GROUP BY cp.casestructure_id
+            ) j 
+        WHERE c.metadata_id=m.id and c.id=j.casestructure_id
+    """)
 
 
 if __name__ == "__main__":

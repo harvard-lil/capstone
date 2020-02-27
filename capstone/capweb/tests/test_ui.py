@@ -8,17 +8,13 @@ from django.conf import settings
 
 from capapi.tests.helpers import check_response
 from capweb.helpers import reverse, page_image_url
-from scripts import update_snippets
 
 
 @pytest.mark.django_db
-def test_nav(client, ingest_case_xml, reporter):
+def test_nav(client, case, reporter):
     """
     All our navigation links lead to somewhere 200 Ok
     """
-    # this is necessary because some routes need specific snippets now
-    update_snippets.update_all()
-
     response = client.get(reverse('home'))
     check_response(response)
     soup = BeautifulSoup(response.content.decode(), 'html.parser')
@@ -74,12 +70,12 @@ def test_contact(client, auth_client, mailoutbox):
     assert len(mailoutbox) == 1
 
 
-def test_screenshot(client, live_server, settings, ngrammed_cases):
+def test_screenshot__parallel(client, live_server, settings, ngrammed_cases):
     # set up conditions for /screenshot/ route to work
     settings.SCREENSHOT_FEATURE = True
-    settings.DEBUG = True  # so view expects an http url
+    settings.DEBUG = True  # so view runs browser unsandboxed for docker
     live_server_port = live_server.url.rsplit(':', 1)[1]
-    with mock.patch('capweb.views._safe_domains', ['case.test:%s' % live_server_port]):
+    with mock.patch('capweb.views.safe_domains', ['case.test:%s' % live_server_port]):
 
         # url we want a screenshot of -- .graph-container in /trends/?q=the
         target_url = reverse('trends', port=live_server_port).replace(':8000', '') + '?q=the'

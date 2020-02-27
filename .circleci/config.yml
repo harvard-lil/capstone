@@ -54,7 +54,7 @@ jobs:
             docker-compose exec web pytest \
               --junitxml=junit/pytest/test-results.xml       `# write test results so they can be displayed by circleci` \
               --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
-              --fail-on-template-vars
+              -v
 
       # Upload test details to circleci
       - store_test_results:

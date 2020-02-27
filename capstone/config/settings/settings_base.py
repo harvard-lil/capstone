@@ -437,6 +437,8 @@ INVENTORY = {
     'private_manifest_path_prefix': 'inventory/',
 }
 
+GEOIP_PATH = os.path.join(BASE_DIR, 'test_data/GeoLite2-City.mmdb')
+
 ### CELERY ###
 from celery.schedules import crontab
 CELERY_BROKER_URL = 'redis://'
@@ -549,6 +551,7 @@ CELERY_RESOURCE_LIMITS = [
 
 # security
 SECURE_CONTENT_TYPE_NOSNIFF = True
+MAKE_HTTPS_URLS = True
 
 SILENCED_SYSTEM_CHECKS = [
     "models.E004"   # For our history tables, the "id" field should not be a primary key. This disables the Django system
@@ -577,6 +580,8 @@ NGRAM_THREAD_COUNT = 4
 
 # feature flags
 SCREENSHOT_FEATURE = False
+GEOLOCATION_FEATURE = False
+CASE_PDF_FEATURE = False
 
 HARVARD_IP_RANGES = """
     12.0.48.0/20
@@ -617,6 +622,7 @@ ELASTICSEARCH_DSL={
         'hosts': 'localhost:9200'
     },
 }
+ELASTICSEARCH_DSL_AUTO_REFRESH = False  # don't force a reindex on every write to ES; let ES do it routinely instead
 MAINTAIN_ELASTICSEARCH_INDEX = True  # whether to update index when changing cases
 
 ELASTICSEARCH_INDEXES={

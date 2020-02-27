@@ -6,7 +6,14 @@ import re
 from contextlib import contextmanager
 import struct
 import base64
+import fitz
+from lxml import etree
+from model_utils import FieldTracker
 import nacl
+import nacl.encoding
+import nacl.secret
+from pyquery import PyQuery
+from bs4 import BeautifulSoup
 
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
@@ -16,18 +23,11 @@ from django.db.models import Q
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from django.core.files.base import ContentFile
-from lxml import etree
-from model_utils import FieldTracker
-import nacl.encoding
-import nacl.secret
-from pyquery import PyQuery
-from bs4 import BeautifulSoup
 
 from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
-from scripts.generate_case_html import generate_html
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
@@ -595,7 +595,7 @@ class VolumeMetadata(models.Model):
     xml_checksums_need_update = models.BooleanField(default=False,
                                                     help_text="Whether checksums in volume_xml match current values in "
                                                                "related case_xml and page_xml data.")
-    pdf_file = models.FileField(blank=True, null=True, storage=download_files_storage, help_text="Exported volume PDF")
+    pdf_file = models.FileField(blank=True, storage=download_files_storage, help_text="Exported volume PDF")
 
     # values extracted from VolumeXML
     xml_start_year = models.IntegerField(blank=True, null=True)
@@ -825,8 +825,10 @@ class CaseMetadataQuerySet(TemporalQuerySet):
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, unique=True)
     frontend_url = models.CharField(max_length=255, null=True, blank=True)
-    first_page = models.CharField(max_length=255, null=True, blank=True)
-    last_page = models.CharField(max_length=255, null=True, blank=True)
+    first_page = models.CharField(max_length=255, null=True, blank=True, help_text='Label of first page')
+    last_page = models.CharField(max_length=255, null=True, blank=True, help_text='Label of first page')
+    first_page_order = models.SmallIntegerField(null=True, blank=True, help_text='1-based page order of first page')
+    last_page_order = models.SmallIntegerField(null=True, blank=True, help_text='1-based page order of last page')
     publication_status = models.CharField(max_length=255, null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
@@ -882,6 +884,8 @@ class CaseMetadata(models.Model):
     def save(self, *args, **kwargs):
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
+        if settings.MAINTAIN_ELASTICSEARCH_INDEX and not getattr(kwargs, 'no_reindex', False) and self.pk and hasattr(self, 'body_cache'):
+            self.update_search_index()
         super().save(*args, **kwargs)
 
     def full_cite(self):
@@ -961,6 +965,13 @@ class CaseMetadata(models.Model):
             url = '/'+url.split('/',3)[3]
         return url
 
+    def get_full_frontend_url(self):
+        return reverse('cite_home') + self.frontend_url
+
+    def get_pdf_url(self):
+        pdf_name = re.sub(r'[\\/:*?"<>|]', '_', self.full_cite()) + ".pdf"
+        return reverse('case_pdf', [self.pk, pdf_name])
+
     def withdraw(self, new_value=True, replaced_by=None):
         """ Mark this case as withdrawn by the court, and optionally replaced by a new case. """
         self.withdrawn = new_value
@@ -987,6 +998,7 @@ class CaseMetadata(models.Model):
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
         """
+
         # if rerender is false, just regenerate json and text attributes from existing html
         if not rerender:
             try:
@@ -1010,8 +1022,12 @@ class CaseMetadata(models.Model):
         json, text = self.get_json_from_html(html)
 
         ## save
-
-        params = {'text': text, 'html': html, 'xml': xml, 'json': json}
+        params = {
+            'text': text,
+            'html': html,
+            'xml': xml,
+            'json': json,
+        }
         # use this approach, instead of update_or_create, to reduce sql traffic:
         #   - avoid causing a select (if the body_cache has already been populated with select_related)
         #   - avoid hydrating the params via save(), if they were loaded with defer()
@@ -1146,11 +1162,7 @@ class CaseMetadata(models.Model):
 
     def retrieve_and_store_images(self):
         """Get all <img> tags in casebody, store file images in db"""
-        try:
-            casebody = self.body_cache.html
-        except CaseBodyCache.DoesNotExist:
-            casebody = generate_html(self.case_xml.extract_casebody())
-
+        casebody = self.body_cache.html
         casebody = BeautifulSoup(casebody, 'html.parser')
         imgs = casebody.findAll('img')
         known_hashes = {c.hash for c in self.caseimages.all()}
@@ -1181,6 +1193,16 @@ class CaseMetadata(models.Model):
         # handle deleted images
         if known_hashes:
             CaseImage.objects.filter(case=self, hash__in=known_hashes).delete()
+
+    def get_pdf(self):
+        """
+            Return PDF for this case from volume PDF. `fitz` is the PyMuPDF library.
+        """
+        if not self.volume.pdf_file:
+            raise ValueError("Cannot get case PDF for volume with no PDF")
+        doc = fitz.open(self.volume.pdf_file.path)
+        doc.select(range(self.first_page_order-1, self.last_page_order))
+        return doc.write(garbage=2)
 
 
 class CaseXML(BaseXMLModel):

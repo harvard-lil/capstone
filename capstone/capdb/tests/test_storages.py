@@ -1,10 +1,10 @@
 from io import BytesIO
 
 
-def test_iter_files_s3_storage(s3_storage):
+def test_iter_files_s3_storage__parallel(s3_storage):
     base_test_iter_files(s3_storage)
 
-def test_iter_files_file_storage(file_storage):
+def test_iter_files_file_storage__parallel(file_storage):
     base_test_iter_files(file_storage)
 
 def base_test_iter_files(storage):
@@ -26,7 +26,7 @@ def base_test_iter_files(storage):
     assert set(sub_dir) == set(storage.iter_files_recursive('d'))
 
 
-def test_isfile(file_storage):
+def test_isfile__parallel(file_storage):
     file_names = ['a/b.txt', 'c.txt']
     for file_name in file_names:
         file_storage.save(file_name, BytesIO(b'content'))
@@ -37,7 +37,7 @@ def test_isfile(file_storage):
     assert not file_storage.isfile('a')
 
 
-def test_isdir(file_storage):
+def test_isdir__parallel(file_storage):
     file_storage.save('a/b.txt', BytesIO(b'content'))
 
     assert file_storage.isdir('a')

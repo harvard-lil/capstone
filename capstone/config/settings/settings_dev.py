@@ -17,6 +17,8 @@ CELERY_TASK_ALWAYS_EAGER = True
 # propagate exceptions
 CELERY_TASK_EAGER_PROPAGATES = True
 
+MAKE_HTTPS_URLS = False
+
 if os.environ.get('DOCKERIZED'):
     DATABASES['default']['PASSWORD'] = 'password'
     DATABASES['default']['HOST'] = 'db'
@@ -55,13 +57,22 @@ STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 # don't update elasticsearch index on dev when savings cases (this may want to change -- not sure)
 MAINTAIN_ELASTICSEARCH_INDEX = False
 
-ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases_test'
-
-# django-debug-toolbar
 import sys
-if 'pytest' not in sys.modules:  # don't run this from tests
+if 'pytest' in sys.modules:
+    ## settings only for tests
+    MAINTAIN_ELASTICSEARCH_INDEX = False  # tests must opt in
+    ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases_test'
+    STORAGES['download_files_storage']['kwargs']['location'] = os.path.join(BASE_DIR, 'test_data/downloads')
+
+    # don't waste time on whitenoise for tests
+    MIDDLEWARE = [i for i in MIDDLEWARE if not i.startswith('whitenoise.')]
+
+else:
+    ## settings not for tests
+    ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases'
+
+    # django-debug-toolbar
     try:
-            ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases'
             import debug_toolbar  # noqa
             INSTALLED_APPS += (
                 'debug_toolbar',
