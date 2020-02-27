@@ -157,3 +157,28 @@ def api_reverse(viewname, args=None, kwargs=None, request=None, format=None, **e
 
     return out
 
+
+def apply_replacements(item, replacements, prefix="[ ", suffix=" ]"):
+    """ filters out terms in 'item' with the {'original_text': and 'replacement_text' }
+    >>> apply_replacements("Hello, what's your name?", {'name': 'game', 'Hello': 'Wow'})
+    "[ Wow ], what's your [ game ]?"
+
+    >>> apply_replacements({"test": "Hello, what's your name?" }, {'name': 'game', 'Hello': 'Wow'})
+    {'test': "[ Wow ], what's your [ game ]?"}
+    """
+
+    if not replacements:
+        return item
+
+    if isinstance(item, str):
+        for replacement in replacements.items():
+            item = item.replace(replacement[0], prefix + replacement[1] + suffix)
+    elif isinstance(item, list):
+        item = [apply_replacements(inner_item, replacements) for inner_item in item]
+    elif isinstance(item, dict):
+        item = {name: apply_replacements(inner_item, replacements) for (name, inner_item) in item.items()}
+    elif not item:
+        return item
+    else:
+        raise Exception("Unexpected redaction format")
+    return item

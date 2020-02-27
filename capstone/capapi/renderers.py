@@ -3,104 +3,9 @@ import json
 
 from django.conf import settings
 from django.http.response import HttpResponseBase
-from django.template import loader
 from rest_framework import renderers
 
-from capdb.models import Citation
 from capweb.helpers import cache_func
-from scripts.process_metadata import parse_decision_date
-
-
-
-class XMLRenderer(renderers.BaseRenderer):
-    media_type = 'application/xml'
-    format = 'xml'
-
-    def render(self, data, media_type=None, renderer_context=None):
-        if 'detail' in data:
-            if data['detail'] == "Not found.":
-                return generate_xml_error("Case Not Found.", "The case specified by the URL does not exist in our database.")
-
-            return generate_xml_error("Authentication Error", data['detail'])
-
-        # if user requested format=xml without requesting full casebody
-        if 'casebody' not in data:
-            return generate_xml_error("Full Case Parameter Missing in Non-JSON Request", "To retrieve the full case body, you must specify full_case=true in the URL. If you only want metadata, you must specify format=json in the URL. We only serve standalone metadata in JSON format.")
-
-        if data['casebody']['status'] != 'ok':
-            if data['casebody']['status'] == 'error_auth_required':
-                return generate_xml_error("Not Authenticated ({})".format(data['casebody']['status']), "You must be authenticated to view this case.")
-            return generate_xml_error("Could Not Load Case Body", data['casebody']['status'])
-        else:
-            return data['casebody']['data']
-
-
-class HTMLRenderer(renderers.StaticHTMLRenderer):
-    def render(self, data, media_type=None, renderer_context=None):
-        if 'detail' in data:
-            if data['detail'] == "Not found.":
-                template = loader.get_template('case_404.html')
-                return template.render(renderer_context, renderer_context['request'])
-            return generate_html_error("Authentication Error", data['detail'])
-
-        template = loader.get_template('case.html')
-
-        sorted_cites = sorted(data['citations'], key=lambda c: Citation.citation_type_sort_order[c['type']])
-        citations = ", ".join(c['cite'] for c in sorted_cites)
-        non_vendor_citations = ", ".join(c['cite'] for c in sorted_cites if c['type'] != 'vendor')
-
-        try:
-            cit_year = data["decision_date"][0:4]
-            dec_date = parse_decision_date(data["decision_date"])
-        except TypeError:
-            cit_year = data["decision_date"].strftime('%Y')
-            dec_date = data["decision_date"].strftime('%b. %-d, %Y')
-
-        citation_full = data["name_abbreviation"] + ", " + non_vendor_citations + " (" + cit_year + ")"
-        name_with_html_markup = data["name_with_html_markup"] if "name_with_html_markup" in data.keys() else data["name"]
-
-        context = {
-            **renderer_context,
-            'citation': citations,
-            'meta_description': "Full text of %s from the Caselaw Access Project." % citation_full,
-            'frontend_url': data['frontend_url'],
-            'metadata': {
-                "name": data["name"],
-                "name_with_html_markup": name_with_html_markup,
-                "name_abbreviation": data["name_abbreviation"],
-                "decision_date": dec_date,
-                "docket_number": data["docket_number"],
-                "first_page": data["first_page"],
-                "last_page": data["last_page"],
-                "citations": citations,
-                "volume": data["volume"],
-                "reporter": data["reporter"],
-                "court": data["court"],
-                "jurisdiction": data["jurisdiction"]},
-            'citation_full': citation_full,
-            'id': data['id'],
-        }
-
-        # if user requested format=html without requesting full casebody
-        if 'casebody' not in data:
-            context['reason'] = "full_case_param_missing"
-            return template.render(context, renderer_context['request'])
-
-        if data['casebody']['status'] != 'ok':
-            if data['casebody']['status'] == 'error_auth_required':
-                context['reason'] = data['casebody']['status']
-                return template.render(context, renderer_context['request'])
-            context['reason'] = 'other'
-            context['message'] = data['casebody']['status']
-            return template.render(context, renderer_context['request'])
-
-        context['case_html'] = data['casebody']['data']
-        try:
-            context['title'] = data['casebody']['title']
-        except KeyError:
-            context['title'] = "{}, {}{}".format(context['metadata']['name_abbreviation'], citations, dec_date)
-
-        return template.render(context, renderer_context['request'])
 
 
 class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
@@ -164,31 +69,4 @@ class PassthroughRenderer(renderers.JSONRenderer):
             return data
         return super().render(data, accepted_media_type, renderer_context)
 
-
-
-def generate_xml_error(error_text, message_text):
-    return """
-        <data>
-            <error>%s</error>
-            <message>%s</message>
-        </data>
-    """ % (error_text, message_text)
-
-def generate_html_error(error_text, message_text, first_page=None, last_page=None, case_name=None):
-    if first_page is not None and last_page is not None and case_name is not None:
-        section_and_title = """
-        <section data-data-firstpage="{0}" data-data-lastpage="{1}" data-class="casebody">
-        <h4>{2}</h4>
-        """.format(first_page, last_page, case_name)
-    else:
-        section_and_title = "<section>"
-
-    return """
-        {}
-        <article class='error'>
-            <h1>Error: {}</h1>
-            <p><span style="font-weight: bold;">Details:</span> <span style="font-style: italic;">{}</span></p>
-        </article>
-        </section>
-    """.format(section_and_title, error_text, message_text)
 

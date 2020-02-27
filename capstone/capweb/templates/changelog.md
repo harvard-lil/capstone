@@ -10,6 +10,15 @@ row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
 <!-- UNRELEASED
+**API:**
+
+* Cases Endpoint:
+    * Removed the `format=html` and `format=xml` parameters, which previously caused the case detail endpoint to return
+      either HTML or XML instead of JSON. API will always return JSON, with case body format still
+      controllable via `body_format`. Requests for `format=html` will redirect to the frontend case browser, which
+      shows identical contents to what `format=html` used to return.
+-->
+
 # January 24, 2020
 
 **API:**
@@ -19,7 +28,6 @@ extra_head: {% stylesheet 'docs' %}
 * Search
     * Default sort for full-text search is now relevance, rather than decision date.
     * Added Sorting field to case endpoint searches. You can now sort by decision date, and relevance.
--->
 
 # January 19, 2020
 

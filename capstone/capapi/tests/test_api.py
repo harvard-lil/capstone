@@ -104,12 +104,6 @@ def test_unauthenticated_full_case(unrestricted_case, restricted_case, client, e
     assert 'error_' in casebody['status']
     assert not casebody['data']
 
-    response = client.get(case_url, {"full_case": "true", "format": "xml"})
-    check_response(response, content_type="application/xml", content_includes='error_auth_required')
-
-    response = client.get(case_url, {"full_case": "true", "format": "html"})
-    check_response(response, content_type="text/html", content_includes='You must be signed in to see the full case')
-
 
 @pytest.mark.django_db
 def test_authenticated_full_case_whitelisted(auth_user, auth_client, unrestricted_case, elasticsearch):
@@ -527,27 +521,6 @@ def test_ngrams_api(client, ngrammed_cases):
             'total': [{'year': '2000', 'count': [1, 9], 'doc_count': [1, 3]}]},
         "three don't": {
             'total': [{'year': '2000', 'count': [2, 9], 'doc_count': [2, 3]}]}}
-
-
-# RESPONSE FORMATS
-@pytest.mark.django_db
-@pytest.mark.parametrize("format, content_type", [
-    ('html', 'text/html'),
-    ('xml', 'application/xml'),
-    ('json', 'application/json'),
-])
-def test_formats(client, auth_client, restricted_case, format, content_type, elasticsearch):
-    # test format without api_key
-    response = client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"format": format, "full_case": "true"})
-    check_response(response, content_type=content_type)
-    response_content = response.content.decode()
-    assert 'error' in response_content.lower()
-
-    # test full, authorized case
-    response = auth_client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"format": format, "full_case": "true"})
-    body_cache = restricted_case.body_cache
-    expected_content = body_cache.html if format == 'html' else body_cache.xml if format == 'xml' else body_cache.json['opinions'][0]['text']
-    check_response(response, content_type=content_type, content_includes=expected_content)
 
 
 # API SPECIFICATION ENDPOINTS
