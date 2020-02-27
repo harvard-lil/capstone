@@ -346,22 +346,16 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 
 @shared_task(bind=True)
 def extract_citations_per_vol(self, volume_id):
-    from celery.contrib import rdb
-    print("in task", volume_id)
-
     try:
-        cases_query = CaseDocument.search() \
+        cases_query = CaseDocument.search()\
             .filter("term", volume__barcode=volume_id)\
             .sort('first_page')\
             .source(['casebody_data.text.opinions.text', 'casebody_data.text.headmatter', 'id'])
         cases_query.aggs.bucket('vols', 'terms', field='volume.id')
 
         cases = cases_query.execute()
-        print("extract_citations_from_casedoc", extract_citations_from_casedoc, len(cases))
         for casedoc in cases:
-            extract_citations_from_casedoc(casedoc)
+            extract_citations_from_casedoc(casedoc, volume_id)
     except:
-        print("getting error")
         pass
-
 
