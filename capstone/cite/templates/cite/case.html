@@ -83,6 +83,18 @@
             Search CAP
           </a>
         </li>
+        {% if request.user.is_staff %}
+          <li class="list-item">
+            <a href="#" class="btn-default context-menu-link" id="elide-text">
+              ⚠️ Elide
+            </a>
+          </li>
+          <li class="list-item">
+            <a href="#" class="btn-default context-menu-link" id="redact-text">
+              ⚠️ Redact
+            </a>
+          </li>
+        {% endif %}
       </ul>
     </nav>
     <input id="text-for-copy" class="offscreen" aria-hidden="true">
@@ -132,8 +144,9 @@
 
   </script>
   <script>
-  const search_url = "{% url "search" %}#/cases",
-      full_cite = "{{ citation_full }}";
+    const search_url = "{% url "search" %}#/cases",
+          full_cite = "{{ citation_full }}",
+          redaction_url = "{% url "redact_case" db_case.id host 'cite' %}";
   </script>
   {% render_bundle 'case' %}
 
