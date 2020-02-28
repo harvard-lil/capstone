@@ -1,3 +1,5 @@
+import re
+import csv
 from copy import copy
 from datetime import datetime
 from time import sleep
@@ -6,6 +8,8 @@ from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
+from reporters_db import REPORTERS, VARIATIONS_ONLY
+from collections import deque
 
 from django.db import connections
 from django.db.models import Prefetch, Q
@@ -13,7 +17,6 @@ from django.utils import timezone
 
 from capapi.documents import CaseDocument
 from capdb.models import *
-from scripts.extract_citations import extract_citations_from_casedoc
 
 ### HELPERS ###
 
@@ -380,19 +383,89 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
             case.retrieve_and_store_images()
 
 
+@shared_task(bind=True, acks_late=True)
+def extract_citations_per_vol(self, volume_id, update_existing=False):
+    regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
+    regex_filter = Q(body_cache__text__regex=regex)
+    cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id)
+             .select_related('body_cache')
+             .only('body_cache__text'))
+    misses = []
+    # database filter for text matching any of those patterns
+    # set no_index_redacted for each matching case
+    with record_task_status_for_volume(self, volume_id):
+        for case in cases:
+            for match in set(re.findall(regex, case.body_cache.text + case.name)):
+                vol_num, reporter_str, page_num = match
+                citation = " ".join(match)
+                cite, created = ExtractedCitation.objects.get_or_create(original_cite=citation)
+                cite.case_origins.add(case.id)
+                if created or update_existing:
+                    # Try to find matching reporter instance in our DB
+                    reporters_to_check = []
+                    # Look for found reporter string in the official REPORTER dict
+                    if reporter_str in REPORTERS:
+                        reporters_to_check.append(reporter_str)
+                        for rep_instance in REPORTERS[reporter_str]:
+                            reporters_to_check += list(rep_instance['variations'].keys())
 
-@shared_task(bind=True)
-def extract_citations_per_vol(self, volume_id):
-    try:
-        cases_query = CaseDocument.search()\
-            .filter("term", volume__barcode=volume_id)\
-            .sort('first_page')\
-            .source(['casebody_data.text.opinions.text', 'casebody_data.text.headmatter', 'id'])
-        cases_query.aggs.bucket('vols', 'terms', field='volume.id')
+                    # If reporter string is not found
+                    # try to find it in VARIATIONS dict (for nominative reporters and such)
+                    elif reporter_str in VARIATIONS_ONLY:
+                        reporters_to_check.append(reporter_str)
+                        for variation in VARIATIONS_ONLY[reporter_str]:
+                            reporters_to_check.append(variation)
+                            if variation in REPORTERS:
+                                for rep_instance in REPORTERS[variation]:
+                                    reporters_to_check += list(rep_instance['variations'].keys())
+                    else:
+                        misses.append(match)
+                    reporter = find_reporter_match(reporter_str, reporters_to_check)
+                    if reporter:
+                        cite.reporter_match = reporter
+                        try:
+                            cite.volume_match = VolumeMetadata.objects.get(
+                                reporter=reporter,
+                                volume_number=vol_num
+                            )
+                        except VolumeMetadata.DoesNotExist:
+                            pass
 
-        cases = cases_query.execute()
-        for casedoc in cases:
-            extract_citations_from_casedoc(casedoc, volume_id)
-    except:
-        pass
+            cite.reporter_original_string = reporter_str
+            cite.volume_original_number = vol_num
+            cite.page_original_number = page_num
+            try:
+                # try to get original citation
+                cite.citation_match = Citation.objects.get(cite=citation)
+            except Citation.DoesNotExist:
+                # try to get citation with reporter match
+                if cite.reporter_match:
+                    try:
+                        official_cite_guess = "%s %s %s" % (vol_num, cite.reporter_match, page_num)
+                        cite.citation_match = Citation.objects.get(official_cite_guess)
+                    except Citation.DoesNotExist:
+                        pass
+                pass
+            print("new citation added:", cite)
+            cite.save()
 
+    fieldnames = ['volume_id', 'reporter_str', 'vol_num', 'page_num']
+    # TODO: figure out where to put missed citations csv
+    with open("missed_citations.csv", "a+") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        [writer.writerow({"volume_id": volume_id, "reporter_str": reporter_str, "vol_num": vol_num, "page_num": page_num}) for case in cases]
+
+
+def find_reporter_match(reporter_str, remaining_list_to_check):
+    reporters = Reporter.objects.filter(short_name=reporter_str)
+    if reporters.count() == 0:
+        if len(remaining_list_to_check):
+            new_reporter_str = deque(remaining_list_to_check).popleft()
+            find_reporter_match(new_reporter_str, remaining_list_to_check)
+        else:
+            return
+    elif reporters.count() == 1:
+        return reporters[0]
+    else:
+        # Too many reporters found, return no reporters
+        return
