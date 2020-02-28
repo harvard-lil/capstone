@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 from django.db import connections, utils
 
-from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction
+from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction, ExtractedCitation
 from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, get_reporter_count_for_jur
 
 import fabfile
@@ -237,3 +237,17 @@ def test_redact_id_numbers(case_factory):
         'A123456789': 'AXXXXXXXXX',
         'A-12345678': 'A-XXXXXXXX',
     }
+
+
+@pytest.mark.django_db
+def test_extract_citations(case_factory):
+    legitimate_cite = "225 F.Supp. 552"
+    illegitimate_cite = "2 Dogs 3"
+    case = case_factory(body_cache__text="Alaska: Alaska Reports (1887-1959) %s The' suit was brought in February, 1827. %s" % (legitimate_cite, illegitimate_cite))
+    fabfile.extract_all_citations()
+    case.refresh_from_db()
+    citation_exists = ExtractedCitation.objects.get(original_cite=legitimate_cite)
+    assert citation_exists
+    case = case_factory(body_cache__text="Alaska: Alaska Reports (1887-1959) The' suit was brought in February, 1827.")
+    citations_do_not_exist = ExtractedCitation.objects.filter(original_cite=illegitimate_cite)
+    assert len(citations_do_not_exist) == 0

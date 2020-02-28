@@ -446,7 +446,6 @@ def extract_citations_per_vol(self, volume_id, update_existing=False):
                     except Citation.DoesNotExist:
                         pass
                 pass
-            print("new citation added:", cite)
             cite.save()
 
     fieldnames = ['volume_id', 'reporter_str', 'vol_num', 'page_num']
@@ -457,10 +456,11 @@ def extract_citations_per_vol(self, volume_id, update_existing=False):
 
 
 def find_reporter_match(reporter_str, remaining_list_to_check):
+    remaining_list_to_check = deque(remaining_list_to_check)
     reporters = Reporter.objects.filter(short_name=reporter_str)
     if reporters.count() == 0:
         if len(remaining_list_to_check):
-            new_reporter_str = deque(remaining_list_to_check).popleft()
+            new_reporter_str =remaining_list_to_check.popleft()
             find_reporter_match(new_reporter_str, remaining_list_to_check)
         else:
             return
