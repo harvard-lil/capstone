@@ -1,6 +1,7 @@
 from django_elasticsearch_dsl import Document as DocType, Index, fields
 from django.conf import settings
 
+from capapi.resources import apply_replacements
 from capdb.models import CaseMetadata
 
 index = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
@@ -100,14 +101,17 @@ class CaseDocument(DocType):
 
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
-        return CaseDocument.filter_redacted({
+        return apply_replacements({
             'xml': body.xml,
             'html': body.html,
             'text': body.json,
         }, instance.no_index_redacted)
 
     def prepare_name(self, instance):
-        return CaseDocument.filter_redacted(instance.name, instance.no_index_redacted)
+        return apply_replacements(instance.name, instance.no_index_redacted)
+
+    def prepare_name_abbreviation(self, instance):
+        return apply_replacements(instance.name_abbreviation, instance.no_index_redacted)
 
     class Django:
         model = CaseMetadata
@@ -139,32 +143,6 @@ class CaseDocument(DocType):
     def full_cite(self):
         return "%s, %s%s" % (
             self.name_abbreviation,
-            ", ".join(cite.cite for cite in self.citations),
+            ", ".join(cite.cite for cite in self.citations if cite.type != "vendor"),
             " (%s)" % self.decision_date.year if self.decision_date else ""
         )
-
-    @staticmethod
-    def filter_redacted(item, replacements):
-        """ filters out terms in 'item' with the {'original_text': and 'replacement_text' }
-        >>> CaseDocument.filter_redacted("Hello, what's your name?", {'name': 'game', 'Hello': 'Wow'})
-        "[ Wow ], what's your [ game ]?"
-
-        >>> CaseDocument.filter_redacted({"test": "Hello, what's your name?" }, {'name': 'game', 'Hello': 'Wow'})
-        {'test': "[ Wow ], what's your [ game ]?"}
-        """
-
-        if not replacements:
-            return item
-
-        if isinstance(item, str):
-            for replacement in replacements.items():
-                item = item.replace(replacement[0], "[ " + replacement[1] + " ]")
-        elif isinstance(item, list):
-            item = [CaseDocument.filter_redacted(inner_item, replacements) for inner_item in item]
-        elif isinstance(item, dict):
-            item = {name: CaseDocument.filter_redacted(inner_item, replacements) for (name, inner_item) in item.items()}
-        elif not item:
-            return item
-        else:
-            raise Exception("Unexpected redaction format")
-        return item

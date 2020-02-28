@@ -7,7 +7,8 @@
 {% load capweb_static %}
 
 {% block base_css %}{% stylesheet 'case' %}{% endblock %}
-{% block title %}{{ citation_full }}{% endblock %}
+{% block title %}{{ citation_full|striptags }}{% endblock %}
+{% block meta_description %}Full text of {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
 
 {% block content %}
   <div class="case-container header-margin">
@@ -21,38 +22,34 @@
           to use our API or apply for unlimited research scholar access.
         </div>
       {% endif %}
-      <div class="full_cite">{{ citation_full }}</div>
+      <div class="full_cite">{{ citation_full|safe }}</div>
       <div class="small">
-        {% if request.user.is_authenticated or metadata.jurisdiction.whitelisted %}
-          <a href="{% api_url 'cases-detail' id %}?full_case=true">view API</a>
-        {% else %}
-          <a href="{% api_url 'cases-detail' id %}">view API</a>
-        {% endif %}
+        <a href="{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}">view API</a>
         {% if can_render_pdf %}
           • <a href="{{ db_case.get_pdf_url }}">view PDF</a>
         {% endif %}
         {% if request.user.is_staff %}
-          • <a href="{% url 'admin:capdb_casemetadata_change' id %}">Django admin</a>
+          • <a href="{% url 'admin:capdb_casemetadata_change' db_case.id %}">Django admin</a>
         {% endif %}
       </div>
       <div class="court">
-        {{ metadata.court.name }}
+        {{ es_case.court.name }}
       </div>
       <h4 class="case-name">
-        {{ metadata.name_with_html_markup|safe }}
+        {{ db_case.name|safe }} {# safe because elisions may have been inserted #}
       </h4>
       <div class="citations">
-        {{ metadata.citations }}
+        {{ citations }}
       </div>
       <div class="docket-number">
-        {{ metadata.docket_number }}
+        {{ db_case.docket_number }}
       </div>
       <div class="decision_date">
-        {{ metadata.decision_date }}
+        {{ db_case.decision_date }}
       </div>
     </div>
 
-    {% if reason == 'error_auth_required' %}
+    {% if status == 'error_auth_required' %}
       <div class="name">
         <div class="alert-warning text-center">
           <h6 class="case-viewing-error">
@@ -60,24 +57,9 @@
           </h6>
         </div>
       </div>
-    {% elif reason == 'full_case_param_missing' %}
-      <section class="name text-center">
-        <div class="alert-warning text-center">
-          <h6 class="case-viewing-error">
-            Full case parameter is missing in HTML request.</h6>
-        </div>
-        <p>
-          To retrieve the full case body, you must specify <span style='font-family: monospace; font-style: normal;'>full_case=true</span>
-          in the URL.
-        </p>
-        <p>If you only want metadata you must specify
-          <span style='font-family: monospace; font-style: normal;'>format=json</span>
-          in the URL.</p>
-        <p>We only serve standalone metadata in JSON format.")</p>
-      </section>
-    {% elif reason == 'other' %}
+    {% elif status != 'ok' %}
       <div class="alert-warning text-center">
-        <h6 class="case-viewing-error">Could not load case body: {{ message }}</h6>
+        <h6 class="case-viewing-error">Could not load case body: {{ status }}</h6>
       </div>
     {% else %}
       {{ case_html|safe }}
@@ -111,10 +93,10 @@
   "@type": "Article",
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id":"{{ frontend_url }}"
+    "@id":"{{ db_case.get_full_frontend_url }}"
   },
-  "headline": "{{ metadata.name_abbreviation }}",
-  {% if not metadata.jurisdiction.whitelisted %}
+  "headline": "{{ db_case.name_abbreviation|striptags }}",
+  {% if not es_case.jurisdiction.whitelisted %}
   "hasPart": {
     "@type": "WebPageElement",
     "isAccessibleForFree": "False",
@@ -123,10 +105,10 @@
   {% endif %}
   "author": {
     "@type": "Organization",
-    "name": "{{ metadata.court.name }}"
+    "name": "{{ es_case.court.name }}"
     },
   "genre": "Law",
-  "keywords": "{{ metadata.citations }}, {{ metadata.name_abbreviation }}",
+  "keywords": "{{ citations }}, {{ db_case.name_abbreviation|striptags }}",
   "publisher": {
     "@type": "Organization",
     "name": "Harvard Law School Library Innovation Lab",
@@ -138,10 +120,10 @@
     }
   },
    "image": "{% capweb_static "img/og_image/api.jpg" %}",
-   "datePublished": "{{ metadata.decision_date }}",
+   "datePublished": "{{ db_case.decision_date }}",
    "dateModified": "2018-10-29",
-   "dateCreated": "{{ metadata.decision_date }}",
-   "description": "{{ metadata.name }}"
+   "dateCreated": "{{ db_case.decision_date }}",
+   "description": "{{ db_case.name|striptags }}"
  }
 
 

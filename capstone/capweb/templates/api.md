@@ -102,14 +102,6 @@ represented by a JSON object which includes various pieces of metadata, and the 
 [individual case endpoint](#endpoint-case), the `casebody` parameter returns JSON structured plain text, but you can 
 change that to either HTML or XML by setting the `body_format` query parameter to either `html` or `xml`.
   
-In the [individual case endpoint](#endpoint-case), you can alternately pass `html` or `xml` to the `format` parameter to
-dispense with the JSON container and return only the HTML or XML formatted case. The HTML returned using the `format` 
-parameter is the same as the HTML returned in the JSON container with `body_format` set to `html`. The XML output is
-significantly more verbose&mdash; It includes METS, PREMIS and structural metadata.
-  
-Do not set both `format` and `body_format` in the same query, and always use them with the `full_case` parameter set to 
-`true`. Using the `format` parameter with the [case browse/search results endpoint](#endpoint-cases) will have no effect.
-  
 This is what you can expect from different format specifications using the `body_format` parameter.
 
 
@@ -163,13 +155,12 @@ HTML Format
 
 [{% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=html]({% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=html)
 {: class="example-link mt-0" }
-      
+
 The HTML format is best if you want to show readable, formatted caselaw to humans. It represents a best-effort attempt 
 to transform our XML-formatted data to semantic HTML ready for CSS formatting of your choice. Example response data:
-      
+
 `"data": "<section class=\"casebody\" data-firstpage=\"538\" data-lastpage=\"543\"> ..."`
 {: class="code-block" }
-
 
 
 {# ====> PAGINATION <==== #}
@@ -324,29 +315,6 @@ Retrieve a single case by ID
 
 This example uses the [single case](#endpoint-case) endpoint, and will retrieve the metadata for a single 
 case.
-
-Modification with Parameters:
-{: class="list-header mb-2" }
-
-* **Standalone HTML-formatted Case**
-{: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "cases-detail" case_id %}?full_case=true&format=html]({% api_url "cases-detail" case_id %}?full_case=true&format=html)
-    {: add_list_class="example-mod-url" }
-    * This will return a lightly styled, standalone HTML representation of the case with no accompanying metadata.
-    {: add_list_class="example-mod-description" }
-* **Plain Text Case in JSON container with metadata**
-{: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "cases-detail" case_id %}]({% api_url "cases-detail" case_id %})
-    {: add_list_class="example-mod-url" }
-    * This will return a lightly styled, standalone HTML representation of the case with no accompanying metadata.
-    {: add_list_class="example-mod-description" }
-* **Raw original XML document, with METS data**
-{: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "cases-detail" case_id %}?full_case=true&body_format=xml]({% api_url "cases-detail" case_id %}?full_case=true&body_format=xml)
-    {: add_list_class="example-mod-url" }
-    * To get the document by itself, without the JSON enclosure and metadata, use the `format` parameter. Set it to HTML
-     and get a display-ready, standalone HTML document.
-    {: add_list_class="example-mod-description" }
 
 
 {# ====> filter cases <==== #}
@@ -527,19 +495,13 @@ Endpoint Parameters:
 {: class="list-group-item" add_list_class="parameter-list" }
     * `true` or `false`
     {: class="param-data-type" }
-    * When set to `true`, this parameter loads the case body. It is required for setting both `body_format` and `format`.
+    * When set to `true`, this parameter loads the case body. It is required for setting `body_format`.
     {: class="param-description" }
 * `body_format`{: class="parameter-name" }
 {: class="list-group-item" add_list_class="parameter-list" }
     * `html` or `xml`
     {: class="param-data-type" }
     * This will return a JSON enclosure with metadata, and a field containing the case in XML or HTML.
-    {: class="param-description" }
-* `format`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * `html` or `xml`
-    {: class="param-data-type" }
-    * This will return the case in HTML or its original XML with no JSON enclosure or metadata.
     {: class="param-description" }
 * `cursor`{: class="parameter-name" }
 {: class="list-group-item" add_list_class="parameter-list" }

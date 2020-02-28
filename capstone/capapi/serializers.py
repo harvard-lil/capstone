@@ -5,7 +5,6 @@ from rest_framework.serializers import ListSerializer
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
 from .models import SiteLimits
-from .renderers import HTMLRenderer, XMLRenderer
 from .documents import CaseDocument
 from capdb import models
 from capweb.helpers import reverse
@@ -271,10 +270,10 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         # render case
         data = None
         if status == 'ok':
-            body_format = request.query_params.get('body_format', None)
-            if body_format == 'html' or type(request.accepted_renderer) == HTMLRenderer:
+            body_format = self.context.get('force_body_format') or request.query_params.get('body_format')
+            if body_format == 'html':
                 data = case.casebody_data['html']
-            elif body_format == 'xml' or type(request.accepted_renderer) == XMLRenderer:
+            elif body_format == 'xml':
                 data = case.casebody_data['xml']
             else:
                 try:
