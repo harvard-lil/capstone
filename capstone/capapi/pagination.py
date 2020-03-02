@@ -66,7 +66,6 @@ class SmallCapPagination(CapPagination):
 class ESPaginatorMixin:
     """
         Parent class for pagination functions common to django_elasticsearch_dsl_drf paginators.
-        TODO: This could potentially be contributed upstream instead of staying in CAP.
     """
     template = None
     facets = None
@@ -81,8 +80,8 @@ class ESPaginatorMixin:
         is_suggest = getattr(queryset, '_suggest', False)
         if is_suggest:
             if ELASTICSEARCH_GTE_6_0:
-                return queryset.execute().to_dict().get('suggest')
-            return queryset.execute_suggest().to_dict()
+                return queryset.execute().get('suggest')
+            return queryset.execute_suggest()
 
         # Check if we're using paginate queryset from `functional_suggest`
         # backend.
@@ -90,9 +89,9 @@ class ESPaginatorMixin:
             return queryset
 
         self.resp = resp = self._paginate_queryset(queryset, request, view)
-        self.facets = getattr(resp, 'aggregations', None)
+        self.facets = resp.get('aggregations', None)
         self.display_page_controls = self.has_next and self.template is not None
-        return list(resp)
+        return resp['hits']['hits']
 
     def _paginate_queryset(self, queryset, request, view):
         """
@@ -110,14 +109,7 @@ class ESPaginatorMixin:
         :param facets:
         :return:
         """
-        if facets is None:
-            facets = self.facets
-
-        if facets is None:
-            return None
-
-        if hasattr(facets, '_d_'):
-            return facets._d_
+        return self.facets if facets is None else facets
 
     def get_paginated_response_context(self, data):
         """Get paginated response data.
@@ -148,14 +140,10 @@ class ESPaginatorMixin:
         """
         return Response(OrderedDict(self.get_paginated_response_context(data)))
 
-    def get_count(self, es_response):
-        return es_response.hits.total
-
 
 class ESCursorPagination(ESPaginatorMixin, CursorPagination):
     """
         Generic class for paginating django_elasticsearch_dsl_drf queries using search_after.
-        TODO: This could potentially be contributed upstream instead of staying in CAP.
     """
     fallback_sort_field = "_id"
 
@@ -202,14 +190,14 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
             queryset = queryset.extra(search_after=self.search_after)
 
         resp = queryset[:self.page_size+1].execute()
-        self.count = self.get_count(resp)
+        hits = resp['hits']
+        self.count = hits['total']
 
-        hits = resp.hits
-        has_extra = len(hits) > self.page_size
+        has_extra = len(hits['hits']) > self.page_size
         if has_extra:
-            hits.pop()
+            hits['hits'].pop()
         if self.reversed:
-            hits.reverse()
+            hits['hits'].reverse()
             self.has_next = True
             self.has_previous = has_extra
         else:
@@ -247,12 +235,12 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
     def get_next_link(self):
         if not self.has_next:
             return None
-        return self.encode_cursor({'p': list(self.resp.hits[-1].meta.sort)})
+        return self.encode_cursor({'p': self.resp['hits']['hits'][-1]['sort']})
 
     def get_previous_link(self):
         if not self.has_previous:
             return None
-        return self.encode_cursor({'p': list(self.resp.hits[0].meta.sort), 'r':1})
+        return self.encode_cursor({'p': self.resp['hits']['hits'][0]['sort'], 'r':1})
 
 class CapESCursorPagination(ESCursorPagination):
     """

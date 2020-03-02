@@ -406,7 +406,7 @@ def test_full_text_search(client, case_factory, elasticsearch):
     # empty search
     response = client.get(api_reverse("cases-list"), {"search": "Some other search that doesn't work"})
     content = response.json()
-    assert content == { "count":0, "next": None, "previous": None, "facets": {}, "results": []}
+    assert content == { "count":0, "next": None, "previous": None, "results": []}
 
 
 # FILTERING
