@@ -1,5 +1,6 @@
 from django_elasticsearch_dsl import Document as DocType, Index, fields
 from django.conf import settings
+from elasticsearch_dsl import Search
 
 from capapi.resources import apply_replacements
 from capdb.models import CaseMetadata
@@ -23,6 +24,19 @@ def SuggestField():
             'suggest': fields.CompletionField(),
         }
     )
+
+
+class RawSearch(Search):
+    """
+        Subclass of ElasticSearch DSL's Search object that returns raw dicts from ES, rather than wrapping in an object.
+    """
+    def _get_result(self, hit):
+        return hit
+
+    def execute(self, ignore_cache=False):
+        self._response_class = lambda self, obj: obj
+        return super().execute(ignore_cache)
+
 
 @case.doc_type
 class CaseDocument(DocType):
@@ -146,3 +160,12 @@ class CaseDocument(DocType):
             ", ".join(cite.cite for cite in self.citations if cite.type != "vendor"),
             " (%s)" % self.decision_date.year if self.decision_date else ""
         )
+
+    @classmethod
+    def raw_search(cls, *args, **kwargs):
+        """
+            Return RawSearch object instead of Search object.
+        """
+        out = super().search(*args, **kwargs)
+        out.__class__ = RawSearch
+        return out

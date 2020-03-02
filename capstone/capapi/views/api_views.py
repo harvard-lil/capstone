@@ -17,7 +17,7 @@ from django.http import HttpResponseRedirect, FileResponse
 from django.template import loader
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
-from capapi.documents import CaseDocument
+from capapi.documents import CaseDocument, RawSearch
 from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
@@ -255,8 +255,12 @@ class CAPOrderingFilterBackend(OrderingFilterBackend):
             ordering_fields)
 
 class CaseDocumentViewSet(BaseDocumentViewSet):
-
     """The CaseDocument view."""
+
+    def __init__(self, *args, **kwargs):
+        # use RawSearch to avoid using Elasticsearch wrappers, for speed
+        super().__init__(*args, **kwargs)
+        self.search.__class__ = RawSearch
 
     # this lets DRF handle 'not found' issues the way they they are with the DB back end
     ignore = [404]

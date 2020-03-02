@@ -9,7 +9,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
-from django.db.models import Q, Prefetch
+from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
@@ -121,13 +121,8 @@ def volume(request, series_slug, volume_number_slug):
     if len(cases) == 0:
         raise Http404
 
-    volume_filters = None
-    for vol in cases.aggs.vols.buckets:
-        if volume_filters is None:
-            volume_filters = Q(barcode=vol.key)
-        else:
-            volume_filters = volume_filters | Q(barcode=vol.key)
-    vols = VolumeMetadata.objects.select_related('reporter').filter(volume_filters).all()
+    volume_ids = [vol.key for vol in cases.aggs.vols.buckets]
+    vols = list(VolumeMetadata.objects.select_related('reporter').filter(pk__in=volume_ids))
     if not vols:
         raise Http404
 
