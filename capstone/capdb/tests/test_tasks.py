@@ -248,6 +248,5 @@ def test_extract_citations(case_factory):
     case.refresh_from_db()
     citation_exists = ExtractedCitation.objects.get(original_cite=legitimate_cite)
     assert citation_exists
-    case = case_factory(body_cache__text="Alaska: Alaska Reports (1887-1959) The' suit was brought in February, 1827.")
     citations_do_not_exist = ExtractedCitation.objects.filter(original_cite=illegitimate_cite)
     assert len(citations_do_not_exist) == 0
