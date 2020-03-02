@@ -289,7 +289,7 @@ def bag_jurisdiction(name):
 
 @task
 def bag_reporter(reporter_id):
-    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
+    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_reporter:137 """
     export.export_cases_by_reporter.delay(reporter_id)
 
 @task
