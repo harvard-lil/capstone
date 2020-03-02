@@ -3,6 +3,9 @@ import gzip
 import hashlib
 import os
 import pathlib
+import signal
+import subprocess
+import sys
 from datetime import datetime
 import django
 import json
@@ -42,6 +45,16 @@ def run_django(port="127.0.0.1:8000"):
     if os.environ.get('DOCKERIZED'):
         port = "0.0.0.0:8000"
     management.call_command('runserver', port)
+
+
+@task
+def run_frontend(port=None):
+    node_proc = subprocess.Popen("npm run serve", shell=True, stdout=sys.stdout, stderr=sys.stderr)
+    try:
+        run_django(port)
+    finally:
+        os.kill(node_proc.pid, signal.SIGKILL)
+
 
 @task
 def test():

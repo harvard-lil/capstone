@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import './jquery_django_csrf';
 import Mark from 'mark.js';
 import debounce from 'lodash.debounce';
 
@@ -13,15 +14,33 @@ $(contextMenu).on('click', '#copy-url', (event) => {
   event.preventDefault();
   let updatedUrl = getUpdatedURL(selectedText);
   copyText(event, updatedUrl.href);
-  successCall();
+  successCall("Copied!");
 });
 
 $(contextMenu).on('click', '#copy-cite', (event) => {
   event.preventDefault();
   let formattedCitation = formatCitation();
   copyText(event, formattedCitation);
-  successCall();
+  successCall("Copied!");
 });
+
+$(contextMenu).on('click', '#elide-text', (event) => {
+  event.preventDefault();
+  elideOrRedactText('elide', selectedText);
+  successCall("Reloading ...");
+});
+
+$(contextMenu).on('click', '#redact-text', (event) => {
+  event.preventDefault();
+  elideOrRedactText('redact', selectedText);
+  successCall("Reloading ...");
+});
+
+function elideOrRedactText(kind, text) {
+  if(confirm(`Really ${kind} "${selectedText}"?`))
+    $.post(redaction_url, {'kind': kind, 'text': text}, ()=>{window.location.reload()});
+}
+
 
 // This is a workaround: If there are other tab-able elements (like page labels, footnote markers, etc)
 // tabbing will take user away from context menu and go straight to those elements
@@ -76,7 +95,8 @@ function contextMenuIsShown() {
   return $('.context-menu').is(":visible");
 }
 
-function successCall() {
+function successCall(message) {
+  copiedSuccessfullyText.innerText = message;
   $(copiedSuccessfullyText).show();
   setTimeout(() => {
     $(contextMenu).hide();
@@ -129,9 +149,10 @@ function formatCitation() {
 // Elisions
 function showOrHideElision(el) {
   if ($(el).hasClass('shown')) {
-    $(el).text('...');
+    $(el).text($(el).attr('data-orig-text'));
     $(el).removeClass('shown')
   } else {
+    $(el).attr('data-orig-text', $(el).text());
     $(el).addClass('shown');
     $(el).text($(el).attr('data-hidden-text'));
   }

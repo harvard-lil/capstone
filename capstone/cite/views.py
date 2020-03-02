@@ -2,17 +2,21 @@ import re
 import time
 from collections import defaultdict
 from contextlib import contextmanager
+from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
 from django.db.models import Q, Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.http import is_safe_url
 from django.utils.text import slugify
+from django.views.decorators.http import require_POST
 from rest_framework.request import Request
 from elasticsearch.exceptions import NotFoundError
 from natsort import natsorted
@@ -282,6 +286,10 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         except Exception as e:
             logger.warning("Unable to geolocate %s: %s" % (request.user.ip_address, e))
 
+    # set CSRF token for staff so they can make ajax requests
+    if request.user.is_staff:
+        get_token(request)
+
     return render(request, 'cite/case.html', {
         'meta_tags': meta_tags,
         'can_render_pdf': can_render_pdf,
@@ -325,3 +333,26 @@ def set_cookie(request):
         return render(request, 'cite/check_js.html', {
             'next': request.GET.get('next', '/'),
         })
+
+
+@require_POST
+@staff_member_required
+def redact_case(request, case_id):
+    """
+        Admin-only view to redact or elide selected text from case browser.
+    """
+    case = get_object_or_404(CaseMetadata, pk=case_id)
+    if request.POST['kind'] == 'redact':
+        if not case.no_index_redacted:
+            case.no_index_redacted = {}
+        target = case.no_index_redacted
+        replacement = 'redacted'
+    else:
+        if not case.no_index_elided:
+            case.no_index_elided = {}
+        target = case.no_index_elided
+        replacement = '...'
+    target[request.POST['text']] = replacement
+    case.robots_txt_until = timezone.now() + timedelta(days=7)
+    case.save()
+    return HttpResponse('ok')
