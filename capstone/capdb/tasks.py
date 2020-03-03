@@ -3,13 +3,13 @@ import csv
 from copy import copy
 from datetime import datetime
 from time import sleep
+
 from celery import shared_task
 from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
 from reporters_db import REPORTERS, VARIATIONS_ONLY
-from collections import deque
 
 from django.db import connections
 from django.db.models import Prefetch, Q
@@ -402,54 +402,16 @@ def extract_citations_per_vol(self, volume_id, update_existing=False):
                 cite.case_origins.add(case.id)
                 if not created and not update_existing:
                     continue
-                # Try to find matching reporter instance in our DB
-                reporters_to_check = []
-                # Look for found reporter string in the official REPORTER dict
-                if reporter_str in REPORTERS:
-                    reporters_to_check.append(reporter_str)
-                    for rep_instance in REPORTERS[reporter_str]:
-                        reporters_to_check += list(rep_instance['variations'].keys())
-
-                # If reporter string is not found
-                # try to find it in VARIATIONS dict (for nominative reporters and such)
-                elif reporter_str in VARIATIONS_ONLY:
-                    reporters_to_check.append(reporter_str)
-                    for variation in VARIATIONS_ONLY[reporter_str]:
-                        reporters_to_check.append(variation)
-                        if variation in REPORTERS:
-                            for rep_instance in REPORTERS[variation]:
-                                reporters_to_check += list(rep_instance['variations'].keys())
-                else:
+                # Look for found reporter string in the official and nominative REPORTER dicts
+                if not (reporter_str in REPORTERS) and not (reporter_str in VARIATIONS_ONLY):
                     # reporter not found, removing cite and adding to misses list
                     cite.delete()
                     misses.append(match)
                     continue
-                reporter = find_reporter_match(reporter_str, reporters_to_check)
-                if reporter:
-                    cite.reporter_match = reporter
-                    try:
-                        cite.volume_match = VolumeMetadata.objects.get(
-                            reporter=reporter,
-                            volume_number=vol_num
-                        )
-                    except VolumeMetadata.DoesNotExist:
-                        pass
 
                 cite.reporter_original_string = reporter_str
                 cite.volume_original_number = vol_num
                 cite.page_original_number = page_num
-                try:
-                    # try to get original citation
-                    cite.citation_match = Citation.objects.get(cite=citation)
-                except Citation.DoesNotExist:
-                    # try to get citation with reporter match
-                    if cite.reporter_match:
-                        try:
-                            official_cite_guess = "%s %s %s" % (vol_num, cite.reporter_match, page_num)
-                            cite.citation_match = Citation.objects.get(official_cite_guess)
-                        except Citation.DoesNotExist:
-                            pass
-                    pass
                 cite.save()
 
     fieldnames = ['volume_id', 'reporter_str', 'vol_num', 'page_num']
@@ -458,18 +420,3 @@ def extract_citations_per_vol(self, volume_id, update_existing=False):
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         [writer.writerow({"volume_id": volume_id, "reporter_str": reporter_str, "vol_num": vol_num, "page_num": page_num}) for case in cases]
 
-
-def find_reporter_match(reporter_str, remaining_list_to_check):
-    remaining_list_to_check = deque(remaining_list_to_check)
-    reporters = Reporter.objects.filter(short_name=reporter_str)
-    if reporters.count() == 0:
-        if len(remaining_list_to_check):
-            new_reporter_str =remaining_list_to_check.popleft()
-            find_reporter_match(new_reporter_str, remaining_list_to_check)
-        else:
-            return
-    elif reporters.count() == 1:
-        return reporters[0]
-    else:
-        # Too many reporters found, return no reporters
-        return
