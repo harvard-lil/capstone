@@ -155,9 +155,10 @@ class CaseDocument(DocType):
         return doc
 
     def full_cite(self):
+        from capdb.models import Citation  # avoid circular import
         return "%s, %s%s" % (
             self.name_abbreviation,
-            ", ".join(cite.cite for cite in self.citations if cite.type != "vendor"),
+            ", ".join(cite.cite for cite in Citation.sorted_by_type(self.citations) if cite.type != "vendor"),
             " (%s)" % self.decision_date.year if self.decision_date else ""
         )
 

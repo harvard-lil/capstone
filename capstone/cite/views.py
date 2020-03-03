@@ -139,7 +139,7 @@ def case_pdf(request, case_id, pdf_name):
         applied before we return the case.
     """
     # check that we are at the canonical URL
-    case = get_object_or_404(CaseMetadata.objects.select_related('volume').prefetch_related('citations'), pk=case_id)
+    case = get_object_or_404(CaseMetadata.objects.select_related('volume'), pk=case_id)
     pdf_url = case.get_pdf_url()
     if request.build_absolute_uri() != pdf_url:
         return HttpResponseRedirect(pdf_url)
@@ -227,7 +227,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
     # handle pdf output --
     # wait until here to do this so serializer() can apply case quotas
-    db_case = db_case or CaseMetadata.objects.select_related('volume').prefetch_related('citations').get(pk=case.id)
+    db_case = db_case or CaseMetadata.objects.select_related('volume').get(pk=case.id)
     can_render_pdf = db_case.volume.pdf_file and not db_case.no_index_redacted and settings.CASE_PDF_FEATURE and serialized_data['casebody']['status'] == 'ok'
     if pdf:
         if serialized_data['casebody']['status'] != 'ok':
@@ -292,8 +292,8 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         'es_case': serialized_data,
         'status': serialized_data['casebody']['status'],
         'case_html': case_html,
-        'citation_full': db_case.full_cite(),
-        'citations': ", ".join(c.cite for c in Citation.sorted_by_type(db_case.citations.all())),
+        'citation_full': case.full_cite(),
+        'citations': ", ".join(c.cite for c in Citation.sorted_by_type(case.citations)),
     })
 
 
