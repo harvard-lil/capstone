@@ -4,6 +4,7 @@ import pytest
 import bagit
 import zipfile
 import os
+import csv
 import gzip
 import json
 from datetime import datetime
@@ -244,9 +245,19 @@ def test_extract_citations(case_factory):
     legitimate_cite = "225 F.Supp. 552"
     illegitimate_cite = "2 Dogs 3"
     case = case_factory(body_cache__text="Alaska: Alaska Reports (1887-1959) %s The' suit was brought in February, 1827. %s" % (legitimate_cite, illegitimate_cite))
+    case.save()
     fabfile.extract_all_citations()
     case.refresh_from_db()
-    citation_exists = ExtractedCitation.objects.get(original_cite=legitimate_cite)
-    assert citation_exists
+    citation = ExtractedCitation.objects.get(original_cite=legitimate_cite)
+    assert citation
+    assert citation.case_origins.all().count() == 1
+    assert citation.case_origins.first() == case
+
     citations_do_not_exist = ExtractedCitation.objects.filter(original_cite=illegitimate_cite)
     assert len(citations_do_not_exist) == 0
+    with open("/tmp/missed_citations.csv") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            assert row['case_origin'] == case.id
+            assert row['misses_count'] == 1
+            assert row['misses'] == illegitimate_cite

@@ -14,6 +14,7 @@ from reporters_db import REPORTERS, VARIATIONS_ONLY
 from django.db import connections
 from django.db.models import Prefetch, Q
 from django.utils import timezone
+from django.db.utils import DataError
 
 from capapi.documents import CaseDocument
 from capdb.models import *
@@ -384,39 +385,46 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 
 
 @shared_task(bind=True, acks_late=True)
-def extract_citations_per_vol(self, volume_id, update_existing=False):
+def extract_citations_per_vol(self, volume_id):
     regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
     regex_filter = Q(body_cache__text__regex=regex)
     cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id)
              .select_related('body_cache')
              .only('body_cache__text'))
-    misses = []
-    # database filter for text matching any of those patterns
-    # set no_index_redacted for each matching case
+    citation_misses_per_case = {}
     with record_task_status_for_volume(self, volume_id):
         for case in cases:
+            misses = []
             for match in set(re.findall(regex, case.body_cache.text + case.name)):
                 vol_num, reporter_str, page_num = match
                 citation = " ".join(match)
-                cite, created = ExtractedCitation.objects.get_or_create(original_cite=citation)
+                cite, created = ExtractedCitation.objects.get_or_create(
+                    original_cite=citation,
+                    reporter_original_string=reporter_str,
+                    volume_original_number=vol_num)
                 cite.case_origins.add(case.id)
-                if not created and not update_existing:
-                    continue
                 # Look for found reporter string in the official and nominative REPORTER dicts
                 if not (reporter_str in REPORTERS) and not (reporter_str in VARIATIONS_ONLY):
                     # reporter not found, removing cite and adding to misses list
                     cite.delete()
-                    misses.append(match)
+                    misses.append(citation)
                     continue
 
-                cite.reporter_original_string = reporter_str
-                cite.volume_original_number = vol_num
-                cite.page_original_number = page_num
+                try:
+                    # try saving page number.
+                    # If it's too big, it's most likely an error, not a citation
+                    cite.page_original_number = page_num
+                    cite.save()
+                except DataError:
+                    cite.delete()
+                    misses.append(citation)
+                    continue
+
                 cite.save()
+            citation_misses_per_case[case.id] = "; ".join(misses)
 
-    fieldnames = ['volume_id', 'reporter_str', 'vol_num', 'page_num']
-    # TODO: figure out where to put missed citations csv
-    with open("missed_citations.csv", "a+") as f:
+    fieldnames = ['case_origin', 'misses_count', 'misses']
+    with open("/tmp/missed_citations.csv", "a+") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
-        [writer.writerow({"volume_id": volume_id, "reporter_str": reporter_str, "vol_num": vol_num, "page_num": page_num}) for case in cases]
-
+        for case in citation_misses_per_case:
+            writer.writerow({"case_origin": case, "misses_count": len(citation_misses_per_case[case]), "misses": citation_misses_per_case[case]})
