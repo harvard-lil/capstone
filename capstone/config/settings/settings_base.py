@@ -628,6 +628,7 @@ MAINTAIN_ELASTICSEARCH_INDEX = True  # whether to update index when changing cas
 ELASTICSEARCH_INDEXES={
     'cases_endpoint': 'cases',
 }
+MAX_PAGE_SIZE = 10000
 
 # for views decorated with @password_protected_page('some_key')
 PASSWORD_PROTECTED_PAGES = {

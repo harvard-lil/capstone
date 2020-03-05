@@ -267,6 +267,14 @@ def rebuild_search_index(force=False):
     populate_search_index()
 
 @task
+def update_search_index_settings():
+    """ Update settings on existing index, based on the case_index.settings() call in capapi.documents. """
+    from capapi.documents import case_index
+    # remove settings that cannot be changed on existing indexes
+    new_settings = {k:v for k, v in case_index._settings.items() if k not in ('number_of_shards')}
+    case_index.put_settings(body={"index": new_settings})
+
+@task
 def load_test_data():
     ingest_fixtures()
     total_sync_with_s3()
