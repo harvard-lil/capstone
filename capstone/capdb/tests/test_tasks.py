@@ -248,16 +248,14 @@ def test_extract_citations(case_factory):
     case.save()
     fabfile.extract_all_citations()
     case.refresh_from_db()
-    citation = ExtractedCitation.objects.get(original_cite=legitimate_cite)
+    citation = ExtractedCitation.objects.get(cite_original=legitimate_cite)
     assert citation
-    assert citation.case_origins.all().count() == 1
-    assert citation.case_origins.first() == case
+    assert citation.cited_by == case
 
-    citations_do_not_exist = ExtractedCitation.objects.filter(original_cite=illegitimate_cite)
+    citations_do_not_exist = ExtractedCitation.objects.filter(cite_original=illegitimate_cite)
     assert len(citations_do_not_exist) == 0
     with open("/tmp/missed_citations.csv") as f:
         reader = csv.DictReader(f)
         for row in reader:
             assert row['case_origin'] == case.id
-            assert row['misses_count'] == 1
-            assert row['misses'] == illegitimate_cite
+            assert row['missed_cites'] == illegitimate_cite
