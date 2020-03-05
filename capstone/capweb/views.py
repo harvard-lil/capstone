@@ -166,12 +166,12 @@ def api(request):
     try:
         case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
     except NotFoundError:
-        case = CaseDocument.search().filter("term", jurisdiction__slug="ill").execute()[0]
+        try:
+            case = CaseDocument.search().execute()[0]
+        except NotFoundError:
+            case = None
 
-    markdown_doc = render_to_string("api.md", {
-        "citation": case.citations[0].cite,
-        "case_id": case.id,
-    }, request)
+    markdown_doc = render_to_string("api.md", {"case": case}, request)
 
     # render markdown document to html
     html, toc, meta = render_markdown(markdown_doc)

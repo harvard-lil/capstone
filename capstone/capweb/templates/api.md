@@ -75,13 +75,13 @@ __Example:__ With an API key of `abcd12345`, you would pass `Token abcd12345` to
 
 A curl command would look like this:
   
-`curl -H "Authorization: Token abcd12345" "{% api_url "cases-list" %}{{case_id}}/?full_case=true"`
+`curl -H "Authorization: Token abcd12345" "{% api_url "cases-list" %}{{case.id}}/?full_case=true"`
 {: class="code-block" }
 
 In a program, (python's request library in this example,) it would look something like this:
 
 `response = requests.get(
-    '{% api_url "cases-list" %}{{case_id}}/?full_case=true',
+    '{% api_url "cases-list" %}{{case.id}}/?full_case=true',
     headers={'Authorization': 'Token abcd12345'}
 )`
 {: class="code-block" }
@@ -310,7 +310,7 @@ comprehensive documentation about the URLs and their parameters.
 Retrieve a single case by ID
 {: class="topic-header" }
 
-[{% api_url "cases-detail" case_id %}]({% api_url "cases-detail" case_id %})
+[{% api_url "cases-detail" case.id %}]({% api_url "cases-detail" case.id %})
 {: class="example-link mt-0" }
 
 This example uses the [single case](#endpoint-case) endpoint, and will retrieve the metadata for a single 
@@ -321,11 +321,11 @@ case.
 Retrieve a list of cases using a metadata filter
 {: class="topic-header" }
 
-[{% api_url "cases-list" %}?cite={{ citation }}]({% api_url "cases-list" %}?cite={{ citation }})
+[{% api_url "cases-list" %}?cite={{ case.citations.0.cite }}]({% api_url "cases-list" %}?cite={{ case.citations.0.cite }})
 {: class="example-link mt-0" }
 
 This example uses the [cases](#endpoint-cases) endpoint, and will retrieve every case with the citation 
-{{ citation }}. 
+{{ case.citations.0.cite }}. 
 
 There are many parameters with which you can filter the cases result. Check the 
 [cases](#endpoint-cases) endpoint documentation for a complete list of the parameters, and what values they accept.
@@ -335,7 +335,7 @@ Modification with Parameters:
 
 * **Add a date range filter**
 {: class="list-group-item" add_list_class="parameter-list" }
-    * [{% api_url "cases-list" %}?cite={{ citation }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30]({% api_url "cases-list" %}?cite={{ citation }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30)
+    * [{% api_url "cases-list" %}?cite={{ case.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30]({% api_url "cases-list" %}?cite={{ case.citations.0.cite }}&decision_date_min=1900-12-30&decision_date_max=2000-12-30)
     {: add_list_class="example-mod-url" }
     * You can combine any of these parameters to refine your search. Here, we have the same search as in the first 
     example, but will only receive results from within the specified dates.
@@ -483,7 +483,7 @@ Endpoint Parameters:
 Single Case Endpoint
 {: class="topic-header", id="endpoint-case" }
 
-[{% api_url "cases-detail" case_id %}]({% api_url "cases-detail" case_id %})
+[{% api_url "cases-detail" case.id %}]({% api_url "cases-detail" case.id %})
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 Use this endpoint to retrieve a single case.
