@@ -90,8 +90,8 @@ MIDDLEWARE = [
     # - WhiteNoiseMiddleware, because whitenoise already sets cache headers on static assets
     'capapi.middleware.cache_header_middleware',
 
+    'capapi.middleware.GZipJsonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # custom CommonMiddleware for adding CORS header in API
     'capapi.middleware.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'capapi.middleware.AuthenticationMiddleware',

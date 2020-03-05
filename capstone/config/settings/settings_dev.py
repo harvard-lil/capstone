@@ -78,7 +78,7 @@ else:
                 'debug_toolbar',
             )
             MIDDLEWARE.insert(
-                MIDDLEWARE.index('django_hosts.middleware.HostsRequestMiddleware')+1,
+                MIDDLEWARE.index('django.contrib.sessions.middleware.SessionMiddleware'),
                 'debug_toolbar.middleware.DebugToolbarMiddleware',
             )
             DEBUG_TOOLBAR_CONFIG = {
