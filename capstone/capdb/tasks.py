@@ -10,7 +10,6 @@ from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
 from reporters_db import REPORTERS, VARIATIONS_ONLY
-
 from django.db import connections
 from django.db.models import Prefetch, Q
 from django.utils import timezone
@@ -402,7 +401,7 @@ def extract_citations_per_vol(self, volume_id):
         citation_misses_per_case = {}
         for case in cases:
             misses = []
-            for match in set(re.findall(regex, case.body_cache.text + case.name)):
+            for match in set(re.findall(regex, case.body_cache.text)):
                 vol_num, reporter_str, page_num = match
 
                 # Look for found reporter string in the official and nominative REPORTER dicts
