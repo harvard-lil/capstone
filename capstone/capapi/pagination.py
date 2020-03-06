@@ -2,6 +2,8 @@ import json
 import warnings
 from base64 import b64decode, b64encode
 from collections import OrderedDict
+
+from django.conf import settings
 from django_elasticsearch_dsl_drf.versions import ELASTICSEARCH_GTE_6_0
 
 from rest_framework.exceptions import NotFound
@@ -247,5 +249,5 @@ class CapESCursorPagination(ESCursorPagination):
         CAP-specific customization of elasticsearch search_after pagination.
     """
     page_size_query_param = 'page_size'
-    max_page_size = 100
+    max_page_size = settings.MAX_PAGE_SIZE
     fallback_sort_field = "id"

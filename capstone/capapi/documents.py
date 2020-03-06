@@ -5,14 +5,15 @@ from elasticsearch_dsl import Search
 from capapi.resources import apply_replacements
 from capdb.models import CaseMetadata
 
-index = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
 
-case = Index(index)
-
-case.settings(
+index_name = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
+case_index = Index(index_name)
+case_index.settings(
     number_of_shards=1,
-    number_of_replicas=0
+    number_of_replicas=0,
+    max_result_window=settings.MAX_PAGE_SIZE+1,  # allow for one extra for pagination
 )
+
 
 def SuggestField():
     """
@@ -38,7 +39,7 @@ class RawSearch(Search):
         return super().execute(ignore_cache)
 
 
-@case.doc_type
+@case_index.doc_type
 class CaseDocument(DocType):
     name_abbreviation = SuggestField()
 
@@ -137,9 +138,6 @@ class CaseDocument(DocType):
         ]
         ignore_signals = True
         auto_refresh = False
-
-    class Index:
-        name = index
 
     def to_dict(self, skip_empty=False):
         # we need to do this until elasticsearch_dsl propagates skip_empty=False to the serialization that happens in
