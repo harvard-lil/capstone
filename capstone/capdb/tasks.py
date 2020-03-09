@@ -1,19 +1,22 @@
+import re
+import csv
 from copy import copy
 from datetime import datetime
 from time import sleep
+
 from celery import shared_task
 from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
-
+from reporters_db import REPORTERS, VARIATIONS_ONLY
 from django.db import connections
 from django.db.models import Prefetch, Q
 from django.utils import timezone
+from collections import Counter
 
 from capapi.documents import CaseDocument
 from capdb.models import *
-
 
 ### HELPERS ###
 
@@ -378,3 +381,56 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 
         for case in cases:
             case.retrieve_and_store_images()
+
+
+@shared_task(bind=True, acks_late=True)
+def extract_citations_per_vol(self, volume_id):
+    smallint_max = 32767
+    regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
+    regex_filter = Q(body_cache__text__regex=regex)
+    cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id)
+             .select_related('body_cache')
+             .only('body_cache__text'))
+    with record_task_status_for_volume(self, volume_id):
+        # remove all extracted citations in volume before recreating
+        ExtractedCitation.objects.filter(cited_by__volume_id=volume_id).delete()
+
+        # successfully extracted citations
+        extracted_citations = []
+        # extracted possible citations with errors
+        citation_misses_per_case = {}
+        for case in cases:
+            misses = []
+            for match in set(re.findall(regex, case.body_cache.text)):
+                vol_num, reporter_str, page_num = match
+
+                # Look for found reporter string in the official and nominative REPORTER dicts
+                if not (reporter_str in REPORTERS) and not (reporter_str in VARIATIONS_ONLY):
+                    # reporter not found, removing cite and adding to misses list
+                    misses.append(reporter_str)
+                    continue
+
+                if int(page_num) > smallint_max or int(page_num) < 0:
+                    misses.append(reporter_str)
+                    continue
+
+                extracted_citations.append({
+                    "cite_original": " ".join(match),
+                    "cited_by": case,
+                    "reporter_name_original": reporter_str,
+                    "volume_number_original": vol_num,
+                    "page_number_original": page_num})
+            citation_misses_per_case[case.id] = dict(Counter(misses))
+
+        ExtractedCitation.objects.bulk_create([ExtractedCitation(
+            cite_original=c["cite_original"],
+            cited_by=c["cited_by"],
+            reporter_name_original=c["reporter_name_original"],
+            volume_number_original=c["volume_number_original"],
+            page_number_original=c["page_number_original"]) for c in extracted_citations])
+
+    fieldnames = ['case_origin', 'missed_cites_per_case', 'missed_cites']
+    with open("/tmp/missed_citations.csv", "a+") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        for case in citation_misses_per_case:
+            writer.writerow({"case_origin": case, "missed_cites_per_case": len(citation_misses_per_case[case]), "missed_cites": citation_misses_per_case[case]})

@@ -953,7 +953,7 @@ class CaseMetadata(models.Model):
             disambiguate = True
             # try to match "(year)-(series)-(case index)", e.g. "2017-Ohio-5699" and "2015-NMCA-053"
             m = re.match(r'(\S+)-(.+?)-(\S+)$', cite.cite)
-            
+
         # TODO: final fallback value is wrong, because first_page is the physical page count and not the page label
         # after token streams are in, we should be able to retrieve the actual page label instead
         volume_number, rep_short_nm, fp = m.groups() if m else [self.volume.volume_number, self.reporter.short_name, self.first_page]
@@ -1655,6 +1655,16 @@ class PageXML(BaseXMLModel):
         """ ID of this page as referred to by volume xml file. """
         return short_id_from_s3_key(self.s3_key)
 
+
+class ExtractedCitation(models.Model):
+    cite_original = models.CharField(max_length=10000, db_index=True)
+    cited_by = models.ForeignKey(CaseMetadata, related_name='extractedcitations', on_delete=models.DO_NOTHING)
+    reporter_name_original = models.CharField(max_length=200)
+    volume_number_original = models.CharField(max_length=64, blank=True, null=True)
+    page_number_original = models.SmallIntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return self.cite_original
 
 
 class DataMigration(models.Model):

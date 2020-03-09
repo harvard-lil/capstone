@@ -669,6 +669,7 @@ pynacl==1.3.0 \
     --hash=sha256:30f36a9c70450c7878053fa1344aca0145fd47d845270b43a7ee9192a051bf39 \
     --hash=sha256:37aa336a317209f1bb099ad177fef0da45be36a2aa664507c5d72015f956c310 \
     --hash=sha256:4943decfc5b905748f0756fdd99d4f9498d7064815c4cf3643820c9028b711d1 \
+    --hash=sha256:53126cd91356342dcae7e209f840212a58dcf1177ad52c1d938d428eebc9fee5 \
     --hash=sha256:57ef38a65056e7800859e5ba9e6091053cd06e1038983016effaffe0efcd594a \
     --hash=sha256:5bd61e9b44c543016ce1f6aef48606280e45f892a928ca7068fba30021e9b786 \
     --hash=sha256:6482d3017a0c0327a49dddc8bd1074cc730d45db2ccb09c3bac1f8f32d1eb61b \
@@ -677,6 +678,7 @@ pynacl==1.3.0 \
     --hash=sha256:a39f54ccbcd2757d1d63b0ec00a00980c0b382c62865b61a505163943624ab20 \
     --hash=sha256:aabb0c5232910a20eec8563503c153a8e78bbf5459490c49ab31f6adf3f3a415 \
     --hash=sha256:bd4ecb473a96ad0f90c20acba4f0bf0df91a4e03a1f4dd6a4bdc9ca75aa3a715 \
+    --hash=sha256:bf459128feb543cfca16a95f8da31e2e65e4c5257d2f3dfa8c0c1031139c9c92 \
     --hash=sha256:e2da3c13307eac601f3de04887624939aca8ee3c9488a0bb0eca4fb9401fc6b1 \
     --hash=sha256:f67814c38162f4deb31f68d590771a29d5ae3b1bd64b75cf232308e5c74777e0 \
     # via paramiko
@@ -747,6 +749,8 @@ rcssmin==1.0.6 \
 redis==3.2.1 \
     --hash=sha256:6946b5dca72e86103edc8033019cc3814c031232d339d5f4533b02ea85685175 \
     --hash=sha256:8ca418d2ddca1b1a850afa1680a7d2fd1f3322739271de4b704e0d4668449273
+reporters-db==2.0.0 \
+    --hash=sha256:1bfe4a77ef8391a4f2b0ceb464b173425fc63836320d12211f5bcbff97441715
 reportlab==3.5.13 \
     --hash=sha256:069f684cd0aaa518a27dc9124aed29cee8998e21ddf19604e53214ec8462bdd7 \
     --hash=sha256:09b68ec01d86b4b120456b3f3202570ec96f57624e3a4fc36f3829323391daa4 \
@@ -820,7 +824,7 @@ s3transfer==0.2.1 \
 six==1.12.0 \
     --hash=sha256:3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c \
     --hash=sha256:d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73 \
-    # via aws-sam-translator, bcrypt, cfn-lint, cryptography, django-elasticsearch-dsl-drf, django-extensions, docker, docker-pycreds, drf-yasg, elasticsearch-dsl, fabric3, faker, jsonschema, libsass, mock, more-itertools, moto, nltk, pathlib2, pip-tools, pynacl, pyrsistent, pytest, pytest-xdist, python-dateutil, python-jose, responses, swagger-spec-validator, websocket-client
+    # via aws-sam-translator, bcrypt, cfn-lint, cryptography, django-elasticsearch-dsl-drf, django-extensions, docker, docker-pycreds, drf-yasg, elasticsearch-dsl, fabric3, faker, jsonschema, libsass, mock, more-itertools, moto, nltk, pathlib2, pip-tools, pynacl, pyrsistent, pytest, pytest-xdist, python-dateutil, python-jose, reporters-db, responses, swagger-spec-validator, websocket-client
 soupsieve==1.7.3 \
     --hash=sha256:466910df7561796a60748826781ebe9a888f7a1668a636ae86783f44d10aae73 \
     --hash=sha256:87db12ae79194f0ff9808d2b1641c4f031ae39ffa3cab6b907ea7c1e5e5ed445 \
@@ -916,7 +920,7 @@ zope.interface==4.6.0 \
     # via datetime
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==41.4.0 \
-    --hash=sha256:7eae782ccf36b790c21bde7d86a4f303a441cd77036b25c559a602cf5186ce4d \
-    --hash=sha256:8d01f7ee4191d9fdcd9cc5796f75199deccb25b154eba82d44d6a042cf873670 \
+setuptools==45.2.0 \
+    --hash=sha256:316484eebff54cc18f322dea09ed031b7e3eb00811b19dcedb09bc09bba7d93d \
+    --hash=sha256:89c6e6011ec2f6d57d43a3f9296c4ef022c2cbf49bab26b407fe67992ae3397f \
     # via cfn-lint, jsonschema, markdown, pytest, python-rocksdb, zope.interface

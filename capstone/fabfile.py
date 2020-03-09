@@ -1140,6 +1140,12 @@ def populate_case_page_order():
     """)
 
 
+@task
+def extract_all_citations(last_run_before=None):
+    """ extract citations """
+    tasks.run_task_for_volumes(tasks.extract_citations_per_vol, last_run_before=last_run_before)
+
+
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
     # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
