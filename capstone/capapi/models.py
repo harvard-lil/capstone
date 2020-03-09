@@ -336,3 +336,53 @@ class MailingList(models.Model):
     # this field could be manually set in the unlikely case that someone repeatedly signs someone else up. They couldn't
     # re-add the address since their it would already be in here, but we'd know to not email them.
     do_not_email = models.BooleanField(default=False)
+
+
+class EmailBlocklist(models.Model):
+    domain = models.CharField(max_length=1000, blank=True, help_text="Exact match for email domain, e.g. 'example.com'")
+    regex = models.CharField(max_length=1000, blank=True, help_text=r"Postgres regex match for entire email address, e.g. '\yfoo@.*\.com\y'")
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @classmethod
+    def email_allowed(cls, email):
+        """
+            Return True if email does not match any domains or regexes in the EmailBlocklist.
+
+            >>> email_blocklist_factory = getfixture('email_blocklist_factory')
+            >>> _ = email_blocklist_factory(domain='blocked.com')
+            >>> _ = email_blocklist_factory(regex='\yfoo@.*\.org\y')
+            >>> assert EmailBlocklist.email_allowed('foo@good.com')
+            >>> assert EmailBlocklist.email_allowed('nofoo@good.org')
+            >>> assert not EmailBlocklist.email_allowed('foo@blocked.com')
+            >>> assert not EmailBlocklist.email_allowed('foo@blocked.org')
+            >>> assert not EmailBlocklist.email_allowed("foo@'\\'blocked.org")  # make sure 'extra()' is injection safe
+        """
+        parts = email.lower().split('@')
+        if len(parts) != 2:
+            return False
+        domain = parts[1]
+        return (
+            not cls.objects.filter(domain=domain).exists()
+            and not cls.objects.exclude(regex='').extra(where=["%s ~ regex"], params=[email]).exists()
+        )
+
+    @classmethod
+    def matching_accounts(self):
+        """
+            Return CapUser objects for existing accounts that should be blocked.
+
+            >>> email_blocklist_factory, cap_user_factory = [getfixture(f) for f in ('email_blocklist_factory', 'cap_user_factory')]
+            >>> blocklists = [email_blocklist_factory(domain='blocked.com'), email_blocklist_factory(regex=r'\yfoo@')]
+            >>> users = [cap_user_factory(email=e) for e in ('ok@good.com', 'bad@blocked.com', 'foo@bad.com')]
+            >>> assert set(EmailBlocklist.matching_accounts()) == {users[1], users[2]}
+        """
+        return list(CapUser.objects.raw("""
+            SELECT u.* 
+            FROM capapi_capuser u, capapi_emailblocklist e 
+            WHERE 
+                (
+                    lower(substring(u.email from '@(.*)$')) = domain
+                    OR (regex != '' AND lower(u.email) ~ regex)
+                ) AND is_active is true
+        """))

@@ -17,7 +17,7 @@ from capweb.helpers import reverse
 ### register, verify email address, login ###
 
 @pytest.mark.django_db
-def test_registration_flow(client, restricted_case, elasticsearch):
+def test_registration_flow(client, restricted_case, elasticsearch, email_blocklist_factory):
 
     # can't register without agreeing to TOS
     email = 'new_user@gmail.com'
@@ -32,8 +32,15 @@ def test_registration_flow(client, restricted_case, elasticsearch):
     response = client.post(reverse('register'), register_kwargs)
     check_response(response, content_includes="This field is required.")
 
-    # can register
+    # can't register with blocked email
+    email_blocklist_factory(domain='blocked.com')
     register_kwargs['agreed_to_tos'] = 'on'
+    register_kwargs['email'] = 'foo@blocked.com'
+    response = client.post(reverse('register'), register_kwargs)
+    check_response(response, content_includes="This email address is invalid.")
+
+    # can register
+    register_kwargs['email'] = email
     response = client.post(reverse('register'), register_kwargs)
     check_response(response)
     user = CapUser.objects.get(email=email)

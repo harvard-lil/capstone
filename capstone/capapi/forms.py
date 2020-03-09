@@ -7,8 +7,9 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.text import format_lazy
 
-from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract
+from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract, EmailBlocklist
 from capweb.helpers import reverse, reverse_lazy
+from config.logging import logger
 
 
 class LoginForm(AuthenticationForm):
@@ -53,6 +54,11 @@ class RegisterUserForm(UserCreationForm):
         if CapUser.objects.filter(normalized_email=CapUser.normalize_email(email)).exists():
             raise forms.ValidationError("A user with the same email address has already registered.")
 
+        # validate email against blocklists
+        if not EmailBlocklist.email_allowed(email):
+            logger.warning("Email address blocked: %s" % email)
+            raise forms.ValidationError("This email address is invalid. If you believe this is an error, please contact us.")
+
         # validate email against mailgun api
         if settings.VALIDATE_EMAIL_SIGNUPS:
             try:
@@ -66,7 +72,7 @@ class RegisterUserForm(UserCreationForm):
             response_json = response.json()
             if response_json['result'] == 'undeliverable' or (response_json['result'] == 'do_not_send' and 'mailbox_is_disposable_address' in response_json['reason']):
                 # reject undeliverable addresses and disposable addresses
-                print("Invalid email address: %s" % response_json)
+                logger.warning("Invalid email address: %s" % response_json)
                 raise forms.ValidationError("This email address is invalid. If you believe this is an error, please contact us.")
 
         return email

@@ -48,6 +48,12 @@ def register(cls):
 
 
 @register
+class EmailBlocklistFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = EmailBlocklist
+
+
+@register
 class TokenFactory(factory.DjangoModelFactory):
     class Meta:
         model = Token
