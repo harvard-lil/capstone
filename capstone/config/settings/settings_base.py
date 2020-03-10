@@ -428,6 +428,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'downloads'),
             'base_url': 'http://case.test:8000/download/',
         }
+    },
+    'writeable_download_files_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'downloads'),
+        }
     }
 }
 
