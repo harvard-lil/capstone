@@ -1063,9 +1063,11 @@ def check_existing_emails():
 @task
 def download_pdfs(jurisdiction=None):
     """
-        Download all PDFs, or all for a jurisdiction, to download_files_storage.
+        Download all PDFs, or all for a jurisdiction, to writeable_download_files_storage.
+        Locally, this is the same as download_files_storage, but will differ in production,
+        as we're using a read-only overlay to expose the files.
     """
-    from capdb.storages import pdf_storage, download_files_storage
+    from capdb.storages import pdf_storage, writeable_download_files_storage
     from pathlib import Path
     import re
 
@@ -1096,7 +1098,7 @@ def download_pdfs(jurisdiction=None):
             new_name = new_name_prefix + (' %s' % chr(97+i) if i else '') + '.pdf'
             new_name = new_name.replace('..', '.')  # avoid double period in '1 Mass..pdf'
             new_path = Path('PDFs', open_or_restricted, jurisdiction.name_long, reporter.short_name, new_name)
-            if not download_files_storage.exists(str(new_path)):
+            if not writeable_download_files_storage.exists(str(new_path)):
                 break
         else:
             raise Exception("Failed to find a non-existent path for %s" % new_path)
@@ -1104,7 +1106,7 @@ def download_pdfs(jurisdiction=None):
         try:
             # copy file
             try:
-                copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=download_files_storage)
+                copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=writeable_download_files_storage)
             except IOError:
                 print("  - ERROR: source file not found")
                 continue
@@ -1115,7 +1117,7 @@ def download_pdfs(jurisdiction=None):
             print("  - Downloaded to %s" % new_path)
         except:
             # clean up partial downloads if process is killed
-            download_files_storage.delete(new_path)
+            writeable_download_files_storage.delete(new_path)
             raise
 
 
