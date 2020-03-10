@@ -1,7 +1,7 @@
 import re
 import csv
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import sleep
 
 from celery import shared_task
@@ -94,6 +94,7 @@ def remove_id_number_in_volume(self, volume_id):
                     replacement[match] = re.sub(r'\d', 'X', match)
             if replacement != case.no_index_redacted:
                 case.no_index_redacted = replacement
+                case.robots_txt_until = timezone.now() + timedelta(days=7)
                 case.save()
 
 

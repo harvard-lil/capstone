@@ -33,7 +33,7 @@ services:
         volumes:
           - esdata01:/usr/share/elasticsearch/data
         ports:
-          - 9200:9200
+          - 127.0.0.1:9200:9200
     worker:
         build: .
         image: capstone:0.3.73-5bccb72055507e83e1f7aedd821ecfb5
@@ -83,8 +83,8 @@ services:
           - "case.test:127.0.0.1"
           - "api.case.test:127.0.0.1"
         ports:
-            - "8000:8000"
-            - "8080:8080"
+            - 127.0.0.1:8000:8000
+            - 127.0.0.1:8080:8080
         # allow profiling with py-spy
         # https://github.com/benfred/py-spy#how-do-i-run-py-spy-in-docker
         cap_add:
