@@ -1117,7 +1117,7 @@ def download_pdfs(jurisdiction=None):
             print("  - Downloaded to %s" % new_path)
         except:
             # clean up partial downloads if process is killed
-            writeable_download_files_storage.delete(new_path)
+            writeable_download_files_storage.delete(str(new_path))
             raise
 
 
