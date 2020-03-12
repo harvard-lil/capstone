@@ -76,14 +76,16 @@ def update_postgres_env(db='capdb'):
             """.format(table=model._meta.db_table))
 
             # create combined table_with_history views:
-            fields = sorted(field.get_attname() for field in model._meta.get_fields() if field.concrete and not field.many_to_many)
-            cursor.execute("""
-                DROP VIEW IF EXISTS {table}_with_history;
-                CREATE VIEW {table}_with_history AS
-                    SELECT {fields} FROM {table}
-                UNION ALL
-                    SELECT {fields} FROM {table}_history;
-            """.format(
-                table=model._meta.db_table,
-                fields=", ".join(fields),
-            ))
+            # we don't currently use these views, and their existence prevents running migrations that modify columns
+            # on tables with history, so let's disable for now:
+            # fields = sorted(field.get_attname() for field in model._meta.get_fields() if field.concrete and not field.many_to_many)
+            # cursor.execute("DROP VIEW IF EXISTS {table}_with_history;".format(table=model._meta.db_table))
+            # cursor.execute("""
+            #     CREATE VIEW {table}_with_history AS
+            #         SELECT {fields} FROM {table}
+            #     UNION ALL
+            #         SELECT {fields} FROM {table}_history;
+            # """.format(
+            #     table=model._meta.db_table,
+            #     fields=", ".join(fields),
+            # ))

@@ -11,6 +11,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+         migrations.RunSQL("DROP VIEW IF EXISTS %s;" % view, migrations.RunSQL.noop) for view in (
+            'capdb_volumexml_with_history',
+            'capdb_volumemetadata_with_history',
+            'capdb_reporter_with_history',
+            'capdb_pagexml_with_history',
+            'capdb_citation_with_history',
+            'capdb_casexml_with_history',
+            'capdb_casemetadata_with_history'
+        )
+    ]+[
         migrations.AlterField(
             model_name='historicalvolumemetadata',
             name='pdf_file',
