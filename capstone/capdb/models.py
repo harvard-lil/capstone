@@ -595,7 +595,7 @@ class VolumeMetadata(models.Model):
     xml_checksums_need_update = models.BooleanField(default=False,
                                                     help_text="Whether checksums in volume_xml match current values in "
                                                                "related case_xml and page_xml data.")
-    pdf_file = models.FileField(blank=True, storage=download_files_storage, help_text="Exported volume PDF")
+    pdf_file = models.FileField(blank=True, max_length=1000, storage=download_files_storage, help_text="Exported volume PDF")
 
     # values extracted from VolumeXML
     xml_start_year = models.IntegerField(blank=True, null=True)
