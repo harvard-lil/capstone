@@ -29,10 +29,15 @@ def run_task_for_volumes(task, volumes=None, last_run_before=None, synchronous=F
     if volumes is None:
         volumes = VolumeMetadata.objects.all()
     if last_run_before:
-        volumes = volumes.exclude(**{
-            "task_statuses__%s__has_key" % task.name: "success",
-            "task_statuses__%s__timestamp__gte" % task.name: last_run_before
-        })
+        # find volumes where task has never run, or had an error, or had a success before last_run_before date
+        volumes = volumes.filter(
+            ~Q(task_statuses__has_key=task.name) |
+            Q(**{"task_statuses__%s__has_key" % task.name: "error"}) |
+            Q(**{
+                "task_statuses__%s__has_key" % task.name: "success",
+                "task_statuses__%s__timestamp__lt" % task.name: last_run_before
+            })
+        )
     for volume_id in volumes.values_list('pk', flat=True):
         task.delay(volume_id, **kwargs)
 
