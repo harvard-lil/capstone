@@ -40,6 +40,11 @@ def choices(*args):
     return zip(args, args)
 
 
+def normalize_cite(cite):
+    """Remove spaces and special characters from a citation"""
+    return re.sub(r'[^0-9a-z]', '', cite.lower())
+
+
 def fetch_relations(instance, select_relations=None, prefetch_relations=None):
     """
         Load attributes on instance as though they had been loaded by objects.select_related() and object.prefetch_related().
@@ -1608,12 +1613,8 @@ class Citation(models.Model):
 
     def save(self, *args, **kwargs):
         if self.tracker.has_changed('cite'):
-            self.normalized_cite = self.normalize_cite(self.cite)
+            self.normalized_cite = normalize_cite(self.cite)
         super(Citation, self).save(*args, **kwargs)
-
-    @staticmethod
-    def normalize_cite(cite):
-        return re.sub(r'[^0-9a-z]', '', cite.lower())
 
     def page_number(self):
         return self.cite.rsplit(' ', 1)[-1]
@@ -1662,9 +1663,14 @@ class ExtractedCitation(models.Model):
     reporter_name_original = models.CharField(max_length=200)
     volume_number_original = models.CharField(max_length=64, blank=True, null=True)
     page_number_original = models.SmallIntegerField(null=True, blank=True)
+    normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
 
     def __str__(self):
         return self.cite_original
+
+    def save(self, *args, **kwargs):
+        self.normalized_cite = normalize_cite(self.cite_original)
+        return super(ExtractedCitation, self).save(*args, **kwargs)
 
 
 class DataMigration(models.Model):

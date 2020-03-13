@@ -388,9 +388,10 @@ def extract_citations_per_vol(self, volume_id):
     smallint_max = 32767
     regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
     regex_filter = Q(body_cache__text__regex=regex)
-    cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id)
+    cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id, in_scope=True)
              .select_related('body_cache')
              .only('body_cache__text'))
+
     with record_task_status_for_volume(self, volume_id):
         # remove all extracted citations in volume before recreating
         ExtractedCitation.objects.filter(cited_by__volume_id=volume_id).delete()
@@ -424,6 +425,7 @@ def extract_citations_per_vol(self, volume_id):
 
         ExtractedCitation.objects.bulk_create([ExtractedCitation(
             cite_original=c["cite_original"],
+            normalized_cite=normalize_cite(c["cite_original"]),
             cited_by=c["cited_by"],
             reporter_name_original=c["reporter_name_original"],
             volume_number_original=c["volume_number_original"],
