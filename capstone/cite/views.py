@@ -2,17 +2,21 @@ import re
 import time
 from collections import defaultdict
 from contextlib import contextmanager
+from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
-from django.db.models import Q, Prefetch
+from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.http import is_safe_url
 from django.utils.text import slugify
+from django.views.decorators.http import require_POST
 from rest_framework.request import Request
 from elasticsearch.exceptions import NotFoundError
 from natsort import natsorted
@@ -20,9 +24,9 @@ from natsort import natsorted
 from capapi import serializers
 from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
-from capapi.renderers import HTMLRenderer
-from capdb.models import Reporter, VolumeMetadata, CaseMetadata
-from capweb import helpers
+from capapi.resources import apply_replacements
+from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation
+from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
 
@@ -85,7 +89,7 @@ def series(request, series_slug):
     # redirect if series slug is in the wrong format
 
     if slugify(series_slug) != series_slug:
-        return HttpResponseRedirect(helpers.reverse('series', args=[slugify(series_slug)], host='cite'))
+        return HttpResponseRedirect(reverse('series', args=[slugify(series_slug)], host='cite'))
     reporters = list(Reporter.objects
         .filter(short_name_slug=series_slug)
         .exclude(start_year=None)
@@ -104,7 +108,7 @@ def volume(request, series_slug, volume_number_slug):
     # redirect if series slug or volume number slug is in the wrong format
 
     if slugify(series_slug) != series_slug or slugify(volume_number_slug) != volume_number_slug:
-        return HttpResponseRedirect(helpers.reverse('volume', args=[slugify(series_slug), slugify(volume_number_slug)], host='cite'))
+        return HttpResponseRedirect(reverse('volume', args=[slugify(series_slug), slugify(volume_number_slug)], host='cite'))
 
     cases_query = CaseDocument.search()\
         .filter("term", volume__volume_number_slug=volume_number_slug)\
@@ -117,13 +121,8 @@ def volume(request, series_slug, volume_number_slug):
     if len(cases) == 0:
         raise Http404
 
-    volume_filters = None
-    for vol in cases.aggs.vols.buckets:
-        if volume_filters is None:
-            volume_filters = Q(barcode=vol.key)
-        else:
-            volume_filters = volume_filters | Q(barcode=vol.key)
-    vols = VolumeMetadata.objects.select_related('reporter').filter(volume_filters).all()
+    volume_ids = [vol.key for vol in cases.aggs.vols.buckets]
+    vols = list(VolumeMetadata.objects.select_related('reporter').filter(pk__in=volume_ids))
     if not vols:
         raise Http404
 
@@ -156,20 +155,16 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
     # redirect if series slug or volume number slug is in the wrong format
     if not pdf and (slugify(series_slug) != series_slug or slugify(volume_number_slug) != volume_number_slug):
-        if case_id:
-            return HttpResponseRedirect(helpers.reverse('citation',
-                                                    args=[slugify(series_slug), slugify(volume_number_slug), page_number, case_id],
-                                                    host='cite'))
-        else:
-            return HttpResponseRedirect(helpers.reverse('citation',
-                                                        args=[slugify(series_slug), slugify(volume_number_slug), page_number],
-                                                        host='cite'))
+        return HttpResponseRedirect(reverse(
+            'citation',
+            args=[slugify(series_slug), slugify(volume_number_slug), page_number] + ([case_id] if case_id else []),
+            host='cite'))
 
     ### try to look up citation
 
     if case_id:
         try:
-            cases = [ CaseDocument.get(id=case_id) ]
+            case = CaseDocument.get(id=case_id)
         except NotFoundError:
             raise Http404
     else:
@@ -190,9 +185,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
                 "volume_number_slug": volume_number_slug,
                 "page_number": page_number,
             })
-
-    ### handle case where we found a unique case with that citation
-    case = cases[0]
+        case = cases[0]
 
     # handle whitelisted case or logged-in user
     if case.jurisdiction.whitelisted or request.user.is_authenticated:
@@ -218,27 +211,24 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
                 serializer = serializers.CaseDocumentSerializerWithCasebody
 
     # handle google crawler
-    elif helpers.is_google_bot(request):
+    elif is_google_bot(request):
         serializer = serializers.NoLoginCaseDocumentSerializer
 
     # if non-whitelisted case, not logged in, and no cookies set up, redirect to ?set_cookie=1
     else:
         request.session['case_allowance_remaining'] = settings.API_CASE_DAILY_ALLOWANCE
         request.session['case_allowance_last_updated'] = time.time()
-        return HttpResponseRedirect('%s?%s' % (helpers.reverse('set_cookie', host='cite'), urlencode({'next': request.get_full_path()})))
+        return HttpResponseRedirect('%s?%s' % (reverse('set_cookie', host='cite'), urlencode({'next': request.get_full_path()})))
 
     # render case using API serializer
     api_request = Request(request, authenticators=[SessionAuthentication()])
-    api_request.accepted_renderer = HTMLRenderer()
-    serialized = serializer(case, context={'request': api_request})
+    serialized = serializer(case, context={'request': api_request, 'force_body_format': 'html'})
     serialized_data = serialized.data
-    data = serialized_data['casebody']['data']
-    case_name_with_markup = serialized_data['name']
 
     # handle pdf output --
     # wait until here to do this so serializer() can apply case quotas
     db_case = db_case or CaseMetadata.objects.select_related('volume').prefetch_related('citations').get(pk=case.id)
-    can_render_pdf = db_case.volume.pdf_file and not db_case.no_index_redacted and settings.CASE_PDF_FEATURE
+    can_render_pdf = db_case.volume.pdf_file and not db_case.no_index_redacted and settings.CASE_PDF_FEATURE and serialized_data['casebody']['status'] == 'ok'
     if pdf:
         if serialized_data['casebody']['status'] != 'ok':
             return HttpResponseRedirect(db_case.get_full_frontend_url())
@@ -247,69 +237,37 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         return HttpResponse(db_case.get_pdf(), content_type="application/pdf")
 
     # HTML output
-    context = {'request': api_request, 'meta_tags': [], 'can_render_pdf': can_render_pdf, 'db_case': db_case}
 
+    # meta tags
+    meta_tags = []
     if not case.jurisdiction.whitelisted:
         # blacklisted cases shouldn't show cached version in google search results
-        context['meta_tags'].append({"name": "googlebot", "content": "noarchive"})
+        meta_tags.append({"name": "googlebot", "content": "noarchive"})
+    if db_case.no_index:
+        meta_tags.append({"name": "robots", "content": "noindex"})
 
-    # This should probably change
-    if hasattr(case, 'no_index'):
-        if case.no_index:
-            context['meta_tags'].append({"name": "robots", "content": "noindex"})
-    else:
-        if db_case.no_index:
-            context['meta_tags'].append({"name": "robots", "content": "noindex"})
+    case_html = serialized_data['casebody']['data']
+    footer_message = db_case.custom_footer_message or ''
 
-    # insert redactions and elisions
-
+    # insert redactions
     if db_case.no_index_redacted:
-        redaction_count = 0
-        for redaction, val in db_case.no_index_redacted.items():
-            # redact from case body
-            data = re.sub(redaction, "<span class='redacted-text' data-redaction-id='%s'>%s</span>" %
-                          (redaction_count, val), data)
-            redaction_count += 1
+        case_html = apply_replacements(case_html, db_case.no_index_redacted)
+        db_case.name = apply_replacements(db_case.name, db_case.no_index_redacted)
+        db_case.name_abbreviation = apply_replacements(db_case.name_abbreviation, db_case.no_index_redacted)
+        footer_message += "Some text has been redacted. \n"
 
-            # redact from name
-            case_name_with_markup = re.sub(redaction, "[ %s ]" % val, case_name_with_markup)
-            serialized_data['name_abbreviation'] = re.sub(redaction, "[ %s ]" % val, serialized_data['name_abbreviation'])
-        # Also save as name for indexing
-        serialized_data['name'] = case_name_with_markup
-
-
-    elision_span = "<span class='elision-help-text' style='display: none'>hide</span><span class='elided-text' data-elision-reason='%s' role='button' tabindex='0' data-hidden-text='%s' data-elision-id='%s'>...</span>"
+    # insert elisions
     if db_case.no_index_elided:
-        elision_count = 0
-        for elision, val in db_case.no_index_elided.items():
+        elision_span = "<span class='elision-help-text' style='display: none'>hide</span>" \
+                       "<span class='elided-text' role='button' tabindex='0' data-hidden-text='%s'>%s</span>"
+        replacements = {k: elision_span % (k, v) for k, v in db_case.no_index_elided.items()}
+        case_html = apply_replacements(case_html, replacements, prefix="", suffix="")
+        db_case.name = apply_replacements(db_case.name, replacements, prefix="", suffix="")
+        db_case.name_abbreviation = apply_replacements(db_case.name_abbreviation, replacements, prefix="", suffix="")
+        footer_message += "Some text has been hidden for privacy from automated systems, but can be revealed by clicking the elided text. \n"
 
-            # elide from case body
-            data = re.sub(elision, elision_span % (val, elision, elision_count), data)
-
-            elision_count += 1
-
-            # elide from name with html markup
-            case_name_with_markup = re.sub(elision, elision_span % (val, elision, elision_count), case_name_with_markup)
-
-            # add elisions without html markup to case name and name_abbreviation for indexing
-            serialized_data['name'] = re.sub(elision, "...", serialized_data['name'])
-            serialized_data['name_abbreviation'] = re.sub(elision, "...", serialized_data['name_abbreviation'])
-
-    serialized_data['name_with_html_markup'] = case_name_with_markup
-
-    # Add a custom footer message if redactions or elisions exist but no text is provided
-    if not db_case.custom_footer_message and (db_case.no_index_redacted or db_case.no_index_elided):
-        db_case.custom_footer_message = ''
-        if db_case.no_index_redacted:
-            db_case.custom_footer_message += "Some text has been redacted by request of participating parties. \n"
-        if db_case.no_index_elided:
-            db_case.custom_footer_message += "Some text has been elided by request of participating parties. \n"
-
-    if db_case.custom_footer_message:
-        custom_footer_message = re.sub(r'\n', '<br/>', db_case.custom_footer_message)
-        data += "<hr/><footer class='custom-case-footer'>%s</footer>" % custom_footer_message
-
-    serialized_data['casebody']['data'] = data
+    if footer_message:
+        case_html += "<hr/><footer class='custom-case-footer'>%s</footer>" % footer_message.replace('\n', '<br>')
 
     if settings.GEOLOCATION_FEATURE and request.META.get('HTTP_X_FORWARDED_FOR'):
         # Trust x-forwarded-for in this case because we don't mind being lied to, and would rather show accurate
@@ -323,8 +281,20 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         except Exception as e:
             logger.warning("Unable to geolocate %s: %s" % (request.user.ip_address, e))
 
-    rendered = HTMLRenderer().render(serialized_data, renderer_context=context)
-    return HttpResponse(rendered)
+    # set CSRF token for staff so they can make ajax requests
+    if request.user.is_staff:
+        get_token(request)
+
+    return render(request, 'cite/case.html', {
+        'meta_tags': meta_tags,
+        'can_render_pdf': can_render_pdf,
+        'db_case': db_case,
+        'es_case': serialized_data,
+        'status': serialized_data['casebody']['status'],
+        'case_html': case_html,
+        'citation_full': db_case.full_cite(),
+        'citations': ", ".join(c.cite for c in Citation.sorted_by_type(db_case.citations.all())),
+    })
 
 
 def set_cookie(request):
@@ -333,7 +303,7 @@ def set_cookie(request):
         /set_cookie/?no_js=1  -- ask user to click a button to set a 'not_a_bot=1' cookie
     """
     # user is actually a google bot
-    if helpers.is_google_bot(request):
+    if is_google_bot(request):
         return safe_redirect(request)
 
     # user already had a not_a_bot cookie and just needed a session cookie,
@@ -358,3 +328,26 @@ def set_cookie(request):
         return render(request, 'cite/check_js.html', {
             'next': request.GET.get('next', '/'),
         })
+
+
+@require_POST
+@staff_member_required
+def redact_case(request, case_id):
+    """
+        Admin-only view to redact or elide selected text from case browser.
+    """
+    case = get_object_or_404(CaseMetadata, pk=case_id)
+    if request.POST['kind'] == 'redact':
+        if not case.no_index_redacted:
+            case.no_index_redacted = {}
+        target = case.no_index_redacted
+        replacement = 'redacted'
+    else:
+        if not case.no_index_elided:
+            case.no_index_elided = {}
+        target = case.no_index_elided
+        replacement = '...'
+    target[request.POST['text']] = replacement
+    case.robots_txt_until = timezone.now() + timedelta(days=7)
+    case.save()
+    return HttpResponse('ok')

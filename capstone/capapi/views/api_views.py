@@ -3,26 +3,25 @@ import re
 import urllib
 from collections import OrderedDict, defaultdict
 from pathlib import Path
-from rest_framework import viewsets, renderers, mixins, exceptions
+
+from rest_framework import viewsets, renderers, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.constants import LOOKUP_FILTER_RANGE, LOOKUP_QUERY_IN, LOOKUP_QUERY_GT, \
     LOOKUP_QUERY_GTE, LOOKUP_QUERY_LT, LOOKUP_QUERY_LTE
-from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, IdsFilterBackend, \
-    OrderingFilterBackend, DefaultOrderingFilterBackend, SimpleQueryStringSearchFilterBackend, HighlightBackend
+from django_elasticsearch_dsl_drf.filter_backends import IdsFilterBackend, DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
-
 from django.http import HttpResponseRedirect, FileResponse
-from django.template import loader
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
-from capapi.documents import CaseDocument
+from capapi.documents import CaseDocument, RawSearch
+from capapi.filters import CAPFTSFilter, CAPOrderingFilterBackend, CaseFilterBackend
 from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
-from capdb.models import Citation, normalize_cite
+from capdb.models import Citation, CaseMetadata
 from capdb.storages import ngram_kv_store_ro
 from user_data.models import UserHistory
 
@@ -64,199 +63,13 @@ class CitationViewSet(BaseViewSet):
     queryset = models.Citation.objects.order_by('pk')
 
 
-class CAPFiltering(FilteringFilterBackend):
-    def get_filter_query_params(self, request, view):
-        def lc_values(values):
-            return [value.lower() for value in values if isinstance(value, str)]
-
-        def tokenize(filter_values):
-            # takes each entry in filter_values and splits them on non alphanumeric characters into separate entries
-            return [s for current_term in filter_values for s in re.split(r'[^a-zA-Z0-9]+', current_term) if s]
-
-        query_params = super().get_filter_query_params(request, view)
-
-        for suffix in ['min', 'max']:
-            date_param = 'decision_date_{}'.format(suffix)
-            if date_param in query_params:
-                if not re.match(r'\d\d\d\d-\d\d-\d\d', query_params[date_param]['values'][0]):
-                    raise exceptions.ParseError('Invalid date format: must be YYYY-MM-DD')
-
-        if 'cite' in query_params:
-            query_params['cite']['values'] = [normalize_cite(cite) for cite in
-                                              lc_values(query_params['cite']['values']) ]
-
-        if 'court_id' in query_params:
-            query_params['court_id']['values'] = [ court_id for court_id
-                                                   in query_params['court_id']['values'] if court_id.isdigit() ]
-            if len(query_params['court_id']['values']) < 1:
-                del query_params['court_id']
-
-        if 'name' in query_params:
-            query_params['name']['values'] = lc_values(tokenize(query_params['name']['values']))
-            query_params['name']['lookup'] = 'in'
-
-        if 'name_abbreviation' in query_params:
-            query_params['name_abbreviation']['values'] = lc_values(tokenize(query_params['name_abbreviation']['values']))
-            query_params['name_abbreviation']['lookup'] = 'in'
-
-        if 'court' in query_params:
-            query_params['court']['values'] = lc_values(query_params['court']['values'])
-
-        if 'jurisdiction' in query_params:
-            query_params['jurisdiction']['values'] = lc_values(query_params['jurisdiction']['values'])
-
-        if 'docket_number' in query_params:
-            query_params['docket_number']['values'] = lc_values(tokenize(query_params['docket_number']['values']))
-
-        return query_params
-
-    def to_html(self, request, queryset, view):
-        """ This makes the html that goes inside the filters modal in the browsable API. Returns HTML string."""
-
-        query_params = self.get_filter_query_params(request, view)
-        filter_values = { param_name: param_data['values'] for param_name, param_data in query_params.items() }
-
-        # this is for the content of the dropdown menus for jurisdiction, court, and reporter
-        options = {}
-        options['jurisdiction'] = [ {
-                'value': jurisdiction[0],
-                'label': jurisdiction[1],
-                'selected': 'selected' if 'jurisdiction' in filter_values
-                                          and jurisdiction[0] in filter_values['jurisdiction'] else ''
-                }
-            for jurisdiction in filters.jur_choices]
-
-        options['court'] = [ {
-                'value': court[0],
-                'label': court[1],
-                'selected': 'selected' if 'court' in filter_values and court[0] in filter_values['court'] else ''
-                }
-            for court in filters.court_choices]
-        options['reporter'] = [{
-            'value': str(reporter[0]),
-            'label': reporter[1],
-            'selected': 'selected' if 'reporter' in filter_values
-                                      and str(reporter[0]) in filter_values['reporter'] else ''
-            }
-            for reporter in filters.reporter_choices]
-
-        # For fields that look better with custom labels
-        labels = {
-                  'reporter': 'Reporter Series',
-                  'decision_date_min': 'Earliest Decision Date (Format YYYY-MM-DD)',
-                  'decision_date_max': 'Latest Decision Date (Format YYYY-MM-DD)',
-                  'cite': 'Citation',
-                  'docket_number': 'Docket Number (contains)',
-                  'id': 'ID',
-                  'court_id': 'Court ID'
-                  }
-
-        # this creates a dictionary that holds each field and data about it
-        fields = OrderedDict()
-        fields['cite']= {}
-        fields['name_abbreviation']= {}
-        fields['jurisdiction']= {}
-        fields['reporter']= {}
-        fields['decision_date_min']= {}
-        fields['decision_date_max']= {}
-        fields['docket_number']= {}
-        fields['court']= {}
-        fields['court_id']= {}
-        fields['search']= {}
-        fields['full_case']= {}
-        fields['body_format']= {}
-
-        for f in view.filter_fields:
-            if f not in fields:
-                if f == 'decision_date' or f == 'id' or f == 'name':
-                    continue
-                fields[f] = {}
-
-            fields[f]['id'] = f
-
-            if f.endswith('id'):
-                fields[f]['type'] = 'number'
-                fields[f]['step'] = 'any'
-            elif f not in options:
-                fields[f]['type'] = 'text'
-
-            if f in options:
-                fields[f]['options'] = options[f]
-            else:
-                fields[f]['value'] = ''
-
-            if f in filter_values:
-                fields[f]['value'] = ' '.join(filter_values[f])
-
-            fields[f]['label'] = labels[f] if f in labels else f.replace('_', ' ').title()
-
-        # full_case and body_format aren't part of the filters so I add them separately
-        full_case = True if 'full_case' in request.GET and request.GET['full_case'] != '' else False
-        fields['full_case'] = {
-            'id': 'full_case',
-            'label': 'Include full case text or just metadata?',
-            'options': [
-                {'value': 'true',
-                 'label': 'Full case text',
-                 'selected': 'selected' if  full_case else '',
-                 },
-                {'value': '',
-                 'label': 'Just metadata (default)',
-                 'selected': '' if  full_case else 'selected',
-                 }]
-        }
-
-        body_format = request.GET['body_format'] if 'body_format' in request.GET else ''
-        fields['body_format'] = {
-            'id': 'body_format',
-            'label': 'Format for case text (applies only if including case text):',
-            'options': [
-                {'value': 'text',
-                 'label': 'Text Only (default)',
-                 'selected': 'selected' if body_format == 'text' or body_format == '' else '',
-                 },
-                {'value': 'html',
-                 'label': 'HTML',
-                 'selected': 'selected' if body_format == 'html' else '',
-                 },
-                {'value': 'xml',
-                 'label': 'XML',
-                 'selected': 'selected' if body_format == 'xml' else '',
-                 }]
-        }
-
-        # search is also separate from a filter, so it needs to be added separately
-        fields['search'] = {
-            'id': 'search',
-            'value': request.query_params.get('search', ''),
-            'label': 'Full-Text Search',
-            'type': 'search'
-        }
-
-        template = loader.get_template('rest_framework/filters/cases.html')
-        return template.render({'fields': fields })
-
-class CAPFTSFilter(SimpleQueryStringSearchFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        # ignores empty searches
-        if 'search' in request.GET and request.GET['search'] is not '':
-            queryset = super().filter_queryset(request, queryset, view)
-        return queryset
-
-    search_param = 'search'
-
-class CAPOrderingFilterBackend(OrderingFilterBackend):
-    @classmethod
-    def transform_ordering_params(cls, ordering_params, ordering_fields):
-        # changes relevance to -relevance (and vice versa) to avoid the rather unintuitive reverse-relevance sort
-        # when sort=relevance
-        return super(OrderingFilterBackend, cls).transform_ordering_params(
-            ['relevance' if sort == '-relevance' else '-relevance' if sort == 'relevance' else sort for sort in ordering_params],
-            ordering_fields)
-
 class CaseDocumentViewSet(BaseDocumentViewSet):
-
     """The CaseDocument view."""
+
+    def __init__(self, *args, **kwargs):
+        # use RawSearch to avoid using Elasticsearch wrappers, for speed
+        super().__init__(*args, **kwargs)
+        self.search.__class__ = RawSearch
 
     # this lets DRF handle 'not found' issues the way they they are with the DB back end
     ignore = [404]
@@ -264,19 +77,18 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     document = CaseDocument
     serializer_class = CaseDocumentSerializer
     pagination_class = CapESCursorPagination
+    filterset_class = filters.CaseFilter
 
     renderer_classes = (
         renderers.JSONRenderer,
         capapi_renderers.BrowsableAPIRenderer,
-        capapi_renderers.XMLRenderer,
-        capapi_renderers.HTMLRenderer,
     )
 
     lookup_field = 'id'
 
     filter_backends = [
         CAPFTSFilter, # Facilitates FTS
-        CAPFiltering, # Facilitates Filtering (Filters)
+        CaseFilterBackend, # Facilitates Filtering (Filters)
         IdsFilterBackend, # Filtering based on IDs
         CAPOrderingFilterBackend, # Orders Document
         HighlightBackend, # for search preview
@@ -405,10 +217,16 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         # we redirect to /cases/?cite=casecitation
         id = kwargs[self.lookup_field]
         if re.search(r'\D', id):
-            normalized_cite = normalize_cite(id)
+            normalized_cite = Citation.normalize_cite(id)
             query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
             new_url = reverse('cases-list') + "?" + query_string
             return HttpResponseRedirect(new_url)
+
+        # if previously-supported format=html is requested, redirect to frontend_url
+        if self.request.query_params.get('format') == 'html':
+            case = CaseMetadata.objects.filter(id=id).first()
+            if case:
+                return HttpResponseRedirect(case.get_full_frontend_url())
 
         return super(CaseDocumentViewSet, self).retrieve(*args, **kwargs)
 

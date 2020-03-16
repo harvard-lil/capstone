@@ -277,6 +277,11 @@
   <script>
     $(document).ready(function () {
       $('form').ajaxForm();
+
+      // avoid submitting empty filter fields
+      $('#filtersModal form').submit(function() {
+        $(this).find('input,select').filter(function(){return $(this).val() === ''}).attr('name', '');
+      });
     });
   </script>
 {% endblock %}

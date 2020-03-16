@@ -1,11 +1,13 @@
+from collections import OrderedDict
+
 from django.db import transaction
+from django_elasticsearch_dsl_drf.utils import DictionaryProxy
 from rest_framework import serializers
 from rest_framework.reverse import reverse as api_reverse
 from rest_framework.serializers import ListSerializer
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
 from .models import SiteLimits
-from .renderers import HTMLRenderer, XMLRenderer
 from .documents import CaseDocument
 from capdb import models
 from capweb.helpers import reverse
@@ -73,99 +75,84 @@ class JurisdictionSerializer(serializers.ModelSerializer):
 
 # for elasticsearch
 class CaseDocumentSerializer(DocumentSerializer):
-    url = serializers.SerializerMethodField()
-    frontend_url = serializers.SerializerMethodField()
-    reporter = serializers.SerializerMethodField()
-    volume = serializers.SerializerMethodField()
-    court = serializers.SerializerMethodField()
-    jurisdiction = serializers.SerializerMethodField()
-    citations = serializers.SerializerMethodField()
-    preview = serializers.SerializerMethodField()
-    decision_date = serializers.SerializerMethodField()
+    def __init__(self, *args, **kwargs):
+        """
+            If we are instantiated with an Elasticsearch wrapper object, convert to a bare dictionary.
+        """
+        super().__init__(*args, **kwargs)
+        if isinstance(self.instance, CaseDocument):
+            self.instance = self.instance._d_
+        elif isinstance(self.instance, DictionaryProxy):
+            self.instance = self.instance.to_dict()
 
     class Meta:
         document = CaseDocument
-        fields = (
-            'id',
-            'url',
-            'name',
-            'citations',
-            'name_abbreviation',
-            'decision_date',
-            'docket_number',
-            'first_page',
-            'last_page',
-            'citations',
-            'volume',
-            'reporter',
-            'court',
-            'jurisdiction',
-            'frontend_url',
-        )
 
-    def get_reporter(self, obj):
-        return_dict = {
-            "full_name": obj.reporter['full_name'],
-            "id": obj.reporter['id'],
-            "url": api_reverse('reporter-detail', [obj.reporter['id']]),
-        }
-        return return_dict
+    _url_templates = None
 
-    def get_citations(self, obj):
-        return_list = [ { 'type': citation['type'], 'cite': citation['cite'] } for citation in obj.citations ]
-        return return_list
+    def to_representation(self, instance):
+        """
+            Convert ES result to output dictionary for the API.
+        """
+        # cache url templates to avoid lookups for each object serialized
+        if not self._url_templates:
+            def placeholder_url(name):
+                return api_reverse(name, ['REPLACE']).replace('REPLACE', '%s')
+            CaseDocumentSerializer._url_templates = {
+                'case_url': placeholder_url("cases-detail"),
+                'frontend_url': reverse('cite_home', host='cite').rstrip('/') + '%s',
+                'volume_url': placeholder_url("volumemetadata-detail"),
+                'reporter_url': placeholder_url("reporter-detail"),
+                'court_url': placeholder_url("court-detail"),
+                'jurisdiction_url': placeholder_url("jurisdiction-detail"),
+            }
 
-    def get_volume(self, obj):
-        volume_number = None
-        if hasattr(obj.volume, 'volume_number'):
-            volume_number = getattr(obj.volume, 'volume_number', None)
-        elif hasattr(obj.volume, 'get'):
-            volume_number = obj.volume.get('volume_number')
+        if "_source" in instance:
+            s = instance["_source"]
+            preview = [highlight for highlights in instance['highlight'].values() for highlight in highlights] if 'highlight' in instance else []
+        else:
+            s = instance
+            preview = []
 
-        return_dict = {
-            "barcode": obj.volume['barcode'],
-            "volume_number": volume_number,
-            "url": api_reverse('volumemetadata-detail', [obj.volume['barcode']]),
-        }
-        return return_dict
+        return OrderedDict((
+            ("id", s["id"]),
+            ("url", self._url_templates['case_url'] % s["id"]),
+            ("name", s["name"]),
+            ("name_abbreviation", s["name_abbreviation"]),
+            ("decision_date", s["decision_date_original"]),
+            ("docket_number", s["docket_number"]),
+            ("first_page", s["first_page"]),
+            ("last_page", s["last_page"]),
+            ("citations", [{"type": c["type"], "cite": c["cite"]} for c in s["citations"]]),
+            ("volume", {
+                "url": self._url_templates['volume_url'] % s["volume"]["barcode"],
+                "volume_number": s["volume"]["volume_number"],
+                "barcode": s["volume"]["barcode"],
+            }),
+            ("reporter", {
+                "url": self._url_templates['reporter_url'] % s["reporter"]["id"],
+                "full_name": s["reporter"]["full_name"],
+                "id": s["reporter"]["id"]
+            }),
+            ("court", {
+                "url": self._url_templates['court_url'] % s["court"]['slug'],
+                "name_abbreviation": s["court"]["name_abbreviation"],
+                "slug": s["court"]["slug"],
+                "id": s["court"]["id"],
+                "name": s["court"]["name"],
+            }),
+            ("jurisdiction", {
+                "id": s["jurisdiction"]["id"],
+                "name_long": s["jurisdiction"]["name_long"],
+                "url": self._url_templates['jurisdiction_url'] % s["jurisdiction"]["slug"],
+                "slug": s["jurisdiction"]["slug"],
+                "whitelisted": s["jurisdiction"]["whitelisted"],
+                "name": s["jurisdiction"]["name"],
+            }),
+            ("frontend_url", self._url_templates['frontend_url'] % s["frontend_url"]),
+            ("preview", preview),
+        ))
 
-    def get_court(self, obj):
-        return_dict = {
-            "id": obj.court['id'],
-            "slug": obj.court['slug'],
-            "name": obj.court['name'],
-            "name_abbreviation": obj.court['name_abbreviation'],
-            "url": api_reverse('court-detail', [obj.court['slug']]),
-
-        }
-        return return_dict
-
-    def get_jurisdiction(self, obj):
-        return_dict = {
-            "id": obj.jurisdiction['id'],
-            "slug": obj.jurisdiction['slug'],
-            "name": obj.jurisdiction['name'],
-            "name_long": obj.jurisdiction['name_long'],
-            "whitelisted": obj.jurisdiction['whitelisted'],
-            "url": api_reverse('jurisdiction-detail', [obj.jurisdiction['slug']]),
-        }
-        return return_dict
-
-    def get_frontend_url(self, obj):
-        if not hasattr(self, '_frontend_url_base'):
-            CaseDocumentSerializer._frontend_url_base = reverse('cite_home', host='cite').rstrip('/')
-        return self._frontend_url_base + (obj.frontend_url or '')
-
-    def get_url(self, obj):
-        return api_reverse('cases-detail', [obj.id])
-
-    def get_preview(self, obj):
-        if hasattr(obj.meta, 'highlight'):
-            return [ values for field_name in obj.meta.highlight for values in obj.meta.highlight[field_name] ]
-        return []
-
-    def get_decision_date(self, obj):
-        return obj.decision_date_original
 
 class CaseAllowanceMixin:
     """
@@ -202,8 +189,10 @@ class CaseAllowanceMixin:
 
             # pre-fetch IDs of any blacklisted cases in our results that this user has already accessed
             if user.has_tracked_history:
-                instances = self.instance if hasattr(self, 'many') else [self.instance]  # self.many means this is a list view
-                case_ids = [case.id for case in instances if not case.jurisdiction['whitelisted']]
+                if hasattr(self, 'many'):
+                    case_ids = [case["_source"]['id'] for case in self.instance if not case["_source"]['jurisdiction']['whitelisted']]
+                else:
+                    case_ids = [self.instance['id']]
                 allowed_case_ids = set(UserHistory.objects.filter(case_id__in=case_ids, user_id=user.id).values_list('case_id', flat=True).distinct())
                 self.context['allowed_case_ids'] = allowed_case_ids
 
@@ -237,27 +226,25 @@ class ListSerializerWithCaseAllowance(CaseAllowanceMixin, ListSerializer):
 
 
 class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSerializer):
-    casebody = serializers.SerializerMethodField()
-
     class Meta:
         document = CaseDocument
-        fields = CaseDocumentSerializer.Meta.fields + ('casebody',)
         list_serializer_class = ListSerializerWithCaseAllowance
 
-    def get_casebody(self, case, check_permissions=True):
+    def to_representation(self, instance, check_permissions=True):
+        case = super().to_representation(instance)
         request = self.context.get('request')
 
         # check permissions for full-text access to this case
         if not check_permissions:
             status = 'ok'
-        elif 'id' not in case.jurisdiction:
+        elif 'id' not in case['jurisdiction']:
             status = "error_unknown"
-        elif case.jurisdiction['whitelisted']:
+        elif case['jurisdiction']['whitelisted']:
             status = "ok"
         elif request.user.is_anonymous:
             status = "error_auth_required"
-        elif request.user.has_tracked_history and case.id in self.context['allowed_case_ids']:
-            print("allowing %s because of track_history" % case.id)
+        elif request.user.has_tracked_history and case['id'] in self.context['allowed_case_ids']:
+            print("allowing %s because of track_history" % case['id'])
             status = "ok"
         elif request.site_limits.daily_downloads >= request.site_limits.daily_download_limit:
             status = "error_sitewide_limit_exceeded"
@@ -271,18 +258,15 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         # render case
         data = None
         if status == 'ok':
-            body_format = request.query_params.get('body_format', None)
-            if body_format == 'html' or type(request.accepted_renderer) == HTMLRenderer:
-                data = case.casebody_data['html']
-            elif body_format == 'xml' or type(request.accepted_renderer) == XMLRenderer:
-                data = case.casebody_data['xml']
-            else:
-                try:
-                    data = case.casebody_data['text'].to_dict()
-                except AttributeError:
-                    data = case.casebody_data['text']
+            body_format = self.context.get('force_body_format') or request.query_params.get('body_format')
 
-        return {'status': status, 'data': data}
+            if body_format not in ('html', 'xml'):
+                body_format = 'text'
+            source = instance['_source'] if '_source' in instance else instance
+            data = source['casebody_data'][body_format]
+
+        case['casebody'] = {'status': status, 'data': data}
+        return case
 
 
 class VolumeSerializer(serializers.ModelSerializer):
@@ -368,9 +352,9 @@ class CaseExportSerializer(serializers.ModelSerializer):
 
 
 class NoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
-    def get_casebody(self, case):
+    def to_representation(self, instance, check_permissions=False):
         """ Tell get_casebody not to check for case download permissions. """
-        return super().get_casebody(case, check_permissions=False)
+        return super().to_representation(instance, check_permissions=check_permissions)
 
     @property
     def data(self):

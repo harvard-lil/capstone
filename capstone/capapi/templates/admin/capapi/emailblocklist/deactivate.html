@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  {% if account_count %}
+    <p>Are you sure you want to deactivate these accounts?</p>
+    <ul>
+      {% for account in accounts %}
+        <li>{{ account }}</li>
+      {% endfor %}
+    </ul>
+    <form method="post">{% csrf_token %}
+      <div>
+        <input type="hidden" name="post" value="yes">
+        <input type="submit" value="Yes, I'm sure">
+        <a href="../">No, take me back</a>
+      </div>
+    </form>
+  {% else %}
+    <p>No matching accounts are active.</p>
+  {% endif %}
+{% endblock %}

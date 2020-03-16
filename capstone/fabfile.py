@@ -3,6 +3,9 @@ import gzip
 import hashlib
 import os
 import pathlib
+import signal
+import subprocess
+import sys
 from datetime import datetime
 from glob import glob
 import django
@@ -43,6 +46,16 @@ def run_django(port="127.0.0.1:8000"):
     if os.environ.get('DOCKERIZED'):
         port = "0.0.0.0:8000"
     management.call_command('runserver', port)
+
+
+@task
+def run_frontend(port=None):
+    node_proc = subprocess.Popen("npm run serve", shell=True, stdout=sys.stdout, stderr=sys.stderr)
+    try:
+        run_django(port)
+    finally:
+        os.kill(node_proc.pid, signal.SIGKILL)
+
 
 @task
 def test():
@@ -255,6 +268,14 @@ def rebuild_search_index(force=False):
     populate_search_index()
 
 @task
+def update_search_index_settings():
+    """ Update settings on existing index, based on the case_index.settings() call in capapi.documents. """
+    from capapi.documents import case_index
+    # remove settings that cannot be changed on existing indexes
+    new_settings = {k:v for k, v in case_index._settings.items() if k not in ('number_of_shards')}
+    case_index.put_settings(body={"index": new_settings})
+
+@task
 def load_test_data():
     ingest_fixtures()
     total_sync_with_s3()
@@ -277,7 +298,7 @@ def bag_jurisdiction(name):
 
 @task
 def bag_reporter(reporter_id):
-    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
+    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_reporter:137 """
     export.export_cases_by_reporter.delay(reporter_id)
 
 @task
@@ -1043,9 +1064,11 @@ def check_existing_emails():
 @task
 def download_pdfs(jurisdiction=None):
     """
-        Download all PDFs, or all for a jurisdiction, to download_files_storage.
+        Download all PDFs, or all for a jurisdiction, to writeable_download_files_storage.
+        Locally, this is the same as download_files_storage, but will differ in production,
+        as we're using a read-only overlay to expose the files.
     """
-    from capdb.storages import pdf_storage, download_files_storage
+    from capdb.storages import pdf_storage, writeable_download_files_storage
     from pathlib import Path
     import re
 
@@ -1076,7 +1099,7 @@ def download_pdfs(jurisdiction=None):
             new_name = new_name_prefix + (' %s' % chr(97+i) if i else '') + '.pdf'
             new_name = new_name.replace('..', '.')  # avoid double period in '1 Mass..pdf'
             new_path = Path('PDFs', open_or_restricted, jurisdiction.name_long, reporter.short_name, new_name)
-            if not download_files_storage.exists(str(new_path)):
+            if not writeable_download_files_storage.exists(str(new_path)):
                 break
         else:
             raise Exception("Failed to find a non-existent path for %s" % new_path)
@@ -1084,7 +1107,7 @@ def download_pdfs(jurisdiction=None):
         try:
             # copy file
             try:
-                copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=download_files_storage)
+                copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=writeable_download_files_storage)
             except IOError:
                 print("  - ERROR: source file not found")
                 continue
@@ -1095,7 +1118,7 @@ def download_pdfs(jurisdiction=None):
             print("  - Downloaded to %s" % new_path)
         except:
             # clean up partial downloads if process is killed
-            download_files_storage.delete(new_path)
+            writeable_download_files_storage.delete(str(new_path))
             raise
 
 

@@ -15,7 +15,6 @@ from capdb.models import Jurisdiction, Reporter, CaseExport
 from scripts.helpers import HashingFile
 
 
-
 def export_all(before_date=None):
     """
         Queue celery tasks to export all jurisdictions and reporters.
@@ -36,7 +35,7 @@ def export_cases_by_jurisdiction(id):
         Write a .jsonl.gz file with all cases for jurisdiction.
     """
     jurisdiction = Jurisdiction.objects.get(pk=id)
-    cases = CaseDocument.search().filter("term", jurisdiction__id=id)
+    cases = CaseDocument.raw_search().filter("term", jurisdiction__id=id)
     if cases.count() == 0:
         print("WARNING: Jurisdiction '{}' contains NO CASES.".format(jurisdiction.name))
         return
@@ -49,7 +48,7 @@ def export_cases_by_reporter(id):
         Write a .jsonl.gz file with all cases for reporter.
     """
     reporter = Reporter.objects.get(pk=id)
-    cases = CaseDocument.search().filter("term", reporter__id=id)
+    cases = CaseDocument.raw_search().filter("term", reporter__id=id)
     if cases.count() == 0:
         print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
         return
@@ -66,6 +65,7 @@ def try_to_close(file_handle):
             file_handle.close()
         except Exception:
             pass
+
 
 def export_case_documents(cases, dir_name, filter_item, public=False):
     """
@@ -112,8 +112,7 @@ def export_case_documents(cases, dir_name, filter_item, public=False):
         # write each case
         for item in cases.scan():
             for format_name, vars in formats.items():
-                serializer = NoLoginCaseDocumentSerializer(item, context={'request': vars['fake_request']})
-
+                serializer = NoLoginCaseDocumentSerializer(item['_source'], context={'request': vars['fake_request']})
                 vars['compressed_data_file'].write(bytes(json.dumps(serializer.data), 'utf8'))
                 vars['compressed_data_file'].write(b'\n')
 

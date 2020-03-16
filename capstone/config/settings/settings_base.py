@@ -90,8 +90,8 @@ MIDDLEWARE = [
     # - WhiteNoiseMiddleware, because whitenoise already sets cache headers on static assets
     'capapi.middleware.cache_header_middleware',
 
+    'capapi.middleware.GZipJsonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # custom CommonMiddleware for adding CORS header in API
     'capapi.middleware.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'capapi.middleware.AuthenticationMiddleware',
@@ -428,6 +428,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'downloads'),
             'base_url': 'http://case.test:8000/download/',
         }
+    },
+    'writeable_download_files_storage': {
+        'class': 'CapFileStorage',
+        'kwargs': {
+            'location': os.path.join(BASE_DIR, 'downloads'),
+        }
     }
 }
 
@@ -628,6 +634,7 @@ MAINTAIN_ELASTICSEARCH_INDEX = True  # whether to update index when changing cas
 ELASTICSEARCH_INDEXES={
     'cases_endpoint': 'cases',
 }
+MAX_PAGE_SIZE = 10000
 
 # for views decorated with @password_protected_page('some_key')
 PASSWORD_PROTECTED_PAGES = {
