@@ -22,7 +22,7 @@ from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
-from capdb.models import Citation
+from capdb.models import Citation, normalize_cite
 from capdb.storages import ngram_kv_store_ro
 from user_data.models import UserHistory
 
@@ -82,7 +82,7 @@ class CAPFiltering(FilteringFilterBackend):
                     raise exceptions.ParseError('Invalid date format: must be YYYY-MM-DD')
 
         if 'cite' in query_params:
-            query_params['cite']['values'] = [Citation.normalize_cite(cite) for cite in
+            query_params['cite']['values'] = [normalize_cite(cite) for cite in
                                               lc_values(query_params['cite']['values']) ]
 
         if 'court_id' in query_params:
@@ -405,7 +405,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         # we redirect to /cases/?cite=casecitation
         id = kwargs[self.lookup_field]
         if re.search(r'\D', id):
-            normalized_cite = Citation.normalize_cite(id)
+            normalized_cite = normalize_cite(id)
             query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
             new_url = reverse('cases-list') + "?" + query_string
             return HttpResponseRedirect(new_url)

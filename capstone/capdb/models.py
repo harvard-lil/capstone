@@ -1154,7 +1154,7 @@ class CaseMetadata(models.Model):
         if citations:
             Citation.objects.bulk_create(Citation(
                 cite=citation['text'],
-                normalized_cite=Citation.normalize_cite(citation['text']),
+                normalized_cite=normalize_cite(citation['text']),
                 type=citation['category'],
                 category=citation['type'],
                 duplicative=citation.get('duplicative', False),
@@ -1712,6 +1712,7 @@ class CaseExportQuerySet(models.QuerySet):
             Return only the latest file for each export (based on filter_type, filter_id, body_format)
         """
         return self.extra(where=['id in (SELECT max(id) FROM capdb_caseexport GROUP BY (filter_type, filter_id, body_format))'])
+
 
 class CaseExport(models.Model):
     file_name = models.CharField(max_length=255)
