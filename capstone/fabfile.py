@@ -4,6 +4,7 @@ import hashlib
 import os
 import pathlib
 from datetime import datetime
+from glob import glob
 import django
 import json
 from random import randint
@@ -1123,6 +1124,17 @@ def populate_case_page_order():
 def extract_all_citations(last_run_before=None):
     """ extract citations """
     tasks.run_task_for_volumes(tasks.extract_citations_per_vol, last_run_before=last_run_before)
+
+    # concatenate all citations into one big file
+    def concat_and_remove_file(smallfile):
+        with open("/tmp/missed_citations.csv", "a+") as extracted_citations_file:
+            writer = csv.writer(extracted_citations_file)
+            with open(smallfile) as f:
+                reader = csv.reader(f)
+                [writer.writerow(row) for row in reader]
+            os.remove(smallfile)
+
+    [concat_and_remove_file(f) for f in glob('/tmp/missed_citations-*.csv')]
 
 
 if __name__ == "__main__":

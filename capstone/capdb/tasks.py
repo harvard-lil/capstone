@@ -1,5 +1,6 @@
 import re
 import csv
+import json
 from copy import copy
 from datetime import datetime
 from time import sleep
@@ -431,8 +432,8 @@ def extract_citations_per_vol(self, volume_id):
             volume_number_original=c["volume_number_original"],
             page_number_original=c["page_number_original"]) for c in extracted_citations])
 
-    fieldnames = ['case_origin', 'missed_cites_per_case', 'missed_cites']
-    with open("/tmp/missed_citations.csv", "a+") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+    with open("/tmp/missed_citations-%s.csv" % self.request.id, "w+") as f:
+        writer = csv.writer(f)
         for case in citation_misses_per_case:
-            writer.writerow({"case_origin": case, "missed_cites_per_case": len(citation_misses_per_case[case]), "missed_cites": citation_misses_per_case[case]})
+            writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])
+
