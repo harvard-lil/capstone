@@ -82,6 +82,7 @@ class CaseDocumentSerializer(DocumentSerializer):
     citations = serializers.SerializerMethodField()
     preview = serializers.SerializerMethodField()
     decision_date = serializers.SerializerMethodField()
+    citations_included = serializers.SerializerMethodField()
 
     class Meta:
         document = CaseDocument
@@ -90,6 +91,7 @@ class CaseDocumentSerializer(DocumentSerializer):
             'url',
             'name',
             'citations',
+            'citations_included',
             'name_abbreviation',
             'decision_date',
             'docket_number',
@@ -166,6 +168,26 @@ class CaseDocumentSerializer(DocumentSerializer):
 
     def get_decision_date(self, obj):
         return obj.decision_date_original
+
+    def get_citations_included(self, obj):
+        return models.ExtractedCitation.objects.filter(cited_by=obj.id).values_list('cite_original', flat=True)
+
+
+class ExtractedCitationSerializer(serializers.ModelSerializer):
+    cited_by = serializers.HyperlinkedRelatedField(view_name='cases-detail', read_only=True, lookup_field='id')
+
+    class Meta:
+        model = models.ExtractedCitation
+        fields = (
+            'url',
+            'cite_original',
+            'normalized_cite',
+            'cited_by',
+            'reporter_name_original',
+            'volume_number_original',
+            'page_number_original',
+        )
+
 
 class CaseAllowanceMixin:
     """

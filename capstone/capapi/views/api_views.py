@@ -64,6 +64,11 @@ class CitationViewSet(BaseViewSet):
     queryset = models.Citation.objects.order_by('pk')
 
 
+class ExtractedCitationViewSet(BaseViewSet):
+    serializer_class = serializers.ExtractedCitationSerializer
+    queryset = models.ExtractedCitation.objects.order_by('pk')
+
+
 class CAPFiltering(FilteringFilterBackend):
     def get_filter_query_params(self, request, view):
         def lc_values(values):

@@ -68,6 +68,11 @@ class CaseDocument(DocType):
         "normalized_cite": fields.KeywordField(),
     })
 
+    citations_included = fields.ObjectField(properties={
+        "cite_original": fields.KeywordField(),
+        "normalized_cite": fields.KeywordField(),
+    })
+
     jurisdiction = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "slug": fields.KeywordField(),
