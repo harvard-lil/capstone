@@ -2,7 +2,7 @@ import re
 import csv
 import json
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import sleep
 
 from celery import shared_task
@@ -30,10 +30,15 @@ def run_task_for_volumes(task, volumes=None, last_run_before=None, synchronous=F
     if volumes is None:
         volumes = VolumeMetadata.objects.all()
     if last_run_before:
-        volumes = volumes.exclude(**{
-            "task_statuses__%s__has_key" % task.name: "success",
-            "task_statuses__%s__timestamp__gte" % task.name: last_run_before
-        })
+        # find volumes where task has never run, or had an error, or had a success before last_run_before date
+        volumes = volumes.filter(
+            ~Q(task_statuses__has_key=task.name) |
+            Q(**{"task_statuses__%s__has_key" % task.name: "error"}) |
+            Q(**{
+                "task_statuses__%s__has_key" % task.name: "success",
+                "task_statuses__%s__timestamp__lt" % task.name: last_run_before
+            })
+        )
     for volume_id in volumes.values_list('pk', flat=True):
         task.delay(volume_id, **kwargs)
 
@@ -95,6 +100,7 @@ def remove_id_number_in_volume(self, volume_id):
                     replacement[match] = re.sub(r'\d', 'X', match)
             if replacement != case.no_index_redacted:
                 case.no_index_redacted = replacement
+                case.robots_txt_until = timezone.now() + timedelta(days=7)
                 case.save()
 
 

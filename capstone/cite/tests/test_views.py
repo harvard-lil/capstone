@@ -2,6 +2,8 @@ import re
 import json
 from datetime import timedelta
 from pathlib import Path
+
+import mock
 import pytest
 from bs4 import BeautifulSoup
 
@@ -9,7 +11,6 @@ from django.utils import timezone
 
 from capapi.tests.helpers import check_response, is_cached
 from capweb.helpers import reverse
-from capweb import helpers
 
 
 def full_url(document):
@@ -237,10 +238,7 @@ def test_schema_in_case(client, restricted_case, unrestricted_case, elasticsearc
 
 
 @pytest.mark.django_db()
-def test_schema_in_case_as_google_bot(client, restricted_case, monkeypatch, elasticsearch):
-    def mock_is_google_bot(request):
-        return True
-    monkeypatch.setattr(helpers, 'is_google_bot', mock_is_google_bot)
+def test_schema_in_case_as_google_bot(client, restricted_case, elasticsearch):
 
     # our bot has seen too many cases!
     session = client.session
@@ -248,7 +246,8 @@ def test_schema_in_case_as_google_bot(client, restricted_case, monkeypatch, elas
     session.save()
     assert session['case_allowance_remaining'] == 0
 
-    response = client.get(full_url(restricted_case), follow=True)
+    with mock.patch('cite.views.is_google_bot', lambda request: True):
+        response = client.get(full_url(restricted_case), follow=True)
     assert not is_cached(response)
 
     # show cases anyway

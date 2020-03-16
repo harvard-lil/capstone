@@ -1,16 +1,19 @@
 from django_elasticsearch_dsl import Document as DocType, Index, fields
 from django.conf import settings
+from elasticsearch_dsl import Search
 
+from capapi.resources import apply_replacements
 from capdb.models import CaseMetadata
 
-index = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
 
-case = Index(index)
-
-case.settings(
+index_name = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
+case_index = Index(index_name)
+case_index.settings(
     number_of_shards=1,
-    number_of_replicas=0
+    number_of_replicas=0,
+    max_result_window=settings.MAX_PAGE_SIZE+1,  # allow for one extra for pagination
 )
+
 
 def SuggestField():
     """
@@ -23,7 +26,20 @@ def SuggestField():
         }
     )
 
-@case.doc_type
+
+class RawSearch(Search):
+    """
+        Subclass of ElasticSearch DSL's Search object that returns raw dicts from ES, rather than wrapping in an object.
+    """
+    def _get_result(self, hit):
+        return hit
+
+    def execute(self, ignore_cache=False):
+        self._response_class = lambda self, obj: obj
+        return super().execute(ignore_cache)
+
+
+@case_index.doc_type
 class CaseDocument(DocType):
     name_abbreviation = SuggestField()
 
@@ -105,14 +121,17 @@ class CaseDocument(DocType):
 
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
-        return CaseDocument.filter_redacted({
+        return apply_replacements({
             'xml': body.xml,
             'html': body.html,
             'text': body.json,
         }, instance.no_index_redacted)
 
     def prepare_name(self, instance):
-        return CaseDocument.filter_redacted(instance.name, instance.no_index_redacted)
+        return apply_replacements(instance.name, instance.no_index_redacted)
+
+    def prepare_name_abbreviation(self, instance):
+        return apply_replacements(instance.name_abbreviation, instance.no_index_redacted)
 
     class Django:
         model = CaseMetadata
@@ -124,9 +143,6 @@ class CaseDocument(DocType):
         ]
         ignore_signals = True
         auto_refresh = False
-
-    class Index:
-        name = index
 
     def to_dict(self, skip_empty=False):
         # we need to do this until elasticsearch_dsl propagates skip_empty=False to the serialization that happens in
@@ -144,32 +160,15 @@ class CaseDocument(DocType):
     def full_cite(self):
         return "%s, %s%s" % (
             self.name_abbreviation,
-            ", ".join(cite.cite for cite in self.citations),
+            ", ".join(cite.cite for cite in self.citations if cite.type != "vendor"),
             " (%s)" % self.decision_date.year if self.decision_date else ""
         )
 
-    @staticmethod
-    def filter_redacted(item, replacements):
-        """ filters out terms in 'item' with the {'original_text': and 'replacement_text' }
-        >>> CaseDocument.filter_redacted("Hello, what's your name?", {'name': 'game', 'Hello': 'Wow'})
-        "[ Wow ], what's your [ game ]?"
-
-        >>> CaseDocument.filter_redacted({"test": "Hello, what's your name?" }, {'name': 'game', 'Hello': 'Wow'})
-        {'test': "[ Wow ], what's your [ game ]?"}
+    @classmethod
+    def raw_search(cls, *args, **kwargs):
         """
-
-        if not replacements:
-            return item
-
-        if isinstance(item, str):
-            for replacement in replacements.items():
-                item = item.replace(replacement[0], "[ " + replacement[1] + " ]")
-        elif isinstance(item, list):
-            item = [CaseDocument.filter_redacted(inner_item, replacements) for inner_item in item]
-        elif isinstance(item, dict):
-            item = {name: CaseDocument.filter_redacted(inner_item, replacements) for (name, inner_item) in item.items()}
-        elif not item:
-            return item
-        else:
-            raise Exception("Unexpected redaction format")
-        return item
+            Return RawSearch object instead of Search object.
+        """
+        out = super().search(*args, **kwargs)
+        out.__class__ = RawSearch
+        return out

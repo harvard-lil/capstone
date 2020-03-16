@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
 from django.middleware.common import CommonMiddleware as DjangoCommonMiddleware
+from django.middleware.gzip import GZipMiddleware
 from django.utils.cache import patch_cache_control
 
 from .resources import wrap_user
@@ -107,3 +108,16 @@ class CommonMiddleware(DjangoCommonMiddleware):
             response["Access-Control-Allow-Origin"] = "*"
             response["Access-Control-Allow-Headers"] = "Authorization"
         return response
+
+
+### gzip json responses ###
+
+class GZipJsonMiddleware(GZipMiddleware):
+    """
+        Only gzip responses if we are returning json, to reduce the risk of BREACH attacks that might recover CSRF
+        tokens from HTML. See recommendation at https://docs.djangoproject.com/en/2.2/ref/middleware/#module-django.middleware.gzip
+    """
+    def process_response(self, request, response):
+        if response['Content-Type'] != 'application/json':
+            return response
+        return super().process_response(request, response)
