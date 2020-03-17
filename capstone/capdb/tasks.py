@@ -4,6 +4,7 @@ import json
 from copy import copy
 from datetime import datetime, timedelta
 from time import sleep
+from pathlib import Path
 
 from celery import shared_task
 from celery.exceptions import Reject
@@ -392,6 +393,9 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 
 @shared_task(bind=True, acks_late=True)
 def extract_citations_per_vol(self, volume_id):
+    missed_citations_dirpath = "/tmp/missed_citations"
+    Path(missed_citations_dirpath).mkdir(exist_ok=True)
+
     smallint_max = 32767
     regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
     regex_filter = Q(body_cache__text__regex=regex)
@@ -438,7 +442,7 @@ def extract_citations_per_vol(self, volume_id):
             volume_number_original=c["volume_number_original"],
             page_number_original=c["page_number_original"]) for c in extracted_citations])
 
-    with open("/tmp/missed_citations-%s.csv" % self.request.id, "w+") as f:
+    with open("%s/missed_citations-%s.csv" % (missed_citations_dirpath, self.request.id), "w+") as f:
         writer = csv.writer(f)
         for case in citation_misses_per_case:
             writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])
