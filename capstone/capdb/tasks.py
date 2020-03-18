@@ -1,8 +1,10 @@
 import re
 import csv
+import json
 from copy import copy
 from datetime import datetime, timedelta
 from time import sleep
+from pathlib import Path
 
 from celery import shared_task
 from celery.exceptions import Reject
@@ -391,12 +393,16 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 
 @shared_task(bind=True, acks_late=True)
 def extract_citations_per_vol(self, volume_id):
+    missed_citations_dirpath = "/tmp/missed_citations"
+    Path(missed_citations_dirpath).mkdir(exist_ok=True)
+
     smallint_max = 32767
     regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
     regex_filter = Q(body_cache__text__regex=regex)
-    cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id)
+    cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id, in_scope=True)
              .select_related('body_cache')
              .only('body_cache__text'))
+
     with record_task_status_for_volume(self, volume_id):
         # remove all extracted citations in volume before recreating
         ExtractedCitation.objects.filter(cited_by__volume_id=volume_id).delete()
@@ -430,13 +436,14 @@ def extract_citations_per_vol(self, volume_id):
 
         ExtractedCitation.objects.bulk_create([ExtractedCitation(
             cite_original=c["cite_original"],
+            normalized_cite=normalize_cite(c["cite_original"]),
             cited_by=c["cited_by"],
             reporter_name_original=c["reporter_name_original"],
             volume_number_original=c["volume_number_original"],
             page_number_original=c["page_number_original"]) for c in extracted_citations])
 
-    fieldnames = ['case_origin', 'missed_cites_per_case', 'missed_cites']
-    with open("/tmp/missed_citations.csv", "a+") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+    with open("%s/missed_citations-%s.csv" % (missed_citations_dirpath, self.request.id), "w+") as f:
+        writer = csv.writer(f)
         for case in citation_misses_per_case:
-            writer.writerow({"case_origin": case, "missed_cites_per_case": len(citation_misses_per_case[case]), "missed_cites": citation_misses_per_case[case]})
+            writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])
+

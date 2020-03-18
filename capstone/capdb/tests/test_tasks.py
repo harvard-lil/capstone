@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 import bagit
 import zipfile
+from glob import glob
 import os
 import csv
 import gzip
@@ -251,11 +252,21 @@ def test_extract_citations(case_factory):
     citation = ExtractedCitation.objects.get(cite_original=legitimate_cite)
     assert citation
     assert citation.cited_by == case
-
     citations_do_not_exist = ExtractedCitation.objects.filter(cite_original=illegitimate_cite)
     assert len(citations_do_not_exist) == 0
-    with open("/tmp/missed_citations.csv") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            assert row['case_origin'] == case.id
-            assert row['missed_cites'] == illegitimate_cite
+    results = []
+
+    missed_citations_files = glob("/tmp/missed_citations/missed_citations-*.csv")
+    for missed_file in missed_citations_files:
+        with open(missed_file) as f:
+            reader = csv.reader(f)
+            for row in reader:
+                results.append(row)
+
+    # one missed citation found
+    assert len(results) == 1
+    assert results[0][0] == str(case.id)
+
+    # check fake reporter recorded
+    missed_citation = json.loads(results[0][2])
+    assert missed_citation['Dogs'] == 1

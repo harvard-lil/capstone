@@ -210,7 +210,7 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
                     raise ParseError('Invalid date format: must be YYYY-MM-DD')
 
         if 'cite' in query_params:
-            query_params['cite']['values'] = [models.Citation.normalize_cite(cite) for cite in
+            query_params['cite']['values'] = [models.normalize_cite(cite) for cite in
                                               lc_values(query_params['cite']['values']) ]
 
         if 'court_id' in query_params:
