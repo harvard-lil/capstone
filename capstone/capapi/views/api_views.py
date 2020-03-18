@@ -21,7 +21,6 @@ from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
-from capdb.models import Citation, CaseMetadata
 from capdb.storages import ngram_kv_store_ro
 from user_data.models import UserHistory
 
@@ -217,14 +216,14 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         # we redirect to /cases/?cite=casecitation
         id = kwargs[self.lookup_field]
         if re.search(r'\D', id):
-            normalized_cite = Citation.normalize_cite(id)
+            normalized_cite = models.normalize_cite(id)
             query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
             new_url = reverse('cases-list') + "?" + query_string
             return HttpResponseRedirect(new_url)
 
         # if previously-supported format=html is requested, redirect to frontend_url
         if self.request.query_params.get('format') == 'html':
-            case = CaseMetadata.objects.filter(id=id).first()
+            case = models.CaseMetadata.objects.filter(id=id).first()
             if case:
                 return HttpResponseRedirect(case.get_full_frontend_url())
 

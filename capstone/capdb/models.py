@@ -1658,7 +1658,7 @@ class PageXML(BaseXMLModel):
 
 
 class ExtractedCitation(models.Model):
-    cite_original = models.CharField(max_length=10000, db_index=True)
+    cite_original = models.CharField(max_length=10000)
     cited_by = models.ForeignKey(CaseMetadata, related_name='extractedcitations', on_delete=models.DO_NOTHING)
     reporter_name_original = models.CharField(max_length=200)
     volume_number_original = models.CharField(max_length=64, blank=True, null=True)
