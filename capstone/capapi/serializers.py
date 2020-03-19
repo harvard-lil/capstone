@@ -157,6 +157,7 @@ class CaseDocumentSerializer(DocumentSerializer):
                 "whitelisted": s["jurisdiction"]["whitelisted"],
                 "name": s["jurisdiction"]["name"],
             }),
+            ("citations_included", [c["cite_original"] for c in s["extractedcitations"]]),
             ("frontend_url", self._url_templates['frontend_url'] % s["frontend_url"]),
             ("preview", preview),
         ))

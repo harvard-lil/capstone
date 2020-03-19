@@ -84,7 +84,7 @@ class CaseDocument(DocType):
         "normalized_cite": fields.KeywordField(),
     })
 
-    citations_included = fields.ObjectField(properties={
+    extractedcitations = fields.ObjectField(properties={
         "cite_original": fields.KeywordField(),
         "normalized_cite": fields.KeywordField(),
     })
@@ -155,6 +155,7 @@ class CaseDocument(DocType):
         doc['jurisdiction'] = self.jurisdiction.to_dict(skip_empty=skip_empty)
         doc['casebody_data']['text'] = self.casebody_data.text.to_dict(skip_empty=skip_empty)
         doc['casebody_data']['text']['opinions'] = [ op.to_dict(skip_empty=skip_empty) for op in self.casebody_data['text'].opinions ]
+        doc['citations_included'] = self.extractedcitations
         return doc
 
     def full_cite(self):
