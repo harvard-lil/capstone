@@ -273,6 +273,11 @@ class CaseExportViewSet(BaseViewSet):
         return response
 
 
+class ExtractedCitationViewSet(BaseViewSet):
+    serializer_class = serializers.ExtractedCitationSerializer
+    queryset = models.ExtractedCitation.objects.order_by('pk')
+
+
 class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     http_method_names = ['get']
     filterset_class = filters.NgramFilter
