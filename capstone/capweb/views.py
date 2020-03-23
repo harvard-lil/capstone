@@ -300,7 +300,7 @@ def download_files(request, filepath=""):
     # file requested
     if download_files_storage.isfile(filepath):
 
-        if True: #not allow_downloads:
+        if not allow_downloads:
             context = {
                 "filename": filepath,
                 "error": mark_safe("If you believe you should have access to this file, "
