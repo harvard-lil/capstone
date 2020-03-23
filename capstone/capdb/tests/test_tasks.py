@@ -249,10 +249,10 @@ def test_extract_citations(case_factory):
     case.save()
     fabfile.extract_all_citations()
     case.refresh_from_db()
-    citation = ExtractedCitation.objects.get(cite_original=legitimate_cite)
+    citation = ExtractedCitation.objects.get(cite=legitimate_cite)
     assert citation
     assert citation.cited_by == case
-    citations_do_not_exist = ExtractedCitation.objects.filter(cite_original=illegitimate_cite)
+    citations_do_not_exist = ExtractedCitation.objects.filter(cite=illegitimate_cite)
     assert len(citations_do_not_exist) == 0
     results = []
 

@@ -69,7 +69,7 @@ class ExtractedCitationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.ExtractedCitation
-        fields = ('id', 'cite_original', 'cited_by')
+        fields = ('id', 'cite', 'cited_by')
 
 
 class JurisdictionSerializer(serializers.ModelSerializer):
@@ -157,7 +157,7 @@ class CaseDocumentSerializer(DocumentSerializer):
                 "whitelisted": s["jurisdiction"]["whitelisted"],
                 "name": s["jurisdiction"]["name"],
             }),
-            ("citations_included", [c["cite_original"] for c in s["extractedcitations"]]),
+            ("cites_to", [{"cite": c["cite"]} for c in s["extractedcitations"]]),
             ("frontend_url", self._url_templates['frontend_url'] % s["frontend_url"]),
             ("preview", preview),
         ))

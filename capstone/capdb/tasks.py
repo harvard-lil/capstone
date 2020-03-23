@@ -427,7 +427,7 @@ def extract_citations_per_vol(self, volume_id):
                     continue
 
                 extracted_citations.append({
-                    "cite_original": " ".join(match),
+                    "cite": " ".join(match),
                     "cited_by": case,
                     "reporter_name_original": reporter_str,
                     "volume_number_original": vol_num,
@@ -435,8 +435,8 @@ def extract_citations_per_vol(self, volume_id):
             citation_misses_per_case[case.id] = dict(Counter(misses))
 
         ExtractedCitation.objects.bulk_create([ExtractedCitation(
-            cite_original=c["cite_original"],
-            normalized_cite=normalize_cite(c["cite_original"]),
+            cite=c["cite"],
+            normalized_cite=normalize_cite(c["cite"]),
             cited_by=c["cited_by"],
             reporter_name_original=c["reporter_name_original"],
             volume_number_original=c["volume_number_original"],
