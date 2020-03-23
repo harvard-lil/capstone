@@ -10,7 +10,6 @@
 {% block top_section_style %}bg-black{% endblock %}
 
 {% block explainer %}
-{% autoescape off %}
   <div class="middle-text">{{ middle }}</div>
   <div class="bottom-text">
     {{ bottom }}
@@ -18,5 +17,4 @@
   <div class="action-text">
     {{ action }}
   <div>
-{% endautoescape %}
 {% endblock %}
