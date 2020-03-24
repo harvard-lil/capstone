@@ -135,8 +135,8 @@ def user_details(request):
     request.user.update_case_allowance()
     context = {
         'page_name': 'user-details',
-        'research_contract': request.user.research_contracts.first(),
-        'research_request': request.user.research_requests.first(),
+        'research_contract': request.user.research_contracts.filter(status='pending').first(),
+        'research_request': request.user.research_requests.filter(status='pending').first(),
     }
     return render(request, 'registration/user-details.html', context)
 
