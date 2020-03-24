@@ -386,3 +386,14 @@ class CaseExportFactory(factory.DjangoModelFactory):
     public = True
     filter_type = 'jurisdiction'
     filter_id = factory.LazyAttribute(lambda o: JurisdictionFactory.create().pk)
+
+
+@register
+class ExtractedCitationFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = ExtractedCitation
+
+    cite = factory.LazyAttribute(lambda o: "%s U.S. %s" % (random.randint(1,999), random.randint(1, 999)))
+    cited_by = factory.SubFactory(CaseFactory)
+
+

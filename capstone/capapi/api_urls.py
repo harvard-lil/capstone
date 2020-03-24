@@ -9,7 +9,6 @@ from capapi.views import api_views
 
 router = routers.DefaultRouter()
 router.register('cases', api_views.CaseDocumentViewSet, basename="cases")
-router.register('citations', api_views.CitationViewSet)
 router.register('jurisdictions', api_views.JurisdictionViewSet)
 router.register('courts', api_views.CourtViewSet)
 router.register('volumes', api_views.VolumeViewSet)

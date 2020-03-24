@@ -555,6 +555,9 @@ and result counts.
       "name_long": <span class="json-data-type"><a href="#def-string">(string)</a></span>,
       "whitelisted": <span class="json-data-type">"true" or "false"</span>
   },
+  "cites_to": [
+     {"cite": <span class="json-data-type"><a href="#def-string">(string)</a></span>},
+  ]
   <span class="code-example-casebody-section">
   "casebody": {
       "data": {
@@ -830,10 +833,10 @@ cases were indexed for California in 1984, and *raisins* shows up in *1* of thos
 Citations
 {: class="topic-header", id="endpoint-citations" }
 
-[{% api_url "citation-list" %}]({% api_url "citation-list" %}){: class="endpoint-link" }
+[{% api_url "extractedcitation-list" %}]({% api_url "extractedcitation-list" %}){: class="endpoint-link" }
 {: class="endpoint-link" style="margin-top: 0px;" }
 
-This will return a list of citations.
+This will return a list of citations that cases have cited to.
       
 Endpoint Parameters:
 {: class="list-header mb-2" }

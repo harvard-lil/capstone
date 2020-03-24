@@ -57,11 +57,6 @@ class CourtViewSet(BaseViewSet):
     lookup_field = 'slug'
 
 
-class CitationViewSet(BaseViewSet):
-    serializer_class = serializers.CitationWithCaseSerializer
-    queryset = models.Citation.objects.order_by('pk')
-
-
 class CaseDocumentViewSet(BaseDocumentViewSet):
     """The CaseDocument view."""
 
