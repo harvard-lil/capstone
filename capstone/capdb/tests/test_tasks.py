@@ -277,5 +277,5 @@ def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_asser
     for case in three_cases:
         case.volume = volume_metadata
         case.save()
-    with django_assert_num_queries(select=2, update=2):
+    with django_assert_num_queries(select=2, update=1):
         update_elasticsearch_for_vol(volume_metadata.barcode)

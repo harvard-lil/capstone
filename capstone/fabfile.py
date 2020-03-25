@@ -1122,6 +1122,22 @@ def download_pdfs(jurisdiction=None):
 
 
 @task
+def unredact_out_of_copyright_volumes(dry_run='true'):
+    from django.utils import timezone
+    key = None
+    if dry_run == 'false':
+        key = input("Enter decryption key: ").strip()
+    volumes = (VolumeMetadata.objects
+        .filter(out_of_scope=False, redacted=True, publication_year__lt=timezone.now().year-95)
+        .select_related('reporter')
+        .order_by('publication_year', 'volume_number'))
+    for volume in volumes:
+        print("Unredacting %s %s (%s)" % (volume.volume_number, volume.reporter.short_name, volume.publication_year))
+        if dry_run == 'false':
+            volume.unredact(key)
+
+
+@task
 def populate_case_page_order():
     """
         Set all CaseMetadata.first_page_order and .last_page_order values based on PageStructure.

@@ -133,7 +133,6 @@ def update_elasticsearch_for_vol(self, volume_id):
         for i in range(10):
             try:
                 CaseDocument().update(cases)
-                VolumeMetadata.objects.filter(pk=volume_id).update(last_es_index=timezone.now())
                 return
             except (ElasticsearchException, ReadTimeoutError) as e:
                 if i == 9:

@@ -8,8 +8,7 @@ from capdb.tasks import retrieve_images_from_cases
 from scripts.helpers import parse_xml
 
 
-### helpers ###
-
+### test our model helpers ###
 
 @pytest.mark.django_db
 def test_fetch_relations(case, court, django_assert_num_queries):
@@ -42,6 +41,88 @@ def test_fetch_relations(case, court, django_assert_num_queries):
     with django_assert_num_queries():
         assert case.court == court
         assert case.court.jurisdiction
+
+
+### VolumeMetadata ###
+
+@pytest.mark.django_db
+def test_volume_save_slug_update(volume_metadata):
+    original_volume_number = volume_metadata.volume_number
+    volume_metadata.volume_number = "77777"
+    volume_metadata.save(update_volume_number_slug=False)
+    volume_metadata.refresh_from_db()
+
+    assert volume_metadata.volume_number != original_volume_number
+    assert slugify(volume_metadata.volume_number) != volume_metadata.volume_number_slug
+
+    volume_metadata.volume_number = "88888"
+    volume_metadata.save()
+    volume_metadata.refresh_from_db()
+
+    assert volume_metadata.volume_number == "88888"
+    assert slugify(volume_metadata.volume_number) == volume_metadata.volume_number_slug
+
+
+@pytest.mark.django_db
+def test_volume_unredact(case_factory):
+    # set up a redacted case
+    case = case_factory(volume__redacted=True, volume__pdf_file='')
+    structure = case.structure
+    page = structure.pages.first()
+    structure.opinions = [
+        # redacted paragraph
+        {
+            'type': 'head',
+            'paragraphs': [
+                {'class': 'parties', 'block_ids': ['BL_1.1'], 'id': 'b1-1', 'redacted': True}
+            ],
+        }, {
+            'type': 'majority',
+            'paragraphs': [
+                # redacted content blocks
+                {'class': 'p', 'block_ids': ['BL_1.2', 'BL_1.3'], 'id': 'b1-2'},
+                # redacted image block
+                {'class': 'image', 'block_ids': ['BL_1.4'], 'id': 'b1-3'},
+            ],
+            # redacted footnote
+            'footnotes': [
+                {
+                    # redacted footnote paragraph
+                    'paragraphs': [
+                        {'class': 'p', 'block_ids': ['BL_1.5'], 'id': 'b1-4'}
+                    ],
+                    'label': '1',
+                    'id': 'footnote_1_1',
+                    'redacted': True,
+                }
+            ],
+        }
+    ]
+    structure.save()
+    page.blocks = [
+        {"id": "BL_1.1", "class": "p", "tokens": ["Text 1"]},
+        {"id": "BL_1.2", "class": "p", "tokens": ["Text 2"], "redacted": True},
+        {"id": "BL_1.3", "class": "p", "tokens": [["redact"], "Text 3", ["/redact"]]},
+        {"id": "BL_1.4", "format": "image", "redacted": True, "class": "image", "data": "image data", "rect": [0, 0, 100, 100]},
+        {"id": "BL_1.5", "class": "p", "tokens": ["Text 4"]},
+    ]
+    page.encrypt()
+    page.save()
+
+    # verify redacted case contents
+    case.sync_case_body_cache()
+    case.refresh_from_db()
+    assert case.body_cache.text == '\n\n'
+    assert 'src="data:image data"' not in case.body_cache.html
+
+    # unredact
+    volume = case.volume
+    volume.unredact()
+    volume.refresh_from_db()
+    case.body_cache.refresh_from_db()
+    assert volume.redacted is False
+    assert case.body_cache.text == 'Text 1\nText 2Text 3\n1\nText 4\n'
+    assert 'src="data:image data"' in case.body_cache.html
 
 
 
@@ -170,7 +251,8 @@ def test_reorder_head_matter(case_xml):
         </opinion>
     """, flags=re.S)
 
-# EditLog and EditLogTransaction
+
+### EditLog and EditLogTransaction ###
 
 @pytest.mark.django_db
 def test_data_edit(volume_metadata):
@@ -182,6 +264,8 @@ def test_data_edit(volume_metadata):
     volume_metadata.refresh_from_db()
     assert transactions[0].timestamp == volume_metadata.sys_period.lower
 
+
+### CaseImage ###
 
 @pytest.mark.django_db
 def test_retrieve_and_store_images(case, inline_image_src, django_assert_num_queries):
@@ -199,22 +283,3 @@ def test_retrieve_and_store_images(case, inline_image_src, django_assert_num_que
     with django_assert_num_queries(select=3, update=2):
         retrieve_images_from_cases(case.volume_id)
     assert CaseImage.objects.count() == 1
-
-
-@pytest.mark.django_db
-def test_volume_save_slug_update(case):
-    original_volume_number = case.volume.volume_number
-    case.volume.volume_number = "77777"
-    case.volume.save(update_volume_number_slug=False)
-    case.volume.refresh_from_db()
-
-    assert case.volume.volume_number != original_volume_number
-    assert slugify(case.volume.volume_number) != case.volume.volume_number_slug
-
-    case.volume.volume_number = "88888"
-    case.volume.save()
-    case.volume.refresh_from_db()
-
-    assert case.volume.volume_number == "88888"
-    assert slugify(case.volume.volume_number) == case.volume.volume_number_slug
-
