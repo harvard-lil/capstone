@@ -64,6 +64,14 @@ class CitationWithCaseSerializer(CitationSerializer):
         fields = CitationSerializer.Meta.fields + ('case_id', 'case_url')
 
 
+class ExtractedCitationSerializer(serializers.ModelSerializer):
+    cited_by = serializers.HyperlinkedRelatedField(view_name='cases-detail', read_only=True, lookup_field='id')
+
+    class Meta:
+        model = models.ExtractedCitation
+        fields = ('id', 'cite', 'cited_by')
+
+
 class JurisdictionSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="jurisdiction-detail",
@@ -149,6 +157,7 @@ class CaseDocumentSerializer(DocumentSerializer):
                 "whitelisted": s["jurisdiction"]["whitelisted"],
                 "name": s["jurisdiction"]["name"],
             }),
+            ("cites_to", [{"cite": c["cite"]} for c in s["extractedcitations"]]),
             ("frontend_url", self._url_templates['frontend_url'] % s["frontend_url"]),
             ("preview", preview),
         ))

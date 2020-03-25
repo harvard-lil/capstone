@@ -1,5 +1,4 @@
 import pytest
-import re
 from rest_framework.request import Request
 
 from capapi import serializers
@@ -28,15 +27,11 @@ def test_CaseDocumentSerializerWithCasebody(api_request_factory, case_factory, e
 
 
 @pytest.mark.django_db
-def test_CitationSerializer(api_request_factory, case_metadata):
-    request = api_request_factory.get(api_reverse("citation-list"))
+def test_ExtractedCitationSerializer(api_request_factory, extracted_citation_factory):
+    extractedcitation = extracted_citation_factory()
+    request = api_request_factory.get(api_reverse("extractedcitation-list"))
     serializer_context = {'request': Request(request)}
 
-    serialized = serializers.CitationWithCaseSerializer(case_metadata.citations.first(), context=serializer_context)
-
-    url_pattern = api_reverse("cases-list") + str(case_metadata.pk) + '/'
-    assert re.match(url_pattern, serialized.data['case_url'])
-
-    assert case_metadata.citations.first().type == serialized.data['type']
-    assert case_metadata.citations.first().cite == serialized.data['cite']
-    assert 'normalized_cite' not in serialized.data
+    serialized = serializers.ExtractedCitationSerializer(extractedcitation, context=serializer_context)
+    assert 'cite' in serialized.data
+    assert serialized.data.get('cite') == extractedcitation.cite

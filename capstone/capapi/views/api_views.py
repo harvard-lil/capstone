@@ -57,11 +57,6 @@ class CourtViewSet(BaseViewSet):
     lookup_field = 'slug'
 
 
-class CitationViewSet(BaseViewSet):
-    serializer_class = serializers.CitationWithCaseSerializer
-    queryset = models.Citation.objects.order_by('pk')
-
-
 class CaseDocumentViewSet(BaseDocumentViewSet):
     """The CaseDocument view."""
 
@@ -271,6 +266,11 @@ class CaseExportViewSet(BaseViewSet):
             add_cache_header(response)
 
         return response
+
+
+class ExtractedCitationViewSet(BaseViewSet):
+    serializer_class = serializers.ExtractedCitationSerializer
+    queryset = models.ExtractedCitation.objects.order_by('pk')
 
 
 class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):

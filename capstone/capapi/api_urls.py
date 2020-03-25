@@ -9,7 +9,6 @@ from capapi.views import api_views
 
 router = routers.DefaultRouter()
 router.register('cases', api_views.CaseDocumentViewSet, basename="cases")
-router.register('citations', api_views.CitationViewSet)
 router.register('jurisdictions', api_views.JurisdictionViewSet)
 router.register('courts', api_views.CourtViewSet)
 router.register('volumes', api_views.VolumeViewSet)
@@ -17,6 +16,7 @@ router.register('reporters', api_views.ReporterViewSet)
 router.register('bulk', api_views.CaseExportViewSet)
 router.register('ngrams', api_views.NgramViewSet, basename='ngrams')
 router.register('user_history', api_views.UserHistoryViewSet)
+router.register('citations', api_views.ExtractedCitationViewSet)
 
 schema_view = get_schema_view(
     openapi.Info(

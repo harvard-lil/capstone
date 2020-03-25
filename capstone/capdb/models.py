@@ -1658,7 +1658,7 @@ class PageXML(BaseXMLModel):
 
 
 class ExtractedCitation(models.Model):
-    cite_original = models.CharField(max_length=10000)
+    cite = models.CharField(max_length=10000)
     cited_by = models.ForeignKey(CaseMetadata, related_name='extractedcitations', on_delete=models.DO_NOTHING)
     reporter_name_original = models.CharField(max_length=200)
     volume_number_original = models.CharField(max_length=64, blank=True, null=True)
@@ -1666,10 +1666,10 @@ class ExtractedCitation(models.Model):
     normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
 
     def __str__(self):
-        return self.cite_original
+        return self.cite
 
     def save(self, *args, **kwargs):
-        self.normalized_cite = normalize_cite(self.cite_original)
+        self.normalized_cite = normalize_cite(self.cite)
         return super(ExtractedCitation, self).save(*args, **kwargs)
 
 
