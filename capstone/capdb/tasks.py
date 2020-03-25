@@ -122,10 +122,11 @@ def update_elasticsearch_for_vol(self, volume_id):
     with record_task_status_for_volume(self, volume_id):
         # fetch cases
         cases = (CaseMetadata.objects
-            .in_scope()
-            .filter(volume_id=volume_id)
-            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache')
-            .exclude(body_cache=None))
+                 .filter(volume_id=volume_id)
+                 .in_scope()
+                 .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache')
+                 .prefetch_related('extractedcitations')
+                 .exclude(body_cache=None))
 
         # attempt to store 10 times, with linearly increasing backoff. this gives time for the bulk queue to be processed
         # if necessary (in which case we'll get BulkIndexError with error 429, too many requests).

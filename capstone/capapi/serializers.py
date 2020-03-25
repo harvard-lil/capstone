@@ -122,6 +122,9 @@ class CaseDocumentSerializer(DocumentSerializer):
             s = instance
             preview = []
 
+        # TODO: remove check for "extractedcitations" key after ES index has been created
+        extractedcitations = [{"cite": c["cite"]} for c in s["extractedcitations"]] if "extractedcitations" in s else []
+
         return OrderedDict((
             ("id", s["id"]),
             ("url", self._url_templates['case_url'] % s["id"]),
@@ -157,7 +160,7 @@ class CaseDocumentSerializer(DocumentSerializer):
                 "whitelisted": s["jurisdiction"]["whitelisted"],
                 "name": s["jurisdiction"]["name"],
             }),
-            ("cites_to", [{"cite": c["cite"]} for c in s["extractedcitations"]]),
+            ("cites_to", extractedcitations),
             ("frontend_url", self._url_templates['frontend_url'] % s["frontend_url"]),
             ("preview", preview),
         ))
