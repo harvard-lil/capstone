@@ -248,11 +248,11 @@ class PageStructureFactory(factory.DjangoModelFactory):
             "tokens": [
                 ["line", {"rect": [267, 1320, 711, 38]}],
                 ["font", {"id": 1}],
-                ["ocr", {"wc": 1.0, "rect": [267, 1320, 62, 30]}], "Case text", ["/ocr"],
+                ["ocr", {"wc": 1.0, "rect": [267, 1320, 62, 30]}], "Case text %s" % i, ["/ocr"],
                 ["/font"],
                 ["/line"]
             ]
-        } for id in ["BL_81.3", "BL_83.6", "BL_83.16"]
+        } for i, id in enumerate(["BL_81.3", "BL_83.6", "BL_83.16"])
     ]
     font_names = {"1": "Style_1"}
 
