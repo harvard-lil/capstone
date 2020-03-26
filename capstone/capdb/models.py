@@ -1016,6 +1016,8 @@ class CaseMetadata(models.Model):
         self.sync_case_body_cache()
 
     def update_search_index(self):
+        if not self.in_scope:
+            return
         from capapi.documents import CaseDocument  # local to avoid circular import
         CaseDocument().update(self)
 
@@ -1072,6 +1074,8 @@ class CaseMetadata(models.Model):
         except CaseBodyCache.DoesNotExist:
             CaseBodyCache(metadata=self, **params).save()
         else:
+            for k, v in params.items():
+                setattr(body_cache, k, v)
             CaseBodyCache.objects.filter(id=body_cache.id).update(**params)
 
         if settings.MAINTAIN_ELASTICSEARCH_INDEX:
