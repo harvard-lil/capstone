@@ -11,7 +11,7 @@ from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
-from reporters_db import REPORTERS, VARIATIONS_ONLY
+from reporters_db import EDITIONS, VARIATIONS_ONLY
 from django.db import connections
 from django.db.models import Prefetch, Q
 from django.utils import timezone
@@ -393,17 +393,16 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 
 @shared_task(bind=True, acks_late=True)
 def extract_citations_per_vol(self, volume_id):
-    missed_citations_dirpath = "/tmp/missed_citations"
-    Path(missed_citations_dirpath).mkdir(exist_ok=True)
-
-    smallint_max = 32767
-    regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
-    regex_filter = Q(body_cache__text__regex=regex)
-    cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id, in_scope=True)
-             .select_related('body_cache')
-             .only('body_cache__text'))
-
     with record_task_status_for_volume(self, volume_id):
+        missed_citations_dirpath = "/tmp/missed_citations"
+        Path(missed_citations_dirpath).mkdir(exist_ok=True)
+
+        smallint_max = 32767
+        regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
+        regex_filter = Q(body_cache__text__regex=regex)
+        cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id, in_scope=True)
+                 .select_related('body_cache')
+                 .only('body_cache__text'))
         # remove all extracted citations in volume before recreating
         ExtractedCitation.objects.filter(cited_by__volume_id=volume_id).delete()
 
@@ -417,7 +416,7 @@ def extract_citations_per_vol(self, volume_id):
                 vol_num, reporter_str, page_num = match
 
                 # Look for found reporter string in the official and nominative REPORTER dicts
-                if not (reporter_str in REPORTERS) and not (reporter_str in VARIATIONS_ONLY):
+                if not (reporter_str in EDITIONS) and not (reporter_str in VARIATIONS_ONLY):
                     # reporter not found, removing cite and adding to misses list
                     misses.append(reporter_str)
                     continue
@@ -442,8 +441,8 @@ def extract_citations_per_vol(self, volume_id):
             volume_number_original=c["volume_number_original"],
             page_number_original=c["page_number_original"]) for c in extracted_citations])
 
-    with open("%s/missed_citations-%s.csv" % (missed_citations_dirpath, self.request.id), "w+") as f:
-        writer = csv.writer(f)
-        for case in citation_misses_per_case:
-            writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])
+        with open("%s/missed_citations-%s.csv" % (missed_citations_dirpath, self.request.id), "w+") as f:
+            writer = csv.writer(f)
+            for case in citation_misses_per_case:
+                writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])
 
