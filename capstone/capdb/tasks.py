@@ -11,7 +11,7 @@ from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
-from reporters_db import REPORTERS, VARIATIONS_ONLY
+from reporters_db import EDITIONS, VARIATIONS_ONLY
 from django.db import connections
 from django.db.models import Prefetch, Q
 from django.utils import timezone
@@ -417,7 +417,7 @@ def extract_citations_per_vol(self, volume_id):
                 vol_num, reporter_str, page_num = match
 
                 # Look for found reporter string in the official and nominative REPORTER dicts
-                if not (reporter_str in REPORTERS) and not (reporter_str in VARIATIONS_ONLY):
+                if not (reporter_str in EDITIONS) and not (reporter_str in VARIATIONS_ONLY):
                     # reporter not found, removing cite and adding to misses list
                     misses.append(reporter_str)
                     continue
