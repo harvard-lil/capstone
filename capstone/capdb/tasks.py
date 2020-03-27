@@ -18,6 +18,7 @@ from django.utils import timezone
 from collections import Counter
 
 from capapi.documents import CaseDocument
+from capapi.resources import cite_extracting_regex
 from capdb.models import *
 
 ### HELPERS ###
@@ -399,8 +400,7 @@ def extract_citations_per_vol(self, volume_id):
         Path(missed_citations_dirpath).mkdir(exist_ok=True)
 
         smallint_max = 32767
-        regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
-        regex_filter = Q(body_cache__text__regex=regex)
+        regex_filter = Q(body_cache__text__regex=cite_extracting_regex)
         cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id, in_scope=True)
                  .select_related('body_cache')
                  .only('body_cache__text'))

@@ -5,6 +5,7 @@ import zipfile
 import tempfile
 from wsgiref.util import FileWrapper
 import wrapt
+import re
 
 from django.conf import settings
 from django.core.cache import cache
@@ -21,6 +22,7 @@ from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
 from config.logging import logger
 
+cite_extracting_regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
 
 def create_zip_filename(case_list):
     ts = slugify(datetime.now().timestamp())
@@ -182,3 +184,17 @@ def apply_replacements(item, replacements, prefix="[ ", suffix=" ]"):
     else:
         raise Exception("Unexpected redaction format")
     return item
+
+
+def link_to_cites(case_html, cites):
+    """ links previously matched cites in frontend view
+    >>> link_to_cites("Town of Dayton v. Town of Rutland, 84 Ill. 279, Rutland v. Dayton, 60 Ill. 58", [{'cite': '84 Ill. 279'}, {'cite': '60 Ill. 58'}])
+    "Town of Dayton v. Town of Rutland, <a href='http://cite.case.test:8000/Ill./84/279'>84 Ill. 279</a>, Rutland v. Dayton, <a href='http://cite.case.test:8000/Ill./60/58'>60 Ill. 58</a>"
+    """
+
+    for cite in cites:
+        vol_num, reporter_slug, page_num = re.match(cite_extracting_regex, cite['cite']).groups()
+        cite_link = """<a href='%s'>%s</a>""" % ((reverse('cite_home', host='cite') + '%s/%s/%s' % (reporter_slug, vol_num, page_num)), cite['cite'])
+        case_html = re.sub(cite['cite'], cite_link, case_html)
+
+    return case_html
