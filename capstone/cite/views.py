@@ -24,7 +24,7 @@ from natsort import natsorted
 from capapi import serializers
 from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
-from capapi.resources import apply_replacements, cite_extracting_regex, link_to_cites
+from capapi.resources import apply_replacements, link_to_cites
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
