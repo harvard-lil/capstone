@@ -289,7 +289,6 @@ class VolumeSerializer(serializers.ModelSerializer):
     end_year = serializers.ReadOnlyField(source='spine_end_year')
     volume_number = serializers.ReadOnlyField(source='xml_volume_number')
     publisher = serializers.ReadOnlyField(source='xml_publisher')
-    publication_year = serializers.ReadOnlyField(source='xml_publication_year')
     pdf_url = serializers.FileField(source='pdf_file')
 
     class Meta:

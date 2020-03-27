@@ -134,7 +134,6 @@ def update_elasticsearch_for_vol(self, volume_id):
         for i in range(10):
             try:
                 CaseDocument().update(cases)
-                VolumeMetadata.objects.filter(pk=volume_id).update(last_es_index=timezone.now())
                 return
             except (ElasticsearchException, ReadTimeoutError) as e:
                 if i == 9:
@@ -396,9 +395,8 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 @shared_task(bind=True, acks_late=True)
 def extract_citations_per_vol(self, volume_id):
     with record_task_status_for_volume(self, volume_id):
-        missed_citations_dirpath = "/tmp/missed_citations"
-        Path(missed_citations_dirpath).mkdir(exist_ok=True)
-
+        extra_reporters = {'wl'}
+        valid_reporters = {normalize_cite(c) for c in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())} | extra_reporters
         smallint_max = 32767
         regex_filter = Q(body_cache__text__regex=cite_extracting_regex)
         cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id, in_scope=True)
@@ -417,32 +415,30 @@ def extract_citations_per_vol(self, volume_id):
                 vol_num, reporter_str, page_num = match
 
                 # Look for found reporter string in the official and nominative REPORTER dicts
-                if not (reporter_str in EDITIONS) and not (reporter_str in VARIATIONS_ONLY):
+                if normalize_cite(reporter_str) not in valid_reporters:
                     # reporter not found, removing cite and adding to misses list
                     misses.append(reporter_str)
                     continue
 
-                if int(page_num) > smallint_max or int(page_num) < 0:
+                if int(page_num) > smallint_max:
                     misses.append(reporter_str)
                     continue
 
-                extracted_citations.append({
-                    "cite": " ".join(match),
-                    "cited_by": case,
-                    "reporter_name_original": reporter_str,
-                    "volume_number_original": vol_num,
-                    "page_number_original": page_num})
+                cite = " ".join(match)
+                extracted_citations.append(ExtractedCitation(
+                    cite=cite,
+                    normalized_cite=normalize_cite(cite),
+                    cited_by=case,
+                    reporter_name_original=reporter_str,
+                    volume_number_original=vol_num,
+                    page_number_original=page_num))
+
             citation_misses_per_case[case.id] = dict(Counter(misses))
 
-        ExtractedCitation.objects.bulk_create([ExtractedCitation(
-            cite=c["cite"],
-            normalized_cite=normalize_cite(c["cite"]),
-            cited_by=c["cited_by"],
-            reporter_name_original=c["reporter_name_original"],
-            volume_number_original=c["volume_number_original"],
-            page_number_original=c["page_number_original"]) for c in extracted_citations])
+        ExtractedCitation.objects.bulk_create(extracted_citations)
 
-        with open("%s/missed_citations-%s.csv" % (missed_citations_dirpath, self.request.id), "w+") as f:
+        Path(settings.MISSED_CITATIONS_DIR).mkdir(exist_ok=True)
+        with open("%s/missed_citations-%s.csv" % (settings.MISSED_CITATIONS_DIR, self.request.id), "w+") as f:
             writer = csv.writer(f)
             for case in citation_misses_per_case:
                 writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])

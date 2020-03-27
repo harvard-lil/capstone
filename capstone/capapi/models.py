@@ -209,7 +209,7 @@ class ResearchRequest(models.Model):
     area_of_interest = models.TextField(blank=True, null=True)
 
     status = models.CharField(max_length=20, default='pending', verbose_name="research request status",
-                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature')))
+                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature'), ('withdrawn', 'withdrawn')))
     notes = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -232,7 +232,7 @@ class ResearchContract(models.Model):
     approver = models.ForeignKey(CapUser, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='approved_contracts')
     approver_signature_date = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=20, default='pending', verbose_name="research contract status",
-                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied')))
+                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('withdrawn', 'withdrawn')))
     approver_notes = models.TextField(blank=True, null=True)
 
     notes = models.TextField(blank=True, null=True)

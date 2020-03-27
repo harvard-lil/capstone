@@ -24,14 +24,14 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from django.core.files.base import ContentFile
 
-from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage
+from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage, writeable_download_files_storage, pdf_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
-                             short_id_from_s3_key)
+                             short_id_from_s3_key, copy_file)
 from scripts.process_metadata import get_case_metadata, parse_decision_date
 
 
@@ -586,6 +586,7 @@ class VolumeMetadata(models.Model):
                                     choices=choices('Damaged', 'Not Official', 'Duplicate', 'No Cases'),
                                     help_text="The reason something would be out_of_scope")
     out_of_scope = models.BooleanField(default=False)
+    redacted = models.BooleanField(default=False)
     meyer_box_barcode = models.CharField(max_length=32, blank=True, null=True, help_text="The Meyer box barcode")
     uv_box_barcode = models.CharField(max_length=32, blank=True, null=True,
                                       help_text="The Underground Vaults box barcode")
@@ -605,7 +606,6 @@ class VolumeMetadata(models.Model):
     # values extracted from VolumeXML
     xml_start_year = models.IntegerField(blank=True, null=True)
     xml_end_year = models.IntegerField(blank=True, null=True)
-    xml_publication_year = models.IntegerField(blank=True, null=True)
     xml_publisher = models.CharField(max_length=255, blank=True, null=True)
     xml_publication_city = models.CharField(max_length=1024, blank=True, null=True)
     xml_volume_number = models.CharField(max_length=64, blank=True, null=True)
@@ -613,8 +613,6 @@ class VolumeMetadata(models.Model):
     xml_reporter_short_name = models.CharField(max_length=255, blank=True, null=True)
     xml_reporter_full_name = models.CharField(max_length=255, blank=True, null=True)
     xml_metadata = JSONField(blank=True, null=True)
-
-    last_es_index = models.DateTimeField(blank=True, null=True, help_text="Last time cases for this volume were successfully indexed by ElasticSearch")
 
     task_statuses = JSONField(default=dict, help_text="Date and results of tasks run for this volume")
 
@@ -664,6 +662,39 @@ class VolumeMetadata(models.Model):
         if update_volume_number_slug:
             self.update_volume_number_slug()
         super().save(*args, **kwargs)
+
+    @transaction.atomic(using='capdb')
+    def unredact(self, key=settings.REDACTION_KEY):
+        """
+            Decrypt encrypted text and remove all redaction flags from the pages and cases for this volume.
+            Re-download an unredacted PDF if we're currently sharing a redacted one.
+        """
+        # decrypt pages
+        to_save = []
+        for page in self.page_structures.all():
+            page.unredact(key)
+            to_save.append(page)
+        PageStructure.objects.bulk_update(to_save, ['blocks', 'encrypted_strings'])
+
+        # remove case redaction markers
+        to_save = []
+        for case_structure in CaseStructure.objects.filter(metadata__volume=self):
+            case_structure.unredact()
+            to_save.append(case_structure)
+        CaseStructure.objects.bulk_update(to_save, ['opinions'])
+
+        # regenerate cases
+        for case in self.case_metadatas.all():
+            case.sync_case_body_cache()
+
+        # replace PDF
+        if self.pdf_file:
+            copy_file("unredacted/%s.pdf" % self.pk, self.pdf_file, from_storage=pdf_storage, to_storage=writeable_download_files_storage)
+
+        # update flag
+        self.redacted = False
+        self.save()
+
 
 class TrackingToolLog(models.Model):
     volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
@@ -985,6 +1016,8 @@ class CaseMetadata(models.Model):
         self.sync_case_body_cache()
 
     def update_search_index(self):
+        if not self.in_scope:
+            return
         from capapi.documents import CaseDocument  # local to avoid circular import
         CaseDocument().update(self)
 
@@ -1041,6 +1074,8 @@ class CaseMetadata(models.Model):
         except CaseBodyCache.DoesNotExist:
             CaseBodyCache(metadata=self, **params).save()
         else:
+            for k, v in params.items():
+                setattr(body_cache, k, v)
             CaseBodyCache.objects.filter(id=body_cache.id).update(**params)
 
         if settings.MAINTAIN_ELASTICSEARCH_INDEX:
@@ -1932,6 +1967,19 @@ class PageStructure(models.Model):
                     if type(token) != str and token[0] == 'enc':
                         tokens[i:i + 1] = [strings[token[1]['i']]]
 
+    def unredact(self, key=settings.REDACTION_KEY):
+        """
+            Remove encryption and redaction from this page.
+        """
+        self.decrypt(key)
+        self.encrypted_strings = None
+
+        # strip redaction markers from blocks attribute
+        for block in self.blocks:
+            block.pop('redacted', None)
+            if block.get('tokens', None):
+                block['tokens'] = [t for t in block['tokens'] if type(t) is str or t[0] not in ('redact', '/redact')]
+
 
 class CaseStructure(models.Model):
     """
@@ -1943,6 +1991,34 @@ class CaseStructure(models.Model):
 
     ingest_source = models.ForeignKey(TarFile, on_delete=models.DO_NOTHING)
     ingest_path = models.CharField(max_length=1000)
+
+    def unredact(self):
+        """
+            Remove redaction markers from case structure.
+
+            >>> case = CaseStructure(opinions=[{
+            ...     'paragraphs': [{'redacted': True}],
+            ...     'footnotes': [{
+            ...         'redacted': True,
+            ...         'paragraphs': [{'redacted': True}],
+            ...     }],
+            ... }])
+            >>> case.unredact()
+            >>> assert case.opinions == [{
+            ...     'paragraphs': [{}],
+            ...     'footnotes': [{
+            ...         'paragraphs': [{}],
+            ...     }],
+            ... }]
+        """
+        for opinion in self.opinions:
+            for paragraph in opinion.get("paragraphs", []):
+                paragraph.pop("redacted", None)
+            for footnote in opinion.get("footnotes", []):
+                footnote.pop("redacted", None)
+                for paragraph in footnote.get("paragraphs", []):
+                    paragraph.pop("redacted", None)
+
 
 
 class CaseInitialMetadata(models.Model):
@@ -2055,4 +2131,3 @@ class CaseImage(models.Model):
 
     class Meta:
         unique_together = ['case', 'hash']
-

@@ -179,7 +179,7 @@ section.head-matter {
     // on large screens, head matter goes into a narrower column
     margin-top: 1em;
     margin-bottom: 1em;
-    &.summary, &.history, &.headnotes {
+    &.summary, &.history, &.headnotes, &.disposition, &.syllabus {
       margin-top: 0;
       margin-bottom: 0;
 
