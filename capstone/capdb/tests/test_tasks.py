@@ -3,7 +3,6 @@ from pathlib import Path
 import pytest
 import bagit
 import zipfile
-from glob import glob
 import os
 import csv
 import gzip
@@ -242,34 +241,21 @@ def test_redact_id_numbers(case_factory):
 
 
 @pytest.mark.django_db
-def test_extract_citations(case_factory):
-    legitimate_cite = "225 F.Supp. 552"
-    illegitimate_cite = "2 Dogs 3"
-    case = case_factory(body_cache__text="Alaska: Alaska Reports (1887-1959) %s The' suit was brought in February, 1827. %s" % (legitimate_cite, illegitimate_cite))
-    case.save()
+def test_extract_citations(case_factory, tmpdir, settings):
+    settings.MISSED_CITATIONS_DIR = str(tmpdir)
+    legitimate_cites = ["225 F.Supp. 552", "225 f supp 552"]
+    illegitimate_cites = ["2 Dogs 3", "3 Dogs 4"]
+    case = case_factory(body_cache__text=", some text, ".join(legitimate_cites+illegitimate_cites))
     fabfile.extract_all_citations()
-    case.refresh_from_db()
-    citation = ExtractedCitation.objects.get(cite=legitimate_cite)
-    assert citation
-    assert citation.cited_by == case
-    citations_do_not_exist = ExtractedCitation.objects.filter(cite=illegitimate_cite)
-    assert len(citations_do_not_exist) == 0
+    cites = list(ExtractedCitation.objects.all())
+    assert set(c.cite for c in cites) == set(legitimate_cites)
+    assert all(c.cited_by == case for c in cites)
+
+    # check missed_citations files
     results = []
-
-    missed_citations_files = glob("/tmp/missed_citations/missed_citations-*.csv")
-    for missed_file in missed_citations_files:
-        with open(missed_file) as f:
-            reader = csv.reader(f)
-            for row in reader:
-                results.append(row)
-
-    # one missed citation found
-    assert len(results) == 1
-    assert results[0][0] == str(case.id)
-
-    # check fake reporter recorded
-    missed_citation = json.loads(results[0][2])
-    assert missed_citation['Dogs'] == 1
+    for missed_file in Path(settings.MISSED_CITATIONS_DIR).glob('missed_citations-*.csv'):
+        results.extend(list(csv.reader(missed_file.read_text().splitlines())))
+    assert results == [[str(case.id), '1', '{"Dogs": 2}']]
 
 
 @pytest.mark.django_db
