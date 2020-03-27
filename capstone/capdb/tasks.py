@@ -411,7 +411,7 @@ def extract_citations_per_vol(self, volume_id):
         citation_misses_per_case = {}
         for case in cases:
             misses = []
-            for match in set(re.findall(regex, case.body_cache.text)):
+            for match in set(re.findall(cite_extracting_regex, case.body_cache.text)):
                 vol_num, reporter_str, page_num = match
 
                 # Look for found reporter string in the official and nominative REPORTER dicts
