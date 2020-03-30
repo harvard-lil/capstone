@@ -128,7 +128,6 @@ def gallery(request):
     sections = GallerySection.objects.prefetch_related(
         Prefetch('entries', queryset=GalleryEntry.objects.filter(featured=True))).order_by('order')
 
-    GallerySection.objects.prefetch_related('entries')
     return render(request, 'gallery.html', {
         'sections': sections,
         'email': settings.DEFAULT_FROM_EMAIL,
