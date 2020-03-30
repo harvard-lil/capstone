@@ -20,11 +20,12 @@ from django.template.loader import render_to_string
 from django.utils.http import is_safe_url
 from django.views import View
 from django.utils.safestring import mark_safe
+from django.db.models import Prefetch
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
     page_image_url, safe_domains
-from capweb.models import GallerySection
+from capweb.models import GallerySection, GalleryEntry
 
 from capdb.models import Snippet, Court, Reporter, Jurisdiction
 from capdb.storages import download_files_storage
@@ -124,7 +125,10 @@ def tools(request):
 
 
 def gallery(request):
-    sections = GallerySection.objects.prefetch_related('entries').order_by('order')
+    sections = GallerySection.objects.prefetch_related(
+        Prefetch('entries', queryset=GalleryEntry.objects.filter(featured=True))).order_by('order')
+
+    GallerySection.objects.prefetch_related('entries')
     return render(request, 'gallery.html', {
         'sections': sections,
         'email': settings.DEFAULT_FROM_EMAIL,
