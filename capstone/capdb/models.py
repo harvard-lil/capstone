@@ -1697,7 +1697,7 @@ class ExtractedCitation(models.Model):
     cited_by = models.ForeignKey(CaseMetadata, related_name='extractedcitations', on_delete=models.DO_NOTHING)
     reporter_name_original = models.CharField(max_length=200)
     volume_number_original = models.CharField(max_length=64, blank=True, null=True)
-    page_number_original = models.SmallIntegerField(null=True, blank=True)
+    page_number_original = models.IntegerField(null=True, blank=True)
     normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
 
     def __str__(self):

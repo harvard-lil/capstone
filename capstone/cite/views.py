@@ -24,7 +24,7 @@ from natsort import natsorted
 from capapi import serializers
 from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
-from capapi.resources import apply_replacements
+from capapi.resources import apply_replacements, link_to_cites
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
@@ -161,7 +161,6 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
             host='cite'))
 
     ### try to look up citation
-
     if case_id:
         try:
             case = CaseDocument.get(id=case_id)
@@ -248,6 +247,9 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
     case_html = serialized_data['casebody']['data']
     footer_message = db_case.custom_footer_message or ''
+
+    # link all captured cites
+    case_html = link_to_cites(case_html, serialized_data['cites_to'])
 
     # insert redactions
     if db_case.no_index_redacted:

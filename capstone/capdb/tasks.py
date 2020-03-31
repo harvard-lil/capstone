@@ -18,6 +18,7 @@ from django.utils import timezone
 from collections import Counter
 
 from capapi.documents import CaseDocument
+from capapi.resources import cite_extracting_regex
 from capdb.models import *
 
 ### HELPERS ###
@@ -397,8 +398,7 @@ def extract_citations_per_vol(self, volume_id):
         extra_reporters = {'wl'}
         valid_reporters = {normalize_cite(c) for c in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())} | extra_reporters
         smallint_max = 32767
-        regex = "(\d+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
-        regex_filter = Q(body_cache__text__regex=regex)
+        regex_filter = Q(body_cache__text__regex=cite_extracting_regex)
         cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id, in_scope=True)
                  .select_related('body_cache')
                  .only('body_cache__text'))
@@ -411,7 +411,7 @@ def extract_citations_per_vol(self, volume_id):
         citation_misses_per_case = {}
         for case in cases:
             misses = []
-            for match in set(re.findall(regex, case.body_cache.text)):
+            for match in set(re.findall(cite_extracting_regex, case.body_cache.text)):
                 vol_num, reporter_str, page_num = match
 
                 # Look for found reporter string in the official and nominative REPORTER dicts
