@@ -41,10 +41,15 @@ urlpatterns = [
     path('privacy', MarkdownView.as_view(template_name='privacy-policy.md'), name='privacy'),
     path('changelog', MarkdownView.as_view(template_name='changelog.md'), name='changelog'),
 
-    path('gallery/wordclouds', views.wordclouds, name='wordclouds'),
-    path('gallery/limericks', views.limericks, name='limericks'),
-    path('gallery/witchcraft', TemplateView.as_view(template_name='gallery/witchcraft.html'), name='witchcraft'),
+    ### exhibits ###
+    path('exhibits/wordclouds', views.wordclouds, name='wordclouds'),
+    path('exhibits/limericks', views.limericks, name='limericks'),
+    path('exhibits/witchcraft', TemplateView.as_view(template_name='gallery/witchcraft.html'), name='witchcraft'),
 
+    ### gallery sections ###
+    path('gallery/<str:section_slug>', views.gallery_section, name='gallery_section'),
+
+    ### contact ###
     path('contact/', views.contact, name='contact'),
     path('contact-success/', TemplateView.as_view(template_name='form_success.html',
                                                   extra_context={

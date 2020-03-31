@@ -135,7 +135,17 @@ def gallery(request):
         'meta_description': 'Sky is the limit! Here are some examples of what’s possible.'
     })
 
+def gallery_section(request, section_slug):
+    if section_slug in ['wordclouds', 'limericks', 'witchcraft']:
+        return HttpResponseRedirect(reverse(section_slug))
 
+    section = GallerySection.objects.prefetch_related('entries').get(title_slug=section_slug)
+
+    return render(request, 'gallery_section.html', {
+        'section': section,
+        'page_image': 'img/og_image/gallery.png',
+        'meta_description': 'Caselaw Access Project Gallery: ' + section.title
+    })
 
 def maintenance_mode(request):
     return render(request, "error_page.html", {

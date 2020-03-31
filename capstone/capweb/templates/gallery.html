@@ -115,5 +115,15 @@
         </div>
       </div>
     {% endfor %}
+      <div class="row mt-1 mt-md-3 mt-lg-5 mb-3 mb-lg-0">
+        <div class="project-image d-none d-md-block col-md-2 pt-lg-0 pt-3"></div>
+        <div class="project-description col-12 col-md-9 col-lg-8 offset-0 offset-md-1 offset-lg-2">
+          <div class="row">
+            <p class="m-0 mt-3 mt-lg-0">
+              <a class="font-weight-bold" href="{% url 'gallery_section' section.title_slug %}">See all {{ section.title }}...</a>
+            </p>
+          </div>
+        </div>
+      </div>
   {% endfor %}
 {% endblock %}

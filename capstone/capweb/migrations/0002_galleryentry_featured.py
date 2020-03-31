@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='galleryentry',
             name='featured',
-            field=models.BooleanField(default=True),
+            field=models.BooleanField(default=True, null=False),
         ),
     ]
