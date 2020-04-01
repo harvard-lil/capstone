@@ -1164,6 +1164,65 @@ def extract_all_citations(last_run_before=None):
     tasks.run_task_for_volumes(tasks.extract_citations_per_vol, last_run_before=last_run_before)
 
 
+@task
+def report_missed_citations():
+    """ Summarize files written by extract_all_citations. Writes csv to stdout. """
+    import csv
+    import json
+    from pathlib import Path
+    import random
+    counts = {}
+    for f in Path(settings.MISSED_CITATIONS_DIR).glob('*.csv'):
+        for line in csv.reader(f.read_text().splitlines()):
+            reporters = json.loads(line[2])
+            for reporter, count in reporters.items():
+                if reporter not in counts:
+                    counts[reporter] = {'count': 0, 'cases': []}
+                counts[reporter]['count'] += count
+                counts[reporter]['cases'].append(line[0])
+
+    counts = dict((k, v) for k, v in counts.items() if v['count'] >= 10)
+    for v in counts.values():
+        random.shuffle(v['cases'])
+    counts = sorted(([v['count'], k] + v['cases'][:5] for k, v in counts.items()), reverse=True)
+    writer = csv.writer(sys.stdout)
+    writer.writerows(counts)
+
+
+@task
+def filter_limerick_lines(stopwords_path):
+    """
+        Filter limerick_lines.js against a list of stopwords,
+        such as https://www.freewebheaders.com/download/files/full-list-of-bad-words_text-file_2018_07_30.zip
+        or https://www.cs.cmu.edu/~biglou/resources/bad-words.txt
+    """
+    from pathlib import Path
+    import re
+    stopwords_set = set(s.lower() for s in Path(stopwords_path).read_text().splitlines(keepends=False))
+    limerick_text = Path('static/js/limerick_lines.js').read_text()
+    assignment, limerick_json = limerick_text.split(' = ', 1)
+    limericks = json.loads(limerick_json)
+    all_blocked = set()
+    for a in limericks.values():
+        for b in a.values():
+            for c in b.values():
+                for word, sentences in c.items():
+                    fixed = []
+                    blocked_any = False
+                    for sentence in sentences:
+                        words = set(w.lower() for w in re.findall(r'\w+', sentence))
+                        blocked = words & stopwords_set
+                        all_blocked |= blocked
+                        if blocked:
+                            blocked_any = True
+                            print("Removed ", sentence, blocked)
+                        else:
+                            fixed.append(sentence)
+                    if blocked_any:
+                        c[word] = fixed
+    Path('static/js/limerick_lines_fixed.js').write_text(assignment + " = " + json.dumps(limericks))
+
+
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
     # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
