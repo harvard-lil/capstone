@@ -1,0 +1,104 @@
+{% extends "layouts/full.html" %}
+{% load static %}
+{% load pipeline %}
+{% load process_link %}
+{% load md_chunk %}
+
+{% block base_css %}
+  {% stylesheet 'gallery' %}
+{% endblock %}
+
+{% block title %}Gallery: {{ section.title }}{% endblock %}
+{% block meta_description %}Caselaw Access Project gallery: {{ section.title }}{% endblock %}
+{% block top_section_style %}bg-black{% endblock %}
+{% block row_style %}bg-tan{% endblock %}
+
+{% block explainer %}
+ <div class="d-block">
+    Back to <a href="{% url 'gallery'%}">main Gallery page</a>.
+ </div>
+{% endblock %}
+
+{% block sidebar_menu_items %}
+  {% for entry in section.entries.all|dictsort:"order" %}
+    <li>
+      <a class="list-group-item" href="#{{ entry.title|slugify }}">
+        <span class="text">{{ entry.title }}</span>
+      </a>
+    </li>
+  {% endfor %}
+{% endblock %}
+
+
+{% block main_content %}
+  {% for entry in section.entries.all|dictsort:"order" %}
+    <div class="row mt-1 mt-md-3 mt-lg-5 mb-3 mb-lg-0">
+      <div class="project-image d-none d-md-block col-md-2 pt-lg-0 pt-3">
+        {% if entry.page_link %}
+          <a href="{% process_link entry.page_link %}"
+             aria-label="{{ entry.title }} homepage"
+             title="{{ entry.title }} homepage"
+             id="{{ entry.title|slugify }}"
+             target="_blank">
+            <img class="gallery-thumbnail" alt="" src="{{ entry.image.url }}">
+          </a>
+        {% elif entry.repo_link %}
+          <a href="{{ entry.repo_link }}"
+             aria-label="{{ entry.title }} repository"
+             title="{{ entry.title }} repository"
+             id="{{ entry.title|slugify }}"
+             target="_blank">
+            <img class="gallery-thumbnail" alt="" src="{{ entry.image.url }}">
+          </a>
+        {% else %}
+          <img class="gallery-thumbnail" alt="" src="{{ entry.image.url }}">
+        {% endif %}
+
+      </div>
+      <div class="project-description col-12 col-md-9 col-lg-8 offset-0 offset-md-1 offset-lg-2">
+        <div class="row">
+          <h3 class="simple-subtitle m-0 mt-3 mt-lg-0" id="{{ entry.title|slugify }}">
+            {% if entry.page_link %}
+              <a href="{% process_link entry.page_link %}">{{ entry.title }}</a>
+            {% elif entry.repo_link %}
+              <a href="{{ entry.repo_link }}">{{ entry.title }}</a>
+            {% else %}
+              {{ entry.title }}
+            {% endif %}
+          </h3>
+        </div>
+        <div class="row">
+          <div class="col-12 col-md-7 col-lg-12">
+            <p class="mt-3 mb-0">
+              {% autoescape off %}
+              {% md_chunk entry.content %}
+              {% endautoescape %}
+            </p>
+          </div>
+          <div class="col-12 offset-0 col-md-4 offset-md-1 offset-lg-0 col-lg-12">
+            <p class="social mt-0">
+
+              {% if entry.repo_link %}
+                <span class="github">
+                    <a href="{{ entry.repo_link }}" target="_blank"
+                       title="{{ entry.title }} source code on Github"
+                       aria-label="{{ entry.title }} source code on Github"></a>
+                  </span>
+              {% endif %}
+
+              {% if entry.page_link %}
+                <span class="website">
+                    <a href="{% process_link entry.page_link %}"
+                       aria-label="{{ entry.title }} homepage"
+                       title="{{ entry.title }} homepage"
+                       target="_blank">
+                    </a>
+                  </span>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}

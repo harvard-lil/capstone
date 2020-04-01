@@ -13,7 +13,7 @@ class GalleryForm(forms.ModelForm):
         }
 
 class GalleryAdmin(admin.ModelAdmin):
-    list_display = [ "title", "section", "content", "image", "page_link", "repo_link", "order" ]
+    list_display = [ "title", "section", "content", "image", "page_link", "repo_link", "order", "featured" ]
     form = GalleryForm
 
 
