@@ -470,6 +470,31 @@ def test_filter_case(client, case_factory, elasticsearch):
 
 
 @pytest.mark.django_db
+def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, three_cases, elasticsearch):
+    search_url = api_reverse("cases-list")
+    extractedcitation = extracted_citation_factory()
+    extractedcitation.cited_by = three_cases[0]
+    extractedcitation.save()
+    cases = [case_factory() for _ in range(4)]
+
+    # three of the cases citing a particular citation
+    for case in cases[0:3]:
+        case.extractedcitations.add(extractedcitation)
+        case.save()
+
+    response = client.get(search_url, {"cite_to": extractedcitation.cite})
+    content = response.json()
+
+    assert len(content['results']) == 3
+    result_case_ids = [case['id'] for case in content['results']]
+
+    for case in cases[0:3]:
+        assert case.id in result_case_ids
+
+    assert not cases[-1].id in result_case_ids
+
+
+@pytest.mark.django_db
 def test_filter_court(client, court):
     # filtering court by jurisdiction
     jur_slug = court.jurisdiction.slug
