@@ -15,6 +15,7 @@
     "csv-stringify": "^5.3.0",
     "eslint-utils": "^1.4.1",
     "jquery": "^3.3.1",
+    "kind-of": "^6.0.3",
     "lodash.debounce": "^4.0.8",
     "mark.js": "^8.11.1",
     "minimist": "^1.2.2",
