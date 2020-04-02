@@ -131,7 +131,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'jurisdiction': 'jurisdiction.slug',
         'docket_number': 'docket_number',
         'cite': 'citations.normalized_cite',
-        'cite_to': 'extractedcitations.normalized_cite',
+        'cites_to': 'extractedcitations.normalized_cite',
         'decision_date': 'decision_date',
         'decision_date_min': {'field': 'decision_date', 'default_lookup': 'gte'},
         'decision_date_max': {'field': 'decision_date', 'default_lookup': 'lte'},

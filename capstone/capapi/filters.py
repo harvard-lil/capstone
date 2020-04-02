@@ -177,7 +177,7 @@ class CaseFilter(filters.FilterSet):
         label='Format for case text (applies only if including case text)',
         choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML'), ('tokens', 'debug tokens')),
     )
-    cite_to = filters.CharFilter(label='Cases citing to')
+    cites_to = filters.CharFilter(label='Cases citing to')
     ordering = filters.ChoiceFilter(
         label='Sort order',
         choices=(
@@ -237,8 +237,8 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
         if 'docket_number' in query_params:
             query_params['docket_number']['values'] = lc_values(tokenize(query_params['docket_number']['values']))
 
-        if 'cite_to' in query_params:
-            query_params['cite_to']['values'] = [models.normalize_cite(cite) for cite in lc_values(query_params['cite_to']['values'])]
+        if 'cites_to' in query_params:
+            query_params['cites_to']['values'] = [models.normalize_cite(cite) for cite in lc_values(query_params['cites_to']['values'])]
             
         return query_params
 
