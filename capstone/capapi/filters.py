@@ -5,9 +5,10 @@ import rest_framework_filters as filters
 from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
     OrderingFilterBackend
+from elasticsearch.exceptions import NotFoundError
 from rest_framework.exceptions import ParseError
 from rest_framework_filters.backends import RestFrameworkFilterBackend
-
+from capapi.documents import CaseDocument
 from capdb import models
 from user_data.models import UserHistory
 
@@ -177,6 +178,7 @@ class CaseFilter(filters.FilterSet):
         label='Format for case text (applies only if including case text)',
         choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML'), ('tokens', 'debug tokens')),
     )
+    cites_to = filters.CharFilter(label='Cases citing to citation (citation or case id)')
     ordering = filters.ChoiceFilter(
         label='Sort order',
         choices=(
@@ -201,6 +203,9 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
             # takes each entry in filter_values and splits them on non alphanumeric characters into separate entries
             return [s for current_term in filter_values for s in re.split(r'[^a-zA-Z0-9]+', current_term) if s]
 
+        def normalize_cites(values):
+            return [models.normalize_cite(value) for value in values if isinstance(value, str)]
+
         query_params = super().get_filter_query_params(request, view)
 
         for suffix in ['min', 'max']:
@@ -211,11 +216,11 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
 
         if 'cite' in query_params:
             query_params['cite']['values'] = [models.normalize_cite(cite) for cite in
-                                              lc_values(query_params['cite']['values']) ]
+                                              lc_values(query_params['cite']['values'])]
 
         if 'court_id' in query_params:
-            query_params['court_id']['values'] = [ court_id for court_id
-                                                   in query_params['court_id']['values'] if court_id.isdigit() ]
+            query_params['court_id']['values'] = [court_id for court_id in
+                                                  query_params['court_id']['values'] if court_id.isdigit()]
             if len(query_params['court_id']['values']) < 1:
                 del query_params['court_id']
 
@@ -236,6 +241,19 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
         if 'docket_number' in query_params:
             query_params['docket_number']['values'] = lc_values(tokenize(query_params['docket_number']['values']))
 
+        if 'cites_to' in query_params:
+            query_params['cites_to']['values'] = normalize_cites(query_params['cites_to']['values'])
+            for cite in query_params['cites_to']['values']:
+                # check if case id is passed in
+                if cite.isdigit():
+                    try:
+                        case = CaseDocument.get(id=cite)
+                        # remove id from lookup
+                        query_params['cites_to']['values'].remove(cite)
+                        # add all citations relating to case
+                        query_params['cites_to']['values'] += [c['normalized_cite'] for c in case.citations]
+                    except NotFoundError:
+                        pass
         return query_params
 
 
