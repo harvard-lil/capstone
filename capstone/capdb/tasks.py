@@ -3,12 +3,13 @@ import csv
 import json
 from copy import copy
 from datetime import datetime, timedelta
+from string import ascii_lowercase
 from time import sleep
 from pathlib import Path
 
 from celery import shared_task
 from celery.exceptions import Reject
-from elasticsearch import ElasticsearchException
+from elasticsearch import ElasticsearchException, NotFoundError
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
 from reporters_db import EDITIONS, VARIATIONS_ONLY
@@ -126,7 +127,7 @@ def update_elasticsearch_for_vol(self, volume_id):
                  .filter(volume_id=volume_id)
                  .in_scope()
                  .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache')
-                 .prefetch_related('extractedcitations')
+                 .prefetch_related('extractedcitations', 'citations')
                  .exclude(body_cache=None))
 
         # attempt to store 10 times, with linearly increasing backoff. this gives time for the bulk queue to be processed
@@ -177,29 +178,6 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
         query = volume.case_metadatas\
             .select_related('structure', 'body_cache')\
             .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json')
-
-        for case_metadata in query:
-            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender)
-
-
-@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
-def sync_xml_image_case_body_cache_for_vol(self, volume_id, rerender=True):
-    """
-        One-off to call sync_case_body_cache on cases in given volume only if they contain images,
-        because images were previously missing from xml.
-    """
-    with record_task_status_for_volume(self, volume_id):
-        volume = VolumeMetadata.objects.get(pk=volume_id)
-        pages = list(volume.page_structures.all())
-        blocks_by_id = PageStructure.blocks_by_id(pages)
-        fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
-        labels_by_block_id = PageStructure.labels_by_block_id(pages)
-
-        query = (volume.case_metadatas
-            .filter(body_cache__html__contains='<img')
-            .select_related('structure', 'body_cache')
-            .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json')
-         )
 
         for case_metadata in query:
             case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender)
@@ -397,9 +375,9 @@ def extract_citations_per_vol(self, volume_id):
     with record_task_status_for_volume(self, volume_id):
         extra_reporters = {'wl'}
         valid_reporters = {normalize_cite(c) for c in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())} | extra_reporters
-        smallint_max = 32767
-        regex_filter = Q(body_cache__text__regex=cite_extracting_regex)
-        cases = (CaseMetadata.objects.filter(regex_filter, volume_id=volume_id, in_scope=True)
+        invalid_reporters = set(ascii_lowercase) | {'at', 'or', 'p.', 'c.', 'B'}
+        translations = {'la.': 'Ia.'}
+        cases = (CaseMetadata.objects.filter(body_cache__text__regex=cite_extracting_regex, volume_id=volume_id, in_scope=True)
                  .select_related('body_cache')
                  .only('body_cache__text'))
         # remove all extracted citations in volume before recreating
@@ -411,8 +389,18 @@ def extract_citations_per_vol(self, volume_id):
         citation_misses_per_case = {}
         for case in cases:
             misses = []
+            case_citations = []
             for match in set(re.findall(cite_extracting_regex, case.body_cache.text)):
                 vol_num, reporter_str, page_num = match
+
+                # fix known OCR errors
+                if reporter_str in translations:
+                    reporter_str = translations[reporter_str]
+
+                # skip strings like 'or' that are known non-citations
+                if reporter_str in invalid_reporters:
+                    misses.append(reporter_str)
+                    continue
 
                 # Look for found reporter string in the official and nominative REPORTER dicts
                 if normalize_cite(reporter_str) not in valid_reporters:
@@ -420,12 +408,8 @@ def extract_citations_per_vol(self, volume_id):
                     misses.append(reporter_str)
                     continue
 
-                if int(page_num) > smallint_max:
-                    misses.append(reporter_str)
-                    continue
-
                 cite = " ".join(match)
-                extracted_citations.append(ExtractedCitation(
+                case_citations.append(ExtractedCitation(
                     cite=cite,
                     normalized_cite=normalize_cite(cite),
                     cited_by=case,
@@ -433,6 +417,22 @@ def extract_citations_per_vol(self, volume_id):
                     volume_number_original=vol_num,
                     page_number_original=page_num))
 
+            # update cites_to field in ElasticSearch
+            if settings.MAINTAIN_ELASTICSEARCH_INDEX:
+                try:
+                    CaseDocument._get_connection().update(
+                        index=CaseDocument()._get_index(),
+                        doc_type=CaseDocument._doc_type.name,
+                        body={
+                            'doc': {
+                                'extractedcitations': [CaseDocument._fields['extractedcitations']._get_inner_field_data(e) for e in case_citations]
+                            }
+                        },
+                        id=case.pk)
+                except NotFoundError:
+                    pass
+
+            extracted_citations.extend(case_citations)
             citation_misses_per_case[case.id] = dict(Counter(misses))
 
         ExtractedCitation.objects.bulk_create(extracted_citations)

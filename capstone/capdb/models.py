@@ -1083,7 +1083,7 @@ class CaseMetadata(models.Model):
 
     def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)
-        casebody_pq.remove('.page-label,.footnotemark,.bracketnum')  # remove page numbers and references from text/json
+        casebody_pq.remove('.page-label,.footnotemark,.bracketnum,.footnote > a')  # remove page numbers and footnote numbers from text/json
 
         # extract each opinion into a dictionary
         opinions = []

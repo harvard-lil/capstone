@@ -10,6 +10,7 @@ import json
 from datetime import datetime
 from django.db import connections, utils
 
+from capapi.documents import CaseDocument
 from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction, ExtractedCitation
 from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, get_reporter_count_for_jur, update_elasticsearch_for_vol
 
@@ -180,26 +181,26 @@ def test_update_case_frontend_url(case_factory):
 
 
 @pytest.mark.django_db
-def test_update_case_frontend_url_hyphen_cite(case_metadata):
-    case_metadata.volume.volume_number = "123"
-    case_metadata.volume.save()
+def test_update_case_frontend_url_hyphen_cite(case):
+    case.volume.volume_number = "123"
+    case.volume.save()
 
-    citation = case_metadata.citations.first()
+    citation = case.citations.first()
     citation.cite = "123-Test-456"
     citation.save()
     fabfile.update_case_frontend_url(update_existing=True)
-    case_metadata.refresh_from_db()
-    assert case_metadata.frontend_url == "/test/123/456/%s/" % citation.case_id
+    case.refresh_from_db()
+    assert case.frontend_url == "/test/123/456/%s/" % citation.case_id
 
 
 @pytest.mark.django_db
-def test_update_case_frontend_url_bad_cite(case_metadata):
-    citation = case_metadata.citations.first()
+def test_update_case_frontend_url_bad_cite(case):
+    citation = case.citations.first()
     citation.cite = "BAD"
     citation.save()
     fabfile.update_case_frontend_url(update_existing=True)
-    case_metadata.refresh_from_db()
-    assert case_metadata.frontend_url == "/%s/%s/%s/%s/" % (case_metadata.reporter.short_name_slug, case_metadata.volume.volume_number, case_metadata.first_page, citation.case_id)
+    case.refresh_from_db()
+    assert case.frontend_url == "/%s/%s/%s/%s/" % (case.reporter.short_name_slug, case.volume.volume_number, case.first_page, citation.case_id)
 
 
 
@@ -241,21 +242,23 @@ def test_redact_id_numbers(case_factory):
 
 
 @pytest.mark.django_db
-def test_extract_citations(case_factory, tmpdir, settings):
+def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
     settings.MISSED_CITATIONS_DIR = str(tmpdir)
-    legitimate_cites = ["225 F.Supp. 552", "225 f supp 552"]
-    illegitimate_cites = ["2 Dogs 3", "3 Dogs 4"]
+    legitimate_cites = ["225 F.Supp. 552", "125 f supp 152", "2 1/2 Mass. 1", "3 Suppl. Mass. 2"]
+    illegitimate_cites = ["2 Dogs 3", "3 Dogs 4", "1 or 2"]
     case = case_factory(body_cache__text=", some text, ".join(legitimate_cites+illegitimate_cites))
     fabfile.extract_all_citations()
     cites = list(ExtractedCitation.objects.all())
-    assert set(c.cite for c in cites) == set(legitimate_cites)
+    cite_set = set(c.cite for c in cites)
+    assert cite_set == set(legitimate_cites)
     assert all(c.cited_by == case for c in cites)
+    assert set(c['cite'] for c in CaseDocument.get(id=case.pk).extractedcitations) == cite_set
 
     # check missed_citations files
     results = []
     for missed_file in Path(settings.MISSED_CITATIONS_DIR).glob('missed_citations-*.csv'):
         results.extend(list(csv.reader(missed_file.read_text().splitlines())))
-    assert results == [[str(case.id), '1', '{"Dogs": 2}']]
+    assert json.loads(results[0][2]) == {"Dogs": 2, "or": 1}
 
 
 @pytest.mark.django_db
@@ -263,5 +266,5 @@ def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_asser
     for case in three_cases:
         case.volume = volume_metadata
         case.save()
-    with django_assert_num_queries(select=2, update=1):
+    with django_assert_num_queries(select=4, update=1):
         update_elasticsearch_for_vol(volume_metadata.barcode)
