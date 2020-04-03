@@ -36,7 +36,7 @@ services:
           - 127.0.0.1:9200:9200
     worker:
         build: .
-        image: capstone:0.3.77-dc01083536b78dc3461c88a590cbf2cc
+        image: capstone:0.3.78-88930ddafd43f36cd43b59257279305f
         volumes:
             # NAMED VOLUMES
             # Use a named, persistent volume so that the node_modules directory,
@@ -63,7 +63,7 @@ services:
           - "api.case.test:127.0.0.1"
     web:
         build: .
-        image: capstone:0.3.77-dc01083536b78dc3461c88a590cbf2cc
+        image: capstone:0.3.78-88930ddafd43f36cd43b59257279305f
         volumes:
             # NAMED VOLUMES
             - node_modules:/app/node_modules:delegated

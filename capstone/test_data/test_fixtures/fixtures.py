@@ -1,4 +1,6 @@
+import inspect
 from collections import defaultdict
+from datetime import datetime
 from functools import wraps
 from urllib.parse import urlparse
 from time import time
@@ -152,6 +154,17 @@ def django_assert_num_queries(pytestconfig):
 
 
 @pytest.fixture
+def reset_sequences(django_db_reset_sequences):
+    """
+        Reset database IDs and Factory sequence IDs. Use this if you need to have predictable IDs between runs.
+        This fixture must be included first (before other fixtures that use the db).
+    """
+    for factory_class in globals().values():
+        if inspect.isclass(factory_class) and issubclass(factory_class, factory.Factory):
+            factory_class.reset_sequence(force=True)
+
+
+@pytest.fixture
 def benchmark_requests():
     """
         Context manager to get a report of the time taken to process each request inside the block.
@@ -223,54 +236,36 @@ def mock_ngram_storage(tmpdir):
 
 
 @pytest.fixture
-def ngrammed_cases(mock_ngram_storage, three_cases, jurisdiction):
+def ngrammed_cases(mock_ngram_storage, case_factory, jurisdiction_factory):
     import scripts.ngrams
 
     # set up two jurisdictions
-    jur0 = jurisdiction
-    jur0.slug = 'jur0'
-    jur0.save()
-    jur1 = three_cases[0].jurisdiction
-    jur1.slug = 'jur1'
-    jur1.save()
+    jur0 = jurisdiction_factory(slug='jur0')
+    jur1 = jurisdiction_factory(slug='jur1')
 
     # set up three cases across two jurisdictions, all in same year
     case_settings = [
-        (jur0, '"One? two three." Four!', 2000),
-        (jur1, "One 'two three' don't.", 2000),
-        (jur1, "(Two, three, don't, don't)", 2000),
+        (jur0, '"One? two three." Four!'),
+        (jur1, "One 'two three' don't."),
+        (jur1, "(Two, three, don't, don't)"),
     ]
-    for case, (jur, text, year) in zip(three_cases, case_settings):
-        case.jurisdiction = jur
-        case.decision_date = case.decision_date.replace(year=year)
-        case.save()
-        CaseBodyCache(metadata=case, text=text).save()
+    cases = [
+        case_factory(jurisdiction=jur, decision_date=datetime(2000, 1, 1), body_cache__text=text)
+        for (jur, text) in case_settings
+    ]
 
     # run ngram code
     scripts.ngrams.ngram_jurisdictions()
     scripts.ngrams.ngram_kv_store_ro.open()  # re-open so we can see the new values
 
-    return three_cases
+    return cases
 
 
 ### Factory fixtures ###
-@pytest.fixture
-def case(case_xml):
-    return case_xml.metadata
-
 
 @pytest.fixture
-def case_metadata():
-    """
-        This should be provided by @register on CaseFactory, but for some reason that version currently fails to
-        pass itself to the RelatedFactory attributes, and thus throws an IntegrityError.
-    """
-    return CaseFactory()
-
-
-@pytest.fixture
-def three_cases():
-    return [CaseXMLFactory().metadata for _ in range(3)]
+def three_cases(case_factory):
+    return [case_factory() for _ in range(3)]
 
 
 class CapClient(APIClient):

@@ -22,7 +22,7 @@ from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
 from config.logging import logger
 
-cite_extracting_regex = "((?:\d\s?)+)\s+([0-9a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+(\d+)"
+cite_extracting_regex = "([1-9]\d*(?: Suppl\.| 1/2)?)\s+([a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+([1-9]\d*)"
 
 def create_zip_filename(case_list):
     ts = slugify(datetime.now().timestamp())
