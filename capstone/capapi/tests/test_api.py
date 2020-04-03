@@ -491,6 +491,21 @@ def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, e
 
     assert not cases[-1].id in result_case_ids
 
+    # test that we can get cases using id
+    case = case_factory()
+    extractedcitation2 = extracted_citation_factory()
+    extractedcitation2.cite = case.citations.last().cite
+    extractedcitation2.save()
+
+    for c in cases[0:2]:
+        c.extractedcitations.add(extractedcitation2)
+        c.save()
+
+    response = client.get(search_url, {"cites_to": case.id})
+    content = response.json()
+
+    assert len(content['results']) == 2
+
 
 
 @pytest.mark.django_db
