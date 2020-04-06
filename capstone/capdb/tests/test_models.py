@@ -184,7 +184,7 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
     assert case2.frontend_url == "/test/124/456/"
 
 @pytest.mark.django_db
-def test_sync_case_body_cache(reset_sequences, case):
+def test_sync_case_body_cache(reset_sequences, case, elasticsearch):
     # verify case contents
     case.sync_case_body_cache()
     assert case.body_cache.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n'

@@ -195,7 +195,7 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
 
         # just rendering text/json
         else:
-            query = query.only('body_cache__html').exclude(body_cache=None)
+            query = query.defer('body_cache__xml', 'body_cache__text', 'body_cache__json').exclude(body_cache=None)
             blocks_by_id = fonts_by_id = labels_by_block_id = None
             update_fields = ['text', 'json']
 
