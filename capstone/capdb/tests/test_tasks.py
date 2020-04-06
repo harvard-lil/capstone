@@ -274,13 +274,13 @@ def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
 
 
 @pytest.mark.django_db
-def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_assert_num_queries):
+def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_assert_num_queries, elasticsearch):
     with django_assert_num_queries(select=2, update=1):
         update_elasticsearch_for_vol(volume_metadata.barcode)
 
 
 @pytest.mark.django_db
-def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_assert_num_queries):
+def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_assert_num_queries, elasticsearch):
     for i in range(3):
         case_factory(volume=volume_metadata)
 
@@ -292,6 +292,6 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
 
     # text/json sync
     CaseBodyCache.objects.update(text='blank')
-    with django_assert_num_queries(select=7, update=2):
-        sync_case_body_cache_for_vol(volume_metadata.barcode)
+    with django_assert_num_queries(select=5, update=2):
+        sync_case_body_cache_for_vol(volume_metadata.barcode, rerender=False)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
