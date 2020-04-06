@@ -245,8 +245,19 @@ def test_redact_id_numbers(case_factory):
 @pytest.mark.django_db
 def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
     settings.MISSED_CITATIONS_DIR = str(tmpdir)
-    legitimate_cites = ["225 F.Supp. 552", "125 f supp 152", "2 1/2 Mass. 1", "3 Suppl. Mass. 2"]
-    illegitimate_cites = ["2 Dogs 3", "3 Dogs 4", "1 or 2"]
+    legitimate_cites = [
+        "225 F.Supp. 552",  # correct
+        "125 f supp 152",   # normalized
+        "2 1/2 Mass. 1",    # special volume numbers
+        "3 Suppl. Mass. 2", # special volume numbers
+        "1 F. 2d 2"         # not matched as "1 F. 2"
+    ]
+    illegitimate_cites = [
+        "2 Dogs 3",             # unrecognized reporter
+        "3 Dogs 4",             # duplicate unrecognized reporter
+        "1 or 2",               # not matched as 1 Or. 2
+        "word1 Mass. 2word"     # not matched if part of larger word
+    ]
     case = case_factory(body_cache__text=", some text, ".join(legitimate_cites+illegitimate_cites))
     fabfile.extract_all_citations()
     cites = list(ExtractedCitation.objects.all())
