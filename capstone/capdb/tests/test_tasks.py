@@ -11,8 +11,9 @@ from datetime import datetime
 from django.db import connections, utils
 
 from capapi.documents import CaseDocument
-from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction, ExtractedCitation
-from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, get_reporter_count_for_jur, update_elasticsearch_for_vol
+from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction, ExtractedCitation, CaseBodyCache
+from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, \
+    get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol
 
 import fabfile
 
@@ -263,8 +264,23 @@ def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
 
 @pytest.mark.django_db
 def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_assert_num_queries):
-    for case in three_cases:
-        case.volume = volume_metadata
-        case.save()
-    with django_assert_num_queries(select=4, update=1):
+    with django_assert_num_queries(select=2, update=1):
         update_elasticsearch_for_vol(volume_metadata.barcode)
+
+
+@pytest.mark.django_db
+def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_assert_num_queries):
+    for i in range(3):
+        case_factory(volume=volume_metadata)
+
+    # full sync
+    CaseBodyCache.objects.update(text='blank')
+    with django_assert_num_queries(select=7, update=2):
+        sync_case_body_cache_for_vol(volume_metadata.barcode)
+    assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
+
+    # text/json sync
+    CaseBodyCache.objects.update(text='blank')
+    with django_assert_num_queries(select=7, update=2):
+        sync_case_body_cache_for_vol(volume_metadata.barcode)
+    assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
