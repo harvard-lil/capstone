@@ -264,8 +264,10 @@ def ngrammed_cases(mock_ngram_storage, case_factory, jurisdiction_factory):
 ### Factory fixtures ###
 
 @pytest.fixture
-def three_cases(case_factory):
-    return [case_factory() for _ in range(3)]
+def three_cases(case_factory, volume_metadata_factory):
+    """ Three cases from the same volume. """
+    volume = volume_metadata_factory()
+    return [case_factory(volume=volume) for _ in range(3)]
 
 
 class CapClient(APIClient):

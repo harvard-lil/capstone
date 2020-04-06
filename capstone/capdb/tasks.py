@@ -170,17 +170,49 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
     """
     with record_task_status_for_volume(self, volume_id):
         volume = VolumeMetadata.objects.get(pk=volume_id)
-        pages = list(volume.page_structures.all())
-        blocks_by_id = PageStructure.blocks_by_id(pages)
-        fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
-        labels_by_block_id = PageStructure.labels_by_block_id(pages)
+        to_update = []
+        to_create = []
 
-        query = volume.case_metadatas\
-            .select_related('structure', 'body_cache')\
-            .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json')
+        # query includes related/prefetch for elasticsearch indexing
+        query = (volume.case_metadatas
+            .select_related('body_cache', 'volume', 'reporter', 'court', 'jurisdiction')
+            .prefetch_related('extractedcitations', 'citations'))
 
+        # full rendering of HTML/XML
+        if rerender:
+            pages = list(volume.page_structures.all())
+            blocks_by_id = PageStructure.blocks_by_id(pages)
+            fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
+            labels_by_block_id = PageStructure.labels_by_block_id(pages)
+            update_fields = ['html', 'xml', 'text', 'json']
+
+            query = (query
+                .select_related('structure')
+                .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json'))
+
+            for case_metadata in query:
+                case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False)
+
+        # just rendering text/json
+        else:
+            query = query.only('body_cache__html').exclude(body_cache=None)
+            blocks_by_id = fonts_by_id = labels_by_block_id = None
+            update_fields = ['text', 'json']
+
+        # do processing
         for case_metadata in query:
-            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender)
+            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False)
+            body_cache = case_metadata.body_cache
+            if body_cache.id:
+                to_update.append(body_cache)
+            else:
+                to_create.append(body_cache)
+
+        # save
+        if to_create:
+            CaseBodyCache.objects.bulk_create(to_create)
+        if to_update:
+            CaseBodyCache.objects.bulk_update(to_update, update_fields)
 
 
 def create_case_metadata_from_all_vols(update_existing=False):

@@ -252,7 +252,7 @@ class PageStructureFactory(factory.DjangoModelFactory):
                 ["/font"],
                 ["/line"]
             ]
-        } for i, id in enumerate(["BL_81.3", "BL_83.6", "BL_83.16"])
+        } for i, id in enumerate(["BL_81.3", "BL_83.6", "BL_83.7", "BL_83.16"])
     ]
     font_names = {"1": "Style_1"}
 
@@ -286,7 +286,7 @@ class CaseStructureFactory(factory.DjangoModelFactory):
         },
         {
             "type": "majority",
-            "paragraphs": [{"id": "b83-6", "class": "p", "block_ids": ["BL_83.6"]}],
+            "paragraphs": [{"id": "b83-6", "class": "p", "block_ids": ["BL_83.6", "BL_83.7"]}],
             "footnotes": [
                 {
                     "id": "footnote_1_1",

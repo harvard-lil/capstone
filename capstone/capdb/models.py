@@ -1031,7 +1031,7 @@ class CaseMetadata(models.Model):
         renderer = render_case.VolumeRenderer(blocks_by_id, {}, {})
         return renderer.hydrate_opinions(structure.opinions, blocks_by_id)
 
-    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, rerender=True):
+    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, rerender=True, save=True):
         """
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
@@ -1043,8 +1043,10 @@ class CaseMetadata(models.Model):
                 body_cache = self.body_cache
             except CaseBodyCache.DoesNotExist:
                 return
-            json, text = self.get_json_from_html(body_cache.html)
-            CaseBodyCache.objects.filter(id=body_cache.id).update(json=json, text=text)
+            body_cache.json, body_cache.text = self.get_json_from_html(body_cache.html)
+            if save:
+                # save this way to avoid hydrating deferred fields
+                CaseBodyCache.objects.filter(id=body_cache.id).update(json=body_cache.json, text=body_cache.text)
             return
 
         structure = self.structure
@@ -1066,17 +1068,14 @@ class CaseMetadata(models.Model):
             'xml': xml,
             'json': json,
         }
-        # use this approach, instead of update_or_create, to reduce sql traffic:
-        #   - avoid causing a select (if the body_cache has already been populated with select_related)
-        #   - avoid hydrating the params via save(), if they were loaded with defer()
         try:
             body_cache = self.body_cache
         except CaseBodyCache.DoesNotExist:
-            CaseBodyCache(metadata=self, **params).save()
-        else:
-            for k, v in params.items():
-                setattr(body_cache, k, v)
-            CaseBodyCache.objects.filter(id=body_cache.id).update(**params)
+            body_cache = self.body_cache = CaseBodyCache(metadata=self)
+        for k, v in params.items():
+            setattr(body_cache, k, v)
+        if save:
+            body_cache.save()
 
         if settings.MAINTAIN_ELASTICSEARCH_INDEX:
             self.update_search_index()
