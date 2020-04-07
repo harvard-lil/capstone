@@ -443,3 +443,23 @@ def extract_citations_per_vol(self, volume_id):
             for case in citation_misses_per_case:
                 writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])
 
+
+@shared_task(bind=True, acks_late=True)
+def extract_citation_connections_per_vol(self, volume_id):
+    with record_task_status_for_volume(self, volume_id):
+        vol_citation_results = []
+        vol = VolumeMetadata.objects.get(barcode=volume_id)
+        case_citation_instances = CaseMetadata.objects.filter(volume=volume_id, extractedcitations__isnull=False, in_scope=True).values('id', 'extractedcitations__normalized_cite')
+        for instance in case_citation_instances:
+            cited_to = CaseMetadata.objects.filter(citations__normalized_cite=instance['extractedcitations__normalized_cite'], in_scope=True).values('id','reporter')
+            if len(cited_to):
+                vol_citation_results.append({
+                    'case': instance['id'],
+                    'case__reporter': vol.reporter.id,
+                    'cited': [citation['id'] for citation in cited_to],
+                    'cited__reporter': [citation['reporter'] for citation in cited_to]})
+
+        Path(settings.CITATIONS_DIR).mkdir(exist_ok=True)
+        if len(vol_citation_results):
+            with open("%s/citations-%s.json" % (settings.CITATIONS_DIR, volume_id), "w+") as f:
+                json.dump(vol_citation_results, f)

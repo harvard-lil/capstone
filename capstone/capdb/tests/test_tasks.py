@@ -268,3 +268,34 @@ def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_asser
         case.save()
     with django_assert_num_queries(select=4, update=1):
         update_elasticsearch_for_vol(volume_metadata.barcode)
+
+
+@pytest.mark.django_db
+def test_export_citations(case_factory, tmpdir, settings, elasticsearch, extracted_citation_factory, citation_factory):
+    settings.CITATIONS_DIR = str(tmpdir)
+    cite_from = "225 F.Supp. 552"
+    cite_to = "73 Ill. 561"
+    cite_not_in_cap = "23 Some. Cite. 456"
+    case_from = case_factory(body_cache__text=", some text, " + cite_to)
+    case_to = case_factory(body_cache__text=", some other text, ")
+
+    extracted_citation = extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id)
+    extracted_citation_not_in_cap = extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id)
+
+    citation = citation_factory(cite=cite_from)
+    case_from.citations.add(citation)
+    case_from.save()
+
+    citation = citation_factory(cite=cite_to)
+    case_to.citations.add(citation)
+    case_to.save()
+
+    fabfile.extract_vol_citation_connections()
+    results = []
+    for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.json'):
+        content = json.loads(citation_file.read_text())
+        results.extend(content)
+    assert len(results) == 1
+    assert results == [{'case': 1, 'case__reporter': 1, 'cited': [2], 'cited__reporter': [3]}]
+
+
