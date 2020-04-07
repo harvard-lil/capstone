@@ -184,67 +184,44 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
     assert case2.frontend_url == "/test/124/456/"
 
 @pytest.mark.django_db
-def test_sync_case_body_cache(reset_sequences, case):
-    # set up case
-    structure = case.structure
-    page = structure.pages.first()
-    structure.opinions = [
-        {
-            'type': 'head',
-            'paragraphs': [{'class': 'parties', 'block_ids': ['BL_1.1'], 'id': 'b1-1'}],
-        }, {
-            'type': 'majority',
-            'paragraphs': [{'class': 'p', 'block_ids': ['BL_1.2', 'BL_1.3'], 'id': 'b1-2'}],
-            'footnotes': [
-                {
-                    'id': 'footnote_1_1',
-                    'paragraphs': [{'class': 'p', 'block_ids': ['BL_1.4'], 'id': 'b1-4'}],
-                    'label': '1',
-                }
-            ],
-        }
-    ]
-    structure.save()
-    page.blocks = [{"id": "BL_1.%s" % i, "class": "p", "tokens": ["Text %s" % i]} for i in range(1, 5)]
-    page.save()
-
+def test_sync_case_body_cache(reset_sequences, case, elasticsearch):
     # verify case contents
     case.sync_case_body_cache()
-    assert case.body_cache.text == 'Text 1\nText 2Text 3\nText 4\n'
+    assert case.body_cache.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n'
     assert xml_equal(case.body_cache.html,
         '<section class="casebody" data-case-id="00000000" data-firstpage="4" data-lastpage="8">\n'
         '  <section class="head-matter">\n'
-        '    <h4 class="parties" id="b1-1">Text 1</h4>\n'
+        '    <h4 class="parties" id="b81-4">Case text 0</h4>\n'
         '  </section>\n'
         '  <article class="opinion" data-type="majority">\n'
-        '    <p id="b1-2">Text 2Text 3</p>\n'
+        '    <p id="b83-6">Case text 1Case text 2</p>\n'
         '    <aside class="footnote" data-label="1" id="footnote_1_1">\n'
         '      <a href="#ref_footnote_1_1">1</a>\n'
-        '      <p id="b1-4">Text 4</p>\n'
+        '      <p id="b83-11">Case text 3</p>\n'
         '    </aside>\n'
         '  </article>\n'
         '</section>\n')
     assert case.body_cache.json == {
         'attorneys': [],
-        'parties': ['Text 1'],
+        'parties': ['Case text 0'],
         'judges': [],
         'opinions': [
             {
                 'type': 'majority',
                 'author': None,
-                'text': 'Text 2Text 3\nText 4'
+                'text': 'Case text 1Case text 2\nCase text 3'
             }],
-        'head_matter': 'Text 1',
+        'head_matter': 'Case text 0',
         'corrections': ''
     }
     assert xml_equal(case.body_cache.xml,
         '<?xml version=\'1.0\' encoding=\'utf-8\'?>\n'
         '<casebody firstpage="4" lastpage="8" xmlns="http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1">\n'
-        '  <parties id="b1-1">Text 1</parties>\n'
+        '  <parties id="b81-4">Case text 0</parties>\n'
         '  <opinion type="majority">\n'
-        '    <p id="b1-2">Text 2Text 3</p>\n'
+        '    <p id="b83-6">Case text 1Case text 2</p>\n'
         '    <footnote label="1">\n'
-        '      <p id="b1-4">Text 4</p>\n'
+        '      <p id="b83-11">Case text 3</p>\n'
         '    </footnote>\n'
         '  </opinion>\n'
         '</casebody>\n')

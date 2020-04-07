@@ -11,8 +11,9 @@ from datetime import datetime
 from django.db import connections, utils
 
 from capapi.documents import CaseDocument
-from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction, ExtractedCitation
-from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, get_reporter_count_for_jur, update_elasticsearch_for_vol
+from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction, ExtractedCitation, CaseBodyCache
+from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, \
+    get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol
 
 import fabfile
 
@@ -244,8 +245,19 @@ def test_redact_id_numbers(case_factory):
 @pytest.mark.django_db
 def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
     settings.MISSED_CITATIONS_DIR = str(tmpdir)
-    legitimate_cites = ["225 F.Supp. 552", "125 f supp 152", "2 1/2 Mass. 1", "3 Suppl. Mass. 2"]
-    illegitimate_cites = ["2 Dogs 3", "3 Dogs 4", "1 or 2"]
+    legitimate_cites = [
+        "225 F.Supp. 552",  # correct
+        "125 f supp 152",   # normalized
+        "2 1/2 Mass. 1",    # special volume numbers
+        "3 Suppl. Mass. 2", # special volume numbers
+        "1 F. 2d 2"         # not matched as "1 F. 2"
+    ]
+    illegitimate_cites = [
+        "2 Dogs 3",             # unrecognized reporter
+        "3 Dogs 4",             # duplicate unrecognized reporter
+        "1 or 2",               # not matched as 1 Or. 2
+        "word1 Mass. 2word"     # not matched if part of larger word
+    ]
     case = case_factory(body_cache__text=", some text, ".join(legitimate_cites+illegitimate_cites))
     fabfile.extract_all_citations()
     cites = list(ExtractedCitation.objects.all())
@@ -262,16 +274,31 @@ def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
 
 
 @pytest.mark.django_db
-def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_assert_num_queries):
-    for case in three_cases:
-        case.volume = volume_metadata
-        case.save()
-    with django_assert_num_queries(select=4, update=1):
+def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_assert_num_queries, elasticsearch):
+    with django_assert_num_queries(select=2, update=1):
         update_elasticsearch_for_vol(volume_metadata.barcode)
 
 
 @pytest.mark.django_db
-def test_export_citations(case_factory, tmpdir, settings, elasticsearch, extracted_citation_factory, citation_factory):
+def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_assert_num_queries, elasticsearch):
+    for i in range(3):
+        case_factory(volume=volume_metadata)
+
+    # full sync
+    CaseBodyCache.objects.update(text='blank')
+    with django_assert_num_queries(select=7, update=2):
+        sync_case_body_cache_for_vol(volume_metadata.barcode)
+    assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
+
+    # text/json sync
+    CaseBodyCache.objects.update(text='blank')
+    with django_assert_num_queries(select=5, update=2):
+        sync_case_body_cache_for_vol(volume_metadata.barcode, rerender=False)
+    assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
+
+
+@pytest.mark.django_db
+def test_export_citation_connections(case_factory, tmpdir, settings, elasticsearch, extracted_citation_factory, citation_factory):
     settings.CITATIONS_DIR = str(tmpdir)
     cite_from = "225 F.Supp. 552"
     cite_to = "73 Ill. 561"
