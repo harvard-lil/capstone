@@ -743,8 +743,8 @@ rcssmin==1.0.6 \
 redis==3.2.1 \
     --hash=sha256:6946b5dca72e86103edc8033019cc3814c031232d339d5f4533b02ea85685175 \
     --hash=sha256:8ca418d2ddca1b1a850afa1680a7d2fd1f3322739271de4b704e0d4668449273
-reporters-db==2.0.0 \
-    --hash=sha256:1bfe4a77ef8391a4f2b0ceb464b173425fc63836320d12211f5bcbff97441715
+https://github.com/freelawproject/reporters-db/archive/33eb9a405a55a5a3d5619cdd2a47214a6e59460b.zip#egg=reporters_db \
+    --hash=sha256:47ae3f524075abb9cdf29bf75bf6227778b05221ff87b1ceb6f76c1d4c5c249d
 reportlab==3.5.13 \
     --hash=sha256:069f684cd0aaa518a27dc9124aed29cee8998e21ddf19604e53214ec8462bdd7 \
     --hash=sha256:09b68ec01d86b4b120456b3f3202570ec96f57624e3a4fc36f3829323391daa4 \
@@ -818,7 +818,7 @@ s3transfer==0.2.1 \
 six==1.12.0 \
     --hash=sha256:3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c \
     --hash=sha256:d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73 \
-    # via aws-sam-translator, bcrypt, cfn-lint, cryptography, django-elasticsearch-dsl-drf, django-extensions, docker, docker-pycreds, drf-yasg, elasticsearch-dsl, fabric3, faker, jsonschema, libsass, mock, more-itertools, moto, nltk, pathlib2, pip-tools, pynacl, pyrsistent, pytest, pytest-xdist, python-dateutil, python-jose, reporters-db, responses, swagger-spec-validator, websocket-client
+    # via aws-sam-translator, bcrypt, cfn-lint, cryptography, django-elasticsearch-dsl-drf, django-extensions, docker, docker-pycreds, drf-yasg, elasticsearch-dsl, fabric3, faker, jsonschema, libsass, mock, more-itertools, moto, nltk, pathlib2, pip-tools, pynacl, pyrsistent, pytest, pytest-xdist, python-dateutil, python-jose, responses, swagger-spec-validator, websocket-client
 soupsieve==1.7.3 \
     --hash=sha256:466910df7561796a60748826781ebe9a888f7a1668a636ae86783f44d10aae73 \
     --hash=sha256:87db12ae79194f0ff9808d2b1641c4f031ae39ffa3cab6b907ea7c1e5e5ed445 \
