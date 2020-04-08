@@ -6,10 +6,11 @@ from datetime import datetime, timedelta
 from string import ascii_lowercase
 from time import sleep
 from pathlib import Path
+import elasticsearch.helpers
 
 from celery import shared_task
 from celery.exceptions import Reject
-from elasticsearch import ElasticsearchException, NotFoundError
+from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
 from reporters_db import EDITIONS, VARIATIONS_ONLY
@@ -412,11 +413,17 @@ def extract_citations_per_vol(self, volume_id):
         cases = (CaseMetadata.objects.filter(volume_id=volume_id, in_scope=True)
                  .select_related('body_cache')
                  .only('body_cache__text'))
+        base_es_update_op = {
+            '_op_type': 'update',
+            '_index': CaseDocument()._get_index(),
+            '_type': CaseDocument._doc_type.name,
+        }
         # remove all extracted citations in volume before recreating
         ExtractedCitation.objects.filter(cited_by__volume_id=volume_id).delete()
 
         # successfully extracted citations
         extracted_citations = []
+        es_update_ops = []
         # extracted possible citations with errors
         citation_misses_per_case = {}
         for case in cases:
@@ -451,23 +458,24 @@ def extract_citations_per_vol(self, volume_id):
 
             # update cites_to field in ElasticSearch
             if settings.MAINTAIN_ELASTICSEARCH_INDEX:
-                try:
-                    CaseDocument._get_connection().update(
-                        index=CaseDocument()._get_index(),
-                        doc_type=CaseDocument._doc_type.name,
-                        body={
-                            'doc': {
-                                'extractedcitations': [CaseDocument._fields['extractedcitations']._get_inner_field_data(e) for e in case_citations]
-                            }
-                        },
-                        id=case.pk)
-                except NotFoundError:
-                    pass
+                es_update_ops.append({
+                    **base_es_update_op,
+                    '_id': case.pk,
+                    'doc': {
+                        'extractedcitations': [CaseDocument._fields['extractedcitations']._get_inner_field_data(e) for e in case_citations]
+                    }
+                })
 
             extracted_citations.extend(case_citations)
             citation_misses_per_case[case.id] = dict(Counter(misses))
 
         ExtractedCitation.objects.bulk_create(extracted_citations)
+
+        # update cites_to field in ElasticSearch
+        if settings.MAINTAIN_ELASTICSEARCH_INDEX:
+            _, failed = elasticsearch.helpers.bulk(CaseDocument._get_connection(), es_update_ops)
+            if failed:
+                raise Exception("%s errors writing to Elasticsearch" % failed)
 
         Path(settings.MISSED_CITATIONS_DIR).mkdir(exist_ok=True)
         with open("%s/missed_citations-%s.csv" % (settings.MISSED_CITATIONS_DIR, self.request.id), "w+") as f:
