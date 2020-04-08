@@ -39,7 +39,7 @@ def test_flow(client, unrestricted_case, elasticsearch):
 ])
 def test_model_endpoint(request, client, fixture_name, detail_attr, comparison_attr):
     """ Generic test to kick the tires on -list and -detail for model endpoints. """
-    instance = request.getfuncargvalue(fixture_name)
+    instance = request.getfixturevalue(fixture_name)
     model = instance.__class__
     resource_name = model.__name__.lower()
 
@@ -229,7 +229,7 @@ def test_unlimited_access(auth_user, auth_client, restricted_case, elasticsearch
 @pytest.mark.parametrize("client_fixture_name", ["auth_client", "token_auth_client"])
 def test_harvard_access(request, restricted_case, client_fixture_name, elasticsearch):
     ### user with harvard access can download from harvard IPs, even without case allowance
-    client = request.getfuncargvalue(client_fixture_name)
+    client = request.getfixturevalue(client_fixture_name)
     user = client.auth_user
     user.harvard_access = True
     user.case_allowance_remaining = 1
@@ -539,7 +539,8 @@ def test_filter_reporter(client, reporter):
 
 @flaky(max_runs=10)  # ngrammed_cases call to ngram_jurisdictions doesn't reliably work because it uses multiprocessing within pytest environment
 @pytest.mark.django_db
-def test_ngrams_api(client, ngrammed_cases):
+def test_ngrams_api(client, request):
+    ngrammed_cases = request.getfixturevalue('ngrammed_cases')  # load fixture inside test so flaky() can catch errors
 
     # check result counts when not filtering by jurisdiction
     json = client.get(api_reverse('ngrams-list'), {'q': 'one two'}).json()
