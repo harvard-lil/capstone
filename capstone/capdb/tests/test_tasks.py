@@ -306,8 +306,8 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     case_from = case_factory(body_cache__text=", some text, " + cite_to)
     case_to = case_factory(body_cache__text=", some other text, ")
 
-    extracted_citation = extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id)
-    extracted_citation_not_in_cap = extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id)
+    extracted_citation = extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id) # noqa
+    extracted_citation_not_in_cap = extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id) # noqa
 
     citation = citation_factory(cite=cite_from)
     case_from.citations.add(citation)
@@ -323,6 +323,7 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
         content = json.loads(citation_file.read_text())
         results.extend(content)
     assert len(results) == 1
-    assert results == [{'case': 1, 'case__reporter': 1, 'cited': [2], 'cited__reporter': [3]}]
+    assert results[0]['cite_to']['name_abbreviation'] == case_to.name_abbreviation and results[0]['cite_to']['id'] == case_to.id
+    assert results[0]['cite_from']['name_abbreviation'] == case_from.name_abbreviation and results[0]['cite_from']['id'] == case_from.id
 
 

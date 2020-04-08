@@ -480,17 +480,34 @@ def extract_citations_per_vol(self, volume_id):
 def extract_citation_connections_per_vol(self, volume_id):
     with record_task_status_for_volume(self, volume_id):
         vol_citation_results = []
-        vol = VolumeMetadata.objects.get(barcode=volume_id)
-        case_citation_instances = CaseMetadata.objects.filter(volume=volume_id, extractedcitations__isnull=False, in_scope=True).values('id', 'extractedcitations__normalized_cite')
-        for instance in case_citation_instances:
-            cited_to = CaseMetadata.objects.filter(citations__normalized_cite=instance['extractedcitations__normalized_cite'], in_scope=True).values('id','reporter')
-            if len(cited_to):
-                vol_citation_results.append({
-                    'case': instance['id'],
-                    'case__reporter': vol.reporter.id,
-                    'cited': [citation['id'] for citation in cited_to],
-                    'cited__reporter': [citation['reporter'] for citation in cited_to]})
+        query = """SELECT 
+            cite_from.id, cite_from.name_abbreviation, cite_from.decision_date, cite_from.reporter_id, 
+            cite_to.id, cite_to.name_abbreviation, cite_to.decision_date, cite_to.reporter_id 
+            from capdb_casemetadata cite_from 
+            inner join capdb_extractedcitation ec on cite_from.id = ec.cited_by_id 
+            inner join capdb_citation c on c.normalized_cite = ec.normalized_cite 
+            inner join capdb_casemetadata cite_to on c.case_id = cite_to.id
+            where cite_from.volume_id = '%s';
+            """ % volume_id
 
+        with connections['capdb'].cursor() as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            for row in rows:
+                vol_citation_results.append({
+                    'cite_from': {
+                        'id': row[0],
+                        'name_abbreviation': row[1],
+                        'decision_date': str(row[2]),
+                        'reporter': row[3]
+                    },
+                    'cite_to': {
+                        'id': row[4],
+                        'name_abbreviation': row[5],
+                        'decision_date': str(row[6]),
+                        'reporter': row[7]
+                    }
+                })
         Path(settings.CITATIONS_DIR).mkdir(exist_ok=True)
         if len(vol_citation_results):
             with open("%s/citations-%s.json" % (settings.CITATIONS_DIR, volume_id), "w+") as f:
