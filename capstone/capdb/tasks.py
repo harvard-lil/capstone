@@ -480,33 +480,24 @@ def extract_citations_per_vol(self, volume_id):
 def extract_citation_connections_per_vol(self, volume_id):
     with record_task_status_for_volume(self, volume_id):
         vol_citation_results = []
-        query = """SELECT 
-            cite_from.id, cite_from.name_abbreviation, cite_from.decision_date, cite_from.reporter_id, 
-            cite_to.id, cite_to.name_abbreviation, cite_to.decision_date, cite_to.reporter_id 
-            from capdb_casemetadata cite_from 
-            inner join capdb_extractedcitation ec on cite_from.id = ec.cited_by_id 
-            inner join capdb_citation c on c.normalized_cite = ec.normalized_cite 
-            inner join capdb_casemetadata cite_to on c.case_id = cite_to.id
-            where cite_from.volume_id = '%s';
-            """ % volume_id
+        query = """SELECT
+                    json_build_object('id', cite_from.id::int, 'name_abbreviation', cite_from.name_abbreviation, 'decision_date', cite_from.decision_date::date, 'reporter_id', cite_from.reporter_id::int),
+                    json_agg(json_build_object('id', cite_to.id::int, 'name_abbreviation', cite_to.name_abbreviation, 'decision_date', cite_from.decision_date::date, 'reporter_id', cite_from.reporter_id::int) )
+                    from capdb_casemetadata cite_from
+                    inner join capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
+                    inner join capdb_citation c on c.normalized_cite = ec.normalized_cite
+                    inner join capdb_casemetadata cite_to on c.case_id = cite_to.id
+                    where cite_from.volume_id = '%s'
+                    group by cite_from.id;
+                    """ % volume_id
 
         with connections['capdb'].cursor() as cursor:
             cursor.execute(query)
             rows = cursor.fetchall()
             for row in rows:
                 vol_citation_results.append({
-                    'cite_from': {
-                        'id': row[0],
-                        'name_abbreviation': row[1],
-                        'decision_date': str(row[2]),
-                        'reporter': row[3]
-                    },
-                    'cite_to': {
-                        'id': row[4],
-                        'name_abbreviation': row[5],
-                        'decision_date': str(row[6]),
-                        'reporter': row[7]
-                    }
+                    'cite_from': row[0],
+                    'cite_to': row[1:][0]
                 })
         Path(settings.CITATIONS_DIR).mkdir(exist_ok=True)
         if len(vol_citation_results):

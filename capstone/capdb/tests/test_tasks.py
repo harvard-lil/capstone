@@ -323,7 +323,7 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
         content = json.loads(citation_file.read_text())
         results.extend(content)
     assert len(results) == 1
-    assert results[0]['cite_to']['name_abbreviation'] == case_to.name_abbreviation and results[0]['cite_to']['id'] == case_to.id
     assert results[0]['cite_from']['name_abbreviation'] == case_from.name_abbreviation and results[0]['cite_from']['id'] == case_from.id
+    assert results[0]['cite_to'][0]['name_abbreviation'] == case_to.name_abbreviation and results[0]['cite_to'][0]['id'] == case_to.id
 
 
