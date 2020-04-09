@@ -18,7 +18,7 @@ recent cases are from 2018.
 Each volume has been converted into structured, case-level data broken out by majority and dissenting opinion, with 
 human-checked metadata for party names, docket number, citation, and date.
 
-We also make available page images and page-level OCR data for all volumes. 
+We also offer PDFs with selectable OCR text for each case. 
 
 
 # Scope limits {: class="subtitle" } 
