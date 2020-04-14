@@ -320,13 +320,12 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     results = []
     for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.csv'):
         for line in csv.reader(citation_file.read_text().splitlines()):
-            extracted_cite_from, extracted_cite_to = line[0], json.loads(line[1])
-            results.append([int(extracted_cite_from), extracted_cite_to])
+            results.append(line)
     assert len(results) == 1
     case_citations = results[0]
-    assert case_citations[0] == case_from.id
-    assert case_to.id in case_citations[1] and another_case_to.id in case_citations[1]
-    assert len(case_citations[1]) == 2
+    assert case_citations[0] == str(case_from.id)
+    assert str(case_to.id) in case_citations and str(another_case_to.id) in case_citations
+    assert len(case_citations) == 3
 
     ### verify that we're ignoring all duplicate citations
     old_case_citations = case_citations
@@ -343,15 +342,14 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     results = []
     for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.csv'):
         for line in csv.reader(citation_file.read_text().splitlines()):
-            extracted_cite_from, extracted_cite_to = line[0], json.loads(line[1])
-            results.append([int(extracted_cite_from), extracted_cite_to])
+            results.append(line)
 
     assert len(results) == 1
     case_citations = results[0]
-    assert case_citations[0] == case_from.id
+    assert case_citations[0] == str(case_from.id)
 
     # only one duplicate citation found
-    assert case_dups[0].id not in case_citations[1]
-    assert case_dups[1].id not in case_citations[1]
-    assert len(case_citations[1]) == 2
+    assert str(case_dups[0].id) not in case_citations[1]
+    assert str(case_dups[1].id) not in case_citations[1]
+    assert len(case_citations) == 3
     assert case_citations == old_case_citations

@@ -506,4 +506,4 @@ def extract_citation_connections_per_vol(self, volume_id):
                     # adding only the first element in cite_to because of the double `array_agg` function
                     # so cite_tos are double-nested unless we un-nest
                     cite_tos = [cite_to[0] for cite_to in row[1]]
-                    writer.writerow([row[0], cite_tos])
+                    writer.writerow([row[0]] + cite_tos)
