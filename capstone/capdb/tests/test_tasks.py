@@ -303,21 +303,14 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     cite_from = "225 F.Supp. 552"
     cite_to = "73 Ill. 561"
     cite_not_in_cap = "23 Some. Cite. 456"
-    case_from = case_factory(body_cache__text=", some text, " + cite_to)
-    case_to = case_factory(body_cache__text=", some other text, ")
+    case_from = case_factory(body_cache__text=", some text, " + cite_to, citations__cite=cite_from, citations__type='official')
+    case_to = case_factory(body_cache__text=", some other text, ", citations__cite=cite_to, citations__type='official')
 
+    # extract citation and attach it to our case_from
     extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id)
 
     # the following cases should not show up (we should only be extracting citations that are found in CAP)
     extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id)
-
-    citation = citation_factory(cite=cite_from)
-    case_from.citations.add(citation)
-    case_from.save()
-
-    citation = citation_factory(cite=cite_to)
-    case_to.citations.add(citation)
-    case_to.save()
 
     fabfile.extract_vol_citation_connections()
     results = []
@@ -331,28 +324,15 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     assert len(case_citations[1]) == 1
 
     ### verify that we're ignoring all duplicate citations
-    cite_to_duplicate_citation = "36 R.I. 316"
+    old_case_citations = case_citations
+    duplicate_citation = "36 R.I. 316"
 
-    # create two separate cases with the same citation
-    case_to_dup1 = case_factory(body_cache__text=", some text, " + cite_to_duplicate_citation)
-    case_to_dup2 = case_factory(body_cache__text=", some text, " + cite_to_duplicate_citation)
+    # create several cases with the same citation
+    case_dups = [case_factory(body_cache__text=", some text, ", citations__cite=duplicate_citation,
+                              citations__type='official') for case_dup in range(3)]
 
-    case_from_with_dups = case_factory(body_cache__text=", some text, " + cite_to + ", " + cite_to_duplicate_citation)
-    case_from_with_dups_cite = "107 Mass. 1"
-    citation = citation_factory(cite=case_from_with_dups_cite)
-    case_from_with_dups.citations.add(citation)
-    case_from_with_dups.save()
-
-    # create extracted citation matching cite_to_duplicate_citation
-    extracted_citation_factory(cite=cite_to_duplicate_citation, cited_by_id=case_from.id)
-
-    citation = citation_factory(cite=cite_to_duplicate_citation)
-    case_to_dup1.citations.add(citation)
-    case_to_dup1.save()
-
-    citation = citation_factory(cite=cite_to_duplicate_citation)
-    case_to_dup2.citations.add(citation)
-    case_to_dup2.save()
+    # make sure we've extracted this citation
+    extracted_citation_factory(cite=duplicate_citation, cited_by_id=case_from.id)
 
     fabfile.extract_vol_citation_connections()
     results = []
@@ -365,7 +345,7 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     assert case_citations[0] == case_from.id
 
     # only one duplicate citation found
-    assert case_citations[1][0] == case_to_dup1.id
-    assert case_to_dup2.id not in case_citations[1]
-    assert len(case_citations[1]) == 2
-
+    assert case_dups[0].id not in case_citations[1]
+    assert case_dups[1].id not in case_citations[1]
+    assert len(case_citations[1]) == 1
+    assert case_citations == old_case_citations

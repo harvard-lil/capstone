@@ -480,23 +480,24 @@ def extract_citations_per_vol(self, volume_id):
 def extract_citation_connections_per_vol(self, volume_id):
     with record_task_status_for_volume(self, volume_id):
         query = """SELECT
-                cite_from.id, array_agg(cite_to.id)
-                from capdb_casemetadata cite_from
-                inner join capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
-                inner join (
-                    select
-                        distinct on (c.normalized_cite)
-                        c.normalized_cite, array_agg(c.id) as citation_ids, c.case_id
-                    from capdb_citation c
-                    group by c.normalized_cite, c.case_id
-                ) c on c.normalized_cite = ec.normalized_cite
-                inner join capdb_casemetadata cite_to on c.case_id = cite_to.id
-                where cite_from.volume_id = '%s'
-                group by cite_from.id;""" % volume_id
+        cite_from.id, array_agg(cite_to.id)
+        from capdb_casemetadata cite_from
+        inner join capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
+        inner join (
+            select
+                c.normalized_cite, array_agg(c.case_id) as case_ids
+            from capdb_citation c
+            group by c.normalized_cite
+             having count(c.case_id) = 1
+        ) c on c.normalized_cite = ec.normalized_cite
+        inner join capdb_casemetadata cite_to on c.case_ids[1] = cite_to.id
+        where cite_from.volume_id = '%s'
+        group by cite_from.id;""" % volume_id
 
         with connections['capdb'].cursor() as cursor:
             cursor.execute(query)
             vol_citation_results = cursor.fetchall()
+        
         Path(settings.CITATIONS_DIR).mkdir(exist_ok=True)
         if len(vol_citation_results):
             with open("%s/citations-%s.json" % (settings.CITATIONS_DIR, volume_id), "w+") as f:
