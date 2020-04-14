@@ -306,8 +306,10 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     case_from = case_factory(body_cache__text=", some text, " + cite_to)
     case_to = case_factory(body_cache__text=", some other text, ")
 
-    extracted_citation = extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id) # noqa
-    extracted_citation_not_in_cap = extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id) # noqa
+    extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id)
+
+    # the following cases should not show up (we should only be extracting citations that are found in CAP)
+    extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id)
 
     citation = citation_factory(cite=cite_from)
     case_from.citations.add(citation)
@@ -323,7 +325,47 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
         content = json.loads(citation_file.read_text())
         results.extend(content)
     assert len(results) == 1
-    assert results[0]['cite_from']['name_abbreviation'] == case_from.name_abbreviation and results[0]['cite_from']['id'] == case_from.id
-    assert results[0]['cite_to'][0]['name_abbreviation'] == case_to.name_abbreviation and results[0]['cite_to'][0]['id'] == case_to.id
+    case_citations = results[0]
+    assert case_citations[0] == case_from.id
+    assert case_citations[1][0] == case_to.id
+    assert len(case_citations[1]) == 1
 
+    ### verify that we're ignoring all duplicate citations
+    cite_to_duplicate_citation = "36 R.I. 316"
+
+    # create two separate cases with the same citation
+    case_to_dup1 = case_factory(body_cache__text=", some text, " + cite_to_duplicate_citation)
+    case_to_dup2 = case_factory(body_cache__text=", some text, " + cite_to_duplicate_citation)
+
+    case_from_with_dups = case_factory(body_cache__text=", some text, " + cite_to + ", " + cite_to_duplicate_citation)
+    case_from_with_dups_cite = "107 Mass. 1"
+    citation = citation_factory(cite=case_from_with_dups_cite)
+    case_from_with_dups.citations.add(citation)
+    case_from_with_dups.save()
+
+    # create extracted citation matching cite_to_duplicate_citation
+    extracted_citation_factory(cite=cite_to_duplicate_citation, cited_by_id=case_from.id)
+
+    citation = citation_factory(cite=cite_to_duplicate_citation)
+    case_to_dup1.citations.add(citation)
+    case_to_dup1.save()
+
+    citation = citation_factory(cite=cite_to_duplicate_citation)
+    case_to_dup2.citations.add(citation)
+    case_to_dup2.save()
+
+    fabfile.extract_vol_citation_connections()
+    results = []
+    for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.json'):
+        content = json.loads(citation_file.read_text())
+        results.extend(content)
+
+    assert len(results) == 1
+    case_citations = results[0]
+    assert case_citations[0] == case_from.id
+
+    # only one duplicate citation found
+    assert case_citations[1][0] == case_to_dup1.id
+    assert case_to_dup2.id not in case_citations[1]
+    assert len(case_citations[1]) == 2
 
