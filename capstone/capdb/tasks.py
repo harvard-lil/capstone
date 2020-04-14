@@ -497,8 +497,10 @@ def extract_citation_connections_per_vol(self, volume_id):
         with connections['capdb'].cursor() as cursor:
             cursor.execute(query)
             vol_citation_results = cursor.fetchall()
-        
+
         Path(settings.CITATIONS_DIR).mkdir(exist_ok=True)
         if len(vol_citation_results):
-            with open("%s/citations-%s.json" % (settings.CITATIONS_DIR, volume_id), "w+") as f:
-                json.dump(vol_citation_results, f)
+            with open("%s/citations-%s.csv" % (settings.CITATIONS_DIR, volume_id), "w+") as f:
+                writer = csv.writer(f)
+                for row in vol_citation_results:
+                    writer.writerow(row)

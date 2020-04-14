@@ -1171,23 +1171,6 @@ def extract_vol_citation_connections(last_run_before=None):
 
 
 @task
-def merge_citations_per_vol(output_filename):
-    """ merges disparate volume jsons from `extract_vol_citation_connections` task"""
-    with open(output_filename, "w+") as output_file:
-        output_file.write("[")
-        for f in Path(settings.CITATIONS_DIR).glob('*.json'):
-            content = json.loads(f.read_text())
-            for obj in content:
-                output_file.write(json.dumps(obj))
-                output_file.write(",")
-
-        # remove last comma
-        output_file.seek(output_file.tell()-1, os.SEEK_SET)
-        output_file.truncate()
-        output_file.write("]")
-
-
-@task
 def report_missed_citations():
     """ Summarize files written by extract_all_citations. Writes csv to stdout. """
     from pathlib import Path
