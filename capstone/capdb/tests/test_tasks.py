@@ -302,26 +302,31 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     settings.CITATIONS_DIR = str(tmpdir)
     cite_from = "225 F.Supp. 552"
     cite_to = "73 Ill. 561"
+    another_cite_to = "43 Ill. 112"
     cite_not_in_cap = "23 Some. Cite. 456"
+
     case_from = case_factory(body_cache__text=", some text, " + cite_to, citations__cite=cite_from, citations__type='official')
     case_to = case_factory(body_cache__text=", some other text, ", citations__cite=cite_to, citations__type='official')
+    another_case_to = case_factory(body_cache__text=", some other text, ", citations__cite=another_cite_to, citations__type='official')
 
     # extract citation and attach it to our case_from
     extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id)
+    extracted_citation_factory(cite=another_cite_to, cited_by_id=case_from.id)
 
     # the following cases should not show up (we should only be extracting citations that are found in CAP)
     extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id)
 
     fabfile.extract_vol_citation_connections()
     results = []
-    for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.json'):
-        content = json.loads(citation_file.read_text())
-        results.extend(content)
+    for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.csv'):
+        for line in csv.reader(citation_file.read_text().splitlines()):
+            extracted_cite_from, extracted_cite_to = line[0], json.loads(line[1])
+            results.append([int(extracted_cite_from), extracted_cite_to])
     assert len(results) == 1
     case_citations = results[0]
     assert case_citations[0] == case_from.id
-    assert case_citations[1][0] == case_to.id
-    assert len(case_citations[1]) == 1
+    assert case_to.id in case_citations[1] and another_case_to.id in case_citations[1]
+    assert len(case_citations[1]) == 2
 
     ### verify that we're ignoring all duplicate citations
     old_case_citations = case_citations
@@ -336,9 +341,10 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
 
     fabfile.extract_vol_citation_connections()
     results = []
-    for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.json'):
-        content = json.loads(citation_file.read_text())
-        results.extend(content)
+    for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.csv'):
+        for line in csv.reader(citation_file.read_text().splitlines()):
+            extracted_cite_from, extracted_cite_to = line[0], json.loads(line[1])
+            results.append([int(extracted_cite_from), extracted_cite_to])
 
     assert len(results) == 1
     case_citations = results[0]
@@ -347,5 +353,5 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     # only one duplicate citation found
     assert case_dups[0].id not in case_citations[1]
     assert case_dups[1].id not in case_citations[1]
-    assert len(case_citations[1]) == 1
+    assert len(case_citations[1]) == 2
     assert case_citations == old_case_citations
