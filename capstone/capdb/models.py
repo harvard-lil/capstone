@@ -1969,15 +1969,29 @@ class PageStructure(models.Model):
     def unredact(self, key=settings.REDACTION_KEY):
         """
             Remove encryption and redaction from this page.
+
+            >>> page = PageStructure(blocks=[{
+            ...     'redacted': True,
+            ...     'tokens': [['redact'], ['foo'], 'foo', ['/foo'], ['/redact']],
+            ... }])
+            >>> page.unredact()
+            >>> assert page.blocks == [{
+            ...     'unredacted': True,
+            ...     'tokens': [['unredact'], ['foo'], 'foo', ['/foo'], ['/unredact']],
+            ... }]
         """
-        self.decrypt(key)
-        self.encrypted_strings = None
+        if self.encrypted_strings:
+            self.decrypt(key)
+            self.encrypted_strings = None
+        token_filter = {'redact': ['unredact'], '/redact': ['/unredact']}
 
         # strip redaction markers from blocks attribute
         for block in self.blocks:
-            block.pop('redacted', None)
+            if 'redacted' in block:
+                del block['redacted']
+                block['unredacted'] = True
             if block.get('tokens', None):
-                block['tokens'] = [t for t in block['tokens'] if type(t) is str or t[0] not in ('redact', '/redact')]
+                block['tokens'] = [(t if type(t) is str else token_filter.get(t[0], t)) for t in block['tokens']]
 
 
 class CaseStructure(models.Model):
@@ -2004,19 +2018,26 @@ class CaseStructure(models.Model):
             ... }])
             >>> case.unredact()
             >>> assert case.opinions == [{
-            ...     'paragraphs': [{}],
+            ...     'paragraphs': [{'unredacted': True}],
             ...     'footnotes': [{
-            ...         'paragraphs': [{}],
+            ...         'unredacted': True,
+            ...         'paragraphs': [{'unredacted': True}],
             ...     }],
             ... }]
         """
         for opinion in self.opinions:
             for paragraph in opinion.get("paragraphs", []):
-                paragraph.pop("redacted", None)
+                if "redacted" in paragraph:
+                    del paragraph["redacted"]
+                    paragraph["unredacted"] = True
             for footnote in opinion.get("footnotes", []):
-                footnote.pop("redacted", None)
+                if "redacted" in footnote:
+                    del footnote["redacted"]
+                    footnote["unredacted"] = True
                 for paragraph in footnote.get("paragraphs", []):
-                    paragraph.pop("redacted", None)
+                    if "redacted" in paragraph:
+                        del paragraph["redacted"]
+                        paragraph["unredacted"] = True
 
 
 

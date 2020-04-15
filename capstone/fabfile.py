@@ -7,6 +7,8 @@ import signal
 import subprocess
 import sys
 from datetime import datetime
+from getpass import getpass
+
 import django
 import json
 from random import randint
@@ -1121,20 +1123,27 @@ def download_pdfs(jurisdiction=None):
             raise
 
 
-@task
-def unredact_out_of_copyright_volumes(dry_run='true'):
-    from django.utils import timezone
-    key = None
-    if dry_run == 'false':
-        key = input("Enter decryption key: ").strip()
-    volumes = (VolumeMetadata.objects
-        .filter(out_of_scope=False, redacted=True, publication_year__lt=timezone.now().year-95)
+def unredact_volumes(volumes, dry_run='true'):
+    key = getpass("Enter decryption key: ").strip() if dry_run == 'false' else None
+    volumes = (volumes
+        .filter(out_of_scope=False, redacted=True)
         .select_related('reporter')
         .order_by('publication_year', 'volume_number'))
     for volume in volumes:
         print("Unredacting %s %s (%s)" % (volume.volume_number, volume.reporter.short_name, volume.publication_year))
         if dry_run == 'false':
             volume.unredact(key)
+
+
+@task
+def unredact_out_of_copyright_volumes(dry_run='true'):
+    from django.utils import timezone
+    unredact_volumes(VolumeMetadata.objects.filter(publication_year__lt=timezone.now().year-95), dry_run)
+
+
+@task
+def unredact_jurisdiction_volumes(jurisdiction_slug, dry_run='true'):
+    unredact_volumes(VolumeMetadata.objects.filter(reporter__jurisdictions__slug=jurisdiction_slug), dry_run)
 
 
 @task

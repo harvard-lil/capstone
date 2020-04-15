@@ -64,7 +64,7 @@ def test_volume_save_slug_update(volume_metadata):
 
 
 @pytest.mark.django_db
-def test_volume_unredact(case_factory):
+def test_volume_unredact(reset_sequences, case_factory):
     # set up a redacted case
     case = case_factory(volume__redacted=True, volume__pdf_file='')
     structure = case.structure
@@ -113,7 +113,11 @@ def test_volume_unredact(case_factory):
     case.sync_case_body_cache()
     case.refresh_from_db()
     assert case.body_cache.text == '\n\n'
-    assert 'src="data:image data"' not in case.body_cache.html
+    assert xml_equal(case.body_cache.html,
+        '<section class="casebody" data-case-id="00000000" data-firstpage="4" data-lastpage="8">\n'
+        '  <section class="head-matter"/>\n'
+        '  <article class="opinion" data-type="majority"/>\n'
+        '</section>')
 
     # unredact
     volume = case.volume
@@ -122,8 +126,22 @@ def test_volume_unredact(case_factory):
     case.body_cache.refresh_from_db()
     assert volume.redacted is False
     assert case.body_cache.text == 'Text 1\nText 2Text 3\nText 4\n'
-    assert 'src="data:image data"' in case.body_cache.html
-
+    assert xml_equal(case.body_cache.html,
+        '<section class="casebody" data-case-id="00000000" data-firstpage="4" data-lastpage="8">\n'
+        '  <section class="head-matter">\n'
+        '    <h4 class="parties" id="b1-1">Text 1</h4>\n'
+        '  </section>\n'
+        '  <article class="opinion" data-type="majority">\n'
+        '    <p id="b1-2">Text 2Text 3</p>\n'
+        '    <p class="image" id="b1-3">\n'
+        '      <img class="image" height="100" src="data:image data" width="100"/>\n'
+        '    </p>\n'
+        '    <aside class="footnote" data-label="1" id="footnote_1_1">\n'
+        '      <a href="#ref_footnote_1_1">1</a>\n'
+        '      <p id="b1-4">Text 4</p>\n'
+        '    </aside>\n'
+        '  </article>\n'
+        '</section>')
 
 
 ### BaseXMLModel ###
