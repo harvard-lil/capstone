@@ -23,7 +23,7 @@ except Exception as e:
     print("WARNING: Can't configure Django -- tasks depending on Django will fail:\n%s" % e)
 
 from django.core import management
-from django.db import connections
+from django.db import connections, transaction
 from django.utils.encoding import force_str, force_bytes
 from django.conf import settings
 from fabric.api import local
@@ -1165,9 +1165,41 @@ def extract_all_citations(last_run_before=None):
 
 
 @task
-def extract_vol_citation_connections(last_run_before=None):
+def export_citation_graph(chunk_size=10000, filepath=None, last_run_before=None, ):
     """ writes cited from and citing to"""
-    tasks.run_task_for_volumes(tasks.extract_citation_connections_per_vol, last_run_before=last_run_before)
+    from capdb.storages import download_files_storage
+    vols = VolumeMetadata.objects.all().values_list('barcode', flat=True)
+    full_filepath = download_files_storage.path(filepath)
+    with gzip.open(os.path.join('%s.csv.gz' % full_filepath), "wt+") as f:
+        csv_w = csv.writer(f)
+        for volume_id in vols:
+            query = """
+                    DECLARE cite_cursor CURSOR for
+                    select
+                    from_id, array_agg(to_id)
+                    from (
+                        select
+                        cite_from.id as from_id, array_agg(cite_to.case_id) as to_id
+                        from capdb_casemetadata cite_from
+        
+                        inner join 
+                            capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
+                        inner join 
+                            capdb_citation cite_to on cite_to.normalized_cite = ec.normalized_cite
+                        where cite_from.volume_id = '%s' and cite_from.in_scope is true
+                        group by cite_from.id, ec.normalized_cite
+                        having count(*) = 1
+                    ) as c group by from_id;""" % volume_id
+            with transaction.atomic(using='capdb'), connections['capdb'].cursor() as cursor:
+                cursor.execute(query)
+                while True:
+                    cursor.execute("FETCH %s FROM cite_cursor" % str(chunk_size))
+                    chunk = cursor.fetchall()
+                    if not chunk:
+                        break
+                    for row in chunk:
+                        cite_tos = [cite_to[0] for cite_to in row[1]]
+                        csv_w.writerow([row[0]] + cite_tos)
 
 
 @task
