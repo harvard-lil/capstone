@@ -1165,42 +1165,45 @@ def extract_all_citations(last_run_before=None):
 
 
 @task
-def export_citation_graph(chunk_size=10000, filepath=None, last_run_before=None, ):
-    """ writes cited from and citing to"""
-    from capdb.storages import download_files_storage
-    vols = VolumeMetadata.objects.all().values_list('barcode', flat=True)
-    full_filepath = download_files_storage.path(filepath)
+def export_citation_graph(chunk_size=10000, file_name="citations", output_folder="graph"):
+    """writes cited from and citing to to file"""
+    full_filepath = os.path.join(output_folder, file_name)
+
+    # create path if doesn't exist
+    pathlib.Path(full_filepath).mkdir(parents=True, exist_ok=True)
+    cursor_name = 'cite_cursor'
     with gzip.open(os.path.join('%s.csv.gz' % full_filepath), "wt+") as f:
         csv_w = csv.writer(f)
-        for volume_id in vols:
-            query = """
-                    DECLARE cite_cursor CURSOR for
+        query = """
+                DECLARE %s CURSOR for
+                select
+                from_id, array_agg(to_id)
+                from (
                     select
-                    from_id, array_agg(to_id)
-                    from (
-                        select
-                        cite_from.id as from_id, array_agg(cite_to.case_id) as to_id
-                        from capdb_casemetadata cite_from
-        
-                        inner join 
-                            capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
-                        inner join 
-                            capdb_citation cite_to on cite_to.normalized_cite = ec.normalized_cite
-                        where cite_from.volume_id = '%s' and cite_from.in_scope is true
-                        group by cite_from.id, ec.normalized_cite
-                        having count(*) = 1
-                    ) as c group by from_id;""" % volume_id
-            with transaction.atomic(using='capdb'), connections['capdb'].cursor() as cursor:
-                cursor.execute(query)
-                while True:
-                    cursor.execute("FETCH %s FROM cite_cursor" % str(chunk_size))
-                    chunk = cursor.fetchall()
-                    if not chunk:
-                        break
-                    for row in chunk:
-                        cite_tos = [cite_to[0] for cite_to in row[1]]
-                        csv_w.writerow([row[0]] + cite_tos)
+                    cite_from.id as from_id, array_agg(cite_to.case_id) as to_id
+                    from capdb_casemetadata cite_from
+    
+                    inner join 
+                        capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
+                    inner join 
+                        capdb_citation cite_to on cite_to.normalized_cite = ec.normalized_cite
+                    where cite_from.in_scope is true
+                    group by cite_from.id, ec.normalized_cite
+                    having count(*) = 1
+                ) as c group by from_id;
+               """ % cursor_name
 
+        with transaction.atomic(using='capdb'), connections['capdb'].cursor() as cursor:
+            cursor.execute(query)
+            while True:
+                cursor.execute("FETCH %s FROM %s" % (str(chunk_size), cursor_name))
+                chunk = cursor.fetchall()
+                if not chunk:
+                    cursor.execute("CLOSE %s;" % cursor_name)
+                    break
+                for row in chunk:
+                    cite_tos = [cite_to[0] for cite_to in row[1]]
+                    csv_w.writerow([row[0]] + cite_tos)
 
 @task
 def report_missed_citations():

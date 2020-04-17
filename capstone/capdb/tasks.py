@@ -476,34 +476,3 @@ def extract_citations_per_vol(self, volume_id):
                 writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])
 
 
-@shared_task(bind=True, acks_late=True)
-def extract_citation_connections_per_vol(self, volume_id):
-    with record_task_status_for_volume(self, volume_id):
-        query = """select
-                    from_id, array_agg(to_id)
-                    from (
-                        select
-                        cite_from.id as from_id, array_agg(cite_to.case_id) as to_id
-                        from capdb_casemetadata cite_from
-                        inner join 
-                            capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
-                        inner join 
-                            capdb_citation cite_to on cite_to.normalized_cite = ec.normalized_cite
-                        where cite_from.volume_id = '%s'
-                        group by cite_from.id, ec.normalized_cite
-                        having count(*) = 1
-                    ) as c group by from_id;""" % volume_id
-
-        with connections['capdb'].cursor() as cursor:
-            cursor.execute(query)
-            vol_citation_results = cursor.fetchall()
-
-        Path(settings.CITATIONS_DIR).mkdir(exist_ok=True)
-        if len(vol_citation_results):
-            with open("%s/citations-%s.csv" % (settings.CITATIONS_DIR, volume_id), "w+") as f:
-                writer = csv.writer(f)
-                for row in vol_citation_results:
-                    # adding only the first element in cite_to because of the double `array_agg` function
-                    # so cite_tos are double-nested unless we un-nest
-                    cite_tos = [cite_to[0] for cite_to in row[1]]
-                    writer.writerow([row[0]] + cite_tos)

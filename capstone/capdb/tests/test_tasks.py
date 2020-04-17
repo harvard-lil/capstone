@@ -298,8 +298,10 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
 
 
 @pytest.mark.django_db
-def test_export_citation_connections(case_factory, tmpdir, settings, elasticsearch, extracted_citation_factory, citation_factory):
-    settings.CITATIONS_DIR = str(tmpdir)
+def test_export_citation_graph(case_factory, tmpdir, settings, elasticsearch, extracted_citation_factory, citation_factory):
+    output_folder = str(tmpdir)
+    file_name = "citations"
+    file_path = os.path.join(output_folder, file_name + ".csv.gz")
     cite_from = "225 F.Supp. 552"
     cite_to = "73 Ill. 561"
     another_cite_to = "43 Ill. 112"
@@ -315,12 +317,12 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
 
     # the following cases should not show up (we should only be extracting citations that are found in CAP)
     extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id)
-
-    fabfile.extract_vol_citation_connections()
+    fabfile.export_citation_graph(output_folder=output_folder)
     results = []
-    for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.csv'):
-        for line in csv.reader(citation_file.read_text().splitlines()):
-            results.append(line)
+    with gzip.open(file_path, 'rt') as f:
+        csv_r = csv.reader(f)
+        for row in csv_r:
+            results.append(row)
     assert len(results) == 1
     case_citations = results[0]
     assert case_citations[0] == str(case_from.id)
@@ -338,12 +340,12 @@ def test_export_citation_connections(case_factory, tmpdir, settings, elasticsear
     # make sure we've extracted this citation
     extracted_citation_factory(cite=duplicate_citation, cited_by_id=case_from.id)
 
-    fabfile.extract_vol_citation_connections()
+    fabfile.export_citation_graph(output_folder=output_folder)
     results = []
-    for citation_file in Path(settings.CITATIONS_DIR).glob('citations-*.csv'):
-        for line in csv.reader(citation_file.read_text().splitlines()):
-            results.append(line)
-
+    with gzip.open(file_path, 'rt') as f:
+        csv_r = csv.reader(f)
+        for row in csv_r:
+            results.append(row)
     assert len(results) == 1
     case_citations = results[0]
     assert case_citations[0] == str(case_from.id)
