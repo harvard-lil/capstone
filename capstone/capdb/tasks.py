@@ -483,3 +483,4 @@ def extract_citations_per_vol(self, volume_id):
             for case in citation_misses_per_case:
                 writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])
 
+

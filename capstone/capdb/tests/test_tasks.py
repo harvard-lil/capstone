@@ -295,3 +295,63 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
     with django_assert_num_queries(select=5, update=2):
         sync_case_body_cache_for_vol(volume_metadata.barcode, rerender=False)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
+
+
+@pytest.mark.django_db
+def test_export_citation_graph(case_factory, tmpdir, settings, elasticsearch, extracted_citation_factory, citation_factory):
+    output_folder = str(tmpdir)
+    file_name = "citations"
+    file_path = os.path.join(output_folder, file_name + ".csv.gz")
+    cite_from = "225 F.Supp. 552"
+    cite_to = "73 Ill. 561"
+    another_cite_to = "43 Ill. 112"
+    cite_not_in_cap = "23 Some. Cite. 456"
+
+    case_from = case_factory(body_cache__text=", some text, " + cite_to, citations__cite=cite_from, citations__type='official')
+    case_to = case_factory(body_cache__text=", some other text, ", citations__cite=cite_to, citations__type='official')
+    another_case_to = case_factory(body_cache__text=", some other text, ", citations__cite=another_cite_to, citations__type='official')
+
+    # extract citation and attach it to our case_from
+    extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id)
+    extracted_citation_factory(cite=another_cite_to, cited_by_id=case_from.id)
+
+    # the following cases should not show up (we should only be extracting citations that are found in CAP)
+    extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id)
+    fabfile.export_citation_graph(output_folder=output_folder)
+    results = []
+    with gzip.open(file_path, 'rt') as f:
+        csv_r = csv.reader(f)
+        for row in csv_r:
+            results.append(row)
+    assert len(results) == 1
+    case_citations = results[0]
+    assert case_citations[0] == str(case_from.id)
+    assert str(case_to.id) in case_citations and str(another_case_to.id) in case_citations
+    assert len(case_citations) == 3
+
+    ### verify that we're ignoring all duplicate citations
+    old_case_citations = case_citations
+    duplicate_citation = "36 R.I. 316"
+
+    # create several cases with the same citation
+    case_dups = [case_factory(body_cache__text=", some text, ", citations__cite=duplicate_citation,
+                              citations__type='official') for case_dup in range(3)]
+
+    # make sure we've extracted this citation
+    extracted_citation_factory(cite=duplicate_citation, cited_by_id=case_from.id)
+
+    fabfile.export_citation_graph(output_folder=output_folder)
+    results = []
+    with gzip.open(file_path, 'rt') as f:
+        csv_r = csv.reader(f)
+        for row in csv_r:
+            results.append(row)
+    assert len(results) == 1
+    case_citations = results[0]
+    assert case_citations[0] == str(case_from.id)
+
+    # only one duplicate citation found
+    assert str(case_dups[0].id) not in case_citations[1]
+    assert str(case_dups[1].id) not in case_citations[1]
+    assert len(case_citations) == 3
+    assert case_citations == old_case_citations

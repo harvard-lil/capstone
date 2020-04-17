@@ -657,3 +657,4 @@ MAILGUN_API_KEY = ''
 VALIDATE_EMAIL_SIGNUPS = False
 
 MISSED_CITATIONS_DIR = "/tmp/missed_citations"
+
