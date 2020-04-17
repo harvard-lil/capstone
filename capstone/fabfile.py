@@ -1174,7 +1174,6 @@ def export_citation_graph(chunk_size=10000, file_name="citations", output_folder
 
     cursor_name = 'cite_cursor'
     with gzip.open(full_filepath, "wt") as f:
-        csv_w = csv.writer(f)
         query = """
                 DECLARE %s CURSOR for
                 select
@@ -1193,7 +1192,6 @@ def export_citation_graph(chunk_size=10000, file_name="citations", output_folder
                     having count(*) = 1
                 ) as c group by from_id;
                """ % cursor_name
-
         with transaction.atomic(using='capdb'), connections['capdb'].cursor() as cursor:
             cursor.execute(query)
             while True:
@@ -1203,8 +1201,11 @@ def export_citation_graph(chunk_size=10000, file_name="citations", output_folder
                     cursor.execute("CLOSE %s;" % cursor_name)
                     break
                 for row in chunk:
-                    cite_tos = [cite_to[0] for cite_to in row[1]]
-                    csv_w.writerow([row[0]] + cite_tos)
+                    formatted = str(row[0])
+                    for cite_to in row[1]:
+                        formatted += ","+str(cite_to[0])
+                    f.write(formatted)
+                    f.write("\n")
 
 @task
 def report_missed_citations():
