@@ -1183,6 +1183,7 @@ def export_citation_graph(chunk_size=10000, file_name="citations", output_folder
 
     cursor_name = 'cite_cursor'
     with gzip.open(full_filepath, "wt") as f:
+        csv_w = csv.writer(f)
         query = """
                 DECLARE %s CURSOR for
                 select
