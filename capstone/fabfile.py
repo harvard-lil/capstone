@@ -1176,13 +1176,13 @@ def extract_all_citations(last_run_before=None):
 @task
 def export_citation_graph(chunk_size=10000, file_name="citations", output_folder="graph"):
     """writes cited from and citing to to file"""
-    full_filepath = os.path.join(output_folder, file_name)
+    full_filepath = os.path.join(output_folder, '%s.csv.gz' % file_name)
 
     # create path if doesn't exist
-    pathlib.Path(full_filepath).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     cursor_name = 'cite_cursor'
-    with gzip.open(os.path.join('%s.csv.gz' % full_filepath), "wt+") as f:
-        csv_w = csv.writer(f)
+    with gzip.open(full_filepath, "wt") as f:
         query = """
                 DECLARE %s CURSOR for
                 select
@@ -1201,7 +1201,7 @@ def export_citation_graph(chunk_size=10000, file_name="citations", output_folder
                     having count(*) = 1
                 ) as c group by from_id;
                """ % cursor_name
-
+        
         with transaction.atomic(using='capdb'), connections['capdb'].cursor() as cursor:
             cursor.execute(query)
             while True:
