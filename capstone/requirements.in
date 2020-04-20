@@ -27,6 +27,7 @@ mysqlclient         # mysql connector
 redis               # redis connector
 python-redis-lock   # cross-process locks
 python-rocksdb      # key-value store for ngrams
+Cython<3.0          # for compiling python-rocksdb
 msgpack             # for storing data in KV store
 
 # Django stuff
@@ -58,6 +59,7 @@ factory-boy        # mocking
 bagit              # validate BagIt bag
 flaky              # retry flaky tests
 retry              # re-run blocks of code until the ES index updates, but fail if they don't end up working
+pathlib2           # to keep --require-hashes happy; from pytest
 
 # SCSS
 libsasscompiler     # for compiling scss in pipeline
