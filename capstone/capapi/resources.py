@@ -12,7 +12,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import connections
 from django.db.models import QuerySet
-from django.template.defaultfilters import slugify
+from django.utils.text import slugify
 from django.http import FileResponse
 from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
@@ -189,12 +189,15 @@ def apply_replacements(item, replacements, prefix="[ ", suffix=" ]"):
 def link_to_cites(case_html, cites):
     """ links previously matched cites in frontend view
     >>> link_to_cites("Town of Dayton v. Town of Rutland, 84 Ill. 279, Rutland v. Dayton, 60 Ill. 58", [{'cite': '84 Ill. 279'}, {'cite': '60 Ill. 58'}])
-    "Town of Dayton v. Town of Rutland, <a href='http://cite.case.test:8000/Ill./84/279'>84 Ill. 279</a>, Rutland v. Dayton, <a href='http://cite.case.test:8000/Ill./60/58'>60 Ill. 58</a>"
+    "Town of Dayton v. Town of Rutland, <a href='http://cite.case.test:8000/ill/84/279/'>84 Ill. 279</a>, Rutland v. Dayton, <a href='http://cite.case.test:8000/ill/60/58/'>60 Ill. 58</a>"
     """
 
     for cite in cites:
-        vol_num, reporter_slug, page_num = re.match(cite_extracting_regex, cite['cite']).groups()
-        cite_link = """<a href='%s'>%s</a>""" % ((reverse('cite_home', host='cite') + '%s/%s/%s' % (reporter_slug, vol_num, page_num)), cite['cite'])
-        case_html = re.sub(cite['cite'], cite_link, case_html)
+        m = re.match(cite_extracting_regex, cite['cite'])
+        if not m:
+            continue
+        vol_num, reporter, page_num = m.groups()
+        cite_link = "<a href='%s'>%s</a>" % (reverse('citation', host='cite', args=[slugify(reporter), slugify(vol_num), page_num]), cite['cite'])
+        case_html = case_html.replace(cite['cite'], cite_link)
 
     return case_html
