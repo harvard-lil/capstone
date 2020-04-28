@@ -2,7 +2,6 @@ import csv
 import gzip
 import hashlib
 import os
-import pathlib
 import signal
 import subprocess
 import sys
@@ -113,7 +112,7 @@ def update_docker_image_version():
         docker_compose = docker_compose.replace(current_version, new_version)
         docker_compose_path.write_text(docker_compose)
         print("%s updated to version %s" % (docker_compose_path, new_version))
-        
+
     else:
         print("%s is already up to date" % docker_compose_path)
 
@@ -698,7 +697,7 @@ def url_to_js_string(target_url="http://case.test:8000/maintenance/?no_toolbar",
         # replace case.test:8000 with case.law
         data = data.replace(urlparse(target_url).netloc, new_domain)
     data = escapejs(data)           # encode for storage in javascript
-    pathlib.Path(out_path).write_text(data)
+    Path(out_path).write_text(data)
 
 
 @task
@@ -1070,7 +1069,6 @@ def download_pdfs(jurisdiction=None):
         as we're using a read-only overlay to expose the files.
     """
     from capdb.storages import pdf_storage, writeable_download_files_storage
-    from pathlib import Path
     import re
 
     # find each PDF by checking TarFile, since we have a 1-to-1 mapping between tar files and PDFs
@@ -1153,16 +1151,16 @@ def populate_case_page_order():
     """
     cursor = django.db.connections['capdb'].cursor()
     cursor.execute("""
-        UPDATE capdb_casemetadata m 
-        SET first_page_order=j.first_page_order, last_page_order=j.last_page_order 
-        FROM 
-            capdb_casestructure c, 
+        UPDATE capdb_casemetadata m
+        SET first_page_order=j.first_page_order, last_page_order=j.last_page_order
+        FROM
+            capdb_casestructure c,
             (
-                SELECT min(p.order) as first_page_order, max(p.order) as last_page_order, cp.casestructure_id 
-                FROM capdb_pagestructure p, capdb_casestructure_pages cp 
-                WHERE p.id=cp.pagestructure_id 
+                SELECT min(p.order) as first_page_order, max(p.order) as last_page_order, cp.casestructure_id
+                FROM capdb_pagestructure p, capdb_casestructure_pages cp
+                WHERE p.id=cp.pagestructure_id
                 GROUP BY cp.casestructure_id
-            ) j 
+            ) j
         WHERE c.metadata_id=m.id and c.id=j.casestructure_id
     """)
 
@@ -1174,51 +1172,88 @@ def extract_all_citations(last_run_before=None):
 
 
 @task
-def export_citation_graph(chunk_size=10000, file_name="citations", output_folder="graph"):
+def export_citation_graph(output_folder="graph"):
     """writes cited from and citing to to file"""
-    full_filepath = os.path.join(output_folder, '%s.csv.gz' % file_name)
+    from django.utils import timezone
+    from django.contrib.postgres.aggregates import ArrayAgg
 
     # create path if doesn't exist
-    pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+    citations_path = output_folder / 'citations.csv.gz'
+    citations_path.touch(mode=0o644)  # check that we have write access
 
-    cursor_name = 'cite_cursor'
-    with gzip.open(full_filepath, "wt") as f:
+    # write citations.csv.gz
+    nodes = set()
+    edge_count = 0
+    chunk_size = 10000
+    query = """
+        DECLARE cite_cursor CURSOR for
+        select
+            from_id, array_agg(distinct to_id)
+        from (
+            select
+                cite_from.id as from_id, min(cite_to.id) as to_id
+            from capdb_casemetadata cite_from
+            inner join
+                capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
+            inner join
+                capdb_citation cite on cite.normalized_cite = ec.normalized_cite
+            inner join
+                capdb_casemetadata cite_to on cite.case_id = cite_to.id
+            where cite_from.in_scope is true
+                and cite_from.decision_date_original >= cite_to.decision_date_original
+                and cite_to.id != cite_from.id
+            group by cite_from.id, ec.normalized_cite
+            having count(*) = 1
+        ) as c group by from_id;
+    """
+    print("Running citations query")
+    with transaction.atomic(using='capdb'), \
+            connections['capdb'].cursor() as cursor, \
+            gzip.open(str(citations_path), "wt") as f, \
+            tqdm() as pbar:
         csv_w = csv.writer(f)
-        query = """
-                DECLARE %s CURSOR for
-                select
-                from_id, array_agg(to_id)
-                from (
-                    select
-                    cite_from.id as from_id, array_agg(cite_to.case_id) as to_id
-                    from capdb_casemetadata cite_from
-    
-                    inner join 
-                        capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
-                    inner join 
-                        capdb_citation cite_to on cite_to.normalized_cite = ec.normalized_cite
-                    where cite_from.in_scope is true
-                    group by cite_from.id, ec.normalized_cite
-                    having count(*) = 1
-                ) as c group by from_id;
-               """ % cursor_name
-        
-        with transaction.atomic(using='capdb'), connections['capdb'].cursor() as cursor:
-            cursor.execute(query)
-            while True:
-                cursor.execute("FETCH %s FROM %s" % (str(chunk_size), cursor_name))
-                chunk = cursor.fetchall()
-                if not chunk:
-                    cursor.execute("CLOSE %s;" % cursor_name)
-                    break
-                for row in chunk:
-                    cite_tos = [cite_to[0] for cite_to in row[1]]
-                    csv_w.writerow([row[0]] + cite_tos)
+        cursor.execute(query)
+        while True:
+            cursor.execute("FETCH %s FROM cite_cursor" % chunk_size)
+            chunk = cursor.fetchall()
+            pbar.update()
+            if not chunk:
+                break
+            for row in chunk:
+                out = [row[0]] + row[1]
+                csv_w.writerow(out)
+                nodes.update(out)
+                edge_count += len(out) - 1
+
+    # write README.txt
+    output_folder.joinpath('README.md').write_text(
+        "Citation graph exported %s\n"
+        "Nodes: %s\n"
+        "Edges: %s\n" % (timezone.now(), len(nodes), edge_count)
+    )
+
+    # write metadata.csv.gz
+    fields = [
+        'id', 'frontend_url', 'jurisdiction__name', 'jurisdiction_id', 'court__name_abbreviation', 'court_id',
+        'reporter__short_name', 'reporter_id', 'name_abbreviation', 'decision_date_original', 'cites'
+    ]
+    nodes = list(nodes)
+    print("Writing metadata")
+    with gzip.open(str(output_folder / 'metadata.csv.gz'), "wt") as f:
+        csv_w = csv.writer(f)
+        csv_w.writerow(fields)
+        query = CaseMetadata.objects.annotate(cites=ArrayAgg('citations__cite')).values_list(*fields)
+        for i in tqdm(range(0, len(nodes), chunk_size)):
+            for row in query.filter(id__in=nodes[i:i+chunk_size]):
+                row = row[:-1] + ("; ".join(row[-1]),)  # combine citations
+                csv_w.writerow(row)
+
 
 @task
 def report_missed_citations():
     """ Summarize files written by extract_all_citations. Writes csv to stdout. """
-    from pathlib import Path
     import random
     counts = {}
     for f in Path(settings.MISSED_CITATIONS_DIR).glob('*.csv'):
@@ -1245,7 +1280,6 @@ def filter_limerick_lines(stopwords_path):
         such as https://www.freewebheaders.com/download/files/full-list-of-bad-words_text-file_2018_07_30.zip
         or https://www.cs.cmu.edu/~biglou/resources/bad-words.txt
     """
-    from pathlib import Path
     import re
     stopwords_set = set(s.lower() for s in Path(stopwords_path).read_text().splitlines(keepends=False))
     limerick_text = Path('static/js/limerick_lines.js').read_text()

@@ -2,7 +2,7 @@ from .settings_base import *  # noqa
 
 DEBUG = False
 
-STORAGES = {
+STORAGES.update({
     'ingest_storage': {
         'class': 'CapS3Storage',
         'kwargs': {
@@ -69,7 +69,7 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'downloads'),
         }
     }
-}
+})
 
 INVENTORY = {
     # prefix to strip from paths in manifest.json
