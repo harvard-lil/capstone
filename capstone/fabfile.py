@@ -1201,7 +1201,9 @@ def export_citation_graph(output_folder="graph"):
                 capdb_citation cite on cite.normalized_cite = ec.normalized_cite
             inner join
                 capdb_casemetadata cite_to on cite.case_id = cite_to.id
-            where cite_from.in_scope is true
+            where 
+                cite_from.in_scope is true
+                and cite_to.in_scope is true
                 and cite_from.decision_date_original >= cite_to.decision_date_original
                 and cite_to.id != cite_from.id
             group by cite_from.id, ec.normalized_cite
@@ -1235,20 +1237,83 @@ def export_citation_graph(output_folder="graph"):
     )
 
     # write metadata.csv.gz
-    fields = [
+    metadata_fields = [
         'id', 'frontend_url', 'jurisdiction__name', 'jurisdiction_id', 'court__name_abbreviation', 'court_id',
         'reporter__short_name', 'reporter_id', 'name_abbreviation', 'decision_date_original', 'cites'
     ]
     nodes = list(nodes)
     print("Writing metadata")
+    metadata = {}
     with gzip.open(str(output_folder / 'metadata.csv.gz'), "wt") as f:
         csv_w = csv.writer(f)
-        csv_w.writerow(fields)
-        query = CaseMetadata.objects.annotate(cites=ArrayAgg('citations__cite')).values_list(*fields)
+        csv_w.writerow(metadata_fields)
+        query = CaseMetadata.objects.annotate(cites=ArrayAgg('citations__cite')).values_list(*metadata_fields)
         for i in tqdm(range(0, len(nodes), chunk_size)):
             for row in query.filter(id__in=nodes[i:i+chunk_size]):
                 row = row[:-1] + ("; ".join(row[-1]),)  # combine citations
+                metadata[row[0]] = row
                 csv_w.writerow(row)
+
+    ### write outputs per-jurisdiction --
+    print("Writing jurisdiction files")
+
+    # read back through the adjacency list and write each row to the appropriate subfolder
+    jurisdictions = {}
+    jurs_folder = output_folder / 'by_jurisdiction'
+    jurs_folder.mkdir(parents=True, exist_ok=True)
+    jurs_folder.joinpath('README.md').write_text("Subsets of the full graph consisting only of citations between cases within a particular jurisdiction.")
+    with gzip.open(str(citations_path), 'rt') as f:
+        reader = csv.reader(f)
+        for ids in tqdm(reader):
+            # filter to only in-jurisdiction cites
+            ids = [int(i) for i in ids]
+            jur_name = metadata[ids[0]][2]
+            ids = [id for id in ids if metadata[id][2] == jur_name]
+            if len(ids) < 2:
+                continue
+
+            # if this is the first time we're seeing this jurisdiction, set up output streams for the
+            # adjacency list and metadata
+            if jur_name not in jurisdictions:
+                jur_folder = jurs_folder / jur_name
+                jur_folder.mkdir(parents=True, exist_ok=True)
+                graph_file = gzip.open(str(jur_folder / 'citations.csv.gz'), "wt")
+                graph_file_writer = csv.writer(graph_file)
+                metadata_file = gzip.open(str(jur_folder / 'metadata.csv.gz'), "wt")
+                metadata_file_writer = csv.writer(metadata_file)
+                metadata_file_writer.writerow(metadata_fields)
+                nodes = set()
+                jurisdictions[jur_name] = {
+                    'name': jur_name,
+                    'folder': jur_folder,
+                    'nodes': nodes,
+                    'graph_file': graph_file,
+                    'graph_file_writer': graph_file_writer,
+                    'metadata_file': metadata_file,
+                    'metadata_file_writer': metadata_file_writer,
+                    'edge_count': 0,
+                }
+
+            # write out adjacency list and metadata
+            jur = jurisdictions[jur_name]
+            nodes = jur['nodes']
+            metadata_file_writer = jur['metadata_file_writer']
+            jur['graph_file_writer'].writerow(ids)
+            jur['edge_count'] += len(ids) - 1
+            for id in ids:
+                if id not in nodes:
+                    nodes.add(id)
+                    metadata_file_writer.writerow(metadata[id])
+
+    # close streams for each jurisdiction and write out metadata
+    for jur in jurisdictions.values():
+        jur['graph_file'].close()
+        jur['metadata_file'].close()
+        jur['folder'].joinpath('README.md').write_text(
+            "Citation graph for %s exported %s\n"
+            "Nodes: %s\n"
+            "Edges: %s\n" % (jur['name'], timezone.now(), len(jur['nodes']), jur['edge_count'])
+        )
 
 
 @task
