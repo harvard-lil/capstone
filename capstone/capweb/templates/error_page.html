@@ -10,11 +10,19 @@
 {% block top_section_style %}bg-black{% endblock %}
 
 {% block explainer %}
-  <div class="middle-text">{{ middle }}</div>
+{% if middle %}
+  <div class="middle-text">
+    {{ middle }}
+  </div>
+{% endif %}
+{% if bottom %}
   <div class="bottom-text">
     {{ bottom }}
   </div>
+{% endif %}
+{% if action %}
   <div class="action-text">
     {{ action }}
   <div>
+{% endif %}
 {% endblock %}

@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import SuspiciousOperation
+from django.urls import NoReverseMatch
 from django.db import transaction
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -87,9 +88,11 @@ def robots(request):
 def series(request, series_slug):
     """ /<series_slug>/ -- list all volumes for each series with that slug (typically only one). """
     # redirect if series slug is in the wrong format
-
-    if slugify(series_slug) != series_slug:
-        return HttpResponseRedirect(reverse('series', args=[slugify(series_slug)], host='cite'))
+    try:
+        if slugify(series_slug) != series_slug:
+            return HttpResponseRedirect(reverse('series', args=[slugify(series_slug)], host='cite'))
+    except NoReverseMatch:
+        raise Http404
     reporters = list(Reporter.objects
         .filter(short_name_slug=series_slug)
         .exclude(start_year=None)
