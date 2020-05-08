@@ -298,39 +298,42 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
 
 
 @pytest.mark.django_db
-def test_export_citation_graph(case_factory, tmpdir, elasticsearch, extracted_citation_factory, citation_factory):
+def test_export_citation_graph(case_factory, tmpdir, elasticsearch, extracted_citation_factory, citation_factory, jurisdiction_factory):
     output_folder = Path(str(tmpdir))
-    cite_from = "225 F.Supp. 552"
-    cite_to = "73 Ill. 561"
-    cite_to_aka = "123 Reg. 456"
-    another_cite_to = "43 Ill. 112"
-    cite_not_in_cap = "23 Some. Cite. 456"
-    duplicate_citation = "36 R.I. 316"
-    future_cite = "123 Fut. 456"
+    (
+        cite_from, cite_to, different_jur_cite, cite_to_aka, another_cite_to,
+        cite_not_in_cap, duplicate_cite, future_cite
+    ) = ["%s Cite %s" % (i, i) for i in range(1, 9)]
+
+    jur1, jur2, jur3 = [jurisdiction_factory() for _ in range(3)]
 
     # source case
-    case_from = case_factory(citations__cite=cite_from, decision_date=datetime(2000, 1, 1))
+    case_from = case_factory(citations__cite=cite_from, decision_date=datetime(2000, 1, 1), jurisdiction=jur1)
     extracted_citation_factory(cite=cite_from, cited_by_id=case_from.id)  # cite to self is ignored
 
     # dest case should appear
-    case_to = case_factory(citations__cite=cite_to, decision_date=datetime(1990, 1, 1))
+    case_to = case_factory(citations__cite=cite_to, decision_date=datetime(1990, 1, 1), jurisdiction=jur1)
     extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id)
     citation_factory(cite=cite_to_aka, case=case_to)
     extracted_citation_factory(cite=cite_to_aka, cited_by_id=case_from.id)  # we should only include this parallel cite once
 
+    # different jur source case
+    different_jur_case = case_factory(citations__cite=different_jur_cite, decision_date=datetime(2000, 1, 1), jurisdiction=jur2)
+    extracted_citation_factory(cite=cite_to, cited_by_id=different_jur_case.id)
+
     # second dest case should appear
-    another_case_to = case_factory(citations__cite=another_cite_to, decision_date=datetime(1990, 1, 1))
+    another_case_to = case_factory(citations__cite=another_cite_to, decision_date=datetime(1990, 1, 1), jurisdiction=jur3)
     extracted_citation_factory(cite=another_cite_to, cited_by_id=case_from.id)
 
     # multiple cases with same cite should be filtered out
-    [case_factory(citations__cite=duplicate_citation) for _ in range(3)]
-    extracted_citation_factory(cite=duplicate_citation, cited_by_id=case_from.id)
+    [case_factory(citations__cite=duplicate_cite, jurisdiction=jur1) for _ in range(3)]
+    extracted_citation_factory(cite=duplicate_cite, cited_by_id=case_from.id)
 
     # cites matching zero cases should be filtered out
     extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id)
 
     # citations to future cases should be filtered out
-    case_factory(citations__cite=future_cite, decision_date=datetime(2010, 1, 1))
+    case_factory(citations__cite=future_cite, decision_date=datetime(2010, 1, 1), jurisdiction=jur1)
     extracted_citation_factory(cite=future_cite, cited_by_id=case_from.id)
 
     # perform export
@@ -339,17 +342,38 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, extracted_ci
     # check citations.csv.gz
     with gzip.open(str(output_folder / "citations.csv.gz"), 'rt') as f:
         results = list(csv.reader(f))
-    assert len(results) == 1
+    assert len(results) == 2
     assert results[0][0] == str(case_from.id)
     assert set(results[0][1:]) == {str(case_to.id), str(another_case_to.id)}
+    assert results[1][0] == str(different_jur_case.id)
+    assert set(results[1][1:]) == {str(case_to.id)}
 
     # check README.md
     results = output_folder.joinpath("README.md").read_text()
-    assert results.endswith("\nNodes: 3\nEdges: 2\n")
+    assert results.endswith("\nNodes: 4\nEdges: 3\n")
 
     # check metadata.csv.gz
     with gzip.open(str(output_folder / "metadata.csv.gz"), 'rt') as f:
         results = list(csv.DictReader(f))
-    assert set(int(r['id']) for r in results) == {case_from.id, case_to.id, another_case_to.id}
+    assert set(int(r['id']) for r in results) == {case_from.id, case_to.id, another_case_to.id, different_jur_case.id}
+    for r in results:  # check 'cites' column
+        assert set(c.cite for c in Citation.objects.filter(case_id=r['id'])) == set(r['cites'].split('; '))
+
+    # check per-jurisdiction citations.csv.gz
+    jur_folder = output_folder / "by_jurisdiction" / jur1.name
+    with gzip.open(str(jur_folder / "citations.csv.gz"), 'rt') as f:
+        results = list(csv.reader(f))
+    assert len(results) == 1
+    assert results[0][0] == str(case_from.id)
+    assert set(results[0][1:]) == {str(case_to.id)}
+
+    # check README.md
+    results = jur_folder.joinpath("README.md").read_text()
+    assert results.endswith("\nNodes: 2\nEdges: 1\n")
+
+    # check metadata.csv.gz
+    with gzip.open(str(jur_folder / "metadata.csv.gz"), 'rt') as f:
+        results = list(csv.DictReader(f))
+    assert set(int(r['id']) for r in results) == {case_from.id, case_to.id}
     for r in results:  # check 'cites' column
         assert set(c.cite for c in Citation.objects.filter(case_id=r['id'])) == set(r['cites'].split('; '))
