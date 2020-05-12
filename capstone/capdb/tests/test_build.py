@@ -31,6 +31,7 @@ def test_flake8__parallel():
     subprocess.check_call('flake8')
 
 @pytest.mark.skipif(not os.environ.get('DOCKERIZED'), reason="npm build can only be tested in docker")
+@pytest.mark.skipif(os.environ.get('CIRCLECI'), reason="npm build is superfluous in Circle CI")
 def test_npm_build__parallel():
     dist_dir = Path(settings.STATICFILES_DIRS[0], settings.WEBPACK_LOADER['DEFAULT']['BUNDLE_DIR_NAME'])
     stats_file = settings.WEBPACK_LOADER['DEFAULT']['STATS_FILE']
