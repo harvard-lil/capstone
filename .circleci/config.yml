@@ -75,9 +75,10 @@ jobs:
           command: |
             if [[ "$CIRCLE_PULL_REQUEST" == "" && "$CIRCLE_BRANCH" == "develop" ]] ; then
                 if [[ `git status capstone/static/dist/ capstone/webpack-stats.json --porcelain` ]] ; then
+                    docker-compose exec web fab update_docker_image_version
                     git config user.email "lil@law.harvard.edu"
                     git config user.name "Circle CI"
-                    git add capstone/static/dist/ capstone/webpack-stats.json
+                    git add capstone/static/dist/ capstone/webpack-stats.json docker-compose.yml
                     git commit -m 'Add built JS [skip ci]'
                     git push origin develop || exit 1
                 fi
