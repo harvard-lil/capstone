@@ -297,13 +297,6 @@ You can then run the local javascript development server in a separate terminal 
 This will cause javascript files to be loaded live from http://127.0.0.1:8080/ and recompiled on save in the background.
 Your changes should be present at http://127.0.0.1:8000.
 
-*Important:* Any time you run `yarn serve`, before committing, you must then run
-
-    $ yarn build
-
-to compile the production assets and recreate webpack-stats.json, or else tests will fail when you send a pull request.
-(If you don't change anything, you could also just undo the changes to webpack-stats.json.)
-
 Installing node and running `yarn serve` is not necessary unless you are editing javascript. On a clean checkout, or
 after shutting down `yarn serve` and running `yarn build`, the local dev server will use the compiled production
 assets. Under the hood, use of the local dev server vs. production assets is controlled by the contents of
@@ -314,7 +307,7 @@ assets. Under the hood, use of the local dev server vs. production assets is con
     $ yarn add --dev package
 
 After changing package.json or yarn.lock, you should run `fab update_docker_image_version` to ensure that docker users
-get the updates.
+get the updates, but note that Circle CI will take care of building JS assets and updating the Docker image version.
 
 *Yarn and docker:* `yarn` will also work inside docker-compose:
 
