@@ -10,8 +10,6 @@ from io import StringIO
 from django.conf import settings
 from django.core import management
 
-from test_data.test_fixtures.helpers import dir_hash, file_hash
-
 
 @pytest.mark.django_db
 def test_makemigrations():
