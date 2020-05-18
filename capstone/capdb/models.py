@@ -24,7 +24,8 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from django.core.files.base import ContentFile
 
-from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage, writeable_download_files_storage, pdf_storage
+from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage, \
+    writeable_download_files_storage, pdf_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
@@ -33,6 +34,8 @@ from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translatio
                              serialize_xml, jurisdiction_translation_long_name,
                              short_id_from_s3_key, copy_file)
 from scripts.process_metadata import get_case_metadata, parse_decision_date
+
+from elasticsearch.helpers import BulkIndexError
 
 
 def choices(*args):
@@ -80,7 +83,8 @@ def fetch_relations(instance, select_relations=None, prefetch_relations=None):
                 continue
 
             # if this is a prefetch field that's already prefetched, no need to fetch anything
-            if kind == 'prefetch_relations' and not sub_relation and hasattr(instance, '_prefetched_objects_cache') and field_name in instance._prefetched_objects_cache:
+            if kind == 'prefetch_relations' and not sub_relation and hasattr(instance,
+                                                                             '_prefetched_objects_cache') and field_name in instance._prefetched_objects_cache:
                 continue
 
             # if field isn't cached, we should fetch it
@@ -143,11 +147,13 @@ def fetch_relations(instance, select_relations=None, prefetch_relations=None):
             # copy cache
             if not hasattr(sub_instance, '_prefetched_objects_cache'):
                 sub_instance._prefetched_objects_cache = {}
-            sub_instance._prefetched_objects_cache[sub_field_name] = sub_new_instance._prefetched_objects_cache[sub_field_name]
+            sub_instance._prefetched_objects_cache[sub_field_name] = sub_new_instance._prefetched_objects_cache[
+                sub_field_name]
 
 
 class TransactionTimestampDateTimeField(models.DateTimeField):
     """ Postgres timestamp field that defaults to current_timestamp, the timestamp at the start of the transaction """
+
     def db_type(self, connection):
         return 'timestamptz DEFAULT current_timestamp'
 
@@ -156,6 +162,7 @@ class SmallForeignKey(models.ForeignKey):
     """
         Foreign keys are usually the same size as the related column. This forces the foreign key to be a smallint instead.
     """
+
     def db_type(self, connection):
         return 'smallint'
 
@@ -351,10 +358,10 @@ class BaseXMLModel(models.Model):
     def xml_modified(self):
         """ Return True if orig_xml was previously saved to the database and is now different. """
         return (
-            self.tracker.has_changed('orig_xml') and
-            self.pk is not None and
-            self.tracker.previous('orig_xml') and
-            force_str(self.orig_xml) != self.tracker.previous('orig_xml')
+                self.tracker.has_changed('orig_xml') and
+                self.pk is not None and
+                self.tracker.previous('orig_xml') and
+                force_str(self.orig_xml) != self.tracker.previous('orig_xml')
         )
 
     def get_parsed_xml(self):
@@ -491,6 +498,7 @@ class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
     def get_absolute_url(self):
         return reverse('jurisdiction-detail', args=[self.slug], scheme="https")
 
+
 class Reporter(models.Model):
     jurisdictions = models.ManyToManyField(Jurisdiction)
     full_name = models.CharField(max_length=1024, db_index=True)
@@ -507,7 +515,8 @@ class Reporter(models.Model):
     hollis = ArrayField(models.CharField(max_length=9), blank=True,
                         help_text="This is going to replace the Hollis model")
     is_nominative = models.BooleanField(default=False)
-    nominative_for = models.ForeignKey("Reporter", on_delete=models.DO_NOTHING, related_name='nominative_reporters', blank=True, null=True)
+    nominative_for = models.ForeignKey("Reporter", on_delete=models.DO_NOTHING, related_name='nominative_reporters',
+                                       blank=True, null=True)
 
     history = TemporalHistoricalRecords()
     objects = TemporalQuerySet.as_manager()
@@ -537,11 +546,14 @@ class VolumeMetadata(models.Model):
     reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='volumes')
     volume_number = models.CharField(max_length=64, blank=True, null=True)
     volume_number_slug = models.CharField(max_length=64, blank=True, null=True)
-    second_part_of = models.ForeignKey("capdb.VolumeMetadata", on_delete=models.DO_NOTHING, null=True, related_name='second_part')
-    nominative_reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='nominative_volumes', blank=True, null=True)
+    second_part_of = models.ForeignKey("capdb.VolumeMetadata", on_delete=models.DO_NOTHING, null=True,
+                                       related_name='second_part')
+    nominative_reporter = models.ForeignKey(Reporter, on_delete=models.DO_NOTHING, related_name='nominative_volumes',
+                                            blank=True, null=True)
     nominative_volume_number = models.CharField(max_length=1024, blank=True, null=True)
 
-    hollis_number = models.CharField(max_length=9, null=True, help_text="Identifier in the Harvard cataloging system, HOLLIS")
+    hollis_number = models.CharField(max_length=9, null=True,
+                                     help_text="Identifier in the Harvard cataloging system, HOLLIS")
     publisher = models.CharField(max_length=255, blank=True, null=True)
     publication_year = models.IntegerField(blank=True, null=True)
     nominative_name = models.CharField(max_length=1024, blank=True, null=True)
@@ -565,9 +577,11 @@ class VolumeMetadata(models.Model):
                                             choices=choices('No', 'Complete', 'Yes'))
     analyst_page_count = models.IntegerField(blank=True, null=True,
                                              help_text="The page number of the last numbered page in the book")
-    legacy_duplicate = models.BooleanField(default=False, help_text="From tracking tool; we believe this indicates there is another volume with same hollis_number and volume_number")
+    legacy_duplicate = models.BooleanField(default=False,
+                                           help_text="From tracking tool; we believe this indicates there is another volume with same hollis_number and volume_number")
     duplicate = models.BooleanField(default=False, help_text="True if there is another volume with same cases")
-    duplicate_of = models.ForeignKey("VolumeMetadata", blank=True, null=True, related_name="duplicates", on_delete=models.SET_NULL)
+    duplicate_of = models.ForeignKey("VolumeMetadata", blank=True, null=True, related_name="duplicates",
+                                     on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(blank=True, null=True)
     replaced_pages = models.CharField(max_length=1024, blank=True, null=True,
@@ -601,8 +615,9 @@ class VolumeMetadata(models.Model):
     ingest_errors = JSONField(blank=True, null=True)
     xml_checksums_need_update = models.BooleanField(default=False,
                                                     help_text="Whether checksums in volume_xml match current values in "
-                                                               "related case_xml and page_xml data.")
-    pdf_file = models.FileField(blank=True, max_length=1000, storage=download_files_storage, help_text="Exported volume PDF")
+                                                              "related case_xml and page_xml data.")
+    pdf_file = models.FileField(blank=True, max_length=1000, storage=download_files_storage,
+                                help_text="Exported volume PDF")
 
     # values extracted from VolumeXML
     xml_start_year = models.IntegerField(blank=True, null=True)
@@ -627,6 +642,15 @@ class VolumeMetadata(models.Model):
     def __str__(self):
         return self.barcode
 
+    def set_volume_number(self, volume_number):
+        """
+            Update this volume's reporter.
+            Update volume.case_metadatas.reporter to match.
+        """
+        self.volume_number = volume_number
+        self.save(update_volume_number_slug=True)
+        CaseMetadata.reindex_cases(self.case_metadatas.all())
+
     def set_xml_checksums_need_update(self, value=True):
         self.xml_checksums_need_update = value
         self.save(update_fields=['xml_checksums_need_update'])
@@ -645,6 +669,7 @@ class VolumeMetadata(models.Model):
             self.save()
             self.case_metadatas.update(duplicate=is_duplicate)
             self.case_metadatas.update_in_scope()
+        CaseMetadata.reindex_cases(self.case_metadatas.all(), prune_duplicates=True)
 
     def set_reporter(self, reporter):
         """
@@ -655,11 +680,12 @@ class VolumeMetadata(models.Model):
             self.reporter = reporter
             self.save()
             self.case_metadatas.update(reporter=reporter)
+        CaseMetadata.reindex_cases(self.case_metadatas.all())
 
     def update_volume_number_slug(self):
         self.volume_number_slug = slugify(self.volume_number)
 
-    def save(self, *args, update_volume_number_slug = True, **kwargs):
+    def save(self, *args, update_volume_number_slug=True, **kwargs):
         if update_volume_number_slug:
             self.update_volume_number_slug()
         super().save(*args, **kwargs)
@@ -690,7 +716,8 @@ class VolumeMetadata(models.Model):
 
         # replace PDF
         if self.pdf_file:
-            copy_file("unredacted/%s.pdf" % self.pk, self.pdf_file, from_storage=pdf_storage, to_storage=writeable_download_files_storage)
+            copy_file("unredacted/%s.pdf" % self.pk, self.pdf_file, from_storage=pdf_storage,
+                      to_storage=writeable_download_files_storage)
 
         # update flag
         self.redacted = False
@@ -813,7 +840,8 @@ class VolumeXML(BaseXMLModel):
         #   <file ID="alto_00009_1" MIMETYPE="text/xml" CHECKSUM="bfbd53d..." CHECKSUMTYPE="MD5" SIZE="116476">
 
         # regex to match file tags
-        file_tag_re = r'(<file ID="(%s)" MIMETYPE="text/xml" CHECKSUM=")[^"]+(" CHECKSUMTYPE="MD5" SIZE=")\d+' % '|'.join(replacements.keys())
+        file_tag_re = r'(<file ID="(%s)" MIMETYPE="text/xml" CHECKSUM=")[^"]+(" CHECKSUMTYPE="MD5" SIZE=")\d+' % '|'.join(
+            replacements.keys())
 
         # replacement function looks up new values from replacements dict
         def format_file_tag(m):
@@ -856,7 +884,8 @@ class CaseMetadataQuerySet(TemporalQuerySet):
         return self.filter(in_scope=True)
 
     def update_in_scope(self):
-        return self.update(in_scope=Q(duplicative=False, duplicate=False) & ~Q(jurisdiction_id=None) & ~Q(court_id=None))
+        return self.update(
+            in_scope=Q(duplicative=False, duplicate=False) & ~Q(jurisdiction_id=None) & ~Q(court_id=None))
 
 
 class CaseMetadata(models.Model):
@@ -889,22 +918,30 @@ class CaseMetadata(models.Model):
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
                                  on_delete=models.DO_NOTHING)
     date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
-    duplicative = models.BooleanField(default=False, help_text="True if case was not processed because it is an unofficial case in a regional reporter")
-    duplicate = models.BooleanField(default=False, help_text="True if case was processed but is a duplicate of another preferred case")
-    duplicate_of = models.ForeignKey("CaseMetadata", blank=True, null=True, on_delete=models.SET_NULL, related_name="duplicates")
+    duplicative = models.BooleanField(default=False,
+                                      help_text="True if case was not processed because it is an unofficial case in a regional reporter")
+    duplicate = models.BooleanField(default=False,
+                                    help_text="True if case was processed but is a duplicate of another preferred case")
+    duplicate_of = models.ForeignKey("CaseMetadata", blank=True, null=True, on_delete=models.SET_NULL,
+                                     related_name="duplicates")
     withdrawn = models.BooleanField(default=False, help_text="True if case was withdrawn by the court")
-    replaced_by = models.ForeignKey("CaseMetadata", blank=True, null=True, on_delete=models.SET_NULL, related_name="replaced")
+    replaced_by = models.ForeignKey("CaseMetadata", blank=True, null=True, on_delete=models.SET_NULL,
+                                    related_name="replaced")
     no_index = models.BooleanField(default=False, help_text="True if case should not be included in google index")
     no_index_notes = models.TextField(blank=True, null=True, help_text="Reason no_index is true")
 
-    no_index_elided = JSONField(blank=True, null=True, help_text="Elided text will be shown on click. Example: {\"Text to elide (must be exact match)\": \"Extra text that's currently not used. Can be left as empty string.\"}")
-    no_index_redacted = JSONField(blank=True, null=True, help_text="Redacted text will be hidden from view and replaced with key's value specified above. Example: {\"Text to redact (must be exact match)\": \"Text to replace redacted text.\"}")
+    no_index_elided = JSONField(blank=True, null=True,
+                                help_text="Elided text will be shown on click. Example: {\"Text to elide (must be exact match)\": \"Extra text that's currently not used. Can be left as empty string.\"}")
+    no_index_redacted = JSONField(blank=True, null=True,
+                                  help_text="Redacted text will be hidden from view and replaced with key's value specified above. Example: {\"Text to redact (must be exact match)\": \"Text to replace redacted text.\"}")
 
     in_scope = models.BooleanField(default=True, help_text="True if case should be included in public data")
     initial_metadata_synced = models.BooleanField(default=False)
-    robots_txt_until = models.DateTimeField(blank=True, null=True, help_text="Frontend URL for this case will be included in robots.txt until this date")
+    robots_txt_until = models.DateTimeField(blank=True, null=True,
+                                            help_text="Frontend URL for this case will be included in robots.txt until this date")
 
-    custom_footer_message = models.TextField(blank=True, null=True, help_text="If not provided, custom footer will be filled with default text if elisions or redactions exist")
+    custom_footer_message = models.TextField(blank=True, null=True,
+                                             help_text="If not provided, custom footer will be filled with default text if elisions or redactions exist")
 
     objects = CaseMetadataQuerySet.as_manager()
     history = TemporalHistoricalRecords()
@@ -915,13 +952,15 @@ class CaseMetadata(models.Model):
     class Meta:
         indexes = [
             # partial index for robots_txt_until cases
-            models.Index(name='idx_robots_txt_until', fields=('robots_txt_until',), condition=~Q(robots_txt_until=None)),
+            models.Index(name='idx_robots_txt_until', fields=('robots_txt_until',),
+                         condition=~Q(robots_txt_until=None)),
         ]
 
     def save(self, *args, **kwargs):
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
-        if settings.MAINTAIN_ELASTICSEARCH_INDEX and not getattr(kwargs, 'no_reindex', False) and self.pk and hasattr(self, 'body_cache'):
+        if settings.MAINTAIN_ELASTICSEARCH_INDEX and not getattr(kwargs, 'no_reindex', False) and self.pk and hasattr(
+                self, 'body_cache'):
             self.update_search_index()
         super().save(*args, **kwargs)
 
@@ -947,7 +986,8 @@ class CaseMetadata(models.Model):
             cite_strs = list(cite_strs)
 
         for i in range(0, len(cite_strs), batch_size):
-            cites = Citation.objects.filter(cite__in=cite_strs[i:i+batch_size], type='official').order_by('cite').select_related('case__volume', 'case__reporter')
+            cites = Citation.objects.filter(cite__in=cite_strs[i:i + batch_size], type='official').order_by(
+                'cite').select_related('case__volume', 'case__reporter')
             if update_elasticsearch:
                 cites = cites.select_related('case__court', 'case__jurisdiction', 'case__body_cache')
             cite_groups = itertools.groupby(cites, key=lambda c: c.cite)
@@ -971,9 +1011,26 @@ class CaseMetadata(models.Model):
                     cls.reindex_cases(to_update)
 
     @classmethod
-    def reindex_cases(cls, cases):
+    def reindex_cases(cls, cases, prune_duplicates=False):
         from capapi.documents import CaseDocument  # avoid circular import
-        CaseDocument().update(cases)
+        if isinstance(cases, models.Model):
+            cases = [cases]
+
+        # only indexes non-duplicate cases
+        CaseDocument().update([case for case in cases if not case.duplicate])
+
+        # for the duplicates, we want to delete them, if necessary
+        if prune_duplicates:
+            try:
+                CaseDocument().update([case for case in cases if case.duplicate], action="delete")
+            except BulkIndexError as e:
+                # this re-raises if there's a BulkIndexError for any reason other than a failure to delete because of a 404
+                # which would happen if it was already deleted.
+                if not e[0].endswith('failed to index.') \
+                        or len([True for d in e.args[1] if d['delete']['status'] != 404
+                        or len(d.keys()) > 1
+                        or 'delete' not in d.keys()]) > 0:
+                    raise
 
     def get_frontend_url(self, cite=None, disambiguate=False, include_host=True):
         """
@@ -993,13 +1050,14 @@ class CaseMetadata(models.Model):
 
         # TODO: final fallback value is wrong, because first_page is the physical page count and not the page label
         # after token streams are in, we should be able to retrieve the actual page label instead
-        volume_number, rep_short_nm, fp = m.groups() if m else [self.volume.volume_number, self.reporter.short_name, self.first_page]
+        volume_number, rep_short_nm, fp = m.groups() if m else [self.volume.volume_number, self.reporter.short_name,
+                                                                self.first_page]
 
         args = [slugify(rep_short_nm), slugify(volume_number), fp] + ([self.id] if disambiguate else [])
         url = reverse('citation', args=args, host='cite')
         if not include_host:
             # strip https://cite.case.law prefix so stored value can be moved between servers
-            url = '/'+url.split('/',3)[3]
+            url = '/' + url.split('/', 3)[3]
         return url
 
     def get_full_frontend_url(self):
@@ -1032,7 +1090,8 @@ class CaseMetadata(models.Model):
         renderer = render_case.VolumeRenderer(blocks_by_id, {}, {})
         return renderer.hydrate_opinions(structure.opinions, blocks_by_id)
 
-    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, rerender=True, save=True):
+    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, rerender=True,
+                             save=True):
         """
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
@@ -1083,7 +1142,8 @@ class CaseMetadata(models.Model):
 
     def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)
-        casebody_pq.remove('.page-label,.footnotemark,.bracketnum,.footnote > a')  # remove page numbers and footnote numbers from text/json
+        casebody_pq.remove(
+            '.page-label,.footnotemark,.bracketnum,.footnote > a')  # remove page numbers and footnote numbers from text/json
 
         # extract each opinion into a dictionary
         opinions = []
@@ -1139,7 +1199,9 @@ class CaseMetadata(models.Model):
             # apply fixes from scripts.fix_court_tag
             court = data["court"]
             if court.get('jurisdiction') and court.get('name') and court.get('abbreviation'):
-                court['jurisdiction'], court['name'], court['abbreviation'] = fix_court_tag(court['jurisdiction'], court['name'], court['abbreviation'])
+                court['jurisdiction'], court['name'], court['abbreviation'] = fix_court_tag(court['jurisdiction'],
+                                                                                            court['name'],
+                                                                                            court['abbreviation'])
 
             # set jurisdiction
             try:
@@ -1154,7 +1216,8 @@ class CaseMetadata(models.Model):
 
             # set or create court
             # we look up court by name, name_abbreviation, and jurisdiction
-            court_kwargs = {obj_key:court[data_key] for obj_key, data_key in (('name', 'name'), ('name_abbreviation', 'abbreviation')) if data_key in court}
+            court_kwargs = {obj_key: court[data_key] for obj_key, data_key in
+                            (('name', 'name'), ('name_abbreviation', 'abbreviation')) if data_key in court}
             if self.jurisdiction and court_kwargs:
                 court_kwargs["jurisdiction_id"] = self.jurisdiction_id
                 try:
@@ -1241,7 +1304,7 @@ class CaseMetadata(models.Model):
         if not self.volume.pdf_file:
             raise ValueError("Cannot get case PDF for volume with no PDF")
         doc = fitz.open(self.volume.pdf_file.path)
-        doc.select(range(self.first_page_order-1, self.last_page_order))
+        doc.select(range(self.first_page_order - 1, self.last_page_order))
         return doc.write(garbage=2)
 
 
@@ -1264,8 +1327,8 @@ class CaseXML(BaseXMLModel):
         if self.tracker.has_changed('orig_xml'):
             # prefetch data needed by create_or_update_metadata() and process_updated_xml()
             fetch_relations(self,
-                select_relations=['volume__metadata__reporter'],
-                prefetch_relations=['metadata__citations'])
+                            select_relations=['volume__metadata__reporter'],
+                            prefetch_relations=['metadata__citations'])
 
             # Create or update related CaseMetadata object
             if create_or_update_metadata:
@@ -1499,7 +1562,8 @@ class CaseXML(BaseXMLModel):
         if duplicative_case:
             citations = [{
                 "citation_type": "official",
-                "citation_text": "{} {} {}".format(volume_metadata.volume_number, reporter.short_name, data["first_page"]),
+                "citation_text": "{} {} {}".format(volume_metadata.volume_number, reporter.short_name,
+                                                   data["first_page"]),
                 "is_duplicative": True,
             }]
         else:
@@ -1582,6 +1646,7 @@ class CaseXML(BaseXMLModel):
         def sortable_id(alto_id):
             parts = alto_id.split('_')[1].split('.')
             return (int(parts[0]), int(parts[1]))
+
         ignore_ids = {el.attr.id for el in casebody('casebody|footnote [id],casebody|correction').items()}
         id_to_alto_order = {}
         for xref_el in parsed_xml('mets|div[TYPE="blocks"] > mets|div[TYPE="element"]').items():
@@ -1598,12 +1663,15 @@ class CaseXML(BaseXMLModel):
         # Split remove_els into head_els and opinion_els, based on whether or not they come before the first
         # element in the first opinion:
         removed_els.sort(key=lambda el: id_to_alto_order.get(el.attr.id, (math.inf,)))
-        first_opinion_el_id = next((el.attr.id for el in parsed_xml('casebody|opinion').children().items() if el.attr.id in id_to_alto_order), None)
+        first_opinion_el_id = next(
+            (el.attr.id for el in parsed_xml('casebody|opinion').children().items() if el.attr.id in id_to_alto_order),
+            None)
         head_els = []
         opinion_els = []
         if first_opinion_el_id:
             for el in removed_els:
-                if el.attr.id not in id_to_alto_order or id_to_alto_order[el.attr.id] < id_to_alto_order[first_opinion_el_id]:
+                if el.attr.id not in id_to_alto_order or id_to_alto_order[el.attr.id] < id_to_alto_order[
+                    first_opinion_el_id]:
                     head_els.append(el)
                 else:
                     opinion_els.append(el)
@@ -1617,20 +1685,23 @@ class CaseXML(BaseXMLModel):
         # Add all opinion_els back, immediately after whatever existing element they come after in sorted order
         if opinion_els:
             sorted_ids = sorted(id_to_alto_order.keys(), key=lambda key: id_to_alto_order[key])
-            previous_id_lookup = dict(zip(sorted_ids, [None]+sorted_ids))
+            previous_id_lookup = dict(zip(sorted_ids, [None] + sorted_ids))
             for el in opinion_els:
                 previous_el = casebody('[id="%s"]' % previous_id_lookup[el.attr.id])
                 if not previous_el.length:
                     # this shouldn't happen, so throw an exception here to make sure we can't lose elements
-                    raise Exception("Unable to locate previous element %s for element %s" % (previous_id_lookup[el.attr.id], el.attr.id))
+                    raise Exception("Unable to locate previous element %s for element %s" % (
+                    previous_id_lookup[el.attr.id], el.attr.id))
                 casebody('[id="%s"]' % previous_id_lookup[el.attr.id]).after(el)
+
 
 class Citation(models.Model):
     citation_types = ("official", "nominative", "parallel", "vendor")  # citation types in sort order
     citation_type_sort_order = {citation_type: i for i, citation_type in enumerate(citation_types)}
 
     type = models.CharField(max_length=100, choices=list(zip(citation_types, citation_types)))
-    category = models.CharField(max_length=100, blank=True, null=True)  # this field and "type" are reversed from the values in CaseXML -- possibly should be switched back?
+    category = models.CharField(max_length=100, blank=True,
+                                null=True)  # this field and "type" are reversed from the values in CaseXML -- possibly should be switched back?
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
     normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
@@ -1657,6 +1728,7 @@ class Citation(models.Model):
     @classmethod
     def sorted_by_type(cls, cites):
         return sorted(cites, key=lambda c: cls.citation_type_sort_order[c.type])
+
 
 class PageXML(BaseXMLModel):
     barcode = models.CharField(max_length=255, unique=True, db_index=True)
@@ -1746,19 +1818,20 @@ class CaseExportQuerySet(models.QuerySet):
         """
             Return only the latest file for each export (based on filter_type, filter_id, body_format)
         """
-        return self.extra(where=['id in (SELECT max(id) FROM capdb_caseexport GROUP BY (filter_type, filter_id, body_format))'])
+        return self.extra(
+            where=['id in (SELECT max(id) FROM capdb_caseexport GROUP BY (filter_type, filter_id, body_format))'])
 
 
 class CaseExport(models.Model):
     file_name = models.CharField(max_length=255)
     file = models.FileField(storage=bulk_export_storage)
-    body_format = models.CharField(max_length=10, choices=(('xml','xml'),('text','text')))
+    body_format = models.CharField(max_length=10, choices=(('xml', 'xml'), ('text', 'text')))
 
     export_date = models.DateTimeField(auto_now_add=True)
     public = models.BooleanField(default=False)
 
     # do it this way instead of with GenericForeignKey because Django's content_type table is in the other database
-    filter_type = models.CharField(max_length=20, choices=(('jurisdiction','jurisdiction'),('reporter','reporter')))
+    filter_type = models.CharField(max_length=20, choices=(('jurisdiction', 'jurisdiction'), ('reporter', 'reporter')))
     filter_id = models.PositiveIntegerField(null=True, blank=True)
 
     objects = CaseExportQuerySet.as_manager()
@@ -1849,7 +1922,8 @@ class PageStructure(models.Model):
     label = models.CharField(max_length=100, blank=True)
 
     blocks = JSONField()
-    spaces = JSONField(blank=True, null=True)  # probably unnecessary -- in case pages ever have more than one PrintSpace
+    spaces = JSONField(blank=True,
+                       null=True)  # probably unnecessary -- in case pages ever have more than one PrintSpace
     font_names = JSONField(blank=True, null=True)  # for mapping font IDs back to style names in alto
     encrypted_strings = models.TextField(blank=True, null=True)
     duplicates = JSONField(blank=True, null=True)  # list of duplicate IDs detected during conversion
@@ -1865,7 +1939,7 @@ class PageStructure(models.Model):
 
     def order_to_alto_id(self):
         """ Convert 1 to alto_00001_0, 2 to alto_00001_1, 3 to alto_00002_0, and so on. """
-        return 'alto_%05d_%s' % ((self.order+1)//2, (self.order+1)%2)
+        return 'alto_%05d_%s' % ((self.order + 1) // 2, (self.order + 1) % 2)
 
     @staticmethod
     def blocks_by_id(pages):
@@ -2039,7 +2113,6 @@ class CaseStructure(models.Model):
                     if "redacted" in paragraph:
                         del paragraph["redacted"]
                         paragraph["unredacted"] = True
-
 
 
 class CaseInitialMetadata(models.Model):

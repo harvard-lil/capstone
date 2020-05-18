@@ -5,6 +5,7 @@ from django.utils.text import slugify
 from capdb.models import CaseMetadata, CaseImage, fetch_relations, Court, EditLog, CaseBodyCache
 from capdb.tasks import retrieve_images_from_cases
 from test_data.test_fixtures.helpers import xml_equal
+from capapi.documents import CaseDocument
 
 
 ### test our model helpers ###
@@ -200,6 +201,35 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
 
     assert case1.frontend_url == "/test/123/456/"
     assert case2.frontend_url == "/test/124/456/"
+
+@pytest.mark.django_db
+def test_set_duplicate(reset_sequences, case, elasticsearch):
+    # make sure set_duplicate function updates the cases and removes the cases from the elasticsearch index
+    assert CaseDocument.search().filter("term", volume__barcode=case.volume.barcode).count() == 1
+    case.volume.set_duplicate(True)
+    assert CaseDocument.search().filter("term", volume__barcode=case.volume.barcode).count() == 0
+
+@pytest.mark.django_db
+def test_set_reporter(reset_sequences, case, elasticsearch, reporter):
+    # make sure set_duplicate function updates the reporter values in the cases and re-indexes properly
+    volume = case.volume
+    assert volume.reporter.id != reporter.id
+    assert CaseDocument.search().filter("term", reporter__id=reporter.id).count() == 0
+    volume.set_reporter(reporter)
+    assert volume.reporter.id == reporter.id
+    assert CaseDocument.search().filter("term", reporter__id=reporter.id).count() == 1
+
+@pytest.mark.django_db
+def test_set_volume_number(reset_sequences, case, elasticsearch):
+    # make sure set_volume_number function updates the reporter values in the cases and re-indexes properly
+    new_volume_number = '2567'
+    volume = case.volume
+    assert volume.volume_number != new_volume_number
+    assert CaseDocument.search().filter("term", volume__volume_number_slug=slugify(new_volume_number)).count() == 0
+    volume.set_volume_number(new_volume_number)
+    assert volume.volume_number == new_volume_number
+    assert volume.volume_number_slug == slugify(new_volume_number)
+    assert CaseDocument.search().filter("term", volume__volume_number_slug=slugify(new_volume_number)).count() == 1
 
 @pytest.mark.django_db
 def test_sync_case_body_cache(reset_sequences, case, elasticsearch):
