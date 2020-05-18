@@ -1,0 +1,8 @@
+// only for printing
+// this file fixes a firefox bug which makes it so that only the first page can print
+
+@media print {
+  main, body, .row {
+    display: block !important;
+  }
+}

@@ -26,7 +26,6 @@ def test_home(client, django_assert_num_queries, reporter):
 
 @pytest.mark.django_db
 def test_series(client, django_assert_num_queries, volume_metadata_factory):
-
     """ Test /series/ """
 
     # make sure we correctly handle multiple reporters with same slug
@@ -46,6 +45,10 @@ def test_series(client, django_assert_num_queries, volume_metadata_factory):
     check_response(response, status_code=302)
     response = client.get(reverse('series', args=['mass'], host='cite'), follow=True)
     check_response(response, status_code=200)
+    
+    # make sure we get 404 if bad series input
+    response = client.get(reverse('series', args=['*'], host='cite'))
+    check_response(response, status_code=404)
 
 
 @pytest.mark.django_db
