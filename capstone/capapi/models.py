@@ -37,6 +37,14 @@ class CapUserManager(BaseUserManager):
 
         return self.create_user(email=email, password=password, **kwargs)
 
+    def get_by_natural_key(self, username):
+        """
+            Make user logins case-insensitive, which works because you can't sign up
+            with the same email with different capitalization anyway.
+        """
+        return self.get(email__iexact=username)
+
+
 # This is a temporary workaround for the problem described in
 # https://github.com/jazzband/django-model-utils/issues/331#issuecomment-478994563
 # where django-model-utils FieldTracker breaks the setter for overridden attributes on abstract base classes
