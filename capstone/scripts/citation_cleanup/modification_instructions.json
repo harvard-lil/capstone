@@ -1,0 +1,2892 @@
+{
+  "# A.#d #-#": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# A.#d #",
+          "patterns": [
+            [
+              "-[0-9]+$",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 1861,
+      "examples": [
+        [
+          12280391,
+          12288812
+        ]
+      ]
+    }
+  },
+  "# A.D.#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# A.#d #",
+          "patterns": [
+            [
+              "A\\.D\\.",
+              "A."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 1790,
+      "examples": [
+        [
+          331424,
+          11077484
+        ]
+      ]
+    }
+  },
+  "# A#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# A.#d #",
+          "patterns": [
+            [
+              "A",
+              "A."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 126,
+      "examples": [
+        [
+          64775,
+          5735078
+        ]
+      ]
+    }
+  },
+  "# A. #d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# A.#d #",
+          "patterns": [
+            [
+              "A\\.\\s",
+              "A."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 86,
+      "examples": [
+        [
+          83968,
+          6035835
+        ]
+      ]
+    }
+  },
+  "# CMR #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# C.M.R. #",
+          "patterns": [
+            [
+              "CMR",
+              "C.M.R."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 90,
+      "examples": [
+        [
+          11338364,
+          11349855
+        ]
+      ]
+    }
+  },
+  "# Cal.Rptr. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Cal. Rptr. #",
+          "patterns": [
+            [
+              "Cal\\.Rptr\\.",
+              "Cal. Rptr."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 174,
+      "examples": [
+        [
+          63658,
+          6036491
+        ]
+      ]
+    }
+  },
+  "# Hughes, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Hughes #",
+          "patterns": [
+            [
+              ",",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 142,
+      "examples": [
+        [
+          6096472,
+          12121030
+        ]
+      ]
+    }
+  },
+  "# Hun, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Hun. #",
+          "patterns": [
+            [
+              ",",
+              "."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 2093,
+      "examples": [
+        [
+          1966144,
+          5774481
+        ]
+      ]
+    }
+  },
+  "# Ky. L. Rptr. #, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Ky. L. Rptr. #",
+          "patterns": [
+            [
+              ", [0-9]+$",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 47,
+      "examples": [
+        [
+          1413344,
+          1420464
+        ]
+      ]
+    }
+  },
+  "# Lowell, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Lowell #",
+          "patterns": [
+            [
+              ",",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 160,
+      "examples": [
+        [
+          6099751,
+          12121090
+        ]
+      ]
+    }
+  },
+  "# Mason, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Mason #",
+          "patterns": [
+            [
+              ",",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 253,
+      "examples": [
+        [
+          6094994,
+          12120735
+        ]
+      ]
+    }
+  },
+  "# McLean, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# McLean #",
+          "patterns": [
+            [
+              ",",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 576,
+      "examples": [
+        [
+          6095041,
+          12121173
+        ]
+      ]
+    }
+  },
+  "# Misc.#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Misc. #d #",
+          "patterns": [
+            [
+              "Misc\\.",
+              "Misc. "
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 356,
+      "examples": [
+        [
+          1577441,
+          11074504
+        ]
+      ]
+    }
+  },
+  "# Miss. Rep. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Miss. #",
+          "patterns": [
+            [
+              "Rep\\. ",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 65,
+      "examples": [
+        [
+          12138668,
+          12146345
+        ]
+      ]
+    }
+  },
+  "# N. B. R. # Quarto, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N. B. R. # (Quarto, #)",
+          "patterns": [
+            [
+              "Quarto",
+              "(Quarto"
+            ],
+            [
+              "$",
+              ")"
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 136,
+      "examples": [
+        [
+          6095827,
+          12117466
+        ]
+      ]
+    }
+  },
+  "# N. W. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.W. #",
+          "patterns": [
+            [
+              " W",
+              "W"
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 504,
+      "examples": [
+        [
+          197093,
+          5352549
+        ]
+      ]
+    }
+  },
+  "# N.W. Rep. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.W. #",
+          "patterns": [
+            [
+              " Rep\\.",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 65,
+      "examples": [
+        [
+          5291940,
+          5293399
+        ]
+      ]
+    }
+  },
+  "# N. W. Rep. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.W. #",
+          "patterns": [
+            [
+              "N\\. W\\. Rep\\.",
+              "N.W."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 65,
+      "examples": [
+        [
+          2572050,
+          2575586
+        ]
+      ]
+    }
+  },
+  "# N. W. (#d) #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.W.#d #",
+          "patterns": [
+            [
+              "N\\. W\\. \\(",
+              "N.W."
+            ],
+            [
+              "\\)",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 354,
+      "examples": [
+        [
+          291571,
+          345386
+        ]
+      ]
+    }
+  },
+  "# N. W. #d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.W.#d #",
+          "patterns": [
+            [
+              "N\\. W\\. ",
+              "N.W."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 234,
+      "examples": [
+        [
+          312139,
+          8672342
+        ]
+      ]
+    }
+  },
+  "# N.W. #d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.W.#d #",
+          "patterns": [
+            [
+              "W\\. ",
+              "W."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 99,
+      "examples": [
+        [
+          312188,
+          5454620
+        ]
+      ]
+    }
+  },
+  "# N. Y. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.Y. #",
+          "patterns": [
+            [
+              "N\\. ",
+              "N."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 309,
+      "examples": [
+        [
+          807165,
+          1228879
+        ]
+      ]
+    }
+  },
+  "# St. Rep. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.Y.St.Rep. #",
+          "patterns": [
+            [
+              "St. Rep.",
+              "N.Y.St.Rep."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 54,
+      "examples": [
+        [
+          1171542,
+          1186121
+        ]
+      ]
+    }
+  },
+  "# Ohio App., #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Ohio App. #",
+          "patterns": [
+            [
+              ",",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 265,
+      "examples": [
+        [
+          305190,
+          1607325
+        ]
+      ]
+    }
+  },
+  "# Ohio St., #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Ohio St. #",
+          "patterns": [
+            [
+              ",",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 232,
+      "examples": [
+        [
+          305187,
+          1607328
+        ]
+      ]
+    }
+  },
+  "# Pac. #.": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "ac\\.",
+              "."
+            ],
+            [
+              ".$",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 228,
+      "examples": [
+        [
+          1548643,
+          5012328
+        ]
+      ]
+    }
+  },
+  "S. C. # Pac. Rep. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "^S\\. C\\. ",
+              ""
+            ],
+            [
+              "ac\\. Rep",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 216,
+      "examples": [
+        [
+          2267775,
+          2272987
+        ]
+      ]
+    }
+  },
+  "S. C. # Pac. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "^S\\. C\\. ",
+              ""
+            ],
+            [
+              "Pac",
+              "P"
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 153,
+      "examples": [
+        [
+          2267755,
+          2882305
+        ]
+      ]
+    }
+  },
+  "# P.R. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "R\\.",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 137,
+      "examples": [
+        [
+          8873156,
+          8874526
+        ]
+      ]
+    }
+  },
+  "# P. R. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              " R\\.",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 70,
+      "examples": [
+        [
+          8874644,
+          8875125
+        ]
+      ]
+    }
+  },
+  "# P. #.": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "\\.$",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 53,
+      "examples": [
+        [
+          4987481,
+          5002653
+        ]
+      ]
+    }
+  },
+  "# Pac. #, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "ac",
+              ""
+            ],
+            [
+              ",[0-9\\s]+$",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 46,
+      "examples": [
+        [
+          2226878,
+          5778368
+        ]
+      ]
+    }
+  },
+  "# P. #, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              ",[0-9\\s]+$",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 26,
+      "examples": [
+        [
+          2021846,
+          11263822
+        ]
+      ]
+    }
+  },
+  "# P. [#d] #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P.#d #",
+          "patterns": [
+            [
+              "[\\[\\]]",
+              ""
+            ],
+            [
+              "\\. ",
+              "."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 6269,
+      "examples": [
+        [
+          72614,
+          8518059
+        ]
+      ]
+    }
+  },
+  "# Pac. (#d) #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P.#d #",
+          "patterns": [
+            [
+              "ac\\. \\(",
+              "."
+            ],
+            [
+              "\\)",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 1565,
+      "examples": [
+        [
+          2425171,
+          5184523
+        ]
+      ]
+    }
+  },
+  "# P. #d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P.#d #",
+          "patterns": [
+            [
+              "P\\. ",
+              "P."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 81,
+      "examples": [
+        [
+          43437,
+          8410448
+        ]
+      ]
+    }
+  },
+  "# P.#d #-#": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P.#d #",
+          "patterns": [
+            [
+              "-[0-9\\s]+$",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 69,
+      "examples": [
+        [
+          12258630,
+          12262711
+        ]
+      ]
+    }
+  },
+  "# P. (#d) #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P.#d #",
+          "patterns": [
+            [
+              " \\(",
+              ""
+            ],
+            [
+              "\\)",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 54,
+      "examples": [
+        [
+          73502,
+          2759095
+        ]
+      ]
+    }
+  },
+  "# P#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P.#d #",
+          "patterns": [
+            [
+              "P",
+              "P."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 26,
+      "examples": [
+        [
+          926764,
+          12167221
+        ]
+      ]
+    }
+  },
+  "# P.#d. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P.#d #",
+          "patterns": [
+            [
+              "\\. ",
+              " "
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 23,
+      "examples": [
+        [
+          41220,
+          5328477
+        ]
+      ]
+    }
+  },
+  "# S. E. Rep. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.E. #",
+          "patterns": [
+            [
+              " E",
+              "E"
+            ],
+            [
+              "Rep\\. ",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 174,
+      "examples": [
+        [
+          4438566,
+          4441845
+        ]
+      ]
+    }
+  },
+  "# S. E. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.E. #",
+          "patterns": [
+            [
+              " E",
+              "E"
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 48,
+      "examples": [
+        [
+          1951816,
+          8715814
+        ]
+      ]
+    }
+  },
+  "# S.E.#d. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.E.#d #",
+          "patterns": [
+            [
+              "d\\.",
+              "d"
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 324,
+      "examples": [
+        [
+          647638,
+          1210277
+        ]
+      ]
+    }
+  },
+  "# S. E. (#d) #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.E.#d #",
+          "patterns": [
+            [
+              "S\\. ",
+              "S."
+            ],
+            [
+              " \\(",
+              ""
+            ],
+            [
+              "\\)",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 84,
+      "examples": [
+        [
+          2123941,
+          2124024
+        ]
+      ]
+    }
+  },
+  "# S. W., #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.W. #",
+          "patterns": [
+            [
+              "S\\. W\\.,",
+              "S.W."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 586,
+      "examples": [
+        [
+          2273164,
+          2286462
+        ]
+      ]
+    }
+  },
+  "# S. W. (#d) #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.W.#d #",
+          "patterns": [
+            [
+              " W\\. \\(",
+              "W."
+            ],
+            [
+              "\\)",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 1915,
+      "examples": [
+        [
+          1885160,
+          8731080
+        ]
+      ]
+    }
+  },
+  "# S.W. #d Series #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.W.#d #",
+          "patterns": [
+            [
+              "W\\. ",
+              "W."
+            ],
+            [
+              "Series ",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 693,
+      "examples": [
+        [
+          2246227,
+          2261907
+        ]
+      ]
+    }
+  },
+  "# S. W. #d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.W.#d #",
+          "patterns": [
+            [
+              "S\\. W\\. ",
+              "S.W."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 507,
+      "examples": [
+        [
+          1309039,
+          2263636
+        ]
+      ]
+    }
+  },
+  "# S.W. #d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.W.#d #",
+          "patterns": [
+            [
+              "\\. ",
+              "."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 343,
+      "examples": [
+        [
+          1455950,
+          2263655
+        ]
+      ]
+    }
+  },
+  "# S. W. #d Series #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.W.#d #",
+          "patterns": [
+            [
+              "\\. W\\. ",
+              ".W."
+            ],
+            [
+              "Series ",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 129,
+      "examples": [
+        [
+          2246226,
+          2261922
+        ]
+      ]
+    }
+  },
+  "# S. W. #d Series, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.W.#d #",
+          "patterns": [
+            [
+              "\\. W\\. ",
+              ".W."
+            ],
+            [
+              "Series, ",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 63,
+      "examples": [
+        [
+          2244721,
+          2340840
+        ]
+      ]
+    }
+  },
+  "# S. W., #d Series, #; # S. W., #d Series, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.W.#d #",
+          "patterns": [
+            [
+              "S\\. W\\., ",
+              "S.W."
+            ],
+            [
+              ";.*",
+              ""
+            ],
+            [
+              "Series, ",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 58,
+      "examples": [
+        [
+          2273156,
+          2333845
+        ]
+      ]
+    }
+  },
+  "# S. & M. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Smedes & M. #",
+          "patterns": [
+            [
+              "S\\.",
+              "Smedes"
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 59,
+      "examples": [
+        [
+          12127780,
+          12138531
+        ]
+      ]
+    }
+  },
+  "# South. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# So. #",
+          "patterns": [
+            [
+              "uth",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 363,
+      "examples": [
+        [
+          595777,
+          3596399
+        ]
+      ]
+    }
+  },
+  "# So. Rep. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# So. #",
+          "patterns": [
+            [
+              "Rep\\. ",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 268,
+      "examples": [
+        [
+          3448548,
+          8489422
+        ]
+      ]
+    }
+  },
+  "# So. (#nd) #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# So.#d #",
+          "patterns": [
+            [
+              "nd\\)",
+              "d"
+            ],
+            [
+              " \\(",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 3375,
+      "examples": [
+        [
+          1933632,
+          1985962
+        ]
+      ]
+    }
+  },
+  "# Woods, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# Woods #",
+          "patterns": [
+            [
+              ",",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 258,
+      "examples": [
+        [
+          6095076,
+          12121204
+        ]
+      ]
+    }
+  },
+  "# Ohio #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "#-Ohio-#",
+          "patterns": [
+            [
+              " ",
+              "-"
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 205,
+      "examples": [
+        [
+          6713379,
+          6881206
+        ]
+      ]
+    }
+  },
+  "#-Ohio-#.": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "#-Ohio-#",
+          "patterns": [
+            [
+              "\\.",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 71,
+      "examples": [
+        [
+          6708027,
+          12281357
+        ]
+      ]
+    }
+  },
+  "# NYS#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.Y.S.#d #",
+          "patterns": [
+            [
+              "NYS",
+              "N.Y.S."
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 27107,
+      "examples": [
+        [
+          32443,
+          12434531
+        ]
+      ]
+    }
+  },
+  "# P.#d #.": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P.#d #",
+          "patterns": [
+            [
+              "\\.$",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 272,
+      "examples": [
+        [
+          2448757,
+          5316772
+        ]
+      ]
+    }
+  },
+  "# S. W., #d Series, #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# S.W.#d #",
+          "patterns": [
+            [
+              " S. W., ",
+              " S.W."
+            ],
+            [
+              " Series,",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    "counts_and_examples": {
+      "count": 2783,
+      "examples": [
+        [
+          2244704,
+          2341469
+        ]
+      ]
+    }
+  },
+  "# NE.#d #, # N.Y.S.#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.E.#d #",
+          "patterns": [
+            [
+              "NE\\.",
+              "N.E."
+            ]
+          ]
+        },
+        {
+          "goal": "# N.Y.S.#d #",
+          "patterns": []
+        }
+      ],
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 114,
+      "examples": [
+        [
+          188381,
+          188644
+        ]
+      ]
+    }
+  },
+  "# Pac. #, # Pac. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "Pac\\.",
+              "P."
+            ]
+          ]
+        },
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "Pac\\.",
+              "P."
+            ]
+          ]
+        }
+      ],
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 67,
+      "examples": [
+        [
+          2226882,
+          4553995
+        ]
+      ]
+    }
+  },
+  "# USCMA #, # CMR #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# U.S.C.M.A. #",
+          "patterns": [
+            [
+              "USCMA",
+              "U.S.C.M.A."
+            ]
+          ]
+        },
+        {
+          "goal": "# C.M.R. #",
+          "patterns": [
+            [
+              "CMR",
+              "C.M.R."
+            ]
+          ]
+        }
+      ],
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 318,
+      "examples": [
+        [
+          6638750,
+          6669733
+        ]
+      ]
+    }
+  },
+  "# D. L. N., #; # N. W., #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# D. L. N. #",
+          "patterns": [
+            [
+              "N\\.,",
+              "N."
+            ]
+          ]
+        },
+        {
+          "goal": "# N.W. #",
+          "patterns": [
+            [
+              "N. W.,",
+              "N.W."
+            ]
+          ]
+        }
+      ],
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 58,
+      "examples": [
+        [
+          223796,
+          6034632
+        ]
+      ]
+    }
+  },
+  "# MT #; # St.Rep. #; # P.#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# MT #",
+          "patterns": []
+        },
+        {
+          "goal": "# State Reptr. #",
+          "patterns": [
+            [
+              "St.Rep.",
+              "State Reptr."
+            ]
+          ]
+        },
+        {
+          "kill": true
+        }
+      ],
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 47,
+      "examples": [
+        [
+          42372,
+          42458
+        ]
+      ]
+    }
+  },
+  "# MT #; # St. Rep. #; # P.#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# MT #",
+          "patterns": []
+        },
+        {
+          "goal": "# State Reptr. #",
+          "patterns": [
+            [
+              "St. Rep.",
+              "State Reptr."
+            ]
+          ]
+        },
+        {
+          "kill": true
+        }
+      ],
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 49,
+      "examples": [
+        [
+          561166,
+          561214
+        ]
+      ]
+    }
+  },
+  "# NE#d #; # NYS#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.E.#d #",
+          "patterns": [
+            [
+              "NE",
+              "N.E."
+            ]
+          ]
+        },
+        {
+          "goal": "# N.Y.S.#d #",
+          "patterns": [
+            [
+              "NYS",
+              "N.Y.S."
+            ]
+          ]
+        }
+      ],
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 208,
+      "examples": [
+        [
+          202872,
+          1189473
+        ]
+      ]
+    }
+  },
+  "# NE.#d #; # N.Y.S.#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.E.#d #",
+          "patterns": [
+            [
+              "NE\\.",
+              "N.E."
+            ]
+          ]
+        },
+        {
+          "goal": "# N.Y.S.#d #",
+          "patterns": []
+        }
+      ],
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 107,
+      "examples": [
+        [
+          724964,
+          725225
+        ]
+      ]
+    }
+  },
+  "# Pac. #; # Pac. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "Pac\\.",
+              "P."
+            ]
+          ]
+        },
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "Pac\\.",
+              "P."
+            ]
+          ]
+        }
+      ],
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 442,
+      "examples": [
+        [
+          1100869,
+          5780395
+        ]
+      ]
+    }
+  },
+  "# F.#d #; # USPQ #": {
+    "modifications": {
+      "filters": [
+        {
+          "kill": true
+        },
+        {
+          "goal": "# U.S.P.Q. #",
+          "patterns": [
+            [
+              "USPQ",
+              "U.S.P.Q."
+            ]
+          ]
+        }
+      ],
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 321,
+      "examples": [
+        [
+          6077151,
+          6092682
+        ]
+      ]
+    }
+  },
+  "# U.S.P.Q. #; # F. #d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# U.S.P.Q. #",
+          "patterns": []
+        },
+        {
+          "goal": "# F.#d #",
+          "patterns": [
+            [
+              "F\\. ",
+              "F."
+            ]
+          ]
+        }
+      ],
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 108,
+      "examples": [
+        [
+          6077139,
+          6082119
+        ]
+      ]
+    }
+  },
+  "# NE#d #, # NYS#d #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# N.E.#d #",
+          "patterns": [
+            [
+              "NE",
+              "N.E."
+            ]
+          ]
+        },
+        {
+          "goal": "# N.Y.S.#d #",
+          "patterns": [
+            [
+              "NYS",
+              "N.Y.S."
+            ]
+          ]
+        }
+      ],
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 3620,
+      "examples": [
+        [
+          109703,
+          8929205
+        ]
+      ]
+    }
+  },
+  "# Pac. #; # Pac. #; # Pac. #": {
+    "modifications": {
+      "filters": [
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "Pac\\.",
+              "P."
+            ]
+          ]
+        },
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "Pac\\.",
+              "P."
+            ]
+          ]
+        },
+        {
+          "goal": "# P. #",
+          "patterns": [
+            [
+              "Pac\\.",
+              "P."
+            ]
+          ]
+        }
+      ],
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 35,
+      "examples": [
+        [
+          2016822,
+          4820252
+        ]
+      ]
+    }
+  },
+  "# U.S. #, # S. Ct. #, # U.S. LEXIS #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 18114,
+      "examples": [
+        [
+          12435721,
+          12460182
+        ]
+      ]
+    }
+  },
+  "# USCMA #, # C.M.R. #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 2317,
+      "examples": [
+        [
+          6133900,
+          6663258
+        ]
+      ]
+    }
+  },
+  "#-NMCA-#; # P.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 1984,
+      "examples": [
+        [
+          15496,
+          4251490
+        ]
+      ]
+    }
+  },
+  "# WI #; # N.W.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 1944,
+      "examples": [
+        [
+          2228886,
+          12280407
+        ]
+      ]
+    }
+  },
+  "# N.E.#d #, # N.Y.S.#d #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 626,
+      "examples": [
+        [
+          1061670,
+          12309696
+        ]
+      ]
+    }
+  },
+  "# U.S.C.M.A. #, # C.M.R. #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 500,
+      "examples": [
+        [
+          6635438,
+          6667788
+        ]
+      ]
+    }
+  },
+  "# U.S. #, # S. Ct. #, # U.S. LEXIS #.": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 220,
+      "examples": [
+        [
+          12436524,
+          12458964
+        ]
+      ]
+    }
+  },
+  "# P.#d #, # P.#d #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 201,
+      "examples": [
+        [
+          1071340,
+          5117823
+        ]
+      ]
+    }
+  },
+  "# U.S. #, # S.Ct. #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 116,
+      "examples": [
+        [
+          1247838,
+          8843559
+        ]
+      ]
+    }
+  },
+  "# P. #, # P. #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 75,
+      "examples": [
+        [
+          1175161,
+          11263923
+        ]
+      ]
+    }
+  },
+  "# A.L.R. #, # N.W. #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 63,
+      "examples": [
+        [
+          2360533,
+          8592716
+        ]
+      ]
+    }
+  },
+  "# N.W. #, # A.L.R. #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 32,
+      "examples": [
+        [
+          3047941,
+          8590669
+        ]
+      ]
+    }
+  },
+  "# Cal.Rptr. #, # P.#d #": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 31,
+      "examples": [
+        [
+          2306131,
+          12139971
+        ]
+      ]
+    }
+  },
+  "# Fish. Pat. Cas. #; # O. G. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 27,
+      "examples": [
+        [
+          6109909,
+          11993192
+        ]
+      ]
+    }
+  },
+  "# U.S. #, # S. Ct. #, # U.S. LEXIS #,": {
+    "modifications": {
+      "splitstring": ","
+    },
+    "counts_and_examples": {
+      "count": 23,
+      "examples": [
+        [
+          12436512,
+          12458963
+        ]
+      ]
+    }
+  },
+  "# MT #; # P.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 3965,
+      "examples": [
+        [
+          43565,
+          12460423
+        ]
+      ]
+    }
+  },
+  "# WI App #; # N.W.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 3849,
+      "examples": [
+        [
+          2228882,
+          12281039
+        ]
+      ]
+    }
+  },
+  "# F.#d #; # U.S.P.Q. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 2302,
+      "examples": [
+        [
+          6077134,
+          12166925
+        ]
+      ]
+    }
+  },
+  "# So. #; # Div. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 2130,
+      "examples": [
+        [
+          1653684,
+          8837047
+        ]
+      ]
+    }
+  },
+  "# State Rptr. #; # P.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 1835,
+      "examples": [
+        [
+          130346,
+          5383252
+        ]
+      ]
+    }
+  },
+  "# VT #; # A.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 1419,
+      "examples": [
+        [
+          1420465,
+          12461459
+        ]
+      ]
+    }
+  },
+  "#-NMSC-#; # P.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 690,
+      "examples": [
+        [
+          15506,
+          4251393
+        ]
+      ]
+    }
+  },
+  "# MT #; # State Rptr. #; # P.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 681,
+      "examples": [
+        [
+          78412,
+          11150434
+        ]
+      ]
+    }
+  },
+  "# P.#d #; # P.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 484,
+      "examples": [
+        [
+          322289,
+          8898360
+        ]
+      ]
+    }
+  },
+  "# P. #; # P. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 372,
+      "examples": [
+        [
+          31752,
+          11264073
+        ]
+      ]
+    }
+  },
+  "# U.S.P.Q. #; # F.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 331,
+      "examples": [
+        [
+          6077149,
+          6082696
+        ]
+      ]
+    }
+  },
+  "# So. #d #; # So. #d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 257,
+      "examples": [
+        [
+          1311499,
+          8830962
+        ]
+      ]
+    }
+  },
+  "# Abs. #; OS. Pend. # Abs. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 239,
+      "examples": [
+        [
+          1637018,
+          1640296
+        ]
+      ]
+    }
+  },
+  "# Vt. #; # A.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 236,
+      "examples": [
+        [
+          3586769,
+          6787459
+        ]
+      ]
+    }
+  },
+  "# So. #; # So. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 229,
+      "examples": [
+        [
+          350,
+          8847981
+        ]
+      ]
+    }
+  },
+  "# So. #d #; # Div. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 225,
+      "examples": [
+        [
+          1710405,
+          1710634
+        ]
+      ]
+    }
+  },
+  "# N.E.#d #; # N.Y.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 191,
+      "examples": [
+        [
+          1577444,
+          11077245
+        ]
+      ]
+    }
+  },
+  "# U.S.C.M.A. #; # C.M.R. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 146,
+      "examples": [
+        [
+          6134842,
+          12116818
+        ]
+      ]
+    }
+  },
+  "# Ban. & A. #; # O. G. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 133,
+      "examples": [
+        [
+          6095708,
+          12119381
+        ]
+      ]
+    }
+  },
+  "# S.W.#d #; # S.W.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 118,
+      "examples": [
+        [
+          51275,
+          8736267
+        ]
+      ]
+    }
+  },
+  "# Ben. #; # N. B. R. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 101,
+      "examples": [
+        [
+          6097113,
+          12120810
+        ]
+      ]
+    }
+  },
+  "# St. Rep. #; # Hun, #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 82,
+      "examples": [
+        [
+          1171534,
+          1175018
+        ]
+      ]
+    }
+  },
+  "# Spr. #; # Law Rep. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 79,
+      "examples": [
+        [
+          6095833,
+          12120773
+        ]
+      ]
+    }
+  },
+  "# MT #; # Mont. #; # P.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 69,
+      "examples": [
+        [
+          213074,
+          5469560
+        ]
+      ]
+    }
+  },
+  "# Ben. #; # Int. Rev. Rec. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 68,
+      "examples": [
+        [
+          6112796,
+          12120245
+        ]
+      ]
+    }
+  },
+  "# P.#d #; #-NMCA-#": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 68,
+      "examples": [
+        [
+          1217097,
+          1217188
+        ]
+      ]
+    }
+  },
+  "# St. Rep. #; # N. Y. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 64,
+      "examples": [
+        [
+          1171533,
+          1174997
+        ]
+      ]
+    }
+  },
+  "# Biss. #; # Chi. Leg. News, #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 61,
+      "examples": [
+        [
+          6102819,
+          12119215
+        ]
+      ]
+    }
+  },
+  "# Blatchf. #; # Ban. & A. #; # O. G. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 57,
+      "examples": [
+        [
+          6095032,
+          12120990
+        ]
+      ]
+    }
+  },
+  "# Blatchf. #; # Fish. Pat. Cas. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 57,
+      "examples": [
+        [
+          6100584,
+          12118029
+        ]
+      ]
+    }
+  },
+  "# St.Rep. #; # Mont. #; # P.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 54,
+      "examples": [
+        [
+          972242,
+          972295
+        ]
+      ]
+    }
+  },
+  "# Abs. #; OA. # Abs. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 50,
+      "examples": [
+        [
+          1637017,
+          1640144
+        ]
+      ]
+    }
+  },
+  "# Blatchf. #; # Int. Rev. Rec. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 50,
+      "examples": [
+        [
+          6097707,
+          12121002
+        ]
+      ]
+    }
+  },
+  "# N. W., #; # D. L. N., #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 47,
+      "examples": [
+        [
+          223821,
+          225617
+        ]
+      ]
+    }
+  },
+  "# Ben. #; # N. B. R. # Quarto, #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 46,
+      "examples": [
+        [
+          6096084,
+          12117271
+        ]
+      ]
+    }
+  },
+  "# Blatchf. #; # N. B. R. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 39,
+      "examples": [
+        [
+          6097660,
+          12120659
+        ]
+      ]
+    }
+  },
+  "# Blatchf. #; # Fish. Pat. Rep. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 29,
+      "examples": [
+        [
+          6103584,
+          12121021
+        ]
+      ]
+    }
+  },
+  "# M., #; # L. R. A., #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 27,
+      "examples": [
+        [
+          223869,
+          6034638
+        ]
+      ]
+    }
+  },
+  "# Abs. #; OA. # Abs. #; OS. Pend. # Abs. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 26,
+      "examples": [
+        [
+          1637253,
+          1640190
+        ]
+      ]
+    }
+  },
+  "# P.#d #; #-NMSC-#": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 26,
+      "examples": [
+        [
+          1217096,
+          1217189
+        ]
+      ]
+    }
+  },
+  "# S.E.#d #; # Ga. App. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 24,
+      "examples": [
+        [
+          6775980,
+          12169812
+        ]
+      ]
+    }
+  },
+  "# Hughes, #; # N. B. R. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 22,
+      "examples": [
+        [
+          6108003,
+          12120823
+        ]
+      ]
+    }
+  },
+  "# P.#d #; # P.#d #; # P.#d #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 22,
+      "examples": [
+        [
+          2071766,
+          5093008
+        ]
+      ]
+    }
+  },
+  "# N. B. R. #; # Chi. Leg. News, #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 22,
+      "examples": [
+        [
+          6096767,
+          11995328
+        ]
+      ]
+    }
+  },
+  "# Lowell, #; # N. B. R. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 38,
+      "examples": [
+        [
+          6099556,
+          12121096
+        ]
+      ]
+    }
+  },
+  "# Leg. Int. #; # Phila. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 38,
+      "examples": [
+        [
+          6100165,
+          12117451
+        ]
+      ]
+    }
+  },
+  "# Story, #; # Law Rep. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 38,
+      "examples": [
+        [
+          6104545,
+          12120978
+        ]
+      ]
+    }
+  },
+  "# Biss. #; # N. B. R. #": {
+    "modifications": {
+      "splitstring": ";"
+    },
+    "counts_and_examples": {
+      "count": 32,
+      "examples": [
+        [
+          6101318,
+          11997520
+        ]
+      ]
+    }
+  },
+  "# N.W.#d # and # N.W.#d #": {
+    "modifications": {
+      "splitstring": "and"
+    },
+    "counts_and_examples": {
+      "count": 27,
+      "examples": [
+        [
+          2292537,
+          8672822
+        ]
+      ]
+    }
+  }
+}

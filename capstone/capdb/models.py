@@ -857,6 +857,17 @@ class CaseMetadataQuerySet(TemporalQuerySet):
     def update_in_scope(self):
         return self.update(in_scope=Q(duplicative=False, duplicate=False) & ~Q(jurisdiction_id=None) & ~Q(court_id=None))
 
+    def for_indexing(self):
+        """
+            Fetch only cases that are appropriate for Elasticsearch indexing, with associated data.
+        """
+        return (self
+            .filter(volume__out_of_scope=False, volume__duplicate=False)
+            .in_scope()
+            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache')
+            .prefetch_related('extractedcitations', 'citations')
+            .exclude(body_cache=None))
+
 
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, unique=True)
