@@ -1,8 +1,9 @@
 import pytest
+import re
 
 from django.utils.text import slugify
 
-from capdb.models import CaseMetadata, CaseImage, fetch_relations, Court, EditLog, CaseBodyCache
+from capdb.models import CaseMetadata, CaseImage, fetch_relations, Court, EditLog, CaseBodyCache, VolumeMetadata
 from capdb.tasks import retrieve_images_from_cases
 from test_data.test_fixtures.helpers import xml_equal
 from capapi.documents import CaseDocument
@@ -205,31 +206,59 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
 @pytest.mark.django_db
 def test_set_duplicate(reset_sequences, case, elasticsearch):
     # make sure set_duplicate function updates the cases and removes the cases from the elasticsearch index
+    duplicate_of = VolumeMetadata.objects.exclude(pk=case.volume.pk).first()
     assert CaseDocument.search().filter("term", volume__barcode=case.volume.barcode).count() == 1
-    case.volume.set_duplicate(True)
+    case.volume.set_duplicate(duplicate_of)
+    assert case.volume.duplicate_of == duplicate_of
     assert CaseDocument.search().filter("term", volume__barcode=case.volume.barcode).count() == 0
 
 @pytest.mark.django_db
 def test_set_reporter(reset_sequences, case, elasticsearch, reporter):
     # make sure set_duplicate function updates the reporter values in the cases and re-indexes properly
+
     volume = case.volume
+
+    old_frontend_url_rep_shorts = set([case.frontend_url.split('/')[1] for case in volume.case_metadatas.all()])
+    # set middle of official citation to reflect the generated reporter's short name
+    for case in volume.case_metadatas.all():
+        cite = case.citations.get(type="official")
+        cite.cite = cite.cite.replace("U.S.", volume.reporter.short_name)
+        cite.save()
+
     assert volume.reporter.id != reporter.id
     assert CaseDocument.search().filter("term", reporter__id=reporter.id).count() == 0
     volume.set_reporter(reporter)
     assert volume.reporter.id == reporter.id
     assert CaseDocument.search().filter("term", reporter__id=reporter.id).count() == 1
+    new_frontend_url_rep_shorts = set([case.frontend_url.split('/')[1] for case in volume.case_metadatas.all()])
+    assert len(new_frontend_url_rep_shorts) == 1
+    assert list(new_frontend_url_rep_shorts)[0] == slugify(reporter.short_name)
+    assert old_frontend_url_rep_shorts != new_frontend_url_rep_shorts
 
 @pytest.mark.django_db
 def test_set_volume_number(reset_sequences, case, elasticsearch):
     # make sure set_volume_number function updates the reporter values in the cases and re-indexes properly
     new_volume_number = '2567'
+
     volume = case.volume
+
+    old_frontend_url_vols = set([case.frontend_url.split('/')[2] for case in volume.case_metadatas.all()])
+    # set the volume number of the official citation to that of the generated volume
+    for case in volume.case_metadatas.all():
+        cite = case.citations.get(type="official")
+        cite.cite = re.sub(r'^[0-9]+', volume.volume_number, cite.cite)
+        cite.save()
+
     assert volume.volume_number != new_volume_number
     assert CaseDocument.search().filter("term", volume__volume_number_slug=slugify(new_volume_number)).count() == 0
     volume.set_volume_number(new_volume_number)
     assert volume.volume_number == new_volume_number
     assert volume.volume_number_slug == slugify(new_volume_number)
     assert CaseDocument.search().filter("term", volume__volume_number_slug=slugify(new_volume_number)).count() == 1
+    new_frontend_url_vols = set([case.frontend_url.split('/')[2] for case in volume.case_metadatas.all()])
+    assert len(new_frontend_url_vols) == 1
+    assert list(new_frontend_url_vols)[0] == new_volume_number
+    assert old_frontend_url_vols != new_frontend_url_vols
 
 @pytest.mark.django_db
 def test_sync_case_body_cache(reset_sequences, case, elasticsearch):

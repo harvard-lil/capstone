@@ -642,15 +642,6 @@ class VolumeMetadata(models.Model):
     def __str__(self):
         return self.barcode
 
-    def set_volume_number(self, volume_number):
-        """
-            Update this volume's reporter.
-            Update volume.case_metadatas.reporter to match.
-        """
-        self.volume_number = volume_number
-        self.save(update_volume_number_slug=True)
-        CaseMetadata.reindex_cases(self.case_metadatas.all())
-
     def set_xml_checksums_need_update(self, value=True):
         self.xml_checksums_need_update = value
         self.save(update_fields=['xml_checksums_need_update'])
@@ -658,29 +649,60 @@ class VolumeMetadata(models.Model):
     def get_absolute_url(self):
         return reverse('volumemetadata-detail', args=[self.pk], scheme="https")
 
-    def set_duplicate(self, is_duplicate, duplicate_of=None):
+    def set_duplicate(self, duplicate_of):
         """
             Update this volume to reflect that it is or is not a duplicate of another volume.
             Update volume.case_metadatas.duplicate and .in_scope to match.
         """
+        #TODO: PDF renaming/deleting functionality
         with transaction.atomic(using='capdb'):
-            self.duplicate = is_duplicate
+            self.duplicate = True
             self.duplicate_of = duplicate_of
             self.save()
-            self.case_metadatas.update(duplicate=is_duplicate)
+            self.case_metadatas.update(duplicate=True)
             self.case_metadatas.update_in_scope()
         CaseMetadata.reindex_cases(self.case_metadatas.all(), prune_duplicates=True)
 
-    def set_reporter(self, reporter):
+    def set_volume_number(self, volume_number, update_citations=True):
         """
             Update this volume's reporter.
             Update volume.case_metadatas.reporter to match.
         """
+        #TODO: PDF renaming functionality
         with transaction.atomic(using='capdb'):
+            old_volume_number = self.volume_number
+            self.volume_number = volume_number
+            self.save(update_volume_number_slug=True)
+            if update_citations:
+                for case in self.case_metadatas.all():
+                    citation = case.citations.get(type="official")
+                    old_citation = citation.cite
+                    if not citation.cite.startswith(old_volume_number):
+                        raise Exception("Unexpected original volume number at beginning of citation")
+                    citation.cite = citation.cite.replace(old_volume_number, self.volume_number, 1)
+                    citation.save()
+                    CaseMetadata.update_frontend_urls([old_citation, citation.cite])
+
+    def set_reporter(self, reporter, update_citations=True):
+        """
+            Update this volume's reporter.
+            Update volume.case_metadatas.reporter to match.
+        """
+        #TODO: PDF renaming functionality
+        with transaction.atomic(using='capdb'):
+            old_reporter = self.reporter
             self.reporter = reporter
             self.save()
             self.case_metadatas.update(reporter=reporter)
-        CaseMetadata.reindex_cases(self.case_metadatas.all())
+            if update_citations:
+                for case in self.case_metadatas.all():
+                    citation = case.citations.get(type="official")
+                    old_citation = citation.cite
+                    if old_reporter.short_name not in citation.cite:
+                        raise Exception("Unexpected citation format")
+                    citation.cite = citation.cite.replace(old_reporter.short_name, self.reporter.short_name, 1)
+                    citation.save()
+                    CaseMetadata.update_frontend_urls([old_citation, citation.cite])
 
     def update_volume_number_slug(self):
         self.volume_number_slug = slugify(self.volume_number)
@@ -1558,7 +1580,7 @@ class CaseXML(BaseXMLModel):
         # fetch any existing cites from the database
         existing_cites = {} if metadata_created else {cite.cite: cite for cite in self.metadata.citations.all()}
 
-        # set up a fake cite for duplicate cases
+        # set up a fake cite for duplicative cases
         if duplicative_case:
             citations = [{
                 "citation_type": "official",
