@@ -661,12 +661,12 @@ class VolumeMetadata(models.Model):
             self.save()
             self.case_metadatas.update(duplicate=True)
             self.case_metadatas.update_in_scope()
-        CaseMetadata.reindex_cases(self.case_metadatas.all(), prune_duplicates=True)
+        CaseMetadata.reindex_cases(self.case_metadatas.all())
 
     def set_volume_number(self, volume_number, update_citations=True):
         """
-            Update this volume's reporter.
-            Update volume.case_metadatas.reporter to match.
+            Update this volume's number.
+            Update the citations to match.
         """
         #TODO: PDF renaming functionality
         with transaction.atomic(using='capdb'):
@@ -1033,26 +1033,25 @@ class CaseMetadata(models.Model):
                     cls.reindex_cases(to_update)
 
     @classmethod
-    def reindex_cases(cls, cases, prune_duplicates=False):
+    def reindex_cases(cls, cases):
         from capapi.documents import CaseDocument  # avoid circular import
         if isinstance(cases, models.Model):
             cases = [cases]
 
         # only indexes non-duplicate cases
-        CaseDocument().update([case for case in cases if not case.duplicate])
+        CaseDocument().update([case for case in cases if case.in_scope])
 
         # for the duplicates, we want to delete them, if necessary
-        if prune_duplicates:
-            try:
-                CaseDocument().update([case for case in cases if case.duplicate], action="delete")
-            except BulkIndexError as e:
-                # this re-raises if there's a BulkIndexError for any reason other than a failure to delete because of a 404
-                # which would happen if it was already deleted.
-                if not e[0].endswith('failed to index.') \
-                        or len([True for d in e.args[1] if d['delete']['status'] != 404
-                        or len(d.keys()) > 1
-                        or 'delete' not in d.keys()]) > 0:
-                    raise
+        try:
+            CaseDocument().update([case for case in cases if not case.in_scope], action="delete")
+        except BulkIndexError as e:
+            # this re-raises if there's a BulkIndexError for any reason other than a failure to delete because of a 404
+            # which would happen if it was already deleted.
+            if not e[0].endswith('failed to index.') \
+                    or len([True for d in e.args[1] if d['delete']['status'] != 404
+                    or len(d.keys()) > 1
+                    or 'delete' not in d.keys()]) > 0:
+                raise
 
     def get_frontend_url(self, cite=None, disambiguate=False, include_host=True):
         """
