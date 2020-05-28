@@ -1,4 +1,4 @@
-from capdb.models import VolumeMetadata, Reporter, Citation
+from capdb.models import VolumeMetadata, Reporter, Citation, EditLog
 
 to_suppress_to_keep = [(["32044109582668"], "32044109582650"), (["32044106827413"], "32044132256546"),
 (["32044078700051"], "32044057891848"), (["32044078700044"], "NOTALEPH000568"), (["32044133503029"], "Cal4th_062"),
@@ -75,106 +75,101 @@ part_2 = [("NOTALEPH001514", "NOTALEPH001513"), ("NOTALEPH001511", "NOTALEPH0015
 
 # Should be 4 N.C. / 2 Car. L. Rep. -- though it's not really 4 N.C. any more than the others	5	NOTALEPH000015, 32044057887291
 
-simple_replace = [("NOTALEPH000588", '3'),
-                  ("NOTALEPH000589", '4'),
-                  ("NOTALEPH000590", '5'),
-                  ("NOTALEPH000591", '6'),
-                  ("NOTALEPH000592", '7'),
-                  ("NOTALEPH000593", '8'),
-                  ("NOTALEPH000594", '9'),
-                  ("NOTALEPH000595", '10'),
-                  ("NOTALEPH000596", '11'),
-                  ("NOTALEPH000597", '12'),
-                  ("HL560V", '2')]
+simple_replace = [
+    ("NOTALEPH000597", '12'),
+    ("NOTALEPH000596", '11'),
+    ("NOTALEPH000595", '10'),
+    ("NOTALEPH000594", '9'),
+    ("NOTALEPH000593", '8'),
+    ("NOTALEPH000592", '7'),
+    ("NOTALEPH000591", '6'),
+    ("NOTALEPH000590", '5'),
+    ("NOTALEPH000589", '4'),
+    ("NOTALEPH000588", '3'),
+    ("HL560V", '2')
+]
 
-def perform_non_pdf_updates(dry_run=True):
-    print("Marking Duplicates")
-    for duplicate_volume in to_suppress_to_keep:
-        preferred_volume = VolumeMetadata.objects.get(pk=duplicate_volume[1])
-        for suppress_this in duplicate_volume[0]:
-            vol = VolumeMetadata.objects.get(pk=suppress_this)
-            if not dry_run:
-                vol.set_duplicate(preferred_volume)
-            else:
-                print("Dry Run: would set volume {} as duplicate of {}".format(vol.barcode, preferred_volume.barcode))
+def main(dry_run="true"):
+    with EditLog(description='Fix duplicate volumes').record(dry_run=dry_run != "false"):
+        # mark duplicates
+        for duplicate_volume in to_suppress_to_keep:
+            preferred_volume = VolumeMetadata.objects.get(pk=duplicate_volume[1])
+            for suppress_this in duplicate_volume[0]:
+                vol = VolumeMetadata.objects.get(pk=suppress_this)
+                if dry_run == "false":
+                    vol.set_duplicate(preferred_volume)
+                print("set_duplicate,%s,%s" % (vol.barcode, preferred_volume.barcode))
 
-    print("Second Part Of")
-    for parts in part_2:
-        vol_entry_1 = VolumeMetadata.objects.get(pk=parts[0])
-        vol_entry_2 = VolumeMetadata.objects.get(pk=parts[1])
+        # mark second parts
+        for parts in part_2:
+            vol_entry_1 = VolumeMetadata.objects.get(pk=parts[0])
+            vol_entry_2 = VolumeMetadata.objects.get(pk=parts[1])
 
-        i = 0
-        label_1 = ""
-        while not label_1.isdigit():
-            label_1 = vol_entry_1.page_structures.order_by('-order')[i].label
-            i += 1
-        label_1 = int(label_1)
+            i = 0
+            label_1 = ""
+            while not label_1.isdigit():
+                label_1 = vol_entry_1.page_structures.order_by('-order')[i].label
+                i += 1
+            label_1 = int(label_1)
 
-        i = 0
-        label_2 = ""
-        while not label_2.isdigit():
-            label_2 = vol_entry_2.page_structures.order_by('-order')[i].label
-            i += 1
-        label_2 = int(label_2)
+            i = 0
+            label_2 = ""
+            while not label_2.isdigit():
+                label_2 = vol_entry_2.page_structures.order_by('-order')[i].label
+                i += 1
+            label_2 = int(label_2)
 
-        if label_1  > label_2:
-            vol_entry_1.second_part_of = vol_entry_2
-            if not dry_run:
-                vol_entry_1.save()
-            else:
-                print("Dry Run: would set volume {} as second_part_of {}".format(vol_entry_1.barcode, vol_entry_2.barcode))
-        else:
+            if label_1 > label_2:
+                vol_entry_1, vol_entry_2 = vol_entry_2, vol_entry_1
             vol_entry_2.second_part_of = vol_entry_1
-            if not dry_run:
+            if dry_run == "false":
                 vol_entry_2.save()
-            else:
-                print("Dry Run: would set volume {} as second_part_of {}".format(vol_entry_2.barcode, vol_entry_1.barcode))
 
-    print("Updating Wn2d_185")
-    Wn2d_185 = VolumeMetadata.objects.get(pk="Wn2d_185")
-    if not dry_run:
-        Wn2d_185.set_reporter(Reporter.objects.get(short_name="Wash. 2d"))
-    else:
-        print("Dry Run: would set reporter to: {}".format(Reporter.objects.get(short_name="Wash. 2d")))
+            print("second_part_of,%s,%s" % (vol_entry_2.barcode, vol_entry_1.barcode))
 
-    print("Updating 32044057887291")
-    nc_vol = VolumeMetadata.objects.get(pk="32044057887291")
-    if not dry_run:
-        nc_vol.set_volume("5")
-    else:
-        print("Dry Run: would set volume number to: {}".format("5"))
+        # update Wn2d_185
+        Wn2d_185 = VolumeMetadata.objects.get(pk="Wn2d_185")
+        reporter = Reporter.objects.get(short_name="Wash. 2d")
+        if dry_run == "false":
+            Wn2d_185.set_reporter(reporter)
+        print("set_reporter,%s,%s" % (Wn2d_185.barcode, reporter.pk))
 
-    #update case frontend urls and citations
-    print("Updating 25 Tex. Supp.")
-    tex_supp = VolumeMetadata.objects.get(pk="32044078588621")
-    if not dry_run:
-        tex_supp.set_volume_number("25 Supp.")
-    else:
-        print("Dry Run: would set volume number to: {}".format("25 Supp."))
+        # update 32044057887291
+        nc_vol = VolumeMetadata.objects.get(pk="32044057887291")
+        if dry_run == "false":
+            nc_vol.set_volume_number("5")
+        print("set_volume_number,%s,%s" % (nc_vol.barcode, "5"))
 
-    for case in tex_supp.case_metadatas.all():
-        if not dry_run:
-            Citation.objects.create(
-                type="parallel",
-                cite="25 Tex. Supp. {}".format(case.first_page),
-                case=case
-            )
-        else:
-            print('Dry Run: citation update: type="parallel", cite="25 Tex. Supp. {}", case={}'.format(case.first_page, case))
+        #update 25 Tex. Supp
+        tex_supp = VolumeMetadata.objects.get(pk="32044078588621")
+        if dry_run == "false":
+            tex_supp.set_volume_number("25 Supp.")
+        print("set_volume_number,%s,%s" % (tex_supp.barcode, "25 Supp."))
 
-    volume = VolumeMetadata.objects.get(pk="32044078699600")
-    print("Updating {} {}".format(volume.volume_number, volume.reporter.short_name))
-    if not dry_run:
-        volume.set_volume_number('25')
-        volume.set_duplicate("32044078592631")
-    else:
-        print("Dry Run: Setting 32044078699600 to volume 25, and marking duplicate of 32044078592631")
+        for case in tex_supp.case_metadatas.for_indexing():
+            cite = "25 Tex. Supp. {}".format(case.first_page)
+            if dry_run == "false":
+                Citation.objects.create(
+                    type="parallel",
+                    cite=cite,
+                    case=case
+                )
+                case.reindex()
+            print("new_citation,%s,%s" % (tex_supp.barcode, cite))
 
-    print("Updating Volume Numbers")
-    for replace in simple_replace:
-        vol = VolumeMetadata.objects.get(pk=replace[0])
-        if not dry_run:
-            vol.set_volume_number(replace[1])
-        else:
-            print("Dry Run: Setting {} to volume {}".format(vol.barcode, replace[1]))
+        # update 32044078699600
+        volume = VolumeMetadata.objects.get(pk="32044078699600")
+        duplicate_of = VolumeMetadata.objects.get(pk="32044078592631")
+        if dry_run == "false":
+            volume.set_volume_number('25')
+            volume.set_duplicate(duplicate_of)
+        print("set_volume_number,%s,%s" % (volume.barcode, '25'))
+        print("set_duplicate,%s,%s" % (volume.barcode, duplicate_of.pk))
+
+        # update volume numbers
+        for replace in simple_replace:
+            vol = VolumeMetadata.objects.get(pk=replace[0])
+            if dry_run == "false":
+                vol.set_volume_number(replace[1])
+            print("set_volume_number,%s,%s" % (vol.barcode, replace[1]))
 

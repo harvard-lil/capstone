@@ -359,7 +359,7 @@ def test_redaction(client, unrestricted_case, elasticsearch):
 
     unrestricted_case.no_index_redacted = { case_text_word : case_text_rep_word, name_word :name_rep_word}
     unrestricted_case.save()
-    unrestricted_case.update_search_index()
+    unrestricted_case.reindex()
 
     response = client.get(url, follow=True)
     check_response(response)

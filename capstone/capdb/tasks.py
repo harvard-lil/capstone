@@ -130,7 +130,7 @@ def update_elasticsearch_for_vol(self, volume_id):
         # if necessary (in which case we'll get BulkIndexError with error 429, too many requests).
         for i in range(10):
             try:
-                CaseDocument().update(cases)
+                CaseMetadata.reindex_cases(cases)
                 return
             except (ElasticsearchException, ReadTimeoutError) as e:
                 if i == 9:
