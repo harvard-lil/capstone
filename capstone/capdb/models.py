@@ -651,7 +651,7 @@ class VolumeMetadata(models.Model):
 
     def set_duplicate(self, duplicate_of):
         """
-            Update this volume to reflect that it is or is not a duplicate of another volume.
+            Update this volume to reflect that it is a duplicate of another volume.
             Update volume.case_metadatas.duplicate and .in_scope to match.
         """
         #TODO: PDF renaming/deleting functionality
@@ -661,7 +661,8 @@ class VolumeMetadata(models.Model):
             self.save()
             self.case_metadatas.update(duplicate=True)
             self.case_metadatas.update_in_scope()
-        CaseMetadata.reindex_cases(self.case_metadatas.all())
+            CaseMetadata.update_frontend_urls(Citation.objects.filter(type='official', case__volume=self).values_list('cite', flat=True))
+            CaseMetadata.reindex_cases(self.case_metadatas.for_indexing())
 
     def set_volume_number(self, volume_number, update_citations=True):
         """
@@ -674,14 +675,14 @@ class VolumeMetadata(models.Model):
             self.volume_number = volume_number
             self.save(update_volume_number_slug=True)
             if update_citations:
-                for case in self.case_metadatas.all():
-                    citation = case.citations.get(type="official")
+                for citation in Citation.objects.filter(type="official", case__volume=self):
                     old_citation = citation.cite
                     if not citation.cite.startswith(old_volume_number):
                         raise Exception("Unexpected original volume number at beginning of citation")
                     citation.cite = citation.cite.replace(old_volume_number, self.volume_number, 1)
                     citation.save()
                     CaseMetadata.update_frontend_urls([old_citation, citation.cite])
+            CaseMetadata.reindex_cases(self.case_metadatas.for_indexing())
 
     def set_reporter(self, reporter, update_citations=True):
         """
@@ -703,6 +704,7 @@ class VolumeMetadata(models.Model):
                     citation.cite = citation.cite.replace(old_reporter.short_name, self.reporter.short_name, 1)
                     citation.save()
                     CaseMetadata.update_frontend_urls([old_citation, citation.cite])
+            CaseMetadata.reindex_cases(self.case_metadatas.for_indexing())
 
     def update_volume_number_slug(self):
         self.volume_number_slug = slugify(self.volume_number)
@@ -914,8 +916,6 @@ class CaseMetadataQuerySet(TemporalQuerySet):
             Fetch only cases that are appropriate for Elasticsearch indexing, with associated data.
         """
         return (self
-            .filter(volume__out_of_scope=False, volume__duplicate=False)
-            .in_scope()
             .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache')
             .prefetch_related('extractedcitations', 'citations')
             .exclude(body_cache=None))
@@ -992,9 +992,8 @@ class CaseMetadata(models.Model):
     def save(self, *args, **kwargs):
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
-        if settings.MAINTAIN_ELASTICSEARCH_INDEX and not getattr(kwargs, 'no_reindex', False) and self.pk and hasattr(
-                self, 'body_cache'):
-            self.update_search_index()
+        if not getattr(kwargs, 'no_reindex', False) and self.pk and hasattr(self, 'body_cache'):
+            self.reindex()
         super().save(*args, **kwargs)
 
     def full_cite(self):
@@ -1019,8 +1018,13 @@ class CaseMetadata(models.Model):
             cite_strs = list(cite_strs)
 
         for i in range(0, len(cite_strs), batch_size):
-            cites = Citation.objects.filter(cite__in=cite_strs[i:i + batch_size], type='official').order_by(
-                'cite').select_related('case__volume', 'case__reporter')
+            cites = (Citation.objects
+                .filter(
+                    cite__in=cite_strs[i:i + batch_size],
+                    type='official',
+                    case__in_scope=True
+                ).order_by('cite')
+                .select_related('case__volume', 'case__reporter'))
             if update_elasticsearch:
                 cites = cites.select_related('case__court', 'case__jurisdiction', 'case__body_cache')
             cite_groups = itertools.groupby(cites, key=lambda c: c.cite)
@@ -1045,16 +1049,27 @@ class CaseMetadata(models.Model):
 
     @classmethod
     def reindex_cases(cls, cases):
+        if not settings.MAINTAIN_ELASTICSEARCH_INDEX:
+            return
+
         from capapi.documents import CaseDocument  # avoid circular import
-        if isinstance(cases, models.Model):
-            cases = [cases]
+
+        in_scope = []
+        out_of_scope = []
+        for case in cases:
+            if case.in_scope and not case.volume.out_of_scope:
+                in_scope.append(case)
+            else:
+                out_of_scope.append(case)
 
         # only indexes non-duplicate cases
-        CaseDocument().update([case for case in cases if case.in_scope])
+        if in_scope:
+            CaseDocument().update(in_scope)
 
         # for the duplicates, we want to delete them, if necessary
         try:
-            CaseDocument().update([case for case in cases if not case.in_scope], action="delete")
+            if out_of_scope:
+                CaseDocument().update(out_of_scope, action="delete")
         except BulkIndexError as e:
             # this re-raises if there's a BulkIndexError for any reason other than a failure to delete because of a 404
             # which would happen if it was already deleted.
@@ -1063,6 +1078,9 @@ class CaseMetadata(models.Model):
                     or len(d.keys()) > 1
                     or 'delete' not in d.keys()]) > 0:
                 raise
+
+    def reindex(self):
+        CaseMetadata.reindex_cases([self])
 
     def get_frontend_url(self, cite=None, disambiguate=False, include_host=True):
         """
@@ -1105,12 +1123,6 @@ class CaseMetadata(models.Model):
         self.replaced_by = replaced_by
         self.save()
         self.sync_case_body_cache()
-
-    def update_search_index(self):
-        if not self.in_scope:
-            return
-        from capapi.documents import CaseDocument  # local to avoid circular import
-        CaseDocument().update(self)
 
     def get_hydrated_structure(self):
         """
@@ -1169,8 +1181,7 @@ class CaseMetadata(models.Model):
         if save:
             body_cache.save()
 
-        if settings.MAINTAIN_ELASTICSEARCH_INDEX:
-            self.update_search_index()
+        self.reindex()
 
     def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)
@@ -2194,10 +2205,13 @@ class EditLog(models.Model):
         ordering = ['-timestamp']
 
     @contextmanager
-    def record(self, auto_transaction=True):
+    def record(self, auto_transaction=True, dry_run=False):
         """
             Context manager to record an EditLog along with any transactions run inside it.
         """
+        if dry_run:
+            yield self
+            return
         self.save()
         try:
             if auto_transaction:

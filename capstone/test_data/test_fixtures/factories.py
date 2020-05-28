@@ -332,7 +332,7 @@ class CaseFactory(factory.DjangoModelFactory):
         if not create:
             return
         if settings.MAINTAIN_ELASTICSEARCH_INDEX:
-            obj.update_search_index()
+            obj.reindex()
 
 
 @register

@@ -224,8 +224,7 @@ def main(dry_run='true', output_missing='false'):
         with EditLog(description='Add SCDB cites').record():
             Citation.objects.bulk_create(to_create)
             Citation.objects.bulk_update(to_update, ['cite'])
-            if settings.MAINTAIN_ELASTICSEARCH_INDEX:
-                CaseMetadata.reindex_cases(CaseMetadata.objects.filter(id__in=[c.case_id for c in to_create]+[c.case_id for c in to_update]))
+            CaseMetadata.reindex_cases(CaseMetadata.objects.filter(id__in=[c.case_id for c in to_create]+[c.case_id for c in to_update]))
 
     if output_missing != 'true':
         return
