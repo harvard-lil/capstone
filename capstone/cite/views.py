@@ -11,7 +11,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.urls import NoReverseMatch
 from django.db import transaction
 from django.db.models import Prefetch
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -149,6 +149,16 @@ def case_pdf(request, case_id, pdf_name):
 
     return citation(request,None, None, None, case_id, pdf=True, db_case=case)
 
+def page_image(request, series_slug, volume_number_slug, sequence_number):
+    """
+        Return the image for a page to authorized users.
+    """
+    if not request.user.is_authenticated and not request.user.is_staff:
+        return HttpResponseForbidden()
+    vol = VolumeMetadata.objects.get(volume_number_slug=volume_number_slug)
+    get_object_or_404(vol.vol, short_name_slug=slugify(series_slug))
+
+    return HttpResponse(vol.extract_page_image(sequence_number), content_type="application/pdf")
 
 def citation(request, series_slug, volume_number_slug, page_number, case_id=None, pdf=False, db_case=None):
     """

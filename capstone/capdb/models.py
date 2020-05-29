@@ -747,6 +747,18 @@ class VolumeMetadata(models.Model):
         self.redacted = False
         self.save()
 
+    def extract_page_image(self, sequence_number):
+        """
+            Return page image PNG image byte string from vol PDF
+            Takes the 1-indexed sequence number, like in the *page_order values
+        """
+        if not self.pdf_file:
+            raise ValueError("Cannot get page_images for volume with no PDF")
+        doc = fitz.open(self.pdf_file.path)
+        if sequence_number >= len(doc):
+            raise ValueError("There aren't that many pages in that book")
+        page = doc[sequence_number - 1]
+        return page.getPixmap().getPNGdata()
 
 class TrackingToolLog(models.Model):
     volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
