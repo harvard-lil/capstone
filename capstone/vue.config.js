@@ -42,7 +42,8 @@ let vueConfig = {
     witchcraft: 'static/js/witchcraft.js',
     search: 'static/js/search.js',
     trends: 'static/js/trends.js',
-    case: 'static/js/case.js'
+    case: 'static/js/case.js',
+    'cite-grid': 'static/js/cite-grid.js',
   },
 
   configureWebpack: {
@@ -103,6 +104,26 @@ let vueConfig = {
     config.externals({
       moment: 'moment'
     });
+
+    // embed svgs
+    // via https://github.com/visualfanatic/vue-svg-loader
+    const svgRule = config.module.rule('svg');
+    svgRule.uses.clear();
+    svgRule
+      .use('babel-loader')
+      .loader('babel-loader')
+      .end()
+      .use('vue-svg-loader')
+      .loader('vue-svg-loader')
+      // don't strip IDs from SVGs
+      // via https://github.com/visualfanatic/vue-svg-loader/issues/97
+      .options({
+        svgo: {
+          plugins: [
+            { cleanupIDs: false },
+          ],
+        },
+      });
   },
 
 };

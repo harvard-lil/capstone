@@ -45,6 +45,7 @@ urlpatterns = [
     path('exhibits/wordclouds', views.wordclouds, name='wordclouds'),
     path('exhibits/limericks', views.limericks, name='limericks'),
     path('exhibits/witchcraft', TemplateView.as_view(template_name='gallery/witchcraft.html'), name='witchcraft'),
+    path('exhibits/cite-grid', TemplateView.as_view(template_name='exhibits/cite-grid.html'), name='cite-grid'),
 
     ### gallery sections ###
     path('gallery/<str:section_slug>', views.gallery_section, name='gallery_section'),

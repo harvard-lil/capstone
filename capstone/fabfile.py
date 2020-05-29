@@ -5,6 +5,7 @@ import os
 import signal
 import subprocess
 import sys
+from collections import defaultdict
 from datetime import datetime
 from getpass import getpass
 
@@ -1231,9 +1232,9 @@ def export_citation_graph(output_folder="graph"):
 
     # write README.txt
     output_folder.joinpath('README.md').write_text(
-        "Citation graph exported %s\n"
-        "Nodes: %s\n"
-        "Edges: %s\n" % (timezone.now(), len(nodes), edge_count)
+        "Citation graph exported %s:\n\n"
+        "* Nodes: %s\n"
+        "* Edges: %s\n" % (timezone.now(), len(nodes), edge_count)
     )
 
     # write metadata.csv.gz
@@ -1310,10 +1311,12 @@ def export_citation_graph(output_folder="graph"):
         jur['graph_file'].close()
         jur['metadata_file'].close()
         jur['folder'].joinpath('README.md').write_text(
-            "Citation graph for %s exported %s\n"
-            "Nodes: %s\n"
-            "Edges: %s\n" % (jur['name'], timezone.now(), len(jur['nodes']), jur['edge_count'])
+            "Citation graph for %s exported %s:\n\n"
+            "* Nodes: %s\n"
+            "* Edges: %s\n" % (jur['name'], timezone.now(), len(jur['nodes']), jur['edge_count'])
         )
+
+    count_cites_by_year(output_folder, output_folder.joinpath('aggregations'))
 
 
 @task
@@ -1336,6 +1339,49 @@ def report_missed_citations():
     counts = sorted(([v['count'], k] + v['cases'][:5] for k, v in counts.items()), reverse=True)
     writer = csv.writer(sys.stdout)
     writer.writerows(counts)
+
+
+@task
+def count_cites_by_year(folder, output_folder):
+    """ Write summaries from citation graph in folder to output_folder. """
+    folder = Path(folder)
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    print("Loading metadata")
+    metadata = {}
+    with gzip.open(str(folder / 'metadata.csv.gz'), "rt") as f:
+        for row in tqdm(csv.DictReader(f)):
+            metadata[int(row['id'])] = (int(row['jurisdiction_id']), int(row['decision_date_original'][:4]))
+    cites_per_jurisdiction = defaultdict(int)
+    totals = defaultdict(lambda: defaultdict(int))
+    totals_by_year = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+
+    print("Counting totals")
+    with gzip.open(str(folder / 'citations.csv.gz'), "rt") as f:
+        for row in tqdm(csv.reader(f)):
+            from_id, *to_ids = [int(i) for i in row]
+            from_jur_id, year = metadata[from_id]
+            cites_per_jurisdiction[from_jur_id] += len(to_ids)
+            for to_id in to_ids:
+                to_jur_id = metadata[to_id][0]
+                totals[from_jur_id][to_jur_id] += 1
+                totals_by_year[year][from_jur_id][to_jur_id] += 1
+
+    print("Writing output")
+    jurisdiction_metadata = [
+        {'id': j.id, 'name': j.name, 'name_long': j.name_long, 'cites': cites_per_jurisdiction[j.id]}
+        for j in Jurisdiction.objects.filter(id__in=cites_per_jurisdiction.keys()).order_by('name')
+    ]
+    output_folder.joinpath('jurisdictions.json').write_text(json.dumps(jurisdiction_metadata))
+    output_folder.joinpath('totals.json').write_text(json.dumps(totals))
+    output_folder.joinpath('totals_by_year.json').write_text(json.dumps(totals_by_year))
+    output_folder.joinpath('README.md').write_text(
+        "This directory contains aggregations of data by jurisdiction from the citation graph:\n\n"
+        "* jurisdictions.json: citation counts by citing jurisdiction\n"
+        "* totals.json: citation counts from each jurisdiction to each jurisdiction\n"
+        "* totals_by_year.json: citation counts from each jurisdiction to each jurisdiction for each year\n"
+    )
 
 
 @task

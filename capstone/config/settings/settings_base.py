@@ -332,7 +332,13 @@ PIPELINE = {
                 'css/scss/file_download.scss',
             },
             'output_filename': 'file_download.css'
-        }
+        },
+        'cite-grid': {
+            'source_filenames': {
+                'css/scss/cite-grid.scss',
+            },
+            'output_filename': 'cite-grid.css'
+        },
     },
     # These are not yet converted to vue/webpack:
     # 'JAVASCRIPT': {

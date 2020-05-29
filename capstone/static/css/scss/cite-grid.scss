@@ -1,0 +1,51 @@
+@import "bootstrap/functions";
+@import "bootstrap/variables";
+@import "bootstrap/mixins";
+@import "bootstrap/utilities/align";
+@import "base.scss";
+@import 'footer/yellow';
+
+.basic-page {
+  .main-content {
+    @include media-breakpoint-up(lg) {
+      @include make-col(10);
+    }
+  }
+}
+
+.table-scroll {
+  width: 100%;
+  height: 800px;
+  position: relative;
+  overflow: scroll;
+}
+
+table {
+  position: relative;
+}
+
+th {
+  white-space: nowrap;
+  background-color: white;
+  position: sticky;
+
+  &.top-header.left-header {
+    z-index: 1;
+  }
+  &.top-header {
+    vertical-align: bottom;
+    top: 0;
+  }
+  &.left-header {
+    text-align: right;
+    left: 0;
+  }
+
+  &.disabled {
+    color: gray;
+  }
+
+  &.rotate > div{
+    writing-mode: vertical-rl;
+  }
+}

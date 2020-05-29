@@ -33,6 +33,7 @@
     "@vue/cli-service": "^3.7.0",
     "babel-eslint": "^10.0.1",
     "bootstrap": "^4.3.1",
+    "bootstrap-vue": "^2.14.0",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0-0",
     "exports-loader": "^0.7.0",
@@ -42,8 +43,12 @@
     "tar": "^4.4.8",
     "url-polyfill": "^1.1.3",
     "vue-router": "^3.0.2",
-    "vue-template-compiler": "^2.5.17",
+    "vue-svg-loader": "^0.16.0",
+    "vue-template-compiler": "^2.6.11",
     "webpack-bundle-tracker": "^0.4.2-beta"
+  },
+  "resolutions": {
+    "vue-svg-loader/svg-to-vue": "0.6.0"
   },
   "eslintConfig": {
     "root": true,
