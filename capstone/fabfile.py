@@ -1370,7 +1370,7 @@ def count_cites_by_year(folder, output_folder):
 
     print("Writing output")
     jurisdiction_metadata = [
-        {'id': j.id, 'name': j.name, 'name_long': j.name_long, 'cites': cites_per_jurisdiction[j.id]}
+        {'id': j.id, 'slug': j.slug, 'name': j.name, 'name_long': j.name_long, 'cites': cites_per_jurisdiction[j.id]}
         for j in Jurisdiction.objects.filter(id__in=cites_per_jurisdiction.keys()).order_by('name')
     ]
     output_folder.joinpath('jurisdictions.json').write_text(json.dumps(jurisdiction_metadata))
