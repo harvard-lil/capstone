@@ -1,8 +1,8 @@
 import {encodeQueryData} from './utils';
 
-const api_url = urls.api_root;  // eslint-disable-line
 
 export function getApiUrl(endpoint, params) {
+  const api_url = urls.api_root;  // eslint-disable-line
   return `${api_url}${endpoint}/?${encodeQueryData(params)}`;
 }
 

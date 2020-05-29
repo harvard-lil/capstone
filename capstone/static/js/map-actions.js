@@ -1,5 +1,3 @@
-import {jurisdiction_translation} from './map-data.js'
-
 /*
     Enable mouseover effects with the map on the homepage
  */
@@ -52,42 +50,26 @@ function addMapMouseovers() {
   });
 
   // This loops through the elements of the map and sets the mouseover events
-
-  let statelinks = document.getElementsByClassName('state-link');
-
-  Array.from(statelinks).forEach(function (element) {
-    let jur_el = element.childNodes[1];
-    let jurname = jur_el.id;
-    add_event_to_jur('focus', element, jurname);
-    add_event_to_jur('mouseover', jur_el, jurname);
-
-  });
+  for (const stateLink of document.getElementsByClassName('state-link')) {
+    const jurPath = stateLink.childNodes[1];
+    const jurSlug = stateLink.id;
+    const jurName = stateLink.ariaLabel;
+    add_event_to_jur('focus', stateLink, jurSlug, jurName);
+    add_event_to_jur('mouseover', jurPath, jurSlug, jurName);
+  }
 }
 
-function add_event_to_jur(event, el, jurname) {
+function add_event_to_jur(event, el, jurSlug, jurName) {
   // mapSettings lives in index.html, which calls this js file. eslint hates that.
   // eslint-disable-next-line
-  const map_data = mapSettings.data;
+  const map_data = mapSettings.data[jurSlug];
   el.addEventListener(event, function () {
-    Array.from(document.getElementsByClassName("jur_name")).forEach(function (el) {
-      el.innerHTML = jurisdiction_translation[jurname]['name'];
-    });
-
-    Array.from(document.getElementsByClassName("num_cases")).forEach(function (el) {
-      el.innerHTML =
-          map_data[jurname]['case_count'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    });
-    Array.from(document.getElementsByClassName("num_reporters")).forEach(function (el) {
-      el.innerHTML = map_data[jurname]['reporter_count'];
-      // Pluralize "Reporters" text if there is more than one
-      el.nextElementSibling.innerHTML = map_data[jurname]['reporter_count'] > 1 ? "Reporters" : "Reporter";
-    });
-    Array.from(document.getElementsByClassName("num_pages")).forEach(function (el) {
-      el.innerHTML =
-          map_data[jurname]['page_count'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    });
+    document.querySelector(".jur_name").innerHTML = jurName;
+    document.querySelector(".num_cases").innerHTML = map_data['case_count'].toLocaleString();
+    document.querySelector(".num_reporters").innerHTML = map_data['reporter_count'];
+    document.querySelector(".num_reporters").nextElementSibling.innerHTML = map_data['reporter_count'] > 1 ? "Reporters" : "Reporter";
+    document.querySelector(".num_pages").innerHTML = map_data['page_count'].toLocaleString();
   });
-
 }
 
 // Too dry? maybe.
@@ -105,10 +87,10 @@ function addJurHrefs() {
         // mapSettings lives in index.html, which calls this js file. eslint hates that.
         // eslint-disable-next-line
         let childID = child.id;
-        if (childID.indexOf('Dakota-Territory') > -1) {
-          childID = 'Dakota-Territory'
+        if (childID.indexOf('dakota-territory') > -1) {
+          childID = 'dakota-territory'
         }
-        el.setAttribute("href", mapSettings.jurisdictionUrl.replace("JURISDICTION", jurisdiction_translation[childID]['slug']));
+        el.setAttribute("href", mapSettings.jurisdictionUrl.replace("JURISDICTION", childID));
         el.setAttribute("target", "_blank");
       }
     });

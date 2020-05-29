@@ -1,0 +1,38 @@
+{% extends "layouts/full.html" %}
+{% load static %}
+{% load pipeline %}
+{% load api_url %}
+{% load snippet %}
+{% load render_bundle from webpack_loader %}
+{% block row_style %}bg-tan{% endblock %}
+
+{% block base_css %}
+  {% stylesheet 'cite-grid' %}
+{% endblock %}
+
+{% block top_section_style %}bg-tan simple-section{% endblock %}
+{% block title_section %}
+{% endblock %}
+{% block meta_description %}
+  What states cite what states in United States caselaw?
+{% endblock %}
+{% block sidebar_menu %}{% endblock %}
+
+{% block main_content %}
+  <div class="page-title">
+    <h1>Cite Grid</h1>
+    <p>
+      <b>What states cite what states?</b> This tool uses our
+      <a href="{% url "download-files" "citation_graph/" %}">citation graph data</a>
+      to visualize how states and other jurisdictions tend to cite to each other.
+    </p>
+    <p>
+      Want to dig in? All of the <a href="{% url "download-files" "citation_graph/2020-05-08/aggregations/" %}">data supporting this tool is available in our downloads section.
+    </p>
+  </div>
+  <div id="app" class="content"></div>
+  <noscript>
+    This interface requires javascript.
+  </noscript>
+{% render_bundle 'cite-grid' %}
+{% endblock %}

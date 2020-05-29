@@ -350,7 +350,7 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, extracted_ci
 
     # check README.md
     results = output_folder.joinpath("README.md").read_text()
-    assert results.endswith("\nNodes: 4\nEdges: 3\n")
+    assert results.endswith("\n* Nodes: 4\n* Edges: 3\n")
 
     # check metadata.csv.gz
     with gzip.open(str(output_folder / "metadata.csv.gz"), 'rt') as f:
@@ -369,7 +369,7 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, extracted_ci
 
     # check README.md
     results = jur_folder.joinpath("README.md").read_text()
-    assert results.endswith("\nNodes: 2\nEdges: 1\n")
+    assert results.endswith("\n* Nodes: 2\n* Edges: 1\n")
 
     # check metadata.csv.gz
     with gzip.open(str(jur_folder / "metadata.csv.gz"), 'rt') as f:

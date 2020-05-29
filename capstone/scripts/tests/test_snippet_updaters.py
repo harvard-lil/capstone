@@ -4,16 +4,15 @@ from scripts import update_snippets
 from capdb.models import Snippet
 
 @pytest.mark.django_db
-def test_map_numbers(case_factory, jurisdiction_factory):
-    jurisdiction = jurisdiction_factory(slug='ill')
+def test_map_numbers(case_factory, jurisdiction):
     [case_factory(jurisdiction=jurisdiction) for i in range(3)]
     update_snippets.update_map_numbers()
     snippet = Snippet.objects.get(label="map_numbers")
     parsed = json.loads(snippet.contents)
     assert len(parsed) == 1
-    assert parsed['US-IL']['case_count'] == 3
-    assert parsed['US-IL']['volume_count'] == 3
-    assert parsed['US-IL']['page_count'] == 15
+    assert parsed[jurisdiction.slug]['case_count'] == 3
+    assert parsed[jurisdiction.slug]['volume_count'] == 3
+    assert parsed[jurisdiction.slug]['page_count'] == 15
 
 @pytest.mark.django_db
 def test_cases_by_decision_date(case_factory):
