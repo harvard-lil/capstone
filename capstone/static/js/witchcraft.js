@@ -1,5 +1,4 @@
 import $ from "jquery"
-import { jurisdiction_translation } from './map-data.js'
 import { witchcraft_results } from './witchcraft-data.js'
 
 let apiUrl = "https://api.case.law/v1";
@@ -51,53 +50,44 @@ let getRandomNum = function (min, max) {
 let showRandomCase = function () {
   let allJurs = Object.keys(witchcraft_results);
   let randJur = allJurs[getRandomNum(0, allJurs.length)];
-  for (const jur in jurisdiction_translation) {
-    if (jurisdiction_translation.hasOwnProperty(jur)) {
-      if (jurisdiction_translation[jur].slug === randJur) {
-        $('#' + jur).addClass('state-selected');
-        showCase(jurisdiction_translation[jur].name, witchcraft_results[randJur]);
-        return
-      }
-    }
-  }
+  const jurEl = $('#' + randJur);
+  jurEl.addClass('state-selected');
+  showCase(jurEl[0].ariaLabel, witchcraft_results[randJur]);
 };
 
-let setupEventsOnHover = function (id, jurname, info) {
+let setupEventsOnHover = function ($stateLink, jurname, info) {
   let selected_class = 'state-selected';
-  $(id).on("click mouseover", function (e) {
+  $stateLink.on("click mouseover", function (e) {
     showCase(jurname, info);
-    $('.state').removeClass(selected_class);
-    $(id).addClass(selected_class);
+    $('.state-link').removeClass(selected_class);
+    $stateLink.addClass(selected_class);
     e.preventDefault();
   });
 
   // add focus events for users using tab
-  $(id).parent().focus(function (e) {
+  $stateLink.parent().focus(function (e) {
     showCase(jurname, info);
     e.preventDefault();
   });
 };
 
 let setupClickEvent = function () {
-  $('.state').click(function () {
-    $('.state').off('mouseover');
+  $('.state-link').click(function () {
+    $('.state-link').off('mouseover');
   });
 };
 
 let parseWitchcraft = function () {
-  for (const jur in jurisdiction_translation) {
-    if (jurisdiction_translation.hasOwnProperty(jur)) {
-      let slug = jurisdiction_translation[jur].slug;
-      if (slug && slug in witchcraft_results) {
-        //  assign results to map
-        let jurid = "#" + jur;
-        let new_opacity = witchcraft_results[slug].total_appearances / 45;
-        $(jurid)
-            .css('fill', 'orange')
-            .css('fill-opacity', new_opacity);
-        let jurname = jurisdiction_translation[jur].name;
-        setupEventsOnHover(jurid, jurname, witchcraft_results[slug]);
-      }
+  for (const stateLink of $('.state-link')) {
+    const slug = stateLink.id;
+    if (slug in witchcraft_results) {
+      //  assign results to map
+      const $stateLink = $(stateLink);
+      const new_opacity = witchcraft_results[slug].total_appearances / 45;
+      $stateLink
+          .css('fill', 'orange')
+          .css('fill-opacity', new_opacity);
+      setupEventsOnHover($stateLink, stateLink.ariaLabel, witchcraft_results[slug]);
     }
   }
 };
