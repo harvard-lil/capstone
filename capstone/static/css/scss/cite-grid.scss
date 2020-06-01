@@ -15,19 +15,25 @@
 
 .table-scroll {
   width: 100%;
-  height: 800px;
   position: relative;
   overflow: scroll;
 }
 
 table {
   position: relative;
+  background-color: white;
+}
+
+td {
+  border: 1px solid #FFF;
 }
 
 th {
   white-space: nowrap;
   background-color: white;
   position: sticky;
+  line-height: 1em;
+  font-size: 75%;
 
   &.top-header.left-header {
     z-index: 1;
@@ -47,5 +53,6 @@ th {
 
   &.rotate > div{
     writing-mode: vertical-rl;
+    width: 1em;  // firefox 76 can't see the width of the rotated headers, so hardcode
   }
 }
