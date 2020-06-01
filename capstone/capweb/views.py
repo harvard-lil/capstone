@@ -136,10 +136,11 @@ def gallery(request):
     })
 
 def gallery_section(request, section_slug):
+    # historical redirect
     if section_slug in ['wordclouds', 'limericks', 'witchcraft']:
         return HttpResponseRedirect(reverse(section_slug))
 
-    section = GallerySection.objects.prefetch_related('entries').get(title_slug=section_slug)
+    section = get_object_or_404(GallerySection.objects.prefetch_related('entries'), title_slug=section_slug)
 
     return render(request, 'gallery_section.html', {
         'section': section,
