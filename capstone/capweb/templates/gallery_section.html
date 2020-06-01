@@ -40,7 +40,7 @@
              title="{{ entry.title }} homepage"
              id="{{ entry.title|slugify }}"
              target="_blank">
-            <img class="gallery-thumbnail" alt="" src="{{ entry.image.url }}">
+            <img class="gallery-thumbnail" alt="" src="{% if entry.image %}{{ entry.image.url }}{% else %}{% static 'img/gallery-default.jpg' %}{% endif %}">
           </a>
         {% elif entry.repo_link %}
           <a href="{{ entry.repo_link }}"
@@ -48,10 +48,10 @@
              title="{{ entry.title }} repository"
              id="{{ entry.title|slugify }}"
              target="_blank">
-            <img class="gallery-thumbnail" alt="" src="{{ entry.image.url }}">
+            <img class="gallery-thumbnail" alt="" src="{% if entry.image %}{{ entry.image.url }}{% else %}{% static 'img/gallery-default.jpg' %}{% endif %}">
           </a>
         {% else %}
-          <img class="gallery-thumbnail" alt="" src="{{ entry.image.url }}">
+          <img class="gallery-thumbnail" alt="" src="{% if entry.image %}{{ entry.image.url }}{% else %}{% static 'img/gallery-default.jpg' %}{% endif %}">
         {% endif %}
 
       </div>
