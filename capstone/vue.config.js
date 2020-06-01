@@ -53,7 +53,8 @@ let vueConfig = {
     ],
     resolve: {
       alias: {
-        'vue$': 'vue/dist/vue.esm.js'
+        'vue$': 'vue/dist/vue.esm.js',
+        static: path.resolve(__dirname, 'static'),
       }
     }
   },

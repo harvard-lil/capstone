@@ -29,11 +29,13 @@
             <input class="form-check-input"type="radio" id="mapDirectionOutbound" value="outbound" v-model="mapDirection">
             <label class="form-check-label" for="mapDirectionOutbound">outbound citations</label>
           </div>
-          <div v-if="hoveredJur">
-            Darker states are more likely to {{mapDirection === "inbound" ? "cite to" : "be cited by"}} {{hoveredJur.name_long}}
-          </div>
-          <div v-else>
-            Hover over a state to see what other states {{mapDirection === "inbound" ? "most often cite it" : "it most often cites"}}.
+          <div id="hovered-map-message">
+            <span v-if="hoveredJur">
+              Darker states are more likely to {{mapDirection === "inbound" ? "cite to" : "be cited by"}} {{hoveredJur.name_long}}.
+            </span>
+            <span v-else>
+              Hover over a state to see what other states {{mapDirection === "inbound" ? "most often cite it" : "it most often cites"}}.
+            </span>
           </div>
         </div>
         <div class="col-lg-9 col-md-12">
@@ -52,7 +54,9 @@
       <div>
         Coloring of each square is logarithmic to emphasize the range between 0 and 10%:<br>
         0%
-        <span v-for="i in 20" :style="{backgroundColor: percentageColor((i-1)/2), width: '1em', display: 'inline-block'}" :title="`${(i-1)/2}%`">&nbsp;</span>
+        <div style="display: inline-block; background-color: white">
+          <span v-for="i in 20" :style="{backgroundColor: percentageColor((i-1)/2), width: '1em', display: 'inline-block'}" :title="`${(i-1)/2}%`">&nbsp;</span>
+        </div>
         10%
       </div>
       <div>
@@ -85,7 +89,6 @@
                 @mouseover="hoveredGridMessage=hoverText(fromJur, toJur)"
                 @mouseleave="hoveredGridMessage=null"
             >
-              <!--{{citePercentage(fromJur, toJur)}}-->
             </td>
           </tr>
         </table>
@@ -181,8 +184,9 @@
         return this.percentageColor(this.citePercentage(fromJur, toJur));
       },
       percentageColor(x) {
-        // convert a percentage between 0 and 100 to a color between white and black, log normalized
-        return `hsl(0,0%,${100-this.logPercentage(x)}%)`;
+        // convert a percentage between 0 and 100 to a color, log normalized
+        return `rgba(44, 96, 255, ${this.logPercentage(x)}%)`;
+        // return `hsl(0,0%,${100-this.logPercentage(x)}%)`;
       },
       hoverText(fromJur, toJur) {
         let percentage = this.citePercentage(fromJur, toJur);
@@ -259,5 +263,9 @@
     background-color: white;
     padding: .2em;
     border: 1px black solid;
+  }
+  #hovered-map-message {
+    margin-top: 1em;
+    font-weight: bold;
   }
 </style>
