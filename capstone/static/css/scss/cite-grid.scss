@@ -15,6 +15,7 @@
 
 .table-scroll {
   width: 100%;
+  height: calc(100vh - 75px);
   position: relative;
   overflow: scroll;
 }
@@ -22,6 +23,7 @@
 table {
   position: relative;
   background-color: white;
+  margin-bottom: 0;
 }
 
 td {
