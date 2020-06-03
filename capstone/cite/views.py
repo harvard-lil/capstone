@@ -155,10 +155,10 @@ def page_image(request, series_slug, volume_number_slug, sequence_number):
     """
     if not request.user.is_authenticated and not request.user.is_staff:
         return HttpResponseForbidden()
-    vol = VolumeMetadata.objects.get(volume_number_slug=volume_number_slug)
-    get_object_or_404(vol.vol, short_name_slug=slugify(series_slug))
+    vol = VolumeMetadata.objects.filter(reporter__short_name_slug=slugify(series_slug))
+    vol = get_object_or_404(vol, volume_number_slug=volume_number_slug)
 
-    return HttpResponse(vol.extract_page_image(sequence_number), content_type="application/pdf")
+    return HttpResponse(vol.extract_page_image(int(sequence_number)), content_type="image/png")
 
 def citation(request, series_slug, volume_number_slug, page_number, case_id=None, pdf=False, db_case=None):
     """
