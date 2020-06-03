@@ -334,3 +334,13 @@ def test_retrieve_and_store_images(case, inline_image_src, django_assert_num_que
     with django_assert_num_queries(select=3, update=2):
         retrieve_images_from_cases(case.volume_id)
     assert CaseImage.objects.count() == 1
+
+
+### Extract single page image from a volume PDF with VolumeMetadata's extract_page_image ###
+
+@pytest.mark.django_db
+def test_extract_page_image(volume_metadata):
+    volume_metadata.pdf_file = "fake_volume.pdf"
+    volume_metadata.save()
+    img = volume_metadata.extract_page_image(1)
+    assert b'\x89PNG' in img
