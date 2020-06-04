@@ -747,7 +747,7 @@ class VolumeMetadata(models.Model):
         self.redacted = False
         self.save()
 
-    def extract_page_image(self, sequence_number, zoom_level = 3.0):
+    def extract_page_image(self, sequence_number, zoom_level=3.0):
         """
             Return page image PNG image byte string from vol PDF
             Takes the 1-indexed sequence number, like in the *page_order values
@@ -757,7 +757,7 @@ class VolumeMetadata(models.Model):
         doc = fitz.open(self.pdf_file.path)
         if sequence_number >= len(doc):
             raise ValueError("There aren't that many pages in that book")
-        mat = fitz.Matrix(zoom_level) # sets zoom level to 3x
+        mat = fitz.Matrix(zoom_level, zoom_level) # sets zoom level to 3x
         page = doc[sequence_number - 1]
         return page.getPixmap(matrix=mat).getPNGdata()
 
