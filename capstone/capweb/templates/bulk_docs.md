@@ -2,15 +2,15 @@
 {% load api_url %}
 title: Bulk data documentation
 meta_description: Caselaw Access Project bulk data documentation
-explainer: Our <a href="{% url "download" "bulk_exports" %}">bulk data files</a> contain the same information that is available via <a href="{% url "api" %}">our API</a>, but are much faster to download if you want to interact with a large number of cases. Each file contains all of the cases from a single jurisdiction or reporter. <br/> <a class="btn btn-primary" href="{% url "download" "bulk_exports" %}">Access data</a>
+explainer: Our <a href="{% url "download-files" "bulk_exports/" %}">bulk data files</a> contain the same information that is available via <a href="{% url "api" %}">our API</a>, but are much faster to download if you want to interact with a large number of cases. Each file contains all of the cases from a single jurisdiction or reporter. <br/> <a class="btn btn-primary" href="{% url "download-files" "bulk_exports/" %}">Access data</a>
 top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
-# Requesting Access {: class="subtitle" }
+# Access Limits {: class="subtitle" }
 
-Bulk data files for our whitelisted jurisdictions are 
-[available to everyone]({% url "download" "bulk_exports" %}) without a login.
+All metadata files, and bulk data files for our open jurisdictions, are 
+[available to everyone]({% url "download-files" "bulk_exports/" %}) without a login.
 
 Bulk data files for the remaining jurisdictions are available to research scholars who sign a research agreement. You 
 can request a research agreement by [creating an account]({% url "register" %}") and then 
@@ -21,15 +21,15 @@ See our [About page]({% url "about" %}#usage) for details on our data access res
 
 # Downloading {: class="subtitle" }
 
-You can [download bulk data]({% url "download" "bulk_exports" %}) manually from our website, or
-use the [manifest.json]({% url "download" "manifest.json" %}) or [manifest.csv]({% url "download" "manifest.csv" %})
+You can [download bulk data]({% url "download-files" "bulk_exports/" %}) manually from our website, or
+use the [manifest.json]({% url "download-files" "manifest.json" %}) or [manifest.csv]({% url "download-files" "manifest.csv" %})
 files to select URLs to download programmatically.
 
 When downloading bulk files, you may find that the download times out on the largest files.
 In that case use `wget`, which retries when it encounters a network problem. Here's an example for the
 U.S. file with case body in text format:
 
-<pre class="code-block">wget --header="Authorization: Token your-api-token" "{% url "download" "bulk_exports/latest/by_jurisdiction/case_text_restricted/us_metadata.zip" %}"</pre>
+<pre class="code-block">wget --header="Authorization: Token your-api-token" "{% url "download-files" "bulk_exports/latest/by_jurisdiction/case_text_restricted/us_text.zip" %}"</pre>
 
 Because this is a restricted file it requires an Authorization header.
 Replace `your-api-token` with your API token from the [user details]({% url "user-details" %}) page.
