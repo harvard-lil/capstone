@@ -48,7 +48,7 @@ pip-tools
 Fabric3             # project automation
 
 # Testing
-pytest==3.7.0      # Fix issues related to 4.x branch (https://github.com/harvard-lil/capstone/issues/745)
+pytest
 pytest-django      # testing
 pytest-xdist       # run tests in parallel with pytest -n
 pytest-cov         # record code coverage

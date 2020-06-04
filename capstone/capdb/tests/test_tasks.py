@@ -7,11 +7,13 @@ import os
 import csv
 import gzip
 import json
-from datetime import datetime
+from datetime import datetime, date
+
+from django.core.files.storage import FileSystemStorage
 from django.db import connections, utils
 
 from capapi.documents import CaseDocument
-from capdb.models import CaseMetadata, Court, Reporter, Citation, Jurisdiction, ExtractedCitation, CaseBodyCache
+from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache
 from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, \
     get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol
 
@@ -37,53 +39,82 @@ def test_create_case_metadata_from_all_vols(case_xml):
     assert case_xml.metadata.case_id == case_id
 
 
-def check_exports(case, filter_item, tmpdir):
-    tmpdir = Path(str(tmpdir))
+@pytest.mark.django_db
+def test_export_cases(case_factory, tmp_path, django_assert_num_queries, elasticsearch, monkeypatch):
+    version = date.today().strftime('%Y%m%d')
+    case1 = case_factory(jurisdiction__slug="aaa", volume__reporter__short_name="aaa", jurisdiction__whitelisted=False)
+    case2 = case_factory(jurisdiction__slug="bbb", volume__reporter__short_name="bbb", jurisdiction__whitelisted=True)
+    monkeypatch.setattr("scripts.export.writeable_download_files_storage", FileSystemStorage(location=str(tmp_path)))
+    changelog = "changelogtext"
+    fabfile.export_cases(changelog)
+    written_files = sorted(str(i.relative_to(tmp_path)) for i in tmp_path.rglob('*'))
+    expected_files = [i.strip() for i in """
+        bulk_exports
+        bulk_exports/{version}
+        bulk_exports/{version}/README.md
+        bulk_exports/{version}/by_jurisdiction
+        bulk_exports/{version}/by_jurisdiction/README.md
+        bulk_exports/{version}/by_jurisdiction/case_metadata
+        bulk_exports/{version}/by_jurisdiction/case_metadata/README.md
+        bulk_exports/{version}/by_jurisdiction/case_metadata/{case1.jurisdiction.slug}
+        bulk_exports/{version}/by_jurisdiction/case_metadata/{case1.jurisdiction.slug}/{case1.jurisdiction.slug}_metadata_{version}.zip
+        bulk_exports/{version}/by_jurisdiction/case_metadata/{case2.jurisdiction.slug}
+        bulk_exports/{version}/by_jurisdiction/case_metadata/{case2.jurisdiction.slug}/{case2.jurisdiction.slug}_metadata_{version}.zip
+        bulk_exports/{version}/by_jurisdiction/case_text_open
+        bulk_exports/{version}/by_jurisdiction/case_text_open/README.md
+        bulk_exports/{version}/by_jurisdiction/case_text_open/{case2.jurisdiction.slug}
+        bulk_exports/{version}/by_jurisdiction/case_text_open/{case2.jurisdiction.slug}/{case2.jurisdiction.slug}_text_{version}.zip
+        bulk_exports/{version}/by_jurisdiction/case_text_open/{case2.jurisdiction.slug}/{case2.jurisdiction.slug}_xml_{version}.zip
+        bulk_exports/{version}/by_jurisdiction/case_text_restricted
+        bulk_exports/{version}/by_jurisdiction/case_text_restricted/README.md
+        bulk_exports/{version}/by_jurisdiction/case_text_restricted/{case1.jurisdiction.slug}
+        bulk_exports/{version}/by_jurisdiction/case_text_restricted/{case1.jurisdiction.slug}/{case1.jurisdiction.slug}_text_{version}.zip
+        bulk_exports/{version}/by_jurisdiction/case_text_restricted/{case1.jurisdiction.slug}/{case1.jurisdiction.slug}_xml_{version}.zip
+        bulk_exports/{version}/by_reporter
+        bulk_exports/{version}/by_reporter/README.md
+        bulk_exports/{version}/by_reporter/case_metadata
+        bulk_exports/{version}/by_reporter/case_metadata/README.md
+        bulk_exports/{version}/by_reporter/case_metadata/{case1.reporter.short_name_slug}
+        bulk_exports/{version}/by_reporter/case_metadata/{case1.reporter.short_name_slug}/{case1.reporter.short_name_slug}_metadata_{version}.zip
+        bulk_exports/{version}/by_reporter/case_metadata/{case2.reporter.short_name_slug}
+        bulk_exports/{version}/by_reporter/case_metadata/{case2.reporter.short_name_slug}/{case2.reporter.short_name_slug}_metadata_{version}.zip
+        bulk_exports/{version}/by_reporter/case_text_open
+        bulk_exports/{version}/by_reporter/case_text_open/README.md
+        bulk_exports/{version}/by_reporter/case_text_open/{case2.reporter.short_name_slug}
+        bulk_exports/{version}/by_reporter/case_text_open/{case2.reporter.short_name_slug}/{case2.reporter.short_name_slug}_text_{version}.zip
+        bulk_exports/{version}/by_reporter/case_text_open/{case2.reporter.short_name_slug}/{case2.reporter.short_name_slug}_xml_{version}.zip
+        bulk_exports/{version}/by_reporter/case_text_restricted
+        bulk_exports/{version}/by_reporter/case_text_restricted/README.md
+        bulk_exports/{version}/by_reporter/case_text_restricted/{case1.reporter.short_name_slug}
+        bulk_exports/{version}/by_reporter/case_text_restricted/{case1.reporter.short_name_slug}/{case1.reporter.short_name_slug}_text_{version}.zip
+        bulk_exports/{version}/by_reporter/case_text_restricted/{case1.reporter.short_name_slug}/{case1.reporter.short_name_slug}_xml_{version}.zip
+    """.strip().format(case1=case1, case2=case2, version=version).splitlines()]
 
-    # should have two exports
-    exports = list(filter_item.case_exports.all())
-    assert len(exports) == 2
+    assert expected_files == written_files
+    assert changelog in (tmp_path / 'bulk_exports' / version / 'README.md').read_text()
 
-    for export in exports:
-        assert export.public is False
+    for export_path in tmp_path.rglob('*.zip'):
+        bag_path = export_path.stem
+        export_path = str(export_path)
+        case = case1 if case1.jurisdiction.slug in export_path or case1.reporter.short_name_slug in export_path else case2
 
         # check bag format
-        bag_path = Path(export.file_name).with_suffix('')
-        with zipfile.ZipFile(export.file.open()) as zf:
-            zf.extractall(str(tmpdir))
-        bag = bagit.Bag(str(tmpdir / bag_path))
+        with zipfile.ZipFile(export_path) as zf:
+            zf.extractall(str(tmp_path))
+        bag = bagit.Bag(str(tmp_path / bag_path))
         bag.validate()
 
         # check data file
-        with lzma.open(str(tmpdir / bag_path / 'data' / 'data.jsonl.xz')) as in_file:
+        with lzma.open(str(tmp_path / bag_path / 'data' / 'data.jsonl.xz')) as in_file:
             records = [json.loads(str(line, 'utf8')) for line in in_file if line]
         assert len(records) == 1
         assert records[0]['name'] == case.name
-        if export.body_format == 'xml':
+        if 'xml' in export_path:
             assert records[0]['casebody']['data'].startswith('<?xml')
-        else:
+        elif 'text' in export_path:
             assert 'opinions' in records[0]['casebody']['data']
-
-        # clean up files
-        # (this is hard to do with tmpdir, because the path is set by CaseExport.file.storage when pytest loads)
-        export.file.delete(save=False)
-
-
-@pytest.mark.django_db
-def test_bag_jurisdiction(restricted_case, tmpdir, django_assert_num_queries, elasticsearch):
-
-    jurisdiction = Jurisdiction.objects.get(pk=restricted_case.jurisdiction.id)
-    # bag the jurisdiction
-    with django_assert_num_queries(select=2, insert=2):
-        fabfile.bag_jurisdiction(restricted_case.jurisdiction.name)
-    check_exports(restricted_case, jurisdiction, tmpdir)
-
-
-@pytest.mark.django_db
-def test_bag_reporter(restricted_case, tmpdir, elasticsearch):
-    reporter = Reporter.objects.get(pk=restricted_case.reporter.id)
-    fabfile.bag_reporter(reporter.id)
-    check_exports(restricted_case, reporter, tmpdir)
+        else:
+            assert 'casebody' not in records[0]
 
 
 @pytest.mark.django_db
