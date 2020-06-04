@@ -8,6 +8,7 @@ urlpatterns = [
     path('redact/<int:case_id>/', views.redact_case, name='redact_case'),
     path('pdf/<int:case_id>/<str:pdf_name>', views.case_pdf, name='case_pdf'),
     path('image/<str:series_slug>/<str:volume_number_slug>/<str:sequence_number>', views.page_image, name='page_image'),
+    path('edit/<int:case_id>/', views.case_editor, name='case_editor'),
     path('<str:series_slug>/<str:volume_number_slug>/<str:page_number>/<int:case_id>/', views.citation, name='citation'),
     path('<str:series_slug>/<str:volume_number_slug>/<str:page_number>/', views.citation, name='citation'),
     path('<str:series_slug>/<str:volume_number_slug>/', views.volume, name='volume'),

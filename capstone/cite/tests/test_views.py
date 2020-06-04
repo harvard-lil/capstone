@@ -304,10 +304,14 @@ def test_geolocation_log(client, unrestricted_case, elasticsearch, settings, cap
 ### Extract single page image from a volume PDF with VolumeMetadata's extract_page_image ###
 
 @pytest.mark.django_db
-def test_retrieve_page_image(auth_client, volume_metadata):
+def test_retrieve_page_image(admin_client, auth_client, volume_metadata):
     volume_metadata.pdf_file = "fake_volume.pdf"
     volume_metadata.save()
-    response = auth_client.get(reverse('page_image', args=[volume_metadata.reporter.short_name_slug,
+    response = admin_client.get(reverse('page_image', args=[volume_metadata.reporter.short_name_slug,
                                                       volume_metadata.volume_number_slug, '2'], host='cite'))
     check_response(response, content_type="image/png")
     assert b'\x89PNG' in response.content
+
+    response = auth_client.get(reverse('page_image', args=[volume_metadata.reporter.short_name_slug,
+                                                            volume_metadata.volume_number_slug, '2'], host='cite'))
+    check_response(response, status_code=403)

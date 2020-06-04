@@ -747,7 +747,7 @@ class VolumeMetadata(models.Model):
         self.redacted = False
         self.save()
 
-    def extract_page_image(self, sequence_number):
+    def extract_page_image(self, sequence_number, zoom_level = 3.0):
         """
             Return page image PNG image byte string from vol PDF
             Takes the 1-indexed sequence number, like in the *page_order values
@@ -757,8 +757,9 @@ class VolumeMetadata(models.Model):
         doc = fitz.open(self.pdf_file.path)
         if sequence_number >= len(doc):
             raise ValueError("There aren't that many pages in that book")
+        mat = fitz.Matrix(zoom_level) # sets zoom level to 3x
         page = doc[sequence_number - 1]
-        return page.getPixmap().getPNGdata()
+        return page.getPixmap(matrix=mat).getPNGdata()
 
 class TrackingToolLog(models.Model):
     volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
@@ -1361,6 +1362,26 @@ class CaseMetadata(models.Model):
         doc = fitz.open(self.volume.pdf_file.path)
         doc.select(range(self.first_page_order - 1, self.last_page_order))
         return doc.write(garbage=2)
+
+    def pages_with_image_urls(self, label=None, order=None):
+        """
+            Returns either a list of pages and image urls, or a single one (as a one-item list) based on the order or label.
+        """
+        #< str: series_slug > / < str: volume_number_slug > / < str: sequence_number >
+        if order:
+            pages = self.structure.pages.filter(order=order).first()
+        elif label:
+            pages = self.structure.pages.filter(label=label).first()
+        else:
+            pages = self.structure.pages.all()
+
+        vol = self.volume
+        return [{
+            "page": page,
+            "image_url": reverse('page_image', [vol.reporter.short_name_slug, vol.volume_number_slug, page.order]),
+            "structure": PageStructure.blocks_by_id([page])}
+            for page in pages]
+
 
 
 class CaseXML(BaseXMLModel):

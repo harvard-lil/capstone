@@ -30,6 +30,7 @@
         {% endif %}
         {% if request.user.is_staff %}
           • <a href="{% url 'admin:capdb_casemetadata_change' db_case.id %}">Django admin</a>
+          • <a href="{% url 'case_editor' db_case.id host 'cite' %}">Edit</a>
         {% endif %}
       </div>
       <div class="court">
