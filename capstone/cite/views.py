@@ -173,7 +173,9 @@ def case_editor(request, case_id):
 
     return render(request, 'cite/case_editor.html', {
         'case': case,
-        'pages': pages
+        'pages': pages,
+        'citations': case.citations.all(),
+        'citation_full': case.full_cite(),
     })
 
 
