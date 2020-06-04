@@ -11,7 +11,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.urls import NoReverseMatch
 from django.db import transaction
 from django.db.models import Prefetch
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -148,6 +148,35 @@ def case_pdf(request, case_id, pdf_name):
         return HttpResponseRedirect(pdf_url)
 
     return citation(request,None, None, None, case_id, pdf=True, db_case=case)
+
+def page_image(request, series_slug, volume_number_slug, sequence_number):
+    """
+        Return the image for a page to authorized users.
+    """
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return HttpResponseForbidden()
+    vol = VolumeMetadata.objects.filter(reporter__short_name_slug=slugify(series_slug))
+    vol = get_object_or_404(vol, volume_number_slug=volume_number_slug)
+
+    return HttpResponse(vol.extract_page_image(int(sequence_number)), content_type="image/png")
+
+def case_editor(request, case_id):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    case = get_object_or_404(CaseMetadata, pk=case_id)
+    pages = case.pages_with_image_urls()
+
+    # set CSRF token for staff so they can make ajax requests
+    if request.user.is_staff:
+        get_token(request)
+
+    return render(request, 'cite/case_editor.html', {
+        'case': case,
+        'pages': pages,
+        'citations': case.citations.all(),
+        'citation_full': case.full_cite(),
+    })
 
 
 def citation(request, series_slug, volume_number_slug, page_number, case_id=None, pdf=False, db_case=None):
