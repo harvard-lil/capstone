@@ -292,28 +292,24 @@ def add_permissions_groups():
 
 
 @task
-def bag_jurisdiction(name):
-    """ Write a BagIt package of all cases in a given jurisdiction. E.g. fab bag_jurisdiction:Ill. """
-    jurisdiction = Jurisdiction.objects.get(name=name)
-    export.export_cases_by_jurisdiction.delay(jurisdiction.pk)
-
-@task
-def bag_reporter(reporter_id):
-    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_reporter:137 """
-    export.export_cases_by_reporter.delay(reporter_id)
-
-@task
-def bag_all_cases(before_date=None):
+def export_cases(*changes):
     """
-        Export cases for all jurisdictions and reporters.
-        If before_date is provided, only export targets where the export_date for the last export is less than before_date.
+        Export all cases from Elasticsearch to download/bulk_exports/<timestamp>.
+        Set up a new set of folders for a bulk data version, and queue jobs to export each jurisdiction and reporter.
+        Example usage: fab 'export_cases:change 1\, with a comma,change 2'
     """
-    export.export_all(before_date)
+    export.init_export('* '+'\n* '.join(changes)+'\n')
+
 
 @task
-def bag_all_reporters(name):
-    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
-    export.export_cases_by_reporter.delay(name)
+def retry_export_cases(version_string):
+    """
+        Requeue all the jobs to export files to download/bulk_exports/<version_string>.
+        Jobs that see existing exported files will immediately exit, so this can be run to pick
+        up an existing export_cases() bulk export where it left off.
+    """
+    export.export_all(version_string)
+
 
 @task
 def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test_data/inventory/data')):

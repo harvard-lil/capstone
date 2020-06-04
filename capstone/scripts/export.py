@@ -2,20 +2,49 @@ import json
 import lzma
 import tempfile
 import zipfile
+from io import StringIO
 from collections import namedtuple
+from datetime import date
 from pathlib import Path
 from celery import shared_task
+from django.conf import settings
 
-from django.core.files import File
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from capapi.documents import CaseDocument
-from capapi.serializers import NoLoginCaseDocumentSerializer
-from capdb.models import Jurisdiction, Reporter, CaseExport
+from capapi.serializers import NoLoginCaseDocumentSerializer, CaseDocumentSerializer
+from capdb.models import Jurisdiction, Reporter
+from capdb.storages import writeable_download_files_storage
 from scripts.helpers import HashingFile
 
 
-def export_all(before_date=None):
+def init_export(changelog):
+    # setup vars
+    version_string = date.today().strftime('%Y%m%d')
+    template_dir = Path(settings.BASE_DIR, 'capdb/templates/bulk_export')
+    output_path = Path('bulk_exports', version_string)
+    if writeable_download_files_storage.exists(str(output_path / 'README.md')):
+        print("Cannot init export; %s already exists" % output_path)
+        return
+
+    # write readme files
+    print("Writing README files to %s" % output_path)
+    for path in template_dir.rglob('*'):
+        if path.is_dir():
+            continue
+        path = path.relative_to(template_dir)
+        contents = render_to_string('bulk_export/%s' % path, {
+            'changes': changelog,
+            'export_date': date.today(),
+        })
+        writeable_download_files_storage.save('bulk_exports/%s/%s' % (version_string, path), StringIO(contents))
+
+    # run export
+    export_all(version_string)
+
+
+def export_all(version_string):
     """
         Queue celery tasks to export all jurisdictions and reporters.
         If before_date is provided, only queue jobs where the last export's export_date was less than before_date.
@@ -23,14 +52,11 @@ def export_all(before_date=None):
     for model, task in ((Jurisdiction, export_cases_by_jurisdiction), (Reporter, export_cases_by_reporter)):
         print("Queueing %s" % model.__name__)
         for item in model.objects.all():
-            if before_date and item.case_exports.filter(export_date__gte=before_date).exists():
-                print("- Skipping %s" % item)
-                continue
             print("- Adding %s" % item)
-            task.delay(item.pk)
+            task.delay(version_string, item.pk)
 
 @shared_task
-def export_cases_by_jurisdiction(id):
+def export_cases_by_jurisdiction(version_string, id):
     """
         Write a .jsonl.gz file with all cases for jurisdiction.
     """
@@ -39,11 +65,18 @@ def export_cases_by_jurisdiction(id):
     if cases.count() == 0:
         print("WARNING: Jurisdiction '{}' contains NO CASES.".format(jurisdiction.name))
         return
-    out_path = "{}-{:%Y%m%d}".format(jurisdiction.name_long, timezone.now())
+    out_path = Path(
+        "bulk_exports",
+        version_string,
+        "by_jurisdiction",
+        "{subfolder}",
+        jurisdiction.slug,
+        "%s_{case_format}_%s.zip" % (jurisdiction.slug, version_string)
+    )
     export_case_documents(cases, out_path, jurisdiction, public=jurisdiction.whitelisted)
 
 @shared_task
-def export_cases_by_reporter(id):
+def export_cases_by_reporter(version_string, id):
     """
         Write a .jsonl.gz file with all cases for reporter.
     """
@@ -52,8 +85,16 @@ def export_cases_by_reporter(id):
     if cases.count() == 0:
         print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
         return
-    out_path = "{}-{:%Y%m%d}".format(reporter.short_name, timezone.now())
-    export_case_documents(cases, out_path, reporter, public=False)
+    out_path = Path(
+        "bulk_exports",
+        version_string,
+        "by_reporter",
+        "{subfolder}",
+        reporter.short_name_slug,
+        "%s_{case_format}_%s.zip" % (reporter.short_name_slug, version_string)
+    )
+    public = not reporter.case_metadatas.in_scope().filter(jurisdiction__whitelisted=False).exists()
+    export_case_documents(cases, out_path, reporter, public=public)
 
 def try_to_close(file_handle):
     """
@@ -67,18 +108,40 @@ def try_to_close(file_handle):
             pass
 
 
-def export_case_documents(cases, dir_name, filter_item, public=False):
+def export_case_documents(cases, zip_path, filter_item, public=False):
     """
         Export cases in queryset to dir_name.zip.
         filter_item is the Jurisdiction or Reporter used to select the cases.
         public controls whether export is downloadable by non-researchers.
     """
 
-    formats = {'xml': {}, 'text': {}}
+    formats = {
+        'xml': {
+            'serializer': NoLoginCaseDocumentSerializer,
+            'query_params': {'body_format': 'xml'},
+        },
+        'text': {
+            'serializer': NoLoginCaseDocumentSerializer,
+            'query_params': {'body_format': 'text'},
+        },
+        'metadata': {
+            'serializer': CaseDocumentSerializer,
+            'query_params': {},
+        }
+    }
 
     try:
         # set up vars for each format
-        for format_name, vars in formats.items():
+        for format_name, vars in list(formats.items()):
+            # set up paths for zip file output
+            subfolder = 'case_metadata' if format_name == 'metadata' else 'case_text_open' if public else 'case_text_restricted'
+            vars['out_path'] = str(zip_path).format(subfolder=subfolder, case_format=format_name)
+            if writeable_download_files_storage.exists(vars['out_path']):
+                print("File %s already exists; skipping." % vars['out_path'])
+                del formats[format_name]
+                continue
+            vars['internal_path'] = Path(Path(vars['out_path']).stem)
+            vars['data_file_path'] = Path('data', 'data.jsonl.xz')
 
             # set up bagit metadata files
             vars['payload'] = []
@@ -94,13 +157,9 @@ def export_case_documents(cases, dir_name, filter_item, public=False):
 
             # fake Request object used for serializing cases with DRF's serializer
             vars['fake_request'] = namedtuple('Request', ['query_params', 'accepted_renderer'])(
-                query_params={'body_format': format_name},
+                query_params=vars['query_params'],
                 accepted_renderer=None,
             )
-
-            # set up paths for zip file output
-            vars['internal_path'] = Path(dir_name + '-' + format_name)
-            vars['data_file_path'] = Path('data', 'data.jsonl.xz')
 
             # create new zip file in memory
             vars['out_spool'] = tempfile.TemporaryFile()
@@ -112,9 +171,8 @@ def export_case_documents(cases, dir_name, filter_item, public=False):
         # write each case
         for item in cases.scan():
             for format_name, vars in formats.items():
-                serializer = NoLoginCaseDocumentSerializer(item['_source'], context={'request': vars['fake_request']})
-                vars['compressed_data_file'].write(bytes(json.dumps(serializer.data), 'utf8'))
-                vars['compressed_data_file'].write(b'\n')
+                serializer = vars['serializer'](item['_source'], context={'request': vars['fake_request']})
+                vars['compressed_data_file'].write(bytes(json.dumps(serializer.data), 'utf8') + b'\n')
 
         # finish bag for each format
         for format_name, vars in formats.items():
@@ -131,11 +189,9 @@ def export_case_documents(cases, dir_name, filter_item, public=False):
             vars['archive'].writestr(str(vars['internal_path'] / "manifest-sha512.txt"), "\n".join(vars['payload']))
             vars['archive'].close()
 
-            # copy temp file to django storage
+            # copy temp file to permanent storage
             vars['out_spool'].seek(0)
-            zip_name = str(vars['internal_path']) + '.zip'
-            case_export = CaseExport(public=public, filter_id=filter_item.pk, filter_type=filter_item.__class__.__name__.lower(), body_format=format_name, file_name=zip_name)
-            case_export.file.save(zip_name, File(vars['out_spool']))
+            writeable_download_files_storage.save(vars['out_path'], vars['out_spool'])
             vars['out_spool'].close()
 
     finally:
