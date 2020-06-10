@@ -83,7 +83,6 @@ img2pdf
 Pillow
 diff-match-patch
 Markdown
-python-magic
 PyMuPDF
 
 # maintenance page

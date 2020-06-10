@@ -1,9 +1,4 @@
 import hashlib
-import json
-from datetime import datetime
-import zipfile
-import tempfile
-from wsgiref.util import FileWrapper
 import wrapt
 import re
 
@@ -13,7 +8,6 @@ from django.core.mail import send_mail
 from django.db import connections
 from django.db.models import QuerySet
 from django.utils.text import slugify
-from django.http import FileResponse
 from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
@@ -23,28 +17,6 @@ from capweb.helpers import reverse, statement_timeout, StatementTimeout
 from config.logging import logger
 
 cite_extracting_regex = r"\b([1-9]\d*(?: Suppl\.| 1/2)?)\s+([a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+([1-9]\d*)\b"
-
-def create_zip_filename(case_list):
-    ts = slugify(datetime.now().timestamp())
-    if len(case_list) == 1:
-        return case_list[0].slug + '-' + ts + '.zip'
-
-    return '{0}_{1}_{2}.zip'.format(case_list[0].slug[:20], case_list[-1].slug[:20], ts)
-
-
-def create_download_response(filename='', content=[]):
-    # tmp file backed by RAM up to 10MB, then stored to disk
-    tmp_file = tempfile.SpooledTemporaryFile(10 * 2 ** 20)
-    with zipfile.ZipFile(tmp_file, 'w', zipfile.ZIP_DEFLATED) as archive:
-        for item in content:
-            archive.writestr(item['slug'] + '.json', json.dumps(item))
-
-    # Reset file pointer
-    tmp_file.seek(0)
-
-    response = FileResponse(FileWrapper(tmp_file), content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
-    return response
 
 
 def send_new_signup_email(request, user):
