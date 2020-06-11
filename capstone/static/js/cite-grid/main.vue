@@ -26,7 +26,7 @@
             <label class="form-check-label" for="mapDirectionInbound">inbound citations</label>
           </div>
           <div class="form-check">
-            <input class="form-check-input"type="radio" id="mapDirectionOutbound" value="outbound" v-model="mapDirection">
+            <input class="form-check-input" type="radio" id="mapDirectionOutbound" value="outbound" v-model="mapDirection">
             <label class="form-check-label" for="mapDirectionOutbound">outbound citations</label>
           </div>
           <div id="hovered-map-message">
@@ -55,7 +55,7 @@
         Coloring of each square is logarithmic to emphasize the range between 0 and 10%:<br>
         0%
         <div style="display: inline-block; background-color: white">
-          <span v-for="i in 20" :style="{backgroundColor: percentageColor((i-1)/2), width: '1em', display: 'inline-block'}" :title="`${(i-1)/2}%`">&nbsp;</span>
+          <span v-bind:key="i" v-for="i in 20" :style="{backgroundColor: percentageColor((i-1)/2), width: '1em', display: 'inline-block'}" :title="`${(i-1)/2}%`">&nbsp;</span>
         </div>
         10%
       </div>
@@ -101,6 +101,7 @@
   import {apiQuery} from '../api';
   import USMap from '../../../capweb/templates/includes/usa_territories_white.svg';
 
+  /* eslint-disable */
   // const deepCopy = (value) => JSON.parse(JSON.stringify(value));
   const toHashMap = (a,f) => a.reduce((a,c)=> (a[f(c)]=c,a),{});
   const sum = (arr) => arr.reduce((a, b) => a + (b || 0), 0);
