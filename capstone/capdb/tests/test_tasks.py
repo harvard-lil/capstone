@@ -44,7 +44,7 @@ def test_export_cases(case_factory, tmp_path, django_assert_num_queries, elastic
     version = date.today().strftime('%Y%m%d')
     case1 = case_factory(jurisdiction__slug="aaa", volume__reporter__short_name="aaa", jurisdiction__whitelisted=False)
     case2 = case_factory(jurisdiction__slug="bbb", volume__reporter__short_name="bbb", jurisdiction__whitelisted=True)
-    monkeypatch.setattr("scripts.export.writeable_download_files_storage", FileSystemStorage(location=str(tmp_path)))
+    monkeypatch.setattr("scripts.export.download_files_storage", FileSystemStorage(location=str(tmp_path)))
     changelog = "changelogtext"
     fabfile.export_cases(changelog)
     written_files = sorted(str(i.relative_to(tmp_path)) for i in tmp_path.rglob('*'))

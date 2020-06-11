@@ -22,7 +22,11 @@ def check_response(response, status_code=200, content_type=None, content_include
         if content_type == 'application/pdf':
             content = "\n".join(page.getText() for page in fitz.open(stream=response.content, filetype="pdf"))
         else:
-            content = response.content.decode()
+            try:
+                content = response.content.decode()
+            except AttributeError:
+                # FileResponse
+                content = b''.join(response.streaming_content).decode()
 
         if content_includes:
             if isinstance(content_includes, str):

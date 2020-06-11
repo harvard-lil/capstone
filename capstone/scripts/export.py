@@ -15,7 +15,7 @@ from django.utils import timezone
 from capapi.documents import CaseDocument
 from capapi.serializers import NoLoginCaseDocumentSerializer, CaseDocumentSerializer
 from capdb.models import Jurisdiction, Reporter
-from capdb.storages import writeable_download_files_storage
+from capdb.storages import download_files_storage
 from scripts.helpers import HashingFile
 
 
@@ -24,7 +24,7 @@ def init_export(changelog):
     version_string = date.today().strftime('%Y%m%d')
     template_dir = Path(settings.BASE_DIR, 'capdb/templates/bulk_export')
     output_path = Path('bulk_exports', version_string)
-    if writeable_download_files_storage.exists(str(output_path / 'README.md')):
+    if download_files_storage.exists(str(output_path / 'README.md')):
         print("Cannot init export; %s already exists" % output_path)
         return
 
@@ -38,7 +38,7 @@ def init_export(changelog):
             'changes': changelog,
             'export_date': date.today(),
         })
-        writeable_download_files_storage.save('bulk_exports/%s/%s' % (version_string, path), StringIO(contents))
+        download_files_storage.save('bulk_exports/%s/%s' % (version_string, path), StringIO(contents))
 
     # run export
     export_all(version_string)
@@ -136,7 +136,7 @@ def export_case_documents(cases, zip_path, filter_item, public=False):
             # set up paths for zip file output
             subfolder = 'case_metadata' if format_name == 'metadata' else 'case_text_open' if public else 'case_text_restricted'
             vars['out_path'] = str(zip_path).format(subfolder=subfolder, case_format=format_name)
-            if writeable_download_files_storage.exists(vars['out_path']):
+            if download_files_storage.exists(vars['out_path']):
                 print("File %s already exists; skipping." % vars['out_path'])
                 del formats[format_name]
                 continue
@@ -191,7 +191,7 @@ def export_case_documents(cases, zip_path, filter_item, public=False):
 
             # copy temp file to permanent storage
             vars['out_spool'].seek(0)
-            writeable_download_files_storage.save(vars['out_path'], vars['out_spool'])
+            download_files_storage.save(vars['out_path'], vars['out_spool'])
             vars['out_spool'].close()
 
     finally:

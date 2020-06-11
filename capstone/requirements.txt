@@ -747,9 +747,6 @@ python-jose==2.0.2 \
     --hash=sha256:391f860dbe274223d73dd87de25e4117bf09e8fe5f93a417663b1f2d7b591165 \
     --hash=sha256:3b35cdb0e55a88581ff6d3f12de753aa459e940b50fe7ca5aa25149bc94cb37b \
     # via moto
-python-magic==0.4.15 \
-    --hash=sha256:f2674dcfad52ae6c49d4803fa027809540b130db1dec928cfbb9240316831375 \
-    --hash=sha256:f3765c0f582d2dfc72c15f3b5a82aecfae9498bd29ca840d72f37d7bd38bfcd5
 python-redis-lock==3.3.1 \
     --hash=sha256:5316d473ce6ce86a774b9f9c110d84c3a9bd1a2abfda5d99e9c0c8a872a8e6d6 \
     --hash=sha256:f0649c49341fa943f19b8fbe93c3457df8a0a85006c88134465a16401fd1e553
