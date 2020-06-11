@@ -1,5 +1,6 @@
 import re
 import time
+import json
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import timedelta
@@ -158,22 +159,53 @@ def page_image(request, series_slug, volume_number_slug, sequence_number):
     vol = VolumeMetadata.objects.filter(reporter__short_name_slug=slugify(series_slug))
     vol = get_object_or_404(vol, volume_number_slug=volume_number_slug)
 
-    return HttpResponse(vol.extract_page_image(int(sequence_number)), content_type="image/png")
+    return HttpResponse(vol.extract_page_image(int(sequence_number), zoom_level=2.0), content_type="image/png")
 
 def case_editor(request, case_id):
     if not request.user.is_authenticated or not request.user.is_staff:
         return HttpResponseForbidden()
 
+    processed_pages = {}
     case = get_object_or_404(CaseMetadata, pk=case_id)
     pages = case.pages_with_image_urls()
+    images = {}
+    for page in pages:
+        images[page] = {
+            'url': pages[page]['image_url'],
+            'height': pages[page]['height'],
+            'width': pages[page]['width']
+        }
+        processed_pages[page] = {}
+        for block_id in pages[page]['structure']:
+            processed_pages[page][block_id] = {}
+            block = pages[page]['structure'][block_id]
+            current_line = None
+            current_word = {}
+            for token in block['tokens']:
+                if isinstance(token, list) and token[0] == 'line' and (not current_line or current_line != tuple(token[1]['rect'])):
+                    current_line = "-".join([str(a) for a in token[1]['rect']])
+                    processed_pages[page][block_id][current_line] = []
+                elif not current_line and (not isinstance(token, list) or token[0] != 'list'):
+                    pass
+
+                if isinstance(token, list):
+                    if token[0] == 'ocr':
+                        current_word['rect'] = token[1]['rect']
+                        current_word['wc'] = token[1]['wc']
+                    if token[0] == '/ocr':
+                        processed_pages[page][block_id][current_line].append(current_word)
+                        current_word = {}
+                else:
+                    current_word['word'] = token
 
     # set CSRF token for staff so they can make ajax requests
     if request.user.is_staff:
         get_token(request)
-
     return render(request, 'cite/case_editor.html', {
         'case': case,
-        'pages': pages,
+        'pages': json.dumps(pages),
+        'page_images': json.dumps(images),
+        'processed_pages': json.dumps(processed_pages),
         'citations': case.citations.all(),
         'citation_full': case.full_cite(),
     })

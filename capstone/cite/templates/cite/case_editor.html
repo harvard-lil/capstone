@@ -1,43 +1,76 @@
-{% extends "layouts/centered.html" %}
+{% extends "layouts/full.html" %}
 {% load pipeline %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
 {% load api_url %}
-
 {% load capweb_static %}
 
 {% block base_css %}{% stylesheet 'case' %}{% endblock %}
-{% block title %}{{ citation_full|striptags }}{% endblock %}
-{% block meta_description %}Full text of {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
+{% block explainer %}{{ citation_full|striptags }}{% endblock %}
+{% block meta_description %}Editing {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
 
-{% block content %}
-  <div class="case-container header-margin">
-    <div class="metadata text-center col-centered">
-      <div class="full_cite">{{ citation_full|safe }}</div>
-      <div class="court">
-        {{ case.court.name }}
-      </div>
-      <h4 class="case-name">
-        {{ case.name|safe }} {# safe because elisions may have been inserted #}
-      </h4>
-      <div class="citations">
-        {{ citations }}
-      </div>
-      <div class="docket-number">
-        {{ case.docket_number }}
-      </div>
-      <div class="decision_date">
-        {{ case.decision_date }}
-      </div>
+{% block sidebar_menu_items %}
+
+    <div class="row margin-top-4">
+        <div class="col">
+            <div class="sticky-top">
+                <div class="row">
+                    <div class="col">
+                        <div class="full_cite">{{ citation_full|safe }}</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <canvas id="word_focus"></canvas>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <input type="text" id="current_word"><small><small>(confidence: <span
+                            id="current_word_confidence"></span>)</small></small>
+                        <button>Modify</button>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col">
+                        <input type="text" value="{{ case.name }}">
+                        <input type="text" value="{{ case.decision_date_original }}">
+                        <input type="text" value="{{ case.docket_number }}">
+                        <select>
+                            <option>{{ case.court.name }}</option>
+                        </select>
+                        <button>Modify Metadata</button>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col">
+                        <button class="danger">Save Case To Database</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    {% for page in pages %}
-        <img src="{{ page.image_url }}">
-    {% endfor %}
 
-  </div>
 
-  <script>
-  </script>
-  {% render_bundle 'case' %}
+{% endblock %}
+
+{% block main_content %}
+    <div class="row">
+        <div class="col-9">
+            <div id="canvas_div">
+                &nbsp;
+            </div>
+        </div>
+    </div>
+
+    <script>
+        {% autoescape off %}
+            const pages = new Map(Object.entries({{ pages }}));// Get page info from django template vars
+            const processed_pages = new Map(Object.entries({{ processed_pages }})); // Get page info from django template vars
+            const page_images = {{ page_images }};// Get page info from django template vars
+        {% endautoescape %}
+    </script>
+    {% render_bundle 'case-editor' %}
 
 {% endblock %}
