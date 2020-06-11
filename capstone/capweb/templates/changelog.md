@@ -9,7 +9,60 @@ top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
-<!-- UNRELEASED
+# June 2020
+
+**Website:**
+
+* Moved bulk data releases from an API endpoint to the /download/ section.
+
+**Data:**
+
+* Removed a number of duplicate volumes (see bug [#1322](https://github.com/harvard-lil/capstone/issues/1322)).
+* Corrected a number of citations containing strange characters (see bug [#960](https://github.com/harvard-lil/capstone/issues/960)).
+* 20200604 bulk data release including citation fixed, duplicate volume fixes, and cites_to field. 
+
+# April 2020
+
+**Website:**
+
+* Linked citations in cases to cited case.
+
+**API:**
+
+* Cases Endpoint:
+    * Added `cites_to` field to list cases cited.
+    * Added `cites_to` filter to find cases citing to a case.
+
+**Data:**
+
+* Added `/download/citation_graph/` folder.
+
+# March 2020
+
+**API:**
+
+* Cases Endpoint:
+    * Raise max results per request to 10,000.
+
+**Data:**
+
+* Merged duplicate New York reporters (see bug [#1420](https://github.com/harvard-lil/capstone/issues/1420)).
+
+# February 2020
+
+**Website:**
+
+* Added /download/ section to download files.
+* Added opt-in ability for user to track their previously-viewed cases.
+* Cases now link to per-case PDFs.
+
+**Data:**
+
+* Added to Downloads section:
+    * `scdb/` folder with SCDB to CAP matchups.
+    * `PDFs/` folder with full volume scans.
+    * `illustrations/` folder with extracted figures and illustrations from cases. 
+
 **API:**
 
 * Cases Endpoint:
@@ -17,7 +70,10 @@ extra_head: {% stylesheet 'docs' %}
       either HTML or XML instead of JSON. API will always return JSON, with case body format still
       controllable via `body_format`. Requests for `format=html` will redirect to the frontend case browser, which
       shows identical contents to what `format=html` used to return.
--->
+* Volumes Endpoint:
+    * Added pdf_url field to volumes endpoint.
+* User History Endpoint:
+    * Added opt-in ability for user to retrieve their previously-viewed cases via API.
 
 # January 24, 2020
 
@@ -33,7 +89,7 @@ extra_head: {% stylesheet 'docs' %}
 
 **Security:**
 
-* Add a dmarc record for the case.law domain. Thanks to Kashif Shoukat for the suggestion!
+* Added a dmarc record for the case.law domain. Thanks to Kashif Shoukat for the suggestion!
 
 # January 16, 2020
 
