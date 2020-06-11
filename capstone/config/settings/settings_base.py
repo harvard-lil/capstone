@@ -429,18 +429,12 @@ STORAGES = {
         }
     },
     'download_files_storage': {
-        'class': 'CapFileStorage',
+        'class': 'DownloadOverlayStorage',
         'kwargs': {
-            'location': os.path.join(BASE_DIR, 'downloads'),
+            'location': os.path.join(BASE_DIR, 'test_data/downloads'),
             'base_url': 'http://case.test:8000/download/',
         }
     },
-    'writeable_download_files_storage': {
-        'class': 'CapFileStorage',
-        'kwargs': {
-            'location': os.path.join(BASE_DIR, 'downloads'),
-        }
-    }
 }
 
 INVENTORY = {

@@ -1,18 +1,16 @@
-import io
 import os
-import csv
 import json
+import stat
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
-from wsgiref.util import FileWrapper
 from natsort import natsorted
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core import signing
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect, HttpResponse, Http404, \
-    HttpResponseBadRequest, StreamingHttpResponse
+    HttpResponseBadRequest, FileResponse
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -303,35 +301,29 @@ def download_files(request, filepath=""):
     If directory requested: show list of files inside dir
     If file requested: download file
     """
+    real_path = download_files_storage.realpath(filepath)
+    allow_downloads = "restricted" not in filepath or request.user.unlimited_access_in_effect()
 
-    if "manifest.csv" in filepath or "manifest.json" in filepath:
-        return download_manifest_file(request, filepath=filepath)
-
-    absolute_path = download_files_storage.path(filepath)
-
-    allow_downloads = "restricted" not in absolute_path or request.user.unlimited_access_in_effect()
+    # symlink requested
+    if filepath and filepath.rstrip('/') != real_path:
+        redirect_to = reverse('download-files', args=[real_path])
+        if filepath.endswith('/'):
+            redirect_to += '/'
+        return HttpResponseRedirect(redirect_to)
 
     # file requested
-    if download_files_storage.isfile(filepath):
+    elif download_files_storage.isfile(filepath):
+        if allow_downloads:
+            return FileResponse(download_files_storage.open(filepath, 'rb'))
 
-        if not allow_downloads:
-            context = {
-                "filename": filepath,
-                "error": mark_safe("If you believe you should have access to this file, "
-                         "please let us know at <a href='mailto:info@case.law'>info@case.law</a>."),
-                "title": "403 - Access to this file is restricted",
-            }
-            return render(request, "file_download_400.html", context, status=403)
-
-        import magic
-        mime = magic.Magic(mime=True)
-        content_type = mime.from_file(absolute_path)
-        chunk_size = 8192
-
-        response = StreamingHttpResponse(FileWrapper(open(absolute_path, 'rb'), chunk_size), content_type=content_type)
-        response['Content-Length'] = download_files_storage.size(absolute_path)
-
-        return response
+        response_template = "file_download_400.html"
+        context = {
+            "filename": filepath,
+            "error": mark_safe("If you believe you should have access to this file, "
+                     "please let us know at <a href='mailto:info@case.law'>info@case.law</a>."),
+            "title": "403 - Access to this file is restricted",
+            "status": 403,
+        }
 
     # directory requested
     elif download_files_storage.isdir(filepath):
@@ -340,126 +332,58 @@ def download_files(request, filepath=""):
 
         # create clickable breadcrumbs
         breadcrumb_parts = filepath.split('/')
-
         breadcrumbs = []
         for idx, breadcrumb in enumerate(breadcrumb_parts):
             if breadcrumb:
                 breadcrumbs.append({'name': breadcrumb,
                                     'path': "/".join(breadcrumb_parts[0:idx + 1])})
+        if breadcrumbs:
+            breadcrumbs = [{'name': 'home', 'path': ''}] + breadcrumbs
 
         readme = ""
         files = []
-        for filename in list(download_files_storage.iter_files(filepath)):
+        for filename in download_files_storage.iter_files(filepath):
             if "README.md" in filename:
-                with open(download_files_storage.path(filename), "r") as f:
-                    readme_content = f.read()
+                readme_content = download_files_storage.contents(filename)
                 readme, toc, meta = render_markdown(readme_content)
                 continue
 
-            is_dir = download_files_storage.isdir(filename)
-            fileobject = {
+            # use stat() to follow symlinks and fetch directory status and size in one call
+            file_stat = download_files_storage.stat(filename)
+            is_dir = stat.S_ISDIR(file_stat.st_mode)
+            files.append({
                 "name": filename.split('/')[-1],
                 "path": filename + ('/' if is_dir else ''),
                 "is_dir": is_dir,
-                "size": download_files_storage.size(filename)
-            }
-
-            files.append(fileobject)
-
-        # if we're  in the root folder, also add a manifest.csv
-        if filepath == "":
-            files.append({
-                "name": "manifest.csv",
-                "path": "manifest.csv",
-                "is_dir": False,
+                "size": file_stat.st_size,
             })
-            files.append({
-                "name": "manifest.json",
-                "path": "manifest.json",
-                "is_dir": False,
-            })
-
 
         # sort files alphabetically
         files = natsorted(files, key=lambda x: x["name"].lower())
 
+        response_template = "file_download.html"
         context = {
             'files': files,
             'allow_downloads': allow_downloads,
+            'status': 200,
+            'readme': mark_safe(readme),
+            'breadcrumbs': breadcrumbs,
         }
-
-        if len(breadcrumbs) > 0:
-            # Add home path to root folder if breadcrumbs exist
-            context['breadcrumbs'] = [{'name': 'home', 'path': ''}] + breadcrumbs
-        if readme:
-            context['readme'] = mark_safe(readme)
-
-        if is_browser_request(request):
-            return render(request, "file_download.html", context)
-        else:
-            return HttpResponse(json.dumps(context), content_type='application/json')
 
     # path does not exist
     else:
+        response_template = "file_download_400.html"
         context = {
             "title": "404 - File not found",
-            "error": "This file was not found in our system."
+            "error": "This file was not found in our system.",
+            "status": 404,
         }
-        if is_browser_request(request):
-            return render(request, "file_download_400.html", context, status=404)
-        else:
-            return HttpResponse(json.dumps(context), content_type='application/json')
 
-
-def download_manifest_file(request, filepath=""):
-    filename = "manifest"
-    absolute_path = download_files_storage.path(filepath)
-    manifest_dir = absolute_path.split('%s.' % filename)[0]
-
-    def get_file_info(abs_filepath):
-        fp = download_files_storage.relpath(abs_filepath)
-        return {
-            "path": fp,
-            "size": download_files_storage.size(fp),
-            "last_modified": download_files_storage.get_modified_time(fp).isoformat()}
-
-    # send back file for downloading
-    fieldnames = ["path", "size", "last_modified"]
-
-    # if csv requested
-    if "%s.csv" % filename in filepath:
-        output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
-        writer.writeheader()
-        for root, dirs, files in os.walk(manifest_dir):
-            for name in files:
-                writer.writerow(get_file_info(os.path.join(root, name)))
-            for name in dirs:
-                writer.writerow(get_file_info(os.path.join(root, name)))
-        response = HttpResponse(output.getvalue(), content_type='text/csv')
-
-    # if json requested
-    elif "%s.json" % filename in filepath:
-        all_files = []
-        for root, dirs, files in os.walk(manifest_dir):
-            for name in files:
-                all_files.append(get_file_info(os.path.join(root, name)))
-            for name in dirs:
-                all_files.append(get_file_info(os.path.join(root, name)))
-        response = HttpResponse(json.dumps(all_files), content_type='application/json')
-
-    # if another file requested
+    # return response
+    if is_browser_request(request):
+        return render(request, response_template, context, status=context['status'])
     else:
-        context = {
-            "title": "404 - File not found",
-            "error": "This file was not found in our system."
-        }
-        if is_browser_request(request):
-            response = render(request, "file_download_400.html", context, status=404)
-        else:
-            response = HttpResponse(json.dumps(context), content_type='application/json')
-
-    return response
+        return HttpResponse(json.dumps(context), content_type='application/json', status=context['status'])
 
 
 def view_jurisdiction(request, jurisdiction_id):

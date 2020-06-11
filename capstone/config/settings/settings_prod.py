@@ -56,19 +56,6 @@ STORAGES.update({
             'location': os.path.join(BASE_DIR, 'ngrams'),
         },
     },
-    'download_files_storage': {
-        'class': 'CapFileStorage',
-        'kwargs': {
-            'location': os.path.join(BASE_DIR, 'downloads'),
-            'base_url': 'https://case.law/download/',
-        }
-    },
-    'writeable_download_files_storage': {
-        'class': 'CapFileStorage',
-        'kwargs': {
-            'location': os.path.join(BASE_DIR, 'downloads'),
-        }
-    }
 })
 
 INVENTORY = {

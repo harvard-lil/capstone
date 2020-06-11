@@ -2,15 +2,15 @@
 {% load api_url %}
 title: Bulk data documentation
 meta_description: Caselaw Access Project bulk data documentation
-explainer: Our <a href="{% url "bulk-download" %}">bulk data files</a> contain the same information that is available via <a href="{% url "api" %}">our API</a>, but are much faster to download if you want to interact with a large number of cases. Each file contains all of the cases from a single jurisdiction or reporter. <br/> <a class="btn btn-primary" href="{% url "bulk-download" %}">Access data</a>
+explainer: Our <a href="{% url "download-files" "bulk_exports/" %}">bulk data files</a> contain the same information that is available via <a href="{% url "api" %}">our API</a>, but are much faster to download if you want to interact with a large number of cases. Each file contains all of the cases from a single jurisdiction or reporter. <br/> <a class="btn btn-primary" href="{% url "download-files" "bulk_exports/" %}">Access data</a>
 top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
-# Requesting Access {: class="subtitle" }
+# Access Limits {: class="subtitle" }
 
-Bulk data files for our whitelisted jurisdictions (currently Illinois and Arkansas) are 
-[available to everyone]({% url "bulk-download" %}) without a login.
+All metadata files, and bulk data files for our open jurisdictions, are 
+[available to everyone]({% url "download-files" "bulk_exports/" %}) without a login.
 
 Bulk data files for the remaining jurisdictions are available to research scholars who sign a research agreement. You 
 can request a research agreement by [creating an account]({% url "register" %}") and then 
@@ -21,31 +21,27 @@ See our [About page]({% url "about" %}#usage) for details on our data access res
 
 # Downloading {: class="subtitle" }
 
-You can [download bulk data]({% url "bulk-download" %}) manually from our website, or
-[use the API]({% api_url "caseexport-list" %}) if you are fetching many files at once.
+You can [download bulk data]({% url "download-files" "bulk_exports/" %}) manually from our website, or
+use the [manifest.json]({% url "download-files" "manifest.json" %}) or [manifest.csv]({% url "download-files" "manifest.csv" %})
+files to select URLs to download programmatically.
 
-
-To download all cases via the API,
-[use the body_format and filter_type parameters to the `/bulk/` endpoint]({% api_url "caseexport-list" %}?body_format=text&filter_type=jurisdiction) 
-to select all cases, sorted by jurisdiction, of your desired body_format.
-
-If you are downloading bulk files manually, you may find that the browser times out on the largest files;
-in that case, use `wget`, which retries when it encounters a network problem. Here's an example for the
+When downloading bulk files, you may find that the download times out on the largest files.
+In that case use `wget`, which retries when it encounters a network problem. Here's an example for the
 U.S. file with case body in text format:
 
-<pre class="code-block">wget --header="Authorization: Token your-api-token" -O "United States-20190418-text.zip" "https://api.case.law/v1/bulk/17050/download/"</pre>
+<pre class="code-block">wget --header="Authorization: Token your-api-token" "{% url "download-files" "bulk_exports/latest/by_jurisdiction/case_text_restricted/us_text.zip" %}"</pre>
 
-In this case, you'd replace `your-api-token` with your API token from the [user details]({% url "user-details" %}) page.
+Because this is a restricted file it requires an Authorization header.
+Replace `your-api-token` with your API token from the [user details]({% url "user-details" %}) page.
 
 # API Equivalence {: class="subtitle" }
 
 Each file that we offer for download is equivalent to a particular query to our API. For example, the file
-"Illinois-20180829-text.zip" contains all cases that would be returned by
+"ill_text.zip" contains all cases that would be returned by
 [an API query]({% api_url "cases-list" %}?full_case=true&jurisdiction=ill&body_format=text)
 with `full_case=true&jurisdiction=ill&body_format=text`. We offer files for each possible
-`jurisdiction` value and each possible `reporter` value, combined with
-`body_format=text` and `body_format=xml`.
-
+`jurisdiction` value and each possible `reporter` value, combined with `body_format=text`, `body_format=xml`,
+and plain metadata-only export.
 
 The JSON objects returned by the API and in bulk files differ only in that bulk JSON objects do not include
 `"url"` fields, which can be reconstructed from object IDs.
@@ -55,7 +51,6 @@ The JSON objects returned by the API and in bulk files differ only in that bulk 
 
 Bulk data files are provided as zipped directories. Each directory is in
 [BagIt format](https://en.wikipedia.org/wiki/BagIt), with a layout like this:
-
 
 * `Illinois-20180829-text/`
 {: add_list_class="bullets" }
@@ -70,6 +65,7 @@ keeping the uncompressed directory on disk.
 
 Caselaw data is stored within the `data/data.jsonl.xz` file. The `.jsonl.xz` suffix
 indicates that the file is compressed with xzip, and is a text file where each line represents a JSON object.
+
 
 # Using Bulk Data {: class="subtitle" }
 
@@ -114,8 +110,8 @@ To load the compressed data file into an R data frame, do something like this:
 > ark <- stream_in(xzfile("Arkansas-20190416-text/data/data.jsonl.xz"))
 </pre>
 
-# Visit Us {: class="subtitle" }
+# Other repositories {: class="subtitle" }
 
-Explore our Illinois Public Bulk Data on 
+You can also explore our Illinois Public Bulk Data on 
 [Harvard Dataverse](https://dataverse.harvard.edu/dataverse/caselawaccess"){: target="_blank } and 
 [Kaggle](https://www.kaggle.com/harvardlil/caselaw-dataset-illinois){: target="_blank" }.

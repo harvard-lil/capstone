@@ -24,8 +24,7 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from django.core.files.base import ContentFile
 
-from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage, \
-    writeable_download_files_storage, pdf_storage
+from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage, pdf_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
@@ -741,7 +740,7 @@ class VolumeMetadata(models.Model):
         # replace PDF
         if self.pdf_file:
             copy_file("unredacted/%s.pdf" % self.pk, self.pdf_file, from_storage=pdf_storage,
-                      to_storage=writeable_download_files_storage)
+                      to_storage=download_files_storage)
 
         # update flag
         self.redacted = False

@@ -65,17 +65,6 @@ def test():
 
 @task(alias='pip-compile')
 def pip_compile(args=''):
-    """
-        We want to run `pip-compile --generate-hashes` so hash values of packages are locked.
-        This breaks packages installed from source; pip currently refuses to install source packages alongside hashed packages:
-            https://github.com/pypa/pip/issues/4995
-        pip will install packages from github in gz form, but those are currently rejected by pip-compile:
-            https://github.com/jazzband/pip-tools/issues/700
-        So we need to keep package requirements in requirements.in that look like this:
-            -e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
-        and convert them to https form with hashes once they're written to requirements.txt:
-            https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.tar.gz#egg=email-normalize --hash=sha256:530851e150781c5208f0b60a278a902a3e5c6b98cd31d21f86eba54335134766
-    """
     import subprocess
 
     # run pip-compile
@@ -292,28 +281,24 @@ def add_permissions_groups():
 
 
 @task
-def bag_jurisdiction(name):
-    """ Write a BagIt package of all cases in a given jurisdiction. E.g. fab bag_jurisdiction:Ill. """
-    jurisdiction = Jurisdiction.objects.get(name=name)
-    export.export_cases_by_jurisdiction.delay(jurisdiction.pk)
-
-@task
-def bag_reporter(reporter_id):
-    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_reporter:137 """
-    export.export_cases_by_reporter.delay(reporter_id)
-
-@task
-def bag_all_cases(before_date=None):
+def export_cases(*changes):
     """
-        Export cases for all jurisdictions and reporters.
-        If before_date is provided, only export targets where the export_date for the last export is less than before_date.
+        Export all cases from Elasticsearch to download/bulk_exports/<timestamp>.
+        Set up a new set of folders for a bulk data version, and queue jobs to export each jurisdiction and reporter.
+        Example usage: fab 'export_cases:change 1\, with a comma,change 2'
     """
-    export.export_all(before_date)
+    export.init_export('* '+'\n* '.join(changes)+'\n')
+
 
 @task
-def bag_all_reporters(name):
-    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
-    export.export_cases_by_reporter.delay(name)
+def retry_export_cases(version_string):
+    """
+        Requeue all the jobs to export files to download/bulk_exports/<version_string>.
+        Jobs that see existing exported files will immediately exit, so this can be run to pick
+        up an existing export_cases() bulk export where it left off.
+    """
+    export.export_all(version_string)
+
 
 @task
 def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test_data/inventory/data')):
@@ -1065,11 +1050,11 @@ def check_existing_emails():
 @task
 def download_pdfs(jurisdiction=None):
     """
-        Download all PDFs, or all for a jurisdiction, to writeable_download_files_storage.
+        Download all PDFs, or all for a jurisdiction, to download_files_storage.
         Locally, this is the same as download_files_storage, but will differ in production,
         as we're using a read-only overlay to expose the files.
     """
-    from capdb.storages import pdf_storage, writeable_download_files_storage
+    from capdb.storages import pdf_storage, download_files_storage
     import re
 
     # find each PDF by checking TarFile, since we have a 1-to-1 mapping between tar files and PDFs
@@ -1099,7 +1084,7 @@ def download_pdfs(jurisdiction=None):
             new_name = new_name_prefix + (' %s' % chr(97+i) if i else '') + '.pdf'
             new_name = new_name.replace('..', '.')  # avoid double period in '1 Mass..pdf'
             new_path = Path('PDFs', open_or_restricted, jurisdiction.name_long, reporter.short_name, new_name)
-            if not writeable_download_files_storage.exists(str(new_path)):
+            if not download_files_storage.exists(str(new_path)):
                 break
         else:
             raise Exception("Failed to find a non-existent path for %s" % new_path)
@@ -1107,7 +1092,7 @@ def download_pdfs(jurisdiction=None):
         try:
             # copy file
             try:
-                copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=writeable_download_files_storage)
+                copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=download_files_storage)
             except IOError:
                 print("  - ERROR: source file not found")
                 continue
@@ -1118,7 +1103,7 @@ def download_pdfs(jurisdiction=None):
             print("  - Downloaded to %s" % new_path)
         except:
             # clean up partial downloads if process is killed
-            writeable_download_files_storage.delete(str(new_path))
+            download_files_storage.delete(str(new_path))
             raise
 
 
@@ -1415,6 +1400,22 @@ def filter_limerick_lines(stopwords_path):
                     if blocked_any:
                         c[word] = fixed
     Path('static/js/limerick_lines_fixed.js').write_text(assignment + " = " + json.dumps(limericks))
+
+
+@task
+def write_manifest_files():
+    """ Update manifest.csv in /download/ """
+    from capdb.storages import download_files_storage
+    with download_files_storage.open('manifest.csv', 'w') as out:
+        writer = csv.writer(out)
+        writer.writerow(["path", "size", "last_modified"])
+        for path in tqdm(sorted(download_files_storage.iter_files_recursive())):
+            stat = download_files_storage.stat(path)
+            writer.writerow([
+                path,
+                stat.st_size,
+                download_files_storage._datetime_from_timestamp(stat.st_mtime),
+            ])
 
 
 if __name__ == "__main__":

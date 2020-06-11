@@ -1,6 +1,8 @@
 from copy import deepcopy
 
 import pytest
+
+from django.conf import settings
 from django.http import SimpleCookie
 
 from capapi.resources import api_reverse  # noqa -- this is dynamically used by test_cache_headers
@@ -36,13 +38,12 @@ from capdb.models import CaseMetadata
     ("caseexport-download", [],                                               {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
 ])
 @pytest.mark.parametrize("client_fixture_name", ["client", "auth_client", "token_auth_client"])
-def test_cache_headers(request, settings, elasticsearch,
+def test_cache_headers(request, elasticsearch,
                        client_fixture_name,
                        view_name, cache_clients, get_kwargs):
 
     # set up variables
     get_kwargs = deepcopy(get_kwargs)  # avoid modifying between tests
-    settings.SET_CACHE_CONTROL_HEADER = True
     client = request.getfixturevalue(client_fixture_name)
 
     # Resolve reverse_args. For example, if we see "fixture_case_export" we will fetch the "case_export" fixture
@@ -70,10 +71,8 @@ def test_cache_headers(request, settings, elasticsearch,
     )
 
 @pytest.mark.django_db
-def test_cache_case_cite(client, unrestricted_case, restricted_case, settings, elasticsearch):
+def test_cache_case_cite(client, unrestricted_case, restricted_case, elasticsearch):
     """ Single-case cite.case.law page should be cached only if case is whitelisted. """
-    settings.SET_CACHE_CONTROL_HEADER = True
-
     url = CaseMetadata.objects.get(pk=unrestricted_case.id).get_frontend_url()
 
     # whitelisted case is cached
@@ -88,9 +87,7 @@ def test_cache_case_cite(client, unrestricted_case, restricted_case, settings, e
     assert not is_cached(response)
 
 @pytest.mark.django_db
-def test_cache_headers_with_bad_auth(client, case, settings):
-    settings.SET_CACHE_CONTROL_HEADER = True
-
+def test_cache_headers_with_bad_auth(client, case):
     # visiting homepage when logged out is cached ...
     response = client.get(reverse('home'))
     assert is_cached(response)
