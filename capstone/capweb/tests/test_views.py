@@ -28,6 +28,10 @@ def test_download_area(client, unlimited_auth_client, tmp_path, monkeypatch):
             check_response(response, content_type=content_type, content_includes=read_from.joinpath(path).read_text())
             assert is_cached(response)
 
+    # can list overlay folders
+    response = c.get(reverse('download-files', args=['scdb/']))
+    check_response(response, content_type="application/json")
+
     # restricted folder
     underlay_path.joinpath('restricted').mkdir()
     underlay_path.joinpath('restricted/file.txt').write_text('contents')
