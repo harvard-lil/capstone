@@ -184,19 +184,19 @@ class CapFileStorage(CapStorageMixin, FileSystemStorage):
         return os.stat(self.path(path), *args, **kwargs)
 
 
-class DownloadOverlayStorage(CapFileStorage):
+class DownloadOverlayStorage(Storage):
     """
         Storage that shows the files in BASE_DIR/downloads/ as an overlay over the files in the underlying storage.
         Files in overlay will cached; restart Django to reload.
     """
     def __init__(self, *args, **kwargs):
-        self.overlay_storage = CapFileStorage(location=os.path.join(settings.BASE_DIR, 'downloads'))
-        super().__init__(*args, **kwargs)
+        overlay_storage = CapFileStorage(location=os.path.join(settings.BASE_DIR, 'downloads'))
+        underlay_storage = CapFileStorage(*args, **kwargs)
 
         # functions that check for existence of the file in the overlay, and otherwise return the result for the underlying storage
-        overlay_paths = set(p.strip('/') for p in self.overlay_storage.iter_files_recursive(with_dirs=True))
-        for method_name in ('isdir', 'isfile', 'islink', 'relpath', 'realpath', 'path', 'open', 'size', 'get_modified_time', 'stat'):
-            def method(self, path, *args, overlay_method=getattr(self.overlay_storage, method_name), underlay_method=getattr(super(), method_name), **kwargs):
+        overlay_paths = set(p.strip('/') for p in overlay_storage.iter_files_recursive(with_dirs=True))
+        for method_name in ('isdir', 'isfile', 'islink', 'relpath', 'realpath', 'path', 'open', 'size', 'get_modified_time', 'stat', 'contents'):
+            def method(self, path, *args, overlay_method=getattr(overlay_storage, method_name), underlay_method=getattr(underlay_storage, method_name), **kwargs):
                 if path.strip('/') in overlay_paths:
                     return overlay_method(path, *args, **kwargs)
                 return underlay_method(path, *args, **kwargs)
@@ -204,9 +204,13 @@ class DownloadOverlayStorage(CapFileStorage):
 
         # functions that return chained results for both storages
         for method_name in ('iter_files', 'iter_files_recursive'):
-            def method(self, *args, overlay_method=getattr(self.overlay_storage, method_name), underlay_method=getattr(super(), method_name), **kwargs):
+            def method(self, *args, overlay_method=getattr(overlay_storage, method_name), underlay_method=getattr(underlay_storage, method_name), **kwargs):
                 return set(itertools.chain(overlay_method(*args, **kwargs), underlay_method(*args, **kwargs)))
             setattr(self, method_name, types.MethodType(method, self))
+
+        # functions that go directly to underlay storage
+        for method_name in ('url',):
+            setattr(self, method_name, getattr(underlay_storage, method_name))
 
 
 class CaptarFile(File):
