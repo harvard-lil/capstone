@@ -194,10 +194,10 @@ class DownloadOverlayStorage(CapFileStorage):
         super().__init__(*args, **kwargs)
 
         # functions that check for existence of the file in the overlay, and otherwise return the result for the underlying storage
-        overlay_paths = set(self.overlay_storage.iter_files_recursive(with_dirs=True))
+        overlay_paths = set(p.strip('/') for p in self.overlay_storage.iter_files_recursive(with_dirs=True))
         for method_name in ('isdir', 'isfile', 'islink', 'relpath', 'realpath', 'path', 'open', 'size', 'get_modified_time', 'stat'):
             def method(self, path, *args, overlay_method=getattr(self.overlay_storage, method_name), underlay_method=getattr(super(), method_name), **kwargs):
-                if path in overlay_paths:
+                if path.strip('/') in overlay_paths:
                     return overlay_method(path, *args, **kwargs)
                 return underlay_method(path, *args, **kwargs)
             setattr(self, method_name, types.MethodType(method, self))
