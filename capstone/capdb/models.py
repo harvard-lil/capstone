@@ -1375,11 +1375,20 @@ class CaseMetadata(models.Model):
             pages = self.structure.pages.all()
 
         vol = self.volume
-        return [{
-            "page": page,
-            "image_url": reverse('page_image', [vol.reporter.short_name_slug, vol.volume_number_slug, page.order]),
-            "structure": PageStructure.blocks_by_id([page])}
-            for page in pages]
+
+        return {
+            page.order: {
+                'order': page.order,
+                'label': page.label,
+                'font_names': page.font_names,
+                'duplicates': page.duplicates,
+                'width': page.width,
+                'height': page.height,
+                'deskew': page.deskew,
+                'id': page.id,
+                "image_url": reverse('page_image', [vol.reporter.short_name_slug, vol.volume_number_slug, page.order]),
+                "structure": PageStructure.blocks_by_id([page])}
+            for page in pages}
 
 
 
