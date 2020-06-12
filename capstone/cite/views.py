@@ -188,6 +188,7 @@ def case_editor(request, case_id):
                 elif not current_line and (not isinstance(token, list) or token[0] != 'list'):
                     pass
 
+                # TODO: make sure to get the word if it's soft-hyphenated
                 if isinstance(token, list):
                     if token[0] == 'ocr':
                         current_word['rect'] = token[1]['rect']

@@ -16,12 +16,19 @@
             <div class="sticky-top">
                 <div class="row">
                     <div class="col">
-                        <div class="full_cite">{{ citation_full|safe }}</div>
+                        <input type="checkbox" id="see_ocr" name="see_ocr" checked>
+                        <label for="scales">See OCR</label>
+                        <br>
+                        <input type="checkbox" id="see_wc" name="see_wc">
+                        <label for="scales">See WC</label>
+                    </div>
+                    <div class="col">
+
                     </div>
                 </div>
                 <div class="row">
                     <div class="col">
-                        <canvas id="word_focus"></canvas>
+                        <canvas id="word_focus" height="45px"></canvas>
                     </div>
                 </div>
                 <div class="row">
@@ -29,6 +36,7 @@
                         <input type="text" id="current_word"><small><small>(confidence: <span
                             id="current_word_confidence"></span>)</small></small>
                         <button>Modify</button>
+                        <button id="next_word">Next Word</button>
                     </div>
                 </div>
 
@@ -66,9 +74,10 @@
 
     <script>
         {% autoescape off %}
-            const pages = new Map(Object.entries({{ pages }}));// Get page info from django template vars
-            const processed_pages = new Map(Object.entries({{ processed_pages }})); // Get page info from django template vars
-            const page_images = {{ page_images }};// Get page info from django template vars
+            const import_processed_pages_from_django_template = new Map(Object.entries({{ processed_pages }}));
+            // Get page info from django template vars
+            const import_page_images_from_django_template = {{ page_images }};
+            // Get page info from django template vars
         {% endautoescape %}
     </script>
     {% render_bundle 'case-editor' %}
