@@ -658,3 +658,4 @@ VALIDATE_EMAIL_SIGNUPS = False
 
 MISSED_CITATIONS_DIR = "/tmp/missed_citations"
 
+SITE_LIMIT_REPORT = False
