@@ -8,12 +8,13 @@
 {% load snippet %}
 
 {% block base_css %}{% stylesheet 'index' %}{% endblock %}
-{% block extra_head %}
+{% block extra_footer %}
   <script>
-    const mapSettings = {
-      "data": {% snippet 'map_numbers' '{}' %},
-      "jurisdictionUrl": "{% url "cite_home" host "cite" %}#JURISDICTION"
+    const urls = {
+      static: "{% static "" %}",
+      jurisdiction: "{% url "cite_home" host "cite" %}#JURISDICTION"
     };
+    const jurData = {% snippet 'map_numbers' '{}' %};
   </script>
   {% render_bundle 'map' %}
 {% endblock %}
@@ -52,111 +53,7 @@
 
     <!-- END SPLASH QUOTE -->
     <!-- START MAP -->
-
-    <div class="map-section m-0 pt-0 bg-gradient">
-      <div class="d-block d-md-none d-lg-none d-xl-none bg-gradient small-screen-map-section pb-5">
-        <div class="row pt-5 top-numbers-row">
-          <div class="col-4 offset-2 p-0">
-            <p class="bignumber">6.7</p>
-          </div>
-          <div class="col-4 pt-4">
-            <div class="pt-2 pt-sm-4 vseparator">
-              <span class="million">Million</span><br>
-              <span class="uniquecases">
-                Unique cases
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="row p-0 mb-3 mb-sm-4">
-          <div class="col-8 offset-2 p-0 mt-0 mb-0 vseparator">
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-4 offset-2 p-0">
-            <div class="sixtwentyseven">627</div>
-          </div>
-          <div class="col-4 p-0">
-            <div class="fortym pl-3">40M</div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-4 offset-2 p-0">
-            <div class="bottom-text bottom-text-border pl-1 pt-4">Reporters</div>
-          </div>
-          <div class="col-6 p-0">
-            <div class="bottom-text pt-4 pl-2">Pages scanned</div>
-          </div>
-        </div>
-
-
-      </div>
-      <div class="d-none d-md-block d-lg-block d-xl-block pt-5">
-        <div class="row top-section-row">
-          <div class="col-1 text-right p-3 d-none d-lg-block">
-            <img aria-hidden="true" src='{% static "img/white-arrow-right.svg" %}'>
-          </div>
-          <div class="col-4 offset-1 offset-lg-0">
-            <h2 class="section-title p-0">
-              Our data
-            </h2>
-          </div>
-        </div>
-        <div class="row content-row">
-          <div class="col-3 offset-md-1 pr-3">
-
-            <div class="boxcontainer text-white state-numbers-boxcontainer mt-2 mb-4">
-              <div class="boxcontainer-body bg-black p-3 pt-2 pb-2">
-                <h5 class="boxcontainer-title pb-1 jur_name">State and Federal Totals</h5>
-
-                <div class="number-set mt-3 p-0">
-                  <p class="boxcontainer-text figure mb-0 num_cases">{{ state.cases }}</p>
-                  <p class="boxcontainer-text label">Unique cases</p>
-                </div>
-
-                <div class="number-set d-lg-block d-md-none p-0">
-                  <p class="boxcontainer-text figure mb-0 num_reporters">{{ state.reporters }}</p>
-                  <p class="boxcontainer-text label">Reporters</p>
-                </div>
-
-                <div class="number-set p-0">
-                  <p class="boxcontainer-text figure mb-0 num_pages">{{ state.pages_scanned }}</p>
-                  <p class="boxcontainer-text label">Pages scanned</p>
-                </div>
-              </div>
-              <div class="boxcontainer-body bg-black p-3 pt-2">
-                <h5 class="boxcontainer-title pb-1 federal">Federal Totals</h5>
-
-                <div class="number-set">
-                  <p class="boxcontainer-text figure mb-0">{{ federal.cases|format_number }}</p>
-                  <p class="boxcontainer-text label">Unique cases</p>
-                </div>
-
-                <div class="number-set d-lg-block d-md-none">
-                  <p class="boxcontainer-text figure mb-0">{{ federal.reporters|format_number }}</p>
-                  <p class="boxcontainer-text label">Reporters</p>
-                </div>
-
-                <div class="number-set">
-                  <p class="boxcontainer-text figure mb-0">{{ federal.pages_scanned|format_number }}</p>
-                  <p class="boxcontainer-text label">Pages scanned</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-          <div class="col-7">
-            <div class="map bg-transparent pl-5">
-              <a href="#section-dive-in"
-                 class="skip">Skip map</a>
-              {% include "includes/usa_territories_white.svg" %}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <div id="app"></div>
     <!-- END MAP -->
     <!-- START DIVE-IN -->
 

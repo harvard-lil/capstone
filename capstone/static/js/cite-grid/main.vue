@@ -20,14 +20,20 @@
       <h2>Map view</h2>
       <div class="row">
         <div class="col-lg-3 col-md-12">
-          Showing:
+          <div class="form-group">
+            <label for="hoveredJurSelect">Selected jurisdiction:</label>
+            <select class="form-control" id="hoveredJurSelect" v-model="hoveredJur">
+              <option disabled value="">Select one, or hover on the map</option>
+              <option v-for="jur in jurisdictions" v-bind:value="jur">{{jur.name_long}}</option>
+            </select>
+          </div>
           <div class="form-check">
             <input class="form-check-input" type="radio" id="mapDirectionInbound" value="inbound" v-model="mapDirection">
-            <label class="form-check-label" for="mapDirectionInbound">inbound citations</label>
+            <label class="form-check-label" for="mapDirectionInbound">Inbound citations</label>
           </div>
           <div class="form-check">
             <input class="form-check-input" type="radio" id="mapDirectionOutbound" value="outbound" v-model="mapDirection">
-            <label class="form-check-label" for="mapDirectionOutbound">outbound citations</label>
+            <label class="form-check-label" for="mapDirectionOutbound">Outbound citations</label>
           </div>
           <div id="hovered-map-message">
             <span v-if="hoveredJur">
@@ -38,19 +44,20 @@
             </span>
           </div>
         </div>
-        <div class="col-lg-9 col-md-12">
-          <div>
+        <div class="col-lg-9 col-md-12" aria-label="United States map showing frequency of citations from one jurisdiction to another by color">
+          <div aria-hidden="true">
             <USMap @mouseover="mapMouseover" @mouseleave="mapMouseleave" class="map" />
           </div>
         </div>
       </div>
 
       <h2>Grid view</h2>
-      <div>
+      <p>
         This grid shows what percentage of the citations <i>by</i> each state on the left are <i>to</i> each state
         on the top. For example, the square in the row marked "Alaska" and column marked "Cal." indicates that
         2.5% of all citations extracted from Alaska cases are to California cases.
-      </div>
+        <a href="#" download="cite-grid.csv" @click="csvDownloadClicked" @contextmenu="csvDownloadClicked">Download CSV</a>.
+      </p>
       <div>
         Coloring of each square is logarithmic to emphasize the range between 0 and 10%:<br>
         0%
@@ -59,9 +66,9 @@
         </div>
         10%
       </div>
-      <div>
-        Hover over a grid square for details
-      </div>
+      <p>
+        Hover over a grid square for details:
+      </p>
       <div class="table-scroll">
         <table v-if="dataLoaded">
           <tr>
@@ -98,6 +105,7 @@
 </template>
 
 <script>
+  import csvStringify from 'csv-stringify/lib/sync';
   import {apiQuery} from '../api';
   import USMap from '../../../capweb/templates/includes/usa_territories_white.svg';
 
@@ -178,7 +186,7 @@
         let percentage = 0;
         if (denominator)
           percentage = (this.totals[fromJur.id][toJur.id] || 0) / denominator * 100;
-        return percentage;
+        return percentage ? percentage.toFixed(1) : 0;
       },
       countColor(fromJur, toJur) {
         // return color for citation count from fromJur to toJur
@@ -191,7 +199,6 @@
       },
       hoverText(fromJur, toJur) {
         let percentage = this.citePercentage(fromJur, toJur);
-        percentage = percentage ? percentage.toFixed(1) : 0;
         return `${this.jurisdictionsById[fromJur.id].name} cites ${this.jurisdictionsById[toJur.id].name} ${percentage}%`;
       },
       toggleJurisdiction(jur) {
@@ -226,17 +233,25 @@
         const target = event.target;
         if (target.classList.contains('state')) {
           this.hoveredJur = this.jurisdictionsBySlug[target.parentElement.id];
-        } else {
-          this.hoveredJur = null;
         }
       },
       mapMouseleave(event) {
-       this.hoveredJur = null;
+       // this.hoveredJur = null;
       },
       logPercentage(x) {
         if (x<.1)
           return x;
         return (Math.log(x) - Math.log(.1)) / (Math.log(100) - Math.log(.1)) * 100;
+      },
+      csvDownloadClicked(event) {
+        /* when the Download url is clicked/right-clicked/touched, intercept the event and fill in the correct data for download */
+        let payload = [];
+        payload.push(["", ...this.jurisdictions.map((jur)=>jur.name_long)]);
+        for (const fromJur of this.jurisdictions) {
+          payload.push([fromJur.name_long, ...this.jurisdictions.map((toJur)=>this.citePercentage(fromJur, toJur))]);
+        }
+        payload = "data:text/csv;base64," + btoa(csvStringify(payload));
+        event.currentTarget.href = payload;
       },
     },
   }
