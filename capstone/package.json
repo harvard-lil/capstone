@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "yarn run vue-cli-service serve",
     "build": "yarn run vue-cli-service build",
+    "build-report": "yarn run vue-cli-service build --report",
     "lint": "yarn run vue-cli-service lint"
   },
   "dependencies": {
