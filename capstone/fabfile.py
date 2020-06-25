@@ -2,6 +2,7 @@ import csv
 import gzip
 import hashlib
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -13,7 +14,7 @@ import django
 import json
 from random import randint
 from pathlib import Path
-from celery import shared_task, group
+from celery import group
 from tqdm import tqdm
 
 # set up Django
@@ -26,20 +27,19 @@ except Exception as e:
 
 from django.core import management
 from django.db import connections, transaction
-from django.utils.encoding import force_str, force_bytes
+from django.utils.encoding import force_bytes
 from django.conf import settings
 from fabric.api import local
 from fabric.decorators import task
 
 from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Citation, CaseMetadata, \
-    Court
+from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Citation, CaseMetadata, \
+    Court, Reporter
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, data_migrations, ingest_by_manifest, \
     validate_private_volumes as validate_private_volumes_script, export, update_snippets
-from scripts.helpers import parse_xml, serialize_xml, copy_file, volume_barcode_from_folder, \
-    up_to_date_volumes, storage_lookup
+from scripts.helpers import copy_file, volume_barcode_from_folder, up_to_date_volumes, storage_lookup
 
 
 @task(alias='run')
@@ -565,32 +565,43 @@ def count_case_totals(write_to_file=True, min_year=1640):
 
 
 @task
-def fix_jurisdictions():
+@transaction.atomic(using='capdb')
+def fix_reporter_jurisdictions():
     """
-        Finds cases where the XML jurisdiction value is different from the text in the jurisdiction table and fixes it.
+        Update Reporter.jurisdictions values based on case jurisdictions.
+        For regional reporters, reporter is associated with all jurisdictions for which it has cases.
+        For other reporters, reporter is only associated with most frequent jurisdiction.
     """
-    @shared_task
-    def update_xml_jurisdiction(case_xml_id, orig_xml, jurisdiction, case_id):
-        parsed = parse_xml(orig_xml)
-        print("Updating {} to {} in {}".format(parsed('case|court')[0].get("jurisdiction"), jurisdiction, case_id))
-        parsed('case|court')[0].set("jurisdiction", jurisdiction)
-        CaseXML.objects.filter(pk=case_xml_id).update(orig_xml=force_str(serialize_xml(parsed)))
+    from capweb.helpers import select_raw_sql
 
-    query = """SELECT x.id, x.orig_xml, j.name_long, m.case_id from capdb_casexml x
-    inner join capdb_casemetadata m on x.metadata_id = m.id
-    inner join capdb_jurisdiction j on m.jurisdiction_id = j.id
-    where text((ns_xpath('//case:court/@jurisdiction', x.orig_xml))[1]) != text(j.name_long)"""
+    # clear existing relationships
+    join_model = Reporter.jurisdictions.through
+    join_model.objects.all().delete()
 
-    with connections['capdb'].cursor() as cursor:
-        cursor.execute(query)
-        row = cursor.fetchone()
-        while row is not None:
-            case_xml_id = row[0]
-            orig_xml = row[1]
-            jurisdiction = row[2]
-            case_id = row[3]
-            update_xml_jurisdiction(case_xml_id, orig_xml, jurisdiction, case_id)
-            row = cursor.fetchone()
+    # get count of cases in each jurisdiction for each reporter
+    reporters = defaultdict(list)
+    query = """SELECT reporter_id, jurisdiction_id, count(*) as case_count FROM capdb_casemetadata WHERE in_scope = true GROUP BY reporter_id, jurisdiction_id"""
+    for row in select_raw_sql(query, using='capdb'):
+        reporters[row.reporter_id].append([row.case_count, row.jurisdiction_id])
+
+    # add reporter <-> jurisdiction relationship for primary jurisdiction for each reporter
+    regional = Jurisdiction.objects.get(name='Regional')
+    to_insert = []
+    for reporter_id, jurisdictions in reporters.items():
+        reporter = Reporter.objects.get(pk=reporter_id)
+        jurisdictions.sort(reverse=True)
+
+        # handle regional reporters
+        if re.match(r'(A\.|P\.|S\.W\.|So\.|N\.W\.|N\.E\.)(\dd)?$', reporter.short_name):
+            to_insert.append(join_model(reporter_id=reporter_id, jurisdiction_id=regional.id))
+            for case_count, jurisdiction_id in jurisdictions:
+                to_insert.append(join_model(reporter_id=reporter_id, jurisdiction_id=jurisdiction_id))
+
+        # non-regional reporters
+        else:
+            to_insert.append(join_model(reporter_id=reporter_id, jurisdiction_id=jurisdictions[0][1]))
+
+    join_model.objects.bulk_create(to_insert)
 
 
 @task
