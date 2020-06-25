@@ -16,7 +16,15 @@ from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
 from config.logging import logger
 
-cite_extracting_regex = r"\b([1-9]\d*(?: Suppl\.| 1/2)?)\s+([a-zA-Z][\s0-9a-zA-Z.']{0,40})\s+([1-9]\d*)\b"
+# To get characters in valid reporters:
+#   ''.join(set(c for s in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys()) for c in s if not re.match(r'[a-zA-Z0-9]', c)))
+# To get max reporter length:
+#   max(len(i) for i in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys()))
+cite_extracting_regex = (
+    r"\b([1-9]\d*(?: Suppl\.| 1/2)?) +"             # volume number, with optional Suppl. or 1/2
+    r"([a-zA-Z][ 0-9a-zA-Z.,\-'&()]{0,32}?) +"      # reporter string, including all characters found in reporters_db
+    r"([1-9]\d*)\b(?! Cir.)"                        # page number, which cannot be followed by " Cir." to avoid matching reporters like "La.App. 5 Cir." as La.App. page 5
+)
 
 
 def send_new_signup_email(request, user):
