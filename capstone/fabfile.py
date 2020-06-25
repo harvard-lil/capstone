@@ -301,6 +301,33 @@ def retry_export_cases(version_string):
 
 
 @task
+def make_latest_folder(target_path, latest_path=None):
+    """
+        Create a "latest" version of a datestamped folder in the downloads area, symlinking to the original files.
+        Example: fab make_latest_folder:bulk_exports/20200101
+    """
+    from capdb.storages import download_files_storage
+    if not latest_path:
+        latest_path = str(Path(target_path).with_name('latest'))
+
+    # remove existing latest_path
+    if download_files_storage.exists(latest_path):
+        if input("%s already exists. Delete and replace? [y/N] " % latest_path) != 'y':
+            return
+        download_files_storage.rmtree(latest_path)
+
+    # create new latest_path
+    for path in download_files_storage.iter_files_recursive(target_path):
+        new_path = str(Path(latest_path) / Path(path).relative_to(target_path))
+        new_path = re.sub(r'_\d{8}\b', '', new_path)  # remove dates
+        new_path_dir = str(Path(new_path).parent)
+        download_files_storage.mkdir(new_path_dir, parents=True, exist_ok=True)
+        symlink_val = os.path.relpath(path, new_path_dir)
+        print(new_path, symlink_val)
+        download_files_storage.symlink(symlink_val, new_path)
+
+
+@task
 def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test_data/inventory/data')):
     """ Create inventory.csv.gz files in test_data/inventory/data. Should be re-run if test_data/from_vendor changes. """
 
