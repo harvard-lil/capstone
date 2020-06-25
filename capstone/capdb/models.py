@@ -957,7 +957,7 @@ class CaseMetadata(models.Model):
     district_name = models.CharField(max_length=255, null=True, blank=True)
     district_abbreviation = models.CharField(max_length=255, null=True, blank=True)
     name = models.TextField(blank=True)
-    name_abbreviation = models.CharField(max_length=1024, blank=True, db_index=True)
+    name_abbreviation = models.CharField(max_length=1024, blank=True)
     volume = models.ForeignKey('VolumeMetadata', related_name='case_metadatas',
                                on_delete=models.DO_NOTHING)
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
