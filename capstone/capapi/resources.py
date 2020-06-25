@@ -1,6 +1,5 @@
 import hashlib
 import wrapt
-import re
 
 from django.conf import settings
 from django.core.cache import cache
@@ -171,12 +170,11 @@ def link_to_cites(case_html, cites):
     >>> link_to_cites("Town of Dayton v. Town of Rutland, 84 Ill. 279, Rutland v. Dayton, 60 Ill. 58", [{'cite': '84 Ill. 279'}, {'cite': '60 Ill. 58'}])
     "Town of Dayton v. Town of Rutland, <a href='http://cite.case.test:8000/ill/84/279/'>84 Ill. 279</a>, Rutland v. Dayton, <a href='http://cite.case.test:8000/ill/60/58/'>60 Ill. 58</a>"
     """
-
+    from capdb.models import Citation
     for cite in cites:
-        m = re.match(cite_extracting_regex, cite['cite'])
-        if not m:
+        vol_num, reporter, page_num = Citation.parse_cite(cite['cite'])
+        if not reporter:
             continue
-        vol_num, reporter, page_num = m.groups()
         cite_link = "<a href='%s'>%s</a>" % (reverse('citation', host='cite', args=[slugify(reporter), slugify(vol_num), page_num]), cite['cite'])
         case_html = case_html.replace(cite['cite'], cite_link)
 
