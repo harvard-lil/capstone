@@ -24,6 +24,7 @@ from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from django.core.files.base import ContentFile
 
+from capapi.resources import cite_extracting_regex
 from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage, pdf_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
@@ -695,14 +696,10 @@ class VolumeMetadata(models.Model):
             self.save()
             self.case_metadatas.update(reporter=reporter)
             if update_citations:
-                for case in self.case_metadatas.all():
-                    citation = case.citations.get(type="official")
-                    old_citation = citation.cite
-                    if old_reporter.short_name not in citation.cite:
-                        raise Exception("Unexpected citation format")
-                    citation.cite = citation.cite.replace(old_reporter.short_name, self.reporter.short_name, 1)
-                    citation.save()
-                    CaseMetadata.update_frontend_urls([old_citation, citation.cite])
+                Citation.replace_reporter(
+                    Citation.objects.filter(case__volume=self, type="official"),
+                    old_reporter.short_name,
+                    self.reporter.short_name)
             CaseMetadata.reindex_cases(self.case_metadatas.for_indexing())
 
     def update_volume_number_slug(self):
@@ -957,7 +954,7 @@ class CaseMetadata(models.Model):
     district_name = models.CharField(max_length=255, null=True, blank=True)
     district_abbreviation = models.CharField(max_length=255, null=True, blank=True)
     name = models.TextField(blank=True)
-    name_abbreviation = models.CharField(max_length=1024, blank=True, db_index=True)
+    name_abbreviation = models.CharField(max_length=1024, blank=True)
     volume = models.ForeignKey('VolumeMetadata', related_name='case_metadatas',
                                on_delete=models.DO_NOTHING)
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
@@ -1083,12 +1080,11 @@ class CaseMetadata(models.Model):
             if out_of_scope:
                 CaseDocument().update(out_of_scope, action="delete")
         except BulkIndexError as e:
-            # this re-raises if there's a BulkIndexError for any reason other than a failure to delete because of a 404
+            # Re-raise if there's a BulkIndexError for any reason other than a failure to delete because of a 404
             # which would happen if it was already deleted.
-            if not e[0].endswith('failed to index.') \
-                    or len([True for d in e.args[1] if d['delete']['status'] != 404
-                    or len(d.keys()) > 1
-                    or 'delete' not in d.keys()]) > 0:
+            if not e.args[0].endswith('failed to index.'):
+                raise
+            if any('delete' not in es_err or es_err['delete']['status'] != 404 for es_err in e.args[1]):
                 raise
 
     def reindex(self):
@@ -1812,6 +1808,61 @@ class Citation(models.Model):
     @classmethod
     def sorted_by_type(cls, cites):
         return sorted(cites, key=lambda c: cls.citation_type_sort_order[c.type])
+
+    @staticmethod
+    def parse_cite(cite):
+        """
+            >>> assert Citation.parse_cite("123 Mass. App. Ct. 456") == ("123", "Mass. App. Ct.", "456")
+            >>> assert Citation.parse_cite("123 Mass. App. Ct.") == (None, None, None)
+        """
+        m = re.match(cite_extracting_regex, cite)
+        if not m:
+            return None, None, None
+        return m.groups()
+
+    def parsed(self):
+        return Citation.parse_cite(self.cite)
+
+    @classmethod
+    def replace_reporter(cls, cites, old_reporter, new_reporter, dry_run=False):
+        """
+            Given a list or queryset of cites, replace reporter string old_reporter with new_reporter.
+            Skip cites that don't have the reporter old_reporter.
+            Return a list of updated cites in the form [(cite_ob, old_cite_str, new_cite_str)].
+
+            Given:
+            >>> case_factory = getfixture('case_factory')
+            >>> cases = [case_factory(citations__cite=c) for c in ("1 Old 1", "2 Old 2", "3 Old Rep. 3")]
+            >>> cites = list(Citation.objects.order_by('case_id'))
+
+            Only the exact-matching cites are updated and returned:
+            >>> assert Citation.replace_reporter(cites, "Old", "New") == [
+            ...     (cites[0], "1 Old 1", "1 New 1"),
+            ...     (cites[1], "2 Old 2", "2 New 2"),
+            ... ]
+
+            All DB fields are updated:
+            >>> assert set(Citation.objects.values_list('cite', flat=True)) == {"1 New 1", "2 New 2", "3 Old Rep. 3"}
+            >>> assert set(Citation.objects.values_list('normalized_cite', flat=True)) == {"1new1", "2new2", "3oldrep3"}
+            >>> assert set(CaseMetadata.objects.values_list('frontend_url', flat=True)) == {"/new/1/1/", "/new/2/2/", "/old-rep/3/3/"}
+        """
+        to_update = []
+        cites_updated = []
+        actions = []
+        for cite in cites:
+            vol_num, reporter, page_num = cite.parsed()
+            if reporter != old_reporter:
+                continue
+            old_cite = cite.cite
+            cite.cite = cite.cite.replace(old_reporter, new_reporter, 1)
+            cites_updated.extend((old_cite, cite.cite))
+            cite.normalized_cite = normalize_cite(cite.cite)
+            to_update.append(cite)
+            actions.append((cite, old_cite, cite.cite))
+        if to_update and not dry_run:
+            Citation.objects.bulk_update(to_update, ['normalized_cite', 'cite'])
+            CaseMetadata.update_frontend_urls(cites_updated)
+        return actions
 
 
 class PageXML(BaseXMLModel):

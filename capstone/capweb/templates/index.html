@@ -141,12 +141,14 @@
                 <div class="col-6 d-none d-md-block">
                   <div class="boxcontainer text-white bg-transparent d-none d-sm-block mb-4 pr-3">
                     <div class="boxcontainer-body bg-black">
-                      <p><span class="highlighted">Download</span> whole zip files of whitelisted jurisdictions like
-                        Illinois.</p>
+                      <p>
+                        <span class="highlighted">Download</span> zip files of our open jurisdictions
+                        and other bulk exports.
+                      </p>
                       <div class="boxcontainer-footer">
                         <div class="btn-group mb-0">
-                          <a href="{% url "bulk-download" %}" class="btn-secondary">bulk</a>
-                          <a href="{% url "bulk-docs" %}" class="btn-tertiary">see docs</a>
+                          <a href="{% url "download-files" "" %}" class="btn-secondary">download</a>
+<!--                          <a href="{% url "bulk-docs" %}" class="btn-tertiary">see docs</a>-->
                         </div>
                       </div>
                     </div>

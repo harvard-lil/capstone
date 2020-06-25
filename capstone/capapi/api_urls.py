@@ -18,6 +18,15 @@ router.register('ngrams', api_views.NgramViewSet, basename='ngrams')
 router.register('user_history', api_views.UserHistoryViewSet)
 router.register('citations', api_views.ExtractedCitationViewSet)
 
+
+# filter out bulk endpoint from API browser listing
+class FilteredAPIRootView(routers.APIRootView):
+    def get(self, request, *args, **kwargs):
+        self.api_root_dict = {k:v for k,v in self.api_root_dict.items() if k != 'bulk'}
+        return super().get(request, *args, **kwargs)
+router.APIRootView = FilteredAPIRootView
+
+
 schema_view = get_schema_view(
     openapi.Info(
         title="CAP API",

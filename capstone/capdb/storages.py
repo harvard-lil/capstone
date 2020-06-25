@@ -1,6 +1,7 @@
 import csv
 import gzip
 import hashlib
+import shutil
 import traceback
 import types
 from contextlib import contextmanager
@@ -16,6 +17,7 @@ import rocksdb
 from django.conf import settings
 from django.core.files import File
 from django.core.files.storage import FileSystemStorage, Storage
+from django.utils.deconstruct import deconstructible
 from django.utils.functional import SimpleLazyObject
 from rocksdb.interfaces import MergeOperator
 from storages.backends.s3boto3 import S3Boto3Storage
@@ -183,7 +185,17 @@ class CapFileStorage(CapStorageMixin, FileSystemStorage):
     def stat(self, path, *args, **kwargs):
         return os.stat(self.path(path), *args, **kwargs)
 
+    def rmtree(self, path):
+        return shutil.rmtree(self.path(path))
 
+    def mkdir(self, path, *args, **kwargs):
+        return Path(self.path(path)).mkdir(*args, **kwargs)
+
+    def symlink(self, src, dst, *args, **kwargs):
+        return os.symlink(src, self.path(dst))
+
+
+@deconstructible
 class DownloadOverlayStorage(Storage):
     """
         Storage that shows the files in BASE_DIR/downloads/ as an overlay over the files in the underlying storage.
@@ -195,7 +207,7 @@ class DownloadOverlayStorage(Storage):
 
         # functions that check for existence of the file in the overlay, and otherwise return the result for the underlying storage
         overlay_paths = set(p.strip('/') for p in overlay_storage.iter_files_recursive(with_dirs=True))
-        for method_name in ('isdir', 'isfile', 'islink', 'relpath', 'realpath', 'path', 'open', 'size', 'get_modified_time', 'stat', 'contents'):
+        for method_name in ('isdir', 'isfile', 'islink', 'relpath', 'realpath', 'path', 'open', 'size', 'get_modified_time', 'stat', 'contents', 'exists'):
             def method(self, path, *args, overlay_method=getattr(overlay_storage, method_name), underlay_method=getattr(underlay_storage, method_name), **kwargs):
                 if path.strip('/') in overlay_paths:
                     return overlay_method(path, *args, **kwargs)
@@ -209,7 +221,7 @@ class DownloadOverlayStorage(Storage):
             setattr(self, method_name, types.MethodType(method, self))
 
         # functions that go directly to underlay storage
-        for method_name in ('url',):
+        for method_name in ('url', 'mkdir', 'symlink', 'rmtree'):
             setattr(self, method_name, getattr(underlay_storage, method_name))
 
 
