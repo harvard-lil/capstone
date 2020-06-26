@@ -27,6 +27,7 @@ except Exception as e:
 
 from django.core import management
 from django.db import connections, transaction
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.conf import settings
 from fabric.api import local
@@ -1452,7 +1453,7 @@ def write_manifest_files():
             writer.writerow([
                 path,
                 stat.st_size,
-                download_files_storage._datetime_from_timestamp(stat.st_mtime),
+                datetime.utcfromtimestamp(stat.st_mtime).replace(tzinfo=timezone.utc),
             ])
 
 
