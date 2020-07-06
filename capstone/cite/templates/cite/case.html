@@ -13,11 +13,15 @@
   <script>
     const templateVars = {
       urls: {
+        {% if request.user.is_staff %}
+          djangoAdmin: "{% url 'admin:capdb_casemetadata_change' db_case.id %}",
+          caseEditor: "{% url 'case_editor' db_case.id host 'cite' %}",
+        {% endif %}
         search: "{% url "search" %}#/cases",
         redact: "{% url "redact_case" db_case.id host 'cite' %}",
         about: "{% url "about" %}",
         caseApi: "{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}",
-        casePdf: "{% if can_render_pdf %}{{ db_case.get_pdf_url }}{% endif %}",
+        casePdf: "{% if can_render_pdf %}{{ db_case.get_pdf_url }}{% endif %}"
       },
       fullCite: "{{ citation_full }}",
       isStaff: {% if request.user.is_staff %}true{% else %}false{% endif %},

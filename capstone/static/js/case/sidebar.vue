@@ -43,8 +43,8 @@
       <h3>Admin Tools</h3>
       <div class="sidebar-section-contents">
         <ul class="bullets">
-          <li><a href="{% url 'admin:capdb_casemetadata_change' db_case.id %}">Django admin</a></li>
-          <li><a href="{% url 'case_editor' db_case.id host 'cite' %}">Case editor</a></li>
+          <li><a :href="templateVars.urls.djangoAdmin">Django admin</a></li>
+          <li><a :href="templateVars.urls.caseEditor">Case editor</a></li>
         </ul>
       </div>
     </div>
@@ -144,7 +144,7 @@
         }
 
         opinions.push({
-          id: opinion.firstChild.id,
+          id: opinion.firstElementChild.id,
           type: opinion.getAttribute('data-type').toLowerCase(),
           author: author,
         });
