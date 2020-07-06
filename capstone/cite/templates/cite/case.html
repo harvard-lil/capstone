@@ -43,7 +43,8 @@
     </div>
   {% endif %}
   <div class="sr-only sr-only-focusable" tabindex="0">
-    For keyboard users: press command-/ to jump to the tools for this case, and escape to return to last selected case text.
+    Press Ctrl + / (Windows, Chrome OS) or ⌘ + / (Mac) to jump to the Tools menu.
+    Press escape to return to last selected case text.
   </div>
   <div class="case-header">
     <h1>{{ citation_full|safe }}</h1>
@@ -59,7 +60,7 @@
 {% endblock %}
 
 {% block sidebar_menu %}
-  <aside id="sidebar-menu">
+  <aside id="sidebar-menu" tabindex="-1">
     <div id="sidebar-menu-content"></div>
   </aside>
 {% endblock %}

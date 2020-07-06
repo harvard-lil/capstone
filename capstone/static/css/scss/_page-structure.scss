@@ -266,7 +266,7 @@ section > .content > .row > .content-right {
     position: -webkit-sticky;
     position: sticky;
     height: 90vh;
-    overflow: scroll;
+    overflow: auto;
   }
   .list-group-item {
     border: 0;
