@@ -42,7 +42,7 @@ let vueConfig = {
     witchcraft: 'static/js/witchcraft/main.js',
     search: 'static/js/search/main.js',
     trends: 'static/js/trends/main.js',
-    case: 'static/js/case.js',
+    case: 'static/js/case/main.js',
     'cite-grid': 'static/js/cite-grid/main.js',
     'case-editor': 'static/js/case-editor.js',
   },

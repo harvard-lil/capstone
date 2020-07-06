@@ -173,7 +173,8 @@ pre {
 }
 
 main {
-  padding-top: 90px;
+  // push main content below floating top menu bar
+  padding-top: 94px;
   // push footer to bottom on short pages
   @extend .flex-fill;
   @extend .d-flex;
