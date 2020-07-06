@@ -7,7 +7,7 @@
       <h3>Case Outline</h3>
       <div class="sidebar-section-contents">
         <ul class="bullets">
-          <li v-for="opinion in opinions">
+          <li v-for="opinion in opinions" :key="opinion.id">
             <a :href="`#${opinion.id}`">{{opinion.type}}</a>
             <span v-if="opinion.author"> — {{opinion.author}}</span>
           </li>
@@ -145,7 +145,7 @@
 
         opinions.push({
           id: opinion.firstElementChild.id,
-          type: opinion.getAttribute('data-type').toLowerCase(),
+          type: opinion.getAttribute('data-type').toLowerCase().replace('-', ' '),
           author: author,
         });
       }
@@ -182,12 +182,12 @@
         return url.toString();
       },
       searchForSelection() {
-        return templateVars.urls.search + "?search=" + encodeURIComponent(this.selectedText);
+        return this.templateVars.urls.search + "?search=" + encodeURIComponent(this.selectedText);
       },
       copyCiteToSelection() {
         // Copies: "Selected quotation" name_abbreviation, official_citation, (<year>)
         // TODO: add pin cite to citation
-        const toCopy = "\"" + this.selectedText + "\" " + full_cite; // eslint-disable-line
+        const toCopy = `"${this.selectedText}" ${this.templateVars.fullCite}`;
         navigator.clipboard.writeText(toCopy).then(
           () => this.copyStatus = "done",
           () => this.copyStatus = "failed",
@@ -195,7 +195,7 @@
       },
       elideOrRedactSelection(kind) {
         if(confirm(`Really ${kind} "${this.selectedText}"?`))
-          $.post(templateVars.urls.redact, {'kind': kind, 'text': this.selectedText}, ()=>{window.location.reload()});
+          $.post(this.templateVars.urls.redact, {'kind': kind, 'text': this.selectedText}, ()=>{window.location.reload()});
       },
     },
   }
