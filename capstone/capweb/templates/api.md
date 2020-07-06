@@ -6,7 +6,7 @@ page_image: img/og_image/tools_api.png
 meta_description: Caselaw Access Project API Docs
 top_section_style: bg-black
 row_style: bg-tan
-explainer: The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases published in books from 1658 to 2018. The collection includes over six million cases scanned from the Harvard Law Library shelves. <a href="{% url "about" }>Learn more about the project</a>. 
+explainer: The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases published in books from 1658 to 2018. The collection includes over six million cases scanned from the Harvard Law School Library shelves. <a href="{% url "about" }>Learn more about the project</a>. 
 extra_head: {% stylesheet 'docs' %}
 
 {# ==============> GETTING STARTED <============== #}

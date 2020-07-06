@@ -10,6 +10,84 @@
   }
 }
 
+.top-section {
+  padding: 0;
+}
+.title-section {
+  @include make-col(12);
+  @include make-col-offset(0);
+  padding: 0;
+  letter-spacing: inherit;
+}
+.case-header {
+  padding: 1.25rem;
+  font-family: $font-serif;
+  font-size: $font-size-base !important;
+  text-align: center;
+  h1 {
+    font-weight: 700;
+    font-size: 1.3em;
+    font-family: $font-serif;
+    padding: 0;
+    margin: 0;
+  }
+  .decision-date, .court-name {
+    margin-right: 1em;
+  }
+  .docket-number {}
+  .citations {
+    line-height: 1em;
+  }
+}
+
+#sidebar-menu {
+  padding: 0;
+  font-size: $font-size-sm;
+  background: $color-tan;
+
+  h2 {
+    font-size: 1.3em;
+    font-family: $font-serif;
+    font-weight: 700;
+    margin: 0;
+  }
+  h3 {
+    font-size: $font-size-sm;
+    font-family: $font-serif;
+    font-weight: bold;
+  }
+  .sidebar-section {
+    padding: 1em;
+    border-bottom: 1px solid #E7E7ED;
+  }
+  .sidebar-section-contents {}
+  ul {
+    margin: 0;
+  }
+
+  .outline {
+    li {
+      text-transform: capitalize;
+    }
+  }
+
+  @include media-breakpoint-down(md) {
+    display: block;
+    @include make-col(10);
+    @include make-col-offset(1);
+
+    .content {
+      position: unset;
+      height: unset;
+    }
+  }
+
+  @include media-breakpoint-down(sm) {
+    @include make-col(12);
+    @include make-col-offset(0);
+  }
+}
+
 .casebody {
   img {
     max-width: 100%;
@@ -37,24 +115,6 @@ p {
   margin-bottom: 0;
 }
 
-.full_cite {
-  font-family: $font-family-sans-serif;
-  font-size: $font-size-sm;
-  color: $color-black;
-  background-color: $color-light-gray;
-  border-radius: 1rem;
-  margin-top: 0;
-  margin-bottom: 1rem;
-}
-
-.court {
-  font-family: $font-sans-serif;
-  text-align: center;
-  margin-bottom: 1em;
-  a {
-    color: $color-blue;
-  }
-}
 
 .tooltip {
   cursor: pointer;
@@ -128,21 +188,15 @@ p.small-text {
   margin-top: 20px;
 }
 
-h4.case-name {
-  line-height: 1.4em;
-  letter-spacing: 0;
+.case-name {
+  @include make-col(8);
+  @include make-col-offset(2);
   font-family: $font-serif;
-}
-
-.citations, .court {
-  font-family: $font-sans-serif;
-  font-size: 1.2em;
-  line-height: 2em;
-}
-
-.docket-number, .decision_date {
-  font-size: 1em;
-  line-height: 1.5em;
+  .case-name-v {
+    display: block;
+    margin: .5em;
+    font-style: italic;
+  }
 }
 
 #citation_container {

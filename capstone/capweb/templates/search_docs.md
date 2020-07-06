@@ -1,7 +1,7 @@
 {% load pipeline %}
 {% load api_url %}
 title: CAP Search
-explainer: The Caselaw Access Project Search Interface facilitates searching and viewing all official US court cases published in books from 1658 to 2018. The collection includes over six million cases scanned from the Harvard Law Library shelves. <a href="{% url "about" %}">Learn more about the project.</a>
+explainer: The Caselaw Access Project Search Interface facilitates searching and viewing all official US court cases published in books from 1658 to 2018. The collection includes over six million cases scanned from the Harvard Law School Library shelves. <a href="{% url "about" %}">Learn more about the project.</a>
 meta_description: Caselaw Access Project Search Docs
 top_section_style: bg-black
 row_style: bg-tan
