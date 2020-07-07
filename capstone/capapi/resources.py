@@ -30,7 +30,7 @@ def send_new_signup_email(request, user):
     token_url = reverse('verify-user', kwargs={'user_id':user.pk, 'activation_nonce': user.get_activation_nonce()}, scheme="https")
     send_mail(
         'Caselaw Access Project: Verify your email address',
-        "Please click here to verify your email address: \n\n%s \n\nIf you believe you have received this message in error, please ignore it." % token_url,
+        "Please click here to verify your email address: \n\n%s \n\nIf you received this message in error, please ignore it." % token_url,
         settings.DEFAULT_FROM_EMAIL,
         [user.email],
         fail_silently=False, )
