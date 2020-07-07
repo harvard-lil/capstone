@@ -30,7 +30,9 @@
           <li><a :href="linkToSelection()">Link to "{{selectedTextShort}}"</a></li>
           <li>
             <a href="#" @click.prevent="copyCiteToSelection">Copy "{{selectedTextShort}}" with cite</a>
-            <span v-if="copyStatus">{{copyStatus}}</span>
+            <span aria-live="polite">
+              <span v-if="copyStatus" class="ml-1">{{copyStatus}}</span>
+            </span>
           </li>
           <li><a :href="searchForSelection()">Search cases for "{{selectedTextShort}}"</a></li>
           <li v-if="templateVars.isStaff"><a href="#" @click.prevent="elideOrRedactSelection('elide')">⚠️ Elide "{{selectedTextShort}}"</a></li>
@@ -66,6 +68,9 @@
   import $ from "jquery";
   import '../jquery_django_csrf';
 
+  // this polyfill can be dropped if we're targeting Safari >= 13.1 and post-IE
+  import * as clipboard from "clipboard-polyfill/dist/text/clipboard-polyfill.text.js";
+
   export default {
     name: 'Sidebar',
     beforeMount: function () {
@@ -78,10 +83,11 @@
         const selection = window.getSelection();
         if (!caseContainer.contains(selection.anchorNode))
           return;
-        const selectedText = selection.getRangeAt(0).toString();
+        const selectedRange = selection.getRangeAt(0);
+        const selectedText = selectedRange.toString();
         if (selectedText) {
           this.selectedText = selectedText;
-          this.lastSelection = selection;
+          this.lastSelection = selectedRange;
         }
       }));
 
@@ -105,8 +111,7 @@
           for (const previousNode of document.querySelectorAll('.focusable-element'))
             previousNode.remove();
           if (this.lastSelection) {
-            const range = this.lastSelection.getRangeAt(0);
-            range.insertNode(range.createContextualFragment("<span class='focusable-element' tabindex='-1'></span>"));
+            this.lastSelection.insertNode(this.lastSelection.createContextualFragment("<span class='focusable-element' tabindex='-1'></span>"));
             document.querySelector('.focusable-element').focus();
           }
         }
@@ -188,9 +193,9 @@
         // Copies: "Selected quotation" name_abbreviation, official_citation, (<year>)
         // TODO: add pin cite to citation
         const toCopy = `"${this.selectedText}" ${this.templateVars.fullCite}`;
-        navigator.clipboard.writeText(toCopy).then(
-          () => this.copyStatus = "done",
-          () => this.copyStatus = "failed",
+        clipboard.writeText(toCopy).then(
+          () => this.copyStatus = "copied",
+          () => this.copyStatus = "copy failed",
         );
       },
       elideOrRedactSelection(kind) {
