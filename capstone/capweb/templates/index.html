@@ -464,31 +464,13 @@
     <!-- START CONTACT --> <!-- (https://1n.pm/igQ7s) -->
 
     <div class="contact-section m-0 p-0 pb-5 pt-5 bg-yellow">
-      <div class="row d-inline d-md-none">
-        <div class="col-6 pl-0 offset-1">
+      <div class="row">
+        <div class="col-md-3 offset-1 pb-2 follow">
           <h2 class="section-title pt-0 mb-3">
             Contact
           </h2>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-2 offset-1 d-none d-md-block follow">
           Follow our progress, contribute code, or just say hi!
-        </div>
-        <div class="col-8 offset-1 d-block d-md-none pb-4">
-          <form action="https://law.us3.list-manage.com/subscribe/post?u={{ mailchimp_u }}&amp;id={{ mailchimp_id }}"
-                method="post" id="mc-embedded-subscribe-form-small" name="mc-embedded-subscribe-form-small"
-                class="validate" target="_blank" novalidate>
-            <div style="position: absolute; left: -5000px;" aria-hidden="true">
-              <input type="text" name="b_{{ mailchimp_u }}_{{ mailchimp_id }}" tabindex="-1" value="">
-            </div>
-            <input type="email" name="EMAIL" class="form-control" placeholder="email" required="" title="">
-            <div class="add">Add your email to keep in touch</div>
-            <button class="btn-secondary subscribe" value="Subscribe" name="subscribe" id="mc-embedded-subscribe-small" type="submit">Subscribe!</button>
-          </form>
-        </div>
-        <div class="col-11 col-md-2 offset-1 offset-md-0 ">
-          <div class="social-top d-block d-md-flex justify-content-end">
+          <div class="social-top d-block d-md-flex">
             <span class="twitter">
               <a href="https://twitter.com/caselawaccess" target="_blank"
                  title="Caselaw Access Project Twitter"
@@ -507,21 +489,19 @@
             </span>
           </div>
         </div>
-        <div class="d-none d-md-block col-5 col-md-5 col-lg-3 offset-1 offset-sm-0">
-
+        <div class="col-5 col-md-5 col-lg-3 offset-1">
           <form action="https://law.us3.list-manage.com/subscribe/post?u={{ mailchimp_u }}&amp;id={{ mailchimp_id }}"
                 method="post" id="mc-embedded-subscribe-form-large" name="mc-embedded-subscribe-form-large"
                 class="validate" target="_blank" novalidate>
             <div style="position: absolute; left: -5000px;" aria-hidden="true">
               <input type="text" name="b_{{ mailchimp_u }}_{{ mailchimp_id }}" tabindex="-1" value="">
             </div>
-            <input type="email" name="EMAIL" class="form-control" placeholder="mail" required="" title="">
-            <div class="add">Add your email to keep in touch</div>
+            <label class="add" for="email">Subscribe to Lawvocado, our biweekly email list</label>
+            <input type="email" name="EMAIL" class="form-control" placeholder="email" id="email">
             <button class="btn-secondary subscribe" value="Subscribe" name="subscribe" id="mc-embedded-subscribe-large" type="submit">Subscribe!</button>
           </form>
         </div>
         <div class="col-3 promise pl-5 d-none d-lg-block">
-
           We promise won't spam you, though we might invite you to a hackathon.
         </div>
       </div>

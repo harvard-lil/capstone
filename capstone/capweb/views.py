@@ -55,7 +55,6 @@ def index(request):
         'state': state,
         'federal': federal,
         'page_image': 'img/og_image/index.png',
-        'page_name': 'home'
     })
 
 
