@@ -1,6 +1,5 @@
 from .settings_dev import *  # noqa
 
-
 MAINTAIN_ELASTICSEARCH_INDEX = False  # tests must opt in
 ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases_test'
 STORAGES['download_files_storage']['kwargs']['location'] = os.path.join(BASE_DIR, 'test_data/downloads')

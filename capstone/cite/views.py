@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 from urllib.parse import urlencode
 
+from django.core.serializers import serialize
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import SuspiciousOperation
@@ -150,6 +151,10 @@ def case_pdf(request, case_id, pdf_name):
 
     return citation(request,None, None, None, case_id, pdf=True, db_case=case)
 
+def update_case(request, case_id):
+    pass
+    #TODO: this
+
 def page_image(request, series_slug, volume_number_slug, sequence_number):
     """
         Return the image for a page to authorized users.
@@ -168,46 +173,79 @@ def case_editor(request, case_id):
     processed_pages = {}
     case = get_object_or_404(CaseMetadata, pk=case_id)
     pages = case.pages_with_image_urls()
-    images = {}
+    # TODO: this isn't going to work
     for page in pages:
-        images[page] = {
-            'url': pages[page]['image_url'],
-            'height': pages[page]['height'],
-            'width': pages[page]['width']
+        processed_pages[page] = {
+            "image": {
+                'url': pages[page]['image_url'],
+                'height': pages[page]['height'],
+                'width': pages[page]['width']
+            }
         }
-        processed_pages[page] = {}
+        processed_pages[page]['blocks'] = {}
         for block_id in pages[page]['structure']:
-            processed_pages[page][block_id] = {}
+            processed_pages[page]['blocks'][block_id] = {}
             block = pages[page]['structure'][block_id]
             current_line = None
-            current_word = {}
-            for token in block['tokens']:
-                if isinstance(token, list) and token[0] == 'line' and (not current_line or current_line != tuple(token[1]['rect'])):
-                    current_line = "-".join([str(a) for a in token[1]['rect']])
-                    processed_pages[page][block_id][current_line] = []
-                elif not current_line and (not isinstance(token, list) or token[0] != 'list'):
-                    pass
-
-                # TODO: make sure to get the word if it's soft-hyphenated
+            current_word = {'word': []}
+            current_font = None
+            current_edit = None
+            for i in range(len(block['tokens'])):
+                token = block['tokens'][i]
                 if isinstance(token, list):
-                    if token[0] == 'ocr':
+                    if token[0] == 'line':
+                        current_line = "-".join([str(a) for a in token[1]['rect']])
+                        processed_pages[page]['blocks'][block_id][current_line] = []
+                    elif token[0] == 'font':
+                        current_font = token[1]['id']
+                    elif token[0] == 'ocr':
                         current_word['rect'] = token[1]['rect']
                         current_word['wc'] = token[1]['wc']
-                    if token[0] == '/ocr':
-                        processed_pages[page][block_id][current_line].append(current_word)
-                        current_word = {}
+                    elif token[0] == 'edit':
+                        current_edit = token[1]['was']
+                    elif token[0] == '/edit':
+                        current_edit = None
+                    elif token[0] == '/ocr':
+                        current_word['font'] = current_font
+                        processed_pages[page]['blocks'][block_id][current_line].append(current_word)
+                        current_word = {'word': []}
+                    elif token[0] == '/font':
+                        current_font = None
+                    elif token[0] == '/line':
+                        current_line = None
+                    # TODO:
+                    elif token[0] == 'redact':
+                        pass
+                    elif token[0] == '/redact':
+                        pass
+                    elif token[0] == 'bracketnum':
+                        pass
+                    elif token[0] == '/bracketnum':
+                        pass
+                    elif token[0] == 'enc':
+                        pass
+                    elif token[0] == '/enc':
+                        pass
+                    elif token[0] == 'footnotemark':
+                        pass
+                    elif token[0] == '/footnotemark':
+                        pass
+                    else:
+                        raise Exception("Unexpected Token Type: {}".format(token[0]))
                 else:
-                    current_word['word'] = token
+                    unsoftened = token.replace('\xad', '\u29DF')
+                    if current_edit:
+                        current_word['word'].append({"edit": current_edit, "content": unsoftened})
+                    else:
+                        current_word['word'].append({"content": unsoftened})
 
     # set CSRF token for staff so they can make ajax requests
     if request.user.is_staff:
         get_token(request)
+    print(serialize('json', [case]))
     return render(request, 'cite/case_editor.html', {
-        'case': case,
-        'pages': json.dumps(pages),
-        'page_images': json.dumps(images),
+        'json_case': serialize('json', [case]),
         'processed_pages': json.dumps(processed_pages),
-        'citations': case.citations.all(),
         'citation_full': case.full_cite(),
     })
 

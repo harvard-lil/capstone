@@ -1,0 +1,33 @@
+@import "base.scss";
+@import 'bootstrap/_functions.scss';
+@import 'bootstrap/_variables.scss';
+@import 'bootstrap/mixins';
+@import 'bootstrap/tooltip';
+
+@media print {
+  #main-nav {
+    display: none;
+  }
+}
+
+.casebody {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  section {
+    // for .page-label:before absolute positioning
+    position: relative;
+  }
+}
+
+section, article {
+  @include make-col(11);
+  @extend .col-centered;
+  @include media-breakpoint-up(lg) {
+    @include make-col(10);
+  }
+  padding-top: 1em;
+
+}

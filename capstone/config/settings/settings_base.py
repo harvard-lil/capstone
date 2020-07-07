@@ -296,7 +296,12 @@ PIPELINE = {
             ),
             'output_filename': 'api.css'
         },
-
+        'case_editor': {
+            'source_filenames': {
+                'css/scss/case.scss',
+            },
+            'output_filename': 'case_editor.css'
+        },
         'case': {
             'source_filenames': {
                 'css/scss/case.scss',

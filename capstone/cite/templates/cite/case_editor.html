@@ -1,82 +1,23 @@
-{% extends "layouts/full.html" %}
+{% extends "layouts/base.html" %}
 {% load pipeline %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
 {% load api_url %}
 {% load capweb_static %}
 
-{% block base_css %}{% stylesheet 'case' %}{% endblock %}
+{% block base_css %}{% stylesheet 'case_editor' %}{% endblock %}
 {% block explainer %}{{ citation_full|striptags }}{% endblock %}
 {% block meta_description %}Editing {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
 
-{% block sidebar_menu_items %}
-
-    <div class="row margin-top-4">
-        <div class="col">
-            <div class="sticky-top">
-                <div class="row">
-                    <div class="col">
-                        <input type="checkbox" id="see_ocr" name="see_ocr" checked>
-                        <label for="scales">See OCR</label>
-                        <br>
-                        <input type="checkbox" id="see_wc" name="see_wc">
-                        <label for="scales">See WC</label>
-                    </div>
-                    <div class="col">
-
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <canvas id="word_focus" height="45px"></canvas>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <input type="text" id="current_word"><small><small>(confidence: <span
-                            id="current_word_confidence"></span>)</small></small>
-                        <button>Modify</button>
-                        <button id="next_word">Next Word</button>
-                    </div>
-                </div>
-
-                <div class="row mt-4">
-                    <div class="col">
-                        <input type="text" value="{{ case.name }}">
-                        <input type="text" value="{{ case.decision_date_original }}">
-                        <input type="text" value="{{ case.docket_number }}">
-                        <select>
-                            <option>{{ case.court.name }}</option>
-                        </select>
-                        <button>Modify Metadata</button>
-                    </div>
-                </div>
-                <div class="row mt-4">
-                    <div class="col">
-                        <button class="danger">Save Case To Database</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-{% endblock %}
-
 {% block main_content %}
-    <div class="row">
-        <div class="col-9">
-            <div id="canvas_div">
-                &nbsp;
-            </div>
-        </div>
+    <div id="app">
     </div>
 
     <script>
         {% autoescape off %}
             const import_processed_pages_from_django_template = new Map(Object.entries({{ processed_pages }}));
             // Get page info from django template vars
-            const import_page_images_from_django_template = {{ page_images }};
+            const import_case_info_from_django_template = {{ json_case }}[0];
             // Get page info from django template vars
         {% endautoescape %}
     </script>
