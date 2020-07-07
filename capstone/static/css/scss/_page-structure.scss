@@ -30,7 +30,7 @@
     .subtitle:before {
       content: "\00A7";
       color: $color-yellow;
-      margin-left: -2rem;
+      margin-left: -1em;
       font-weight: $font-weight-bold;
       font-size: 60%;
       margin-right: 0.5rem;
@@ -266,7 +266,7 @@ section > .content > .row > .content-right {
     position: -webkit-sticky;
     position: sticky;
     height: 90vh;
-    overflow: scroll;
+    overflow: auto;
   }
   .list-group-item {
     border: 0;

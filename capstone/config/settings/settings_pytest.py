@@ -7,3 +7,5 @@ SET_CACHE_CONTROL_HEADER = True
 
 # don't waste time on whitenoise for tests
 MIDDLEWARE = [i for i in MIDDLEWARE if not i.startswith('whitenoise.')]
+
+SITE_LIMIT_REPORT = True

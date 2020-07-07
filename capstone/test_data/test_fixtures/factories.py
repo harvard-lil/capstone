@@ -183,11 +183,8 @@ class CitationFactory(factory.DjangoModelFactory):
 
     type = 'official'
     cite = factory.LazyAttribute(lambda o: "%s U.S. %s" % (random.randint(1,999), random.randint(1, 999)))
-
-    # this should work, per https://factoryboy.readthedocs.io/en/latest/recipes.html#example-django-s-profile ,
-    # but actually it throws AttributeError: module has no attribute 'CaseFactory':
-    #  case = factory.SubFactory('test_data.test_fixtures.factories.CaseFactory', citations=None)
-    # Instead we can do this, as long as we only instantiate this as CitationFactory(case=obj):
+    # This doesn't work because the case factory needs the cite to already exist to generate frontend_url:
+    # case = factory.SubFactory('test_data.test_fixtures.factories.CaseFactory', citations=None)
     case = None
 
 

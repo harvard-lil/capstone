@@ -1,4 +1,4 @@
-{% extends "layouts/centered.html" %}
+{% extends "layouts/base.html" %}
 {% load pipeline %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
@@ -9,44 +9,69 @@
 {% block base_css %}{% stylesheet 'case' %}{% endblock %}
 {% block title %}{{ citation_full|striptags }}{% endblock %}
 {% block meta_description %}Full text of {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
+{% block extra_footer %}
+  <script>
+    const templateVars = {
+      urls: {
+        {% if request.user.is_staff %}
+          djangoAdmin: "{% url 'admin:capdb_casemetadata_change' db_case.id %}",
+          caseEditor: "{% url 'case_editor' db_case.id host 'cite' %}",
+        {% endif %}
+        search: "{% url "search" %}#/cases",
+        redact: "{% url "redact_case" db_case.id host 'cite' %}",
+        about: "{% url "about" %}",
+        caseApi: "{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}",
+        casePdf: "{% if can_render_pdf %}{{ db_case.get_pdf_url }}{% endif %}"
+      },
+      fullCite: "{{ citation_full }}",
+      isStaff: {% if request.user.is_staff %}true{% else %}false{% endif %},
+      jurisdictionName: "{{ es_case.jurisdiction.name_long }}",
+      caseYear: "{{ db_case.decision_date.year }}"
+    };
+  </script>
+  {% render_bundle 'case' %}
+{% endblock %}
 
-{% block content %}
+{% block title_section %}
+  {% if not request.user.is_authenticated %}
+    <div class="alert alert-success m-0" role="alert">
+      Welcome to the Caselaw Access Project! We allow free access to up to 500 cases per person per day &mdash; see
+      our
+      <a href="{% url 'terms' %}">terms of use</a> for details. <a href="{% url 'register' %}">Sign up for an
+      account</a>
+      to use our API or apply for unlimited research scholar access.
+    </div>
+  {% endif %}
+  <div class="sr-only sr-only-focusable" tabindex="0">
+    Press Ctrl + / (Windows, Chrome OS) or ⌘ + / (Mac) to jump to the Tools menu.
+    Press escape to return to last selected case text.
+  </div>
+  <div class="case-header">
+    <h1>{{ citation_full|safe }}</h1>
+    <div>
+      <span class="decision-date">{{ db_case.decision_date }}</span>
+      <span class="court-name">{{ es_case.court.name }}</span>
+      <span class="docket-number">{{ db_case.docket_number }}</span>
+    </div>
+    <div class="citations">
+      {{ citations }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block sidebar_menu %}
+  <aside id="sidebar-menu" tabindex="-1" aria-label="Tools">
+    <div id="sidebar-menu-content"></div>
+  </aside>
+{% endblock %}
+
+{% block main_content %}
+  <div>
+  </div>
   <div class="case-container header-margin">
     <div class="metadata text-center col-centered">
-      {% if not request.user.is_authenticated %}
-        <div class="alert alert-success" role="alert">
-          Welcome to the Caselaw Access Project! We allow free access to up to 500 cases per person per day &mdash; see
-          our
-          <a href="{% url 'terms' %}">terms of use</a> for details. <a href="{% url 'register' %}">Sign up for an
-          account</a>
-          to use our API or apply for unlimited research scholar access.
-        </div>
-      {% endif %}
-      <div class="full_cite">{{ citation_full|safe }}</div>
-      <div class="small">
-        <a href="{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}">view API</a>
-        {% if can_render_pdf %}
-          • <a href="{{ db_case.get_pdf_url }}">view PDF</a>
-        {% endif %}
-        {% if request.user.is_staff %}
-          • <a href="{% url 'admin:capdb_casemetadata_change' db_case.id %}">Django admin</a>
-          • <a href="{% url 'case_editor' db_case.id host 'cite' %}">Edit</a>
-        {% endif %}
-      </div>
-      <div class="court">
-        {{ es_case.court.name }}
-      </div>
-      <h4 class="case-name">
-        {{ db_case.name|safe }} {# safe because elisions may have been inserted #}
-      </h4>
-      <div class="citations">
-        {{ citations }}
-      </div>
-      <div class="docket-number">
-        {{ db_case.docket_number }}
-      </div>
-      <div class="decision_date">
-        {{ db_case.decision_date }}
+      <div class="case-name">
+        {{ formatted_name|safe }} {# safe because elisions may have been inserted #}
       </div>
     </div>
 
@@ -65,90 +90,44 @@
     {% else %}
       {{ case_html|safe }}
     {% endif %}
-
-    <nav class="context-menu" aria-label="" tabindex="-1">
-      <ul class="list-group">
-        <li class="list-item copied-successfully">Copied!</li>
-        <li class="list-item">
-          <a href="#" class="btn-default context-menu-link" id="copy-url">
-            Copy URL
-          </a>
-        </li>
-        <li class="list-item">
-          <a href="#" class="btn-default context-menu-link" id="copy-cite">
-            Copy cite
-          </a>
-        </li>
-        <li class="list-item">
-          <a href="{% url "search" %}" target="_blank" class="btn-default context-menu-link" id="search-cap">
-            Search CAP
-          </a>
-        </li>
-        {% if request.user.is_staff %}
-          <li class="list-item">
-            <a href="#" class="btn-default context-menu-link" id="elide-text">
-              ⚠️ Elide
-            </a>
-          </li>
-          <li class="list-item">
-            <a href="#" class="btn-default context-menu-link" id="redact-text">
-              ⚠️ Redact
-            </a>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
-    <input id="text-for-copy" class="offscreen" aria-hidden="true">
   </div>
   <script type="application/ld+json">
- {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id":"{{ db_case.get_full_frontend_url }}"
-  },
-  "headline": "{{ db_case.name_abbreviation|striptags }}",
-  {% if not es_case.jurisdiction.whitelisted %}
-  "hasPart": {
-    "@type": "WebPageElement",
-    "isAccessibleForFree": "False",
-    "cssSelector": ".casebody"
-  },
-  {% endif %}
-  "author": {
-    "@type": "Organization",
-    "name": "{{ es_case.court.name }}"
-    },
-  "genre": "Law",
-  "keywords": "{{ citations }}, {{ db_case.name_abbreviation|striptags }}",
-  "publisher": {
-    "@type": "Organization",
-    "name": "Harvard Law School Library Innovation Lab",
-    "logo": {
-      "@type": "ImageObject",
-      "url":"{% capweb_static "img/lil-logo-black.png" %}",
-      "width": 693,
-      "height": 361
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id":"{{ db_case.get_full_frontend_url }}"
+      },
+      "headline": "{{ db_case.name_abbreviation|striptags }}",
+      {% if not es_case.jurisdiction.whitelisted %}
+        "hasPart": {
+          "@type": "WebPageElement",
+          "isAccessibleForFree": "False",
+          "cssSelector": ".casebody"
+        },
+      {% endif %}
+      "author": {
+        "@type": "Organization",
+        "name": "{{ es_case.court.name }}"
+        },
+      "genre": "Law",
+      "keywords": "{{ citations }}, {{ db_case.name_abbreviation|striptags }}",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Harvard Law School Library Innovation Lab",
+        "logo": {
+          "@type": "ImageObject",
+          "url":"{% capweb_static "img/lil-logo-black.png" %}",
+          "width": 693,
+          "height": 361
+        }
+      },
+      "image": "{% capweb_static "img/og_image/api.jpg" %}",
+      "datePublished": "{{ db_case.decision_date }}",
+      "dateModified": "2018-10-29",
+      "dateCreated": "{{ db_case.decision_date }}",
+      "description": "{{ db_case.name|striptags }}"
     }
-  },
-   "image": "{% capweb_static "img/og_image/api.jpg" %}",
-   "datePublished": "{{ db_case.decision_date }}",
-   "dateModified": "2018-10-29",
-   "dateCreated": "{{ db_case.decision_date }}",
-   "description": "{{ db_case.name|striptags }}"
- }
-
-
-
-
-
   </script>
-  <script>
-    const search_url = "{% url "search" %}#/cases",
-          full_cite = "{{ citation_full }}",
-          redaction_url = "{% url "redact_case" db_case.id host 'cite' %}";
-  </script>
-  {% render_bundle 'case' %}
-
 {% endblock %}

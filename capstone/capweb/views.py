@@ -55,7 +55,6 @@ def index(request):
         'state': state,
         'federal': federal,
         'page_image': 'img/og_image/index.png',
-        'page_name': 'home'
     })
 
 
@@ -126,7 +125,7 @@ def gallery(request):
     sections = GallerySection.objects.prefetch_related(
         Prefetch('entries', queryset=GalleryEntry.objects.filter(featured=True))).order_by('order')
 
-    return render(request, 'gallery.html', {
+    return render(request, 'gallery/gallery.html', {
         'sections': sections,
         'email': settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/gallery.png',
@@ -140,7 +139,7 @@ def gallery_section(request, section_slug):
 
     section = get_object_or_404(GallerySection.objects.prefetch_related('entries'), title_slug=section_slug)
 
-    return render(request, 'gallery_section.html', {
+    return render(request, 'gallery/gallery_section.html', {
         'section': section,
         'page_image': 'img/og_image/gallery.png',
         'meta_description': 'Caselaw Access Project Gallery: ' + section.title

@@ -37,13 +37,13 @@ let vueConfig = {
 
   pages: {
     base: 'static/js/base.js',
-    map: 'static/js/map-actions.js',
+    map: 'static/js/homepage-map/main.js',
     limericks: 'static/js/generate_limericks.js',
-    witchcraft: 'static/js/witchcraft.js',
-    search: 'static/js/search.js',
-    trends: 'static/js/trends.js',
-    case: 'static/js/case.js',
-    'cite-grid': 'static/js/cite-grid.js',
+    witchcraft: 'static/js/witchcraft/main.js',
+    search: 'static/js/search/main.js',
+    trends: 'static/js/trends/main.js',
+    case: 'static/js/case/main.js',
+    'cite-grid': 'static/js/cite-grid/main.js',
     'case-editor': 'static/js/case-editor.js',
   },
 
@@ -67,9 +67,9 @@ let vueConfig = {
     allowedHosts: [
         '.case.test'
     ],
-    watchOptions: {
-      poll: true
-    }
+    // watchOptions: {
+    //   poll: true
+    // }
 
   },
 

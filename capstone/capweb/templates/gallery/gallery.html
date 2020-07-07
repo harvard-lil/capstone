@@ -1,0 +1,56 @@
+{% extends "layouts/full.html" %}
+{% load static %}
+{% load pipeline %}
+{% load process_link %}
+{% load md_chunk %}
+
+{% block base_css %}
+  {% stylesheet 'gallery' %}
+{% endblock %}
+
+{% block title %}Gallery{% endblock %}
+{% block meta_description %}Caselaw Access Project gallery{% endblock %}
+{% block top_section_style %}bg-black{% endblock %}
+{% block row_style %}bg-tan{% endblock %}
+
+{% block explainer %}
+  <p class="mt-0">
+    The sky's the limit! Here are some examples of what's possible.
+  </p>
+  <p class="mb-0">
+    Want to have your project featured on this site?
+    <a href="{% url "contact" %}">Get in touch!</a>.
+  </p>
+{% endblock %}
+
+{% block sidebar_menu_items %}
+  {% for section in sections %}
+    <li>
+      <a class="list-group-item" href="#{{ section.title|slugify }}">
+        <span class="text">{{ section.title }}</span>
+      </a>
+    </li>
+  {% endfor %}
+{% endblock %}
+
+{% block main_content %}
+  {% for section in sections %}
+    <h2 class="subtitle mt-2 mt-lg-5 mb-0 pb-0" id="{{ section|slugify }}">{{ section }}</h2>
+    {% if section.description %}
+      <p>{% md_chunk section.description %}</p>
+    {% endif %}
+
+    {% include "gallery/section_entries.html" %}
+
+    <div class="row mt-1 mt-md-3 mt-lg-5 mb-3 mb-lg-0">
+      <div class="project-image d-none d-md-block col-md-2 pt-lg-0 pt-3"></div>
+      <div class="project-description col-12 col-md-9 col-lg-8 offset-0 offset-md-1 offset-lg-2">
+        <div class="row">
+          <p class="m-0 mt-3 mt-lg-0">
+            <a class="font-weight-bold" href="{% url 'gallery_section' section.title_slug %}">See all {{ section.title }}...</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}

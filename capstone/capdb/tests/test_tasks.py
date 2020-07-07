@@ -8,6 +8,7 @@ import csv
 import gzip
 import json
 from datetime import datetime, date
+from reporters_db import EDITIONS, VARIATIONS_ONLY
 
 from django.core.files.storage import FileSystemStorage
 from django.db import connections, utils
@@ -281,14 +282,17 @@ def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
         "125 f supp 152",   # normalized
         "2 1/2 Mass. 1",    # special volume numbers
         "3 Suppl. Mass. 2", # special volume numbers
-        "1 F. 2d 2"         # not matched as "1 F. 2"
+        "1 F. 2d 2",         # not matched as "1 F. 2"
+        "1 La.App. 5 Cir. 2",         # not matched as "1 La.App. 5"
     ]
     illegitimate_cites = [
         "2 Dogs 3",             # unrecognized reporter
         "3 Dogs 4",             # duplicate unrecognized reporter
         "1 or 2",               # not matched as 1 Or. 2
-        "word1 Mass. 2word"     # not matched if part of larger word
+        "word1 Mass. 2word",    # not matched if part of larger word
+        "1 Mass.\n 2",          # no match across newlines
     ]
+    legitimate_cites += ["1 %s 1" % c.strip() for c in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())]
     case = case_factory(body_cache__text=", some text, ".join(legitimate_cites+illegitimate_cites))
     fabfile.extract_all_citations()
     cites = list(ExtractedCitation.objects.all())

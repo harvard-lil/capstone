@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Main from './search/main'
+import Main from './main.vue'
 
 Vue.config.devtools = true;
 Vue.config.productionTip = false;

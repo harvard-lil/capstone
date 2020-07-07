@@ -119,7 +119,8 @@ def volume(request, series_slug, volume_number_slug):
         .filter("term", volume__volume_number_slug=volume_number_slug)\
         .filter("term", reporter__short_name_slug__raw=series_slug)\
         .sort('first_page')\
-        .extra(size=10000)
+        .extra(size=10000)\
+        .source({"excludes": "casebody_data.*"})
     cases_query.aggs.bucket('vols', 'terms', field='volume.barcode')
     cases = cases_query.execute()
 
@@ -390,6 +391,8 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     if request.user.is_staff:
         get_token(request)
 
+    formatted_name = db_case.name.replace(' v. ', ' <span class="case-name-v">v.</span> ')
+
     return render(request, 'cite/case.html', {
         'meta_tags': meta_tags,
         'can_render_pdf': can_render_pdf,
@@ -399,6 +402,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         'case_html': case_html,
         'citation_full': db_case.full_cite(),
         'citations': ", ".join(c.cite for c in Citation.sorted_by_type(db_case.citations.all())),
+        'formatted_name': formatted_name,
     })
 
 

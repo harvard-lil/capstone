@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Main from './trends/main'
+import Main from './main.vue'
 
 Vue.config.devtools = true;
 Vue.config.productionTip = false;
@@ -8,7 +8,7 @@ Vue.config.productionTip = false;
 Vue.use(VueRouter);
 const router = new VueRouter({
   mode: 'history',
-  base: '/trends/',
+  base: '/exhibits/cite-grid/',
   routes: [
     {path: '/', component: Main, name: 'main'},
     {path: '*', redirect: '/'},

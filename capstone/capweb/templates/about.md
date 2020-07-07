@@ -2,7 +2,7 @@
 title: About
 meta_description: About the Caselaw Access Project
 page_image: img/og_image/about.png
-explainer: The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make all published U.S. court decisions freely available to the public online, in a consistent format, digitized from the collection of the Harvard Law Library. 
+explainer: The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make all published U.S. court decisions freely available to the public online, in a consistent format, digitized from the collection of the Harvard Law School Library. 
 top_section_style: bg-black
 row_style: bg-tan
 
@@ -124,7 +124,7 @@ other jurisdictions will follow their example soon.
 * The Caselaw Access Project is a [Harvard Law School Library Innovation Lab](https://lil.law.harvard.edu/) Project.
 * LIL is part of the [Harvard Law School Library](https://hls.harvard.edu/library){: add_list_class="item-name" }.
 * [Berkman-Klein Center](https://cyber.law.harvard.edu) cooperated with LIL on the Caselaw Access Project.
-* [Ravel Law](https://www.ravellaw.com/) has partnered with the Harvard Law Library and LIL since the beginning of the 
+* [Ravel Law](https://www.ravellaw.com/) has partnered with the Harvard Law School Library and LIL since the beginning of the 
 Caselaw Access Project. Ravel funded the digitization effort and now offers free public access to the entire corpus 
 through their [search interface](https://home.ravellaw.com) and their 
 [non-commercial API](https://home.ravellaw.com/api).

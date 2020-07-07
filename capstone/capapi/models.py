@@ -141,7 +141,7 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
             self.save(update_fields=['case_allowance_remaining', 'case_allowance_last_updated'])
 
     def authenticate_user(self, activation_nonce):
-        if self.activation_nonce == activation_nonce and self.nonce_expires + timedelta(hours=24) > timezone.now():
+        if self.is_active and self.activation_nonce == activation_nonce and self.nonce_expires + timedelta(days=3) > timezone.now():
             Token.objects.get_or_create(user=self)
             self.activation_nonce = ''
             self.email_verified = True

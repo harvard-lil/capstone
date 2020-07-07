@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "yarn run vue-cli-service serve",
     "build": "yarn run vue-cli-service build",
+    "build-report": "yarn run vue-cli-service build --report",
     "lint": "yarn run vue-cli-service lint"
   },
   "dependencies": {
@@ -35,6 +36,7 @@
     "babel-eslint": "^10.0.1",
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.14.0",
+    "clipboard-polyfill": "^3.0.0-pre5",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0-0",
     "exports-loader": "^0.7.0",

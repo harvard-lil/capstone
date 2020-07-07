@@ -22,7 +22,6 @@ def details_view(request):
     jurisdictions = OrderedDict(sorted(jurisdictions.items(), key=lambda t: t[1]['name_long']))
     return render(request, 'data/viz-details.html', {
         "hide_footer": True,
-        'page_name': 'jurisdiction_details',
         'jurisdictions': jurisdictions,
     })
 
@@ -48,7 +47,6 @@ def totals_view(request):
     jurs = OrderedDict(sorted(jurs.items(), key=lambda t: t[1]['name_long']))
     return render(request, 'data/viz-totals.html', {
         "hide_footer": True,
-        'page_name': 'totals',
         'jurisdictions': json.dumps(jurs),
         'data': json.dumps(case_count),
     })
