@@ -71,26 +71,23 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
                        'no_index_elided', 'no_index_redacted',
                        'robots_txt_until', 'withdrawn', 'replaced_by', 'in_scope', 'custom_footer_message'),
         }),
-        ('', {
-            'fields': ('frontend_url',)
+        ('Metadata', {
+            'fields': ('docket_number', 'decision_date', 'decision_date_original', 'name_abbreviation', 'name',),
+        }),
+        ('Automatically generated fields', {
+            'fields': ('frontend_url', 'attorneys', 'opinions', 'parties', 'judges',),
         }),
         ('Ingest metadata', {
-            'fields': ('date_added',)
+            'fields': ('date_added', 'case_id', 'last_page', 'first_page', 'duplicative'),
         }),
-        ('Volume and reporter relationship', {
+        ('Relationship', {
             'description': "These cannot currently be changed via the admin.",
-            'fields': ('reporter', 'volume'),
-        }),
-        ('Metadata from xml', {
-            'description': "These values are extracted from the CaseXML, and should be changed there.",
-            'fields': ('court', 'jurisdiction', 'attorneys', 'opinions', 'parties', 'judges',
-                       'docket_number', 'decision_date', 'decision_date_original', 'name_abbreviation',
-                       'name', 'case_id', 'last_page', 'first_page', 'duplicative'),
+            'fields': ('reporter', 'volume', 'court', 'jurisdiction',),
         }),
     )
     raw_id_fields = ['duplicate_of', 'replaced_by', 'reporter', 'volume', 'court', 'jurisdiction']
     # mark all fields as readonly
-    readonly_fields = sum((f[1]['fields'] for f in fieldsets[1:]), ())
+    readonly_fields = sum((f[1]['fields'] for f in fieldsets[2:]), ())
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
