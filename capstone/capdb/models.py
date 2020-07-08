@@ -20,6 +20,7 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.db.models import Q
+from django.utils.formats import date_format
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
 from django.core.files.base import ContentFile
@@ -1386,6 +1387,20 @@ class CaseMetadata(models.Model):
                 "structure": PageStructure.blocks_by_id([page])}
             for page in pages}
 
+    def formatted_decision_date(self):
+        """
+            Return human-formatted decision_date with appropriate precision based on decision_date_original.
+            >>> for d, output in [['2020-01-01', 'Jan. 1, 2020'], ['2020-01', 'Jan. 2020'], ['2020', '2020']]:
+            ...     assert CaseMetadata(decision_date_original=d, decision_date=parse_decision_date(d)).formatted_decision_date() == output
+        """
+        date_len = self.decision_date_original and len(self.decision_date_original)
+        if date_len == 10:
+            return date_format(self.decision_date, 'N j, Y')
+        if date_len == 7:
+            return date_format(self.decision_date, 'N Y')
+        if date_len == 4:
+            return self.decision_date_original
+        return ''
 
 
 class CaseXML(BaseXMLModel):
