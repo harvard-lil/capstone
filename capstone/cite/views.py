@@ -349,31 +349,33 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     if db_case.no_index:
         meta_tags.append({"name": "robots", "content": "noindex"})
 
-    case_html = serialized_data['casebody']['data']
-    footer_message = db_case.custom_footer_message or ''
+    case_html = None
+    if serialized_data['casebody']['status'] == 'ok':
+        case_html = serialized_data['casebody']['data']
+        footer_message = db_case.custom_footer_message or ''
 
-    # link all captured cites
-    case_html = link_to_cites(case_html, serialized_data['cites_to'])
+        # link all captured cites
+        case_html = link_to_cites(case_html, serialized_data['cites_to'])
 
-    # insert redactions
-    if db_case.no_index_redacted:
-        case_html = apply_replacements(case_html, db_case.no_index_redacted)
-        db_case.name = apply_replacements(db_case.name, db_case.no_index_redacted)
-        db_case.name_abbreviation = apply_replacements(db_case.name_abbreviation, db_case.no_index_redacted)
-        footer_message += "Some text has been redacted. \n"
+        # insert redactions
+        if db_case.no_index_redacted:
+            case_html = apply_replacements(case_html, db_case.no_index_redacted)
+            db_case.name = apply_replacements(db_case.name, db_case.no_index_redacted)
+            db_case.name_abbreviation = apply_replacements(db_case.name_abbreviation, db_case.no_index_redacted)
+            footer_message += "Some text has been redacted. \n"
 
-    # insert elisions
-    if db_case.no_index_elided:
-        elision_span = "<span class='elision-help-text' style='display: none'>hide</span>" \
-                       "<span class='elided-text' role='button' tabindex='0' data-hidden-text='%s'>%s</span>"
-        replacements = {k: elision_span % (k, v) for k, v in db_case.no_index_elided.items()}
-        case_html = apply_replacements(case_html, replacements, prefix="", suffix="")
-        db_case.name = apply_replacements(db_case.name, replacements, prefix="", suffix="")
-        db_case.name_abbreviation = apply_replacements(db_case.name_abbreviation, replacements, prefix="", suffix="")
-        footer_message += "Some text has been hidden for privacy from automated systems, but can be revealed by clicking the elided text. \n"
+        # insert elisions
+        if db_case.no_index_elided:
+            elision_span = "<span class='elision-help-text' style='display: none'>hide</span>" \
+                           "<span class='elided-text' role='button' tabindex='0' data-hidden-text='%s'>%s</span>"
+            replacements = {k: elision_span % (k, v) for k, v in db_case.no_index_elided.items()}
+            case_html = apply_replacements(case_html, replacements, prefix="", suffix="")
+            db_case.name = apply_replacements(db_case.name, replacements, prefix="", suffix="")
+            db_case.name_abbreviation = apply_replacements(db_case.name_abbreviation, replacements, prefix="", suffix="")
+            footer_message += "Some text has been hidden for privacy from automated systems, but can be revealed by clicking the elided text. \n"
 
-    if footer_message:
-        case_html += "<hr/><footer class='custom-case-footer'>%s</footer>" % footer_message.replace('\n', '<br>')
+        if footer_message:
+            case_html += "<hr/><footer class='custom-case-footer'>%s</footer>" % footer_message.replace('\n', '<br>')
 
     if settings.GEOLOCATION_FEATURE and request.META.get('HTTP_X_FORWARDED_FOR'):
         # Trust x-forwarded-for in this case because we don't mind being lied to, and would rather show accurate
