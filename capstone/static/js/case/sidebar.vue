@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <div class="sidebar-section">
+    <div class="sidebar-section sidebar-title">
       <h2>Tools</h2>
     </div>
     <div v-if="opinions" class="sidebar-section outline">
