@@ -30,8 +30,7 @@
           <li><a :href="linkToSelection()">Link to "{{selectedTextShort}}"</a></li>
           <li>
             <a href="#" @click.prevent="copyCiteToSelection">Copy "{{selectedTextShort}}" with cite</a>
-            <span aria-live="polite">
-              <span v-if="copyStatus" class="ml-1">{{copyStatus}}</span>
+            <span aria-live="polite"> <span v-if="copyStatus" class="ml-1">{{copyStatus}}</span>
             </span>
           </li>
           <li><a :href="searchForSelection()">Search cases for "{{selectedTextShort}}"</a></li>
@@ -50,12 +49,12 @@
         </ul>
       </div>
     </div>
-    <div class="sidebar-section explainer">
+    <div class="sidebar-section">
       <h3>What is this page?</h3>
       <div class="sidebar-section-contents">
         Every document on this site is part of the official caselaw of a court within the
-        United States, scanned from the collection of the Harvard Law School Library. This is a
-        {{ templateVars.jurisdictionName }} case from {{ templateVars.caseYear }}.
+        United States, scanned from the collection of the Harvard Law School Library. This
+        {{ templateVars.jurisdictionName }} is from {{ templateVars.caseYear }}.
         <a :href="templateVars.urls.about">Learn more</a>.
       </div>
     </div>
