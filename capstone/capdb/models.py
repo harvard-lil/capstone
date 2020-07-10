@@ -1359,34 +1359,6 @@ class CaseMetadata(models.Model):
         doc.select(range(self.first_page_order - 1, self.last_page_order))
         return doc.write(garbage=2)
 
-    def pages_with_image_urls(self, label=None, order=None):
-        """
-            Returns either a list of pages and image urls, or a single one (as a one-item list) based on the order or label.
-        """
-        #< str: series_slug > / < str: volume_number_slug > / < str: sequence_number >
-        if order:
-            pages = self.structure.pages.filter(order=order).first()
-        elif label:
-            pages = self.structure.pages.filter(label=label).first()
-        else:
-            pages = self.structure.pages.all()
-
-        vol = self.volume
-
-        return {
-            page.order: {
-                'order': page.order,
-                'label': page.label,
-                'font_names': page.font_names,
-                'duplicates': page.duplicates,
-                'width': page.width,
-                'height': page.height,
-                'deskew': page.deskew,
-                'id': page.id,
-                "image_url": reverse('page_image', [vol.reporter.short_name_slug, vol.volume_number_slug, page.order]),
-                "structure": PageStructure.blocks_by_id([page])}
-            for page in pages}
-
     def formatted_decision_date(self):
         """
             Return human-formatted decision_date with appropriate precision based on decision_date_original.

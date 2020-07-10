@@ -298,7 +298,7 @@ PIPELINE = {
         },
         'case_editor': {
             'source_filenames': {
-                'css/scss/case.scss',
+                'css/scss/case_editor.scss',
             },
             'output_filename': 'case_editor.css'
         },

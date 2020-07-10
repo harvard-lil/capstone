@@ -6,19 +6,20 @@ from contextlib import contextmanager
 from datetime import timedelta
 from urllib.parse import urlencode
 
-from django.core.serializers import serialize
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import SuspiciousOperation
+from django.forms import model_to_dict
 from django.urls import NoReverseMatch
 from django.db import transaction
 from django.db.models import Prefetch
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.http import is_safe_url
 from django.utils.text import slugify
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 from rest_framework.request import Request
 from elasticsearch.exceptions import NotFoundError
@@ -28,7 +29,7 @@ from capapi import serializers
 from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
 from capapi.resources import apply_replacements, link_to_cites
-from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation
+from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseFont, PageStructure, EditLog
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
@@ -152,101 +153,91 @@ def case_pdf(request, case_id, pdf_name):
 
     return citation(request,None, None, None, case_id, pdf=True, db_case=case)
 
-def update_case(request, case_id):
-    pass
-    #TODO: this
 
+@staff_member_required
 def page_image(request, series_slug, volume_number_slug, sequence_number):
     """
         Return the image for a page to authorized users.
     """
-    if not request.user.is_authenticated or not request.user.is_staff:
-        return HttpResponseForbidden()
-    vol = VolumeMetadata.objects.filter(reporter__short_name_slug=slugify(series_slug))
-    vol = get_object_or_404(vol, volume_number_slug=volume_number_slug)
-
+    vol = get_object_or_404(VolumeMetadata, reporter__short_name_slug=slugify(series_slug), volume_number_slug=volume_number_slug)
     return HttpResponse(vol.extract_page_image(int(sequence_number), zoom_level=2.0), content_type="image/png")
 
+
+@staff_member_required
+@ensure_csrf_cookie
 def case_editor(request, case_id):
-    if not request.user.is_authenticated or not request.user.is_staff:
-        return HttpResponseForbidden()
+    case = get_object_or_404(CaseMetadata.objects.select_related('volume', 'reporter', 'structure'), pk=case_id)
+    pages = list(case.structure.pages.all())
+    metadata_fields = ['name', 'decision_date_original', 'docket_number']
 
-    processed_pages = {}
-    case = get_object_or_404(CaseMetadata, pk=case_id)
-    pages = case.pages_with_image_urls()
-    # TODO: this isn't going to work
-    for page in pages:
-        processed_pages[page] = {
-            "image": {
-                'url': pages[page]['image_url'],
-                'height': pages[page]['height'],
-                'width': pages[page]['width']
-            }
-        }
-        processed_pages[page]['blocks'] = {}
-        for block_id in pages[page]['structure']:
-            processed_pages[page]['blocks'][block_id] = {}
-            block = pages[page]['structure'][block_id]
-            current_line = None
-            current_word = {'word': []}
-            current_font = None
-            current_edit = None
-            for i in range(len(block['tokens'])):
-                token = block['tokens'][i]
-                if isinstance(token, list):
-                    if token[0] == 'line':
-                        current_line = "-".join([str(a) for a in token[1]['rect']])
-                        processed_pages[page]['blocks'][block_id][current_line] = []
-                    elif token[0] == 'font':
-                        current_font = token[1]['id']
-                    elif token[0] == 'ocr':
-                        current_word['rect'] = token[1]['rect']
-                        current_word['wc'] = token[1]['wc']
-                    elif token[0] == 'edit':
-                        current_edit = token[1]['was']
-                    elif token[0] == '/edit':
-                        current_edit = None
-                    elif token[0] == '/ocr':
-                        current_word['font'] = current_font
-                        processed_pages[page]['blocks'][block_id][current_line].append(current_word)
-                        current_word = {'word': []}
-                    elif token[0] == '/font':
-                        current_font = None
-                    elif token[0] == '/line':
-                        current_line = None
-                    # TODO:
-                    elif token[0] == 'redact':
-                        pass
-                    elif token[0] == '/redact':
-                        pass
-                    elif token[0] == 'bracketnum':
-                        pass
-                    elif token[0] == '/bracketnum':
-                        pass
-                    elif token[0] == 'enc':
-                        pass
-                    elif token[0] == '/enc':
-                        pass
-                    elif token[0] == 'footnotemark':
-                        pass
-                    elif token[0] == '/footnotemark':
-                        pass
-                    else:
-                        raise Exception("Unexpected Token Type: {}".format(token[0]))
-                else:
-                    unsoftened = token.replace('\xad', '\u29DF')
-                    if current_edit:
-                        current_word['word'].append({"edit": current_edit, "content": unsoftened})
-                    else:
-                        current_word['word'].append({"content": unsoftened})
+    # handle save
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf8'))
 
-    # set CSRF token for staff so they can make ajax requests
-    if request.user.is_staff:
-        get_token(request)
-    print(serialize('json', [case]))
+        # update case, if needed
+        case_to_save = None
+        metadata_count = 0
+        for field in metadata_fields:
+            if field not in data['metadata']:
+                continue
+            old_val, new_val = data['metadata'][field]
+            if getattr(case, field) == old_val:
+                metadata_count += 1
+                setattr(case, field, new_val)
+                case_to_save = case
+
+        # update pages, if needed
+        pages_to_save = []
+        word_count = 0
+        if data['edit_list']:
+            pages_by_id = {p.id: [p, PageStructure.blocks_by_id([p])] for p in pages}
+            for page_id, blocks in data['edit_list'].items():
+                page, blocks_by_id = pages_by_id[int(page_id)]
+                pages_to_save.append(page)
+                for block_id, block_edit_list in blocks.items():
+                    block = blocks_by_id[block_id]
+                    tokens = block.get('tokens')
+                    if not tokens:
+                        raise Exception("attempt to edit block without tokens")
+                    word_count += 1
+                    for index, [old_val, new_val] in block_edit_list.items():
+                        index = int(index)
+                        old_token = tokens[index]
+                        if type(old_token) != str:
+                            raise Exception("attempt to edit non-string token")
+                        if old_token != old_val:
+                            raise Exception("attempt to edit out-of-date token")
+                        tokens[index] = new_val
+
+        if case_to_save or pages_to_save:
+            with EditLog(description='Case %s edited by user %s: %s metadata fields, %s words' % (case.id, request.user.id, metadata_count, word_count)).record():
+                if case_to_save:
+                    case.save()
+                if pages_to_save:
+                    PageStructure.objects.bulk_update(pages_to_save, ['blocks'])
+                    case.sync_case_body_cache(blocks_by_id=PageStructure.blocks_by_id(pages))
+
+        return HttpResponse('OK')
+
+    # serialize values for JS
+    case_json = json.dumps(model_to_dict(case, fields=['id'] + metadata_fields))
+    pages_json = json.dumps([
+        {
+            'id': page.id,
+            'width': page.width,
+            'height': page.height,
+            "image_url": reverse('page_image', [case.reporter.short_name_slug, case.volume.volume_number_slug, page.order]),
+            "blocks": page.blocks,
+        } for page in case.structure.pages.all()
+    ])
+    fonts = CaseFont.fonts_by_id(PageStructure.blocks_by_id(pages))
+    fonts_json = json.dumps({k: model_to_dict(v) for k, v in fonts.items()})
+
     return render(request, 'cite/case_editor.html', {
-        'json_case': serialize('json', [case]),
-        'processed_pages': json.dumps(processed_pages),
+        'case': case,
+        'case_json': case_json,
+        'pages_json': pages_json,
+        'fonts_json': fonts_json,
         'citation_full': case.full_cite(),
     })
 
