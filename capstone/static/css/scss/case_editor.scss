@@ -4,22 +4,10 @@
 @import 'bootstrap/mixins';
 @import 'bootstrap/tooltip';
 
-@media print {
-  #main-nav {
-    display: none;
-  }
-}
-
-.casebody {
-  img {
-    max-width: 100%;
-    height: auto;
-  }
-
-  section {
-    // for .page-label:before absolute positioning
-    position: relative;
-  }
+.main-content {
+  // undo @include make-col(9); from base
+  max-width: unset !important;
+  flex: unset !important;
 }
 
 section, article {

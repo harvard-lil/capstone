@@ -1,26 +1,29 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/wide.html" %}
 {% load pipeline %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
 {% load api_url %}
 {% load capweb_static %}
 
+{% block title %}Editing {{ citation_full }}{% endblock %}
+{% block content_title %}Editing Case{% endblock %}
 {% block base_css %}{% stylesheet 'case_editor' %}{% endblock %}
-{% block explainer %}{{ citation_full|striptags }}{% endblock %}
+{% block explainer %}{{ citation_full }}{% endblock %}
 {% block meta_description %}Editing {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
+{% block main_content_style %}class="col-12"{% endblock %}
 
 {% block main_content %}
-    <div id="app">
-    </div>
+    <div id="app"></div>
 
     <script>
-        {% autoescape off %}
-            const import_processed_pages_from_django_template = new Map(Object.entries({{ processed_pages }}));
-            // Get page info from django template vars
-            const import_case_info_from_django_template = {{ json_case }}[0];
-            // Get page info from django template vars
-        {% endautoescape %}
+      const templateVars = {
+        urls: {
+          case: "{{ case.get_full_frontend_url }}"
+        },
+        metadata: {{ case_json|safe }},
+        pages: {{ pages_json|safe }},
+        fonts: {{ fonts_json|safe }}
+      };
     </script>
     {% render_bundle 'case-editor' %}
-
 {% endblock %}
