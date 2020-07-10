@@ -21,13 +21,13 @@
 }
 .case-header {
   padding: 1.25rem;
-  font-family: $font-serif;
   font-size: $font-size-base !important;
   text-align: center;
+  font-family: $font-serif-fancy;
   h1 {
+    font-family: $font-sans-title;
     font-weight: 700;
-    font-size: 1.3em;
-    font-family: $font-serif;
+    font-size: 1.5em;
     padding: 0;
     margin: 0;
   }
@@ -44,27 +44,37 @@
   padding: 0;
   font-size: $font-size-sm;
   background: $color-tan;
+  font-family: $font-sans-serif;
+  color: $color-violet-gray-dark;
 
   h2 {
     font-size: 1.3em;
-    font-family: $font-serif;
     font-weight: 700;
-    margin: 0;
-  }
-  h3 {
-    font-size: $font-size-sm;
-    font-family: $font-serif;
-    font-weight: bold;
-  }
-  .sidebar-section {
-    padding: 1em;
-    border-bottom: 1px solid #E7E7ED;
-  }
-  .sidebar-section-contents {}
-  ul {
-    margin: 0;
+    margin: 0 0 0 -0.25rem;
   }
 
+  h3 {
+    font-size: $font-size-sm;
+    font-weight: bold;
+    margin: 0 0 0.25rem -0.25rem;
+  }
+
+  .sidebar-section {
+    padding: 0 1rem 1rem 1rem;
+    ul {
+      margin: 0;
+    }
+
+
+  }
+  .sidebar-title {
+    padding-top: 40px;
+  }
+
+  .sidebar-section-contents {
+    line-height: 1.25rem;
+    letter-spacing: 0.03rem;
+  }
   .outline {
     li {
       text-transform: capitalize;
@@ -97,6 +107,10 @@
   section {
     // for .page-label:before absolute positioning
     position: relative;
+  }
+
+  p {
+    font-family: $font-serif;
   }
 }
 
@@ -155,6 +169,7 @@ p {
 
 .case-container {
   padding-bottom: 100px !important;
+  padding-top: 0;
 }
 
 .metadata {
@@ -166,10 +181,13 @@ section.casebody {
 }
 
 blockquote {
+  font-family: $font-serif;
   padding: 0 1em;
+  background-color: $color-light-gray;
 }
 
 p.small-text {
+  font-family: $font-serif;
   font-size: 14px;
   font-weight: $font-weight-semibold;
 }
@@ -256,11 +274,12 @@ section.head-matter {
 }
 
 @mixin head-matter-label {
+  font-family: $font-serif-fancy;
   font-weight: bold;
   color: $color-violet-gray;
   word-break: break-all;
   position: absolute;
-
+  font-size: 1rem;
   // on large screens, label is right-aligned to left of paragraph
   margin-left: -10em;
   width: 9em;
@@ -330,6 +349,7 @@ mark {
   &:before {
     content: "Opinion";
     font-weight: bold;
+    font-family: $font-serif-fancy;
   }
 
   > p {
@@ -343,6 +363,8 @@ mark {
   margin-bottom: 5px;
   color: $color-magenta;
   vertical-align: super;
+  font-size: .75rem;
+  font-weight: bold;
 }
 
 .footnote {
@@ -381,7 +403,7 @@ mark {
   color: $color-medium-gray;
   font-size: .8em;
   padding: .4em;
-
+  font-style: italic;
   &:before {
     display: inline-block;
     content: attr(data-label);
