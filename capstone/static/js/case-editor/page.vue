@@ -1,137 +1,169 @@
 <template>
-        <canvas :id="page_id">
-        </canvas>
+  <div :class="{page: true, 'show-ocr': $parent.showOcr}">
+    <img :src="page.image_url" :width="page.width * scale" :height="page.height * scale">
+    <span v-for="word in words" :style="wordStyle(word)" @click="wordClicked(word)" :class="wordClass(word)">
+      {{word.string}}
+    </span>
+  </div>
 </template>
 
 <script>
+  import {FAKE_SOFT_HYPHEN, SOFT_HYPHEN} from "./helpers";
 
-    export default {
-        props: [
-            'page_id',
-            'page_image',
-            'blocks',
-        ],
-        data: function () {
-            return {
-                "image": new Image(),
-                "scale": null,
+  export default {
+    props: ['page', 'savedWordEdits'],
+    data() {
+      return {
+        scale: 1,
+        words: [],
+      }
+    },
+    computed: {
+      fontScale() {
+        /*
+          Conversion factor for font pts on scanned page to pixels.
+          For example, a font detected as "12pt" in our 300DPI scan was actually 12/72 * 300 == 50px high.
+        */
+        return this.scale * 300/72;
+      },
+    },
+    watch: {
+      words: {
+        handler() {
+          this.$parent.saveStateToStorage();
+        },
+        deep: true
+      },
+    },
+    beforeMount() {
+      /*
+        Extract a list of words from the token stream in this.page.blocks, and store the words in this.words.
+
+        word objects look like this: {
+          blockId,
+          wordConfidence, font,  // display metadata
+          x, y, w, h,  // location
+          lineHeight, yOffset,  // calculated OCR alignment values
+          strings: [{index, value}],  // list of the original token stream strings composing this word
+          originalString,  // merged strings, before any edits
+          string,  // merged strings, including any edits
+        }
+
+        To save changes later, we'll update `blocks[blockId].tokens[index]` to `string`, and empty any additional `strings`.
+       */
+      const words = [];
+      for (const block of this.page.blocks) {
+        if (!block.tokens)
+          continue;
+        let word = null;
+        let fontId = -1;
+        const savedWordEdits = this.savedWordEdits && this.savedWordEdits[block.id] ? this.savedWordEdits[block.id] : {};
+        for (const [i, token] of block.tokens.entries()) {
+          if (typeof token === 'string') {
+            if (word)
+              word.strings.push({index: i, value: token});
+            continue;
+          }
+          const [tag, attrs] = token;
+          if(tag === 'ocr') {
+            const rect = attrs.rect;
+            word = {
+              blockId: block.id,
+              wordConfidence: attrs.wc,
+              font: this.$parent.fonts[fontId],
+              strings: [],
+              x: rect[0],
+              y: rect[1],
+              w: rect[2],
+              h: rect[3],
+            };
+          } else if(tag === '/ocr') {
+            if (!word)
+              continue;  // tag closed before opened -- shouldn't happen
+            if (word.strings.length) {
+              // apply saved edits, if any
+              const wordIndex = words.length;
+              word.originalString = word.strings.map(s=>s.value).join("").replace(SOFT_HYPHEN, FAKE_SOFT_HYPHEN);
+              if (wordIndex in savedWordEdits && savedWordEdits[wordIndex][0] === word.originalString)
+                word.string = savedWordEdits[wordIndex][1];
+              else
+                word.string = word.originalString;
+
+              // for OCR alignment, calculate line height based on font, and apply a y offset based on the tallest
+              // character in the word
+              word.lineHeight = this.$parent.getFontLineHeight(fontId);
+              word.yOffset = Math.min(...word.string.split('').map(c => word.lineHeight - this.$parent.getCharAscent(c, fontId)));
+
+              words.push(word);
             }
-        },
-        computed: {
-            canvas_element: function () {
-                return document.getElementById(this.page_id)
-            },
-        },
-        methods: {
-            handle_correction: function () {
-                 this.$store.commit('update-word')
-            },
-            draw_page: function () {
-                const page_component = this;
-                const ctx = page_component.canvas_element.getContext("2d");
-                ctx.clearRect(0, 0, page_component.canvas_element.width, page_component.canvas_element.height);
-                ctx.globalAlpha = page_component.draw_ocr_text ? .2 : 1;
-                ctx.drawImage(page_component.image, 0, 0);
-                page_component.$store.state.word_regions[page_component.page_id].forEach(function (word) {
-                    let wc = word["word_confidence"];
-                    let wtext_array = word["word"];
-                    let x = word["x"] * page_component.scale;
-                    let y = word["y"] * page_component.scale;
-                    let w = word["w"] * page_component.scale;
-                    let h = word["h"] * page_component.scale;
-
-                    if (page_component.$store.state.current_word == word) {
-                        ctx.globalAlpha = 1;
-                        ctx.strokeStyle = "green";
-                        ctx.strokeRect(x, y, w, h);
-                    }
-                    if (page_component.$store.state.show_confidence && wc < 0.5) {
-                        ctx.globalAlpha = .6 - wc;
-                        let red_level = 255 * wc + 127;
-                        ctx.fillStyle = 'rgb(' + red_level + ', 0, 0)';
-                        ctx.fillRect(x, y, w, h);
-                    }
-                    if (page_component.$store.state.show_ocr) {
-                        ctx.globalAlpha =1;
-                        ctx.fillStyle = 'blue';
-                        ctx.font = "20px Georgia";
-                        let printable_word_value = '';
-                        for (let wtext_entry in wtext_array) {
-                            printable_word_value = printable_word_value + wtext_array[wtext_entry]['content']
-                        }
-                        ctx.fillText(printable_word_value, x, y + 12); //TODO: for some reason, on my browser, the text was offset by 12px?
-                    }
-                })
-            },
-            handle_page_clicks: function (click_x, click_y) {
-                const page_component = this;
-                page_component.$store.state.word_regions[page_component.page_id].forEach(function (word) {
-                    //let block_id = word["block_id"];
-                    //let line_label = word["line_label"];
-                    let wtext_array = word["word"];
-                    let x = word["x"] * page_component.scale;
-                    let y = word["y"] * page_component.scale;
-                    let w = word["w"] * page_component.scale;
-                    let h = word["h"] * page_component.scale;
-                    // I was trying this with IsPointInPath but the math is so simple with rects that I figured this would be more efficient
-                    if ((click_x > x && click_x < x + w) && (click_y > y && click_y < y + h)) {
-                        let printable_word_value = '';
-                        for (let wtext_entry in wtext_array) {
-                            printable_word_value = printable_word_value + wtext_array[wtext_entry]['content']
-                        }
-                        document.getElementById("current_word").value = printable_word_value;
-                        page_component.$parent.get_image_slice(page_component.image, x, y, w, h);
-                        page_component.$store.commit('set_current_word', word);
-                        page_component.draw_page();
-                    }
-                })
-            },
-        },
-
-        beforeMount() {
-            const page_component = this;
-            page_component.$store.state.word_regions[page_component.page_id] = []
-            page_component.image.addEventListener("load", function () {
-                Object.keys(page_component.blocks).forEach(function (block_id) {
-                    Object.keys(page_component.blocks[block_id]).forEach(function (line_label) {
-                        page_component.blocks[block_id][line_label].forEach(function (word) {
-                            page_component.$store.state.word_regions[page_component.page_id].push({
-                                "page_id": page_component.page_id,
-                                "block_id": block_id,
-                                "line_label": line_label,
-                                "word_confidence": word['wc'],
-                                "word": word['word'],
-                                "x": word['rect'][0],
-                                "y": word['rect'][1],
-                                "w": word['rect'][2],
-                                "h": word['rect'][3],
-                                'corrections': []
-                            })
-                        });
-                    });
-                });
-                page_component.canvas_element.width = page_component.image.width;
-                page_component.canvas_element.height = page_component.image.height;
-                page_component.scale = page_component.image.width / page_component.page_image['width'];
-                page_component.draw_page()
-            });
-
-        },
-        mounted() {
-            const page_component = this;
-            page_component.image.setAttribute("src", page_component.page_image['url']);
-            page_component.canvas_element.addEventListener('click', (e) => {
-                let rect = e.target.getBoundingClientRect();
-                let x = e.clientX - rect.left; //x position within the element.
-                let y = e.clientY - rect.top;  //y position within the element.
-                page_component.handle_page_clicks(x, y)
-            });
-            page_component.$store.watch((state) => state.show_ocr, () => {
-                page_component.draw_page();
-            })
-            page_component.$store.watch((state) => state.show_confidence, () => {
-                page_component.draw_page();
-            })
-        },
-    }
+            word = null;
+          } else if(tag === 'font') {
+            fontId = attrs.id;
+          } else if(tag === '/font') {
+            fontId = -1;
+          }
+        }
+      }
+      this.words = words;
+    },
+    mounted() {
+      this.scale = document.getElementById('canvas_div').offsetWidth / this.page.width;
+    },
+    methods: {
+      wordStyle(word) {
+        const font = word.font;
+        return {
+          left: `${word.x * this.scale}px`,
+          top: `${word.y * this.scale - word.yOffset * this.fontScale - 1}px`,  // -1 for top border
+          'background-color': this.$parent.showConfidence ? this.wordConfidenceColor(word) : 'unset',
+          // font format is "<styles> <font size>/<line height> <font families>":
+          font: `${font.styles} ${font.size * this.fontScale}px/${word.lineHeight * this.fontScale}px ${font.family}`,
+        };
+      },
+      wordClass(word) {
+        return {
+          'current-word': this.$parent.currentWord === word,
+          'edited': word.string !== word.originalString,
+        };
+      },
+      wordClicked(word) {
+        this.$parent.currentWord = word;
+        this.$parent.currentPage = this;
+        this.$nextTick(() => {
+          this.$parent.$refs.currentWord.focus();
+        });
+      },
+      wordConfidenceColor(word) {
+        const alpha = (.6 - word.wordConfidence)*100;
+        const red = 255 * word.wordConfidence + 127;
+        return `rgba(${red}, 0, 0, ${alpha}%)`;
+      },
+    },
+  }
 </script>
+
+<style lang="scss" scoped>
+  .page {
+    position: relative;
+  }
+  .page.show-ocr {
+    img {
+      opacity: 0.2;
+    }
+    span {
+      color: unset;
+    }
+  }
+  span {
+    border: 1px transparent solid;
+    line-height: 1;
+    color: transparent;
+    position: absolute;
+  }
+  .current-word {
+    border: 1px green solid;
+  }
+  .edited {
+    border: 1px orange solid;
+  }
+</style>

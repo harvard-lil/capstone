@@ -107,7 +107,7 @@ View the cases you have accessed.
                 Last accessed {{ result.date}}
             </div>
             <div class="col-md-12">
-                <a target="_blank" href="{{ result.case.frontend_url }}" class="simple">
+                <a target="_blank" href="{{ result.case.get_full_frontend_url }}" class="simple">
                     {{ result.case.name|truncatewords:30 }}
                 </a>
             </div>

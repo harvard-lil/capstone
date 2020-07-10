@@ -44,7 +44,7 @@ let vueConfig = {
     trends: 'static/js/trends/main.js',
     case: 'static/js/case/main.js',
     'cite-grid': 'static/js/cite-grid/main.js',
-    'case-editor': 'static/js/case-editor.js',
+    'case-editor': 'static/js/case-editor/main.js',
   },
 
   configureWebpack: {
