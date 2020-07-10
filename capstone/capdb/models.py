@@ -2059,6 +2059,8 @@ class PageStructure(models.Model):
     ingest_source = models.ForeignKey(TarFile, on_delete=models.DO_NOTHING)
     ingest_path = models.CharField(max_length=1000)
 
+    history = TemporalHistoricalRecords()
+
     def order_to_alto_id(self):
         """ Convert 1 to alto_00001_0, 2 to alto_00001_1, 3 to alto_00002_0, and so on. """
         return 'alto_%05d_%s' % ((self.order + 1) // 2, (self.order + 1) % 2)

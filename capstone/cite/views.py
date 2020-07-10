@@ -167,7 +167,7 @@ def page_image(request, series_slug, volume_number_slug, sequence_number):
 @ensure_csrf_cookie
 def case_editor(request, case_id):
     case = get_object_or_404(CaseMetadata.objects.select_related('volume', 'reporter', 'structure'), pk=case_id)
-    pages = list(case.structure.pages.all())
+    pages = list(case.structure.pages.order_by('order'))
     metadata_fields = ['name', 'decision_date_original', 'docket_number']
 
     # handle save
@@ -228,7 +228,7 @@ def case_editor(request, case_id):
             'height': page.height,
             "image_url": reverse('page_image', [case.reporter.short_name_slug, case.volume.volume_number_slug, page.order]),
             "blocks": page.blocks,
-        } for page in case.structure.pages.all()
+        } for page in pages
     ])
     fonts = CaseFont.fonts_by_id(PageStructure.blocks_by_id(pages))
     fonts_json = json.dumps({k: model_to_dict(v) for k, v in fonts.items()})

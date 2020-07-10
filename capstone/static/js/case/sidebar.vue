@@ -54,7 +54,7 @@
       <div class="sidebar-section-contents">
         Every document on this site is part of the official caselaw of a court within the
         United States, scanned from the collection of the Harvard Law School Library. This
-        {{ templateVars.jurisdictionName }} is from {{ templateVars.caseYear }}.
+        {{ templateVars.jurisdictionName }} case is from {{ templateVars.caseYear }}.
         <a :href="templateVars.urls.about">Learn more</a>.
       </div>
     </div>
