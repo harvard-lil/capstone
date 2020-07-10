@@ -1090,8 +1090,6 @@ def check_existing_emails():
 def download_pdfs(jurisdiction=None):
     """
         Download all PDFs, or all for a jurisdiction, to download_files_storage.
-        Locally, this is the same as download_files_storage, but will differ in production,
-        as we're using a read-only overlay to expose the files.
     """
     from capdb.storages import pdf_storage, download_files_storage
     import re
