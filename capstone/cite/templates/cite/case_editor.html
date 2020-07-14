@@ -6,11 +6,10 @@
 {% load capweb_static %}
 
 {% block title %}Editing {{ citation_full }}{% endblock %}
-{% block content_title %}Editing Case{% endblock %}
+{% block content_title %}{{ citation_full }}{% endblock %}
 {% block base_css %}{% stylesheet 'case_editor' %}{% endblock %}
-{% block explainer %}{{ citation_full }}{% endblock %}
 {% block meta_description %}Editing {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
-{% block main_content_style %}class="col-12"{% endblock %}
+{% block main_content_style %}col-12{% endblock %}
 
 {% block main_content %}
     <div id="app"></div>

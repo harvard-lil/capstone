@@ -1,40 +1,102 @@
 <template>
-  <div class="row grid-container">
-    <div class="col-3 controls grid-item">
-      <div class="sticky-top pt-5">
-        <input type="checkbox" v-model="showOcr" id="show_ocr">
-        <label for="show_ocr">OCR text</label>
-        <br>
-        <input type="checkbox" v-model="showConfidence" id="see_wc">
-        <label for="see_wc">Word confidence</label>
-        <div v-if="currentWord">
-          <div
-            :style="{
-              'background-image':`url(${currentPage.page.image_url})`,
-              'background-size': `${currentPage.page.width}px`,
-              width: `${currentWord.w}px`,
-              height: `${currentWord.h}px`,
-              'background-position': `-${currentWord.x}px -${currentWord.y}px`,
-            }"></div>
-          <input type="text" id="current_word" v-model="currentWord.string" ref="currentWord">
-          <small><small>
-            (confidence: <span
-            id="current_word_confidence">{{currentWord.word_confidence}}</span>)
-          </small></small>
-          <button @click="addSoftHyphen()">Add Soft Hyphen(⧟)</button>
+  <div>
+    <div id="metadata-box" class="row metadata">
+      <div class="col-8 offset-3">
+        <div class="row">
+          <div class="col-6">
+            <input type="text" v-model="metadata.name" placeholder="case name">
+          </div>
+          <div class="col-6">
+            <input type="text" v-model="metadata.decision_date_original" placeholder="decision date string">
+          </div>
         </div>
-        <input type="text" v-model="metadata.name" placeholder="case name">
-        <input type="text" v-model="metadata.docket_number" placeholder="docket number">
-        <input type="text" v-model="metadata.decision_date_original" placeholder="decision date string">
-        <button class="danger" @click="saveCase">Save Case To Database</button>
-        <div>
-          All changes are saved locally in your browser until you are ready to commit a batch of changes to the
-          database.
+        <div class="row">
+          <div class="col-6">
+            <input type="text" v-model="metadata.docket_number" placeholder="docket number">
+          </div>
         </div>
       </div>
     </div>
-    <div id="canvas_div" class="col-9 grid-item">
-      <page v-for="page in pages" :key="page.id" :page="page" :savedWordEdits="savedWordEdits[page.id]" ref="pageComponents"/>
+    <div class="row">
+      <div class="col-3">
+        <div class="sticky-top pt-5">
+          <div class="row mt-5 mb-3" >
+            <div  class="col">
+              <div v-if="currentWord"
+                :style="{
+                  'background-image':`url(${currentPage.page.image_url})`,
+                  'background-size': `${currentPage.page.width}px`,
+                  width: `${currentWord.w}px`,
+                  height: `${currentWord.h}px`,
+                  'background-position': `-${currentWord.x}px -${currentWord.y}px`,
+                }">&nbsp;</div>
+              <div v-else :style="{ width: `20rem`, height: `2rem`}"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-10">
+              <input v-if="currentWord" type="text" id="current_word" v-model="currentWord.string" ref="currentWord">
+              <input v-else type="text" disabled placeholder="current word">
+            </div>
+            <div class="col-2"><button @click="addSoftHyphen()" :disabled="currentWord === null">⧟</button></div>
+          </div>
+          <div class="row confidence">
+            <div class="col-4">
+              Confidence:
+            </div>
+            <div class="col-4">
+               <span v-if="currentWord" id="current_word_confidence">{{currentWord.wordConfidence}}</span>
+            </div>
+          </div>
+          <div class="edits-container row mt-5">
+            <div class="col-6">
+              <h4 class="edits-title">edits</h4>
+            </div>
+            <div class="save-button-box col-3">
+              <button id="save_button" class="btn-secondary" @click="saveCase">(^s)ave</button>
+            </div>
+            <div class="save-button-box col-3">
+              <button class="btn-secondary" @click="clearEdits">Clear</button>
+            </div>
+            <div class="row edited-word-list mt-3">
+              <div class="col-12 ">
+                <div v-for="(p, p_id) in savedWordEdits" :key="p_id">
+                  <div v-for="(b, b_id) in p" :key="b_id">
+                    <div>
+                      <div class="row edit-entry" v-for="(w, i) in b" :key="i" >
+                        <div class="col-5" @click="scrollToWord( b_id + '_' + w[1])">{{w[0]}}</div>
+                        <div class="col-5" @click="scrollToWord( b_id + '_' + w[1])">{{w[1]}}</div>
+                        <div class="col-2 edit-controls"><span class="edit-delete" @click="removeEdit(p, b_id, w, i)">&#8855;</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="canvas_div" class="col-8">
+        <page v-for="page in pages" :key="page.id" :page="page" :savedWordEdits="savedWordEdits[page.id]" ref="pageComponents"/>
+      </div>
+      <div id="controls" class="col-1">
+         <div class="sticky-top pt-6 mt-6 row">
+           <div class="col viz-controls">
+            <div class="row ocr-toggle" v-if="showOcr">
+              <button v-on:click="showOcr=false" class="toggle-btn on">(^O)CR</button>
+            </div>
+            <div class="row ocr-toggle" v-else>
+              <button v-on:click="showOcr=true" class="toggle-btn off">(^O)CR</button>
+            </div>
+            <div class="row wc-toggle" v-if="showConfidence">
+              <button v-on:click="showConfidence=false" class="toggle-btn off">W(^C)</button>
+            </div>
+            <div class="row wc-toggle" v-else>
+              <button v-on:click="showConfidence=true"  class="toggle-btn on">W(^C)</button>
+            </div>
+           </div>
+          </div>
+      </div>
     </div>
   </div>
 </template>
@@ -65,6 +127,28 @@
         },
         deep: true
       },
+    },
+    mounted: function () {
+
+      const main_component = this;
+      window.onkeyup = function(e){
+        if ( e.ctrlKey ) {
+          switch(e.key) {
+            case "o":
+                main_component.showOcr = !main_component.showOcr;
+              break;
+            case "c":
+              main_component.showConfidence= !main_component.showConfidence;
+              break;
+            case "s":
+              //main_component.savedWordEdits();
+              main_component.saveCase();
+              break;
+            default:
+              break;
+          }
+        }
+      };
     },
     beforeMount: function () {
       // load local variables from Django template
@@ -100,12 +184,26 @@
           }
         } catch(e) {
           // localStorage is wiped in case of error, so bad state doesn't leave user with an unusable page
-          console.log("Error applying edit_list to server state", e);
+          console.log("Error applying edit_list to server state", e); // eslint-disable-line
           localStorage.removeItem(this.storageKey);
         }
       }
     },
     methods: {
+      scrollToWord(scroll_string) {
+        // Do we want to make this the current word? Is it possible that people might want to check other words they
+        // while already editied they're editing a word? Possible but unlikely? Would people be more likely to want
+        // to revisit a word they edited and make a change? It doesn't seem like it would be too confusing to have
+        // the current word change if you clicked on it in this list.
+        document.body.querySelector('span[scroll-to-here="' + scroll_string + '"]').scrollIntoView();
+      },
+      removeEdit(p, p_id, b_id, w) {
+        p, p_id, b_id, w
+        //TODO remove a single edit
+      },
+      clearEdits() {
+        //TODO remove all the edits
+      },
       getMetadataEdits() {
         /*
           Prepare dict of all edited metadata, including old value and new value so we can check for consistency
@@ -174,9 +272,10 @@
           }).promise();
         } catch(e) {
           // TODO: show server error to user
-          console.log("error saving:", e);
+          alert("error saving:", e); // eslint-disable-line
           return;
         }
+        this.saveAnimation();
         localStorage.removeItem(this.storageKey);
         window.location.href = this.urls.case;
       },
@@ -205,7 +304,7 @@
         return this.getCharAscent('T', fontId);
       },
       addSoftHyphen() {
-        document.execCommand('insertText', false, FAKE_SOFT_HYPHEN);
+        this.currentWord.string = this.currentWord.string + FAKE_SOFT_HYPHEN
       },
       processFont(font) {
         /*
@@ -228,6 +327,16 @@
           styles: styles.join(' '),
         };
       },
+      saveAnimation() {
+        const save_box = document.getElementsByClassName('save-button-box')[0];
+        const save_flash = setInterval(function(){
+          save_box.classList.toggle('saving');
+        }, 75);
+        setTimeout(function () {
+          clearInterval(save_flash)
+          save_box.classList.remove('saving')
+        }, 500)
+      }
     },
   }
 </script>
