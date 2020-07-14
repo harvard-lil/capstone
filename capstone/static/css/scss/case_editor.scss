@@ -19,3 +19,105 @@ section, article {
   padding-top: 1em;
 
 }
+
+.title-section, .explainer-section, .main-content.simple {
+  font-size: $font-size-sm / 2;
+  letter-spacing: normal;
+  padding-left: 3rem;
+  margin-left: 0;
+}
+
+.viz-controls {
+  .toggle-btn {
+    @extend .toggle-btn;
+    color: $color-violet-gray-dark;
+    border: medium solid $color-violet-gray-dark;
+    height: 2.5rem;
+    width: 4rem;
+    font-size: .75rem;
+    margin-top: 1rem;
+    margin-left: 1rem;
+  }
+  .on {
+      background-color: $color-magenta;
+      color: $color-violet-gray-dark;
+  }
+  .off {
+      background-color: $color-light-gray;
+      color: $color-violet-gray-dark;
+  }
+}
+
+.saving {
+  background-color: $color-violet-gray-dark;
+}
+
+.edits-container {
+
+  width: 100%;
+  h4.edits-title {
+    font-size: 1.75rem;
+    line-height: 1rem;
+    font-weight: bold;
+  }
+  .save-button-box {
+    padding: .25rem;
+    button {
+      line-height: normal;
+      height: 20px;
+      border: thin solid $color-violet-gray-dark;
+      background-color: $color-magenta;
+      padding: 5px;
+      display: inline-flex;
+      align-items: center;
+      position: absolute;
+    }
+  }
+  .edited-word-list {
+    width: 100%;
+    overflow: scroll;
+    height: 500px;
+  }
+  .edit-delete {
+    background-color: transparent;
+    color: red;
+  }
+  .edit-delete:hover {
+    background-color: transparent;
+    font-weight: bolder;
+  }
+  .edit-entry:hover {
+    cursor: pointer;
+    background-color: $color-light-gray;
+  }
+}
+
+.confidence {
+  font-size: small;
+  font-weight: bolder;
+}
+
+.metadata {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.top-section.compressed {
+  margin: 2rem 0 0 0 ;
+  padding: 0;
+}
+
+#metadata-box {
+  input {
+    width: 20rem;
+    font-size: 1rem;
+    height: 2rem;
+  }
+  padding-left: 4rem;
+  padding-right : 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.main-content.col-12 {
+  padding-top: 1rem;
+}
