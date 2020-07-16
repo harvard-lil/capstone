@@ -15,11 +15,21 @@
       </div>
     </div>
     <div class="sidebar-section">
+      <h3>Citing Cases</h3>
+      <div class="sidebar-section-contents">
+        <span v-if="citingCount === null"><a :href="urls.citedBy">cases citing to this case</a></span>
+        <span v-else-if="citingCount === 0">No cases cite to this case</span>
+        <span v-else>
+          <a :href="urls.citedBy">{{citingCount}} case{{citingCount===1?"":"s"}} cite to this case</a>
+        </span>
+      </div>
+    </div>
+    <div class="sidebar-section">
       <h3>Other Formats</h3>
       <div class="sidebar-section-contents">
         <ul class="bullets">
-          <li v-if="templateVars.urls.casePdf"><a :href="templateVars.urls.casePdf">PDF</a></li>
-          <li><a :href="templateVars.urls.caseApi">API</a></li>
+          <li v-if="urls.casePdf"><a :href="urls.casePdf">PDF</a></li>
+          <li><a :href="urls.caseApi">API</a></li>
         </ul>
       </div>
     </div>
@@ -44,8 +54,8 @@
       <h3>Admin Tools</h3>
       <div class="sidebar-section-contents">
         <ul class="bullets">
-          <li><a :href="templateVars.urls.djangoAdmin">Django admin</a></li>
-          <li><a :href="templateVars.urls.caseEditor">Case editor</a></li>
+          <li><a :href="urls.djangoAdmin">Django admin</a></li>
+          <li><a :href="urls.caseEditor">Case editor</a></li>
         </ul>
       </div>
     </div>
@@ -55,7 +65,7 @@
         Every document on this site is part of the official caselaw of a court within the
         United States, scanned from the collection of the Harvard Law School Library. This
         {{ templateVars.jurisdictionName }} case is from {{ templateVars.caseYear }}.
-        <a :href="templateVars.urls.about">Learn more</a>.
+        <a :href="urls.about">Learn more</a>.
       </div>
     </div>
   </div>
@@ -69,11 +79,14 @@
 
   // this polyfill can be dropped if we're targeting Safari >= 13.1 and post-IE
   import * as clipboard from "clipboard-polyfill/dist/text/clipboard-polyfill.text.js";
+  import {getApiUrl, jsonQuery} from "../api";
 
   export default {
     name: 'Sidebar',
-    beforeMount: function () {
+    created() {
       this.templateVars = templateVars;  // eslint-disable-line
+      this.urls = this.templateVars.urls;
+      this.fetchCitingCount();
     },
     mounted() {
       // listen for text selections
@@ -161,6 +174,7 @@
         lastSelection: null,
         copyStatus: null,
         opinions: null,
+        citingCount: null,
       }
     },
     watch: {
@@ -179,6 +193,10 @@
       },
     },
     methods: {
+      async fetchCitingCount() {
+        const response = await jsonQuery(getApiUrl(this.urls.api, 'cases', {cites_to: this.templateVars.caseId, page_size: 1}));
+        this.citingCount = response.count;
+      },
       linkToSelection() {
         const url = new URL(window.location.href);
         url.searchParams.delete('highlight');
@@ -186,7 +204,7 @@
         return url.toString();
       },
       searchForSelection() {
-        return this.templateVars.urls.search + "?search=" + encodeURIComponent(this.selectedText);
+        return this.urls.search + "?search=" + encodeURIComponent(this.selectedText);
       },
       copyCiteToSelection() {
         // Copies: "Selected quotation" name_abbreviation, official_citation, (<year>)
@@ -199,7 +217,7 @@
       },
       elideOrRedactSelection(kind) {
         if(confirm(`Really ${kind} "${this.selectedText}"?`))
-          $.post(this.templateVars.urls.redact, {'kind': kind, 'text': this.selectedText}, ()=>{window.location.reload()});
+          $.post(this.urls.redact, {'kind': kind, 'text': this.selectedText}, ()=>{window.location.reload()});
       },
     },
   }

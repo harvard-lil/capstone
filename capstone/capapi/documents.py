@@ -2,7 +2,6 @@ from django_elasticsearch_dsl import Document as DocType, Index, fields
 from django.conf import settings
 from elasticsearch_dsl import Search
 
-from capapi.resources import apply_replacements
 from capdb.models import CaseMetadata
 
 
@@ -121,17 +120,17 @@ class CaseDocument(DocType):
 
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
-        return apply_replacements({
+        return instance.redact_obj({
             'xml': body.xml,
             'html': body.html,
             'text': body.json,
-        }, instance.no_index_redacted)
+        })
 
     def prepare_name(self, instance):
-        return apply_replacements(instance.name, instance.no_index_redacted)
+        return instance.redact_obj(instance.name)
 
     def prepare_name_abbreviation(self, instance):
-        return apply_replacements(instance.name_abbreviation, instance.no_index_redacted)
+        return instance.redact_obj(instance.name_abbreviation)
 
     class Django:
         model = CaseMetadata

@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('robots.txt', views.robots, name='robots'),
     path('set-cookie/', views.set_cookie, name='set_cookie'),
+    path('cited-by/<int:case_id>/', views.case_cited_by, name='case_cited_by'),
     path('redact/<int:case_id>/', views.redact_case, name='redact_case'),
     path('pdf/<int:case_id>/<str:pdf_name>', views.case_pdf, name='case_pdf'),
     path('image/<str:series_slug>/<str:volume_number_slug>/<str:sequence_number>', views.page_image, name='page_image'),

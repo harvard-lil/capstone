@@ -4,97 +4,11 @@
 @import 'bootstrap/mixins';
 @import 'bootstrap/tooltip';
 
+@import "case_header";
+
 @media print {
   #main-nav {
     display: none;
-  }
-}
-
-.top-section {
-  padding: 0;
-}
-.title-section {
-  @include make-col(12);
-  @include make-col-offset(0);
-  padding: 0;
-  letter-spacing: inherit;
-}
-.case-header {
-  padding: 1.25rem;
-  font-size: $font-size-base !important;
-  text-align: center;
-  font-family: $font-serif-fancy;
-  h1 {
-    font-family: $font-sans-title;
-    font-weight: 700;
-    font-size: 1.5em;
-    padding: 0;
-    margin: 0;
-  }
-  .decision-date, .court-name {
-    margin-right: 1em;
-  }
-  .docket-number {}
-  .citations {
-    line-height: 1em;
-  }
-}
-
-#sidebar-menu {
-  padding: 0;
-  font-size: $font-size-sm;
-  background: $color-tan;
-  font-family: $font-sans-serif;
-  color: $color-violet-gray-dark;
-
-  h2 {
-    font-size: 1.3em;
-    font-weight: 700;
-    margin: 0 0 0 -0.25rem;
-  }
-
-  h3 {
-    font-size: $font-size-sm;
-    font-weight: bold;
-    margin: 0 0 0.25rem -0.25rem;
-  }
-
-  .sidebar-section {
-    padding: 0 1rem 1rem 1rem;
-    ul {
-      margin: 0;
-    }
-
-
-  }
-  .sidebar-title {
-    padding-top: 40px;
-  }
-
-  .sidebar-section-contents {
-    line-height: 1.25rem;
-    letter-spacing: 0.03rem;
-  }
-  .outline {
-    li {
-      text-transform: capitalize;
-    }
-  }
-
-  @include media-breakpoint-down(md) {
-    display: block;
-    @include make-col(10);
-    @include make-col-offset(1);
-
-    .content {
-      position: unset;
-      height: unset;
-    }
-  }
-
-  @include media-breakpoint-down(sm) {
-    @include make-col(12);
-    @include make-col-offset(0);
   }
 }
 
@@ -132,34 +46,6 @@ p {
 
 .tooltip {
   cursor: pointer;
-}
-
-.context-menu {
-  position: fixed !important;
-  width: 130px;
-  left: -999em;
-  border: 1px solid $color-blue;
-  background-color: $color-white;
-  z-index: 999;
-  text-align: left;
-  font-size: 1em;
-  font-style: normal;
-
-  li {
-    border-bottom: 1px solid $color-blue;
-
-    a {
-      z-index: 999;
-      width: 100%;
-      height: 100%;
-      display: inline-block;
-      padding: 0.3em;
-    }
-  }
-  .copied-successfully {
-    display: none;
-    padding: 0.3em;
-  }
 }
 
 .offscreen {

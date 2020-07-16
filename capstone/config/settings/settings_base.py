@@ -308,6 +308,12 @@ PIPELINE = {
             },
             'output_filename': 'case.css'
         },
+        'case_cited_by': {
+            'source_filenames': {
+                'css/scss/case_cited_by.scss',
+            },
+            'output_filename': 'case_cited_by.css'
+        },
         'search': {
             'source_filenames': {
                 'css/scss/search.scss',
@@ -345,24 +351,6 @@ PIPELINE = {
             'output_filename': 'cite-grid.css'
         },
     },
-    # These are not yet converted to vue/webpack:
-    # 'JAVASCRIPT': {
-    #     'viz_totals': {
-    #         'source_filenames': (
-    #             'js/chart.js',
-    #             'js/color-blend.js',
-    #             'js/viz-totals.js',
-    #         ),
-    #         'output_filename': 'viz_totals.js'
-    #     },
-    #     'viz_details': {
-    #         'source_filenames': (
-    #             'js/chart.js',
-    #             'js/viz-details.js',
-    #         ),
-    #         'output_filename': 'viz_details.js'
-    #     },
-    # },
 
     # avoid compressing assets for now
     'CSS_COMPRESSOR': None,

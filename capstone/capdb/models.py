@@ -23,9 +23,10 @@ from django.db.models import Q
 from django.utils.formats import date_format
 from django.utils.text import slugify
 from django.utils.encoding import force_bytes, force_str
+from django.utils.safestring import mark_safe
 from django.core.files.base import ContentFile
 
-from capapi.resources import cite_extracting_regex
+from capapi.resources import cite_extracting_regex, apply_replacements
 from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage, pdf_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
@@ -1012,9 +1013,12 @@ class CaseMetadata(models.Model):
     def full_cite(self):
         return "%s, %s%s" % (
             self.name_abbreviation,
-            ", ".join(cite.cite for cite in Citation.sorted_by_type(self.citations.all()) if cite.type != 'vendor'),
+            ", ".join(cite.cite for cite in self.citations_by_type() if cite.type != 'vendor'),
             " (%s)" % self.decision_date.year if self.decision_date else ""
         )
+
+    def citations_by_type(self):
+        return Citation.sorted_by_type(self.citations.all())
 
     def get_absolute_url(self):
         return reverse('cases-detail', kwargs={'id': self.id}, scheme="https")
@@ -1126,7 +1130,7 @@ class CaseMetadata(models.Model):
         return reverse('cite_home').rstrip('/') + self.frontend_url
 
     def get_pdf_url(self):
-        pdf_name = re.sub(r'[\\/:*?"<>|]', '_', self.full_cite()) + ".pdf"
+        pdf_name = re.sub(r'[\\/:*?"<>|]', '_', self.redact_obj(self.full_cite())) + ".pdf"
         return reverse('case_pdf', [self.pk, pdf_name])
 
     def withdraw(self, new_value=True, replaced_by=None):
@@ -1376,6 +1380,18 @@ class CaseMetadata(models.Model):
         if date_len == 4:
             return self.decision_date_original
         return ''
+
+    def redact_obj(self, text):
+        if not self.no_index_redacted:
+            return text
+        return apply_replacements(text, self.no_index_redacted)
+
+    def elide_obj(self, text):
+        text = self.redact_obj(text)
+        if not self.no_index_elided:
+            return text
+        elision_span = "<span class='elided-text' role='button' tabindex='0' data-hidden-text='%s'>%s</span>"
+        return mark_safe(apply_replacements(text, {k: elision_span % (k, v) for k, v in self.no_index_elided.items()}, "", ""))
 
 
 class CaseXML(BaseXMLModel):
@@ -1763,6 +1779,13 @@ class CaseXML(BaseXMLModel):
                     raise Exception("Unable to locate previous element %s for element %s" % (
                     previous_id_lookup[el.attr.id], el.attr.id))
                 casebody('[id="%s"]' % previous_id_lookup[el.attr.id]).after(el)
+
+
+class CitationQuerySet(TemporalQuerySet):
+    def sort_by_type(self):
+        """ Sort citations in order of importance. """
+        order = models.Case(*[models.When(id=id, then=pos) for pos, id in enumerate(Citation.citation_types)])
+        return self.order_by(order)
 
 
 class Citation(models.Model):

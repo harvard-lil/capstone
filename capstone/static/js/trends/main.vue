@@ -380,7 +380,7 @@
   import LoadingButton from '../vue-shared/loading-button.vue';
   import Panelset from '../vue-shared/panelset';
   import SearchResults from './search-results.vue';
-  import {getApiUrl, apiQuery} from '../api'
+  import {getApiUrl, jsonQuery} from '../api'
 
   // math helpers
   const mod = (n, m) => ((n % m) + m) % m;  // mod function that works correctly with negative numbers
@@ -748,9 +748,9 @@
             }
 
             // fetch results
-            const url = getApiUrl("ngrams", params);
+            const url = getApiUrl(this.urls.api_root,"ngrams", params);
             this.currentApiQueries.push([term, url]);
-            return apiQuery(url).then((resp)=>{
+            return jsonQuery(url).then((resp)=>{
               // filter out responses with no results
               if (Object.keys(resp.results).length === 0) {
                 this.errors.push(`"${term}" does not appear in our corpus.`);

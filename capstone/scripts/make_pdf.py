@@ -13,7 +13,7 @@ from reportlab.lib.units import inch
 
 from django.db.models import Prefetch
 
-from capdb.models import VolumeMetadata, Citation, PageXML
+from capdb.models import VolumeMetadata, PageXML
 from capdb.storages import pdf_storage
 
 from scripts.compress_volumes import open_captar_volume, files_by_type
@@ -100,7 +100,7 @@ def make_pdf(volume_path, show_words=False, replace_existing=False):
                 if case.duplicative:
                     cite = "Case %s" % (i+1)
                 else:
-                    cite = ", ".join(c.cite for c in Citation.sorted_by_type(case.citations.all()))
+                    cite = ", ".join(c.cite for c in case.citations_by_type())
                 bookmarks.append((page, cite))
         else:
             parsed = parse(volume_storage, paths['volume'][0])

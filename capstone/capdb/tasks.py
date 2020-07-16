@@ -405,7 +405,9 @@ def extract_citations_per_vol(self, volume_id):
         valid_reporters = {normalize_cite(c) for c in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())} | extra_reporters
         invalid_reporters = set(ascii_lowercase) | {'at', 'or', 'p.', 'c.', 'B'}
         translations = {'la.': 'Ia.', 'Yt.': 'Vt.', 'Pae.': 'Pac.'}
-        cases = (CaseMetadata.objects.filter(volume_id=volume_id, in_scope=True)
+        cases = (CaseMetadata.objects
+                 .filter(volume_id=volume_id, in_scope=True)
+                 .exclude(body_cache=None)
                  .select_related('body_cache')
                  .only('body_cache__text'))
         base_es_update_op = {

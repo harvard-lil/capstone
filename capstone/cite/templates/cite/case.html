@@ -3,12 +3,13 @@
 {% load static %}
 {% load render_bundle from webpack_loader %}
 {% load api_url %}
+{% load redaction %}
 
 {% load capweb_static %}
 
 {% block base_css %}{% stylesheet 'case' %}{% endblock %}
-{% block title %}{{ citation_full|striptags }}{% endblock %}
-{% block meta_description %}Full text of {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
+{% block title %}{{ full_citation|elide:db_case|striptags }}{% endblock %}
+{% block meta_description %}Full text of {{ full_citation|elide:db_case|striptags }} from the Caselaw Access Project.{% endblock %}
 {% block extra_footer %}
   <script>
     const templateVars = {
@@ -20,13 +21,16 @@
         search: "{% url "search" %}#/cases",
         redact: "{% url "redact_case" db_case.id host 'cite' %}",
         about: "{% url "about" %}",
+        api: "{% api_url "api-root" %}v1/",
         caseApi: "{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}",
-        casePdf: "{% if can_render_pdf %}{{ db_case.get_pdf_url }}{% endif %}"
+        casePdf: "{% if can_render_pdf %}{{ db_case.get_pdf_url|elide:db_case|striptags }}{% endif %}",
+        citedBy: "{% url "case_cited_by" db_case.id host 'cite' %}"
       },
-      fullCite: "{{ citation_full }}",
+      fullCite: "{{ full_citation|redact:db_case }}",
       isStaff: {% if request.user.is_staff %}true{% else %}false{% endif %},
       jurisdictionName: "{{ es_case.jurisdiction.name_long }}",
-      caseYear: "{{ db_case.decision_date.year }}"
+      caseYear: "{{ db_case.decision_date.year }}",
+      caseId: {{ db_case.id }}
     };
   </script>
   {% render_bundle 'case' %}
@@ -46,17 +50,7 @@
     Press Ctrl + / (Windows, Chrome OS) or ⌘ + / (Mac) to jump to the Tools menu.
     Press escape to return to last selected case text.
   </div>
-  <div class="case-header">
-    <h1>{{ citation_full|safe }}</h1>
-    <div>
-      <span class="decision-date">{{ db_case.formatted_decision_date }}</span>
-      <span class="court-name">{{ es_case.court.name }}</span>
-      <span class="docket-number">{{ db_case.docket_number }}</span>
-    </div>
-    <div class="citations">
-      {{ citations }}
-    </div>
-  </div>
+  {% include "cite/case_header.html" with case=db_case %}
 {% endblock %}
 
 {% block sidebar_menu %}
@@ -71,7 +65,7 @@
   <div class="case-container header-margin">
     <div class="metadata text-center col-centered">
       <div class="case-name">
-        {{ formatted_name|safe }} {# safe because elisions may have been inserted #}
+        {{ formatted_name|elide:db_case }}
       </div>
     </div>
 
@@ -88,7 +82,18 @@
         <h6 class="case-viewing-error">Could not load case body: {{ status }}</h6>
       </div>
     {% else %}
-      {{ case_html|safe }}
+      {{ case_html|elide:db_case|safe }}
+      {% if db_case.custom_footer_message %}
+        <footer class='custom-case-footer'>{{db_case.custom_footer_message}}</footer>
+      {% endif %}
+      {% if db_case.no_index_redacted %}
+        <footer class='custom-case-footer'>Some text has been redacted.</footer>
+      {% endif %}
+      {% if db_case.no_index_elided %}
+        <footer class='custom-case-footer'>
+          Some text has been hidden for privacy from automated systems, but can be revealed by clicking the elided text.
+        </footer>
+      {% endif %}
     {% endif %}
   </div>
   <script type="application/ld+json">
@@ -99,7 +104,7 @@
         "@type": "WebPage",
         "@id":"{{ db_case.get_full_frontend_url }}"
       },
-      "headline": "{{ db_case.name_abbreviation|striptags }}",
+      "headline": "{{ db_case.name_abbreviation|elide:db_case|striptags }}",
       {% if not es_case.jurisdiction.whitelisted %}
         "hasPart": {
           "@type": "WebPageElement",
@@ -112,7 +117,7 @@
         "name": "{{ es_case.court.name }}"
         },
       "genre": "Law",
-      "keywords": "{{ citations }}, {{ db_case.name_abbreviation|striptags }}",
+      "keywords": "{{ db_case.citations_by_type|join:", " }}, {{ db_case.name_abbreviation|elide:db_case|striptags }}",
       "publisher": {
         "@type": "Organization",
         "name": "Harvard Law School Library Innovation Lab",
@@ -127,7 +132,7 @@
       "datePublished": "{{ db_case.decision_date }}",
       "dateModified": "2018-10-29",
       "dateCreated": "{{ db_case.decision_date }}",
-      "description": "{{ db_case.name|striptags }}"
+      "description": "{{ formatted_name|elide:db_case|striptags }}"
     }
   </script>
 {% endblock %}
