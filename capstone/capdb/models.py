@@ -988,6 +988,7 @@ class CaseMetadata(models.Model):
 
     objects = CaseMetadataQuerySet.as_manager()
     history = TemporalHistoricalRecords()
+    tracker = FieldTracker()
 
     def __str__(self):
         return self.case_id
@@ -1000,6 +1001,8 @@ class CaseMetadata(models.Model):
         ]
 
     def save(self, *args, **kwargs):
+        if self.tracker.has_changed('decision_date_original'):
+            self.decision_date = parse_decision_date(self.decision_date_original)
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
         if not getattr(kwargs, 'no_reindex', False) and self.pk and hasattr(self, 'body_cache'):
