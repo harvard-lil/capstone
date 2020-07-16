@@ -65,7 +65,7 @@
   <div class="case-container header-margin">
     <div class="metadata text-center col-centered">
       <div class="case-name">
-        {{ formatted_name|elide:db_case }}
+        {{ formatted_name|elide:db_case|safe }}
       </div>
     </div>
 
