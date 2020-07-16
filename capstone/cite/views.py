@@ -212,11 +212,16 @@ def case_editor(request, case_id):
 
         if case_to_save or pages_to_save:
             with EditLog(description='Case %s edited by user %s: %s metadata fields, %s words' % (case.id, request.user.id, metadata_count, word_count)).record():
+                reindex_flag = False
                 if case_to_save:
                     case.save()
+                    reindex_flag = True
                 if pages_to_save:
                     PageStructure.objects.bulk_update(pages_to_save, ['blocks'])
-                    case.sync_case_body_cache(blocks_by_id=PageStructure.blocks_by_id(pages))
+                    case.sync_case_body_cache(blocks_by_id=PageStructure.blocks_by_id(pages), reindex=False)
+                    reindex_flag = True
+                if reindex_flag:
+                    case.reindex()
 
         return HttpResponse('OK')
 

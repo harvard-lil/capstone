@@ -1151,7 +1151,7 @@ class CaseMetadata(models.Model):
         return renderer.hydrate_opinions(structure.opinions, blocks_by_id)
 
     def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, rerender=True,
-                             save=True):
+                             save=True, reindex=True):
         """
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
@@ -1196,8 +1196,8 @@ class CaseMetadata(models.Model):
             setattr(body_cache, k, v)
         if save:
             body_cache.save()
-
-        self.reindex()
+        if reindex:
+            self.reindex()
 
     def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)

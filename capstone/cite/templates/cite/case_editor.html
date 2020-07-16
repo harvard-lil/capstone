@@ -6,7 +6,7 @@
 {% load capweb_static %}
 
 {% block title %}Editing {{ citation_full }}{% endblock %}
-{% block content_title %}{{ citation_full }}{% endblock %}
+{% block content_title %}<a href="{{ case.get_full_frontend_url }}">{{ citation_full }}</a>{% endblock %}
 {% block base_css %}{% stylesheet 'case_editor' %}{% endblock %}
 {% block meta_description %}Editing {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
 {% block main_content_style %}col-12{% endblock %}
