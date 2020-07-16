@@ -303,6 +303,17 @@ def test_sync_case_body_cache(reset_sequences, case, elasticsearch):
         '  </opinion>\n'
         '</casebody>\n')
 
+@pytest.mark.django_db
+def test_update_decision_date_on_save(three_cases):
+    for case in three_cases:
+        [year, month, day] = [int(val) for val in case.decision_date_original.split('-')]
+        new_month = str(month + 2 if month < 4 else month - 2).zfill(2)
+        new_day = str(day + 5 if day < 25 else day - 5).zfill(2)
+        new_ddo = "{}-{}-{}".format(year, new_month, new_day)
+        case.decision_date_original = new_ddo
+        case.save()
+        assert str(case.decision_date.day).zfill(2) == new_day
+        assert str(case.decision_date.month).zfill(2) == new_month
 
 ### EditLog and EditLogTransaction ###
 
