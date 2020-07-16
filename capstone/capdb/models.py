@@ -988,6 +988,7 @@ class CaseMetadata(models.Model):
 
     objects = CaseMetadataQuerySet.as_manager()
     history = TemporalHistoricalRecords()
+    tracker = FieldTracker()
 
     def __str__(self):
         return self.case_id
