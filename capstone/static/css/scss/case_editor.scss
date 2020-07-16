@@ -132,6 +132,39 @@ button.saving {
   padding-top: 1rem;
 }
 
+body.modal_open {
+  overflow: hidden;
+}
+
+#instructions_modal_overlay {
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
+  background-color: rgba(0,0,0,0.4);
+  #instructions_modal {
+    z-index: 10001; /* Sit on top */
+    background-color: $color-light-gray;
+  }
+  .q {
+    font-size: $font-size-sm;
+    font-weight: bold;
+    line-height: $line-height-sm;
+  }
+  .a {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-normal;
+    line-height: $line-height-sm;
+  }
+  #modal_close {
+    margin-left: 100%;
+    cursor: pointer;
+  }
+}
+
 /*
 .confidence_visual {
   background: linear-gradient(90deg, rgba(121,0,0,1) 0%, rgba(255,0,0,1) 35%, rgba(255,255,255,1) 100%);

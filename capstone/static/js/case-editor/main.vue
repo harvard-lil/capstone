@@ -107,8 +107,42 @@
             <div class="row wc-toggle" v-else>
               <button v-on:click="showConfidence=true"  class="toggle-btn off">W(^C)</button>
             </div>
+            <div class="row instruction-toggle">
+              <button v-on:click="toggleInstructions" class="toggle-btn off">help</button>
+            </div>
+
            </div>
           </div>
+      </div>
+    </div>
+    <div class="pt-6" id="instructions_modal_overlay" style="display: none">
+      <div class="col-8 offset-2 p-5" id="instructions_modal">
+        <div id="modal_close" v-on:click="toggleInstructions">&#8855;</div>
+        <div class="row pt-3">
+          <div class="q col-3">When should I press “Save”?</div>
+          <div class="a col-9 pl-3">
+            Corrections to a case should be made in a batch, and you should only press “save” when you have made all changes you intend to make to a case. This avoids preserving intermediate edits on the server that aren’t needed. In the meantime, each change you make will be immediately stored to your local browser storage, and will be stored across restarts until you are ready to save.
+          </div>
+        </div>
+        <div class="row pt-3">
+          <div class="q col-3">Why is there a space after each word?</div>
+          <div class="a col-9 pl-3">
+            The space after each word should be preserved (if it is supposed to be there) -- it controls whether there will be a space between that word and the next word when they are combined into text.
+          </div>
+        </div>
+        <div class="row pt-3">
+          <div class="q col-3">What is the significance of the word confidence labels?</div>
+          <div class="a col-9 pl-3">
+            The word confidence button highlights words that the OCR engine was less confident about. Word confidence is labeled by the OCR engine on a scale from 0.0 (least confident) to 1.0 (most confident). These scores have no objective meaning.
+          </div>
+        </div>
+        <div class="row pt-3">
+          <div class="q col-3">What is the “⧟” button for?</div>
+          <div class="a col-9 pl-3">
+            The “⧟” button is for inserting a “soft hyphen.” When the OCR engine sees a hyphen at the end of a line, it has to guess whether to encode the hyphen as a “hard hyphen,” which should be preserved in the text, or a “soft hyphen,” an invisible character which indicates where the word was broken over the line but should not be preserved in text.<br>
+            For example, if the OCR engine saw “hyphen-” at the end of one line, and “ated” at the start of the next line, it needed to decide whether the text output should be “hyphen-ated” or “hyphenated.” If the engine wrongly output “hyphen-ated”, you could use the soft hyphen button to change it to “hyphen⧟” “ated”, which would render as “hyphenated” in the text.
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -205,6 +239,10 @@
       }
     },
     methods: {
+      toggleInstructions() {
+        const instructions = document.getElementById("instructions_modal_overlay")
+        instructions.style.display = instructions.style.display === "none" ? 'block' : 'none'
+      },
       scrollToWord(scroll_string) {
         // Do we want to make this the current word? Is it possible that people might want to check other words they
         // while already editied they're editing a word? Possible but unlikely? Would people be more likely to want
