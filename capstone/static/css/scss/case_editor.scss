@@ -29,29 +29,39 @@ section, article {
 
 .viz-controls {
   .toggle-btn {
-    @extend .toggle-btn;
-    color: $color-violet-gray-dark;
-    border: medium solid $color-violet-gray-dark;
+    @extend .btn-secondary;
     height: 2.5rem;
     width: 4rem;
     font-size: .75rem;
-    margin-top: 1rem;
+    margin-bottom: 1rem;
     margin-left: 1rem;
   }
   .on {
-      background-color: $color-magenta;
-      color: $color-violet-gray-dark;
+      background-color: $color-yellow-bright;
+      color: $color-dark-blue;
   }
   .off {
       background-color: $color-light-gray;
-      color: $color-violet-gray-dark;
+      color: $color-dark-blue;
   }
 }
 
-.saving {
-  background-color: $color-violet-gray-dark;
+button.saving {
+  background-color: $color-black !important;
+  color: $color-magenta;
 }
 
+.save-button-box {
+  button {
+    @extend .btn-primary;
+    height: 2.5rem;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+  }
+}
 .edits-container {
 
   width: 100%;
@@ -60,17 +70,19 @@ section, article {
     line-height: 1rem;
     font-weight: bold;
   }
-  .save-button-box {
+  .button-box {
     padding: .25rem;
     button {
+      width: 100%;
       line-height: normal;
       height: 20px;
       border: thin solid $color-violet-gray-dark;
       background-color: $color-magenta;
-      padding: 5px;
       display: inline-flex;
       align-items: center;
-      position: absolute;
+      text-align: center;
+      justify-content: center;
+      padding: 0;
     }
   }
   .edited-word-list {
@@ -90,11 +102,9 @@ section, article {
     cursor: pointer;
     background-color: $color-light-gray;
   }
-}
-
-.confidence {
-  font-size: small;
-  font-weight: bolder;
+  .word {
+    word-break: break-word;
+  }
 }
 
 .metadata {
@@ -121,3 +131,17 @@ section, article {
 .main-content.col-12 {
   padding-top: 1rem;
 }
+
+/*
+.confidence_visual {
+  background: linear-gradient(90deg, rgba(121,0,0,1) 0%, rgba(255,0,0,1) 35%, rgba(255,255,255,1) 100%);
+}
+
+.confidence {
+  font-size: small;
+  font-weight: bolder;
+  color: $color-light-blue;
+  padding-left: 1rem;
+  margin-right: 1.5rem;
+}
+*/
