@@ -106,7 +106,7 @@
 
 <script>
   import csvStringify from 'csv-stringify/lib/sync';
-  import {apiQuery} from '../api';
+  import {jsonQuery} from '../api';
   import USMap from '../../../capweb/templates/includes/usa_territories_white.svg';
 
   /* eslint-disable */
@@ -170,7 +170,7 @@
 
     methods: {
       async getJSON(fileName) {
-        return await apiQuery("/download/citation_graph/2020-05-08/aggregations/"+fileName);
+        return await jsonQuery("/download/citation_graph/2020-05-08/aggregations/"+fileName);
       },
       citePercentage(fromJur, toJur) {
         // disabling this for now -- allows vertical jurisdictions in grid to be removed

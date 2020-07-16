@@ -1,0 +1,101 @@
+{% extends "layouts/base.html" %}
+{% load pipeline %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% load api_url %}
+{% load redaction %}
+{% load capweb_static %}
+{% load parse_date %}
+
+{% block base_css %}{% stylesheet 'case_cited_by' %}{% endblock %}
+{% block title %}Citations to {{ full_citation|elide:case|striptags }}{% endblock %}
+{% block meta_description %}Cases citing to {{ full_citation|elide:case|striptags }} from the Caselaw Access
+  Project.{% endblock %}
+
+{% block title_section %}
+  {% include "cite/case_header.html" with case=case %}
+{% endblock %}
+
+{% block sidebar_menu %}
+  <aside id="sidebar-menu" tabindex="-1" aria-label="Tools">
+    <div class="content">
+      <div class="sidebar-section sidebar-title">
+        <h2>Citing Cases</h2>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-contents">
+          <a href="case.frontend_url">back to case</a>
+        </div>
+      </div>
+    </div>
+  </aside>
+{% endblock %}
+
+{% block main_content %}
+  {% if results %}
+    <div class="row mb-5">
+      {% if previous %}
+        <div class="entries col-6">
+          <a href="?{{ previous }}" class="btn btn-sm p-0">
+            &laquo; Newer entries
+          </a>
+        </div>
+      {% endif %}
+
+      {% if next %}
+        <div {% if previous %}class="entries col-6 text-right"{% else %}class="entries col-12 text-right"{% endif %}>
+          <a href="?{{ next }}" class="btn btn-sm p-0 ">
+            Older entries &raquo;
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <ul class="results-list">
+      {% for case in results %}
+        <li class="result">
+          <div class="result-title row">
+            <div class="col-md-9">
+              <a target="_blank" href="{{ case.frontend_url }}" class="simple">
+                {{ case.name_abbreviation|truncatewords:30 }}
+              </a>
+            </div>
+            <div class="col-md-3 decision-date">
+              {{ case.decision_date|parse_date }}
+            </div>
+          </div>
+          <div class="row metadata-row">
+                <span class="result-citation">
+                  {% for cite in case.citations %}
+                    {{ cite.cite }}{% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+                </span>
+            &nbsp;&middot;&nbsp;
+            <span class="court">{{ case.court.name }}</span>
+            &nbsp;&middot;&nbsp;
+            <span class="jurisdiction">{{ case.jurisdiction.name_long }}</span>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="row">
+      {% if previous %}
+        <div class="entries col-6">
+          <a href="?{{ previous }}" class="btn btn-sm">
+            &laquo; Newer entries
+          </a>
+        </div>
+      {% endif %}
+      {% if next %}
+        <div {% if previous %}class="entries col-6 text-right"{% else %}class="entries col-12 text-right"{% endif %}>
+          <a href="?{{ next }}" class="btn btn-sm">
+            Older entries &raquo;
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <p>No cases cite this case.</p>
+  {% endif %}
+{% endblock %}

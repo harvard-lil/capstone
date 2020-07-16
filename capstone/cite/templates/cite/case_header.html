@@ -1,0 +1,12 @@
+{% load redaction %}
+<div class="case-header">
+  <h1>{{ full_citation|elide:case }}</h1>
+  <div>
+    <span class="decision-date">{{ case.formatted_decision_date }}</span>
+    <span class="court-name">{{ case.court.name }}</span>
+    <span class="docket-number">{{ case.docket_number }}</span>
+  </div>
+  <div class="citations">
+    {{ case.citations_by_type|join:", " }}
+  </div>
+</div>

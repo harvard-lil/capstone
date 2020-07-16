@@ -37,7 +37,7 @@
 
 <script>
   import CaseResult from '../search/case-result.vue';
-  import {getApiUrl, apiQuery} from '../api';
+  import {getApiUrl, jsonQuery} from '../api';
   import {encodeQueryData} from '../utils';
   import Vue from 'vue';
 
@@ -72,7 +72,8 @@
         this.showLoading = true;
         Vue.nextTick().then(() => { this.$refs.loadingMessage.focus() });
         this.error = null;
-        apiQuery(getApiUrl("cases", searchParams)).then((resp)=>{
+        const url = getApiUrl(urls.api_root,"cases", searchParams);  // eslint-disable-line
+        jsonQuery(url).then((resp)=>{
           this.results = resp.results;
           this.term = term;
           this.startYear = startYear;

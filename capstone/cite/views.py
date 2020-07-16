@@ -3,6 +3,7 @@ import time
 import json
 from collections import defaultdict
 from contextlib import contextmanager
+from copy import copy
 from datetime import timedelta
 from urllib.parse import urlencode
 
@@ -13,7 +14,7 @@ from django.forms import model_to_dict
 from django.urls import NoReverseMatch
 from django.db import transaction
 from django.db.models import Prefetch
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, QueryDict
 from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -28,7 +29,7 @@ from natsort import natsorted
 from capapi import serializers
 from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
-from capapi.resources import apply_replacements, link_to_cites
+from capapi.views.api_views import CaseDocumentViewSet
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseFont, PageStructure, EditLog
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
@@ -321,7 +322,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
     # handle pdf output --
     # wait until here to do this so serializer() can apply case quotas
-    db_case = db_case or CaseMetadata.objects.select_related('volume').prefetch_related('citations').get(pk=case.id)
+    db_case = db_case or CaseMetadata.objects.select_related('volume', 'court').prefetch_related('citations').get(pk=case.id)
     can_render_pdf = db_case.volume.pdf_file and not db_case.no_index_redacted and settings.CASE_PDF_FEATURE and serialized_data['casebody']['status'] == 'ok'
     if pdf:
         if serialized_data['casebody']['status'] != 'ok':
@@ -343,30 +344,6 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     case_html = None
     if serialized_data['casebody']['status'] == 'ok':
         case_html = serialized_data['casebody']['data']
-        footer_message = db_case.custom_footer_message or ''
-
-        # link all captured cites
-        case_html = link_to_cites(case_html, serialized_data['cites_to'])
-
-        # insert redactions
-        if db_case.no_index_redacted:
-            case_html = apply_replacements(case_html, db_case.no_index_redacted)
-            db_case.name = apply_replacements(db_case.name, db_case.no_index_redacted)
-            db_case.name_abbreviation = apply_replacements(db_case.name_abbreviation, db_case.no_index_redacted)
-            footer_message += "Some text has been redacted. \n"
-
-        # insert elisions
-        if db_case.no_index_elided:
-            elision_span = "<span class='elision-help-text' style='display: none'>hide</span>" \
-                           "<span class='elided-text' role='button' tabindex='0' data-hidden-text='%s'>%s</span>"
-            replacements = {k: elision_span % (k, v) for k, v in db_case.no_index_elided.items()}
-            case_html = apply_replacements(case_html, replacements, prefix="", suffix="")
-            db_case.name = apply_replacements(db_case.name, replacements, prefix="", suffix="")
-            db_case.name_abbreviation = apply_replacements(db_case.name_abbreviation, replacements, prefix="", suffix="")
-            footer_message += "Some text has been hidden for privacy from automated systems, but can be revealed by clicking the elided text. \n"
-
-        if footer_message:
-            case_html += "<hr/><footer class='custom-case-footer'>%s</footer>" % footer_message.replace('\n', '<br>')
 
     if settings.GEOLOCATION_FEATURE and request.META.get('HTTP_X_FORWARDED_FOR'):
         # Trust x-forwarded-for in this case because we don't mind being lied to, and would rather show accurate
@@ -393,7 +370,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         'es_case': serialized_data,
         'status': serialized_data['casebody']['status'],
         'case_html': case_html,
-        'citation_full': db_case.full_cite(),
+        'full_citation': db_case.full_cite(),
         'citations': ", ".join(c.cite for c in Citation.sorted_by_type(db_case.citations.all())),
         'formatted_name': formatted_name,
     })
@@ -453,3 +430,24 @@ def redact_case(request, case_id):
     case.robots_txt_until = timezone.now() + timedelta(days=7)
     case.save()
     return HttpResponse('ok')
+
+
+def case_cited_by(request, case_id):
+    case = get_object_or_404(CaseMetadata, pk=case_id)
+
+    # get citation data from API
+    api_request = copy(request)
+    api_request.method = 'GET'
+    api_request.GET = QueryDict(mutable=True)
+    api_request.GET['cites_to'] = str(case.id)
+    if 'cursor' in request.GET:
+        api_request.GET['cursor'] = request.GET['cursor']
+    data = CaseDocumentViewSet.as_view({'get': 'list'})(api_request).data
+
+    return render(request, 'cite/case_cited_by.html', {
+        'case': case,
+        'full_citation': case.full_cite(),
+        'next': data['next'].split('?')[1] if data['next'] else None,
+        'previous': data['previous'].split('?')[1] if data['previous'] else None,
+        'results': data['results'],
+    })

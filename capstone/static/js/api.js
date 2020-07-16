@@ -1,12 +1,11 @@
 import {encodeQueryData} from './utils';
 
 
-export function getApiUrl(endpoint, params) {
-  const api_url = urls.api_root;  // eslint-disable-line
+export function getApiUrl(api_url, endpoint, params) {
   return `${api_url}${endpoint}/?${encodeQueryData(params)}`;
 }
 
-export function apiQuery(url) {
+export function jsonQuery(url) {
   return fetch(url).then((resp) => {
       if (!resp.ok)
         throw resp;

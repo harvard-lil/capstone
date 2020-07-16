@@ -3,6 +3,7 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
+import fabfile
 import mock
 import pytest
 from bs4 import BeautifulSoup
@@ -316,9 +317,27 @@ def test_retrieve_page_image(admin_client, auth_client, volume_metadata):
                                                             volume_metadata.volume_number_slug, '2'], host='cite'))
     check_response(response, status_code=302)
 
+
 @pytest.mark.django_db
 def test_case_editor_view(admin_client, auth_client, unrestricted_case):
     response = admin_client.get(reverse('case_editor', args=[unrestricted_case.pk], host='cite'))
     check_response(response)
     response = auth_client.get(reverse('case_editor', args=[unrestricted_case.pk], host='cite'))
     check_response(response, status_code=302)
+
+
+@pytest.mark.django_db
+def test_case_cited_by(client, case_factory, tmpdir, settings, elasticsearch):
+    settings.MISSED_CITATIONS_DIR = str(tmpdir)
+    dest_case = case_factory()
+    dest_cite = dest_case.citations.first()
+    source_cases = [case_factory(body_cache__text=dest_cite.cite) for _ in range(2)]
+    non_citing_case = case_factory()
+    fabfile.extract_all_citations()
+
+    response = client.get(reverse('case_cited_by', args=[dest_case.pk], host='cite'))
+    check_response(
+        response,
+        content_includes=[c.name_abbreviation for c in source_cases],
+        content_excludes=[non_citing_case.name_abbreviation]
+    )
