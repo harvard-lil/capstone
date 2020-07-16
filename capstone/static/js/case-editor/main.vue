@@ -18,8 +18,15 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-3">
-        <div class="sticky-top pt-5">
+      <div class="col-3 pl-3 pr-3">
+        <div class="sticky-top pt-6">
+          <div class="row">
+            <div class="col-12">
+              <div class="save-button-box">
+                <button id="save_button" class="btn-secondary" @click="saveCase($event)">(^s)ave case to DB</button>
+              </div>
+            </div>
+          </div>
           <div class="row mt-5 mb-3" >
             <div  class="col">
               <div v-if="currentWord"
@@ -40,33 +47,39 @@
             </div>
             <div class="col-2"><button @click="addSoftHyphen()" :disabled="currentWord === null">⧟</button></div>
           </div>
-          <div class="row confidence">
+          <!--
+          <div class="row confidence confidence_visual">
             <div class="col-4">
               Confidence:
             </div>
             <div class="col-4">
-               <span v-if="currentWord" id="current_word_confidence">{{currentWord.wordConfidence}}</span>
+               <span v-if="currentWord" id="current_word_confidence">{{Math.round(currentWord.wordConfidence * 100)}}%</span>
             </div>
           </div>
+          <div class="row">
+            <div class="col">
+               <span class="confidence-indicator" v-if="currentWord"
+                :style="{'margin-left':`${currentWord.wordConfidence * 90}%`}">&#x29cd;</span>
+            </div>
+          </div>
+          -->
           <div class="edits-container row mt-5">
-            <div class="col-6">
+            <div class="col-5 pt-1">
               <h4 class="edits-title">edits</h4>
             </div>
-            <div class="save-button-box col-3">
-              <button id="save_button" class="btn-secondary" @click="saveCase">(^s)ave</button>
-            </div>
-            <div class="save-button-box col-3">
-              <button class="btn-secondary" @click="clearEdits">Clear</button>
+
+            <div class="button-box col-7 pt-0">
+              <button class="btn-secondary" @click="clearEdits">Clear All Edits</button>
             </div>
             <div class="row edited-word-list mt-3">
               <div class="col-12 ">
                 <div v-for="(p, p_id) in savedWordEdits" :key="p_id">
                   <div v-for="(b, b_id) in p" :key="b_id">
                     <div>
-                      <div class="row edit-entry" v-for="(w, i) in b" :key="i" >
-                        <div class="col-5" @click="scrollToWord( b_id + '_' + w[1])">{{w[0]}}</div>
-                        <div class="col-5" @click="scrollToWord( b_id + '_' + w[1])">{{w[1]}}</div>
-                        <div class="col-2 edit-controls"><span class="edit-delete" @click="removeEdit(p, b_id, w, i)">&#8855;</span></div>
+                      <div class="row edit-entry" v-for="(w, w_id) in b" :key="w_id" >
+                        <div class="col-5 word" @click="scrollToWord( b_id + '_' + w[1])">{{w[0]}}</div>
+                        <div class="col-6 word" @click="scrollToWord( b_id + '_' + w[1])">{{w[1]}}</div>
+                        <div class="col-1 edit-controls"><span class="edit-delete" @click="removeEdit(p_id, b_id, w_id)">&#8855;</span></div>
                       </div>
                     </div>
                   </div>
@@ -80,7 +93,7 @@
         <page v-for="page in pages" :key="page.id" :page="page" :savedWordEdits="savedWordEdits[page.id]" ref="pageComponents"/>
       </div>
       <div id="controls" class="col-1">
-         <div class="sticky-top pt-6 mt-6 row">
+         <div class="sticky-top pt-6 row">
            <div class="col viz-controls">
             <div class="row ocr-toggle" v-if="showOcr">
               <button v-on:click="showOcr=false" class="toggle-btn on">(^O)CR</button>
@@ -89,10 +102,10 @@
               <button v-on:click="showOcr=true" class="toggle-btn off">(^O)CR</button>
             </div>
             <div class="row wc-toggle" v-if="showConfidence">
-              <button v-on:click="showConfidence=false" class="toggle-btn off">W(^C)</button>
+              <button v-on:click="showConfidence=false" class="toggle-btn on">W(^C)</button>
             </div>
             <div class="row wc-toggle" v-else>
-              <button v-on:click="showConfidence=true"  class="toggle-btn on">W(^C)</button>
+              <button v-on:click="showConfidence=true"  class="toggle-btn off">W(^C)</button>
             </div>
            </div>
           </div>
@@ -118,6 +131,7 @@
         showOcr: true,
         showConfidence: true,
         metadata: null,
+        savedWordEdits: {},
       }
     },
     watch: {
@@ -127,9 +141,11 @@
         },
         deep: true
       },
+      savedWordEdits: function () {
+        return this.savedWordEdits;
+      }
     },
     mounted: function () {
-
       const main_component = this;
       window.onkeyup = function(e){
         if ( e.ctrlKey ) {
@@ -141,7 +157,6 @@
               main_component.showConfidence= !main_component.showConfidence;
               break;
             case "s":
-              //main_component.savedWordEdits();
               main_component.saveCase();
               break;
             default:
@@ -197,12 +212,23 @@
         // the current word change if you clicked on it in this list.
         document.body.querySelector('span[scroll-to-here="' + scroll_string + '"]').scrollIntoView();
       },
-      removeEdit(p, p_id, b_id, w) {
-        p, p_id, b_id, w
-        //TODO remove a single edit
+      removeEdit(p_id, b_id, w_id) {
+        for (const pageComponent of this.$refs.pageComponents) {
+          const pageId = pageComponent.page.id.toString();
+          if (pageId !== p_id) { continue }
+
+          const word = pageComponent.words[w_id]
+          pageComponent.$set(word, 'string', word.originalString)
+          this.$delete(this.savedWordEdits[p_id][b_id], w_id)
+          this.saveStateToStorage()
+        }
       },
       clearEdits() {
-        //TODO remove all the edits
+        if (!confirm('CONFIRM: permanently discard your edits?\nThere is no undo for this command.')) {
+          return;
+        }
+        localStorage.removeItem(this.storageKey);
+        this.savedWordEdits = {};
       },
       getMetadataEdits() {
         /*
@@ -260,9 +286,15 @@
       },
       saveStateToStorage: debounce(function() {
         /* save to local storage */
-        localStorage.setItem(this.storageKey, JSON.stringify(this.getState(true)));
-      }, 1000),
+        const save_state = this.getState(true)
+        localStorage.setItem(this.storageKey, JSON.stringify(save_state));
+        this.savedWordEdits = save_state['edit_list']
+      }, 500),
       async saveCase() {
+        if (!confirm('CONFIRM: permanently overwrite ' + this.metadata.name + ' in the CAP database with your edited ' +
+                'version?\nThere is no undo for this command.')) {
+          return;
+        }
         /* save to server */
         try {
           await $.ajax('', {
@@ -275,7 +307,7 @@
           alert("error saving:", e); // eslint-disable-line
           return;
         }
-        this.saveAnimation();
+        this.flashSave();
         localStorage.removeItem(this.storageKey);
         window.location.href = this.urls.case;
       },
@@ -327,15 +359,16 @@
           styles: styles.join(' '),
         };
       },
-      saveAnimation() {
-        const save_box = document.getElementsByClassName('save-button-box')[0];
+      flashSave() {
+
+        const save_box = document.getElementById('save_button');
         const save_flash = setInterval(function(){
           save_box.classList.toggle('saving');
         }, 75);
         setTimeout(function () {
           clearInterval(save_flash)
           save_box.classList.remove('saving')
-        }, 500)
+        }, 400)
       }
     },
   }
