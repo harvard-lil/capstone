@@ -27,6 +27,14 @@ section, article {
   margin-left: 0;
 }
 
+.form-group {
+  margin-bottom: 0;
+  label {
+    margin-bottom: 0;
+    font-size: smaller;
+  }
+}
+
 .viz-controls {
   .toggle-btn {
     @extend .btn-secondary;
@@ -46,22 +54,6 @@ section, article {
   }
 }
 
-button.saving {
-  background-color: $color-black !important;
-  color: $color-magenta;
-}
-
-.save-button-box {
-  button {
-    @extend .btn-primary;
-    height: 2.5rem;
-    width: 100%;
-    display: inline-flex;
-    align-items: center;
-    text-align: center;
-    justify-content: center;
-  }
-}
 .edits-container {
 
   width: 100%;

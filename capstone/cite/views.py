@@ -29,11 +29,14 @@ from natsort import natsorted
 from capapi import serializers
 from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
+from capapi.resources import link_to_cites
 from capapi.views.api_views import CaseDocumentViewSet
-from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseFont, PageStructure, EditLog
+from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseFont, PageStructure, EditLog, \
+    ExtractedCitation
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
+from scripts.extract_cites import extract_citations
 
 
 def safe_redirect(request):
@@ -155,11 +158,11 @@ def case_pdf(request, case_id, pdf_name):
 
 
 @staff_member_required
-def page_image(request, series_slug, volume_number_slug, sequence_number):
+def page_image(request, volume_id, sequence_number):
     """
         Return the image for a page to authorized users.
     """
-    vol = get_object_or_404(VolumeMetadata, reporter__short_name_slug=slugify(series_slug), volume_number_slug=volume_number_slug)
+    vol = get_object_or_404(VolumeMetadata, pk=volume_id)
     return HttpResponse(vol.extract_page_image(int(sequence_number), zoom_level=2.0), content_type="image/png")
 
 
@@ -168,7 +171,7 @@ def page_image(request, series_slug, volume_number_slug, sequence_number):
 def case_editor(request, case_id):
     case = get_object_or_404(CaseMetadata.objects.select_related('volume', 'reporter', 'structure'), pk=case_id)
     pages = list(case.structure.pages.order_by('order'))
-    metadata_fields = ['name', 'decision_date_original', 'docket_number']
+    metadata_fields = ['name_abbreviation', 'name', 'decision_date_original', 'docket_number']
 
     # handle save
     if request.method == 'POST':
@@ -219,6 +222,13 @@ def case_editor(request, case_id):
                     PageStructure.objects.bulk_update(pages_to_save, ['blocks'])
                     case.sync_case_body_cache(blocks_by_id=PageStructure.blocks_by_id(pages), reindex=False)
                     reindex_flag = True
+
+                    # re-extract citations
+                    existing_cites = {c.cite: c for c in ExtractedCitation.objects.filter(cited_by=case)}
+                    new_cites = {c.cite: c for c in extract_citations(case)[0]}
+                    ExtractedCitation.objects.filter(id__in=[v.id for k, v in existing_cites.items() if k not in new_cites]).delete()
+                    ExtractedCitation.objects.bulk_create([v for k, v in new_cites.items() if k not in existing_cites])
+
                 if reindex_flag:
                     case.reindex()
 
@@ -231,7 +241,7 @@ def case_editor(request, case_id):
             'id': page.id,
             'width': page.width,
             'height': page.height,
-            "image_url": reverse('page_image', [case.reporter.short_name_slug, case.volume.volume_number_slug, page.order]),
+            "image_url": reverse('page_image', [case.volume.pk, page.order]),
             "blocks": page.blocks,
         } for page in pages
     ])
@@ -348,6 +358,8 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     case_html = None
     if serialized_data['casebody']['status'] == 'ok':
         case_html = serialized_data['casebody']['data']
+        # link all captured cites
+        case_html = link_to_cites(case_html, serialized_data['cites_to'])
 
     if settings.GEOLOCATION_FEATURE and request.META.get('HTTP_X_FORWARDED_FOR'):
         # Trust x-forwarded-for in this case because we don't mind being lied to, and would rather show accurate

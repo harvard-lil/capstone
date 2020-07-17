@@ -40,8 +40,7 @@
           <li><a :href="linkToSelection()">Link to "{{selectedTextShort}}"</a></li>
           <li>
             <a href="#" @click.prevent="copyCiteToSelection">Copy "{{selectedTextShort}}" with cite</a>
-            <span aria-live="polite"> <span v-if="copyStatus" class="ml-1">{{copyStatus}}</span>
-            </span>
+            <span aria-live="polite"><span v-if="copyStatus" class="ml-1">{{copyStatus}}</span></span>
           </li>
           <li><a :href="searchForSelection()">Search cases for "{{selectedTextShort}}"</a></li>
           <li v-if="templateVars.isStaff"><a href="#" @click.prevent="elideOrRedactSelection('elide')">⚠️ Elide "{{selectedTextShort}}"</a></li>

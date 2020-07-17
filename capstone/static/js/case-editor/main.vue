@@ -1,18 +1,36 @@
 <template>
   <div>
     <div id="metadata-box" class="row metadata">
-      <div class="col-8 offset-3">
+      <div class="col-3">
+        <button class="btn-primary mr-1 mb-1" @click="saveCase($event)">(^s)ave case to DB</button><br>
+        <button class="btn-secondary" @click="clearEdits">Clear All Edits</button>
+        <span aria-live="polite"><span v-if="saveStatus" class="ml-1"><br>{{saveStatus}}</span></span>
+      </div>
+      <div class="col-8">
         <div class="row">
           <div class="col-6">
-            <input type="text" v-model="metadata.name" placeholder="case name">
+              <div class="form-group">
+                <label for="metadata-name-abbreviation">Short Name</label>
+                <input type="text" v-model="metadata.name_abbreviation" placeholder="case short name" id="metadata-name-abbreviation">
+              </div>
           </div>
           <div class="col-6">
-            <input type="text" v-model="metadata.decision_date_original" placeholder="decision date string">
+              <div class="form-group">
+                <label for="metadata-name">Long Name</label>
+                <input type="text" v-model="metadata.name" placeholder="case name" id="metadata-name">
+              </div>
           </div>
-        </div>
-        <div class="row">
           <div class="col-6">
-            <input type="text" v-model="metadata.docket_number" placeholder="docket number">
+              <div class="form-group">
+                <label for="metadata-decision-date-original">Decision Date (YYYY-MM-DD)</label>
+                <input type="text" v-model="metadata.decision_date_original" placeholder="decision date" id="metadata-decision-date-original">
+              </div>
+          </div>
+          <div class="col-6">
+              <div class="form-group">
+                <label for="metadata-docket-number">Docket Number</label>
+                <input type="text" v-model="metadata.docket_number" placeholder="docket number" id="metadata-docket-number">
+              </div>
           </div>
         </div>
       </div>
@@ -20,14 +38,7 @@
     <div class="row">
       <div class="col-3 pl-3 pr-3">
         <div class="sticky-top pt-6">
-          <div class="row">
-            <div class="col-12">
-              <div class="save-button-box">
-                <button id="save_button" class="btn-secondary" @click="saveCase($event)">(^s)ave case to DB</button>
-              </div>
-            </div>
-          </div>
-          <div class="row mt-5 mb-3" >
+          <div class="row mb-3" >
             <div  class="col">
               <div v-if="currentWord"
                 :style="{
@@ -67,18 +78,14 @@
             <div class="col-5 pt-1">
               <h4 class="edits-title">edits</h4>
             </div>
-
-            <div class="button-box col-7 pt-0">
-              <button class="btn-secondary" @click="clearEdits">Clear All Edits</button>
-            </div>
             <div class="row edited-word-list mt-3">
               <div class="col-12 ">
                 <div v-for="(p, p_id) in savedWordEdits" :key="p_id">
                   <div v-for="(b, b_id) in p" :key="b_id">
                     <div>
                       <div class="row edit-entry" v-for="(w, w_id) in b" :key="w_id" >
-                        <div class="col-5 word" @click="scrollToWord( b_id + '_' + w[1])">{{w[0]}}</div>
-                        <div class="col-6 word" @click="scrollToWord( b_id + '_' + w[1])">{{w[1]}}</div>
+                        <div class="col-5 word" @click="scrollToWord(p_id, b_id, w_id)">{{w[0]}}</div>
+                        <div class="col-6 word" @click="scrollToWord(p_id, b_id, w_id)">{{w[1]}}</div>
                         <div class="col-1 edit-controls"><span class="edit-delete" @click="removeEdit(p_id, b_id, w_id)">&#8855;</span></div>
                       </div>
                     </div>
@@ -156,6 +163,8 @@
   import Page from './page.vue'
   import {FAKE_SOFT_HYPHEN, SOFT_HYPHEN} from "./helpers";
 
+  const toHashMap = (a,f) => a.reduce((a,c)=> (a[f(c)]=c,a),{});
+
   export default {
     components: {Page},
     data() {
@@ -166,6 +175,7 @@
         showConfidence: true,
         metadata: null,
         savedWordEdits: {},
+        saveStatus: null,
       }
     },
     watch: {
@@ -175,29 +185,6 @@
         },
         deep: true
       },
-      savedWordEdits: function () {
-        return this.savedWordEdits;
-      }
-    },
-    mounted: function () {
-      const main_component = this;
-      window.onkeyup = function(e){
-        if ( e.ctrlKey ) {
-          switch(e.key) {
-            case "o":
-                main_component.showOcr = !main_component.showOcr;
-              break;
-            case "c":
-              main_component.showConfidence= !main_component.showConfidence;
-              break;
-            case "s":
-              main_component.saveCase();
-              break;
-            default:
-              break;
-          }
-        }
-      };
     },
     beforeMount: function () {
       // load local variables from Django template
@@ -205,6 +192,7 @@
       this.metadata = templateVars.metadata;  // eslint-disable-line
       this.serverMetadata = {...this.metadata};
       this.pages = templateVars.pages;  // eslint-disable-line
+      this.pagesById = toHashMap(this.pages, p => p.id);
       this.fonts = templateVars.fonts;  // eslint-disable-line
 
       // preprocess fonts
@@ -238,35 +226,50 @@
         }
       }
     },
+    mounted: function () {
+      document.addEventListener('keyup', (e)=>{
+        if (e.ctrlKey) {
+          switch(e.key) {
+            case "o":
+                this.showOcr = !this.showOcr;
+              break;
+            case "c":
+              this.showConfidence = !this.showConfidence;
+              break;
+            case "s":
+              this.saveCase();
+              break;
+            default:
+              break;
+          }
+        }
+      });
+      this.pageComponentsById = toHashMap(this.$refs.pageComponents, p => p.page.id);
+    },
     methods: {
       toggleInstructions() {
         const instructions = document.getElementById("instructions_modal_overlay")
         instructions.style.display = instructions.style.display === "none" ? 'block' : 'none'
       },
-      scrollToWord(scroll_string) {
-        // Do we want to make this the current word? Is it possible that people might want to check other words they
-        // while already editied they're editing a word? Possible but unlikely? Would people be more likely to want
-        // to revisit a word they edited and make a change? It doesn't seem like it would be too confusing to have
-        // the current word change if you clicked on it in this list.
-        document.body.querySelector('span[scroll-to-here="' + scroll_string + '"]').scrollIntoView();
+      scrollToWord(p_id, b_id, w_id) {
+        const pageComponent = this.pageComponentsById[parseInt(p_id)];
+        pageComponent.wordClicked(pageComponent.words[w_id]);
+        document.body.querySelector(`span[scroll-to-here="${b_id}_${w_id}"]`).scrollIntoView();
       },
       removeEdit(p_id, b_id, w_id) {
-        for (const pageComponent of this.$refs.pageComponents) {
-          const pageId = pageComponent.page.id.toString();
-          if (pageId !== p_id) { continue }
-
-          const word = pageComponent.words[w_id]
-          pageComponent.$set(word, 'string', word.originalString)
-          this.$delete(this.savedWordEdits[p_id][b_id], w_id)
-          this.saveStateToStorage()
-        }
+        const word = this.pageComponentsById[parseInt(p_id)].words[w_id];
+        word.string = word.originalString;
       },
       clearEdits() {
         if (!confirm('CONFIRM: permanently discard your edits?\nThere is no undo for this command.')) {
           return;
         }
         localStorage.removeItem(this.storageKey);
-        this.savedWordEdits = {};
+        this.metadata = {...this.serverMetadata};
+        for (const pageComponent of this.$refs.pageComponents)
+          for (const word of pageComponent.words)
+            if (word.string !== word.originalString)
+              word.string = word.originalString;
       },
       getMetadataEdits() {
         /*
@@ -329,11 +332,12 @@
         this.savedWordEdits = save_state['edit_list']
       }, 500),
       async saveCase() {
+        /* save to server */
         if (!confirm('CONFIRM: permanently overwrite ' + this.metadata.name + ' in the CAP database with your edited ' +
                 'version?\nThere is no undo for this command.')) {
           return;
         }
-        /* save to server */
+        this.saveStatus = "saving ...";
         try {
           await $.ajax('', {
             type : 'POST',
@@ -341,11 +345,9 @@
             contentType: 'application/json',
           }).promise();
         } catch(e) {
-          // TODO: show server error to user
-          alert("error saving:", e); // eslint-disable-line
+          this.saveStatus = `error saving: ${e}`;
           return;
         }
-        this.flashSave();
         localStorage.removeItem(this.storageKey);
         window.location.href = this.urls.case;
       },
@@ -397,17 +399,6 @@
           styles: styles.join(' '),
         };
       },
-      flashSave() {
-
-        const save_box = document.getElementById('save_button');
-        const save_flash = setInterval(function(){
-          save_box.classList.toggle('saving');
-        }, 75);
-        setTimeout(function () {
-          clearInterval(save_flash)
-          save_box.classList.remove('saving')
-        }, 400)
-      }
     },
   }
 </script>
