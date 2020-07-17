@@ -1,28 +1,25 @@
 {% extends "layouts/wide.html" %}
-{% load pipeline %}
 
-{% block extra_head %}
-{% endblock %}
-
-{% block title %} {{ type }} | {{ title }}{% endblock %}
+{% block extra_head %}{% endblock %}
+{% block title %}{% if type %}{{ type }}{% else %}Error{% endif %} | {{ title }}{% endblock %}
 {% block content_title %}{{ title }}{% endblock %}
-{% block meta_description %}Caselaw Access Project {{ type }}{% endblock %}
+{% block meta_description %}Caselaw Access Project {% if type %}{{ type }}{% else %}Error{% endif %}{% endblock %}
 {% block top_section_style %}bg-black border-bottom-0{% endblock %}
 {% block full_content_style %}bg-black{% endblock %}
 {% block explainer %}
-{% if middle %}
-  <div class="middle-text">
-    {{ middle }}
-  </div>
-{% endif %}
-{% if bottom %}
-  <div class="bottom-text">
-    {{ bottom }}
-  </div>
-{% endif %}
-{% if action %}
-  <div class="action-text">
-    {{ action }}
-  <div>
-{% endif %}
+  {% if middle %}
+    <div class="middle-text">
+      {{ middle }}
+    </div>
+  {% endif %}
+  {% if bottom %}
+    <div class="bottom-text">
+      {{ bottom }}
+    </div>
+  {% endif %}
+  {% if action %}
+    <div class="action-text">
+      {{ action }}
+    </div>
+  {% endif %}
 {% endblock %}

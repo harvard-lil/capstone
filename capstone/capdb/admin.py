@@ -156,20 +156,22 @@ class EditLogAdmin(admin.ModelAdmin):
 
 @admin.register(VolumeMetadata)
 class VolumeMetadataAdmin(admin.ModelAdmin):
-    raw_id_fields = ['duplicate_of', 'reporter', 'nominative_reporter', 'request']
+    raw_id_fields = ['duplicate_of', 'reporter', 'nominative_reporter', 'request', 'second_part_of']
     list_display = ['pk', 'volume_number', 'reporter', 'out_of_scope', 'duplicate']
     list_select_related = ['reporter']
     ordering = ['reporter__full_name', 'volume_number']
-    search_fields = ['reporter__short_name', 'reporter__full_name']
+    search_fields = ['reporter__short_name', 'reporter__full_name', 'pk']
+    list_filter = ['reporter__jurisdictions', 'reporter']
     fieldsets = (
         ('', {
             'fields': (
                 'barcode', 'out_of_scope', 'title', 'reporter', 'volume_number', 'nominative_reporter', 'nominative_volume_number',
                 'duplicate', 'duplicate_of',
+                'second_part_of',
                 'pdf_file',
                 'task_statuses', 'xml_metadata',
                 'ingest_status', 'ingest_errors',
-                'notes',
+                'notes', 'description',
             ),
         }),
     )

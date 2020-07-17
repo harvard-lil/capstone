@@ -302,6 +302,7 @@ def download_files(request, filepath=""):
     """
     real_path = download_files_storage.realpath(filepath)
     allow_downloads = "restricted" not in filepath or request.user.unlimited_access_in_effect()
+    status = 200
 
     # symlink requested
     if filepath and filepath.rstrip('/') != real_path:
@@ -315,13 +316,14 @@ def download_files(request, filepath=""):
         if allow_downloads:
             return FileResponse(download_files_storage.open(filepath, 'rb'))
 
-        response_template = "file_download_400.html"
+        response_template = "error_page.html"
+        status = 403
         context = {
-            "filename": filepath,
-            "error": mark_safe("If you believe you should have access to this file, "
-                     "please let us know at <a href='mailto:info@case.law'>info@case.law</a>."),
-            "title": "403 - Access to this file is restricted",
-            "status": 403,
+            "title": "File restricted",
+            "middle": mark_safe(
+                "Sorry! This file is available only to logged-in users with a <a href='%s#usage-access'>research scholar account</a>."
+                % (reverse('about'))
+            ),
         }
 
     # directory requested
@@ -364,25 +366,19 @@ def download_files(request, filepath=""):
         context = {
             'files': files,
             'allow_downloads': allow_downloads,
-            'status': 200,
             'readme': mark_safe(readme),
             'breadcrumbs': breadcrumbs,
         }
 
     # path does not exist
     else:
-        response_template = "file_download_400.html"
-        context = {
-            "title": "404 - File not found",
-            "error": "This file was not found in our system.",
-            "status": 404,
-        }
+        raise Http404
 
     # return response
     if is_browser_request(request):
-        return render(request, response_template, context, status=context['status'])
+        return render(request, response_template, context, status=status)
     else:
-        return HttpResponse(json.dumps(context), content_type='application/json', status=context['status'])
+        return HttpResponse(json.dumps(context), content_type='application/json', status=status)
 
 
 def view_jurisdiction(request, jurisdiction_id):

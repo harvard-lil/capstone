@@ -598,6 +598,7 @@ class VolumeMetadata(models.Model):
     request = models.ForeignKey(BookRequest, blank=True, null=True, on_delete=models.SET_NULL)
     publisher_deleted_pages = models.BooleanField(default=False, help_text="")  # rename?
     notes = models.CharField(max_length=512, blank=True, null=True)
+    description = models.TextField(blank=True, null=True, help_text="Optional description to display about this volume on the frontend")
     original_barcode = models.CharField(max_length=64, blank=True, null=True, help_text="")
     scope_reason = models.CharField(max_length=16, blank=True, null=True,
                                     choices=choices('Damaged', 'Not Official', 'Duplicate', 'No Cases'),
