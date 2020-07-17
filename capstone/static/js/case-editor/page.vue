@@ -1,7 +1,7 @@
 <template>
   <div :class="{page: true, 'show-ocr': $parent.showOcr}">
     <img :src="page.image_url" :width="page.width * scale" :height="page.height * scale">
-    <span v-for="(word, index) in words" :scroll-to-here="word.blockId + '_' + word.string" :key="index" :style="wordStyle(word)" @click="wordClicked(word)" :class="wordClass(word)">
+    <span v-for="(word, index) in words" :scroll-to-here="`${word.blockId}_${index}`" :key="index" :style="wordStyle(word)" @click="wordClicked(word)" :class="wordClass(word)">
       {{word.string}}
     </span>
   </div>
@@ -107,9 +107,13 @@
       this.words = words;
     },
     mounted() {
-      this.scale = document.getElementById('canvas_div').offsetWidth / this.page.width;
+      window.addEventListener('resize', ()=>{ this.handleWindowResize() });
+      this.handleWindowResize();
     },
     methods: {
+      handleWindowResize() {
+        this.scale = document.getElementById('canvas_div').offsetWidth / this.page.width;
+      },
       wordStyle(word) {
         const font = word.font;
         return {

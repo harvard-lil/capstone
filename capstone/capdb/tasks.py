@@ -3,7 +3,6 @@ import csv
 import json
 from copy import copy
 from datetime import datetime, timedelta
-from string import ascii_lowercase
 from time import sleep
 from pathlib import Path
 import elasticsearch.helpers
@@ -13,17 +12,17 @@ from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
 from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
-from reporters_db import EDITIONS, VARIATIONS_ONLY
 from django.db import connections
 from django.db.models import Prefetch, Q
 from django.utils import timezone
 from collections import Counter
 
 from capapi.documents import CaseDocument
-from capapi.resources import cite_extracting_regex
 from capdb.models import *
 
 ### HELPERS ###
+from scripts.extract_cites import extract_citations
+
 
 def run_task_for_volumes(task, volumes=None, last_run_before=None, synchronous=False, **kwargs):
     """
@@ -401,10 +400,7 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 @shared_task(bind=True, acks_late=True)
 def extract_citations_per_vol(self, volume_id):
     with record_task_status_for_volume(self, volume_id):
-        extra_reporters = {'wl'}
-        valid_reporters = {normalize_cite(c) for c in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())} | extra_reporters
-        invalid_reporters = set(ascii_lowercase) | {'at', 'or', 'p.', 'c.', 'B'}
-        translations = {'la.': 'Ia.', 'Yt.': 'Vt.', 'Pae.': 'Pac.'}
+
         cases = (CaseMetadata.objects
                  .filter(volume_id=volume_id, in_scope=True)
                  .exclude(body_cache=None)
@@ -424,34 +420,7 @@ def extract_citations_per_vol(self, volume_id):
         # extracted possible citations with errors
         citation_misses_per_case = {}
         for case in cases:
-            misses = []
-            case_citations = []
-            for match in set(re.findall(cite_extracting_regex, case.body_cache.text)):
-                vol_num, reporter_str, page_num = match
-
-                # fix known OCR errors
-                if reporter_str in translations:
-                    reporter_str = translations[reporter_str]
-
-                # skip strings like 'or' that are known non-citations
-                if reporter_str in invalid_reporters:
-                    misses.append(reporter_str)
-                    continue
-
-                # Look for found reporter string in the official and nominative REPORTER dicts
-                if normalize_cite(reporter_str) not in valid_reporters:
-                    # reporter not found, removing cite and adding to misses list
-                    misses.append(reporter_str)
-                    continue
-
-                cite = " ".join(match)
-                case_citations.append(ExtractedCitation(
-                    cite=cite,
-                    normalized_cite=normalize_cite(cite),
-                    cited_by=case,
-                    reporter_name_original=reporter_str,
-                    volume_number_original=vol_num,
-                    page_number_original=page_num))
+            case_citations, misses = extract_citations(case)
 
             # update cites_to field in ElasticSearch
             if settings.MAINTAIN_ELASTICSEARCH_INDEX:
