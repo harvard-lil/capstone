@@ -28,14 +28,26 @@
 
     {% for volume, cases in volumes %}
       {% with volume.reporter as reporter %}
-        <h3 class="subtitle">{{ reporter.short_name }}</h3>
-        <p>{{ reporter.full_name }} ({{ reporter.start_year|default:"" }}-{{ reporter.end_year|default:"" }})
-          volume {{ volume.volume_number }}</p>
-        <ul>
-          {% for case in cases %}
-            <li><a href="{{ case.frontend_url }}">{{ case.full_cite }}</a></li>
-          {% endfor %}
-        </ul>
+        <h3 class="subtitle">{{ volume.volume_number }} {{ reporter.short_name }}</h3>
+        <p>
+          {{ reporter.full_name }}
+          ({{ reporter.start_year|default:"" }}-{{ reporter.end_year|default:"" }})
+          volume {{ volume.volume_number }}.
+          <a href="{{ volume.pdf_file.url }}">View scanned PDF.</a>
+          <a href="{% url 'volumemetadata-detail' volume.pk host 'api' %}">View API.</a>
+        </p>
+        {% if volume.description %}
+          <p class="font-italic">{{ volume.description|safe }}</p>
+        {% endif %}
+        {% if cases %}
+          <ul>
+            {% for case in cases %}
+              <li><a href="{{ case.frontend_url }}">{{ case.full_cite }}</a></li>
+            {% endfor %}
+          </ul>
+        {% elif not volume.description %}
+          <p class="font-italic">Sorry, we have no processed cases for this volume.</p>
+        {% endif %}
       {% endwith %}
     {% endfor %}
   </div>

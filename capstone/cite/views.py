@@ -117,24 +117,23 @@ def volume(request, series_slug, volume_number_slug):
     if slugify(series_slug) != series_slug or slugify(volume_number_slug) != volume_number_slug:
         return HttpResponseRedirect(reverse('volume', args=[slugify(series_slug), slugify(volume_number_slug)], host='cite'))
 
+    vols = list(VolumeMetadata.objects
+        .select_related('reporter')
+        .filter(volume_number_slug=volume_number_slug, reporter__short_name_slug=series_slug)
+        .order_by('-second_part_of'))
+    if not vols:
+        raise Http404
+
     cases_query = CaseDocument.search()\
         .filter("term", volume__volume_number_slug=volume_number_slug)\
         .filter("term", reporter__short_name_slug__raw=series_slug)\
         .sort('first_page')\
         .extra(size=10000)\
         .source({"excludes": "casebody_data.*"})
-    cases_query.aggs.bucket('vols', 'terms', field='volume.barcode')
     cases = cases_query.execute()
+    cases = natsorted(cases, key=lambda c: c.first_page)
 
-    if len(cases) == 0:
-        raise Http404
-
-    volume_ids = [vol.key for vol in cases.aggs.vols.buckets]
-    vols = list(VolumeMetadata.objects.select_related('reporter').filter(pk__in=volume_ids))
-    if not vols:
-        raise Http404
-
-    volumes = [(volume, [ case for case in natsorted(cases, key=lambda case: case.first_page) if case.volume.barcode == volume.barcode]) for volume in vols ]
+    volumes = [(volume, [c for c in cases if c.volume.barcode == volume.barcode]) for volume in vols]
 
     return render(request, 'cite/volume.html', {
         "volumes": volumes,
