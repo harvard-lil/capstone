@@ -4,6 +4,7 @@
 @import 'bootstrap/mixins';
 @import 'bootstrap/tooltip';
 
+
 .main-content {
   // undo @include make-col(9); from base
   max-width: unset !important;

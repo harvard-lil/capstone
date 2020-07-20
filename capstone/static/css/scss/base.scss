@@ -53,7 +53,12 @@ body {
   // push footer to bottom on short pages
   @extend .d-flex;
   @extend .flex-column;
-  min-height: 100vh;
+  height: 100vh;
+}
+
+#content-and-footer {
+  flex: 1 1 auto;
+  overflow-y: auto;
 }
 
 // BUTTONS & LINKS
@@ -174,8 +179,6 @@ pre {
 }
 
 main {
-  // push main content below floating top menu bar
-  padding-top: 94px;
   // push footer to bottom on short pages
   @extend .flex-fill;
   @extend .d-flex;
