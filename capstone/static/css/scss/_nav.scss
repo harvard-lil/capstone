@@ -3,19 +3,17 @@
   border-bottom: 0 !important;
 }
 
-.branding-standalone {
-  display: none;
-}
-
 .branding {
   display: inline-block;
   line-height: inherit;
   white-space: nowrap;
+  transition: .2s;
   .nav-branding {
     background: url("../../img/logos/cap-logo-harvard-white.svg") no-repeat;
     background-size: contain;
     width: 187px;
     height: 72px;
+    transition: .2s;
     display: block;
     background-position-x: 0;
     &:hover, &:focus, &:active {
@@ -25,12 +23,12 @@
   }
 }
 
-nav[aria-label="main"] {
+#main-nav {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   justify-content: space-between;
-  position: fixed;
   width: 100%;
   padding: 0.5rem;
   margin: 0;
@@ -43,6 +41,7 @@ nav[aria-label="main"] {
   user-select: none;
   border-bottom: 1px solid $color-white;
   font-size: 1.5rem;
+  transition: .2s;
   a {
     border-bottom: 0;
   }
@@ -54,11 +53,11 @@ nav[aria-label="main"] {
   }
 }
 
-nav[aria-label="main"].sticky {
-  position: fixed;
+#main-nav.sticky {
   width: 100%;
   padding: 0;
   font-size: 18px;
+  transition: .2s;
   .nav-item {
     padding-bottom: 0;
     padding-top: 0;

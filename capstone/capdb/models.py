@@ -2087,6 +2087,7 @@ class PageStructure(models.Model):
     ingest_path = models.CharField(max_length=1000)
 
     history = TemporalHistoricalRecords()
+    objects = TemporalQuerySet.as_manager()
 
     def order_to_alto_id(self):
         """ Convert 1 to alto_00001_0, 2 to alto_00001_1, 3 to alto_00002_0, and so on. """

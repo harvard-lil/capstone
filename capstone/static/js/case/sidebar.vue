@@ -111,7 +111,8 @@
           diacritics: true,
           acrossElements: true
         });
-        window.scrollTo({top: document.querySelector("mark").getBoundingClientRect().top - 100});
+        document.querySelector("mark").scrollIntoView();
+        // document.getElementById('content-and-footer').scrollTo({top: document.querySelector("mark").getBoundingClientRect().top - 100});
       }
 
       // handle keyboard controls

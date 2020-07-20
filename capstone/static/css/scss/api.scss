@@ -12,7 +12,7 @@ nav {
 }
 
 /* give container closest to nav some padding */
-nav[aria-label="main"] ~ .container {
+#main-nav ~ .container {
   padding-top: 90px;
 }
 

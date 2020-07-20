@@ -89,42 +89,25 @@ let setupSidebarHighlighting = function () {
 
 let setupScrollStickiness = function() {
   const nav = $('#main-nav');
-  const sidebarMenu = $('#sidebar-menu');
   const navHeight = nav.height();
   const halfNavHeight = navHeight/2;
   let stickOn = false;
+  const contentDiv = document.getElementById('content-and-footer');
   const handleScroll = function() {
-    if (window.pageYOffset > halfNavHeight) {
+    if (contentDiv.scrollTop > halfNavHeight) {
       if (!stickOn) {
-        sidebarMenu.addClass("sticky");
         nav.addClass("sticky");
         stickOn = true;
       }
     } else {
       if (stickOn) {
-        sidebarMenu.removeClass("sticky");
         nav.removeClass("sticky");
         stickOn = false;
       }
     }
   };
-  window.addEventListener('scroll', handleScroll);
+  contentDiv.addEventListener('scroll', handleScroll);
   handleScroll();  // handle case where page is already scrolled on load
-};
-
-const urlFragmentScrollCheck = function() {
-  /* When scrolling to an in-page target, make sure it is visible below the navbar */
-  const navBar = $('#main-nav');
-  function hashChanged() {
-    if (location.hash) {
-      const offset = $(':target').offset();
-      if (offset){
-        $('html, body').animate({scrollTop: Math.floor(offset.top - navBar.height())}, 0);
-      }
-    }
-  }
-  window.addEventListener("hashchange", hashChanged, false);
-  hashChanged();
 };
 
 $(function() {
@@ -134,5 +117,4 @@ $(function() {
   setupDropdown();
   setupBurgerAction();
   patchAnchorTagButtons();
-  urlFragmentScrollCheck();
 });

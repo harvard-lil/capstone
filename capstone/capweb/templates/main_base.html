@@ -69,15 +69,17 @@
   <body class="hamburger-menu-closed" tabindex="-1">
 
     {% include "includes/nav.html" %}
-    <main class="all-content flex-xl-nowrap {% block all_content_style %}{% endblock %}" id="main">
-      {% block content %}{% endblock content %}
-    </main>
+    <div id="content-and-footer">
+      <main class="all-content flex-xl-nowrap {% block all_content_style %}{% endblock %}" id="main">
+        {% block content %}{% endblock content %}
+      </main>
 
-    {% if not hide_footer %}
-      {% block footer %}
-          {% include "includes/footer.html" %}
-      {% endblock %}
-    {% endif %}
-    {% block extra_footer %}{% endblock %}
+      {% if not hide_footer %}
+        {% block footer %}
+            {% include "includes/footer.html" %}
+        {% endblock %}
+      {% endif %}
+      {% block extra_footer %}{% endblock %}
+    </div>
   </body>
 </html>
