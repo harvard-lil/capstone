@@ -131,8 +131,7 @@ This will make a virtualenv entitled "capstone." You can tell that you're inside
     (capstone)$ psql -c "CREATE DATABASE capapi;"
     (capstone)$ psql -c "CREATE DATABASE cap_user_data;"
     (capstone)$ fab init_dev_db  # one time -- set up database tables and development Django admin user, migrate databases
-    (capstone)$ fab load_test_data  # load in our test data
-    (capstone)$ fab update_all_snippets  # make our pre-generated data snippets 
+    (capstone)$ fab ingest_fixtures  # load in our test data
 
 #### 6. Running the capstone server <a id="running-the-capstone-server"></a>
 
@@ -149,8 +148,7 @@ We have initial support for local development via `docker compose`. Docker setup
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capapi;"
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE cap_user_data;"
     $ docker-compose exec web fab init_dev_db
-    $ docker-compose exec web fab load_test_data
-    $ docker-compose exec web fab update_all_snippets
+    $ docker-compose exec web fab ingest_fixtures
     $ docker-compose exec web fab run
     
 Capstone should now be running at 127.0.0.1:8000.

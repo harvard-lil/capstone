@@ -6,6 +6,7 @@ import re
 import signal
 import subprocess
 import sys
+import tempfile
 from collections import defaultdict
 from datetime import datetime
 from getpass import getpass
@@ -27,6 +28,7 @@ except Exception as e:
 
 from django.core import management
 from django.db import connections, transaction
+from django.db.models import Prefetch
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.conf import settings
@@ -35,10 +37,10 @@ from fabric.decorators import task
 
 from capapi.models import CapUser
 from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Citation, CaseMetadata, \
-    Court, Reporter
+    Court, Reporter, PageStructure
 
 import capdb.tasks as tasks
-from scripts import set_up_postgres, data_migrations, ingest_by_manifest, \
+from scripts import set_up_postgres, data_migrations, \
     validate_private_volumes as validate_private_volumes_script, export, update_snippets
 from scripts.helpers import copy_file, volume_barcode_from_folder, up_to_date_volumes, storage_lookup
 
@@ -115,21 +117,6 @@ def show_urls():
         print("\nURLs for %s (%s):\n" % (name, host["urlconf"]))
         management.call_command('show_urls', urlconf='URLCONF')
 
-@task
-def sync_with_s3():
-    """ Import XML for volumes that have not had a previous completed import with that VolumeXML md5. """
-    for volume_barcode in VolumeMetadata.objects.filter(ingest_status__in=['to_ingest', 'error']).values_list('barcode', flat=True):
-        ingest_by_manifest.ingest_volume_from_s3.delay(volume_barcode)
-
-@task
-def total_sync_with_s3():
-    """
-        Inspect and import any changed XML for all volumes not yet imported.
-
-        This now does the same thing as sync_with_s3, but is more efficient than sync_with_s3 for large numbers of volumes
-        because it uses the S3 manifest.
-    """
-    ingest_by_manifest.sync_s3_data.delay(full_sync=False)
 
 @task
 def validate_private_volumes():
@@ -139,7 +126,7 @@ def validate_private_volumes():
 
 fixtures = [
     ('default', 'capweb', ('galleryentry', 'cmspicture', 'gallerysection')),
-    ('capdb', 'capdb', ('jurisdiction', 'reporter', 'volumemetadata')),
+    ('capdb', 'capdb', ('jurisdiction', 'reporter', 'snippet', 'casefont')),
 ]
 
 @task
@@ -150,9 +137,6 @@ def ingest_fixtures():
 
 @task
 def update_fixtures():
-    from django.core import serializers
-
-    # write full tables
     for db, app, models in fixtures:
         for model in models:
             if model == 'volumemetadata':
@@ -162,18 +146,67 @@ def update_fixtures():
             with gzip.open(str(output_path), 'wt') as out:
                 management.call_command('dumpdata', '%s.%s' % (app, model), database=db, stdout=out, indent=2)
 
-    # write selected volumes with associated relationships
-    barcodes = ('32044057891608', '32044061407086', '32044057892259', 'WnApp_199')
+@task
+def export_volume(volume_id, output_zip=None):
+    """
+        Run this on production to export all data for a volume and its cases, as well as the volume's PDF, to a zip file.
+        Use import_volume() to load the zip on dev.
+    """
+    from django.core import serializers
+    import zipfile
+
+    if output_zip is None:
+        output_zip = '%s.zip' % volume_id
+    print("Exporting volume to %s" % output_zip)
+
     to_serialize = set()
-    for volume in VolumeMetadata.objects.filter(pk__in=barcodes).select_related('request', 'created_by'):
-        to_serialize.add(volume)
-        if volume.request:
-            to_serialize.add(volume.request)
-        if volume.created_by:
-            to_serialize.add(volume.created_by)
+    volume = (VolumeMetadata.objects.filter(pk=volume_id)
+        .select_related('request', 'created_by')
+        .prefetch_related(
+            Prefetch('page_structures', queryset=PageStructure.objects.select_related('ingest_source')),
+            Prefetch('case_metadatas', queryset=(CaseMetadata.objects
+                .select_related('structure', 'initial_metadata', 'body_cache', 'court')
+                .prefetch_related('citations', 'extractedcitations'))),
+        ).get()
+    )
+    to_serialize.add(volume)
+    if volume.request:
+        to_serialize.add(volume.request)
+    if volume.created_by:
+        to_serialize.add(volume.created_by)
+    for page_structure in volume.page_structures.all():
+        to_serialize.add(page_structure)
+        to_serialize.add(page_structure.ingest_source)
+    for case in volume.case_metadatas.all():
+        to_serialize.add(case)
+        to_serialize.add(case.structure)
+        to_serialize.add(case.initial_metadata)
+        to_serialize.add(case.body_cache)
+        to_serialize.add(case.court)
+        to_serialize.update(case.citations.all())
+        to_serialize.update(case.extractedcitations.all())
     serializer = serializers.get_serializer("json")()
-    with gzip.open(str(Path(settings.BASE_DIR, "capdb/fixtures/volumemetadata.capdb.json.gz")), "wt") as out:
-        serializer.serialize(to_serialize, stream=out, indent=2)
+    with zipfile.ZipFile(output_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zip:
+        zip.writestr("volume.json", serializer.serialize(to_serialize))
+        if volume.pdf_file:
+            with volume.pdf_file.open() as pdf:
+                zip.writestr("downloads/%s" % volume.pdf_file, pdf.read())
+
+@task
+def import_volume(volume_zip_path):
+    """
+        Run this on dev to import all data for a volume and its cases, as well as the volume's PDF.
+        Use export_volume() on prod to generate zips for this function.
+        Use populate_search_index() to reindex after ingesting volumes.
+    """
+    from distutils.dir_util import copy_tree
+    import zipfile
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        with zipfile.ZipFile(volume_zip_path, 'r') as zip_ref:
+            zip_ref.extractall(tmpdirname)
+        management.call_command('loaddata', str(Path(tmpdirname, 'volume.json')), database='capdb')
+        copy_tree(str(Path(tmpdirname, 'downloads')), str(Path(settings.BASE_DIR, 'test_data/downloads')))
+
 
 @task
 def run_pending_migrations():
@@ -265,11 +298,6 @@ def update_search_index_settings():
     # remove settings that cannot be changed on existing indexes
     new_settings = {k:v for k, v in case_index._settings.items() if k not in ('number_of_shards')}
     case_index.put_settings(body={"index": new_settings})
-
-@task
-def load_test_data():
-    ingest_fixtures()
-    total_sync_with_s3()
 
 
 @task
