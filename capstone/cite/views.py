@@ -253,7 +253,10 @@ def case_editor(request, case_id):
         'case_json': case_json,
         'pages_json': pages_json,
         'fonts_json': fonts_json,
+        'opinions_json': json.dumps(case.structure.opinions),
         'citation_full': case.full_cite(),
+        'nav_class': 'force-small-nav',
+        'hide_footer': True,
     })
 
 

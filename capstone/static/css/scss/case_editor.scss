@@ -4,11 +4,25 @@
 @import 'bootstrap/mixins';
 @import 'bootstrap/tooltip';
 
+h1 {
+  font-size: 1.2em;
+  margin-top: 0;
+}
+
+#main {
+  height: 100%;
+}
 
 .main-content {
   // undo @include make-col(9); from base
   max-width: unset !important;
   flex: unset !important;
+}
+
+#edit-app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 section, article {
@@ -28,21 +42,12 @@ section, article {
   margin-left: 0;
 }
 
-.form-group {
-  margin-bottom: 0;
-  label {
-    margin-bottom: 0;
-    font-size: smaller;
-  }
-}
-
 .viz-controls {
   .toggle-btn {
     @extend .btn-secondary;
     height: 2.5rem;
     width: 4rem;
     font-size: .75rem;
-    margin-bottom: 1rem;
     margin-left: 1rem;
   }
   .on {
@@ -56,13 +61,6 @@ section, article {
 }
 
 .edits-container {
-
-  width: 100%;
-  h4.edits-title {
-    font-size: 1.75rem;
-    line-height: 1rem;
-    font-weight: bold;
-  }
   .button-box {
     padding: .25rem;
     button {
@@ -77,11 +75,6 @@ section, article {
       justify-content: center;
       padding: 0;
     }
-  }
-  .edited-word-list {
-    width: 100%;
-    overflow: scroll;
-    height: 500px;
   }
   .edit-delete {
     background-color: transparent;
@@ -98,31 +91,6 @@ section, article {
   .word {
     word-break: break-word;
   }
-}
-
-.metadata {
-  margin-top: 0;
-  padding-top: 0;
-}
-
-.top-section.compressed {
-  margin: 2rem 0 0 0 ;
-  padding: 0;
-}
-
-#metadata-box {
-  input {
-    width: 20rem;
-    font-size: 1rem;
-    height: 2rem;
-  }
-  padding-left: 4rem;
-  padding-right : 4rem;
-  margin-bottom: 1.5rem;
-}
-
-.main-content.col-12 {
-  padding-top: 1rem;
 }
 
 body.modal_open {
@@ -158,16 +126,17 @@ body.modal_open {
   }
 }
 
-/*
-.confidence_visual {
-  background: linear-gradient(90deg, rgba(121,0,0,1) 0%, rgba(255,0,0,1) 35%, rgba(255,255,255,1) 100%);
+.tools-row {
+  height: 20vh;
 }
 
-.confidence {
-  font-size: small;
-  font-weight: bolder;
-  color: $color-light-blue;
-  padding-left: 1rem;
-  margin-right: 1.5rem;
+.scrollable {
+  height: 100%;
+  overflow: auto;
 }
-*/
+
+.section-title {
+  font-size: 1.25rem;
+  line-height: 1rem;
+  font-weight: bold;
+}

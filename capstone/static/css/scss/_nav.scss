@@ -51,36 +51,39 @@
   @include media-breakpoint-down(lg) {
     font-size: 1.2rem;
   }
-}
 
-#main-nav.sticky {
-  width: 100%;
-  padding: 0;
-  font-size: 18px;
-  transition: .2s;
-  .nav-item {
-    padding-bottom: 0;
-    padding-top: 0;
-    position: relative;
-  }
-  .nav-branding {
-    background: url("../../img/logos/cap-logo-long-white-harvard.svg") no-repeat;
-    background-size: contain;
-    width: 200px;
-    height: 21px;
-    margin-left: 1rem;
-    &:hover, &:focus, &:active {
-      background: url("../../img/logos/cap-logo-long-yellow-harvard.svg") no-repeat;
-      background-size: contain;
+  &.small-nav, &.force-small-nav {
+    padding: 0;
+    font-size: 18px;
+
+    .nav-item {
+      padding-bottom: 0;
+      padding-top: 0;
+      position: relative;
     }
 
-  }
-  .dropdown-menu {
-    margin-top: 10px;
-  }
-  > #burger-icon {
-    @include media-breakpoint-down(md) {
-      padding-top: 10px;
+    .nav-branding {
+      background: url("../../img/logos/cap-logo-long-white-harvard.svg") no-repeat;
+      background-size: contain;
+      width: 200px;
+      height: 21px;
+      margin-left: 1rem;
+
+      &:hover, &:focus, &:active {
+        background: url("../../img/logos/cap-logo-long-yellow-harvard.svg") no-repeat;
+        background-size: contain;
+      }
+
+    }
+
+    .dropdown-menu {
+      margin-top: 10px;
+    }
+
+    > #burger-icon {
+      @include media-breakpoint-down(md) {
+        padding-top: 10px;
+      }
     }
   }
 }

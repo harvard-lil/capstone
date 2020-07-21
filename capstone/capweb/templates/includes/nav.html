@@ -1,7 +1,7 @@
 {% load static %}
 <a class="skip" href="#main">Skip to main content</a>
 
-<nav id="main-nav" aria-label="main">
+<nav id="main-nav" aria-label="main" {% if nav_class %}class="{{nav_class}}"{% endif %}>
   <div class="branding">
     <a class="nav-branding" href="{% url "home" %}" aria-label="Caselaw Access Project Home"></a>
   </div>

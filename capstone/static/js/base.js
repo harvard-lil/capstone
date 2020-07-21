@@ -96,12 +96,12 @@ let setupScrollStickiness = function() {
   const handleScroll = function() {
     if (contentDiv.scrollTop > halfNavHeight) {
       if (!stickOn) {
-        nav.addClass("sticky");
+        nav.addClass("small-nav");
         stickOn = true;
       }
     } else {
       if (stickOn) {
-        nav.removeClass("sticky");
+        nav.removeClass("small-nav");
         stickOn = false;
       }
     }
