@@ -1,130 +1,109 @@
 <template>
-  <div>
-    <div id="metadata-box" class="row metadata">
-      <div class="col-3">
-        <button class="btn-primary mr-1 mb-1" @click="saveCase($event)">(^s)ave case to DB</button><br>
+  <div id="edit-app">
+    <div class="row p-2">
+      <div class="col-6">
+        <h1><a :href="urls.case">{{templateVars.citation_full}}</a></h1>
+      </div>
+      <div class="col-6 text-right viz-controls">
+        <button @click="showOcr=!showOcr" :class="{'toggle-btn': true, 'on': showOcr}">(^O)CR</button>
+        <button @click="showConfidence=!showConfidence" :class="{'toggle-btn': true, 'on': showConfidence}">W(^C)</button>
+        <button @click="toggleInstructions" class="toggle-btn off">help</button>
+        <button class="btn-primary mr-1 mb-1 ml-3" @click="saveCase($event)">(^s)ave case to DB</button>
         <button class="btn-secondary" @click="clearEdits">Clear All Edits</button>
         <span aria-live="polite"><span v-if="saveStatus" class="ml-1"><br>{{saveStatus}}</span></span>
       </div>
-      <div class="col-8">
+    </div>
+    <div class="tools-row row">
+      <div class="scrollable col-4">
+        <h4 class="section-title">current word</h4>
+        <div :style="currentWordStyle()"></div>
         <div class="row">
-          <div class="col-6">
-              <div class="form-group">
-                <label for="metadata-name-abbreviation">Short Name</label>
-                <input type="text" v-model="metadata.name_abbreviation" placeholder="case short name" id="metadata-name-abbreviation">
-              </div>
+          <div class="col-10">
+            <input type="text" id="current_word" :value="currentWord ? currentWord.string : ''" placeholder="current word" ref="currentWord" @input="wordEdited($event.target.value)">
           </div>
-          <div class="col-6">
-              <div class="form-group">
-                <label for="metadata-name">Long Name</label>
-                <input type="text" v-model="metadata.name" placeholder="case name" id="metadata-name">
-              </div>
+          <div class="col-2"><button @click="addSoftHyphen()" :disabled="currentWord === null">⧟</button></div>
+        </div>
+      </div>
+      <div class="scrollable col-4 edits-container">
+        <h4 class="section-title">edits</h4>
+        <div class="edited-word-list mt-3">
+          <div class="row edit-entry" v-for="word in editedWords" :key="word.id">
+            <div class="col-5 word" @click="wordClicked(word)">{{word.originalString}}</div>
+            <div class="col-6 word" @click="wordClicked(word)">{{word.string}}</div>
+            <div class="col-1 edit-controls"><span class="edit-delete" @click="removeEdit(word.id)">&#8855;</span></div>
           </div>
-          <div class="col-6">
-              <div class="form-group">
-                <label for="metadata-decision-date-original">Decision Date (YYYY-MM-DD)</label>
-                <input type="text" v-model="metadata.decision_date_original" placeholder="decision date" id="metadata-decision-date-original">
-              </div>
-          </div>
-          <div class="col-6">
-              <div class="form-group">
-                <label for="metadata-docket-number">Docket Number</label>
-                <input type="text" v-model="metadata.docket_number" placeholder="docket number" id="metadata-docket-number">
-              </div>
-          </div>
+        </div>
+      </div>
+      <div class="scrollable col-4">
+        <h4 class="section-title">case metadata</h4>
+        <div class="row">
+          <label class="col-4" for="metadata-name-abbreviation">Short Name</label>
+          <input class="col-8" type="text" v-model="metadata.name_abbreviation" placeholder="case short name" id="metadata-name-abbreviation">
+          <label class="col-4" for="metadata-name">Long Name</label>
+          <input class="col-8" type="text" v-model="metadata.name" placeholder="case name" id="metadata-name">
+          <label class="col-4" for="metadata-decision-date-original">Decision Date (YYYY-MM-DD)</label>
+          <input class="col-8" type="text" v-model="metadata.decision_date_original" placeholder="decision date" id="metadata-decision-date-original">
+          <label class="col-4" for="metadata-docket-number">Docket Number</label>
+          <input class="col-8" type="text" v-model="metadata.docket_number" placeholder="docket number" id="metadata-docket-number">
         </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-3 pl-3 pr-3">
-        <div class="sticky-top pt-6">
-          <div class="row mb-3" >
-            <div  class="col">
-              <div v-if="currentWord"
-                :style="{
-                  'background-image':`url(${currentPage.page.image_url})`,
-                  'background-size': `${currentPage.page.width}px`,
-                  width: `${currentWord.w}px`,
-                  height: `${currentWord.h}px`,
-                  'background-position': `-${currentWord.x}px -${currentWord.y}px`,
-                }">&nbsp;</div>
-              <div v-else :style="{ width: `20rem`, height: `2rem`}"></div>
-            </div>
+    <div class="row" style="flex: 1 1 auto; overflow-y: auto;">
+      <div id="textView" class="scrollable col-6">
+        <div v-for="opinion in opinions" class="opinion">
+          <h4 class="section-title">opinion: {{opinion.type}}</h4>
+          <div v-for="paragraph in opinion.paragraphs" :key="paragraph.id" class="paragraph">
+            <span class="paragraph-class">{{paragraph.class}}</span>
+            <template v-for="block in paragraphBlocks(paragraph)"><span
+              v-if="mounted"
+              v-for="word in block.words"
+              :key="word.id"
+              :style="wordTextStyle(word)"
+              @click="wordClicked(word)"
+              :ref="`wordText${word.id}`"
+              :class="wordClass(word)"
+            >{{word.stringWithoutSoftHyphens}}</span></template>
           </div>
-          <div class="row">
-            <div class="col-10">
-              <input v-if="currentWord" type="text" id="current_word" v-model="currentWord.string" ref="currentWord">
-              <input v-else type="text" disabled placeholder="current word">
+
+          <div v-for="footnote in opinion.footnotes" :key="footnote.id">
+            <span>{{footnote.label}}</span>
+
+            <!-- THIS IS NOT DRY YET -- REPEAT OF ABOVE -->
+            <div v-for="paragraph in opinion.paragraphs" :key="paragraph.id">
+              <span>{{paragraph.class}}</span>
+              <template v-for="block in paragraphBlocks(paragraph)"><span
+                v-if="mounted"
+                v-for="word in block.words"
+                :key="word.id"
+                :style="wordTextStyle(word)"
+                @click="wordClicked(word)"
+                :ref="`wordText${word.id}`"
+                :class="wordClass(word)"
+              >{{word.stringWithoutSoftHyphens}}</span></template>
             </div>
-            <div class="col-2"><button @click="addSoftHyphen()" :disabled="currentWord === null">⧟</button></div>
+            <!-- END THING TO DRY -->
           </div>
-          <!--
-          <div class="row confidence confidence_visual">
-            <div class="col-4">
-              Confidence:
-            </div>
-            <div class="col-4">
-               <span v-if="currentWord" id="current_word_confidence">{{Math.round(currentWord.wordConfidence * 100)}}%</span>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col">
-               <span class="confidence-indicator" v-if="currentWord"
-                :style="{'margin-left':`${currentWord.wordConfidence * 90}%`}">&#x29cd;</span>
-            </div>
-          </div>
-          -->
-          <div class="edits-container row mt-5">
-            <div class="col-5 pt-1">
-              <h4 class="edits-title">edits</h4>
-            </div>
-            <div class="row edited-word-list mt-3">
-              <div class="col-12 ">
-                <div v-for="(p, p_id) in savedWordEdits" :key="p_id">
-                  <div v-for="(b, b_id) in p" :key="b_id">
-                    <div>
-                      <div class="row edit-entry" v-for="(w, w_id) in b" :key="w_id" >
-                        <div class="col-5 word" @click="scrollToWord(p_id, b_id, w_id)">{{w[0]}}</div>
-                        <div class="col-6 word" @click="scrollToWord(p_id, b_id, w_id)">{{w[1]}}</div>
-                        <div class="col-1 edit-controls"><span class="edit-delete" @click="removeEdit(p_id, b_id, w_id)">&#8855;</span></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
-      <div id="canvas_div" class="col-8">
-        <page v-for="page in pages" :key="page.id" :page="page" :savedWordEdits="savedWordEdits[page.id]" ref="pageComponents"/>
-      </div>
-      <div id="controls" class="col-1">
-         <div class="sticky-top pt-6 row">
-           <div class="col viz-controls">
-            <div class="row ocr-toggle" v-if="showOcr">
-              <button v-on:click="showOcr=false" class="toggle-btn on">(^O)CR</button>
-            </div>
-            <div class="row ocr-toggle" v-else>
-              <button v-on:click="showOcr=true" class="toggle-btn off">(^O)CR</button>
-            </div>
-            <div class="row wc-toggle" v-if="showConfidence">
-              <button v-on:click="showConfidence=false" class="toggle-btn on">W(^C)</button>
-            </div>
-            <div class="row wc-toggle" v-else>
-              <button v-on:click="showConfidence=true"  class="toggle-btn off">W(^C)</button>
-            </div>
-            <div class="row instruction-toggle">
-              <button v-on:click="toggleInstructions" class="toggle-btn off">help</button>
-            </div>
-
-           </div>
-          </div>
+      <div id="imageView" class="scrollable col-6" ref="pageImageContainer">
+        <div v-for="page in pages" :key="page.id" ref="pageImages" :class="{page: true, 'show-ocr': showOcr}">
+          <img :src="page.image_url" :width="page.width * page.scale" :height="page.height * page.scale">
+          <span v-if="mounted"
+                v-for="word in page.words"
+                :key="word.id"
+                :style="wordImageStyle(page, word)"
+                @click="wordClicked(word)"
+                :ref="`wordImage${word.id}`"
+                :class="wordClass(word)">
+            {{word.string}}
+          </span>
+        </div>
       </div>
     </div>
     <div class="pt-6" id="instructions_modal_overlay" style="display: none">
       <div class="col-8 offset-2 p-5" id="instructions_modal">
-        <div id="modal_close" v-on:click="toggleInstructions">&#8855;</div>
+        <div id="modal_close" @click="toggleInstructions">&#8855;</div>
         <div class="row pt-3">
           <div class="q col-3">When should I press “Save”?</div>
           <div class="a col-9 pl-3">
@@ -159,23 +138,21 @@
   import $ from "jquery";
   import '../jquery_django_csrf';
   import debounce from "lodash.debounce";
+  import scrollIntoView from 'scroll-into-view-if-needed';
 
-  import Page from './page.vue'
   import {FAKE_SOFT_HYPHEN, SOFT_HYPHEN} from "./helpers";
 
-  const toHashMap = (a,f) => a.reduce((a,c)=> (a[f(c)]=c,a),{});
-
   export default {
-    components: {Page},
     data() {
       return {
-        currentWord: null,
-        currentPage: null,
-        showOcr: true,
-        showConfidence: true,
+        pages: null,
         metadata: null,
-        savedWordEdits: {},
+        currentWord: null,
+        showOcr: false,
+        showConfidence: false,
+        editedWords: {},
         saveStatus: null,
+        mounted: false,
       }
     },
     watch: {
@@ -185,17 +162,32 @@
         },
         deep: true
       },
+      editedWords: {
+        handler() {
+          this.saveStateToStorage();
+        },
+        deep: true
+      },
     },
-    beforeMount: function () {
+    created() {
       // load local variables from Django template
-      this.urls = templateVars.urls;  // eslint-disable-line
-      this.metadata = templateVars.metadata;  // eslint-disable-line
+      this.templateVars = templateVars;  // eslint-disable-line
+      this.urls = this.templateVars.urls;
+      this.opinions = this.templateVars.opinions;
+
+      // preprocess metadata
+      this.metadata = this.templateVars.metadata;
       this.serverMetadata = {...this.metadata};
-      this.pages = templateVars.pages;  // eslint-disable-line
-      this.pagesById = toHashMap(this.pages, p => p.id);
-      this.fonts = templateVars.fonts;  // eslint-disable-line
+
+      // preprocess pages
+      this.pages = this.templateVars.pages;
+      this.blocksById = {};
+      for (const page of this.pages)
+        for (const block of page.blocks)
+          this.blocksById[block.id] = block;
 
       // preprocess fonts
+      this.fonts = this.templateVars.fonts;
       for (const fontId of Object.keys(this.fonts))
         this.fonts[fontId] = this.processFont(this.fonts[fontId]);
       this.fonts[-1] = {styles:'', family:'Times New Roman', size:12.0};  // default font
@@ -203,13 +195,13 @@
 
       // load state from localStorage
       this.storageKey = `caseedit-${this.metadata.id}`;
-      this.savedWordEdits = {};
       const savedStateJson = localStorage.getItem(this.storageKey);
+      this.savedWordEdits = {};
       if (savedStateJson) {
         try {
           const savedState = JSON.parse(savedStateJson);
 
-          // for use in page rendering
+          // for use in extracting words
           this.savedWordEdits = savedState.edit_list;
 
           // apply saved updates to metadata, if server val still matches old val
@@ -225,6 +217,7 @@
           localStorage.removeItem(this.storageKey);
         }
       }
+      this.extractWords();  // depends on saved state
     },
     mounted: function () {
       document.addEventListener('keyup', (e)=>{
@@ -244,21 +237,181 @@
           }
         }
       });
-      this.pageComponentsById = toHashMap(this.$refs.pageComponents, p => p.page.id);
+      for (const [i, page] of this.pages.entries())
+        page.imageRef = this.$refs.pageImages[i];
+      window.addEventListener('resize', ()=>{ this.handleWindowResize() });
+      this.handleWindowResize();
+      this.mounted = true;
     },
     methods: {
+      wordEdited(newVal) {
+        const word = this.currentWord;
+        if (word.originalString === newVal)
+          this.$delete(this.editedWords, word.id);
+        else
+          this.$set(this.editedWords, word.id, word);
+        word.string = newVal;
+        word.stringWithoutSoftHyphens = word.string.replace(FAKE_SOFT_HYPHEN, '');
+      },
+      paragraphBlocks(paragraph) {
+        if (!paragraph.block_ids)
+          return [];
+        return paragraph.block_ids.map(blockId => this.blocksById[blockId]);
+      },
+      currentWordStyle() {
+        if (this.currentWord) {
+          const currentPage = this.pagesByWordId[this.currentWord.id];
+          return {
+            'background-image':`url(${currentPage.image_url})`,
+            'background-size': `${currentPage.width}px`,
+            width: `${this.currentWord.w}px`,
+            height: `${this.currentWord.h}px`,
+            'background-position': `-${this.currentWord.x}px -${this.currentWord.y}px`,
+          };
+        }
+        return {width: '20rem', height: '2rem'};
+      },
+      wordImageStyle(page, word) {
+        const font = word.font;
+        return {
+          left: `${word.x * page.scale}px`,
+          top: `${word.y * page.scale - word.yOffset * page.fontScale - 1}px`,  // -1 for top border
+          'background-color': this.showConfidence ? word.wordConfidenceColor : 'unset',
+          // font format is "<styles> <font size>/<line height> <font families>":
+          font: `${font.styles} ${font.size * page.fontScale}px/${word.lineHeight * page.fontScale}px ${font.family}`,
+        };
+      },
+      wordTextStyle(word) {
+        const font = word.font;
+        return {
+          'background-color': this.showConfidence ? word.wordConfidenceColor : 'unset',
+          font: `${word.font.styles}`,
+        };
+      },
+      wordClass(word) {
+        return {
+          'current-word': this.currentWord === word,
+          'edited': word.string !== word.originalString,
+        };
+      },
+      wordClicked(word) {
+        this.currentWord = word;
+        this.$refs.currentWord.focus();
+        this.scrollToWord(word.id);
+      },
+      wordConfidenceColor(word) {
+        const alpha = (.6 - word.wordConfidence)*100;
+        const red = 255 * word.wordConfidence + 127;
+        return `rgba(${red}, 0, 0, ${alpha}%)`;
+      },
+      handleWindowResize() {
+        const containerWidth = this.$refs.pageImageContainer.offsetWidth;
+        for (const page of this.pages) {
+          this.$set(page, 'scale', containerWidth / page.width);
+          // Conversion factor for font pts on scanned page to pixels.
+          // For example, a font detected as "12pt" in our 300DPI scan was actually 12/72 * 300 == 50px high.
+          page.fontScale = page.scale * 300/72;
+        }
+      },
+      extractWords() {
+        /*
+          Extract a list of words from the token stream in each page.blocks, and store the words in each page.words.
+
+          word objects look like this: {
+            blockId,
+            wordConfidence, font,  // display metadata
+            x, y, w, h,  // location
+            lineHeight, yOffset,  // calculated OCR alignment values
+            strings: [{index, value}],  // list of the original token stream strings composing this word
+            originalString,  // merged strings, before any edits
+            string,  // merged strings, including any edits
+          }
+
+          To save changes later, we'll update `blocks[blockId].tokens[index]` to `string`, and empty any additional `strings`.
+         */
+        let wordId = 0;
+        this.pagesByWordId = {};
+        for (const page of this.pages) {
+          const words = [];
+          for (const block of page.blocks) {
+            block.words = [];
+            if (!block.tokens)
+              continue;
+            let word = null;
+            let fontId = -1;
+            const wordEdits = this.savedWordEdits[page.id] && this.savedWordEdits[page.id][block.id] ? this.savedWordEdits[page.id][block.id] : {};
+            for (const [i, token] of block.tokens.entries()) {
+              if (typeof token === 'string') {
+                if (word)
+                  word.strings.push({index: i, value: token});
+                continue;
+              }
+              const [tag, attrs] = token;
+              if(tag === 'ocr') {
+                const rect = attrs.rect;
+                word = {
+                  blockId: block.id,
+                  wordConfidence: attrs.wc,
+                  font: this.fonts[fontId],
+                  strings: [],
+                  x: rect[0],
+                  y: rect[1],
+                  w: rect[2],
+                  h: rect[3],
+                };
+              } else if(tag === '/ocr') {
+                if (!word)
+                  continue;  // tag closed before opened -- shouldn't happen
+                if (word.strings.length) {
+                  // apply saved edits, if any
+                  const wordIndex = words.length;
+                  word.index = wordIndex;
+                  word.originalString = word.strings.map(s=>s.value).join("").replace(SOFT_HYPHEN, FAKE_SOFT_HYPHEN);
+                  if (wordIndex in wordEdits && wordEdits[wordIndex][0] === word.originalString) {
+                    word.string = wordEdits[wordIndex][1];
+                    this.editedWords[wordId] = word;
+                  } else {
+                    word.string = word.originalString;
+                  }
+                  word.stringWithoutSoftHyphens = word.string.replace(FAKE_SOFT_HYPHEN, '');
+
+                  // for OCR alignment, calculate line height based on font, and apply a y offset based on the tallest
+                  // character in the word
+                  word.lineHeight = this.getFontLineHeight(fontId);
+                  word.yOffset = Math.min(...word.string.split('').map(c => word.lineHeight - this.getCharAscent(c, fontId)));
+
+                  // calculate background color
+                  word.wordConfidenceColor = this.wordConfidenceColor(word);
+
+                  wordId++;
+                  word.id = wordId;
+                  words.push(word);
+                  block.words.push(word);
+                  this.pagesByWordId[wordId] = page;
+                }
+                word = null;
+              } else if(tag === 'font') {
+                fontId = attrs.id;
+              } else if(tag === '/font') {
+                fontId = -1;
+              }
+            }
+          }
+          page.words = words;
+        }
+      },
       toggleInstructions() {
         const instructions = document.getElementById("instructions_modal_overlay")
         instructions.style.display = instructions.style.display === "none" ? 'block' : 'none'
       },
-      scrollToWord(p_id, b_id, w_id) {
-        const pageComponent = this.pageComponentsById[parseInt(p_id)];
-        pageComponent.wordClicked(pageComponent.words[w_id]);
-        document.body.querySelector(`span[scroll-to-here="${b_id}_${w_id}"]`).scrollIntoView();
+      scrollToWord(wordId) {
+        scrollIntoView(this.$refs[`wordText${wordId}`][0], {scrollMode: 'if-needed'});
+        scrollIntoView(this.$refs[`wordImage${wordId}`][0], {scrollMode: 'if-needed'});
       },
-      removeEdit(p_id, b_id, w_id) {
-        const word = this.pageComponentsById[parseInt(p_id)].words[w_id];
+      removeEdit(wordId) {
+        const word = this.editedWords[wordId];
         word.string = word.originalString;
+        this.$delete(this.editedWords, wordId);
       },
       clearEdits() {
         if (!confirm('CONFIRM: permanently discard your edits?\nThere is no undo for this command.')) {
@@ -266,8 +419,8 @@
         }
         localStorage.removeItem(this.storageKey);
         this.metadata = {...this.serverMetadata};
-        for (const pageComponent of this.$refs.pageComponents)
-          for (const word of pageComponent.words)
+        for (const page of this.pages)
+          for (const word of page.words)
             if (word.string !== word.originalString)
               word.string = word.originalString;
       },
@@ -297,9 +450,9 @@
           With wordIndexed=true, <index> represents index into clickable words in the block, used for saving to localStorage.
         */
         const editList = {};
-        for (const pageComponent of this.$refs.pageComponents) {
-          const pageId = pageComponent.page.id;
-          for (const [wordIndex, word] of pageComponent.words.entries()) {
+        for (const page of this.pages) {
+          const pageId = page.id;
+          for (const [wordIndex, word] of page.words.entries()) {
             if (word.string !== word.originalString) {
               if (!editList[pageId])
                 editList[pageId] = {};
@@ -329,7 +482,6 @@
         /* save to local storage */
         const save_state = this.getState(true)
         localStorage.setItem(this.storageKey, JSON.stringify(save_state));
-        this.savedWordEdits = save_state['edit_list']
       }, 500),
       async saveCase() {
         /* save to server */
@@ -402,3 +554,50 @@
     },
   }
 </script>
+
+<style lang="scss" scoped>
+  .scrollable {
+    border: 2px gray solid;
+    padding: 1em;
+  }
+  .page {
+    position: relative;
+    span {
+      border: 1px transparent solid;
+      line-height: 1;
+      color: transparent;
+      position: absolute;
+    }
+    &.show-ocr {
+      img {
+        opacity: 0.2;
+      }
+
+      span {
+        color: unset;
+      }
+    }
+  }
+  .current-word {
+    border: 1px green solid !important;
+  }
+  .edited {
+    border: 1px orange solid !important;
+  }
+  #textView {
+    padding: 2em;
+    hyphens: none;
+    .opinion {
+      padding-bottom: 2em;
+      padding-top: 2em;
+      border-bottom: 1px gray solid;
+    }
+    .paragraph {
+      margin-bottom: 1em;
+    }
+    .paragraph-class {
+      margin-right: 1em;
+      color: gray;
+    }
+  }
+</style>
