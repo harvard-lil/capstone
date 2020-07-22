@@ -192,6 +192,8 @@ class CaseFilter(filters.FilterSet):
         ),
     )
     page_size = filters.NumberFilter(label='Results per page (1 to 10,000; default 100)')
+    last_updated_min = filters.CharFilter(label='last_updated greater than or equal to this prefix')
+    last_updated_max = filters.CharFilter(label='last_updated less than or equal to this prefix')
 
 
 class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):

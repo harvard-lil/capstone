@@ -167,11 +167,10 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
         volume = VolumeMetadata.objects.get(pk=volume_id)
         to_update = []
         to_create = []
+        cases_to_update = []
 
         # query includes related/prefetch for elasticsearch indexing
-        query = (volume.case_metadatas
-            .select_related('body_cache', 'volume', 'reporter', 'court', 'jurisdiction')
-            .prefetch_related('extractedcitations', 'citations'))
+        query = volume.case_metadatas.for_indexing(require_body_cache=False)
 
         # full rendering of HTML/XML
         if rerender:
@@ -180,34 +179,36 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
             fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
             labels_by_block_id = PageStructure.labels_by_block_id(pages)
             update_fields = ['html', 'xml', 'text', 'json']
-
-            query = (query
-                .select_related('structure')
-                .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json'))
-
-            for case_metadata in query:
-                case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False)
+            query = query.select_related('structure')
 
         # just rendering text/json
         else:
-            query = query.defer('body_cache__xml', 'body_cache__text', 'body_cache__json').exclude(body_cache=None)
+            query = query.exclude(body_cache=None)
             blocks_by_id = fonts_by_id = labels_by_block_id = None
             update_fields = ['text', 'json']
 
         # do processing
         for case_metadata in query:
-            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False)
             body_cache = case_metadata.body_cache
-            if body_cache.id:
-                to_update.append(body_cache)
-            else:
-                to_create.append(body_cache)
+            old_fields = {k: getattr(body_cache, k) for k in update_fields}
+            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False, reindex=False)
+            new_fields = {k: getattr(body_cache, k) for k in update_fields}
+            if old_fields != new_fields:
+                if body_cache.id:
+                    to_update.append(body_cache)
+                else:
+                    to_create.append(body_cache)
+                case_metadata.last_updated = timezone.now()
+                cases_to_update.append(case_metadata)
 
         # save
         if to_create:
             CaseBodyCache.objects.bulk_create(to_create)
         if to_update:
             CaseBodyCache.objects.bulk_update(to_update, update_fields)
+        if cases_to_update:
+            CaseMetadata.objects.bulk_update(cases_to_update, ['last_updated'])
+            CaseMetadata.reindex_cases(cases_to_update)
 
 
 def create_case_metadata_from_all_vols(update_existing=False):

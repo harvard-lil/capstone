@@ -321,13 +321,13 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
 
     # full sync
     CaseBodyCache.objects.update(text='blank')
-    with django_assert_num_queries(select=7, update=2):
+    with django_assert_num_queries(select=7, update=3):
         sync_case_body_cache_for_vol(volume_metadata.barcode)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 
     # text/json sync
     CaseBodyCache.objects.update(text='blank')
-    with django_assert_num_queries(select=5, update=2):
+    with django_assert_num_queries(select=5, update=3):
         sync_case_body_cache_for_vol(volume_metadata.barcode, rerender=False)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 

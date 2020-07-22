@@ -139,6 +139,7 @@ class CaseDocument(DocType):
             'decision_date',
             'decision_date_original',
             'date_added',
+            'last_updated',
         ]
         ignore_signals = True
         auto_refresh = False

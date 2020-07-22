@@ -37,6 +37,9 @@
       <div class="scrollable col-4">
         <h4 class="section-title">case metadata</h4>
         <div class="row">
+          <label class="col-8 m-0" for="metadata-human-corrected">Human Corrected</label>
+          <input class="col-4" type="checkbox" v-model="metadata.human_corrected" id="metadata-human-corrected">
+          <small class="form-text text-muted">Set "Human Corrected" if this case has been fully corrected and is essentially error-free.</small>
           <label class="col-4" for="metadata-name-abbreviation">Short Name</label>
           <input class="col-8" type="text" v-model="metadata.name_abbreviation" placeholder="case short name" id="metadata-name-abbreviation">
           <label class="col-4" for="metadata-name">Long Name</label>
@@ -485,15 +488,20 @@
       }, 500),
       async saveCase() {
         /* save to server */
-        if (!confirm('CONFIRM: permanently overwrite ' + this.metadata.name + ' in the CAP database with your edited ' +
-                'version?\nThere is no undo for this command.')) {
+        const description = prompt(`
+          CONFIRM: permanently replace ${this.templateVars.citation_full} in the CAP database with your edited version?
+          There is no undo for this command.
+          Enter a description of your edits to continue:
+        `, '');
+        if (!description)
           return;
-        }
         this.saveStatus = "saving ...";
+        const state = this.getState();
+        state.description = description;
         try {
           await $.ajax('', {
             type : 'POST',
-            data: JSON.stringify(this.getState()),
+            data: JSON.stringify(state),
             contentType: 'application/json',
           }).promise();
         } catch(e) {
