@@ -1,6 +1,8 @@
+import datetime
 import re
 import json
 from datetime import timedelta
+from difflib import unified_diff
 from pathlib import Path
 
 import fabfile
@@ -317,11 +319,61 @@ def test_retrieve_page_image(admin_client, auth_client, volume_metadata):
 
 
 @pytest.mark.django_db
-def test_case_editor_view(admin_client, auth_client, unrestricted_case):
-    response = admin_client.get(reverse('case_editor', args=[unrestricted_case.pk], host='cite'))
+def test_case_editor(admin_client, auth_client, unrestricted_case):
+    url = reverse('case_editor', args=[unrestricted_case.pk], host='cite')
+    response = admin_client.get(url)
     check_response(response)
-    response = auth_client.get(reverse('case_editor', args=[unrestricted_case.pk], host='cite'))
+    response = auth_client.get(url)
     check_response(response, status_code=302)
+
+    # make an edit
+    unrestricted_case.sync_case_body_cache()
+    body_cache = unrestricted_case.body_cache
+    old_html = body_cache.html
+    old_first_page = unrestricted_case.first_page
+    description = "Made some edits"
+    page = unrestricted_case.structure.pages.first()
+    response = admin_client.post(
+        url,
+        json.dumps({
+            'metadata': {
+                'name': [unrestricted_case.name, 'new name'],
+                'decision_date_original': [unrestricted_case.decision_date_original, '2020-01-01'],
+                'first_page': [old_first_page, 'ignore this'],
+                'human_corrected': [False, True],
+            },
+            'description': description,
+            'edit_list': {
+                page.id: {
+                    'BL_81.3': {
+                        3: ["Case text 0", "Replacement text"],
+                    }
+                }
+            }
+        }),
+        content_type="application/json")
+    check_response(response)
+
+    # check OCR edit
+    body_cache.refresh_from_db()
+    new_html = body_cache.html
+    assert list(unified_diff(old_html.splitlines(), new_html.splitlines(), n=0))[3:] == [
+        '-    <h4 class="parties" id="b81-4">Case text 0</h4>',
+        '+    <h4 class="parties" id="b81-4">Replacement text</h4>',
+    ]
+
+    # check metadata
+    unrestricted_case.refresh_from_db()
+    assert unrestricted_case.name == 'new name'
+    assert unrestricted_case.decision_date_original == '2020-01-01'
+    assert unrestricted_case.decision_date == datetime.date(year=2020, month=1, day=1)
+    assert unrestricted_case.human_corrected is True
+    assert unrestricted_case.first_page == old_first_page  # change ignored
+
+    # check log
+    log_entry = unrestricted_case.correction_logs.first()
+    assert log_entry.description == description
+    assert log_entry.user_id == admin_client.auth_user.id
 
 
 @pytest.mark.django_db

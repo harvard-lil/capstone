@@ -7,6 +7,7 @@ from contextlib import contextmanager
 import struct
 import base64
 import fitz
+from django.utils import timezone
 from lxml import etree
 from model_utils import FieldTracker
 import nacl
@@ -685,6 +686,7 @@ class VolumeMetadata(models.Model):
                     citation.cite = citation.cite.replace(old_volume_number, self.volume_number, 1)
                     citation.save()
                     CaseMetadata.update_frontend_urls([old_citation, citation.cite])
+            self.case_metadatas.update(last_updated=timezone.now())
             CaseMetadata.reindex_cases(self.case_metadatas.for_indexing())
 
     def set_reporter(self, reporter, update_citations=True):
@@ -697,7 +699,7 @@ class VolumeMetadata(models.Model):
             old_reporter = self.reporter
             self.reporter = reporter
             self.save()
-            self.case_metadatas.update(reporter=reporter)
+            self.case_metadatas.update(reporter=reporter, last_updated=timezone.now())
             if update_citations:
                 Citation.replace_reporter(
                     Citation.objects.filter(case__volume=self, type="official"),
@@ -923,14 +925,14 @@ class CaseMetadataQuerySet(TemporalQuerySet):
         return self.update(
             in_scope=Q(duplicative=False, duplicate=False) & ~Q(jurisdiction_id=None) & ~Q(court_id=None))
 
-    def for_indexing(self):
+    def for_indexing(self, require_body_cache=True):
         """
             Fetch only cases that are appropriate for Elasticsearch indexing, with associated data.
         """
-        return (self
-            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache')
-            .prefetch_related('extractedcitations', 'citations')
-            .exclude(body_cache=None))
+        out = self.select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache').prefetch_related('extractedcitations', 'citations')
+        if require_body_cache:
+            out = out.exclude(body_cache=None)
+        return out
 
 
 class CaseMetadata(models.Model):
@@ -963,6 +965,9 @@ class CaseMetadata(models.Model):
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
                                  on_delete=models.DO_NOTHING)
     date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    last_updated = models.DateTimeField(null=True, blank=True, auto_now_add=True,
+                                        help_text="User-visible date when the API response for this case last changed")
+    human_corrected = models.BooleanField(default=False, help_text="True if the case meets a 'human corrected' standard of accuracy")
     duplicative = models.BooleanField(default=False,
                                       help_text="True if case was not processed because it is an unofficial case in a regional reporter")
     duplicate = models.BooleanField(default=False,
@@ -1007,7 +1012,8 @@ class CaseMetadata(models.Model):
             self.decision_date = parse_decision_date(self.decision_date_original)
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
-        if not getattr(kwargs, 'no_reindex', False) and self.pk and hasattr(self, 'body_cache'):
+        if not kwargs.get('no_reindex') and self.pk and hasattr(self, 'body_cache'):
+            self.last_updated = timezone.now()
             self.reindex()
         super().save(*args, **kwargs)
 
@@ -1058,10 +1064,11 @@ class CaseMetadata(models.Model):
                     new_frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=disambiguate)
                     if new_frontend_url != case.frontend_url:
                         case.frontend_url = new_frontend_url
+                        case.last_updated = timezone.now()
                         to_update.append(case)
 
             if to_update:
-                cls.objects.bulk_update(to_update, ['frontend_url'])
+                cls.objects.bulk_update(to_update, ['frontend_url', 'last_updated'])
                 if update_elasticsearch:
                     cls.reindex_cases(to_update)
 
@@ -1168,6 +1175,8 @@ class CaseMetadata(models.Model):
             if save:
                 # save this way to avoid hydrating deferred fields
                 CaseBodyCache.objects.filter(id=body_cache.id).update(json=body_cache.json, text=body_cache.text)
+            if reindex:
+                self.save()
             return
 
         structure = self.structure
@@ -1198,7 +1207,7 @@ class CaseMetadata(models.Model):
         if save:
             body_cache.save()
         if reindex:
-            self.reindex()
+            self.save()
 
     def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)
@@ -2365,6 +2374,13 @@ class EditLogTransaction(models.Model):
         timestamp_field = self._meta.get_field('timestamp')
         fields = tuple(f for f in fields if f != timestamp_field)
         return super()._do_insert(manager, using, fields, update_pk, raw)
+
+
+class CorrectionLog(models.Model):
+    case = models.ForeignKey('CaseMetadata', related_name='correction_logs', on_delete=models.DO_NOTHING)
+    user_id = models.IntegerField(blank=True, null=True)
+    description = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
 
 
 class CaseImage(models.Model):

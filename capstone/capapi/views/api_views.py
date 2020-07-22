@@ -135,6 +135,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'decision_date': 'decision_date',
         'decision_date_min': {'field': 'decision_date', 'default_lookup': 'gte'},
         'decision_date_max': {'field': 'decision_date', 'default_lookup': 'lte'},
+        'last_updated_min': {'field': 'last_updated', 'default_lookup': 'gte'},
+        'last_updated_max': {'field': 'last_updated', 'default_lookup': 'lte'},
     }
 
     # Define ordering fields

@@ -115,15 +115,16 @@ class CaseDocumentSerializer(DocumentSerializer):
                 'jurisdiction_url': placeholder_url("jurisdiction-detail"),
             }
 
+        preview = []
         if "_source" in instance:
             s = instance["_source"]
             preview = [highlight for highlights in instance['highlight'].values() for highlight in highlights] if 'highlight' in instance else []
+        elif type(instance) is CaseDocument:
+            s = instance._d_
         else:
             s = instance
-            preview = []
 
-        # TODO: remove check for "extractedcitations" key after ES index has been created
-        extractedcitations = [{"cite": c["cite"]} for c in s["extractedcitations"]] if "extractedcitations" in s else []
+        extractedcitations = [{"cite": c["cite"]} for c in s["extractedcitations"]]
 
         return OrderedDict((
             ("id", s["id"]),
@@ -163,6 +164,7 @@ class CaseDocumentSerializer(DocumentSerializer):
             ("cites_to", extractedcitations),
             ("frontend_url", self._url_templates['frontend_url'] % s["frontend_url"]),
             ("preview", preview),
+            ("last_updated", s.get("last_updated")),  # can be changed to s["last_updated"] once new index is in place
         ))
 
 

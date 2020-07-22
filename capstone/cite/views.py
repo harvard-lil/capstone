@@ -32,7 +32,7 @@ from capapi.authentication import SessionAuthentication
 from capapi.resources import link_to_cites
 from capapi.views.api_views import CaseDocumentViewSet
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseFont, PageStructure, EditLog, \
-    ExtractedCitation
+    ExtractedCitation, CorrectionLog
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
@@ -171,23 +171,11 @@ def page_image(request, volume_id, sequence_number):
 def case_editor(request, case_id):
     case = get_object_or_404(CaseMetadata.objects.select_related('volume', 'reporter', 'structure'), pk=case_id)
     pages = list(case.structure.pages.order_by('order'))
-    metadata_fields = ['name_abbreviation', 'name', 'decision_date_original', 'docket_number']
+    metadata_fields = ['human_corrected', 'name_abbreviation', 'name', 'decision_date_original', 'docket_number']
 
     # handle save
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf8'))
-
-        # update case, if needed
-        case_to_save = None
-        metadata_count = 0
-        for field in metadata_fields:
-            if field not in data['metadata']:
-                continue
-            old_val, new_val = data['metadata'][field]
-            if getattr(case, field) == old_val:
-                metadata_count += 1
-                setattr(case, field, new_val)
-                case_to_save = case
 
         # update pages, if needed
         pages_to_save = []
@@ -212,25 +200,29 @@ def case_editor(request, case_id):
                             raise Exception("attempt to edit out-of-date token")
                         tokens[index] = new_val
 
-        if case_to_save or pages_to_save:
-            with EditLog(description='Case %s edited by user %s: %s metadata fields, %s words' % (case.id, request.user.id, metadata_count, word_count)).record():
-                reindex_flag = False
-                if case_to_save:
-                    case.save()
-                    reindex_flag = True
+        # update case, if needed
+        metadata_count = 0
+        for field in metadata_fields:
+            if field not in data['metadata']:
+                continue
+            old_val, new_val = data['metadata'][field]
+            if getattr(case, field) == old_val:
+                metadata_count += 1
+                setattr(case, field, new_val)
+
+        if metadata_count or word_count:
+            with EditLog(description='Case %s edited by user %s: %s metadata fields, %s words' % (case.id, request.user.id, metadata_count, word_count), user_id=request.user.id).record():
+                CorrectionLog(description=data['description'], user_id=request.user.id, case=case).save()
                 if pages_to_save:
                     PageStructure.objects.bulk_update(pages_to_save, ['blocks'])
                     case.sync_case_body_cache(blocks_by_id=PageStructure.blocks_by_id(pages), reindex=False)
-                    reindex_flag = True
 
                     # re-extract citations
                     existing_cites = {c.cite: c for c in ExtractedCitation.objects.filter(cited_by=case)}
                     new_cites = {c.cite: c for c in extract_citations(case)[0]}
                     ExtractedCitation.objects.filter(id__in=[v.id for k, v in existing_cites.items() if k not in new_cites]).delete()
                     ExtractedCitation.objects.bulk_create([v for k, v in new_cites.items() if k not in existing_cites])
-
-                if reindex_flag:
-                    case.reindex()
+                case.save()  # reindexes and sets last_updated
 
         return HttpResponse('OK')
 
