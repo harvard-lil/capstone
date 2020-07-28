@@ -1483,9 +1483,31 @@ def write_manifest_files():
             ])
 
 
+@task
+def calculate_pagerank_scores(citation_graph_path="graph/citations.csv.gz", pagerank_score_output="graph/pagerank_scores.csv.gz"):
+    """ Generate pageranks scores for all nodes in the given citation graph """
+    import networkx as nx
+    with gzip.open(str(citation_graph_path), 'rt') as f:
+        graph = nx.DiGraph()
+        reader = csv.reader(f)
+        for ids in tqdm(reader,total=4911157, desc="Reading citation graph"):
+            cite_from_id, *cite_to_ids = [int(i) for i in ids]
+            for cite_to_id in cite_to_ids:
+                graph.add_edge(cite_to_id, cite_from_id)
+        # Graph loaded
+        print("Started PageRank calculation at {}".format(datetime.now()))
+        pagerank_scores = sorted(nx.pagerank(graph).items(), key=lambda x:x[1])
+        print("Finished PageRank calculation at {}".format(datetime.now()))
+        with gzip.open(pagerank_score_output, "wt") as f:
+            csv_output = csv.writer(f)
+            csv_output.writerow(['id','score'])
+            for row in tqdm(pagerank_scores, desc="Wrting PageRank csv"):
+                csv_output.writerow(row)
+
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
     # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
     from fabric.main import main
     main()
+
 
