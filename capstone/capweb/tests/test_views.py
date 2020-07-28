@@ -6,10 +6,11 @@ from django.conf import settings
 from capapi.tests.helpers import check_response, is_cached
 from capdb.storages import DownloadOverlayStorage
 from capweb.helpers import reverse
+from test_data.test_fixtures.fixtures import CapClient
 
 
 @pytest.mark.django_db
-def test_download_area(client, unlimited_auth_client, tmp_path, monkeypatch):
+def test_download_area(client, auth_client, unlimited_auth_client, tmp_path, monkeypatch):
     overlay_path = Path(settings.BASE_DIR, 'downloads')
     underlay_path = tmp_path
     monkeypatch.setattr("capweb.views.download_files_storage", DownloadOverlayStorage(location=str(underlay_path)))
@@ -35,22 +36,31 @@ def test_download_area(client, unlimited_auth_client, tmp_path, monkeypatch):
     # restricted folder
     underlay_path.joinpath('restricted').mkdir()
     underlay_path.joinpath('restricted/file.txt').write_text('contents')
-    for c, allow_downloads in ((client, False), (unlimited_auth_client, True)):
-        # restricted directory
-        response = c.get(reverse('download-files', args=['restricted/']))
-        check_response(response, content_type="application/json")
-        assert is_cached(response) is not allow_downloads
-        response_json = response.json()
-        assert response_json['allow_downloads'] == allow_downloads
-        assert set(f['name'] for f in response_json['files']) == {'file.txt'}
+    for test_client, allow_downloads, token in (
+            (client, False, 'none'),
+            (auth_client, False, auth_client.auth_user.get_api_key()),
+            (unlimited_auth_client, True, unlimited_auth_client.auth_user.get_api_key())
+    ):
+        token_client = CapClient()
+        token_client.credentials(HTTP_AUTHORIZATION='Token ' + token)
 
-        # restricted file
-        response = c.get(reverse('download-files', args=['restricted/file.txt']))
-        assert not is_cached(response)
-        if allow_downloads:
-            check_response(response, content_type="text/plain", content_includes="contents")
-        else:
-            check_response(response, content_type="application/json", status_code=403)
+        for c in (test_client, token_client):
+            # restricted directory
+            response = c.get(reverse('download-files', args=['restricted/']))
+            check_response(response, content_type="application/json")
+            cacheable = c == client  # we can only cache for an anonymous user who didn't supply an auth header
+            assert is_cached(response) is cacheable
+            response_json = response.json()
+            assert response_json['allow_downloads'] == allow_downloads
+            assert set(f['name'] for f in response_json['files']) == {'file.txt'}
+
+            # restricted file
+            response = c.get(reverse('download-files', args=['restricted/file.txt']))
+            assert not is_cached(response)
+            if allow_downloads:
+                check_response(response, content_type="text/plain", content_includes="contents")
+            else:
+                check_response(response, content_type="application/json", status_code=403)
 
     # symlinks
     underlay_path.joinpath('folder_link').symlink_to('restricted')

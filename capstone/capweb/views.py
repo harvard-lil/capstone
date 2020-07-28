@@ -4,6 +4,8 @@ import stat
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
+
+from django.template import Template, RequestContext
 from natsort import natsorted
 
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -19,6 +21,8 @@ from django.utils.http import is_safe_url
 from django.views import View
 from django.utils.safestring import mark_safe
 from django.db.models import Prefetch
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.views import APIView
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
@@ -301,7 +305,15 @@ def download_files(request, filepath=""):
     If file requested: download file
     """
     real_path = download_files_storage.realpath(filepath)
-    allow_downloads = "restricted" not in filepath or request.user.unlimited_access_in_effect()
+    allow_downloads = True
+    if "restricted" in filepath:
+        try:
+            # authenticate user via DRF to allow for API key auth
+            user = APIView().initialize_request(request).user
+        except AuthenticationFailed:
+            allow_downloads = False
+        else:
+            allow_downloads = user.unlimited_access_in_effect()
     status = 200
 
     # symlink requested
@@ -346,7 +358,8 @@ def download_files(request, filepath=""):
         for filename in download_files_storage.iter_files(filepath):
             if "README.md" in filename:
                 readme_content = download_files_storage.contents(filename)
-                readme, toc, meta = render_markdown(readme_content)
+                markdown_doc = Template(readme_content).render(RequestContext(request))
+                readme, toc, meta = render_markdown(markdown_doc)
                 continue
 
             # use stat() to follow symlinks and fetch directory status and size in one call
