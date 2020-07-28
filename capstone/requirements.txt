@@ -232,7 +232,7 @@ datetime==4.3 \
 decorator==4.4.1 \
     --hash=sha256:54c38050039232e1db4ad7375cfce6748d7b41c29e95a081c8a6d2c30364a2ce \
     --hash=sha256:5d19b92a3c8f7f101c8dd86afd86b0f061a8ce4540ab8cd401fa2542756bce6d \
-    # via retry
+    # via networkx, retry
 diff-match-patch==20181111 \
     --hash=sha256:a809a996d0f09b9bbd59e9bbd0b71eed8c807922512910e05cbd3f9480712ddb
 django-appconf==1.0.2 \
@@ -541,6 +541,9 @@ natsort==7.0.1 \
 netaddr==0.7.19 \
     --hash=sha256:38aeec7cdd035081d3a4c306394b19d677623bf76fa0913f6695127c7753aefd \
     --hash=sha256:56b3558bd71f3f6999e4c52e349f38660e54a7a8a9943335f73dfc96883e08ca
+networkx==2.4 \
+    --hash=sha256:cdfbf698749a5014bf2ed9db4a07a5295df1d3a53bf80bf3cbd61edf9df05fa1 \
+    --hash=sha256:f8f4ff0b6f96e4f9b16af6b84622597b5334bf9cae8cf9b2e42e7985d5c95c64
 nltk==3.4.5 \
     --hash=sha256:bed45551259aa2101381bbdd5df37d44ca2669c5c3dad72439fa459b29137d94
 packaging==20.4 \

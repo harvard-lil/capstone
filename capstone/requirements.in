@@ -101,3 +101,6 @@ django-elasticsearch-dsl-drf
 # Citation extraction
 # reporters_db
 https://github.com/freelawproject/reporters-db/archive/33eb9a405a55a5a3d5619cdd2a47214a6e59460b.zip#egg=reporters_db  # can be dropped after version > 2.0.0 is on pypi
+
+# Citation pagerank
+networkx
