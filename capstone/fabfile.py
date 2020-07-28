@@ -1493,7 +1493,7 @@ def calculate_pagerank_scores(citation_graph_path="graph/citations.csv.gz", page
         for ids in tqdm(reader,total=4911157, desc="Reading citation graph"):
             cite_from_id, *cite_to_ids = [int(i) for i in ids]
             for cite_to_id in cite_to_ids:
-                graph.add_edge(cite_to_id, cite_from_id)
+                graph.add_edge(cite_from_id, cite_to_id)
         # Graph loaded
         print("Started PageRank calculation at {}".format(datetime.now()))
         pagerank_scores = sorted(nx.pagerank(graph).items(), key=lambda x:x[1])
@@ -1509,5 +1509,4 @@ if __name__ == "__main__":
     # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
     from fabric.main import main
     main()
-
 
