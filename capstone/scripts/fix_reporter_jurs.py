@@ -84,7 +84,7 @@ def main(dry_run='true', log_file='/tmp/fix_reporter_jurs.log'):
                 if fix['Correct Court']:
                     new_court = Court.objects.get(name=fix['Correct Court'])
                 to_update = []
-                for case in cases.for_indexing():
+                for case in cases:
                     case.jurisdiction = new_jur
                     message = {"action": 'fix_jur', "case_id": case.pk, "old_jur": fix['Wrong Jur'], "new_jur": fix['Correct Jur']}
                     if new_court:
@@ -100,4 +100,3 @@ def main(dry_run='true', log_file='/tmp/fix_reporter_jurs.log'):
                         description='Correct jurisdictions in reporter %s volume %s from %s to %s' % (fix['Reporter'], fix['Volume'], fix['Wrong Jur'], fix['Correct Jur']),
                     ).record():
                         CaseMetadata.objects.bulk_update(to_update, ['court', 'jurisdiction'])
-                        CaseMetadata.reindex_cases(to_update)

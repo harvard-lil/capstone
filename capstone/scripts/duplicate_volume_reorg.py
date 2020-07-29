@@ -146,7 +146,7 @@ def main(dry_run="true"):
             tex_supp.set_volume_number("25 Supp.")
         print("set_volume_number,%s,%s" % (tex_supp.barcode, "25 Supp."))
 
-        for case in tex_supp.case_metadatas.for_indexing():
+        for case in tex_supp.case_metadatas.all():
             cite = "25 Tex. Supp. {}".format(case.first_page)
             if dry_run == "false":
                 Citation.objects.create(
@@ -154,7 +154,6 @@ def main(dry_run="true"):
                     cite=cite,
                     case=case
                 )
-                case.reindex()
             print("new_citation,%s,%s" % (tex_supp.barcode, cite))
 
         # update 32044078699600

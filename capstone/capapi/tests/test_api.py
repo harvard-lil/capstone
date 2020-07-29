@@ -1,6 +1,7 @@
 from flaky import flaky
 
 from capapi import api_reverse
+from capdb.tasks import update_elasticsearch_from_queue
 from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
 from user_data.models import UserHistory
@@ -472,40 +473,19 @@ def test_filter_case(client, case_factory, elasticsearch):
 @pytest.mark.django_db
 def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, elasticsearch):
     search_url = api_reverse("cases-list")
-    extractedcitation = extracted_citation_factory()
     cases = [case_factory() for _ in range(4)]
+    case_cited = case_factory(citations__cite='1 Mass. 1')
+    for c in cases[:-1]:
+        extracted_citation_factory(cited_by=c, cite='1 Mass. 1')
+    update_elasticsearch_from_queue()
 
-    # three of the cases citing a particular citation
-    for case in cases[0:3]:
-        case.extractedcitations.add(extractedcitation)
-        case.save()
+    # get cases by cites_to=citation
+    content = client.get(search_url, {"cites_to": '1 Mass. 1'}).json()
+    assert set(case['id'] for case in content['results']) == set(c.id for c in cases[:-1])
 
-    response = client.get(search_url, {"cites_to": extractedcitation.cite})
-    content = response.json()
-
-    assert len(content['results']) == 3
-    result_case_ids = [case['id'] for case in content['results']]
-
-    for case in cases[0:3]:
-        assert case.id in result_case_ids
-
-    assert not cases[-1].id in result_case_ids
-
-    # test that we can get cases using id
-    case = case_factory()
-    extractedcitation2 = extracted_citation_factory()
-    extractedcitation2.cite = case.citations.last().cite
-    extractedcitation2.save()
-
-    for c in cases[0:2]:
-        c.extractedcitations.add(extractedcitation2)
-        c.save()
-
-    response = client.get(search_url, {"cites_to": case.id})
-    content = response.json()
-
-    assert len(content['results']) == 2
-
+    # get cases by cites_to=id
+    content = client.get(search_url, {"cites_to": case_cited.id}).json()
+    assert set(case['id'] for case in content['results']) == set(c.id for c in cases[:-1])
 
 
 @pytest.mark.django_db

@@ -449,6 +449,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'capapi.tasks.daily_site_limit_reset_and_report',
         'schedule': crontab(hour=0, minute=0),
     },
+    'update-elasticsearch': {
+        'task': 'capdb.tasks.update_elasticsearch_from_queue',
+        'schedule': crontab(),
+    },
 }
 CELERY_TIMEZONE = 'UTC'
 
@@ -518,8 +522,7 @@ LOGGING['loggers'] = {
     },
     # disable django's built-in handlers to avoid double emails
     'django': {'level': 'WARNING'},
-    # not sure why we wanted to show debug messages for celery, but apparently we did
-    'celery': {'level': 'DEBUG'},
+    'celery': {'level': 'INFO'},
     # show info for our first-party apps
     **{
         app_name: {'level': 'INFO'}

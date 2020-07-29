@@ -5,7 +5,6 @@ from copy import copy
 from datetime import datetime, timedelta
 from time import sleep
 from pathlib import Path
-import elasticsearch.helpers
 
 from celery import shared_task
 from celery.exceptions import Reject
@@ -17,12 +16,11 @@ from django.db.models import Prefetch, Q
 from django.utils import timezone
 from collections import Counter
 
-from capapi.documents import CaseDocument
 from capdb.models import *
-
-### HELPERS ###
 from scripts.extract_cites import extract_citations
 
+
+### HELPERS ###
 
 def run_task_for_volumes(task, volumes=None, last_run_before=None, synchronous=False, **kwargs):
     """
@@ -143,6 +141,23 @@ def update_elasticsearch_for_vol(self, volume_id):
                 sleep(i)
 
 
+@shared_task(acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def update_elasticsearch_from_queue():
+    """
+        Index 100 cases that need to be indexed from CaseLastUpdate, in a loop, until we run out.
+    """
+    if not settings.MAINTAIN_ELASTICSEARCH_INDEX:
+        return
+    while True:
+        with transaction.atomic(using='capdb'):
+            case_ids = CaseLastUpdate.objects.filter(indexed=False).select_for_update(skip_locked=True)[:100].values_list('case_id', flat=True)
+            if not case_ids:
+                break
+            cases = CaseMetadata.objects.filter(id__in=case_ids).for_indexing()
+            CaseMetadata.reindex_cases(cases)
+            CaseLastUpdate.objects.filter(case_id__in=case_ids).update(indexed=True)
+
+
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
 def sync_from_initial_metadata_for_vol(self, volume_id, force):
     """
@@ -167,10 +182,7 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
         volume = VolumeMetadata.objects.get(pk=volume_id)
         to_update = []
         to_create = []
-        cases_to_update = []
-
-        # query includes related/prefetch for elasticsearch indexing
-        query = volume.case_metadatas.for_indexing(require_body_cache=False)
+        query = volume.case_metadatas.select_related('body_cache')
 
         # full rendering of HTML/XML
         if rerender:
@@ -191,24 +203,19 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
         for case_metadata in query:
             body_cache = case_metadata.body_cache
             old_fields = {k: getattr(body_cache, k) for k in update_fields}
-            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False, reindex=False)
+            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False)
             new_fields = {k: getattr(body_cache, k) for k in update_fields}
             if old_fields != new_fields:
                 if body_cache.id:
                     to_update.append(body_cache)
                 else:
                     to_create.append(body_cache)
-                case_metadata.last_updated = timezone.now()
-                cases_to_update.append(case_metadata)
 
         # save
         if to_create:
             CaseBodyCache.objects.bulk_create(to_create)
         if to_update:
             CaseBodyCache.objects.bulk_update(to_update, update_fields)
-        if cases_to_update:
-            CaseMetadata.objects.bulk_update(cases_to_update, ['last_updated'])
-            CaseMetadata.reindex_cases(cases_to_update)
 
 
 def create_case_metadata_from_all_vols(update_existing=False):
@@ -407,43 +414,34 @@ def extract_citations_per_vol(self, volume_id):
                  .exclude(body_cache=None)
                  .select_related('body_cache')
                  .only('body_cache__text'))
-        base_es_update_op = {
-            '_op_type': 'update',
-            '_index': CaseDocument()._get_index(),
-            '_type': CaseDocument._doc_type.name,
-        }
-        # remove all extracted citations in volume before recreating
-        ExtractedCitation.objects.filter(cited_by__volume_id=volume_id).delete()
+        comparison_fields = ('normalized_cite', 'page_number_original', 'volume_number_original', 'reporter_name_original', 'cited_by', 'cite')
 
-        # successfully extracted citations
-        extracted_citations = []
-        es_update_ops = []
-        # extracted possible citations with errors
-        citation_misses_per_case = {}
+        extracted_citations = []  # successfully extracted citations
+        citation_misses_per_case = {}  # extracted possible citations with errors
         for case in cases:
             case_citations, misses = extract_citations(case)
-
-            # update cites_to field in ElasticSearch
-            if settings.MAINTAIN_ELASTICSEARCH_INDEX:
-                es_update_ops.append({
-                    **base_es_update_op,
-                    '_id': case.pk,
-                    'doc': {
-                        'extractedcitations': [CaseDocument._fields['extractedcitations']._get_inner_field_data(e) for e in case_citations]
-                    }
-                })
-
             extracted_citations.extend(case_citations)
             citation_misses_per_case[case.id] = dict(Counter(misses))
 
-        ExtractedCitation.objects.bulk_create(extracted_citations)
+        # update cites for volume --
+        # fetch all existing cites for volume, delete any where the comparison_fields don't match,
+        # and save any new ones
+        existing_cites = {
+            tuple(getattr(c, f) for f in comparison_fields): c
+            for c in ExtractedCitation.objects.filter(cited_by__volume_id=volume_id)
+        }
+        extracted_citations_to_save = []
+        for c in extracted_citations:
+            key = tuple(getattr(c, f) for f in comparison_fields)
+            if key in existing_cites:
+                del existing_cites[key]
+            else:
+                extracted_citations_to_save.append(c)
+        with transaction.atomic(using='capdb'):
+            ExtractedCitation.objects.bulk_create(extracted_citations_to_save)
+            ExtractedCitation.objects.filter(pk__in=[c.id for c in existing_cites.values()]).delete()
 
-        # update cites_to field in ElasticSearch
-        if settings.MAINTAIN_ELASTICSEARCH_INDEX:
-            _, failed = elasticsearch.helpers.bulk(CaseDocument._get_connection(), es_update_ops)
-            if failed:
-                raise Exception("%s errors writing to Elasticsearch" % failed)
-
+        # write possible cites with errors
         Path(settings.MISSED_CITATIONS_DIR).mkdir(exist_ok=True)
         with open("%s/missed_citations-%s.csv" % (settings.MISSED_CITATIONS_DIR, self.request.id), "w+") as f:
             writer = csv.writer(f)
