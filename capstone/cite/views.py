@@ -215,14 +215,15 @@ def case_editor(request, case_id):
                 CorrectionLog(description=data['description'], user_id=request.user.id, case=case).save()
                 if pages_to_save:
                     PageStructure.objects.bulk_update(pages_to_save, ['blocks'])
-                    case.sync_case_body_cache(blocks_by_id=PageStructure.blocks_by_id(pages), reindex=False)
+                    case.sync_case_body_cache(blocks_by_id=PageStructure.blocks_by_id(pages))
 
                     # re-extract citations
                     existing_cites = {c.cite: c for c in ExtractedCitation.objects.filter(cited_by=case)}
                     new_cites = {c.cite: c for c in extract_citations(case)[0]}
                     ExtractedCitation.objects.filter(id__in=[v.id for k, v in existing_cites.items() if k not in new_cites]).delete()
                     ExtractedCitation.objects.bulk_create([v for k, v in new_cites.items() if k not in existing_cites])
-                case.save()  # reindexes and sets last_updated
+                case.save()
+                case.reindex()  # manual reindex for instant results
 
         return HttpResponse('OK')
 

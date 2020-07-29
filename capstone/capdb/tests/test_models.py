@@ -4,7 +4,7 @@ import re
 from django.utils.text import slugify
 
 from capdb.models import CaseMetadata, CaseImage, fetch_relations, Court, EditLog, CaseBodyCache, VolumeMetadata
-from capdb.tasks import retrieve_images_from_cases
+from capdb.tasks import retrieve_images_from_cases, update_elasticsearch_from_queue
 from test_data.test_fixtures.helpers import xml_equal
 from capapi.documents import CaseDocument
 
@@ -185,7 +185,7 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
     case2.volume.save()
     cite2.save()
     with django_assert_num_queries(select=1, update=1):
-        CaseMetadata.update_frontend_urls(["124 Test 456", "123 Test 456"], update_elasticsearch=False)
+        CaseMetadata.update_frontend_urls(["124 Test 456", "123 Test 456"])
     case1.refresh_from_db()
     case2.refresh_from_db()
 
@@ -196,7 +196,7 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
     cite2.save()
     case2.volume.volume_number = "124"
     case2.volume.save()
-    CaseMetadata.update_frontend_urls(["124 Test 456", "123 Test 456"], update_elasticsearch=False)
+    CaseMetadata.update_frontend_urls(["124 Test 456", "123 Test 456"])
     case1.refresh_from_db()
     case2.refresh_from_db()
 
@@ -207,15 +207,15 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
 def test_set_duplicate(reset_sequences, case, elasticsearch):
     # make sure set_duplicate function updates the cases and removes the cases from the elasticsearch index
     duplicate_of = VolumeMetadata.objects.exclude(pk=case.volume.pk).first()
+    update_elasticsearch_from_queue()
     assert CaseDocument.search().filter("term", volume__barcode=case.volume.barcode).count() == 1
     case.volume.set_duplicate(duplicate_of)
     assert case.volume.duplicate_of == duplicate_of
+    update_elasticsearch_from_queue()
     assert CaseDocument.search().filter("term", volume__barcode=case.volume.barcode).count() == 0
 
 @pytest.mark.django_db
 def test_set_reporter(reset_sequences, case, elasticsearch, reporter):
-    # make sure set_duplicate function updates the reporter values in the cases and re-indexes properly
-
     volume = case.volume
 
     old_frontend_url_rep_shorts = set([case.frontend_url.split('/')[1] for case in volume.case_metadatas.all()])
@@ -226,9 +226,11 @@ def test_set_reporter(reset_sequences, case, elasticsearch, reporter):
         cite.save()
 
     assert volume.reporter.id != reporter.id
+    update_elasticsearch_from_queue()
     assert CaseDocument.search().filter("term", reporter__id=reporter.id).count() == 0
     volume.set_reporter(reporter)
     assert volume.reporter.id == reporter.id
+    update_elasticsearch_from_queue()
     assert CaseDocument.search().filter("term", reporter__id=reporter.id).count() == 1
     new_frontend_url_rep_shorts = set([case.frontend_url.split('/')[1] for case in volume.case_metadatas.all()])
     assert len(new_frontend_url_rep_shorts) == 1
@@ -239,10 +241,9 @@ def test_set_reporter(reset_sequences, case, elasticsearch, reporter):
 def test_set_volume_number(reset_sequences, case, elasticsearch):
     # make sure set_volume_number function updates the reporter values in the cases and re-indexes properly
     new_volume_number = '2567'
-
     volume = case.volume
-
     old_frontend_url_vols = set([case.frontend_url.split('/')[2] for case in volume.case_metadatas.all()])
+
     # set the volume number of the official citation to that of the generated volume
     for case in volume.case_metadatas.all():
         cite = case.citations.get(type="official")
@@ -250,10 +251,12 @@ def test_set_volume_number(reset_sequences, case, elasticsearch):
         cite.save()
 
     assert volume.volume_number != new_volume_number
+    update_elasticsearch_from_queue()
     assert CaseDocument.search().filter("term", volume__volume_number_slug=slugify(new_volume_number)).count() == 0
     volume.set_volume_number(new_volume_number)
     assert volume.volume_number == new_volume_number
     assert volume.volume_number_slug == slugify(new_volume_number)
+    update_elasticsearch_from_queue()
     assert CaseDocument.search().filter("term", volume__volume_number_slug=slugify(new_volume_number)).count() == 1
     new_frontend_url_vols = set([case.frontend_url.split('/')[2] for case in volume.case_metadatas.all()])
     assert len(new_frontend_url_vols) == 1

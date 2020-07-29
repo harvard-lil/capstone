@@ -5,8 +5,6 @@ from pathlib import Path
 import csv
 from datetime import datetime
 
-from django.conf import settings
-
 from capdb.models import Citation, CaseMetadata, normalize_cite, EditLog
 
 
@@ -146,11 +144,6 @@ def main(dry_run='true'):
                 with EditLog(description='Fix citations matching %s' % current_pattern).record() as edit:
                     Citation.objects.bulk_update(to_update, ['cite', 'normalized_cite'])
                     Citation.objects.bulk_create(to_insert)
-
-                    # update elasticsearch
-                    if settings.MAINTAIN_ELASTICSEARCH_INDEX:
-                        case_ids = set(c.case_id for c in to_update+to_insert)
-                        CaseMetadata.reindex_cases(CaseMetadata.objects.filter(pk__in=case_ids).for_indexing())
                 timestamp = edit.timestamp
             else:
                 timestamp = datetime.now()

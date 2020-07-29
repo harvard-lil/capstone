@@ -29,7 +29,6 @@ def main(dry_run='true'):
     bad_cases = set(c.case for c in bad_cites)
     to_delete = []
     to_update = []
-    to_reindex = []
     changed_cites = set()
     out = csv.writer(sys.stdout)
     out.writerow(['case.id', 'result', 'val1', 'val2'])
@@ -43,7 +42,6 @@ def main(dry_run='true'):
             old_val = first.cite
             first.cite = "122 Ct. Cl. 348"
             to_update.append(first)
-            to_reindex.append(case)
             out.writerow([case.id, "special case", old_val, first.cite])
             continue
 
@@ -66,7 +64,6 @@ def main(dry_run='true'):
                 old_val = second.cite
                 second.cite = old_val.split(';', 1)[0]
                 to_update.append(second)
-                to_reindex.append(case)
                 changed_cites.add(old_val)
                 changed_cites.add(second.cite)
                 out.writerow([case.id, "update", old_val, second.cite])
@@ -77,7 +74,6 @@ def main(dry_run='true'):
         changed_cites.update(delete_cites)
         out.writerow([case.id, "delete"]+delete_cites)
         to_delete.extend(rest)
-        to_reindex.append(case)
 
     # apply edits:
     if dry_run == 'false':
@@ -89,4 +85,3 @@ def main(dry_run='true'):
             for obj in to_delete:
                 obj.delete()
             CaseMetadata.update_frontend_urls(changed_cites)
-            CaseMetadata.reindex_cases(to_reindex)

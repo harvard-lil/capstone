@@ -9,6 +9,7 @@ __pycache__
 
 db.sqlite3
 celerybeat-schedule.db
+celerybeat-schedule
 
 # pytest
 .cache

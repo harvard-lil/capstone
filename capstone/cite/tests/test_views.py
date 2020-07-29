@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from django.utils import timezone
 
 from capapi.tests.helpers import check_response, is_cached
+from capdb.tasks import update_elasticsearch_from_queue
 from capweb.helpers import reverse
 
 
@@ -384,6 +385,7 @@ def test_case_cited_by(client, case_factory, tmpdir, settings, elasticsearch):
     source_cases = [case_factory(body_cache__text=dest_cite.cite) for _ in range(2)]
     non_citing_case = case_factory()
     fabfile.extract_all_citations()
+    update_elasticsearch_from_queue()
 
     response = client.get(reverse('case_cited_by', args=[dest_case.pk], host='cite'))
     check_response(

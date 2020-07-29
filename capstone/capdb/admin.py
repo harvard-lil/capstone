@@ -94,6 +94,7 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
         # handle changes to obj.withdrawn
         if 'withdrawn' in form.changed_data or 'replaced_by' in form.changed_data:
             obj.withdraw(obj.withdrawn, obj.replaced_by)
+        obj.save()  # manual reindex for instant results
 
 
 class CasePageInline(admin.TabularInline):

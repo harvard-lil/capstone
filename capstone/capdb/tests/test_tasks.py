@@ -15,29 +15,11 @@ from django.db import connections, utils
 
 from capapi.documents import CaseDocument
 from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache
-from capdb.tasks import create_case_metadata_from_all_vols, get_case_count_for_jur, get_court_count_for_jur, \
-    get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol
+from capdb.tasks import get_case_count_for_jur, get_court_count_for_jur, \
+    get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol, \
+    update_elasticsearch_from_queue
 
 import fabfile
-
-
-@pytest.mark.django_db
-def test_create_case_metadata_from_all_vols(case_xml):
-    # get initial state
-    metadata_count = CaseMetadata.objects.count()
-    case_id = case_xml.metadata.case_id
-
-    # delete case metadata
-    case_xml.metadata.delete()
-    assert CaseMetadata.objects.count() == metadata_count - 1
-
-    # recreate case metadata
-    create_case_metadata_from_all_vols()
-
-    # check success
-    case_xml.refresh_from_db()
-    assert CaseMetadata.objects.count() == metadata_count
-    assert case_xml.metadata.case_id == case_id
 
 
 @pytest.mark.django_db
@@ -295,11 +277,26 @@ def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
     legitimate_cites += ["1 %s 1" % c.strip() for c in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())]
     case = case_factory(body_cache__text=", some text, ".join(legitimate_cites+illegitimate_cites))
     fabfile.extract_all_citations()
+    update_elasticsearch_from_queue()
+
+    # check extracted cites
     cites = list(ExtractedCitation.objects.all())
     cite_set = set(c.cite for c in cites)
     assert cite_set == set(legitimate_cites)
     assert all(c.cited_by == case for c in cites)
     assert set(c['cite'] for c in CaseDocument.get(id=case.pk).extractedcitations) == cite_set
+
+    # remove a cite and add a cite --
+    # make sure IDs of unchanged cites are still the same
+    removed_cite_str = legitimate_cites[0]
+    added_cite_str = '123 F.Supp. 456'
+    case.body_cache.text = case.body_cache.text.replace(removed_cite_str, '') + ', some text, ' + added_cite_str
+    case.body_cache.save()
+    fabfile.extract_all_citations()
+    new_cites = list(ExtractedCitation.objects.all())
+    removed_cite = next(c for c in cites if c.cite == removed_cite_str)
+    added_cite = next(c for c in new_cites if c.cite == added_cite_str)
+    assert {(c.id, c.cite) for c in new_cites} == ({(c.id, c.cite) for c in cites} | {(added_cite.id, added_cite.cite)}) - {(removed_cite.id, removed_cite.cite)}
 
     # check missed_citations files
     results = []
@@ -321,13 +318,13 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
 
     # full sync
     CaseBodyCache.objects.update(text='blank')
-    with django_assert_num_queries(select=7, update=3):
+    with django_assert_num_queries(select=5, update=2):
         sync_case_body_cache_for_vol(volume_metadata.barcode)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 
     # text/json sync
     CaseBodyCache.objects.update(text='blank')
-    with django_assert_num_queries(select=5, update=3):
+    with django_assert_num_queries(select=3, update=2):
         sync_case_body_cache_for_vol(volume_metadata.barcode, rerender=False)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 

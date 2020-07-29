@@ -2,8 +2,7 @@ from django_elasticsearch_dsl import Document as DocType, Index, fields
 from django.conf import settings
 from elasticsearch_dsl import Search
 
-from capdb.models import CaseMetadata
-
+from capdb.models import CaseMetadata, CaseLastUpdate
 
 index_name = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
 case_index = Index(index_name)
@@ -40,20 +39,16 @@ class RawSearch(Search):
 
 @case_index.doc_type
 class CaseDocument(DocType):
+    # IMPORTANT: If you change what values are indexed here, also change the "CaseLastUpdate triggers"
+    # section in set_up_postgres.py to keep Elasticsearch updated.
     name_abbreviation = SuggestField()
-
     name = fields.TextField(index_phrases=True)
-
     frontend_url = fields.KeywordField()
     last_page = fields.KeywordField()
     first_page = fields.KeywordField()
-    no_index = fields.KeywordField()
-    duplicative = fields.KeywordField()
-    no_index_notes = fields.KeywordField()
-
     docket_numbers = fields.TextField(multi=True)
-
     docket_number = fields.TextField()
+    last_updated = fields.DateField()
 
     volume = fields.ObjectField(properties={
         "barcode": fields.KeywordField(),
@@ -118,6 +113,12 @@ class CaseDocument(DocType):
             return { 'docket_numbers': None }
         return instance.docket_numbers
 
+    def prepare_last_updated(self, instance):
+        try:
+            return instance.last_update.timestamp
+        except CaseLastUpdate.DoesNotExist:
+            return None
+
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
         return instance.redact_obj({
@@ -138,8 +139,6 @@ class CaseDocument(DocType):
             'id',
             'decision_date',
             'decision_date_original',
-            'date_added',
-            'last_updated',
         ]
         ignore_signals = True
         auto_refresh = False

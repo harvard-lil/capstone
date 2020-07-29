@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 from collections import defaultdict
+from contextlib import contextmanager
 from datetime import datetime
 from getpass import getpass
 
@@ -45,20 +46,33 @@ from scripts import set_up_postgres, data_migrations, \
 from scripts.helpers import copy_file, volume_barcode_from_folder, up_to_date_volumes, storage_lookup
 
 
+@contextmanager
+def open_subprocess(command):
+    """ Call command as a subprocess, and kill when with block exits. """
+    print("Starting: %s" % command)
+    proc = subprocess.Popen(command, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+    try:
+        yield
+    finally:
+        print("Killing: %s" % command)
+        os.kill(proc.pid, signal.SIGKILL)
+
+
 @task(alias='run')
 def run_django(port="127.0.0.1:8000"):
     if os.environ.get('DOCKERIZED'):
         port = "0.0.0.0:8000"
-    management.call_command('runserver', port)
+    # run celerybeat in background for elasticsearch indexing
+    with open_subprocess("watchmedo auto-restart -d ./ -p '*.py' -R -- celery worker -A config.celery.app -c 1 -B"):
+        # This was `management.call_command('runserver', port)`, but then the Django autoreloader
+        # itself calls fab run and we get two copies of everything!
+        local("python manage.py runserver %s" % port)
 
 
 @task
 def run_frontend(port=None):
-    node_proc = subprocess.Popen("npm run serve", shell=True, stdout=sys.stdout, stderr=sys.stderr)
-    try:
+    with open_subprocess("npm run serve"):
         run_django(port)
-    finally:
-        os.kill(node_proc.pid, signal.SIGKILL)
 
 
 @task
@@ -197,7 +211,6 @@ def import_volume(volume_zip_path):
     """
         Run this on dev to import all data for a volume and its cases, as well as the volume's PDF.
         Use export_volume() on prod to generate zips for this function.
-        Use populate_search_index() to reindex after ingesting volumes.
     """
     from distutils.dir_util import copy_tree
     import zipfile
@@ -216,16 +229,6 @@ def run_pending_migrations():
 def update_postgres_env(db='capdb'):
     set_up_postgres.update_postgres_env(db=db)
 
-@task
-def initialize_denormalization_fields():
-    """
-        Manually populate or repopulate denormalized fields.
-
-        Typically initialize_denormalization_fields should instead be called in a migration that adds denormalized fields, as
-            migrations.RunPython(initialize_denormalization_fields),
-        but this allows it to be re-run manually if necessary.
-    """
-    set_up_postgres.initialize_denormalization_fields()
 
 @task
 def update_volume_metadata():

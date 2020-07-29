@@ -7,7 +7,6 @@ from contextlib import contextmanager
 import struct
 import base64
 import fitz
-from django.utils import timezone
 from lxml import etree
 from model_utils import FieldTracker
 import nacl
@@ -666,7 +665,6 @@ class VolumeMetadata(models.Model):
             self.case_metadatas.update(duplicate=True)
             self.case_metadatas.update_in_scope()
             CaseMetadata.update_frontend_urls(Citation.objects.filter(type='official', case__volume=self).values_list('cite', flat=True))
-            CaseMetadata.reindex_cases(self.case_metadatas.for_indexing())
 
     def set_volume_number(self, volume_number, update_citations=True):
         """
@@ -686,8 +684,6 @@ class VolumeMetadata(models.Model):
                     citation.cite = citation.cite.replace(old_volume_number, self.volume_number, 1)
                     citation.save()
                     CaseMetadata.update_frontend_urls([old_citation, citation.cite])
-            self.case_metadatas.update(last_updated=timezone.now())
-            CaseMetadata.reindex_cases(self.case_metadatas.for_indexing())
 
     def set_reporter(self, reporter, update_citations=True):
         """
@@ -699,13 +695,12 @@ class VolumeMetadata(models.Model):
             old_reporter = self.reporter
             self.reporter = reporter
             self.save()
-            self.case_metadatas.update(reporter=reporter, last_updated=timezone.now())
+            self.case_metadatas.update(reporter=reporter)
             if update_citations:
                 Citation.replace_reporter(
                     Citation.objects.filter(case__volume=self, type="official"),
                     old_reporter.short_name,
                     self.reporter.short_name)
-            CaseMetadata.reindex_cases(self.case_metadatas.for_indexing())
 
     def update_volume_number_slug(self):
         self.volume_number_slug = slugify(self.volume_number)
@@ -929,7 +924,7 @@ class CaseMetadataQuerySet(TemporalQuerySet):
         """
             Fetch only cases that are appropriate for Elasticsearch indexing, with associated data.
         """
-        out = self.select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache').prefetch_related('extractedcitations', 'citations')
+        out = self.select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache', 'last_update').prefetch_related('extractedcitations', 'citations')
         if require_body_cache:
             out = out.exclude(body_cache=None)
         return out
@@ -965,8 +960,6 @@ class CaseMetadata(models.Model):
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
                                  on_delete=models.DO_NOTHING)
     date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
-    last_updated = models.DateTimeField(null=True, blank=True, auto_now_add=True,
-                                        help_text="User-visible date when the API response for this case last changed")
     human_corrected = models.BooleanField(default=False, help_text="True if the case meets a 'human corrected' standard of accuracy")
     duplicative = models.BooleanField(default=False,
                                       help_text="True if case was not processed because it is an unofficial case in a regional reporter")
@@ -1012,9 +1005,6 @@ class CaseMetadata(models.Model):
             self.decision_date = parse_decision_date(self.decision_date_original)
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
-        if not kwargs.get('no_reindex') and self.pk and hasattr(self, 'body_cache'):
-            self.last_updated = timezone.now()
-            self.reindex()
         super().save(*args, **kwargs)
 
     def full_cite(self):
@@ -1031,7 +1021,7 @@ class CaseMetadata(models.Model):
         return reverse('cases-detail', kwargs={'id': self.id}, scheme="https")
 
     @classmethod
-    def update_frontend_urls(cls, cite_strs, update_elasticsearch=True, batch_size=100):
+    def update_frontend_urls(cls, cite_strs, batch_size=100):
         """
             Update frontend_url for all cases affected by a group of citation updates.
             cite_strs should include both old and new citations. For example, if a case was corrected from
@@ -1049,8 +1039,6 @@ class CaseMetadata(models.Model):
                     case__in_scope=True
                 ).order_by('cite')
                 .select_related('case__volume', 'case__reporter'))
-            if update_elasticsearch:
-                cites = cites.select_related('case__court', 'case__jurisdiction', 'case__body_cache')
             cite_groups = itertools.groupby(cites, key=lambda c: c.cite)
             to_update = []
 
@@ -1064,13 +1052,10 @@ class CaseMetadata(models.Model):
                     new_frontend_url = case.get_frontend_url(cite, include_host=False, disambiguate=disambiguate)
                     if new_frontend_url != case.frontend_url:
                         case.frontend_url = new_frontend_url
-                        case.last_updated = timezone.now()
                         to_update.append(case)
 
             if to_update:
-                cls.objects.bulk_update(to_update, ['frontend_url', 'last_updated'])
-                if update_elasticsearch:
-                    cls.reindex_cases(to_update)
+                cls.objects.bulk_update(to_update, ['frontend_url'])
 
     @classmethod
     def reindex_cases(cls, cases):
@@ -1158,8 +1143,7 @@ class CaseMetadata(models.Model):
         renderer = render_case.VolumeRenderer(blocks_by_id, {}, {})
         return renderer.hydrate_opinions(structure.opinions, blocks_by_id)
 
-    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, rerender=True,
-                             save=True, reindex=True):
+    def sync_case_body_cache(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, rerender=True, save=True):
         """
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
@@ -1175,8 +1159,6 @@ class CaseMetadata(models.Model):
             if save:
                 # save this way to avoid hydrating deferred fields
                 CaseBodyCache.objects.filter(id=body_cache.id).update(json=body_cache.json, text=body_cache.text)
-            if reindex:
-                self.save()
             return
 
         structure = self.structure
@@ -1206,8 +1188,6 @@ class CaseMetadata(models.Model):
             setattr(body_cache, k, v)
         if save:
             body_cache.save()
-        if reindex:
-            self.save()
 
     def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)
@@ -2396,3 +2376,9 @@ class CaseImage(models.Model):
 
     class Meta:
         unique_together = ['case', 'hash']
+
+
+class CaseLastUpdate(models.Model):
+    case = models.OneToOneField('CaseMetadata', related_name='last_update', on_delete=models.DO_NOTHING)
+    timestamp = models.DateTimeField()
+    indexed = models.BooleanField(default=False, db_index=True)

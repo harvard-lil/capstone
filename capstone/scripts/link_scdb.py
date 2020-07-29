@@ -92,7 +92,6 @@ def manual_pre_edits(dry_run='true'):
 
     to_delete = []
     changed_cites = []
-    to_reindex = []
     potential_matches = list(Citation.objects.filter(cite__contains=' U. S. '))
     actual_matches = [c for c in potential_matches if ';' not in c.cite and re.match(r'\d+ U\. S\. \d+', c.cite)]
     actual_matches += [
@@ -103,7 +102,6 @@ def manual_pre_edits(dry_run='true'):
         print("Would delete %s" % cite)
         to_delete.append(cite)
         changed_cites.append(cite.cite)
-        to_reindex.append(cite.case)
 
     if dry_run == 'false':
         with EditLog(
@@ -113,7 +111,6 @@ def manual_pre_edits(dry_run='true'):
             for cite in to_delete:
                 cite.delete()
             CaseMetadata.update_frontend_urls(changed_cites)
-            CaseMetadata.reindex_cases(to_reindex)
 
 def main(dry_run='true', output_missing='false'):
     # download data
@@ -224,7 +221,6 @@ def main(dry_run='true', output_missing='false'):
         with EditLog(description='Add SCDB cites').record():
             Citation.objects.bulk_create(to_create)
             Citation.objects.bulk_update(to_update, ['cite'])
-            CaseMetadata.reindex_cases(CaseMetadata.objects.filter(id__in=[c.case_id for c in to_create]+[c.case_id for c in to_update]))
 
     if output_missing != 'true':
         return

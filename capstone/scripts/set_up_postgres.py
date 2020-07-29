@@ -5,6 +5,8 @@ import django.apps
 from django.conf import settings
 from django.db import connections
 
+from capdb.models import Citation, CaseMetadata, CaseBodyCache, Reporter, Court, VolumeMetadata, Jurisdiction, \
+    ExtractedCitation
 from .helpers import nsmap
 
 
@@ -41,6 +43,94 @@ def update_postgres_env(db='capdb'):
                 end
             $$ LANGUAGE plpgSQL;
         """ % namespaces)
+
+        ### CaseLastUpdate triggers ###
+
+        run_sql_file(cursor, "last_update_function.sql")
+        # List all fields that go into generating the case documents in capapi.documents.
+        # For Elasticsearch to notice that a case has changed, the field has to be listed here.
+        last_update_models = [
+            {
+                'model': CaseMetadata,
+                'case_field': 'id',
+                'fields': [
+                    'name',
+                    'name_abbreviation',
+                    'decision_date_original',
+                    'decision_date',
+                    'docket_number',
+                    'first_page',
+                    'last_page',
+                    'frontend_url',
+                    'jurisdiction_id',
+                    'court_id',
+                    'reporter_id',
+                    'volume_id',
+                    'in_scope',
+                ],
+            },
+            {
+                'model': Citation,
+                'case_field': 'case_id',
+                'fields': ['type', 'cite'],
+            },
+            {
+                'model': CaseBodyCache,
+                'case_field': 'metadata_id',
+                'fields': ['json', 'html'],
+            },
+            {
+                'model': ExtractedCitation,
+                'case_field': 'cited_by_id',
+                'fields': ['cite'],
+            },
+        ]
+        fkey_update_models = [
+            {
+                'model': Reporter,
+                'case_field': 'reporter_id',
+                'fields': ['full_name'],
+            },
+            {
+                'model': Court,
+                'case_field': 'court_id',
+                'fields': ['name', 'name_abbreviation', 'slug'],
+            },
+            {
+                'model': VolumeMetadata,
+                'case_field': 'volume_id',
+                'fields': ['volume_number'],
+            },
+            {
+                'model': Jurisdiction,
+                'case_field': 'jurisdiction_id',
+                'fields': ['whitelisted', 'name', 'name_long', 'slug'],
+            },
+        ]
+        def get_change_query(fields):
+            return " or ".join('$1.%s != $2.%s' % (f, f) for f in fields)
+        for model in last_update_models:
+            cursor.execute("""
+                    DROP TRIGGER IF EXISTS last_update_trigger ON {table};
+                    CREATE TRIGGER last_update_trigger
+                    AFTER INSERT OR DELETE OR UPDATE OF {fields}
+                        ON {table}
+                        FOR EACH ROW
+                    EXECUTE PROCEDURE track_last_update(%s, %s);
+                """.format(table=model['model']._meta.db_table, fields=", ".join(model['fields'])),
+                (model['case_field'], get_change_query(model['fields'])),
+            )
+        for model in fkey_update_models:
+            cursor.execute("""
+                    DROP TRIGGER IF EXISTS fkey_last_update_trigger ON {table};
+                    CREATE TRIGGER fkey_last_update_trigger
+                    AFTER UPDATE OF {fields}
+                        ON {table}
+                        FOR EACH ROW
+                    EXECUTE PROCEDURE fkey_last_update(%s, %s, %s);
+                """.format(table=model['model']._meta.db_table, fields=", ".join(model['fields'])),
+                (model['case_field'], model['model']._meta.pk.name, get_change_query(model['fields'])),
+            )
 
         ### Versioning ###
 

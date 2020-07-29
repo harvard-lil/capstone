@@ -126,6 +126,8 @@ class CaseDocumentSerializer(DocumentSerializer):
 
         extractedcitations = [{"cite": c["cite"]} for c in s["extractedcitations"]]
 
+        # IMPORTANT: If you change what values are exposed here, also change the "CaseLastUpdate triggers"
+        # section in set_up_postgres.py to keep Elasticsearch updated.
         return OrderedDict((
             ("id", s["id"]),
             ("url", self._url_templates['case_url'] % s["id"]),
