@@ -10,8 +10,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql='CREATE INDEX idx_casemetadata_docket_number_upper ON capdb_casemetadata USING GIN (UPPER(docket_number) gin_trgm_ops);',
-            reverse_sql='DROP INDEX idx_casemetadata_docket_number_upper;',
-        ),
+        # migrations.RunSQL(
+        #     sql='CREATE INDEX idx_casemetadata_docket_number_upper ON capdb_casemetadata USING GIN (UPPER(docket_number) gin_trgm_ops);',
+        #     reverse_sql='DROP INDEX idx_casemetadata_docket_number_upper;',
+        # ),
     ]

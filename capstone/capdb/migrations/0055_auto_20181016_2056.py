@@ -10,8 +10,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql="""CREATE INDEX idx_casetext_text_gin ON capdb_casetext USING GIN (to_tsvector('english'::regconfig, COALESCE("capdb_casetext"."text", '')));""",
-            reverse_sql='DROP INDEX idx_casetext_text_gin;',
-        ),
+        # migrations.RunSQL(
+        #     sql="""CREATE INDEX idx_casetext_text_gin ON capdb_casetext USING GIN (to_tsvector('english'::regconfig, COALESCE("capdb_casetext"."text", '')));""",
+        #     reverse_sql='DROP INDEX idx_casetext_text_gin;',
+        # ),
     ]
