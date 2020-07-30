@@ -103,7 +103,7 @@ Add the following to `/etc/hosts`:
 
 
 #### 1. Install global system requirements <a id="install-global-system-requirements"></a>
-- **Python 3.5.4**— While there shouldn't be any issues with using a more recent version, we will only accept PRs that are fully compatible with 3.5.4.
+- **Python 3.7**— While there shouldn't be any issues with using a more recent version, we will only accept PRs that are fully compatible with 3.7.
 - **MySQL**— On Macs with homebrew, the version installed with `brew install mysql` works fine. On Linux, [apt-get](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-14-04) does the job
 - **Redis**— ([Instructions](https://redis.io/topics/quickstart))
 - **Postgres > 9.5**— ([Instructions](https://www.postgresql.org/download/))
