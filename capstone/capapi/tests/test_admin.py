@@ -1,7 +1,5 @@
 import pytest
 
-from django.contrib.auth.models import Permission
-
 
 def test_admin_view__parallel(admin_client):
     response = admin_client.get('/admin/')
@@ -25,24 +23,3 @@ def test_admin_user_authenticate(admin_client, cap_user):
     assert response.status_code == 200
     assert cap_user.is_authenticated
     assert cap_user.get_api_key()
-
-
-@pytest.mark.django_db
-def test_admin_permissions(admin_user):
-    permissions = Permission.objects.all()
-    for perm in permissions:
-        action, app, table = perm.natural_key()
-        perm_str = "%s.%s" % (app, action)
-        assert admin_user.has_perm(perm_str)
-
-
-@pytest.mark.django_db
-def test_user_permissions(cap_user):
-    cap_user.is_staff = False
-    cap_user.save()
-    permissions = Permission.objects.all()
-    for perm in permissions:
-        action, app, table = perm.natural_key()
-        perm_str = "%s.%s" % (app, action)
-        assert cap_user.has_perm(perm_str) is False
-

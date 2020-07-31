@@ -283,7 +283,7 @@ def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
     cites = list(ExtractedCitation.objects.all())
     cite_set = set(c.cite for c in cites)
     assert cite_set == set(legitimate_cites)
-    assert all(c.cited_by == case for c in cites)
+    assert all(c.cited_by_id == case.pk for c in cites)
     assert set(c['cite'] for c in CaseDocument.get(id=case.pk).extractedcitations) == cite_set
 
     # remove a cite and add a cite --

@@ -9,3 +9,8 @@ SET_CACHE_CONTROL_HEADER = True
 MIDDLEWARE = [i for i in MIDDLEWARE if not i.startswith('whitenoise.')]
 
 SITE_LIMIT_REPORT = True
+
+# use a fast password hash by default for speed
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
+] + PASSWORD_HASHERS
