@@ -51,7 +51,7 @@ def cases_by_jurisdiction_tsv():
     snippet_format="text/tab-separated-values"
     output = io.StringIO()
     writer = csv.writer(output, delimiter='\t',quoting=csv.QUOTE_NONNUMERIC)
-    for jurisdiction in tqdm(Jurisdiction.objects.annotate(case_count=Count('case_metadatas'))):
+    for jurisdiction in tqdm(Jurisdiction.objects.order_by('name').annotate(case_count=Count('case_metadatas'))):
         if jurisdiction.case_count == 0:
             continue
         writer.writerow(
@@ -75,7 +75,7 @@ def cases_by_reporter_tsv():
     snippet_format="text/tab-separated-values"
     output = io.StringIO()
     writer = csv.writer(output, delimiter='\t',quoting=csv.QUOTE_NONNUMERIC)
-    for reporter in tqdm(Reporter.objects.annotate(case_count=Count(
+    for reporter in tqdm(Reporter.objects.order_by('full_name').annotate(case_count=Count(
             Case(When(case_metadatas__duplicative=False, then=1), output_field=IntegerField())))):
         if reporter.case_count == 0:
             continue

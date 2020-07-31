@@ -359,7 +359,7 @@ class EmailBlocklist(models.Model):
 
             >>> email_blocklist_factory = getfixture('email_blocklist_factory')
             >>> _ = email_blocklist_factory(domain='blocked.com')
-            >>> _ = email_blocklist_factory(regex='\yfoo@.*\.org\y')
+            >>> _ = email_blocklist_factory(regex=r'\yfoo@.*\.org\y')
             >>> assert EmailBlocklist.email_allowed('foo@good.com')
             >>> assert EmailBlocklist.email_allowed('nofoo@good.org')
             >>> assert not EmailBlocklist.email_allowed('foo@blocked.com')
