@@ -498,7 +498,7 @@ class Jurisdiction(CachedLookupMixin, AutoSlugMixin, models.Model):
         return CaseExport.objects.filter(filter_type='jurisdiction', filter_id=self.pk)
 
     def get_absolute_url(self):
-        return reverse('jurisdiction-detail', args=[self.slug], scheme="https")
+        return reverse('jurisdiction-detail', args=[self.slug])
 
 
 class Reporter(models.Model):
@@ -539,7 +539,10 @@ class Reporter(models.Model):
         return CaseExport.objects.filter(filter_type='reporter', filter_id=self.pk)
 
     def get_absolute_url(self):
-        return reverse('reporter-detail', args=[self.id], scheme="https")
+        return reverse('reporter-detail', args=[self.id])
+
+    def get_frontend_url(self):
+        return reverse('series', args=[self.short_name_slug], host="cite")
 
 
 class VolumeMetadata(models.Model):
@@ -650,7 +653,10 @@ class VolumeMetadata(models.Model):
         self.save(update_fields=['xml_checksums_need_update'])
 
     def get_absolute_url(self):
-        return reverse('volumemetadata-detail', args=[self.pk], scheme="https")
+        return reverse('volumemetadata-detail', args=[self.pk])
+
+    def get_frontend_url(self):
+        return reverse('volume', args=[self.reporter.short_name_slug, self.volume_number_slug], host="cite")
 
     def set_duplicate(self, duplicate_of):
         """
@@ -906,7 +912,7 @@ class Court(CachedLookupMixin, AutoSlugMixin, models.Model):
         return self.name_abbreviation or self.name
 
     def get_absolute_url(self):
-        return reverse('court-detail', args=[self.pk], scheme="https")
+        return reverse('court-detail', args=[self.pk])
 
 
 class CaseMetadataQuerySet(TemporalQuerySet):
@@ -1018,7 +1024,7 @@ class CaseMetadata(models.Model):
         return Citation.sorted_by_type(self.citations.all())
 
     def get_absolute_url(self):
-        return reverse('cases-detail', kwargs={'id': self.id}, scheme="https")
+        return reverse('cases-detail', kwargs={'id': self.id})
 
     @classmethod
     def update_frontend_urls(cls, cite_strs, batch_size=100):

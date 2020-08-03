@@ -9,6 +9,17 @@ top_section_style: bg-black
 row_style: bg-tan
 extra_head: {% stylesheet 'docs' %}
 
+# August 2020
+
+**API:**
+
+* Cases Endpoint:
+    * Added `last_updated` field and filters to get cases changed since date.
+* Volumes Endpoint:
+    * Added `frontend_url` field.
+* Reporters Endpoint:
+    * Added `frontend_url` field.
+    
 # June 2020
 
 **Website:**
