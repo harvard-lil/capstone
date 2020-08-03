@@ -294,6 +294,7 @@ class VolumeSerializer(serializers.ModelSerializer):
     volume_number = serializers.ReadOnlyField(source='xml_volume_number')
     publisher = serializers.ReadOnlyField(source='xml_publisher')
     pdf_url = serializers.FileField(source='pdf_file')
+    frontend_url = serializers.ReadOnlyField(source='get_frontend_url')
 
     class Meta:
         model = models.VolumeMetadata
@@ -313,11 +314,13 @@ class VolumeSerializer(serializers.ModelSerializer):
             'reporter_url',
             'jurisdictions',
             'pdf_url',
+            'frontend_url',
         )
 
 
 class ReporterSerializer(serializers.ModelSerializer):
     jurisdictions = JurisdictionSerializer(many=True)
+    frontend_url = serializers.ReadOnlyField(source='get_frontend_url')
 
     class Meta:
         model = models.Reporter
@@ -329,6 +332,7 @@ class ReporterSerializer(serializers.ModelSerializer):
             'start_year',
             'end_year',
             'jurisdictions',
+            'frontend_url',
         )
 
 
