@@ -163,6 +163,7 @@ class CaseFilter(filters.FilterSet):
         help_text='Search for words separated by spaces. All words are required in results. Words less than 3 characters are ignored.')
     cite = filters.CharFilter(label='Citation')
     name_abbreviation = filters.CharFilter(label='Name Abbreviation (contains)')
+    name = filters.CharFilter(label='Full Name (contains)')
     jurisdiction = filters.ChoiceFilter(choices=jur_choices)
     reporter = filters.ChoiceFilter(choices=reporter_choices, label='Reporter Series')
     decision_date_min = filters.CharFilter(label='Earliest Decision Date (Format YYYY-MM-DD)')
@@ -201,10 +202,6 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
         def lc_values(values):
             return [value.lower() for value in values if isinstance(value, str)]
 
-        def tokenize(filter_values):
-            # takes each entry in filter_values and splits them on non alphanumeric characters into separate entries
-            return [s for current_term in filter_values for s in re.split(r'[^a-zA-Z0-9]+', current_term) if s]
-
         def normalize_cites(values):
             return [models.normalize_cite(value) for value in values if isinstance(value, str)]
 
@@ -226,22 +223,11 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
             if len(query_params['court_id']['values']) < 1:
                 del query_params['court_id']
 
-        if 'name' in query_params:
-            query_params['name']['values'] = lc_values(tokenize(query_params['name']['values']))
-            query_params['name']['lookup'] = 'in'
-
-        if 'name_abbreviation' in query_params:
-            query_params['name_abbreviation']['values'] = lc_values(tokenize(query_params['name_abbreviation']['values']))
-            query_params['name_abbreviation']['lookup'] = 'in'
-
         if 'court' in query_params:
             query_params['court']['values'] = lc_values(query_params['court']['values'])
 
         if 'jurisdiction' in query_params:
             query_params['jurisdiction']['values'] = lc_values(query_params['jurisdiction']['values'])
-
-        if 'docket_number' in query_params:
-            query_params['docket_number']['values'] = lc_values(tokenize(query_params['docket_number']['values']))
 
         if 'cites_to' in query_params:
             query_params['cites_to']['values'] = normalize_cites(query_params['cites_to']['values'])
@@ -259,14 +245,47 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
         return query_params
 
 
-class CAPFTSFilter(SimpleQueryStringSearchFilterBackend):
+class BaseFTSFilter(SimpleQueryStringSearchFilterBackend):
+    """ Base filter for query params that search by simple_query_string. """
     def filter_queryset(self, request, queryset, view):
-        # ignores empty searches
-        if 'search' in request.GET and request.GET['search'] is not '':
-            queryset = super().filter_queryset(request, queryset, view)
+        # ignore empty searches
+        if request.GET.get(self.search_param):
+            # Patch simple_query_string_search_fields on the view, since SimpleQueryStringSearchFilterBackend isn't
+            # set up to be used multiple times on the same view.
+            view.simple_query_string_search_fields = self.fields
+            return super().filter_queryset(request, queryset, view)
         return queryset
 
+
+class MultiFieldFTSFilter(BaseFTSFilter):
     search_param = 'search'
+    fields = (
+        'name',
+        'name_abbreviation',
+        'jurisdiction.name_long',
+        'court.name',
+        'casebody_data.text.head_matter',
+        'casebody_data.text.opinions.author',
+        'casebody_data.text.opinions.text',
+        'casebody_data.text.opinions.type',
+        'casebody_data.text.corrections',
+        'docket_number',
+    )
+
+
+class NameFTSFilter(BaseFTSFilter):
+    search_param = 'name'
+    fields = ('name',)
+
+
+class NameAbbreviationFTSFilter(BaseFTSFilter):
+    search_param = 'name_abbreviation'
+    fields = ('name_abbreviation',)
+
+
+class DocketNumberFTSFilter(BaseFTSFilter):
+    search_param = 'docket_number'
+    fields = ('docket_number',)
 
 
 class CAPOrderingFilterBackend(OrderingFilterBackend):

@@ -10,13 +10,14 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.constants import LOOKUP_FILTER_RANGE, LOOKUP_QUERY_IN, LOOKUP_QUERY_GT, \
     LOOKUP_QUERY_GTE, LOOKUP_QUERY_LT, LOOKUP_QUERY_LTE
-from django_elasticsearch_dsl_drf.filter_backends import IdsFilterBackend, DefaultOrderingFilterBackend, HighlightBackend
+from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
 from django.http import HttpResponseRedirect, FileResponse
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch
-from capapi.filters import CAPFTSFilter, CAPOrderingFilterBackend, CaseFilterBackend
+from capapi.filters import CAPOrderingFilterBackend, CaseFilterBackend, MultiFieldFTSFilter, \
+    NameFTSFilter, NameAbbreviationFTSFilter, DocketNumberFTSFilter
 from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
@@ -81,31 +82,17 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     lookup_field = 'id'
 
     filter_backends = [
-        CAPFTSFilter, # Facilitates FTS
+        # queries that take full-text search operators:
+        MultiFieldFTSFilter,
+        NameFTSFilter,
+        NameAbbreviationFTSFilter,
+        DocketNumberFTSFilter,
         CaseFilterBackend, # Facilitates Filtering (Filters)
-        IdsFilterBackend, # Filtering based on IDs
         CAPOrderingFilterBackend, # Orders Document
         HighlightBackend, # for search preview
         DefaultOrderingFilterBackend # Must be last
     ]
 
-    # Define search fields
-    simple_query_string_search_fields = (
-        'name',
-        'name_abbreviation',
-        'jurisdiction.name_long',
-        'court.name',
-        # these are included in head_matter or text:
-        # 'casebody_data.text.attorneys',
-        # 'casebody_data.text.judges',
-        # 'casebody_data.text.parties',
-        'casebody_data.text.head_matter',
-        'casebody_data.text.opinions.author',
-        'casebody_data.text.opinions.text',
-        'casebody_data.text.opinions.type',
-        'casebody_data.text.corrections',
-        'docket_number',
-    )
     simple_query_string_options = {
         "default_operator": "and",
     }
@@ -123,13 +110,10 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
                 LOOKUP_QUERY_LTE,
             ],
         },
-        'name': 'name',
-        'name_abbreviation': 'name_abbreviation',
         'court': 'court.slug',
         'court_id': 'court.id',
         'reporter': 'reporter.id',
         'jurisdiction': 'jurisdiction.slug',
-        'docket_number': 'docket_number',
         'cite': 'citations.normalized_cite',
         'cites_to': 'extractedcitations.normalized_cite',
         'decision_date': 'decision_date',
