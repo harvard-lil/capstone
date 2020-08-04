@@ -736,7 +736,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
 
             try:
                 xml_strings_equal(alto_xml_output, original_alto, ignore)
-            except ValueError as e:
+            except ValueError:
                 if redacted and redacted_errors_as_warnings:
                     volume['metadata'].setdefault('errors', {}).setdefault('failed_validations', {})[path] = True
                     print("- ignoring validation error in %s" % path)
@@ -797,7 +797,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                         'footnote': {'redact'},  # the redact attr isn't reliably set in the original, so our output may not match. comparison will still ensure that redacted footnotes don't appear.
                     }
                 })
-            except ValueError as e:
+            except ValueError:
                 if redacted and redacted_errors_as_warnings:
                     volume['metadata'].setdefault('errors', {}).setdefault('failed_validations', {})[path] = True
                     print("- ignoring validation error in %s" % path)
@@ -819,7 +819,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
 
                 try:
                     xml_strings_equal(*case_heads)
-                except ValueError as e:
+                except ValueError:
                     if redacted and redacted_errors_as_warnings:
                         volume['metadata'].setdefault('errors', {}).setdefault('failed_validations', {})[path] = True
                         print("- ignoring validation error in %s" % path)
@@ -841,7 +841,7 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
                     volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key, save_failed, catch_validation_errors)
             else:
                 volume_to_json_inner(volume_barcode, unredacted_storage, None, key, save_failed, catch_validation_errors)
-    except:
+    except Exception:
         if isinstance(captar_storage, CapS3Storage):
             # copy busted S3 files locally for further inspection
             for storage in (unredacted_storage, redacted_storage):
@@ -1439,7 +1439,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                 volume_barcode, unredacted_storage, redacted_storage,
                 volume, pages, cases, fonts_by_id, text_replacements,
                 paths, blocks_by_id, key, catch_validation_errors)
-        except:
+        except Exception:
             # save temp zip locally if requested
             if save_failed:
                 dest_path = Path(settings.BASE_DIR, 'test_data/zips', 'token_streams', unredacted_storage.path.name + '-failed.zip')

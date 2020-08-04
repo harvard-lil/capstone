@@ -46,7 +46,7 @@ User emails:
         try:
             r = requests.get(url)
             r.raise_for_status()
-        except requests.exceptions.RequestException as err:
+        except requests.exceptions.RequestException:
             print("CAP daily usage report was unable to notify healthcheck service.")
     except KeyError:
         pass

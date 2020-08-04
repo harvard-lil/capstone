@@ -132,7 +132,7 @@ def main(dry_run='true', output_missing='false'):
     print("loading data")
     scdb_new_cites_path = base_path / 'SCDB_2019_01_caseCentered_Citation.csv'
     scdb_old_cites_path = base_path / 'SCDB_Legacy_05_caseCentered_Citation.csv'
-    cap_cites = list(csv.DictReader((l.replace('\xad', '') for l in cap_cites_path.open()), exported_columns))
+    cap_cites = list(csv.DictReader((line.replace('\xad', '') for line in cap_cites_path.open()), exported_columns))
     scdb_cites = list(csv.DictReader(scdb_new_cites_path.open(encoding='iso-8859-1'))) + list(csv.DictReader(scdb_old_cites_path.open(encoding='iso-8859-1')))
     scdb_cites = [c for c in scdb_cites if c['usCite']]
     cap_cites_by_id = {c['id']:c for c in cap_cites}
