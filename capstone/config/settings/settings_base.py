@@ -572,8 +572,8 @@ CACHE_CONTROL_DEFAULT_MAX_AGE = 60*60*24  # length of time to cache pages by def
 COMPRESS_VOLUMES_THREAD_COUNT = 20   # if < 2, no thread pool will be used
 COMPRESS_VOLUMES_SKIP_EXISTING = True  # don't process volumes that already exist in the dest dir; if False, will create additional files with random suffixes
 
-# override django-storages default
-AWS_DEFAULT_ACL = 'private'
+# override django-storages default -- probably can be removed in django-storages > 1.9
+AWS_DEFAULT_ACL = None
 
 # set the default login
 LOGIN_URL = 'login'

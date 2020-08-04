@@ -25,7 +25,6 @@ https://github.com/gawel/pyquery/archive/2351446c56d5c3df93e3fd81a2b828cf00e3b64
 
 # database
 psycopg2            # postgres connector
-mysqlclient         # mysql connector
 redis               # redis connector
 python-redis-lock   # cross-process locks
 python-rocksdb      # key-value store for ngrams

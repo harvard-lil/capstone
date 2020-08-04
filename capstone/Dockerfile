@@ -1,4 +1,4 @@
-FROM python:3.5-stretch
+FROM python:3.7-buster
 ENV PYTHONUNBUFFERED 1
 
 # Get build dependencies and packages required by the app
@@ -13,10 +13,9 @@ ENV PYTHONUNBUFFERED 1
 #  ldd /node_modules/puppeteer/.local-chromium/linux-672088/chrome-linux/chrome | grep not
 # and then looking for relevant packages listed in
 #  https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix
-RUN echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/backports.list
 RUN apt-get update \
     && apt-get install -y redis-server postgresql-client libtiff-tools pdftk \
-    && apt-get install -t stretch-backports -y librocksdb5.17 libzstd-dev liblz4-dev libgflags-dev libbz2-dev zlib1g-dev libsnappy-dev librocksdb-dev rocksdb-tools \
+    && apt-get install -y librocksdb5.17 librocksdb-dev libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev rocksdb-tools \
     && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3
 
 # pip

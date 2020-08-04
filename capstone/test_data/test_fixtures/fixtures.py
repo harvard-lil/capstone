@@ -50,12 +50,9 @@ def pytest_xdist_make_scheduler(config, log):
 @pytest.fixture(scope='session')
 def django_db_setup(django_db_setup, django_db_blocker, redis_proc):
     from django.test import TransactionTestCase, TestCase
-    # This is a hack around pytest not playing nice with multiple databases
-    # Without these flags set, we don't get any non-default database cleanup
-    # in between tests
-    # https://github.com/pytest-dev/pytest-django/issues/76
-    TransactionTestCase.multi_db = True
-    TestCase.multi_db = True
+    # Set of databases to clean up between tests
+    # See https://github.com/pytest-dev/pytest-django/issues/76
+    TransactionTestCase.databases = TestCase.databases = set(settings.DATABASES.keys())
 
     with django_db_blocker.unblock():
         # set up postgres functions and triggers
@@ -216,11 +213,12 @@ def unaltered_alto_xml():
 @pytest.fixture
 def s3_storage():
     with mock_s3():
-        yield capdb.storages.CapS3Storage(
-            auto_create_bucket=True,
+        storage = capdb.storages.CapS3Storage(
             bucket_name='bucket',
             location='subdir',
         )
+        storage.connection.Bucket('bucket').create()
+        yield storage
 
 
 @pytest.fixture

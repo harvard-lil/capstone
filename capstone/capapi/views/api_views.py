@@ -122,6 +122,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'last_updated_min': {'field': 'last_updated', 'default_lookup': 'gte'},
         'last_updated_max': {'field': 'last_updated', 'default_lookup': 'lte'},
     }
+    filterset_fields = []  # make CaseFilter, which we use just for presentation in the HTML viewer, ignore filter_fields, which we use for filtering on Elasticsearch
 
     # Define ordering fields
     ordering_fields = {
