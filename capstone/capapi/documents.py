@@ -110,7 +110,7 @@ class CaseDocument(DocType):
 
     def prepare_docket_numbers(self, instance):
         if not hasattr(instance, 'docket_numbers'):
-            return { 'docket_numbers': None }
+            return {'docket_numbers': None}
         return instance.docket_numbers
 
     def prepare_last_updated(self, instance):

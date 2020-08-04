@@ -36,7 +36,6 @@ from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseF
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
-from scripts.extract_cites import extract_citations
 
 
 def safe_redirect(request):
@@ -219,7 +218,7 @@ def case_editor(request, case_id):
 
                     # re-extract citations
                     existing_cites = {c.cite: c for c in ExtractedCitation.objects.filter(cited_by=case)}
-                    new_cites = {c.cite: c for c in extract_citations(case)[0]}
+                    new_cites = {c.cite: c for c in case.extract_citations()[0]}
                     ExtractedCitation.objects.filter(id__in=[v.id for k, v in existing_cites.items() if k not in new_cites]).delete()
                     ExtractedCitation.objects.bulk_create([v for k, v in new_cites.items() if k not in existing_cites])
                 case.save()
