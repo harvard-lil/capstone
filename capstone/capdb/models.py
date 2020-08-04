@@ -841,7 +841,7 @@ class VolumeXML(BaseXMLModel):
                 raise Exception("Ambiguous Short Reporter Name: {} in {}".format(
                     metadata.xml_reporter_short_name, self.s3_key))
 
-        if metadata.barcode is None or metadata.barcode is '':
+        if not metadata.barcode:
             metadata.barcode = self.s3_key.split('/')[0].split('_redacted')[0]
         if metadata.volume_number is None:
             metadata.volume_number = metadata.xml_volume_number

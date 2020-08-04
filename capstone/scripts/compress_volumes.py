@@ -521,7 +521,7 @@ def open_captar_volume(volume_path, delete_temp_on_error=True, raise_on_not_foun
             yield None
         else:
             yield volume_storage
-    except:
+    except Exception:
         if not delete_temp_on_error:
             delete_temp = False
         raise

@@ -43,7 +43,7 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
                     context['title'] = parsed_response['short_name']
                     context['meta_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['full_name'])
 
-            except:
+            except Exception:
                 return context
         else:
             context['title'] = context['name']

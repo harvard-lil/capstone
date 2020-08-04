@@ -99,6 +99,6 @@ def parse_decision_date(decision_date_text):
                 return datetime.strptime(decision_date_text, '%Y-%m').date()
             except ValueError:
                 return datetime.strptime(decision_date_text, '%Y').date()
-    except Exception as e:
+    except Exception:
         # if for some reason we can't parse the date, just store None
         return None

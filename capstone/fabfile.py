@@ -436,7 +436,7 @@ def show_slow_queries(server='capstone'):
         today = datetime.now().strftime("%Y-%m-%d")
         heading = "*slow query report for %s on %s*" % (server, today)
         queries = []
-    except:
+    except Exception:
         print(json.dumps({'text': 'Could not get slow queries'}))
         return
     for row in rows:
@@ -469,7 +469,7 @@ def create_fixtures_db_for_benchmarking():
     try:
         local('psql -c "CREATE DATABASE %s;"' % settings.TEST_SLOW_QUERIES_DB_NAME)
         init_dev_db()
-    except:
+    except Exception:
         # Exception is thrown if test db has already been created
         pass
 
@@ -504,7 +504,7 @@ def create_case_fixtures_for_benchmarking(amount=50000, randomize_casemets=False
         try:
             # create casexml and casemetadata objects, save to db
             CaseXMLFactory(orig_xml=case_xml)
-        except:
+        except Exception:
             # Exception could happen because of duplicate slug keys on jurisdiction creation
             # For now, skipping this issue
             pass
@@ -1169,7 +1169,7 @@ def download_pdfs(jurisdiction=None):
             volume.pdf_file.name = str(new_path)
             volume.save()
             print("  - Downloaded to %s" % new_path)
-        except:
+        except Exception:
             # clean up partial downloads if process is killed
             download_files_storage.delete(str(new_path))
             raise

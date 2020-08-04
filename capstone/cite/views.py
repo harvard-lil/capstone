@@ -55,7 +55,7 @@ def locked_session(request, using='default'):
         try:
             s = session.model.objects.select_for_update().get(session_key=session.session_key, expire_date__gt=timezone.now())
             temp_session = session.decode(s.session_data)
-        except (session.model.DoesNotExist, SuspiciousOperation) as e:
+        except (session.model.DoesNotExist, SuspiciousOperation):
             temp_session = {}
         try:
             yield temp_session
