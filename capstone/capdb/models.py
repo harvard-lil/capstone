@@ -1389,6 +1389,11 @@ class CaseMetadata(models.Model):
         elision_span = "<span class='elided-text' role='button' tabindex='0' data-hidden-text='%s'>%s</span>"
         return mark_safe(apply_replacements(text, {k: elision_span % (k, v) for k, v in self.no_index_elided.items()}, "", ""))
 
+    def extract_citations(self):
+        # avoid this import until needed, to avoid loading reporters db
+        from scripts.extract_cites import extract_citations
+        return extract_citations(self)
+
 
 class CaseXML(BaseXMLModel):
     metadata = models.OneToOneField(CaseMetadata, blank=True, null=True, related_name='case_xml',

@@ -14,7 +14,7 @@ from django.core.files.storage import FileSystemStorage
 from django.db import connections, utils
 
 from capapi.documents import CaseDocument
-from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache
+from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache, normalize_cite
 from capdb.tasks import get_case_count_for_jur, get_court_count_for_jur, \
     get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol, \
     update_elasticsearch_from_queue
@@ -258,38 +258,50 @@ def test_redact_id_numbers(case_factory):
 
 @pytest.mark.django_db
 def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
+    from scripts.extract_cites import EDITIONS as processed_editions
     settings.MISSED_CITATIONS_DIR = str(tmpdir)
+    blocked_by_date = set(k for k in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys()) if all(c['start_year']>2000 for c in processed_editions[k]))
     legitimate_cites = [
-        "225 F.Supp. 552",  # correct
-        "125 f supp 152",   # normalized
-        "2 1/2 Mass. 1",    # special volume numbers
-        "3 Suppl. Mass. 2", # special volume numbers
-        "1 F. 2d 2",         # not matched as "1 F. 2"
-        "1 La.App. 5 Cir. 2",         # not matched as "1 La.App. 5"
+        "225 F. Supp. 552",                         # correct
+        ["125 f supp 152", "125 F. Supp. 152"],     # normalized
+        ["125 Burnett (Wis.) 152", "125 Bur. 152"], # normalized
+        ["1 F. 2d 2", "1 F.2d 2"],                  # not matched as "1 F. 2"
+        "2 1/2 Mass. 1",                            # special volume numbers
+        "3 Suppl. Mass. 2",                         # special volume numbers
+        "1 La.App. 5 Cir. 2",                       # not matched as "1 La.App. 5"
+        "2000 WL 12345",                            # vendor cite
     ]
+    legitimate_cites += ["1 %s 1" % c for c in EDITIONS.keys() if c not in blocked_by_date]
+    legitimate_cites += [["1 %s 1" % k, "1 %s 1" % v] for k, vv in VARIATIONS_ONLY.items() for v in vv if k not in blocked_by_date]
+    legitimate_cites_normalized = set(normalize_cite(c if type(c) is str else c[1]) for c in legitimate_cites)
+    legitimate_cites = [c if type(c) is str else c[0] for c in legitimate_cites]
     illegitimate_cites = [
         "2 Dogs 3",             # unrecognized reporter
         "3 Dogs 4",             # duplicate unrecognized reporter
         "1 or 2",               # not matched as 1 Or. 2
         "word1 Mass. 2word",    # not matched if part of larger word
         "1 Mass.\n 2",          # no match across newlines
+        "1 A.3d 1",             # no match to reporter that started publishing in 2010
     ]
-    legitimate_cites += ["1 %s 1" % c.strip() for c in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())]
-    case = case_factory(body_cache__text=", some text, ".join(legitimate_cites+illegitimate_cites))
+    illegitimate_cites += ["1 %s 1" % c for c in blocked_by_date]
+    case = case_factory(body_cache__text=", some text, ".join(legitimate_cites+illegitimate_cites), decision_date=datetime(2000, 1, 1))
     fabfile.extract_all_citations()
     update_elasticsearch_from_queue()
 
     # check extracted cites
     cites = list(ExtractedCitation.objects.all())
     cite_set = set(c.cite for c in cites)
+    normalized_cite_set = set(c.normalized_cite for c in cites)
     assert cite_set == set(legitimate_cites)
+    assert normalized_cite_set == legitimate_cites_normalized
     assert all(c.cited_by_id == case.pk for c in cites)
     assert set(c['cite'] for c in CaseDocument.get(id=case.pk).extractedcitations) == cite_set
+    assert set(c['normalized_cite'] for c in CaseDocument.get(id=case.pk).extractedcitations) == normalized_cite_set
 
     # remove a cite and add a cite --
     # make sure IDs of unchanged cites are still the same
     removed_cite_str = legitimate_cites[0]
-    added_cite_str = '123 F.Supp. 456'
+    added_cite_str = '123 F. Supp. 456'
     case.body_cache.text = case.body_cache.text.replace(removed_cite_str, '') + ', some text, ' + added_cite_str
     case.body_cache.save()
     fabfile.extract_all_citations()
@@ -299,10 +311,10 @@ def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
     assert {(c.id, c.cite) for c in new_cites} == ({(c.id, c.cite) for c in cites} | {(added_cite.id, added_cite.cite)}) - {(removed_cite.id, removed_cite.cite)}
 
     # check missed_citations files
-    results = []
-    for missed_file in Path(settings.MISSED_CITATIONS_DIR).glob('missed_citations-*.csv'):
-        results.extend(list(csv.reader(missed_file.read_text().splitlines())))
-    assert json.loads(results[0][2]) == {"Dogs": 2, "or": 1}
+    misses = json.loads(Path(settings.MISSED_CITATIONS_DIR, "missed_citations-%s.json" % case.volume_id).read_text())[str(case.id)]
+    assert misses["not_found"] == {"Dogs": 2}
+    assert misses["blocked"] == {"or": 1}
+    assert misses["invalid_date"] == {k: 1 for k in blocked_by_date | {"A.3d"}}
 
 
 @pytest.mark.django_db

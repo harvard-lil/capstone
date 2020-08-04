@@ -1,5 +1,4 @@
 import re
-import csv
 import json
 from copy import copy
 from datetime import datetime, timedelta
@@ -14,10 +13,8 @@ from urllib3.exceptions import ReadTimeoutError
 from django.db import connections
 from django.db.models import Prefetch, Q
 from django.utils import timezone
-from collections import Counter
 
 from capdb.models import *
-from scripts.extract_cites import extract_citations
 
 
 ### HELPERS ###
@@ -419,9 +416,9 @@ def extract_citations_per_vol(self, volume_id):
         extracted_citations = []  # successfully extracted citations
         citation_misses_per_case = {}  # extracted possible citations with errors
         for case in cases:
-            case_citations, misses = extract_citations(case)
+            case_citations, misses = case.extract_citations()
             extracted_citations.extend(case_citations)
-            citation_misses_per_case[case.id] = dict(Counter(misses))
+            citation_misses_per_case[case.id] = misses
 
         # update cites for volume --
         # fetch all existing cites for volume, delete any where the comparison_fields don't match,
@@ -443,9 +440,4 @@ def extract_citations_per_vol(self, volume_id):
 
         # write possible cites with errors
         Path(settings.MISSED_CITATIONS_DIR).mkdir(exist_ok=True)
-        with open("%s/missed_citations-%s.csv" % (settings.MISSED_CITATIONS_DIR, self.request.id), "w+") as f:
-            writer = csv.writer(f)
-            for case in citation_misses_per_case:
-                writer.writerow([case, len(citation_misses_per_case[case]), json.dumps(citation_misses_per_case[case])])
-
-
+        Path(settings.MISSED_CITATIONS_DIR, "missed_citations-%s.json" % volume_id).write_text(json.dumps(citation_misses_per_case))
