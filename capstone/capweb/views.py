@@ -62,32 +62,6 @@ def index(request):
     })
 
 
-def about(request):
-    contributors = get_data_from_lil_site(section="contributors")
-    sorted_contributors = {}
-    for contributor in contributors:
-        sorted_contributors[contributor['sort_name']] = contributor
-        if contributor['affiliated']:
-            sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
-    sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
-
-    markdown_doc = render_to_string("about.md", {
-        "contributors": sorted_contributors,
-        "news": get_data_from_lil_site(section="news"),
-        "email": settings.DEFAULT_FROM_EMAIL
-    }, request)
-
-    # render markdown document to html
-    html, toc, meta = render_markdown(markdown_doc)
-
-    meta = {k: mark_safe(v) for k, v in meta.items()}
-    return render(request, "layouts/full.html", {
-        'main_content': mark_safe(html),
-        'sidebar_menu_items': mark_safe(toc),
-        **meta,
-    })
-
-
 def contact(request):
     form = form_for_request(request, ContactForm)
 
@@ -110,18 +84,6 @@ def contact(request):
         "email": settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/contact.png',
         'meta_description': 'Email us at %s or fill out this form. ' % settings.DEFAULT_FROM_EMAIL,
-    })
-
-
-def tools(request):
-    extra_context = {}
-    markdown_doc = render_to_string("tools.md", extra_context, request)
-    html, toc, meta = render_markdown(markdown_doc)
-    meta = {k: mark_safe(v) for k, v in meta.items()}
-    return render(request, "layouts/full.html", {
-        'main_content': mark_safe(html),
-        'sidebar_menu_items': mark_safe(toc),
-        **meta,
     })
 
 
@@ -177,33 +139,6 @@ def limericks(request):
     })
 
 
-def api(request):
-    try:
-        case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
-    except NotFoundError:
-        try:
-            case = CaseDocument.search().execute()[0]
-        except NotFoundError:
-            case = None
-
-    markdown_doc = render_to_string("api.md", {"case": case}, request)
-
-    # render markdown document to html
-    html, toc, meta = render_markdown(markdown_doc)
-
-    meta = {k: mark_safe(v) for k, v in meta.items()}
-    return render(request, "layouts/full.html", {
-        'main_content': mark_safe(html),
-        'sidebar_menu_items': mark_safe(toc),
-        **meta,
-    })
-
-
-
-def search_docs(request):
-    return render(request, 'search_docs.md')
-
-
 def snippet(request, label):
     snippet = get_object_or_404(Snippet, label=label).contents
     return HttpResponse(snippet, content_type=snippet.format)
@@ -216,13 +151,14 @@ class MarkdownView(View):
 
         IMPORTANT: As all outputs are marked safe, subclasses should never include user-generated input in the template context.
     """
-    base_template_name = "layouts/full.html"
+    base_template_name = "markdown.html"
     extra_context = {}
     template_name = None
 
     def get(self, request, *args, **kwargs):
+        context = {**self.extra_context, **self.get_context(request)}
         # render any django template tags in markdown document
-        markdown_doc = render_to_string(self.template_name, self.extra_context, request)
+        markdown_doc = render_to_string(self.template_name, context, request)
 
         # render markdown document to html
         html, toc, meta = render_markdown(markdown_doc)
@@ -233,9 +169,45 @@ class MarkdownView(View):
             'main_content': mark_safe(html),
             'sidebar_menu_items': mark_safe(toc),
             'main_content_style': 'markdown',
-            **self.extra_context,
+            **context,
             **meta,
         })
+
+    def get_context(self, request):
+        return {}
+
+
+class ApiView(MarkdownView):
+    template_name = "api.md"
+
+    def get_context(self, request):
+        try:
+            case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
+        except NotFoundError:
+            try:
+                case = CaseDocument.search().execute()[0]
+            except NotFoundError:
+                case = None
+        return {"case": case}
+
+
+class AboutView(MarkdownView):
+    template_name = "about.md"
+
+    def get_context(self, request):
+        contributors = get_data_from_lil_site(section="contributors")
+        sorted_contributors = {}
+        for contributor in contributors:
+            sorted_contributors[contributor['sort_name']] = contributor
+            if contributor['affiliated']:
+                sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
+        sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
+
+        return {
+            "contributors": sorted_contributors,
+            "news": get_data_from_lil_site(section="news"),
+            "email": settings.DEFAULT_FROM_EMAIL
+        }
 
 
 def screenshot(request):

@@ -325,18 +325,21 @@ def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_asser
 
 @pytest.mark.django_db
 def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_assert_num_queries, elasticsearch):
-    for i in range(3):
-        case_factory(volume=volume_metadata)
+    cases = [case_factory(volume=volume_metadata) for c in range(3)]
 
     # full sync
     CaseBodyCache.objects.update(text='blank')
-    with django_assert_num_queries(select=5, update=2):
+    with django_assert_num_queries(select=5, update=2, insert=1):
         sync_case_body_cache_for_vol(volume_metadata.barcode)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 
+    # check analysis
+    for case in cases:
+        assert sorted((a.key, a.value) for a in case.analysis.all()) == [('char_count', 47), ('ocr_confidence', 1.0), ('word_count', 12)]
+
     # text/json sync
     CaseBodyCache.objects.update(text='blank')
-    with django_assert_num_queries(select=3, update=2):
+    with django_assert_num_queries(select=3, update=2, insert=1):
         sync_case_body_cache_for_vol(volume_metadata.barcode, rerender=False)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 
@@ -421,3 +424,20 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, extracted_ci
     assert set(int(r['id']) for r in results) == {case_from.id, case_to.id}
     for r in results:  # check 'cites' column
         assert set(c.cite for c in Citation.objects.filter(case_id=r['id'])) == set(r['cites'].split('; '))
+
+
+def test_pagerank(tmp_path, reset_sequences, three_cases):
+    """ Test calculate_pagerank_scores and load_pagerank_scores """
+    citations_file = tmp_path / 'citations.csv.gz'
+    pagerank_file = tmp_path / 'pagerank.csv.gz'
+    with gzip.open(citations_file, 'wt') as f:
+        f.write("%s,%s,%s\n%s,%s\n" % (three_cases[0].id, three_cases[0].id, three_cases[2].id, three_cases[1].id, three_cases[2].id))
+    fabfile.calculate_pagerank_scores(citations_file, pagerank_file)
+    fabfile.load_pagerank_scores(pagerank_file)
+    with gzip.open(pagerank_file, 'rt') as f:
+        pageranks = {int(row[0]): row[1:] for row in list(csv.reader(f))[1:]}
+    for case in three_cases:
+        assert case.analysis.get(key='pagerank').value == {
+            'raw': float(pageranks[case.id][0]),
+            'percentile': float(pageranks[case.id][1])
+        }

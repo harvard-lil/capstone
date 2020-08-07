@@ -22,6 +22,7 @@
         redact: "{% url "redact_case" db_case.id host 'cite' %}",
         about: "{% url "about" %}",
         api: "{% api_url "api-root" %}v1/",
+        apiDocs: "{% url "api" %}",
         caseApi: "{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}",
         casePdf: "{% if can_render_pdf %}{{ db_case.get_pdf_url|elide:db_case|striptags }}{% endif %}",
         citedBy: "{% url "case_cited_by" db_case.id host 'cite' %}"
@@ -30,7 +31,8 @@
       isStaff: {% if request.user.is_staff %}true{% else %}false{% endif %},
       jurisdictionName: "{{ es_case.jurisdiction.name_long }}",
       caseYear: "{{ db_case.decision_date.year }}",
-      caseId: {{ db_case.id }}
+      caseId: {{ db_case.id }},
+      analysis: {{ analysis|safe }}
     };
   </script>
   {% render_bundle 'case' %}

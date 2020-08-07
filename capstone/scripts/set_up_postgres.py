@@ -6,7 +6,7 @@ from django.conf import settings
 from django.db import connections
 
 from capdb.models import Citation, CaseMetadata, CaseBodyCache, Reporter, Court, VolumeMetadata, Jurisdiction, \
-    ExtractedCitation
+    ExtractedCitation, CaseAnalysis
 from .helpers import nsmap
 
 
@@ -83,6 +83,11 @@ def update_postgres_env(db='capdb'):
                 'model': ExtractedCitation,
                 'case_field': 'cited_by_id',
                 'fields': ['cite'],
+            },
+            {
+                'model': CaseAnalysis,
+                'case_field': 'case_id',
+                'fields': ['value'],
             },
         ]
         fkey_update_models = [

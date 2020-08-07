@@ -49,6 +49,15 @@
         <span v-else>Select text to link, cite, or search</span>
       </div>
     </div>
+    <div class="sidebar-section" v-if="Object.keys(templateVars.analysis).length">
+      <h3>Analysis</h3>
+      <div class="sidebar-section-contents">
+        <ul class="bullets">
+          <li v-for="(v, k) in templateVars.analysis">{{k.replace('_', ' ')}}: {{analysisValue(k, v)}}</li>
+        </ul>
+        <a :href="`${urls.apiDocs}#analysis-fields`">About analysis fields</a>
+      </div>
+    </div>
     <div  v-if="templateVars.isStaff" class="sidebar-section admin-tools">
       <h3>Admin Tools</h3>
       <div class="sidebar-section-contents">
@@ -193,6 +202,12 @@
       },
     },
     methods: {
+      analysisValue(k, v) {
+        if (k === "pagerank") {
+          return `${(v.percentile*100).toFixed(1)}%`;
+        }
+        return v.toLocaleString();
+      },
       async fetchCitingCount() {
         const response = await jsonQuery(getApiUrl(this.urls.api, 'cases', {cites_to: this.templateVars.caseId, page_size: 1}));
         this.citingCount = response.count;

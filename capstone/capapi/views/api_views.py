@@ -8,8 +8,6 @@ from rest_framework import viewsets, renderers, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from django_elasticsearch_dsl_drf.constants import LOOKUP_FILTER_RANGE, LOOKUP_QUERY_IN, LOOKUP_QUERY_GT, \
-    LOOKUP_QUERY_GTE, LOOKUP_QUERY_LT, LOOKUP_QUERY_LTE
 from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
 from django.http import HttpResponseRedirect, FileResponse
@@ -99,28 +97,19 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
     # Define filter fields
     filter_fields = {
-        'id': {
-            'field': 'id',
-            'lookups': [
-                LOOKUP_FILTER_RANGE,
-                LOOKUP_QUERY_IN,
-                LOOKUP_QUERY_GT,
-                LOOKUP_QUERY_GTE,
-                LOOKUP_QUERY_LT,
-                LOOKUP_QUERY_LTE,
-            ],
-        },
+        'id': 'id',
         'court': 'court.slug',
         'court_id': 'court.id',
         'reporter': 'reporter.id',
         'jurisdiction': 'jurisdiction.slug',
         'cite': 'citations.normalized_cite',
         'cites_to': 'extractedcitations.normalized_cite',
-        'decision_date': 'decision_date',
-        'decision_date_min': {'field': 'decision_date', 'default_lookup': 'gte'},
-        'decision_date_max': {'field': 'decision_date', 'default_lookup': 'lte'},
-        'last_updated_min': {'field': 'last_updated', 'default_lookup': 'gte'},
-        'last_updated_max': {'field': 'last_updated', 'default_lookup': 'lte'},
+        'decision_date': 'decision_date_original',
+        'last_updated': 'last_updated',
+        **{'analysis.'+k: 'analysis.'+k for k in ['word_count', 'char_count', 'ocr_confidence', 'page_rank']},
+        # legacy fields:
+        'decision_date_min': {'field': 'decision_date_original', 'default_lookup': 'gte'},
+        'decision_date_max': {'field': 'decision_date_original', 'default_lookup': 'lte'},
     }
     filterset_fields = []  # make CaseFilter, which we use just for presentation in the HTML viewer, ignore filter_fields, which we use for filtering on Elasticsearch
 

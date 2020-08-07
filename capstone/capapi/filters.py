@@ -1,4 +1,3 @@
-import re
 from functools import lru_cache
 import rest_framework_filters as filters
 
@@ -6,7 +5,6 @@ from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
     OrderingFilterBackend
 from elasticsearch.exceptions import NotFoundError
-from rest_framework.exceptions import ParseError
 from rest_framework_filters.backends import RestFrameworkFilterBackend
 from capapi.documents import CaseDocument
 from capdb import models
@@ -206,12 +204,6 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
             return [models.normalize_cite(value) for value in values if isinstance(value, str)]
 
         query_params = super().get_filter_query_params(request, view)
-
-        for suffix in ['min', 'max']:
-            date_param = 'decision_date_{}'.format(suffix)
-            if date_param in query_params:
-                if not re.match(r'\d\d\d\d-\d\d-\d\d', query_params[date_param]['values'][0]):
-                    raise ParseError('Invalid date format: must be YYYY-MM-DD')
 
         if 'cite' in query_params:
             query_params['cite']['values'] = [models.normalize_cite(cite) for cite in
