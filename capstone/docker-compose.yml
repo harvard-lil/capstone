@@ -12,7 +12,7 @@ services:
     redis:
         image: redis:4
     elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:6.8.11
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
         environment:
           - node.name=es01
           - bootstrap.memory_lock=true
@@ -28,7 +28,7 @@ services:
           - 127.0.0.1:9200:9200
     web:
         build: .
-        image: capstone:0.3.99-021adf544e37bdb4b5923e54886ef700
+        image: capstone:0.3.100-0b5f618351abdc3543b1e8f19bb50b13
         volumes:
             # NAMED VOLUMES
             - node_modules:/app/node_modules:delegated

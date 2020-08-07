@@ -120,7 +120,7 @@ class ESPaginatorMixin:
         :return:
         """
         __data = [
-            ('count', self.count),
+            ('count', self.count['value']),
             ('next', self.get_next_link()),
             ('previous', self.get_previous_link()),
         ]
