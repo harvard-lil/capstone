@@ -28,7 +28,7 @@ services:
           - 127.0.0.1:9200:9200
     web:
         build: .
-        image: capstone:0.3.97-e0a0ae9b68ff70c653a7f5e78c65702f
+        image: capstone:0.3.99-021adf544e37bdb4b5923e54886ef700
         volumes:
             # NAMED VOLUMES
             - node_modules:/app/node_modules:delegated
