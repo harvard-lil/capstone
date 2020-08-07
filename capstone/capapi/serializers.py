@@ -166,6 +166,7 @@ class CaseDocumentSerializer(DocumentSerializer):
             ("cites_to", extractedcitations),
             ("frontend_url", self._url_templates['frontend_url'] % s["frontend_url"]),
             ("preview", preview),
+            ("analysis", s.get("analysis", {})),
             ("last_updated", s.get("last_updated")),  # can be changed to s["last_updated"] once new index is in place
         ))
 

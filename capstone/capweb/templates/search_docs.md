@@ -5,7 +5,6 @@ explainer: The Caselaw Access Project Search Interface facilitates searching and
 meta_description: Caselaw Access Project Search Docs
 top_section_style: bg-black
 row_style: bg-tan
-extra_head: {% stylesheet 'docs' %} 
 
 # Overview {: class="subtitle" }
 

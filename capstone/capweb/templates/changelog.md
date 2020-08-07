@@ -7,7 +7,6 @@ meta_description: CAP Data/Feature Change Log
 explainer: If our data or user-facing research features change in significant ways&mdash;beyond bug fixes and minor changes&mdash;we'll record those changes here.
 top_section_style: bg-black
 row_style: bg-tan
-extra_head: {% stylesheet 'docs' %}
 
 # August 2020
 
@@ -15,6 +14,8 @@ extra_head: {% stylesheet 'docs' %}
 
 * Cases Endpoint:
     * Added `last_updated` field and filters to get cases changed since date.
+    * Added `analysis` field and filters to list extracted facts about case, such as word count.
+    * `decision_date` filter can take prefixes like `decision_date__gte=2000`.
 * Volumes Endpoint:
     * Added `frontend_url` field.
 * Reporters Endpoint:

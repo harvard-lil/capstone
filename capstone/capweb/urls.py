@@ -1,5 +1,5 @@
-from capweb.views import MarkdownView
 from . import views
+from .views import MarkdownView
 from django.contrib.auth import views as auth_views
 from django.urls import path, include, re_path
 from django.conf import settings
@@ -14,10 +14,10 @@ from capweb.helpers import safe_domains
 urlpatterns = [
     ### pages ###
     path('', views.index, name='home'),
-    path('about/', views.about, name='about'),
-    path('tools/', views.tools, name='tools'),
+    path('about/', views.AboutView.as_view(), name='about'),
+    path('tools/', MarkdownView.as_view(template_name='tools.md'), name='tools'),
     path('gallery/', views.gallery, name='gallery'),
-    path('api/', views.api, name='api'),
+    path('api/', views.ApiView.as_view(), name='api'),
     path('search/', views.search, name='search'),
     path('search-docs/', MarkdownView.as_view(template_name='search_docs.md'), name='search-docs'),
     path('trends/', views.trends, name='trends'),

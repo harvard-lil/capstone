@@ -6,8 +6,7 @@ page_image: img/og_image/tools_api.png
 meta_description: Caselaw Access Project API Docs
 top_section_style: bg-black
 row_style: bg-tan
-explainer: The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases published in books from 1658 to 2018. The collection includes over six million cases scanned from the Harvard Law School Library shelves. <a href="{% url "about" }>Learn more about the project</a>. 
-extra_head: {% stylesheet 'docs' %}
+explainer: The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases published in books from 1658 to 2018. The collection includes over six million cases scanned from the Harvard Law School Library shelves. <a href="{% url "about" }>Learn more about the project</a>.
 
 {# ==============> GETTING STARTED <============== #}
 # Getting Started {: class="subtitle" data-toc-label='Start Here' }
@@ -20,8 +19,7 @@ case text available as structured XML, presentation HTML, or plain text.
 To get started with the API, you can [explore it in your browser]({% api_url "api-root" %}), or reach it from the 
 command line. For example, here is a curl command to request a single case from Illinois:
 
-`curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"`
-{: class="code-block" }
+    curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"
 
 If you haven't used APIs before, you might want to check out our [search tool]({% url "search" %}) or jump down to our 
 [Beginner's Introduction to APIs](#beginners-introduction-to-apis).
@@ -44,24 +42,22 @@ Most API queries don't require registration: check our [access limits](#access-l
 Most API requests do not need to be authenticated. However, if requests are not authenticated, you may see this response
 in results from the case endpoint with `full_case=true`:
 
-
-`{
-  "results": [
     {
-      "id": 1021505,
-      ...
-      "jurisdiction": {
-        ...
-        "whitelisted": false
-      },
-      "casebody": {
-        "data": null,
-        "status": "error_auth_required"
-      }
-    },
-  ]
-}`
-{: class="code-block" }
+      "results": [
+        {
+          "id": 1021505,
+          ...
+          "jurisdiction": {
+            ...
+            "whitelisted": false
+          },
+          "casebody": {
+            "data": null,
+            "status": "error_auth_required"
+          }
+        },
+      ]
+    }
 
 In this example the response included a case from a non-whitelisted jurisdiction, and `casebody.data` for the case is 
 therefore blank, while `casebody.status` is "error_auth_required".
@@ -75,16 +71,14 @@ __Example:__ With an API key of `abcd12345`, you would pass `Token abcd12345` to
 
 A curl command would look like this:
   
-`curl -H "Authorization: Token abcd12345" "{% api_url "cases-list" %}{{case.id}}/?full_case=true"`
-{: class="code-block" }
+    curl -H "Authorization: Token abcd12345" "{% api_url "cases-list" %}{{case.id}}/?full_case=true"
 
 In a program, (python's request library in this example,) it would look something like this:
 
-`response = requests.get(
-    '{% api_url "cases-list" %}{{case.id}}/?full_case=true',
-    headers={'Authorization': 'Token abcd12345'}
-)`
-{: class="code-block" }
+    response = requests.get(
+        '{% api_url "cases-list" %}{{case.id}}/?full_case=true',
+        headers={'Authorization': 'Token abcd12345'}
+    )
   
 If you are [logged into this website]({% url "login" %}) and accessing the API through a web browser, all requests 
 will be authenticated automatically.
@@ -93,17 +87,12 @@ will be authenticated automatically.
 {# ==============> DATA FORMATS <============== #}
 # Case Text Formats {: class="subtitle" data-toc-label='Data Formats' }
   
-Both of these parameters must be used in conjunction with the `full_case=true`parameter.
-{: class="highlighted" }
+The `body_format` query parameter controls the format of full case text when using the `full_case=true` parameter.
   
-CAPAPI is capable of returning case text in three formats: text(default), XML, or HTML. In most instances, each case is 
-represented by a JSON object which includes various pieces of metadata, and the case text itself which is located in the
-`casebody` property. In both the [case browse/search results endpoint](#endpoint-cases) and the 
-[individual case endpoint](#endpoint-case), the `casebody` parameter returns JSON structured plain text, but you can 
-change that to either HTML or XML by setting the `body_format` query parameter to either `html` or `xml`.
+CAPAPI cases are always returned as JSON objects. By default the `casebody` JSON field returns structured plain text,
+but you can change that to either HTML or XML by setting the `body_format` query parameter to either `html` or `xml`.
   
-This is what you can expect from different format specifications using the `body_format` parameter.
-
+This is what you can expect from different format specifications using the `body_format` parameter:
 
 Text Format (default)
 {: class="topic-header" }
@@ -113,23 +102,22 @@ Text Format (default)
 
 The default text format is best for natural language processing. Example response data:
 
-`"data": {
-      "head_matter": "Fifth District\n(No. 70-17;\nThe People of the State of Illinois ...",
-      "opinions": [
-          {
-              "author": "Mr. PRESIDING JUSTICE EBERSPACHER",
-              "text": "Mr. PRESIDING JUSTICE EBERSPACHER\ndelivered the opinion of the court: ...",
-              "type": "majority"
-          }
-      ],
-      "judges": [],
-      "attorneys": [
-          "John D. Shulleriberger, Morton Zwick, ...",
-          "Robert H. Rice, State’s Attorney, of Belleville, for the Peop ..."
-      ]
-  }
-}`
-{: class="code-block" }
+    "data": {
+          "head_matter": "Fifth District\n(No. 70-17;\nThe People of the State of Illinois ...",
+          "opinions": [
+              {
+                  "author": "Mr. PRESIDING JUSTICE EBERSPACHER",
+                  "text": "Mr. PRESIDING JUSTICE EBERSPACHER\ndelivered the opinion of the court: ...",
+                  "type": "majority"
+              }
+          ],
+          "judges": [],
+          "attorneys": [
+              "John D. Shulleriberger, Morton Zwick, ...",
+              "Robert H. Rice, State’s Attorney, of Belleville, for the Peop ..."
+          ]
+      }
+    }
 
 In this example, `"head_matter"` is a string representing all text printed in the volume before the text prepared by 
 judges. `"opinions"` is an array containing a dictionary for each opinion in the case. `"judges"`, and 
@@ -147,8 +135,7 @@ The XML format is best if your analysis requires more information about paginati
 contains a superset of the information available from body_format=text, but requires parsing XML data. Example 
 response data:
       
-`"data": "<?xml version='1.0' encoding='utf-8'?>\n<casebody ..."`
-{: class="code-block" }
+    "data": "<?xml version='1.0' encoding='utf-8'?>\n<casebody ..."
 
 HTML Format
 {: class="topic-header" }
@@ -159,81 +146,133 @@ HTML Format
 The HTML format is best if you want to show readable, formatted caselaw to humans. It represents a best-effort attempt 
 to transform our XML-formatted data to semantic HTML ready for CSS formatting of your choice. Example response data:
 
-`"data": "<section class=\"casebody\" data-firstpage=\"538\" data-lastpage=\"543\"> ..."`
-{: class="code-block" }
+    "data": "<section class=\"casebody\" data-firstpage=\"538\" data-lastpage=\"543\"> ..."
 
 
 {# ====> PAGINATION <==== #}
 # Pagination and Counts {: class="subtitle" data-toc-label='Pagination and Counts' }
   
-Queries by default return 100 results per page, but you may request a smaller number using the `page_size` parameter:
+Queries by default return 100 results per page, but you may request a smaller or larger number (up to 10,000!) using the
+`page_size` parameter:
   
-`curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"`
-{: class="code-block" }
+    curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"
   
-We use [cursor](#def-cursor)-based pagination, meaning we keep track of where you are in the results set on 
-the server, and you can access each page of results by using the link in the `"previous"` and `"next"` keys of the 
+We use [cursor](#def-cursor)-based pagination, meaning we keep track of where you are in the results set with a token, 
+and you can access each page of results by returning the token included in the `"previous"` and `"next"` keys of the 
 response:
   
-`{
-  "count": 183149,
-  "next": "{% api_url "cases-list" %}?cursor=cD0xODMyLTEyLTAx",
-  "previous": "{% api_url "cases-list" %}?cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
-  ...
-}`
-{: class="code-block" }
-
-Responses also include a `"count"` key. Occasionally this may show `"count": null`, indicating that the total count for
-a particular query has not yet been calculated.
+    {
+      "count": 183149,
+      "next": "{% api_url "cases-list" %}?cursor=cD0xODMyLTEyLTAx",
+      "previous": "{% api_url "cases-list" %}?cursor=bz0xMCZyPTEmcD0xODI4LTEyLTAx"
+      ...
+    }
 
 
+{# ====> Searching and Filtering <==== #}
+# Searching and Filtering Cases {: class="subtitle" data-toc-label='Search' }
 
-{# ====> Search <==== #}
-# Searching Cases {: class="subtitle" data-toc-label='Search' }
+Our [cases endpoint](#endpoint-cases) is indexed by Elasticsearch, and supports a range of searching, filtering, and
+sorting options.
 
-Our [cases endpoint](#endpoint-cases) supports full-text search through the `search` parameter. For example, if you'd
+Options in this section work only with the cases endpoint.
+{: class="highlighted" }
+
+Full-text Search
+{: #case-fts class="topic-header" }
+
+Full-text search uses the `search` parameter. For example, if you'd
 like to search for all cases that contain the word 'baronetcy', use the following query:
 
-`{% api_url "cases-list" %}?search=baronetcy`
-{: class="code-block" }
+    {% api_url "cases-list" %}?search=baronetcy
 
+The `search` field supports Elasticsearch [Simple Query String Syntax](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl-simple-query-string-query.html#_simple_query_string_syntax)
+For example, you can use `"quotes"` to search by phrase and `-negation` to exclude cases with matching terms.
+
+The `search` parameter searches the case, jurisdiction, and court names, docket number, and case text.
+You can also use the `name`, `name_abbreviation`, or `docket_number` parameters to perform full-text search
+just on those fields.
+
+Filtering by Groups or Ranges
+{: #case-filtering class="topic-header" }
+
+Many of the parameters on the cases endpoint can be filtered by appending a suffix to the query parameter key.
+
+To match to a list, append `__in` to the query parameter. For example, to fetch cases matching ID `12`, `34`, or `56`:
+
+    curl "{% api_url "cases-list" %}?id__in=12__34__56"
+
+To filter by less than or greater than, append `__gt` (greater than), `__gte` (greater than or equal to), 
+`__lt` (less than), or `__lte` (less than or equal to). For example, to fetch cases of 2,000 to 3,000 words:
+
+    curl "{% api_url "cases-list" %}?analysis.word_count__gte=2000&analysis.word_count__lte=3000"
+
+To filter by prefix, append `__prefix`. For example, to find cases from February of 1800:
+
+    curl "{% api_url "cases-list" %}?decision_date__prefix=1800-02"
+    
 Sorting
 {: class="topic-header" }
-
-The ordering argument only works with the cases endpoint.
-{: class="highlighted" }
   
 You can sort your search in the cases endpoint using the `ordering` argument. To order your results in ascending order, 
 supply the ordering argument with the field on which you'd like to sort your results. For example, if you'd like to 
 search for the term 'baronetcy' with the oldest cases appearing first, supply the following query: 
 
-`{% api_url "cases-list" %}?search=baronetcy&ordering=decision_date`
-{: class="code-block" }
+    {% api_url "cases-list" %}?search=baronetcy&ordering=decision_date
 
 You can also sort in descending order by adding a minus sign before the field on which you'd like to sort. To perform 
 the same search sorted in descending order, that is, seeing the newest cases first, then use this query:
 
-`{% api_url "cases-list" %}?search=baronetcy&ordering=-decision_date`
-{: class="code-block" }
+    {% api_url "cases-list" %}?search=baronetcy&ordering=-decision_date
 
-Phrase Search
+{# ====> Analysis Fields <==== #}
+# Analysis Fields {: class="subtitle" }
+
+Each case result in the API returns an analysis section, such as:
+
+    "analysis": {
+        "word_count": 16593,
+        "ocr_confidence": 0.691,
+        "char_count": 92845,
+        "page_rank": 0.1
+    }
+
+Analysis fields are values calculated by processing the raw case text. They can be searched with [filters](#case-filtering).
+
+All analysis fields are optional, and may or may not appear for a given case.
+
+Analysis fields have the following meanings:
+
+Character count (`char_count`)
 {: class="topic-header" }
 
-We also support phrase search. To search our corpus for the phrase, "a pox on both your houses", simply enclose it in
-double quotes:
+The number of unicode characters in the full case text including headnotes.
 
-`{% api_url "cases-list" %}?search="a pox on both your houses"`
-{: class="code-block" }
-
-Exclusion
+OCR Confidence (`ocr_confidence`)
 {: class="topic-header" }
 
-You can also exclude terms from your search by prepending them with a minus sign. For example, if you wanted to
-search for all cases containing the phrase "insurance fraud" but wanted to exclude the word automobile, pass both 
-"insurance fraud" and -automobile to the search parameter:
+A relative score of the predicted accuracy of optical character recognition in the case, from 0.0 to 1.0.
+`ocr_confidence` is generated by averaging the OCR engine's reported confidence for each word in the case.
+The score has no objective interpretation, other than that a case with a lower score is likely to have more
+typographical errors than a case with a higher score.
 
-`{% api_url "cases-list" %}?search="insurance fraud"-automobile`
-{: class="code-block" }
+PageRank (`pagerank`)
+{: class="topic-header" }
+
+Example: `"pagerank": {"raw": 0.00278, "percentile": 0.997}`
+
+An estimate of the all-time significance of this case in the citation graph, from 0.0 to 1.0, calculated using
+the PageRank algorithm. Cases with no inbound citations will not have this field, and implicitly have a rank of 0.
+
+The `"raw"` score can be interpreted as the probability of encountering that case if you start at a random case and 
+followed random citations. The `"percentile"` score indicates the percentage of cases, between 0.0 and 1.0, that have
+a lower raw score than the given case. 
+
+Word count (`word_count`)
+{: class="topic-header" }
+
+The number of words in the full case text including headnotes, defined as the number of character strings separated by
+spaces.
 
 {# ==============> ACCESS LIMITS <============== #}
 # Access Limits {: class="subtitle" }
@@ -412,71 +451,60 @@ case in our system, you can append it to the [path](#def-path) to retrieve a [si
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `name_abbreviation`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * An arbitrary [string](#def-string).
-    {: class="param-data-type" }
-    * e.g. `People v. Smith`
-    {: class="param-description" }
-* `decision_date_min`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * `YYYY-MM-DD`
-    {: class="param-data-type" }
-* `decision_date_max`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * `YYYY-MM-DD`
-    {: class="param-data-type" }
-* `docket_number`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * An arbitrary [string](#def-string)
-    {: class="param-data-type" }
-* `cite`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * e.g. `1 Ill. 21`
-    {: class="param-data-type" }
-* `reporter`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * integer
-    {: class="param-data-type" }
-    * a [reporter](#endpoint-reporters) id
-    {: class="param-description" }
-* `court`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * [slug](#def-slug)
-    {: class="param-data-type" }
-    * a [court](#endpoint-courts) [slug](#def-slug)
-    {: class="param-description" }
-* `court_id`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * integer
-    {: class="param-data-type" }
-    * a [court](#endpoint-courts) id
-    {: class="param-description" }
-* `jurisdiction`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * [slug](#def-slug)
-    {: class="param-data-type" }
-    * a [jurisdiction](#endpoint-jurisdictions) [slug](#def-slug)
-    {: class="param-description" }
-* `search`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * An arbitrary [string](#def-string)
-    {: class="param-data-type" }
-    * A full-text search query
-    {: class="param-description" }
-* `cursor`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * An randomly generated [string](#def-string)
-    {: class="param-data-type" }
-    * This field contains a value that we generate which will bring you to a specific page of results.
-    {: class="param-description" }
-* `ordering`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * a field name
-    {: class="param-data-type" }
-    * Pass this parameter a field name to sort your results in ascending order on that field. Prepend it with a minus 
+Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`. See [Filtering](#case-filtering).
+
+* `id` 
+{: add_list_class="parameter-list" }
+    * __data type:__    integer
+* `name_abbreviation`
+    * __data type:__    string
+    * __description:__  e.g. `People v. Smith`
+* `decision_date`
+    * __data type:__    `YYYY-MM-DD` or a substring
+* `last_updated`
+    * __data type:__    `YYYY-MM-DDTHH:MM:SS` or a substring
+* `docket_number`
+    * __data type:__    string
+    * __description:__  [full-text search](#case-fts)
+* `cite`
+    * __data type:__    string
+    * __description:__  citation to case, e.g. `1 Ill. 21`
+* `cites_to`
+    * __data type:__    string or integer
+    * __description:__  find cases that cite to the given citation or case ID, e.g. `1 Ill. 21` or `12345`
+* `reporter`
+    * __data type:__    integer
+    * __description:__  [reporter](#endpoint-reporters) id
+* `court`
+    * __data type:__    [slug](#def-slug)
+    * __description:__  [court](#endpoint-courts) slug
+* `court_id`
+    * __data type:__    integer
+    * __description:__  [court](#endpoint-courts) id
+* `jurisdiction`
+    * __data type:__    [slug](#def-slug)
+    * __description:__  [jurisdiction](#endpoint-jurisdictions) slug
+* `search`
+    * __data type:__    string
+    * __description:__  [full-text search](#case-fts)
+* `analysis.<key>`
+    * __data type:__    integer or float
+    * __description:__  Filter by an [analysis field](#analysis-fields), e.g. `analysis.word_count__gt=1000`
+* `cursor`
+    * __data type:__    string
+    * __description:__  A value provided by a previous search result to go to the next page of results
+* `ordering`
+    * __data type:__    string
+    * __description:__  A field name to sort your results in ascending order. Prepend with a minus 
     sign to sort in reverse order. See [Search](#search) for more details.
-    {: class="param-description" }    
+* `full_case`
+    * __data type:__    "true" or "false"
+    * __default:__      "false"
+    * __description:__  When set to `true`, load the case body. Required when setting `body_format`.
+* `body_format`
+    * __data type:__    "text", "html", or "xml"
+    * __default:__      "text"
+    * __description:__  Change the case body format from JSON to html or xml.
             
             
 {# ==============> CASE <============== #}
@@ -491,93 +519,15 @@ Use this endpoint to retrieve a single case.
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `full_case`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * `true` or `false`
-    {: class="param-data-type" }
-    * When set to `true`, this parameter loads the case body. It is required for setting `body_format`.
-    {: class="param-description" }
-* `body_format`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * `html` or `xml`
-    {: class="param-data-type" }
-    * This will return a JSON enclosure with metadata, and a field containing the case in XML or HTML.
-    {: class="param-description" }
-* `cursor`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * An randomly generated [string](#def-string)
-    {: class="param-data-type" }
-    * This field contains a value that we generate which will bring you to a specific page of results.
-    {: class="param-description" }
-        
-        
-Here's what you can expect when you request a single case. Everything under 
-`casebody`{: class="code-example-casebody-section" } is only returned if `full_case=true` is set. In the 
-[cases](#endpoint-cases) endpoint, you'd get a list of these in a JSON object which also included pagination information
-and result counts.
-
-
-<pre class="code-block">{
-  "id": <span class="json-data-type">(integer)</span>
-  "url": <span class="json-data-type"><a href="#def-url">(url)</a></span>,
-  "name": <span class="json-data-type"><a href="#def-string">(string)</a></span>,
-  "name_abbreviation": <span class="json-data-type"><a href="#def-string">(string)</a></span>,
-  "decision_date": <span class="json-data-type">YYYY-MM-DD</span>,
-  "docket_number": <span class="json-data-type"><a href="#def-string">(string)</a></span>,
-  "first_page": <span class="json-data-type"><a href="#def-string">(string)</a> (generally a number)</span>,
-  "last_page": <span class="json-data-type"><a href="#def-string">(string)</a> (generally a number)</span>,
-  "citations": [
-      {
-          "type": <span class="json-data-type">"official" or "parallel"</span>,
-          "cite": <span class="json-data-type"><a href="#def-string">(string)</a></span>
-      }
-  ],
-  "volume": {
-      "url": <span class="json-data-type"><a href="#def-url">(url)</a></span>,
-      "volume_number": <span class="json-data-type"><a href="#def-string">(string)</a> (generally a number)</span>
-  },
-  "reporter": {
-      "url": <span class="json-data-type"><a href="#def-url">(url)</a></span>,
-      "full_name": <span class="json-data-type"><a href="#def-string">(string)</a></span>
-  },
-  "court": {
-      "url": <span class="json-data-type"><a href="#def-url">(url)</a></span>,
-      "id": <span class="json-data-type">(integer)</span>,
-      "slug": <span class="json-data-type"><a href="#def-slug">(slug)</a></span>,
-      "name": <span class="json-data-type"><a href="#def-string">(string)</a></span>,
-      "name_abbreviation": <span class="json-data-type"><a href="#def-string">(string)</a></span>
-  },
-  "jurisdiction": {
-      "url": <span class="json-data-type"><a href="#def-url">(url)</a></span>,
-      "id": <span class="json-data-type">(integer)</span>,
-      "slug": <span class="json-data-type"><a href="#def-slug">(slug)</a></span>,
-      "name": <span class="json-data-type"><a href="#def-string">(string)</a></span>,
-      "name_long": <span class="json-data-type"><a href="#def-string">(string)</a></span>,
-      "whitelisted": <span class="json-data-type">"true" or "false"</span>
-  },
-  "cites_to": [
-     {"cite": <span class="json-data-type"><a href="#def-string">(string)</a></span>},
-  ]
-  <span class="code-example-casebody-section">
-  "casebody": {
-      "data": {
-          "judges": [],
-          "head_matter": <span class="json-data-type"><a href="#def-string">(string)</a></span>
-          "attorneys": [
-            <span class="json-data-type"><a href="#def-string">(string)</a></span>
-          ],
-          "opinions": [
-              {
-                  "type": <span class="json-data-type"><a href="#def-string">(string)</a></span>,
-                  "author": <span class="json-data-type"><a href="#def-string">(string)</a></span>,
-                  "text": <span class="json-data-type"><a href="#def-string">(string)</a></span>
-              }
-          ],
-      },
-      "status": <span class="json-data-type">should be "ok"</span>
-  }
-  </span>
-}</pre>
+* `full_case` 
+{: add_list_class="parameter-list" }
+    * __data type:__    "true" or "false"
+    * __default:__      "false"
+    * __description:__  When set to `true`, load the case body. Required when setting `body_format`.
+* `body_format`
+    * __data type:__    "text", "html", or "xml"
+    * __default:__      "text"
+    * __description:__  Change the case body format from JSON to html or xml.
 
 
 {# ==============> reporters <============== #}
@@ -589,47 +539,28 @@ Reporters Endpoint
 
 This will return a list of reporter series.
 
-
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `full_name`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * e.g. Illinois Appellate Court Reports
-    {: class="param-data-type" }
-    * the full reporter name
-    {: class="param-description" }
-* `short_name`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * e.g. Ill. App.
-    {: class="param-data-type" }
-    * the abbreviated name for the reporter
-    {: class="param-description" }
-* `start_year`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * YYYY
-    {: class="param-data-type" }
-    * the earliest year reported on in the series
-    {: class="param-description" }
-* `end_year`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * YYYY
-    {: class="param-data-type" }
-    * the latest year reported on in the series
-    {: class="param-description" }
-* `volume_count`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * integer
-    {: class="param-data-type" }
-    * filter on the number of volumes in a reporter series
-    {: class="param-description" }
-* `cursor`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * a randomly generated [string](#def-string)
-    {: class="param-data-type" }
-    * This field contains a value that we generate which will bring you to a
-     specific page of results.
-    {: class="param-description" }
+* `full_name` 
+{: add_list_class="parameter-list" }
+    * __data type:__    string
+    * __description:__  the full reporter name, e.g. Illinois Appellate Court Reports
+* `short_name`
+    * __data type:__    string
+    * __description:__  the short reporter name, e.g. Ill. App.
+* `start_year`
+    * __data type:__    integer
+    * __description:__  the earliest year reported on in the series
+* `end_year`
+    * __data type:__    integer
+    * __description:__  the latest year reported on in the series
+* `volume_count`
+    * __data type:__    integer
+    * __description:__  filter on the number of volumes in a reporter series
+* `cursor`
+    * __data type:__    string
+    * __description:__  A value provided by a previous search result to go to the next page of results
 
 
 {# ==============> jurisdictions <============== #}
@@ -644,44 +575,23 @@ This will return a list of jurisdictions.
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `id`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * integer
-    {: class="param-data-type" }
-    * get jurisdiction by ID
-    {: class="param-description" }
-* `name`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * e.g. `Ill.`
-    {: class="param-data-type" }
-    * abbreviated jurisdiction name
-    {: class="param-description" }
-* `name_long`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * e.g. `Illinois`
-    {: class="param-data-type" }
-    * full jurisdiction name
-    {: class="param-description" }
-* `whitelisted`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * true` or `false`
-    {: class="param-data-type" }
-    * filter for [whitelisted](#def-whitelisted) cases
-    {: class="param-description" }
-* `slug`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * a [slug](#def-slug)
-    {: class="param-data-type" }
-    * filter on the jurisdiction [slug](#def-slug)
-    {: class="param-description" }
-* `cursor`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * a randomly generated [string](#def-string)
-    {: class="param-data-type" }
-    * This field contains a value that we generate which will bring you to a
-     specific page of results.
-    {: class="param-description" }
-
+* `name_long` 
+{: add_list_class="parameter-list" }
+    * __data type:__    string
+    * __description:__  the full jurisdiction name, e.g. Illinois
+* `name`
+    * __data type:__    string
+    * __description:__  the short jurisdiction name, e.g. Ill.
+* `whitelisted`
+    * __data type:__    "true" or "false"
+    * __description:__  filter for [whitelisted](#def-whitelisted) jurisdictions
+* `slug`
+    * __data type:__    string
+    * __description:__  filter on the jurisdiction [slug](#def-slug)
+* `cursor`
+    * __data type:__    string
+    * __description:__  A value provided by a previous search result to go to the next page of results
+    
 {# ==============> courts <============== #}
 Courts
 {: class="topic-header", id="endpoint-courts" }
@@ -694,44 +604,25 @@ This will return a list of courts.
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `id`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * integer
-    {: class="param-data-type" }
-    * get courts by ID
-    {: class="param-description" }
-* `slug`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * a [slug](#def-slug)
-    {: class="param-data-type" }
-    * filter on the court [slug](#def-slug)
-    {: class="param-description" }
-* `name`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * e.g. `Illinois Appellate Court`
-    {: class="param-data-type" }
-    * full court name
-    {: class="param-description" }
-* `name_abbreviation`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * e.g. `Ill. App. Ct.`
-    {: class="param-data-type" }
-    * abbreviated court name
-    {: class="param-description" }
-* `jurisdiction`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * [slug](#def-slug)
-    {: class="param-data-type" }
-    * [jurisdiction](#endpoint-jurisdictions) [slug](#def-slug)
-    {: class="param-description" }
-* `cursor`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * a randomly generated [string](#def-string)
-    {: class="param-data-type" }
-    * This field contains a value that we generate which will bring you to a
-     specific page of results.
-    {: class="param-description" }
-            
+* `name_long` 
+{: add_list_class="parameter-list" }
+    * __data type:__    string
+    * __description:__  the full court name, e.g. Illinois Appellate Court
+* `name_abbreviation`
+    * __data type:__    string
+    * __description:__  the short jurisdiction name, e.g. Ill. App. Ct.
+* `whitelisted`
+    * __data type:__    "true" or "false"
+    * __description:__  filter for [whitelisted](#def-whitelisted) jurisdictions
+* `jurisdiction`
+    * __data type:__    string
+    * __description:__  filter on the jurisdiction [slug](#def-slug)
+* `slug`
+    * __data type:__    string
+    * __description:__  filter on the court [slug](#def-slug)
+* `cursor`
+    * __data type:__    string
+    * __description:__  A value provided by a previous search result to go to the next page of results
 
 
 {# ==============> volumes <============== #}
@@ -746,13 +637,10 @@ This will return a complete list of volumes.
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `cursor`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * a randomly generated [string](#def-string)
-    {: class="param-data-type" }
-    * This field contains a value that we generate which will bring you to a
-     specific page of results.
-    {: class="param-description" }
+* `cursor` 
+{: add_list_class="parameter-list" }
+    * __data type:__    string
+    * __description:__  A value provided by a previous search result to go to the next page of results
 
 {# ==============> ngrams <============== #}
 Ngrams
@@ -774,53 +662,43 @@ If you set the optional `jurisdiction` parameter, your results will be limited t
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `q`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * up to 3 space separated [strings](#def-string)
-    {: class="param-data-type" }
-    * Here is where you specify which terms you'd like to submit. All terms beyond the third are ignored.
-    {: class="param-description" }
-* `jurisdiction`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * [Jurisdiction](#endpoint-jurisdiction) [slug](#def-slug): e.g. `tex` or `mass`
-    {: class="param-data-type" }
-    * This will limit your results to a specific jurisdiction.
-    {: class="param-description" }                
-* `year`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * YYYY
-    {: class="param-data-type" }
-    * Use this to filter your results by year.
-    {: class="param-description" }
-
-
+* `q` 
+{: add_list_class="parameter-list" }
+    * __data type:__    string
+    * __description:__  Up to 3 space separated words. All words beyond the third are ignored.
+* `jurisdiction`
+    * __data type:__    string
+    * __description:__  [Jurisdiction](#endpoint-jurisdiction) [slug](#def-slug): e.g. `tex` or `mass`.
+        Limit your results to a specific jurisdiction.
+* `year`
+    * __data type:__    YYYY
+    * __description:__  Filter results by year.
 
 Here's the output when 
 [querying for 'raisins' in California in 1984]({% api_url "ngrams-list" %}?q=raisins&jurisdiction=cal&year=1984): 
 
-`{
-    "count": 1,
-    "next": null,
-    "previous": null,
-    "results": {
-        "raisins": {
-            "cal": [
-                {
-                    "year": "1984",
-                    "count": [
-                        40,
-                        4589927
-                    ],
-                    "doc_count": [
-                        1,
-                        1237
-                    ]
-                }
-            ]
+    {
+        "count": 1,
+        "next": null,
+        "previous": null,
+        "results": {
+            "raisins": {
+                "cal": [
+                    {
+                        "year": "1984",
+                        "count": [
+                            40,
+                            4589927
+                        ],
+                        "doc_count": [
+                            1,
+                            1237
+                        ]
+                    }
+                ]
+            }
         }
-    }
-}`
-{: class="code-block" }    
+    } 
     
 Under `results` is an object containing the results for the query term `raisins`. Each jurisdiction's [slug](#def-slug) 
 is a key in the `raisins` object. Only `cal` is listed because the jurisdiction parameter in the query is set to `cal`. 
@@ -841,13 +719,10 @@ This will return a list of citations that cases have cited to.
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `cursor`{: class="parameter-name" }
-{: class="list-group-item" add_list_class="parameter-list" }
-    * a randomly generated [string](#def-string)
-    {: class="param-data-type" }
-    * This field contains a value that we generate which will bring you to a
-     specific page of results.
-    {: class="param-description" }
+* `cursor` 
+{: add_list_class="parameter-list" }
+    * __data type:__    string
+    * __description:__  A value provided by a previous search result to go to the next page of results
 
 {# ==============> BEGINNERS <============== #}
 # Beginner's Introduction to APIs  {: class="subtitle" data-toc-label='Intro to APIs' }
@@ -865,27 +740,23 @@ limited to clicking on the links and buttons on the screen.
 Consider the following [url](#def-url), which will 
 [perform a google search for the word "CAP."](https://www.google.com/search?q=CAP")
   
-`https://www.google.com/search?q=CAP`
-{: class="code-block" }
+    https://www.google.com/search?q=CAP
   
 Let's break it down into its individual parts:
   
-`https://`
-{: class="code-block" }
+    https://
   
 This first part tells your web browser which protocol to use: this isn't very important for our purposes, so we'll 
 ignore it.
   
-`www.google.com`
-{: class="code-block" }
+    www.google.com
   
 The next part is a list of words, separated by periods, between the initial double-slash, and before the subsequent 
 single slash. Many people generically refer to this as the domain, which is only partly true, but the reason why that's 
 not entirely true isn't really important for our purposes; the important consideration here is that it points to a 
 specific [server](#def-server), which is just another computer on the internet. 
 
-`/search`
-{: class="code-block" }
+    /search
   
 The next section, which is comprised of everything between the slash after the server name and the question mark, is 
 called the [path](#def-path). It's called a path because, in the earlier days of the web, it was a 'path' through 
@@ -904,8 +775,7 @@ lists separated by slashes. Hypothetically, if the developers at Google decided 
 wasn't sufficiently serving people who wanted to search for books or locations, they could implement more specific 
 endpoints such as `/search/books` and `/search/locations`.
   
-`?q=CAP`
-{: class="code-block" }
+    ?q=CAP
   
 The final section of the URL is where you'll find the [parameters](#def-parameter), and is comprised of everything 
 after the question mark. Parameters are a way of passing individual, labelled pieces of information to the endpoint to 

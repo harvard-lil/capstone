@@ -384,6 +384,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         'full_citation': db_case.full_cite(),
         'citations': ", ".join(c.cite for c in Citation.sorted_by_type(db_case.citations.all())),
         'formatted_name': formatted_name,
+        'analysis': json.dumps(serialized_data['analysis']._d_),
     })
 
 

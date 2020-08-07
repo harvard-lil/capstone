@@ -179,6 +179,7 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
         volume = VolumeMetadata.objects.get(pk=volume_id)
         to_update = []
         to_create = []
+        all_analyses = []
         query = volume.case_metadatas.select_related('body_cache')
 
         # full rendering of HTML/XML
@@ -198,11 +199,10 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
 
         # do processing
         for case_metadata in query:
-            body_cache = case_metadata.body_cache
-            old_fields = {k: getattr(body_cache, k) for k in update_fields}
-            case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False)
-            new_fields = {k: getattr(body_cache, k) for k in update_fields}
-            if old_fields != new_fields:
+            changed, analyses = case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False)
+            if changed:
+                all_analyses.extend(analyses)
+                body_cache = case_metadata.body_cache
                 if body_cache.id:
                     to_update.append(body_cache)
                 else:
@@ -213,6 +213,26 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
             CaseBodyCache.objects.bulk_create(to_create)
         if to_update:
             CaseBodyCache.objects.bulk_update(to_update, update_fields)
+        if all_analyses:
+            CaseAnalysis.bulk_upsert(all_analyses)
+
+
+@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def run_text_analysis_for_vol(self, volume_id):
+    """
+        call run_text_analysis on cases in given volume
+    """
+    with record_task_status_for_volume(self, volume_id):
+        volume = VolumeMetadata.objects.get(pk=volume_id)
+        all_analyses = []
+        query = (volume.case_metadatas.in_scope()
+             .select_related('body_cache', 'structure')
+             .defer('body_cache__xml', 'body_cache__html', 'body_cache__json'))
+        blocks_by_id = PageStructure.blocks_by_id(volume.page_structures.all())
+        for case_metadata in query:
+            all_analyses.extend(case_metadata.run_text_analysis(blocks_by_id, save=False))
+        if all_analyses:
+            CaseAnalysis.bulk_upsert(all_analyses)
 
 
 def create_case_metadata_from_all_vols(update_existing=False):

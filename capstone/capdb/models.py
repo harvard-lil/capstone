@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models, IntegrityError, transaction
+from django.db import models, IntegrityError, transaction, connections
 from django.db.models import Q
 from django.utils.formats import date_format
 from django.utils.text import slugify
@@ -38,6 +38,8 @@ from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translatio
 from scripts.process_metadata import get_case_metadata, parse_decision_date
 
 from elasticsearch.helpers import BulkIndexError
+
+from scripts.render_case import iter_pars
 
 
 def choices(*args):
@@ -930,7 +932,7 @@ class CaseMetadataQuerySet(TemporalQuerySet):
         """
             Fetch only cases that are appropriate for Elasticsearch indexing, with associated data.
         """
-        out = self.select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache', 'last_update').prefetch_related('extractedcitations', 'citations')
+        out = self.select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache', 'last_update').prefetch_related('extractedcitations', 'citations', 'analysis')
         if require_body_cache:
             out = out.exclude(body_cache=None)
         return out
@@ -1160,12 +1162,15 @@ class CaseMetadata(models.Model):
             try:
                 body_cache = self.body_cache
             except CaseBodyCache.DoesNotExist:
-                return
-            body_cache.json, body_cache.text = self.get_json_from_html(body_cache.html)
-            if save:
-                # save this way to avoid hydrating deferred fields
-                CaseBodyCache.objects.filter(id=body_cache.id).update(json=body_cache.json, text=body_cache.text)
-            return
+                return False, []
+            json, text = self.get_json_from_html(body_cache.html)
+            if body_cache.json != json or body_cache.text != text:
+                body_cache.json, body_cache.text = json, text
+                analyses = self.run_text_analysis(save=save)
+                if save:
+                    body_cache.save(update_fields=['text', 'json'])
+                return True, analyses
+            return False, []
 
         structure = self.structure
         if not blocks_by_id or not labels_by_block_id:
@@ -1180,20 +1185,52 @@ class CaseMetadata(models.Model):
         json, text = self.get_json_from_html(html)
 
         ## save
-        params = {
-            'text': text,
-            'html': html,
-            'xml': xml,
-            'json': json,
-        }
         try:
             body_cache = self.body_cache
         except CaseBodyCache.DoesNotExist:
             body_cache = self.body_cache = CaseBodyCache(metadata=self)
-        for k, v in params.items():
-            setattr(body_cache, k, v)
+        changed = False
+        for k in ['text', 'html', 'xml', 'json']:
+            new_val = locals()[k]
+            old_val = getattr(body_cache, k)
+            if new_val != old_val:
+                setattr(body_cache, k, new_val)
+                changed = True
+        if changed:
+            analyses = self.run_text_analysis(blocks_by_id, save=save)
+            if save:
+                body_cache.save()
+            return True, analyses
+        return False, []
+
+    def run_text_analysis(self, blocks_by_id=None, save=True):
+        """
+            Calculate char_count, word_count, and ocr_confidence for case.
+            Return CaseAnalysis objects.
+            ocr_confidence will be skipped if blocks_by_id is None.
+        """
+        text = self.body_cache.text
+        analyses = [
+            CaseAnalysis(case=self, key='char_count', value=len(text)),
+            CaseAnalysis(case=self, key='word_count', value=sum(1 for _ in re.finditer(r'\s+', text)) + 1),
+        ]
+        confidence = None
+        if self.human_corrected:
+            confidence = 1.0
+        elif blocks_by_id:
+            confidences = []
+            for par in iter_pars(self.structure.opinions):
+                for block_id in par['block_ids']:
+                    block = blocks_by_id[block_id]
+                    for token in block.get('tokens', []):
+                        if type(token) is list and token[0] == 'ocr':
+                            confidences.append(token[1]['wc'])
+            confidence = round(sum(confidences) / len(confidences), 3) if confidences else 0
+        if confidence is not None:
+            analyses.append(CaseAnalysis(case=self, key='ocr_confidence', value=confidence))
         if save:
-            body_cache.save()
+            CaseAnalysis.bulk_upsert(analyses)
+        return analyses
 
     def get_json_from_html(self, html):
         casebody_pq = PyQuery(html)
@@ -2393,3 +2430,47 @@ class CaseLastUpdate(models.Model):
     case = models.OneToOneField('CaseMetadata', related_name='last_update', on_delete=models.DO_NOTHING)
     timestamp = models.DateTimeField()
     indexed = models.BooleanField(default=False, db_index=True)
+
+
+class CaseAnalysis(models.Model):
+    case = models.ForeignKey(CaseMetadata, related_name='analysis', on_delete=models.DO_NOTHING)
+    timestamp = models.DateTimeField(auto_now=True)
+    key = models.CharField(max_length=255, db_index=True)
+    value = JSONField()
+
+    class Meta:
+        unique_together = [['case', 'key']]
+
+    @staticmethod
+    def bulk_upsert(objs):
+        """
+            Create or update a list of CaseAnalysis objects, using raw sql for Postgres upsert.
+            Note this does NOT take care of setting the id field on created objects.
+
+            Given three CaseAnalysis objects:
+            >>> case = getfixture('case')
+            >>> analyses = [CaseAnalysis(case=case, key=k, value=v) for k, v in (('foo', 'foo'), ('bar', 1.0), ('baz', {'foo': 1}))]
+
+            We can create:
+            >>> CaseAnalysis.bulk_upsert(analyses)
+            >>> assert sorted((i.case_id, i.key, i.value) for i in CaseAnalysis.objects.all()) == sorted((i.case_id, i.key, i.value) for i in analyses)
+
+            Or update:
+            >>> analyses[0].value = 'new value'
+            >>> CaseAnalysis.bulk_upsert(analyses)
+            >>> assert sorted((i.case_id, i.key, i.value) for i in CaseAnalysis.objects.all()) == sorted((i.case_id, i.key, i.value) for i in analyses)
+        """
+        with connections['capdb'].cursor() as cursor:
+            cursor.execute(
+                """
+                insert into capdb_caseanalysis (case_id, key, value, timestamp)
+                values %s
+                on conflict (case_id, key) do update set
+                value = excluded.value,
+                timestamp = now();
+                """ % (",".join(["(%s, %s, %s, now())"]*len(objs))),
+                sum(([obj.case_id, obj.key, json.dumps(obj.value)] for obj in objs), []),
+            )
+
+    def __str__(self):
+        return "%s=%s" % (self.key, self.value)

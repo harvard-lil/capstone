@@ -46,6 +46,7 @@ class CaseDocument(DocType):
     frontend_url = fields.KeywordField()
     last_page = fields.KeywordField()
     first_page = fields.KeywordField()
+    decision_date_original = fields.KeywordField()
     docket_numbers = fields.TextField(multi=True)
     docket_number = fields.TextField()
     last_updated = fields.DateField()
@@ -108,6 +109,11 @@ class CaseDocument(DocType):
         }),
     })
 
+    analysis = fields.ObjectField()
+
+    def prepare_analysis(self, instance):
+        return dict(sorted((a.key, a.value) for a in instance.analysis.all()))
+
     def prepare_docket_numbers(self, instance):
         if not hasattr(instance, 'docket_numbers'):
             return {'docket_numbers': None}
@@ -138,7 +144,6 @@ class CaseDocument(DocType):
         fields = [
             'id',
             'decision_date',
-            'decision_date_original',
         ]
         ignore_signals = True
         auto_refresh = False

@@ -1,4 +1,5 @@
 @import "variables";
+@import "base.scss";
 
 nav {
   padding: 0;
@@ -14,16 +15,8 @@ nav {
   padding-top: 90px;
 }
 
-.param-label {
-  font-weight: bold;
-}
-
 .list-group-item > ul {
   font-size: 14px;
-}
-
-.parameter-name {
-  margin-left: -10px;
 }
 
 li > code {
@@ -54,16 +47,6 @@ p.topic-header {
 
 lh{
   font-weight: bold;
-}
-
-.param-data-type::before {
-  font-weight: bold;
-  content: "data type: ";
-}
-
-.param-description::before {
-  font-weight: bold;
-  content: "description: ";
 }
 
 dt.example-description {
@@ -108,4 +91,13 @@ p.code-block {
 
 #sidebar-menu {
   background-color: $color-white;
+}
+
+.parameter-list > li {
+  @extend .list-group-item;
+  margin-left: -10px;
+}
+
+pre {
+  @extend .code-block;
 }

@@ -38,7 +38,7 @@ from fabric.decorators import task
 
 from capapi.models import CapUser
 from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Citation, CaseMetadata, \
-    Court, Reporter, PageStructure
+    Court, Reporter, PageStructure, CaseAnalysis
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, data_migrations, \
@@ -179,7 +179,7 @@ def export_volume(volume_id, output_zip=None):
         .prefetch_related(
             Prefetch('page_structures', queryset=PageStructure.objects.select_related('ingest_source')),
             Prefetch('case_metadatas', queryset=(CaseMetadata.objects
-                .select_related('structure', 'initial_metadata', 'body_cache', 'court')
+                .select_related('structure', 'initial_metadata', 'body_cache', 'court', 'analysis')
                 .prefetch_related('citations', 'extractedcitations'))),
         ).get()
     )
@@ -199,6 +199,7 @@ def export_volume(volume_id, output_zip=None):
         to_serialize.add(case.court)
         to_serialize.update(case.citations.all())
         to_serialize.update(case.extractedcitations.all())
+        to_serialize.update(case.analysis.all())
     serializer = serializers.get_serializer("json")()
     with zipfile.ZipFile(output_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zip:
         zip.writestr("volume.json", serializer.serialize(to_serialize))
@@ -959,6 +960,7 @@ def load_token_streams(replace_existing=False):
             continue
         scripts.refactor_xml.write_to_db.delay(volume_barcode, str(path))
 
+
 @task
 def refresh_case_body_cache(last_run_before=None, rerender=True):
     """ Recreate CaseBodyCache for all cases. Use `fab refresh_case_body_cache:rerender=false` to just regenerate text/json from html. """
@@ -968,6 +970,17 @@ def refresh_case_body_cache(last_run_before=None, rerender=True):
         last_run_before=last_run_before,
         rerender=rerender != 'false',
     )
+
+
+@task
+def run_text_analysis(last_run_before=None):
+    """ Call run_text_analysis for all cases. """
+    tasks.run_task_for_volumes(
+        tasks.run_text_analysis_for_vol,
+        VolumeMetadata.objects.exclude(out_of_scope=True),
+        last_run_before=last_run_before,
+    )
+
 
 @task
 def sync_from_initial_metadata(last_run_before=None, force=False):
@@ -1490,22 +1503,32 @@ def write_manifest_files():
 def calculate_pagerank_scores(citation_graph_path="graph/citations.csv.gz", pagerank_score_output="graph/pagerank_scores.csv.gz"):
     """ Generate pageranks scores for all nodes in the given citation graph """
     import networkx as nx
-    with gzip.open(str(citation_graph_path), 'rt') as f:
-        graph = nx.DiGraph()
-        reader = csv.reader(f)
-        for ids in tqdm(reader,total=4911157, desc="Reading citation graph"):
-            cite_from_id, *cite_to_ids = [int(i) for i in ids]
-            for cite_to_id in cite_to_ids:
-                graph.add_edge(cite_from_id, cite_to_id)
-        # Graph loaded
-        print("Started PageRank calculation at {}".format(datetime.now()))
-        pagerank_scores = sorted(nx.pagerank(graph).items(), key=lambda x:x[1])
-        print("Finished PageRank calculation at {}".format(datetime.now()))
-        with gzip.open(pagerank_score_output, "wt") as f:
-            csv_output = csv.writer(f)
-            csv_output.writerow(['id','score'])
-            for row in tqdm(pagerank_scores, desc="Wrting PageRank csv"):
-                csv_output.writerow(row)
+    print("Reading citation graph")
+    graph = nx.read_adjlist(citation_graph_path, delimiter=",", create_using=nx.DiGraph())
+    print("Calculating PageRank")
+    pagerank_scores = sorted(nx.pagerank(graph).items(), key=lambda x: x[1])
+    print("Writing output")
+    with gzip.open(pagerank_score_output, "wt") as f:
+        csv_output = csv.writer(f)
+        csv_output.writerow(['id','raw_score','percentile'])
+        last_score = 0
+        percentile = 0
+        total_rows = len(pagerank_scores)
+        for i, [id, score] in tqdm(enumerate(pagerank_scores)):
+            if score > last_score:
+                percentile = i
+            csv_output.writerow([id, score, percentile/total_rows])
+
+
+@task
+def load_pagerank_scores(pagerank_score_output):
+    with transaction.atomic(using='capdb'):
+        CaseAnalysis.objects.filter(key__in='pagerank').delete()
+        with gzip.open(pagerank_score_output, 'rt') as f:
+            reader = csv.DictReader(f)
+            objs = (CaseAnalysis(key='pagerank', value={'raw': float(line['raw_score']), 'percentile': float(line['percentile'])}, case_id=line['id']) for line in reader)
+            CaseAnalysis.objects.bulk_create(objs)
+
 
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
