@@ -176,7 +176,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         else:
             source_filter = {"excludes": "casebody_data.*"}
 
-        return queryset.source(source_filter)
+        return queryset.source(source_filter).extra(track_total_hits=True)
 
     def get_renderers(self):
         if self.action == 'retrieve':
