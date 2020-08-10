@@ -332,7 +332,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     # handle pdf output --
     # wait until here to do this so serializer() can apply case quotas
     db_case = db_case or CaseMetadata.objects.select_related('volume', 'court').prefetch_related('citations').get(pk=case.id)
-    can_render_pdf = db_case.volume.pdf_file and not db_case.no_index_redacted and settings.CASE_PDF_FEATURE and serialized_data['casebody']['status'] == 'ok'
+    can_render_pdf = db_case.volume.pdf_file and not db_case.no_index_redacted and serialized_data['casebody']['status'] == 'ok'
     if pdf:
         if serialized_data['casebody']['status'] != 'ok':
             return HttpResponseRedirect(db_case.get_full_frontend_url())

@@ -44,6 +44,7 @@ class CaseDocument(DocType):
     name_abbreviation = SuggestField()
     name = fields.TextField(index_phrases=True)
     frontend_url = fields.KeywordField()
+    frontend_pdf_url = fields.KeywordField(attr='get_pdf_url')
     last_page = fields.KeywordField()
     first_page = fields.KeywordField()
     decision_date_original = fields.KeywordField()

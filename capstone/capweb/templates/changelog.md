@@ -15,11 +15,16 @@ row_style: bg-tan
 * Cases Endpoint:
     * Added `last_updated` field and filters to get cases changed since date.
     * Added `analysis` field and filters to list extracted facts about case, such as word count.
-    * `decision_date` filter can take prefixes like `decision_date__gte=2000`.
+    * Added `frontend_pdf_url` field.
+    * Added `?format=pdf` query parameter for single-case endpoint.
 * Volumes Endpoint:
     * Added `frontend_url` field.
 * Reporters Endpoint:
     * Added `frontend_url` field.
+    
+**Website:**
+
+* Non-API URLs such as Downloads now accept `Authorization: Token` header. 
     
 # June 2020
 

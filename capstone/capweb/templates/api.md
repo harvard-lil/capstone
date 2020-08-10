@@ -10,7 +10,7 @@ explainer: The Caselaw Access Project API, also known as CAPAPI, serves all offi
 
 {# ==============> GETTING STARTED <============== #}
 # Getting Started {: class="subtitle" data-toc-label='Start Here' }
-[API]({% api_url "api-root" %}){: class="btn-primary" }
+[API Browser]({% api_url "api-root" %}){: class="btn-primary" }
 
 CAPAPI includes an in-browser API viewer, but is primarily intended for software developers to access caselaw 
 programmatically, whether to run your own analysis or build tools for other users. API results are in JSON format with 
@@ -82,6 +82,12 @@ In a program, (python's request library in this example,) it would look somethin
   
 If you are [logged into this website]({% url "login" %}) and accessing the API through a web browser, all requests 
 will be authenticated automatically.
+
+Sitewide Token Authentication
+{: class="topic-header" }
+
+In addition to using the `Authorization: Token abcd12345` header on API endpoints, you can use the same header to send
+authenticated requests to any other page at case.law, such as the [Downloads]({% url "download-files" "" %}) section.
   
 
 {# ==============> DATA FORMATS <============== #}
@@ -453,58 +459,58 @@ Endpoint Parameters:
 
 Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`. See [Filtering](#case-filtering).
 
-* `id` 
+* `analysis.<key>`
 {: add_list_class="parameter-list" }
-    * __data type:__    integer
-* `name_abbreviation`
-    * __data type:__    string
-    * __description:__  e.g. `People v. Smith`
-* `decision_date`
-    * __data type:__    `YYYY-MM-DD` or a substring
-* `last_updated`
-    * __data type:__    `YYYY-MM-DDTHH:MM:SS` or a substring
-* `docket_number`
-    * __data type:__    string
-    * __description:__  [full-text search](#case-fts)
+    * __data type:__    integer or float
+    * __description:__  Filter by an [analysis field](#analysis-fields), e.g. `analysis.word_count__gt=1000`
+* `body_format`
+    * __data type:__    "text", "html", or "xml"
+    * __default:__      "text"
+    * __description:__  Change the case body format from JSON to html or xml. Requires `full_case=true`.
 * `cite`
     * __data type:__    string
     * __description:__  citation to case, e.g. `1 Ill. 21`
 * `cites_to`
     * __data type:__    string or integer
     * __description:__  find cases that cite to the given citation or case ID, e.g. `1 Ill. 21` or `12345`
-* `reporter`
-    * __data type:__    integer
-    * __description:__  [reporter](#endpoint-reporters) id
 * `court`
     * __data type:__    [slug](#def-slug)
     * __description:__  [court](#endpoint-courts) slug
 * `court_id`
     * __data type:__    integer
     * __description:__  [court](#endpoint-courts) id
-* `jurisdiction`
-    * __data type:__    [slug](#def-slug)
-    * __description:__  [jurisdiction](#endpoint-jurisdictions) slug
-* `search`
-    * __data type:__    string
-    * __description:__  [full-text search](#case-fts)
-* `analysis.<key>`
-    * __data type:__    integer or float
-    * __description:__  Filter by an [analysis field](#analysis-fields), e.g. `analysis.word_count__gt=1000`
 * `cursor`
     * __data type:__    string
     * __description:__  A value provided by a previous search result to go to the next page of results
-* `ordering`
+* `decision_date`
+    * __data type:__    `YYYY-MM-DD` or a substring
+* `docket_number`
     * __data type:__    string
-    * __description:__  A field name to sort your results in ascending order. Prepend with a minus 
-    sign to sort in reverse order. See [Search](#search) for more details.
+    * __description:__  [full-text search](#case-fts)
 * `full_case`
     * __data type:__    "true" or "false"
     * __default:__      "false"
     * __description:__  When set to `true`, load the case body. Required when setting `body_format`.
-* `body_format`
-    * __data type:__    "text", "html", or "xml"
-    * __default:__      "text"
-    * __description:__  Change the case body format from JSON to html or xml.
+* `id` 
+    * __data type:__    integer
+* `jurisdiction`
+    * __data type:__    [slug](#def-slug)
+    * __description:__  [jurisdiction](#endpoint-jurisdictions) slug
+* `last_updated`
+    * __data type:__    `YYYY-MM-DDTHH:MM:SS` or a substring
+* `name_abbreviation`
+    * __data type:__    string
+    * __description:__  e.g. `People v. Smith`
+* `ordering`
+    * __data type:__    string
+    * __description:__  A field name to sort your results in ascending order. Prepend with a minus 
+    sign to sort in reverse order. See [Search](#search) for more details.
+* `reporter`
+    * __data type:__    integer
+    * __description:__  [reporter](#endpoint-reporters) id
+* `search`
+    * __data type:__    string
+    * __description:__  [full-text search](#case-fts)
             
             
 {# ==============> CASE <============== #}
@@ -519,15 +525,18 @@ Use this endpoint to retrieve a single case.
 Endpoint Parameters:
 {: class="list-header mb-2" }
 
-* `full_case` 
+* `body_format`
 {: add_list_class="parameter-list" }
+    * __data type:__    "text", "html", or "xml"
+    * __default:__      "text"
+    * __description:__  Change the case body format from JSON to html or xml. Requires `full_case=true`.
+* `format`
+    * __data type:__    blank or "pdf"
+    * __description:__  If "pdf", return original PDF of the case instead of JSON. Requires `full_case=true`.
+* `full_case` 
     * __data type:__    "true" or "false"
     * __default:__      "false"
     * __description:__  When set to `true`, load the case body. Required when setting `body_format`.
-* `body_format`
-    * __data type:__    "text", "html", or "xml"
-    * __default:__      "text"
-    * __description:__  Change the case body format from JSON to html or xml.
 
 
 {# ==============> reporters <============== #}

@@ -2,7 +2,7 @@ import hashlib
 import json
 
 from django.conf import settings
-from django.http.response import HttpResponseBase
+from django.http.response import HttpResponseBase, HttpResponse
 from rest_framework import renderers
 
 from capweb.helpers import cache_func
@@ -62,7 +62,7 @@ class PassthroughRenderer(renderers.JSONRenderer):
     """
         Return data as-is. View should supply a Response.
     """
-    media_type = 'application/json'  # used only for rendering errors
+    media_type = 'application/json'  # used only if rendering errors
     format = ''
     def render(self, data, accepted_media_type=None, renderer_context=None):
         if isinstance(data, HttpResponseBase):
@@ -70,3 +70,11 @@ class PassthroughRenderer(renderers.JSONRenderer):
         return super().render(data, accepted_media_type, renderer_context)
 
 
+class PdfRenderer(renderers.BaseRenderer):
+    media_type = 'application/pdf'
+    format = 'pdf'
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if isinstance(data, HttpResponseBase):
+            return data
+        return HttpResponse(data, content_type=accepted_media_type)

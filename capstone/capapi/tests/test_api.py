@@ -136,6 +136,31 @@ def test_authenticated_full_case_blacklisted(auth_user, auth_client, restricted_
     assert auth_user.case_allowance_remaining == auth_user.total_case_allowance - 1
 
 
+def test_case_detail_pdf(transactional_db, client, auth_client, restricted_case, unrestricted_case, elasticsearch):
+    """ Test ?format=pdf on case detail API. """
+    content_type = 'application/pdf'
+    case_text = "Page 2"
+    CaseMetadata.objects.update(first_page_order=1, last_page_order=3)
+
+    # unauthorized request can't fetch restricted PDF
+    response = client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"full_case": "true", "format": "pdf"})
+    check_response(response, status_code=400)
+
+    # authorized request can fetch restricted PDF
+    response = auth_client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"full_case": "true", "format": "pdf"})
+    check_response(response, content_includes=case_text, content_type=content_type)
+
+    # both can fetch unrestricted PDF
+    response = client.get(api_reverse("cases-detail", args=[unrestricted_case.id]), {"full_case": "true", "format": "pdf"})
+    check_response(response, content_includes=case_text, content_type=content_type)
+    response = auth_client.get(api_reverse("cases-detail", args=[unrestricted_case.id]), {"full_case": "true", "format": "pdf"})
+    check_response(response, content_includes=case_text, content_type=content_type)
+
+    # ?format=pdf only works on detail page
+    response = auth_client.get(api_reverse("cases-list", args=[unrestricted_case.id]), {"full_case": "true", "format": "pdf"})
+    check_response(response, status_code=404)
+
+
 @pytest.mark.django_db
 def test_track_history(auth_user, auth_client, restricted_case, elasticsearch):
     # initial fetch

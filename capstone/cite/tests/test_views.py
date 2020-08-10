@@ -115,10 +115,8 @@ def test_cases_multiple(client, django_assert_num_queries, case_factory, elastic
 
 @pytest.mark.django_db
 @pytest.mark.parametrize('response_type', ['html', 'pdf'])
-def test_single_case(client, auth_client, case_factory, elasticsearch, response_type, django_assert_num_queries, settings):
+def test_single_case(client, auth_client, token_auth_client, case_factory, elasticsearch, response_type, django_assert_num_queries, settings):
     """ Test /series/volume/case/ with one matching case """
-
-    settings.CASE_PDF_FEATURE = True
 
     # set up for viewing html or pdf
     case_text = "Case HTML"
@@ -177,10 +175,12 @@ def test_single_case(client, auth_client, case_factory, elasticsearch, response_
 
     ### can load normally as logged-in user
 
-    response = auth_client.get(url)
-    check_response(response, content_includes=case_text, content_type=content_type)
-    auth_client.auth_user.refresh_from_db()
-    assert auth_client.auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+    for c in [auth_client, token_auth_client]:
+        response = c.get(url)
+        check_response(response, content_includes=case_text, content_type=content_type)
+        previous_case_allowance = c.auth_user.case_allowance_remaining
+        c.auth_user.refresh_from_db()
+        assert c.auth_user.case_allowance_remaining == previous_case_allowance - 1
 
 
 @pytest.mark.django_db
