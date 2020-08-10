@@ -12,30 +12,30 @@ from capdb.models import CaseMetadata
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("view_name, cache_clients, get_kwargs", [
-    # docs pages are cached for both logged in and logged out, but not for token auth
-    ("home",                ["client", "auth_client"],                        {}),
+    # docs pages are cached for both logged in and logged out
+    ("home",                ["client", "auth_client", "token_auth_client"],     {}),
 
     # pages with csrf tokens are not cached for logged out or logged in
-    ("login",               [],                                               {}),
-    ("register",            [],                                               {}),
+    ("login",               [],                                                 {}),
+    ("register",            [],                                                 {}),
 
     # login-only pages are not cached for either (because we don't cache redirects for logged-out user)
-    ("user-details",        [],                                               {}),
+    ("user-details",        [],                                                 {}),
 
     # api views are cached for both logged in and logged out
-    ("cases-list",   ["client", "auth_client", "token_auth_client"],   {"reverse_func": "api_reverse"}),
-    ("cases-list",   ["client", "auth_client", "token_auth_client"],   {"HTTP_ACCEPT": "text/html", "reverse_func": "api_reverse"}),
+    ("cases-list",          ["client", "auth_client", "token_auth_client"],     {"reverse_func": "api_reverse"}),
+    ("cases-list",          ["client", "auth_client", "token_auth_client"],     {"HTTP_ACCEPT": "text/html", "reverse_func": "api_reverse"}),
 
     # api views that depend on the user account are cached only for logged out
-    ("cases-list",   ["client"],                                       {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
+    ("cases-list",          ["client"],                                         {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
 
     # bulk list cacheable only for logged-out users
-    ("bulk-download",       ["client"],                                       {}),
+    ("bulk-download",       ["client"],                                         {}),
 
     # bulk downloads are cached if public
-    ("caseexport-download", ["client", "auth_client", "token_auth_client"],   {"reverse_args": ["fixture_case_export"], "reverse_func": "api_reverse"}),
+    ("caseexport-download", ["client", "auth_client", "token_auth_client"],     {"reverse_args": ["fixture_case_export"], "reverse_func": "api_reverse"}),
     # bulk downloads are not cached if private
-    ("caseexport-download", [],                                               {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
+    ("caseexport-download", [],                                                 {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
 ])
 @pytest.mark.parametrize("client_fixture_name", ["client", "auth_client", "token_auth_client"])
 def test_cache_headers(request, elasticsearch,

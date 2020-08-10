@@ -1,11 +1,10 @@
+from elasticsearch.exceptions import NotFoundError
 import os
 import json
 import stat
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
-
-from django.template import Template, RequestContext
 from natsort import natsorted
 
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -16,26 +15,22 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404, \
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.template import Template, RequestContext
 from django.template.loader import render_to_string
 from django.utils.http import is_safe_url
 from django.views import View
 from django.utils.safestring import mark_safe
 from django.db.models import Prefetch
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.views import APIView
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
     page_image_url, safe_domains
 from capweb.models import GallerySection, GalleryEntry
-
 from capdb.models import Snippet, Court, Reporter, Jurisdiction
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request
 from capapi.documents import CaseDocument
 from config.logging import logger
-
-from elasticsearch.exceptions import NotFoundError
 
 
 def index(request):
@@ -279,13 +274,7 @@ def download_files(request, filepath=""):
     real_path = download_files_storage.realpath(filepath)
     allow_downloads = True
     if "restricted" in filepath:
-        try:
-            # authenticate user via DRF to allow for API key auth
-            user = APIView().initialize_request(request).user
-        except AuthenticationFailed:
-            allow_downloads = False
-        else:
-            allow_downloads = user.unlimited_access_in_effect()
+        allow_downloads = request.user.unlimited_access_in_effect()
     status = 200
 
     # symlink requested
