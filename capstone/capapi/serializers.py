@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from django.db import transaction
 from django_elasticsearch_dsl_drf.utils import DictionaryProxy
 from rest_framework import serializers
@@ -128,47 +126,48 @@ class CaseDocumentSerializer(DocumentSerializer):
 
         # IMPORTANT: If you change what values are exposed here, also change the "CaseLastUpdate triggers"
         # section in set_up_postgres.py to keep Elasticsearch updated.
-        return OrderedDict((
-            ("id", s["id"]),
-            ("url", self._url_templates['case_url'] % s["id"]),
-            ("name", s["name"]),
-            ("name_abbreviation", s["name_abbreviation"]),
-            ("decision_date", s["decision_date_original"]),
-            ("docket_number", s["docket_number"]),
-            ("first_page", s["first_page"]),
-            ("last_page", s["last_page"]),
-            ("citations", [{"type": c["type"], "cite": c["cite"]} for c in s["citations"]]),
-            ("volume", {
+        return {
+            "id": s["id"],
+            "url": self._url_templates['case_url'] % s["id"],
+            "name": s["name"],
+            "name_abbreviation": s["name_abbreviation"],
+            "decision_date": s["decision_date_original"],
+            "docket_number": s["docket_number"],
+            "first_page": s["first_page"],
+            "last_page": s["last_page"],
+            "citations": [{"type": c["type"], "cite": c["cite"]} for c in s["citations"]],
+            "volume": {
                 "url": self._url_templates['volume_url'] % s["volume"]["barcode"],
                 "volume_number": s["volume"]["volume_number"],
                 "barcode": s["volume"]["barcode"],
-            }),
-            ("reporter", {
+            },
+            "reporter": {
                 "url": self._url_templates['reporter_url'] % s["reporter"]["id"],
                 "full_name": s["reporter"]["full_name"],
                 "id": s["reporter"]["id"]
-            }),
-            ("court", {
+            },
+            "court": {
                 "url": self._url_templates['court_url'] % s["court"]['slug'],
                 "name_abbreviation": s["court"]["name_abbreviation"],
                 "slug": s["court"]["slug"],
                 "id": s["court"]["id"],
                 "name": s["court"]["name"],
-            }),
-            ("jurisdiction", {
+            },
+            "jurisdiction": {
                 "id": s["jurisdiction"]["id"],
                 "name_long": s["jurisdiction"]["name_long"],
                 "url": self._url_templates['jurisdiction_url'] % s["jurisdiction"]["slug"],
                 "slug": s["jurisdiction"]["slug"],
                 "whitelisted": s["jurisdiction"]["whitelisted"],
                 "name": s["jurisdiction"]["name"],
-            }),
-            ("cites_to", extractedcitations),
-            ("frontend_url", self._url_templates['frontend_url'] % s["frontend_url"]),
-            ("preview", preview),
-            ("analysis", s.get("analysis", {})),
-            ("last_updated", s.get("last_updated")),  # can be changed to s["last_updated"] once new index is in place
-        ))
+            },
+            "cites_to": extractedcitations,
+            "frontend_url": self._url_templates['frontend_url'] % s["frontend_url"],
+            "frontend_pdf_url": s.get("frontend_pdf_url", None),
+            "preview": preview,
+            "analysis": s.get("analysis", {}),
+            "last_updated": s.get("last_updated"),  # can be changed to s["last_updated"] once new index is in place
+        }
 
 
 class CaseAllowanceMixin:

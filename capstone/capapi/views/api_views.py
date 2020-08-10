@@ -1,5 +1,4 @@
 import bisect
-import re
 import urllib
 from collections import OrderedDict, defaultdict
 from pathlib import Path
@@ -10,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
-from django.http import HttpResponseRedirect, FileResponse
+from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch
@@ -20,6 +19,7 @@ from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
+from capdb.models import CaseMetadata
 from capdb.storages import ngram_kv_store_ro
 from user_data.models import UserHistory
 
@@ -71,11 +71,6 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     serializer_class = CaseDocumentSerializer
     pagination_class = CapESCursorPagination
     filterset_class = filters.CaseFilter
-
-    renderer_classes = (
-        renderers.JSONRenderer,
-        capapi_renderers.BrowsableAPIRenderer,
-    )
 
     lookup_field = 'id'
 
@@ -169,7 +164,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
         # exclude all values from casebody_data that we don't need to complete the request
         if self.is_full_case_request():
-            data_formats_to_exclude = ["text",  "html", "xml"]
+            data_formats_to_exclude = ["text", "html", "xml"]
 
             try:
                 data_formats_to_exclude.remove(self.request.query_params.get('body_format', 'text'))
@@ -183,23 +178,41 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
         return queryset.source(source_filter)
 
-    def retrieve(self, *args, **kwargs):
+    def get_renderers(self):
+        if self.action == 'retrieve':
+            return [renderers.JSONRenderer(), capapi_renderers.PdfRenderer(), capapi_renderers.BrowsableAPIRenderer()]
+        else:
+            return [renderers.JSONRenderer(), capapi_renderers.BrowsableAPIRenderer()]
+
+    def retrieve(self, request, *args, **kwargs):
         # for user's convenience, if user gets /cases/casecitation or /cases/Case Citation (or any non-numeric value)
         # we redirect to /cases/?cite=casecitation
         id = kwargs[self.lookup_field]
-        if re.search(r'\D', id):
+        if not id.isdigit():
             normalized_cite = models.normalize_cite(id)
             query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
             new_url = reverse('cases-list') + "?" + query_string
             return HttpResponseRedirect(new_url)
 
-        # if previously-supported format=html is requested, redirect to frontend_url
         if self.request.query_params.get('format') == 'html':
+            # if previously-supported format=html is requested, redirect to frontend_url
             case = models.CaseMetadata.objects.filter(id=id).first()
             if case:
                 return HttpResponseRedirect(case.get_full_frontend_url())
 
-        return super(CaseDocumentViewSet, self).retrieve(*args, **kwargs)
+        # handle ?format=pdf
+        if request.accepted_renderer.format == 'pdf':
+            data = self.get_serializer(self.get_object()).data
+            if 'casebody' not in data:
+                return HttpResponseBadRequest("full_case=true is required for format=pdf")
+            if data['casebody']['status'] != 'ok':
+                return HttpResponseBadRequest(data['casebody']['status'])
+            pdf_data = CaseMetadata.objects.get(pk=data['id']).get_pdf()
+            if not pdf_data:
+                return HttpResponseBadRequest("error fetching pdf")
+            return Response(pdf_data)
+
+        return super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
 
 
 class CaseExportViewSet(BaseViewSet):

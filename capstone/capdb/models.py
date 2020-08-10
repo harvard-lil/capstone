@@ -1132,7 +1132,7 @@ class CaseMetadata(models.Model):
 
     def get_pdf_url(self):
         pdf_name = re.sub(r'[\\/:*?"<>|]', '_', self.redact_obj(self.full_cite())) + ".pdf"
-        return reverse('case_pdf', [self.pk, pdf_name])
+        return reverse('case_pdf', [self.pk, pdf_name], host='cite')
 
     def withdraw(self, new_value=True, replaced_by=None):
         """ Mark this case as withdrawn by the court, and optionally replaced by a new case. """
@@ -1393,8 +1393,8 @@ class CaseMetadata(models.Model):
         """
             Return PDF for this case from volume PDF. `fitz` is the PyMuPDF library.
         """
-        if not self.volume.pdf_file:
-            raise ValueError("Cannot get case PDF for volume with no PDF")
+        if self.no_index_redacted or not self.volume.pdf_file:
+            return None
         doc = fitz.open(self.volume.pdf_file.path)
         doc.select(range(self.first_page_order - 1, self.last_page_order))
         return doc.write(garbage=2)

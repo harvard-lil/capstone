@@ -1,8 +1,12 @@
 from django.conf import settings
+from django.contrib import auth
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
 from django.middleware.common import CommonMiddleware as DjangoCommonMiddleware
 from django.middleware.gzip import GZipMiddleware
 from django.utils.cache import patch_cache_control
+from django.utils.functional import SimpleLazyObject
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 
 from .resources import wrap_user
 from config.logging import logger
@@ -86,12 +90,30 @@ def cache_header_middleware(get_response):
     return middleware
 
 
-# Override Django's AuthenticationMiddleware to call wrap_user() on the user object
-# This is also done in capapi.authentication to handle user objects created by DRF.
+## authentication ##
+
+_drf_token_authenticator = TokenAuthentication()
+
+def get_user(request):
+    """ Override django get_user to authenticate via DRF token auth if provided. """
+    if not hasattr(request, '_cached_user'):
+        user = auth.get_user(request)
+        if user.is_anonymous:
+            try:
+                user_and_token = _drf_token_authenticator.authenticate(request)
+                if user_and_token:
+                    user = user_and_token[0]
+            except AuthenticationFailed:
+                pass
+        request._cached_user = user
+    return request._cached_user
+
 
 class AuthenticationMiddleware(DjangoAuthenticationMiddleware):
     def process_request(self, request):
-        super().process_request(request)
+        request.user = SimpleLazyObject(lambda: get_user(request))
+        # Call wrap_user() on the user object.
+        # This is also done in capapi.authentication to handle user objects created by DRF.
         request.user = wrap_user(request, request.user)
 
 
