@@ -149,21 +149,35 @@ h2.section-title {
 *
 ***************************************************************/
 
-.map-section:before {
-  left: 50%;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
-  border: 20px solid rgba(0, 0, 0, 0);
-  border-top-color: $color-black;
-  margin-left: -20px;
-  margin-top: -1px;
-}
-
 .map-section {
   background-color: $color-black;
+  position: relative;
+
+  // black arrows at top and bottom
+  &:before, &:after {
+    left: 50%;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-top-color: $color-black !important;
+  }
+  &:before {
+    border: 20px solid rgba(0, 0, 0, 0);
+    margin-left: -20px;
+    margin-top: -1px;
+  }
+  &:after {
+    border: 50px solid rgba(0, 0, 0, 0);
+    margin-left: -50px;
+    margin-top: -8rem;
+    transform: rotate(180deg);
+    @include media-breakpoint-down(md) {
+      display: none;
+    }
+  }
+
   .federal-numbers-boxcontainer {
     max-width: 19rem;
     .boxcontainer-header {
@@ -282,24 +296,6 @@ h2.section-title {
       }
     }
 
-  }
-}
-
-.map-section:after {
-  left: 50%;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
-  border: 50px solid rgba(0, 0, 0, 0);
-  border-top-color: $color-black;
-  margin-left: -50px;
-  margin-top: -8rem;
-  transform: rotate(180deg);
-  display: inline-block;
-  @include media-breakpoint-down(md) {
-    display: none;
   }
 }
 
