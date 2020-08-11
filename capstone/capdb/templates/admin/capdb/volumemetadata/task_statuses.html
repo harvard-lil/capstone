@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <h1></h1>
+  <ul>
+    {% for task, status in statuses %}
+      <li>
+        {{ task }}
+        <ul>
+          {% if status.success %}
+            <li>successes: {{ status.success }}, most recent {{ status.last_success }}</li>
+          {% endif %}
+          {% if status.error %}
+            <li>
+              errors: {{ status.error }}, most recent {{ status.last_error }}
+              <ul>
+                <li>{{ status.error_message }}</li>
+              </ul>
+            </li>
+          {% endif %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
