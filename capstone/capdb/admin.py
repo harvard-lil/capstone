@@ -1,5 +1,9 @@
+from collections import defaultdict
+
 from django.contrib import admin
 from django.forms.widgets import Textarea
+from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils.text import normalize_newlines
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -177,3 +181,32 @@ class VolumeMetadataAdmin(admin.ModelAdmin):
         }),
     )
     readonly_fields = ['barcode', 'task_statuses', 'xml_metadata', 'ingest_status', 'ingest_errors']
+
+    def get_urls(self):
+        return [
+            path('task_statuses/', self.admin_site.admin_view(self.task_statuses))
+        ] + super().get_urls()
+
+    def task_statuses(self, request):
+        """
+            View to summarize .task_statuses field for all volumes.
+        """
+        statuses = defaultdict(lambda: {'success': 0, 'error': 0, 'last_success': '', 'last_error': ''})
+
+        for volume_statuses in VolumeMetadata.objects.filter(out_of_scope=False).values_list('task_statuses', flat=True):
+            for task_name, outcome in volume_statuses.items():
+                task = statuses[task_name]
+                outcome_key = 'success' if 'success' in outcome else 'error'
+                task[outcome_key] += 1
+                ts_key = 'last_' + outcome_key
+                ts = outcome['timestamp']
+                if ts > task[ts_key]:
+                    task[ts_key] = ts
+                    if outcome_key == 'error':
+                        task['error_message'] = outcome['error']
+
+        return TemplateResponse(request, "admin/capdb/volumemetadata/task_statuses.html", {
+            **self.admin_site.each_context(request),
+            'title': 'Volume task results',
+            'statuses': sorted(statuses.items()),
+        })
