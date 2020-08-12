@@ -104,9 +104,11 @@ class CaseDocumentSerializer(DocumentSerializer):
         if not self._url_templates:
             def placeholder_url(name):
                 return api_reverse(name, ['REPLACE']).replace('REPLACE', '%s')
+            cite_home = reverse('cite_home', host='cite').rstrip('/')
             CaseDocumentSerializer._url_templates = {
                 'case_url': placeholder_url("cases-detail"),
-                'frontend_url': reverse('cite_home', host='cite').rstrip('/') + '%s',
+                'frontend_url': cite_home + '%s',
+                'frontend_pdf_url': cite_home + '%s',
                 'volume_url': placeholder_url("volumemetadata-detail"),
                 'reporter_url': placeholder_url("reporter-detail"),
                 'court_url': placeholder_url("court-detail"),
@@ -163,7 +165,7 @@ class CaseDocumentSerializer(DocumentSerializer):
             },
             "cites_to": extractedcitations,
             "frontend_url": self._url_templates['frontend_url'] % s["frontend_url"],
-            "frontend_pdf_url": s.get("frontend_pdf_url", None),
+            "frontend_pdf_url": self._url_templates['frontend_pdf_url'] % s.get("frontend_pdf_url", None),
             "preview": preview,
             "analysis": s.get("analysis", {}),
             "last_updated": s.get("last_updated"),  # can be changed to s["last_updated"] once new index is in place
