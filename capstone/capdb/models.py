@@ -1130,9 +1130,12 @@ class CaseMetadata(models.Model):
     def get_full_frontend_url(self):
         return reverse('cite_home').rstrip('/') + self.frontend_url
 
-    def get_pdf_url(self):
+    def get_pdf_url(self, with_host=True):
         pdf_name = re.sub(r'[\\/:*?"<>|]', '_', self.redact_obj(self.full_cite())) + ".pdf"
-        return reverse('case_pdf', [self.pk, pdf_name], host='cite')
+        url = reverse('case_pdf', [self.pk, pdf_name], host='cite')
+        if not with_host:
+            url = '/' + url.split('/', 3)[-1]
+        return url
 
     def withdraw(self, new_value=True, replaced_by=None):
         """ Mark this case as withdrawn by the court, and optionally replaced by a new case. """

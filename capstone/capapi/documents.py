@@ -44,7 +44,7 @@ class CaseDocument(DocType):
     name_abbreviation = SuggestField()
     name = fields.TextField(index_phrases=True)
     frontend_url = fields.KeywordField()
-    frontend_pdf_url = fields.KeywordField(attr='get_pdf_url')
+    frontend_pdf_url = fields.KeywordField()
     last_page = fields.KeywordField()
     first_page = fields.KeywordField()
     decision_date_original = fields.KeywordField()
@@ -111,6 +111,9 @@ class CaseDocument(DocType):
     })
 
     analysis = fields.ObjectField()
+
+    def prepare_frontend_pdf_url(self, instance):
+        return instance.get_pdf_url(with_host=False)
 
     def prepare_analysis(self, instance):
         return dict(sorted((a.key, a.value) for a in instance.analysis.all()))
