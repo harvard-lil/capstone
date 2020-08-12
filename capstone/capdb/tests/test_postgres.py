@@ -4,9 +4,10 @@ import pytest
 from django.db import transaction
 
 from capapi.documents import CaseDocument
-from capdb.models import CaseLastUpdate, CaseMetadata
+from capdb.models import CaseMetadata
 from capdb.tasks import update_elasticsearch_from_queue
 from scripts.helpers import parse_xml, serialize_xml
+from test_data.test_fixtures.helpers import get_timestamp, check_timestamps_changed, check_timestamps_unchanged
 
 
 @pytest.mark.parametrize('versioned_fixture_name', [
@@ -56,37 +57,20 @@ def test_versioning(transactional_db, versioned_fixture_name, request):
 
 @pytest.mark.django_db(transaction=True)
 def test_last_updated(case, extracted_citation_factory, elasticsearch):
-    timestamp = None
-
-    # helpers
-    def get_timestamp():
-        [[id, t]] = CaseLastUpdate.objects.values_list('case_id', 'timestamp')
-        assert id == case.pk
-        return t
-
-    def check_timestamps_changed():
-        nonlocal timestamp
-        new_t = get_timestamp()
-        assert timestamp < new_t
-        timestamp = new_t
-
-    def check_timestamps_unchanged():
-        assert get_timestamp() == timestamp
-
     # creating case creates a timestamp
-    timestamp = get_timestamp()
+    timestamp = get_timestamp(case)
 
     # updating case field in set_up_postgres updates timestamp
     CaseMetadata.objects.filter(pk=case.id).update(frontend_url='foo')
-    check_timestamps_changed()
+    timestamp = check_timestamps_changed(case, timestamp)
 
     # updating case field not in set_up_postgres doesn't update timestamp
     CaseMetadata.objects.filter(pk=case.id).update(no_index_notes='foo')
-    check_timestamps_unchanged()
+    check_timestamps_unchanged(case, timestamp)
 
     # adding inbound references
     extracted_cite = extracted_citation_factory(cited_by=case)
-    check_timestamps_changed()
+    timestamp = check_timestamps_changed(case, timestamp)
 
     # updating inbound references
     for obj, change_field, no_change_field in (
@@ -97,16 +81,16 @@ def test_last_updated(case, extracted_citation_factory, elasticsearch):
         # updating tracked field
         setattr(obj, change_field, 'foo')
         obj.save()
-        check_timestamps_changed()
+        timestamp = check_timestamps_changed(case, timestamp)
 
         # updated untracked field
         setattr(obj, no_change_field, 'foo')
         obj.save()
-        check_timestamps_unchanged()
+        check_timestamps_unchanged(case, timestamp)
 
         # deleting
         obj.delete()
-        check_timestamps_changed()
+        timestamp = check_timestamps_changed(case, timestamp)
 
     # updating outbound references
     for obj, change_field, no_change_field in (
@@ -118,12 +102,12 @@ def test_last_updated(case, extracted_citation_factory, elasticsearch):
         # updating tracked field
         setattr(obj, change_field, 'foo')
         obj.save()
-        check_timestamps_changed()
+        timestamp = check_timestamps_changed(case, timestamp)
 
         # updated untracked field
         setattr(obj, no_change_field, 'foo')
         obj.save()
-        check_timestamps_unchanged()
+        check_timestamps_unchanged(case, timestamp)
 
     # case gets removed when in_scope changes
     update_elasticsearch_from_queue()

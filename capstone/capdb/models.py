@@ -40,6 +40,7 @@ from scripts.process_metadata import get_case_metadata, parse_decision_date
 from elasticsearch.helpers import BulkIndexError
 
 from scripts.render_case import iter_pars
+from scripts.simhash import get_simhash
 
 
 def choices(*args):
@@ -1212,10 +1213,16 @@ class CaseMetadata(models.Model):
             Return CaseAnalysis objects.
             ocr_confidence will be skipped if blocks_by_id is None.
         """
+        from scripts.tokenizer import tokenize  # local import to avoid loading nltk if not needed
+
         text = self.body_cache.text
+        words = list(tokenize(text))
         analyses = [
             CaseAnalysis(case=self, key='char_count', value=len(text)),
-            CaseAnalysis(case=self, key='word_count', value=sum(1 for _ in re.finditer(r'\s+', text)) + 1),
+            CaseAnalysis(case=self, key='word_count', value=len(words)),
+            CaseAnalysis(case=self, key='cardinality', value=len(set(words))),
+            CaseAnalysis(case=self, key='simhash', value=get_simhash(text)),
+            CaseAnalysis(case=self, key='sha256', value=hashlib.sha256(text.encode('utf8')).hexdigest()),
         ]
         confidence = None
         if self.human_corrected:
