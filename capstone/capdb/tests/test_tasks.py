@@ -17,9 +17,10 @@ from capapi.documents import CaseDocument
 from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache, normalize_cite
 from capdb.tasks import get_case_count_for_jur, get_court_count_for_jur, \
     get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol, \
-    update_elasticsearch_from_queue
+    update_elasticsearch_from_queue, run_text_analysis_for_vol
 
 import fabfile
+from test_data.test_fixtures.helpers import get_timestamp, check_timestamps_changed, check_timestamps_unchanged
 
 
 @pytest.mark.django_db
@@ -334,14 +335,45 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 
     # check analysis
+    expected_analysis = [
+        ('cardinality', 6),
+        ('char_count', 47),
+        ('ocr_confidence', 1.0),
+        ('sha256', 'da95df9d6d5d506285c9a8f9010560fa57905f64b3e94748b8854d678e18f0cc'),
+        ('simhash', '1:6e45862a08eb1d4c'),
+        ('word_count', 11)
+    ]
     for case in cases:
-        assert sorted((a.key, a.value) for a in case.analysis.all()) == [('char_count', 47), ('ocr_confidence', 1.0), ('word_count', 12)]
+        assert sorted((a.key, a.value) for a in case.analysis.all()) == expected_analysis
 
     # text/json sync
     CaseBodyCache.objects.update(text='blank')
     with django_assert_num_queries(select=3, update=2, insert=1):
         sync_case_body_cache_for_vol(volume_metadata.barcode, rerender=False)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
+
+
+@pytest.mark.django_db
+def test_run_text_analysis(transactional_db, reset_sequences, case):
+    timestamp = get_timestamp(case)
+
+    # can update text analysis
+    run_text_analysis_for_vol(case.volume_id)
+    timestamp = check_timestamps_changed(case, timestamp)
+    expected_analysis = [
+        ('cardinality', 3),
+        ('char_count', 11),
+        ('ocr_confidence', 1.0),
+        ('sha256', 'c66397f6ebb7b7e5dfd7191e81ee17db2d8c92bcb45f0c41b1e1c5307334622e'),
+        ('simhash', '1:025d04b98eb62906'),
+        ('word_count', 3)
+    ]
+    assert sorted((a.key, a.value) for a in case.analysis.all()) == expected_analysis
+
+    # if text analysis fields unchanged, last_updated is unchanged
+    run_text_analysis_for_vol(case.volume_id)
+    check_timestamps_unchanged(case, timestamp)
+    assert sorted((a.key, a.value) for a in case.analysis.all()) == expected_analysis
 
 
 @pytest.mark.django_db

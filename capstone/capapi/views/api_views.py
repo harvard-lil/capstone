@@ -101,7 +101,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'cites_to': 'extractedcitations.normalized_cite',
         'decision_date': 'decision_date_original',
         'last_updated': 'last_updated',
-        **{'analysis.'+k: 'analysis.'+k for k in ['word_count', 'char_count', 'ocr_confidence', 'pagerank.percentile', 'pagerank.raw']},
+        **{'analysis.'+k: 'analysis.'+k for k in ['word_count', 'char_count', 'ocr_confidence', 'pagerank.percentile', 'pagerank.raw', 'simhash', 'sha256', 'cardinality']},
         # legacy fields:
         'decision_date_min': {'field': 'decision_date_original', 'default_lookup': 'gte'},
         'decision_date_max': {'field': 'decision_date_original', 'default_lookup': 'lte'},
