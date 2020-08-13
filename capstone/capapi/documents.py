@@ -50,7 +50,7 @@ class CaseDocument(DocType):
     decision_date_original = fields.KeywordField()
     docket_numbers = fields.TextField(multi=True)
     docket_number = fields.TextField()
-    last_updated = fields.DateField()
+    last_updated = fields.KeywordField()
 
     volume = fields.ObjectField(properties={
         "barcode": fields.KeywordField(),
