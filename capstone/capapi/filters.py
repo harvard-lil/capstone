@@ -164,8 +164,8 @@ class CaseFilter(filters.FilterSet):
     name = filters.CharFilter(label='Full Name (contains)')
     jurisdiction = filters.ChoiceFilter(choices=jur_choices)
     reporter = filters.ChoiceFilter(choices=reporter_choices, label='Reporter Series')
-    decision_date_min = filters.CharFilter(label='Earliest Decision Date (Format YYYY-MM-DD)')
-    decision_date_max = filters.CharFilter(label='Latest Decision Date (Format YYYY-MM-DD)')
+    decision_date__gte = filters.CharFilter(label='Earliest Decision Date (Format YYYY-MM-DD)')
+    decision_date__lte = filters.CharFilter(label='Latest Decision Date (Format YYYY-MM-DD)')
     docket_number = filters.CharFilter(label='Docket Number (contains)')
     court = filters.ChoiceFilter(choices=court_choices)
     court_id = filters.NumberFilter(label='Court ID')
@@ -191,8 +191,8 @@ class CaseFilter(filters.FilterSet):
         ),
     )
     page_size = filters.NumberFilter(label='Results per page (1 to 10,000; default 100)')
-    last_updated_min = filters.CharFilter(label='last_updated greater than or equal to this prefix')
-    last_updated_max = filters.CharFilter(label='last_updated less than or equal to this prefix')
+    last_updated__gte = filters.CharFilter(label='last_updated greater than or equal to this prefix')
+    last_updated__lte = filters.CharFilter(label='last_updated less than or equal to this prefix')
 
 
 class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
