@@ -1,9 +1,10 @@
 from elasticsearch.exceptions import NotFoundError
 import os
 import json
+import re
 import stat
 import subprocess
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from pathlib import Path
 from natsort import natsorted
 
@@ -26,11 +27,12 @@ from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
     page_image_url, safe_domains
 from capweb.models import GallerySection, GalleryEntry
-from capdb.models import Snippet, Court, Reporter, Jurisdiction
+from capdb.models import Snippet, Court, Reporter, Jurisdiction, normalize_cite, CaseMetadata
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request
 from capapi.documents import CaseDocument
 from config.logging import logger
+from scripts.extract_cites import extract_citations_from_text
 
 
 def index(request):
@@ -424,4 +426,39 @@ def trends(request):
     return render(request, "trends.html", {
         'title': 'Historical Trends' + title_suffix,
         'page_image': page_image,
+    })
+
+
+def fetch(request):
+    """ Extract citations from text and link to PDFs. """
+    # prefer POST because it doesn't record queried text in server logs, but also accept GET to allow linking to search results
+    text = request.POST.get('q', '') or request.GET.get('q', '')
+    citations = None
+
+    if text:
+        citations = extract_citations_from_text(text)
+        if citations:
+            # extract citations
+            citations = [{'cite': c[0], 'normalized_cite': normalize_cite(c[1]), 'before': '', 'after': ''} for c in extract_citations_from_text(text)]
+
+            # get possible cases matching each extracted cite
+            cases = CaseMetadata.objects.in_scope().filter(citations__normalized_cite__in=[c['normalized_cite'] for c in citations]).prefetch_related('citations').distinct()
+            cases_by_cite = defaultdict(list)
+            for case in cases:
+                for cite in case.citations.all():
+                    cases_by_cite[cite.normalized_cite].append(case)
+
+            for result in citations:
+                result['cases'] = cases_by_cite.get(result['normalized_cite'], [])
+
+                # add context before and after matched cite
+                context_len = 20
+                m = re.search(r'([^\n]{,%s})\b%s\b([^\n]{,%s})' % (context_len, re.escape(result['cite']), context_len), text)
+                if m:
+                    result['before'] = ('... ' if len(m[1]) == context_len else '') + m[1]
+                    result['after'] = m[2] + (' ...' if len(m[2]) == context_len else '')
+
+    return render(request, "fetch.html", {
+        'text': text,
+        'citations': citations,
     })

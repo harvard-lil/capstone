@@ -22,6 +22,7 @@ urlpatterns = [
     path('search-docs/', MarkdownView.as_view(template_name='search_docs.md'), name='search-docs'),
     path('trends/', views.trends, name='trends'),
     path('trends-docs/', MarkdownView.as_view(template_name='trends_docs.md'), name='trends-docs'),
+    path('fetch/', views.fetch, name='fetch'),
     path('action/', MarkdownView.as_view(template_name='action/index.md'), name='action'),
     path('action/guidelines/', MarkdownView.as_view(template_name='action/guidelines.md'), name='action-guidelines'),
     path('action/case-study-nm/', MarkdownView.as_view(template_name='action/case-study-nm.md'), name='action-case-study-nm'),

@@ -1,4 +1,3 @@
-import functools
 import json
 import re
 import socket
@@ -10,8 +9,6 @@ from urllib.parse import urlencode
 
 import markdown
 from django.core.signing import Signer
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
 from markdown.extensions.attr_list import AttrListExtension
 from markdown.extensions.toc import TocExtension
 from markdown.extensions import Extension
@@ -234,32 +231,6 @@ def is_google_bot(request):
         return False
     host_ip = socket.gethostbyname(host)
     return host_ip == ip
-
-
-def password_protected_page(key):
-    """
-        Apply a low-security password to a pre-release page. Example settings.py:
-            PASSWORD_PROTECTED_PAGES = {'foo': ['password']}
-        Example view:
-            @password_protected_page('foo')
-            def my_view(...):
-    """
-    session_key = 'simple_password_%s' % key
-    passwords_dict = settings.PASSWORD_PROTECTED_PAGES
-    def outer(func):
-        @functools.wraps(func)
-        def inner(request, *args, **kwargs):
-            if (key in passwords_dict and passwords_dict[key] is None) or request.session.get(session_key):
-                return func(request, *args, **kwargs)
-            message = ''
-            if request.method == 'POST':
-                if request.POST.get('password') in passwords_dict.get(key, []):
-                    request.session[session_key] = True
-                    return HttpResponseRedirect(request.path_info)
-                message = 'Password not recognized.'
-            return render(request, 'password_protected_page.html', {"message": message})
-        return inner
-    return outer
 
 
 def page_image_url(url, targets=[], waits=[], fallback=None, timeout=None):
