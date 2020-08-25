@@ -68,23 +68,26 @@
             >{{word.stringWithoutSoftHyphens}}</span></template>
           </div>
 
-          <div v-for="footnote in opinion.footnotes" :key="footnote.id">
-            <span>{{footnote.label}}</span>
+          <div v-if="opinion.footnotes && opinion.footnotes.length">
+            <h4 class="section-title">{{opinion.type}} footnotes</h4>
+            <div v-for="footnote in opinion.footnotes" :key="footnote.id">
+              <span>{{footnote.label}}</span>
 
-            <!-- THIS IS NOT DRY YET -- REPEAT OF ABOVE -->
-            <div v-for="paragraph in opinion.paragraphs" :key="paragraph.id">
-              <span>{{paragraph.class}}</span>
-              <template v-for="block in paragraphBlocks(paragraph)"><span
-                v-if="mounted"
-                v-for="word in block.words"
-                :key="word.id"
-                :style="wordTextStyle(word)"
-                @click="wordClicked(word)"
-                :ref="`wordText${word.id}`"
-                :class="wordClass(word)"
-              >{{word.stringWithoutSoftHyphens}}</span></template>
+              <!-- THIS IS NOT DRY YET -- REPEAT OF ABOVE -->
+              <div v-for="paragraph in footnote.paragraphs" :key="paragraph.id">
+                <span class="paragraph-class">{{paragraph.class}}</span>
+                <template v-for="block in paragraphBlocks(paragraph)"><span
+                  v-if="mounted"
+                  v-for="word in block.words"
+                  :key="word.id"
+                  :style="wordTextStyle(word)"
+                  @click="wordClicked(word)"
+                  :ref="`wordText${word.id}`"
+                  :class="wordClass(word)"
+                >{{word.stringWithoutSoftHyphens}}</span></template>
+              </div>
+              <!-- END THING TO DRY -->
             </div>
-            <!-- END THING TO DRY -->
           </div>
 
         </div>
@@ -295,6 +298,7 @@
         return {
           'current-word': this.currentWord === word,
           'edited': word.string !== word.originalString,
+          'footnote-mark': word.footnoteMark,
         };
       },
       wordClicked(word) {
@@ -342,6 +346,7 @@
               continue;
             let word = null;
             let fontId = -1;
+            let footnoteMark = false;
             const wordEdits = this.savedWordEdits[page.id] && this.savedWordEdits[page.id][block.id] ? this.savedWordEdits[page.id][block.id] : {};
             for (const [i, token] of block.tokens.entries()) {
               if (typeof token === 'string') {
@@ -361,6 +366,7 @@
                   y: rect[1],
                   w: rect[2],
                   h: rect[3],
+                  footnoteMark: footnoteMark,
                 };
               } else if(tag === '/ocr') {
                 if (!word)
@@ -397,6 +403,11 @@
                 fontId = attrs.id;
               } else if(tag === '/font') {
                 fontId = -1;
+              } else if(tag === 'footnotemark') {
+                // this doesn't currently accomplish anything, as footnoteMarks start and end inside ocr spans
+                footnoteMark = true;
+              } else if(tag === '/footnotemark') {
+                footnoteMark = false;
               }
             }
           }
@@ -606,6 +617,10 @@
     .paragraph-class {
       margin-right: 1em;
       color: gray;
+    }
+    .footnote-mark {
+      font-size: .83em;
+      vertical-align: super;
     }
   }
 </style>
