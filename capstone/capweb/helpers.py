@@ -1,4 +1,3 @@
-import functools
 import json
 import re
 import socket
@@ -10,8 +9,6 @@ from urllib.parse import urlencode
 
 import markdown
 from django.core.signing import Signer
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
 from markdown.extensions.attr_list import AttrListExtension
 from markdown.extensions.toc import TocExtension
 from markdown.extensions import Extension
