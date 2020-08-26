@@ -452,11 +452,12 @@ def fetch(request):
                 result['cases'] = cases_by_cite.get(result['normalized_cite'], [])
 
                 # add context before and after matched cite
-                context_len = 20
-                m = re.search(r'([^\n]{,%s})\b%s\b([^\n]{,%s})' % (context_len, re.escape(result['cite']), context_len), text)
+                context_before = 40
+                context_after = 30
+                m = re.search(r'([^\n]{,%s})\b%s\b([^\n]{,%s})' % (context_before, re.escape(result['cite']), context_after), text)
                 if m:
-                    result['before'] = ('... ' if len(m[1]) == context_len else '') + m[1]
-                    result['after'] = m[2] + (' ...' if len(m[2]) == context_len else '')
+                    result['before'] = ('... ' if len(m[1]) == context_before else '') + m[1]
+                    result['after'] = m[2] + (' ...' if len(m[2]) == context_after else '')
 
     return render(request, "fetch.html", {
         'text': text,
