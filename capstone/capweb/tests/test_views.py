@@ -76,12 +76,12 @@ def test_fetch(client, three_cases):
     cites = [c.citations.first() for c in three_cases]
     text = f"""
 {cites[0].cite}
-123456789012345678901234567890 {cites[1].cite} 123456789012345678901234567890
+{"A"*50} {cites[1].cite} {"A"*50}
 123 {cites[2].cite} 123
     """
     response = client.post(reverse('fetch'), {'q': text})
     check_response(response, content_includes=[
         cites[0].cite, three_cases[0].full_cite(),
-        '... 2345678901234567890', cites[1].cite, three_cases[1].full_cite(), '1234567890123456789 ...',
+        f'... {"A"*39}', cites[1].cite, three_cases[1].full_cite(), f'{"A"*29} ...',
         '    123', cites[2].cite, three_cases[2].full_cite(), ' 123\n',
     ])
