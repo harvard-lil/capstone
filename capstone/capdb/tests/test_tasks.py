@@ -244,6 +244,7 @@ def test_redact_id_numbers(case_factory):
         A123456789  # 9 digit A-number
         A-12345678  # 8 digit A-number with hyphen
         A — 123456789  # 9 digit A-number with mdash and spaces
+        A — 1 -2- 3 45-67  8--9  # just why
     """
     case.body_cache.save()
     fabfile.redact_id_numbers()
@@ -253,6 +254,7 @@ def test_redact_id_numbers(case_factory):
         'A — 123456789': 'A — XXXXXXXXX',
         'A123456789': 'AXXXXXXXXX',
         'A-12345678': 'A-XXXXXXXX',
+        'A — 1 -2- 3 45-67  8--9': 'A — X -X- X XX-XX  X--X',
     }
 
 
