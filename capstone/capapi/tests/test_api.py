@@ -5,7 +5,7 @@ from capdb.tasks import update_elasticsearch_from_queue
 from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
 from user_data.models import UserHistory
-import random
+
 
 @pytest.mark.django_db
 def test_flow(client, unrestricted_case, elasticsearch):
@@ -369,28 +369,6 @@ def test_body_format_unrecognized(auth_client, restricted_case, elasticsearch):
     opinion = data["opinions"][0]
     assert set(opinion.keys()) == {'type', 'author', 'text'}
     assert opinion["text"]
-
-@pytest.mark.django_db
-def test_redaction(client, unrestricted_case, elasticsearch):
-    """Should allow various forms of citation, should redirect to normalized_cite"""
-    citation = unrestricted_case.citations.first()
-    url = api_reverse("cases-detail", args=[citation.normalized_cite]) + "?full_case=true"
-
-    response = client.get(url, follow=True)
-    check_response(response)
-    case_text_word = random.choice(response.json()['results'][0]['casebody']['data']['opinions'][0]['text'].split())
-    case_text_rep_word = "abababababababa"
-    name_word = random.choice(response.json()['results'][0]['name'].split())
-    name_rep_word = "abababababababa"
-
-    unrestricted_case.no_index_redacted = { case_text_word : case_text_rep_word, name_word :name_rep_word}
-    unrestricted_case.save()
-    unrestricted_case.reindex()
-
-    response = client.get(url, follow=True)
-    check_response(response)
-    assert case_text_rep_word in response.json()['results'][0]['casebody']['data']['opinions'][0]['text']
-    assert name_rep_word in response.json()['results'][0]['name']
 
 
 @pytest.mark.django_db

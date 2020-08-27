@@ -141,18 +141,19 @@ def api_reverse(viewname, args=None, kwargs=None, request=None, format=None, **e
 
 def apply_replacements(item, replacements, prefix="[ ", suffix=" ]"):
     """ filters out terms in 'item' with the {'original_text': and 'replacement_text' }
-    >>> apply_replacements("Hello, what's your name?", {'name': 'game', 'Hello': 'Wow'})
+    >>> apply_replacements("Hello, what's your name?", (('name', 'game'), ('Hello', 'Wow')))
     "[ Wow ], what's your [ game ]?"
 
-    >>> apply_replacements({"test": "Hello, what's your name?" }, {'name': 'game', 'Hello': 'Wow'})
+    >>> apply_replacements({"test": "Hello, what's your name?" }, (('name', 'game'), ('Hello', 'Wow')))
     {'test': "[ Wow ], what's your [ game ]?"}
     """
 
     if not replacements:
         return item
+    replacements = list(replacements)
 
     if isinstance(item, str):
-        for replacement in replacements.items():
+        for replacement in replacements:
             item = item.replace(replacement[0], prefix + replacement[1] + suffix)
     elif isinstance(item, list):
         item = [apply_replacements(inner_item, replacements) for inner_item in item]
