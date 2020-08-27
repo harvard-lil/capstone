@@ -219,7 +219,6 @@ def test_update_case_frontend_url_bad_cite(case):
     assert case.frontend_url == "/%s/%s/%s/%s/" % (case.reporter.short_name_slug, case.volume.volume_number, case.first_page, citation.case_id)
 
 
-
 @pytest.mark.django_db
 def test_redact_id_numbers(case_factory):
     # redact some numbers
@@ -238,15 +237,15 @@ def test_redact_id_numbers(case_factory):
     assert case.no_index_redacted == {'123 — 45 — 6789': 'XXX — XX — XXXX', '123-45-6789': 'XXX-XX-XXXX', 'foo': 'bar'}
 
     # test A-numbers
+    case.no_index_redacted = {}
+    case.save()
     case.body_cache.text="""
         A12345678  # 8 digit A-number
         A123456789  # 9 digit A-number
         A-12345678  # 8 digit A-number with hyphen
         A — 123456789  # 9 digit A-number with mdash and spaces
     """
-    case.no_index_redacted = {}
     case.body_cache.save()
-    case.save()
     fabfile.redact_id_numbers()
     case.refresh_from_db()
     assert case.no_index_redacted == {
