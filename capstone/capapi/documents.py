@@ -110,7 +110,10 @@ class CaseDocument(DocType):
         }),
     })
 
-    analysis = fields.ObjectField()
+    analysis = fields.ObjectField(properties={
+        'sha256': fields.KeywordField(),
+        'simhash': fields.KeywordField(),
+    })
 
     def prepare_frontend_pdf_url(self, instance):
         return instance.get_pdf_url(with_host=False)
