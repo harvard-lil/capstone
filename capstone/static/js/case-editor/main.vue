@@ -5,6 +5,7 @@
         <h1><a :href="urls.case">{{templateVars.citation_full}}</a></h1>
       </div>
       <div class="col-6 text-right viz-controls">
+        <button @click="showImage=!showImage" :class="{'toggle-btn': true, 'on': showImage}">image</button>
         <button @click="showOcr=!showOcr" :class="{'toggle-btn': true, 'on': showOcr}">(^O)CR</button>
         <button @click="showConfidence=!showConfidence" :class="{'toggle-btn': true, 'on': showConfidence}">W(^C)</button>
         <button @click="toggleInstructions" class="toggle-btn off">help</button>
@@ -52,9 +53,9 @@
       </div>
     </div>
     <div class="row" style="flex: 1 1 auto; overflow-y: auto;">
-      <div id="textView" class="scrollable col-6">
+      <div id="textView" :class="{scrollable: true, 'col-6':showImage, 'col-12':!showImage}">
         <div v-for="opinion in opinions" class="opinion">
-          <h4 class="section-title">opinion: {{opinion.type}}</h4>
+          <h4 class="opinion-title">opinion: {{opinion.type}}</h4>
           <div v-for="paragraph in opinion.paragraphs" :key="paragraph.id" class="paragraph">
             <span class="paragraph-class">{{paragraph.class}}</span>
             <template v-for="block in paragraphBlocks(paragraph)"><span
@@ -69,7 +70,7 @@
           </div>
 
           <div v-if="opinion.footnotes && opinion.footnotes.length">
-            <h4 class="section-title">{{opinion.type}} footnotes</h4>
+            <h4 class="opinion-title">footnotes: {{opinion.type}}</h4>
             <div v-for="footnote in opinion.footnotes" :key="footnote.id">
               <span>{{footnote.label}}</span>
 
@@ -92,18 +93,24 @@
 
         </div>
       </div>
-      <div id="imageView" class="scrollable col-6" ref="pageImageContainer">
-        <div v-for="page in pages" :key="page.id" ref="pageImages" :class="{page: true, 'show-ocr': showOcr}">
-          <img :src="page.image_url" :width="page.width * page.scale" :height="page.height * page.scale">
-          <span v-if="mounted"
-                v-for="word in page.words"
-                :key="word.id"
-                :style="wordImageStyle(page, word)"
-                @click="wordClicked(word)"
-                :ref="`wordImage${word.id}`"
-                :class="wordClass(word)">
-            {{word.string}}
-          </span>
+      <div v-if="showImage" id="imageView" class="scrollable col-6" ref="pageImageContainer">
+        <div id="imageControls" class="text-right viz-controls">
+          <button @click="imageZoom+=0.1" class="toggle-btn off">➕</button>
+          <button @click="imageZoom-=0.1" class="toggle-btn off">➖</button>
+        </div>
+        <div :style="{transform: `scale(${imageZoom})`, 'transform-origin': '0% 0% 0px'}">
+          <div v-for="page in pages" :key="page.id" ref="pageImages" :class="{page: true, 'show-ocr': showOcr}">
+            <img :src="page.image_url" :width="page.width * page.scale" :height="page.height * page.scale">
+            <span v-if="mounted"
+                  v-for="word in page.words"
+                  :key="word.id"
+                  :style="wordImageStyle(page, word)"
+                  @click="wordClicked(word)"
+                  :ref="`wordImage${word.id}`"
+                  :class="wordClass(word)">
+              {{word.string}}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -156,9 +163,11 @@
         currentWord: null,
         showOcr: false,
         showConfidence: false,
+        showImage: true,
         editedWords: {},
         saveStatus: null,
         mounted: false,
+        imageZoom: 1.0,
       }
     },
     watch: {
@@ -267,12 +276,13 @@
       currentWordStyle() {
         if (this.currentWord) {
           const currentPage = this.pagesByWordId[this.currentWord.id];
+          const offset=10;
           return {
             'background-image':`url(${currentPage.image_url})`,
             'background-size': `${currentPage.width}px`,
-            width: `${this.currentWord.w}px`,
-            height: `${this.currentWord.h}px`,
-            'background-position': `-${this.currentWord.x}px -${this.currentWord.y}px`,
+            width: `${this.currentWord.w+offset*2}px`,
+            height: `${this.currentWord.h+offset*2}px`,
+            'background-position': `-${this.currentWord.x-offset}px -${this.currentWord.y-offset}px`,
           };
         }
         return {width: '20rem', height: '2rem'};
@@ -372,6 +382,8 @@
                 if (!word)
                   continue;  // tag closed before opened -- shouldn't happen
                 if (word.strings.length) {
+                  wordId++;
+                  
                   // apply saved edits, if any
                   const wordIndex = words.length;
                   word.index = wordIndex;
@@ -392,7 +404,6 @@
                   // calculate background color
                   word.wordConfidenceColor = this.wordConfidenceColor(word);
 
-                  wordId++;
                   word.id = wordId;
                   words.push(word);
                   block.words.push(word);
@@ -575,6 +586,13 @@
 </script>
 
 <style lang="scss" scoped>
+  .opinion-title {
+    position: sticky;
+    top: 0;
+    background: white;
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
   .scrollable {
     border: 2px gray solid;
     padding: 1em;
@@ -604,7 +622,7 @@
     border: 1px orange solid !important;
   }
   #textView {
-    padding: 2em;
+    padding: 0 2em;
     hyphens: none;
     .opinion {
       padding-bottom: 2em;
@@ -622,5 +640,10 @@
       font-size: .83em;
       vertical-align: super;
     }
+  }
+  #imageControls {
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
 </style>
