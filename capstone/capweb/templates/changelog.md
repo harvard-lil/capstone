@@ -8,6 +8,13 @@ explainer: If our data or user-facing research features change in significant wa
 top_section_style: bg-black
 row_style: bg-tan
 
+# August 28, 2020
+
+**API:**
+
+* Cases Endpoint:
+    * Allow `ordering` by analysis fields.
+
 # August 2020
 
 **API:**
