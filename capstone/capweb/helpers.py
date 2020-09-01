@@ -58,7 +58,11 @@ def cache_func(key, timeout=None, cache_name='default'):
     timeout=settings.CACHED_LIL_DATA_TIMEOUT
 )
 def get_data_from_lil_site(section="news"):
-    response = requests.get("https://lil.law.harvard.edu/api/%s/caselaw-access-project/" % section)
+    try:
+        response = requests.get("https://lil.law.harvard.edu/api/%s/caselaw-access-project/" % section)
+        response.raise_for_status()
+    except requests.exceptions.RequestException:
+        return []
     content = response.content.decode()
     start_index = content.index('(')
     if section == "contributors":
