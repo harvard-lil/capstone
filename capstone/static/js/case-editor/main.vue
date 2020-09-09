@@ -6,9 +6,9 @@
       </div>
       <div class="col-6 text-right viz-controls">
         <button @click="showImage=!showImage" :class="{'toggle-btn': true, 'on': showImage}">image</button>
-        <button @click="showOcr=!showOcr" :class="{'toggle-btn': true, 'on': showOcr}">(^O)CR</button>
-        <button @click="showConfidence=!showConfidence" :class="{'toggle-btn': true, 'on': showConfidence}">W(^C)</button>
-        <button @click="toggleInstructions" class="toggle-btn off">help</button>
+        <button @click="$store.commit('toggleOcr')" :class="{'toggle-btn': true, 'on': showOcr}">(^O)CR</button>
+        <button @click="$store.commit('toggleConfidence')" :class="{'toggle-btn': true, 'on': showConfidence}">W(^C)</button>
+        <button @click="toggleInstructions()" class="toggle-btn off">help</button>
         <button class="btn-primary mr-1 mb-1 ml-3" @click="saveCase($event)">(^s)ave case to DB</button>
         <button class="btn-secondary" @click="clearEdits">Clear All Edits</button>
         <span aria-live="polite"><span v-if="saveStatus" class="ml-1"><br>{{saveStatus}}</span></span>
@@ -16,105 +16,24 @@
     </div>
     <div class="tools-row row">
       <div class="scrollable col-4">
-        <h4 class="section-title">current word</h4>
-        <div :style="currentWordStyle()"></div>
-        <div class="row">
-          <div class="col-10">
-            <input type="text" id="current_word" :value="currentWord ? currentWord.string : ''" placeholder="current word" ref="currentWord" @input="wordEdited($event.target.value)">
-          </div>
-          <div class="col-2"><button @click="addSoftHyphen()" :disabled="currentWord === null">⧟</button></div>
-        </div>
+        <EditPanel></EditPanel>
       </div>
       <div class="scrollable col-4 edits-container">
-        <h4 class="section-title">edits</h4>
-        <div class="edited-word-list mt-3">
-          <div class="row edit-entry" v-for="word in editedWords" :key="word.id">
-            <div class="col-5 word" @click="wordClicked(word)">{{word.originalString}}</div>
-            <div class="col-6 word" @click="wordClicked(word)">{{word.string}}</div>
-            <div class="col-1 edit-controls"><span class="edit-delete" @click="removeEdit(word.id)">&#8855;</span></div>
-          </div>
-        </div>
+        <EditListPanel></EditListPanel>
       </div>
       <div class="scrollable col-4">
-        <h4 class="section-title">case metadata</h4>
-        <div class="row">
-          <label class="col-8 m-0" for="metadata-human-corrected">Human Corrected</label>
-          <input class="col-4" type="checkbox" v-model="metadata.human_corrected" id="metadata-human-corrected">
-          <small class="form-text text-muted">Set "Human Corrected" if this case has been fully corrected and is essentially error-free.</small>
-          <label class="col-4" for="metadata-name-abbreviation">Short Name</label>
-          <input class="col-8" type="text" v-model="metadata.name_abbreviation" placeholder="case short name" id="metadata-name-abbreviation">
-          <label class="col-4" for="metadata-name">Long Name</label>
-          <input class="col-8" type="text" v-model="metadata.name" placeholder="case name" id="metadata-name">
-          <label class="col-4" for="metadata-decision-date-original">Decision Date (YYYY-MM-DD)</label>
-          <input class="col-8" type="text" v-model="metadata.decision_date_original" placeholder="decision date" id="metadata-decision-date-original">
-          <label class="col-4" for="metadata-docket-number">Docket Number</label>
-          <input class="col-8" type="text" v-model="metadata.docket_number" placeholder="docket number" id="metadata-docket-number">
-        </div>
+        <MetadataPanel></MetadataPanel>
       </div>
     </div>
     <div class="row" style="flex: 1 1 auto; overflow-y: auto;">
-      <div id="textView" :class="{scrollable: true, 'col-6':showImage, 'col-12':!showImage}">
-        <div v-for="opinion in opinions" class="opinion">
-          <h4 class="opinion-title">opinion: {{opinion.type}}</h4>
-          <div v-for="paragraph in opinion.paragraphs" :key="paragraph.id" class="paragraph">
-            <span class="paragraph-class">{{paragraph.class}}</span>
-            <template v-for="block in paragraphBlocks(paragraph)"><span
-              v-if="mounted"
-              v-for="word in block.words"
-              :key="word.id"
-              :style="wordTextStyle(word)"
-              @click="wordClicked(word)"
-              :ref="`wordText${word.id}`"
-              :class="wordClass(word)"
-            >{{word.stringWithoutSoftHyphens}}</span></template>
-          </div>
-
-          <div v-if="opinion.footnotes && opinion.footnotes.length">
-            <h4 class="opinion-title">footnotes: {{opinion.type}}</h4>
-            <div v-for="footnote in opinion.footnotes" :key="footnote.id">
-              <span>{{footnote.label}}</span>
-
-              <!-- THIS IS NOT DRY YET -- REPEAT OF ABOVE -->
-              <div v-for="paragraph in footnote.paragraphs" :key="paragraph.id">
-                <span class="paragraph-class">{{paragraph.class}}</span>
-                <template v-for="block in paragraphBlocks(paragraph)"><span
-                  v-if="mounted"
-                  v-for="word in block.words"
-                  :key="word.id"
-                  :style="wordTextStyle(word)"
-                  @click="wordClicked(word)"
-                  :ref="`wordText${word.id}`"
-                  :class="wordClass(word)"
-                >{{word.stringWithoutSoftHyphens}}</span></template>
-              </div>
-              <!-- END THING TO DRY -->
-            </div>
-          </div>
-
-        </div>
+      <div :class="{scrollable: true, 'col-6':showImage, 'col-12':!showImage}" style="padding: 0 2em">
+        <CaseTextPanel :opinions="opinions"></CaseTextPanel>
       </div>
       <div v-if="showImage" id="imageView" class="scrollable col-6" ref="pageImageContainer">
-        <div id="imageControls" class="text-right viz-controls">
-          <button @click="imageZoom+=0.1" class="toggle-btn off">➕</button>
-          <button @click="imageZoom-=0.1" class="toggle-btn off">➖</button>
-        </div>
-        <div :style="{transform: `scale(${imageZoom})`, 'transform-origin': '0% 0% 0px'}">
-          <div v-for="page in pages" :key="page.id" ref="pageImages" :class="{page: true, 'show-ocr': showOcr}">
-            <img :src="page.image_url" :width="page.width * page.scale" :height="page.height * page.scale">
-            <span v-if="mounted"
-                  v-for="word in page.words"
-                  :key="word.id"
-                  :style="wordImageStyle(page, word)"
-                  @click="wordClicked(word)"
-                  :ref="`wordImage${word.id}`"
-                  :class="wordClass(word)">
-              {{word.string}}
-            </span>
-          </div>
-        </div>
+        <CaseImagePanel :pages="pages"></CaseImagePanel>
       </div>
     </div>
-    <div class="pt-6" id="instructions_modal_overlay" style="display: none">
+    <div v-if="showInstructions" class="pt-6" id="instructions_modal_overlay">
       <div class="col-8 offset-2 p-5" id="instructions_modal">
         <div id="modal_close" @click="toggleInstructions">&#8855;</div>
         <div class="row pt-3">
@@ -151,23 +70,24 @@
   import $ from "jquery";
   import '../jquery_django_csrf';
   import debounce from "lodash.debounce";
-  import scrollIntoView from 'scroll-into-view-if-needed';
+  import { mapState } from 'vuex'
 
+  import EditPanel from './edit-panel.vue'
+  import EditListPanel from './edit-list-panel.vue'
+  import CaseTextPanel from './case-text-panel.vue'
+  import CaseImagePanel from './case-image-panel.vue'
+  import MetadataPanel from './metadata-panel.vue'
   import {FAKE_SOFT_HYPHEN, SOFT_HYPHEN} from "./helpers";
 
   export default {
+    components: {EditPanel, EditListPanel, CaseTextPanel, CaseImagePanel, MetadataPanel},
+    computed: mapState(['showConfidence', 'showOcr', 'metadata', 'editedWords']),
     data() {
       return {
         pages: null,
-        metadata: null,
-        currentWord: null,
-        showOcr: false,
-        showConfidence: false,
-        showImage: true,
-        editedWords: {},
         saveStatus: null,
-        mounted: false,
-        imageZoom: 1.0,
+        showInstructions: false,
+        showImage: true,
       }
     },
     watch: {
@@ -191,8 +111,8 @@
       this.opinions = this.templateVars.opinions;
 
       // preprocess metadata
-      this.metadata = this.templateVars.metadata;
-      this.serverMetadata = {...this.metadata};
+      this.serverMetadata = this.templateVars.metadata;
+      this.$store.commit('setMetadata', {...this.serverMetadata})
 
       // preprocess pages
       this.pages = this.templateVars.pages;
@@ -209,7 +129,7 @@
       this.charAscentCache = {};
 
       // load state from localStorage
-      this.storageKey = `caseedit-${this.metadata.id}`;
+      this.storageKey = `caseedit-${this.serverMetadata.id}`;
       const savedStateJson = localStorage.getItem(this.storageKey);
       this.savedWordEdits = {};
       if (savedStateJson) {
@@ -222,8 +142,8 @@
           // apply saved updates to metadata, if server val still matches old val
           if (Object.keys(savedState.metadata).length > 0) {
             for (const [k, [oldVal, newVal]] of Object.entries(savedState.metadata)) {
-              if (this.metadata[k] === oldVal)
-                this.metadata[k] = newVal;
+              if (this.serverMetadata[k] === oldVal)
+                this.$store.commit('updateField', {path: `metadata.${k}`, value: newVal});
             }
           }
         } catch(e) {
@@ -252,70 +172,11 @@
           }
         }
       });
-      for (const [i, page] of this.pages.entries())
-        page.imageRef = this.$refs.pageImages[i];
       window.addEventListener('resize', ()=>{ this.handleWindowResize() });
       this.handleWindowResize();
       this.mounted = true;
     },
     methods: {
-      wordEdited(newVal) {
-        const word = this.currentWord;
-        if (word.originalString === newVal)
-          this.$delete(this.editedWords, word.id);
-        else
-          this.$set(this.editedWords, word.id, word);
-        word.string = newVal;
-        word.stringWithoutSoftHyphens = word.string.replace(FAKE_SOFT_HYPHEN, '');
-      },
-      paragraphBlocks(paragraph) {
-        if (!paragraph.block_ids)
-          return [];
-        return paragraph.block_ids.map(blockId => this.blocksById[blockId]);
-      },
-      currentWordStyle() {
-        if (this.currentWord) {
-          const currentPage = this.pagesByWordId[this.currentWord.id];
-          const offset=10;
-          return {
-            'background-image':`url(${currentPage.image_url})`,
-            'background-size': `${currentPage.width}px`,
-            width: `${this.currentWord.w+offset*2}px`,
-            height: `${this.currentWord.h+offset*2}px`,
-            'background-position': `-${this.currentWord.x-offset}px -${this.currentWord.y-offset}px`,
-          };
-        }
-        return {width: '20rem', height: '2rem'};
-      },
-      wordImageStyle(page, word) {
-        const font = word.font;
-        return {
-          left: `${word.x * page.scale}px`,
-          top: `${word.y * page.scale - word.yOffset * page.fontScale - 1}px`,  // -1 for top border
-          'background-color': this.showConfidence ? word.wordConfidenceColor : 'unset',
-          // font format is "<styles> <font size>/<line height> <font families>":
-          font: `${font.styles} ${font.size * page.fontScale}px/${word.lineHeight * page.fontScale}px ${font.family}`,
-        };
-      },
-      wordTextStyle(word) {
-        const font = word.font;
-        return {
-          'background-color': this.showConfidence ? word.wordConfidenceColor : 'unset',
-          font: `${word.font.styles}`,
-        };
-      },
-      wordClass(word) {
-        return {
-          'current-word': this.currentWord === word,
-          'edited': word.string !== word.originalString,
-          'footnote-mark': word.footnoteMark,
-        };
-      },
-      wordClicked(word) {
-        this.currentWord = word;
-        this.$refs.currentWord.focus();
-        this.scrollToWord(word.id);
-      },
       wordConfidenceColor(word) {
         const alpha = (.6 - word.wordConfidence)*100;
         const red = 255 * word.wordConfidence + 127;
@@ -347,7 +208,6 @@
           To save changes later, we'll update `blocks[blockId].tokens[index]` to `string`, and empty any additional `strings`.
          */
         let wordId = 0;
-        this.pagesByWordId = {};
         for (const page of this.pages) {
           const words = [];
           for (const block of page.blocks) {
@@ -376,25 +236,24 @@
                   y: rect[1],
                   w: rect[2],
                   h: rect[3],
-                  footnoteMark: footnoteMark,
+                  footnoteMark,
+                  page,
                 };
               } else if(tag === '/ocr') {
                 if (!word)
                   continue;  // tag closed before opened -- shouldn't happen
                 if (word.strings.length) {
-                  wordId++;
-                  
+                  word.id = ++wordId;
+
                   // apply saved edits, if any
                   const wordIndex = words.length;
                   word.index = wordIndex;
                   word.originalString = word.strings.map(s=>s.value).join("").replace(SOFT_HYPHEN, FAKE_SOFT_HYPHEN);
                   if (wordIndex in wordEdits && wordEdits[wordIndex][0] === word.originalString) {
-                    word.string = wordEdits[wordIndex][1];
-                    this.editedWords[wordId] = word;
+                    this.$store.commit('editWord', {word, string: wordEdits[wordIndex][1]});
                   } else {
                     word.string = word.originalString;
                   }
-                  word.stringWithoutSoftHyphens = word.string.replace(FAKE_SOFT_HYPHEN, '');
 
                   // for OCR alignment, calculate line height based on font, and apply a y offset based on the tallest
                   // character in the word
@@ -404,10 +263,9 @@
                   // calculate background color
                   word.wordConfidenceColor = this.wordConfidenceColor(word);
 
-                  word.id = wordId;
                   words.push(word);
                   block.words.push(word);
-                  this.pagesByWordId[wordId] = page;
+                  this.$store.commit('addWord', word);
                 }
                 word = null;
               } else if(tag === 'font') {
@@ -426,35 +284,23 @@
         }
       },
       toggleInstructions() {
-        const instructions = document.getElementById("instructions_modal_overlay")
-        instructions.style.display = instructions.style.display === "none" ? 'block' : 'none'
-      },
-      scrollToWord(wordId) {
-        scrollIntoView(this.$refs[`wordText${wordId}`][0], {scrollMode: 'if-needed'});
-        scrollIntoView(this.$refs[`wordImage${wordId}`][0], {scrollMode: 'if-needed'});
-      },
-      removeEdit(wordId) {
-        const word = this.editedWords[wordId];
-        word.string = word.originalString;
-        this.$delete(this.editedWords, wordId);
+        this.showInstructions = !this.showInstructions;
       },
       clearEdits() {
         if (!confirm('CONFIRM: permanently discard your edits?\nThere is no undo for this command.')) {
           return;
         }
         localStorage.removeItem(this.storageKey);
-        this.metadata = {...this.serverMetadata};
-        for (const page of this.pages)
-          for (const word of page.words)
-            if (word.string !== word.originalString)
-              word.string = word.originalString;
+        this.$store.commit('setMetadata', {...this.serverMetadata});
+        for (const word of Object.values(this.$store.state.editedWords))
+          this.$store.commit('editWord', {word, string: word.originalString});
       },
       getMetadataEdits() {
         /*
           Prepare dict of all edited metadata, including old value and new value so we can check for consistency
         */
         const metadata = {};
-        for (const [k, v] of Object.entries(this.metadata)) {
+        for (const [k, v] of Object.entries(this.$store.state.metadata)) {
           const serverVal = this.serverMetadata[k];
           if (v !== serverVal)
             metadata[k] = [serverVal, v];
@@ -505,6 +351,8 @@
       },
       saveStateToStorage: debounce(function() {
         /* save to local storage */
+        if (!this.mounted)
+          return;
         const save_state = this.getState(true)
         localStorage.setItem(this.storageKey, JSON.stringify(save_state));
       }, 500),
@@ -557,9 +405,6 @@
         */
         return this.getCharAscent('T', fontId);
       },
-      addSoftHyphen() {
-        this.currentWord.string = this.currentWord.string + FAKE_SOFT_HYPHEN
-      },
       processFont(font) {
         /*
           Process backend font that looks like
@@ -586,64 +431,8 @@
 </script>
 
 <style lang="scss" scoped>
-  .opinion-title {
-    position: sticky;
-    top: 0;
-    background: white;
-    font-size: 1.25rem;
-    font-weight: bold;
-  }
   .scrollable {
     border: 2px gray solid;
     padding: 1em;
-  }
-  .page {
-    position: relative;
-    span {
-      border: 1px transparent solid;
-      line-height: 1;
-      color: transparent;
-      position: absolute;
-    }
-    &.show-ocr {
-      img {
-        opacity: 0.2;
-      }
-
-      span {
-        color: unset;
-      }
-    }
-  }
-  .current-word {
-    border: 1px green solid !important;
-  }
-  .edited {
-    border: 1px orange solid !important;
-  }
-  #textView {
-    padding: 0 2em;
-    hyphens: none;
-    .opinion {
-      padding-bottom: 2em;
-      padding-top: 2em;
-      border-bottom: 1px gray solid;
-    }
-    .paragraph {
-      margin-bottom: 1em;
-    }
-    .paragraph-class {
-      margin-right: 1em;
-      color: gray;
-    }
-    .footnote-mark {
-      font-size: .83em;
-      vertical-align: super;
-    }
-  }
-  #imageControls {
-    position: sticky;
-    top: 0;
-    z-index: 1;
   }
 </style>
