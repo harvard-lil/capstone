@@ -1,8 +1,7 @@
 import $ from "jquery"
-import { limericks } from './limerick_lines.js'
 
 function generate_limerick() {
-  let line_types = limericks;
+  let line_types = limericks;  // eslint-disable-line
 
   let long_lines = get_lines(line_types['long'], 3);
   let short_lines = get_lines(line_types['short'], 2);
