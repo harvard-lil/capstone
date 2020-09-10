@@ -1,19 +1,40 @@
 <template>
-  <div id="edit-app">
+  <div id="edit-app" :class="{darkMode}">
     <div class="row p-2">
       <div class="col-6">
         <h1><a :href="urls.case">{{templateVars.citation_full}}</a></h1>
       </div>
       <div class="col-6 text-right viz-controls">
-        <button @click="showImage=!showImage" :class="{'toggle-btn': true, 'on': showImage}">image</button>
-        <button @click="$store.commit('toggleOcr')" :class="{'toggle-btn': true, 'on': showOcr}">(^O)CR</button>
-        <button @click="$store.commit('toggleConfidence')" :class="{'toggle-btn': true, 'on': showConfidence}">W(^C)</button>
+        <button @click="darkMode=!darkMode" :class="{'toggle-btn': true, 'on': darkMode}">dark</button>
+        <button @click="showImage=!showImage" :class="{'toggle-btn': true, 'on': showImage}">img</button>
+        <button @click="$store.commit('toggleOcr')" :class="{'toggle-btn': true, 'on': showOcr}">OCR</button>
+        <button @click="$store.commit('toggleConfidence')" :class="{'toggle-btn': true, 'on': showConfidence}">WC</button>
         <button @click="toggleInstructions()" class="toggle-btn off">help</button>
-        <button class="btn-primary mr-1 mb-1 ml-3" @click="saveCase($event)">(^s)ave case to DB</button>
+        <button class="btn-primary mr-1 mb-1 ml-3" v-b-modal.save-modal>save case to DB</button>
         <button class="btn-secondary" @click="clearEdits">Clear All Edits</button>
-        <span aria-live="polite"><span v-if="saveStatus" class="ml-1"><br>{{saveStatus}}</span></span>
       </div>
     </div>
+    <b-modal id="save-modal" title="Save Changes" @ok="saveCase">
+      <p>Permanently replace this case in the CAP database with your edited version?</p>
+      <p>There is no undo for this command.</p>
+      <form ref="saveForm" @submit.stop.prevent="saveCase">
+        <b-form-group
+          :state="saveFormValid"
+          label="Description of your changes:"
+          label-for="save-form-message"
+          invalid-feedback="Description is required"
+        >
+          <b-form-input
+            id="save-form-message"
+            v-model="saveFormMessage"
+            :state="saveFormValid"
+            required
+            autofocus
+          ></b-form-input>
+        </b-form-group>
+        <span aria-live="polite">{{saveStatus}}</span>
+      </form>
+    </b-modal>
     <div class="tools-row row">
       <div class="scrollable col-4">
         <EditPanel></EditPanel>
@@ -26,10 +47,10 @@
       </div>
     </div>
     <div class="row" style="flex: 1 1 auto; overflow-y: auto;">
-      <div :class="{scrollable: true, 'col-6':showImage, 'col-12':!showImage}" style="padding: 0 2em">
+      <div id="caseTextPanel" :class="{scrollable: true, 'col-6':showImage, 'col-12':!showImage, casePanel: true}">
         <CaseTextPanel :opinions="opinions"></CaseTextPanel>
       </div>
-      <div v-if="showImage" id="imageView" class="scrollable col-6" ref="pageImageContainer">
+      <div v-if="showImage" id="caseImagePanel" class="scrollable col-6 casePanel" ref="pageImageContainer">
         <CaseImagePanel :pages="pages"></CaseImagePanel>
       </div>
     </div>
@@ -86,8 +107,11 @@
       return {
         pages: null,
         saveStatus: null,
+        saveFormValid: null,
+        saveFormMessage: '',
         showInstructions: false,
         showImage: true,
+        darkMode: false,
       }
     },
     watch: {
@@ -155,23 +179,23 @@
       this.extractWords();  // depends on saved state
     },
     mounted: function () {
-      document.addEventListener('keyup', (e)=>{
-        if (e.ctrlKey) {
-          switch(e.key) {
-            case "o":
-                this.showOcr = !this.showOcr;
-              break;
-            case "c":
-              this.showConfidence = !this.showConfidence;
-              break;
-            case "s":
-              this.saveCase();
-              break;
-            default:
-              break;
-          }
-        }
-      });
+      // document.addEventListener('keyup', (e)=>{
+      //   if (e.ctrlKey) {
+      //     switch(e.key) {
+      //       case "o":
+      //           this.showOcr = !this.showOcr;
+      //         break;
+      //       case "c":
+      //         this.showConfidence = !this.showConfidence;
+      //         break;
+      //       case "s":
+      //         this.saveCase();
+      //         break;
+      //       default:
+      //         break;
+      //     }
+      //   }
+      // });
       window.addEventListener('resize', ()=>{ this.handleWindowResize() });
       this.handleWindowResize();
       this.mounted = true;
@@ -208,6 +232,54 @@
           To save changes later, we'll update `blocks[blockId].tokens[index]` to `string`, and empty any additional `strings`.
          */
         let wordId = 0;
+
+        const startWord = (block, attrs, fontId, footnoteMark, page)=>{
+          const rect = attrs.rect;
+          return {
+            blockId: block.id,
+            wordConfidence: attrs.wc,
+            font: this.fonts[fontId],
+            strings: [],
+            x: rect[0],
+            y: rect[1],
+            w: rect[2],
+            h: rect[3],
+            footnoteMark,
+            page,
+          };
+        }
+
+        const endWord = (word, words, wordEdits, fontId, block)=>{
+          if (!word)
+            return null;  // tag closed before opened -- shouldn't happen
+          if (word.strings.length) {
+            word.id = ++wordId;
+
+            // apply saved edits, if any
+            const wordIndex = words.length;
+            word.index = wordIndex;
+            word.originalString = word.strings.map(s=>s.value).join("").replace(SOFT_HYPHEN, FAKE_SOFT_HYPHEN);
+            if (wordIndex in wordEdits && wordEdits[wordIndex][0] === word.originalString) {
+              this.$store.commit('editWord', {word, string: wordEdits[wordIndex][1]});
+            } else {
+              word.string = word.originalString;
+            }
+
+            // for OCR alignment, calculate line height based on font, and apply a y offset based on the tallest
+            // character in the word
+            word.lineHeight = this.getFontLineHeight(fontId);
+            word.yOffset = Math.min(...word.string.split('').map(c => word.lineHeight - this.getCharAscent(c, fontId)));
+
+            // calculate background color
+            word.wordConfidenceColor = this.wordConfidenceColor(word);
+
+            words.push(word);
+            block.words.push(word);
+            this.$store.commit('addWord', word);
+          }
+          return null;
+        }
+
         for (const page of this.pages) {
           const words = [];
           for (const block of page.blocks) {
@@ -217,6 +289,7 @@
             let word = null;
             let fontId = -1;
             let footnoteMark = false;
+            let ocrAttrs = null;
             const wordEdits = this.savedWordEdits[page.id] && this.savedWordEdits[page.id][block.id] ? this.savedWordEdits[page.id][block.id] : {};
             for (const [i, token] of block.tokens.entries()) {
               if (typeof token === 'string') {
@@ -226,48 +299,10 @@
               }
               const [tag, attrs] = token;
               if(tag === 'ocr') {
-                const rect = attrs.rect;
-                word = {
-                  blockId: block.id,
-                  wordConfidence: attrs.wc,
-                  font: this.fonts[fontId],
-                  strings: [],
-                  x: rect[0],
-                  y: rect[1],
-                  w: rect[2],
-                  h: rect[3],
-                  footnoteMark,
-                  page,
-                };
+                ocrAttrs = attrs;
+                word = startWord(block, attrs, fontId, footnoteMark, page);
               } else if(tag === '/ocr') {
-                if (!word)
-                  continue;  // tag closed before opened -- shouldn't happen
-                if (word.strings.length) {
-                  word.id = ++wordId;
-
-                  // apply saved edits, if any
-                  const wordIndex = words.length;
-                  word.index = wordIndex;
-                  word.originalString = word.strings.map(s=>s.value).join("").replace(SOFT_HYPHEN, FAKE_SOFT_HYPHEN);
-                  if (wordIndex in wordEdits && wordEdits[wordIndex][0] === word.originalString) {
-                    this.$store.commit('editWord', {word, string: wordEdits[wordIndex][1]});
-                  } else {
-                    word.string = word.originalString;
-                  }
-
-                  // for OCR alignment, calculate line height based on font, and apply a y offset based on the tallest
-                  // character in the word
-                  word.lineHeight = this.getFontLineHeight(fontId);
-                  word.yOffset = Math.min(...word.string.split('').map(c => word.lineHeight - this.getCharAscent(c, fontId)));
-
-                  // calculate background color
-                  word.wordConfidenceColor = this.wordConfidenceColor(word);
-
-                  words.push(word);
-                  block.words.push(word);
-                  this.$store.commit('addWord', word);
-                }
-                word = null;
+                word = endWord(word, words, wordEdits, fontId, block);
               } else if(tag === 'font') {
                 fontId = attrs.id;
               } else if(tag === '/font') {
@@ -275,8 +310,12 @@
               } else if(tag === 'footnotemark') {
                 // this doesn't currently accomplish anything, as footnoteMarks start and end inside ocr spans
                 footnoteMark = true;
+                word = endWord(word, words, wordEdits, fontId, block);
+                word = startWord(block, ocrAttrs, fontId, footnoteMark, page);
               } else if(tag === '/footnotemark') {
                 footnoteMark = false;
+                word = endWord(word, words, wordEdits, fontId, block);
+                word = startWord(block, ocrAttrs, fontId, footnoteMark, page);
               }
             }
           }
@@ -286,8 +325,8 @@
       toggleInstructions() {
         this.showInstructions = !this.showInstructions;
       },
-      clearEdits() {
-        if (!confirm('CONFIRM: permanently discard your edits?\nThere is no undo for this command.')) {
+      async clearEdits() {
+        if (!await this.$bvModal.msgBoxConfirm('Permanently discard your edits?\nThere is no undo for this command.')) {
           return;
         }
         localStorage.removeItem(this.storageKey);
@@ -356,18 +395,15 @@
         const save_state = this.getState(true)
         localStorage.setItem(this.storageKey, JSON.stringify(save_state));
       }, 500),
-      async saveCase() {
+      async saveCase(event) {
         /* save to server */
-        const description = prompt(`
-          CONFIRM: permanently replace ${this.templateVars.citation_full} in the CAP database with your edited version?
-          There is no undo for this command.
-          Enter a description of your edits to continue:
-        `, '');
-        if (!description)
+        event.preventDefault();
+        this.saveFormValid = this.$refs.saveForm.checkValidity();
+        if (!this.saveFormValid)
           return;
         this.saveStatus = "saving ...";
         const state = this.getState();
-        state.description = description;
+        state.description = this.saveFormMessage;
         try {
           await $.ajax('', {
             type : 'POST',
@@ -414,8 +450,11 @@
           Snippets are kept separate so font size can be scaled later.
         */
         let styles = [];
-        if (font.style.includes('italics'))
+        let textStyles = [];
+        if (font.style.includes('italics')) {
           styles.push('italic');
+          textStyles.push('italic');
+        }
         if (font.style.includes('smallcaps'))
           styles.push('small-caps');
         if (font.style.includes('bold'))
@@ -424,6 +463,7 @@
           family: `"${font.family}",${font.type}`,
           size: parseFloat(font.size),
           styles: styles.join(' '),
+          textStyles: textStyles.join(' '),
         };
       },
     },
@@ -434,5 +474,17 @@
   .scrollable {
     border: 2px gray solid;
     padding: 1em;
+  }
+  .casePanel {
+     padding: 0 2em;
+  }
+  .darkMode::v-deep {
+    div:not(#imageControls), h4 {
+      background-color: #2F2F2F;
+      color: white;
+    }
+    img {
+      filter: invert(1);
+    }
   }
 </style>
