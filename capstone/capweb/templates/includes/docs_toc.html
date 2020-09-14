@@ -1,0 +1,56 @@
+{% load startswith %}
+{% load static %}
+
+<ul class="interior-level">
+    {% for item in toc %}
+        {% if item.children %}
+             {% if req_doc_path|startswith:item.url %}
+                <li id="label_{{ item.url }}" class="interior-directory expandable" onclick="toggle_item('{{ item.url }}');">
+                    <div class="row">
+                        <div class="col-1 arrow_div">
+                            <img class="arrow active" id="arrow_{{ item.url }}"
+                                 src="{% static 'img/arrows/violet-arrow-right.svg' %}">
+                        </div>
+                        <div class="col-11">
+                            {{ item.label }}
+                        </div>
+                    </div>
+                </li>
+                <li id="structure_{{ item.url }}" class="interior-structure active">
+                    {% include "includes/docs_toc.html" with toc=item.children %}
+                </li>
+            {% else %}
+                <li id="label_{{ item.url }}" class="interior-directory expandable" onclick="toggle_item('{{ item.url }}');">
+                    <div class="row">
+                        <div class="col-1 arrow_div">
+                            <img class="arrow inactive" id="arrow_{{ item.url }}"
+                                 src="{% static 'img/arrows/violet-arrow-right.svg' %}">
+                        </div>
+                        <div class="col-11">
+                            {{ item.label }}
+                        </div>
+                    </div>
+                </li>
+                <li id="structure_{{ item.url }}" class="interior-structure inactive">
+                    {% include "includes/docs_toc.html" with toc=item.children %}
+                </li>
+            {% endif %}
+        {% else %}
+            {% if item.doc_toc %}
+                <li class="interior-title current">
+                    <a class="list-header-link" href="{% url "docs" item.url %}">{{ item.label }}</a>
+                </li>
+                <ul class="interior-item">
+                    <ul class="doc-toc-entry">
+                        {{ item.doc_toc }}
+                    </ul>
+                </ul>
+            {% else %}
+                <li class="interior-title">
+                    <a class="list-header-link" href="{% url "docs" item.url %}">{{ item.label }}</a>
+                </li>
+            {% endif %}
+
+        {% endif %}
+    {% endfor %}
+</ul>

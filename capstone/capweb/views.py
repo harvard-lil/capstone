@@ -14,17 +14,15 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404, \
     HttpResponseBadRequest, FileResponse
 from django.shortcuts import render
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.template import Template, RequestContext
-from django.template.loader import render_to_string
 from django.utils.http import is_safe_url
-from django.views import View
 from django.utils.safestring import mark_safe
 from django.db.models import Prefetch
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
-    page_image_url, safe_domains
+    page_image_url, safe_domains, toc_from_path
 from capweb.models import GallerySection, GalleryEntry
 from capdb.models import Snippet, Court, Reporter, Jurisdiction
 from capdb.storages import download_files_storage
@@ -56,6 +54,55 @@ def index(request):
         'page_image': 'img/og_image/index.png',
     })
 
+
+def docs(request, req_doc_path):
+    """
+        Gets a list of MD documents and their file structure from the docs_path directory and creates the docs nav
+        structure from it. Serves up a specific doc or the default docs entry page.
+    """
+    if not req_doc_path:
+        req_doc_path = "01_general/01_docs_intro"
+
+    # special case contexts
+
+    context = {
+        'email': settings.DEFAULT_FROM_EMAIL
+    }
+
+    if (req_doc_path == '01_general/02_about'):
+        contributors = get_data_from_lil_site(section="contributors")
+        sorted_contributors = {}
+        for contributor in contributors:
+            sorted_contributors[contributor['sort_name']] = contributor
+            if contributor['affiliated']:
+                sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
+        sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
+
+        context['contributors']= sorted_contributors
+        context['news']= get_data_from_lil_site(section="news")
+
+    try:
+        case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
+    except NotFoundError:
+        try:
+            case = CaseDocument.search().execute()[0]
+        except NotFoundError:
+            case = None
+    context['case'] = case
+
+    page = toc_from_path(request, req_doc_path, context)
+
+    if not page or 'content' not in page:
+        raise Http404
+
+    return render(request, 'docs.html', {
+        'content': page['content'],
+        'toc': page['.']['children'],
+        'page_image': 'img/og_image/documentation.png',
+        'req_doc_path': req_doc_path,
+        'breadcrumb': page['breadcrumb'],
+        'meta': page['meta']
+    })
 
 def contact(request):
     form = form_for_request(request, ContactForm)
@@ -92,6 +139,7 @@ def gallery(request):
         'page_image': 'img/og_image/gallery.png',
         'meta_description': 'Sky is the limit! Here are some examples of what’s possible.'
     })
+
 
 def gallery_section(request, section_slug):
     # historical redirect
@@ -139,70 +187,26 @@ def snippet(request, label):
     return HttpResponse(snippet, content_type=snippet.format)
 
 
-class MarkdownView(View):
-    """
-        Render template_name as markdown, and then pass 'main_content', 'sidebar_menu_items', and 'meta' to base_template_name
-        for display as HTML.
+def legacy_docs_redirect(request):
+    url_path = request.META['PATH_INFO'].lstrip('/').rstrip('/')
+    translation = {
+        "api": "02_api/01_api",
+        "about": "01_general/02_about",
+        "search-docs": "04_web/01_search",
+        "tools": "01_general/03_tools",
+        "trends-docs": "04_web/02_trends",
+        "bulk": "03_bulk/01_bulk_docs",
+        "terms": "01_general/06_terms-of-use",
+        "privacy": "01_general/05_privacy-policy",
+        "changelog": "01_general/04_changelog",
+        "action": "01_general/01_for_courts/01_index",
+        "action/guidelines": "01_general/01_for_courts/02_guidelines",
+        "action/case-study-nm": "01_general/01_for_courts",
+        "action/case-study-ark": "01_general/01_for_courts/03_case-study-ark",
+        "action/case-study-canada": "01_general/01_for_courts/04_case-study-canada",
+    }
 
-        IMPORTANT: As all outputs are marked safe, subclasses should never include user-generated input in the template context.
-    """
-    base_template_name = "markdown.html"
-    extra_context = {}
-    template_name = None
-
-    def get(self, request, *args, **kwargs):
-        context = {**self.extra_context, **self.get_context(request)}
-        # render any django template tags in markdown document
-        markdown_doc = render_to_string(self.template_name, context, request)
-
-        # render markdown document to html
-        html, toc, meta = render_markdown(markdown_doc)
-
-        # present markdown html within base_template_name
-        meta = {k:mark_safe(v) for k,v in meta.items()}
-        return render(request, self.base_template_name, {
-            'main_content': mark_safe(html),
-            'sidebar_menu_items': mark_safe(toc),
-            'main_content_style': 'markdown',
-            **context,
-            **meta,
-        })
-
-    def get_context(self, request):
-        return {}
-
-
-class ApiView(MarkdownView):
-    template_name = "api.md"
-
-    def get_context(self, request):
-        try:
-            case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
-        except NotFoundError:
-            try:
-                case = CaseDocument.search().execute()[0]
-            except NotFoundError:
-                case = None
-        return {"case": case}
-
-
-class AboutView(MarkdownView):
-    template_name = "about.md"
-
-    def get_context(self, request):
-        contributors = get_data_from_lil_site(section="contributors")
-        sorted_contributors = {}
-        for contributor in contributors:
-            sorted_contributors[contributor['sort_name']] = contributor
-            if contributor['affiliated']:
-                sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
-        sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
-
-        return {
-            "contributors": sorted_contributors,
-            "news": get_data_from_lil_site(section="news"),
-            "email": settings.DEFAULT_FROM_EMAIL
-        }
+    return redirect('docs', translation[url_path])
 
 
 def screenshot(request):

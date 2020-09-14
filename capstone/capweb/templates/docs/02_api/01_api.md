@@ -22,7 +22,7 @@ command line. For example, here is a curl command to request a single case from 
     curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"
 
 If you haven't used APIs before, you might want to check out our [search tool]({% url "search" %}) or jump down to our 
-[Beginner's Introduction to APIs](#beginners-introduction-to-apis).
+[Beginner's Introduction to APIs]({% url 'docs' '05_tutorials_and_guides/01_intro_to_APIs' %}#beginners-introduction-to-apis).
 
 {# ==============> REGISTER  <============== #}
 # Registration {: class="subtitle" }
@@ -31,7 +31,7 @@ Most API queries don't require registration: check our [access limits](#access-l
 {: class="highlighted" }
 
 [Click here to register for an API key]({% url "register" %}) if you need to access case text from 
-non-[whitelisted](#def-whitelisted) jurisdictions.
+non-[whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions.
 
 {# ==============> AUTHENTICATION <============== #}
 # Authentication {: class="subtitle" }
@@ -163,7 +163,7 @@ Queries by default return 100 results per page, but you may request a smaller or
   
     curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"
   
-We use [cursor](#def-cursor)-based pagination, meaning we keep track of where you are in the results set with a token, 
+We use [cursor]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-cursor)-based pagination, meaning we keep track of where you are in the results set with a token, 
 and you can access each page of results by returning the token included in the `"previous"` and `"next"` keys of the 
 response:
   
@@ -285,10 +285,10 @@ spaces.
   
 The agreement with our project partner, [Ravel](http://ravellaw.com), requires us to limit access to the full
 text of cases to no more than 500 cases per person, per day. This limitation does not apply to 
-[researchers](#def-researchers) who agree to certain restrictions on use and redistribution. Nor does this restriction 
-apply to cases issued in [jurisdictions](#def-jurisdiction) that make their newly issued cases freely 
+[researchers]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-researchers) who agree to certain restrictions on use and redistribution. Nor does this restriction 
+apply to cases issued in [jurisdictions]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-jurisdiction) that make their newly issued cases freely 
 available online in an authoritative, citable, machine-readable format. We call these 
-[whitelisted](#def-whitelisted) jurisdictions. Currently, Illinois, Arkansas, New Mexico, and North Carolina
+[whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions. Currently, Illinois, Arkansas, New Mexico, and North Carolina
 are the only whitelisted jurisdictions.
   
 We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal level,
@@ -310,9 +310,9 @@ Unregistered Users
 
 * Access all metadata
 {: class="list-group-item" add_list_class="parameter-list" }
-* Unlimited API access to all cases from [whitelisted](#def-whitelisted) jurisdictions
+* Unlimited API access to all cases from [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
-* Bulk Download all cases from [whitelisted](#def-whitelisted) jurisdictions
+* Bulk Download all cases from [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
 
 Registered Users
@@ -320,11 +320,11 @@ Registered Users
 
 * Access all metadata
 {: class="list-group-item" add_list_class="parameter-list" }
-* Unlimited API access to all cases from [whitelisted](#def-whitelisted) jurisdictions
+* Unlimited API access to all cases from [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
-* Access to 500 cases per day from non-[whitelisted](#def-whitelisted) jurisdictions
+* Access to 500 cases per day from non-[whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
-* Bulk Download all cases from [whitelisted](#def-whitelisted) jurisdictions
+* Bulk Download all cases from [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
 
 
@@ -440,8 +440,9 @@ API Base
 [{% api_url "api-root" %}]({% api_url "api-root" %})
 {: class="endpoint-link" style="margin-top: 0px;" }
 
-This is the base [endpoint](#def-endpoint) of CAPAPI. It just lists all of the available 
-[endpoints](#def-endpoint).
+This is the base [endpoint]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-endpoint) of 
+CAPAPI. It just lists all of the available 
+[endpoints]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-endpoint).
 
 
 {# ==============> CASES <============== #}
@@ -452,7 +453,7 @@ Case Browse/Search Endpoint
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the numeric ID of your 
-case in our system, you can append it to the [path](#def-path) to retrieve a [single case](#endpoint-case).
+case in our system, you can append it to the [path]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-path) to retrieve a [single case](#endpoint-case).
 
 Endpoint Parameters:
 {: class="list-header mb-2" }
@@ -474,7 +475,7 @@ Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`
     * __data type:__    string or integer
     * __description:__  find cases that cite to the given citation or case ID, e.g. `1 Ill. 21` or `12345`
 * `court`
-    * __data type:__    [slug](#def-slug)
+    * __data type:__    [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
     * __description:__  [court](#endpoint-courts) slug
 * `court_id`
     * __data type:__    integer
@@ -494,7 +495,7 @@ Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`
 * `id` 
     * __data type:__    integer
 * `jurisdiction`
-    * __data type:__    [slug](#def-slug)
+    * __data type:__    [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
     * __description:__  [jurisdiction](#endpoint-jurisdictions) slug
 * `last_updated`
     * __data type:__    `YYYY-MM-DDTHH:MM:SS` or a substring
@@ -593,10 +594,10 @@ Endpoint Parameters:
     * __description:__  the short jurisdiction name, e.g. Ill.
 * `whitelisted`
     * __data type:__    "true" or "false"
-    * __description:__  filter for [whitelisted](#def-whitelisted) jurisdictions
+    * __description:__  filter for [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
 * `slug`
     * __data type:__    string
-    * __description:__  filter on the jurisdiction [slug](#def-slug)
+    * __description:__  filter on the jurisdiction [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
 * `cursor`
     * __data type:__    string
     * __description:__  A value provided by a previous search result to go to the next page of results
@@ -622,13 +623,13 @@ Endpoint Parameters:
     * __description:__  the short jurisdiction name, e.g. Ill. App. Ct.
 * `whitelisted`
     * __data type:__    "true" or "false"
-    * __description:__  filter for [whitelisted](#def-whitelisted) jurisdictions
+    * __description:__  filter for [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
 * `jurisdiction`
     * __data type:__    string
-    * __description:__  filter on the jurisdiction [slug](#def-slug)
+    * __description:__  filter on the jurisdiction [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
 * `slug`
     * __data type:__    string
-    * __description:__  filter on the court [slug](#def-slug)
+    * __description:__  filter on the court [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
 * `cursor`
     * __data type:__    string
     * __description:__  A value provided by a previous search result to go to the next page of results
@@ -677,7 +678,7 @@ Endpoint Parameters:
     * __description:__  Up to 3 space separated words. All words beyond the third are ignored.
 * `jurisdiction`
     * __data type:__    string
-    * __description:__  [Jurisdiction](#endpoint-jurisdiction) [slug](#def-slug): e.g. `tex` or `mass`.
+    * __description:__  [Jurisdiction](#endpoint-jurisdiction) [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug): e.g. `tex` or `mass`.
         Limit your results to a specific jurisdiction.
 * `year`
     * __data type:__    YYYY
@@ -709,7 +710,7 @@ Here's the output when
         }
     } 
     
-Under `results` is an object containing the results for the query term `raisins`. Each jurisdiction's [slug](#def-slug) 
+Under `results` is an object containing the results for the query term `raisins`. Each jurisdiction's [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug) 
 is a key in the `raisins` object. Only `cal` is listed because the jurisdiction parameter in the query is set to `cal`. 
 Under `cal`, there is an array of objects, each containing the counts for a specific year. Since this query filters for 
 results from 1984, that's the only year listed. Under `count`, there's `40, 4589927`, meaning *4,589,927* terms were 
@@ -733,96 +734,6 @@ Endpoint Parameters:
     * __data type:__    string
     * __description:__  A value provided by a previous search result to go to the next page of results
 
-{# ==============> BEGINNERS <============== #}
-# Beginner's Introduction to APIs  {: class="subtitle" data-toc-label='Intro to APIs' }
-  
-Are you a little lost in all the technical jargon, but still want to give the API a shot? This is a good place to start!
-This is by no means a complete introduction to using [APIs](#def-api), but it might be just enough to help situate a 
-technically inclined person who's a bit outside of their comfort zone. If you've had enough and would prefer to just 
-access the cases using a human-centric interface, please check out our [search tool]({% url 'search' %}). 
-  
-Fundamentally, an API is no different from a regular website: A program on your computer, such as a web browser or 
-[curl](#def-curl) sends a bit of data to a [server](#def-server), the server processes that data, and then sends a 
-response. If you know how to read a [url](#def-url), you can interact with web-based services in ways that aren't 
-limited to clicking on the links and buttons on the screen. 
-  
-Consider the following [url](#def-url), which will 
-[perform a google search for the word "CAP."](https://www.google.com/search?q=CAP")
-  
-    https://www.google.com/search?q=CAP
-  
-Let's break it down into its individual parts:
-  
-    https://
-  
-This first part tells your web browser which protocol to use: this isn't very important for our purposes, so we'll 
-ignore it.
-  
-    www.google.com
-  
-The next part is a list of words, separated by periods, between the initial double-slash, and before the subsequent 
-single slash. Many people generically refer to this as the domain, which is only partly true, but the reason why that's 
-not entirely true isn't really important for our purposes; the important consideration here is that it points to a 
-specific [server](#def-server), which is just another computer on the internet. 
-
-    /search
-  
-The next section, which is comprised of everything between the slash after the server name and the question mark, is 
-called the [path](#def-path). It's called a path because, in the earlier days of the web, it was a 'path' through 
-folders/directories to find a specific file on the web server. These days, it's more likely that the path will point 
-to a specific [endpoint](#def-endpoint).
-  
-  
-You can think of an endpoint as a distinct part of a program, which could require specific inputs, and/or provide 
-different results. For example, the "login" endpoint on a website might accept a valid username and a password for 
-input, and return a message that you've successfully logged in. A "register" endpoint might accept various bits of 
-identifying information, and return a screen that says your account was successfully registered.
-  
-  
-Though there is only one part of this particular path, `search`, developers usually organize paths into hierarchical 
-lists separated by slashes. Hypothetically, if the developers at Google decided that one generalized search endpoint 
-wasn't sufficiently serving people who wanted to search for books or locations, they could implement more specific 
-endpoints such as `/search/books` and `/search/locations`.
-  
-    ?q=CAP
-  
-The final section of the URL is where you'll find the [parameters](#def-parameter), and is comprised of everything 
-after the question mark. Parameters are a way of passing individual, labelled pieces of information to the endpoint to 
-help it perform its job. In this case, the parameter tells the `/search` endpoint what to search for. Without this 
-parameter, the response wouldn't be particularly useful.
-  
-A URL can contain many parameters, separated by ampersands, but in this instance, there is only one parameter: the 
-rather cryptically named "q," which is short for "query," which has a value of "CAP." Parameter names are arbitrary— 
-Google's developers could just as easily have set the parameter name to `?query=CAP`, but decided that "q" would 
-sufficiently communicate its purpose. 
-  
-The Google developers designed their web search endpoint to accept other parameters, too. For example, there is an even 
-more cryptically named parameter, 'tbs' which will limit the age of the documents returned in the search results. The 
-parameters `?q=CAP&tbs=qdr:y` will perform a web search for "CAP" and limit the results to documents less than a year 
-old. 
-  
-So when you're working with CAPAPI, the same principles apply. Rather than http://www.google.com, you'll be using 
-{% api_url "api-root" %}. Rather than using the /search?q= endpoint and parameter, you'll be using one of our 
-[endpoints](#endpoints) and the parameters we've defined. Would you like to see how this works in a real application? 
-Head over to our [search tool]({% url 'search' %}), click on the 'SHOW API CALL' link below the search button and 
-construct a query. The URL box below the search form will update as you change your search terms. You can hover over 
-each field in the URL to highlight its counterpart in the search form, or hover over each input box in the search form 
-to highlight its counterpart in the URL. When you've constructed the query, click on the API URL to head over to the 
-API, or click on the search button to use our search feature.
-  
-When you perform a query in a web browser using our API, there are some links and buttons, but the data itself is in a 
-text-based format with lots of brackets and commas. This format is called JSON, or JavaScript Object Notation. We use 
-this format because software developers can easily utilize data in that format in their own programs. We do intend to 
-have a more user-friendly case browser at some point soon, but we're not quite there yet. 
-  
-OK! That about does it for our beginner's introduction to web-based APIs. Please check out our 
-[usage examples](#usage-examples") section to see some of the ways you can put these principles to work in CAPAPI. If you have 
-any suggestions for making this documentation better, we'd appreciate your taking the time to let us know in an issue 
-report in [our repository on github.com](https://github.com/harvard-lil/capstone/issues). 
-  
-Thanks, and good luck!
-  
-
 {# ==============> PROBLEMS <============== #}
 # Reporting Problems and Enhancement Requests {: class="subtitle" data-toc-label='Report Issues' }
   
@@ -838,7 +749,7 @@ small team could ever hope to. Here's the best way to report common types of err
 Jumbled or Misspelled Words in Case Text:
 {: class="list-header mb-1" }
 
-For now, we're not accepting bug reports for [OCR](#def-ocr) problems. While our data is good quality for OCR'd text, we
+For now, we're not accepting bug reports for [OCR]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-ocr) problems. While our data is good quality for OCR'd text, we
 fully expect these errors in every case.  We're working on the best way to tackle this.
 {: class="mt-0" }
 
@@ -865,153 +776,6 @@ get back to you as soon as we can.
 {: class="mt-1" }
 
 
-{# ==============> GLOSSARY <============== #}
-# Glossary  {: class="subtitle" }
-  
-This is a list of technical or project-specific terms we use in this documentation. These are stub definitions to help 
-you get unstuck, but they should not be considered authoritative or complete. A quick Google search should provide more 
-context for any of these terms.
-
-* API
-{: class="list-header mb-0" id="def-api" }
-* API is an acronym for Application Programming Interface. Broadly, it is a way for one computer program to transfer 
-data to another computer program. CAPAPI is a [RESTful](#def-restful) API designed to distribute court case data.
-{: class="mt-1" }
-
-
-* Character
-{: class="list-header mb-0" id="def-character" }
-* A letter, number, space, or piece of punctuation. Multiple characters together make up a [string](#def-string).
-{: class="mt-1" }
-  
-  
-* Special Character
-{: class="list-header mb-0" id="def-special-character" }
-* Special characters are characters that have programmatic significance to a program. The "specialness" of any given 
-character is determined by the context in which it's used. For example, you can't add a bare question mark to your path 
-because they indicate to the server that everything after them is a [parameter](#def-parameter).
-{: class="mt-1" }
-
-
-* Command Line
-{: class="list-header mb-0" id="def-command-line" }
-* This is the textual interface for interacting with a computer. Rather than interacting with the system through windows
- and mouse clicks, commands are typed and output is rendered in its textual form. On mac, the default Command Line 
- program is Terminal. On Windows, the program is cmd.exe.
-{: class="mt-1" }
-
-
-* curl
-{: class="list-header mb-0" id="def-curl" }
-* [curl](https://curl.haxx.se/) is a simple [command line](#def-command-line) tool for retrieving data over the 
-internet. It's similar to a web browser in that it will retrieve the contents of a [url](#def-url), but it will dump the
- text contents to a terminal, rather than show a rendered version in a graphical browser window.
-{: class="mt-1" }
-  
-  
-* Endpoint
-{: class="list-header mb-0" id="def-endpoint" }
-* You can think of an endpoint as a distinct part of a program, which could require specific inputs, and/or provide 
-different results. For example, the "login" endpoint on a website might accept a valid username and a password for 
-input, and return a message that you've successfully logged in. A "register" endpoint might accept various bits of 
-identifying information, and return a screen that says your account was successfully registered.
-{: class="mt-1" }
-  
-
-* Jurisdiction
-{: class="list-header mb-0" id="def-jurisdiction" }
-* The jurisdiction of a case or volume is the political division it belongs to, such as the United States, a state, a 
-territory, a tribe, or the District of Columbia. Volumes that collect cases from a region have the jurisdiction 
-"Regional." Cases from tribal courts (other than Navajo Nation) temporarily have the jurisdiction "Tribal Jurisdictions"
-while we verify the correct jurisdiction for each tribal court.
-{: class="mt-1" }
-
-
-* OCR
-{: class="list-header mb-0" id="def-ocr" }
-* OCR is a process in which a computer attempts to create text from an image of text. The text in our cases is 
-OCR-derived using scanned case reporter pages as source images.
-{: class="mt-1" }
-
-
-* RESTful
-{: class="list-header mb-0" id="def-restful" }
-* A RESTful [API](#def-api) is based on [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol), and makes use
-of its built-in verbs(commands), such as GET and POST.
-{: class="mt-1" }
-
-
-* Reporter
-{: class="list-header mb-0" id="def-reporter" }
-* In this project, we use the term 'reporter' to refer to a reporter series. We'd consider F2d. a reporter.
-{: class="mt-1" }
-
-
-* Server
-{: class="list-header mb-0" id="def-server" }
-* A server is just a computer on the internet that was configured to respond to requests from other computers. A web 
-server will respond to requests from a web browser. An email server will respond to requests from email programs, and or
-other email servers which are sending it messages.
-{: class="mt-1" }
-
-
-* Slug
-{: class="list-header mb-0" id="def-slug" }
-* A [string](#def-string) with [special characters](#def-special-character) removed for ease of inclusion in a 
-[url](#def-url).
-{: class="mt-1" }
-
-
-* String
-{: class="list-header mb-0" id="def-string" }
-* A string, as a type of data, just means an arbitrary list (or string) of [characters](#def-character). A word is a 
-string. This whole sentence is a string. "h3ll0.!" is a string. This whole document is a string.
-{: class="mt-1" }
-
-
-* Top-Level Domain
-{: class="list-header mb-0" id="def-tld" }
-* The suffix to a domain name, such as `.com`, `.edu` or `.co.uk`.
-{: class="mt-1" }
-
-
-* URL
-{: class="list-header mb-0" id="def-url" }
-* A URL, or Uniform Resource Locator, is an internet address that generally contains a communication protocol, a server 
-name, a path to a file or endpoint, and possibly parameters to pass to the endpoint.
-{: class="mt-1" }
-
-
-* URL Parameter
-{: class="list-header mb-0" id="def-parameter" }
-* For our purposes, a parameter is just a piece of data with a label that can be passed to an [endpoint](#def-endpoint) 
-in a web request.
-{: class="mt-1" }
-
-
-* URL Path
-{: class="list-header mb-0" id="def-path" }
-* The URL path begins with the slash after the [top-level domain](#def-tld) and ends with the question mark that signals
- the beginning of the [parameters](#def-parameter). It was originally intended to point to a file on the server's hard 
- drive, but these days it's just as likely to point to an application [endpoint](#def-endpoint).
-{: class="mt-1" }
-
-
-* Whitelisted
-{: class="list-header mb-0" id="def-whitelisted" }
-* While most cases in the database are subject to a 500 case per day access limit, jurisdictions that publish their 
-cases in a citable, machine-readable format are not subject to this limit. 
-For more information on access limits, what type of users aren't subject to them, and how you can eliminate them in your
-legal jurisdiction, visit our [access limits](#access-limits) section.
-{: class="mt-1" }
-
-
-* Cursor
-{: class="list-header mb-0" id="def-cursor" }
-* This property, populated with a random alphanumeric value, is present in all endpoints. It represents a specific page 
-of results for a query. You can get the value of the cursor for the next and previous pages from the cursor parameter in
-the urls in the `next` and `previous` fields.
-{: class="mt-1" }
 
 
 {# ==============> CHANGES AND STABILITY <============== #}
