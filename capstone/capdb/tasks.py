@@ -70,10 +70,9 @@ def remove_id_number_in_volume(self, volume_id):
     # patterns to replace
     regexes = [
         # a-number
-        r'\bA *[-—] *\d{8,9}\b',
-        r'\bA\d{8,9}\b',
+        r'\bA(?:[ \-—]*\d){8,9}\b',
         # ssn
-        r'\b\d{3} *[-—] *\d{2} *[-—] *\d{4}\b',
+        r'\b\d{3} *[\-—] *\d{2} *[\-—] *\d{4}\b',
         r'\b\d{3} +\d{2} +\d{4}\b',
     ]
 

@@ -89,11 +89,9 @@ INVALID_REPORTERS = set(ascii_lowercase) | {'at', 'or', 'p.', 'c.', 'B'}
 TRANSLATIONS = {'la.': 'Ia.', 'Yt.': 'Vt.', 'Pae.': 'Pac.'}
 
 
-def extract_citations(case):
-    misses = defaultdict(lambda: defaultdict(int))
-    case_citations = []
-    case_year = case.decision_date.year
-    for match in set(re.findall(cite_extracting_regex, case.body_cache.text)):
+def extract_citations_from_text(text, max_year=9999, misses=None):
+    # use dict.fromkeys to remove dupes while preserving order
+    for match in dict.fromkeys(re.findall(cite_extracting_regex, text)):
         vol_num, reporter_str, page_num = match
 
         # fix known OCR errors
@@ -102,7 +100,8 @@ def extract_citations(case):
 
         # skip strings like 'or' that are known non-citations
         if reporter_str in INVALID_REPORTERS:
-            misses['blocked'][reporter_str] += 1
+            if misses is not None:
+                misses['blocked'][reporter_str] += 1
             continue
 
         # Look for found reporter string in the official and nominative REPORTER dicts
@@ -110,25 +109,35 @@ def extract_citations(case):
         candidates = EDITIONS.get(reporter_str) or EDITIONS.get(normalize_cite(reporter_str))
         if not candidates:
             # reporter not found, removing cite and adding to misses list
-            misses['not_found'][reporter_str] += 1
+            if misses is not None:
+                misses['not_found'][reporter_str] += 1
             continue
 
         # Find a candidate reporter that was in operation prior to this case being published.
         # Reporters are sorted by end date, so this will prefer newer reporters.
-        best_candidate = next((c for c in candidates if c['start_year'] <= case_year), None)
+        best_candidate = next((c for c in candidates if c['start_year'] <= max_year), None)
         if not best_candidate:
-            misses['invalid_date'][reporter_str] += 1
+            if misses is not None:
+                misses['invalid_date'][reporter_str] += 1
             continue
 
         cite = " ".join(match)
         normalized_cite = "%s %s %s" % (vol_num, best_candidate['reporter'], page_num)
 
-        case_citations.append(ExtractedCitation(
+        yield cite, normalized_cite, vol_num, reporter_str, page_num
+
+
+def extract_citations(case):
+    misses = defaultdict(lambda: defaultdict(int))
+    case_citations = [
+        ExtractedCitation(
             cite=cite,
             normalized_cite=normalize_cite(normalized_cite),
             cited_by=case,
             reporter_name_original=reporter_str,
             volume_number_original=vol_num,
-            page_number_original=page_num))
-
+            page_number_original=page_num)
+        for cite, normalized_cite, vol_num, reporter_str, page_num in
+        extract_citations_from_text(case.body_cache.text, case.decision_date.year, misses)
+    ]
     return case_citations, misses

@@ -40,6 +40,7 @@ from scripts.process_metadata import get_case_metadata, parse_decision_date
 from elasticsearch.helpers import BulkIndexError
 
 from scripts.render_case import iter_pars
+from scripts.simhash import get_simhash
 
 
 def choices(*args):
@@ -1007,12 +1008,17 @@ class CaseMetadata(models.Model):
             models.Index(name='idx_robots_txt_until', fields=('robots_txt_until',),
                          condition=~Q(robots_txt_until=None)),
         ]
+        permissions = [
+            ("correct_ocr", "Can use OCR editor"),
+        ]
 
     def save(self, *args, **kwargs):
         if self.tracker.has_changed('decision_date_original'):
             self.decision_date = parse_decision_date(self.decision_date_original)
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
+        if self.tracker.has_changed('no_index_redacted'):
+            self.sync_case_body_cache()
         super().save(*args, **kwargs)
 
     def full_cite(self):
@@ -1195,6 +1201,7 @@ class CaseMetadata(models.Model):
         changed = False
         for k in ['text', 'html', 'xml', 'json']:
             new_val = locals()[k]
+            new_val = self.redact_obj(new_val)
             old_val = getattr(body_cache, k)
             if new_val != old_val:
                 setattr(body_cache, k, new_val)
@@ -1212,10 +1219,16 @@ class CaseMetadata(models.Model):
             Return CaseAnalysis objects.
             ocr_confidence will be skipped if blocks_by_id is None.
         """
+        from scripts.tokenizer import tokenize  # local import to avoid loading nltk if not needed
+
         text = self.body_cache.text
+        words = list(tokenize(text))
         analyses = [
             CaseAnalysis(case=self, key='char_count', value=len(text)),
-            CaseAnalysis(case=self, key='word_count', value=sum(1 for _ in re.finditer(r'\s+', text)) + 1),
+            CaseAnalysis(case=self, key='word_count', value=len(words)),
+            CaseAnalysis(case=self, key='cardinality', value=len(set(words))),
+            CaseAnalysis(case=self, key='simhash', value=get_simhash(text)),
+            CaseAnalysis(case=self, key='sha256', value=hashlib.sha256(text.encode('utf8')).hexdigest()),
         ]
         confidence = None
         if self.human_corrected:
@@ -1420,14 +1433,16 @@ class CaseMetadata(models.Model):
     def redact_obj(self, text):
         if not self.no_index_redacted:
             return text
-        return apply_replacements(text, self.no_index_redacted)
+        replacements = sorted(self.no_index_redacted.items(), reverse=True, key=lambda i: len(i[0]))
+        return apply_replacements(text, replacements)
 
     def elide_obj(self, text):
         text = self.redact_obj(text)
         if not self.no_index_elided:
             return text
         elision_span = "<span class='elided-text' role='button' tabindex='0' data-hidden-text='%s'>%s</span>"
-        return mark_safe(apply_replacements(text, {k: elision_span % (k, v) for k, v in self.no_index_elided.items()}, "", ""))
+        replacements = sorted(self.no_index_elided.items(), reverse=True, key=lambda i: len(i[0]))
+        return mark_safe(apply_replacements(text, [(k, elision_span % (k, v)) for k, v in replacements], "", ""))
 
     def extract_citations(self):
         # avoid this import until needed, to avoid loading reporters db

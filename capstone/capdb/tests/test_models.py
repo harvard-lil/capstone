@@ -171,6 +171,15 @@ def test_withdraw_case(case_factory):
     assert 'This case was withdrawn and replaced' in withdrawn.body_cache.html
     assert 'This case was withdrawn and replaced' in withdrawn.body_cache.xml
 
+
+@pytest.mark.django_db
+def test_redact_case(case_factory):
+    case = case_factory(body_cache__text="foo bar baz boo")
+    case.no_index_redacted = {"Case text": "bar", "Case text 0": "foo"}
+    case.save()
+    assert case.body_cache.text.replace('\n', '') == '[ foo ][ bar ] 1[ bar ] 2[ bar ] 3'
+
+
 @pytest.mark.django_db
 def test_update_frontend_urls(case_factory, django_assert_num_queries):
     case1 = case_factory(citations__cite="123 Test 456", volume__volume_number="123", citations__type="official")

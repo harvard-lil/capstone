@@ -50,7 +50,7 @@ class CaseDocument(DocType):
     decision_date_original = fields.KeywordField()
     docket_numbers = fields.TextField(multi=True)
     docket_number = fields.TextField()
-    last_updated = fields.DateField()
+    last_updated = fields.KeywordField()
 
     volume = fields.ObjectField(properties={
         "barcode": fields.KeywordField(),
@@ -110,7 +110,10 @@ class CaseDocument(DocType):
         }),
     })
 
-    analysis = fields.ObjectField()
+    analysis = fields.ObjectField(properties={
+        'sha256': fields.KeywordField(),
+        'simhash': fields.KeywordField(),
+    })
 
     def prepare_frontend_pdf_url(self, instance):
         return instance.get_pdf_url(with_host=False)

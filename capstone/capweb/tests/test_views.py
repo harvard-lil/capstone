@@ -80,3 +80,19 @@ def test_download_area(client, auth_client, unlimited_auth_client, tmp_path, mon
         response = c.get(reverse('download-files', args=[p1]))
         check_response(response, status_code=302)
         assert response.url == reverse('download-files', args=[p2])
+
+
+@pytest.mark.django_db
+def test_fetch(client, three_cases):
+    cites = [c.citations.first() for c in three_cases]
+    text = f"""
+{cites[0].cite}
+{"A"*50} {cites[1].cite} {"A"*50}
+123 {cites[2].cite} 123
+    """
+    response = client.post(reverse('fetch'), {'q': text})
+    check_response(response, content_includes=[
+        cites[0].cite, three_cases[0].full_cite(),
+        f'... {"A"*39}', cites[1].cite, three_cases[1].full_cite(), f'{"A"*29} ...',
+        '    123', cites[2].cite, three_cases[2].full_cite(), ' 123\n',
+    ])

@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import SuspiciousOperation
 from django.forms import model_to_dict
 from django.urls import NoReverseMatch
@@ -156,7 +157,7 @@ def case_pdf(request, case_id, pdf_name):
     return citation(request,None, None, None, case_id, pdf=True, db_case=case)
 
 
-@staff_member_required
+@permission_required('capdb.correct_ocr')
 def page_image(request, volume_id, sequence_number):
     """
         Return the image for a page to authorized users.
@@ -165,7 +166,7 @@ def page_image(request, volume_id, sequence_number):
     return HttpResponse(vol.extract_page_image(int(sequence_number), zoom_level=2.0), content_type="image/png")
 
 
-@staff_member_required
+@permission_required('capdb.correct_ocr')
 @ensure_csrf_cookie
 def case_editor(request, case_id):
     case = get_object_or_404(CaseMetadata.objects.select_related('volume', 'reporter', 'structure'), pk=case_id)
@@ -384,7 +385,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         'full_citation': db_case.full_cite(),
         'citations': ", ".join(c.cite for c in Citation.sorted_by_type(db_case.citations.all())),
         'formatted_name': formatted_name,
-        'analysis': json.dumps(serialized_data['analysis']._d_),
+        'analysis': json.dumps({k: v for k, v in serialized_data['analysis']._d_.items() if k in ['word_count', 'char_count', 'ocr_confidence', 'pagerank']}),
     })
 
 

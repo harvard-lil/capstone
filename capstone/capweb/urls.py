@@ -17,6 +17,7 @@ urlpatterns = [
     path('search/', views.search, name='search'),
     path('trends/', views.trends, name='trends'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots'),
+    path('fetch/', views.fetch, name='fetch'),
 
     path('view/court/<int:court_id>/', views.view_court, name='view_court'),
     path('view/reporter/<int:reporter_id>/', views.view_reporter, name='view_reporter'),

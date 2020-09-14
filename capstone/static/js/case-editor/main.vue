@@ -1,110 +1,60 @@
 <template>
-  <div id="edit-app">
+  <div id="edit-app" :class="{darkMode}">
     <div class="row p-2">
       <div class="col-6">
         <h1><a :href="urls.case">{{templateVars.citation_full}}</a></h1>
       </div>
       <div class="col-6 text-right viz-controls">
-        <button @click="showOcr=!showOcr" :class="{'toggle-btn': true, 'on': showOcr}">(^O)CR</button>
-        <button @click="showConfidence=!showConfidence" :class="{'toggle-btn': true, 'on': showConfidence}">W(^C)</button>
-        <button @click="toggleInstructions" class="toggle-btn off">help</button>
-        <button class="btn-primary mr-1 mb-1 ml-3" @click="saveCase($event)">(^s)ave case to DB</button>
+        <button @click="darkMode=!darkMode" :class="{'toggle-btn': true, 'on': darkMode}">dark</button>
+        <button @click="showImage=!showImage" :class="{'toggle-btn': true, 'on': showImage}">img</button>
+        <button @click="$store.commit('toggleOcr')" :class="{'toggle-btn': true, 'on': showOcr}">OCR</button>
+        <button @click="$store.commit('toggleConfidence')" :class="{'toggle-btn': true, 'on': showConfidence}">WC</button>
+        <button @click="toggleInstructions()" class="toggle-btn off">help</button>
+        <button class="btn-primary mr-1 mb-1 ml-3" v-b-modal.save-modal>save case to DB</button>
         <button class="btn-secondary" @click="clearEdits">Clear All Edits</button>
-        <span aria-live="polite"><span v-if="saveStatus" class="ml-1"><br>{{saveStatus}}</span></span>
       </div>
     </div>
+    <b-modal id="save-modal" title="Save Changes" @ok="saveCase">
+      <p>Permanently replace this case in the CAP database with your edited version?</p>
+      <p>There is no undo for this command.</p>
+      <form ref="saveForm" @submit.stop.prevent="saveCase">
+        <b-form-group
+          :state="saveFormValid"
+          label="Description of your changes:"
+          label-for="save-form-message"
+          invalid-feedback="Description is required"
+        >
+          <b-form-input
+            id="save-form-message"
+            v-model="saveFormMessage"
+            :state="saveFormValid"
+            required
+            autofocus
+          ></b-form-input>
+        </b-form-group>
+        <span aria-live="polite">{{saveStatus}}</span>
+      </form>
+    </b-modal>
     <div class="tools-row row">
       <div class="scrollable col-4">
-        <h4 class="section-title">current word</h4>
-        <div :style="currentWordStyle()"></div>
-        <div class="row">
-          <div class="col-10">
-            <input type="text" id="current_word" :value="currentWord ? currentWord.string : ''" placeholder="current word" ref="currentWord" @input="wordEdited($event.target.value)">
-          </div>
-          <div class="col-2"><button @click="addSoftHyphen()" :disabled="currentWord === null">⧟</button></div>
-        </div>
+        <EditPanel></EditPanel>
       </div>
       <div class="scrollable col-4 edits-container">
-        <h4 class="section-title">edits</h4>
-        <div class="edited-word-list mt-3">
-          <div class="row edit-entry" v-for="word in editedWords" :key="word.id">
-            <div class="col-5 word" @click="wordClicked(word)">{{word.originalString}}</div>
-            <div class="col-6 word" @click="wordClicked(word)">{{word.string}}</div>
-            <div class="col-1 edit-controls"><span class="edit-delete" @click="removeEdit(word.id)">&#8855;</span></div>
-          </div>
-        </div>
+        <EditListPanel></EditListPanel>
       </div>
       <div class="scrollable col-4">
-        <h4 class="section-title">case metadata</h4>
-        <div class="row">
-          <label class="col-8 m-0" for="metadata-human-corrected">Human Corrected</label>
-          <input class="col-4" type="checkbox" v-model="metadata.human_corrected" id="metadata-human-corrected">
-          <small class="form-text text-muted">Set "Human Corrected" if this case has been fully corrected and is essentially error-free.</small>
-          <label class="col-4" for="metadata-name-abbreviation">Short Name</label>
-          <input class="col-8" type="text" v-model="metadata.name_abbreviation" placeholder="case short name" id="metadata-name-abbreviation">
-          <label class="col-4" for="metadata-name">Long Name</label>
-          <input class="col-8" type="text" v-model="metadata.name" placeholder="case name" id="metadata-name">
-          <label class="col-4" for="metadata-decision-date-original">Decision Date (YYYY-MM-DD)</label>
-          <input class="col-8" type="text" v-model="metadata.decision_date_original" placeholder="decision date" id="metadata-decision-date-original">
-          <label class="col-4" for="metadata-docket-number">Docket Number</label>
-          <input class="col-8" type="text" v-model="metadata.docket_number" placeholder="docket number" id="metadata-docket-number">
-        </div>
+        <MetadataPanel></MetadataPanel>
       </div>
     </div>
     <div class="row" style="flex: 1 1 auto; overflow-y: auto;">
-      <div id="textView" class="scrollable col-6">
-        <div v-for="opinion in opinions" class="opinion">
-          <h4 class="section-title">opinion: {{opinion.type}}</h4>
-          <div v-for="paragraph in opinion.paragraphs" :key="paragraph.id" class="paragraph">
-            <span class="paragraph-class">{{paragraph.class}}</span>
-            <template v-for="block in paragraphBlocks(paragraph)"><span
-              v-if="mounted"
-              v-for="word in block.words"
-              :key="word.id"
-              :style="wordTextStyle(word)"
-              @click="wordClicked(word)"
-              :ref="`wordText${word.id}`"
-              :class="wordClass(word)"
-            >{{word.stringWithoutSoftHyphens}}</span></template>
-          </div>
-
-          <div v-for="footnote in opinion.footnotes" :key="footnote.id">
-            <span>{{footnote.label}}</span>
-
-            <!-- THIS IS NOT DRY YET -- REPEAT OF ABOVE -->
-            <div v-for="paragraph in opinion.paragraphs" :key="paragraph.id">
-              <span>{{paragraph.class}}</span>
-              <template v-for="block in paragraphBlocks(paragraph)"><span
-                v-if="mounted"
-                v-for="word in block.words"
-                :key="word.id"
-                :style="wordTextStyle(word)"
-                @click="wordClicked(word)"
-                :ref="`wordText${word.id}`"
-                :class="wordClass(word)"
-              >{{word.stringWithoutSoftHyphens}}</span></template>
-            </div>
-            <!-- END THING TO DRY -->
-          </div>
-
-        </div>
+      <div id="caseTextPanel" :class="{scrollable: true, 'col-6':showImage, 'col-12':!showImage, casePanel: true}">
+        <CaseTextPanel :opinions="opinions"></CaseTextPanel>
       </div>
-      <div id="imageView" class="scrollable col-6" ref="pageImageContainer">
-        <div v-for="page in pages" :key="page.id" ref="pageImages" :class="{page: true, 'show-ocr': showOcr}">
-          <img :src="page.image_url" :width="page.width * page.scale" :height="page.height * page.scale">
-          <span v-if="mounted"
-                v-for="word in page.words"
-                :key="word.id"
-                :style="wordImageStyle(page, word)"
-                @click="wordClicked(word)"
-                :ref="`wordImage${word.id}`"
-                :class="wordClass(word)">
-            {{word.string}}
-          </span>
-        </div>
+      <div v-if="showImage" id="caseImagePanel" class="scrollable col-6 casePanel" ref="pageImageContainer">
+        <CaseImagePanel :pages="pages"></CaseImagePanel>
       </div>
     </div>
-    <div class="pt-6" id="instructions_modal_overlay" style="display: none">
+    <div v-if="showInstructions" class="pt-6" id="instructions_modal_overlay">
       <div class="col-8 offset-2 p-5" id="instructions_modal">
         <div id="modal_close" @click="toggleInstructions">&#8855;</div>
         <div class="row pt-3">
@@ -141,21 +91,27 @@
   import $ from "jquery";
   import '../jquery_django_csrf';
   import debounce from "lodash.debounce";
-  import scrollIntoView from 'scroll-into-view-if-needed';
+  import { mapState } from 'vuex'
 
+  import EditPanel from './edit-panel.vue'
+  import EditListPanel from './edit-list-panel.vue'
+  import CaseTextPanel from './case-text-panel.vue'
+  import CaseImagePanel from './case-image-panel.vue'
+  import MetadataPanel from './metadata-panel.vue'
   import {FAKE_SOFT_HYPHEN, SOFT_HYPHEN} from "./helpers";
 
   export default {
+    components: {EditPanel, EditListPanel, CaseTextPanel, CaseImagePanel, MetadataPanel},
+    computed: mapState(['showConfidence', 'showOcr', 'metadata', 'editedWords']),
     data() {
       return {
         pages: null,
-        metadata: null,
-        currentWord: null,
-        showOcr: false,
-        showConfidence: false,
-        editedWords: {},
         saveStatus: null,
-        mounted: false,
+        saveFormValid: null,
+        saveFormMessage: '',
+        showInstructions: false,
+        showImage: true,
+        darkMode: false,
       }
     },
     watch: {
@@ -179,8 +135,8 @@
       this.opinions = this.templateVars.opinions;
 
       // preprocess metadata
-      this.metadata = this.templateVars.metadata;
-      this.serverMetadata = {...this.metadata};
+      this.serverMetadata = this.templateVars.metadata;
+      this.$store.commit('setMetadata', {...this.serverMetadata})
 
       // preprocess pages
       this.pages = this.templateVars.pages;
@@ -197,7 +153,7 @@
       this.charAscentCache = {};
 
       // load state from localStorage
-      this.storageKey = `caseedit-${this.metadata.id}`;
+      this.storageKey = `caseedit-${this.serverMetadata.id}`;
       const savedStateJson = localStorage.getItem(this.storageKey);
       this.savedWordEdits = {};
       if (savedStateJson) {
@@ -210,8 +166,8 @@
           // apply saved updates to metadata, if server val still matches old val
           if (Object.keys(savedState.metadata).length > 0) {
             for (const [k, [oldVal, newVal]] of Object.entries(savedState.metadata)) {
-              if (this.metadata[k] === oldVal)
-                this.metadata[k] = newVal;
+              if (this.serverMetadata[k] === oldVal)
+                this.$store.commit('updateField', {path: `metadata.${k}`, value: newVal});
             }
           }
         } catch(e) {
@@ -223,85 +179,28 @@
       this.extractWords();  // depends on saved state
     },
     mounted: function () {
-      document.addEventListener('keyup', (e)=>{
-        if (e.ctrlKey) {
-          switch(e.key) {
-            case "o":
-                this.showOcr = !this.showOcr;
-              break;
-            case "c":
-              this.showConfidence = !this.showConfidence;
-              break;
-            case "s":
-              this.saveCase();
-              break;
-            default:
-              break;
-          }
-        }
-      });
-      for (const [i, page] of this.pages.entries())
-        page.imageRef = this.$refs.pageImages[i];
+      // document.addEventListener('keyup', (e)=>{
+      //   if (e.ctrlKey) {
+      //     switch(e.key) {
+      //       case "o":
+      //           this.showOcr = !this.showOcr;
+      //         break;
+      //       case "c":
+      //         this.showConfidence = !this.showConfidence;
+      //         break;
+      //       case "s":
+      //         this.saveCase();
+      //         break;
+      //       default:
+      //         break;
+      //     }
+      //   }
+      // });
       window.addEventListener('resize', ()=>{ this.handleWindowResize() });
       this.handleWindowResize();
       this.mounted = true;
     },
     methods: {
-      wordEdited(newVal) {
-        const word = this.currentWord;
-        if (word.originalString === newVal)
-          this.$delete(this.editedWords, word.id);
-        else
-          this.$set(this.editedWords, word.id, word);
-        word.string = newVal;
-        word.stringWithoutSoftHyphens = word.string.replace(FAKE_SOFT_HYPHEN, '');
-      },
-      paragraphBlocks(paragraph) {
-        if (!paragraph.block_ids)
-          return [];
-        return paragraph.block_ids.map(blockId => this.blocksById[blockId]);
-      },
-      currentWordStyle() {
-        if (this.currentWord) {
-          const currentPage = this.pagesByWordId[this.currentWord.id];
-          return {
-            'background-image':`url(${currentPage.image_url})`,
-            'background-size': `${currentPage.width}px`,
-            width: `${this.currentWord.w}px`,
-            height: `${this.currentWord.h}px`,
-            'background-position': `-${this.currentWord.x}px -${this.currentWord.y}px`,
-          };
-        }
-        return {width: '20rem', height: '2rem'};
-      },
-      wordImageStyle(page, word) {
-        const font = word.font;
-        return {
-          left: `${word.x * page.scale}px`,
-          top: `${word.y * page.scale - word.yOffset * page.fontScale - 1}px`,  // -1 for top border
-          'background-color': this.showConfidence ? word.wordConfidenceColor : 'unset',
-          // font format is "<styles> <font size>/<line height> <font families>":
-          font: `${font.styles} ${font.size * page.fontScale}px/${word.lineHeight * page.fontScale}px ${font.family}`,
-        };
-      },
-      wordTextStyle(word) {
-        const font = word.font;
-        return {
-          'background-color': this.showConfidence ? word.wordConfidenceColor : 'unset',
-          font: `${word.font.styles}`,
-        };
-      },
-      wordClass(word) {
-        return {
-          'current-word': this.currentWord === word,
-          'edited': word.string !== word.originalString,
-        };
-      },
-      wordClicked(word) {
-        this.currentWord = word;
-        this.$refs.currentWord.focus();
-        this.scrollToWord(word.id);
-      },
       wordConfidenceColor(word) {
         const alpha = (.6 - word.wordConfidence)*100;
         const red = 255 * word.wordConfidence + 127;
@@ -333,7 +232,54 @@
           To save changes later, we'll update `blocks[blockId].tokens[index]` to `string`, and empty any additional `strings`.
          */
         let wordId = 0;
-        this.pagesByWordId = {};
+
+        const startWord = (block, attrs, fontId, footnoteMark, page)=>{
+          const rect = attrs.rect;
+          return {
+            blockId: block.id,
+            wordConfidence: attrs.wc,
+            font: this.fonts[fontId],
+            strings: [],
+            x: rect[0],
+            y: rect[1],
+            w: rect[2],
+            h: rect[3],
+            footnoteMark,
+            page,
+          };
+        }
+
+        const endWord = (word, words, wordEdits, fontId, block)=>{
+          if (!word)
+            return null;  // tag closed before opened -- shouldn't happen
+          if (word.strings.length) {
+            word.id = ++wordId;
+
+            // apply saved edits, if any
+            const wordIndex = words.length;
+            word.index = wordIndex;
+            word.originalString = word.strings.map(s=>s.value).join("").replace(SOFT_HYPHEN, FAKE_SOFT_HYPHEN);
+            if (wordIndex in wordEdits && wordEdits[wordIndex][0] === word.originalString) {
+              this.$store.commit('editWord', {word, string: wordEdits[wordIndex][1]});
+            } else {
+              word.string = word.originalString;
+            }
+
+            // for OCR alignment, calculate line height based on font, and apply a y offset based on the tallest
+            // character in the word
+            word.lineHeight = this.getFontLineHeight(fontId);
+            word.yOffset = Math.min(...word.string.split('').map(c => word.lineHeight - this.getCharAscent(c, fontId)));
+
+            // calculate background color
+            word.wordConfidenceColor = this.wordConfidenceColor(word);
+
+            words.push(word);
+            block.words.push(word);
+            this.$store.commit('addWord', word);
+          }
+          return null;
+        }
+
         for (const page of this.pages) {
           const words = [];
           for (const block of page.blocks) {
@@ -342,6 +288,8 @@
               continue;
             let word = null;
             let fontId = -1;
+            let footnoteMark = false;
+            let ocrAttrs = null;
             const wordEdits = this.savedWordEdits[page.id] && this.savedWordEdits[page.id][block.id] ? this.savedWordEdits[page.id][block.id] : {};
             for (const [i, token] of block.tokens.entries()) {
               if (typeof token === 'string') {
@@ -351,52 +299,23 @@
               }
               const [tag, attrs] = token;
               if(tag === 'ocr') {
-                const rect = attrs.rect;
-                word = {
-                  blockId: block.id,
-                  wordConfidence: attrs.wc,
-                  font: this.fonts[fontId],
-                  strings: [],
-                  x: rect[0],
-                  y: rect[1],
-                  w: rect[2],
-                  h: rect[3],
-                };
+                ocrAttrs = attrs;
+                word = startWord(block, attrs, fontId, footnoteMark, page);
               } else if(tag === '/ocr') {
-                if (!word)
-                  continue;  // tag closed before opened -- shouldn't happen
-                if (word.strings.length) {
-                  // apply saved edits, if any
-                  const wordIndex = words.length;
-                  word.index = wordIndex;
-                  word.originalString = word.strings.map(s=>s.value).join("").replace(SOFT_HYPHEN, FAKE_SOFT_HYPHEN);
-                  if (wordIndex in wordEdits && wordEdits[wordIndex][0] === word.originalString) {
-                    word.string = wordEdits[wordIndex][1];
-                    this.editedWords[wordId] = word;
-                  } else {
-                    word.string = word.originalString;
-                  }
-                  word.stringWithoutSoftHyphens = word.string.replace(FAKE_SOFT_HYPHEN, '');
-
-                  // for OCR alignment, calculate line height based on font, and apply a y offset based on the tallest
-                  // character in the word
-                  word.lineHeight = this.getFontLineHeight(fontId);
-                  word.yOffset = Math.min(...word.string.split('').map(c => word.lineHeight - this.getCharAscent(c, fontId)));
-
-                  // calculate background color
-                  word.wordConfidenceColor = this.wordConfidenceColor(word);
-
-                  wordId++;
-                  word.id = wordId;
-                  words.push(word);
-                  block.words.push(word);
-                  this.pagesByWordId[wordId] = page;
-                }
-                word = null;
+                word = endWord(word, words, wordEdits, fontId, block);
               } else if(tag === 'font') {
                 fontId = attrs.id;
               } else if(tag === '/font') {
                 fontId = -1;
+              } else if(tag === 'footnotemark') {
+                // this doesn't currently accomplish anything, as footnoteMarks start and end inside ocr spans
+                footnoteMark = true;
+                word = endWord(word, words, wordEdits, fontId, block);
+                word = startWord(block, ocrAttrs, fontId, footnoteMark, page);
+              } else if(tag === '/footnotemark') {
+                footnoteMark = false;
+                word = endWord(word, words, wordEdits, fontId, block);
+                word = startWord(block, ocrAttrs, fontId, footnoteMark, page);
               }
             }
           }
@@ -404,35 +323,23 @@
         }
       },
       toggleInstructions() {
-        const instructions = document.getElementById("instructions_modal_overlay")
-        instructions.style.display = instructions.style.display === "none" ? 'block' : 'none'
+        this.showInstructions = !this.showInstructions;
       },
-      scrollToWord(wordId) {
-        scrollIntoView(this.$refs[`wordText${wordId}`][0], {scrollMode: 'if-needed'});
-        scrollIntoView(this.$refs[`wordImage${wordId}`][0], {scrollMode: 'if-needed'});
-      },
-      removeEdit(wordId) {
-        const word = this.editedWords[wordId];
-        word.string = word.originalString;
-        this.$delete(this.editedWords, wordId);
-      },
-      clearEdits() {
-        if (!confirm('CONFIRM: permanently discard your edits?\nThere is no undo for this command.')) {
+      async clearEdits() {
+        if (!await this.$bvModal.msgBoxConfirm('Permanently discard your edits?\nThere is no undo for this command.')) {
           return;
         }
         localStorage.removeItem(this.storageKey);
-        this.metadata = {...this.serverMetadata};
-        for (const page of this.pages)
-          for (const word of page.words)
-            if (word.string !== word.originalString)
-              word.string = word.originalString;
+        this.$store.commit('setMetadata', {...this.serverMetadata});
+        for (const word of Object.values(this.$store.state.editedWords))
+          this.$store.commit('editWord', {word, string: word.originalString});
       },
       getMetadataEdits() {
         /*
           Prepare dict of all edited metadata, including old value and new value so we can check for consistency
         */
         const metadata = {};
-        for (const [k, v] of Object.entries(this.metadata)) {
+        for (const [k, v] of Object.entries(this.$store.state.metadata)) {
           const serverVal = this.serverMetadata[k];
           if (v !== serverVal)
             metadata[k] = [serverVal, v];
@@ -483,21 +390,20 @@
       },
       saveStateToStorage: debounce(function() {
         /* save to local storage */
+        if (!this.mounted)
+          return;
         const save_state = this.getState(true)
         localStorage.setItem(this.storageKey, JSON.stringify(save_state));
       }, 500),
-      async saveCase() {
+      async saveCase(event) {
         /* save to server */
-        const description = prompt(`
-          CONFIRM: permanently replace ${this.templateVars.citation_full} in the CAP database with your edited version?
-          There is no undo for this command.
-          Enter a description of your edits to continue:
-        `, '');
-        if (!description)
+        event.preventDefault();
+        this.saveFormValid = this.$refs.saveForm.checkValidity();
+        if (!this.saveFormValid)
           return;
         this.saveStatus = "saving ...";
         const state = this.getState();
-        state.description = description;
+        state.description = this.saveFormMessage;
         try {
           await $.ajax('', {
             type : 'POST',
@@ -535,9 +441,6 @@
         */
         return this.getCharAscent('T', fontId);
       },
-      addSoftHyphen() {
-        this.currentWord.string = this.currentWord.string + FAKE_SOFT_HYPHEN
-      },
       processFont(font) {
         /*
           Process backend font that looks like
@@ -547,8 +450,11 @@
           Snippets are kept separate so font size can be scaled later.
         */
         let styles = [];
-        if (font.style.includes('italics'))
+        let textStyles = [];
+        if (font.style.includes('italics')) {
           styles.push('italic');
+          textStyles.push('italic');
+        }
         if (font.style.includes('smallcaps'))
           styles.push('small-caps');
         if (font.style.includes('bold'))
@@ -557,6 +463,7 @@
           family: `"${font.family}",${font.type}`,
           size: parseFloat(font.size),
           styles: styles.join(' '),
+          textStyles: textStyles.join(' '),
         };
       },
     },
@@ -568,44 +475,16 @@
     border: 2px gray solid;
     padding: 1em;
   }
-  .page {
-    position: relative;
-    span {
-      border: 1px transparent solid;
-      line-height: 1;
-      color: transparent;
-      position: absolute;
-    }
-    &.show-ocr {
-      img {
-        opacity: 0.2;
-      }
-
-      span {
-        color: unset;
-      }
-    }
+  .casePanel {
+     padding: 0 2em;
   }
-  .current-word {
-    border: 1px green solid !important;
-  }
-  .edited {
-    border: 1px orange solid !important;
-  }
-  #textView {
-    padding: 2em;
-    hyphens: none;
-    .opinion {
-      padding-bottom: 2em;
-      padding-top: 2em;
-      border-bottom: 1px gray solid;
+  .darkMode::v-deep {
+    div:not(#imageControls), h4 {
+      background-color: #2F2F2F;
+      color: white;
     }
-    .paragraph {
-      margin-bottom: 1em;
-    }
-    .paragraph-class {
-      margin-right: 1em;
-      color: gray;
+    img {
+      filter: invert(1);
     }
   }
 </style>

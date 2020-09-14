@@ -642,13 +642,6 @@ ELASTICSEARCH_INDEXES={
 }
 MAX_PAGE_SIZE = 10000
 
-# for views decorated with @password_protected_page('some_key')
-PASSWORD_PROTECTED_PAGES = {
-    # 'some_key': ['some', 'accepted', 'passwords'],
-    # 'some_key': [],  # no passwords will work
-    # 'some_key': None,  # no password will be requested
-}
-
 SCREENSHOT_DEFAULT_TIMEOUT = 30  # seconds
 
 # For the mailchimp signup form on the homepage.

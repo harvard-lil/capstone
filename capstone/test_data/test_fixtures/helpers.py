@@ -2,8 +2,6 @@ import difflib
 import hashlib
 from pathlib import Path
 
-from lxml import etree
-
 from scripts.helpers import parse_xml
 
 
@@ -74,3 +72,20 @@ def xml_equal(s1, s2, **kwargs):
     e1 = parse_xml(s1)[0]
     e2 = parse_xml(s2)[0]
     return elements_equal(e1, e2, **kwargs)
+
+
+# helpers
+def get_timestamp(case):
+    from capdb.models import CaseLastUpdate
+    [[t]] = CaseLastUpdate.objects.filter(case_id=case.id).values_list('timestamp')
+    return t
+
+
+def check_timestamps_changed(case, timestamp):
+    new_t = get_timestamp(case)
+    assert timestamp < new_t
+    return new_t
+
+
+def check_timestamps_unchanged(case, timestamp):
+    assert get_timestamp(case) == timestamp

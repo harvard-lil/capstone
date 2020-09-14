@@ -249,10 +249,15 @@ All analysis fields are optional, and may or may not appear for a given case.
 
 Analysis fields have the following meanings:
 
+Cardinality (`cardinality`)
+{: class="topic-header" }
+
+The number of unique words in the full case text including head matter.
+
 Character count (`char_count`)
 {: class="topic-header" }
 
-The number of unicode characters in the full case text including headnotes.
+The number of unicode characters in the full case text including head matter.
 
 OCR Confidence (`ocr_confidence`)
 {: class="topic-header" }
@@ -274,11 +279,26 @@ The `"raw"` score can be interpreted as the probability of encountering that cas
 followed random citations. The `"percentile"` score indicates the percentage of cases, between 0.0 and 1.0, that have
 a lower raw score than the given case. 
 
+SHA-256 (`sha256`)
+{: class="topic-header" }
+
+The hex-encoded SHA-256 hash of the full case text including head matter. This will match only if two cases
+have identical text, and will change if case text is edited (such as for OCR correction).
+
+SimHash (`simhash`)
+{: class="topic-header" }
+
+The hex-encoded, 64-bit [SimHash](https://en.wikipedia.org/wiki/SimHash) of the full case text including head matter.
+The simhash of cases with more similar text will have lower Hamming distance. 
+
+Simhashes are prepended by a version number, such as `"1:33e68120ecb2d7de"`, to allow for algorithmic improvements.
+Simhashes with different version numbers may have been calculated using different parameters (such as hash algorithm
+or tokenization) and may not be directly comparable.
+
 Word count (`word_count`)
 {: class="topic-header" }
 
-The number of words in the full case text including headnotes, defined as the number of character strings separated by
-spaces.
+The number of words in the full case text including head matter.
 
 {# ==============> ACCESS LIMITS <============== #}
 # Access Limits {: class="subtitle" }

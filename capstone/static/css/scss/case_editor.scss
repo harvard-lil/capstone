@@ -45,8 +45,6 @@ section, article {
 .viz-controls {
   .toggle-btn {
     @extend .btn-secondary;
-    height: 2.5rem;
-    width: 4rem;
     font-size: .75rem;
     margin-left: 1rem;
   }

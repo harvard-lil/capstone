@@ -1,0 +1,47 @@
+{% extends "layouts/full.html" %}
+
+{% block title %}Fetch Cases{% endblock %}
+{% block top_section_style %}bg-tan{% endblock %}
+{% block meta_description %}
+  Extract citations from a block of text and link to matching cases
+{% endblock %}
+{% block explainer %}
+  Extract citations from a block of text and link to matching cases.
+{% endblock %}
+{% block sidebar_menu %}{% endblock %}
+
+{% block main_content %}
+  <form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="q">Text with citations:</label>
+      <textarea name="q" class="form-control" id="q" rows="3" aria-describedby="qHelp">{{ text }}</textarea>
+      <small id="qHelp" class="form-text text-muted">Enter a single citation, a column copied from a spreadsheet, or document text. No text is saved on the server.</small>
+    </div>
+    <button type="submit" class="btn btn-primary">Find Citations</button>
+  </form>
+
+  {% if text %}
+    <h2>Extracted Citations</h2>
+    {% if citations %}
+      {% for citation in citations %}
+        {{ citation.before }}<span style="font-weight: bold; text-decoration: underline">{{ citation.cite }}</span>{{ citation.after }}
+        <ul class="bullets">
+          {% if citation.cases %}
+            {% for case in citation.cases %}
+              <li>
+                {{ case.full_cite }}:
+                <a href="{{ case.get_full_frontend_url }}" target="_blank">HTML</a>,
+                <a href="{{ case.get_pdf_url }}" target="_blank">PDF</a>
+              </li>
+            {% endfor %}
+          {% else %}
+            <li><i>No cases found.</i></li>
+          {% endif %}
+        </ul>
+      {% endfor %}
+    {% else %}
+      <i>No citations found.</i>
+    {% endif %}
+  {% endif %}
+{% endblock %}

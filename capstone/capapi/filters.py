@@ -24,6 +24,7 @@ def lazy_choices(queryset, id_attr, label_attr):
 jur_choices = lazy_choices(models.Jurisdiction.objects.all(), 'slug', 'name_long')
 court_choices = lazy_choices(models.Court.objects.all(), 'slug', 'name')
 reporter_choices = lazy_choices(models.Reporter.objects.all(), 'id', 'short_name')
+analysis_fields = ['word_count', 'char_count', 'ocr_confidence', 'pagerank.percentile', 'pagerank.raw', 'simhash', 'sha256', 'cardinality']
 
 
 class NoopMixin():
@@ -164,8 +165,8 @@ class CaseFilter(filters.FilterSet):
     name = filters.CharFilter(label='Full Name (contains)')
     jurisdiction = filters.ChoiceFilter(choices=jur_choices)
     reporter = filters.ChoiceFilter(choices=reporter_choices, label='Reporter Series')
-    decision_date_min = filters.CharFilter(label='Earliest Decision Date (Format YYYY-MM-DD)')
-    decision_date_max = filters.CharFilter(label='Latest Decision Date (Format YYYY-MM-DD)')
+    decision_date__gte = filters.CharFilter(label='Earliest Decision Date (Format YYYY-MM-DD)')
+    decision_date__lte = filters.CharFilter(label='Latest Decision Date (Format YYYY-MM-DD)')
     docket_number = filters.CharFilter(label='Docket Number (contains)')
     court = filters.ChoiceFilter(choices=court_choices)
     court_id = filters.NumberFilter(label='Court ID')
@@ -180,7 +181,7 @@ class CaseFilter(filters.FilterSet):
     cites_to = filters.CharFilter(label='Cases citing to citation (citation or case id)')
     ordering = filters.ChoiceFilter(
         label='Sort order',
-        choices=(
+        choices=[
             ('', 'Relevance, then decision date (default)'),
             ('decision_date', 'Decision date'),
             ('-decision_date', 'Reverse decision date'),
@@ -188,11 +189,12 @@ class CaseFilter(filters.FilterSet):
             ('-name_abbreviation', 'Reverse name abbreviation'),
             ('id', 'id'),
             ('-id', 'Reverse id'),
-        ),
+            ('', '--- Analysis fields ---')
+        ]+[choice for field in analysis_fields for choice in [[f'analysis.{field}', field], [f'-analysis.{field}', f'Reverse {field}']]],
     )
     page_size = filters.NumberFilter(label='Results per page (1 to 10,000; default 100)')
-    last_updated_min = filters.CharFilter(label='last_updated greater than or equal to this prefix')
-    last_updated_max = filters.CharFilter(label='last_updated less than or equal to this prefix')
+    last_updated__gte = filters.CharFilter(label='last_updated greater than or equal to this prefix')
+    last_updated__lte = filters.CharFilter(label='last_updated less than or equal to this prefix')
 
 
 class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):

@@ -14,7 +14,7 @@ from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadReque
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch
 from capapi.filters import CAPOrderingFilterBackend, CaseFilterBackend, MultiFieldFTSFilter, \
-    NameFTSFilter, NameAbbreviationFTSFilter, DocketNumberFTSFilter
+    NameFTSFilter, NameAbbreviationFTSFilter, DocketNumberFTSFilter, analysis_fields
 from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer
 from capapi.middleware import add_cache_header
@@ -101,7 +101,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'cites_to': 'extractedcitations.normalized_cite',
         'decision_date': 'decision_date_original',
         'last_updated': 'last_updated',
-        **{'analysis.'+k: 'analysis.'+k for k in ['word_count', 'char_count', 'ocr_confidence', 'pagerank.percentile', 'pagerank.raw']},
+        **{'analysis.'+k: 'analysis.'+k for k in analysis_fields},
         # legacy fields:
         'decision_date_min': {'field': 'decision_date_original', 'default_lookup': 'gte'},
         'decision_date_max': {'field': 'decision_date_original', 'default_lookup': 'lte'},
@@ -111,9 +111,11 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     # Define ordering fields
     ordering_fields = {
         'relevance': '_score',
-        'decision_date': 'decision_date',
+        'decision_date': 'decision_date_original',
         'name_abbreviation': 'name_abbreviation.raw',
         'id': 'id',
+        'last_updated': 'last_updated',
+        **{'analysis.' + k: 'analysis.' + k for k in analysis_fields},
     }
     # Specify default ordering. Relevance is a synonym for score, so we reverse it. It's reversed in the user-specified
     # ordering backend.
