@@ -1,11 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { BootstrapVue } from 'bootstrap-vue'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 import scrollIntoView from 'scroll-into-view-if-needed';
 import { getField, updateField } from 'vuex-map-fields';
 
 import Main from './main.vue'
 
 Vue.use(Vuex)
+Vue.use(BootstrapVue)
 
 const store = new Vuex.Store({
   state: {

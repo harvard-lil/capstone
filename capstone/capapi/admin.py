@@ -26,7 +26,7 @@ authenticate_user.short_description = "Authenticate selected Users"
 class CapUserAdmin(UserAdmin):
     ## override unhelpful settings from the parent UserAdmin
     ordering = ('-date_joined',)
-    filter_horizontal = []
+    filter_horizontal = ['user_permissions']
     ## end override
 
     readonly_fields = ('date_joined',)
@@ -74,8 +74,14 @@ class CapUserAdmin(UserAdmin):
             )
         }),
     )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2'),
+        }),
+    )
     search_fields = ('email', 'last_name', 'first_name')
-    list_filter = ('research_requests__status', 'research_contracts__status', 'is_staff', 'unlimited_access')
+    list_filter = ('research_requests__status', 'research_contracts__status', 'is_staff', 'is_superuser', 'unlimited_access')
     actions = [authenticate_user]
     inlines = (
         new_class('ResearchContractInline', admin.StackedInline, model=models.ResearchContract, fk_name='user', raw_id_fields=['approver']),
@@ -87,10 +93,6 @@ class CapUserAdmin(UserAdmin):
         instance._is_harvard_ip = True  # show unlimited access if user would have access given Harvard IP
         return instance.unlimited_access_in_effect()
     unlimited_access_in_effect.short_description = "Unmetered Access"
-
-    def has_add_permission(self, request, obj=None):
-        """ We don't currently support adding users via admin -- see Perma code for hints on doing this. """
-        return False
 
 
 @admin.register(models.SiteLimits)

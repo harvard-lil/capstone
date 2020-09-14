@@ -1008,6 +1008,9 @@ class CaseMetadata(models.Model):
             models.Index(name='idx_robots_txt_until', fields=('robots_txt_until',),
                          condition=~Q(robots_txt_until=None)),
         ]
+        permissions = [
+            ("correct_ocr", "Can use OCR editor"),
+        ]
 
     def save(self, *args, **kwargs):
         if self.tracker.has_changed('decision_date_original'):

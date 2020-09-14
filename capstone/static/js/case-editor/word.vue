@@ -1,6 +1,7 @@
 <template>
   <span :style="wordStyle()"
         :class="wordClass()"
+        :data-id="word.id"
         @click="$store.commit('setCurrentWord', word)"
   >{{wordString()}}</span>
 </template>
@@ -26,20 +27,22 @@
           return {
             left: `${word.x * page.scale}px`,
             top: `${word.y * page.scale - word.yOffset * page.fontScale - 1}px`,  // -1 for top border
-            'background-color': this.showConfidence ? word.wordConfidenceColor : 'unset',
+            'background-color': this.showConfidence ? word.wordConfidenceColor : '',
             // font format is "<styles> <font size>/<line height> <font families>":
             font: `${font.styles} ${font.size * page.fontScale}px/${word.lineHeight * page.fontScale}px ${font.family}`,
           };
         } else {
           return {
-            'background-color': this.showConfidence ? word.wordConfidenceColor : 'unset',
-            font: font.styles,
+            'background-color': this.showConfidence ? word.wordConfidenceColor : '',
+            font: `${font.textStyles} 1em sans-serif`,
+            'font-family': 'inherit',
           };
         }
       },
       wordClass() {
         const word = this.word;
         return {
+          'word': true,
           'edited': word.string !== word.originalString,
           'footnote-mark': word.footnoteMark,
           'current-word': word.isCurrent,
@@ -62,5 +65,16 @@
     &.current-word {
       outline: 1px green solid !important;
     }
+  }
+  .footnote-mark {
+    vertical-align: super;
+    font-size: .83em;
+    background-color: #0000001f;
+  }
+</style>
+
+<style lang="scss">
+  .darkMode .footnote-mark {
+    background-color: #ffffff1f;
   }
 </style>
