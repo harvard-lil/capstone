@@ -1,4 +1,3 @@
-from elasticsearch.exceptions import NotFoundError
 import os
 import json
 import stat
@@ -27,7 +26,6 @@ from capweb.models import GallerySection, GalleryEntry
 from capdb.models import Snippet, Court, Reporter, Jurisdiction
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request
-from capapi.documents import CaseDocument
 from config.logging import logger
 
 
@@ -63,34 +61,8 @@ def docs(request, req_doc_path):
     if not req_doc_path:
         req_doc_path = "01_general/01_docs_intro"
 
-    # special case contexts
 
-    context = {
-        'email': settings.DEFAULT_FROM_EMAIL
-    }
-
-    if (req_doc_path == '01_general/02_about'):
-        contributors = get_data_from_lil_site(section="contributors")
-        sorted_contributors = {}
-        for contributor in contributors:
-            sorted_contributors[contributor['sort_name']] = contributor
-            if contributor['affiliated']:
-                sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
-        sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
-
-        context['contributors']= sorted_contributors
-        context['news']= get_data_from_lil_site(section="news")
-
-    try:
-        case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
-    except NotFoundError:
-        try:
-            case = CaseDocument.search().execute()[0]
-        except NotFoundError:
-            case = None
-    context['case'] = case
-
-    page = toc_from_path(request, req_doc_path, context)
+    page = toc_from_path(request, req_doc_path)
 
     if not page or 'content' not in page:
         raise Http404

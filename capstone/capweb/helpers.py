@@ -34,6 +34,8 @@ from django.db import transaction, connections, OperationalError
 from django.urls import NoReverseMatch
 from django.utils.functional import lazy
 
+
+
 def cache_func(key, timeout=None, cache_name='default'):
     """
         Decorator to cache decorated function's output according to a custom key.
@@ -295,7 +297,9 @@ def is_browser_request(request):
 safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
 
 
-def toc_from_path(request, url, context):
+def toc_from_path(request, url):
+    from elasticsearch.exceptions import NotFoundError #TODO figure out how to fix this import problem
+    from capapi.documents import CaseDocument
     app_absolute_path = os.path.abspath(os.path.dirname(__file__))
     base_path = Path(app_absolute_path, settings.DOCS_RELATIVE_DIR)
     meta = {}
@@ -303,6 +307,31 @@ def toc_from_path(request, url, context):
     toc_by_url = {
         '.': {'children': []},
     }
+
+    # special case contexts
+    context = {
+        'email': settings.DEFAULT_FROM_EMAIL
+    }
+
+    contributors = get_data_from_lil_site(section="contributors")
+    sorted_contributors = {}
+    for contributor in contributors:
+        sorted_contributors[contributor['sort_name']] = contributor
+        if contributor['affiliated']:
+            sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
+    sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
+
+    context['contributors']= sorted_contributors
+    context['news']= get_data_from_lil_site(section="news")
+
+    try:
+        case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
+    except NotFoundError:
+        try:
+            case = CaseDocument.search().execute()[0]
+        except NotFoundError:
+            case = None
+    context['case'] = case
 
     def path_string_to_title(string):
         return string.replace('-', ' ').replace('_', ' ').title().replace('Api', 'API').replace('Cap', 'CAP')
