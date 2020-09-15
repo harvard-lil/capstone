@@ -182,9 +182,9 @@ class CaseFilter(filters.FilterSet):
     )
     cites_to = filters.CharFilter(label='Cases citing to citation (citation or case id)')
     ordering = filters.ChoiceFilter(
-        label='Sort order',
+        label='Sort order (defaults to relevance, if search is provided, else decision_date)',
         choices=[
-            ('', 'Relevance, then decision date (default)'),
+            ('relevance', 'Relevance'),
             ('decision_date', 'Decision date'),
             ('-decision_date', 'Reverse decision date'),
             ('name_abbreviation', 'Name abbreviation'),
@@ -293,6 +293,9 @@ class DocketNumberFTSFilter(BaseFTSFilter):
 
 
 class CAPOrderingFilterBackend(OrderingFilterBackend):
+    # NOTE: ordering in Elasticsearch falls back to the "internal Lucene doc id" for a given shard,
+    # which means it is stable as long as we have only one shard. If we add additional shards, we will
+    # need to bind each user to a single shard for pagination.
     @classmethod
     def transform_ordering_params(cls, ordering_params, ordering_fields):
         # changes relevance to -relevance (and vice versa) to avoid the rather unintuitive reverse-relevance sort
