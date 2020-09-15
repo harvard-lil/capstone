@@ -5,7 +5,7 @@ import requests
 import os
 from collections import namedtuple, OrderedDict
 from contextlib import contextmanager
-from functools import wraps
+from functools import wraps, lru_cache
 from urllib.parse import urlencode
 from pathlib import Path
 import markdown
@@ -271,8 +271,8 @@ def is_browser_request(request):
 
 safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
 
-
-def toc_from_path(request, url):
+@lru_cache(None)
+def get_toc_from_path(request, url):
     from elasticsearch.exceptions import NotFoundError #TODO figure out how to fix this import problem
     from capapi.documents import CaseDocument
     app_absolute_path = os.path.abspath(os.path.dirname(__file__))
@@ -298,7 +298,6 @@ def toc_from_path(request, url):
 
     context['contributors']= sorted_contributors
     context['news']= get_data_from_lil_site(section="news")
-
     try:
         case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
     except NotFoundError:
@@ -355,4 +354,3 @@ def toc_from_path(request, url):
     toc_by_url['breadcrumb'] = breadcrumb
 
     return toc_by_url
-
