@@ -22,13 +22,14 @@ from django.db.models import Prefetch
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
-    page_image_url, safe_domains, toc_from_path
+    page_image_url, safe_domains, get_toc_from_path
 from capweb.models import GallerySection, GalleryEntry
 from capdb.models import Snippet, Court, Reporter, Jurisdiction, normalize_cite, CaseMetadata
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request
 from config.logging import logger
 from scripts.extract_cites import extract_citations_from_text
+from django.utils.functional import SimpleLazyObject
 
 
 def index(request):
@@ -63,8 +64,7 @@ def docs(request, req_doc_path):
     if not req_doc_path:
         req_doc_path = "01_general/01_docs_intro"
 
-
-    page = toc_from_path(request, req_doc_path)
+    page = SimpleLazyObject(lambda: get_toc_from_path(request, req_doc_path))
 
     if not page or 'content' not in page:
         raise Http404
