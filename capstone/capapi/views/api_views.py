@@ -119,7 +119,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     }
     # Specify default ordering. Relevance is a synonym for score, so we reverse it. It's reversed in the user-specified
     # ordering backend.
-    ordering = ('-relevance', 'decision_date', 'id')
+    ordering = ('-relevance', 'decision_date')
 
     highlight_fields = {
         'casebody_data.text.head_matter': {
