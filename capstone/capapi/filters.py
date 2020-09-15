@@ -4,6 +4,7 @@ import rest_framework_filters as filters
 from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
     OrderingFilterBackend
+from django_filters.utils import translate_validation
 from elasticsearch.exceptions import NotFoundError
 from rest_framework_filters.backends import RestFrameworkFilterBackend
 from capapi.documents import CaseDocument
@@ -155,7 +156,8 @@ class UserHistoryFilter(filters.FilterSet):
 
 class CaseFilter(filters.FilterSet):
     """
-        This is only used for HTML display; it is rendered by CaseFilterBackend, which applies filters to the ES query.
+        Used for HTML display and validation, but not actual filtering.
+        Rendered by CaseFilterBackend, which applies filters to the ES query.
     """
     search = filters.CharFilter(
         label='Full-Text Search',
@@ -192,12 +194,26 @@ class CaseFilter(filters.FilterSet):
             ('', '--- Analysis fields ---')
         ]+[choice for field in analysis_fields for choice in [[f'analysis.{field}', field], [f'-analysis.{field}', f'Reverse {field}']]],
     )
-    page_size = filters.NumberFilter(label='Results per page (1 to 10,000; default 100)')
+    page_size = filters.NumberFilter(min_value=1, max_value=10000, label='Results per page (1 to 10,000; default 100)')
     last_updated__gte = filters.CharFilter(label='last_updated greater than or equal to this prefix')
     last_updated__lte = filters.CharFilter(label='last_updated less than or equal to this prefix')
 
+    class Meta:
+        model = models.CaseMetadata
+        fields = []
+
 
 class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        """
+            Apply form validation from RestFrameworkFilterBackend.filter_queryset(), which uses the fields
+             defined on CaseFilter, before applying actual filters from FilteringFilterBackend.
+        """
+        filterset = self.get_filterset(request, None, view)
+        if not filterset.is_valid():
+            raise translate_validation(filterset.errors)
+        return super().filter_queryset(request, queryset, view)
+
     def get_filter_query_params(self, request, view):
         def lc_values(values):
             return [value.lower() for value in values if isinstance(value, str)]
@@ -210,12 +226,6 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
         if 'cite' in query_params:
             query_params['cite']['values'] = [models.normalize_cite(cite) for cite in
                                               lc_values(query_params['cite']['values'])]
-
-        if 'court_id' in query_params:
-            query_params['court_id']['values'] = [court_id for court_id in
-                                                  query_params['court_id']['values'] if court_id.isdigit()]
-            if len(query_params['court_id']['values']) < 1:
-                del query_params['court_id']
 
         if 'court' in query_params:
             query_params['court']['values'] = lc_values(query_params['court']['values'])

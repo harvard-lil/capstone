@@ -5,11 +5,13 @@ from collections import OrderedDict
 
 from django.conf import settings
 from django_elasticsearch_dsl_drf.versions import ELASTICSEARCH_GTE_6_0
+from elasticsearch import TransportError
 
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.utils.urls import replace_query_param
+from rest_framework import serializers
 
 from capapi.resources import CachedCountQuerySet
 
@@ -74,26 +76,31 @@ class ESPaginatorMixin:
     count = None
 
     def paginate_queryset(self, queryset, request, view=None):
-        # Check if there are suggest queries in the queryset,
-        # ``execute_suggest`` method shall be called, instead of the
-        # ``execute`` method and results shall be returned back immediately.
-        # Placing this code at the very start of ``paginate_queryset`` method
-        # saves us unnecessary queries.
-        is_suggest = getattr(queryset, '_suggest', False)
-        if is_suggest:
-            if ELASTICSEARCH_GTE_6_0:
-                return queryset.execute().get('suggest')
-            return queryset.execute_suggest()
+        try:
+            # Check if there are suggest queries in the queryset,
+            # ``execute_suggest`` method shall be called, instead of the
+            # ``execute`` method and results shall be returned back immediately.
+            # Placing this code at the very start of ``paginate_queryset`` method
+            # saves us unnecessary queries.
+            is_suggest = getattr(queryset, '_suggest', False)
+            if is_suggest:
+                if ELASTICSEARCH_GTE_6_0:
+                    return queryset.execute().get('suggest')
+                return queryset.execute_suggest()
 
-        # Check if we're using paginate queryset from `functional_suggest`
-        # backend.
-        if view.action == 'functional_suggest':
-            return queryset
+            # Check if we're using paginate queryset from `functional_suggest`
+            # backend.
+            if view.action == 'functional_suggest':
+                return queryset
 
-        self.resp = resp = self._paginate_queryset(queryset, request, view)
-        self.facets = resp.get('aggregations', None)
-        self.display_page_controls = self.has_next and self.template is not None
-        return resp['hits']['hits']
+            self.resp = resp = self._paginate_queryset(queryset, request, view)
+            self.facets = resp.get('aggregations', None)
+            self.display_page_controls = self.has_next and self.template is not None
+            return resp['hits']['hits']
+        except TransportError as e:
+            if e.error == 'search_phase_execution_exception':
+                raise serializers.ValidationError({'error': ['Invalid query parameters']})
+            raise
 
     def _paginate_queryset(self, queryset, request, view):
         """
