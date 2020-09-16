@@ -8,6 +8,17 @@ from capdb.storages import DownloadOverlayStorage
 from capweb.helpers import reverse
 from test_data.test_fixtures.fixtures import CapClient
 
+@pytest.mark.django_db
+def test_docs(client, elasticsearch, three_cases):
+    response = client.get(reverse('docs', args=['04_web/01_search']))
+    check_response(response)
+
+@pytest.mark.django_db
+def test_legacy_redirect(client):
+    response = client.get(reverse('about'))
+    check_response(response, 302)
+    assert "/docs/" in response.url
+
 
 @pytest.mark.django_db
 def test_download_area(client, auth_client, unlimited_auth_client, tmp_path, monkeypatch):

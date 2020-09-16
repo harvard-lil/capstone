@@ -128,6 +128,8 @@ API_HOST_OVERRIDE = None
 # useful for pointing dev JS at prod API for testing. E.g., add this to settings.py:
 # API_HOST_OVERRIDE = 'https://api.case.law'
 
+DOCS_RELATIVE_DIR = os.path.join('templates', 'docs')
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -349,6 +351,12 @@ PIPELINE = {
                 'css/scss/cite-grid.scss',
             },
             'output_filename': 'cite-grid.css'
+        },
+        'unified_docs': {
+            'source_filenames': (
+                'css/scss/unified_docs.scss',
+            ),
+            'output_filename': 'unified_docs.css'
         },
     },
 

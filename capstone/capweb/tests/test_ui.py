@@ -27,7 +27,12 @@ def test_nav(client, case, reporter):
     nav_links = soup.find_all('a', {'class': 'nav-link'})
     for a in nav_links:
         res = client.get(a.get('href'))
-        check_response(res)
+        try:
+            check_response(res)
+        except AssertionError:
+            check_response(res, status_code=302)
+            assert "/docs/" in res.url
+            assert "/docs/" not in a.get('href')
 
 
 @pytest.mark.django_db
@@ -42,7 +47,12 @@ def test_footer(client):
         url = a.get('href')
         if settings.PARENT_HOST in url:
             res = client.get(url)
-            check_response(res)
+            try:
+                check_response(res)
+            except AssertionError:
+                check_response(res, status_code=302)
+                assert "/docs/" in res.url
+                assert "/docs/" not in a.get('href')
 
 
 @pytest.mark.django_db

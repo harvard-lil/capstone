@@ -2,17 +2,21 @@ import json
 import re
 import socket
 import requests
+import os
 from collections import namedtuple, OrderedDict
 from contextlib import contextmanager
-from functools import wraps
+from functools import wraps, lru_cache
 from urllib.parse import urlencode
-
+from pathlib import Path
 import markdown
 from django.core.signing import Signer
+from django.template.loader import render_to_string
 from markdown.extensions.attr_list import AttrListExtension
 from markdown.extensions.toc import TocExtension
 from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
+from django.utils.safestring import mark_safe
+
 
 from rest_framework.negotiation import DefaultContentNegotiation
 from rest_framework import renderers
@@ -26,6 +30,7 @@ from django.core.mail import EmailMessage
 from django.db import transaction, connections, OperationalError
 from django.urls import NoReverseMatch
 from django.utils.functional import lazy
+
 
 
 def cache_func(key, timeout=None, cache_name='default'):
@@ -190,7 +195,7 @@ def render_markdown(markdown_doc):
     md = markdown.Markdown(extensions=[TocExtension(baselevel=2, marker=''), AttrListExtension(), listStyleExtension(),
                                        'meta'])
     html = md.convert(markdown_doc.lstrip())
-    toc = md.toc.replace('<a ', '<a class="list-group-item" ')
+    toc = md.toc.replace('<a ', '<a class="list-group-item" ').replace('<li', '<li class="doc-toc-item"')
     toc = "".join(toc.splitlines(True)[2:-2])  # strip <div><ul> around toc by dropping first and last two lines
     meta = {k:' '.join(v) for k, v in md.Meta.items()}
     return html, toc, meta
@@ -265,3 +270,87 @@ def is_browser_request(request):
 
 
 safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
+
+@lru_cache(None)
+def get_toc_from_path(request, url):
+    from elasticsearch.exceptions import NotFoundError #TODO figure out how to fix this import problem
+    from capapi.documents import CaseDocument
+    app_absolute_path = os.path.abspath(os.path.dirname(__file__))
+    base_path = Path(app_absolute_path, settings.DOCS_RELATIVE_DIR)
+    meta = {}
+    content=''
+    toc_by_url = {
+        '.': {'children': []},
+    }
+
+    # special case contexts
+    context = {
+        'email': settings.DEFAULT_FROM_EMAIL
+    }
+
+    contributors = get_data_from_lil_site(section="contributors")
+    sorted_contributors = {}
+    for contributor in contributors:
+        sorted_contributors[contributor['sort_name']] = contributor
+        if contributor['affiliated']:
+            sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
+    sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
+
+    context['contributors']= sorted_contributors
+    context['news']= get_data_from_lil_site(section="news")
+    try:
+        case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
+    except NotFoundError:
+        try:
+            case = CaseDocument.search().execute()[0]
+        except NotFoundError:
+            case = None
+    context['case'] = case
+
+    def path_string_to_title(string):
+        return string.replace('-', ' ').replace('_', ' ').title().replace('Api', 'API').replace('Cap', 'CAP')
+
+    breadcrumb = " &gt; ".join([path_string_to_title(st.split('_', 1)[1]) for st in url.split('/')])
+
+    for path in sorted(base_path.glob('**/*')):
+        rel_path = path.relative_to(base_path)
+        parent_url = str(rel_path.parent)
+        if not (path.suffix == '.md' or path.is_dir()):
+            continue
+
+        order, display_name = path_string_to_title(rel_path.with_suffix('').name).split(' ', 1)
+
+        entry = {
+            'label': display_name,
+            'children': [],
+            'order': int(order),
+        }
+
+        if path.suffix == '.md':
+
+            entry['url'] = str(rel_path.with_suffix(''))
+            entry['path'] = str(path)
+            entry['doc_toc'] = ''
+
+            markdown_doc = render_to_string(str(path), context, request)
+            if url == entry['url']:
+                content, entry['doc_toc'], meta = render_markdown(markdown_doc)
+                meta = {k: mark_safe(v) for k, v in meta.items()}
+                content = mark_safe(content)
+                entry['doc_toc'] = mark_safe(entry['doc_toc'])
+
+        else:
+            # directory
+            entry['url'] = str(rel_path)
+
+        toc_by_url[parent_url]['children'].append(entry)
+        toc_by_url[entry['url']] = entry
+
+    for item in toc_by_url.values():
+        item['children'].sort(key=lambda i: i['order'])
+
+    toc_by_url['content'] = content
+    toc_by_url['meta'] = meta
+    toc_by_url['breadcrumb'] = breadcrumb
+
+    return toc_by_url
