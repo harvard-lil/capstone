@@ -58,12 +58,12 @@
         <a :href="`${urls.apiDocs}#analysis-fields`">About analysis fields</a>
       </div>
     </div>
-    <div  v-if="templateVars.isStaff" class="sidebar-section admin-tools">
+    <div  v-if="templateVars.isStaff || templateVars.canEdit" class="sidebar-section admin-tools">
       <h3>Admin Tools</h3>
       <div class="sidebar-section-contents">
         <ul class="bullets">
-          <li><a :href="urls.djangoAdmin">Django admin</a></li>
-          <li><a :href="urls.caseEditor">Case editor</a></li>
+          <li v-if="templateVars.isStaff"><a :href="urls.djangoAdmin">Django admin</a></li>
+          <li v-if="templateVars.canEdit"><a :href="urls.caseEditor">Case editor</a></li>
         </ul>
       </div>
     </div>
