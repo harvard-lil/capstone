@@ -22,14 +22,13 @@ from django.db.models import Prefetch
 
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
-    page_image_url, safe_domains, get_toc_from_path
+    page_image_url, safe_domains, get_toc_by_url
 from capweb.models import GallerySection, GalleryEntry
 from capdb.models import Snippet, Court, Reporter, Jurisdiction, normalize_cite, CaseMetadata
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request
 from config.logging import logger
 from scripts.extract_cites import extract_citations_from_text
-from django.utils.functional import SimpleLazyObject
 
 
 def index(request):
@@ -55,7 +54,6 @@ def index(request):
         'page_image': 'img/og_image/index.png',
     })
 
-
 def docs(request, req_doc_path):
     """
         Gets a list of MD documents and their file structure from the docs_path directory and creates the docs nav
@@ -63,20 +61,19 @@ def docs(request, req_doc_path):
     """
     if not req_doc_path:
         req_doc_path = "01_general/01_docs_intro"
-
-    page = SimpleLazyObject(lambda: get_toc_from_path(request, req_doc_path))
-
+    toc_by_url = get_toc_by_url()
+    page = toc_by_url.get(req_doc_path)
     if not page or 'content' not in page:
         raise Http404
-
     return render(request, 'docs.html', {
         'content': page['content'],
-        'toc': page['.']['children'],
+        'toc': toc_by_url['.']['children'],
         'page_image': 'img/og_image/documentation.png',
         'req_doc_path': req_doc_path,
         'breadcrumb': page['breadcrumb'],
         'meta': page['meta']
     })
+
 
 def contact(request):
     form = form_for_request(request, ContactForm)
@@ -164,20 +161,20 @@ def snippet(request, label):
 def legacy_docs_redirect(request):
     url_path = request.META['PATH_INFO'].lstrip('/').rstrip('/')
     translation = {
-        "api": "02_api/01_api",
-        "about": "01_general/02_about",
-        "search-docs": "04_web/01_search",
-        "tools": "01_general/03_tools",
-        "trends-docs": "04_web/02_trends",
-        "bulk": "03_bulk/01_bulk_docs",
-        "terms": "01_general/06_terms-of-use",
-        "privacy": "01_general/05_privacy-policy",
-        "changelog": "01_general/04_changelog",
-        "action": "01_general/01_for_courts/01_index",
-        "action/guidelines": "01_general/01_for_courts/02_guidelines",
-        "action/case-study-nm": "01_general/01_for_courts",
-        "action/case-study-ark": "01_general/01_for_courts/03_case-study-ark",
-        "action/case-study-canada": "01_general/01_for_courts/04_case-study-canada",
+        "api": "api/api",
+        "about": "general/about",
+        "search-docs": "web/search",
+        "tools": "general/tools",
+        "trends-docs": "web/trends",
+        "bulk": "bulk/bulk_docs",
+        "terms": "general/terms-of-use",
+        "privacy": "general/privacy-policy",
+        "changelog": "general/changelog",
+        "action": "general/for-courts/index",
+        "action/guidelines": "general/for-courts/guidelines",
+        "action/case-study-nm": "general/for-courts",
+        "action/case-study-ark": "general/for-courts/case-study-ark",
+        "action/case-study-canada": "general/for-courts/case-study-canada",
     }
 
     return redirect('docs', translation[url_path])

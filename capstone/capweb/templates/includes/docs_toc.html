@@ -41,9 +41,11 @@
                     <a class="list-header-link" href="{% url "docs" item.url %}">{{ item.label }}</a>
                 </li>
                 <ul class="interior-item">
-                    <ul class="doc-toc-entry">
-                        {{ item.doc_toc }}
-                    </ul>
+                    {% if req_doc_path == item.url %}
+                        <ul class="doc-toc-entry">
+                            {{ item.doc_toc }}
+                        </ul>
+                    {% endif %}
                 </ul>
             {% else %}
                 <li class="interior-title">

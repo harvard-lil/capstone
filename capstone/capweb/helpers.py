@@ -268,26 +268,23 @@ def is_browser_request(request):
     drf_renderer = DefaultContentNegotiation().select_renderer(RestRequest(request), [renderers.JSONRenderer, renderers.TemplateHTMLRenderer])
     return drf_renderer[0] is renderers.TemplateHTMLRenderer
 
+def path_to_url(url_string):
+    return re.sub(r'(([0-9]+)_([^/]))+', '\\3', url_string)
 
 safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
 
-@lru_cache(None)
-def get_toc_from_path(request, url):
+def get_toc_by_url():
     from elasticsearch.exceptions import NotFoundError #TODO figure out how to fix this import problem
     from capapi.documents import CaseDocument
     app_absolute_path = os.path.abspath(os.path.dirname(__file__))
     base_path = Path(app_absolute_path, settings.DOCS_RELATIVE_DIR)
-    meta = {}
-    content=''
     toc_by_url = {
         '.': {'children': []},
     }
-
     # special case contexts
     context = {
         'email': settings.DEFAULT_FROM_EMAIL
     }
-
     contributors = get_data_from_lil_site(section="contributors")
     sorted_contributors = {}
     for contributor in contributors:
@@ -295,7 +292,6 @@ def get_toc_from_path(request, url):
         if contributor['affiliated']:
             sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
     sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
-
     context['contributors']= sorted_contributors
     context['news']= get_data_from_lil_site(section="news")
     try:
@@ -306,51 +302,38 @@ def get_toc_from_path(request, url):
         except NotFoundError:
             case = None
     context['case'] = case
-
     def path_string_to_title(string):
         return string.replace('-', ' ').replace('_', ' ').title().replace('Api', 'API').replace('Cap', 'CAP')
-
-    breadcrumb = " &gt; ".join([path_string_to_title(st.split('_', 1)[1]) for st in url.split('/')])
-
     for path in sorted(base_path.glob('**/*')):
         rel_path = path.relative_to(base_path)
-        parent_url = str(rel_path.parent)
+        parent_url = path_to_url(str(rel_path.parent))
         if not (path.suffix == '.md' or path.is_dir()):
             continue
-
         order, display_name = path_string_to_title(rel_path.with_suffix('').name).split(' ', 1)
-
         entry = {
             'label': display_name,
             'children': [],
             'order': int(order),
         }
-
         if path.suffix == '.md':
-
-            entry['url'] = str(rel_path.with_suffix(''))
+            entry['url'] = path_to_url(str(rel_path.with_suffix('')))
             entry['path'] = str(path)
             entry['doc_toc'] = ''
-
-            markdown_doc = render_to_string(str(path), context, request)
-            if url == entry['url']:
-                content, entry['doc_toc'], meta = render_markdown(markdown_doc)
-                meta = {k: mark_safe(v) for k, v in meta.items()}
-                content = mark_safe(content)
-                entry['doc_toc'] = mark_safe(entry['doc_toc'])
-
+            markdown_doc = render_to_string(str(path), context)
+            content, doc_toc, meta = render_markdown(markdown_doc)
+            entry['doc_toc'] = mark_safe(doc_toc)
+            entry['content'] = mark_safe(content)
+            entry['meta'] = {k: mark_safe(v) for k, v in meta.items()}
+            entry['breadcrumb'] = path_string_to_title(entry['url'])  # TODO: use entry['meta']['title'] of each entry
         else:
             # directory
-            entry['url'] = str(rel_path)
-
+            entry['url'] = path_to_url(str(rel_path))
         toc_by_url[parent_url]['children'].append(entry)
         toc_by_url[entry['url']] = entry
-
     for item in toc_by_url.values():
         item['children'].sort(key=lambda i: i['order'])
-
-    toc_by_url['content'] = content
-    toc_by_url['meta'] = meta
-    toc_by_url['breadcrumb'] = breadcrumb
-
     return toc_by_url
+
+# in production, only calculate toc_by_url once
+if not settings.DEBUG:
+    get_toc_by_url = lru_cache(None)(get_toc_by_url)

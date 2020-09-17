@@ -10,7 +10,7 @@ from test_data.test_fixtures.fixtures import CapClient
 
 @pytest.mark.django_db
 def test_docs(client, elasticsearch, three_cases):
-    response = client.get(reverse('docs', args=['04_web/01_search']))
+    response = client.get(reverse('docs', args=['web/search']))
     check_response(response)
 
 @pytest.mark.django_db
