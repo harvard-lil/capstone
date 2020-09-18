@@ -29,7 +29,9 @@
       <p>
         <strong>Volume number:</strong>
         {% for volume in volumes %}
-          <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number_slug=volume.volume_number_slug host 'cite' %}">{{ volume.volume_number }}</a>
+          {% ifchanged %}
+            <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number_slug=volume.volume_number_slug host 'cite' %}">{{ volume.volume_number }}</a>
+          {% endifchanged %}
         {% endfor %}
       </p>
     {% endfor %}

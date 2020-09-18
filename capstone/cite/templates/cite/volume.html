@@ -28,7 +28,10 @@
 
     {% for volume, cases in volumes %}
       {% with volume.reporter as reporter %}
-        <h3 class="subtitle">{{ volume.volume_number }} {{ reporter.short_name }}</h3>
+        <h3 class="subtitle">
+          {{ volume.volume_number }} {{ reporter.short_name }}
+          {% if volume.second_part_of_id %}part 2{% endif %}
+        </h3>
         <p>
           {{ reporter.full_name }}
           ({{ reporter.start_year|default:"" }}-{{ reporter.end_year|default:"" }})
