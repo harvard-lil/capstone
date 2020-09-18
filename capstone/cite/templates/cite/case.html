@@ -16,8 +16,8 @@
       urls: {
         {% if request.user.is_staff %}
           djangoAdmin: "{% url 'admin:capdb_casemetadata_change' db_case.id %}",
-          caseEditor: "{% url 'case_editor' db_case.id host 'cite' %}",
         {% endif %}
+        caseEditor: "{% url 'case_editor' db_case.id host 'cite' %}",
         search: "{% url "search" %}#/cases",
         redact: "{% url "redact_case" db_case.id host 'cite' %}",
         about: "{% url "about" %}",
@@ -29,6 +29,7 @@
       },
       fullCite: "{{ full_citation|redact:db_case }}",
       isStaff: {% if request.user.is_staff %}true{% else %}false{% endif %},
+      canEdit: {% if perms.capdb.correct_ocr %}true{% else %}false{% endif %},
       jurisdictionName: "{{ es_case.jurisdiction.name_long }}",
       caseYear: "{{ db_case.decision_date.year }}",
       caseId: {{ db_case.id }},
