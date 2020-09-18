@@ -55,7 +55,7 @@ TEST_SLOW_QUERIES_DB_NAME = 'capstone_test_queries'
 STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 # don't update elasticsearch index on dev when savings cases (this may want to change -- not sure)
-MAINTAIN_ELASTICSEARCH_INDEX = False
+MAINTAIN_ELASTICSEARCH_INDEX = True
 
 import sys
 if 'pytest' not in sys.modules:

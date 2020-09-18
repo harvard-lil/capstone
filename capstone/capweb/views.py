@@ -60,7 +60,7 @@ def docs(request, req_doc_path):
         structure from it. Serves up a specific doc or the default docs entry page.
     """
     if not req_doc_path:
-        req_doc_path = "01_general/01_docs_intro"
+        req_doc_path = "general/docs_intro"
     toc_by_url = get_toc_by_url()
     page = toc_by_url.get(req_doc_path)
     if not page or 'content' not in page:
