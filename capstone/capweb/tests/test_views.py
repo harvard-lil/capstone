@@ -8,10 +8,18 @@ from capdb.storages import DownloadOverlayStorage
 from capweb.helpers import reverse
 from test_data.test_fixtures.fixtures import CapClient
 
+
 @pytest.mark.django_db
 def test_docs(client, elasticsearch, three_cases):
     response = client.get(reverse('docs', args=['web/search']))
     check_response(response)
+
+
+@pytest.mark.django_db
+def test_docs_default(client, elasticsearch, three_cases):
+    response = client.get(reverse('docs', args=['']))
+    check_response(response, content_includes="Welcome to the Caselaw Access Project Documentation")
+
 
 @pytest.mark.django_db
 def test_legacy_redirect(client):
