@@ -183,6 +183,7 @@ main {
   @extend .flex-fill;
   @extend .d-flex;
   @extend .flex-column;
+  min-height: 85%;
   > * {
     @extend .flex-fill;
   }
