@@ -22,7 +22,7 @@ command line. For example, here is a curl command to request a single case from 
     curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"
 
 If you haven't used APIs before, you might want to check out our [search tool]({% url "search" %}) or jump down to our 
-[Beginner's Introduction to APIs]({% url 'docs' '05_tutorials_and_guides/01_intro_to_APIs' %}#beginners-introduction-to-apis).
+[Beginner's Introduction to APIs]({% url 'docs' 'tutorials_and_guides/intro_to_APIs' %}#beginners-introduction-to-apis).
 
 {# ==============> REGISTER  <============== #}
 # Registration {: class="subtitle" }
@@ -31,7 +31,7 @@ Most API queries don't require registration: check our [access limits](#access-l
 {: class="highlighted" }
 
 [Click here to register for an API key]({% url "register" %}) if you need to access case text from 
-non-[whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions.
+non-[whitelisted]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-whitelisted) jurisdictions.
 
 {# ==============> AUTHENTICATION <============== #}
 # Authentication {: class="subtitle" }
@@ -163,7 +163,7 @@ Queries by default return 100 results per page, but you may request a smaller or
   
     curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"
   
-We use [cursor]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-cursor)-based pagination, meaning we keep track of where you are in the results set with a token, 
+We use [cursor]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-cursor)-based pagination, meaning we keep track of where you are in the results set with a token, 
 and you can access each page of results by returning the token included in the `"previous"` and `"next"` keys of the 
 response:
   
@@ -305,10 +305,10 @@ The number of words in the full case text including head matter.
   
 The agreement with our project partner, [Ravel](http://ravellaw.com), requires us to limit access to the full
 text of cases to no more than 500 cases per person, per day. This limitation does not apply to 
-[researchers]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-researchers) who agree to certain restrictions on use and redistribution. Nor does this restriction 
-apply to cases issued in [jurisdictions]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-jurisdiction) that make their newly issued cases freely 
+[researchers]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-researchers) who agree to certain restrictions on use and redistribution. Nor does this restriction 
+apply to cases issued in [jurisdictions]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-jurisdiction) that make their newly issued cases freely 
 available online in an authoritative, citable, machine-readable format. We call these 
-[whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions. Currently, Illinois, Arkansas, New Mexico, and North Carolina
+[whitelisted]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-whitelisted) jurisdictions. Currently, Illinois, Arkansas, New Mexico, and North Carolina
 are the only whitelisted jurisdictions.
   
 We would love to whitelist more jurisdictions! If you are involved in US case publishing at the state or federal level,
@@ -330,9 +330,9 @@ Unregistered Users
 
 * Access all metadata
 {: class="list-group-item" add_list_class="parameter-list" }
-* Unlimited API access to all cases from [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
+* Unlimited API access to all cases from [whitelisted]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
-* Bulk Download all cases from [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
+* Bulk Download all cases from [whitelisted]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
 
 Registered Users
@@ -340,11 +340,11 @@ Registered Users
 
 * Access all metadata
 {: class="list-group-item" add_list_class="parameter-list" }
-* Unlimited API access to all cases from [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
+* Unlimited API access to all cases from [whitelisted]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
-* Access to 500 cases per day from non-[whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
+* Access to 500 cases per day from non-[whitelisted]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
-* Bulk Download all cases from [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
+* Bulk Download all cases from [whitelisted]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-whitelisted) jurisdictions
 {: class="list-group-item" add_list_class="parameter-list" }
 
 
@@ -460,9 +460,9 @@ API Base
 [{% api_url "api-root" %}]({% api_url "api-root" %})
 {: class="endpoint-link" style="margin-top: 0px;" }
 
-This is the base [endpoint]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-endpoint) of 
+This is the base [endpoint]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-endpoint) of 
 CAPAPI. It just lists all of the available 
-[endpoints]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-endpoint).
+[endpoints]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-endpoint).
 
 
 {# ==============> CASES <============== #}
@@ -473,7 +473,7 @@ Case Browse/Search Endpoint
 {: class="endpoint-link" style="margin-top: 0px;" }
 
 This is the primary endpoint; you use it to browse, search for, and retrieve cases. If you know the numeric ID of your 
-case in our system, you can append it to the [path]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-path) to retrieve a [single case](#endpoint-case).
+case in our system, you can append it to the [path]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-path) to retrieve a [single case](#endpoint-case).
 
 Endpoint Parameters:
 {: class="list-header mb-2" }
@@ -495,7 +495,7 @@ Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`
     * __data type:__    string or integer
     * __description:__  find cases that cite to the given citation or case ID, e.g. `1 Ill. 21` or `12345`
 * `court`
-    * __data type:__    [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
+    * __data type:__    [slug]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-slug)
     * __description:__  [court](#endpoint-courts) slug
 * `court_id`
     * __data type:__    integer
@@ -515,7 +515,7 @@ Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`
 * `id` 
     * __data type:__    integer
 * `jurisdiction`
-    * __data type:__    [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
+    * __data type:__    [slug]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-slug)
     * __description:__  [jurisdiction](#endpoint-jurisdictions) slug
 * `last_updated`
     * __data type:__    `YYYY-MM-DDTHH:MM:SS` or a substring
@@ -614,10 +614,10 @@ Endpoint Parameters:
     * __description:__  the short jurisdiction name, e.g. Ill.
 * `whitelisted`
     * __data type:__    "true" or "false"
-    * __description:__  filter for [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
+    * __description:__  filter for [whitelisted]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-whitelisted) jurisdictions
 * `slug`
     * __data type:__    string
-    * __description:__  filter on the jurisdiction [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
+    * __description:__  filter on the jurisdiction [slug]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-slug)
 * `cursor`
     * __data type:__    string
     * __description:__  A value provided by a previous search result to go to the next page of results
@@ -643,13 +643,13 @@ Endpoint Parameters:
     * __description:__  the short jurisdiction name, e.g. Ill. App. Ct.
 * `whitelisted`
     * __data type:__    "true" or "false"
-    * __description:__  filter for [whitelisted]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-whitelisted) jurisdictions
+    * __description:__  filter for [whitelisted]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-whitelisted) jurisdictions
 * `jurisdiction`
     * __data type:__    string
-    * __description:__  filter on the jurisdiction [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
+    * __description:__  filter on the jurisdiction [slug]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-slug)
 * `slug`
     * __data type:__    string
-    * __description:__  filter on the court [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug)
+    * __description:__  filter on the court [slug]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-slug)
 * `cursor`
     * __data type:__    string
     * __description:__  A value provided by a previous search result to go to the next page of results
@@ -698,7 +698,7 @@ Endpoint Parameters:
     * __description:__  Up to 3 space separated words. All words beyond the third are ignored.
 * `jurisdiction`
     * __data type:__    string
-    * __description:__  [Jurisdiction](#endpoint-jurisdiction) [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug): e.g. `tex` or `mass`.
+    * __description:__  [Jurisdiction](#endpoint-jurisdiction) [slug]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-slug): e.g. `tex` or `mass`.
         Limit your results to a specific jurisdiction.
 * `year`
     * __data type:__    YYYY
@@ -730,7 +730,7 @@ Here's the output when
         }
     } 
     
-Under `results` is an object containing the results for the query term `raisins`. Each jurisdiction's [slug]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-slug) 
+Under `results` is an object containing the results for the query term `raisins`. Each jurisdiction's [slug]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-slug) 
 is a key in the `raisins` object. Only `cal` is listed because the jurisdiction parameter in the query is set to `cal`. 
 Under `cal`, there is an array of objects, each containing the counts for a specific year. Since this query filters for 
 results from 1984, that's the only year listed. Under `count`, there's `40, 4589927`, meaning *4,589,927* terms were 
@@ -769,7 +769,7 @@ small team could ever hope to. Here's the best way to report common types of err
 Jumbled or Misspelled Words in Case Text:
 {: class="list-header mb-1" }
 
-For now, we're not accepting bug reports for [OCR]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-ocr) problems. While our data is good quality for OCR'd text, we
+For now, we're not accepting bug reports for [OCR]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-ocr) problems. While our data is good quality for OCR'd text, we
 fully expect these errors in every case.  We're working on the best way to tackle this.
 {: class="mt-0" }
 

@@ -12,15 +12,10 @@ data, applications, services, and site.
 
 * If you're interested in searching for and reading cases, check out our [search tool]({% url 'search' %}).
 {: class="list-group-item" add_list_class="parameter-list" }
-* If you're interested in using Caselaw Access Project data in your project, check out our 
-[Researcher Getting Started Guide]({% url 'docs' '05_tutorials_and_guides/03_researcher_getting_started' %}).
-{: class="list-group-item" add_list_class="parameter-list" }
 * If you work for a court and would like to take action to free your court data, check out 
-[Court Action Guide]({% url 'docs' '01_general/01_action/01_index' %}).
+[Court Action Guide]({% url 'docs' 'docs/general/for-courts/index' %}).
 {: class="list-group-item" add_list_class="parameter-list" }
-* If you work for a library and would like to learn about our data, check out 
-[Court Action Guide]({% url 'docs' '01_general/01_action/01_index' %}).
+* If you're having trouble with these docs or our service, don't hesitate to [reach out]({% url 'contact' %}) 
+and ask for help. 
 {: class="list-group-item" add_list_class="parameter-list" }
 
-If you're having trouble with these docs or our service, don't hesitate to [reach out]({% url 'contact' %}) and ask for
-help. 
