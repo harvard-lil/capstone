@@ -301,7 +301,9 @@ def get_toc_by_url():
             case = CaseDocument.search().execute()[0]
         except NotFoundError:
             case = None
-    context['case'] = case
+    context['case_id'] = case.id if case else 1
+    context['case_url'] = reverse('cases-detail', args=[context['case_id']], host='api')
+    context['case_cite'] = case.citations[0].cite if case else "123 U.S. 456"
     def path_string_to_title(string):
         return string.replace('-', ' ').replace('_', ' ').title().replace('Api', 'API').replace('Cap', 'CAP')
     for path in sorted(base_path.glob('**/*')):
