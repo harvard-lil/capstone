@@ -129,6 +129,9 @@ def extract_citations_from_text(text, max_year=9999, misses=None):
 
 def extract_citations(case):
     misses = defaultdict(lambda: defaultdict(int))
+    # Don't count instances where a case cites to itself. Typically this is listing the parallel cite,
+    # which leads to false matches when the parallel page has more than one case.
+    self_cites = {c.normalized_cite for c in case.citations.all()}
     case_citations = [
         ExtractedCitation(
             cite=cite,
@@ -139,5 +142,6 @@ def extract_citations(case):
             page_number_original=page_num)
         for cite, normalized_cite, vol_num, reporter_str, page_num in
         extract_citations_from_text(case.body_cache.text, case.decision_date.year, misses)
+        if normalized_cite not in self_cites
     ]
     return case_citations, misses
