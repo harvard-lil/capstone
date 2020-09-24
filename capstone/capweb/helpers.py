@@ -312,6 +312,7 @@ def get_toc_by_url():
         order, display_name = path_string_to_title(rel_path.with_suffix('').name).split(' ', 1)
         entry = {
             'label': display_name,
+            'uid': str(rel_path.with_suffix('')).replace("/", "_"),
             'children': [],
             'order': int(order),
         }
@@ -321,6 +322,8 @@ def get_toc_by_url():
             entry['doc_toc'] = ''
             markdown_doc = render_to_string(str(path), context)
             content, doc_toc, meta = render_markdown(markdown_doc)
+            if settings.DOCS_SHOW_DRAFTS is False and 'status' in meta and meta['status'] == 'draft':
+                continue
             entry['doc_toc'] = mark_safe(doc_toc)
             entry['content'] = mark_safe(content)
             entry['meta'] = {k: mark_safe(v) for k, v in meta.items()}

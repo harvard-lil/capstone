@@ -1,4 +1,4 @@
-{% load static %} {% load pipeline %}{% load startswith %}{% load capweb_static %}{% load render_bundle from webpack_loader %}{% load capture_tags %}<!DOCTYPE html>
+{% load static %} {% load bootstrap4 %} {% load pipeline %}{% load startswith %}{% load capweb_static %}{% load render_bundle from webpack_loader %}{% load capture_tags %}<!DOCTYPE html>
 <html lang="en">
   <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
     <meta charset="utf-8">
@@ -71,41 +71,7 @@
     <nav class="site-nav">
         {% include "includes/nav.html" %}
     </nav>
-
-    <nav class="doc-nav">
-        <div id="docs_toc" class="w-100 pl-0">
-            {% for item in toc %}
-                {% if req_doc_path|startswith:item.url %}
-                    <ul class="top-level-item pl-0">
-                        <li id="label_{{ item.url }}" class="top-level-label expandable"
-                            onclick="toggle_item('{{ item.url }}');">
-                            {{ item.label }}
-                        </li>
-                        <li id="structure_{{ item.url }}" class="top-level-structure active">
-                            {% include "includes/docs_toc.html" with toc=item.children %}
-                        </li>
-                    </ul>
-                {% else %}
-                    <ul class="top-level-item pl-0">
-                        <li id="label_{{ item.url }}" class="top-level-label expandable"
-                            onclick="toggle_item('{{ item.url }}');">
-                            {{ item.label }}
-                        </li>
-                        <li id="structure_{{ item.url }}" class="top-level-structure inactive">
-                            {% include "includes/docs_toc.html" with toc=item.children %}
-                        </li>
-                    </ul>
-                {% endif %}
-            {% endfor %}
-        </div>
-    </nav>
-
-    <main id="document-contents" class="doc-main">
-
-            {{ content }}
-    </main>
-
-    <nav class="breadcrumb" onclick="toggle_mobile_nav();">
+    <nav class="breadcrumb" tabindex="0" onclick="toggle_mobile_nav();">
         <div class="row">
             <div class="col-10">
                 {% autoescape off %}
@@ -117,6 +83,36 @@
             </div>
         </div>
     </nav>
+    <nav class="doc-nav show-nav">
+        <div id="docs_toc" class="panel-group w-100 pl-0">
+            {% for item in toc %}
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        <a class="top-level-label" data-toggle="collapse" href="#collapse1_{{ item.url }}" data-target="#collapse1_{{ item.url }}">{{ item.label }}</a>
+                    </div>
+                </div>
+
+               {% if req_doc_path|startswith:item.url %}
+                    <div id="collapse1_{{ item.url }}" class="panel-collapse show collapse">
+               {% else %}
+                    <div id="collapse1_{{ item.url }}" class="panel-collapse collapse">
+               {% endif %}
+                        <ul class="top-level-item pl-0">
+                            <li class="top-level-structure">
+                                {% include "includes/docs_toc.html" with toc=item.children %}
+                            </li>
+                        </ul>
+                    </div>
+            {% endfor %}
+        </div>
+    </nav>
+
+    <main id="document-contents" class="doc-main">
+
+            {{ content }}
+    </main>
+
+
     <header class="title"><h1>{{ meta.title }}</h1></header>
     <aside class="explainer">
 
@@ -129,19 +125,11 @@
     </footer>
 </div>
 <script>
-    function toggle_item(element_url) {
-        let arrow = document.getElementById("arrow_" + element_url);
-        let structure = document.getElementById("structure_" + element_url);
-        let viz_state = structure.classList.contains("active") ? ["active", "inactive"] : ["inactive", "active"];
-        structure.classList.replace(...viz_state);
-        if (arrow) {
-            arrow.classList.replace(...viz_state);
-        }
-    }
+
     function toggle_mobile_nav(force_hide=false) {
         let container = document.getElementById("container");
         let viz_state = container.classList.contains("show-nav") ? ["show-nav", "no-nav"] : ["no-nav", "show-nav"];
-        if (force_hide &&  viz_state === container.classList.contains("no-nav")){
+        if (!window.matchMedia('(max-width: 767px)').matches || (force_hide &&  viz_state === container.classList.contains("no-nav"))){
             return
         }
         container.classList.replace(...viz_state);
@@ -155,6 +143,13 @@
             }
         })
     }
+
+    breadcrumb = document.getElementsByClassName('breadcrumb')[0]
+    breadcrumb.addEventListener('keydown', (event) => {
+      if (document.activeElement === breadcrumb && (event.code === 'Space' || event.code === 'Enter')) {
+        breadcrumb.click();
+      }
+    });
 
 </script>
 <span id="content-and-footer"></span>
