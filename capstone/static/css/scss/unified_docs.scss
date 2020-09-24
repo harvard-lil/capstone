@@ -304,71 +304,70 @@ h2 {
 }
 
 nav.doc-nav {
+  .top-level-item {
+    margin-bottom: 0;
+  }
+  .panel-heading {
+    margin-right: 0.5rem;
+    height: 2rem;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-normal;
+    padding-top: .5rem;
+    padding-bottom: 2.3rem;
+    border-bottom: 1px $color-violet-gray-dark solid;
+  }
   ul {
     padding-left: 1rem;
   }
 
-  .interior-structure {
-    margin-left: -1rem;
-  }
-
-  .interior-level {
-    padding-top: 0.5rem;
-    padding-bottom: 1rem;
-    padding-left: 2rem;
+  .list-group-item {
+    border: 0;
+    padding: 0;
   }
 
   .interior-directory {
-    margin-left: -1.75rem;
-  }
-
-  li.interior-title {
-    padding-top: 0;
-    padding-bottom: .25rem;
-    list-style: circle;
-  }
-
-  li.interior-title.current > a {
-    font-weight: $font-weight-bold !important;
+    background-color: $color-white;
     color: $color-black;
+    border-bottom: 0;
+    font-size: 1rem;
   }
-
+  .current-branch {
+    font-weight: $font-weight-black;
+    color: $color-violet-gray-dark;
+  }
+  .current-document {
+    font-weight: $font-weight-black;
+    margin-left: -2rem;
+  }
   li.doc-toc-item {
     list-style-type: circle;
+    a {
+      color: $color-violet-gray-dark;
+    }
   }
 
-  li.doc-toc-entry {
-    padding-left: 1rem;
+  ul.doc-toc-entry {
+    padding-left: 2rem;
   }
 
-  a.list-group-item {
-    padding: 0;
-    font-size: $font-size-sm;
-    border: 0;
+
+  .interior-directory-link[data-toggle].collapsed:before {
+    content: "+ ";
+    font-family: $font-family-sans-serif;
+    font-weight: $font-weight-black;
+  }
+  .interior-directory-link[data-toggle]:not(.collapsed):before {
+      content: "- ";
+      font-family: $font-family-sans-serif;
+      font-weight: $font-weight-black;
   }
 
-  a.list-header-link {
-    font-size: $font-size-lg;
-    padding-top: 0;
-    padding-bottom: 0;
+
+  .unexpanded {
   }
 
-  .arrow {
-    height: 1rem;
-    display: inline !important;
-  }
-
-  .arrow_div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .arrow.active {
+  .expanded {
     transform: rotate(90deg);
-  }
-
-  .arrow.inactive {
   }
 
   .top-level-label {
@@ -379,28 +378,13 @@ nav.doc-nav {
   }
 
   .top-level-structure {
-    box-shadow: inset 0px 11px 8px -10px #CCC,
-    inset 0px -11px 8px -10px #CCC;
-    background-color: $color-white;
-    color: $color-black;
-    list-style-type: square;
-    display: none;
+    @extend .interior-directory;
+    box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
   }
-
-  .top-level-item {
-    color: $color-white;
-    background-color: $color-black;
-    border-bottom-width: thin;
-    border-bottom-style: solid;
-    border-bottom-color: $color-violet-gray-dark;
-    margin: 0;
-  }
-
-  .active {
-    display: block;
-  }
-
-  .inactive {
-    display: none;
+  .arrow-image {
+    vertical-align: baseline;
+    height: .8rem;
   }
 }
