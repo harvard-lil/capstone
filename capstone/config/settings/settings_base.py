@@ -129,6 +129,7 @@ API_HOST_OVERRIDE = None
 # API_HOST_OVERRIDE = 'https://api.case.law'
 
 DOCS_RELATIVE_DIR = os.path.join('templates', 'docs')
+DOCS_SHOW_DRAFTS = False
 
 TEMPLATES = [
     {

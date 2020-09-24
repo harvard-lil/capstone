@@ -322,7 +322,7 @@ def get_toc_by_url():
             entry['doc_toc'] = ''
             markdown_doc = render_to_string(str(path), context)
             content, doc_toc, meta = render_markdown(markdown_doc)
-            if 'status' in meta and meta['status'] == 'draft':
+            if settings.DOCS_SHOW_DRAFTS is False and 'status' in meta and meta['status'] == 'draft':
                 continue
             entry['doc_toc'] = mark_safe(doc_toc)
             entry['content'] = mark_safe(content)
