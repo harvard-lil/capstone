@@ -429,6 +429,7 @@ def extract_citations_per_vol(self, volume_id):
                  .filter(volume_id=volume_id, in_scope=True)
                  .exclude(body_cache=None)
                  .select_related('body_cache')
+                 .prefetch_related('citations')
                  .only('body_cache__text'))
         comparison_fields = ('normalized_cite', 'page_number_original', 'volume_number_original', 'reporter_name_original', 'cited_by_id', 'cite')
 
