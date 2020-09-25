@@ -34,7 +34,7 @@ h2 {
           "nav content explainer"
           "footer footer footer";
 
-  grid-template-columns: minmax(5rem, 18rem) 1fr 18rem;
+  grid-template-columns: minmax(15rem, 18rem) auto minmax(12rem, 18rem);
   grid-template-rows: auto auto auto auto auto;
 
   .expand-nav-div {
@@ -149,6 +149,7 @@ h2 {
     }
 
     .code-block {
+      max-width: 100%;
       background-color: $color-tan;
       margin-top: 1rem;
     }
@@ -233,7 +234,7 @@ h2 {
             "nav content ."
             "footer footer footer";
 
-    grid-template-columns: minmax(5rem, 18rem) 1fr 3rem;
+    grid-template-columns: minmax(12rem, 18rem) auto 3rem;
     grid-template-rows: auto auto auto 1fr auto auto;
   }
 }
