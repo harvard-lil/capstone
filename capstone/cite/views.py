@@ -19,6 +19,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, QueryDict
 from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
+from django.utils.encoding import iri_to_uri
 from django.utils.http import is_safe_url
 from django.utils.text import slugify
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -150,9 +151,9 @@ def case_pdf(request, case_id, pdf_name):
     """
     # check that we are at the canonical URL
     case = get_object_or_404(CaseMetadata.objects.select_related('volume').prefetch_related('citations'), pk=case_id)
-    pdf_url = case.get_pdf_url()
-    if request.build_absolute_uri() != pdf_url:
-        return HttpResponseRedirect(pdf_url)
+    pdf_url = case.get_pdf_url(with_host=False)
+    if iri_to_uri(request.path) != pdf_url and not request.GET.get('redirect'):
+        return HttpResponseRedirect(pdf_url+"?redirect=1")
 
     return citation(request,None, None, None, case_id, pdf=True, db_case=case)
 
