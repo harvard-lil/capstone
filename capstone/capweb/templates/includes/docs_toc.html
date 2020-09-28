@@ -9,12 +9,14 @@
                 <a class="current-branch interior-directory-link"
                    href="#menu_{{ item.uid }}"
                    data-toggle="collapse"
-                   data-target="#menu_{{ item.uid }}"></a>{{ item.label }}
+                   data-target="#menu_{{ item.uid }}"
+                   aria-label="{{ item.label }}"></a>{{ item.label }}
             {% else %}
                 <a class="collapsed interior-directory-link"
                    href="#menu_{{ item.uid }}"
                    data-toggle="collapse"
-                   data-target="#menu_{{ item.uid }}"></a>{{ item.label }}
+                   data-target="#menu_{{ item.uid }}"
+                   aria-label="{{ item.label }}"></a>{{ item.label }}
             {% endif %}
         {% elif not item.doc_toc %}
                 <a class="interior-file-link" href="{% url "docs" item.url %}" >{{ item.label }}</a>
