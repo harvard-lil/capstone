@@ -220,7 +220,6 @@ h2 {
       padding-bottom: 0;
     }
     display: grid;
-    grid-gap: 0 1rem;
     grid-template-areas:
             "pagenav pagenav pagenav"
             "nav breadcrumb breadcrumb"
@@ -230,7 +229,7 @@ h2 {
             "footer footer footer";
 
     grid-template-columns: minmax(12rem, 18rem) auto 3rem;
-    grid-template-rows: auto auto auto 1fr auto auto;
+    grid-template-rows: auto 3rem minmax(5rem, 10rem) auto auto 5rem;
   }
 }
 
@@ -314,6 +313,10 @@ nav.doc-nav {
     padding-top: .5rem;
     padding-bottom: 2.3rem;
     border-bottom: 1px $color-violet-gray-dark solid;
+  }
+  .panel-heading:first-of-type {
+    //this makes up for the 1px border between panels on the top row, so it lines up with the breadcrumb box
+    margin-top: -1px;
   }
   ul {
     padding-left: 1rem;
