@@ -104,7 +104,7 @@ def series(request, series_slug):
     reporters = list(Reporter.objects
         .filter(short_name_slug=series_slug)
         .exclude(start_year=None)
-        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None).exclude(volume_number='').exclude(duplicate=True).exclude(out_of_scope=True)))
+        .prefetch_related(Prefetch('volumes', queryset=VolumeMetadata.objects.exclude(volume_number=None).exclude(volume_number='').exclude(out_of_scope=True)))
         .order_by('full_name'))
     if not reporters:
         raise Http404
@@ -123,7 +123,7 @@ def volume(request, series_slug, volume_number_slug):
 
     vols = list(VolumeMetadata.objects
         .select_related('reporter')
-        .filter(volume_number_slug=volume_number_slug, reporter__short_name_slug=series_slug)
+        .filter(volume_number_slug=volume_number_slug, reporter__short_name_slug=series_slug, out_of_scope=False)
         .order_by('-second_part_of'))
     if not vols:
         raise Http404
