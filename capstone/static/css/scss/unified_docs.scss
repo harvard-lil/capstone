@@ -12,21 +12,20 @@ h1 {
   margin-top: 0;
   padding-top: 1rem;
   padding-bottom: 1rem;
+  padding-left: 1rem;
 }
 
 h2 {
   font-size: 1.5rem;
   font-weight: $font-weight-black;
-
 }
 
 
 
 
 .gr_container {
-
   display: grid;
-  grid-gap: 0 1rem;
+  grid-gap: 0;
   grid-template-areas:
           "pagenav pagenav pagenav"
           "nav breadcrumb breadcrumb"
@@ -64,10 +63,8 @@ h2 {
 
     .subtitle {
       margin-top: 2rem;
-      margin-left: -1rem;
     }
     .subtitle:first-of-type {
-      margin-left: -1rem;
       margin-top: 0;
     }
 
@@ -102,7 +99,6 @@ h2 {
 
     p.topic-header {
       margin-top: 2rem;
-      margin-left: -1rem;
       font-weight: bold;
       margin-bottom: 1rem;
       font-family: $font-sans-title;
@@ -128,7 +124,6 @@ h2 {
       font-weight: 700;
       letter-spacing: 0.9px;
       color: $color-black;
-      margin-left: -1rem;
     }
 
     li.list-header {
@@ -304,12 +299,15 @@ h2 {
   }
 }
 
+
 nav.doc-nav {
+  .nav {
+    padding-left: 2rem;
+  }
   .top-level-item {
     margin-bottom: 0;
   }
   .panel-heading {
-    margin-right: 0.5rem;
     height: 2rem;
     font-size: $font-size-lg;
     font-weight: $font-weight-normal;
@@ -331,6 +329,8 @@ nav.doc-nav {
     color: $color-black;
     border-bottom: 0;
     font-size: 1rem;
+    margin-left: 0;
+    padding-left: 0;
   }
   .current-branch {
     font-weight: $font-weight-black;
@@ -338,7 +338,6 @@ nav.doc-nav {
   }
   .current-document {
     font-weight: $font-weight-black;
-    margin-left: -2rem;
   }
   li.doc-toc-item {
     list-style-type: circle;
