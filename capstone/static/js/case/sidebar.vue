@@ -1,6 +1,6 @@
 <template>
     <div>
-        <hr class="rule"/>
+        <hr/>
         <div v-if="opinions" class="sidebar-section outline" id="outline-section">
             <h2 class="sidebar-title">Case outline</h2>
             <div class="sidebar-section-contents">
@@ -31,7 +31,7 @@
                 </span>
             </div>
         </div>
-        <hr class="rule"/>
+        <hr class="large-format-rule"/>
         <div class="sidebar-section" id="tools-section">
             <h2 class="sidebar-title">Tools</h2>
             <h3>Selection tools</h3>
@@ -59,16 +59,16 @@
                 </ul>
             </div>
         </div>
-        <div v-if="templateVars.isStaff || templateVars.canEdit" class="sidebar-section admin-tools">
+        <div v-if="templateVars.isStaff || templateVars.canEdit" class="sidebar-section admin-tools" id="admin-section">
             <h3>Admin Tools</h3>
             <div class="sidebar-section-contents">
-                <ul class="bullets">
+                <ul>
                     <li v-if="templateVars.isStaff"><a :href="urls.djangoAdmin">Django admin</a></li>
                     <li v-if="templateVars.canEdit"><a :href="urls.caseEditor">Case editor</a></li>
                 </ul>
             </div>
         </div>
-        <hr class="rule"/>
+        <hr/>
         <div class="sidebar-section" id="info-section">
             <h3>What is this page?</h3>
             <div class="sidebar-section-contents">
@@ -112,7 +112,6 @@
           this.lastSelection = selectedRange;
         }
       }));
-      console.log("case", this.case)
       // handle ?highlight= query param
       const highlightPhrase = new URLSearchParams(window.location.search).get('highlight');
       if (highlightPhrase) {
@@ -247,10 +246,6 @@
             window.location.reload()
           });
       },
-      toggleSidebar() {
-        console.log("toggling sidebar", this.sidebarStatus);
-        this.sidebarStatus = !this.sidebarStatus;
-      }
     },
   }
 </script>

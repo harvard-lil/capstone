@@ -47,7 +47,6 @@
     padding-top: 2.5rem;
     padding-bottom: 3rem;
     margin: 0 auto;
-    font-size: 1.14em;
     @include media-breakpoint-up(lg) {
       @include make-col(7);
     }

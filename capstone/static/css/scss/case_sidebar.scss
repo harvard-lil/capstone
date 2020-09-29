@@ -35,7 +35,8 @@
 
 #sidebar-menu {
   padding: 1em 0 0;
-  font-size: $font-size-sm;
+  font-size: 0.7em;
+  line-height: 1.4em;
   font-family: $font-sans-serif;
   color: $color-violet-gray-dark;
   box-shadow: 4px 0 4px 0 rgba(208, 208, 208, 0.50);
@@ -74,7 +75,7 @@
   }
 
   .sidebar-section-contents {
-    line-height: 1.25rem;
+    line-height: 1.5rem;
     letter-spacing: 0.03rem;
   }
 
@@ -99,7 +100,8 @@
   }
   .analysis-link {
     margin-left: 0.3em;
-    margin-bottom: 0.1em;
+    bottom: 0.1em;
+    position: relative;
   }
   .analysis-info {
     width: 1em;
@@ -127,7 +129,7 @@
     #info-section,
     #citing-section,
     .sidebar-title,
-    hr.rule {
+    hr.large-format-rule {
       display: none;
     }
     .btn {
@@ -138,14 +140,10 @@
       }
     }
     #outline-section {
-      border-top: 1px solid $color-gray;
       padding-top: 0.8em;
       padding-bottom: 0;
     }
-    #format-section {
-      border-bottom: 1px solid $color-gray;
-    }
-    #format-section, #outline-section {
+    #format-section, #outline-section, #admin-section {
       .sidebar-section-contents {
         display: inline;
       }
@@ -162,7 +160,7 @@
         content: "";
       }
     }
-    #format-section > .sidebar-title, #outline-section > .sidebar-title {
+    #format-section > .sidebar-title, #outline-section > .sidebar-title, #admin-section > h3 {
       display: inline;
       text-transform: initial;
       color: $color-black;

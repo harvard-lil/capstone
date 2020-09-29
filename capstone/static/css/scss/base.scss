@@ -49,15 +49,10 @@ body {
   -moz-hyphens: auto;
   -ms-hyphens: auto;
   hyphens: auto;
-  font-size: 1.1em;
   // push footer to bottom on short pages
   @extend .d-flex;
   @extend .flex-column;
   height: 100vh;
-  @include media-breakpoint-down(md) {
-    line-height: 1.5em;
-  }
-
 }
 
 #content-and-footer {
