@@ -1,27 +1,28 @@
 <template>
     <div>
+        <hr class="rule"/>
         <div v-if="opinions" class="sidebar-section outline" id="outline-section">
-            <h2 class="sidebar-title">Case Outline</h2>
+            <h2 class="sidebar-title">Case outline</h2>
             <div class="sidebar-section-contents">
                 <ul>
                     <li v-for="opinion in opinions" :key="opinion.id">
-                        <a class="font-weight-bold" :href="`#${opinion.id}`">{{opinion.type}}</a>
+                        <a  :href="`#${opinion.id}`">{{opinion.type}}</a>
                         <span v-if="opinion.author"> — {{opinion.author}}</span>
                     </li>
                 </ul>
             </div>
         </div>
         <div class="sidebar-section" id="format-section">
-            <h2 class="sidebar-title">Other Formats</h2>
+            <h2 class="sidebar-title">Other formats</h2>
             <div class="sidebar-section-contents">
-                <ul>
-                    <li v-if="urls.casePdf"><a class="btn" :href="urls.casePdf">PDF</a></li>
-                    <li><a class="btn" :href="urls.caseApi">API</a></li>
+                <ul class="list-inline">
+                    <li  class="list-inline-item" v-if="urls.casePdf"><a class="btn" :href="urls.casePdf">PDF</a></li>
+                    <li class="list-inline-item" ><a class="btn" :href="urls.caseApi">API</a></li>
                 </ul>
             </div>
         </div>
         <div class="sidebar-section" id="citing-section">
-            <h2 class="sidebar-title">Citing Cases</h2>
+            <h2 class="sidebar-title">Citing cases</h2>
             <div class="sidebar-section-contents">
                 <span v-if="citingCount === null"><a :href="urls.citedBy">cases citing to this case</a></span>
                 <span v-else-if="citingCount === 0">No cases cite to this case</span>
@@ -51,7 +52,7 @@
             </div>
         </div>
         <div class="sidebar-section" id="analysis-section" v-if="Object.keys(templateVars.analysis).length">
-            <h3>Analysis</h3><span class="float-left"><a :href="`${urls.apiDocs}#analysis-fields`">About</a></span>
+            <h3>Analysis<a class="analysis-link" :href="`${urls.apiDocs}#analysis-fields`"><img class="analysis-info" alt="More information about analysis fields" :src="`${urls.static}img/icons/question.svg`"></a></h3>
             <div class="sidebar-section-contents">
                 <ul>
                     <li v-for="(v, k) in templateVars.analysis">{{analysisName[k]}}: {{analysisValue(k, v)}}</li>
