@@ -13,18 +13,18 @@ explainer: The Caselaw Access Project API, also known as CAPAPI, serves all offi
   
 Are you a little lost in all the technical jargon, but still want to give the API a shot? This is a good place to start!
 This is by no means a complete introduction to using 
-[APIs]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-api), but it might be just enough to 
+[APIs]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-api), but it might be just enough to 
 help situate a technically inclined person who's a bit outside of their comfort zone. If you've had enough and would 
 prefer to just access the cases using a human-centric interface, please check out our [search tool]({% url 'search' %}). 
   
 Fundamentally, an API is no different from a regular website: A program on your computer, such as a web browser or 
-[curl]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-curl) sends a bit of data to 
-a [server]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-server), the server processes that 
+[curl]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-curl) sends a bit of data to 
+a [server]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-server), the server processes that 
 data, and then sends a response. If you know how to read a 
-[url]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-url), you can interact with web-based 
+[url]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-url), you can interact with web-based 
 services in ways that aren't limited to clicking on the links and buttons on the screen. 
   
-Consider the following [url]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-url), which will 
+Consider the following [url]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-url), which will 
 [perform a google search for the word "CAP."](https://www.google.com/search?q=CAP")
   
     https://www.google.com/search?q=CAP
@@ -41,16 +41,16 @@ ignore it.
 The next part is a list of words, separated by periods, between the initial double-slash, and before the subsequent 
 single slash. Many people generically refer to this as the domain, which is only partly true, but the reason why that's 
 not entirely true isn't really important for our purposes; the important consideration here is that it points to a 
-specific [server]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-server), which is just 
+specific [server]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-server), which is just 
 another computer on the internet. 
 
     /search
   
 The next section, which is comprised of everything between the slash after the server name and the question mark, is 
-called the [path]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-path). It's called a path 
+called the [path]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-path). It's called a path 
 because, in the earlier days of the web, it was a 'path' through folders/directories to find a specific file on the web 
 server. These days, it's more likely that the path will point to a specific 
-[endpoint]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-endpoint).
+[endpoint]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-endpoint).
   
   
 You can think of an endpoint as a distinct part of a program, which could require specific inputs, and/or provide 
@@ -67,7 +67,7 @@ endpoints such as `/search/books` and `/search/locations`.
     ?q=CAP
   
 The final section of the URL is where you'll find the 
-[parameters]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-parameter), and is comprised of 
+[parameters]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-parameter), and is comprised of 
 everything after the question mark. Parameters are a way of passing individual, labelled pieces of information to the 
 endpoint to help it perform its job. In this case, the parameter tells the `/search` endpoint what to search for. 
 Without this parameter, the response wouldn't be particularly useful.
@@ -84,7 +84,7 @@ old.
   
 So when you're working with CAPAPI, the same principles apply. Rather than http://www.google.com, you'll be using 
 {% api_url "api-root" %}. Rather than using the /search?q= endpoint and parameter, you'll be using one of our 
-[endpoints]({% url 'docs' '05_tutorials_and_guides/02_documentation_glossary' %}#def-endpoint) and the parameters we've 
+[endpoints]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-endpoint) and the parameters we've 
 defined. Would you like to see how this works in a real application? 
 Head over to our [search tool]({% url 'search' %}), click on the 'SHOW API CALL' link below the search button and 
 construct a query. The URL box below the search form will update as you change your search terms. You can hover over 

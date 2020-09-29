@@ -459,6 +459,7 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, extracted_ci
         assert set(c.cite for c in Citation.objects.filter(case_id=r['id'])) == set(r['cites'].split('; '))
 
 
+@pytest.mark.django_db(transaction=True)
 def test_pagerank(tmp_path, reset_sequences, three_cases):
     """ Test calculate_pagerank_scores and load_pagerank_scores """
     citations_file = tmp_path / 'citations.csv.gz'
@@ -468,9 +469,24 @@ def test_pagerank(tmp_path, reset_sequences, three_cases):
     fabfile.calculate_pagerank_scores(citations_file, pagerank_file)
     fabfile.load_pagerank_scores(pagerank_file)
     with gzip.open(pagerank_file, 'rt') as f:
-        pageranks = {int(row[0]): row[1:] for row in list(csv.reader(f))[1:]}
+        reader = csv.reader(f)
+        headers = next(reader)
+        pageranks = {int(row[0]): [float(row[1]), float(row[2])] for row in reader}
     for case in three_cases:
         assert case.analysis.get(key='pagerank').value == {
-            'raw': float(pageranks[case.id][0]),
-            'percentile': float(pageranks[case.id][1])
+            'raw': pageranks[case.id][0],
+            'percentile': pageranks[case.id][1],
         }
+
+    # check updating pagerank
+    timestamps = [get_timestamp(c) for c in three_cases]
+    pageranks[three_cases[0].id][0] *= 0.9
+    with gzip.open(pagerank_file, 'wt') as f:
+        writer = csv.writer(f)
+        writer.writerow(headers)
+        writer.writerows([k]+v for k, v in pageranks.items())
+    fabfile.load_pagerank_scores(pagerank_file)
+    check_timestamps_changed(three_cases[0], timestamps[0])
+    assert three_cases[0].analysis.get(key='pagerank').value['raw'] == pageranks[three_cases[0].id][0]
+    check_timestamps_unchanged(three_cases[1], timestamps[1])
+    check_timestamps_unchanged(three_cases[2], timestamps[2])

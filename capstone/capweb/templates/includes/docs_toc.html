@@ -1,58 +1,65 @@
 {% load startswith %}
 {% load static %}
 
-<ul class="interior-level">
-    {% for item in toc %}
+<ul class="nav">
+{% for item in toc %}
+    <li>
         {% if item.children %}
-             {% if req_doc_path|startswith:item.url %}
-                <li id="label_{{ item.url }}" class="interior-directory expandable" onclick="toggle_item('{{ item.url }}');">
-                    <div class="row">
-                        <div class="col-1 arrow_div">
-                            <img class="arrow active" id="arrow_{{ item.url }}"
-                                 src="{% static 'img/arrows/violet-arrow-right.svg' %}">
-                        </div>
-                        <div class="col-11">
-                            {{ item.label }}
-                        </div>
-                    </div>
-                </li>
-                <li id="structure_{{ item.url }}" class="interior-structure active">
-                    {% include "includes/docs_toc.html" with toc=item.children %}
-                </li>
+            {% if req_doc_path|startswith:item.url %}
+                <a class="current-branch interior-directory-link"
+                   href="#menu_{{ item.uid }}"
+                   data-toggle="collapse"
+                   data-target="#menu_{{ item.uid }}"
+                   aria-label="Expand {{ item.label }}"></a>{{ item.label }}
             {% else %}
-                <li id="label_{{ item.url }}" class="interior-directory expandable" onclick="toggle_item('{{ item.url }}');">
-                    <div class="row">
-                        <div class="col-1 arrow_div">
-                            <img class="arrow inactive" id="arrow_{{ item.url }}"
-                                 src="{% static 'img/arrows/violet-arrow-right.svg' %}">
-                        </div>
-                        <div class="col-11">
-                            {{ item.label }}
-                        </div>
-                    </div>
-                </li>
-                <li id="structure_{{ item.url }}" class="interior-structure inactive">
-                    {% include "includes/docs_toc.html" with toc=item.children %}
-                </li>
+                <a class="collapsed interior-directory-link"
+                   href="#menu_{{ item.uid }}"
+                   data-toggle="collapse"
+                   data-target="#menu_{{ item.uid }}"
+                   aria-label="Expand {{ item.label }}"></a>{{ item.label }}
             {% endif %}
+        {% elif not item.doc_toc %}
+                <a class="interior-file-link" href="{% url "docs" item.url %}" >{{ item.label }}</a>
         {% else %}
-            {% if item.doc_toc %}
-                <li class="interior-title current">
-                    <a class="list-header-link" href="{% url "docs" item.url %}">{{ item.label }}</a>
-                </li>
-                <ul class="interior-item">
-                    {% if req_doc_path == item.url %}
-                        <ul class="doc-toc-entry">
-                            {{ item.doc_toc }}
-                        </ul>
-                    {% endif %}
-                </ul>
+            {% if req_doc_path|startswith:item.url %}
+                <a class="current-branch interior-directory-link"
+                   href="#menu_{{ item.uid }}"
+                   data-toggle="collapse"
+                   data-target="#menu_{{ item.uid }}"
+                   aria-label="Expand {{ item.label }} Document Navigation"></a>
+                <a href="{% url "docs" item.url %}"
+                   aria-label="Go to {{ item.label }}">{{ item.label }}</a>
             {% else %}
-                <li class="interior-title">
-                    <a class="list-header-link" href="{% url "docs" item.url %}">{{ item.label }}</a>
-                </li>
+                <a class="collapsed interior-directory-link"
+                   href="#menu_{{ item.uid }}"
+                   data-toggle="collapse"
+                   data-target="#menu_{{ item.uid }}"></a>
+                <a href="{% url "docs" item.url %}"
+                aria-label="Go to {{ item.label }}">{{ item.label }}</a>
             {% endif %}
-
         {% endif %}
-    {% endfor %}
+
+       {% if req_doc_path|startswith:item.url %}
+           <div class="collapse show" id="menu_{{ item.uid }}" aria-expanded="false">
+       {% else %}
+           <div class="collapse" id="menu_{{ item.uid }}" aria-expanded="false">
+       {% endif %}
+                <ul class="interior-directory">
+                        {% if item.children %}
+                            <li>
+                                {% include "includes/docs_toc.html" with toc=item.children %}
+                            </li>
+                        {% elif item.doc_toc %}
+                            <ul class="nav">
+                                {% if req_doc_path == item.url %}
+                                    {{ item.doc_toc }}
+                                {% else %}
+                                    {{ item.doc_toc_absolute }}
+                                {% endif %}
+                            </ul>
+                        {% endif %}
+                </ul>
+            </div>
+    </li>
+{% endfor %}
 </ul>

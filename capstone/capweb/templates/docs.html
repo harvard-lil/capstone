@@ -1,163 +1,86 @@
-{% load static %} {% load pipeline %}{% load startswith %}{% load capweb_static %}{% load render_bundle from webpack_loader %}{% load capture_tags %}<!DOCTYPE html>
-<html lang="en">
-  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {# title #}
-    {% capture as title_out silent %}{% block title %}{% if title %}{{ title }}{% endif %}{% endblock title %}{% block title_suffix %} | Caselaw Access Project{% endblock title_suffix %}{% endcapture %}
-    <title>{{ title_out }}</title>
-    <meta property="og:title" content="{% if og_title %}{{ og_title }}{% else %}{{ title_out }}{% endif %}">
-    <meta property="twitter:title" content="{% if og_title %}{{ og_title }}{% else %}{{ title_out }}{% endif %}">
-    {# description #}
-    {% capture as meta_description_out silent %}{% block meta_description %}{% if meta_description %}{{ meta_description }}{% else %}Explore American Caselaw{% endif %}{% endblock meta_description %}{% endcapture %}
-    <meta name="description" content="{{ meta_description_out }}">
-    <meta property="og:description" content="{% if og_description %}{{ og_description }}{% else %}{{ meta_description_out }}{% endif %}">
-    <meta name="twitter:description" content="{% if og_description %}{{ og_description }}{% else %}{{ meta_description_out }}{% endif %}">
+{% extends "layouts/wide.html" %}
+{% load pipeline %}
+{% load static %}
+{% load startswith %}
 
-    {# social #}
-    {% capture as page_image_out silent %}{% block page_image %}{% if page_image != None %}{{ page_image }}{% else %}img/og_image/api.jpg{% endif %}{% endblock %}{% endcapture %}
-    {% capture as page_image_out silent %}{% if page_image_out|slice:":4" == 'http' %}{{ page_image_out }}{% else %}{% capweb_static page_image_out %}{% endif %}{% endcapture %}
-    {% if page_image_out %}
-      <meta name="twitter:card" content="summary_large_image">
-      <meta name="twitter:image" content="{{ page_image_out }}">
-      <meta property="og:image"  content="{{ page_image_out }}">
-    {% endif %}
+{% block title %}{{ meta.title }}{% endblock %}
+{% block base_css %}{% stylesheet "unified_docs" %}{% endblock %}
 
-    <meta name="twitter:site" content="@caselawaccess">
-    <meta name="twitter:creator" content="@HarvardLIL">
-
-    {% if page_url %}
-      <meta property="og:url" content="{{ page_url }}">
-    {% else %}
-      {% if request %}<meta property="og:url" content="{{ request.build_absolute_uri }}">{% endif %}
-    {% endif %}
-
-    <meta property="og:type" content="article">
-
-    {# extra meta tags #}
-    {% if meta_tags %}
-      {% for meta_tag in meta_tags %}
-        <meta
-          {% for k, v in meta_tag.items %}
-            {{ k }}="{{ v }}"
-          {% endfor %}
-        >
-      {% endfor %}
-    {% endif %}
-
-    {# favicon #}
-    <link rel="apple-touch-icon" sizes="152x152" href="{% static "img/favicon/apple-touch-icon.png" %}">
-    <link rel="icon" type="image/png" sizes="192x192"  href="{% static "img/favicon/android-chrome-144x144.png" %}">
-    <link rel="icon" type="image/png" sizes="96x96" href="{% static "img/favicon/favicon.ico" %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static "img/favicon/favicon-32x32.png" %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static "img/favicon/favicon-16x16.png" %}">
-    <link rel="mask-icon" href="{% static "img/favicon/safari-pinned-tab.svg" %}" color="#0075FF">
-    <meta name="msapplication-TileColor" content="#2b5797">
-    <meta name="msapplication-TileImage" content="{% static "img/favicon/mstile-150x150.png" %}">
-    <meta name="theme-color" content="#ffffff">
-
-    {# if a stylesheet has to import base.scss, it should override this block instead of going in extra_head to avoid double import #}
-    {% block base_css %}{% stylesheet "unified_docs" %}{% endblock %}
-    {% render_bundle 'chunk-common' %}
-    {% render_bundle 'base' %}
-    {% if extra_head %}{{ extra_head }}{% endif %}
-    {% block extra_head %}{% endblock %}
-  </head>
-
-<body class="hamburger-menu-closed" tabindex="-1">
-
-<div id="container" class="gr_container no-nav">
-    <nav class="site-nav">
-        {% include "includes/nav.html" %}
-    </nav>
-
-    <nav class="doc-nav">
-        <div id="docs_toc" class="w-100 pl-0">
-            {% for item in toc %}
-                {% if req_doc_path|startswith:item.url %}
-                    <ul class="top-level-item pl-0">
-                        <li id="label_{{ item.url }}" class="top-level-label expandable"
-                            onclick="toggle_item('{{ item.url }}');">
-                            {{ item.label }}
-                        </li>
-                        <li id="structure_{{ item.url }}" class="top-level-structure active">
-                            {% include "includes/docs_toc.html" with toc=item.children %}
-                        </li>
-                    </ul>
-                {% else %}
-                    <ul class="top-level-item pl-0">
-                        <li id="label_{{ item.url }}" class="top-level-label expandable"
-                            onclick="toggle_item('{{ item.url }}');">
-                            {{ item.label }}
-                        </li>
-                        <li id="structure_{{ item.url }}" class="top-level-structure inactive">
-                            {% include "includes/docs_toc.html" with toc=item.children %}
-                        </li>
-                    </ul>
-                {% endif %}
-            {% endfor %}
+{% block content %}
+  <div id="container" class="gr_container no-nav">
+    <nav class="breadcrumb" tabindex="0" onclick="toggle_mobile_nav();">
+      <div class="row">
+        <div class="col-10">
+          {% autoescape off %}
+            {{ breadcrumb }}
+          {% endautoescape %}
         </div>
-    </nav>
-
-    <main id="document-contents" class="doc-main">
-
-            {{ content }}
-    </main>
-
-    <nav class="breadcrumb" onclick="toggle_mobile_nav();">
-        <div class="row">
-            <div class="col-10">
-                {% autoescape off %}
-                    {{ breadcrumb }}
-                {% endautoescape %}
-            </div>
-            <div class="col-2 expand-nav-div">
-                <img id="expand-nav-arrow" height="15" width="30" class="unexpanded" src="{% static 'img/arrows/expand-arrow-blocked-black.svg' %}">
-            </div>
+        <div class="col-2 expand-nav-div">
+          <img id="expand-nav-arrow" height="15" width="30" class="unexpanded"
+               src="{% static 'img/arrows/expand-arrow-blocked-black.svg' %}">
         </div>
+      </div>
     </nav>
+    <nav class="doc-nav show-nav">
+      <div id="docs_toc" class="panel-group w-100 pl-0">
+        {% for item in toc %}
+          <div class="panel-heading">
+            <div class="panel-title">
+              <a class="top-level-label" data-toggle="collapse" href="#collapse1_{{ item.url }}"
+                 data-target="#collapse1_{{ item.url }}">{{ item.label }}</a>
+            </div>
+          </div>
+
+          {% if req_doc_path|startswith:item.url %}
+            <div id="collapse1_{{ item.url }}" class="panel-collapse show collapse">
+          {% else %}
+            <div id="collapse1_{{ item.url }}" class="panel-collapse collapse">
+          {% endif %}
+        <ul class="top-level-item pl-0">
+          <li class="top-level-structure">
+            {% include "includes/docs_toc.html" with toc=item.children %}
+          </li>
+        </ul>
+        </div>
+        {% endfor %}
+      </div>
+    </nav>
+
+    <div id="document-contents" class="doc-main">
+      {{ content }}
+    </div>
+
     <header class="title"><h1>{{ meta.title }}</h1></header>
     <aside class="explainer">
-
-        <p>
-            {{meta.explainer}}
-        </p>
+      <p>
+        {{ meta.explainer }}
+      </p>
     </aside>
-    <footer class="main-footer">
-        {% include "includes/footer.html" %}
-    </footer>
-</div>
-<script>
-    function toggle_item(element_url) {
-        let arrow = document.getElementById("arrow_" + element_url);
-        let structure = document.getElementById("structure_" + element_url);
-        let viz_state = structure.classList.contains("active") ? ["active", "inactive"] : ["inactive", "active"];
-        structure.classList.replace(...viz_state);
-        if (arrow) {
-            arrow.classList.replace(...viz_state);
-        }
-    }
-    function toggle_mobile_nav(force_hide=false) {
-        let container = document.getElementById("container");
-        let viz_state = container.classList.contains("show-nav") ? ["show-nav", "no-nav"] : ["no-nav", "show-nav"];
-        if (force_hide &&  viz_state === container.classList.contains("no-nav")){
-            return
-        }
-        container.classList.replace(...viz_state);
+  </div>
+  <script>
+    function toggle_mobile_nav(force_hide = false) {
+      let container = document.getElementById("container");
+      let viz_state = container.classList.contains("show-nav") ? ["show-nav", "no-nav"] : ["no-nav", "show-nav"];
+      if (!window.matchMedia('(max-width: 767px)').matches || (force_hide && viz_state === container.classList.contains("no-nav"))) {
+        return
+      }
+      container.classList.replace(...viz_state);
     }
 
     page_toc_items = document.getElementsByClassName("doc-toc-item");
     for (let local_link of page_toc_items) {
-        local_link.addEventListener("click", function () {
-            if (window.matchMedia('(max-width: 767px)').matches) {
-                toggle_mobile_nav(true);
-            }
-        })
+      local_link.addEventListener("click", function () {
+        if (window.matchMedia('(max-width: 767px)').matches) {
+          toggle_mobile_nav(true);
+        }
+      })
     }
 
-</script>
-<span id="content-and-footer"></span>
-</body>
-</html>
-
+    breadcrumb = document.getElementsByClassName('breadcrumb')[0]
+    breadcrumb.addEventListener('keydown', (event) => {
+      if (document.activeElement === breadcrumb && (event.code === 'Space' || event.code === 'Enter')) {
+        breadcrumb.click();
+      }
+    });
+  </script>
+{% endblock content %}

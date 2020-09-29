@@ -1382,7 +1382,14 @@ def export_citation_graph(output_folder="graph"):
             "* Edges: %s\n" % (jur['name'], timezone.now(), len(jur['nodes']), jur['edge_count'])
         )
 
-    count_cites_by_year(output_folder, output_folder.joinpath('aggregations'))
+    print("Calling count_cites_by_year")
+    count_cites_by_year(output_folder, output_folder / 'aggregations')
+
+    print("Calling calculate_pagerank_scores")
+    calculate_pagerank_scores(output_folder / "citations.csv.gz", output_folder / "pagerank_scores.csv.gz")
+
+    print("Calling load_pagerank_scores")
+    load_pagerank_scores(output_folder / "pagerank_scores.csv.gz")
 
 
 @task
@@ -1522,12 +1529,24 @@ def calculate_pagerank_scores(citation_graph_path="graph/citations.csv.gz", page
 
 @task
 def load_pagerank_scores(pagerank_score_output):
+    existing_scores = {c.case_id: c for c in CaseAnalysis.objects.filter(key='pagerank')}
+    to_insert = []
+    to_update = []
+    with gzip.open(pagerank_score_output, 'rt') as f:
+        reader = csv.DictReader(f)
+        for line in reader:
+            new_score = {'raw': float(line['raw_score']), 'percentile': float(line['percentile'])}
+            existing_score = existing_scores.pop(int(line['id']), None)
+            if existing_score:
+                if existing_score.value != new_score:
+                    existing_score.value = new_score
+                    to_update.append(existing_score)
+            else:
+                to_insert.append(CaseAnalysis(key='pagerank', value=new_score, case_id=line['id']))
     with transaction.atomic(using='capdb'):
-        CaseAnalysis.objects.filter(key__in='pagerank').delete()
-        with gzip.open(pagerank_score_output, 'rt') as f:
-            reader = csv.DictReader(f)
-            objs = (CaseAnalysis(key='pagerank', value={'raw': float(line['raw_score']), 'percentile': float(line['percentile'])}, case_id=line['id']) for line in reader)
-            CaseAnalysis.objects.bulk_create(objs)
+        CaseAnalysis.objects.filter(id__in=existing_scores.keys()).delete()
+        CaseAnalysis.objects.bulk_create(to_insert)
+        CaseAnalysis.objects.bulk_update(to_update, ['value'])
 
 
 if __name__ == "__main__":

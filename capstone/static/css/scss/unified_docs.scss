@@ -12,30 +12,28 @@ h1 {
   margin-top: 0;
   padding-top: 1rem;
   padding-bottom: 1rem;
+  padding-left: 1rem;
 }
 
 h2 {
   font-size: 1.5rem;
   font-weight: $font-weight-black;
-
 }
 
 
 
 
 .gr_container {
-
   display: grid;
-  grid-gap: 0 1rem;
+  grid-gap: 0;
   grid-template-areas:
-          "pagenav pagenav pagenav"
           "nav breadcrumb breadcrumb"
           "nav title title"
-          "nav content explainer"
-          "footer footer footer";
+          "nav content explainer";
 
-  grid-template-columns: minmax(5rem, 18rem) 1fr 18rem;
-  grid-template-rows: auto auto auto auto auto;
+  grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr) minmax(12rem, 18rem);
+  grid-template-rows: auto auto 1fr;
+  height: 100%;
 
   .expand-nav-div {
     display: none;
@@ -58,16 +56,14 @@ h2 {
     background-color: $color-black;
   }
 
-  main#document-contents {
+  #document-contents {
     padding: 0rem 3rem 1rem 3rem;
     grid-area: content;
 
     .subtitle {
       margin-top: 2rem;
-      margin-left: -1rem;
     }
     .subtitle:first-of-type {
-      margin-left: -1rem;
       margin-top: 0;
     }
 
@@ -102,7 +98,6 @@ h2 {
 
     p.topic-header {
       margin-top: 2rem;
-      margin-left: -1rem;
       font-weight: bold;
       margin-bottom: 1rem;
       font-family: $font-sans-title;
@@ -128,7 +123,6 @@ h2 {
       font-weight: 700;
       letter-spacing: 0.9px;
       color: $color-black;
-      margin-left: -1rem;
     }
 
     li.list-header {
@@ -149,6 +143,7 @@ h2 {
     }
 
     .code-block {
+      max-width: 100%;
       background-color: $color-tan;
       margin-top: 1rem;
     }
@@ -194,6 +189,8 @@ h2 {
     padding-left: 1rem;
     padding-top: .5rem;
     padding-bottom: 2.3rem;
+    position: sticky;
+    top: 0;
   }
 
   aside.explainer {
@@ -224,17 +221,14 @@ h2 {
       padding-bottom: 0;
     }
     display: grid;
-    grid-gap: 0 1rem;
     grid-template-areas:
-            "pagenav pagenav pagenav"
             "nav breadcrumb breadcrumb"
             "nav title title"
             "nav explainer ."
-            "nav content ."
-            "footer footer footer";
+            "nav content .";
 
-    grid-template-columns: minmax(5rem, 18rem) 1fr 3rem;
-    grid-template-rows: auto auto auto 1fr auto auto;
+    grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr) 3rem;
+    grid-template-rows: auto auto auto 1fr;
   }
 }
 
@@ -242,7 +236,7 @@ h2 {
   html body.hamburger-menu-closed div.gr_container nav.site-nav nav#site-nav {
     border-bottom: 0;
   }
-  main#document-contents {
+  #document-contents {
     padding: 2rem 1rem 1rem 1rem;
   }
   .gr_container {
@@ -264,18 +258,12 @@ h2 {
     }
 
     grid-template-areas:
-            "pagenav"
             "breadcrumb"
             "title"
             "explainer"
-            "content"
-            "footer";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto
-    minmax(25px, auto)
-    1fr
-    minmax(75px, auto)
-    auto;
+            "content";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto 1fr;
   }
   .gr_container.show-nav {
     nav.doc-nav {
@@ -283,92 +271,99 @@ h2 {
       top: 2rem;
     }
 
-    main#document-contents, .explainer, footer, header {
+    #document-contents, .explainer, footer, header {
       display: none !important;
     }
 
     grid-template-areas:
-            "pagenav"
             "breadcrumb"
             "nav";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto /* Header */
-    minmax(25px, auto) /* Nav */
-    1fr /* Content */
-    minmax(75px, auto) /* Sidebar */
-    auto; /* Footer */
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     #expand-nav-arrow {
       transform: rotate(180deg);
     }
   }
 }
 
+
 nav.doc-nav {
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow: auto;
+  white-space: nowrap;
+  .nav {
+    padding-left: 2rem;
+  }
+  .top-level-item {
+    margin-bottom: 0;
+  }
+  .panel-heading {
+    height: 2rem;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-normal;
+    padding-top: .5rem;
+    padding-bottom: 2.3rem;
+    border-bottom: 1px $color-violet-gray-dark solid;
+  }
+  .panel-heading:first-of-type {
+    //this makes up for the 1px border between panels on the top row, so it lines up with the breadcrumb box
+    margin-top: -1px;
+  }
   ul {
     padding-left: 1rem;
   }
 
-  .interior-structure {
-    margin-left: -1rem;
-  }
-
-  .interior-level {
-    padding-top: 0.5rem;
-    padding-bottom: 1rem;
-    padding-left: 2rem;
+  .list-group-item {
+    border: 0;
+    padding: 0;
   }
 
   .interior-directory {
-    margin-left: -1.75rem;
-  }
-
-  li.interior-title {
-    padding-top: 0;
-    padding-bottom: .25rem;
-    list-style: circle;
-  }
-
-  li.interior-title.current > a {
-    font-weight: $font-weight-bold !important;
+    background-color: $color-white;
     color: $color-black;
+    border-bottom: 0;
+    font-size: 1rem;
+    margin-left: 0;
+    padding-left: 0;
   }
-
+  .current-branch {
+    font-weight: $font-weight-black;
+    color: $color-violet-gray-dark;
+  }
+  .current-document {
+    font-weight: $font-weight-black;
+  }
   li.doc-toc-item {
     list-style-type: circle;
+    a {
+      color: $color-violet-gray-dark;
+    }
   }
 
-  li.doc-toc-entry {
-    padding-left: 1rem;
+  ul.doc-toc-entry {
+    padding-left: 2rem;
   }
 
-  a.list-group-item {
-    padding: 0;
-    font-size: $font-size-sm;
-    border: 0;
+
+  .interior-directory-link[data-toggle].collapsed:before {
+    content: "+ ";
+    font-family: $font-family-sans-serif;
+    font-weight: $font-weight-black;
+  }
+  .interior-directory-link[data-toggle]:not(.collapsed):before {
+      content: "- ";
+      font-family: $font-family-sans-serif;
+      font-weight: $font-weight-black;
   }
 
-  a.list-header-link {
-    font-size: $font-size-lg;
-    padding-top: 0;
-    padding-bottom: 0;
+
+  .unexpanded {
   }
 
-  .arrow {
-    height: 1rem;
-    display: inline !important;
-  }
-
-  .arrow_div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .arrow.active {
+  .expanded {
     transform: rotate(90deg);
-  }
-
-  .arrow.inactive {
   }
 
   .top-level-label {
@@ -379,28 +374,13 @@ nav.doc-nav {
   }
 
   .top-level-structure {
-    box-shadow: inset 0px 11px 8px -10px #CCC,
-    inset 0px -11px 8px -10px #CCC;
-    background-color: $color-white;
-    color: $color-black;
-    list-style-type: square;
-    display: none;
+    @extend .interior-directory;
+    box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
   }
-
-  .top-level-item {
-    color: $color-white;
-    background-color: $color-black;
-    border-bottom-width: thin;
-    border-bottom-style: solid;
-    border-bottom-color: $color-violet-gray-dark;
-    margin: 0;
-  }
-
-  .active {
-    display: block;
-  }
-
-  .inactive {
-    display: none;
+  .arrow-image {
+    vertical-align: baseline;
+    height: .8rem;
   }
 }

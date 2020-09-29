@@ -668,6 +668,7 @@ class VolumeMetadata(models.Model):
         """
         #TODO: PDF renaming/deleting functionality
         with transaction.atomic(using='capdb'):
+            self.out_of_scope = True
             self.duplicate = True
             self.duplicate_of = duplicate_of
             self.save()
