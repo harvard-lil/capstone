@@ -44,21 +44,20 @@ body {
   /* push footer to bottom of screen if insufficient main-content to fill page */
   display: flex;
   flex-direction: column;
+  height: 100vh;
   color: $color-black;
   -webkit-hyphens: auto;
   -moz-hyphens: auto;
   -ms-hyphens: auto;
   hyphens: auto;
-
-  // push footer to bottom on short pages
-  @extend .d-flex;
-  @extend .flex-column;
-  height: 100vh;
 }
 
 #content-and-footer {
   flex: 1 1 auto;
   overflow-y: auto;
+  /* push footer to bottom of screen if insufficient main-content to fill page */
+  display: flex;
+  flex-direction: column;
 }
 
 // BUTTONS & LINKS
@@ -179,14 +178,7 @@ pre {
 }
 
 main {
-  // push footer to bottom on short pages
-  @extend .flex-fill;
-  @extend .d-flex;
-  @extend .flex-column;
-  min-height: 85%;
-  > * {
-    @extend .flex-fill;
-  }
+  flex: 1;
 }
 
 .code-block {
