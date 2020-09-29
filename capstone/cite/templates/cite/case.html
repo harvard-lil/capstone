@@ -53,18 +53,19 @@
     Press Ctrl + / (Windows, Chrome OS) or ⌘ + / (Mac) to jump to the Tools menu.
     Press escape to return to last selected case text.
   </div>
-  {% include "cite/case_header.html" with case=db_case %}
 {% endblock %}
 
 {% block sidebar_menu %}
   <aside id="sidebar-menu" tabindex="-1" aria-label="Tools">
+    <div class="content">
+
+  {% include "cite/case_header.html" with case=db_case %}
     <div id="sidebar-menu-content"></div>
+      </div>
   </aside>
 {% endblock %}
 
 {% block main_content %}
-  <div>
-  </div>
   <div class="case-container header-margin">
     <div class="metadata text-center col-centered">
       <div class="case-name">

@@ -12,14 +12,12 @@
   letter-spacing: inherit;
 }
 .case-header {
-  padding: 1.25rem;
-  font-size: $font-size-base !important;
-  text-align: center;
-  font-family: $font-serif-fancy;
+  font-size: 1.1em;
+  font-family: $font-sans-serif;
   h1 {
-    font-family: $font-sans-title;
+    font-family: $font-sans-serif;
     font-weight: 700;
-    font-size: 1.5em;
+    font-size: 1.25em;
     padding: 0;
     margin: 0;
   }
@@ -35,32 +33,33 @@
 #sidebar-menu {
   padding: 0;
   font-size: $font-size-sm;
-  background: $color-tan;
   font-family: $font-sans-serif;
   color: $color-violet-gray-dark;
-
+  h2, h3 {
+    font-family: $font-sans-serif;
+    color: $color-medium-gray;
+  }
   h2 {
-    font-size: 1.3em;
+    font-size: 1.2em;
     font-weight: 700;
-    margin: 0 0 0 -0.25rem;
   }
 
   h3 {
-    font-size: $font-size-sm;
+    font-size: 1.1em;
     font-weight: bold;
-    margin: 0 0 0.25rem -0.25rem;
   }
-
+  .content {
+    padding: 1em;
+  }
   .sidebar-section {
     padding: 0 1rem 1rem 1rem;
     ul {
       margin: 0;
     }
-
-
   }
   .sidebar-title {
-    padding-top: 40px;
+    text-transform: uppercase;
+    padding-left: 0;
   }
 
   .sidebar-section-contents {
@@ -73,14 +72,36 @@
     }
   }
 
+  .btn {
+    border: 2px solid $color-blue;
+    color: $color-blue;
+    font-size: 0.9em;
+  }
+
+  hr {
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+  }
+
   @include media-breakpoint-down(md) {
     display: block;
+    text-align: center;
     @include make-col(10);
     @include make-col-offset(1);
-
+    .case-header {
+      margin-top: 1em;
+    }
     .content {
       position: unset;
       height: unset;
+    }
+    #format-section,
+    #tools-section,
+    #analysis-section,
+    #info-section,
+    #citing-section,
+    .sidebar-title,
+    hr.rule {
+      display: none;
     }
   }
 
