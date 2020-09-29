@@ -27,14 +27,13 @@ h2 {
   display: grid;
   grid-gap: 0;
   grid-template-areas:
-          "pagenav pagenav pagenav"
           "nav breadcrumb breadcrumb"
           "nav title title"
-          "nav content explainer"
-          "footer footer footer";
+          "nav content explainer";
 
-  grid-template-columns: minmax(15rem, 18rem) auto minmax(12rem, 18rem);
-  grid-template-rows: auto auto auto auto auto;
+  grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr) minmax(12rem, 18rem);
+  grid-template-rows: auto auto 1fr;
+  height: 100%;
 
   .expand-nav-div {
     display: none;
@@ -57,7 +56,7 @@ h2 {
     background-color: $color-black;
   }
 
-  main#document-contents {
+  #document-contents {
     padding: 0rem 3rem 1rem 3rem;
     grid-area: content;
 
@@ -190,6 +189,8 @@ h2 {
     padding-left: 1rem;
     padding-top: .5rem;
     padding-bottom: 2.3rem;
+    position: sticky;
+    top: 0;
   }
 
   aside.explainer {
@@ -221,15 +222,13 @@ h2 {
     }
     display: grid;
     grid-template-areas:
-            "pagenav pagenav pagenav"
             "nav breadcrumb breadcrumb"
             "nav title title"
             "nav explainer ."
-            "nav content ."
-            "footer footer footer";
+            "nav content .";
 
-    grid-template-columns: minmax(12rem, 18rem) auto 3rem;
-    grid-template-rows: auto 3rem minmax(5rem, 10rem) auto auto 5rem;
+    grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr) 3rem;
+    grid-template-rows: auto auto auto 1fr;
   }
 }
 
@@ -237,7 +236,7 @@ h2 {
   html body.hamburger-menu-closed div.gr_container nav.site-nav nav#site-nav {
     border-bottom: 0;
   }
-  main#document-contents {
+  #document-contents {
     padding: 2rem 1rem 1rem 1rem;
   }
   .gr_container {
@@ -259,18 +258,12 @@ h2 {
     }
 
     grid-template-areas:
-            "pagenav"
             "breadcrumb"
             "title"
             "explainer"
-            "content"
-            "footer";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto
-    minmax(25px, auto)
-    1fr
-    minmax(75px, auto)
-    auto;
+            "content";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto 1fr;
   }
   .gr_container.show-nav {
     nav.doc-nav {
@@ -278,20 +271,15 @@ h2 {
       top: 2rem;
     }
 
-    main#document-contents, .explainer, footer, header {
+    #document-contents, .explainer, footer, header {
       display: none !important;
     }
 
     grid-template-areas:
-            "pagenav"
             "breadcrumb"
             "nav";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto /* Header */
-    minmax(25px, auto) /* Nav */
-    1fr /* Content */
-    minmax(75px, auto) /* Sidebar */
-    auto; /* Footer */
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     #expand-nav-arrow {
       transform: rotate(180deg);
     }
@@ -300,6 +288,11 @@ h2 {
 
 
 nav.doc-nav {
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow: auto;
+  white-space: nowrap;
   .nav {
     padding-left: 2rem;
   }
