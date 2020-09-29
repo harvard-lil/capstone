@@ -327,6 +327,9 @@ def get_toc_by_url():
             if settings.DOCS_SHOW_DRAFTS is False and 'status' in meta and meta['status'] == 'draft':
                 continue
             entry['doc_toc'] = mark_safe(doc_toc)
+            entry['doc_toc_absolute'] = mark_safe(
+                re.sub(r'href="#', 'href="{}#'.format(reverse('docs', args=[entry['url']])), doc_toc))
+
             entry['content'] = mark_safe(content)
             entry['meta'] = {k: mark_safe(v) for k, v in meta.items()}
             entry['breadcrumb'] = path_string_to_title(entry['url'])  # TODO: use entry['meta']['title'] of each entry

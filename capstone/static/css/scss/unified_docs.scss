@@ -12,21 +12,20 @@ h1 {
   margin-top: 0;
   padding-top: 1rem;
   padding-bottom: 1rem;
+  padding-left: 1rem;
 }
 
 h2 {
   font-size: 1.5rem;
   font-weight: $font-weight-black;
-
 }
 
 
 
 
 .gr_container {
-
   display: grid;
-  grid-gap: 0 1rem;
+  grid-gap: 0;
   grid-template-areas:
           "pagenav pagenav pagenav"
           "nav breadcrumb breadcrumb"
@@ -34,7 +33,7 @@ h2 {
           "nav content explainer"
           "footer footer footer";
 
-  grid-template-columns: minmax(5rem, 18rem) 1fr 18rem;
+  grid-template-columns: minmax(15rem, 18rem) auto minmax(12rem, 18rem);
   grid-template-rows: auto auto auto auto auto;
 
   .expand-nav-div {
@@ -64,10 +63,8 @@ h2 {
 
     .subtitle {
       margin-top: 2rem;
-      margin-left: -1rem;
     }
     .subtitle:first-of-type {
-      margin-left: -1rem;
       margin-top: 0;
     }
 
@@ -102,7 +99,6 @@ h2 {
 
     p.topic-header {
       margin-top: 2rem;
-      margin-left: -1rem;
       font-weight: bold;
       margin-bottom: 1rem;
       font-family: $font-sans-title;
@@ -128,7 +124,6 @@ h2 {
       font-weight: 700;
       letter-spacing: 0.9px;
       color: $color-black;
-      margin-left: -1rem;
     }
 
     li.list-header {
@@ -149,6 +144,7 @@ h2 {
     }
 
     .code-block {
+      max-width: 100%;
       background-color: $color-tan;
       margin-top: 1rem;
     }
@@ -224,7 +220,6 @@ h2 {
       padding-bottom: 0;
     }
     display: grid;
-    grid-gap: 0 1rem;
     grid-template-areas:
             "pagenav pagenav pagenav"
             "nav breadcrumb breadcrumb"
@@ -233,8 +228,8 @@ h2 {
             "nav content ."
             "footer footer footer";
 
-    grid-template-columns: minmax(5rem, 18rem) 1fr 3rem;
-    grid-template-rows: auto auto auto 1fr auto auto;
+    grid-template-columns: minmax(12rem, 18rem) auto 3rem;
+    grid-template-rows: auto 3rem minmax(5rem, 10rem) auto auto 5rem;
   }
 }
 
@@ -303,18 +298,25 @@ h2 {
   }
 }
 
+
 nav.doc-nav {
+  .nav {
+    padding-left: 2rem;
+  }
   .top-level-item {
     margin-bottom: 0;
   }
   .panel-heading {
-    margin-right: 0.5rem;
     height: 2rem;
     font-size: $font-size-lg;
     font-weight: $font-weight-normal;
     padding-top: .5rem;
     padding-bottom: 2.3rem;
     border-bottom: 1px $color-violet-gray-dark solid;
+  }
+  .panel-heading:first-of-type {
+    //this makes up for the 1px border between panels on the top row, so it lines up with the breadcrumb box
+    margin-top: -1px;
   }
   ul {
     padding-left: 1rem;
@@ -330,6 +332,8 @@ nav.doc-nav {
     color: $color-black;
     border-bottom: 0;
     font-size: 1rem;
+    margin-left: 0;
+    padding-left: 0;
   }
   .current-branch {
     font-weight: $font-weight-black;
@@ -337,7 +341,6 @@ nav.doc-nav {
   }
   .current-document {
     font-weight: $font-weight-black;
-    margin-left: -2rem;
   }
   li.doc-toc-item {
     list-style-type: circle;

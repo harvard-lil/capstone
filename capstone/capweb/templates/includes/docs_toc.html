@@ -5,36 +5,61 @@
 {% for item in toc %}
     <li>
         {% if item.children %}
-                <div class="row">
-                    {% if req_doc_path|startswith:item.url %}
-                        <a class="py-1 current-branch interior-directory-link" href="#menu_{{ item.uid }}" data-toggle="collapse" data-target="#menu_{{ item.uid }}" onclick="toggle_arrow('arrow_{{ item.uid }}');">{{ item.label }}</a>
-                    {% else %}
-                        <a class="collapsed py-1 interior-directory-link" href="#menu_{{ item.uid }}" data-toggle="collapse" data-target="#menu_{{ item.uid }}" onclick="toggle_arrow('arrow_{{ item.uid }}');">{{ item.label }}</a>
-                    {% endif %}
-                </div>
-               {% if req_doc_path|startswith:item.url %}
-                   <div class="collapse show" id="menu_{{ item.uid }}" aria-expanded="false">
-               {% else %}
-                   <div class="collapse" id="menu_{{ item.uid }}" aria-expanded="false">
-               {% endif %}
-                        <ul class="top-level-item pl-0">
-                            <li class="interior-directory">
-                                {% include "includes/docs_toc.html" with toc=item.children %}
-                            </li>
-                        </ul>
-                    </div>
-        {% elif req_doc_path == item.url %}
-            <ul class="doc-toc-entry">
-                <li class="current-document py-1">{{ item.label }}</li>
-                 {{ item.doc_toc }}
-            </ul>
+            {% if req_doc_path|startswith:item.url %}
+                <a class="current-branch interior-directory-link"
+                   href="#menu_{{ item.uid }}"
+                   data-toggle="collapse"
+                   data-target="#menu_{{ item.uid }}"
+                   aria-label="Expand {{ item.label }}"></a>{{ item.label }}
+            {% else %}
+                <a class="collapsed interior-directory-link"
+                   href="#menu_{{ item.uid }}"
+                   data-toggle="collapse"
+                   data-target="#menu_{{ item.uid }}"
+                   aria-label="Expand {{ item.label }}"></a>{{ item.label }}
+            {% endif %}
+        {% elif not item.doc_toc %}
+                <a class="interior-file-link" href="{% url "docs" item.url %}" >{{ item.label }}</a>
         {% else %}
             {% if req_doc_path|startswith:item.url %}
-                   <a class="current-branch py-1" href="{% url "docs" item.url %}">{{ item.label }}</a>
+                <a class="current-branch interior-directory-link"
+                   href="#menu_{{ item.uid }}"
+                   data-toggle="collapse"
+                   data-target="#menu_{{ item.uid }}"
+                   aria-label="Expand {{ item.label }} Document Navigation"></a>
+                <a href="{% url "docs" item.url %}"
+                   aria-label="Go to {{ item.label }}">{{ item.label }}</a>
             {% else %}
-                   <a class="py-1" href="{% url "docs" item.url %}">{{ item.label }}</a>
+                <a class="collapsed interior-directory-link"
+                   href="#menu_{{ item.uid }}"
+                   data-toggle="collapse"
+                   data-target="#menu_{{ item.uid }}"></a>
+                <a href="{% url "docs" item.url %}"
+                aria-label="Go to {{ item.label }}">{{ item.label }}</a>
             {% endif %}
         {% endif %}
+
+       {% if req_doc_path|startswith:item.url %}
+           <div class="collapse show" id="menu_{{ item.uid }}" aria-expanded="false">
+       {% else %}
+           <div class="collapse" id="menu_{{ item.uid }}" aria-expanded="false">
+       {% endif %}
+                <ul class="interior-directory">
+                        {% if item.children %}
+                            <li>
+                                {% include "includes/docs_toc.html" with toc=item.children %}
+                            </li>
+                        {% elif item.doc_toc %}
+                            <ul class="nav">
+                                {% if req_doc_path == item.url %}
+                                    {{ item.doc_toc }}
+                                {% else %}
+                                    {{ item.doc_toc_absolute }}
+                                {% endif %}
+                            </ul>
+                        {% endif %}
+                </ul>
+            </div>
     </li>
 {% endfor %}
 </ul>
