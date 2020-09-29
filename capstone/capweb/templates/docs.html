@@ -5,8 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {# title #}
-    {% capture as title_out silent %}{% block title %}{% if title %}{{ title }}{% endif %}{% endblock title %}{% block title_suffix %} | Caselaw Access Project{% endblock title_suffix %}{% endcapture %}
-    <title>{{ title_out }}</title>
+    <title>Docs: {{ breadcrumb }} | Caselaw Access Project</title>
     <meta property="og:title" content="{% if og_title %}{{ og_title }}{% else %}{{ title_out }}{% endif %}">
     <meta property="twitter:title" content="{% if og_title %}{{ og_title }}{% else %}{{ title_out }}{% endif %}">
     {# description #}
