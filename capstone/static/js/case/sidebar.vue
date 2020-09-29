@@ -1,82 +1,84 @@
 <template>
-  <div class="content">
-    <div class="sidebar-section sidebar-title">
-      <h2>Tools</h2>
+    <div>
+        <hr/>
+        <div v-if="opinions" class="sidebar-section outline" id="outline-section">
+            <h2 class="sidebar-title">Case outline</h2>
+            <div class="sidebar-section-contents">
+                <ul>
+                    <li v-for="opinion in opinions" :key="opinion.id">
+                        <a  :href="`#${opinion.id}`">{{opinion.type}}</a>
+                        <span v-if="opinion.author"> — {{opinion.author}}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="sidebar-section" id="format-section">
+            <h2 class="sidebar-title">Other formats</h2>
+            <div class="sidebar-section-contents">
+                <ul class="list-inline">
+                    <li  class="list-inline-item" v-if="urls.casePdf"><a class="btn" :href="urls.casePdf">PDF</a></li>
+                    <li class="list-inline-item" ><a class="btn" :href="urls.caseApi">API</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="sidebar-section" id="citing-section">
+            <h2 class="sidebar-title">Citing cases</h2>
+            <div class="sidebar-section-contents">
+                <span v-if="citingCount === null"><a :href="urls.citedBy">cases citing to this case</a></span>
+                <span v-else-if="citingCount === 0">No cases cite to this case</span>
+                <span v-else>
+                  <a :href="urls.citedBy">{{citingCount}} case{{citingCount===1?"":"s"}} cite to this case</a>
+                </span>
+            </div>
+        </div>
+        <hr class="large-format-rule"/>
+        <div class="sidebar-section" id="tools-section">
+            <h2 class="sidebar-title">Tools</h2>
+            <h3>Selection tools</h3>
+            <div class="sidebar-section-contents">
+                <ul class="bullets" v-if="selectedText">
+                    <li><a :href="linkToSelection()">Link to "{{selectedTextShort}}"</a></li>
+                    <li>
+                        <a href="#" @click.prevent="copyCiteToSelection">Copy "{{selectedTextShort}}" with cite</a>
+                        <span aria-live="polite"><span v-if="copyStatus" class="ml-1">{{copyStatus}}</span></span>
+                    </li>
+                    <li><a :href="searchForSelection()">Search cases for "{{selectedTextShort}}"</a></li>
+                    <li v-if="templateVars.isStaff"><a href="#" @click.prevent="elideOrRedactSelection('elide')">⚠️
+                        Elide "{{selectedTextShort}}"</a></li>
+                    <li v-if="templateVars.isStaff"><a href="#" @click.prevent="elideOrRedactSelection('redact')">⚠️
+                        Redact "{{selectedTextShort}}"</a></li>
+                </ul>
+                <span v-else>Select text to link, cite, or search</span>
+            </div>
+        </div>
+        <div class="sidebar-section" id="analysis-section" v-if="Object.keys(templateVars.analysis).length">
+            <h3>Analysis<a class="analysis-link" :href="`${urls.apiDocs}#analysis-fields`"><img class="analysis-info" alt="More information about analysis fields" :src="`${urls.static}img/icons/question.svg`"></a></h3>
+            <div class="sidebar-section-contents">
+                <ul>
+                    <li v-for="(v, k) in templateVars.analysis">{{analysisName[k]}}: {{analysisValue(k, v)}}</li>
+                </ul>
+            </div>
+        </div>
+        <div v-if="templateVars.isStaff || templateVars.canEdit" class="sidebar-section admin-tools" id="admin-section">
+            <h3>Admin Tools</h3>
+            <div class="sidebar-section-contents">
+                <ul>
+                    <li v-if="templateVars.isStaff"><a :href="urls.djangoAdmin">Django admin</a></li>
+                    <li v-if="templateVars.canEdit"><a :href="urls.caseEditor">Case editor</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr/>
+        <div class="sidebar-section" id="info-section">
+            <h3>What is this page?</h3>
+            <div class="sidebar-section-contents">
+                Every document on this site is part of the official caselaw of a court within the
+                United States, scanned from the collection of the Harvard Law School Library.
+                <!-- This {{ templateVars.jurisdictionName }} case is from {{ templateVars.caseYear }}.-->
+                <a :href="urls.about">Learn more</a>.
+            </div>
+        </div>
     </div>
-    <div v-if="opinions" class="sidebar-section outline">
-      <h3>Case Outline</h3>
-      <div class="sidebar-section-contents">
-        <ul class="bullets">
-          <li v-for="opinion in opinions" :key="opinion.id">
-            <a :href="`#${opinion.id}`">{{opinion.type}}</a>
-            <span v-if="opinion.author"> — {{opinion.author}}</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <h3>Citing Cases</h3>
-      <div class="sidebar-section-contents">
-        <span v-if="citingCount === null"><a :href="urls.citedBy">cases citing to this case</a></span>
-        <span v-else-if="citingCount === 0">No cases cite to this case</span>
-        <span v-else>
-          <a :href="urls.citedBy">{{citingCount}} case{{citingCount===1?"":"s"}} cite to this case</a>
-        </span>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <h3>Other Formats</h3>
-      <div class="sidebar-section-contents">
-        <ul class="bullets">
-          <li v-if="urls.casePdf"><a :href="urls.casePdf">PDF</a></li>
-          <li><a :href="urls.caseApi">API</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <h3>Selection Tools</h3>
-      <div class="sidebar-section-contents">
-        <ul class="bullets" v-if="selectedText">
-          <li><a :href="linkToSelection()">Link to "{{selectedTextShort}}"</a></li>
-          <li>
-            <a href="#" @click.prevent="copyCiteToSelection">Copy "{{selectedTextShort}}" with cite</a>
-            <span aria-live="polite"><span v-if="copyStatus" class="ml-1">{{copyStatus}}</span></span>
-          </li>
-          <li><a :href="searchForSelection()">Search cases for "{{selectedTextShort}}"</a></li>
-          <li v-if="templateVars.isStaff"><a href="#" @click.prevent="elideOrRedactSelection('elide')">⚠️ Elide "{{selectedTextShort}}"</a></li>
-          <li v-if="templateVars.isStaff"><a href="#" @click.prevent="elideOrRedactSelection('redact')">⚠️ Redact "{{selectedTextShort}}"</a></li>
-        </ul>
-        <span v-else>Select text to link, cite, or search</span>
-      </div>
-    </div>
-    <div class="sidebar-section" v-if="Object.keys(templateVars.analysis).length">
-      <h3>Analysis</h3>
-      <div class="sidebar-section-contents">
-        <ul class="bullets">
-          <li v-for="(v, k) in templateVars.analysis">{{k.replace('_', ' ')}}: {{analysisValue(k, v)}}</li>
-        </ul>
-        <a :href="`${urls.apiDocs}#analysis-fields`">About analysis fields</a>
-      </div>
-    </div>
-    <div  v-if="templateVars.isStaff || templateVars.canEdit" class="sidebar-section admin-tools">
-      <h3>Admin Tools</h3>
-      <div class="sidebar-section-contents">
-        <ul class="bullets">
-          <li v-if="templateVars.isStaff"><a :href="urls.djangoAdmin">Django admin</a></li>
-          <li v-if="templateVars.canEdit"><a :href="urls.caseEditor">Case editor</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <h3>What is this page?</h3>
-      <div class="sidebar-section-contents">
-        Every document on this site is part of the official caselaw of a court within the
-        United States, scanned from the collection of the Harvard Law School Library. This
-        {{ templateVars.jurisdictionName }} case is from {{ templateVars.caseYear }}.
-        <a :href="urls.about">Learn more</a>.
-      </div>
-    </div>
-  </div>
 </template>
 
 <script>
@@ -110,7 +112,6 @@
           this.lastSelection = selectedRange;
         }
       }));
-
       // handle ?highlight= query param
       const highlightPhrase = new URLSearchParams(window.location.search).get('highlight');
       if (highlightPhrase) {
@@ -143,12 +144,12 @@
         const $el = $(el);
         if ($el.text() === $el.attr('data-hidden-text')) {
           $el.text($el.attr('data-orig-text'))
-        }
-        else {
+        } else {
           $el.attr('data-orig-text', $el.text());
           $el.text($el.attr('data-hidden-text'));
         }
       }
+
       $(".elided-text").on('click', (evt) => {
         showOrHideElision(evt.target);
       }).on('keypress', (evt) => {
@@ -184,6 +185,12 @@
         copyStatus: null,
         opinions: null,
         citingCount: null,
+        sidebarStatus: true,
+        analysisName: {
+          'char_count': 'Character count',
+          'ocr_confidence': 'OCR confidence',
+          'word_count': 'Word count'
+        }
       }
     },
     watch: {
@@ -204,12 +211,15 @@
     methods: {
       analysisValue(k, v) {
         if (k === "pagerank") {
-          return `${(v.percentile*100).toFixed(1)}%`;
+          return `${(v.percentile * 100).toFixed(1)}%`;
         }
         return v.toLocaleString();
       },
       async fetchCitingCount() {
-        const response = await jsonQuery(getApiUrl(this.urls.api, 'cases', {cites_to: this.templateVars.caseId, page_size: 1}));
+        const response = await jsonQuery(getApiUrl(this.urls.api, 'cases', {
+          cites_to: this.templateVars.caseId,
+          page_size: 1
+        }));
         this.citingCount = response.count;
       },
       linkToSelection() {
@@ -226,13 +236,15 @@
         // TODO: add pin cite to citation
         const toCopy = `"${this.selectedText}" ${this.templateVars.fullCite}`;
         clipboard.writeText(toCopy).then(
-          () => this.copyStatus = "copied",
-          () => this.copyStatus = "copy failed",
+            () => this.copyStatus = "copied",
+            () => this.copyStatus = "copy failed",
         );
       },
       elideOrRedactSelection(kind) {
-        if(confirm(`Really ${kind} "${this.selectedText}"?`))
-          $.post(this.urls.redact, {'kind': kind, 'text': this.selectedText}, ()=>{window.location.reload()});
+        if (confirm(`Really ${kind} "${this.selectedText}"?`))
+          $.post(this.urls.redact, {'kind': kind, 'text': this.selectedText}, () => {
+            window.location.reload()
+          });
       },
     },
   }

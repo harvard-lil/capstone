@@ -8,23 +8,20 @@
 {% load parse_date %}
 
 {% block base_css %}{% stylesheet 'case_cited_by' %}{% endblock %}
-{% block title %}Citations to {{ full_citation|elide:case|striptags }}{% endblock %}
+{% block title %} Citations to {{ full_citation|elide:case|striptags }} {% endblock %}
 {% block meta_description %}Cases citing to {{ full_citation|elide:case|striptags }} from the Caselaw Access
   Project.{% endblock %}
 
-{% block title_section %}
-  {% include "cite/case_header.html" with case=case %}
-{% endblock %}
+{% block title_section %}{% endblock %}
 
 {% block sidebar_menu %}
   <aside id="sidebar-menu" tabindex="-1" aria-label="Tools">
     <div class="content">
-      <div class="sidebar-section sidebar-title">
-        <h2>Citing Cases</h2>
-      </div>
+      {% include "cite/case_header.html" with case=case %}
+
       <div class="sidebar-section">
         <div class="sidebar-section-contents">
-          <a href="{{case.frontend_url}}">back to case</a>
+          <a href="{{case.frontend_url}}">Back to case</a>
         </div>
       </div>
     </div>

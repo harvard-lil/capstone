@@ -1,0 +1,179 @@
+@import 'variables';
+@import 'bootstrap/mixins/_grid';
+
+
+.top-section {
+  padding: 0;
+}
+
+.title-section {
+  @include make-col(12);
+  @include make-col-offset(0);
+  padding: 0;
+  letter-spacing: inherit;
+}
+
+.case-header {
+  font-size: 1.1em;
+  font-family: $font-serif-fancy;
+
+  h1 {
+    font-family: $font-serif-fancy;
+    font-weight: 700;
+    font-size: 1.25em;
+    padding: 0;
+    margin: 0;
+  }
+
+  .docket-number {
+  }
+
+  .citations {
+    line-height: 1em;
+  }
+}
+
+#sidebar-menu {
+  padding: 1em 0 0;
+  font-size: 0.7em;
+  line-height: 1.4em;
+  font-family: $font-sans-serif;
+  color: $color-violet-gray-dark;
+  box-shadow: 4px 0 4px 0 rgba(208, 208, 208, 0.50);
+
+  h2, h3 {
+    font-family: $font-sans-serif;
+    color: $color-medium-gray;
+  }
+
+  h2 {
+    font-size: 1.2em;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 1.1em;
+    font-weight: bold;
+  }
+
+  .content {
+    padding: 1em;
+  }
+
+  .sidebar-section {
+    padding: 0 1rem 1rem 1rem;
+
+    ul {
+      margin: 0;
+    }
+  }
+
+  .sidebar-title {
+    text-transform: uppercase;
+    padding-left: 0;
+    line-height: 1.7em;
+  }
+
+  .sidebar-section-contents {
+    line-height: 1.5rem;
+    letter-spacing: 0.03rem;
+  }
+
+  .outline {
+    li {
+      text-transform: capitalize;
+    }
+    li a {
+      font-weight: bold;
+    }
+  }
+
+  .btn {
+    border: 2px solid $color-blue;
+    color: $color-blue;
+    font-size: 0.9em;
+
+    &:hover, &:active, &:focus {
+      color: $color-black;
+      border: 2px solid $color-black;
+    }
+  }
+  .analysis-link {
+    margin-left: 0.3em;
+    bottom: 0.1em;
+    position: relative;
+  }
+  .analysis-info {
+    width: 1em;
+  }
+  hr {
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+  }
+
+  @include media-breakpoint-down(md) {
+    display: block;
+    box-shadow: none;
+    border: 0;
+    text-align: center;
+    @include make-col(10);
+    @include make-col-offset(1);
+    .case-header {
+      margin-top: 1em;
+    }
+    .content {
+      position: unset;
+      height: unset;
+    }
+    #tools-section,
+    #analysis-section,
+    #info-section,
+    #citing-section,
+    .sidebar-title,
+    hr.large-format-rule {
+      display: none;
+    }
+    .btn {
+      border: 0;
+      padding: 0;
+      &:hover, &:active, &:focus {
+        border: 0;
+      }
+    }
+    #outline-section {
+      padding-top: 0.8em;
+      padding-bottom: 0;
+    }
+    #format-section, #outline-section, #admin-section {
+      .sidebar-section-contents {
+        display: inline;
+      }
+      ul, li {
+        display: inline;
+      }
+      li a {
+        font-weight: 400;
+      }
+      li::after {
+        content: ", ";
+      }
+      li:last-child::after {
+        content: "";
+      }
+    }
+    #format-section > .sidebar-title, #outline-section > .sidebar-title, #admin-section > h3 {
+      display: inline;
+      text-transform: initial;
+      color: $color-black;
+      font-weight: $font-weight-regular;
+      font-size: 1em;
+      &::after {
+        content: ": "
+      }
+    }
+  }
+
+  @include media-breakpoint-down(sm) {
+    @include make-col(12);
+    @include make-col-offset(0);
+  }
+}

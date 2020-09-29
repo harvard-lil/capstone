@@ -4,14 +4,13 @@
 @import 'bootstrap/mixins';
 @import 'bootstrap/tooltip';
 
-@import "case_header";
+@import "case_sidebar";
 
 @media print {
   #main-nav {
     display: none;
   }
 }
-
 .casebody {
   img {
     max-width: 100%;
@@ -245,7 +244,6 @@ mark {
 
 .footnotemark {
   border-bottom: 0;
-  font-weight: $font-weight-semibold;
   margin-bottom: 5px;
   color: $color-magenta;
   vertical-align: super;

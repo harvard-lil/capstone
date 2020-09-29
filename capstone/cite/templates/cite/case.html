@@ -25,7 +25,8 @@
         apiDocs: "{% url "api" %}",
         caseApi: "{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}",
         casePdf: "{% if can_render_pdf %}{{ db_case.get_pdf_url|elide:db_case|striptags }}{% endif %}",
-        citedBy: "{% url "case_cited_by" db_case.id host 'cite' %}"
+        citedBy: "{% url "case_cited_by" db_case.id host 'cite' %}",
+        static: "{% static "" %}",
       },
       fullCite: "{{ full_citation|redact:db_case }}",
       isStaff: {% if request.user.is_staff %}true{% else %}false{% endif %},
@@ -53,18 +54,19 @@
     Press Ctrl + / (Windows, Chrome OS) or ⌘ + / (Mac) to jump to the Tools menu.
     Press escape to return to last selected case text.
   </div>
-  {% include "cite/case_header.html" with case=db_case %}
 {% endblock %}
 
 {% block sidebar_menu %}
   <aside id="sidebar-menu" tabindex="-1" aria-label="Tools">
+    <div class="content">
+
+  {% include "cite/case_header.html" with case=db_case %}
     <div id="sidebar-menu-content"></div>
+      </div>
   </aside>
 {% endblock %}
 
 {% block main_content %}
-  <div>
-  </div>
   <div class="case-container header-margin">
     <div class="metadata text-center col-centered">
       <div class="case-name">
