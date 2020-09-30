@@ -1,17 +1,20 @@
 import os
 import json
+from natsort import natsorted
 import re
 import stat
 import subprocess
+import tempfile
 from collections import OrderedDict, defaultdict
 from pathlib import Path
-from natsort import natsorted
+from zipfile import ZipFile
 
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core import signing
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect, HttpResponse, Http404, \
-    HttpResponseBadRequest, FileResponse
+    HttpResponseBadRequest, FileResponse, HttpResponseForbidden
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect
@@ -20,13 +23,14 @@ from django.utils.http import is_safe_url
 from django.utils.safestring import mark_safe
 from django.db.models import Prefetch
 
+from capapi.views.api_views import CaseDocumentViewSet
 from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
     page_image_url, safe_domains, get_toc_by_url
 from capweb.models import GallerySection, GalleryEntry
 from capdb.models import Snippet, Court, Reporter, Jurisdiction, normalize_cite, CaseMetadata
 from capdb.storages import download_files_storage
-from capapi.resources import form_for_request
+from capapi.resources import form_for_request, api_request
 from config.logging import logger
 from scripts.extract_cites import extract_citations_from_text
 
@@ -402,8 +406,32 @@ def trends(request):
     })
 
 
+@csrf_exempt
 def fetch(request):
     """ Extract citations from text and link to PDFs. """
+
+    # zip file download
+    error = None
+    if request.method == 'POST' and request.POST.get('download'):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden()
+        case_ids = set(request.POST.getlist('case_ids'))
+        if not request.user.unlimited_access_in_effect() and request.user.case_allowance_remaining < len(case_ids):
+            error = "You do not have sufficient downloads remaining to fetch the requested cases"
+        else:
+            cases_by_id = {c.id: c for c in CaseMetadata.objects.filter(pk__in=case_ids).prefetch_related('citations')}
+            try:
+                tmp = tempfile.NamedTemporaryFile(delete=False)
+                with ZipFile(tmp.name, 'w') as zip:
+                    for case_id in case_ids:
+                        api_response = api_request(request, CaseDocumentViewSet, 'retrieve', {'id': case_id}, {'format': 'pdf', 'full_case': 'true'})
+                        if not hasattr(api_response, 'data') or api_response.status_code != 200:
+                            return api_response
+                        zip.writestr("cases/"+cases_by_id[int(case_id)].get_pdf_name(), api_response.data)
+                return FileResponse(open(tmp.name, 'rb'), as_attachment=True, filename='cases.zip')
+            finally:
+                os.remove(tmp.name)
+
     # prefer POST because it doesn't record queried text in server logs, but also accept GET to allow linking to search results
     text = request.POST.get('q', '') or request.GET.get('q', '')
     citations = None
@@ -435,4 +463,5 @@ def fetch(request):
     return render(request, "fetch.html", {
         'text': text,
         'citations': citations,
+        'error': error,
     })

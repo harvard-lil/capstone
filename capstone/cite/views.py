@@ -3,7 +3,6 @@ import time
 import json
 from collections import defaultdict
 from contextlib import contextmanager
-from copy import copy
 from datetime import timedelta
 from urllib.parse import urlencode
 
@@ -15,7 +14,7 @@ from django.forms import model_to_dict
 from django.urls import NoReverseMatch
 from django.db import transaction
 from django.db.models import Prefetch
-from django.http import Http404, HttpResponse, HttpResponseRedirect, QueryDict
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -31,7 +30,7 @@ from natsort import natsorted
 from capapi import serializers
 from capapi.documents import CaseDocument
 from capapi.authentication import SessionAuthentication
-from capapi.resources import link_to_cites
+from capapi.resources import link_to_cites, api_request
 from capapi.views.api_views import CaseDocumentViewSet
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseFont, PageStructure, EditLog, \
     ExtractedCitation, CorrectionLog
@@ -334,7 +333,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     # handle pdf output --
     # wait until here to do this so serializer() can apply case quotas
     db_case = db_case or CaseMetadata.objects.select_related('volume', 'court').prefetch_related('citations').get(pk=case.id)
-    can_render_pdf = db_case.volume.pdf_file and not db_case.no_index_redacted and serialized_data['casebody']['status'] == 'ok'
+    can_render_pdf = db_case.pdf_available() and serialized_data['casebody']['status'] == 'ok'
     if pdf:
         if serialized_data['casebody']['status'] != 'ok':
             return HttpResponseRedirect(db_case.get_full_frontend_url())
@@ -450,13 +449,10 @@ def case_cited_by(request, case_id):
     case = get_object_or_404(CaseMetadata, pk=case_id)
 
     # get citation data from API
-    api_request = copy(request)
-    api_request.method = 'GET'
-    api_request.GET = QueryDict(mutable=True)
-    api_request.GET['cites_to'] = str(case.id)
+    params = {'cites_to': str(case.id)}
     if 'cursor' in request.GET:
-        api_request.GET['cursor'] = request.GET['cursor']
-    data = CaseDocumentViewSet.as_view({'get': 'list'})(api_request).data
+        params['cursor'] = request.GET['cursor']
+    data = api_request(request, CaseDocumentViewSet, 'list', get_params=params).data
 
     return render(request, 'cite/case_cited_by.html', {
         'case': case,

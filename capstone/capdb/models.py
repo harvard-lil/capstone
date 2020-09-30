@@ -1137,9 +1137,11 @@ class CaseMetadata(models.Model):
     def get_full_frontend_url(self):
         return reverse('cite_home').rstrip('/') + self.frontend_url
 
+    def get_pdf_name(self):
+        return re.sub(r'[\\/:*?"<>|]', '_', self.redact_obj(self.full_cite())) + ".pdf"
+
     def get_pdf_url(self, with_host=True):
-        pdf_name = re.sub(r'[\\/:*?"<>|]', '_', self.redact_obj(self.full_cite())) + ".pdf"
-        url = reverse('case_pdf', [self.pk, pdf_name], host='cite')
+        url = reverse('case_pdf', [self.pk, self.get_pdf_name()], host='cite')
         if not with_host:
             url = '/' + url.split('/', 3)[-1]
         return url
@@ -1406,11 +1408,14 @@ class CaseMetadata(models.Model):
         if known_hashes:
             CaseImage.objects.filter(case=self, hash__in=known_hashes).delete()
 
+    def pdf_available(self):
+        return not self.no_index_redacted and bool(self.volume.pdf_file)
+
     def get_pdf(self):
         """
             Return PDF for this case from volume PDF. `fitz` is the PyMuPDF library.
         """
-        if self.no_index_redacted or not self.volume.pdf_file:
+        if not self.pdf_available():
             return None
         doc = fitz.open(self.volume.pdf_file.path)
         doc.select(range(self.first_page_order - 1, self.last_page_order))

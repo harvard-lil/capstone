@@ -209,10 +209,10 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
                 return HttpResponseBadRequest("full_case=true is required for format=pdf")
             if data['casebody']['status'] != 'ok':
                 return HttpResponseBadRequest(data['casebody']['status'])
-            pdf_data = CaseMetadata.objects.get(pk=data['id']).get_pdf()
-            if not pdf_data:
-                return HttpResponseBadRequest("error fetching pdf")
-            return Response(pdf_data)
+            case = CaseMetadata.objects.get(pk=data['id'])
+            if not case.pdf_available():
+                return HttpResponseBadRequest("pdf is not available for this case")
+            return Response(case.get_pdf())
 
         return super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
 
