@@ -11,6 +11,16 @@
     display: none;
   }
 }
+
+@include media-breakpoint-down(md) {
+  .main-content {
+    padding-top: 0 !important;
+  }
+  .alert {
+    text-align: center;
+  }
+}
+
 .casebody {
   img {
     max-width: 100%;
@@ -42,6 +52,36 @@ p {
   margin-bottom: 0;
 }
 
+.case-header {
+  font-size: 0.9em;
+  font-family: $font-serif-fancy;
+  text-align: center;
+  padding: 2em 2em 0;
+  @include media-breakpoint-up(lg) {
+    padding: 0;
+    &::after {
+      content: '*';
+      color: $color-medium-gray;
+    }
+  }
+
+  > h1 {
+    font-family: $font-serif-fancy;
+    font-weight: $font-weight-bold;
+    font-size: 1.3em;
+    line-height: 1.4em;
+    padding: 0;
+    margin: 0;
+  }
+
+  .decision-date, .court-name {
+    line-height: 1.4em;
+  }
+
+  .citations {
+    line-height: 2em;
+  }
+}
 
 .tooltip {
   cursor: pointer;
