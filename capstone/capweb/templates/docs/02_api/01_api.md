@@ -236,11 +236,17 @@ the same search sorted in descending order, that is, seeing the newest cases fir
 
 Each case result in the API returns an analysis section, such as:
 
-    "analysis": {
-        "word_count": 16593,
-        "ocr_confidence": 0.691,
-        "char_count": 92845,
-        "pagerank": 0.1
+    "analysis": { 
+        "word_count": 1110, 
+        "sha256": "0876189e8ac20dd03b7...", 
+        "ocr_confidence": 0.654, 
+        "char_count": 6890, 
+        "pagerank": { 
+            "percentile": 0.31980916105919643, 
+            "raw": 5.770123949632993e-08 
+         }, 
+        "cardinality": 390,
+        "simhash": "1:3459aad720da314e" 
     }
 
 Analysis fields are values calculated by processing the raw case text. They can be searched with [filters](#case-filtering).
@@ -249,7 +255,7 @@ All analysis fields are optional, and may or may not appear for a given case.
 
 Analysis fields have the following meanings:
 
-Cardinality (`word_count`)
+Cardinality (`cardinality`)
 {: class="topic-header" }
 
 The number of unique words in the full case text including head matter.
