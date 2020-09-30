@@ -1,6 +1,6 @@
 <template>
     <div>
-        <hr/>
+        <hr class="d-lg-none">
         <div v-if="opinions" class="sidebar-section outline" id="outline-section">
             <h2 class="sidebar-title">Case outline</h2>
             <div class="sidebar-section-contents">
@@ -31,8 +31,8 @@
                 </span>
             </div>
         </div>
-        <hr class="large-format-rule"/>
-        <div class="sidebar-section" id="tools-section">
+        <hr class="d-none d-lg-block"/>
+        <div class="sidebar-section d-none d-lg-block" id="tools-section">
             <h2 class="sidebar-title">Tools</h2>
             <h3>Selection tools</h3>
             <div class="sidebar-section-contents">
@@ -51,7 +51,7 @@
                 <span v-else>Select text to link, cite, or search</span>
             </div>
         </div>
-        <div class="sidebar-section" id="analysis-section" v-if="Object.keys(templateVars.analysis).length">
+        <div class="sidebar-section d-none d-lg-block" id="analysis-section" v-if="Object.keys(templateVars.analysis).length">
             <h3>Analysis<a class="analysis-link" :href="`${urls.apiDocs}#analysis-fields`"><img class="analysis-info" alt="More information about analysis fields" :src="`${urls.static}img/icons/question.svg`"></a></h3>
             <div class="sidebar-section-contents">
                 <ul>
@@ -68,8 +68,8 @@
                 </ul>
             </div>
         </div>
-        <hr/>
-        <div class="sidebar-section" id="info-section">
+        <hr class="d-lg-flex"/>
+        <div class="sidebar-section d-none d-lg-block" id="info-section">
             <h3>What is this page?</h3>
             <div class="sidebar-section-contents">
                 Every document on this site is part of the official caselaw of a court within the
