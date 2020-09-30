@@ -1,6 +1,9 @@
+from io import BytesIO
 from pathlib import Path
-
+from zipfile import ZipFile
+import fitz
 import pytest
+
 from django.conf import settings
 
 from capapi.tests.helpers import check_response, is_cached
@@ -91,8 +94,13 @@ def test_download_area(client, auth_client, unlimited_auth_client, tmp_path, mon
 
 
 @pytest.mark.django_db
-def test_fetch(client, three_cases):
-    cites = [c.citations.first() for c in three_cases]
+def test_fetch(client, auth_client, elasticsearch, case_factory):
+    cases = [
+        case_factory(jurisdiction__whitelisted=True, first_page_order=1, last_page_order=2),
+        case_factory(jurisdiction__whitelisted=False, first_page_order=1, last_page_order=2),
+        case_factory(jurisdiction__whitelisted=False, first_page_order=1, last_page_order=2),
+    ]
+    cites = [c.citations.first() for c in cases]
     text = f"""
 {cites[0].cite}
 {"A"*50} {cites[1].cite} {"A"*50}
@@ -100,7 +108,22 @@ def test_fetch(client, three_cases):
     """
     response = client.post(reverse('fetch'), {'q': text})
     check_response(response, content_includes=[
-        cites[0].cite, three_cases[0].full_cite(),
-        f'... {"A"*39}', cites[1].cite, three_cases[1].full_cite(), f'{"A"*29} ...',
-        '    123', cites[2].cite, three_cases[2].full_cite(), ' 123\n',
+        cites[0].cite, cases[0].full_cite(),
+        f'... {"A"*39}', cites[1].cite, cases[1].full_cite(), f'{"A"*29} ...',
+        '    123', cites[2].cite, cases[2].full_cite(), ' 123\n',
     ])
+
+    # can't download zip when logged out
+    check_response(client.post(reverse('fetch'), {'download': '1', 'case_ids': [c.pk for c in cases]}), status_code=403)
+
+    # can download zip of valid PDFs
+    response = auth_client.post(reverse('fetch'), {'download': '1', 'case_ids': [c.pk for c in cases]})
+    zip = ZipFile(BytesIO(b''.join(response)))
+    for case in cases:
+        path = 'cases/' + case.get_pdf_name()
+        doc = fitz.open(stream=zip.open(path).read(), filetype='pdf')
+        assert len(list(doc.pages())) == 2
+
+    # quota is tracked
+    auth_client.auth_user.refresh_from_db()
+    assert auth_client.auth_user.case_allowance_remaining == 498

@@ -11,8 +11,11 @@
 {% block sidebar_menu %}{% endblock %}
 
 {% block main_content %}
+  {% if error %}
+    <p class="error">{{ error }}</p>
+  {% endif %}
+
   <form method="POST">
-    {% csrf_token %}
     <div class="form-group">
       <label for="q">Text with citations:</label>
       <textarea name="q" class="form-control" id="q" rows="3" aria-describedby="qHelp">{{ text }}</textarea>
@@ -24,22 +27,39 @@
   {% if text %}
     <h2>Extracted Citations</h2>
     {% if citations %}
-      {% for citation in citations %}
-        {{ citation.before }}<span style="font-weight: bold; text-decoration: underline">{{ citation.cite }}</span>{{ citation.after }}
-        <ul class="bullets">
-          {% if citation.cases %}
-            {% for case in citation.cases %}
-              <li>
-                {{ case.full_cite }}:
-                <a href="{{ case.get_full_frontend_url }}" target="_blank">HTML</a>,
-                <a href="{{ case.get_pdf_url }}" target="_blank">PDF</a>
-              </li>
-            {% endfor %}
-          {% else %}
-            <li><i>No cases found.</i></li>
+      <form method="POST">
+        {% for citation in citations %}
+          {{ citation.before }}<span style="font-weight: bold; text-decoration: underline">{{ citation.cite }}</span>{{ citation.after }}
+          <ul>
+            {% if citation.cases %}
+              {% for case in citation.cases %}
+                <li>
+                  <input type="checkbox" name="case_ids" value="{{ case.pk }}" id="case-id-{{ case.pk }}" {% if case.pdf_available %}checked{% else %}disabled{% endif %}>
+                  <label for="case-id-{{ case.pk }}">{{ case.full_cite }}</label>:
+                  <a href="{{ case.get_full_frontend_url }}" target="_blank">HTML</a>
+                  {% if case.pdf_available %}
+                    - <a href="{{ case.get_pdf_url }}" target="_blank">PDF</a>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            {% else %}
+              <li><i>No cases found.</i></li>
+            {% endif %}
+          </ul>
+        {% endfor %}
+        <div>
+          {% if not request.user.is_authenticated %}
+            <p class="error">
+              You must be
+              <a href="{% url "login" %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}">logged in</a>
+              to download a zip file.
+            </p>
           {% endif %}
-        </ul>
-      {% endfor %}
+          <button type="submit" class="btn btn-primary" name="download" value="1" {% if not request.user.is_authenticated %}disabled{% endif %}>
+            Download checked PDFs as a zip file
+          </button>
+        </div>
+      </form>
     {% else %}
       <i>No citations found.</i>
     {% endif %}
