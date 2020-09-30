@@ -240,7 +240,7 @@ Each case result in the API returns an analysis section, such as:
         "word_count": 16593,
         "ocr_confidence": 0.691,
         "char_count": 92845,
-        "page_rank": 0.1
+        "pagerank": 0.1
     }
 
 Analysis fields are values calculated by processing the raw case text. They can be searched with [filters](#case-filtering).
@@ -249,7 +249,7 @@ All analysis fields are optional, and may or may not appear for a given case.
 
 Analysis fields have the following meanings:
 
-Cardinality (`cardinality`)
+Cardinality (`word_count`)
 {: class="topic-header" }
 
 The number of unique words in the full case text including head matter.
