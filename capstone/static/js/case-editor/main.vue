@@ -150,7 +150,7 @@
       for (const fontId of Object.keys(this.fonts))
         this.fonts[fontId] = this.processFont(this.fonts[fontId]);
       this.fonts[-1] = {styles:'', family:'Times New Roman', size:12.0};  // default font
-      this.charAscentCache = {};
+      this.charAscentCache = new Map();
 
       // load state from localStorage
       this.storageKey = `caseedit-${this.serverMetadata.id}`;
@@ -423,15 +423,15 @@
           (So "T" has a higher value than "i" has a higher value than "a", which is the same as "g".)
         */
         const key = `${fontId}-${c}`;
-        if (!this.charAscentCache.hasOwnProperty(key)) {
+        if (!this.charAscentCache.has(key)) {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           const font = this.fonts[fontId];
           ctx.font = `${font.styles} ${font.size}pt ${font.family}`;
           // multiply by 3/4 to convert from px to pt
-          this.charAscentCache[key] = ctx.measureText(c).actualBoundingBoxAscent * 3/4;
+          this.charAscentCache.set(key, ctx.measureText(c).actualBoundingBoxAscent * 3/4);
         }
-        return this.charAscentCache[key];
+        return this.charAscentCache.get(key);
       },
       getFontLineHeight(fontId) {
         /*
