@@ -8,7 +8,7 @@
             <label for="hoveredJurSelect">Selected jurisdiction:</label>
             <select class="form-control" id="hoveredJurSelect" v-model="hoveredSlug">
               <option disabled value="">Select one, or use the map</option>
-              <option v-for="jur in jurisdictions" v-bind:value="jur[0]">{{jur[1]}}</option>
+              <option v-for="jur in jurisdictions" :key="jur[0]" v-bind:value="jur[0]">{{jur[1]}}</option>
             </select>
           </div>
           <div>
@@ -18,7 +18,7 @@
         </div>
         <div class="item-set excerpts">Excerpts:</div>
         <ol class="excerpt-box">
-          <li v-for="item in results[hoveredSlug]" class="excerpt-item">
+          <li v-for="item in results[hoveredSlug]" class="excerpt-item"> <!-- eslint-disable-line vue/require-v-for-key -->
             "...{{item.context}}..." <a :href="item.url">{{item.name}}</a><span class="excerpt-date"> {{item.decision_date}} </span>
           </li>
         </ol>

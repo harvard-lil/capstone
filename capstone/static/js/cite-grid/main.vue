@@ -24,7 +24,7 @@
             <label for="hoveredJurSelect">Selected jurisdiction:</label>
             <select class="form-control" id="hoveredJurSelect" v-model="hoveredJur">
               <option disabled value="">Select one, or hover on the map</option>
-              <option v-for="jur in jurisdictions" v-bind:value="jur">{{jur.name_long}}</option>
+              <option v-for="jur in jurisdictions" :key="jur.id" v-bind:value="jur">{{jur.name_long}}</option>
             </select>
           </div>
           <div class="form-check">
