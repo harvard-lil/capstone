@@ -55,7 +55,10 @@
             <h3>Analysis<a class="analysis-link" :href="`${urls.apiDocs}#analysis-fields`"><img class="analysis-info" alt="More information about analysis fields" :src="`${urls.static}img/icons/question.svg`"></a></h3>
             <div class="sidebar-section-contents">
                 <ul>
-                    <li v-for="(v, k) in templateVars.analysis">{{analysisName[k]}}: {{analysisValue(k, v)}}</li>
+                    <li v-if="templateVars.analysis.pagerank">PageRank: {{templateVars.analysis.pagerank}} </li>
+                    <li v-if="templateVars.analysis.ocr_confidence">OCR confidence: {{templateVars.analysis.ocr_confidence}} </li>
+                    <li v-if="templateVars.analysis.char_count">Character count: {{templateVars.analysis.char_count}} </li>
+                    <li v-if="templateVars.analysis.word_count">Word count: {{templateVars.analysis.word_count}} </li>
                 </ul>
             </div>
         </div>
@@ -186,11 +189,6 @@
         opinions: null,
         citingCount: null,
         sidebarStatus: true,
-        analysisName: {
-          'char_count': 'Character count',
-          'ocr_confidence': 'OCR confidence',
-          'word_count': 'Word count'
-        }
       }
     },
     watch: {
