@@ -269,12 +269,11 @@ Installing the temporal_tables extension is recommended for performance. If not 
 will be installed by set_up_postgres.py; this is handy for development.
 
 ### Download real data locally <a id="download-real-data-locally"></a>
-*These instructions are likely only going to be useful for internal users with access to our production databases and data stores, but there's no reason you couldn't set up an s3 bucket with the expected structure to ingest volumes. If you have any interest in working on something that requires this, file an issue to request that we extend the documentation. We've found very few instances where our test cases did not fully meet our dev needs.*
 
-To write test data and fixtures for given volume and case:
-run the fab command `fab add_test_case` with a volume barcode
-(like `fab add_test_case:32044057891608_0001`)
-- You will need to point STORAGES['ingest_storage'] to real harvard-ftl-shared
+We store complete fixtures for about 1,000 cases in the case.law [downloads section](https://case.law/download/developer/).
+
+You can download and ingest all volume fixtures from that section with the command `fab import_web_volumes`,
+or ingest a single volume downloaded from that section with the command `fab import_volume:some.zip`.  
 
 ### Working with javascript <a id="working-with-javascript"></a>
 
