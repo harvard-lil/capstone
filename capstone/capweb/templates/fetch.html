@@ -1,67 +1,104 @@
 {% extends "layouts/full.html" %}
+{% load static %}
+{% load pipeline %}
 
 {% block title %}Fetch Cases{% endblock %}
-{% block top_section_style %}bg-tan{% endblock %}
+{% block title_section %}{% endblock %}
+{% block top_section_style %}bg-tan simple-section{% endblock %}
 {% block meta_description %}
-  Extract citations from a block of text and link to matching cases
+Extract citations from a block of text and link to matching cases
 {% endblock %}
-{% block explainer %}
-  Extract citations from a block of text and link to matching cases.
-{% endblock %}
+{% block explainer %}{% endblock %}
 {% block sidebar_menu %}{% endblock %}
+{% block base_css %}{% stylesheet 'fetch' %}{% endblock %}
 
 {% block main_content %}
-  {% if error %}
-    <p class="error">{{ error }}</p>
-  {% endif %}
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+<div class="fetch-page">
 
-  <form method="POST">
-    <div class="form-group">
-      <label for="q">Text with citations:</label>
-      <textarea name="q" class="form-control" id="q" rows="3" aria-describedby="qHelp">{{ text }}</textarea>
-      <small id="qHelp" class="form-text text-muted">Enter a single citation, a column copied from a spreadsheet, or document text. No text is saved on the server.</small>
+  <form method="POST" class="row bg-tan">
+    <div class="col-centered col-lg-9">
+    <h2 class="page-title">
+      <img alt="" aria-hidden="true" src="{% static 'img/arrows/violet-arrow-right.svg'%}" class="decorative-arrow" />
+      Extract Citations
+      </h1>
+      <br/>
+      <div class="row">
+        Extract citations from a block of text and link to matching cases.
+      </div>
+        <div class="form-group">
+          <!-- <label for="q">Text with citations:</label> -->
+          <textarea name="q" class="form-control" id="q" rows="3" aria-describedby="qHelp">{{ text }}</textarea>
+          <small id="qHelp" class="form-text text-muted">Enter a single citation, a column copied from a spreadsheet, or
+            document text. No text is saved on the server.</small>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn btn-primary">Find Citations</button>
+        </div>
+
     </div>
-    <button type="submit" class="btn btn-primary">Find Citations</button>
   </form>
 
   {% if text %}
-    <h2>Extracted Citations</h2>
+  <div class="col-centered col-lg-8 col-sm-10">
     {% if citations %}
-      <form method="POST">
-        {% for citation in citations %}
-          {{ citation.before }}<span style="font-weight: bold; text-decoration: underline">{{ citation.cite }}</span>{{ citation.after }}
-          <ul>
-            {% if citation.cases %}
-              {% for case in citation.cases %}
-                <li>
-                  <input type="checkbox" name="case_ids" value="{{ case.pk }}" id="case-id-{{ case.pk }}" {% if case.pdf_available %}checked{% else %}disabled{% endif %}>
-                  <label for="case-id-{{ case.pk }}">{{ case.full_cite }}</label>:
-                  <a href="{{ case.get_full_frontend_url }}" target="_blank">HTML</a>
-                  {% if case.pdf_available %}
-                    - <a href="{{ case.get_pdf_url }}" target="_blank">PDF</a>
-                  {% endif %}
-                </li>
-              {% endfor %}
-            {% else %}
-              <li><i>No cases found.</i></li>
-            {% endif %}
-          </ul>
-        {% endfor %}
-        <div>
-          {% if not request.user.is_authenticated %}
-            <p class="error">
-              You must be
-              <a href="{% url "login" %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}">logged in</a>
-              to download a zip file.
-            </p>
+    <p id="results_count_focus" tabindex="-1" class="hitcount"><span>
+        Extracted citation results
+      </span>
+    </p>
+    <form method="POST">
+      {% for citation in citations %}
+      <span class="result">
+        <span class="result result-title">
+        "{{ citation.before }}
+        <span class="font-weight-bold">
+          {{ citation.cite }}
+        </span>
+        {{ citation.after }}"
+      </span>
+      <ul>
+        {% if citation.cases %}
+        {% for case in citation.cases %}
+        <li>
+          {% if case.pdf_available %}
+          <input type="checkbox" name="case_ids" value="{{ case.pk }}" id="case-id-{{ case.pk }}" checked>
           {% endif %}
-          <button type="submit" class="btn btn-primary" name="download" value="1" {% if not request.user.is_authenticated %}disabled{% endif %}>
-            Download checked PDFs as a zip file
-          </button>
-        </div>
-      </form>
+
+            <a href="{{ case.get_full_frontend_url }}" target="_blank">
+              {{ case.full_cite }}</a>
+            {% if case.pdf_available %}
+            &middot; <a href="{{ case.get_pdf_url }}" target="_blank">PDF</a>
+            {% endif %}
+
+        </li>
+        {% endfor %}
+        {% else %}
+        <li class="no-results">No cases found.</li>
+        {% endif %}
+      </ul>
+    </span>
+      {% endfor %}
+      <div>
+        {% if not request.user.is_authenticated %}
+        <p class="error">
+          You must be
+          <a href="{% url "login" %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}">logged in</a>
+          to download a zip file.
+        </p>
+        {% endif %}
+        {% if request.user.is_authenticated %}<label class="d-block">Download checked PDFs as a zip file:</label>{% endif %}
+        <button type="submit" class="btn btn-primary" name="download" value="1"
+          {% if not request.user.is_authenticated %}disabled{% endif %}>
+          Download zip
+        </button>
+      </div>
+    </form>
     {% else %}
-      <i>No citations found.</i>
+    <i>No citations found.</i>
     {% endif %}
-  {% endif %}
+    {% endif %}
+  </div>
+</div>
 {% endblock %}
