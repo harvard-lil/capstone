@@ -1,4 +1,6 @@
 import hashlib
+from copy import copy
+
 import wrapt
 
 from django.conf import settings
@@ -6,6 +8,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import connections
 from django.db.models import QuerySet
+from django.http import QueryDict
 from django.utils.text import slugify
 from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
@@ -180,3 +183,16 @@ def link_to_cites(case_html, cites):
         case_html = case_html.replace(cite['cite'], cite_link)
 
     return case_html
+
+
+def api_request(request, viewset, method, url_kwargs={}, get_params={}):
+    """
+        Call an API route on behalf of the user request. Examples:
+            data = api_request(request, CaseDocumentViewSet, 'list', get_params={'q': 'foo'}).data
+            data = api_request(request, CaseDocumentViewSet, 'retrieve', url_kwargs={'id': '123'}).data
+    """
+    api_request = copy(request)
+    api_request.method = 'GET'
+    api_request.GET = QueryDict(mutable=True)
+    api_request.GET.update(get_params)
+    return viewset.as_view({'get': method})(api_request, **url_kwargs)

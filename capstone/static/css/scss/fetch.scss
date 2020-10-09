@@ -1,0 +1,46 @@
+@import "bootstrap/functions";
+@import "bootstrap/variables";
+@import "bootstrap/mixins";
+@import "base.scss";
+@import 'footer/yellow';
+@import "search_results";
+
+
+.row.alert-danger {
+  padding: 10px 0;
+  margin: 10px 0;
+}
+
+/* end safari rounding bug hack */
+.main-content {
+  margin: 1em;
+  min-width: 100%;
+  padding: 0 !important;
+}
+
+.top-section {
+  border: 0;
+}
+
+.fetch-page > * {
+  padding: 2.5em;
+}
+
+.page-title {
+  margin-left: -20px;
+}
+
+.no-results {
+  font-style: italic;
+  color: $color-medium-gray;
+}
+
+.hitcount {
+  color: $color-medium-gray;
+  margin-bottom: 20px;
+  columns: $color-violet;
+}
+
+button:disabled {
+  border: 0;
+}

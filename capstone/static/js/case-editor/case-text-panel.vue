@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-for="opinion in opinions" :key="opinion.id" class="opinion">
+    <div v-for="opinion in opinions" class="opinion">  <!-- eslint-disable-line vue/require-v-for-key -->
       <!-- main text -->
       <h4 class="opinion-title">opinion: {{opinion.type}}</h4>
       <Paragraph v-for="paragraph in opinion.paragraphs"
