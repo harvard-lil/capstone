@@ -319,10 +319,12 @@ def rebuild_search_index(force=False):
 @task
 def update_search_index_settings():
     """ Update settings on existing index, based on the case_index.settings() call in capapi.documents. """
-    from capapi.documents import case_index
-    # remove settings that cannot be changed on existing indexes
-    new_settings = {k:v for k, v in case_index._settings.items() if k not in ('number_of_shards')}
-    case_index.put_settings(body={"index": new_settings})
+    from capapi.documents import get_index
+    for k in settings.ELASTICSEARCH_INDEXES:
+        index = get_index(k)
+        # remove settings that cannot be changed on existing indexes
+        new_settings = {k:v for k, v in index._settings.items() if k not in ('number_of_shards')}
+        index.put_settings(body={"index": new_settings})
 
 
 @task
@@ -1568,6 +1570,13 @@ def load_pagerank_scores(pagerank_score_output):
         CaseAnalysis.objects.filter(id__in=existing_scores.keys()).delete()
         CaseAnalysis.objects.bulk_create(to_insert)
         CaseAnalysis.objects.bulk_update(to_update, ['value'])
+
+
+@task
+def ingest_courtlistener(download_dir='/tmp'):
+    """ Download CourtListener cases and add metadata to citation resolver endpoint. """
+    from scripts.ingest_courtlistener import ingest_courtlistener
+    ingest_courtlistener(download_dir)
 
 
 if __name__ == "__main__":

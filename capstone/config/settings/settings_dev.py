@@ -60,7 +60,6 @@ MAINTAIN_ELASTICSEARCH_INDEX = True
 import sys
 if 'pytest' not in sys.modules:
     ## settings not for tests
-    ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases'
 
     # django-debug-toolbar
     try:

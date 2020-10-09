@@ -1,16 +1,26 @@
-from django_elasticsearch_dsl import Document as DocType, Index, fields
+import re
+from difflib import SequenceMatcher
+
+from django_elasticsearch_dsl import Document, Index, fields
 from django.conf import settings
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Search, Q
 
 from capdb.models import CaseMetadata, CaseLastUpdate
+from scripts.simhash import get_distance
 
-index_name = settings.ELASTICSEARCH_INDEXES['cases_endpoint']
-case_index = Index(index_name)
-case_index.settings(
-    number_of_shards=1,
-    number_of_replicas=0,
-    max_result_window=settings.MAX_PAGE_SIZE+1,  # allow for one extra for pagination
-)
+
+def get_index(index_name):
+    index = Index(settings.ELASTICSEARCH_INDEXES[index_name])
+    index.settings(
+        number_of_shards=1,
+        number_of_replicas=0,
+        max_result_window=settings.MAX_PAGE_SIZE+1,  # allow for one extra for pagination
+    )
+    return index
+
+
+cases_index = get_index("cases_endpoint")
+resolve_index = get_index("resolve_endpoint")
 
 
 def SuggestField():
@@ -37,8 +47,8 @@ class RawSearch(Search):
         return super().execute(ignore_cache)
 
 
-@case_index.doc_type
-class CaseDocument(DocType):
+@cases_index.doc_type
+class CaseDocument(Document):
     # IMPORTANT: If you change what values are indexed here, also change the "CaseLastUpdate triggers"
     # section in set_up_postgres.py to keep Elasticsearch updated.
     name_abbreviation = SuggestField()
@@ -173,7 +183,7 @@ class CaseDocument(DocType):
         return "%s, %s%s" % (
             self.name_abbreviation,
             ", ".join(cite.cite for cite in self.citations if cite.type != "vendor"),
-            " (%s)" % self.decision_date.year if self.decision_date else ""
+            " (%s)" % (self.decision_date_original[:4],) if self.decision_date_original else ""
         )
 
     @classmethod
@@ -184,3 +194,103 @@ class CaseDocument(DocType):
         out = super().search(*args, **kwargs)
         out.__class__ = RawSearch
         return out
+
+
+@resolve_index.doc_type
+class ResolveDocument(Document):
+    id = fields.KeywordField()
+    source = fields.KeywordField()
+    source_id = fields.KeywordField(attr='id')
+    citations = fields.ObjectField(properties={
+        "cite": fields.KeywordField(),
+        "normalized_cite": fields.KeywordField(),
+        "type": fields.KeywordField(),
+        "volume": fields.KeywordField(),
+        "reporter": fields.KeywordField(),
+        "page": fields.KeywordField(),
+        "page_int": fields.IntegerField(),
+    })
+    name_short = fields.TextField(attr='name_abbreviation')
+    name_full = fields.TextField(attr='name')
+    decision_date = fields.KeywordField(attr='decision_date_original')
+    frontend_url = fields.KeywordField()
+    api_url = fields.KeywordField()
+    simhash = fields.KeywordField()
+
+    class Django:
+        model = CaseMetadata
+        ignore_signals = True
+        auto_refresh = False
+
+    def prepare_id(self, instance):
+        return 'cap-%s' % instance.id
+
+    def prepare_source(self, instance):
+        return 'cap'
+
+    def prepare_simhash(self, instance):
+        sh = next((i for i in instance.analysis.all() if i.key == 'simhash'), None)
+        if sh:
+            return sh.value
+
+    def prepare_frontend_url(self, instance):
+        return settings.RESOLVE_FRONTEND_PREFIX + instance.frontend_url
+
+    def prepare_api_url(self, instance):
+        return settings.RESOLVE_API_PREFIX + str(instance.id)
+
+    def prepare_citations(self, instance):
+        citations = []
+        for cite in instance.citations.all():
+            vol_num, reporter, page_num = cite.parsed()
+            try:
+                page_int = int(page_num)
+            except (TypeError, ValueError):
+                page_int = None
+            citations.append({
+                'cite': cite.cite,
+                'normalized_cite': cite.normalized_cite,
+                'type': cite.type,
+                'volume': vol_num,
+                'reporter': reporter,
+                'page': page_num,
+                'page_int': page_int,
+            })
+        return citations
+
+    def prepare(self, instance):
+        if type(instance) is dict:
+            return instance
+        return super().prepare(instance)
+
+    def generate_id(self, object_instance):
+        if type(object_instance) is dict:
+            return object_instance['id']
+        return object_instance.pk
+
+    def full_cite(self):
+        return "%s, %s%s" % (
+            self.name_short,
+            ", ".join(cite.cite for cite in self.citations if cite.type != "vendor"),
+            " (%s)" % (self.decision_date[:4],) if self.decision_date else ""
+        )
+
+    def get_similar(self):
+        candidates = ResolveDocument.search().query(
+            'bool',
+            should=[Q("match", citations__normalized_cite=c.normalized_cite) for c in self.citations]
+        ).exclude("match", source=self.source).execute()
+
+        # estimate similarities for each case
+        for candidate in candidates:
+            n1 = re.sub(r'[^a-z0-9]', '', self.name_short.lower())
+            n2 = re.sub(r'[^a-z0-9]', '', candidate.name_short.lower())
+            if n1 in n2 or n2 in n1:
+                candidate.similarity = 1
+            else:
+                distances = [SequenceMatcher(None, n1, n2).ratio()]
+                if self.simhash and candidate.simhash:
+                    distances.append(get_distance(self.simhash, candidate.simhash))
+                candidate.similarity = sum(distances)/len(distances)
+
+        return candidates

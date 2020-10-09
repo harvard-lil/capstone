@@ -6,9 +6,12 @@ from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend,
     OrderingFilterBackend
 from django_filters.utils import translate_validation
 from elasticsearch.exceptions import NotFoundError
+from rest_framework.exceptions import ValidationError
 from rest_framework_filters.backends import RestFrameworkFilterBackend
 from capapi.documents import CaseDocument
 from capdb import models
+from capdb.models import normalize_cite
+from scripts.extract_cites import extract_citations_from_text
 from user_data.models import UserHistory
 
 
@@ -218,9 +221,6 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
         def lc_values(values):
             return [value.lower() for value in values if isinstance(value, str)]
 
-        def normalize_cites(values):
-            return [models.normalize_cite(value) for value in values if isinstance(value, str)]
-
         query_params = super().get_filter_query_params(request, view)
 
         if 'cite' in query_params:
@@ -234,18 +234,19 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
             query_params['jurisdiction']['values'] = lc_values(query_params['jurisdiction']['values'])
 
         if 'cites_to' in query_params:
-            query_params['cites_to']['values'] = normalize_cites(query_params['cites_to']['values'])
-            for cite in query_params['cites_to']['values']:
+            old_cites_to = query_params['cites_to']['values']
+            query_params['cites_to']['values'] = []
+            for cite in old_cites_to:
                 # check if case id is passed in
                 if cite.isdigit():
                     try:
                         case = CaseDocument.get(id=cite)
-                        # remove id from lookup
-                        query_params['cites_to']['values'].remove(cite)
                         # add all citations relating to case
                         query_params['cites_to']['values'] += [c['normalized_cite'] for c in case.citations]
                     except NotFoundError:
                         pass
+                else:
+                    query_params['cites_to']['values'].append(normalize_cite(cite))
         return query_params
 
 
@@ -303,3 +304,38 @@ class CAPOrderingFilterBackend(OrderingFilterBackend):
         return super().transform_ordering_params(
             ['relevance' if sort == '-relevance' else '-relevance' if sort == 'relevance' else sort for sort in ordering_params],
             ordering_fields)
+
+
+class ResolveFilter(filters.FilterSet):
+    """
+        Used for HTML display and validation, but not actual filtering.
+        Rendered by ResolveFilterBackend, which applies filters to the ES query.
+    """
+    q = filters.CharFilter(label='Citation', help_text='Citation, or text containing multiple citations')
+
+    class Meta:
+        model = models.CaseMetadata
+        fields = []
+
+
+class ResolveFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        """
+            Apply form validation from RestFrameworkFilterBackend.filter_queryset(), which uses the fields
+             defined on ResolveFilter, before applying actual filters from FilteringFilterBackend.
+        """
+        filterset = self.get_filterset(request, None, view)
+        if not filterset.is_valid():
+            raise translate_validation(filterset.errors)
+        return super().filter_queryset(request, queryset, view)
+
+    def get_filter_query_params(self, request, view):
+        query_params = super().get_filter_query_params(request, view)
+        if not query_params:
+            raise ValidationError("Query parameter 'q' is required")
+        extracted_cites = {normalize_cite(i[1]): i[0] for v in query_params['q']['values'] for i in extract_citations_from_text(v)}
+        if not extracted_cites:
+            raise ValidationError("No citations found in query.")
+        query_params['q']['values'] = set(extracted_cites)
+        request.extracted_cites = extracted_cites
+        return query_params

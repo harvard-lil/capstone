@@ -106,3 +106,6 @@ VALIDATE_EMAIL_SIGNUPS = True
 # EMAIL_HOST = 'smtp.example.com'
 # EMAIL_HOST_USER = 'smtpuser'
 # EMAIL_HOST_PASSWORD = 'smtppw'
+
+RESOLVE_API_PREFIX = 'https://api.case.law/v1/cases/'
+RESOLVE_FRONTEND_PREFIX = 'https://cite.case.law'

@@ -1,6 +1,6 @@
 import hashlib
 import re
-import simhash
+import numpy as np
 
 
 # increment this whenever get_simhash() output changes, e.g. because of new tokenizer or hash function
@@ -8,8 +8,8 @@ SIMHASH_VERSION = 1
 
 
 def hashfunc(obj):
-    """ Return first 8 bytes of md5(obj) as an integer. """
-    return int.from_bytes(hashlib.md5(obj).digest()[:8], byteorder='big')
+    """ Return first 8 bytes of md5(obj). """
+    return hashlib.md5(obj.encode('utf8')).digest()[:8]
 
 
 def shingles(tokens, n):
@@ -34,12 +34,20 @@ def get_simhash(text):
         Return `version:hex-encoded simhash`, based on tokenizer and hashfunc defined above.
         >>> assert get_simhash("Hasta mañana, say we’ll meet again.") == '1:f30f534aac9db398'
     """
-    # Note on simhash packages: we are using the `simhash` package.
-    # The `simhash-py` package is faster but the py3 version is currently unreleased. `simhash-py` version:
-    # hashes = [hashfunc(s.encode('utf8')) for s in tokenize(text)]
-    # value = simhash.compute(hashes)
-    value = simhash.Simhash(tokenize(text), hashfunc=hashfunc).value
-    return f"{SIMHASH_VERSION}:{value:016x}"
+    tokens = tokenize(text)
+
+    # equivalent to:
+    #   pip install simhash
+    #   import simhash
+    #   value = simhash.Simhash(tokenize(text), hashfunc=hashfunc).value.to_bytes(8, byteorder='big')
+    # but faster
+    bytestring = b''.join(hashfunc(f) for f in tokens)
+    bitarray = np.unpackbits(np.frombuffer(bytestring, dtype='>B'))
+    rows = np.reshape(bitarray, (-1, 64))
+    sums = np.sum(rows, 0)
+    value = np.packbits(sums > len(tokens) // 2).tobytes()
+
+    return f"{SIMHASH_VERSION}:{value.hex()}"
 
 
 def get_distance(s1, s2):
@@ -48,8 +56,6 @@ def get_distance(s1, s2):
         >>> assert get_distance(get_simhash("This is a brown dog"), get_simhash("This is a brown doggy")) == 17
         >>> assert get_distance(get_simhash("This is a brown dog"), get_simhash("That is a brown doggy")) == 25
     """
-    return simhash.Simhash(int(s1.split(':', 1)[1], 16)).distance(simhash.Simhash(int(s2.split(':', 1)[1], 16)))
-    # `simhash-py` package's version:
-    # return simhash.num_differing_bits(
-    #     int(s1.split(':', 1)[1], 16),
-    #     int(s2.split(':', 1)[1], 16))
+    s1_int = int(s1.split(':', 1)[1], 16)
+    s2_int = int(s2.split(':', 1)[1], 16)
+    return bin(s1_int ^ s2_int).count('1')

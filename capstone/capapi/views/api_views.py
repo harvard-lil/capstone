@@ -8,20 +8,46 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
-from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
+from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
 from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
-from capapi.documents import CaseDocument, RawSearch
-from capapi.filters import CAPOrderingFilterBackend, CaseFilterBackend, MultiFieldFTSFilter, \
-    NameFTSFilter, NameAbbreviationFTSFilter, DocketNumberFTSFilter, analysis_fields
+from capapi.documents import CaseDocument, RawSearch, ResolveDocument
 from capapi.pagination import CapESCursorPagination
-from capapi.serializers import CaseDocumentSerializer
+from capapi.serializers import CaseDocumentSerializer, ResolveDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
 from capdb.models import CaseMetadata
 from capdb.storages import ngram_kv_store_ro
 from user_data.models import UserHistory
+
+
+class BaseDocumentViewSet(DEDDBaseDocumentViewSet):
+    pagination_class = CapESCursorPagination
+
+    def __init__(self, *args, **kwargs):
+        # use RawSearch to avoid using Elasticsearch wrappers, for speed
+        super().__init__(*args, **kwargs)
+        self.search.__class__ = RawSearch
+
+    # this lets DRF handle 'not found' issues the way they they are with the DB back end
+    ignore = [404]
+
+    lookup_field = 'id'
+
+    simple_query_string_options = {
+        "default_operator": "and",
+    }
+
+    filterset_fields = []  # make CaseFilter, which we use just for presentation in the HTML viewer, ignore filter_fields, which we use for filtering on Elasticsearch
+
+    # Specify default ordering. Relevance is a synonym for score, so we reverse it. It's reversed in the user-specified
+    # ordering backend.
+    ordering = ('-relevance', 'decision_date')
+
+    def filter_queryset(self, queryset):
+        queryset = super(BaseDocumentViewSet, self).filter_queryset(queryset)
+        return queryset.extra(track_total_hits=True)
 
 
 class BaseViewSet(viewsets.ReadOnlyModelViewSet):
@@ -58,37 +84,21 @@ class CourtViewSet(BaseViewSet):
 
 class CaseDocumentViewSet(BaseDocumentViewSet):
     """The CaseDocument view."""
-
-    def __init__(self, *args, **kwargs):
-        # use RawSearch to avoid using Elasticsearch wrappers, for speed
-        super().__init__(*args, **kwargs)
-        self.search.__class__ = RawSearch
-
-    # this lets DRF handle 'not found' issues the way they they are with the DB back end
-    ignore = [404]
-
     document = CaseDocument
     serializer_class = CaseDocumentSerializer
-    pagination_class = CapESCursorPagination
     filterset_class = filters.CaseFilter
-
-    lookup_field = 'id'
 
     filter_backends = [
         # queries that take full-text search operators:
-        MultiFieldFTSFilter,
-        NameFTSFilter,
-        NameAbbreviationFTSFilter,
-        DocketNumberFTSFilter,
-        CaseFilterBackend, # Facilitates Filtering (Filters)
-        CAPOrderingFilterBackend, # Orders Document
+        filters.MultiFieldFTSFilter,
+        filters.NameFTSFilter,
+        filters.NameAbbreviationFTSFilter,
+        filters.DocketNumberFTSFilter,
+        filters.CaseFilterBackend, # Facilitates Filtering (Filters)
+        filters.CAPOrderingFilterBackend, # Orders Document
         HighlightBackend, # for search preview
         DefaultOrderingFilterBackend # Must be last
     ]
-
-    simple_query_string_options = {
-        "default_operator": "and",
-    }
 
     # Define filter fields
     filter_fields = {
@@ -101,12 +111,11 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'cites_to': 'extractedcitations.normalized_cite',
         'decision_date': 'decision_date_original',
         'last_updated': 'last_updated',
-        **{'analysis.'+k: 'analysis.'+k for k in analysis_fields},
+        **{'analysis.'+k: 'analysis.'+k for k in filters.analysis_fields},
         # legacy fields:
         'decision_date_min': {'field': 'decision_date_original', 'default_lookup': 'gte'},
         'decision_date_max': {'field': 'decision_date_original', 'default_lookup': 'lte'},
     }
-    filterset_fields = []  # make CaseFilter, which we use just for presentation in the HTML viewer, ignore filter_fields, which we use for filtering on Elasticsearch
 
     # Define ordering fields
     ordering_fields = {
@@ -115,11 +124,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'name_abbreviation': 'name_abbreviation.raw',
         'id': 'id',
         'last_updated': 'last_updated',
-        **{'analysis.' + k: 'analysis.' + k for k in analysis_fields},
+        **{'analysis.' + k: 'analysis.' + k for k in filters.analysis_fields},
     }
-    # Specify default ordering. Relevance is a synonym for score, so we reverse it. It's reversed in the user-specified
-    # ordering backend.
-    ordering = ('-relevance', 'decision_date')
 
     highlight_fields = {
         'casebody_data.text.head_matter': {
@@ -178,7 +184,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         else:
             source_filter = {"excludes": "casebody_data.*"}
 
-        return queryset.source(source_filter).extra(track_total_hits=True)
+        return queryset.source(source_filter)
 
     def get_renderers(self):
         if self.action == 'retrieve':
@@ -215,6 +221,29 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             return Response(case.get_pdf())
 
         return super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
+
+
+class ResolveDocumentViewSet(BaseDocumentViewSet):
+    """The ResolveDocument view."""
+
+    document = ResolveDocument
+    serializer_class = ResolveDocumentSerializer
+    filterset_class = filters.ResolveFilter
+    pagination_class = None
+
+    filter_backends = [
+        filters.ResolveFilterBackend,
+    ]
+
+    # Define filter fields
+    filter_fields = {
+        'q': 'citations.normalized_cite',
+    }
+
+    retrieve = None
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class CaseExportViewSet(BaseViewSet):
