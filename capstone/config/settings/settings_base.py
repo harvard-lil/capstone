@@ -359,6 +359,12 @@ PIPELINE = {
             ),
             'output_filename': 'unified_docs.css'
         },
+        'fetch': {
+            'source_filenames': {
+                'css/scss/fetch.scss',
+            },
+            'output_filename': 'fetch.css'
+        },
     },
 
     # avoid compressing assets for now
