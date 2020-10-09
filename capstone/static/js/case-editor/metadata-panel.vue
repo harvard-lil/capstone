@@ -1,6 +1,7 @@
 <template>
   <div>
-    <h4 class="section-title">case metadata</h4>
+    <h4>case metadata</h4>
+
     <div class="row">
       <label class="col-8 m-0" for="metadata-human-corrected">Human Corrected</label>
       <input class="col-4" type="checkbox" v-model="human_corrected" id="metadata-human-corrected">
@@ -14,7 +15,11 @@
       <label class="col-4" for="metadata-docket-number">Docket Number</label>
       <input class="col-8" type="text" v-model="docket_number" placeholder="docket number" id="metadata-docket-number">
     </div>
+    <p class="m-4">
+      <small class="form-text text-muted">Metadata changes are saved with all other changes when the "save to db" button is clicked in the main editor screen.</small>
+    </p>
   </div>
+
 </template>
 
 <script>

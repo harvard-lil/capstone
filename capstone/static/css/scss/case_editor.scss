@@ -13,17 +13,305 @@ h1 {
   height: 100%;
 }
 
-.main-content {
+.main-content, article {
   // undo @include make-col(9); from base
   max-width: unset !important;
   flex: unset !important;
 }
 
-#edit-app {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.modal-body {
+  z-index: 10002;
 }
+div#app-grid {
+    display: grid;
+    grid-template-areas:
+            "title       title  title       title"
+            "view_controls  view_controls view_controls popups"
+            "ocr         ocr ocr      ocr"
+            "edits_expand         edits_expand edits_expand      edits_expand"
+            "word        edits edits    document_controls";
+
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 3rem 4rem auto 1rem auto;
+    height: 95vh;
+}
+
+div#app-grid.showImage {
+    grid-template-areas:
+            "title       title  title       title"
+            "view_controls  view_controls view_controls popups"
+            "ocr         ocr image      image"
+            "edits_expand         edits_expand edits_expand      edits_expand"
+            "word        edits edits    document_controls";
+}
+
+nav#editsExpand {
+  z-index: 5000;
+  grid-area: edits_expand;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  button {
+    width: 100%;
+    background-color: $color-gray;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    height: 1rem;
+    color: $color-light-gray;
+    font-size: 2rem;
+    line-height: 0;
+    font-weight: $font-weight-black;
+  }
+}
+
+div#app-grid.editsExpand {
+  grid-template-rows: 3rem 4rem 8rem 1rem 1fr;
+}
+
+.opinion-title {
+  padding-top: .5rem;
+  padding-bottom: .5rem;
+  font-size: $font-size-sm;
+  position: sticky;
+  top: 0;
+  background: white;
+  font-weight: $font-weight-bold;
+  color: $color-violet-gray-dark;
+  background-color: $color-light-gray;
+  }
+
+
+header#title {
+  padding-top: 1rem;
+  grid-area: title;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  background-color: $color-black;
+  a {
+    color: $color-white;
+  }
+}
+
+article#caseTextPanel {
+  grid-area: ocr;
+  overflow: scroll;
+  width: 100%;
+  .opinion {
+    padding-top: 1rem;
+  }
+}
+
+nav#view_controls {
+  padding-top: 1rem;
+  color: $color-white;
+  background-color: $color-black;
+  grid-area: view_controls;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+nav#popups {
+  padding-top: 1rem;
+  color: $color-white;
+  background-color: $color-black;
+  grid-area: popups;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  display: grid;
+  grid-template-areas: "human_corrected edit_metadata instructions";
+  grid-template-columns: 5rem 3fr 1fr;
+  gap: 1rem;
+  button {
+    width: 100%;
+  }
+  div#edit_metadata {
+    grid-area: edit_metadata;
+  }
+
+  div#instructions {
+    grid-area: instructions;
+  }
+
+  div#human_corrected {
+    text-align: start;
+    grid-area: human_corrected;
+    background-color: $color-black;
+    line-height: 1rem;
+    font-size: 2.7rem;
+    color: $color-red;
+    margin-left: -1rem;
+    display: flex;
+    padding-top: .4rem;
+    .label {
+      margin-top: -.4rem;
+      color: $color-white;
+      text-align: start;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-black;
+      display: inline-block;
+      text-decoration: line-through;
+    }
+  }
+
+  div#human_corrected:before {
+    content: "☒";
+  }
+
+  div#human_corrected.corrected {
+    .label {
+      text-decoration: none;
+    }
+  }
+  div#human_corrected.corrected:before {
+    color: $color-white;
+    content: "☑︎";
+  }
+
+
+}
+
+nav#view_controls, nav#popups {
+  button.toggle-btn {
+    @extend .btn-tertiary;
+    font-size: .75rem;
+    margin-left: 1rem;
+    border:0;
+    background-color: $color-light-blue;
+  }
+  button.toggle-btn:first-of-type {
+    margin-left: 0;
+  }
+  button.on {
+    @extend .btn-primary;
+    background-color: $color-dark-blue;
+  }
+}
+
+article#caseImagePanel {
+  grid-area: image;
+  overflow: scroll;
+  width: 100%;
+  #imageControls {
+    z-index: 1;
+    position: fixed;
+    right: 1.5rem;
+    button {
+      display: inline-block;
+      font-family: $font-serif-fancy;
+      font-weight: $font-weight-black;
+      font-size: $font-size-lg;
+      border-radius: 50%;
+      border: 1px solid $color-violet-gray-dark;
+      color: $color-violet-gray-dark;
+      background-color: rgba($color-violet-light, 0.3);
+      width: 30px;
+      height: 30px;
+      padding: 0px;
+      margin: 1.1rem .5rem .5rem .5rem;
+    }
+    button.zoom-in::before {
+      content: "+";
+    }
+    button.zoom-out::before {
+      content: "-";
+    }
+  }
+}
+aside#metadata {
+    display: none;
+}
+nav#word {
+    grid-area: word;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  .word-panel-row {
+    height: 3rem;
+  }
+  .word-panel-row:first-of-type {
+    margin-bottom: .5rem;
+    margin-top: .5rem;
+  }
+}
+nav#edits {
+  grid-area: edits;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  overflow: scroll;
+  height: 7rem;
+
+  .edited-word-list {
+    li {
+      font-size: $font-size-sm;
+    }
+    .count_col {
+      .pencil {
+        color: $color-red;
+      }
+    }
+    .edit-controls {
+      text-align: center;
+    }
+    .row {
+      flex-wrap: nowrap;
+    }
+    margin-top: 1rem;
+    padding-left: 1rem;
+    .edit-head {
+      background-color: $color-gray;
+      color: $color-black;
+      height: 1.25rem;
+      line-height: 1rem;
+      padding-top: .125rem;
+      .count_col {
+        padding-left: 1rem;
+      }
+      .clear_col {
+        text-align: center;
+      }
+    }
+    .edit-entry {
+      margin-bottom: .5rem;
+      .edit-word {
+        background-color: $color-light-gray;
+        padding-left: 1rem;
+        border-left: 1px solid $color-gray;
+      }
+      .edit-word:first-of-type {
+        border-left: 0;
+      }
+        padding-left: 0;
+    }
+    .edit-delete {
+      background-color: transparent;
+      color: $color-red;
+      font-size: $font-size-base;
+    }
+    .edit-delete:hover {
+      background-color: transparent;
+      font-weight: $font-weight-black;
+    }
+    .edit-entry:hover {
+      cursor: pointer;
+    }
+  }
+}
+
+
+
+nav#edits.editsExpand {
+  height: 100%;
+}
+nav#document_controls {
+  grid-area: document_controls;
+  padding-top: .5rem;
+  text-align: end;
+  padding-right: 1rem;
+  button {
+    margin:  1rem;
+  }
+}
+
 
 section, article {
   @include make-col(11);
@@ -42,60 +330,40 @@ section, article {
   margin-left: 0;
 }
 
-.viz-controls {
-  .toggle-btn {
-    @extend .btn-secondary;
-    font-size: .75rem;
-    margin-left: 1rem;
-  }
-  .on {
-      background-color: $color-yellow-bright;
-      color: $color-dark-blue;
-  }
-  .off {
-      background-color: $color-light-gray;
-      color: $color-dark-blue;
+.button-box {
+  padding: .25rem;
+  button {
+    width: 100%;
+    line-height: normal;
+    height: 20px;
+    border: thin solid $color-violet-gray-dark;
+    background-color: $color-magenta;
+    display: inline-flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    padding: 0;
   }
 }
 
-.edits-container {
-  .button-box {
-    padding: .25rem;
-    button {
-      width: 100%;
-      line-height: normal;
-      height: 20px;
-      border: thin solid $color-violet-gray-dark;
-      background-color: $color-magenta;
-      display: inline-flex;
-      align-items: center;
-      text-align: center;
-      justify-content: center;
-      padding: 0;
-    }
-  }
-  .edit-delete {
-    background-color: transparent;
-    color: red;
-  }
-  .edit-delete:hover {
-    background-color: transparent;
-    font-weight: bolder;
-  }
-  .edit-entry:hover {
-    cursor: pointer;
-    background-color: $color-light-gray;
-  }
-  .word {
-    word-break: break-word;
-  }
+
+
+
+
+
+.word {
+  word-break: break-word;
 }
 
 body.modal_open {
   overflow: hidden;
 }
 
-#instructions_modal_overlay {
+aside#metadata {
+    display: none;
+}
+
+.modal_overlay {
   position: fixed;
   z-index: 10000;
   left: 0;
@@ -104,9 +372,14 @@ body.modal_open {
   height: 100%;
   overflow: scroll;
   background-color: rgba(0,0,0,0.4);
-  #instructions_modal {
+  .modal {
     z-index: 10001; /* Sit on top */
     background-color: $color-light-gray;
+    display: block;
+    h4 {
+      font-size: 3rem;
+      margin-bottom: 3rem;
+    }
   }
   .q {
     font-size: $font-size-sm;
@@ -118,7 +391,7 @@ body.modal_open {
     font-weight: $font-weight-normal;
     line-height: $line-height-sm;
   }
-  #modal_close {
+  .modal_close {
     margin-left: 100%;
     cursor: pointer;
   }
@@ -138,3 +411,4 @@ body.modal_open {
   line-height: 1rem;
   font-weight: bold;
 }
+

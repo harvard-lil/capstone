@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-for="opinion in opinions" class="opinion">
+    <div v-for="opinion in opinions" :key="opinion.id" class="opinion">
       <!-- main text -->
       <h4 class="opinion-title">opinion: {{opinion.type}}</h4>
       <Paragraph v-for="paragraph in opinion.paragraphs"
@@ -37,13 +37,6 @@
     padding-bottom: 2em;
     padding-top: 2em;
     border-bottom: 1px gray solid;
-  }
-  .opinion-title {
-    position: sticky;
-    top: 0;
-    background: white;
-    font-size: 1.25rem;
-    font-weight: bold;
   }
   .footnote-mark {
     font-size: .83em;
