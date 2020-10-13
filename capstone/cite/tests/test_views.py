@@ -87,7 +87,7 @@ def test_case_not_found(client, django_assert_num_queries, elasticsearch):
     """ Test /series/volume/case/ not found """
     with django_assert_num_queries(select=1):
         response = client.get(reverse('citation', args=['fake', '123', '456'], host='cite'))
-    check_response(response, content_includes='Citation "123 Fake 456" was not found')
+    check_response(response, content_includes='Search for "123 Fake 456" in other databases')
 
 
 @pytest.mark.django_db

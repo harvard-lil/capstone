@@ -28,7 +28,7 @@ from elasticsearch.exceptions import NotFoundError
 from natsort import natsorted
 
 from capapi import serializers
-from capapi.documents import CaseDocument
+from capapi.documents import CaseDocument, ResolveDocument
 from capapi.authentication import SessionAuthentication
 from capapi.resources import link_to_cites, api_request
 from capapi.views.api_views import CaseDocumentViewSet
@@ -37,6 +37,7 @@ from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseF
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
+from scripts.helpers import group_by
 
 
 def safe_redirect(request):
@@ -267,30 +268,62 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
             host='cite'))
 
     ### try to look up citation
+
+    case = None
+    resolved_case = None
     if case_id:
         try:
             case = CaseDocument.get(id=case_id)
+            resolved_cases = ResolveDocument.search().query("match", source='cap').query("match", source_id=case_id).execute()
+            if resolved_cases:
+                resolved_case = resolved_cases[0]
         except NotFoundError:
             raise Http404
     else:
         full_cite = "%s %s %s" % (volume_number_slug, series_slug.replace('-', ' ').title(), page_number)
         normalized_cite = re.sub(r'[^0-9a-z]', '', full_cite.lower())
-        cases = CaseDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
+        resolved = ResolveDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
+        resolved_by_source = None
 
-        ### handle non-unique citation (zero or multiple)
-        if not cases or len(cases) != 1:
+        if resolved:
+            resolved_by_source = group_by(resolved, lambda r: r.source)
+            if 'cap' in resolved_by_source:
+                if len(resolved_by_source['cap']) == 1:
+                    resolved_case = resolved_by_source['cap'][0]
+                    case = CaseDocument.get(resolved_case['source_id'])
+            else:
+                cap_candidates = {
+                    c.id: c
+                    for r in resolved
+                    for cite in r.citations
+                    for c in CaseDocument.search().filter("term", citations__normalized_cite=cite.normalized_cite).execute()
+                }
+                if cap_candidates:
+                    resolved_by_source['cap_guess'] = cap_candidates.values()
+
+        # this branch can be removed once ResolveDocument index is populated
+        else:
+            cases = CaseDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
+            if len(cases) > 1:
+                for c in cases:
+                    c.name_short = c.name_abbreviation
+                    c.decision_date = c.decision_date_original
+                resolved_by_source = {'cap': cases}
+            elif len(cases) == 1:
+                case = cases[0]
+
+        if not case:
             reporter = Reporter.objects.filter(short_name_slug=slugify(series_slug)).first()
             series = reporter.short_name if reporter else series_slug
 
             return render(request, 'cite/citation_failed.html', {
-                "cases": cases,
+                "resolved": resolved_by_source,
                 "full_cite": full_cite,
                 "series_slug": series_slug,
                 "series": series,
                 "volume_number_slug": volume_number_slug,
                 "page_number": page_number,
             })
-        case = cases[0]
 
     # handle whitelisted case or logged-in user
     if case.jurisdiction.whitelisted or request.user.is_authenticated:
@@ -375,6 +408,13 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
     formatted_name = db_case.name.replace(' v. ', ' <span class="case-name-v">v.</span> ')
 
+    # find case in other dbs
+    similar_cases = []
+    if resolved_case:
+        similar_cases = group_by(resolved_case.get_similar(), lambda r: r.source)
+        for group in similar_cases.values():
+            group.sort(reverse=True, key=lambda c: c.similarity)
+
     return render(request, 'cite/case.html', {
         'meta_tags': meta_tags,
         'can_render_pdf': can_render_pdf,
@@ -385,7 +425,8 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         'full_citation': db_case.full_cite(),
         'citations': ", ".join(c.cite for c in Citation.sorted_by_type(db_case.citations.all())),
         'formatted_name': formatted_name,
-        'analysis': json.dumps({k: v for k, v in serialized_data['analysis']._d_.items() if k in ['word_count', 'char_count', 'ocr_confidence', 'pagerank']}),
+        'analysis': serialized_data['analysis'],
+        'similar_cases': similar_cases,
     })
 
 

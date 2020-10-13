@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
+    'django.contrib.humanize',
 
     'django_filters',
     'django_extensions',
@@ -646,6 +647,7 @@ MAINTAIN_ELASTICSEARCH_INDEX = True  # whether to update index when changing cas
 
 ELASTICSEARCH_INDEXES={
     'cases_endpoint': 'cases',
+    'resolve_endpoint': 'resolve',
 }
 MAX_PAGE_SIZE = 10000
 
@@ -665,3 +667,6 @@ VALIDATE_EMAIL_SIGNUPS = False
 MISSED_CITATIONS_DIR = "/tmp/missed_citations"
 
 SITE_LIMIT_REPORT = False
+
+RESOLVE_API_PREFIX = 'http://api.case.test:8000/v1/cases/'
+RESOLVE_FRONTEND_PREFIX = 'http://cite.case.test:8000'

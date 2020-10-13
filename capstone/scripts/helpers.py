@@ -1,4 +1,5 @@
 import hashlib
+from collections import defaultdict
 from pathlib import Path
 from lxml import etree
 from pyquery import PyQuery
@@ -393,3 +394,11 @@ def fix_image_file_name(barcode, file_name):
         path actually exists.
     """
     return '%s_%s' % (barcode, file_name.split('_', 1)[1])
+
+
+def group_by(collection, key):
+    """ Return dict grouping collection by key function. """
+    out = defaultdict(list)
+    for item in collection:
+        out[key(item)].append(item)
+    return out
