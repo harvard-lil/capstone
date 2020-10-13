@@ -1,8 +1,8 @@
 <template>
   <div>
     <div id="imageControls" class="text-right viz-controls">
-      <button @click="imageZoom+=0.1" class="toggle-btn off">➕</button>
-      <button @click="imageZoom-=0.1" class="toggle-btn off">➖</button>
+      <button @click="imageZoom+=0.1" class="toggle-btn off zoom-in"></button>
+      <button @click="imageZoom-=0.1" class="toggle-btn off zoom-out"></button>
     </div>
     <div :style="{transform: `scale(${imageZoom})`, 'transform-origin': '0% 0% 0px'}">
       <div v-for="page in pages" :key="page.id" :class="{page: true, 'show-ocr': showOcr}">
@@ -52,10 +52,5 @@
         color: unset;
       }
     }
-  }
-  #imageControls {
-    position: sticky;
-    top: 0;
-    z-index: 1;
   }
 </style>

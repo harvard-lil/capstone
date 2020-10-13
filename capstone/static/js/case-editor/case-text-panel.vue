@@ -38,13 +38,6 @@
     padding-top: 2em;
     border-bottom: 1px gray solid;
   }
-  .opinion-title {
-    position: sticky;
-    top: 0;
-    background: white;
-    font-size: 1.25rem;
-    font-weight: bold;
-  }
   .footnote-mark {
     font-size: .83em;
     vertical-align: super;

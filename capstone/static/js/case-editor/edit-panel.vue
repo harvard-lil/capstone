@@ -1,8 +1,11 @@
 <template>
   <div>
-    <h4 class="section-title">current word</h4>
-    <div :style="currentWordStyle()"></div>
-    <div class="row">
+    <div class="row word-panel-row">
+      <div class="col-12">
+        <div :style="currentWordStyle()"></div>
+      </div>
+    </div>
+    <div class="row word-panel-row">
       <div class="col-10">
         <input type="text"
                id="current_word"

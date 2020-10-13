@@ -17,7 +17,7 @@
         urls: {
           case: "{{ case.get_full_frontend_url }}"
         },
-        citation_full: "{{ citation_full }}",
+        citation_full: "{{ citation_full|safe }}",
         metadata: {{ case_json|safe }},
         pages: {{ pages_json|safe }},
         fonts: {{ fonts_json|safe }},
