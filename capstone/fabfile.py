@@ -1573,10 +1573,10 @@ def load_pagerank_scores(pagerank_score_output):
 
 
 @task
-def ingest_courtlistener(download_dir='/tmp'):
+def ingest_courtlistener(download_dir='/tmp', start_from=None):
     """ Download CourtListener cases and add metadata to citation resolver endpoint. """
     from scripts.ingest_courtlistener import ingest_courtlistener
-    ingest_courtlistener(download_dir)
+    ingest_courtlistener(download_dir, start_from)
 
 
 if __name__ == "__main__":

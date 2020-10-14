@@ -31,8 +31,12 @@ def load_cluster(args):
     opinion_texts = []
     for opinion_url in cluster['sub_opinions']:
         opinion_id = opinion_url.split('/')[-2]
-        with opinions_dir.joinpath(f'{opinion_id}.json').open() as f:
-            opinion = json.load(f)
+        try:
+            with opinions_dir.joinpath(f'{opinion_id}.json').open() as f:
+                opinion = json.load(f)
+        except FileNotFoundError:
+            print("- Opinion file not found:", opinion_id)
+            continue
         opinion_text = next((opinion[k] for k in
                              ['html_with_citations', 'plain_text', 'html', 'html_lawbox', 'html_columbia',
                               'xml_harvard'] if opinion[k]), '')
@@ -71,7 +75,7 @@ def load_cluster(args):
     }
 
 
-def ingest_courtlistener(download_dir='/tmp'):
+def ingest_courtlistener(download_dir='/tmp', start_from=None):
     """ Download CourtListener cases and add metadata to citation resolver endpoint. """
     download_dir = Path(download_dir)
     opinions_file = download_dir / 'opinions.tar'
@@ -97,6 +101,12 @@ def ingest_courtlistener(download_dir='/tmp'):
         jurisdiction_files = clusters_tar.getnames()
     pool = Pool(max(cpu_count() // 2, 1))
     for jurisdiction_file in jurisdiction_files:
+        if start_from:
+            if jurisdiction_file == start_from:
+                start_from = None
+            else:
+                print("Skipping", jurisdiction_file)
+                continue
         print("Ingesting", jurisdiction_file)
         with TemporaryDirectory() as tmpdir:
             clusters_dir = Path(tmpdir, "clusters")
