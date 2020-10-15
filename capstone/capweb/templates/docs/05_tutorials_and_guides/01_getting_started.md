@@ -1,12 +1,9 @@
 {% load static %}
 {% load pipeline %}
 {% load api_url %}
-title: Use CAP Data in Your Research
-page_image: img/og_image/do
-meta_description: Caselaw Access Project API Docs
-top_section_style: bg-black
-row_style: bg-tan
-status: draft
+title: Caselaw Access Project – Guide - Getting Started
+page_image: img/og_image/tools_api.png
+meta_description: Caselaw Access Project Getting Started Guide.
 explainer: Want to get started with data from the Caselaw Access Project but aren't sure where to start? This guide will point you in the right direction for your use case.
 
 This document will guide you through the process of determining what level of access you need to access the data you're interested in for your research. It will explain the pros and cons of unmetered research access and how to apply for it.
