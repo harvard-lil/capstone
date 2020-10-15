@@ -22,7 +22,7 @@ command line. For example, here is a curl command to request a single case from 
     curl "{% api_url "cases-list" %}?jurisdiction=ill&page_size=1"
 
 If you haven't used APIs before, you might want to check out our [search tool]({% url "search" %}) or jump down to our 
-[Beginner's Introduction to APIs]({% url 'docs' 'tutorials_and_guides/intro_to_APIs' %}#beginners-introduction-to-apis).
+[Beginner's Introduction to APIs]({% url 'docs' 'tutorials_and_guides/intro_to_APIs' %}).
 
 {# ==============> REGISTER  <============== #}
 # Registration {: class="subtitle" }
