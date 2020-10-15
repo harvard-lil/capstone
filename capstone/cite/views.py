@@ -301,20 +301,13 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
                 if cap_candidates:
                     resolved_by_source['cap_guess'] = cap_candidates.values()
 
-        # this branch can be removed once ResolveDocument index is populated
-        else:
-            cases = CaseDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
-            if len(cases) > 1:
-                for c in cases:
-                    c.name_short = c.name_abbreviation
-                    c.decision_date = c.decision_date_original
-                resolved_by_source = {'cap': cases}
-            elif len(cases) == 1:
-                case = cases[0]
-
         if not case:
             reporter = Reporter.objects.filter(short_name_slug=slugify(series_slug)).first()
-            series = reporter.short_name if reporter else series_slug
+            if reporter:
+                series = reporter.short_name
+                full_cite = f'{volume_number_slug} {series} {page_number}'
+            else:
+                series = series_slug
 
             return render(request, 'cite/citation_failed.html', {
                 "resolved": resolved_by_source,
