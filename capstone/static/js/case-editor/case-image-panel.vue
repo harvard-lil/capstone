@@ -5,14 +5,26 @@
       <button @click="imageZoom-=0.1" class="toggle-btn off zoom-out"></button>
     </div>
     <div :style="{transform: `scale(${imageZoom})`, 'transform-origin': '0% 0% 0px'}">
-      <div v-for="page in pages" :key="page.id" :class="{page: true, 'show-ocr': showOcr}">
-        <img :src="page.image_url" :width="page.width * page.scale" :height="page.height * page.scale">
-        <Word v-for="word in page.words"
+      <div v-for="(page, i) in pages" :key="page.id" :class="{page: true, 'show-ocr': showOcr}">
+        <img :src="`data:image/png;base64,${pngs[i]}`" :width="page.width * page.scale" :height="page.height * page.scale">
+        <!-- manually render each word instead of using a reactive component, for speed on large cases -->
+        <span v-for="word in page.words"
               :key="word.id"
-              :image="true"
-              :wordId="word.id"
-              :page="page"
-        ></Word>
+              :class="{
+                'word': true,
+                'footnote-mark': word.footnoteMark,
+                'edited': word.string !== word.originalString,
+                [`word-id-${word.id}`]: true,
+              }"
+              :style="{
+                left: `${word.x * page.scale}px`,
+                top: `${word.y * page.scale - word.yOffset * page.fontScale - 1}px`,  // -1 for top border
+                'background-color': word.wordConfidenceColor,
+                // font format is '<styles> <font size>/<line height> <font families>':
+                font: `${word.font.styles} ${word.font.size * page.fontScale}px/${word.lineHeight * page.fontScale}px ${word.font.family}`,
+              }"
+              :data-id="word.id"
+        >{{ word.string }}</span>
       </div>
     </div>
   </div>
@@ -21,12 +33,9 @@
 <script>
   import { mapState } from 'vuex'
 
-  import Word from './word'
-
   export default {
-    components: {Word},
     computed: mapState(['showOcr']),
-    props: ['pages'],
+    props: ['pages', 'pngs'],
     data() {
       return {
         imageZoom: 1.0,

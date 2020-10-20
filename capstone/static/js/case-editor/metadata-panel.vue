@@ -3,9 +3,9 @@
     <h4>case metadata</h4>
 
     <div class="row">
-      <label class="col-8 m-0" for="metadata-human-corrected">Human Corrected</label>
-      <input class="col-4" type="checkbox" v-model="human_corrected" id="metadata-human-corrected">
-      <small class="form-text text-muted">Set "Human Corrected" if this case has been fully corrected and is essentially error-free.</small>
+      <label class="col-4 m-0" for="metadata-human-corrected">Human Corrected</label>
+      <input class="col-8" type="checkbox" v-model="human_corrected" id="metadata-human-corrected">
+      <small class="col-12 form-text text-muted">Set "Human Corrected" if this case has been fully corrected and is essentially error-free.</small>
       <label class="col-4" for="metadata-name-abbreviation">Short Name</label>
       <input class="col-8" type="text" v-model="name_abbreviation" placeholder="case short name" id="metadata-name-abbreviation">
       <label class="col-4" for="metadata-name">Long Name</label>

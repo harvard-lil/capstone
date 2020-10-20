@@ -23,6 +23,7 @@
     "mark.js": "^8.11.1",
     "minimist": "^1.2.2",
     "puppeteer": "^1.18.1",
+    "split-grid": "^1.0.9",
     "tone": "^13.4.9",
     "vue": "^2.5.17",
     "vue-chartjs": "^3.4.2",

@@ -1,15 +1,16 @@
 <template>
   <div id="edit-app" :class="{darkMode}">
-    <div id="app-grid" :class="{ showImage: showImage, editsExpand: editsExpand }">
+    <div id="app-grid" :class="{ showImage: showImage }">
       <header id="title">
         <h1><a :href="urls.case">{{templateVars.citation_full}}</a></h1>
       </header>
 
-      <article id="caseTextPanel" :class="{scrollable: true, casePanel: true}">
-            <CaseTextPanel :opinions="opinions"></CaseTextPanel>
+      <article id="caseTextPanel" :class="{scrollable: true, casePanel: true, hideConfidence: !showConfidence}" @click="handleWordClick">
+        <CaseTextPanel :opinions="opinions"></CaseTextPanel>
       </article>
-      <article v-if="showImage" id="caseImagePanel" class="scrollable casePanel" ref="pageImageContainer">
-            <CaseImagePanel :pages="pages"></CaseImagePanel>
+      <nav class="gutter gutter-vertical">‖</nav>
+      <article v-if="showImage" id="caseImagePanel" :class="{scrollable: true, casePanel: true, hideConfidence: !showConfidence}" ref="pageImageContainer" @click="handleWordClick">
+        <CaseImagePanel :pages="pages" :pngs="templateVars.pngs"></CaseImagePanel>
       </article>
       <nav id="view_controls">
         <button @click="darkMode=!darkMode" :class="{'toggle-btn': true, 'on': darkMode}">dark</button>
@@ -29,16 +30,14 @@
           <button @click="toggleInstructions()" class="toggle-btn off">?</button>
         </div>
       </nav>
-      <nav id="editsExpand">
-        <button @click="editsExpand=!editsExpand">—</button>
-      </nav>
       <aside id="metadata">
         <MetadataPanel></MetadataPanel>
       </aside>
+      <nav class="gutter gutter-horizontal">=</nav>
       <nav id="word">
         <EditPanel></EditPanel>
       </nav>
-      <nav id="edits" :class="{ editsExpand: editsExpand }">
+      <nav id="edits">
         <EditListPanel></EditListPanel>
       </nav>
       <nav id="document_controls">
@@ -110,7 +109,8 @@
   import $ from "jquery";
   import '../jquery_django_csrf';
   import debounce from "lodash.debounce";
-  import { mapState } from 'vuex'
+  import { mapState } from 'vuex';
+  import Split from 'split-grid';
 
   import EditPanel from './edit-panel.vue'
   import EditListPanel from './edit-list-panel.vue'
@@ -131,7 +131,6 @@
         showInstructions: false,
         showMetadata: false,
         showImage: true,
-        editsExpand: false,
         darkMode: false,
         scrollLock: true,
         imagePanelOffset: null,
@@ -139,12 +138,6 @@
       }
     },
     watch: {
-      metadata: {
-        handler() {
-          this.saveStateToStorage();
-        },
-        deep: true
-      },
       editedWords: {
         handler() {
           this.saveStateToStorage();
@@ -224,21 +217,41 @@
       window.addEventListener('resize', ()=>{ this.handleWindowResize() });
       this.handleWindowResize();
       this.mounted = true;
+
+      // grid resizing
+      Split({
+        columnGutters: [{
+          track: 2,
+          element: document.querySelector('.gutter-vertical'),
+        }],
+        rowGutters: [{
+          track: 3,
+          element: document.querySelector('.gutter-horizontal'),
+        }],
+        onDragEnd: this.handleWindowResize,
+      });
     },
     methods: {
+      handleWordClick(e) {
+        if (!(e.target.classList.contains('word')))
+          return;
+        this.$store.commit('setCurrentWord', this.wordsById[e.target.dataset.id]);
+      },
       wordConfidenceColor(word) {
         const alpha = (.6 - word.wordConfidence)*100;
         const red = 255 * word.wordConfidence + 127;
         return `rgba(${red}, 0, 0, ${alpha}%)`;
       },
       handleWindowResize() {
-        const containerWidth = this.$refs.pageImageContainer.offsetWidth;
-        for (const page of this.pages) {
-          this.$set(page, 'scale', containerWidth / page.width);
-          // Conversion factor for font pts on scanned page to pixels.
-          // For example, a font detected as "12pt" in our 300DPI scan was actually 12/72 * 300 == 50px high.
-          page.fontScale = page.scale * 300/72;
-        }
+        this.$nextTick(() => {
+          const containerWidth = this.$refs.pageImageContainer.offsetWidth;
+          for (const page of this.pages) {
+            this.$set(page, 'scale', containerWidth / page.width);
+            // Conversion factor for font pts on scanned page to pixels.
+            // For example, a font detected as "12pt" in our 300DPI scan was actually 12/72 * 300 == 50px high.
+            page.fontScale = page.scale * 300 / 72;
+          }
+        });
       },
       extractWords() {
         /*
@@ -257,6 +270,7 @@
           To save changes later, we'll update `blocks[blockId].tokens[index]` to `string`, and empty any additional `strings`.
          */
         let wordId = 0;
+        const wordsById = this.wordsById = {};
 
         const startWord = (block, attrs, fontId, footnoteMark, page)=>{
           const rect = attrs.rect;
@@ -300,7 +314,7 @@
 
             words.push(word);
             block.words.push(word);
-            this.$store.commit('addWord', word);
+            wordsById[word.id] = word;
           }
           return null;
         }
@@ -498,15 +512,34 @@
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
   .scrollable {
     border-left: 1px gray solid;
     padding: 1em;
   }
- .casePanel {
-     padding: 0 2rem;
+  .casePanel {
+    padding: 0 2rem;
   }
-  .darkMode::v-deep {
+
+  .current-word {
+    border: 1px green solid !important;
+  }
+  .edited {
+    border: 1px orange solid !important;
+    &.current-word {
+      outline: 1px green solid !important;
+    }
+  }
+  .footnote-mark {
+    vertical-align: super;
+    font-size: .83em;
+    background-color: #0000001f;
+  }
+  .hideConfidence .word {
+    background-color: inherit !important;
+  }
+
+  .darkMode {
     article {
       border: thin solid gray;
     }
@@ -526,6 +559,8 @@
          background-color: #434343;
       }
     }
-
+    .footnote-mark {
+      background-color: #ffffff1f;
+    }
   }
 </style>
