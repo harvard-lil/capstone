@@ -53,7 +53,7 @@ const store = new Vuex.Store({
 
       // focus and scroll
       document.getElementById('current_word').focus();
-      forWordElements(word, (el) => scrollIntoView(el, {scrollMode: 'if-needed'}));
+      requestAnimationFrame(()=> forWordElements(word, (el) => scrollIntoView(el, {scrollMode: 'if-needed'})));
     },
     editWord(state, {word, string}) {
       if (word.originalString === string) {
