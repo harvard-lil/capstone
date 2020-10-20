@@ -753,19 +753,27 @@ class VolumeMetadata(models.Model):
         self.redacted = False
         self.save()
 
-    def extract_page_image(self, sequence_number, zoom_level=3.0):
+    def extract_page_images(self, sequence_number, sequence_number_end=None):
         """
-            Return page image PNG image byte string from vol PDF
-            Takes the 1-indexed sequence number, like in the *page_order values
+            Return page images and PNG byte strings from volume PDF.
+            Sequence numbers are 1-indexed and sequence_number_end is inclusive,
+            so extract_page_images(case.first_page_order, case.last_page_order)
+            will include all pages of case.
         """
         if not self.pdf_file:
             raise ValueError("Cannot get page_images for volume with no PDF")
+        if sequence_number_end is None:
+            sequence_number_end = sequence_number
         doc = fitz.open(self.pdf_file.path)
-        if sequence_number >= len(doc):
+        if sequence_number_end > len(doc):
             raise ValueError("There aren't that many pages in that book")
-        mat = fitz.Matrix(zoom_level, zoom_level) # sets zoom level to 3x
-        page = doc[sequence_number - 1]
-        return page.getPixmap(matrix=mat).getPNGdata()
+        pngs = []
+        for n in range(sequence_number-1, sequence_number_end):
+            img = doc.getPageImageList(n)[0]
+            xref = img[0]
+            pngs.append(fitz.Pixmap(doc, xref).getPNGdata())
+        return pngs
+
 
 class TrackingToolLog(models.Model):
     volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)

@@ -1,9 +1,6 @@
 <template>
   <div class="row">
-    <div class="count col-1">
-
-    </div>
-    <div class="col-11">
+    <div class="col-12">
       <ol reversed class="edited-word-list">
         <li>
           <div class="row edit-entry edit-head">

@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="row word-panel-row">
-      <div class="col-10">
+      <div class="col-11">
         <input type="text"
                id="current_word"
                :value="currentWord ? currentWord.string : ''"
@@ -15,7 +15,7 @@
                @keydown.shift.tab.prevent="shiftWord(-1)"
                @input="$store.commit('editWord', {word: currentWord, string: $event.target.value})">
       </div>
-      <div class="col-2"><button @click="addSoftHyphen()" :disabled="currentWord === null">⧟</button></div>
+      <div class="col-1"><button @click="addSoftHyphen()" :disabled="currentWord === null">⧟</button></div>
     </div>
   </div>
 </template>
@@ -62,7 +62,7 @@
         if (newIndex < 0 || newIndex > wordEls.length-1)
           return;
         // update current word:
-        this.$store.commit('setCurrentWord', this.$store.state.words[wordEls[newIndex].dataset.id]);
+        this.$store.commit('setCurrentWord', this.$root.$children[0].wordsById[wordEls[newIndex].dataset.id]);
       },
     },
   }

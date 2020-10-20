@@ -1,3 +1,4 @@
+import base64
 import re
 import time
 import json
@@ -164,7 +165,7 @@ def page_image(request, volume_id, sequence_number):
         Return the image for a page to authorized users.
     """
     vol = get_object_or_404(VolumeMetadata, pk=volume_id)
-    return HttpResponse(vol.extract_page_image(int(sequence_number), zoom_level=2.0), content_type="image/png")
+    return HttpResponse(vol.extract_page_images(int(sequence_number))[0], content_type="image/png")
 
 
 @permission_required('capdb.correct_ocr')
@@ -228,6 +229,9 @@ def case_editor(request, case_id):
 
         return HttpResponse('OK')
 
+    # pre-load all images so we don't have to open the PDF more than once
+    pngs = case.volume.extract_page_images(case.first_page_order, case.last_page_order)
+
     # serialize values for JS
     case_json = json.dumps(model_to_dict(case, fields=['id'] + metadata_fields))
     pages_json = json.dumps([
@@ -241,12 +245,14 @@ def case_editor(request, case_id):
     ])
     fonts = CaseFont.fonts_by_id(PageStructure.blocks_by_id(pages))
     fonts_json = json.dumps({k: model_to_dict(v) for k, v in fonts.items()})
+    pngs_json = json.dumps([base64.b64encode(png).decode() for png in pngs])
 
     return render(request, 'cite/case_editor.html', {
         'case': case,
         'case_json': case_json,
         'pages_json': pages_json,
         'fonts_json': fonts_json,
+        'pngs_json': pngs_json,
         'opinions_json': json.dumps(case.structure.opinions),
         'citation_full': case.full_cite(),
         'nav_class': 'force-small-nav',
