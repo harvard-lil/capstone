@@ -517,8 +517,11 @@
     border-left: 1px gray solid;
     padding: 1em;
   }
-  .casePanel {
+  .caseTextPanel {
     padding: 0 2rem;
+  }
+  .caseImagePanel {
+    padding: 0;
   }
 
   .current-word {
@@ -536,7 +539,7 @@
     background-color: #0000001f;
   }
   .hideConfidence .word {
-    background-color: inherit !important;
+    background-color: transparent !important;
   }
 
   .darkMode {
