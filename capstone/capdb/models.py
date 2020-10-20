@@ -31,6 +31,7 @@ from capdb.storages import bulk_export_storage, case_image_storage, download_fil
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
+from scripts.extract_images import extract_images
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
@@ -764,15 +765,7 @@ class VolumeMetadata(models.Model):
             raise ValueError("Cannot get page_images for volume with no PDF")
         if sequence_number_end is None:
             sequence_number_end = sequence_number
-        doc = fitz.open(self.pdf_file.path)
-        if sequence_number_end > len(doc):
-            raise ValueError("There aren't that many pages in that book")
-        pngs = []
-        for n in range(sequence_number-1, sequence_number_end):
-            img = doc.getPageImageList(n)[0]
-            xref = img[0]
-            pngs.append(fitz.Pixmap(doc, xref).getPNGdata())
-        return pngs
+        return extract_images(self.pdf_file.path, sequence_number, sequence_number_end)
 
 
 class TrackingToolLog(models.Model):

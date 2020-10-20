@@ -1,10 +1,11 @@
-import base64
 import re
+import subprocess
 import time
 import json
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import timedelta
+from pathlib import Path
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -229,9 +230,6 @@ def case_editor(request, case_id):
 
         return HttpResponse('OK')
 
-    # pre-load all images so we don't have to open the PDF more than once
-    pngs = case.volume.extract_page_images(case.first_page_order, case.last_page_order)
-
     # serialize values for JS
     case_json = json.dumps(model_to_dict(case, fields=['id'] + metadata_fields))
     pages_json = json.dumps([
@@ -245,7 +243,15 @@ def case_editor(request, case_id):
     ])
     fonts = CaseFont.fonts_by_id(PageStructure.blocks_by_id(pages))
     fonts_json = json.dumps({k: model_to_dict(v) for k, v in fonts.items()})
-    pngs_json = json.dumps([base64.b64encode(png).decode() for png in pngs])
+
+    # pre-load all images in parallel so we don't have to open the PDF more than once
+    pngs_json = subprocess.run([
+        "python",
+        Path(settings.BASE_DIR, "scripts/extract_images.py"),
+        case.volume.pdf_file.path,
+        str(case.first_page_order),
+        str(case.last_page_order),
+    ], capture_output=True).stdout.decode('utf8')
 
     return render(request, 'cite/case_editor.html', {
         'case': case,
