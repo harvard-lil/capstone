@@ -1,4 +1,5 @@
 import os
+import sys
 from copy import deepcopy
 
 
@@ -670,3 +671,5 @@ SITE_LIMIT_REPORT = False
 
 RESOLVE_API_PREFIX = 'http://api.case.test:8000/v1/cases/'
 RESOLVE_FRONTEND_PREFIX = 'http://cite.case.test:8000'
+
+PYTHON_BINARY = sys.executable
