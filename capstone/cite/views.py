@@ -246,12 +246,12 @@ def case_editor(request, case_id):
 
     # pre-load all images in parallel so we don't have to open the PDF more than once
     pngs_json = subprocess.run([
-        "python",
+        settings.PYTHON_BINARY,
         Path(settings.BASE_DIR, "scripts/extract_images.py"),
         case.volume.pdf_file.path,
         str(case.first_page_order),
         str(case.last_page_order),
-    ], capture_output=True).stdout.decode('utf8')
+    ], capture_output=True, check=True).stdout.decode('utf8')
 
     return render(request, 'cite/case_editor.html', {
         'case': case,
