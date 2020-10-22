@@ -230,35 +230,34 @@ def case_editor(request, case_id):
 
         return HttpResponse('OK')
 
-    # serialize values for JS
-    case_json = json.dumps(model_to_dict(case, fields=['id'] + metadata_fields))
-    pages_json = json.dumps([
-        {
-            'id': page.id,
-            'width': page.width,
-            'height': page.height,
-            "image_url": reverse('page_image', [case.volume.pk, page.order]),
-            "blocks": page.blocks,
-        } for page in pages
-    ])
-    fonts = CaseFont.fonts_by_id(PageStructure.blocks_by_id(pages))
-    fonts_json = json.dumps({k: model_to_dict(v) for k, v in fonts.items()})
-
     # pre-load all images in parallel so we don't have to open the PDF more than once
-    pngs_json = subprocess.run([
+    pngs = json.loads(subprocess.run([
         settings.PYTHON_BINARY,
         Path(settings.BASE_DIR, "scripts/extract_images.py"),
         case.volume.pdf_file.path,
         str(case.first_page_order),
         str(case.last_page_order),
-    ], capture_output=True, check=True).stdout.decode('utf8')
+    ], capture_output=True, check=True).stdout.decode('utf8'))
+    for page in pages:
+        page.png = pngs[page.order - case.first_page_order]
+
+    # serialize values for JS
+    case_json = json.dumps(model_to_dict(case, fields=['id'] + metadata_fields))
+    pages_json = json.dumps([
+        {
+            **model_to_dict(page, ['id', 'width', 'height', 'blocks']),
+            "image_url": reverse('page_image', [case.volume.pk, page.order]),
+            "png": page.png,
+        } for page in pages
+    ])
+    fonts = CaseFont.fonts_by_id(PageStructure.blocks_by_id(pages))
+    fonts_json = json.dumps({k: model_to_dict(v) for k, v in fonts.items()})
 
     return render(request, 'cite/case_editor.html', {
         'case': case,
         'case_json': case_json,
         'pages_json': pages_json,
         'fonts_json': fonts_json,
-        'pngs_json': pngs_json,
         'opinions_json': json.dumps(case.structure.opinions),
         'citation_full': case.full_cite(),
         'nav_class': 'force-small-nav',
