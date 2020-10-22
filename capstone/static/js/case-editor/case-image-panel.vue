@@ -5,8 +5,8 @@
       <button @click="imageZoom-=0.1" class="toggle-btn off zoom-out"></button>
     </div>
     <div :style="{transform: `scale(${imageZoom})`, 'transform-origin': '0% 0% 0px'}">
-      <div v-for="(page, i) in pages" :key="page.id" :class="{page: true, 'show-ocr': showOcr}">
-        <img :src="`data:image/png;base64,${pngs[i]}`" :width="page.width * page.scale" :height="page.height * page.scale">
+      <div v-for="page in pages" :key="page.id" :class="{page: true, 'show-ocr': showOcr}">
+        <img :src="`data:image/png;base64,${page.png}`" :width="page.width * page.scale" :height="page.height * page.scale">
         <!-- manually render each word instead of using a reactive component, for speed on large cases -->
         <span v-for="word in page.words"
               :key="word.id"

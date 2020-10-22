@@ -320,7 +320,7 @@ def test_retrieve_page_image(admin_client, auth_client, volume_metadata):
 
 
 @pytest.mark.django_db
-def test_case_editor(admin_client, auth_client, unrestricted_case_factory):
+def test_case_editor(reset_sequences, admin_client, auth_client, unrestricted_case_factory):
     unrestricted_case = unrestricted_case_factory(first_page_order=1, last_page_order=3)
     url = reverse('case_editor', args=[unrestricted_case.pk], host='cite')
     response = admin_client.get(url)
