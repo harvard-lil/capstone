@@ -1,4 +1,4 @@
-FROM python:3.7-buster
+FROM registry.lil.tools/library/python:3.7-buster
 ENV PYTHONUNBUFFERED 1
 
 # Get build dependencies and packages required by the app
