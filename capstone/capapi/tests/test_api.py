@@ -161,6 +161,21 @@ def test_case_detail_pdf(transactional_db, client, auth_client, restricted_case,
     check_response(response, status_code=404)
 
 
+def test_case_detail_csv(transactional_db, client, auth_client, restricted_case, unrestricted_case, elasticsearch):
+    content_type = 'text/csv'
+    # content_type = 'application/pdf'
+    case_text = "Page 2"
+
+    # authorized request can fetch restricted PDF
+    CaseMetadata.objects.update(first_page_order=1, last_page_order=3)
+
+    # both can fetch unrestricted PDF
+    response = client.get(api_reverse("cases-detail", args=[unrestricted_case.id]), {"full_case": "true", "format": "csv"})
+    check_response(response, content_includes=case_text, content_type=content_type)
+    # response = auth_client.get(api_reverse("cases-detail", args=[unrestricted_case.id]), {"full_case": "true", "format": "pdf"})
+    # check_response(response, content_includes=case_text, content_type=content_type)
+
+
 @pytest.mark.django_db
 def test_track_history(auth_user, auth_client, restricted_case, elasticsearch):
     # initial fetch

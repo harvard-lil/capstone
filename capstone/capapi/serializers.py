@@ -1,3 +1,5 @@
+import pandas
+from flatten_json import flatten
 from django.db import transaction
 from django_elasticsearch_dsl_drf.utils import DictionaryProxy
 from rest_framework import serializers
@@ -357,6 +359,22 @@ class CourtSerializer(serializers.ModelSerializer):
             'jurisdiction_url',
             'slug',
         )
+
+
+class CaseCSVSeralizer(CaseDocumentSerializer):
+    class Meta:
+        document = CaseDocument
+
+    def to_representation(self, instance, check_permissions=True):
+        print('to representation')
+        instance = super().to_representation(instance)
+        flat_instance = flatten(instance)
+        return flat_instance
+
+# class CaseCSVSerializerWithCasebody(CaseDocumentSerializerWithCasebody):
+#     class Meta:
+#         model = models.CaseExport
+
 
 
 ### BULK SERIALIZERS ###

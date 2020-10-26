@@ -1,6 +1,9 @@
 import hashlib
 import json
+import pandas
+from flatten_json import flatten
 
+import csv
 from django.conf import settings
 from django.http.response import HttpResponseBase, HttpResponse
 from rest_framework import renderers
@@ -10,7 +13,8 @@ from capweb.helpers import cache_func
 
 class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
     @cache_func(
-        key=lambda self, data, view, request: 'filter-form:'+hashlib.md5((request.get_full_path()).encode('utf8')).hexdigest(),
+        key=lambda self, data, view, request: 'filter-form:' + hashlib.md5(
+            (request.get_full_path()).encode('utf8')).hexdigest(),
         timeout=settings.CACHED_COUNT_TIMEOUT,
     )
     def get_filter_form(self, data, view, request):
@@ -18,6 +22,7 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
 
     def get_context(self, *args, **kwargs):
         context = super().get_context(*args, **kwargs)
+        # import pdb; pdb.set_trace()
         if "Instance" in context['name'] and context['response'].status_code == 200:
             try:
                 parsed_response = json.loads(context['content'].decode())
@@ -29,15 +34,20 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
 
                 if context['name'] == "Jurisdiction Instance":
                     context['title'] = "Jurisdiction: {}".format(parsed_response['name'])
-                    context['meta_description'] = "The CAPAPI Jurisdiction Entry for {}".format(parsed_response['name_long'])
+                    context['meta_description'] = "The CAPAPI Jurisdiction Entry for {}".format(
+                        parsed_response['name_long'])
 
                 if context['name'] == "Court Instance":
                     context['title'] = parsed_response['name_abbreviation']
                     context['meta_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['name'])
 
                 if context['name'] == "Volume Instance":
-                    context['title'] = "{} v.{} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
-                    context['meta_description'] = "The CAPAPI Volume Entry for {} v. {} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
+                    context['title'] = "{} v.{} ({})".format(parsed_response['reporter'],
+                                                             parsed_response['volume_number'],
+                                                             parsed_response['publication_year'])
+                    context['meta_description'] = "The CAPAPI Volume Entry for {} v. {} ({})".format(
+                        parsed_response['reporter'], parsed_response['volume_number'],
+                        parsed_response['publication_year'])
 
                 if context['name'] == "Reporter Instance":
                     context['title'] = parsed_response['short_name']
@@ -64,6 +74,7 @@ class PassthroughRenderer(renderers.JSONRenderer):
     """
     media_type = 'application/json'  # used only if rendering errors
     format = ''
+
     def render(self, data, accepted_media_type=None, renderer_context=None):
         if isinstance(data, HttpResponseBase):
             return data
@@ -78,3 +89,17 @@ class PdfRenderer(renderers.BaseRenderer):
         if isinstance(data, HttpResponseBase):
             return data
         return HttpResponse(data, content_type=accepted_media_type)
+
+
+class CSVRenderer(renderers.JSONRenderer):
+    media_type = 'text/csv'
+    format = 'csv'
+
+    def render(self, data, accepted_media_type='text/csv', renderer_context=None):
+        if 'results' in data:
+            json_normalize = pandas.json_normalize(map(flatten, data['results']))
+        else:
+            json_normalize = pandas.json_normalize(flatten(data))
+        json_normalize.replace(to_replace=[r"\\n", "\n"], value=["¶", "¶"], regex=True, inplace=True)
+        csv_string = json_normalize.to_csv(sep="\t", quoting=csv.QUOTE_NONE, doublequote=False, index=False, escapechar="\\")
+        return HttpResponse(csv_string, content_type=accepted_media_type)
