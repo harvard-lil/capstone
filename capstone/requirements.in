@@ -86,6 +86,8 @@ Pillow
 diff-match-patch
 Markdown
 PyMuPDF
+pandas
+flatten_json
 
 # maintenance page
 webpage2html # save target page as string

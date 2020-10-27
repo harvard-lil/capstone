@@ -110,7 +110,6 @@ urlpatterns = [
     path('user/research/harvard-success/',
          TemplateView.as_view(template_name='research_request/harvard_research_request_success.html'),
          name='harvard-research-request-success'),
-     path('csv', views.csv),
 ]
 
 if settings.DEBUG:

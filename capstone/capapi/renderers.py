@@ -22,7 +22,6 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
 
     def get_context(self, *args, **kwargs):
         context = super().get_context(*args, **kwargs)
-        # import pdb; pdb.set_trace()
         if "Instance" in context['name'] and context['response'].status_code == 200:
             try:
                 parsed_response = json.loads(context['content'].decode())
