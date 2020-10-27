@@ -33,8 +33,7 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
 
                 if context['name'] == "Jurisdiction Instance":
                     context['title'] = "Jurisdiction: {}".format(parsed_response['name'])
-                    context['meta_description'] = "The CAPAPI Jurisdiction Entry for {}".format(
-                        parsed_response['name_long'])
+                    context['meta_description'] = "The CAPAPI Jurisdiction Entry for {}".format(parsed_response['name_long'])
 
                 if context['name'] == "Court Instance":
                     context['title'] = parsed_response['name_abbreviation']
@@ -73,7 +72,6 @@ class PassthroughRenderer(renderers.JSONRenderer):
     """
     media_type = 'application/json'  # used only if rendering errors
     format = ''
-
     def render(self, data, accepted_media_type=None, renderer_context=None):
         if isinstance(data, HttpResponseBase):
             return data
