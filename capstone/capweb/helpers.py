@@ -275,7 +275,7 @@ safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT
 
 def get_toc_by_url():
     from elasticsearch.exceptions import NotFoundError #TODO figure out how to fix this import problem
-    from capapi.documents import CaseDocument
+    from capapi.documents import CaseReaderDocument
     app_absolute_path = os.path.abspath(os.path.dirname(__file__))
     base_path = Path(app_absolute_path, settings.DOCS_RELATIVE_DIR)
     toc_by_url = {
@@ -295,10 +295,10 @@ def get_toc_by_url():
     context['contributors']= sorted_contributors
     context['news']= get_data_from_lil_site(section="news")
     try:
-        case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
+        case = CaseReaderDocument.get(id=settings.API_DOCS_CASE_ID)
     except NotFoundError:
         try:
-            case = CaseDocument.search().execute()[0]
+            case = CaseReaderDocument.search().execute()[0]
         except NotFoundError:
             case = None
     context['case_id'] = case.id if case else 1

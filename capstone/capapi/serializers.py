@@ -8,7 +8,7 @@ from rest_framework.serializers import ListSerializer
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
 from .models import SiteLimits
-from .documents import CaseDocument, ResolveDocument
+from .documents import CaseReaderDocument, ResolveReaderDocument
 from capdb import models
 from capweb.helpers import reverse
 from user_data.models import UserHistory
@@ -22,13 +22,13 @@ class UserHistoryMixin:
     def data(self):
         """
             After serializing user history data, we have records like {'case_id': 123, 'date': <date>}.
-            Extract all of the 'case_id' fields and use CaseDocument.mget to fetch the case metadata
+            Extract all of the 'case_id' fields and use CaseReaderDocument.mget to fetch the case metadata
             for each case.
         """
         result = super().data
         records = result if hasattr(self, 'many') else [result]
         if records:
-            cases = CaseDocument.mget([r['case_id'] for r in records])
+            cases = CaseReaderDocument.mget([r['case_id'] for r in records])
             cases_by_id = {c.id: c for c in cases}
             for r in records:
                 case = cases_by_id.get(r['case_id'])
@@ -90,7 +90,7 @@ class BaseDocumentSerializer(DocumentSerializer):
             If we are instantiated with an Elasticsearch wrapper object, convert to a bare dictionary.
         """
         super().__init__(*args, **kwargs)
-        if isinstance(self.instance, CaseDocument):
+        if isinstance(self.instance, CaseReaderDocument):
             self.instance = self.instance._d_
         elif isinstance(self.instance, DictionaryProxy):
             self.instance = self.instance.to_dict()
@@ -98,7 +98,7 @@ class BaseDocumentSerializer(DocumentSerializer):
     def s_from_instance(self, instance):
         if "_source" in instance:
             return instance["_source"]
-        elif type(instance) is CaseDocument:
+        elif type(instance) is CaseReaderDocument:
             return instance._d_
         else:
             return instance
@@ -107,7 +107,7 @@ class BaseDocumentSerializer(DocumentSerializer):
 class CaseDocumentSerializer(BaseDocumentSerializer):
 
     class Meta:
-        document = CaseDocument
+        document = CaseReaderDocument
 
     _url_templates = None
 
@@ -202,7 +202,7 @@ class ResolveDocumentListSerializer(ListSerializer):
 
 class ResolveDocumentSerializer(BaseDocumentSerializer):
     class Meta:
-        document = ResolveDocument
+        document = ResolveReaderDocument
         list_serializer_class = ResolveDocumentListSerializer
 
 
@@ -279,7 +279,7 @@ class ListSerializerWithCaseAllowance(CaseAllowanceMixin, ListSerializer):
 
 class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSerializer):
     class Meta:
-        document = CaseDocument
+        document = CaseReaderDocument
         list_serializer_class = ListSerializerWithCaseAllowance
 
     def to_representation(self, instance, check_permissions=True):

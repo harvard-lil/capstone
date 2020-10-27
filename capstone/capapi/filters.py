@@ -8,7 +8,7 @@ from django_filters.utils import translate_validation
 from elasticsearch.exceptions import NotFoundError
 from rest_framework.exceptions import ValidationError
 from rest_framework_filters.backends import RestFrameworkFilterBackend
-from capapi.documents import CaseDocument
+from capapi.documents import CaseReaderDocument
 from capdb import models
 from capdb.models import normalize_cite
 from scripts.extract_cites import extract_citations_from_text
@@ -240,7 +240,7 @@ class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
                 # check if case id is passed in
                 if cite.isdigit():
                     try:
-                        case = CaseDocument.get(id=cite)
+                        case = CaseReaderDocument.get(id=cite)
                         # add all citations relating to case
                         query_params['cites_to']['values'] += [c['normalized_cite'] for c in case.citations]
                     except NotFoundError:

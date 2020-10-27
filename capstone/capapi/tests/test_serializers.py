@@ -2,14 +2,14 @@ import pytest
 from rest_framework.request import Request
 
 from capapi import serializers
-from capapi.documents import CaseDocument
+from capapi.documents import CaseReaderDocument
 from capapi.resources import api_reverse
 
 
 @pytest.mark.django_db
 def test_CaseDocumentSerializerWithCasebody(api_request_factory, case_factory, elasticsearch):
     cases = [case_factory() for i in range(3)]
-    case_documents = [CaseDocument.get(c.id) for c in cases]
+    case_documents = [CaseReaderDocument.get(c.id) for c in cases]
 
     # can get single case data
     request = api_request_factory.get(api_reverse("cases-list"))

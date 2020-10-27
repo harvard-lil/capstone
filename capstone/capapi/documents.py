@@ -9,18 +9,17 @@ from capdb.models import CaseMetadata, CaseLastUpdate
 from scripts.simhash import get_distance
 
 
-def get_index(index_name):
-    index = Index(settings.ELASTICSEARCH_INDEXES[index_name])
+## helpers
+
+def get_index(index_key, fallback_index_key=None):
+    index_name = settings.ELASTICSEARCH_INDEXES.get(index_key) or settings.ELASTICSEARCH_INDEXES[fallback_index_key]
+    index = Index(index_name)
     index.settings(
         number_of_shards=1,
         number_of_replicas=0,
         max_result_window=settings.MAX_PAGE_SIZE+1,  # allow for one extra for pagination
     )
     return index
-
-
-cases_index = get_index("cases_endpoint")
-resolve_index = get_index("resolve_endpoint")
 
 
 def SuggestField():
@@ -47,7 +46,22 @@ class RawSearch(Search):
         return super().execute(ignore_cache)
 
 
-@cases_index.doc_type
+class WriteOnlyDocument():
+    def search(*args, **kwargs):
+        raise NotImplementedError("Use reader object")
+    def get(*args, **kwargs):
+        raise NotImplementedError("Use reader object")
+    def mget(*args, **kwargs):
+        raise NotImplementedError("Use reader object")
+
+
+class ReadOnlyDocument(Document):
+    def update(*args, **kwargs):
+        raise NotImplementedError("Use writer object")
+
+
+## base documents
+
 class CaseDocument(Document):
     # IMPORTANT: If you change what values are indexed here, also change the "CaseLastUpdate triggers"
     # section in set_up_postgres.py to keep Elasticsearch updated.
@@ -186,17 +200,7 @@ class CaseDocument(Document):
             " (%s)" % (self.decision_date_original[:4],) if self.decision_date_original else ""
         )
 
-    @classmethod
-    def raw_search(cls, *args, **kwargs):
-        """
-            Return RawSearch object instead of Search object.
-        """
-        out = super().search(*args, **kwargs)
-        out.__class__ = RawSearch
-        return out
 
-
-@resolve_index.doc_type
 class ResolveDocument(Document):
     id = fields.KeywordField()
     source = fields.KeywordField()
@@ -275,8 +279,47 @@ class ResolveDocument(Document):
             " (%s)" % (self.decision_date[:4],) if self.decision_date else ""
         )
 
+
+## readers and writers
+
+# Sometimes we want to point search results at a copy of the index while we update the primary index,
+# so our base documents are split into separate documents for reading and writing.
+
+
+cases_writer_index = get_index("cases_endpoint")
+resolve_writer_index = get_index("resolve_endpoint")
+cases_reader_index = get_index("cases_reader_endpoint", "cases_endpoint")
+resolve_reader_index = get_index("resolve_reader_endpoint", "resolve_endpoint")
+
+
+@cases_writer_index.doc_type
+class CaseWriterDocument(WriteOnlyDocument, CaseDocument):
+    pass
+
+
+@resolve_writer_index.doc_type
+class ResolveWriterDocument(WriteOnlyDocument, ResolveDocument):
+    pass
+
+
+@cases_reader_index.doc_type
+class CaseReaderDocument(ReadOnlyDocument, CaseDocument):
+
+    @classmethod
+    def raw_search(cls, *args, **kwargs):
+        """
+            Return RawSearch object instead of Search object.
+        """
+        out = super().search(*args, **kwargs)
+        out.__class__ = RawSearch
+        return out
+
+
+@resolve_reader_index.doc_type
+class ResolveReaderDocument(ReadOnlyDocument, ResolveDocument):
+
     def get_similar(self):
-        candidates = ResolveDocument.search().query(
+        candidates = type(self).search().query(
             'bool',
             should=[Q("match", citations__normalized_cite=c.normalized_cite) for c in self.citations]
         ).exclude("match", source=self.source).execute()

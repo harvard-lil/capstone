@@ -306,15 +306,24 @@ def populate_search_index(last_run_before=None):
         VolumeMetadata.objects.exclude(out_of_scope=True),
         last_run_before=last_run_before)
 
+
 @task
 def rebuild_search_index(force=False):
-    if force:
-        management.call_command('search_index', '--delete', '-f')
-        management.call_command('search_index', '--create', '-f')
-    else:
-        management.call_command('search_index', '--delete')
-        management.call_command('search_index', '--create')
+    """ Delete and recreate writer indexes. Ignore separate reader indexes, if any. """
+    from django_elasticsearch_dsl.registries import registry
+    if not force:
+        if input("Really delete existing indexes? [y/N] ").lower() != 'y':
+            return
+    index_names = {settings.ELASTICSEARCH_INDEXES[k] for k in ('cases_endpoint', 'resolve_endpoint')}
+    for index in registry.get_indices():
+        if index._name not in index_names:
+            continue
+        print(f"Deleting {index._name}")
+        index.delete(ignore=404)
+        print(f"Creating {index._name}")
+        index.create()
     populate_search_index()
+
 
 @task
 def update_search_index_settings():

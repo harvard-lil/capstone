@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 from tqdm import tqdm
 
 from capdb.models import normalize_cite
-from capapi.documents import ResolveDocument
+from capapi.documents import ResolveWriterDocument
 from scripts.simhash import get_simhash
 
 
@@ -116,7 +116,7 @@ def ingest_courtlistener(download_dir='/tmp', start_from=None):
             run(f"tar -xOf {clusters_file} {jurisdiction_file} | tar -C {clusters_dir} -zxf -", shell=True)
             run(f"tar -xOf {opinions_file} {jurisdiction_file} | tar -C {opinions_dir} -zxf -", shell=True)
             documents = pool.imap_unordered(load_cluster, ((cluster_member, opinions_dir) for cluster_member in clusters_dir.glob("*.json")))
-            ResolveDocument().update(tqdm(d for d in documents if d), parallel=True)
+            ResolveWriterDocument().update(tqdm(d for d in documents if d), parallel=True)
 
 
 def make_test_files(input_dir='.', output_dir='test_data/courtlistener'):

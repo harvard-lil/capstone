@@ -649,6 +649,9 @@ MAINTAIN_ELASTICSEARCH_INDEX = True  # whether to update index when changing cas
 ELASTICSEARCH_INDEXES={
     'cases_endpoint': 'cases',
     'resolve_endpoint': 'resolve',
+    # these can be set on prod if they're different:
+    # 'cases_reader_endpoint': 'cases_ro',
+    # 'resolve_reader_endpoint': 'resolve_ro',
 }
 MAX_PAGE_SIZE = 10000
 

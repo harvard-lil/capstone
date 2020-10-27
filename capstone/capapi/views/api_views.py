@@ -12,7 +12,7 @@ from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBas
 from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
-from capapi.documents import CaseDocument, RawSearch, ResolveDocument
+from capapi.documents import CaseReaderDocument, RawSearch, ResolveReaderDocument
 from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer, ResolveDocumentSerializer
 from capapi.middleware import add_cache_header
@@ -84,7 +84,7 @@ class CourtViewSet(BaseViewSet):
 
 class CaseDocumentViewSet(BaseDocumentViewSet):
     """The CaseDocument view."""
-    document = CaseDocument
+    document = CaseReaderDocument
     serializer_class = CaseDocumentSerializer
     filterset_class = filters.CaseFilter
 
@@ -226,7 +226,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 class ResolveDocumentViewSet(BaseDocumentViewSet):
     """The ResolveDocument view."""
 
-    document = ResolveDocument
+    document = ResolveReaderDocument
     serializer_class = ResolveDocumentSerializer
     filterset_class = filters.ResolveFilter
     pagination_class = None

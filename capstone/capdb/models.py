@@ -1078,7 +1078,7 @@ class CaseMetadata(models.Model):
         if not settings.MAINTAIN_ELASTICSEARCH_INDEX:
             return
 
-        from capapi.documents import CaseDocument, ResolveDocument  # avoid circular import
+        from capapi.documents import CaseWriterDocument, ResolveWriterDocument  # avoid circular import
 
         in_scope = []
         out_of_scope = []
@@ -1090,11 +1090,11 @@ class CaseMetadata(models.Model):
 
         # only indexes non-duplicate cases
         if in_scope:
-            CaseDocument().update(in_scope)
-            ResolveDocument().update(in_scope)
+            CaseWriterDocument().update(in_scope)
+            ResolveWriterDocument().update(in_scope)
 
         # for the duplicates, we want to delete them, if necessary
-        for Document in (CaseDocument, ResolveDocument):
+        for Document in (CaseWriterDocument, ResolveWriterDocument):
             try:
                 if out_of_scope:
                     Document().update(out_of_scope, action="delete")

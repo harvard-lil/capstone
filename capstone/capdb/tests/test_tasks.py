@@ -13,7 +13,7 @@ from reporters_db import EDITIONS, VARIATIONS_ONLY
 from django.core.files.storage import FileSystemStorage
 from django.db import connections, utils
 
-from capapi.documents import CaseDocument
+from capapi.documents import CaseReaderDocument
 from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache, normalize_cite
 from capdb.tasks import get_case_count_for_jur, get_court_count_for_jur, \
     get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol, \
@@ -297,8 +297,8 @@ def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
     assert cite_set == set(legitimate_cites)
     assert normalized_cite_set == legitimate_cites_normalized
     assert all(c.cited_by_id == case.pk for c in cites)
-    assert set(c['cite'] for c in CaseDocument.get(id=case.pk).extractedcitations) == cite_set
-    assert set(c['normalized_cite'] for c in CaseDocument.get(id=case.pk).extractedcitations) == normalized_cite_set
+    assert set(c['cite'] for c in CaseReaderDocument.get(id=case.pk).extractedcitations) == cite_set
+    assert set(c['normalized_cite'] for c in CaseReaderDocument.get(id=case.pk).extractedcitations) == normalized_cite_set
 
     # remove a cite and add a cite --
     # make sure IDs of unchanged cites are still the same

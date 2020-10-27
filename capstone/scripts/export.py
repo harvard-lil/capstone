@@ -12,7 +12,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from capapi.documents import CaseDocument
+from capapi.documents import CaseReaderDocument
 from capapi.serializers import NoLoginCaseDocumentSerializer, CaseDocumentSerializer
 from capdb.models import Jurisdiction, Reporter
 from capdb.storages import download_files_storage
@@ -61,7 +61,7 @@ def export_cases_by_jurisdiction(version_string, id):
         Write a .jsonl.gz file with all cases for jurisdiction.
     """
     jurisdiction = Jurisdiction.objects.get(pk=id)
-    cases = CaseDocument.raw_search().filter("term", jurisdiction__id=id)
+    cases = CaseReaderDocument.raw_search().filter("term", jurisdiction__id=id)
     if cases.count() == 0:
         print("WARNING: Jurisdiction '{}' contains NO CASES.".format(jurisdiction.name))
         return
@@ -81,7 +81,7 @@ def export_cases_by_reporter(version_string, id):
         Write a .jsonl.gz file with all cases for reporter.
     """
     reporter = Reporter.objects.get(pk=id)
-    cases = CaseDocument.raw_search().filter("term", reporter__id=id)
+    cases = CaseReaderDocument.raw_search().filter("term", reporter__id=id)
     if cases.count() == 0:
         print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
         return

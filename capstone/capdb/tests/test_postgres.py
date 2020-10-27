@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 from django.db import transaction
 
-from capapi.documents import CaseDocument
+from capapi.documents import CaseReaderDocument
 from capdb.models import CaseMetadata
 from capdb.tasks import update_elasticsearch_from_queue
 from scripts.helpers import parse_xml, serialize_xml
@@ -111,8 +111,8 @@ def test_last_updated(case, extracted_citation_factory, elasticsearch):
 
     # case gets removed when in_scope changes
     update_elasticsearch_from_queue()
-    CaseDocument.get(case.pk)
+    CaseReaderDocument.get(case.pk)
     case.duplicative = True
     case.save()
     update_elasticsearch_from_queue()
-    CaseDocument.get(case.pk)
+    CaseReaderDocument.get(case.pk)

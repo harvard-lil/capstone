@@ -30,7 +30,7 @@ from elasticsearch.exceptions import NotFoundError
 from natsort import natsorted
 
 from capapi import serializers
-from capapi.documents import CaseDocument, ResolveDocument
+from capapi.documents import CaseReaderDocument, ResolveReaderDocument
 from capapi.authentication import SessionAuthentication
 from capapi.resources import link_to_cites, api_request
 from capapi.views.api_views import CaseDocumentViewSet
@@ -130,7 +130,7 @@ def volume(request, series_slug, volume_number_slug):
     if not vols:
         raise Http404
 
-    cases_query = CaseDocument.search()\
+    cases_query = CaseReaderDocument.search()\
         .filter("term", volume__volume_number_slug=volume_number_slug)\
         .filter("term", reporter__short_name_slug__raw=series_slug)\
         .sort('first_page')\
@@ -284,8 +284,8 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     resolved_case = None
     if case_id:
         try:
-            case = CaseDocument.get(id=case_id)
-            resolved_cases = ResolveDocument.search().query("match", source='cap').query("match", source_id=case_id).execute()
+            case = CaseReaderDocument.get(id=case_id)
+            resolved_cases = ResolveReaderDocument.search().query("match", source='cap').query("match", source_id=case_id).execute()
             if resolved_cases:
                 resolved_case = resolved_cases[0]
         except NotFoundError:
@@ -293,7 +293,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     else:
         full_cite = "%s %s %s" % (volume_number_slug, series_slug.replace('-', ' ').title(), page_number)
         normalized_cite = re.sub(r'[^0-9a-z]', '', full_cite.lower())
-        resolved = ResolveDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
+        resolved = ResolveReaderDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
         resolved_by_source = None
 
         if resolved:
@@ -301,13 +301,13 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
             if 'cap' in resolved_by_source:
                 if len(resolved_by_source['cap']) == 1:
                     resolved_case = resolved_by_source['cap'][0]
-                    case = CaseDocument.get(resolved_case['source_id'])
+                    case = CaseReaderDocument.get(resolved_case['source_id'])
             else:
                 cap_candidates = {
                     c.id: c
                     for r in resolved
                     for cite in r.citations
-                    for c in CaseDocument.search().filter("term", citations__normalized_cite=cite.normalized_cite).execute()
+                    for c in CaseReaderDocument.search().filter("term", citations__normalized_cite=cite.normalized_cite).execute()
                 }
                 if cap_candidates:
                     resolved_by_source['cap_guess'] = cap_candidates.values()
