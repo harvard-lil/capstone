@@ -31,6 +31,7 @@ from capdb.storages import bulk_export_storage, case_image_storage, download_fil
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
+from scripts.extract_images import extract_images
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
@@ -753,19 +754,19 @@ class VolumeMetadata(models.Model):
         self.redacted = False
         self.save()
 
-    def extract_page_image(self, sequence_number, zoom_level=3.0):
+    def extract_page_images(self, sequence_number, sequence_number_end=None):
         """
-            Return page image PNG image byte string from vol PDF
-            Takes the 1-indexed sequence number, like in the *page_order values
+            Return page images and PNG byte strings from volume PDF.
+            Sequence numbers are 1-indexed and sequence_number_end is inclusive,
+            so extract_page_images(case.first_page_order, case.last_page_order)
+            will include all pages of case.
         """
         if not self.pdf_file:
             raise ValueError("Cannot get page_images for volume with no PDF")
-        doc = fitz.open(self.pdf_file.path)
-        if sequence_number >= len(doc):
-            raise ValueError("There aren't that many pages in that book")
-        mat = fitz.Matrix(zoom_level, zoom_level) # sets zoom level to 3x
-        page = doc[sequence_number - 1]
-        return page.getPixmap(matrix=mat).getPNGdata()
+        if sequence_number_end is None:
+            sequence_number_end = sequence_number
+        return extract_images(self.pdf_file.path, sequence_number, sequence_number_end)
+
 
 class TrackingToolLog(models.Model):
     volume = models.ForeignKey(VolumeMetadata, related_name="tracking_tool_logs", on_delete=models.DO_NOTHING)
@@ -1077,7 +1078,7 @@ class CaseMetadata(models.Model):
         if not settings.MAINTAIN_ELASTICSEARCH_INDEX:
             return
 
-        from capapi.documents import CaseDocument  # avoid circular import
+        from capapi.documents import CaseDocument, ResolveDocument  # avoid circular import
 
         in_scope = []
         out_of_scope = []
@@ -1090,18 +1091,20 @@ class CaseMetadata(models.Model):
         # only indexes non-duplicate cases
         if in_scope:
             CaseDocument().update(in_scope)
+            ResolveDocument().update(in_scope)
 
         # for the duplicates, we want to delete them, if necessary
-        try:
-            if out_of_scope:
-                CaseDocument().update(out_of_scope, action="delete")
-        except BulkIndexError as e:
-            # Re-raise if there's a BulkIndexError for any reason other than a failure to delete because of a 404
-            # which would happen if it was already deleted.
-            if not e.args[0].endswith('failed to index.'):
-                raise
-            if any('delete' not in es_err or es_err['delete']['status'] != 404 for es_err in e.args[1]):
-                raise
+        for Document in (CaseDocument, ResolveDocument):
+            try:
+                if out_of_scope:
+                    Document().update(out_of_scope, action="delete")
+            except BulkIndexError as e:
+                # Re-raise if there's a BulkIndexError for any reason other than a failure to delete because of a 404
+                # which would happen if it was already deleted.
+                if not e.args[0].endswith('failed to index.'):
+                    raise
+                if any('delete' not in es_err or es_err['delete']['status'] != 404 for es_err in e.args[1]):
+                    raise
 
     def reindex(self):
         CaseMetadata.reindex_cases([self])

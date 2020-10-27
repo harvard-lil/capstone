@@ -36,10 +36,38 @@
       </ol>
     </nav>
     <div class="content-centered">
-      {% if not cases %}
-        <h3>Citation "{{ full_cite }}" was not found.</h3>
-        <p>Check for the case in other databases:</p>
-        <ul class="third-party-dbs">
+      <h3>{{ full_cite }}</h3>
+      {% if resolved %}
+        {% if resolved.cap %}
+          <h4 class="case-name">Multiple cases match:</h4>
+          <ul>
+            {% for case in resolved.cap %}
+              <li><a href="{{ case.frontend_url }}">{{ case.full_cite }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if resolved.cap_guess %}
+          <h4 class="case-name">Possible matches found. Did you mean:</h4>
+          <ul>
+            {% for case in resolved.cap_guess %}
+              <li><a href="{{ case.frontend_url }}">{{ case.full_cite }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if resolved.cl %}
+          <h4 class="case-name">Matches found at CourtListener:</h4>
+          <p>Clicking these links will bring you to a third party site.</p>
+          <ul>
+            {% for case in resolved.cl %}
+              <li><a href="{{ case.frontend_url }}">{{ case.full_cite }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endif %}
+
+      <p>Search for "{{ full_cite }}" in other databases:</p>
+      <ul class="third-party-dbs">
+        {% if not resolved.cl %}
           <li>
             <a class="btn btn-primary"
                target="_blank"
@@ -47,24 +75,16 @@
               CourtListener
             </a>
           </li>
-          <li>
-            <a class="btn btn-primary"
-               target="_blank"
-               href="https://scholar.google.com/scholar?as_sdt=40000006&q={{ full_cite }}">
-              Google Scholar
-            </a>
-          </li>
-        </ul>
-      {% else %}
-        <h4 class="case-name">Multiple cases match "{{ full_cite }}"</h4>
-        <ul>
-          {% for case in cases %}
-            <li>
-              <a href="{% url 'citation' series_slug=series_slug volume_number_slug=volume_number_slug page_number=page_number case_id=case.id host 'cite' %}">{{ case.full_cite }}</a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% endif %}
+        {% endif %}
+        <li>
+          <a class="btn btn-primary"
+             target="_blank"
+             href="https://scholar.google.com/scholar?as_sdt=40000006&q={{ full_cite }}">
+            Google Scholar
+          </a>
+        </li>
+      </ul>
+
     </div>
   </div>
 {% endblock %}

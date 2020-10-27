@@ -18,6 +18,8 @@ router.register('ngrams', api_views.NgramViewSet, basename='ngrams')
 router.register('user_history', api_views.UserHistoryViewSet)
 router.register('citations', api_views.ExtractedCitationViewSet)
 
+unstable_router = routers.DefaultRouter()
+unstable_router.register('resolve', api_views.ResolveDocumentViewSet, basename="resolve")
 
 # filter out bulk endpoint from API browser listing
 class FilteredAPIRootView(routers.APIRootView):
@@ -43,6 +45,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('v1/', include(router.urls)),
+    path('unstable/', include(unstable_router.urls)),
     # convenience pattern: catch all citations, redirect in CaseDocumentViewSet's retrieve
     re_path(r'^v1/cases/(?P<id>[0-9A-Za-z\s\.]+)/$', api_views.CaseDocumentViewSet.as_view({'get': 'retrieve'}), name='case-get-cite'),
 

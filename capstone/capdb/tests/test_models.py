@@ -365,5 +365,5 @@ def test_retrieve_and_store_images(case, inline_image_src, django_assert_num_que
 def test_extract_page_image(volume_metadata):
     volume_metadata.pdf_file = "fake_volume.pdf"
     volume_metadata.save()
-    img = volume_metadata.extract_page_image(1)
-    assert b'\x89PNG' in img
+    images = volume_metadata.extract_page_images(1)
+    assert b'\x89PNG' in images[0]

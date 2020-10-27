@@ -1,6 +1,6 @@
 import csv
 import re
-from collections import defaultdict, Counter
+from collections import Counter
 from difflib import get_close_matches
 from math import log
 from pathlib import Path
@@ -10,6 +10,7 @@ from django.db import connections
 from tqdm import tqdm
 
 from capdb.models import Citation, EditLog, Reporter, CaseMetadata, normalize_cite
+from scripts.helpers import group_by
 
 """
     Usage: fab run_script:scripts.link_scdb
@@ -47,12 +48,6 @@ def top_tf_idf_sums(s1, candidates, word_counts, document_count, threshold=5):
     matches = sorted(((tf_idf_sum(s1, c, word_counts, document_count), c) for c in candidates), reverse=True)
     return [m[1] for m in matches if m[0] >= threshold]
 
-def group_by(collection, key):
-    """ Return dict grouping collection by key function. """
-    out = defaultdict(list)
-    for item in collection:
-        out[key(item)].append(item)
-    return out
 
 def get_best_match(targets, candidates, word_counts, document_count, tf_threshold=5):
     """

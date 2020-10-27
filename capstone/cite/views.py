@@ -1,9 +1,11 @@
 import re
+import subprocess
 import time
 import json
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import timedelta
+from pathlib import Path
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -28,7 +30,7 @@ from elasticsearch.exceptions import NotFoundError
 from natsort import natsorted
 
 from capapi import serializers
-from capapi.documents import CaseDocument
+from capapi.documents import CaseDocument, ResolveDocument
 from capapi.authentication import SessionAuthentication
 from capapi.resources import link_to_cites, api_request
 from capapi.views.api_views import CaseDocumentViewSet
@@ -37,6 +39,7 @@ from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseF
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
+from scripts.helpers import group_by
 
 
 def safe_redirect(request):
@@ -163,7 +166,7 @@ def page_image(request, volume_id, sequence_number):
         Return the image for a page to authorized users.
     """
     vol = get_object_or_404(VolumeMetadata, pk=volume_id)
-    return HttpResponse(vol.extract_page_image(int(sequence_number), zoom_level=2.0), content_type="image/png")
+    return HttpResponse(vol.extract_page_images(int(sequence_number))[0], content_type="image/png")
 
 
 @permission_required('capdb.correct_ocr')
@@ -227,15 +230,24 @@ def case_editor(request, case_id):
 
         return HttpResponse('OK')
 
+    # pre-load all images in parallel so we don't have to open the PDF more than once
+    pngs = json.loads(subprocess.run([
+        settings.PYTHON_BINARY,
+        Path(settings.BASE_DIR, "scripts/extract_images.py"),
+        case.volume.pdf_file.path,
+        str(case.first_page_order),
+        str(case.last_page_order),
+    ], capture_output=True, check=True).stdout.decode('utf8'))
+    for page in pages:
+        page.png = pngs[page.order - case.first_page_order]
+
     # serialize values for JS
     case_json = json.dumps(model_to_dict(case, fields=['id'] + metadata_fields))
     pages_json = json.dumps([
         {
-            'id': page.id,
-            'width': page.width,
-            'height': page.height,
+            **model_to_dict(page, ['id', 'width', 'height', 'blocks']),
             "image_url": reverse('page_image', [case.volume.pk, page.order]),
-            "blocks": page.blocks,
+            "png": page.png,
         } for page in pages
     ])
     fonts = CaseFont.fonts_by_id(PageStructure.blocks_by_id(pages))
@@ -267,30 +279,55 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
             host='cite'))
 
     ### try to look up citation
+
+    case = None
+    resolved_case = None
     if case_id:
         try:
             case = CaseDocument.get(id=case_id)
+            resolved_cases = ResolveDocument.search().query("match", source='cap').query("match", source_id=case_id).execute()
+            if resolved_cases:
+                resolved_case = resolved_cases[0]
         except NotFoundError:
             raise Http404
     else:
         full_cite = "%s %s %s" % (volume_number_slug, series_slug.replace('-', ' ').title(), page_number)
         normalized_cite = re.sub(r'[^0-9a-z]', '', full_cite.lower())
-        cases = CaseDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
+        resolved = ResolveDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
+        resolved_by_source = None
 
-        ### handle non-unique citation (zero or multiple)
-        if not cases or len(cases) != 1:
+        if resolved:
+            resolved_by_source = group_by(resolved, lambda r: r.source)
+            if 'cap' in resolved_by_source:
+                if len(resolved_by_source['cap']) == 1:
+                    resolved_case = resolved_by_source['cap'][0]
+                    case = CaseDocument.get(resolved_case['source_id'])
+            else:
+                cap_candidates = {
+                    c.id: c
+                    for r in resolved
+                    for cite in r.citations
+                    for c in CaseDocument.search().filter("term", citations__normalized_cite=cite.normalized_cite).execute()
+                }
+                if cap_candidates:
+                    resolved_by_source['cap_guess'] = cap_candidates.values()
+
+        if not case:
             reporter = Reporter.objects.filter(short_name_slug=slugify(series_slug)).first()
-            series = reporter.short_name if reporter else series_slug
+            if reporter:
+                series = reporter.short_name
+                full_cite = f'{volume_number_slug} {series} {page_number}'
+            else:
+                series = series_slug
 
             return render(request, 'cite/citation_failed.html', {
-                "cases": cases,
+                "resolved": resolved_by_source,
                 "full_cite": full_cite,
                 "series_slug": series_slug,
                 "series": series,
                 "volume_number_slug": volume_number_slug,
                 "page_number": page_number,
             })
-        case = cases[0]
 
     # handle whitelisted case or logged-in user
     if case.jurisdiction.whitelisted or request.user.is_authenticated:
@@ -375,6 +412,13 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
     formatted_name = db_case.name.replace(' v. ', ' <span class="case-name-v">v.</span> ')
 
+    # find case in other dbs
+    similar_cases = []
+    if resolved_case:
+        similar_cases = group_by(resolved_case.get_similar(), lambda r: r.source)
+        for group in similar_cases.values():
+            group.sort(reverse=True, key=lambda c: c.similarity)
+
     return render(request, 'cite/case.html', {
         'meta_tags': meta_tags,
         'can_render_pdf': can_render_pdf,
@@ -385,7 +429,8 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         'full_citation': db_case.full_cite(),
         'citations': ", ".join(c.cite for c in Citation.sorted_by_type(db_case.citations.all())),
         'formatted_name': formatted_name,
-        'analysis': json.dumps({k: v for k, v in serialized_data['analysis']._d_.items() if k in ['word_count', 'char_count', 'ocr_confidence', 'pagerank']}),
+        'analysis': serialized_data['analysis'],
+        'similar_cases': similar_cases,
     })
 
 

@@ -153,8 +153,6 @@ def ingest_fixtures():
 def update_fixtures():
     for db, app, models in fixtures:
         for model in models:
-            if model == 'volumemetadata':
-                continue  # handle specially below
             output_path = Path(settings.BASE_DIR, '%s/fixtures/%s.%s.json.gz' % (app, model, db))
             print("Exporting %s to %s" % (model, output_path))
             with gzip.open(str(output_path), 'wt') as out:
@@ -179,8 +177,8 @@ def export_volume(volume_id, output_zip=None):
         .prefetch_related(
             Prefetch('page_structures', queryset=PageStructure.objects.select_related('ingest_source')),
             Prefetch('case_metadatas', queryset=(CaseMetadata.objects
-                .select_related('structure', 'initial_metadata', 'body_cache', 'court', 'analysis')
-                .prefetch_related('citations', 'extractedcitations'))),
+                .select_related('structure', 'initial_metadata', 'body_cache', 'court',)
+                .prefetch_related('citations', 'extractedcitations', 'analysis'))),
         ).get()
     )
     to_serialize.add(volume)
@@ -220,6 +218,29 @@ def import_volume(volume_zip_path):
             zip_ref.extractall(tmpdirname)
         management.call_command('loaddata', str(Path(tmpdirname, 'volume.json')), database='capdb')
         copy_tree(str(Path(tmpdirname, 'downloads')), str(Path(settings.BASE_DIR, 'test_data/downloads')))
+
+
+@task
+def import_web_volumes():
+    """
+        Import all volumes from https://case.law/download/developer/volumes
+    """
+    import requests
+    import shutil
+    from django.db import IntegrityError
+
+    for info in requests.get('https://case.law/download/developer/volumes/').json()['files']:
+        print("Importing", info['path'])
+        with tempfile.NamedTemporaryFile() as f:
+            print("- downloading")
+            with requests.get(f"https://case.law/download/{info['path']}", stream=True) as r:
+                shutil.copyfileobj(r.raw, f)
+            f.flush()
+            print("- importing")
+            try:
+                import_volume(f.name)
+            except IntegrityError:
+                print(" - integrity error; volume already imported? skipping")
 
 
 @task
@@ -298,10 +319,12 @@ def rebuild_search_index(force=False):
 @task
 def update_search_index_settings():
     """ Update settings on existing index, based on the case_index.settings() call in capapi.documents. """
-    from capapi.documents import case_index
-    # remove settings that cannot be changed on existing indexes
-    new_settings = {k:v for k, v in case_index._settings.items() if k not in ('number_of_shards')}
-    case_index.put_settings(body={"index": new_settings})
+    from capapi.documents import get_index
+    for k in settings.ELASTICSEARCH_INDEXES:
+        index = get_index(k)
+        # remove settings that cannot be changed on existing indexes
+        new_settings = {k:v for k, v in index._settings.items() if k not in ('number_of_shards')}
+        index.put_settings(body={"index": new_settings})
 
 
 @task
@@ -1547,6 +1570,13 @@ def load_pagerank_scores(pagerank_score_output):
         CaseAnalysis.objects.filter(id__in=existing_scores.keys()).delete()
         CaseAnalysis.objects.bulk_create(to_insert)
         CaseAnalysis.objects.bulk_update(to_update, ['value'])
+
+
+@task
+def ingest_courtlistener(download_dir='/tmp', start_from=None):
+    """ Download CourtListener cases and add metadata to citation resolver endpoint. """
+    from scripts.ingest_courtlistener import ingest_courtlistener
+    ingest_courtlistener(download_dir, start_from)
 
 
 if __name__ == "__main__":

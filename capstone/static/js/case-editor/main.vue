@@ -1,18 +1,48 @@
 <template>
   <div id="edit-app" :class="{darkMode}">
-    <div class="row p-2">
-      <div class="col-6">
+    <div id="app-grid" :class="{ showImage: showImage }">
+      <header id="title">
         <h1><a :href="urls.case">{{templateVars.citation_full}}</a></h1>
-      </div>
-      <div class="col-6 text-right viz-controls">
+      </header>
+
+      <article id="caseTextPanel" :class="{scrollable: true, casePanel: true, hideConfidence: !showConfidence}" @click="handleWordClick">
+        <CaseTextPanel :opinions="opinions"></CaseTextPanel>
+      </article>
+      <nav class="gutter gutter-vertical">‖</nav>
+      <article v-if="showImage" id="caseImagePanel" :class="{scrollable: true, casePanel: true, hideConfidence: !showConfidence}" ref="pageImageContainer" @click="handleWordClick">
+        <CaseImagePanel :pages="pages" :pngs="templateVars.pngs"></CaseImagePanel>
+      </article>
+      <nav id="view_controls">
         <button @click="darkMode=!darkMode" :class="{'toggle-btn': true, 'on': darkMode}">dark</button>
         <button @click="showImage=!showImage" :class="{'toggle-btn': true, 'on': showImage}">img</button>
         <button @click="$store.commit('toggleOcr')" :class="{'toggle-btn': true, 'on': showOcr}">OCR</button>
         <button @click="$store.commit('toggleConfidence')" :class="{'toggle-btn': true, 'on': showConfidence}">WC</button>
-        <button @click="toggleInstructions()" class="toggle-btn off">help</button>
-        <button class="btn-primary mr-1 mb-1 ml-3" v-b-modal.save-modal>save case to DB</button>
-        <button class="btn-secondary" @click="clearEdits">Clear All Edits</button>
-      </div>
+      </nav>
+      <nav id="popups">
+        <div :class="{ corrected: metadata.human_corrected }" id="human_corrected"
+        title="'Human Corrected' means this case has been fully corrected and is essentially error-free. Set in the meta screen.">
+          <div class="label">Human<br>Corrected</div>
+        </div>
+        <div id="edit_metadata">
+          <button @click="toggleMetadata()" class="toggle-btn off">meta</button>
+        </div>
+        <div id="instructions">
+          <button @click="toggleInstructions()" class="toggle-btn off">?</button>
+        </div>
+      </nav>
+      <aside id="metadata">
+        <MetadataPanel></MetadataPanel>
+      </aside>
+      <nav class="gutter gutter-horizontal">=</nav>
+      <nav id="word">
+        <EditPanel></EditPanel>
+      </nav>
+      <nav id="edits">
+        <EditListPanel></EditListPanel>
+      </nav>
+      <nav id="document_controls">
+        <button class="btn-primary" v-b-modal.save-modal>save to DB</button>
+      </nav>
     </div>
     <b-modal id="save-modal" title="Save Changes" @ok="saveCase">
       <p>Permanently replace this case in the CAP database with your edited version?</p>
@@ -35,28 +65,16 @@
         <span aria-live="polite">{{saveStatus}}</span>
       </form>
     </b-modal>
-    <div class="tools-row row">
-      <div class="scrollable col-4">
-        <EditPanel></EditPanel>
-      </div>
-      <div class="scrollable col-4 edits-container">
-        <EditListPanel></EditListPanel>
-      </div>
-      <div class="scrollable col-4">
-        <MetadataPanel></MetadataPanel>
+    <div v-if="showMetadata" class="pt-6 modal_overlay">
+      <div class="col-8 offset-2 p-5 modal">
+        <div class="modal_close" @click="toggleMetadata">&#8855;</div>
+          <MetadataPanel></MetadataPanel>
       </div>
     </div>
-    <div class="row" style="flex: 1 1 auto; overflow-y: auto;">
-      <div id="caseTextPanel" :class="{scrollable: true, 'col-6':showImage, 'col-12':!showImage, casePanel: true}">
-        <CaseTextPanel :opinions="opinions"></CaseTextPanel>
-      </div>
-      <div v-if="showImage" id="caseImagePanel" class="scrollable col-6 casePanel" ref="pageImageContainer">
-        <CaseImagePanel :pages="pages"></CaseImagePanel>
-      </div>
-    </div>
-    <div v-if="showInstructions" class="pt-6" id="instructions_modal_overlay">
-      <div class="col-8 offset-2 p-5" id="instructions_modal">
-        <div id="modal_close" @click="toggleInstructions">&#8855;</div>
+    <div v-if="showInstructions" class="pt-6 modal_overlay">
+      <div class="col-8 offset-2 p-5 modal">
+        <div class="modal_close" @click="toggleInstructions">&#8855;</div>
+        <h4>instructions</h4>
         <div class="row pt-3">
           <div class="q col-3">When should I press “Save”?</div>
           <div class="a col-9 pl-3">
@@ -91,7 +109,8 @@
   import $ from "jquery";
   import '../jquery_django_csrf';
   import debounce from "lodash.debounce";
-  import { mapState } from 'vuex'
+  import { mapState } from 'vuex';
+  import Split from 'split-grid';
 
   import EditPanel from './edit-panel.vue'
   import EditListPanel from './edit-list-panel.vue'
@@ -110,17 +129,15 @@
         saveFormValid: null,
         saveFormMessage: '',
         showInstructions: false,
+        showMetadata: false,
         showImage: true,
         darkMode: false,
+        scrollLock: true,
+        imagePanelOffset: null,
+        scrollEventListeners: {},
       }
     },
     watch: {
-      metadata: {
-        handler() {
-          this.saveStateToStorage();
-        },
-        deep: true
-      },
       editedWords: {
         handler() {
           this.saveStateToStorage();
@@ -179,6 +196,7 @@
       this.extractWords();  // depends on saved state
     },
     mounted: function () {
+
       // document.addEventListener('keyup', (e)=>{
       //   if (e.ctrlKey) {
       //     switch(e.key) {
@@ -199,21 +217,41 @@
       window.addEventListener('resize', ()=>{ this.handleWindowResize() });
       this.handleWindowResize();
       this.mounted = true;
+
+      // grid resizing
+      Split({
+        columnGutters: [{
+          track: 2,
+          element: document.querySelector('.gutter-vertical'),
+        }],
+        rowGutters: [{
+          track: 3,
+          element: document.querySelector('.gutter-horizontal'),
+        }],
+        onDragEnd: this.handleWindowResize,
+      });
     },
     methods: {
+      handleWordClick(e) {
+        if (!(e.target.classList.contains('word')))
+          return;
+        this.$store.commit('setCurrentWord', this.wordsById[e.target.dataset.id]);
+      },
       wordConfidenceColor(word) {
         const alpha = (.6 - word.wordConfidence)*100;
         const red = 255 * word.wordConfidence + 127;
         return `rgba(${red}, 0, 0, ${alpha}%)`;
       },
       handleWindowResize() {
-        const containerWidth = this.$refs.pageImageContainer.offsetWidth;
-        for (const page of this.pages) {
-          this.$set(page, 'scale', containerWidth / page.width);
-          // Conversion factor for font pts on scanned page to pixels.
-          // For example, a font detected as "12pt" in our 300DPI scan was actually 12/72 * 300 == 50px high.
-          page.fontScale = page.scale * 300/72;
-        }
+        this.$nextTick(() => {
+          const containerWidth = this.$refs.pageImageContainer.offsetWidth;
+          for (const page of this.pages) {
+            this.$set(page, 'scale', containerWidth / page.width);
+            // Conversion factor for font pts on scanned page to pixels.
+            // For example, a font detected as "12pt" in our 300DPI scan was actually 12/72 * 300 == 50px high.
+            page.fontScale = page.scale * 300 / 72;
+          }
+        });
       },
       extractWords() {
         /*
@@ -232,6 +270,7 @@
           To save changes later, we'll update `blocks[blockId].tokens[index]` to `string`, and empty any additional `strings`.
          */
         let wordId = 0;
+        const wordsById = this.wordsById = {};
 
         const startWord = (block, attrs, fontId, footnoteMark, page)=>{
           const rect = attrs.rect;
@@ -275,7 +314,7 @@
 
             words.push(word);
             block.words.push(word);
-            this.$store.commit('addWord', word);
+            wordsById[word.id] = word;
           }
           return null;
         }
@@ -324,6 +363,9 @@
       },
       toggleInstructions() {
         this.showInstructions = !this.showInstructions;
+      },
+      toggleMetadata() {
+        this.showMetadata = !this.showMetadata;
       },
       async clearEdits() {
         if (!await this.$bvModal.msgBoxConfirm('Permanently discard your edits?\nThere is no undo for this command.')) {
@@ -470,21 +512,58 @@
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
   .scrollable {
-    border: 2px gray solid;
+    border-left: 1px gray solid;
     padding: 1em;
   }
-  .casePanel {
-     padding: 0 2em;
+  .caseTextPanel {
+    padding: 0 2rem;
   }
-  .darkMode::v-deep {
-    div:not(#imageControls), h4 {
+  .caseImagePanel {
+    padding: 0;
+  }
+
+  .current-word {
+    border: 1px green solid !important;
+  }
+  .edited {
+    border: 1px orange solid !important;
+    &.current-word {
+      outline: 1px green solid !important;
+    }
+  }
+  .footnote-mark {
+    vertical-align: super;
+    font-size: .83em;
+    background-color: #0000001f;
+  }
+  .hideConfidence .word {
+    background-color: transparent !important;
+  }
+
+  .darkMode {
+    article {
+      border: thin solid gray;
+    }
+    div:not(#imageControls, .edit-word), h4{
       background-color: #2F2F2F;
       color: white;
     }
     img {
       filter: invert(1);
+    }
+    nav#edits .edited-word-list .edit-entry .edit-word {
+      background-color: #232323;
+    }
+    nav#edits .edited-word-list .edit-head {
+      background-color: #434343;
+      .count_col, .clear_col {
+         background-color: #434343;
+      }
+    }
+    .footnote-mark {
+      background-color: #ffffff1f;
     }
   }
 </style>

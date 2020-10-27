@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.db import transaction
 from django_elasticsearch_dsl_drf.utils import DictionaryProxy
 from rest_framework import serializers
@@ -6,7 +8,7 @@ from rest_framework.serializers import ListSerializer
 from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
 
 from .models import SiteLimits
-from .documents import CaseDocument
+from .documents import CaseDocument, ResolveDocument
 from capdb import models
 from capweb.helpers import reverse
 from user_data.models import UserHistory
@@ -80,7 +82,9 @@ class JurisdictionSerializer(serializers.ModelSerializer):
         fields = ('url', 'id', 'slug', 'name', 'name_long', 'whitelisted')
 
 # for elasticsearch
-class CaseDocumentSerializer(DocumentSerializer):
+class BaseDocumentSerializer(DocumentSerializer):
+    _abstract = True
+
     def __init__(self, *args, **kwargs):
         """
             If we are instantiated with an Elasticsearch wrapper object, convert to a bare dictionary.
@@ -90,6 +94,17 @@ class CaseDocumentSerializer(DocumentSerializer):
             self.instance = self.instance._d_
         elif isinstance(self.instance, DictionaryProxy):
             self.instance = self.instance.to_dict()
+
+    def s_from_instance(self, instance):
+        if "_source" in instance:
+            return instance["_source"]
+        elif type(instance) is CaseDocument:
+            return instance._d_
+        else:
+            return instance
+
+
+class CaseDocumentSerializer(BaseDocumentSerializer):
 
     class Meta:
         document = CaseDocument
@@ -115,16 +130,11 @@ class CaseDocumentSerializer(DocumentSerializer):
                 'jurisdiction_url': placeholder_url("jurisdiction-detail"),
             }
 
+        s = self.s_from_instance(instance)
+        extractedcitations = [{"cite": c["cite"]} for c in s["extractedcitations"]]
         preview = []
         if "_source" in instance:
-            s = instance["_source"]
             preview = [highlight for highlights in instance['highlight'].values() for highlight in highlights] if 'highlight' in instance else []
-        elif type(instance) is CaseDocument:
-            s = instance._d_
-        else:
-            s = instance
-
-        extractedcitations = [{"cite": c["cite"]} for c in s["extractedcitations"]]
 
         # IMPORTANT: If you change what values are exposed here, also change the "CaseLastUpdate triggers"
         # section in set_up_postgres.py to keep Elasticsearch updated.
@@ -170,6 +180,30 @@ class CaseDocumentSerializer(DocumentSerializer):
             "analysis": s.get("analysis", {}),
             "last_updated": s.get("last_updated"),  # can be changed to s["last_updated"] once new index is in place
         }
+
+
+class ResolveDocumentListSerializer(ListSerializer):
+    def to_representation(self, data):
+        extracted_cites = self.context['request'].extracted_cites
+        out = defaultdict(list)
+        for hit in data.execute()['hits']['hits']:
+            case = hit['_source']
+            case.pop('id')
+            for cite in case['citations']:
+                cite.pop('page_int', None)
+                if cite['normalized_cite'] in extracted_cites:
+                    out[extracted_cites[cite['normalized_cite']]].append(case)
+        return out
+
+    @property
+    def data(self):
+        return super(ListSerializer, self).data
+
+
+class ResolveDocumentSerializer(BaseDocumentSerializer):
+    class Meta:
+        document = ResolveDocument
+        list_serializer_class = ResolveDocumentListSerializer
 
 
 class CaseAllowanceMixin:

@@ -4,6 +4,7 @@
 {% load render_bundle from webpack_loader %}
 {% load api_url %}
 {% load redaction %}
+{% load humanize %}
 
 {% load capweb_static %}
 
@@ -14,27 +15,15 @@
   <script>
     const templateVars = {
       urls: {
-        {% if request.user.is_staff %}
-          djangoAdmin: "{% url 'admin:capdb_casemetadata_change' db_case.id %}",
-        {% endif %}
-        caseEditor: "{% url 'case_editor' db_case.id host 'cite' %}",
         search: "{% url "search" %}#/cases",
         redact: "{% url "redact_case" db_case.id host 'cite' %}",
-        about: "{% url "about" %}",
         api: "{% api_url "api-root" %}v1/",
-        apiDocs: "{% url "api" %}",
-        caseApi: "{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}",
-        casePdf: "{% if can_render_pdf %}{{ db_case.get_pdf_url|elide:db_case|striptags }}{% endif %}",
         citedBy: "{% url "case_cited_by" db_case.id host 'cite' %}",
         static: "{% static "" %}",
       },
       fullCite: "{{ full_citation|redact:db_case }}",
       isStaff: {% if request.user.is_staff %}true{% else %}false{% endif %},
-      canEdit: {% if perms.capdb.correct_ocr %}true{% else %}false{% endif %},
-      jurisdictionName: "{{ es_case.jurisdiction.name_long }}",
-      caseYear: "{{ db_case.decision_date.year }}",
-      caseId: {{ db_case.id }},
-      analysis: {{ analysis|safe }}
+      caseId: {{ db_case.id }}
     };
   </script>
   {% render_bundle 'case' %}
@@ -64,9 +53,87 @@
 {% block sidebar_menu %}
   <aside id="sidebar-menu" tabindex="-1" aria-label="Tools">
     <div class="content">
+      <div id="sidebar-menu-content">
+        <Sidebar>
 
-    <div id="sidebar-menu-content"></div>
+          <template v-slot:other-formats>
+            <div class="sidebar-section" id="format-section">
+              <h2 class="sidebar-title">Other formats</h2>
+              <div class="sidebar-section-contents">
+                <ul class="list-inline">
+                  {% if can_render_pdf %}
+                    <li class="list-inline-item"><a class="btn" href="{{ db_case.get_pdf_url|elide:db_case|striptags }}">PDF</a></li>
+                  {% endif %}
+                  <li class="list-inline-item" ><a class="btn" href="{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}">API</a></li>
+                </ul>
+              </div>
+            </div>
+          </template>
+
+          {% if similar_cases %}
+            <template v-slot:similar-cases>
+              <div class="sidebar-section" id="similar-cases">
+                <h2 class="sidebar-title">Other databases</h2>
+                <div class="sidebar-section-contents">
+                  <ul class="list-inline">
+                    {% if similar_cases.cl %}
+                      <li class="list-inline-item"><a class="btn" href="{{ similar_cases.cl.0.frontend_url }}">CourtListener</a></li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </div>
+            </template>
+          {% endif %}
+
+          {% if analysis %}
+            <template v-slot:analysis>
+              <div class="sidebar-section d-none d-lg-block" id="analysis-section">
+                <h3>
+                  Analysis
+                  <a class="analysis-link" href="{% url "api" %}#analysis-fields">
+                    <img class="analysis-info" alt="More information about analysis fields" src="{% static "img/icons/question.svg" %}">
+                  </a>
+                </h3>
+                <div class="sidebar-section-contents">
+                  <ul>
+                    {% if analysis.pagerank %}<li>PageRank: {% widthratio analysis.pagerank.percentile 1 100 %}%</li>{% endif %}
+                    {% if analysis.ocr_confidence %}<li>OCR confidence: {{analysis.ocr_confidence}} </li>{% endif %}
+                    {% if analysis.char_count %}<li>Character count: {{analysis.char_count|intcomma}} </li>{% endif %}
+                    {% if analysis.word_count %}<li>Word count: {{analysis.word_count|intcomma}} </li>{% endif %}
+                  </ul>
+                </div>
+              </div>
+            </template>
+          {% endif %}
+
+          {% if request.user.is_staff or perms.capdb.correct_ocr %}
+            <template v-slot:admin-tools>
+              <div class="sidebar-section admin-tools" id="admin-section">
+                <h3>Admin Tools</h3>
+                <div class="sidebar-section-contents">
+                  <ul>
+                    {% if request.user.is_staff %}<li><a href="{% url 'admin:capdb_casemetadata_change' db_case.id %}">Django admin</a></li>{% endif %}
+                    {% if perms.capdb.correct_ocr %}<li><a href="{% url 'case_editor' db_case.id host 'cite' %}">Case editor</a></li>{% endif %}
+                  </ul>
+                </div>
+              </div>
+            </template>
+          {% endif %}
+
+          <template v-slot:info>
+            <div class="sidebar-section d-none d-lg-block" id="info-section">
+              <h3>What is this page?</h3>
+              <div class="sidebar-section-contents">
+                Every document on this site is part of the official caselaw of a court within the
+                United States, scanned from the collection of the Harvard Law School Library.
+                <a href="{% url "about" %}">Learn more</a>.
+              </div>
+            </div>
+          </template>
+
+        </Sidebar>
       </div>
+    </div>
   </aside>
 {% endblock %}
 

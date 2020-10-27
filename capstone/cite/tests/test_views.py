@@ -87,7 +87,7 @@ def test_case_not_found(client, django_assert_num_queries, elasticsearch):
     """ Test /series/volume/case/ not found """
     with django_assert_num_queries(select=1):
         response = client.get(reverse('citation', args=['fake', '123', '456'], host='cite'))
-    check_response(response, content_includes='Citation "123 Fake 456" was not found')
+    check_response(response, content_includes='Search for "123 Fake 456" in other databases')
 
 
 @pytest.mark.django_db
@@ -123,7 +123,7 @@ def test_single_case(client, auth_client, token_auth_client, case_factory, elast
     unrestricted_case = case_factory(jurisdiction__whitelisted=True, body_cache__html=case_text, first_page_order=2, last_page_order=2)
     restricted_case = case_factory(jurisdiction__whitelisted=False, body_cache__html=case_text, first_page_order=2, last_page_order=2)
     if response_type == 'pdf':
-        case_text = "Page 2"
+        case_text = "REMEMBERED"
         unrestricted_url = unrestricted_case.get_pdf_url()
         url = restricted_case.get_pdf_url()
         content_type = 'application/pdf'
@@ -320,7 +320,8 @@ def test_retrieve_page_image(admin_client, auth_client, volume_metadata):
 
 
 @pytest.mark.django_db
-def test_case_editor(admin_client, auth_client, unrestricted_case):
+def test_case_editor(reset_sequences, admin_client, auth_client, unrestricted_case_factory):
+    unrestricted_case = unrestricted_case_factory(first_page_order=1, last_page_order=3)
     url = reverse('case_editor', args=[unrestricted_case.pk], host='cite')
     response = admin_client.get(url)
     check_response(response)

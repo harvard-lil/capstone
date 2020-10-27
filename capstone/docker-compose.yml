@@ -10,9 +10,9 @@ services:
         volumes:
           - db_data:/var/lib/postgresql/data:delegated
     redis:
-        image: redis:4
+        image: registry.lil.tools/library/redis:6.0.8
     elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
         environment:
           - node.name=es01
           - bootstrap.memory_lock=true
@@ -28,7 +28,7 @@ services:
           - 127.0.0.1:9200:9200
     web:
         build: .
-        image: capstone:0.3.109-3250a91695b771d2d7b26aed0642c14b
+        image: capstone:0.3.110-2becf13dcf5df2d7fa9ec8514ae23a13
         volumes:
             # NAMED VOLUMES
             - node_modules:/app/node_modules:delegated

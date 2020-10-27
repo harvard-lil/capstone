@@ -9,7 +9,7 @@ netaddr             # checking IP address in range
 mailchimp3          # for signing people up for lawvocado when they register
 natsort             # good natural sorting library for things like page numbers where the data gets messy
 geoip2              # local IP geolocation
-simhash             # text summarization
+numpy               # simhash calculation
 
 # celery
 celery[redis,sqs]       # task queue

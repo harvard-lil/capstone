@@ -10,6 +10,16 @@ import Main from './main.vue'
 Vue.use(Vuex)
 Vue.use(BootstrapVue)
 
+function wordElements(word) {
+  return document.querySelectorAll(`.word-id-${word.id}`);
+}
+
+function forWordElements(word, f) {
+  /* helper to manually apply DOM updates to words, for speed on large cases */
+  for (const el of wordElements(word))
+    f(el);
+}
+
 const store = new Vuex.Store({
   state: {
     words: {},
@@ -33,27 +43,31 @@ const store = new Vuex.Store({
     setCurrentWord (state, word) {
       if (state.currentWord === word)
         return;
-      if (state.currentWord !== null)
+      if (state.currentWord !== null) {
         Vue.set(state.currentWord, 'isCurrent', false);
+        forWordElements(state.currentWord, (el) => el.classList.remove('current-word'));
+      }
       Vue.set(word, 'isCurrent', true);
+      forWordElements(word, (el) => el.classList.add('current-word'));
       state.currentWord = word;
 
       // focus and scroll
       document.getElementById('current_word').focus();
-      for (const el of document.querySelectorAll(`.word-id-${word.id}`)){
-        scrollIntoView(el, {scrollMode: 'if-needed'});
-      }
+      requestAnimationFrame(()=> forWordElements(word, (el) => scrollIntoView(el, {scrollMode: 'if-needed'})));
     },
     editWord(state, {word, string}) {
-      if (word.originalString === string)
+      if (word.originalString === string) {
         Vue.delete(state.editedWords, word.id);
-      else
+        forWordElements(word, (el) => el.classList.remove('edited'));
+      } else {
         Vue.set(state.editedWords, word.id, word);
+        forWordElements(word, (el) => el.classList.add('edited'));
+      }
       Vue.set(word, 'string', string);
+      forWordElements(word, (el) => el.innerText = string);
     },
     removeEdit(state, word) {
-      Vue.set(word, 'string', word.originalString);
-      Vue.delete(state.editedWords, word.id);
+      this.commit("editWord", {word, string: word.originalString});
     },
     toggleConfidence(state) {
       state.showConfidence = !state.showConfidence;

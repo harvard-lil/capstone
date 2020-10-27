@@ -139,7 +139,7 @@ def test_authenticated_full_case_blacklisted(auth_user, auth_client, restricted_
 def test_case_detail_pdf(transactional_db, client, auth_client, restricted_case, unrestricted_case, elasticsearch):
     """ Test ?format=pdf on case detail API. """
     content_type = 'application/pdf'
-    case_text = "Page 2"
+    case_text = "REMEMBERED"
     CaseMetadata.objects.update(first_page_order=1, last_page_order=3)
 
     # unauthorized request can't fetch restricted PDF
