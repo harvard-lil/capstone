@@ -2,7 +2,7 @@
 {% load pipeline %}
 {% load api_url %}
 title: Documentation Glossary
-page_image: img/og_image/do
+page_image: img/og_image/docs.png
 meta_description: Caselaw Access Project API Docs
 explainer: The Caselaw Access Project API, also known as CAPAPI, serves all official US court cases published in books from 1658 to 2018. The collection includes over six million cases scanned from the Harvard Law School Library shelves. <a href="{% url "about" }>Learn more about the project</a>.
 
@@ -14,19 +14,19 @@ context for any of these terms.
 
 # API {: class="subtitle list-header mb-0" id="def-api" }
 * API is an acronym for Application Programming Interface. Broadly, it is a way for one computer program to transfer 
-data to another computer program. CAPAPI is a [RESTful]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-restful) API designed to distribute court case data.
+data to another computer program. CAPAPI is a [RESTful]({% url 'docs' 'user_guides/documentation_glossary' %}#def-restful) API designed to distribute court case data.
 {: class="mt-1" }
 
 
 # Character {: class="subtitle list-header mb-0" id="def-character" }
-* A letter, number, space, or piece of punctuation. Multiple characters together make up a [string]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-string).
+* A letter, number, space, or piece of punctuation. Multiple characters together make up a [string]({% url 'docs' 'user_guides/documentation_glossary' %}#def-string).
 {: class="mt-1" }
   
   
 # special Character {: class="subtitle list-header mb-0" id="def-special-character" }
 * Special characters are characters that have programmatic significance to a program. The "specialness" of any given 
 character is determined by the context in which it's used. For example, you can't add a bare question mark to your path 
-because they indicate to the server that everything after them is a [parameter]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-parameter).
+because they indicate to the server that everything after them is a [parameter]({% url 'docs' 'user_guides/documentation_glossary' %}#def-parameter).
 {: class="mt-1" }
 
 
@@ -38,8 +38,8 @@ because they indicate to the server that everything after them is a [parameter](
 
 
 # curl {: class="subtitle list-header mb-0" id="def-curl" }
-* [curl](https://curl.haxx.se/) is a simple [command line]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-command-line) tool for retrieving data over the 
-internet. It's similar to a web browser in that it will retrieve the contents of a [url]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-url), but it will dump the
+* [curl](https://curl.haxx.se/) is a simple [command line]({% url 'docs' 'user_guides/documentation_glossary' %}#def-command-line) tool for retrieving data over the 
+internet. It's similar to a web browser in that it will retrieve the contents of a [url]({% url 'docs' 'user_guides/documentation_glossary' %}#def-url), but it will dump the
  text contents to a terminal, rather than show a rendered version in a graphical browser window.
 {: class="mt-1" }
   
@@ -67,7 +67,7 @@ OCR-derived using scanned case reporter pages as source images.
 
 
 # RESTful {: class="subtitle list-header mb-0" id="def-restful" }
-* A RESTful [API]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-api) is based on [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol), and makes use
+* A RESTful [API]({% url 'docs' 'user_guides/documentation_glossary' %}#def-api) is based on [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol), and makes use
 of its built-in verbs(commands), such as GET and POST.
 {: class="mt-1" }
 
@@ -85,13 +85,13 @@ other email servers which are sending it messages.
 
 
 # Slug {: class="subtitle list-header mb-0" id="def-slug" }
-* A [string]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-string) with [special characters]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-special-character) removed for ease of inclusion in a 
-[url]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-url).
+* A [string]({% url 'docs' 'user_guides/documentation_glossary' %}#def-string) with [special characters]({% url 'docs' 'user_guides/documentation_glossary' %}#def-special-character) removed for ease of inclusion in a 
+[url]({% url 'docs' 'user_guides/documentation_glossary' %}#def-url).
 {: class="mt-1" }
 
 
 # String {: class="subtitle list-header mb-0" id="def-string" }
-* A string, as a type of data, just means an arbitrary list (or string) of [characters]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-character). A word is a 
+* A string, as a type of data, just means an arbitrary list (or string) of [characters]({% url 'docs' 'user_guides/documentation_glossary' %}#def-character). A word is a 
 string. This whole sentence is a string. "h3ll0.!" is a string. This whole document is a string.
 {: class="mt-1" }
 
@@ -108,15 +108,15 @@ name, a path to a file or endpoint, and possibly parameters to pass to the endpo
 
 
 # URL Parameter {: class="subtitle list-header mb-0" id="def-parameter" }
-* For our purposes, a parameter is just a piece of data with a label that can be passed to an [endpoint]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-endpoint) 
+* For our purposes, a parameter is just a piece of data with a label that can be passed to an [endpoint]({% url 'docs' 'user_guides/documentation_glossary' %}#def-endpoint) 
 in a web request.
 {: class="mt-1" }
 
 
 # URL Path {: class="subtitle list-header mb-0" id="def-path" }
-* The URL path begins with the slash after the [top-level domain]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-tld) and ends with the question mark that signals
- the beginning of the [parameters]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-parameter). It was originally intended to point to a file on the server's hard 
- drive, but these days it's just as likely to point to an application [endpoint]({% url 'docs' 'tutorials_and_guides/documentation_glossary' %}#def-endpoint).
+* The URL path begins with the slash after the [top-level domain]({% url 'docs' 'user_guides/documentation_glossary' %}#def-tld) and ends with the question mark that signals
+ the beginning of the [parameters]({% url 'docs' 'user_guides/documentation_glossary' %}#def-parameter). It was originally intended to point to a file on the server's hard 
+ drive, but these days it's just as likely to point to an application [endpoint]({% url 'docs' 'user_guides/documentation_glossary' %}#def-endpoint).
 {: class="mt-1" }
 
 

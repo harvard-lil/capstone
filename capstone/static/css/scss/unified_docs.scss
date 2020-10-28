@@ -8,7 +8,7 @@ nav {
 
 h1 {
   font-size: 3rem;
-  font-weight: $font-weight-lighter;
+  font-weight: $font-weight-normal;
   margin-top: 0;
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -16,10 +16,19 @@ h1 {
 }
 
 h2 {
-  font-size: 1.5rem;
-  font-weight: $font-weight-black;
+  font-size: 2rem;
+  font-weight: $font-weight-semibold;
 }
 
+h3 {
+  font-size: 1.5rem;
+  font-weight: $font-weight-semibold;
+}
+
+h4 {
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+}
 
 
 
@@ -59,6 +68,22 @@ h2 {
   #document-contents {
     padding: 0rem 3rem 1rem 3rem;
     grid-area: content;
+
+
+
+    ul.bulleted {
+      li {
+        list-style: unset !important;
+      }
+      list-style-type: circle !important;
+    }
+
+    ul.ordered {
+      li {
+        list-style: unset !important;
+      }
+      list-style-type: decimal !important;
+    }
 
     .subtitle {
       margin-top: 2rem;
@@ -175,6 +200,7 @@ h2 {
         }
       }
     }
+
 
   }
 
@@ -318,6 +344,7 @@ nav.doc-nav {
   .list-group-item {
     border: 0;
     padding: 0;
+    white-space: pre-wrap;
   }
 
   .interior-directory {

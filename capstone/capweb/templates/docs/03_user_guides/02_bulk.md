@@ -2,9 +2,8 @@
 {% load api_url %}
 title: Bulk data documentation
 meta_description: Caselaw Access Project bulk data documentation
+page_image: img/og_image/docs.png
 explainer: Our <a href="{% url "download-files" "bulk_exports/" %}">bulk data files</a> contain the same information that is available via <a href="{% url "api" %}">our API</a>, but are much faster to download if you want to interact with a large number of cases. Each file contains all of the cases from a single jurisdiction or reporter. <br/> <a class="btn btn-primary" href="{% url "download-files" "bulk_exports/" %}">Access data</a>
-top_section_style: bg-black
-row_style: bg-tan
 
 # Access Limits {: class="subtitle" }
 

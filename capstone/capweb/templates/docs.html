@@ -24,24 +24,26 @@
     <nav class="doc-nav show-nav">
       <div id="docs_toc" class="panel-group w-100 pl-0">
         {% for item in toc %}
-          <div class="panel-heading">
-            <div class="panel-title">
-              <a class="top-level-label" data-toggle="collapse" href="#collapse1_{{ item.url }}"
-                 data-target="#collapse1_{{ item.url }}">{{ item.label }}</a>
-            </div>
-          </div>
+          {% if not item.label == "Index" %}
+              <div class="panel-heading">
+                <div class="panel-title">
+                  <a class="top-level-label" data-toggle="collapse" href="#collapse1_{{ item.url }}"
+                     data-target="#collapse1_{{ item.url }}">{{ item.label }}</a>
+                </div>
+              </div>
 
-          {% if req_doc_path|startswith:item.url %}
-            <div id="collapse1_{{ item.url }}" class="panel-collapse show collapse">
-          {% else %}
-            <div id="collapse1_{{ item.url }}" class="panel-collapse collapse">
+              {% if req_doc_path|startswith:item.url %}
+                <div id="collapse1_{{ item.url }}" class="panel-collapse show collapse">
+              {% else %}
+                <div id="collapse1_{{ item.url }}" class="panel-collapse collapse">
+              {% endif %}
+            <ul class="top-level-item pl-0">
+              <li class="top-level-structure">
+                {% include "includes/docs_toc.html" with toc=item.children %}
+              </li>
+            </ul>
+            </div>
           {% endif %}
-        <ul class="top-level-item pl-0">
-          <li class="top-level-structure">
-            {% include "includes/docs_toc.html" with toc=item.children %}
-          </li>
-        </ul>
-        </div>
         {% endfor %}
       </div>
     </nav>

@@ -19,7 +19,9 @@ from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect
 from django.template import Template, RequestContext
+from django.template.loader import render_to_string
 from django.utils.http import is_safe_url
+from django.views import View
 from django.utils.safestring import mark_safe
 from django.db.models import Prefetch
 
@@ -64,7 +66,7 @@ def docs(request, req_doc_path):
         structure from it. Serves up a specific doc or the default docs entry page.
     """
     if not req_doc_path:
-        req_doc_path = "general/docs_intro"
+        req_doc_path = "index"
     toc_by_url = get_toc_by_url()
     page = toc_by_url.get(req_doc_path)
     if not page or 'content' not in page:
@@ -165,20 +167,16 @@ def snippet(request, label):
 def legacy_docs_redirect(request):
     url_path = request.META['PATH_INFO'].lstrip('/').rstrip('/')
     translation = {
-        "api": "api/api",
-        "about": "general/about",
-        "search-docs": "web/search",
-        "tools": "general/tools",
-        "trends-docs": "web/trends",
-        "bulk": "bulk/bulk_docs",
-        "terms": "general/terms-of-use",
-        "privacy": "general/privacy-policy",
-        "changelog": "general/changelog",
-        "action": "general/for-courts/index",
-        "action/guidelines": "general/for-courts/guidelines",
-        "action/case-study-nm": "general/for-courts",
-        "action/case-study-ark": "general/for-courts/case-study-ark",
-        "action/case-study-canada": "general/for-courts/case-study-canada",
+        "api": "user_guides/api",
+        "search-docs": "user_guides/search",
+        "trends-docs": "user_guides/trends",
+        "bulk": "user_guides/bulk_docs",
+        "changelog": "specs_and_reference/changelog",
+        "action": "user_pathways/for-courts/index",
+        "action/guidelines": "user_pathways/for-courts/guidelines",
+        "action/case-study-nm": "user_pathways/for-courts",
+        "action/case-study-ark": "user_pathways/for-courts/case-study-ark",
+        "action/case-study-canada": "user_pathways/for-courts/case-study-canada",
     }
 
     return redirect('docs', translation[url_path])
@@ -465,3 +463,54 @@ def fetch(request):
         'citations': citations,
         'error': error,
     })
+
+
+class MarkdownView(View):
+    """
+        Render template_name as markdown, and then pass 'main_content', 'sidebar_menu_items', and 'meta' to base_template_name
+        for display as HTML.
+        IMPORTANT: As all outputs are marked safe, subclasses should never include user-generated input in the template context.
+    """
+    base_template_name = "markdown.html"
+    extra_context = {}
+    template_name = None
+
+    def get(self, request, *args, **kwargs):
+        context = {**self.extra_context, **self.get_context(request)}
+        # render any django template tags in markdown document
+        markdown_doc = render_to_string(self.template_name, context, request)
+
+        # render markdown document to html
+        html, toc, meta = render_markdown(markdown_doc)
+
+        # present markdown html within base_template_name
+        meta = {k:mark_safe(v) for k,v in meta.items()}
+        return render(request, self.base_template_name, {
+            'main_content': mark_safe(html),
+            'sidebar_menu_items': mark_safe(toc),
+            'main_content_style': 'markdown',
+            **context,
+            **meta,
+        })
+
+    def get_context(self, request):
+        return {}
+
+
+class AboutView(MarkdownView):
+    template_name = "about.md"
+
+    def get_context(self, request):
+        contributors = get_data_from_lil_site(section="contributors")
+        sorted_contributors = {}
+        for contributor in contributors:
+            sorted_contributors[contributor['sort_name']] = contributor
+            if contributor['affiliated']:
+                sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
+        sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
+
+        return {
+            "contributors": sorted_contributors,
+            "news": get_data_from_lil_site(section="news"),
+            "email": settings.DEFAULT_FROM_EMAIL
+        }
