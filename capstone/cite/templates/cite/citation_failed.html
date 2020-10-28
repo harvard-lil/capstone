@@ -67,13 +67,15 @@
 
       <p>Search for "{{ full_cite }}" in other databases:</p>
       <ul class="third-party-dbs">
-        <li>
-          <a class="btn btn-primary"
-             target="_blank"
-             href="https://www.courtlistener.com/c/{{ series }}/{{ volume_number_slug }}/{{ page_number }}">
-            CourtListener
-          </a>
-        </li>
+        {% if not resolved.cl %}
+          <li>
+            <a class="btn btn-primary"
+               target="_blank"
+               href="https://www.courtlistener.com/c/{{ series }}/{{ volume_number_slug }}/{{ page_number }}">
+              CourtListener
+            </a>
+          </li>
+        {% endif %}
         <li>
           <a class="btn btn-primary"
              target="_blank"

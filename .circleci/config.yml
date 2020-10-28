@@ -75,7 +75,6 @@ jobs:
           name: "Deploy"
           command: |
             if [[ "$CIRCLE_PULL_REQUEST" == "" && "$CIRCLE_BRANCH" == "develop" ]] ; then
-                docker-compose up -d
                 docker-compose exec web yarn build
                 if [[ `git status static/dist/ webpack-stats.json --porcelain` ]] ; then
                     docker-compose exec web fab update_docker_image_version

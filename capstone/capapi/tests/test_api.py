@@ -139,7 +139,7 @@ def test_authenticated_full_case_blacklisted(auth_user, auth_client, restricted_
 def test_case_detail_pdf(transactional_db, client, auth_client, restricted_case, unrestricted_case, elasticsearch):
     """ Test ?format=pdf on case detail API. """
     content_type = 'application/pdf'
-    case_text = "Page 2"
+    case_text = "REMEMBERED"
     CaseMetadata.objects.update(first_page_order=1, last_page_order=3)
 
     # unauthorized request can't fetch restricted PDF
@@ -159,6 +159,36 @@ def test_case_detail_pdf(transactional_db, client, auth_client, restricted_case,
     # ?format=pdf only works on detail page
     response = auth_client.get(api_reverse("cases-list", args=[unrestricted_case.id]), {"full_case": "true", "format": "pdf"})
     check_response(response, status_code=404)
+
+
+def test_csv(transactional_db, client, auth_client, restricted_case, unrestricted_case, elasticsearch):
+    """ Test ?format=csv on case detail and list API. """
+    content_type = 'text/csv'
+    case_text = "majority"
+
+    # unauthorized request can't fetch restricted CSV
+    response = client.get(api_reverse("cases-detail", args=[restricted_case.id]),
+                          {"full_case": "true", "format": "csv"})
+    check_response(response, content_excludes=case_text, content_type=content_type)
+
+    # authorized request can fetch restricted CSV
+    response = auth_client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"full_case": "true", "format": "csv"})
+    check_response(response, content_includes=case_text, content_type=content_type)
+
+    # both can fetch unrestricted CSV
+    response = client.get(api_reverse("cases-detail", args=[unrestricted_case.id]),
+                          {"full_case": "true", "format": "csv"})
+    check_response(response, content_includes=case_text, content_type=content_type)
+    response = auth_client.get(api_reverse("cases-detail", args=[unrestricted_case.id]),
+                               {"full_case": "true", "format": "csv"})
+    check_response(response, content_includes=case_text, content_type=content_type)
+
+    # ?format=csv works on list page
+    response = auth_client.get(api_reverse("cases-list"), {"full_case": "true", "format": "csv", "page_size": "100"})
+    # each row separated by '\n'
+    response_count = len(response.content.decode().split('\n')) - 1
+    assert response_count == CaseMetadata.objects.count()
+    check_response(response, content_includes=case_text, content_type=content_type)
 
 
 @pytest.mark.django_db

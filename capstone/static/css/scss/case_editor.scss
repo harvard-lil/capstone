@@ -22,51 +22,54 @@ h1 {
 .modal-body {
   z-index: 10002;
 }
-div#app-grid {
-    display: grid;
+
+#app-grid {
+  display: grid;
+  grid-template-areas:
+          "title       title  title       title"
+          "view_controls  view_controls view_controls popups"
+          "ocr         ocr ocr      ocr"
+          "edits_expand         edits_expand edits_expand      edits_expand"
+          "word        edits edits    document_controls";
+
+  grid-template-columns: 30% 1fr 16px 1fr 1fr;
+  grid-template-rows: 48px 64px 1fr 16px 128px;
+  height: 95vh;
+
+  &.showImage {
     grid-template-areas:
-            "title       title  title       title"
-            "view_controls  view_controls view_controls popups"
-            "ocr         ocr ocr      ocr"
-            "edits_expand         edits_expand edits_expand      edits_expand"
-            "word        edits edits    document_controls";
-
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    grid-template-rows: 3rem 4rem auto 1rem auto;
-    height: 95vh;
-}
-
-div#app-grid.showImage {
-    grid-template-areas:
-            "title       title  title       title"
-            "view_controls  view_controls view_controls popups"
-            "ocr         ocr image      image"
-            "edits_expand         edits_expand edits_expand      edits_expand"
-            "word        edits edits    document_controls";
-}
-
-nav#editsExpand {
-  z-index: 5000;
-  grid-area: edits_expand;
-  border: 0;
-  margin: 0;
-  padding: 0;
-  button {
-    width: 100%;
-    background-color: $color-gray;
-    border: 0;
-    margin: 0;
-    padding: 0;
-    height: 1rem;
-    color: $color-light-gray;
-    font-size: 2rem;
-    line-height: 0;
-    font-weight: $font-weight-black;
+            "title       title  title       title title"
+            "view_controls  view_controls view_controls view_controls popups"
+            "ocr         ocr gutter-vertical image      image"
+            "gutter-horizontal gutter-horizontal gutter-horizontal gutter-horizontal gutter-horizontal"
+            "word        edits edits edits    document_controls";
   }
 }
 
-div#app-grid.editsExpand {
-  grid-template-rows: 3rem 4rem 8rem 1rem 1fr;
+.gutter {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background-color: $color-gray;
+  line-height: 0;
+  // center text contents vertically and horizontally:
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gutter-horizontal{
+  grid-area: gutter-horizontal;
+  &:hover {
+    cursor: row-resize;
+  }
+}
+
+.gutter-vertical{
+  grid-area: gutter-vertical;
+  &:hover {
+    cursor: col-resize;
+  }
 }
 
 .opinion-title {
@@ -75,11 +78,10 @@ div#app-grid.editsExpand {
   font-size: $font-size-sm;
   position: sticky;
   top: 0;
-  background: white;
   font-weight: $font-weight-bold;
   color: $color-violet-gray-dark;
   background-color: $color-light-gray;
-  }
+}
 
 
 header#title {
@@ -298,10 +300,6 @@ nav#edits {
 }
 
 
-
-nav#edits.editsExpand {
-  height: 100%;
-}
 nav#document_controls {
   grid-area: document_controls;
   padding-top: .5rem;

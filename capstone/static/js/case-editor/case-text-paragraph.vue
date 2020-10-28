@@ -1,21 +1,31 @@
 <template>
   <div class="paragraph">
     <span class="paragraph-class">{{paragraph.class}}</span>
+    <!-- manually render each word instead of using a reactive component, for speed on large cases -->
     <template v-for="block in paragraphBlocks()"
-      ><Word v-for="word in block.words"
+      ><span v-for="word in block.words"
              :key="word.id"
-             :image="false"
-             :wordId="word.id"
-      ></Word
+             :class="{
+               'word': true,
+               'footnote-mark': word.footnoteMark,
+               'edited': word.string !== word.originalString,
+               [`word-id-${word.id}`]: true,
+             }"
+             :style="{
+               'background-color': word.wordConfidenceColor,
+               font: `${word.font.textStyles} 1em sans-serif`,
+               'font-family': 'inherit',
+             }"
+            :data-id="word.id"
+        >{{ formatWord(word) }}</span
     ></template>
   </div>
 </template>
 
 <script>
-  import Word from './word.vue'
+  import {FAKE_SOFT_HYPHEN} from "static/js/case-editor/helpers";
 
   export default {
-    components: {Word},
     props: ['paragraph'],
     methods: {
       paragraphBlocks() {
@@ -24,6 +34,9 @@
         const blocksById = this.$root.$children[0].blocksById;
         return this.paragraph.block_ids.map(blockId => blocksById[blockId]);
       },
+      formatWord(word) {
+        return word.string.replace(FAKE_SOFT_HYPHEN, '');
+      }
     }
   }
 </script>

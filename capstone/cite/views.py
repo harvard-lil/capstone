@@ -1,9 +1,11 @@
 import re
+import subprocess
 import time
 import json
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import timedelta
+from pathlib import Path
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -164,7 +166,7 @@ def page_image(request, volume_id, sequence_number):
         Return the image for a page to authorized users.
     """
     vol = get_object_or_404(VolumeMetadata, pk=volume_id)
-    return HttpResponse(vol.extract_page_image(int(sequence_number), zoom_level=2.0), content_type="image/png")
+    return HttpResponse(vol.extract_page_images(int(sequence_number))[0], content_type="image/png")
 
 
 @permission_required('capdb.correct_ocr')
@@ -228,15 +230,24 @@ def case_editor(request, case_id):
 
         return HttpResponse('OK')
 
+    # pre-load all images in parallel so we don't have to open the PDF more than once
+    pngs = json.loads(subprocess.run([
+        settings.PYTHON_BINARY,
+        Path(settings.BASE_DIR, "scripts/extract_images.py"),
+        case.volume.pdf_file.path,
+        str(case.first_page_order),
+        str(case.last_page_order),
+    ], capture_output=True, check=True).stdout.decode('utf8'))
+    for page in pages:
+        page.png = pngs[page.order - case.first_page_order]
+
     # serialize values for JS
     case_json = json.dumps(model_to_dict(case, fields=['id'] + metadata_fields))
     pages_json = json.dumps([
         {
-            'id': page.id,
-            'width': page.width,
-            'height': page.height,
+            **model_to_dict(page, ['id', 'width', 'height', 'blocks']),
             "image_url": reverse('page_image', [case.volume.pk, page.order]),
-            "blocks": page.blocks,
+            "png": page.png,
         } for page in pages
     ])
     fonts = CaseFont.fonts_by_id(PageStructure.blocks_by_id(pages))
@@ -301,20 +312,13 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
                 if cap_candidates:
                     resolved_by_source['cap_guess'] = cap_candidates.values()
 
-        # this branch can be removed once ResolveDocument index is populated
-        else:
-            cases = CaseDocument.search().filter("term", citations__normalized_cite=normalized_cite).execute()
-            if len(cases) > 1:
-                for c in cases:
-                    c.name_short = c.name_abbreviation
-                    c.decision_date = c.decision_date_original
-                resolved_by_source = {'cap': cases}
-            elif len(cases) == 1:
-                case = cases[0]
-
         if not case:
             reporter = Reporter.objects.filter(short_name_slug=slugify(series_slug)).first()
-            series = reporter.short_name if reporter else series_slug
+            if reporter:
+                series = reporter.short_name
+                full_cite = f'{volume_number_slug} {series} {page_number}'
+            else:
+                series = series_slug
 
             return render(request, 'cite/citation_failed.html', {
                 "resolved": resolved_by_source,
