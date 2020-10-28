@@ -1,6 +1,9 @@
 import hashlib
 import json
+import pandas
+from flatten_json import flatten
 
+import csv
 from django.conf import settings
 from django.http.response import HttpResponseBase, HttpResponse
 from rest_framework import renderers
@@ -10,7 +13,8 @@ from capweb.helpers import cache_func
 
 class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
     @cache_func(
-        key=lambda self, data, view, request: 'filter-form:'+hashlib.md5((request.get_full_path()).encode('utf8')).hexdigest(),
+        key=lambda self, data, view, request: 'filter-form:' + hashlib.md5(
+            (request.get_full_path()).encode('utf8')).hexdigest(),
         timeout=settings.CACHED_COUNT_TIMEOUT,
     )
     def get_filter_form(self, data, view, request):
@@ -36,8 +40,12 @@ class BrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
                     context['meta_description'] = "The CAPAPI Court Entry for {}".format(parsed_response['name'])
 
                 if context['name'] == "Volume Instance":
-                    context['title'] = "{} v.{} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
-                    context['meta_description'] = "The CAPAPI Volume Entry for {} v. {} ({})".format(parsed_response['reporter'], parsed_response['volume_number'], parsed_response['publication_year'])
+                    context['title'] = "{} v.{} ({})".format(parsed_response['reporter'],
+                                                             parsed_response['volume_number'],
+                                                             parsed_response['publication_year'])
+                    context['meta_description'] = "The CAPAPI Volume Entry for {} v. {} ({})".format(
+                        parsed_response['reporter'], parsed_response['volume_number'],
+                        parsed_response['publication_year'])
 
                 if context['name'] == "Reporter Instance":
                     context['title'] = parsed_response['short_name']
@@ -78,3 +86,18 @@ class PdfRenderer(renderers.BaseRenderer):
         if isinstance(data, HttpResponseBase):
             return data
         return HttpResponse(data, content_type=accepted_media_type)
+
+
+class CSVRenderer(renderers.JSONRenderer):
+    media_type = 'text/csv'
+    format = 'csv'
+
+    def render(self, data, accepted_media_type='text/csv', renderer_context=None):
+        # import pdb; pdb.set_trace()
+        if 'results' in data:
+            json_normalize = pandas.json_normalize(map(lambda x: flatten(x, '.', root_keys_to_ignore={'cites_to'}), data['results']))
+        else:
+            json_normalize = pandas.json_normalize(flatten(data, '.', root_keys_to_ignore={'cites_to'}))
+        json_normalize.replace(to_replace=[r"\\n", "\n"], value=["¶", "¶"], regex=True, inplace=True)
+        csv_string = json_normalize.to_csv(sep="\t", quoting=csv.QUOTE_NONE, doublequote=False, index=False, escapechar="\\")
+        return HttpResponse(csv_string, content_type=accepted_media_type)

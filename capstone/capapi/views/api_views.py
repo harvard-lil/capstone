@@ -169,7 +169,6 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
     def filter_queryset(self, queryset):
         queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
-
         # exclude all values from casebody_data that we don't need to complete the request
         if self.is_full_case_request():
             data_formats_to_exclude = ["text", "html", "xml"]
@@ -188,9 +187,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
     def get_renderers(self):
         if self.action == 'retrieve':
-            return [renderers.JSONRenderer(), capapi_renderers.PdfRenderer(), capapi_renderers.BrowsableAPIRenderer()]
+            return [renderers.JSONRenderer(), capapi_renderers.PdfRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.CSVRenderer()]
         else:
-            return [renderers.JSONRenderer(), capapi_renderers.BrowsableAPIRenderer()]
+            return [renderers.JSONRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.CSVRenderer()]
 
     def retrieve(self, request, *args, **kwargs):
         # for user's convenience, if user gets /cases/casecitation or /cases/Case Citation (or any non-numeric value)
