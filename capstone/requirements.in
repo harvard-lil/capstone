@@ -106,3 +106,6 @@ reporters_db
 
 # Citation pagerank
 networkx
+
+# pinned for now
+cryptography>=3.2  # Required-by: sshpubkeys, paramiko, moto
