@@ -1,141 +1,138 @@
 <template>
 
   <form @submit.prevent="$emit('new-search', fields, endpoint)" class="row">
-    <div class="col-md-3">
-      <h1 class="page-title">
-        <img alt=""
-             aria-hidden="true"
-             :src='`${urls.static}img/arrows/violet-arrow-right.svg`'
+    <div class="col-md-2 empty-push-div"></div>
+    <div class="col-md-10 title-container">
+      <h3 class="page-title">
+        <img alt="" aria-hidden="true" src="{% static 'img/arrows/violet-arrow-right.svg' %}"
              class="decorative-arrow"/>
-        Find
-      </h1>
+        Search
+      </h3>
     </div>
-    <div class="col-md-9">
-      <div class="row">
-        <div class="col-lg-7">
-
-          <searchroutes :endpoint="endpoint" :endpoints="endpoints">
-          </searchroutes>
-          <br/>
-          <!-- Table showing search fields. Also includes add field and search buttons. -->
-          <div v-if="search_error"
-               role="alert"
-               class="alert alert-danger">
-            <p>{{search_error}}</p>
-            <h2 id="form-errors-heading" tabindex="-1" class="sr-only">{{search_error}}</h2>
+    <div class="row">
+      <div class="col-md-2"></div>
+      <div class="col-lg-7">
+        <searchroutes :endpoint="endpoint" :endpoints="endpoints">
+        </searchroutes>
+        <br/>
+        <!-- Table showing search fields. Also includes add field and search buttons. -->
+        <div v-if="search_error"
+             role="alert"
+             class="alert alert-danger">
+          <p>{{search_error}}</p>
+          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">{{search_error}}</h2>
+        </div>
+        <div v-if="Object.keys(field_errors).length"
+             role="alert"
+             class="alert alert-danger">
+          <!--<p>Please correct the following <strong>2 error(s)</strong>: </p>-->
+          <p>Please correct the following {{ Object.keys(field_errors).length }} error(s):</p>
+          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
+            Please correct the following {{Object.keys(field_errors).length}} error(s)</h2>
+          <ul class="bullets">
+            <li v-for="(error, name) in field_errors"
+                :key="'error' + name">
+              <a :href="'#'+name">{{getFieldByName(name).label}}:</a> {{error}}
+            </li>
+          </ul>
+        </div>
+        <div class="row field-row"
+             v-for="field in fields" :key="field.name"
+             v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }"
+             @mouseover="highlightExplainer"
+             @mouseout="unhighlightExplainer">
+          <div class="col-4 field_label_container">
+            <label class="querylabel" :for="field['name']">
+              {{ field["label"] }}
+            </label>
           </div>
-          <div v-if="Object.keys(field_errors).length"
-               role="alert"
-               class="alert alert-danger">
-            <!--<p>Please correct the following <strong>2 error(s)</strong>: </p>-->
-            <p>Please correct the following {{ Object.keys(field_errors).length }} error(s):</p>
-            <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
-              Please correct the following {{Object.keys(field_errors).length}} error(s)</h2>
-            <ul class="bullets">
-              <li v-for="(error, name) in field_errors"
-                  :key="'error' + name">
-                <a :href="'#'+name">{{getFieldByName(name).label}}:</a> {{error}}
-              </li>
-            </ul>
+          <div class="col-7">
+            <template v-if="field['choices']">
+              <select v-model='field["value"]'
+                      :id='field["name"]'
+                      @change="valueUpdated"
+                      @focus="highlightExplainer"
+                      @blur="unhighlightExplainer">
+                <option v-for="choice in choices[field['choices']]"
+                        :value="choice[0]" v-bind:key="choice[1]">
+                  {{choice[1]}}
+                </option>
+              </select>
+            </template>
+            <template v-else>
+              <input v-model='field["value"]'
+                     :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '']"
+                     type="text"
+                     :id='field["name"]'
+                     :placeholder='field["format"] || false'
+                     v-on:keyup="valueUpdated"
+                     @focus="highlightExplainer"
+                     @blur="unhighlightExplainer">
+            </template>
+            <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{field.info}}
+            </small>
+            <div v-if="field_errors[field.name]" class="invalid-feedback">
+              {{ field_errors[field.name] }}
+            </div>
           </div>
-          <div class="row field-row"
-               v-for="field in fields" :key="field.name"
-               v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }"
-               @mouseover="highlightExplainer"
-               @mouseout="unhighlightExplainer">
-            <div class="col-4 field_label_container">
-              <label class="querylabel" :for="field['name']">
-                {{ field["label"] }}
-              </label>
+          <div class="col-1">
+            <button type="button"
+                    :class="[fields.length <= 1 ? 'disabled' : 'active', 'field-button']"
+                    :disabled="fields.length <= 1"
+                    @click="removeField(field.name)">
+            </button>
+          </div>
+        </div>
+        <!--Buttons row-->
+        <div class="row">
+          <div class="col-3"></div>
+          <div class="col-8">
+            <div class="submit-button-group">
+              <loading-button :showLoading="showLoading">Search</loading-button>
             </div>
-            <div class="col-7">
-              <template v-if="field['choices']">
-                <select v-model='field["value"]'
-                        :id='field["name"]'
-                        @change="valueUpdated"
-                        @focus="highlightExplainer"
-                        @blur="unhighlightExplainer">
-                  <option v-for="choice in choices[field['choices']]"
-                          :value="choice[0]" v-bind:key="choice[1]">
-                    {{choice[1]}}
-                  </option>
-                </select>
-              </template>
-              <template v-else>
-                <input v-model='field["value"]'
-                       :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '']"
-                       type="text"
-                       :id='field["name"]'
-                       :placeholder='field["format"] || false'
-                       v-on:keyup="valueUpdated"
-                       @focus="highlightExplainer"
-                       @blur="unhighlightExplainer">
-              </template>
-              <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{field.info}}
-              </small>
-              <div v-if="field_errors[field.name]" class="invalid-feedback">
-                {{ field_errors[field.name] }}
-              </div>
-            </div>
-            <div class="col-1">
-              <button type="button"
-                      :class="[fields.length <= 1 ? 'disabled' : 'active', 'field-button']"
-                      :disabled="fields.length <= 1"
-                      @click="removeField(field.name)">
+            <div v-if="fields.length > 0" class="dropdown addfield">
+              <button class="dropdown-toggle add-field-button btn-secondary"
+                      type="button"
+                      id="dropdownMenuButton"
+                      data-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false">
+                Add Field&nbsp;
               </button>
-            </div>
-          </div>
-          <!--Buttons row-->
-          <div class="row">
-            <div class="col-3"></div>
-            <div class="col-8">
-              <div class="submit-button-group">
-                <loading-button :showLoading="showLoading">Search</loading-button>
-              </div>
-              <div v-if="fields.length > 0" class="dropdown addfield">
-                <button class="dropdown-toggle add-field-button btn-secondary"
-                        type="button"
-                        id="dropdownMenuButton"
-                        data-toggle="dropdown"
-                        aria-haspopup="true"
-                        aria-expanded="false">
-                  Add Field&nbsp;
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <button class="dropdown-item" type="button"
+                        v-for="newfield in availableFields()" :key="newfield.name"
+                        @click="addField(newfield)">
+                  {{ newfield.label }}
                 </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <button class="dropdown-item" type="button"
-                          v-for="newfield in availableFields()" :key="newfield.name"
-                          @click="addField(newfield)">
-                    {{ newfield.label }}
-                  </button>
-                </div>
-              </div>
-
-            </div>
-            <div class="col-1"></div>
-          </div>
-          <div class="row">
-            <div class="col-3"></div>
-            <div class="col-8">
-              <div class="submit-button-group">
-                <button id="query-explainer-button" class="mt-0" @click="toggleExplainer"
-                        v-if="show_explainer === true">HIDE API CALL
-                </button>
-                <button id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</button>
               </div>
             </div>
-            <div class="col-1"></div>
-          </div>
 
+          </div>
+          <div class="col-1"></div>
         </div>
-        <div class="col-lg-5 search-disclaimer">
-          <p>
-            Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
-          </p>
-          <p>
-            <span class="bold">Need legal advice?</span> This is not your best option! Read about
-            <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
-          </p>
+        <div class="row">
+          <div class="col-3"></div>
+          <div class="col-8">
+            <div class="submit-button-group">
+              <button id="query-explainer-button" class="mt-0" @click="toggleExplainer"
+                      v-if="show_explainer === true">HIDE API CALL
+              </button>
+              <button id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</button>
+            </div>
+          </div>
+          <div class="col-1"></div>
         </div>
+
+      </div>
+      <div class="col-lg-3 search-disclaimer">
+        <p>
+          Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
+        </p>
+        <p>
+          <span class="bold">Need legal advice?</span> This is not your best option! Read about
+          <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
+        </p>
       </div>
     </div>
     <div class="col-9 offset-3 query-explainer" v-show="show_explainer">
