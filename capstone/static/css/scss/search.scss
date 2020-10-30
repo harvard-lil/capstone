@@ -22,16 +22,21 @@
 }
 
 //*** head matter
-
+form {
+  @include media-breakpoint-down(md) {
+    .empty-push-div {
+      display: none;
+    }
+  }
+}
 .page-title {
-  @extend h2;
-  @include media-breakpoint-up(md) {
-    text-align: right;
-    margin-right: .2em;
-
-    // janky stuff to vertically align "Find" label with dropdown
-    position: relative;
-    top: -8px;
+  @extend h3;
+  font-weight: $font-weight-bold;
+  margin-left: 0;
+  top: -8px;
+  position: relative;
+  @include media-breakpoint-up(lg) {
+    margin-left: -0.4em;
   }
 }
 
@@ -44,7 +49,7 @@
     @extend h6;
     min-width: 100%;
     display: inline-block;
-    color: $color-violet;
+    color: $color-medium-blue;
     font-family: $font-sans-title;
     font-weight: 400;
     background-color: rgba(220, 220, 220, 0.35);
@@ -66,7 +71,6 @@
   > .dropdown-menu {
     padding: 0;
     border-radius: 0;
-    border: 1px solid $color-violet-gray;
     width: 100%;
     .dropdown-item {
       color: $color-black;
@@ -213,8 +217,6 @@ select {
       display: inline-block;
     }
     &:active, &:hover, &:focus {
-      background-color: $color-violet;
-      color: $color-white;
       &:after {
         content: url("../../img/plus_sign_violet.svg");
         display: inline-block;
@@ -327,6 +329,10 @@ select {
 
 .queryfield_highlighted {
   @extend .highlight-parameter;
+}
+
+.queryfield {
+  margin-left: 0.3em;
 }
 
 .querylabel_highlighted {
