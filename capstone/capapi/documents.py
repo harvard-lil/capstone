@@ -23,7 +23,7 @@ cases_index = get_index("cases_endpoint")
 resolve_index = get_index("resolve_endpoint")
 
 
-def SuggestField():
+def SuggestField(**kwargs):
     """
         Query 'foo' to get the TextField, or 'foo.raw' to get the KeywordField, or 'foo.suggest' to get the CompletionField.
     """
@@ -31,7 +31,8 @@ def SuggestField():
         fields={
             'raw': fields.KeywordField(),
             'suggest': fields.CompletionField(),
-        }
+        },
+        **kwargs
     )
 
 
@@ -51,8 +52,8 @@ class RawSearch(Search):
 class CaseDocument(Document):
     # IMPORTANT: If you change what values are indexed here, also change the "CaseLastUpdate triggers"
     # section in set_up_postgres.py to keep Elasticsearch updated.
-    name_abbreviation = SuggestField()
-    name = fields.TextField(index_phrases=True)
+    name_abbreviation = SuggestField(analyzer='english')
+    name = fields.TextField(index_phrases=True, analyzer='english')
     frontend_url = fields.KeywordField()
     frontend_pdf_url = fields.KeywordField()
     last_page = fields.KeywordField()
@@ -110,10 +111,10 @@ class CaseDocument(Document):
             'attorneys': fields.TextField(multi=True),
             'judges': fields.TextField(multi=True),
             'parties': fields.TextField(multi=True),
-            'head_matter': fields.TextField(index_phrases=True),
+            'head_matter': fields.TextField(index_phrases=True, analyzer='english'),
             'opinions': fields.ObjectField(multi=True, properties={
                 'author': fields.KeywordField(),
-                'text': fields.TextField(index_phrases=True),
+                'text': fields.TextField(index_phrases=True, analyzer='english'),
                 'type': fields.KeywordField(),
             }),
             'corrections': fields.TextField(),

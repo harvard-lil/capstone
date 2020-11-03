@@ -272,7 +272,6 @@ class MultiFieldFTSFilter(BaseFTSFilter):
         'casebody_data.text.head_matter',
         'casebody_data.text.opinions.author',
         'casebody_data.text.opinions.text',
-        'casebody_data.text.opinions.type',
         'casebody_data.text.corrections',
         'docket_number',
     )
