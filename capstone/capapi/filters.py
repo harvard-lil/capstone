@@ -1,13 +1,13 @@
 from functools import lru_cache
-import rest_framework_filters as filters
 
 from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
     OrderingFilterBackend
+from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
 from elasticsearch.exceptions import NotFoundError
 from rest_framework.exceptions import ValidationError
-from rest_framework_filters.backends import RestFrameworkFilterBackend
+
 from capapi.documents import CaseDocument
 from capdb import models
 from capdb.models import normalize_cite
@@ -40,7 +40,7 @@ class NoopMixin():
 
 ### FILTERS ###
 
-class JurisdictionFilter(filters.FilterSet):
+class JurisdictionFilter(FilterSet):
     whitelisted = filters.BooleanFilter()
     slug = filters.ChoiceFilter(choices=jur_choices, label='Name')
     name_long = filters.CharFilter(label='Long Name')
@@ -56,7 +56,7 @@ class JurisdictionFilter(filters.FilterSet):
         ]
 
 
-class ReporterFilter(filters.FilterSet):
+class ReporterFilter(FilterSet):
     jurisdictions = filters.MultipleChoiceFilter(
         field_name='jurisdictions__slug',
         choices=jur_choices)
@@ -74,7 +74,7 @@ class ReporterFilter(filters.FilterSet):
         ]
 
 
-class VolumeFilter(filters.FilterSet):
+class VolumeFilter(FilterSet):
     jurisdictions = filters.MultipleChoiceFilter(
         label='Jurisdiction',
         field_name='reporter__jurisdictions__slug',
@@ -97,7 +97,7 @@ class VolumeFilter(filters.FilterSet):
         ]
 
 
-class CourtFilter(filters.FilterSet):
+class CourtFilter(FilterSet):
     jurisdiction = filters.ChoiceFilter(
         field_name='jurisdiction__slug',
         choices=jur_choices)
@@ -114,7 +114,7 @@ class CourtFilter(filters.FilterSet):
         ]
 
 
-class CaseExportFilter(NoopMixin, filters.FilterSet):
+class CaseExportFilter(NoopMixin, FilterSet):
     with_old = filters.ChoiceFilter(
         field_name='with_old',
         label='Include previous versions of files?',
@@ -131,7 +131,7 @@ class CaseExportFilter(NoopMixin, filters.FilterSet):
         }
 
 
-class NgramFilter(filters.FilterSet):
+class NgramFilter(FilterSet):
     q = filters.CharFilter(
         label='Words',
         help_text='Up to three words separated by spaces',
@@ -148,7 +148,7 @@ class NgramFilter(filters.FilterSet):
         fields = ['q', 'jurisdiction', 'year']
 
 
-class UserHistoryFilter(filters.FilterSet):
+class UserHistoryFilter(FilterSet):
     case_id = filters.NumberFilter()
     date = filters.DateTimeFromToRangeFilter()
 
@@ -157,7 +157,7 @@ class UserHistoryFilter(filters.FilterSet):
         fields = ['case_id', 'date']
 
 
-class CaseFilter(filters.FilterSet):
+class CaseFilter(FilterSet):
     """
         Used for HTML display and validation, but not actual filtering.
         Rendered by CaseFilterBackend, which applies filters to the ES query.
@@ -206,10 +206,10 @@ class CaseFilter(filters.FilterSet):
         fields = []
 
 
-class CaseFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
+class CaseFilterBackend(FilteringFilterBackend, DjangoFilterBackend):
     def filter_queryset(self, request, queryset, view):
         """
-            Apply form validation from RestFrameworkFilterBackend.filter_queryset(), which uses the fields
+            Apply form validation from DjangoFilterBackend.filter_queryset(), which uses the fields
              defined on CaseFilter, before applying actual filters from FilteringFilterBackend.
         """
         filterset = self.get_filterset(request, None, view)
@@ -305,7 +305,7 @@ class CAPOrderingFilterBackend(OrderingFilterBackend):
             ordering_fields)
 
 
-class ResolveFilter(filters.FilterSet):
+class ResolveFilter(FilterSet):
     """
         Used for HTML display and validation, but not actual filtering.
         Rendered by ResolveFilterBackend, which applies filters to the ES query.
@@ -317,10 +317,10 @@ class ResolveFilter(filters.FilterSet):
         fields = []
 
 
-class ResolveFilterBackend(FilteringFilterBackend, RestFrameworkFilterBackend):
+class ResolveFilterBackend(FilteringFilterBackend, DjangoFilterBackend):
     def filter_queryset(self, request, queryset, view):
         """
-            Apply form validation from RestFrameworkFilterBackend.filter_queryset(), which uses the fields
+            Apply form validation from DjangoFilterBackend.filter_queryset(), which uses the fields
              defined on ResolveFilter, before applying actual filters from FilteringFilterBackend.
         """
         filterset = self.get_filterset(request, None, view)
