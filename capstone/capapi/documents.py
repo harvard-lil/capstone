@@ -36,6 +36,15 @@ def SuggestField(**kwargs):
     )
 
 
+def FTSField(**kwargs):
+    """
+        index_phrases: optimize for "quoted searches"
+        analyzer: tokenize based on English text
+        index_options='offsets': allow for highlighting of long documents without increasing max_analyzed_offset
+    """
+    return fields.TextField(index_phrases=True, analyzer='english', index_options='offsets', **kwargs)
+
+
 class RawSearch(Search):
     """
         Subclass of ElasticSearch DSL's Search object that returns raw dicts from ES, rather than wrapping in an object.
@@ -111,10 +120,10 @@ class CaseDocument(Document):
             'attorneys': fields.TextField(multi=True),
             'judges': fields.TextField(multi=True),
             'parties': fields.TextField(multi=True),
-            'head_matter': fields.TextField(index_phrases=True, analyzer='english'),
+            'head_matter': FTSField(),
             'opinions': fields.ObjectField(multi=True, properties={
                 'author': fields.KeywordField(),
-                'text': fields.TextField(index_phrases=True, analyzer='english'),
+                'text': FTSField(),
                 'type': fields.KeywordField(),
             }),
             'corrections': fields.TextField(),
