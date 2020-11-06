@@ -112,5 +112,5 @@ To load the compressed data file into an R data frame, do something like this:
 # Other repositories {: class="subtitle" }
 
 You can also explore our Illinois Public Bulk Data on 
-[Harvard Dataverse](https://dataverse.harvard.edu/dataverse/caselawaccess"){: target="_blank } and 
+[Harvard Dataverse](https://dataverse.harvard.edu/dataverse/caselawaccess){: target="_blank } and 
 [Kaggle](https://www.kaggle.com/harvardlil/caselaw-dataset-illinois){: target="_blank" }.

@@ -10,9 +10,10 @@ mailchimp3          # for signing people up for lawvocado when they register
 natsort             # good natural sorting library for things like page numbers where the data gets messy
 geoip2              # local IP geolocation
 numpy               # simhash calculation
+requests
 
 # celery
-celery[redis,sqs]       # task queue
+celery[redis,sqs]   # task queue
 pycurl              # let celery talk to SQS queue
 flower              # monitoring
 watchdog            # restart celery in dev (via 'watchmedo' command)
@@ -21,8 +22,7 @@ argh                # needed by watchdog
 # xml
 lxml
 xmltodict
-#pyquery
-https://github.com/gawel/pyquery/archive/2351446c56d5c3df93e3fd81a2b828cf00e3b648.zip#egg=pyquery  # Can be dropped on release of 1.4.1 (https://github.com/gawel/pyquery/pull/183)
+pyquery
 
 # database
 psycopg2            # postgres connector
@@ -36,22 +36,25 @@ msgpack             # for storing data in KV store
 django
 django-storages
 whitenoise             # serve static assets
-https://github.com/jcushman/django-model-utils/archive/f2e97e41418788c81ee8e5ab1cec37ecff65a003.zip#egg=django-model-utils  # PR: https://github.com/jazzband/django-model-utils/pull/369
-#django-simple-history  # model versioning
-https://github.com/jcushman/django-simple-history/archive/fbce3c40c1c5b3e3c0c905bcb1ca56976b227798.zip#egg=django-simple-history  # PR: https://github.com/treyhunner/django-simple-history/pull/625
+django-model-utils
+django-simple-history  # model versioning
 django-redis           # use redis as Django cache backend
 django-hosts           # URL routing across subdomains
 django-webpack-loader  # include assets from webpack
 django-capture-tag     # capture values in templates
 django-db-file-storage # use db to store FileField files
+django-bootstrap4      # render bootstrap forms in django templates
+django-extensions
+django-pipeline
 
 # Admin stuff
 pip-tools
 Fabric3             # project automation
+ipython             # better shell for ./manage.py shell_plus
 
 # Testing
 pytest
-pytest-django      # testing
+pytest-django
 pytest-xdist       # run tests in parallel with pytest -n
 pytest-cov         # record code coverage
 pytest-redis       # redisdb fixture
@@ -62,21 +65,19 @@ bagit              # validate BagIt bag
 flaky              # retry flaky tests
 retry              # re-run blocks of code until the ES index updates, but fail if they don't end up working
 pathlib2           # to keep --require-hashes happy; from pytest
+beautifulsoup4
 
 # SCSS
 libsasscompiler     # for compiling scss in pipeline
 
 # API
-beautifulsoup4
-django-extensions
-django-libsass
-django-pipeline
-djangorestframework-filters==1.0.0.dev0 # Remove pinned version on next release (https://github.com/harvard-lil/capstone/issues/745)
 djangorestframework
-django-bootstrap4   # render bootstrap forms in django templates
-drf-yasg            # expose API specification
+django-filter           # API filters
+drf-yasg                # expose API specification
 swagger_spec_validator  # optional package for schema validation by drf-yasg
 https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.zip#egg=email-normalize  # Fix issues related to https://github.com/gmr/email-normalize/pull/3 (https://github.com/harvard-lil/capstone/issues/745)
+pandas                  # json-to-csv export
+flatten_json            # json-to-csv export
 
 # File conversion
 PyPDF2
@@ -86,26 +87,16 @@ Pillow
 diff-match-patch
 Markdown
 PyMuPDF
-pandas
-flatten_json
 
 # maintenance page
 webpage2html # save target page as string
 mincss       # remove unused css styles
-
-# capapi.tasks and capweb.helpers use requests
-requests  # also via aws-xray-sdk, coreapi, docker, moto, response
 
 # Elasticsearch
 elasticsearch-dsl
 django-elasticsearch-dsl
 django-elasticsearch-dsl-drf
 
-# Citation extraction
+# citation extraction
 reporters_db
-
-# Citation pagerank
 networkx
-
-# pinned for now
-cryptography>=3.2  # Required-by: sshpubkeys, paramiko, moto
