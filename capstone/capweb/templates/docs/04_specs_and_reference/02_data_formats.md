@@ -1,19 +1,15 @@
-{% load pipeline %}
-{% load api_url %}
+{% load docs_url %}{% load api_url %}
 title: Data Specifications
-page_image: img/og_image/docs.png
-meta_description: Caselaw Access Project Data Specifications
 
 # Bulk
-[Bulk User Guide]({% url 'docs' 'user_guides/bulk' %})
+[Bulk User Guide]({% docs_url 'bulk' %})
 
 ## Structure
 Bulk data files are provided as zipped directories. Each directory is in
 [BagIt format](https://en.wikipedia.org/wiki/BagIt), with a layout like this:
 
 * `Illinois-20180829-text/`
-{: add_list_class="bullets" }
-    1. `bag-info.txt`
+1. `bag-info.txt`
     2. `bagit.txt`
     3. `manifest-sha512.txt`
 * `data/`
@@ -22,18 +18,18 @@ Bulk data files are provided as zipped directories. Each directory is in
 ## Data Format    
 Caselaw data is stored within the `data/data.jsonl.xz` file. The `.jsonl.xz` suffix
 indicates that the file is compressed with xzip, and is a text file where each line represents a JSON object.
+Each line of the JSON file is an object retried from the API.
 
 
 # API
 
 API queries always return JSON. Here's what they look like. For more details on queries, check out the
-[API Reference]({% url 'docs' 'specs_and_reference/api_reference' %}) and 
-[API User Guide]({% url 'docs' 'specs_and_reference/api_reference' %})
+[API Reference]({% docs_url 'api' %}).
 
 ## Individual Records
 
 If you specify an individual record (reachable through the "url" value present in most types of records) then you'll
-recieve a single JSON object as formatted below.
+receive a single JSON object as formatted below.
 
 ## Query Results
 
@@ -112,7 +108,6 @@ Text Format (default)
 {: class="topic-header" }
 
 [{% api_url "cases-list" %}?jurisdiction=ill&full_case=true]({% api_url "cases-list" %}?jurisdiction=ill&full_case=true)
-{: class="example-link mt-0" }
 
 The default text format is best for natural language processing. Example response data:
 
@@ -143,7 +138,6 @@ XML Format
 {: class="topic-header" }
 
 [{% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=xml]({% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=xml)
-{: class="example-link mt-0" }
 
 The XML format is best if your analysis requires more information about pagination, formatting, or page layout. It 
 contains a superset of the information available from body_format=text, but requires parsing XML data. Example 
@@ -155,7 +149,6 @@ HTML Format
 {: class="topic-header" }
 
 [{% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=html]({% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=html)
-{: class="example-link mt-0" }
 
 The HTML format is best if you want to show readable, formatted caselaw to humans. It represents a best-effort attempt 
 to transform our XML-formatted data to semantic HTML ready for CSS formatting of your choice. Example response data:

@@ -14,7 +14,7 @@ from test_data.test_fixtures.fixtures import CapClient
 
 @pytest.mark.django_db
 def test_docs(client, elasticsearch, three_cases):
-    response = client.get(reverse('docs', args=['tutorials/api_tutorial']))
+    response = client.get(reverse('docs', args=['site_features/registration']))
     check_response(response)
 
 @pytest.mark.django_db

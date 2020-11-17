@@ -1,11 +1,8 @@
-{% load pipeline %}
 {% load api_url %}
-title: Bulk data documentation
-meta_description: Caselaw Access Project bulk data documentation
-page_image: img/og_image/docs.png
+title: Bulk Data
 explainer: Our <a href="{% url "download-files" "bulk_exports/" %}">bulk data files</a> contain the same information that is available via <a href="{% url "api" %}">our API</a>, but are much faster to download if you want to interact with a large number of cases. Each file contains all of the cases from a single jurisdiction or reporter. <br/> <a class="btn btn-primary" href="{% url "download-files" "bulk_exports/" %}">Access data</a>
 
-# Access Limits {: class="subtitle" }
+# Access Limits
 
 All metadata files, and bulk data files for our open jurisdictions, are 
 [available to everyone]({% url "download-files" "bulk_exports/" %}) without a login.
@@ -17,22 +14,22 @@ can request a research agreement by [creating an account]({% url "register" %}")
 See our [About page]({% url "about" %}#usage) for details on our data access restrictions.
 
 
-# Downloading {: class="subtitle" }
+# Downloading
 
 You can [download bulk data]({% url "download-files" "bulk_exports/" %}) manually from our website, or
-use the [manifest.json]({% url "download-files" "manifest.json" %}) or [manifest.csv]({% url "download-files" "manifest.csv" %})
-files to select URLs to download programmatically.
+use the [manifest.csv]({% url "download-files" "manifest.csv" %})
+file to select URLs to download programmatically.
 
 When downloading bulk files, you may find that the download times out on the largest files.
 In that case use `wget`, which retries when it encounters a network problem. Here's an example for the
 U.S. file with case body in text format:
 
-<pre class="code-block">wget --header="Authorization: Token your-api-token" "{% url "download-files" "bulk_exports/latest/by_jurisdiction/case_text_restricted/us_text.zip" %}"</pre>
+    wget --header="Authorization: Token your-api-token" "{% url "download-files" "bulk_exports/latest/by_jurisdiction/case_text_restricted/us_text.zip" %}"
 
 Because this is a restricted file it requires an Authorization header.
 Replace `your-api-token` with your API token from the [user details]({% url "user-details" %}) page.
 
-# API Equivalence {: class="subtitle" }
+# API Equivalence
 
 Each file that we offer for download is equivalent to a particular query to our API. For example, the file
 "ill_text.zip" contains all cases that would be returned by
@@ -45,14 +42,13 @@ The JSON objects returned by the API and in bulk files differ only in that bulk 
 `"url"` fields, which can be reconstructed from object IDs.
 
 
-# Data Format {: class="subtitle" }
+# Data Format
 
 Bulk data files are provided as zipped directories. Each directory is in
 [BagIt format](https://en.wikipedia.org/wiki/BagIt), with a layout like this:
 
 * `Illinois-20180829-text/`
-{: add_list_class="bullets" }
-    1. `bag-info.txt`
+1. `bag-info.txt`
     2. `bagit.txt`
     3. `manifest-sha512.txt`
 * `data/`
@@ -65,51 +61,45 @@ Caselaw data is stored within the `data/data.jsonl.xz` file. The `.jsonl.xz` suf
 indicates that the file is compressed with xzip, and is a text file where each line represents a JSON object.
 
 
-# Using Bulk Data {: class="subtitle" }
+# Using Bulk Data
 
 The `data.jsonl.xz` file can be unzipped using third-party GUI programs like
 [The Unarchiver](https://theunarchiver.com/) (Mac) or
 [7-zip](https://www.7-zip.org/) (Windows), or from the command line with a command like
 `unxz -k data/data.jsonl.xz`.
 
-
 However, this increases the disk space needed by about 500%, and in most cases is unnecessary. Instead
 we recommend interacting directly with the compressed files.
 
-
 To read the file from the command line, run:
 
-<pre class="code-block">xzcat data/data.jsonl.xz | less</pre>
+    xzcat data/data.jsonl.xz | less
 
 If you install [jq](https://stedolan.github.io/jq/download/) you can get nicely formatted output ...
 
-`xzcat data/data.jsonl.xz | jq | less`{: class="code-block" }
+    xzcat data/data.jsonl.xz | jq | less
 
 ... or run more sophisticated queries. For example, to extract the name of each case:
 
-<pre class="code-block">xzcat data/data.jsonl.xz | jq .name | less</pre>
+    xzcat data/data.jsonl.xz | jq .name | less
 
 You can also interact directly with the compressed files from code. The following example prints
 the name of each case using Python:
 
-<pre class="code-block">
-import lzma, json
-with lzma.open("data/data.jsonl.xz") as in_file:
-    for line in in_file:
-        case = json.loads(str(line, 'utf8'))
-        print(case['name'])
-</pre>
+    import lzma, json
+    with lzma.open("data/data.jsonl.xz") as in_file:
+        for line in in_file:
+            case = json.loads(str(line, 'utf8'))
+            print(case['name'])
 
 To load the compressed data file into an R data frame, do something like this:
 
-<pre class="code-block">
-> install.packages("jsonlite")
-> library(jsonlite)
-> ark <- stream_in(xzfile("Arkansas-20190416-text/data/data.jsonl.xz"))
-</pre>
+    > install.packages("jsonlite")
+    > library(jsonlite)
+    > ark <- stream_in(xzfile("Arkansas-20190416-text/data/data.jsonl.xz"))
 
-# Other repositories {: class="subtitle" }
+# Other repositories
 
 You can also explore our Illinois Public Bulk Data on 
-[Harvard Dataverse](https://dataverse.harvard.edu/dataverse/caselawaccess){: target="_blank } and 
-[Kaggle](https://www.kaggle.com/harvardlil/caselaw-dataset-illinois){: target="_blank" }.
+[Harvard Dataverse](https://dataverse.harvard.edu/dataverse/caselawaccess) and 
+[Kaggle](https://www.kaggle.com/harvardlil/caselaw-dataset-illinois).
