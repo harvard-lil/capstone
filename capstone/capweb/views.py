@@ -60,24 +60,25 @@ def index(request):
         'page_image': 'img/og_image/index.png',
     })
 
+
 def docs(request, req_doc_path):
     """
         Gets a list of MD documents and their file structure from the docs_path directory and creates the docs nav
         structure from it. Serves up a specific doc or the default docs entry page.
     """
-    if not req_doc_path:
-        req_doc_path = "index"
     toc_by_url = get_toc_by_url()
-    page = toc_by_url.get(req_doc_path)
-    if not page or 'content' not in page:
+    page = toc_by_url.get(req_doc_path.rstrip('/'))
+    if not page:
         raise Http404
     return render(request, 'docs.html', {
         'content': page['content'],
-        'toc': toc_by_url['.']['children'],
+        'toc': toc_by_url['']['children'],
         'page_image': 'img/og_image/documentation.png',
         'req_doc_path': req_doc_path,
-        'breadcrumb': page['breadcrumb'],
-        'meta': page['meta']
+        'parents': page['parents'],
+        # this can be overridden by meta_description: in an individual doc page:
+        'meta_description': f'Caselaw Access Project: {page["meta"]["title"]} Documentation',
+        **page['meta'],
     })
 
 
