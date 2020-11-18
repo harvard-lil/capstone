@@ -1,7 +1,7 @@
 {% load docs_url %}
 title: Documentation
 meta_description: Caselaw Access Project Documentation
-explainer: Some documenation locations have changed. For help, <a href="{% url 'contact' %}">reach out</a>.
+explainer: Some documentation locations have changed. For help, <a href="{% url 'contact' %}">reach out</a>.
 
 # Welcome!
 Welcome to the Caselaw Access Project Documentation. Here you'll find some documentation about our project, organization, 
