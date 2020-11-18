@@ -14,9 +14,8 @@ from test_data.test_fixtures.fixtures import CapClient
 
 @pytest.mark.django_db
 def test_docs(client, elasticsearch, three_cases):
-    response = client.get(reverse('docs', args=['web/search']))
+    response = client.get(reverse('docs', args=['site_features/registration']))
     check_response(response)
-
 
 @pytest.mark.django_db
 def test_docs_default(client, elasticsearch, three_cases):
@@ -26,7 +25,7 @@ def test_docs_default(client, elasticsearch, three_cases):
 
 @pytest.mark.django_db
 def test_legacy_redirect(client):
-    response = client.get(reverse('about'))
+    response = client.get(reverse('api'))
     check_response(response, 302)
     assert "/docs/" in response.url
 

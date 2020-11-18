@@ -1,12 +1,7 @@
-{% load static %}
-{% load pipeline %}
-{% load api_url %}
+{% load docs_url %}{% load api_url %}
 title: Changelog
-page_image: img/og_image/tools.png
-meta_description: CAP Data/Feature Change Log
+meta_description: Caselaw Access Project changelog
 explainer: If our data or user-facing research features change in significant ways&mdash;beyond bug fixes and minor changes&mdash;we'll record those changes here.
-top_section_style: bg-black
-row_style: bg-tan
 
 # August 28 2020 {: class="changelog-head"  }
 
@@ -285,5 +280,5 @@ row_style: bg-tan
 **API:**
 {: class="changelog-subhead"  }
 
-* Added the [ngrams]({% api_url "ngrams-list" %}) endpoint. Here are the [docs]({% url 'api' %}#endpoint-ngrams).
+* Added the [ngrams]({% api_url "ngrams-list" %}) endpoint. Here are the [docs]({% docs_url 'api' %}#endpoint-ngrams).
 {: add_list_class="changelog-list" }

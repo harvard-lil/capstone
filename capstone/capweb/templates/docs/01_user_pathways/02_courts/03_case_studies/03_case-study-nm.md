@@ -1,7 +1,5 @@
-{% load static %}
 title: Case study: New Mexico 
 meta_description: Case study on New Mexico's open access caselaw publishing platform
-page_image: img/og_image/about.png
 explainer: New Mexico offers open access to the exclusive source for official New Mexico laws 
 top_section_style: bg-black
 row_style: bg-tan

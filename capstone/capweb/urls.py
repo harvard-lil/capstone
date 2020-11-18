@@ -9,6 +9,7 @@ from capapi.forms import LoginForm
 
 from capweb.helpers import safe_domains
 
+from .views import MarkdownView
 
 urlpatterns = [
     ### pages ###
@@ -23,15 +24,16 @@ urlpatterns = [
     path('view/reporter/<int:reporter_id>/', views.view_reporter, name='view_reporter'),
     path('view/jurisdiction/<int:jurisdiction_id>/', views.view_jurisdiction, name='view_jurisdiction'),
 
-
+    path('about/', views.AboutView.as_view(), name='about'),
+    path('tools/', MarkdownView.as_view(template_name='tools.md'), name='tools'),
+    path('terms', MarkdownView.as_view(template_name='terms-of-use.md'), name='terms'),
+    path('privacy', MarkdownView.as_view(template_name='privacy-policy.md'), name='privacy'),
 
     ### bulk data ###
     path('bulk/download/', user_views.bulk, name='bulk-download'),
 
     ### legacy doc urls
     path('api/', views.legacy_docs_redirect, name='api'),
-    path('about/', views.legacy_docs_redirect, name='about'),
-    path('tools/', views.legacy_docs_redirect, name='tools'),
     path('search-docs/', views.legacy_docs_redirect, name='search-docs'),
     path('trends-docs/', views.legacy_docs_redirect, name='trends-docs'),
     path('action/', views.legacy_docs_redirect, name='action'),
@@ -41,8 +43,6 @@ urlpatterns = [
     path('action/case-study-canada/', views.legacy_docs_redirect, name='action-case-study-canada'),
     path('bulk/', views.legacy_docs_redirect, name='bulk-docs'),
 
-    path('terms', views.legacy_docs_redirect, name='terms'),
-    path('privacy', views.legacy_docs_redirect, name='privacy'),
     path('changelog', views.legacy_docs_redirect, name='changelog'),
 
     ### main docs url

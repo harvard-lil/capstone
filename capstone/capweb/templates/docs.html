@@ -3,20 +3,20 @@
 {% load static %}
 {% load startswith %}
 
-{% block title %}{{ meta.title }}{% endblock %}
 {% block base_css %}{% stylesheet "unified_docs" %}{% endblock %}
 
 {% block content %}
   <div id="container" class="gr_container no-nav">
-    <nav class="breadcrumb" tabindex="0" onclick="toggle_mobile_nav();">
+    <nav class="breadcrumb" tabindex="0" onclick="toggle_mobile_nav()">
       <div class="row">
         <div class="col-10">
-          {% autoescape off %}
-            {{ breadcrumb }}
-          {% endautoescape %}
+          {% for parent in parents %}
+            <a href="{% url 'docs' parent.url %}">{{ parent.label }}</a> /
+          {% endfor %}
+          {{ title }}
         </div>
         <div class="col-2 expand-nav-div">
-          <img id="expand-nav-arrow" height="15" width="30" class="unexpanded"
+          <img id="expand-nav-arrow" height="15" width="30"
                src="{% static 'img/arrows/expand-arrow-blocked-black.svg' %}">
         </div>
       </div>
@@ -24,38 +24,43 @@
     <nav class="doc-nav show-nav">
       <div id="docs_toc" class="panel-group w-100 pl-0">
         {% for item in toc %}
-          <div class="panel-heading">
-            <div class="panel-title">
-              <a class="top-level-label" data-toggle="collapse" href="#collapse1_{{ item.url }}"
-                 data-target="#collapse1_{{ item.url }}">{{ item.label }}</a>
+          {% if item.children %}
+            <button class="panel-heading btn btn-link"
+                    data-toggle="collapse"
+                    data-target="#collapse1_{{ item.url }}"
+                    aria-expanded="{% if req_doc_path|startswith:item.url %}true{% else %}false{% endif %}"
+                    aria-controls="collapse1_{{ item.url }}">
+              {{ item.label }}
+            </button>
+            <div id="collapse1_{{ item.url }}" class="panel-collapse {% if req_doc_path|startswith:item.url %}show {% endif %}collapse">
+              <ul class="top-level-item pl-0">
+                <li class="top-level-structure">
+                  {% include "includes/docs_toc.html" with toc=item.children %}
+                </li>
+              </ul>
             </div>
-          </div>
-
-          {% if req_doc_path|startswith:item.url %}
-            <div id="collapse1_{{ item.url }}" class="panel-collapse show collapse">
-          {% else %}
-            <div id="collapse1_{{ item.url }}" class="panel-collapse collapse">
           {% endif %}
-        <ul class="top-level-item pl-0">
-          <li class="top-level-structure">
-            {% include "includes/docs_toc.html" with toc=item.children %}
-          </li>
-        </ul>
-        </div>
         {% endfor %}
       </div>
     </nav>
 
-    <div id="document-contents" class="doc-main">
+    <div id="document-contents" class="doc-main markdown">
       {{ content }}
+
+      <ul class="parameter-list mt-5">
+        <li>
+          <h2>Find what you were looking for?</h2>
+          <p>If you have suggestions for improving this documentation, <a href="{% url 'contact' %}">let us know</a>!</p>
+        </li>
+      </ul>
     </div>
 
-    <header class="title"><h1>{{ meta.title }}</h1></header>
-    <aside class="explainer">
-      <p>
-        {{ meta.explainer }}
-      </p>
-    </aside>
+    <header class="title"><h1>{{ title }}</h1></header>
+    {% if explainer %}
+      <aside class="explainer">
+        <p>{{ explainer }}</p>
+      </aside>
+    {% endif %}
   </div>
   <script>
     function toggle_mobile_nav(force_hide = false) {

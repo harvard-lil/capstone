@@ -29,11 +29,6 @@ pre code {
 }
 
 
-
-.endpoint-link {
-  font-weight: bold;
-}
-
 dt {
   margin-top: 2rem;
 }
@@ -96,8 +91,4 @@ p.code-block {
 .parameter-list > li {
   @extend .list-group-item;
   margin-left: -10px;
-}
-
-pre {
-  @extend .code-block;
 }

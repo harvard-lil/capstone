@@ -7,4 +7,10 @@
   ul {
     @extend ul.bullets;
   }
+  ol {
+    @extend ol.num;
+  }
+  pre {
+    @extend .code-block;
+  }
 }

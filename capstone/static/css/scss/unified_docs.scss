@@ -8,7 +8,7 @@ nav {
 
 h1 {
   font-size: 3rem;
-  font-weight: $font-weight-lighter;
+  font-weight: $font-weight-normal;
   margin-top: 0;
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -16,10 +16,19 @@ h1 {
 }
 
 h2 {
-  font-size: 1.5rem;
-  font-weight: $font-weight-black;
+  font-size: 2rem;
+  font-weight: $font-weight-semibold;
 }
 
+h3 {
+  font-size: 1.5rem;
+  font-weight: $font-weight-semibold;
+}
+
+h4 {
+  font-size: 1.25rem;
+  font-weight: $font-weight-black;
+}
 
 
 
@@ -60,11 +69,11 @@ h2 {
     padding: 0rem 3rem 1rem 3rem;
     grid-area: content;
 
-    .subtitle {
+    h2 {
       margin-top: 2rem;
-    }
-    .subtitle:first-of-type {
-      margin-top: 0;
+      &:first-of-type {
+        margin-top: 0;
+      }
     }
 
     pre {
@@ -90,6 +99,7 @@ h2 {
 
     .endpoint-link {
       font-weight: bold;
+      margin-top: 0;
     }
 
     dt {
@@ -111,10 +121,6 @@ h2 {
       margin-top: 20px;
       font-weight: bold;
       font-size: 1em;
-    }
-
-    .example-link {
-      font-size: 0.65em;
     }
 
     .list-header {
@@ -140,12 +146,6 @@ h2 {
 
     .code-example-casebody-section {
       color: $red;
-    }
-
-    .code-block {
-      max-width: 100%;
-      background-color: $color-tan;
-      margin-top: 1rem;
     }
 
     .changelog-head {
@@ -176,6 +176,7 @@ h2 {
       }
     }
 
+
   }
 
   nav.breadcrumb {
@@ -191,6 +192,11 @@ h2 {
     padding-bottom: 2.3rem;
     position: sticky;
     top: 0;
+    z-index: 1;
+
+    a {
+      color: $color-violet-gray-dark;
+    }
   }
 
   aside.explainer {
@@ -300,11 +306,12 @@ nav.doc-nav {
     margin-bottom: 0;
   }
   .panel-heading {
-    height: 2rem;
     font-size: $font-size-lg;
-    font-weight: $font-weight-normal;
-    padding-top: .5rem;
-    padding-bottom: 2.3rem;
+    text-align: left;
+    color: $color-white;
+    padding: .5rem 1rem;
+    width: 100%;
+    display: block;
     border-bottom: 1px $color-violet-gray-dark solid;
   }
   .panel-heading:first-of-type {
@@ -318,6 +325,7 @@ nav.doc-nav {
   .list-group-item {
     border: 0;
     padding: 0;
+    white-space: pre-wrap;
   }
 
   .interior-directory {
@@ -347,30 +355,24 @@ nav.doc-nav {
   }
 
 
-  .interior-directory-link[data-toggle].collapsed:before {
-    content: "+ ";
-    font-family: $font-family-sans-serif;
+  .interior-directory-link {
     font-weight: $font-weight-black;
-  }
-  .interior-directory-link[data-toggle]:not(.collapsed):before {
+    font-family: $font-family-sans-serif;
+    font-size: 1rem;
+    padding: 0;
+    position: relative;
+    top: -0.1rem;
+    width: 1rem;
+    &:not(.collapsed):before {
       content: "- ";
-      font-family: $font-family-sans-serif;
-      font-weight: $font-weight-black;
-  }
-
-
-  .unexpanded {
+    }
+    &.collapsed:before {
+      content: "+ "
+    }
   }
 
   .expanded {
     transform: rotate(90deg);
-  }
-
-  .top-level-label {
-    color: $color-white;
-    padding-left: 1rem;
-    padding-top: .5rem;
-    padding-bottom: .5rem;
   }
 
   .top-level-structure {
