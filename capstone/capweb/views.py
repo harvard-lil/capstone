@@ -33,6 +33,7 @@ from capweb.models import GallerySection, GalleryEntry
 from capdb.models import Snippet, Court, Reporter, Jurisdiction, normalize_cite, CaseMetadata
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request, api_request
+from capweb.templatetags.docs_url import docs_url
 from config.logging import logger
 from scripts.extract_cites import extract_citations_from_text
 
@@ -166,21 +167,20 @@ def snippet(request, label):
 
 
 def legacy_docs_redirect(request):
-    url_path = request.META['PATH_INFO'].lstrip('/').rstrip('/')
+    url_path = request.path.strip('/')
     translation = {
-        "api": "user_guides/api",
-        "search-docs": "user_guides/search",
-        "trends-docs": "user_guides/trends",
-        "bulk": "user_guides/bulk_docs",
-        "changelog": "specs_and_reference/changelog",
-        "action": "user_pathways/for-courts/index",
-        "action/guidelines": "user_pathways/for-courts/guidelines",
-        "action/case-study-nm": "user_pathways/for-courts",
-        "action/case-study-ark": "user_pathways/for-courts/case-study-ark",
-        "action/case-study-canada": "user_pathways/for-courts/case-study-canada",
+        "api": "api",
+        "search-docs": "search",
+        "trends-docs": "trends",
+        "bulk": "bulk",
+        "changelog": "changelog",
+        "action": "courts",
+        "action/guidelines": "guidelines",
+        "action/case-study-nm": "case-study-nm",
+        "action/case-study-ark": "case-study-ark",
+        "action/case-study-canada": "case-study-canada",
     }
-
-    return redirect('docs', translation[url_path])
+    return redirect(docs_url(translation[url_path]))
 
 
 def screenshot(request):
