@@ -33,7 +33,7 @@ RUN echo "--modules-folder /node_modules" > /.yarnrc
 COPY package.json /app
 COPY yarn.lock /app
 # pin node version -- see https://github.com/nodesource/distributions/issues/33
-RUN curl -o nodejs.deb https://deb.nodesource.com/node_12.x/pool/main/n/nodejs/nodejs_12.18.4-1nodesource1_amd64.deb \
+RUN curl -o nodejs.deb https://deb.nodesource.com/node_14.x/pool/main/n/nodejs/nodejs_14.15.1-1nodesource1_amd64.deb \
     && dpkg -i ./nodejs.deb \
     && rm nodejs.deb \
     && npm install -g yarn@1.22.5 \
