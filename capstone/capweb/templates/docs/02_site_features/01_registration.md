@@ -2,7 +2,7 @@
 title: Registration
 
 You might not need an account! Most searches, and some API queries and bulk downloads, don't require an account. 
-(See [access limits]({% docs_url 'access_limits' %}.) To access case text via the API or bulk download seciont from 
+(See [access limits]({% docs_url 'access_limits' %}).) To access case text via the API or bulk download seciont from 
 [restricted]({% docs_url 'glossary' %}#def-restricted) jurisdictions, however, 
 or to apply for fully unrestricted researcher access, we do require an account. 
 
