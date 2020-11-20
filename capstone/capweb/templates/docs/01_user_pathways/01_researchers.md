@@ -92,7 +92,7 @@ apply for unmetered access via your account page.
 ## Important Caveats
 You must enter into a special bulk access agreement with LexisNexis, which prohibits you from:
 
-*  **using the cases for non-research or commercial purposes and**
+*  **using the cases for non-research or commercial purposes** and
 *  **sharing bulk caselaw with others.**
 
 ## Eligibility
