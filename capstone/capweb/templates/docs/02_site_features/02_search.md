@@ -71,7 +71,6 @@ search for all cases containing the phrase "insurance fraud" but wanted to exclu
 For example, if you're searching our jurisdiction list, each result on that list has a "See Cases" button that starts a
 new search for all of the cases under the specified jurisdiction. You can get back to your original search
 using the back button.
-* You may use as many search field boxes as you like.
 * To share a search, simply copy the URL and pass it along! It will link the user to the specific page of
 results you're viewing. To send them to the first page of results, navigate to the first page of results
 before copying the URL.
