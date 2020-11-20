@@ -54,7 +54,7 @@ Many types of data are available without logging in and without
 restriction.
 
 *   Metadata
-*   N-gram statistics
+*   _n_-gram statistics
 *   Citation graphs
 *   Case text from open jurisdictions:
     *   Illinois
