@@ -35,11 +35,11 @@ The digital versions of decisions should be the official versions.
 
 ### Citable
 
-The digital version should be citable in and by the courts of the relevant state, using vendor neutral citation formats. 
+The digital version should be citable in and by the courts of the relevant state, using vendor-neutral citation formats.
 
 ### Machine Readable
 
-The decisions should be made available in machine readable formats, meaning at least digitally created PDFs.
+The decisions should be made available in machine-readable formats, meaning at least digitally created PDFs.
 
 ## Desirable characteristics
 
@@ -57,7 +57,7 @@ Decisions should be issued with accompanying metadata that describes, according 
 
 ### Medium-Neutral
 
-Decisions should include paragraph-numbering and avoid page-dependency.
+Decisions should include paragraph numbering and avoid page dependency.
 
 ### Archives
 

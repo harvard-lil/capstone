@@ -11,9 +11,9 @@ Courts and their Reporters of Decisions have worked throughout U.S. history to e
 
 To enable this critical transition, courts should seek and adopt digital-first publishing solutions that would make all of their new opinions freely and openly accessible online in an authoritative, citable, machine-readable format. 
 
-These solutions should prioritize court convenience, high quality public access, reliability, cost effectiveness and comprehensiveness. And they should offer the courts at least three things: 
+These solutions should prioritize court convenience, high-quality public access, reliability, cost-effectiveness and comprehensiveness. And they should offer the courts at least three things:
 
-* _Self-publishing tools_ – Easy-to-use, high quality, cost effective self-publishing tools adapted to the existing editorial workflow of the court.
+* _Self-publishing tools_ – Easy-to-use, high-quality, and cost-effective self-publishing tools adapted to the existing editorial workflow of the court.
 * _Public access website_ – A public website affording free, open access to newly issued court opinions in HTML and PDF, with vendor-neutral and medium-neutral citation. The website should provide customizable metadata fields, a search engine suited to legal information, an API to enable programmatic access and bulk downloads and Web accessibility compliance for users with disabilities.
 * _Professional support and service_ – An experienced support and service team dedicated to helping courts fulfill their publishing and access goals.
 

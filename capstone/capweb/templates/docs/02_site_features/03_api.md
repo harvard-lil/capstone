@@ -16,8 +16,8 @@ section for more details.
 ## Get an API Key
 Before you can authenticate, you'll need an API key. 
 
-* First [register]({% docs_url 'registration' %}) an account.
-* Log in
+* First, [register]({% docs_url 'registration' %}) an account.
+* Log in.
 * Click on the "ACCOUNT" link at the top of the screen.
 * The API key is listed in your profile.
 
