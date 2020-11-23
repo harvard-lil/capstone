@@ -100,18 +100,18 @@
           this.endpoint = route.params.endpoint;
 
           // load search fields and values from query params
-          let fields = [];
-          let blankFields = searchform.endpoints[this.endpoint];
-          for (const field of blankFields) {
+          let fields = searchform.endpoints[this.endpoint];
+          console.log("what is query", query)
+          for (const field of fields) {
             if (query[field.name]) {
-              field.value = query[field.name];
+              fields[field].value = query[field.name];
               fields.push(field);
             }
           }
 
+
           // if no search fields included in query, show default fields
-          if (!fields.length)
-            fields = blankFields.filter(endpoint => endpoint.default);
+          //   fields = blankFields.filter(endpoint => endpoint.default);
 
           searchform.fields = fields;
         }
@@ -138,7 +138,11 @@
         }
       },
 
-      newSearch() { this.goToPage(0) },
+      newSearch() {
+        this.goToPage(0)
+        console.log("new search triggered")
+
+      },
       nextPage() { this.goToPage(this.page + 1) },
       prevPage() { this.goToPage(this.page - 1) },
       goToPage: function(page) {

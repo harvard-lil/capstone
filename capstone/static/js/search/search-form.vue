@@ -12,15 +12,35 @@
     <div class="row">
       <div class="col-md-2"></div>
       <div class="col-lg-7">
-        <searchroutes :endpoint="endpoint" :endpoints="endpoints">
-        </searchroutes>
+        <div class="dropdown dropdown-search-routes col-12">
+          <button class="btn dropdown-toggle dropdown-title"
+                  type="button"
+                  id="search-routes-dropdown"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  :aria-describedby="endpoint">
+            {{ endpoint }}
+          </button>
+
+          <div class="dropdown-menu" aria-labelledby="search-routes-dropdown">
+            <button type="button"
+                    v-for="current_endpoint in Object.keys(endpoints)" :key="current_endpoint"
+                    @click="changeEndpoint(current_endpoint)"
+                    :class="['dropdown-item', 'search-tab', current_endpoint===endpoint ? 'active' : '']">
+              {{ current_endpoint }}
+            </button>
+          </div>
+        </div>
+
+
         <br/>
         <!-- Table showing search fields. Also includes add field and search buttons. -->
         <div v-if="search_error"
              role="alert"
              class="alert alert-danger">
-          <p>{{search_error}}</p>
-          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">{{search_error}}</h2>
+          <p>{{ search_error }}</p>
+          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">{{ search_error }}</h2>
         </div>
         <div v-if="Object.keys(field_errors).length"
              role="alert"
@@ -28,11 +48,11 @@
           <!--<p>Please correct the following <strong>2 error(s)</strong>: </p>-->
           <p>Please correct the following {{ Object.keys(field_errors).length }} error(s):</p>
           <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
-            Please correct the following {{Object.keys(field_errors).length}} error(s)</h2>
+            Please correct the following {{ Object.keys(field_errors).length }} error(s)</h2>
           <ul class="bullets">
             <li v-for="(error, name) in field_errors"
                 :key="'error' + name">
-              <a :href="'#'+name">{{getFieldByName(name).label}}:</a> {{error}}
+              <a :href="'#'+name">{{ getFieldByName(name).label }}:</a> {{ error }}
             </li>
           </ul>
         </div>
@@ -48,39 +68,41 @@
           </div>
           <div class="col-7">
             <template v-if="field['choices']">
-              <select v-model='field["value"]'
+              <button class="dropdown-toggle dropdown-title"
                       :id='field["name"]'
+                      type="button"
+                      data-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                      aria-describedby='field["name"]'
                       @change="valueUpdated"
                       @focus="highlightExplainer"
                       @blur="unhighlightExplainer">
-                <option v-for="choice in choices[field['choices']]"
+                {{ field['name'] }}
+              </button>
+              <div class="dropdown-menu" :aria-labelledby="field['name']">
+                <button type="button"
+                        v-for="choice in choices[field['choices']]"
                         :value="choice[0]" v-bind:key="choice[1]">
-                  {{choice[1]}}
-                </option>
-              </select>
+                  {{ choice[1] }}
+                </button>
+              </div>
             </template>
             <template v-else>
               <input v-model='field["value"]'
                      :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '']"
-                     type="text"
+                     :type='field["type"]'
                      :id='field["name"]'
-                     :placeholder='field["format"] || false'
+                     :placeholder='field["placeholder"] || false'
                      v-on:keyup="valueUpdated"
                      @focus="highlightExplainer"
                      @blur="unhighlightExplainer">
             </template>
-            <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{field.info}}
+            <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{ field.info }}
             </small>
             <div v-if="field_errors[field.name]" class="invalid-feedback">
               {{ field_errors[field.name] }}
             </div>
-          </div>
-          <div class="col-1">
-            <button type="button"
-                    :class="[fields.length <= 1 ? 'disabled' : 'active', 'field-button']"
-                    :disabled="fields.length <= 1"
-                    @click="removeField(field.name)">
-            </button>
           </div>
         </div>
         <!--Buttons row-->
@@ -89,23 +111,6 @@
           <div class="col-8">
             <div class="submit-button-group">
               <loading-button :showLoading="showLoading">Search</loading-button>
-            </div>
-            <div v-if="fields.length > 0" class="dropdown addfield">
-              <button class="dropdown-toggle add-field-button btn-secondary"
-                      type="button"
-                      id="dropdownMenuButton"
-                      data-toggle="dropdown"
-                      aria-haspopup="true"
-                      aria-expanded="false">
-                Add Field&nbsp;
-              </button>
-              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <button class="dropdown-item" type="button"
-                        v-for="newfield in availableFields()" :key="newfield.name"
-                        @click="addField(newfield)">
-                  {{ newfield.label }}
-                </button>
-              </div>
             </div>
 
           </div>
@@ -116,7 +121,7 @@
           <div class="col-8">
             <div class="submit-button-group">
               <button id="query-explainer-button" class="mt-0" @click="toggleExplainer"
-                      v-if="show_explainer === true">HIDE API CALL
+                      v-if="show_explainer">HIDE API CALL
               </button>
               <button id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</button>
             </div>
@@ -152,232 +157,237 @@
   </form>
 </template>
 <script>
-  import searchroutes from "./search-routes"
-  import LoadingButton from '../vue-shared/loading-button.vue';
-  import QueryExplainer from './query-explainer';
+import LoadingButton from '../vue-shared/loading-button.vue';
+import QueryExplainer from './query-explainer';
 
-  export default {
-    components: {searchroutes, LoadingButton, QueryExplainer},
-    data: function () {
-      return {
-        query: [],
-        newfield: null,
-        page_size: 10,
-        fields: [],
-        query_url: '',
-        show_explainer: false,
-        endpoints: {
-          cases: [
-            {
-              name: "search",
-              value: "",
-              label: "Full-Text Search",
-              default: true,
-              format: "e.g. library",
-              info: "Terms stemmed and combined using AND. Words in quotes searched as phrases."
-            },
-            {
-              name: "ordering",
-              value: "relevance",
-              label: "Result Sorting",
-              choices: 'sort',
-            },
-            {
-              name: "name_abbreviation",
-              label: "Case Name Abbreviation",
-              value: "",
-              format: "e.g. Taylor v. Sprinkle",
-            },
-            {
-              name: "decision_date_min",
-              label: "Decision Date Earliest",
-              format: "YYYY-MM-DD",
-            },
-            {
-              name: "decision_date_max",
-              value: "",
-              label: "Decision Date Latest",
-              format: "YYYY-MM-DD",
-            },
-            {
-              name: "docket_number",
-              value: "",
-              label: "Docket Number",
-              format: "e.g. Civ. No. 74-289",
-            },
-            {
-              name: "cite",
-              value: "",
-              label: "Citation",
-              format: "e.g. 1 Ill. 17",
-            },
-            {
-              name: "reporter",
-              value: "",
-              label: "Reporter",
-              choices: 'reporter',
-            },
-            {
-              name: "court",
-              value: "",
-              label: "Court",
-              format: "e.g. ill-app-ct",
-              hidden: true,
-            },
-            {
-              name: "court_id",
-              value: "",
-              label: "Court ID",
-              format: ""
-            },
-            {
-              name: "jurisdiction",
-              value: "",
-              label: "Jurisdiction",
-              choices: 'jurisdiction',
-            }
-          ],
-          courts: [
-            {
-              name: "id",
-              value: "",
-              label: "ID",
-              format: ""
-            },
-            {
-              name: "slug",
-              value: "",
-              label: "Slug",
-              format: "e.g. ill-app-ct",
-            },
-            {
-              name: "name",
-              value: "",
-              label: "Name",
-              format: "e.g. 'Illinois Supreme Court'",
-            },
-            {
-              name: "name_abbreviation",
-              value: "",
-              format: "e.g. 'Ill.'",
-              label: "Name Abbreviation",
-            },
-            {
-              name: "jurisdiction",
-              value: "",
-              label: "Jurisdiction",
-              choices: 'jurisdiction',
-              default: true,
-            }
-          ],
-          jurisdictions: [
-            {
-              name: "id",
-              value: "",
-              format: "e.g. 47",
-              label: "Database ID",
-            },
-            {
-              name: "name",
-              value: "",
-              label: "Name",
-              format: "e.g. 'Ill.'",
-            },
-            {
-              name: "name_long",
-              value: "",
-              label: "Long Name",
-              format: "e.g. 'Illinois'",
-              default: true,
-            },
-            {
-              name: "whitelisted",
-              value: "",
-              label: "Whitelisted Jurisdiction",
-              choices: 'whitelisted',
-              info: "Whitelisted jurisdictions are not subject to the 500 case per day access limitation."
-            }
-          ],
-          reporters: [
-            {
-              name: "full_name",
-              value: "",
-              label: "Full Name",
-              format: "e.g. 'Illinois Appellate Court Reports'",
-            },
-            {
-              name: "short_name",
-              value: "",
-              label: "Short Name",
-              format: "e.g. 'Ill. App.'",
-            },
-            {
-              name: "start_year",
-              value: "",
-              label: "Start Year",
-              format: "e.g. '1893'",
-              info: "Year in which the reporter began publishing."
-            },
-            {
-              name: "end_year",
-              value: "",
-              label: "End Year",
-              format: "e.g. '1894'",
-              info: "Year in which the reporter stopped publishing."
-            },
-            {
-              name: "jurisdiction",
-              value: "",
-              label: "Jurisdiction",
-              choices: 'jurisdiction',
-              default: true,
-            }
-          ]
-        },
+export default {
+  components: {LoadingButton, QueryExplainer},
+  data: function () {
+    return {
+      query: [],
+      // newfield: null,
+      page_size: 10,
+      fields: [],
+      query_url: '',
+      show_explainer: false,
+      endpoints: {
+        cases: [
+          {
+            name: "search",
+            value: "",
+            label: "Full-Text Search",
+            type: "text",
+            placeholder: "Enter keyword or phrase",
+            info: "Terms stemmed and combined using AND. Words in quotes searched as phrases."
+          },
+          {
+            name: "ordering",
+            value: "relevance",
+            label: "Result Sorting",
+            choices: 'sort',
+          },
+          {
+            name: "name_abbreviation",
+            label: "Case Name Abbreviation",
+            value: "",
+            placeholder: "Enter case name abbreviation e.g. Taylor v. Sprinkle",
+          },
+          {
+            name: "decision_date_min",
+            label: "Decision Date Earliest",
+            placeholder: "YYYY-MM-DD",
+            type: "date",
+          },
+          {
+            name: "decision_date_max",
+            value: "",
+            label: "Decision Date Latest",
+            placeholder: "YYYY-MM-DD",
+            type: "date",
+          },
+          {
+            name: "docket_number",
+            value: "",
+            label: "Docket Number",
+            placeholder: "e.g. Civ. No. 74-289",
+          },
+          {
+            name: "cite",
+            value: "",
+            label: "Citation",
+            placeholder: "e.g. 1 Ill. 17",
+          },
+          {
+            name: "reporter",
+            value: "",
+            label: "Reporter",
+            choices: 'reporter',
+          },
+          {
+            name: "court",
+            value: "",
+            label: "Court",
+            placeholder: "e.g. ill-app-ct",
+            hidden: true,
+          },
+          {
+            name: "court_id",
+            value: "",
+            label: "Court ID",
+            placeholder: ""
+          },
+          {
+            name: "jurisdiction",
+            value: "",
+            label: "Jurisdiction",
+            choices: 'jurisdiction',
+          }
+        ],
+        courts: [
+          {
+            name: "id",
+            value: "",
+            label: "ID",
+            placeholder: ""
+          },
+          {
+            name: "slug",
+            value: "",
+            label: "Slug",
+            placeholder: "e.g. ill-app-ct",
+          },
+          {
+            name: "name",
+            value: "",
+            label: "Name",
+            placeholder: "e.g. 'Illinois Supreme Court'",
+          },
+          {
+            name: "name_abbreviation",
+            value: "",
+            placeholder: "e.g. 'Ill.'",
+            label: "Name Abbreviation",
+          },
+          {
+            name: "jurisdiction",
+            value: "",
+            label: "Jurisdiction",
+            choices: 'jurisdiction',
+            default: true,
+          }
+        ],
+        jurisdictions: [
+          {
+            name: "id",
+            value: "",
+            placeholder: "e.g. 47",
+            label: "Database ID",
+          },
+          {
+            name: "name",
+            value: "",
+            label: "Name",
+            placeholder: "e.g. 'Ill.'",
+          },
+          {
+            name: "name_long",
+            value: "",
+            label: "Long Name",
+            placeholder: "e.g. 'Illinois'",
+            default: true,
+          },
+          {
+            name: "whitelisted",
+            value: "",
+            label: "Whitelisted Jurisdiction",
+            choices: 'whitelisted',
+            info: "Whitelisted jurisdictions are not subject to the 500 case per day access limitation."
+          }
+        ],
+        reporters: [
+          {
+            name: "full_name",
+            value: "",
+            label: "Full Name",
+            placeholder: "e.g. 'Illinois Appellate Court Reports'",
+          },
+          {
+            name: "short_name",
+            value: "",
+            label: "Short Name",
+            placeholder: "e.g. 'Ill. App.'",
+          },
+          {
+            name: "start_year",
+            value: "",
+            label: "Start Year",
+            placeholder: "e.g. '1893'",
+            info: "Year in which the reporter began publishing."
+          },
+          {
+            name: "end_year",
+            value: "",
+            label: "End Year",
+            placeholder: "e.g. '1894'",
+            info: "Year in which the reporter stopped publishing."
+          },
+          {
+            name: "jurisdiction",
+            value: "",
+            label: "Jurisdiction",
+            choices: 'jurisdiction',
+            default: true,
+          }
+        ]
+      },
 
-      }
-    },
-    watch: {
-      fields() {
-        this.valueUpdated()
-      }
-    },
-    props: ['choices', 'search_error', 'field_errors', 'urls', 'showLoading', 'endpoint'],
-    methods: {
-      valueUpdated() {
-        this.query_url = this.$parent.assembleUrl();
-      },
-      removeField(field_name) {
-        this.fields = this.fields.filter(field => field.name !== field_name);
-      },
-      addField(field) {
-        this.fields.push(field);
-      },
-      getFieldByName(field_name) {
-        return this.endpoints[this.endpoint].find(field => field.name === field_name);
-      },
-      availableFields() {
-        /*
-          Return list of fields that can be added for current endpoint, and aren't yet included.
-          Fields with hidden=true are excluded.
-        */
-        return this.endpoints[this.endpoint].filter(field => !field.hidden && !this.fields.includes(field));
-      },
-      highlightExplainer(event) {
-        var explainer_argument = document.getElementById("p_" + event.target.id);
-        if (explainer_argument) {
-          explainer_argument.classList.add('highlight-parameter');
-        }
-      },
-      unhighlightExplainer(event) {
-        var explainer_argument = document.getElementById("p_" + event.target.id);
-        if (explainer_argument) {
-          explainer_argument.classList.remove('highlight-parameter');
-        }
-      },
-      toggleExplainer() {
-        this.show_explainer = this.show_explainer ? false : true
-      },
     }
+  },
+  watch: {
+    fields() {
+      console.log("watching fields", this.fields)
+      this.valueUpdated()
+    }
+  },
+  props: ['choices', 'search_error', 'field_errors', 'urls', 'showLoading', 'endpoint'],
+  methods: {
+    valueUpdated() {
+      this.query_url = this.$parent.assembleUrl();
+      console.log("valueUpdated", this.query_url)
+
+    },
+    // removeField(field_name) {
+    //   this.fields = this.fields.filter(field => field.name !== field_name);
+    // },
+    // addField(field) {
+    //   console.log("calling addField", field)
+    //   this.fields.push(field);
+    // },
+    getFieldByName(field_name) {
+      console.log("getFieldByName", field_name)
+      return this.endpoints[this.endpoint].find(field => field.name === field_name);
+    },
+    changeEndpoint: function (new_endpoint) {
+      console.log("new endpoint", new_endpoint, "fields:",this.endpoints[new_endpoint])
+      this.$router.push({name: 'endpoint', params: {endpoint: new_endpoint}});
+    },
+    highlightExplainer(event) {
+      let explainer_argument = document.getElementById("p_" + event.target.id);
+      if (explainer_argument) {
+        explainer_argument.classList.add('highlight-parameter');
+      }
+    },
+    unhighlightExplainer(event) {
+      let explainer_argument = document.getElementById("p_" + event.target.id);
+      if (explainer_argument) {
+        explainer_argument.classList.remove('highlight-parameter');
+      }
+    },
+    toggleExplainer() {
+
+      this.show_explainer = !this.show_explainer;
+      console.log("show explainer", this.show_explainer)
+    },
   }
+}
 </script>

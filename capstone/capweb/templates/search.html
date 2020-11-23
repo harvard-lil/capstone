@@ -6,39 +6,39 @@
 {% load render_bundle from webpack_loader %}
 {% block base_css %}{% stylesheet 'search' %}{% endblock %}
 
-{% block top_section_style %}bg-tan simple-section{% endblock %}
+{% block top_section_style %}bg-tan{% endblock %}
 {% block title %}Search{% endblock %}
 {% block title_section %}{% endblock %}
 {% block meta_description %}
   Search the Caselaw Access Project
 {% endblock %}
-{% block sidebar_menu %}{%  endblock %}
+{% block sidebar_menu %}{% endblock %}
 
 {% block main_content %}
   <div id="app" class="content"></div>
 
   <script>
-// This is essentially each endpoint with its API interface
-// eslint-disable-next-line
-  const urls = {
-    view_court: "{% url 'view_court' 987654321 %}",
-    api_root: "{% api_url "api-root" %}v1/",
-    static: "{% static "" %}",
-    search_docs: "{% url 'search-docs' %}"
-  };
+    // This is essentially each endpoint with its API interface
+    // eslint-disable-next-line
+    const urls = {
+      view_court: "{% url 'view_court' 987654321 %}",
+      api_root: "{% api_url "api-root" %}v1/",
+      static: "{% static "" %}",
+      search_docs: "{% url 'search-docs' %}"
+    };
 
-  const choices = {
-    "jurisdiction": {% snippet 'search_jurisdiction_list' '[]' %},
-    "reporter": {% snippet 'search_reporter_list' '[]' %},
-    "whitelisted": [["true", "Whitelisted"], ["false", "Not Whitelisted"]],
-    "sort": [["relevance", "Most Relevant First"], ["-decision_date", "Newest Decisions First"], ["decision_date", "Oldest Decisions First"]],
-  };
+    const choices = {
+      "jurisdiction": {% snippet 'search_jurisdiction_list' '[]' %},
+      "reporter": {% snippet 'search_reporter_list' '[]' %},
+      "whitelisted": [["true", "Whitelisted"], ["false", "Not Whitelisted"]],
+      "sort": [["relevance", "Most Relevant First"], ["-decision_date", "Newest Decisions First"], ["decision_date", "Oldest Decisions First"]],
+    };
 
   </script>
-<noscript>
-  This search interface requires javascript, even for basic functionality. If you can not or will not use
-  javascript, your best bet is to directly use <a href="{% api_url "api-root" %}">the API this search interface
-  queries.</a> There is no data available in this search interface that is not available through the API.
-</noscript>
+  <noscript>
+    This search interface requires javascript, even for basic functionality. If you can not or will not use
+    javascript, your best bet is to directly use <a href="{% api_url "api-root" %}">the API this search interface
+    queries.</a> There is no data available in this search interface that is not available through the API.
+  </noscript>
   {% render_bundle 'search' %}
 {% endblock %}

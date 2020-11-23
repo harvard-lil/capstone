@@ -49,6 +49,7 @@ form {
     @extend h6;
     min-width: 100%;
     display: inline-block;
+    position: absolute;
     color: $color-medium-blue;
     font-family: $font-sans-title;
     font-weight: 400;
@@ -325,6 +326,11 @@ select {
 .queryfield input.form-control[type="text"], input[type="text"], input[type="email"], textarea {
   display: inline-block;
   width: 100%;
+}
+
+.queryfield input.form-control[type="date"] {
+  //display: inline-block;
+  width: 50%;
 }
 
 .queryfield_highlighted {
