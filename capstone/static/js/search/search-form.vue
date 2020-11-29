@@ -1,9 +1,11 @@
 <template>
-  <form @submit.prevent="$emit('new-search', fields, endpoint)">
+  <form @submit.prevent="$emit('new-search', fields, endpoint)"
+    class="col-10 col-centered">
     <div class="col-md-2 empty-push-div"></div>
     <div class="col-md-10 title-container">
       <h3 class="page-title">
-        <img alt="" aria-hidden="true" src="{% static 'img/arrows/violet-arrow-right.svg' %}"
+        <img alt="" aria-hidden="true"
+             src="{% static 'img/arrows/violet-arrow-right.svg' %}"
              class="decorative-arrow"/>
         Search
       </h3>
@@ -53,10 +55,15 @@
         <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{ field.info }}
         </small>
         <template v-if="field['choices']">
-          <select class="col-12" :id="field.name">
-            <option value="" hidden selected>{{ field.label }}</option>
+          <select v-model='field["value"]'
+                  :id='field["name"]'
+                  @change="valueUpdated"
+                  @focus="highlightExplainer"
+                  @blur="unhighlightExplainer">
+            <option selected hidden value="">{{field.label}}</option>
             <option v-for="choice in choices[field['choices']]"
-                    v-bind:key="choice[1]">{{ choice[1] }}
+                    :value="choice[0]" v-bind:key="choice[1]">
+              {{ choice[1] }}
             </option>
           </select>
         </template>
@@ -97,6 +104,7 @@
         </div>
       </div>
       <!--Buttons row-->
+    </div>
 
       <div class="submit-button-group">
         <loading-button :showLoading="showLoading">Search</loading-button>
@@ -115,7 +123,6 @@
           <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
         </p>
       </div>
-    </div>
     <div class="query-explainer" v-show="show_explainer">
       <div class="row">
         <div class="col-12">

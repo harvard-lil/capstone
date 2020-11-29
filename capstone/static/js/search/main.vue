@@ -112,7 +112,6 @@ export default {
 
         // load search fields and values from query params
         let fields = searchform.endpoints[this.endpoint];
-        console.log("what is query", query)
         for (const field of fields) {
           if (query[field.name]) {
             fields[field].value = query[field.name];

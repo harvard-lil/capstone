@@ -122,6 +122,10 @@ form {
 .results-list-container {
   padding-bottom: 2rem;
 }
+.results-list-container {
+  padding-left: 1em !important;
+  padding-right: 1em !important;
+}
 
 // search disclaimer
 .search-disclaimer {
@@ -216,7 +220,8 @@ select, .queryfield {
   width: 100%;
   border: 1px solid $color-search-gray-light;
   padding: 5px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+  margin-top: 5px;
   background-color: $color-white;
 }
 
