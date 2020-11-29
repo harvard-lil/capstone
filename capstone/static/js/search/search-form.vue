@@ -1,6 +1,5 @@
 <template>
-
-  <form @submit.prevent="$emit('new-search', fields, endpoint)" class="row">
+  <form @submit.prevent="$emit('new-search', fields, endpoint)">
     <div class="col-md-2 empty-push-div"></div>
     <div class="col-md-10 title-container">
       <h3 class="page-title">
@@ -10,127 +9,104 @@
       </h3>
     </div>
     <div class="row">
-      <div class="col-md-2"></div>
-      <div class="col-lg-7">
-        <div class="dropdown dropdown-search-routes col-12">
-          <button class="btn dropdown-toggle dropdown-title"
-                  type="button"
-                  id="search-routes-dropdown"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                  :aria-describedby="endpoint">
-            {{ endpoint }}
-          </button>
+      <div class="dropdown dropdown-search-routes">
+        <button class="btn dropdown-toggle dropdown-title"
+                type="button"
+                id="search-routes-dropdown"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+                :aria-describedby="endpoint">
+          {{ endpoint }}
+        </button>
 
-          <div class="dropdown-menu" aria-labelledby="search-routes-dropdown">
-            <button type="button"
-                    v-for="current_endpoint in Object.keys(endpoints)" :key="current_endpoint"
-                    @click="changeEndpoint(current_endpoint)"
-                    :class="['dropdown-item', 'search-tab', current_endpoint===endpoint ? 'active' : '']">
-              {{ current_endpoint }}
-            </button>
-          </div>
+        <div class="dropdown-menu" aria-labelledby="search-routes-dropdown">
+          <a v-for="current_endpoint in Object.keys(endpoints)" :key="current_endpoint"
+             @click="changeEndpoint(current_endpoint)"
+             :class="['dropdown-item', 'search-tab', current_endpoint===endpoint ? 'active' : '']">
+            {{ current_endpoint }}
+          </a>
         </div>
-
-
-        <br/>
-        <!-- Table showing search fields. Also includes add field and search buttons. -->
-        <div v-if="search_error"
-             role="alert"
-             class="alert alert-danger">
-          <p>{{ search_error }}</p>
-          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">{{ search_error }}</h2>
-        </div>
-        <div v-if="Object.keys(field_errors).length"
-             role="alert"
-             class="alert alert-danger">
-          <!--<p>Please correct the following <strong>2 error(s)</strong>: </p>-->
-          <p>Please correct the following {{ Object.keys(field_errors).length }} error(s):</p>
-          <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
-            Please correct the following {{ Object.keys(field_errors).length }} error(s)</h2>
-          <ul class="bullets">
-            <li v-for="(error, name) in field_errors"
-                :key="'error' + name">
-              <a :href="'#'+name">{{ getFieldByName(name).label }}:</a> {{ error }}
-            </li>
-          </ul>
-        </div>
-        <div class="row field-row"
-             v-for="field in fields" :key="field.name"
-             v-bind:class="{ 'alert-danger': field_errors.hasOwnProperty(field['name']) }"
-             @mouseover="highlightExplainer"
-             @mouseout="unhighlightExplainer">
-          <div class="col-4 field_label_container">
-            <label class="querylabel" :for="field['name']">
-              {{ field["label"] }}
-            </label>
-          </div>
-          <div class="col-7">
-            <template v-if="field['choices']">
-              <button class="dropdown-toggle dropdown-title"
-                      :id='field["name"]'
-                      type="button"
-                      data-toggle="dropdown"
-                      aria-haspopup="true"
-                      aria-expanded="false"
-                      aria-describedby='field["name"]'
-                      @change="valueUpdated"
-                      @focus="highlightExplainer"
-                      @blur="unhighlightExplainer">
-                {{ field['name'] }}
-              </button>
-              <div class="dropdown-menu" :aria-labelledby="field['name']">
-                <button type="button"
-                        v-for="choice in choices[field['choices']]"
-                        :value="choice[0]" v-bind:key="choice[1]">
-                  {{ choice[1] }}
-                </button>
-              </div>
-            </template>
-            <template v-else>
-              <input v-model='field["value"]'
-                     :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '']"
-                     :type='field["type"]'
-                     :id='field["name"]'
-                     :placeholder='field["placeholder"] || false'
-                     v-on:keyup="valueUpdated"
-                     @focus="highlightExplainer"
-                     @blur="unhighlightExplainer">
-            </template>
-            <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{ field.info }}
-            </small>
-            <div v-if="field_errors[field.name]" class="invalid-feedback">
-              {{ field_errors[field.name] }}
-            </div>
-          </div>
-        </div>
-        <!--Buttons row-->
-        <div class="row">
-          <div class="col-3"></div>
-          <div class="col-8">
-            <div class="submit-button-group">
-              <loading-button :showLoading="showLoading">Search</loading-button>
-            </div>
-
-          </div>
-          <div class="col-1"></div>
-        </div>
-        <div class="row">
-          <div class="col-3"></div>
-          <div class="col-8">
-            <div class="submit-button-group">
-              <button id="query-explainer-button" class="mt-0" @click="toggleExplainer"
-                      v-if="show_explainer">HIDE API CALL
-              </button>
-              <button id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</button>
-            </div>
-          </div>
-          <div class="col-1"></div>
-        </div>
-
       </div>
-      <div class="col-lg-3 search-disclaimer">
+      <!-- Table showing search fields. Also includes add field and search buttons. -->
+      <div v-if="search_error"
+           role="alert"
+           class="alert alert-danger">
+        <p>{{ search_error }}</p>
+        <h2 id="form-errors-heading" tabindex="-1" class="sr-only">{{ search_error }}</h2>
+      </div>
+      <div v-if="Object.keys(field_errors).length"
+           role="alert"
+           class="alert alert-danger">
+        <!--<p>Please correct the following <strong>2 error(s)</strong>: </p>-->
+        <p>Please correct the following {{ Object.keys(field_errors).length }} error(s):</p>
+        <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
+          Please correct the following {{ Object.keys(field_errors).length }} error(s)</h2>
+        <ul class="bullets">
+          <li v-for="(error, name) in field_errors"
+              :key="'error' + name">
+            <a :href="'#'+name">{{ getFieldByName(name).label }}:</a> {{ error }}
+          </li>
+        </ul>
+      </div>
+      <div class="input-group " v-for="field in fields" :key="field.name">
+        <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{ field.info }}
+        </small>
+        <template v-if="field['choices']">
+          <select class="col-12" :id="field.name">
+            <option value="" hidden selected>{{ field.label }}</option>
+            <option v-for="choice in choices[field['choices']]"
+                    v-bind:key="choice[1]">{{ choice[1] }}
+            </option>
+          </select>
+        </template>
+        <template v-else>
+          <div v-if="field.type === 'date'" class="input-group mb-3 col-6">
+            <!--                <div class="input-group-prepend">-->
+            <!--                  <span class="input-group-text" id="basic-addon1">{{ field.label }}</span>-->
+            <!--                </div>-->
+            <input type="date" class="form-control"
+                   :aria-label="field.name"
+                   v-model='field["value"]'
+                   v-on:keypress="valueUpdated"
+                   @focus="highlightExplainer"
+                   @blur="unhighlightExplainer"
+                   aria-describedby="basic-addon1">
+          </div>
+          <input v-if="field.type === 'text'" v-model='field["value"]'
+                 :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '', 'col-12' ]"
+                 :type='field["type"]' :id='field["name"]'
+                 :placeholder='field["placeholder"] || false'
+                 v-on:keyup="valueUpdated"
+                 @focus="highlightExplainer"
+                 @blur="unhighlightExplainer">
+          <textarea v-if="field.type==='textarea'"
+                    :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '', 'col-12' ]"
+                    :type='field["type"]' :id='field["name"]'
+                    :placeholder='field["placeholder"] || false'
+                    v-on:keyup="valueUpdated"
+                    @focus="highlightExplainer"
+                    @blur="unhighlightExplainer">
+
+            </textarea>
+        </template>
+
+
+        <div v-if="field_errors[field.name]" class="invalid-feedback">
+          {{ field_errors[field.name] }}
+        </div>
+      </div>
+      <!--Buttons row-->
+
+      <div class="submit-button-group">
+        <loading-button :showLoading="showLoading">Search</loading-button>
+        <button id="query-explainer-button" class="mt-0" @click="toggleExplainer"
+                v-if="show_explainer">HIDE API CALL
+        </button>
+        <button id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</button>
+      </div>
+
+      <div class="search-disclaimer">
         <p>
           Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
         </p>
@@ -140,7 +116,7 @@
         </p>
       </div>
     </div>
-    <div class="col-9 offset-3 query-explainer" v-show="show_explainer">
+    <div class="query-explainer" v-show="show_explainer">
       <div class="row">
         <div class="col-12">
           <small id="help-text-search" class="form-text text-muted">
@@ -176,7 +152,7 @@ export default {
             name: "search",
             value: "",
             label: "Full-Text Search",
-            type: "text",
+            type: "textarea",
             placeholder: "Enter keyword or phrase",
             info: "Terms stemmed and combined using AND. Words in quotes searched as phrases."
           },
@@ -320,6 +296,7 @@ export default {
           {
             name: "start_year",
             value: "",
+            type: "date",
             label: "Start Year",
             placeholder: "e.g. '1893'",
             info: "Year in which the reporter began publishing."
@@ -327,6 +304,7 @@ export default {
           {
             name: "end_year",
             value: "",
+            type: "date",
             label: "End Year",
             placeholder: "e.g. '1894'",
             info: "Year in which the reporter stopped publishing."
@@ -356,19 +334,12 @@ export default {
       console.log("valueUpdated", this.query_url)
 
     },
-    // removeField(field_name) {
-    //   this.fields = this.fields.filter(field => field.name !== field_name);
-    // },
-    // addField(field) {
-    //   console.log("calling addField", field)
-    //   this.fields.push(field);
-    // },
     getFieldByName(field_name) {
       console.log("getFieldByName", field_name)
       return this.endpoints[this.endpoint].find(field => field.name === field_name);
     },
     changeEndpoint: function (new_endpoint) {
-      console.log("new endpoint", new_endpoint, "fields:",this.endpoints[new_endpoint])
+      console.log("new endpoint", new_endpoint, "fields:", this.endpoints[new_endpoint])
       this.$router.push({name: 'endpoint', params: {endpoint: new_endpoint}});
     },
     highlightExplainer(event) {

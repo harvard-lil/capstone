@@ -1,9 +1,12 @@
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
+
 @import "base.scss";
 @import 'footer/yellow';
 @import "search_results";
+
+$color-search-gray-light: #ced4da;
 
 .row.alert-danger {
   padding: 10px 0;
@@ -17,18 +20,22 @@
   padding: 0 !important;
 }
 
-.search-page > * {
-  padding: 2.5em;
-}
-
 //*** head matter
 form {
-  @include media-breakpoint-down(md) {
-    .empty-push-div {
-      display: none;
-    }
+  &.col-md-4 {
+    border-right: 1px solid $color-search-gray-light;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+  .input-group {
+    padding: 0;
+  }
+  input, input[type="date"] {
+    border-radius: 0;
   }
 }
+
+
 .page-title {
   @extend h3;
   font-weight: $font-weight-bold;
@@ -44,12 +51,15 @@ form {
   float: right;
 }
 
+#search-routes-dropdown {
+  border: 1px solid $color-search-gray-light;
+}
 .dropdown-search-routes {
+  width: 100%;
   > .dropdown-title {
     @extend h6;
     min-width: 100%;
     display: inline-block;
-    position: absolute;
     color: $color-medium-blue;
     font-family: $font-sans-title;
     font-weight: 400;
@@ -62,6 +72,7 @@ form {
     @include media-breakpoint-up(lg) {
       margin-top: 15px;
     }
+
     &:after {
       float: right;
       content: url("../../img/arrows/expand-arrow-blocked.svg");
@@ -72,35 +83,31 @@ form {
   > .dropdown-menu {
     padding: 0;
     border-radius: 0;
+    border-left: 1px solid $color-search-gray-light;
+    border-bottom: 1px solid $color-search-gray-light;
+    border-right: 1px solid $color-search-gray-light;
     width: 100%;
+    max-height: 300px;
+    overflow-y: scroll;
     .dropdown-item {
       color: $color-black;
       border-bottom: 1px solid $color-gray;
       text-transform: capitalize;
       font-size: inherit;
       font-weight: inherit;
+      background-color: $color-white;
+
       &:hover, &:active, &:focus, &.active {
         background-color: $color-yellow;
       }
     }
   }
+
   &.show {
     .dropdown-title::after {
       transform: rotate(180deg);
       margin-top: 5px;
     }
-  }
-}
-
-.dropdown-search-routes.dropdown,
-.addfield.dropdown {
-  .dropdown-menu {
-    max-height: 300px;
-    overflow-y: scroll;
-    z-index: 1000;
-  }
-  .dropdown-item {
-    background-color: $color-white;
   }
 }
 
@@ -120,13 +127,15 @@ form {
 .search-disclaimer {
   font-size: 0.8em;
   line-height: 1.5em;
-  @include media-breakpoint-up(lg) {
-    padding-left: 20px !important;
-  }
+  //@include media-breakpoint-up(lg) {
+  //  padding-left: 20px !important;
+  //}
   margin-top: 15px;
+
   p {
     margin-bottom: 0.2em;
   }
+
   .bold {
     font-weight: 600;
   }
@@ -157,6 +166,7 @@ form {
   outline: 0;
   float: right;
   margin-top: -5px;
+
   &:focus, &:active {
     border: 1px solid $color-blue;
   }
@@ -180,43 +190,57 @@ form {
 .top-section {
   padding-bottom: 2rem;
   border-bottom: none !important;
+  padding-top: 0;
 }
 
 .citation-list .basic-page p, .basic-page ul {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .citation-entry {
-  padding-top: 0px;
-  padding-bottom: 0px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 select {
+  -webkit-appearance: none;
+  /*webkit browsers */
+  -moz-appearance: none;
+  /*Firefox */
+  appearance: none;
+  /* modern browsers */
+  border-radius: 0;
+}
+
+select, .queryfield {
   width: 100%;
-  border: 1px solid $color-violet-gray;
+  border: 1px solid $color-search-gray-light;
   padding: 5px;
   margin-bottom: 10px;
+  background-color: $color-white;
 }
 
 .btn-submit {
   float: right;
 }
-
-.submit-button-group {
-  float: right;
-  margin-left: 10px;
-}
+//
+//.submit-button-group {
+//  float: right;
+//}
 
 .addfield {
   float: right;
+
   > button {
     border: 1px solid $color-violet;
     margin-bottom: 10px;
     margin-top: 10px;
+
     &:after {
       content: url("../../img/plus_sign_violet.svg");
       display: inline-block;
     }
+
     &:active, &:hover, &:focus {
       &:after {
         content: url("../../img/plus_sign_violet.svg");
@@ -224,47 +248,24 @@ select {
       }
     }
   }
+
   .dropdown-menu {
     right: 0;
     border-radius: 0;
     border: 1px solid $color-violet-gray;
-    position: absolute !important;
+
     .dropdown-item {
       border-bottom: 1px solid $color-gray;
       color: $color-black;
       font-size: inherit;
       text-transform: capitalize;
       font-weight: inherit;
+
       &:hover, &:active, &:focus {
         background-color: $color-yellow;
       }
     }
   }
-}
-
-.field-button {
-  border: 0;
-  background: transparent url("../../img/search/remove-circle-sprite.svg") no-repeat;
-  background-size: auto 26px;
-  width: 26px;
-  height: 26px;
-  margin-left: 10px;
-  margin-bottom: 10px;
-  &.active {
-    &:hover, &:active, &:focus {
-      background-position-x: -26px !important;
-    }
-  }
-  &.disabled {
-    background-color: transparent;
-    background-size: auto 26px;
-    background-position-x: -52px;
-    cursor: default;
-    border: 0;
-  }
-}
-
-.add-field-button {
 }
 
 .disabled {
@@ -303,12 +304,15 @@ select {
     font-size: $font-size-sm;
     color: $color-violet-gray-dark;
   }
+
   .api_url_segment:hover {
     @extend .highlight-parameter;
   }
+
   .api_url_active {
     font-weight: bold;
   }
+
   small {
     line-height: 1.3;
     display: block;
@@ -356,8 +360,10 @@ select {
   border: 0;
   background-color: transparent;
   padding-right: 0;
+  padding-left: 0;
   margin-right: 0;
   margin-top: 0;
+
   &.active {
     &:hover, &:active, &:focus {
       background-position-x: -26px !important;
