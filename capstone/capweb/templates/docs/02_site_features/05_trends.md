@@ -104,7 +104,7 @@ keyboard icon and the mortarboard icon) above the graph. These are affected by t
 {# ==============> KEYBOARD NAVIGATION <============== #}
 # Keyboard navigation
 
-The graph is keyboard accessible. With the graph selected, press:
+The graph is keyboard-accessible. With the graph selected, press:
 
 Keyboard Navigation Commands:
 
@@ -138,7 +138,7 @@ access to our data.
 {# ==============> Wildcard search <============== #}
 # Wildcard search
 
-Replace the final word of a phrase with "*" to perform a wildcard search. This will return the top ten phrases beginning
+Replace the final word of a phrase with `*` to perform a wildcard search. This will return the top ten phrases beginning
 with your first one or two words. Wildcards are currently allowed only as the final word in a phrase. 
  
 Examples:
@@ -160,7 +160,7 @@ Examples:
 * [`me: lobster, cal: gold, tex: cowboy`]({% url 'trends' %}?q=me: lobster, cal: gold, tex: cowboy) *(compare "lobster" 
 in Maine, "gold" in California, and "cowboy" in Texas)*
 
-Show all jurisdictions separately by using the special jurisdiction code "*". 
+Show all jurisdictions separately by using the special jurisdiction code `*`. 
 
 Examples:
 
@@ -170,68 +170,68 @@ Examples:
 {# ==============> JURISDICTION CODES <============== #}
 # Jurisdiction codes
 
-* Wildcard: " *:"
-* Alabama: " ala:"
-* Alaska: " alaska:"
-* American Samoa: " am-samoa:"
-* Arizona: " ariz:"
-* Arkansas: " ark:"
-* California: " cal:"
-* Colorado: " colo:"
-* Connecticut: " conn:"
-* Dakota Territory: " dakota-territory:"
-* District of Columbia: " dc:"
-* Delaware: " del:"
-* Florida: " fla:"
-* Georgia: " ga:"
-* Guam: " guam:"
-* Hawaii: " haw:"
-* Idaho: " idaho:"
-* Illinois: " ill:"
-* Indiana: " ind:"
-* Iowa: " iowa:"
-* Kansas: " kan:"
-* Kentucky: " ky:"
-* Louisiana: " la:"
-* Massachusetts: " mass:"
-* Maryland: " md:"
-* Maine: " me:"
-* Michigan: " mich:"
-* Minnesota: " minn:"
-* Mississippi: " miss:"
-* Missouri: " mo:"
-* Montana: " mont:"
-* Native American: " native-american:"
-* Navajo Nation: " navajo-nation:"
-* North Carolina: " nc:"
-* North Dakota: " nd:"
-* Nebraska: " neb:"
-* Nevada: " nev:"
-* New Hampshire: " nh:"
-* New Jersey: " nj:"
-* New Mexico: " nm:"
-* Northern Mariana Islands: " n-mar-i:"
-* New York: " ny:"
-* Ohio: " ohio:"
-* Oklahoma: " okla:"
-* Oregon: " or:"
-* Pennsylvania: " pa:"
-* Puerto Rico: " pr:"
-* Rhode Island: " ri:"
-* South Carolina: " sc:"
-* South Dakota: " sd:"
-* Tennessee: " tenn:"
-* Texas: " tex:"
-* Tribal Jurisdictions: " tribal:"
-* United States: " us:"
-* Utah: " utah:"
-* Virginia: " va:"
-* Virgin Islands: " vi:"
-* Vermont: " vt:"
-* Washington: " wash:"
-* Wisconsin: " wis:"
-* West Virginia: " w-va:"
-* Wyoming: " wyo:" 
+* wildcard: `*`
+* Alabama: `ala`
+* Alaska: `alaska`
+* American Samoa: `am-samoa`
+* Arizona: `ariz`
+* Arkansas: `ark`
+* California: `cal`
+* Colorado: `colo`
+* Connecticut: `conn`
+* Dakota Territory: `dakota-territory`
+* District of Columbia: `dc`
+* Delaware: `del`
+* Florida: `fla`
+* Georgia: `ga`
+* Guam: `guam`
+* Hawaii: `haw`
+* Idaho: `idaho`
+* Illinois: `ill`
+* Indiana: `ind`
+* Iowa: `iowa`
+* Kansas: `kan`
+* Kentucky: `ky`
+* Louisiana: `la`
+* Massachusetts: `mass`
+* Maryland: `md`
+* Maine: `me`
+* Michigan: `mich`
+* Minnesota: `minn`
+* Mississippi: `miss`
+* Missouri: `mo`
+* Montana: `mont`
+* Native American: `native-american`
+* Navajo Nation: `navajo-nation`
+* North Carolina: `nc`
+* North Dakota: `nd`
+* Nebraska: `neb`
+* Nevada: `nev`
+* New Hampshire: `nh`
+* New Jersey: `nj`
+* New Mexico: `nm`
+* Northern Mariana Islands: `n-mar-i`
+* New York: `ny`
+* Ohio: `ohio`
+* Oklahoma: `okla`
+* Oregon: `or`
+* Pennsylvania: `pa`
+* Puerto Rico: `pr`
+* Rhode Island: `ri`
+* South Carolina: `sc`
+* South Dakota: `sd`
+* Tennessee: `tenn`
+* Texas: `tex`
+* Tribal Jurisdictions: `tribal`
+* United States: `us`
+* Utah: `utah`
+* Virginia: `va`
+* Virgin Islands: `vi`
+* Vermont: `vt`
+* Washington: `wash`
+* Wisconsin: `wis`
+* West Virginia: `w-va`
+* Wyoming: `wyo`
 
 
 {# ==============> CITATION FEATURE <============== #}
