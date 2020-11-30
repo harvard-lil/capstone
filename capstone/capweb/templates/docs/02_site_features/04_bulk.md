@@ -47,12 +47,12 @@ The JSON objects returned by the API and in bulk files differ only in that bulk 
 Bulk data files are provided as zipped directories. Each directory is in
 [BagIt format](https://en.wikipedia.org/wiki/BagIt), with a layout like this:
 
-* `Illinois-20180829-text/`
-1. `bag-info.txt`
-    2. `bagit.txt`
-    3. `manifest-sha512.txt`
-* `data/`
-    4. `data.jsonl.xz`
+    .
+    ├── bag-info.txt
+    ├── bagit.txt
+    ├── data/
+    │   └── data.jsonl.xz
+    └── manifest-sha512.txt
     
 Because the zip file provides no additional compression, we recommend uncompressing it for convenience and
 keeping the uncompressed directory on disk.
