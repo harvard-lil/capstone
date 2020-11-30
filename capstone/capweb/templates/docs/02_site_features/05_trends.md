@@ -6,8 +6,8 @@ explainer: CAP Historical Trends visualizes and compares the frequency of terms 
 
 The Caselaw Access Project includes over 6 million U.S. legal cases from the Harvard Law School 
 Library — about 12 billion words in all. Our Historical Trends tool graphs the frequency of words and phrases through
-time from 1800 to 2018, similar to the Google Ngram Viewer. (Though the corpus includes data from cases before 1800, 
-low case density limits their utility in visualizing trends, so we've excluded them.)
+time from 1800 to 2018, similar to the [Google Ngram Viewer](https://books.google.com/ngrams). (Though the corpus includes
+data from cases before 1800, low case density limits their utility in visualizing trends, so we've excluded them.)
 
 Search for phrases of one to three words. Multiple phrases can be separated by commas. Do not use quotes. 
 All searches are case-insensitive. Examples:
