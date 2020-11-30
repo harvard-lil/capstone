@@ -97,7 +97,7 @@ If you'd preview to view the data points in a table rather than on a chart, you 
 keyboard icon and the mortarboard icon) above the graph. These are affected by the 
 [customize display settings](#customize-display) in the same way the graph is. 
 
-**important: smoothing does not simply flatten the curve; it changes the values of the each data point. Please see the
+**Important: Smoothing does not simply flatten the curve; it changes the values of the each data point. Please see the
 [Smoothing](#setting-smoothing) section for more information.**
 
 
