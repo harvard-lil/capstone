@@ -43,7 +43,7 @@ Using Python's `requests` library, it would look something like this:
   
 ## Failure: error_auth_required
 
-In authentication fails, in the casebody object, you'll receive 
+If authentication fails, you'll receive
 
          ...
           "casebody": {
@@ -53,7 +53,7 @@ In authentication fails, in the casebody object, you'll receive
           ...
 
 In this example the response included a case from a restricted jurisdiction, and `casebody.data` for the case is 
-therefore blank, while `casebody.status` is "error_auth_required".
+therefore blank, while `casebody.status` is `error_auth_required`.
 
 ## Browsable API
 
