@@ -30,11 +30,11 @@ by a space, followed by your API key.
 
 With an API key of `abcd12345`, you would pass `Token abcd12345` to the `Authorization` header.
 
-A curl command would look like this:
+A `curl` command would look like this:
   
     curl -H "Authorization: Token abcd12345" "{{ case_url }}?full_case=true"
 
-In a program (python's request library in this example) it would look something like this:
+Using Python's `requests` library, it would look something like this:
 
     response = requests.get(
         '{{ case_url }}?full_case=true',
