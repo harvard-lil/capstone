@@ -53,7 +53,7 @@ Read on for how to change those display settings.
 
 ## Percentage Count/Instance Count/Scaling
 
-For example, in the query [{% url 'trends' %}?q=apple, banana, orange, pear]({% url 'trends' %}?q=apple,%20banana,%20orange,%20pear) 
+For example, in the query [trends?q=apple, banana, orange, pear]({% url 'trends' %}?q=apple,%20banana,%20orange,%20pear)
 we can see four terms: apple, banana, orange, and pear. For the sake of simplicity, we'll turn smoothing off by clicking 
 on the gear icon and sliding
 the smoothing slider all the way to the left, until 'No smoothing will be applied' is displayed.
