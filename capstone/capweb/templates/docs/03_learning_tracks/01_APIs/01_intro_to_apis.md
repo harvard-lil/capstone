@@ -17,7 +17,7 @@ data and sends a response. If you know how to read a
 services in ways that aren't limited to clicking on the links and buttons on the screen. 
   
 Consider the following url, which will 
-[perform a google search for the word "CAP."](https://www.google.com/search?q=CAP")
+[perform a google search for the word "CAP."](https://www.google.com/search?q=CAP)
   
     https://www.google.com/search?q=CAP
   
