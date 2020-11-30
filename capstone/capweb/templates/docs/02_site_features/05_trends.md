@@ -26,7 +26,7 @@ All searches are case-insensitive. Examples:
 
 The color/shape-keyed terms at the top of the graph correspond to each term in the query, and each of those corresponds 
 to a trend line on the graph. The individual points on the trend line can be revealed by hovering over them with the 
-mouse cursor, or by using the [keyboard navigation](#keyboard-navigation).
+pointer, or by using [keyboard navigation](#keyboard-navigation).
 
 ## Horizontal axis
 
