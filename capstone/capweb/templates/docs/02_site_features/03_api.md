@@ -198,8 +198,8 @@ Endpoint Parameters:
 
 ### Search Syntax
 
-The `search` field supports Elasticsearch [Simple Query String Syntax](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl-simple-query-string-query.html#_simple_query_string_syntax)
-For example, you can use `"quotes"` to search by phrase and `-negation` to exclude cases with matching terms.
+The `search` field supports Elasticsearch [Simple Query String Syntax](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl-simple-query-string-query.html#_simple_query_string_syntax).
+For example, you can use `"quotation marks around your search string"` to search by phrase and prefix words with a minus sign to exclude cases with matching terms.
 
 ### Examples
 
