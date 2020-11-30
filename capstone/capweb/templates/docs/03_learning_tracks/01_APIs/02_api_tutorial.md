@@ -36,7 +36,7 @@ it's the first step towards doing fantastic work.
 You might first notice the unusual, code-ish-looking format of this data. It's called JSON, or JavaScript Object 
 Notation, and we'll look into that soon. You probably also recognized some of the terms on the left, such as cases, 
 jurisdictions, courts, etc. Each is the name of an API 
-[endpoint]({% docs_url 'glossary' %}#def-endpoint, through which you 
+[endpoint]({% docs_url 'glossary' %}#def-endpoint), through which you
 receive one type of data. For example, to find a court, you might use the *courts* endpoint. Click on the URL to the 
 right of "courts."
 
