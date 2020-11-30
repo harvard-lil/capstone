@@ -8,7 +8,7 @@ This learning track offers an introduction to using the CAP API for research.
 * How do you use an API? Check out our [CAP API Tutorial]({% docs_url 'api_tutorial' %})
   for an introduction to JSON, curl, and how to use the CAP API to fetch some data.
 * What else can the CAP API do? Our [In Depth Tutorial]({% docs_url 'in_depth' %})
-  walks through many of the features of our caselaw API and how it can be used in your research.
+  walks through many of its features.
 
-Or if you're an RESTful API pro, you may just need our API reference
+Or, if you're already familiar with RESTful APIs, you may just need our
 [API Reference]({% docs_url 'api' %}).
