@@ -26,8 +26,8 @@ because they indicate to the server that everything after them is a [parameter](
 
 # Command Line {: id="def-command-line" }
 A textual interface for interacting with a computer. Rather than interacting with the system through windows
- and mouse clicks, commands are typed and output is rendered in its textual form. On mac, the default Command Line
- program is Terminal. On Windows, the program is cmd.exe.
+ and mouse clicks, the user types commands and output is rendered in textual form. On a Mac, the default command-line
+ program is Terminal. On Windows, the program is `cmd.exe`.
 
 
 # curl {: id="def-curl" }
