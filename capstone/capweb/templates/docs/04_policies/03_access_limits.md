@@ -64,5 +64,5 @@ bulk access to anyone seeking to make commercial use of this data.
 
 ## Commercial Users {: id="def-researchers" }
 
-[Click here to contact Ravel for more information](http://info.ravellaw.com/contact-us-form) or 
-[contact us]({% url "contact" %}) and we will put you in touch with Ravel.
+[Click here to contact Ravel for more information](https://home.ravellaw.com/contact) or
+[contact us]({% url "contact" %}), and we will put you in touch with Ravel.
