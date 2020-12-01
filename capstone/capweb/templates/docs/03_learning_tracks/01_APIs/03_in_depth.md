@@ -67,7 +67,7 @@ just on those fields.
 
 ### Filtering by Groups or Ranges {: #case-filtering }
 
-Many of the parameters on the cases endpoint can be filtered by appending a suffix to the query parameter key.
+Many of the parameters on the `/cases` endpoint can be filtered by appending a suffix to the query parameter key.
 
 To match to a list, append `__in` to the query parameter. For example, to fetch cases matching ID `12`, `34`, or `56`:
 
@@ -84,7 +84,7 @@ To filter by prefix, append `__prefix`. For example, to find cases from February
 
 ## Sorting
   
-You can sort your search in the cases endpoint using the `ordering` parameter. To sort your results in ascending order,
+You can sort your search in the `/cases` endpoint using the `ordering` parameter. To sort your results in ascending order,
 supply the `ordering` parameter with the field on which you'd like to sort your results. For example, if you'd like to
 search for the term 'baronetcy' with the oldest cases appearing first, supply the following query:
 
@@ -97,10 +97,10 @@ the same search sorted in descending order, that is, with the newest cases first
     
 ## Types of Data You Can Query
 
-We make data available through several API endpoints, the most popular being our cases endpoint. It's the only endpoint
+We make data available through several API endpoints, the most popular being our `/cases` endpoint. It's the only endpoint
 through which we distribute full case text, and the only endpoint for which you may need authentication. We also serve 
 up citations, ngrams, court metadata, reporter series metadata, volume metadata, and jurisdiction metadata. They all
-work about the same way, and are all based off of the same data set. That means that an ID in the reporters endpoint 
+work about the same way, and are all based on the same data set. That means that an ID in the `/reporters` endpoint
 will correspond to a reporter object's ID listed in a case. 
 
 Check out our [API Reference]({% docs_url 'api' %}) for a complete list of specs and arguments.
