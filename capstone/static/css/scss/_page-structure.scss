@@ -1,5 +1,6 @@
 .basic-page {
   @extend .row;
+  min-height: 100%;
   ul {
     padding-left: 0;
   }

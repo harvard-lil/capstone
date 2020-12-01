@@ -55,6 +55,7 @@ export default {
       this.handleRouteUpdate(route, oldRoute);
     },
     results() {
+      console.log("results is changing state", this.results)
       if (this.results.length && !this.resultsShown) {
         this.resultsShown = true
       }
@@ -119,19 +120,16 @@ export default {
 
         // load search fields and values from query params
         let fields = searchform.endpoints[this.endpoint];
-        console.log("this.endpoint", this.endpoint, fields, )
-        for (const field of fields) {
-          console.log("field is ", field, fields.length)
+        fields.forEach((field) => {
           if (field && query[field.name]) {
-            fields[field].value = query[field.name];
-            fields.push(field);
+            field.value = query[field.name];
+            fields[field] = field;
           }
-        }
+        })
 
 
         // if no search fields included in query, show default fields
         //   fields = blankFields.filter(endpoint => endpoint.default);
-
         searchform.fields = fields;
       }
 
@@ -213,7 +211,7 @@ export default {
       const currentFetchID = Math.random();
       this.currentFetchID = currentFetchID;
       this.showLoading = true;
-      print("getResultsPage !!!!!!!!!!", query_url)
+      console.log("getResultsPage !!!!!!!!!!", query_url)
       return fetch(query_url)
           .then((response) => {
             if (currentFetchID !== this.currentFetchID) {
@@ -320,6 +318,7 @@ export default {
       /* Scroll to first element with target selector. */
       // use setTimeout to make sure element exists -- it may not have appeared yet if we just changed template vars
       setTimeout(() => {
+        console.log("selector", selector)
         const el = document.querySelector(selector);
         el.focus({preventScroll: true}); // set focus for screenreaders
         el.scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});

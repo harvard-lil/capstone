@@ -377,7 +377,7 @@
   import 'vue-slider-component/theme/default.css';
 
   import LineExample from './LineChart.vue';
-  import LoadingButton from '../vue-shared/loading-button.vue';
+  import LoadingButton from '../vue-shared/search-button.vue';
   import Panelset from '../vue-shared/panelset';
   import SearchResults from './search-results.vue';
   import {getApiUrl, jsonQuery} from '../api'

@@ -1,7 +1,7 @@
 <template>
   <div class="submit-btn-container">
-    <button class="btn-create btn-primary d-flex align-items-center">
-      <slot></slot>
+    <button @click="changeState()" class="btn-create btn-primary d-flex align-items-center">
+      Search
       <span v-if="showLoading"
             class="spinner-border spinner-border-sm"
             role="status"
@@ -26,6 +26,12 @@
               loadingMessage.focus();
           });
       }
+    },
+    methods: {
+      changeState() {
+        this.$parent.valueUpdated();
+        console.log("clicked changeState")
+      },
     }
   }
 </script>

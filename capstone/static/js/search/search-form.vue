@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="$emit('new-search', fields, endpoint)"
-        class="col-lg-8 col-md-10 col-centered">
+        class="col-centered">
     <div class="col-md-2 empty-push-div"></div>
     <div class="col-md-10 title-container">
       <h3 class="page-title">
@@ -95,8 +95,7 @@
                     v-on:keyup="valueUpdated"
                     @focus="highlightExplainer"
                     @blur="unhighlightExplainer">
-
-            </textarea>
+          </textarea>
         </template>
 
 
@@ -108,9 +107,9 @@
     </div>
 
     <div class="submit-button-group">
-      <loading-button :showLoading="showLoading">Search</loading-button>
+      <search-button :showLoading="showLoading" :endpoint="endpoint"></search-button>
       <a href="#" id="query-explainer-button" class="mt-0" @click="toggleExplainer"
-              v-if="show_explainer">HIDE API CALL
+         v-if="show_explainer">HIDE API CALL
       </a>
       <a href="#" id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</a>
     </div>
@@ -141,11 +140,11 @@
   </form>
 </template>
 <script>
-import LoadingButton from '../vue-shared/loading-button.vue';
+import SearchButton from '../vue-shared/search-button.vue';
 import QueryExplainer from './query-explainer';
 
 export default {
-  components: {LoadingButton, QueryExplainer},
+  components: {SearchButton, QueryExplainer},
   data: function () {
     return {
       query: [],
@@ -340,15 +339,17 @@ export default {
     valueUpdated() {
       this.query_url = this.$parent.assembleUrl();
       console.log("valueUpdated", this.query_url)
-
+      this.$router.push({name: 'endpoint', params: {endpoint: this.endpoint}});
     },
     getFieldByName(field_name) {
       console.log("getFieldByName", field_name)
       return this.endpoints[this.endpoint].find(field => field.name === field_name);
     },
     changeEndpoint: function (new_endpoint) {
+      this.endpoint = new_endpoint;
+      this.fields = this.endpoints[new_endpoint];
       console.log("new endpoint", new_endpoint, "fields:", this.endpoints[new_endpoint])
-      this.$router.push({name: 'endpoint', params: {endpoint: new_endpoint}}).catch(()=>{});
+
     },
     highlightExplainer(event) {
       let explainer_argument = document.getElementById("p_" + event.target.id);
