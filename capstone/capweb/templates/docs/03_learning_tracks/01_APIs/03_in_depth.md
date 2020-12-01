@@ -107,8 +107,8 @@ Check out our [API Reference]({% docs_url 'api' %}) for a complete list of specs
 
 # Getting Full Case Text
 
-You can request the get full case text for cases anywhere in the cases endpoint, whether you're viewing an individual
-case, or a query with many cases. to do so, you must include the `full_case=true` argument in your query url, like so:
+You can request full case text for cases anywhere in the cases endpoint, whether you're viewing an individual
+case or a list of cases. to do so, you must include the `full_case=true` parameter in your query url, like so:
 
 [{% api_url "cases-list" %}jurisdiction=ill&page_size=1&full_case=true]({% api_url "cases-list" %}jurisdiction=ill&page_size=1&full_case=true)
 
