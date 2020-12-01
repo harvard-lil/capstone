@@ -69,8 +69,9 @@ Whoa! That's a lot more data! Before we continue, let's take a look at the JSON 
 
 # Intro to JSON
 
-JSON, or JavaScript Object Notation, is a simple but flexible way to represent data in text. What people do with this 
-format can be quite complex, but we won't need to dive too deep to understand the API contents.
+[JSON, or JavaScript Object Notation](https://en.wikipedia.org/wiki/JSON), is a simple but
+flexible way to represent data in text. What people do with this format can be quite complex,
+but we won't need to dive too deep to understand the API contents.
 
 Let's start with a bit of simple example data in the form of a shopping list to get us started.
 
