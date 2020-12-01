@@ -110,11 +110,11 @@ Check out our [API Reference]({% docs_url 'api' %}) for a complete list of specs
 You can request full case text for cases anywhere in the `/cases` endpoint, whether you're viewing an individual
 case or a list of cases. to do so, you must include the `full_case=true` parameter in your query url, like so:
 
-[{% api_url "cases-list" %}jurisdiction=ill&page_size=1&full_case=true]({% api_url "cases-list" %}jurisdiction=ill&page_size=1&full_case=true)
+[{% api_url "cases-list" %}?jurisdiction=ill&page_size=1&full_case=true]({% api_url "cases-list" %}?jurisdiction=ill&page_size=1&full_case=true)
 
 Without that option, you'll just get the case metadata:
 
-[{% api_url "cases-list" %}jurisdiction=wash&page_size=1]({% api_url "cases-list" %}jurisdiction=wash&page_size=1)
+[{% api_url "cases-list" %}?jurisdiction=wash&page_size=1]({% api_url "cases-list" %}?jurisdiction=wash&page_size=1)
 
 For most cases, you'll need to authenticate using an API key to get the case text. There are several jurisdictions
 for which we do not require authentication, which we call
@@ -124,12 +124,14 @@ a complete list of open jurisdictions, check out our
 
 For restricted jurisdictions, if you try to get case text without authenticating, you'll run into this:
 
-[{% api_url "cases-list" %}jurisdiction=wash&page_size=1&full_case=true]({% api_url "cases-list" %}jurisdiction=wash&page_size=1&full_case=true)
+[{% api_url "cases-list" %}?jurisdiction=wash&page_size=1&full_case=true]({% api_url "cases-list" %}?jurisdiction=wash&page_size=1&full_case=true)
 
+          ...
           "casebody": {
             "data": null,
             "status": "error_auth_required"
           }
+		  ...
 
 {# ==============> AUTHENTICATION <============== #}
 # Authentication
