@@ -1,7 +1,5 @@
-{% load static %}
 title: Case study: Arkansas 
 meta_description: Case study on the Arkansas open access caselaw publishing platform
-page_image: img/og_image/about.png
 explainer: Enhancing accessibility of the Arkansas judiciary opinions 
 top_section_style: bg-black
 row_style: bg-tan

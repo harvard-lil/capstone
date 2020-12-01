@@ -12,7 +12,7 @@ services:
     redis:
         image: registry.lil.tools/library/redis:6.0.9
     elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
         environment:
           - node.name=es01
           - bootstrap.memory_lock=true
@@ -28,7 +28,7 @@ services:
           - 127.0.0.1:9200:9200
     web:
         build: .
-        image: capstone:0.3.112-133e9c29a6d9e1adb437b5d4d2cec8f0
+        image: capstone:0.3.114-4c46b25dd88a2c7f63fca573d2aba917
         volumes:
             # NAMED VOLUMES
             - node_modules:/app/node_modules:delegated

@@ -128,7 +128,6 @@ API_HOST_OVERRIDE = None
 # useful for pointing dev JS at prod API for testing. E.g., add this to settings.py:
 # API_HOST_OVERRIDE = 'https://api.case.law'
 
-DOCS_RELATIVE_DIR = os.path.join('templates', 'docs')
 DOCS_SHOW_DRAFTS = False
 
 TEMPLATES = [

@@ -87,6 +87,11 @@ button, .btn,
   }
 }
 
+.btn-link {
+  font-weight: $font-weight-normal;
+  text-transform: unset;
+}
+
 .btn-group {
   margin-bottom: 3rem;
 }
@@ -183,7 +188,6 @@ main {
 
 .code-block {
   font-size: 0.75em;
-  margin-top: -20px;
   line-height: 1.5em;
   background-color: $color-white;
   padding: 1rem;

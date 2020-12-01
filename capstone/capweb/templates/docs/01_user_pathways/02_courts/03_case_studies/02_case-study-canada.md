@@ -1,7 +1,5 @@
-{% load static %}
 title: Case study: Canada 
 meta_description: Case study on Canada's open access caselaw publishing platform
-page_image: img/og_image/about.png
 explainer: Since 1992, Canada’s first-ever legal website has offered open access to official caselaw
 top_section_style: bg-black
 row_style: bg-tan

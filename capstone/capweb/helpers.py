@@ -2,9 +2,10 @@ import json
 import re
 import socket
 import requests
-import os
 from collections import namedtuple, OrderedDict
 from contextlib import contextmanager
+import django_hosts
+from elasticsearch.exceptions import NotFoundError
 from functools import wraps, lru_cache
 from urllib.parse import urlencode
 from pathlib import Path
@@ -15,14 +16,10 @@ from markdown.extensions.attr_list import AttrListExtension
 from markdown.extensions.toc import TocExtension
 from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
-from django.utils.safestring import mark_safe
-
-
 from rest_framework.negotiation import DefaultContentNegotiation
 from rest_framework import renderers
 from rest_framework.request import Request as RestRequest
 
-import django_hosts
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.core.cache import caches
@@ -30,7 +27,7 @@ from django.core.mail import EmailMessage
 from django.db import transaction, connections, OperationalError
 from django.urls import NoReverseMatch
 from django.utils.functional import lazy
-
+from django.utils.safestring import mark_safe
 
 
 def cache_func(key, timeout=None, cache_name='default'):
@@ -268,80 +265,130 @@ def is_browser_request(request):
     drf_renderer = DefaultContentNegotiation().select_renderer(RestRequest(request), [renderers.JSONRenderer, renderers.TemplateHTMLRenderer])
     return drf_renderer[0] is renderers.TemplateHTMLRenderer
 
-def path_to_url(url_string):
-    return re.sub(r'(([0-9]+)_([^/]))+', '\\3', url_string)
 
 safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
 
+
+### docs indexing ###
+# functions to load and index the documentation files in templates/docs
+
+docs_path = Path(__file__).parent.joinpath('templates/docs')
+
+
+def path_to_url(path):
+    if str(path) == '.':
+        return ''
+    return re.sub(r'\d+_', '', str(path.with_suffix('')))
+
+
+def iter_docs():
+    for path in sorted(docs_path.glob('**/*')):
+        if not (path.suffix == '.md' or path.is_dir()):
+            continue
+        yield path
+
+
+def get_doc_links():
+    """
+        Return a map of doc name to url. Given 'docs/01_user_pathways/01_researchers.md', return
+        {'researchers': 'user_pathways/researchers'}.
+    """
+    doc_links = {}
+    for path in iter_docs():
+        order, file_name = path.with_suffix('').name.split('_', 1)
+        if file_name == 'index':
+            continue
+        if file_name in doc_links:
+            raise ValueError(f"Two documentation pages have the file name '{file_name}'. Change the file name for one of them.")
+        doc_links[file_name] = path_to_url(path.relative_to(docs_path))
+    return doc_links
+
+
 def get_toc_by_url():
-    from elasticsearch.exceptions import NotFoundError #TODO figure out how to fix this import problem
     from capapi.documents import CaseDocument
-    app_absolute_path = os.path.abspath(os.path.dirname(__file__))
-    base_path = Path(app_absolute_path, settings.DOCS_RELATIVE_DIR)
+    base_path = Path(__file__).parent.joinpath('templates/docs')
     toc_by_url = {
-        '.': {'children': []},
+        '': {
+            'parents': [],
+            'children': [],
+            'url': '',
+            'meta': {
+                'doc_link': '/',
+            }
+        },
     }
-    # special case contexts
+
+    # context variables for rendering markdown templates
     context = {
-        'email': settings.DEFAULT_FROM_EMAIL
+        'email': settings.DEFAULT_FROM_EMAIL,
+        'news': get_data_from_lil_site(section="news"),
     }
-    contributors = get_data_from_lil_site(section="contributors")
-    sorted_contributors = {}
-    for contributor in contributors:
-        sorted_contributors[contributor['sort_name']] = contributor
-        if contributor['affiliated']:
-            sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
-    sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
-    context['contributors']= sorted_contributors
-    context['news']= get_data_from_lil_site(section="news")
     try:
         case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
     except NotFoundError:
         try:
-            case = CaseDocument.search().execute()[0]
+            case = CaseDocument.search()[0].execute()[0]
         except NotFoundError:
             case = None
     context['case_id'] = case.id if case else 1
     context['case_url'] = reverse('cases-detail', args=[context['case_id']], host='api')
     context['case_cite'] = case.citations[0].cite if case else "123 U.S. 456"
+
     def path_string_to_title(string):
         return string.replace('-', ' ').replace('_', ' ').title().replace('Api', 'API').replace('Cap', 'CAP')
-    for path in sorted(base_path.glob('**/*')):
-        rel_path = path.relative_to(base_path)
-        parent_url = path_to_url(str(rel_path.parent))
+
+    for path in iter_docs():
         if not (path.suffix == '.md' or path.is_dir()):
             continue
-        order, display_name = path_string_to_title(rel_path.with_suffix('').name).split(' ', 1)
-        entry = {
-            'label': display_name,
-            'uid': str(rel_path.with_suffix('')).replace("/", "_"),
-            'children': [],
-            'order': int(order),
-        }
+        rel_path = path.relative_to(base_path)
+        parent_url = path_to_url(rel_path.parent)
+        order, file_name = rel_path.with_suffix('').name.split('_', 1)
+        display_name = path_string_to_title(file_name)
+        is_index = display_name == 'Index'
+        if is_index:
+            entry = toc_by_url[parent_url]
+        else:
+            entry = {
+                'url': path_to_url(rel_path),
+                'file_name': file_name,
+                'label': display_name,
+                'uid': str(rel_path.with_suffix('')).replace("/", "_"),
+                'content': '',
+                'children': [],
+                'order': int(order),
+                'meta': {
+                    'title': display_name,
+                },
+            }
         if path.suffix == '.md':
-            entry['url'] = path_to_url(str(rel_path.with_suffix('')))
             entry['path'] = str(path)
-            entry['doc_toc'] = ''
-            markdown_doc = render_to_string(str(path), context)
+            try:
+                markdown_doc = render_to_string(str(path), context)
+            except Exception as e:
+                raise Exception(f"Error rendering template {path}") from e
             content, doc_toc, meta = render_markdown(markdown_doc)
-            if settings.DOCS_SHOW_DRAFTS is False and 'status' in meta and meta['status'] == 'draft':
+            if settings.DOCS_SHOW_DRAFTS is False and meta.get('status') == 'draft':
                 continue
             entry['doc_toc'] = mark_safe(doc_toc)
             entry['doc_toc_absolute'] = mark_safe(
                 re.sub(r'href="#', 'href="{}#'.format(reverse('docs', args=[entry['url']])), doc_toc))
 
             entry['content'] = mark_safe(content)
-            entry['meta'] = {k: mark_safe(v) for k, v in meta.items()}
-            entry['breadcrumb'] = path_string_to_title(entry['url'])  # TODO: use entry['meta']['title'] of each entry
-        else:
-            # directory
-            entry['url'] = path_to_url(str(rel_path))
-        toc_by_url[parent_url]['children'].append(entry)
-        toc_by_url[entry['url']] = entry
+            entry['meta'].update({k: mark_safe(v) for k, v in meta.items()})
+            entry['label'] = entry['meta'].get('short_title') or entry['meta']['title']
+        if not is_index:
+            parent_entry = toc_by_url[parent_url]
+            parent_entry['children'].append(entry)
+            entry['parents'] = parent_entry['parents'] + [parent_entry]
+            toc_by_url[entry['url']] = entry
+
     for item in toc_by_url.values():
         item['children'].sort(key=lambda i: i['order'])
+
     return toc_by_url
 
-# in production, only calculate toc_by_url once
+
+# in production, only calculate these once
 if not settings.DEBUG:
     get_toc_by_url = lru_cache(None)(get_toc_by_url)
+    get_doc_links = lru_cache(None)(get_doc_links)

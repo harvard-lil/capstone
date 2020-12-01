@@ -19,7 +19,9 @@ from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect
 from django.template import Template, RequestContext
+from django.template.loader import render_to_string
 from django.utils.http import is_safe_url
+from django.views import View
 from django.utils.safestring import mark_safe
 from django.db.models import Prefetch
 
@@ -31,6 +33,7 @@ from capweb.models import GallerySection, GalleryEntry
 from capdb.models import Snippet, Court, Reporter, Jurisdiction, normalize_cite, CaseMetadata
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request, api_request
+from capweb.templatetags.docs_url import docs_url
 from config.logging import logger
 from scripts.extract_cites import extract_citations_from_text
 
@@ -58,24 +61,25 @@ def index(request):
         'page_image': 'img/og_image/index.png',
     })
 
+
 def docs(request, req_doc_path):
     """
         Gets a list of MD documents and their file structure from the docs_path directory and creates the docs nav
         structure from it. Serves up a specific doc or the default docs entry page.
     """
-    if not req_doc_path:
-        req_doc_path = "general/docs_intro"
     toc_by_url = get_toc_by_url()
-    page = toc_by_url.get(req_doc_path)
-    if not page or 'content' not in page:
+    page = toc_by_url.get(req_doc_path.rstrip('/'))
+    if not page:
         raise Http404
     return render(request, 'docs.html', {
         'content': page['content'],
-        'toc': toc_by_url['.']['children'],
+        'toc': toc_by_url['']['children'],
         'page_image': 'img/og_image/documentation.png',
         'req_doc_path': req_doc_path,
-        'breadcrumb': page['breadcrumb'],
-        'meta': page['meta']
+        'parents': page['parents'],
+        # this can be overridden by meta_description: in an individual doc page:
+        'meta_description': f'Caselaw Access Project: {page["meta"]["title"]} Documentation',
+        **page['meta'],
     })
 
 
@@ -163,25 +167,20 @@ def snippet(request, label):
 
 
 def legacy_docs_redirect(request):
-    url_path = request.META['PATH_INFO'].lstrip('/').rstrip('/')
+    url_path = request.path.strip('/')
     translation = {
-        "api": "api/api",
-        "about": "general/about",
-        "search-docs": "web/search",
-        "tools": "general/tools",
-        "trends-docs": "web/trends",
-        "bulk": "bulk/bulk_docs",
-        "terms": "general/terms-of-use",
-        "privacy": "general/privacy-policy",
-        "changelog": "general/changelog",
-        "action": "general/for-courts/index",
-        "action/guidelines": "general/for-courts/guidelines",
-        "action/case-study-nm": "general/for-courts",
-        "action/case-study-ark": "general/for-courts/case-study-ark",
-        "action/case-study-canada": "general/for-courts/case-study-canada",
+        "api": "api",
+        "search-docs": "search",
+        "trends-docs": "trends",
+        "bulk": "bulk",
+        "changelog": "changelog",
+        "action": "courts",
+        "action/guidelines": "guidelines",
+        "action/case-study-nm": "case-study-nm",
+        "action/case-study-ark": "case-study-ark",
+        "action/case-study-canada": "case-study-canada",
     }
-
-    return redirect('docs', translation[url_path])
+    return redirect(docs_url(translation[url_path]))
 
 
 def screenshot(request):
@@ -465,3 +464,54 @@ def fetch(request):
         'citations': citations,
         'error': error,
     })
+
+
+class MarkdownView(View):
+    """
+        Render template_name as markdown, and then pass 'main_content', 'sidebar_menu_items', and 'meta' to base_template_name
+        for display as HTML.
+        IMPORTANT: As all outputs are marked safe, subclasses should never include user-generated input in the template context.
+    """
+    base_template_name = "markdown.html"
+    extra_context = {}
+    template_name = None
+
+    def get(self, request, *args, **kwargs):
+        context = {**self.extra_context, **self.get_context(request)}
+        # render any django template tags in markdown document
+        markdown_doc = render_to_string(self.template_name, context, request)
+
+        # render markdown document to html
+        html, toc, meta = render_markdown(markdown_doc)
+
+        # present markdown html within base_template_name
+        meta = {k:mark_safe(v) for k,v in meta.items()}
+        return render(request, self.base_template_name, {
+            'main_content': mark_safe(html),
+            'sidebar_menu_items': mark_safe(toc),
+            'main_content_style': 'markdown',
+            **context,
+            **meta,
+        })
+
+    def get_context(self, request):
+        return {}
+
+
+class AboutView(MarkdownView):
+    template_name = "about.md"
+
+    def get_context(self, request):
+        contributors = get_data_from_lil_site(section="contributors")
+        sorted_contributors = {}
+        for contributor in contributors:
+            sorted_contributors[contributor['sort_name']] = contributor
+            if contributor['affiliated']:
+                sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
+        sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
+
+        return {
+            "contributors": sorted_contributors,
+            "news": get_data_from_lil_site(section="news"),
+            "email": settings.DEFAULT_FROM_EMAIL
+        }

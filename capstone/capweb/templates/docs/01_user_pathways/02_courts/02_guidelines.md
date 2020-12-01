@@ -1,12 +1,10 @@
-{% load static %}
-title: CAP Digital-First Guidelines 
+title: Digital-First Guidelines 
 meta_description: Guidelines for digital-first publishing of court decisions
-page_image: img/og_image/about.png
 explainer: The CAP Digital-First Guidelines describe essential and desirable characteristics for digital-first caselaw publishing systems, whether you are drafting an RFP or building a system internally. 
 top_section_style: bg-black
 row_style: bg-tan
 
-# Introduction {: class="subtitle" } 
+# Introduction
 
 Ensuring public access to law is a fundamental obligation of our government. For centuries our courts have fulfilled this obligation by publishing and disseminating their written decisions in books. Today, books are no longer adequate to this task. In a modern world, ensuring public access to court decisions means publishing and distributing them online for free, without usage restrictions.
 
@@ -15,7 +13,7 @@ Below are guidelines for any state making the transition to digital-first publis
 For states administering their own digital-first publishing systems, these guidelines can inform that system’s priorities and design. For states that will rely on the software and/or services of a commercial vendor, these guidelines can help define an RFP and inform negotiations and contracting.
 
 
-# Digital-first publishing guidelines {: class="subtitle" } 
+# Digital-first publishing guidelines
 
 ## Essential characteristics
 
@@ -37,11 +35,11 @@ The digital versions of decisions should be the official versions.
 
 ### Citable
 
-The digital version should be citable in and by the courts of the relevant state, using vendor neutral citation formats. 
+The digital version should be citable in and by the courts of the relevant state, using vendor-neutral citation formats.
 
 ### Machine Readable
 
-The decisions should be made available in machine readable formats, meaning at least digitally created PDFs.
+The decisions should be made available in machine-readable formats, meaning at least digitally created PDFs.
 
 ## Desirable characteristics
 
@@ -59,7 +57,7 @@ Decisions should be issued with accompanying metadata that describes, according 
 
 ### Medium-Neutral
 
-Decisions should include paragraph-numbering and avoid page-dependency.
+Decisions should include paragraph numbering and avoid page dependency.
 
 ### Archives
 
