@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="$emit('new-search', fields, endpoint)"
-    class="col-10 col-centered">
+        class="col-lg-8 col-md-10 col-centered">
     <div class="col-md-2 empty-push-div"></div>
     <div class="col-md-10 title-container">
       <h3 class="page-title">
@@ -51,18 +51,19 @@
           </li>
         </ul>
       </div>
-      <div class="input-group " v-for="field in fields" :key="field.name">
+      <div v-for="field in fields" :key="field.name">
         <small v-if="field.info" :id="`help-text-${field.name}`" class="form-text text-muted">{{ field.info }}
         </small>
         <template v-if="field['choices']">
           <select v-model='field["value"]'
                   :id='field["name"]'
+                  class="form-control"
                   @change="valueUpdated"
                   @focus="highlightExplainer"
                   @blur="unhighlightExplainer">
-            <option selected hidden value="">{{field.label}}</option>
+            <option selected hidden value="">{{ field.label }}</option>
             <option v-for="choice in choices[field['choices']]"
-                    :value="choice[0]" v-bind:key="choice[1]">
+                    :value="choice[0]" v-bind:key="choice[0]">
               {{ choice[1] }}
             </option>
           </select>
@@ -106,23 +107,23 @@
       <!--Buttons row-->
     </div>
 
-      <div class="submit-button-group">
-        <loading-button :showLoading="showLoading">Search</loading-button>
-        <button id="query-explainer-button" class="mt-0" @click="toggleExplainer"
-                v-if="show_explainer">HIDE API CALL
-        </button>
-        <button id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</button>
-      </div>
+    <div class="submit-button-group">
+      <loading-button :showLoading="showLoading">Search</loading-button>
+      <a href="#" id="query-explainer-button" class="mt-0" @click="toggleExplainer"
+              v-if="show_explainer">HIDE API CALL
+      </a>
+      <a href="#" id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</a>
+    </div>
 
-      <div class="search-disclaimer">
-        <p>
-          Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
-        </p>
-        <p>
-          <span class="bold">Need legal advice?</span> This is not your best option! Read about
-          <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
-        </p>
-      </div>
+    <div class="search-disclaimer">
+      <p>
+        Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
+      </p>
+      <p>
+        <span class="bold">Need legal advice?</span> This is not your best option! Read about
+        <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
+      </p>
+    </div>
     <div class="query-explainer" v-show="show_explainer">
       <div class="row">
         <div class="col-12">
@@ -347,7 +348,7 @@ export default {
     },
     changeEndpoint: function (new_endpoint) {
       console.log("new endpoint", new_endpoint, "fields:", this.endpoints[new_endpoint])
-      this.$router.push({name: 'endpoint', params: {endpoint: new_endpoint}});
+      this.$router.push({name: 'endpoint', params: {endpoint: new_endpoint}}).catch(()=>{});
     },
     highlightExplainer(event) {
       let explainer_argument = document.getElementById("p_" + event.target.id);
@@ -362,10 +363,12 @@ export default {
       }
     },
     toggleExplainer() {
-
       this.show_explainer = !this.show_explainer;
       console.log("show explainer", this.show_explainer)
     },
+    downloadResults: function (format) {
+      return this.$parent.assembleUrl() + "&format=" + format;
+    }
   }
 }
 </script>

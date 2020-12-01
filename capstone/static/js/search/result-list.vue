@@ -3,7 +3,7 @@
     <img alt="" aria-hidden="true" :src='`${urls.static}img/loading.gif`' class="loading-gif"/>
     <div class="loading-text">Loading results ...</div>
   </div>
-  <div v-else-if="results.length" class="results-list-container col-centered">
+  <div v-else-if="resultsShown" class="results-list-container col-centered">
     <div class="hitcount" id="results_count_focus" tabindex="-1">
       <span v-if="!results[page] || !results[page].length">No results</span>
       <span v-else>
@@ -73,6 +73,7 @@
       'first_result_number',
       'last_result_number',
       'showLoading',
+      'resultsShown',
       'endpoint',
       'hitcount',
       'page',

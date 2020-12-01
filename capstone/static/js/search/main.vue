@@ -19,6 +19,7 @@
                    :first_page="first_page"
                    :page="page"
                    :results="results"
+                   :resultsShown="resultsShown"
                    :first_result_number="first_result_number"
                    :last_result_number="last_result_number"
                    :showLoading="showLoading"
@@ -54,7 +55,11 @@ export default {
       this.handleRouteUpdate(route, oldRoute);
     },
     results() {
-      console.log('results list changed')
+      if (this.results.length && !this.resultsShown) {
+        this.resultsShown = true
+      }
+    },
+    resultsShown() {
       let fullWidth;
       this.searchFormClass = this.results.length ? "col-md-4" : fullWidth;
       this.searchResultsClass = this.results.length ? "col-md-8" : fullWidth;
@@ -67,6 +72,7 @@ export default {
       hitcount: null,
       page: 0,
       results: [],
+      resultsShown: false,
       first_result_number: null,
       last_result_number: null,
       showLoading: false,
@@ -102,18 +108,21 @@ export default {
         - reset state variables if endpoint/fields have changed
         - show search results
       */
+      console.log('handleRouteUpdate', route, oldRoute)
       const query = route.query;
       const searchform = this.$refs.searchform;
-
+      console.log("searchform", searchform)
       // if route changes (other than pagination), reset state, set endpoint and fields
       if (this.routeComparisonString(route) !== this.routeComparisonString(oldRoute)) {
-        this.resetResults();
+        // this.resetResults();
         this.endpoint = route.params.endpoint;
 
         // load search fields and values from query params
         let fields = searchform.endpoints[this.endpoint];
+        console.log("this.endpoint", this.endpoint, fields, )
         for (const field of fields) {
-          if (query[field.name]) {
+          console.log("field is ", field, fields.length)
+          if (field && query[field.name]) {
             fields[field].value = query[field.name];
             fields.push(field);
           }
@@ -150,8 +159,6 @@ export default {
 
     newSearch() {
       this.goToPage(0)
-      console.log("new search triggered")
-
     },
     nextPage() {
       this.goToPage(this.page + 1)
@@ -194,6 +201,7 @@ export default {
        */
       // if we already have the page in cache, return immediately
       if (this.results[this.page]) {
+        console.log("page in cache, promise")
         return Promise.resolve();
       }
 
@@ -205,6 +213,7 @@ export default {
       const currentFetchID = Math.random();
       this.currentFetchID = currentFetchID;
       this.showLoading = true;
+      print("getResultsPage !!!!!!!!!!", query_url)
       return fetch(query_url)
           .then((response) => {
             if (currentFetchID !== this.currentFetchID) {
@@ -258,7 +267,7 @@ export default {
 
             console.log("Search error:", response);  // eslint-disable-line
             throw response;  // in case callers want to do further error handling
-          });
+          }).catch(()=>{});
 
     },
     resetResults: function () {

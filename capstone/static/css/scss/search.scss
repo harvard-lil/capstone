@@ -23,14 +23,19 @@ $color-search-gray-light: #ced4da;
 //*** head matter
 form {
   &.col-md-4 {
-    border-right: 1px solid $color-search-gray-light;
     padding-left: 15px !important;
     padding-right: 15px !important;
+    border-right: 1px solid $color-search-gray-light;
   }
+
   .input-group {
     padding: 0;
+    width: 100%;
   }
-  input, input[type="date"] {
+
+  input[type="text"],
+  input[type="date"],
+  select, .form-control {
     border-radius: 0;
   }
 }
@@ -54,8 +59,10 @@ form {
 #search-routes-dropdown {
   border: 1px solid $color-search-gray-light;
 }
+
 .dropdown-search-routes {
   width: 100%;
+
   > .dropdown-title {
     @extend h6;
     min-width: 100%;
@@ -89,6 +96,7 @@ form {
     width: 100%;
     max-height: 300px;
     overflow-y: scroll;
+
     .dropdown-item {
       color: $color-black;
       border-bottom: 1px solid $color-gray;
@@ -122,6 +130,7 @@ form {
 .results-list-container {
   padding-bottom: 2rem;
 }
+
 .results-list-container {
   padding-left: 1em !important;
   padding-right: 1em !important;
@@ -225,9 +234,6 @@ select, .queryfield {
   background-color: $color-white;
 }
 
-.btn-submit {
-  float: right;
-}
 //
 //.submit-button-group {
 //  float: right;
@@ -302,6 +308,13 @@ select, .queryfield {
   margin-top: 1rem;
 }
 
+.btn-submit {
+  float: right;
+}
+.submit-btn-container {
+  display: inline-block;
+}
+
 .query-explainer {
 
   a {
@@ -366,6 +379,7 @@ select, .queryfield {
   background-color: transparent;
   padding-right: 0;
   padding-left: 0;
+  margin-left: 10px;
   margin-right: 0;
   margin-top: 0;
 
