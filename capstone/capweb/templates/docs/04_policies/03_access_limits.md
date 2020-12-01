@@ -34,7 +34,7 @@ Some users may qualify for unlimited access as a research scholar. For more info
 
 In addition, under our agreement with Ravel (now owned by Lexis-Nexis), Ravel must negotiate in good faith to provide 
 bulk access to anyone seeking to make commercial use of this data. 
-[Click here to contact Ravel for more information](http://info.ravellaw.com/contact-us-form) or 
+[Click here to contact Ravel for more information](https://home.ravellaw.com/contact) or
 [contact us]({% url "contact" %}) and we will put you in touch with Ravel.
 
 
