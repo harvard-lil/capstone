@@ -84,14 +84,14 @@ To filter by prefix, append `__prefix`. For example, to find cases from February
 
 ## Sorting
   
-You can sort your search in the cases endpoint using the `ordering` argument. To order your results in ascending order, 
-supply the ordering argument with the field on which you'd like to sort your results. For example, if you'd like to 
-search for the term 'baronetcy' with the oldest cases appearing first, supply the following query: 
+You can sort your search in the cases endpoint using the `ordering` parameter. To sort your results in ascending order,
+supply the `ordering` parameter with the field on which you'd like to sort your results. For example, if you'd like to
+search for the term 'baronetcy' with the oldest cases appearing first, supply the following query:
 
     {% api_url "cases-list" %}?search=baronetcy&ordering=decision_date
 
 You can also sort in descending order by adding a minus sign before the field on which you'd like to sort. To perform 
-the same search sorted in descending order, that is, seeing the newest cases first, then use this query:
+the same search sorted in descending order, that is, with the newest cases first, use this query:
 
     {% api_url "cases-list" %}?search=baronetcy&ordering=-decision_date
     
