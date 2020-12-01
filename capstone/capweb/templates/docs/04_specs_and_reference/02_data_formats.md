@@ -15,7 +15,7 @@ Bulk data files are provided as zipped directories. Each directory is in
     │   └── data.jsonl.xz
     └── manifest-sha512.txt
     
-## Data Format    
+## Data Format
 Caselaw data is stored within the `data/data.jsonl.xz` file. The `.jsonl.xz` suffix
 indicates that the file is compressed with xzip, and is a text file where each line represents a JSON object.
 Each line of the JSON file is an object retried from the API.
