@@ -45,7 +45,7 @@ Now let's search for all cases in the jurisdiction of Rhode Island that contain 
 {# ====> Searching and Filtering <==== #}
 ## Searching and Filtering Cases {: data-toc-label='Search' }
 
-Our [cases endpoint](#endpoint-cases) is indexed by Elasticsearch, and supports a range of searching, filtering, and
+Our [cases endpoint]({% api_url "cases-list" %}) is indexed by Elasticsearch, and supports a range of searching, filtering, and
 sorting options.
 
 Options in this section work only with the cases endpoint.
