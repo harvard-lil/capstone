@@ -116,8 +116,8 @@ Without that option, you'll just get the case metadata:
 
 [{% api_url "cases-list" %}jurisdiction=wash&page_size=1]({% api_url "cases-list" %}jurisdiction=wash&page_size=1)
 
-For most cases, you'll need to be authenticate using an API key to get the case test. There are several jurisdictions
-for which we do not require authenticating, which we call 
+For most cases, you'll need to authenticate using an API key to get the case text. There are several jurisdictions
+for which we do not require authentication, which we call
 [open]({% docs_url 'glossary' %}#def-open) jurisdictions. To see 
 a complete list of open jurisdictions, check out our 
 [access limits documentation]({% docs_url 'access_limits' %}).
