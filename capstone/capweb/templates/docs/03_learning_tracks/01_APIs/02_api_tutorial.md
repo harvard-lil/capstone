@@ -36,8 +36,8 @@ it's the first step towards doing fantastic work.
 You might first notice the unusual, code-ish-looking format of this data. It's called JSON, or JavaScript Object 
 Notation, and we'll look into that soon. You probably also recognized some of the terms on the left, such as cases, 
 jurisdictions, courts, etc. Each is the name of an API 
-[endpoint]({% docs_url 'glossary' %}#def-endpoint, through which you 
-receive one type of data. For example, to find a court, you might use the *courts* endpoint. Click on the URL to the 
+[endpoint]({% docs_url 'glossary' %}#def-endpoint), through which you
+receive one type of data. For example, to find a court, you might use the `/courts` endpoint. Click on the URL to the
 right of "courts."
 
     {
@@ -69,8 +69,9 @@ Whoa! That's a lot more data! Before we continue, let's take a look at the JSON 
 
 # Intro to JSON
 
-JSON, or JavaScript Object Notation, is a simple but flexible way to represent data in text. What people do with this 
-format can be quite complex, but we won't need to dive too deep to understand the API contents.
+[JSON, or JavaScript Object Notation](https://en.wikipedia.org/wiki/JSON), is a simple but
+flexible way to represent data in text. What people do with this format can be quite complex,
+but we won't need to dive too deep to understand the API contents.
 
 Let's start with a bit of simple example data in the form of a shopping list to get us started.
 

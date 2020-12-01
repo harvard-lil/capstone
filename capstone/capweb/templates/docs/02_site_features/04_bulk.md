@@ -21,7 +21,7 @@ use the [manifest.csv]({% url "download-files" "manifest.csv" %})
 file to select URLs to download programmatically.
 
 When downloading bulk files, you may find that the download times out on the largest files.
-In that case use `wget`, which retries when it encounters a network problem. Here's an example for the
+In that case, use `wget`, which retries when it encounters a network problem. Here's an example for the
 U.S. file with case body in text format:
 
     wget --header="Authorization: Token your-api-token" "{% url "download-files" "bulk_exports/latest/by_jurisdiction/case_text_restricted/us_text.zip" %}"
@@ -32,7 +32,7 @@ Replace `your-api-token` with your API token from the [user details]({% url "use
 # API Equivalence
 
 Each file that we offer for download is equivalent to a particular query to our API. For example, the file
-"ill_text.zip" contains all cases that would be returned by
+`ill_text.zip` contains all cases that would be returned by
 [an API query]({% api_url "cases-list" %}?full_case=true&jurisdiction=ill&body_format=text)
 with `full_case=true&jurisdiction=ill&body_format=text`. We offer files for each possible
 `jurisdiction` value and each possible `reporter` value, combined with `body_format=text`, `body_format=xml`,
@@ -47,12 +47,12 @@ The JSON objects returned by the API and in bulk files differ only in that bulk 
 Bulk data files are provided as zipped directories. Each directory is in
 [BagIt format](https://en.wikipedia.org/wiki/BagIt), with a layout like this:
 
-* `Illinois-20180829-text/`
-1. `bag-info.txt`
-    2. `bagit.txt`
-    3. `manifest-sha512.txt`
-* `data/`
-    4. `data.jsonl.xz`
+    .
+    ├── bag-info.txt
+    ├── bagit.txt
+    ├── data/
+    │   └── data.jsonl.xz
+    └── manifest-sha512.txt
     
 Because the zip file provides no additional compression, we recommend uncompressing it for convenience and
 keeping the uncompressed directory on disk.

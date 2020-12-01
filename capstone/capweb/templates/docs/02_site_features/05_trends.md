@@ -6,8 +6,8 @@ explainer: CAP Historical Trends visualizes and compares the frequency of terms 
 
 The Caselaw Access Project includes over 6 million U.S. legal cases from the Harvard Law School 
 Library — about 12 billion words in all. Our Historical Trends tool graphs the frequency of words and phrases through
-time from 1800 to 2018, similar to the Google Ngram Viewer. (Though the corpus includes data from cases before 1800, 
-low case density limits their utility in visualizing trends, so we've excluded them.)
+time from 1800 to 2018, similar to the [Google Ngram Viewer](https://books.google.com/ngrams). (Though the corpus includes
+data from cases before 1800, low case density limits their utility in visualizing trends, so we've excluded them.)
 
 Search for phrases of one to three words. Multiple phrases can be separated by commas. Do not use quotes. 
 All searches are case-insensitive. Examples:
@@ -26,7 +26,7 @@ All searches are case-insensitive. Examples:
 
 The color/shape-keyed terms at the top of the graph correspond to each term in the query, and each of those corresponds 
 to a trend line on the graph. The individual points on the trend line can be revealed by hovering over them with the 
-mouse cursor, or by using the [keyboard navigation](#keyboard-navigation).
+pointer, or by using [keyboard navigation](#keyboard-navigation).
 
 ## Horizontal axis
 
@@ -53,7 +53,7 @@ Read on for how to change those display settings.
 
 ## Percentage Count/Instance Count/Scaling
 
-For example, in the query [{% url 'trends' %}?q=apple, banana, orange, pear]({% url 'trends' %}?q=apple,%20banana,%20orange,%20pear) 
+For example, in the query [trends?q=apple, banana, orange, pear]({% url 'trends' %}?q=apple,%20banana,%20orange,%20pear)
 we can see four terms: apple, banana, orange, and pear. For the sake of simplicity, we'll turn smoothing off by clicking 
 on the gear icon and sliding
 the smoothing slider all the way to the left, until 'No smoothing will be applied' is displayed.
@@ -97,14 +97,14 @@ If you'd preview to view the data points in a table rather than on a chart, you 
 keyboard icon and the mortarboard icon) above the graph. These are affected by the 
 [customize display settings](#customize-display) in the same way the graph is. 
 
-**important: smoothing does not simply flatten the curve; it changes the values of the each data point. Please see the
+**Important: Smoothing does not simply flatten the curve; it changes the values of the each data point. Please see the
 [Smoothing](#setting-smoothing) section for more information.**
 
 
 {# ==============> KEYBOARD NAVIGATION <============== #}
 # Keyboard navigation
 
-The graph is keyboard accessible. With the graph selected, press:
+The graph is keyboard-accessible. With the graph selected, press:
 
 Keyboard Navigation Commands:
 
@@ -138,7 +138,7 @@ access to our data.
 {# ==============> Wildcard search <============== #}
 # Wildcard search
 
-Replace the final word of a phrase with "*" to perform a wildcard search. This will return the top ten phrases beginning
+Replace the final word of a phrase with `*` to perform a wildcard search. This will return the top ten phrases beginning
 with your first one or two words. Wildcards are currently allowed only as the final word in a phrase. 
  
 Examples:
@@ -160,7 +160,7 @@ Examples:
 * [`me: lobster, cal: gold, tex: cowboy`]({% url 'trends' %}?q=me: lobster, cal: gold, tex: cowboy) *(compare "lobster" 
 in Maine, "gold" in California, and "cowboy" in Texas)*
 
-Show all jurisdictions separately by using the special jurisdiction code "*". 
+Show all jurisdictions separately by using the special jurisdiction code `*`. 
 
 Examples:
 
@@ -170,68 +170,68 @@ Examples:
 {# ==============> JURISDICTION CODES <============== #}
 # Jurisdiction codes
 
-* Wildcard: " *:"
-* Alabama: " ala:"
-* Alaska: " alaska:"
-* American Samoa: " am-samoa:"
-* Arizona: " ariz:"
-* Arkansas: " ark:"
-* California: " cal:"
-* Colorado: " colo:"
-* Connecticut: " conn:"
-* Dakota Territory: " dakota-territory:"
-* District of Columbia: " dc:"
-* Delaware: " del:"
-* Florida: " fla:"
-* Georgia: " ga:"
-* Guam: " guam:"
-* Hawaii: " haw:"
-* Idaho: " idaho:"
-* Illinois: " ill:"
-* Indiana: " ind:"
-* Iowa: " iowa:"
-* Kansas: " kan:"
-* Kentucky: " ky:"
-* Louisiana: " la:"
-* Massachusetts: " mass:"
-* Maryland: " md:"
-* Maine: " me:"
-* Michigan: " mich:"
-* Minnesota: " minn:"
-* Mississippi: " miss:"
-* Missouri: " mo:"
-* Montana: " mont:"
-* Native American: " native-american:"
-* Navajo Nation: " navajo-nation:"
-* North Carolina: " nc:"
-* North Dakota: " nd:"
-* Nebraska: " neb:"
-* Nevada: " nev:"
-* New Hampshire: " nh:"
-* New Jersey: " nj:"
-* New Mexico: " nm:"
-* Northern Mariana Islands: " n-mar-i:"
-* New York: " ny:"
-* Ohio: " ohio:"
-* Oklahoma: " okla:"
-* Oregon: " or:"
-* Pennsylvania: " pa:"
-* Puerto Rico: " pr:"
-* Rhode Island: " ri:"
-* South Carolina: " sc:"
-* South Dakota: " sd:"
-* Tennessee: " tenn:"
-* Texas: " tex:"
-* Tribal Jurisdictions: " tribal:"
-* United States: " us:"
-* Utah: " utah:"
-* Virginia: " va:"
-* Virgin Islands: " vi:"
-* Vermont: " vt:"
-* Washington: " wash:"
-* Wisconsin: " wis:"
-* West Virginia: " w-va:"
-* Wyoming: " wyo:" 
+* wildcard: `*`
+* Alabama: `ala`
+* Alaska: `alaska`
+* American Samoa: `am-samoa`
+* Arizona: `ariz`
+* Arkansas: `ark`
+* California: `cal`
+* Colorado: `colo`
+* Connecticut: `conn`
+* Dakota Territory: `dakota-territory`
+* District of Columbia: `dc`
+* Delaware: `del`
+* Florida: `fla`
+* Georgia: `ga`
+* Guam: `guam`
+* Hawaii: `haw`
+* Idaho: `idaho`
+* Illinois: `ill`
+* Indiana: `ind`
+* Iowa: `iowa`
+* Kansas: `kan`
+* Kentucky: `ky`
+* Louisiana: `la`
+* Massachusetts: `mass`
+* Maryland: `md`
+* Maine: `me`
+* Michigan: `mich`
+* Minnesota: `minn`
+* Mississippi: `miss`
+* Missouri: `mo`
+* Montana: `mont`
+* Native American: `native-american`
+* Navajo Nation: `navajo-nation`
+* North Carolina: `nc`
+* North Dakota: `nd`
+* Nebraska: `neb`
+* Nevada: `nev`
+* New Hampshire: `nh`
+* New Jersey: `nj`
+* New Mexico: `nm`
+* Northern Mariana Islands: `n-mar-i`
+* New York: `ny`
+* Ohio: `ohio`
+* Oklahoma: `okla`
+* Oregon: `or`
+* Pennsylvania: `pa`
+* Puerto Rico: `pr`
+* Rhode Island: `ri`
+* South Carolina: `sc`
+* South Dakota: `sd`
+* Tennessee: `tenn`
+* Texas: `tex`
+* Tribal Jurisdictions: `tribal`
+* United States: `us`
+* Utah: `utah`
+* Virginia: `va`
+* Virgin Islands: `vi`
+* Vermont: `vt`
+* Washington: `wash`
+* Wisconsin: `wis`
+* West Virginia: `w-va`
+* Wyoming: `wyo`
 
 
 {# ==============> CITATION FEATURE <============== #}

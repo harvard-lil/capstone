@@ -30,11 +30,11 @@ by a space, followed by your API key.
 
 With an API key of `abcd12345`, you would pass `Token abcd12345` to the `Authorization` header.
 
-A curl command would look like this:
+A `curl` command would look like this:
   
     curl -H "Authorization: Token abcd12345" "{{ case_url }}?full_case=true"
 
-In a program (python's request library in this example) it would look something like this:
+Using Python's `requests` library, it would look something like this:
 
     response = requests.get(
         '{{ case_url }}?full_case=true',
@@ -43,7 +43,7 @@ In a program (python's request library in this example) it would look something 
   
 ## Failure: error_auth_required
 
-In authentication fails, in the casebody object, you'll receive 
+If authentication fails, you'll receive
 
          ...
           "casebody": {
@@ -53,7 +53,7 @@ In authentication fails, in the casebody object, you'll receive
           ...
 
 In this example the response included a case from a restricted jurisdiction, and `casebody.data` for the case is 
-therefore blank, while `casebody.status` is "error_auth_required".
+therefore blank, while `casebody.status` is `error_auth_required`.
 
 ## Browsable API
 
@@ -198,8 +198,8 @@ Endpoint Parameters:
 
 ### Search Syntax
 
-The `search` field supports Elasticsearch [Simple Query String Syntax](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl-simple-query-string-query.html#_simple_query_string_syntax)
-For example, you can use `"quotes"` to search by phrase and `-negation` to exclude cases with matching terms.
+The `search` field supports Elasticsearch [Simple Query String Syntax](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl-simple-query-string-query.html#_simple_query_string_syntax).
+For example, you can use `"quotation marks around your search string"` to search by phrase and prefix words with a minus sign to exclude cases with matching terms.
 
 ### Examples
 
