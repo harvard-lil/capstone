@@ -17,7 +17,7 @@ If you need a more detailed, step-by-step walkthrough of our API, check out our
 
 ## Making Basic Queries
 
-This is a restful API, and its primary return format is in JSON. For details on the data returned by the API, head over
+This is a RESTful API, and its primary return format is in JSON. For details on the data returned by the API, head over
 to our [API Reference]({% docs_url 'api' %})
 
 CAPAPI includes an in-browser API viewer, but is primarily intended for software developers to access caselaw 
