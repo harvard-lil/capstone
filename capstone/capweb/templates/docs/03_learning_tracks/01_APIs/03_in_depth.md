@@ -143,13 +143,12 @@ authenticate your requests.
 ## Find your API Key
 
 First, log in to your account using the [LOG IN]({% url "login" %}) link at the top of the screen. After you've signed 
-in, the [LOG IN]({% url "login" %}) link at the top of the screen now reads [ACCOUNT]({% url "user-details" %}). Click 
-that link. In the API key field, you should see a 40 
-[character]({% docs_url 'glossary' %}#def-character) long 
-[string]({% docs_url 'glossary' %}#def-string). That is your API key.
+in, the link at the top of the screen now reads [ACCOUNT]({% url "user-details" %}). Click that link. In the API key field,
+you should see a 40-[character]({% docs_url 'glossary' %}#def-character) long [string]({% docs_url 'glossary' %}#def-string).
+That is your API key.
 
 ## Modify Your Headers
-You must submit the API key in the request headers. The headers are a group of metadata fields automatically included in the background of each request. Your browser (or equivalent like `curl`, or a requests library) uses headers to describe each request to the server, and the server to describe its response. For example, your web browser will include a header field called `User-Agent`, which tells the web server what version of what browser you're using, on what operating system. Among the various headers in its response, the server will include a `Content-Type` field, which says if it's HTML text, an image, etc.
+You must submit the API key in the request headers. The headers are a group of metadata fields automatically included in the background of each request. Your browser (or equivalent, like `curl`, or Python's `requests` library) uses headers to describe each request to the server, and the server uses headers to describe its response. For example, your web browser will include a header field called `User-Agent`, which tells the web server what version of what browser you're using, on what operating system. Among the various headers in its response, the server will include a `Content-Type` field, which says if it's HTML text, an image, etc.
 Our service requires you to include the header labeled `Authorization`, containing the string `Token [your API key]`. So, if your API key were `1234thisisntarealapikeysodontusethisone1`, your header would look like this: `Authorization: Token 1234thisisntarealapikeysodontusethisone1`. 
 
 In practice, that looks like this:
@@ -158,8 +157,10 @@ In practice, that looks like this:
 
 ### python requests library
 	response = requests.get(
-    'https://api.case.law/v1/cases/435800/?full_case=true',
-    headers={'Authorization': 'Token 1234thisisntarealapikeysodontusethisone1'})
+        'https://api.case.law/v1/cases/435800/?full_case=true',
+        headers={
+		    'Authorization': 'Token 1234thisisntarealapikeysodontusethisone1'
+		})
 
 ### Other Environments
 
