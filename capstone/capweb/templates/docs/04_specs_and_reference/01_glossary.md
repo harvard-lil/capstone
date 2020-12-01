@@ -31,8 +31,8 @@ A textual interface for interacting with a computer. Rather than interacting wit
 
 
 # curl {: id="def-curl" }
-[curl](https://curl.haxx.se/) is a [command line](#def-command-line) tool for retrieving data over the
-internet. It's similar to a web browser in that it will retrieve the contents of a [url](#def-url), but it will dump the
+[curl](https://curl.haxx.se/) is a [command-line](#def-command-line) tool for retrieving data over the
+internet. It's similar to a web browser in that it will retrieve the contents of a [URL](#def-url), but it will dump the
  text contents to a terminal, rather than show a rendered version in a graphical browser window.
   
   
