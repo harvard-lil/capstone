@@ -38,8 +38,8 @@ internet. It's similar to a web browser in that it will retrieve the contents of
   
 # Endpoint {: id="def-endpoint" }
 A distinct part of a program which could require specific inputs and provide
-different results. For example, the "login" endpoint on a website might accept a valid username and a password for
-input and return a message that you've successfully logged in. A "register" endpoint might accept various bits of
+different results. For example, the `/login` endpoint on a website might accept a valid username and a password for
+input and return a message that you've successfully logged in. A `/register` endpoint might accept various bits of
 identifying information, and return a screen that says your account was successfully registered.
   
 
