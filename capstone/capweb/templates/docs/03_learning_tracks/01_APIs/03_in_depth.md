@@ -59,7 +59,7 @@ like to search for all cases that contain the word 'baronetcy', use the followin
     {% api_url "cases-list" %}?search=baronetcy
 
 The `search` field supports Elasticsearch [Simple Query String Syntax](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl-simple-query-string-query.html#_simple_query_string_syntax)
-For example, you can use `"quotes"` to search by phrase and `-negation` to exclude cases with matching terms.
+For example, you can use `"quotation marks around your search string"` to search by phrase and prefix words with a minus sign to exclude cases with matching terms.
 
 The `search` parameter searches the case, jurisdiction, and court names, docket number, and case text.
 You can also use the `name`, `name_abbreviation`, or `docket_number` parameters to perform full-text search
