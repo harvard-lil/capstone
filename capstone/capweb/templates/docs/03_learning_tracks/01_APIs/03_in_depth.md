@@ -7,8 +7,7 @@ explainer: The Caselaw Access Project API, also known as CAPAPI, serves all offi
 {# ==============> GETTING STARTED <============== #}
 # Getting Started
 
-If you're an RESTful API pro, you may just need our API reference
-[API Reference]({% docs_url 'api' %}).
+If you're a RESTful API pro, you may just need our [API Reference]({% docs_url 'api' %}).
 
 If you're an absolute beginner and haven't used APIs before, but want to get up to speed, check out our 
 [Beginner's Introduction to APIs]({% docs_url 'intro_to_apis' %}).
