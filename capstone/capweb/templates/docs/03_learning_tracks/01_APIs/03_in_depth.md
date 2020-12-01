@@ -203,8 +203,8 @@ All non-browser API responses are in JSON format.
         "results": [list of objects]
     }
 
-Each endpoint has its own object format. For a complete breakdown, check out 
-[data specs]({% docs_url 'data_formats' %})
+Each endpoint has its own object format. For a complete breakdown, check out our
+[data specs]({% docs_url 'data_formats' %}).
 
 This is what a case object looks like:
 
