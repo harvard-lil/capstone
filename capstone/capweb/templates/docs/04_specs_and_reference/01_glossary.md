@@ -73,7 +73,7 @@ other email servers which are sending it messages.
 
 # Slug {: id="def-slug" }
 A [string](#def-string) with [special characters](#def-special-character) removed for ease of inclusion in a
-[url](#def-url).
+[URL](#def-url).
 
 
 # String {: id="def-string" }
@@ -116,4 +116,4 @@ legal jurisdiction, visit our [access limits]({% docs_url "access_limits" %}) se
 # Cursor {: id="def-cursor" }
 This property, populated with a random alphanumeric value, is present in all endpoints. It represents a specific page
 of results for a query. You can get the value of the cursor for the next and previous pages from the cursor parameter in
-the urls in the `next` and `previous` fields.
+the URLs in the `next` and `previous` fields.
