@@ -108,7 +108,7 @@ legal jurisdiction, visit our [access limits]({% docs_url "access_limits" %}) se
 
 
 # Restricted Jurisdiction {: id="def-restricted" }
-Restricted jurisdictions are subject to a 500 case per day access limit.
+Restricted jurisdictions are subject to a 500-case-per-day access limit.
 For more information on access limits, what type of users aren't subject to them, and how you can eliminate them in your
 legal jurisdiction, visit our [access limits]({% docs_url "access_limits" %}) section.
 
