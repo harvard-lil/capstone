@@ -130,7 +130,7 @@ The default text format is best for natural language processing. Example respons
 
 In this example, `"head_matter"` is a string representing all text printed in the volume before the text prepared by 
 judges. `"opinions"` is an array containing a dictionary for each opinion in the case. `"judges"`, and 
-`"attorneys"` are particular substrings from `"head_matter"` that we believe to refer to entities involved with the 
+`"attorneys"` are particular substrings from `"head_matter"` that we believe refer to entities involved with the
 case.
       
 
