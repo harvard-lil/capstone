@@ -96,7 +96,7 @@ structured to return multiple objects, even if there's only one match to your qu
 
 ### Casebody
 Without the `full_case=true` parameter set, this query would not have a case body. This can be useful when you want to
-browse the metadata of a bunch of cases but only get case data for specific ones, conserving your 500 case text per day 
+browse the metadata of a bunch of cases but only get case text for specific ones, conserving your 500-case-per-day
 limit.
 
 This shows the default output for `casebody`— a JSON field with structured plain text. You can change that to HTML or 
