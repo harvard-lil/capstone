@@ -51,13 +51,14 @@ while we verify the correct jurisdiction for each tribal court.
 
 
 # OCR {: id="def-ocr" }
-A process in which a computer attempts to create text from an image of text. The text in our cases is
-OCR-derived using scanned case reporter pages as source images.
+An acronym for Optical Character Recognition, a process in which a computer attempts to create text from an image of text.
+The text in our cases is OCR-derived using scanned case reporter pages as source images.
 
 
 # RESTful {: id="def-restful" }
 An [API](#def-api) based on [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol), that makes use
-of its built-in verbs (commands), such as GET and POST.
+of its built-in verbs (commands), such as GET and POST. (The REST in RESTful is short for the software architectural
+style called REpresentational State Transfer.)
 
 
 # Reporter {: id="def-reporter" }
