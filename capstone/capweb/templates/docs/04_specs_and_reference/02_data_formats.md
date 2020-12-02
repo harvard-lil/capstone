@@ -140,7 +140,7 @@ XML Format
 [{% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=xml]({% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=xml)
 
 The XML format is best if your analysis requires more information about pagination, formatting, or page layout. It 
-contains a superset of the information available from body_format=text, but requires parsing XML data. Example 
+contains a superset of the information available from `body_format=text`, but requires parsing XML data. Example
 response data:
       
     "data": "<?xml version='1.0' encoding='utf-8'?>\n<casebody ..."
