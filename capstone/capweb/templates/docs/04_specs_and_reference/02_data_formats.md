@@ -34,7 +34,7 @@ receive a single JSON object as formatted below.
 ## Query Results
 
 If you're not specifying a specific record to return by its primary key (usually an id), your results will be
-structured to return multiple objects, even if there's only one hit in your query.
+structured to return multiple objects, even if there's only one match to your query.
 
     {
         "count": (int),
