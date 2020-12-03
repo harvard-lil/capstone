@@ -8,14 +8,14 @@ title: Data Specifications
 Bulk data files are provided as zipped directories. Each directory is in
 [BagIt format](https://en.wikipedia.org/wiki/BagIt), with a layout like this:
 
-* `Illinois-20180829-text/`
-1. `bag-info.txt`
-    2. `bagit.txt`
-    3. `manifest-sha512.txt`
-* `data/`
-    4. `data.jsonl.xz`
+    .
+    ├── bag-info.txt
+    ├── bagit.txt
+    ├── data/
+    │   └── data.jsonl.xz
+    └── manifest-sha512.txt
     
-## Data Format    
+## Data Format
 Caselaw data is stored within the `data/data.jsonl.xz` file. The `.jsonl.xz` suffix
 indicates that the file is compressed with xzip, and is a text file where each line represents a JSON object.
 Each line of the JSON file is an object retried from the API.
@@ -33,8 +33,8 @@ receive a single JSON object as formatted below.
 
 ## Query Results
 
-If you're not specifying a specific record to return by its primary key (ususally an id,) then your results will be
-structured to return multiple objects, even if there's only one hit in your query.
+If you're not specifying a specific record to return by its primary key (usually an id), your results will be
+structured to return multiple objects, even if there's only one match to your query.
 
     {
         "count": (int),
@@ -96,7 +96,7 @@ structured to return multiple objects, even if there's only one hit in your quer
 
 ### Casebody
 Without the `full_case=true` parameter set, this query would not have a case body. This can be useful when you want to
-browse the metadata of a bunch of cases but only get case data for specific ones, conserving your 500 case text per day 
+browse the metadata of a bunch of cases but only get case text for specific ones, conserving your 500-case-per-day
 limit.
 
 This shows the default output for `casebody`— a JSON field with structured plain text. You can change that to HTML or 
@@ -130,7 +130,7 @@ The default text format is best for natural language processing. Example respons
 
 In this example, `"head_matter"` is a string representing all text printed in the volume before the text prepared by 
 judges. `"opinions"` is an array containing a dictionary for each opinion in the case. `"judges"`, and 
-`"attorneys"` are particular substrings from `"head_matter"` that we believe to refer to entities involved with the 
+`"attorneys"` are particular substrings from `"head_matter"` that we believe refer to entities involved with the
 case.
       
 
@@ -140,7 +140,7 @@ XML Format
 [{% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=xml]({% api_url "cases-list" %}?jurisdiction=ill&full_case=true&body_format=xml)
 
 The XML format is best if your analysis requires more information about pagination, formatting, or page layout. It 
-contains a superset of the information available from body_format=text, but requires parsing XML data. Example 
+contains a superset of the information available from `body_format=text`, but requires parsing XML data. Example
 response data:
       
     "data": "<?xml version='1.0' encoding='utf-8'?>\n<casebody ..."
