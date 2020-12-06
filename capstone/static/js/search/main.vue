@@ -19,6 +19,7 @@
                    :first_page="first_page"
                    :page="page"
                    :results="results"
+                   :resultsType="resultsType"
                    :resultsShown="resultsShown"
                    :first_result_number="first_result_number"
                    :last_result_number="last_result_number"
@@ -74,6 +75,7 @@ export default {
       hitcount: null,
       page: 0,
       results: [],
+      resultsType: '',
       resultsShown: false,
       first_result_number: null,
       last_result_number: null,
@@ -95,10 +97,8 @@ export default {
     routeComparisonString(route) {
       /* Construct a stable comparison string for the given route, ignoring pagination parameters */
       if (!route) {
-        // console.log("routeComparisonString route is empty")
         return '';
       }
-      // console.log("routeComparisonString", route.params.endpoint)
       const ignoreKeys = {cursor: true, page: true};
       const query = route.query;
       const queryKeys = Object.keys(query).filter(key => !ignoreKeys[key]);
@@ -108,27 +108,21 @@ export default {
     updateSearchFormFields(query) {
       const searchform = this.$refs.searchform;
       console.log("updateSearchFormFields", query, this.endpoint)
-      // load search fields and values from query params
+        // load search fields and values from query params
         let fields = searchform.endpoints[this.endpoint];
         fields.forEach((field) => {
-
           if (field && query[field.name]) {
             field.value = query[field.name];
             fields[field] = field;
           }
         })
-
-        // if no search fields included in query, show default fields
-        //   fields = blankFields.filter(endpoint => endpoint.default);
         searchform.fields = fields;
     },
     handleRouteUpdate(route, oldRoute) {
       /*
-        When the URL hash changes, update all state as appropriate:
+        When the URL hash changes, update state:
         - set current endpoint
         - show appropriate fields
-        - reset state variables if endpoint/fields have changed
-        - show search results
       */
       console.log('handleRouteUpdate',"old route:", oldRoute, "new route:", route)
       const query = route.query;
@@ -207,9 +201,9 @@ export default {
             and previous page url and updates this.cursors if necessary
           - Updates error messages for forms or fields
        */
-      // if we already have the page in cache, return immediately
-      if (this.results[this.page]) {
-        console.log("page in cache, promise", this.results)
+      // if we haven't changed the endpoint
+      // and we already have the page in cache, return immediately
+      if (this.resultsType === this.endpoint && this.results[this.page]) {
         return Promise.resolve();
       }
 
@@ -246,6 +240,7 @@ export default {
 
             // use this.$set to set array value with reactivity -- see https://vuejs.org/v2/guide/list.html#Caveats
             this.$set(this.results, this.page, results_json.results);
+            this.resultsType = this.endpoint;
             this.showLoading = false;
           })
           .catch((response) => {

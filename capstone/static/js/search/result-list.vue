@@ -10,7 +10,7 @@
         {{ first_result_number !== last_result_number ? `Results ${first_result_number} to ${last_result_number}` : `Result ${first_result_number}` }}
         of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
       </span>
-      <div class="btn-group download-formats" v-if="endpoint==='cases'">
+      <div class="btn-group download-formats" v-if="resultsType==='cases'">
         <a class="btn-secondary"
                 target="_blank"
                 :href="downloadResults('json')">JSON</a>&nbsp;
@@ -19,25 +19,25 @@
      <label for="csv-download-button" class="csv-explainer">CSV file is tab separated</label>
       </div>
     </div>
-    <ul v-if="endpoint==='cases'" class="results-list">
+    <ul v-if="resultsType==='cases'" class="results-list">
       <case-result v-for="result in results[page]"
                    :result="result"
                    :key="result.id">
       </case-result>
     </ul>
-    <ul v-else-if="endpoint==='courts'">
+    <ul v-else-if="resultsType==='courts'">
       <court-result v-for="result in results[page]"
                     :result="result"
                     :key="result.id">
       </court-result>
     </ul>
-    <ul v-else-if="endpoint==='jurisdictions'">
+    <ul v-else-if="resultsType==='jurisdictions'">
       <jurisdiction-result v-for="result in results[page]"
                            :result="result"
                            :key="result.id">
       </jurisdiction-result>
     </ul>
-    <ul v-else-if="endpoint==='reporters'">
+    <ul v-else-if="resultsType==='reporters'">
       <reporter-result v-for="result in results[page]"
                        :result="result"
                        :key="result.id">
@@ -74,6 +74,7 @@
       'last_result_number',
       'showLoading',
       'resultsShown',
+      'resultsType',
       'endpoint',
       'hitcount',
       'page',
@@ -81,15 +82,20 @@
       'last_page',
       'urls'
     ],
-
     components: {
       'reporter-result': ReporterResult,
       'case-result': CaseResult,
       'court-result': CourtResult,
       'jurisdiction-result': JurisdictionResult,
     },
+    watch: {
+      results() {
+        console.log("watching results", this.results)
+      }
+    },
     methods: {
       metadata_view_url: function (endpoint, id) {
+        console.log("metadata_view_url", endpoint)
         return this.urls.view_court.replace('987654321', id).replace('/court/', "/" + endpoint + "/")
       },
       downloadResults: function (format) {
