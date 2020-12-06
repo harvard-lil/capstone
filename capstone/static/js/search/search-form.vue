@@ -173,8 +173,6 @@ export default {
   data: function () {
     return {
       query: [],
-      // newfield: null,
-      page_size: 10,
       fields: [],
       query_url: '',
       show_explainer: false,
@@ -357,13 +355,6 @@ export default {
 
     }
   },
-  watch: {
-    // fields() {
-    //   console.log("watching fields", this.fields)
-    //   this.valueUpdated()
-    // }
-
-  },
   props: [
     'choices',
     'search_error',
@@ -380,11 +371,8 @@ export default {
       return this.endpoints[this.endpoint].find(field => field.name === field_name);
     },
     changeEndpoint: function (new_endpoint) {
-      // this.endpoint = new_endpoint;
       this.$emit('update:endpoint', new_endpoint)
-      // this.$parent.endpoint = this.endpoint;
       this.fields = this.endpoints[new_endpoint];
-      console.log("changeEndpoint", new_endpoint)
     },
     highlightExplainer(event) {
       let explainer_argument = document.getElementById("p_" + event.target.id);

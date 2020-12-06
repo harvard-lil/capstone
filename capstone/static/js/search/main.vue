@@ -66,7 +66,7 @@ export default {
       let fullWidth = "col-md-12";
       this.searchFormClass = this.results.length ? "col-md-4" : fullWidth;
       this.searchResultsClass = this.results.length ? "col-md-8" : fullWidth;
-    }
+    },
   },
   components: {SearchForm, ResultList},
   data: function () {
