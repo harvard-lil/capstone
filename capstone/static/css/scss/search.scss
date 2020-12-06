@@ -1,8 +1,9 @@
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
-
+@import "bootstrap/forms";
 @import "base.scss";
+@import "floating-labels";
 @import 'footer/yellow';
 @import "search_results";
 
