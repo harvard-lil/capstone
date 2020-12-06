@@ -1,6 +1,7 @@
 <template>
   <div class="submit-btn-container">
-    <button @click="changeState()" class="btn-create btn-primary d-flex align-items-center">
+    <button @click="changeState()"
+            class="btn-primary d-flex align-items-center">
       Search
       <span v-if="showLoading"
             class="spinner-border spinner-border-sm"
@@ -18,7 +19,6 @@
     props: ['showLoading'],
     watch: {
       showLoading: function(newVal, oldVal) {  // eslint-disable-line no-unused-vars
-        console.log("showLoading:::", newVal, oldVal)
         if(newVal)
           setTimeout(()=>{
             const loadingMessage = document.querySelector('#loading-focus');
@@ -30,7 +30,6 @@
     methods: {
       changeState() {
         this.$parent.valueUpdated();
-        console.log("clicked changeState")
       },
     }
   }

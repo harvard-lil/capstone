@@ -7,7 +7,7 @@
                    :field_errors="field_errors"
                    :search_error="search_error"
                    :showLoading="showLoading"
-                   :endpoint="endpoint"
+                   :endpoint.sync="endpoint"
                    :urls="urls"
                    :choices="choices">
       </search-form>
@@ -47,7 +47,8 @@ export default {
   },
   mounted: function () {
     /* Read url state when first loaded. */
-    this.handleRouteUpdate(this.$route);
+    console.log("in mounted", this.$route)
+    this.$route ? this.handleRouteUpdate(this.$route) : this.updateSearchFormFields();
   },
   watch: {
     /* Read url state on change. */
@@ -61,7 +62,7 @@ export default {
       }
     },
     resultsShown() {
-      let fullWidth;
+      let fullWidth = "col-md-12";
       this.searchFormClass = this.results.length ? "col-md-4" : fullWidth;
       this.searchResultsClass = this.results.length ? "col-md-8" : fullWidth;
     }
@@ -78,7 +79,7 @@ export default {
       last_result_number: null,
       showLoading: false,
       cursors: [],
-      endpoint: 'cases', // only used in the title in search.html. The working endpoint is in the searchform component
+      endpoint: 'cases',
       page_size: 10,
       choices: {},
       cursor: null,
@@ -93,13 +94,33 @@ export default {
   methods: {
     routeComparisonString(route) {
       /* Construct a stable comparison string for the given route, ignoring pagination parameters */
-      if (!route)
+      if (!route) {
+        // console.log("routeComparisonString route is empty")
         return '';
+      }
+      // console.log("routeComparisonString", route.params.endpoint)
       const ignoreKeys = {cursor: true, page: true};
       const query = route.query;
       const queryKeys = Object.keys(query).filter(key => !ignoreKeys[key]);
       queryKeys.sort();
       return route.params.endpoint + '|' + queryKeys.map(key => `${key}:${query[key]}`).join('|');
+    },
+    updateSearchFormFields(query) {
+      const searchform = this.$refs.searchform;
+      console.log("updateSearchFormFields", query, this.endpoint)
+      // load search fields and values from query params
+        let fields = searchform.endpoints[this.endpoint];
+        fields.forEach((field) => {
+
+          if (field && query[field.name]) {
+            field.value = query[field.name];
+            fields[field] = field;
+          }
+        })
+
+        // if no search fields included in query, show default fields
+        //   fields = blankFields.filter(endpoint => endpoint.default);
+        searchform.fields = fields;
     },
     handleRouteUpdate(route, oldRoute) {
       /*
@@ -109,29 +130,17 @@ export default {
         - reset state variables if endpoint/fields have changed
         - show search results
       */
-      console.log('handleRouteUpdate', route, oldRoute)
+      console.log('handleRouteUpdate',"old route:", oldRoute, "new route:", route)
       const query = route.query;
-      const searchform = this.$refs.searchform;
-      console.log("searchform", searchform)
-      // if route changes (other than pagination), reset state, set endpoint and fields
+      // if route changes (other than pagination), set endpoint and fields
       if (this.routeComparisonString(route) !== this.routeComparisonString(oldRoute)) {
-        // this.resetResults();
-        this.endpoint = route.params.endpoint;
-
-        // load search fields and values from query params
-        let fields = searchform.endpoints[this.endpoint];
-        fields.forEach((field) => {
-          if (field && query[field.name]) {
-            field.value = query[field.name];
-            fields[field] = field;
-          }
-        })
-
-
-        // if no search fields included in query, show default fields
-        //   fields = blankFields.filter(endpoint => endpoint.default);
-        searchform.fields = fields;
+        if (route.name) {
+          // route can be unnamed, as in '/'
+          this.endpoint = route.params.endpoint;
+        }
+        this.updateSearchFormFields(query);
       }
+
 
       // handle page=n parameter: if it is 1 or greater, we show the requested search result page
       const newPage = query.page ? parseInt(query.page) - 1 : undefined;
@@ -166,6 +175,7 @@ export default {
     },
     goToPage: function (page) {
       /* Update URL hash to show the requested search result page. */
+      console.log("go to page")
       this.page = page;
 
       // calculate query string from search fields and pagination variables
@@ -199,7 +209,7 @@ export default {
        */
       // if we already have the page in cache, return immediately
       if (this.results[this.page]) {
-        console.log("page in cache, promise")
+        console.log("page in cache, promise", this.results)
         return Promise.resolve();
       }
 
@@ -223,6 +233,7 @@ export default {
             return response.json();
           })
           .then((results_json) => {
+            console.log("getting result: ", results_json)
             this.hitcount = results_json.count;
 
             // extract cursors
@@ -275,6 +286,7 @@ export default {
        Side Effects:
          - 'resets' the following variables.
       */
+      console.log("resetResults")
       this.title = "Search";
       this.hitcount = null;
       this.page = 0;
@@ -293,6 +305,7 @@ export default {
        Side Effects:
        - Set URL hash for new search
        */
+      console.log("seeCases", parameter, value)
       this.$router.push({
         name: 'endpoint',
         params: {endpoint: 'cases'},
@@ -327,6 +340,7 @@ export default {
 
     assembleUrl: function () {
       /* assembles and returns URL */
+      console.log("assembleUrl")
       const params = {
         page_size: this.page_size,
       };

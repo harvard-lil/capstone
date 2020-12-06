@@ -9,7 +9,7 @@ Vue.use(VueRouter);
 const router = new VueRouter({
   routes: [
     { path: '/:endpoint', component: Main, name: 'endpoint' },
-    { path: '/', redirect: '/cases' },
+    { path: '/'},
     { path: '*', redirect: '/' },
   ]
 });
