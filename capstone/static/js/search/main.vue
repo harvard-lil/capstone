@@ -133,6 +133,7 @@ export default {
           this.endpoint = route.params.endpoint;
         }
         this.updateSearchFormFields(query);
+        this.resetResults();
       }
 
 
@@ -157,7 +158,6 @@ export default {
         }
       }
     },
-
     newSearch() {
       this.goToPage(0)
     },
@@ -203,7 +203,7 @@ export default {
        */
       // if we haven't changed the endpoint
       // and we already have the page in cache, return immediately
-      if (this.resultsType === this.endpoint && this.results[this.page]) {
+      if (this.results[this.page]) {
         return Promise.resolve();
       }
 
@@ -215,7 +215,6 @@ export default {
       const currentFetchID = Math.random();
       this.currentFetchID = currentFetchID;
       this.showLoading = true;
-      console.log("getResultsPage !!!!!!!!!!", query_url)
       return fetch(query_url)
           .then((response) => {
             if (currentFetchID !== this.currentFetchID) {

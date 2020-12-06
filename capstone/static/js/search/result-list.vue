@@ -12,7 +12,7 @@
         }}
         of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
       </span>
-      <div class="row download-button-set" v-if="resultsType==='cases'">
+      <div class="row download-button-set" v-if="resultsType==='cases' && results[page] && results[page].length">
         <span class="title col-6">
           Download results
         </span>
@@ -22,15 +22,20 @@
             <input type="number"
                    v-model="localPageSize"
                    @change="updatePageSize"
-                   id="max-downloads" placeholder="10000">
-            <a class="btn-secondary"
+                   id="max-downloads" :placeholder="localPageSize">
+            <br/>
+            <label for="full-case">Download case body if available</label>
+
+            <input type="checkbox"
+                  id="full-case">
+            <button class="btn-secondary"
                target="_blank"
-               :href="downloadResults('json')"
-               title="Download JSON">JSON</a>&nbsp;
-            <a id="csv-download-button"
+               @click="downloadResults('json')"
+               title="Download JSON">JSON</button>&nbsp;
+            <button id="csv-download-button"
                class="btn-secondary download-csv"
-               :href="downloadResults('csv')"
-               title="Download tab separated CSV">tab separated CSV</a>
+               @click="downloadResults('csv')"
+               title="Download tab separated CSV">tab separated CSV</button>
           </div>
         </div>
 
@@ -61,7 +66,7 @@
                        :key="result.id">
       </reporter-result>
     </ul>
-    <div class="row page-navigation-buttons">
+    <div class="row page-navigation-buttons" v-if="results[page] && results[page].length">
       <div class="col-6">
         <button class="btn-secondary btn btn-sm" v-if="first_page !== true" @click="$emit('prev-page')">
           Back
