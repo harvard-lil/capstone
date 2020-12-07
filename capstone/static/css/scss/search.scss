@@ -26,7 +26,9 @@ form {
   &.col-md-4 {
     padding-left: 15px !important;
     padding-right: 15px !important;
-    border-right: 1px solid $color-search-gray-light;
+    @include media-breakpoint-up(md) {
+      border-right: 1px solid $color-search-gray-light;
+    }
   }
 
   .input-group {
@@ -41,6 +43,9 @@ form {
   }
 }
 
+.form-control {
+  padding: 0 0.2em;
+}
 
 .page-title {
   @extend h3;
@@ -66,6 +71,10 @@ form {
 
   > .dropdown-title {
     @extend h6;
+    text-transform: uppercase;
+    padding-top: 10px;
+    font-size: 1em;
+    letter-spacing: 0.04em;
     min-width: 100%;
     display: inline-block;
     color: $color-medium-blue;
@@ -73,7 +82,6 @@ form {
     font-weight: 400;
     background-color: rgba(220, 220, 220, 0.35);
     text-align: left;
-    text-transform: capitalize;
     padding-left: 10px;
     padding-bottom: 10px;
     margin-bottom: 0;
@@ -83,8 +91,9 @@ form {
 
     &:after {
       float: right;
-      content: url("../../img/arrows/expand-arrow-blocked.svg");
-      display: inline-block;
+      content: url("../../img/arrows/keyboard_arrow_down-24px.svg");
+      top: 0.2em;
+      position: relative;
     }
   }
 
@@ -97,6 +106,8 @@ form {
     width: 100%;
     max-height: 300px;
     overflow-y: scroll;
+    position: absolute !important;
+    box-shadow: 0 7px 10px $color-gray;
 
     .dropdown-item {
       color: $color-black;
@@ -115,7 +126,7 @@ form {
   &.show {
     .dropdown-title::after {
       transform: rotate(180deg);
-      margin-top: 5px;
+      top: 0;
     }
   }
 }
@@ -132,9 +143,31 @@ form {
   padding-bottom: 2rem;
 }
 
+
+// RESULTS CONTAINER
 .results-list-container {
-  padding-left: 1em !important;
-  padding-right: 1em !important;
+  color: $color-black;
+  #results_count_focus {
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 20px;
+    .download-button-set {
+      border-bottom: 1px solid $color-search-gray-light;
+
+      > .title {
+        font-weight: $font-weight-bold;
+        text-transform: uppercase;
+        font-size: 0.8em;
+      }
+    }
+  }
+  .results-list,
+  .page-navigation-buttons,
+  .download-button-set,
+  .results-count {
+    padding-left: 1em;
+    padding-right: 1em;
+  }
 }
 
 // search disclaimer
@@ -235,63 +268,13 @@ select, .queryfield {
   background-color: $color-white;
 }
 
-//
-//.submit-button-group {
-//  float: right;
-//}
-
-.addfield {
-  float: right;
-
-  > button {
-    border: 1px solid $color-violet;
-    margin-bottom: 10px;
-    margin-top: 10px;
-
-    &:after {
-      content: url("../../img/plus_sign_violet.svg");
-      display: inline-block;
-    }
-
-    &:active, &:hover, &:focus {
-      &:after {
-        content: url("../../img/plus_sign_violet.svg");
-        display: inline-block;
-      }
-    }
-  }
-
-  .dropdown-menu {
-    right: 0;
-    border-radius: 0;
-    border: 1px solid $color-violet-gray;
-
-    .dropdown-item {
-      border-bottom: 1px solid $color-gray;
-      color: $color-black;
-      font-size: inherit;
-      text-transform: capitalize;
-      font-weight: inherit;
-
-      &:hover, &:active, &:focus {
-        background-color: $color-yellow;
-      }
-    }
-  }
+option {
+  background-color: $color-white;
 }
 
 .disabled {
   background-color: $color-gray;
   color: $color-light-gray;
-}
-
-.hitcount {
-  color: $color-medium-gray;
-  margin-bottom: 20px;
-  columns: $color-violet;
-}
-
-.field_label_container {
 }
 
 .field_label_container > select {
@@ -312,8 +295,10 @@ select, .queryfield {
 .btn-submit {
   float: right;
 }
+
 .submit-btn-container {
   display: inline-block;
+  margin-top: 1em;
 }
 
 .query-explainer {
@@ -358,10 +343,6 @@ select, .queryfield {
 
 .queryfield_highlighted {
   @extend .highlight-parameter;
-}
-
-.queryfield {
-  margin-left: 0.3em;
 }
 
 .querylabel_highlighted {

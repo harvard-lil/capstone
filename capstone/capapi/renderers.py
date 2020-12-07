@@ -93,7 +93,6 @@ class CSVRenderer(renderers.JSONRenderer):
     format = 'csv'
 
     def render(self, data, accepted_media_type='text/csv', renderer_context=None):
-        # import pdb; pdb.set_trace()
         if 'results' in data:
             json_normalize = pandas.json_normalize(map(lambda x: flatten(x, '.', root_keys_to_ignore={'cites_to'}), data['results']))
         else:

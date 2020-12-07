@@ -11,14 +11,12 @@
 
 .form-label-group input,
 .form-label-group label {
-  padding-top: 0.5em;
-  padding-bottom: 0.1em;
   padding-left: 0.5em;
 }
 
 .form-label-group label {
   position: absolute;
-  top: 0;
+  top: 6px;
   left: 0;
   display: block;
   width: 100%;
@@ -27,6 +25,9 @@
   color: $color-medium-gray;
   cursor: text; /* Match the input under the label */
   transition: all .1s ease-in-out;
+  @include media-breakpoint-down(xs) {
+    font-size: 0.8em;
+  }
 }
 
 .form-label-group input::-webkit-input-placeholder {

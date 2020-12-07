@@ -21,21 +21,27 @@
             <label for="max-downloads">Max</label>
             <input type="number"
                    v-model="localPageSize"
-                   @change="updatePageSize"
+                   @input="updatePageSize"
                    id="max-downloads" :placeholder="localPageSize">
             <br/>
             <label for="full-case">Download case body if available</label>
 
-            <input type="checkbox"
-                  id="full-case">
-            <button class="btn-secondary"
-               target="_blank"
-               @click="downloadResults('json')"
-               title="Download JSON">JSON</button>&nbsp;
-            <button id="csv-download-button"
-               class="btn-secondary download-csv"
-               @click="downloadResults('csv')"
-               title="Download tab separated CSV">tab separated CSV</button>
+            <input v-model="fullCase"
+                   type="checkbox"
+                   id="full-case">
+            <br/>
+            <a class="btn-secondary"
+                    target="_blank"
+                    :href="downloadResults('json')"
+                    title="Download JSON">
+              JSON
+            </a>&nbsp;
+            <a id="csv-download-button"
+                    class="btn-secondary download-csv"
+                    :href="downloadResults('csv')"
+                    title="Download tab separated CSV">
+              tab separated CSV
+            </a>
           </div>
         </div>
 
@@ -108,6 +114,7 @@ export default {
   data: function () {
     return {
       localPageSize: this.$parent.page_size,
+      fullCase: false,
     }
   },
   components: {
@@ -124,10 +131,16 @@ export default {
       return url
     },
     updatePageSize: function () {
+      console.log("updatePageSize")
       this.$parent.page_size = this.localPageSize;
     },
     downloadResults: function (format) {
-      return this.$parent.assembleUrl() + "&format=" + format;
+      console.log("download results in result-list")
+      let fullCaseString = ""
+      if (this.fullCase) {
+        fullCaseString = "&full_case=true"
+      }
+      return this.$parent.assembleUrl() + "&format=" + format + fullCaseString;
     }
   }
 }
