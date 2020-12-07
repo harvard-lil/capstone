@@ -357,8 +357,8 @@ option {
 }
 
 .highlight-parameter {
-  color: $color-white;
-  background-color: $color-violet-gray-dark;
+  color: $color-white !important;
+  background-color: $color-violet-gray-dark !important;
 }
 
 #query-explainer-button {
