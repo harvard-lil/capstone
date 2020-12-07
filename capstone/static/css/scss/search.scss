@@ -147,10 +147,12 @@ form {
 // RESULTS CONTAINER
 .results-list-container {
   color: $color-black;
+
   #results_count_focus {
     padding-left: 0;
     padding-right: 0;
     margin-bottom: 20px;
+
     .download-button-set {
       border-bottom: 1px solid $color-search-gray-light;
 
@@ -161,6 +163,7 @@ form {
       }
     }
   }
+
   .results-list,
   .page-navigation-buttons,
   .download-button-set,
@@ -325,10 +328,13 @@ option {
     letter-spacing: 0.01em;
   }
 
-}
+  code {
+    margin-left: 0;
+  }
 
-.url-block {
-  background-color: $color-white;
+  .url-block {
+    background-color: $color-white;
+  }
 }
 
 .queryfield input.form-control[type="text"], input[type="text"], input[type="email"], textarea {

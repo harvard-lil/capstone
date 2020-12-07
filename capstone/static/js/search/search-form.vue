@@ -157,7 +157,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-12 p-3 url-block">
+          <div class="col-12 url-block">
             <query-explainer :query_url="query_url"></query-explainer>
           </div>
         </div>
@@ -199,12 +199,12 @@ export default {
           {
             name: "ordering",
             value: "relevance",
-            label: "Result Sorting",
+            label: "Result sorting",
             choices: 'sort',
           },
           {
             name: "decision_date_min",
-            label: "From YYYY-MM-DD",
+            label: "Date from YYYY-MM-DD",
             placeholder: "YYYY-MM-DD",
             type: "text",
             value: "",
@@ -212,7 +212,7 @@ export default {
           {
             name: "decision_date_max",
             value: "",
-            label: "To YYYY-MM-DD",
+            label: "Date to YYYY-MM-DD",
             placeholder: "YYYY-MM-DD",
             type: "text",
           },
@@ -225,13 +225,13 @@ export default {
           {
             name: "docket_number",
             value: "",
-            label: "Docket Number",
+            label: "Docket number e.g. Civ. No. 74-289",
             placeholder: "e.g. Civ. No. 74-289",
           },
           {
             name: "cite",
             value: "",
-            label: "Citation",
+            label: "Citation e.g. 1 Ill. 17",
             placeholder: "e.g. 1 Ill. 17",
           },
           {
@@ -374,10 +374,8 @@ export default {
     'showLoading',
     'endpoint'],
   methods: {
-    valueUpdated(val) {
-      console.log("valueUpdated", val)
+    valueUpdated() {
       this.query_url = this.$parent.assembleUrl();
-      console.log("valueUpdated", this.query_url)
     },
     getFieldByName(field_name) {
       return this.endpoints[this.endpoint].find(field => field.name === field_name);
@@ -400,12 +398,13 @@ export default {
     },
     toggleExplainer() {
       this.show_explainer = !this.show_explainer;
-      console.log("show explainer", this.show_explainer)
     },
     downloadResults: function (format) {
-      console.log("downloadResults", format)
       return this.$parent.assembleUrl() + "&format=" + format;
     }
+  },
+  mounted() {
+    this.valueUpdated();
   }
 }
 </script>

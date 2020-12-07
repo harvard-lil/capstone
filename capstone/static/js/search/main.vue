@@ -107,7 +107,6 @@ export default {
     },
     updateSearchFormFields(query) {
       const searchform = this.$refs.searchform;
-      console.log("updateSearchFormFields", query, this.endpoint)
         // load search fields and values from query params
         let fields = searchform.endpoints[this.endpoint];
         fields.forEach((field) => {
