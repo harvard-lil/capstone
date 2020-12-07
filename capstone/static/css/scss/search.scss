@@ -116,6 +116,10 @@ form {
       font-weight: inherit;
       background-color: $color-white;
 
+      &.reset-field {
+        color: $color-medium-gray;
+      }
+
       &:hover, &:active, &:focus, &.active {
         background-color: $color-yellow;
       }
@@ -163,15 +167,20 @@ form {
     padding-left: 0;
     padding-right: 0;
     margin-bottom: 20px;
+  }
 
-    .download-button-set {
-      border-bottom: 1px solid $color-search-gray-light;
-
-      > .title {
-        font-weight: $font-weight-bold;
-        text-transform: uppercase;
-        font-size: 0.8em;
-      }
+  .download-button-set {
+    border-bottom: 1px solid $color-search-gray-light;
+    margin-bottom: 1em;
+    padding-bottom: 1em;
+    > .title {
+      font-weight: $font-weight-bold;
+      color: $color-medium-gray;
+      text-transform: uppercase;
+      font-size: 0.8em;
+    }
+    .btn-group {
+      margin-bottom: 0;
     }
   }
 
@@ -182,6 +191,27 @@ form {
     padding-left: 1em;
     padding-right: 1em;
   }
+
+  .download-options {
+    #max-downloads {
+      border: 0;
+      border-bottom: 1px solid $color-medium-gray;
+      width: 4em;
+      margin-right: 0.4em;
+    }
+
+    label {
+      font-weight: $font-weight-bold;
+      color: $color-medium-gray;
+      font-size: $font-size-sm;
+      margin-right: 0.5em;
+    }
+
+    .download-json {
+      margin-right: 0.4em;
+    }
+  }
+
 }
 
 // search disclaimer

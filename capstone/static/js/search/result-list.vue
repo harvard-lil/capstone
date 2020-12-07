@@ -4,6 +4,46 @@
     <div class="loading-text">Loading results ...</div>
   </div>
   <div v-else-if="resultsShown" class="results-list-container col-centered">
+    <!-- show download options -->
+    <div class="row download-button-set"
+         v-if="resultsType==='cases' && results[page] && results[page].length">
+      <div class="col-12 title">
+        Download results
+      </div>
+
+      <div class="col-6 download-options">
+        <label for="max-downloads">Max</label>
+        <input type="number"
+               v-model="localPageSize"
+               @input="updatePageSize"
+               id="max-downloads" :placeholder="localPageSize">
+
+        <label for="full-case">Full case</label>
+        <input v-model="fullCase"
+               type="checkbox"
+               id="full-case">
+      </div>
+
+      <div class="col-6 text-right">
+        <div class="btn-group download-options row">
+
+          <div class="btn-group col-12">
+            <a class="btn-secondary download-formats-btn download-json"
+               target="_blank"
+               :href="downloadResults('json')"
+               title="Download JSON">
+              JSON
+            </a>&nbsp;
+            <a class="btn-secondary download-formats-btn download-csv"
+               :href="downloadResults('csv')"
+               title="Download tab separated CSV">
+              tab separated CSV
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
     <div class="hitcount" id="results_count_focus" tabindex="-1">
       <span class="results-count" v-if="!results[page] || !results[page].length">No results</span>
       <span class="results-count" v-else>
@@ -12,41 +52,6 @@
         }}
         of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
       </span>
-      <div class="row download-button-set" v-if="resultsType==='cases' && results[page] && results[page].length">
-        <span class="title col-6">
-          Download results
-        </span>
-        <div class="col-6 text-right">
-          <div class="btn-group download-formats">
-            <label for="max-downloads">Max</label>
-            <input type="number"
-                   v-model="localPageSize"
-                   @input="updatePageSize"
-                   id="max-downloads" :placeholder="localPageSize">
-            <br/>
-            <label for="full-case">Download case body if available</label>
-
-            <input v-model="fullCase"
-                   type="checkbox"
-                   id="full-case">
-            <br/>
-            <a class="btn-secondary"
-                    target="_blank"
-                    :href="downloadResults('json')"
-                    title="Download JSON">
-              JSON
-            </a>&nbsp;
-            <a id="csv-download-button"
-                    class="btn-secondary download-csv"
-                    :href="downloadResults('csv')"
-                    title="Download tab separated CSV">
-              tab separated CSV
-            </a>
-          </div>
-        </div>
-
-      </div>
-
     </div>
     <ul v-if="resultsType==='cases'" class="results-list">
       <case-result v-for="result in results[page]"
@@ -131,11 +136,9 @@ export default {
       return url
     },
     updatePageSize: function () {
-      console.log("updatePageSize")
       this.$parent.page_size = this.localPageSize;
     },
     downloadResults: function (format) {
-      console.log("download results in result-list")
       let fullCaseString = ""
       if (this.fullCase) {
         fullCaseString = "&full_case=true"

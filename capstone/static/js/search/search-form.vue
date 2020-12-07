@@ -71,6 +71,12 @@
             </button>
 
             <div class="dropdown-menu" :aria-labelledby="field.name">
+              <!-- Include reset field -->
+              <a class="dropdown-item reset-field"
+                 v-if="field.display_value"
+                  @click="updateDropdownVal(index, ['', ''])">
+                Reset field</a>
+              <!-- Choice fields -->
               <a v-for="choice in choices[field['choices']]" v-bind:key="choice[0]"
                  @click="updateDropdownVal(index, choice)"
                  :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
@@ -202,7 +208,7 @@ export default {
           {
             name: "docket_number",
             value: "",
-            label: "Docket number e.g. Civ. No. 74-289",
+            label: "Docket number",
             placeholder: "e.g. Civ. No. 74-289",
           },
           {
@@ -353,7 +359,6 @@ export default {
   methods: {
     valueUpdated() {
       this.query_url = this.$parent.assembleUrl();
-      console.log("value updated", this.query_url)
     },
     updateDropdownVal(index, choice) {
       this.fields[index].value = choice[0];

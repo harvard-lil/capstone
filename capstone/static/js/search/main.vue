@@ -48,7 +48,6 @@ export default {
   },
   mounted: function () {
     /* Read url state when first loaded. */
-    console.log("in mounted", this.$route)
     this.$route ? this.handleRouteUpdate(this.$route) : this.updateSearchFormFields();
   },
   watch: {
@@ -57,7 +56,6 @@ export default {
       this.handleRouteUpdate(route, oldRoute);
     },
     results() {
-      console.log("results is changing state", this.results)
       if (this.results.length && !this.resultsShown) {
         this.resultsShown = true
       }
@@ -123,7 +121,6 @@ export default {
         - set current endpoint
         - show appropriate fields
       */
-      console.log('handleRouteUpdate',"old route:", oldRoute, "new route:", route)
       const query = route.query;
       // if route changes (other than pagination), set endpoint and fields
       if (this.routeComparisonString(route) !== this.routeComparisonString(oldRoute)) {
@@ -168,7 +165,6 @@ export default {
     },
     goToPage: function (page) {
       /* Update URL hash to show the requested search result page. */
-      console.log("go to page")
       this.page = page;
 
       // calculate query string from search fields and pagination variables
@@ -225,7 +221,6 @@ export default {
             return response.json();
           })
           .then((results_json) => {
-            console.log("getting result: ", results_json)
             this.hitcount = results_json.count;
 
             // extract cursors
@@ -279,7 +274,6 @@ export default {
        Side Effects:
          - 'resets' the following variables.
       */
-      console.log("resetResults")
       this.title = "Search";
       this.hitcount = null;
       this.page = 0;
@@ -298,7 +292,6 @@ export default {
        Side Effects:
        - Set URL hash for new search
        */
-      console.log("seeCases", parameter, value)
       this.$router.push({
         name: 'endpoint',
         params: {endpoint: 'cases'},
@@ -324,7 +317,6 @@ export default {
       /* Scroll to first element with target selector. */
       // use setTimeout to make sure element exists -- it may not have appeared yet if we just changed template vars
       setTimeout(() => {
-        console.log("selector", selector)
         const el = document.querySelector(selector);
         el.focus({preventScroll: true}); // set focus for screenreaders
         el.scrollIntoView({behavior: "smooth", block: "nearest", inline: "start"});
@@ -333,7 +325,6 @@ export default {
 
     assembleUrl: function () {
       /* assembles and returns URL */
-      console.log("assembleUrl")
       const params = {
         page_size: this.page_size,
       };
