@@ -56,87 +56,64 @@
       </div>
       <!--Fields-->
       <div class="search-fields row">
-        <div v-for="field in fields" :key="field.name" class="col-12">
-          <template v-if="field['choices']">
-            <select v-model='field["value"]'
-                    :id='field["name"]'
-                    class="form-control"
-                    @change="valueUpdated"
+        <div v-for="(field, index) in fields" :key="field.name" class="col-12">
+          <div v-if="field['choices']" class="dropdown dropdown-field">
+            <button class="btn dropdown-toggle dropdown-title"
+                    type="button"
+                    :id="field.name"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    :aria-describedby="field.label"
                     @focus="highlightExplainer"
                     @blur="unhighlightExplainer">
-              <option selected hidden value="">{{ field.label }}</option>
-              <option v-for="choice in choices[field['choices']]"
-                      :value="choice[0]" v-bind:key="choice[0]">
+              {{ field.display_value ? field.display_value : field.label }}
+            </button>
+
+            <div class="dropdown-menu" :aria-labelledby="field.name">
+              <a v-for="choice in choices[field['choices']]" v-bind:key="choice[0]"
+                 @click="updateDropdownVal(index, choice)"
+                 :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
                 {{ choice[1] }}
-              </option>
-            </select>
-          </template>
-          <template v-else-if="Array.isArray(field)">
-            <div class="form-inline input-group ">
-              <div v-for="subfield in field" :key="subfield.name"
-                   class="col-6 form-label-group">
-                <input :type="subfield.type" class="queryfield"
-                       :aria-label="subfield.name"
-                       v-model='subfield.value'
-                       @input="valueUpdated"
-                       @focus="highlightExplainer"
-                       @blur="unhighlightExplainer">
-                <label :for="subfield.name">{{ subfield.label }}</label>
-
-              </div>
+              </a>
             </div>
-          </template>
-          <template v-else>
-            <!--        <div v-if="field.type === 'date'" class="input-group mb-3 col-6">-->
-            <!--          <input type="date" class="form-control"-->
-            <!--                 :aria-label="field.name"-->
-            <!--                 v-model='field.value'-->
-            <!--                 v-on:keyup="valueUpdated"-->
-            <!--                 @focus="highlightExplainer"-->
-            <!--                 @blur="unhighlightExplainer"-->
-            <!--                 aria-describedby="basic-addon1">-->
-            <!--        </div>-->
-            <textarea v-if="field.type === 'textarea'"
-                      :aria-label="field.name"
-                      v-model="field.value"
-                      :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '', 'col-12' ]"
-                      :id='field["name"]'
-                      :placeholder='field["placeholder"] || false'
-                      class="form-control"
-                      v-on:keyup="valueUpdated"
-                      @focus="highlightExplainer"
-                      @blur="unhighlightExplainer">
+          </div>
+
+          <textarea v-else-if="field.type === 'textarea'"
+                    :aria-label="field.name"
+                    v-model="field.value"
+                    :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '', 'col-12' ]"
+                    :id='field["name"]'
+                    :placeholder='field["placeholder"] || false'
+                    class="form-control"
+                    v-on:keyup="valueUpdated"
+                    @focus="highlightExplainer"
+                    @blur="unhighlightExplainer">
         </textarea>
-            <!-- for text, numbers, and everything else (that we presume is text) -->
-            <div v-else
-                 class="form-label-group">
-              <input v-model='field.value'
-                     :aria-label="field.name"
-                     :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '', 'col-12' ]"
-                     :type='field.type'
-                     :placeholder="field.label"
-                     :id="field.name"
-                     :min="field.min"
-                     :max="field.max"
-                     @input="valueUpdated"
-                     @focus="highlightExplainer"
-                     @blur="unhighlightExplainer">
-              <label :for="field.name">{{ field.label }}</label>
+          <!-- for text, numbers, and everything else (that we presume is text) -->
+          <div v-else class="form-label-group">
+            <input v-model='field.value'
+                   :aria-label="field.name"
+                   :class="['queryfield', field_errors[field.name] ? 'is-invalid' : '', 'col-12' ]"
+                   :type='field.type'
+                   :placeholder="field.label"
+                   :id="field.name"
+                   :min="field.min"
+                   :max="field.max"
+                   @input="valueUpdated"
+                   @focus="highlightExplainer"
+                   @blur="unhighlightExplainer">
+            <label :for="field.name">{{ field.label }}</label>
 
-            </div>
-
-
-          </template>
-
-
+          </div>
           <div v-if="field_errors[field.name]" class="invalid-feedback">
             {{ field_errors[field.name] }}
           </div>
           <small v-if="field.info"
                  :id="`help-text-${field.name}`"
                  class="form-text text-muted">
-          {{ field.info }}
-        </small>
+            {{ field.info }}
+          </small>
         </div>
       </div>
       <!--Buttons row-->
@@ -376,6 +353,12 @@ export default {
   methods: {
     valueUpdated() {
       this.query_url = this.$parent.assembleUrl();
+      console.log("value updated", this.query_url)
+    },
+    updateDropdownVal(index, choice) {
+      this.fields[index].value = choice[0];
+      this.fields[index].display_value = choice[1];
+      this.valueUpdated()
     },
     getFieldByName(field_name) {
       return this.endpoints[this.endpoint].find(field => field.name === field_name);
@@ -383,6 +366,7 @@ export default {
     changeEndpoint: function (new_endpoint) {
       this.$emit('update:endpoint', new_endpoint)
       this.fields = this.endpoints[new_endpoint];
+      this.valueUpdated();
     },
     highlightExplainer(event) {
       let explainer_argument = document.getElementById("p_" + event.target.id);

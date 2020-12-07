@@ -66,18 +66,17 @@ form {
   border: 1px solid $color-search-gray-light;
 }
 
-.dropdown-search-routes {
+.dropdown-search-routes,
+.dropdown-field {
   width: 100%;
 
   > .dropdown-title {
     @extend h6;
-    text-transform: uppercase;
     padding-top: 10px;
     font-size: 1em;
     letter-spacing: 0.04em;
     min-width: 100%;
     display: inline-block;
-    color: $color-medium-blue;
     font-family: $font-sans-title;
     font-weight: 400;
     background-color: rgba(220, 220, 220, 0.35);
@@ -129,6 +128,18 @@ form {
       top: 0;
     }
   }
+}
+
+.dropdown-search-routes > .dropdown-toggle {
+  text-transform: uppercase;
+  color: $color-medium-blue;
+}
+
+.dropdown-field > .dropdown-toggle {
+  background-color: $color-white;
+  border: 1px solid $color-search-gray-light;
+  color: $color-black;
+  text-transform: none;
 }
 
 .main-content {
@@ -343,7 +354,6 @@ option {
 }
 
 .queryfield input.form-control[type="date"] {
-  //display: inline-block;
   width: 50%;
 }
 
