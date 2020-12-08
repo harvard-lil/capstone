@@ -89,6 +89,168 @@ export default {
       search_error: null,
       searchFormClass: '',
       searchResultsClass: '',
+      endpoints: {
+        cases: [
+          {
+            name: "search",
+            value: "",
+            label: "Full-Text Search",
+            type: "textarea",
+            placeholder: "Enter keyword or phrase",
+            info: "Terms stemmed and combined using AND. Words in quotes searched as phrases.",
+            default: true,
+          },
+          {
+            name: "ordering",
+            value: "relevance",
+            label: "Result sorting",
+            choices: 'sort',
+          },
+          {
+            name: "decision_date_min",
+            label: "Date from YYYY-MM-DD",
+            placeholder: "YYYY-MM-DD",
+            type: "text",
+            value: "",
+          },
+          {
+            name: "decision_date_max",
+            value: "",
+            label: "Date to YYYY-MM-DD",
+            placeholder: "YYYY-MM-DD",
+            type: "text",
+          },
+          {
+            name: "name_abbreviation",
+            label: "Case name abbreviation",
+            value: "",
+            placeholder: "Enter case name abbreviation e.g. Taylor v. Sprinkle",
+          },
+          {
+            name: "docket_number",
+            value: "",
+            label: "Docket number",
+            placeholder: "e.g. Civ. No. 74-289",
+          },
+          {
+            name: "cite",
+            value: "",
+            label: "Citation e.g. 1 Ill. 17",
+            placeholder: "e.g. 1 Ill. 17",
+          },
+          {
+            name: "reporter",
+            value: "",
+            label: "Reporter",
+            choices: 'reporter',
+          },
+          {
+            name: "court",
+            value: "",
+            label: "Court",
+            placeholder: "e.g. ill-app-ct",
+            hidden: true,
+          },
+          {
+            name: "jurisdiction",
+            value: "",
+            label: "Jurisdiction",
+            choices: 'jurisdiction',
+          }
+        ],
+        courts: [
+          {
+            name: "slug",
+            value: "",
+            label: "Slug e.g. ill-app-ct",
+            placeholder: "e.g. ill-app-ct",
+          },
+          {
+            name: "name",
+            value: "",
+            label: "Name e.g. 'Illinois Supreme Court'",
+            placeholder: "e.g. 'Illinois Supreme Court'",
+            default: true,
+          },
+          {
+            name: "name_abbreviation",
+            value: "",
+            placeholder: "e.g. 'Ill.'",
+            label: "Name abbreviation e.g. 'Ill.'",
+          },
+          {
+            name: "jurisdiction",
+            value: "",
+            label: "Jurisdiction",
+            choices: 'jurisdiction',
+            default: true,
+          }
+        ],
+        jurisdictions: [
+          {
+            name: "name",
+            value: "",
+            label: "Name",
+            placeholder: "e.g. 'Ill.'",
+          },
+          {
+            name: "name_long",
+            value: "",
+            label: "Long Name",
+            placeholder: "e.g. 'Illinois'",
+            default: true,
+          },
+          {
+            name: "whitelisted",
+            value: "",
+            label: "Whitelisted Jurisdiction",
+            choices: 'whitelisted',
+            info: "Whitelisted jurisdictions are not subject to the 500 case per day access limitation."
+          }
+        ],
+        reporters: [
+          {
+            name: "full_name",
+            value: "",
+            label: "Full Name",
+            placeholder: "e.g. 'Illinois Appellate Court Reports'",
+            default: true,
+          },
+          {
+            name: "short_name",
+            value: "",
+            label: "Short Name",
+            placeholder: "e.g. 'Ill. App.'",
+          },
+          {
+            name: "start_year",
+            value: "",
+            type: "number",
+            min: "1640",
+            max: "2018",
+            label: "Start Year",
+            placeholder: "e.g. '1893'",
+            info: "Year in which the reporter began publishing."
+          },
+          {
+            name: "end_year",
+            value: "",
+            type: "number",
+            min: "1640",
+            max: "2018",
+            label: "End Year",
+            placeholder: "e.g. '1894'",
+            info: "Year in which the reporter stopped publishing."
+          },
+          {
+            name: "jurisdiction",
+            value: "",
+            label: "Jurisdiction",
+            choices: 'jurisdiction',
+            default: true,
+          }
+        ]
+      },
     }
   },
   methods: {
@@ -105,15 +267,15 @@ export default {
     },
     updateSearchFormFields(query) {
       const searchform = this.$refs.searchform;
-        // load search fields and values from query params
-        let fields = searchform.endpoints[this.endpoint];
-        fields.forEach((field) => {
-          if (field && query[field.name]) {
-            field.value = query[field.name];
-            fields[field] = field;
-          }
-        })
-        searchform.fields = fields;
+      // load search fields and values from query params
+      let fields = this.endpoints[this.endpoint];
+      fields.forEach((field) => {
+        if (field && query[field.name]) {
+          field.value = query[field.name];
+          fields[field] = field;
+        }
+      })
+      searchform.fields = fields;
     },
     handleRouteUpdate(route, oldRoute) {
       /*
@@ -264,7 +426,8 @@ export default {
 
             console.log("Search error:", response);  // eslint-disable-line
             throw response;  // in case callers want to do further error handling
-          }).catch(()=>{});
+          }).catch(() => {
+          });
 
     },
     resetResults: function () {

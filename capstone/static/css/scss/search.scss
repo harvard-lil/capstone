@@ -21,14 +21,25 @@ $color-search-gray-light: #ced4da;
   padding: 0 !important;
 }
 
-//*** head matter
-form {
-  &.col-md-4 {
-    padding-left: 15px !important;
-    padding-right: 15px !important;
-    @include media-breakpoint-up(md) {
-      border-right: 1px solid $color-search-gray-light;
-    }
+input, textarea,
+.form-control {
+  border-radius: 0;
+}
+
+/* sidebar form */
+form.col-md-4 {
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+  @include media-breakpoint-up(md) {
+    border-right: 1px solid $color-search-gray-light;
+  }
+
+  input {
+    height: 30px;
+  }
+
+  label {
+    font-size: 0.8em;
   }
 
   .input-group {
@@ -36,10 +47,33 @@ form {
     width: 100%;
   }
 
-  input[type="text"],
-  input[type="date"],
-  select, .form-control {
-    border-radius: 0;
+  .dropdown-title, .dropdown-item {
+    margin-top: 0;
+    font-size: 0.8em !important;
+    padding-top: 0.2em;
+    padding-bottom: 0;
+  }
+
+  .dropdown-item {
+    overflow-x: hidden;
+  }
+
+  .dropdown-title {
+    &::after {
+      top: 0;
+    }
+  }
+
+  .dropdown-field.show {
+    .dropdown-title::after {
+      top: -0.2em;
+    }
+  }
+
+  small {
+    line-height: 1.2em;
+    font-size: 0.7em;
+    margin-bottom: 1em;
   }
 }
 
@@ -58,12 +92,27 @@ form {
   }
 }
 
+.show-advanced-options {
+  padding: 0;
+}
+
+.show-advanced-options > span {
+  color: $color-blue;
+  text-transform: none;
+  //font-weight: $font-weight-regular;
+  &:hover, &:focus, &:active {
+    color: $color-dark-blue;
+    border-bottom: 1px solid $color-dark-blue;
+  }
+}
+
 .search-form-contents {
   float: right;
 }
 
 #search-routes-dropdown {
   border: 1px solid $color-search-gray-light;
+  margin-bottom: 4px;
 }
 
 .dropdown-search-routes,
@@ -84,9 +133,6 @@ form {
     padding-left: 10px;
     padding-bottom: 10px;
     margin-bottom: 0;
-    @include media-breakpoint-up(lg) {
-      margin-top: 15px;
-    }
 
     &:after {
       float: right;
@@ -107,6 +153,7 @@ form {
     overflow-y: scroll;
     position: absolute !important;
     box-shadow: 0 7px 10px $color-gray;
+    z-index: 9999;
 
     .dropdown-item {
       color: $color-black;
@@ -132,6 +179,10 @@ form {
       top: 0;
     }
   }
+}
+
+.dropdown-search-routes > .dropdown-menu {
+  margin-top: -4px;
 }
 
 .dropdown-search-routes > .dropdown-toggle {
@@ -173,12 +224,14 @@ form {
     border-bottom: 1px solid $color-search-gray-light;
     margin-bottom: 1em;
     padding-bottom: 1em;
+
     > .title {
       font-weight: $font-weight-bold;
       color: $color-medium-gray;
       text-transform: uppercase;
       font-size: 0.8em;
     }
+
     .btn-group {
       margin-bottom: 0;
     }
@@ -293,36 +346,18 @@ form {
   padding-bottom: 0;
 }
 
-select {
-  -webkit-appearance: none;
-  /*webkit browsers */
-  -moz-appearance: none;
-  /*Firefox */
-  appearance: none;
-  /* modern browsers */
-  border-radius: 0;
-}
-
-select, .queryfield {
+.queryfield {
   width: 100%;
   border: 1px solid $color-search-gray-light;
   padding: 5px;
   margin-bottom: 5px;
-  margin-top: 5px;
-  background-color: $color-white;
-}
-
-option {
+  margin-top: 1px;
   background-color: $color-white;
 }
 
 .disabled {
   background-color: $color-gray;
   color: $color-light-gray;
-}
-
-.field_label_container > select {
-  max-width: 100%;
 }
 
 .field_value_container {
