@@ -25,6 +25,8 @@ from django.utils.http import is_safe_url
 from django.utils.text import slugify
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
+from elasticsearch_dsl import SF
+from elasticsearch_dsl.query import FunctionScore
 from rest_framework.request import Request
 from elasticsearch.exceptions import NotFoundError
 from natsort import natsorted
@@ -86,6 +88,23 @@ def home(request):
     return render(request, 'cite/home.html', {
         "jurisdictions": jurisdictions,
     })
+
+
+def random(request):
+    """ Redirect to a random case over 1,000 words. """
+    s = CaseDocument.search().source(['frontend_url']).filter('range', analysis__word_count={'gte':1000})
+    s.query = FunctionScore(
+        query=s.query,  # omit this if not applying a filter first
+        functions=[
+            SF('random_score'),
+            # to weight by pagerank:
+            # SF('field_value_factor', field='analysis.pagerank.percentile', modifier="ln1p", missing=0)
+        ],
+        boost_mode='replace',
+    )
+    random_case = s[0].execute()[0]
+    return HttpResponseRedirect(random_case.frontend_url)
+
 
 def robots(request):
     """
