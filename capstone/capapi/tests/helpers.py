@@ -43,4 +43,4 @@ def check_response(response, status_code=200, content_type=None, content_include
 
 def is_cached(response):
     cache_header = response['cache-control'] if response.has_header('cache-control') else ''
-    return 's-maxage=%d' % settings.CACHE_CONTROL_DEFAULT_MAX_AGE in cache_header
+    return f's-maxage={settings.CDN_CACHE_LENGTH}' in cache_header
