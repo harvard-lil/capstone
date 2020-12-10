@@ -20,12 +20,17 @@ _capuser_cache_safe_attributes = {
     'is_anonymous', 'is_authenticated', '__class__',
 }
 
-def add_cache_header(response, s_maxage=settings.CACHE_CONTROL_DEFAULT_MAX_AGE):
-    patch_cache_control(response, s_maxage=s_maxage)
+def add_cache_header(response):
+    patch_cache_control(response, s_maxage=settings.CDN_CACHE_LENGTH, max_age=settings.BROWSER_CACHE_LENGTH)
+
+
+def add_no_cache_header(response):
+    patch_cache_control(response, s_maxage=0, max_age=0)
+
 
 def cache_header_middleware(get_response):
     """
-        Set an outgoing "Cache-Control: s-maxage=<settings.CACHE_CONTROL_DEFAULT_MAX_AGE>" header on all requests
+        Set an outgoing "Cache-Control: s-maxage=<settings.CDN_CACHE_LENGTH>, max-age=<settings.BROWSER_CACHE_LENGTH>" header on all requests
         that are detected to be cacheable.
 
         See test_cache.py for examples of when we set or don't set cache headers.
@@ -83,7 +88,7 @@ def cache_header_middleware(get_response):
         if cache_response:
             add_cache_header(response)
         else:
-            add_cache_header(response, s_maxage=0)
+            add_no_cache_header(response)
 
         return response
 
