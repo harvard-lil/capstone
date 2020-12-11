@@ -4,6 +4,12 @@
     <div class="loading-text">Loading results ...</div>
   </div>
   <div v-else-if="resultsShown" class="results-list-container col-centered">
+    <!-- show selected fields --->
+    <div class="field-choices">
+      <div class="field" v-for="field in $parent.fields" v-bind:key="field.name">
+        {{ field.name }} {{ field.value }}
+      </div>
+    </div>
     <!-- show download options -->
     <div class="row download-button-set"
          v-if="resultsType==='cases' && results[page] && results[page].length">

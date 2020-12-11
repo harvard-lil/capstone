@@ -65,6 +65,9 @@ export default {
       this.searchFormClass = this.results.length ? "col-md-4" : fullWidth;
       this.searchResultsClass = this.results.length ? "col-md-8" : fullWidth;
     },
+    endpoint() {
+      this.fields = this.endpoints[this.endpoint];
+    }
   },
   components: {SearchForm, ResultList},
   data: function () {
@@ -72,6 +75,7 @@ export default {
       title: "Search",
       hitcount: null,
       page: 0,
+      fields: [],
       results: [],
       resultsType: '',
       resultsShown: false,
@@ -266,7 +270,6 @@ export default {
       return route.params.endpoint + '|' + queryKeys.map(key => `${key}:${query[key]}`).join('|');
     },
     updateSearchFormFields(query) {
-      const searchform = this.$refs.searchform;
       // load search fields and values from query params
       let fields = this.endpoints[this.endpoint];
       fields.forEach((field) => {
@@ -275,7 +278,7 @@ export default {
           fields[field] = field;
         }
       })
-      searchform.fields = fields;
+      this.fields = fields;
     },
     handleRouteUpdate(route, oldRoute) {
       /*
@@ -335,7 +338,7 @@ export default {
       };
       if (this.cursors[this.page])
         query.cursor = this.cursors[this.page];
-      for (const field of this.$refs.searchform.fields)
+      for (const field of this.fields)
         if (field.value)
           query[field.name] = field.value;
 
@@ -496,7 +499,7 @@ export default {
       }
 
       // build the query parameters using the form fields
-      this.$refs.searchform.fields.forEach((field) => {
+      this.fields.forEach((field) => {
         if (field['value']) {
           params[field['name']] = field['value'];
         }

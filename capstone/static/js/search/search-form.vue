@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="$emit('new-search', fields, endpoint)"
+  <form @submit.prevent="$emit('new-search', $parent.fields, endpoint)"
         class="row">
     <div class="col-centered col-9">
       <div class="col-md-2 empty-push-div"></div>
@@ -59,7 +59,7 @@
 
       <!--Fields default-->
       <div class="search-fields row">
-        <div v-for="(field, index) in fields"
+        <div v-for="(field, index) in $parent.fields"
              :key="field.name" class="col-12">
           <field-item v-if="field.default"
                       :field="field"
@@ -81,7 +81,7 @@
       </a>
       <!--Fields-->
       <div class="search-fields row" v-show="advanced_fields_shown">
-        <div v-for="(field, index) in fields"
+        <div v-for="(field, index) in $parent.fields"
              :key="field.name" class="col-12">
           <field-item v-if="!field.default" :field="field" :index="index"></field-item>
           <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
@@ -139,7 +139,6 @@ export default {
   data: function () {
     return {
       query: [],
-      fields: [],
       query_url: '',
       show_explainer: false,
       advanced_fields_shown: false,
@@ -162,7 +161,6 @@ export default {
     },
     changeEndpoint: function (new_endpoint) {
       this.$emit('update:endpoint', new_endpoint)
-      this.fields = this.$parent.endpoints[new_endpoint];
       this.valueUpdated();
     },
     toggleExplainer() {
