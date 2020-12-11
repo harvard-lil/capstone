@@ -9,7 +9,7 @@
             :aria-describedby="field.label"
             @focus="highlightExplainer"
             @blur="unhighlightExplainer">
-      {{ field.display_value ? field.display_value : field.label }}
+      {{ display_value }}
     </button>
 
     <div class="dropdown-menu" :aria-labelledby="field.name">
@@ -61,12 +61,17 @@ export default {
   name: "field-item",
   props: [
     'field',
-      'index'
+    'index'
   ],
+  data() {
+    return {
+      display_value: this.field.label
+    }
+  },
   methods: {
     updateDropdownVal(index, choice) {
-      this.$parent.fields[index].value = choice[0];
-      this.$parent.fields[index].display_value = choice[1];
+      this.field.value = choice[0];
+      this.display_value = choice[1];
       this.$parent.valueUpdated()
     },
     highlightExplainer(event) {
