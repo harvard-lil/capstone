@@ -2,6 +2,7 @@
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
 @import "bootstrap/forms";
+@import "no-select";
 @import "base.scss";
 @import "floating-labels";
 @import 'footer/yellow';
@@ -24,6 +25,10 @@ $color-search-gray-light: #ced4da;
 input, textarea,
 .form-control {
   border-radius: 0;
+}
+
+label {
+  @extend .no-select;
 }
 
 /* sidebar form */

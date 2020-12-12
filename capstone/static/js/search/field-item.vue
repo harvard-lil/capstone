@@ -1,32 +1,35 @@
 <template>
-  <div v-if="field['choices']" class="dropdown dropdown-field">
-    <button class="btn dropdown-toggle dropdown-title"
-            type="button"
-            :id="field.name"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="false"
-            :aria-describedby="field.label"
-            @focus="highlightExplainer"
-            @blur="unhighlightExplainer">
-      {{ display_value }}
-    </button>
+  <div v-if="field['choices']">
+    <div class="dropdown dropdown-field">
+      <button class="btn dropdown-toggle dropdown-title"
+              type="button"
+              :id="field.name"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              :aria-describedby="field.label"
+              @focus="highlightExplainer"
+              @blur="unhighlightExplainer">
+        {{ display_value }}
+      </button>
 
-    <div class="dropdown-menu" :aria-labelledby="field.name">
-      <!-- Include reset field -->
-      <a class="dropdown-item reset-field"
-         v-if="field.display_value"
-         @click="updateDropdownVal(index, ['', ''])">
-        Reset field</a>
-      <!-- Choice fields -->
-      <a v-for="choice in $parent.choices[field['choices']]" v-bind:key="choice[0]"
-         @click="updateDropdownVal(index, choice)"
-         :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
-        {{ choice[1] }}
-      </a>
+
+      <div class="dropdown-menu" :aria-labelledby="field.name">
+        <!-- Choice fields -->
+        <a v-for="choice in $parent.choices[field['choices']]" v-bind:key="choice[0]"
+           @click="updateDropdownVal(index, choice)"
+           :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
+          {{ choice[1] }}
+        </a>
+      </div>
     </div>
-  </div>
+    <a class="dropdown-item reset-field"
+       v-if="display_value !== field.label"
+       href="#"
+       @click.prevent="dropdownReset()">
+      <small>Reset {{ field.label }} field</small></a>
 
+  </div>
   <textarea v-else-if="field.type === 'textarea'"
             :aria-label="field.name"
             v-model="field.value"
@@ -69,6 +72,10 @@ export default {
     }
   },
   methods: {
+    dropdownReset() {
+      this.display_value = this.field.label;
+      this.field.value = "";
+    },
     updateDropdownVal(index, choice) {
       this.field.value = choice[0];
       this.display_value = choice[1];
