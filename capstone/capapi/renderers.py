@@ -1,5 +1,8 @@
 import hashlib
 import json
+import tempfile
+from datetime import datetime
+
 import pandas
 from flatten_json import flatten
 
@@ -88,15 +91,22 @@ class PdfRenderer(renderers.BaseRenderer):
         return HttpResponse(data, content_type=accepted_media_type)
 
 
-class CSVRenderer(renderers.JSONRenderer):
-    media_type = 'text/csv'
-    format = 'csv'
+class TSVRenderer(renderers.JSONRenderer):
+    media_type = 'text/tab-separated-values'
+    format = 'tsv'
 
-    def render(self, data, accepted_media_type='text/csv', renderer_context=None):
+    def render(self, data, accepted_media_type='text/tab-separated-values', renderer_context=None):
         if 'results' in data:
-            json_normalize = pandas.json_normalize(map(lambda x: flatten(x, '.', root_keys_to_ignore={'cites_to'}), data['results']))
+            json_normalize = pandas.json_normalize(
+                map(lambda x: flatten(x, '.', root_keys_to_ignore={'cites_to'}), data['results']))
         else:
             json_normalize = pandas.json_normalize(flatten(data, '.', root_keys_to_ignore={'cites_to'}))
         json_normalize.replace(to_replace=[r"\\n", "\n"], value=["¶", "¶"], regex=True, inplace=True)
-        csv_string = json_normalize.to_csv(sep="\t", quoting=csv.QUOTE_NONE, doublequote=False, index=False, escapechar="\\")
-        return HttpResponse(csv_string, content_type=accepted_media_type)
+        now = datetime.now()
+        out = tempfile.NamedTemporaryFile(prefix='CAP-%s' % now.strftime('%m-%d-%Y-%I%M%S-'), suffix='.tsv')
+        json_normalize.to_csv(sep="\t", quoting=csv.QUOTE_NONE, doublequote=False,
+                              index=False, escapechar="\\", path_or_buf=out.name)
+
+        response = HttpResponse(out, content_type=accepted_media_type)
+        response['Content-Length'] = out.tell()
+        return response
