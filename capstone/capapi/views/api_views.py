@@ -187,9 +187,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
     def get_renderers(self):
         if self.action == 'retrieve':
-            return [renderers.JSONRenderer(), capapi_renderers.PdfRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.CSVRenderer()]
+            return [renderers.JSONRenderer(), capapi_renderers.PdfRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.TSVRenderer()]
         else:
-            return [renderers.JSONRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.CSVRenderer()]
+            return [renderers.JSONRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.TSVRenderer()]
 
     def retrieve(self, request, *args, **kwargs):
         # for user's convenience, if user gets /cases/casecitation or /cases/Case Citation (or any non-numeric value)
