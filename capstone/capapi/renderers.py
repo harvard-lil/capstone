@@ -1,7 +1,5 @@
 import hashlib
 import json
-import tempfile
-from datetime import datetime
 
 import pandas
 from flatten_json import flatten
@@ -102,11 +100,6 @@ class TSVRenderer(renderers.JSONRenderer):
         else:
             json_normalize = pandas.json_normalize(flatten(data, '.', root_keys_to_ignore={'cites_to'}))
         json_normalize.replace(to_replace=[r"\\n", "\n"], value=["¶", "¶"], regex=True, inplace=True)
-        now = datetime.now()
-        out = tempfile.NamedTemporaryFile(prefix='CAP-%s' % now.strftime('%m-%d-%Y-%I%M%S-'), suffix='.tsv')
-        json_normalize.to_csv(sep="\t", quoting=csv.QUOTE_NONE, doublequote=False,
-                              index=False, escapechar="\\", path_or_buf=out.name)
 
-        response = HttpResponse(out, content_type=accepted_media_type)
-        response['Content-Length'] = out.tell()
-        return response
+        return json_normalize.to_csv(sep="\t", quoting=csv.QUOTE_NONE, doublequote=False,
+                              index=False, escapechar="\\")

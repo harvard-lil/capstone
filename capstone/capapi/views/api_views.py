@@ -1,5 +1,6 @@
 import bisect
 import urllib
+from datetime import datetime
 from collections import OrderedDict, defaultdict
 from pathlib import Path
 
@@ -9,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
-from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest, StreamingHttpResponse
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch, ResolveDocument
@@ -220,6 +221,16 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             return Response(case.get_pdf())
 
         return super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+
+        if request.accepted_renderer.format == 'tsv':
+            data = capapi_renderers.TSVRenderer().render(response.data)
+            response = StreamingHttpResponse(data, content_type='text/tab-separated-values')
+            response['Content-Disposition'] = 'attachment; filename="CAP_{}.tsv"'.format(str(datetime.now()))
+
+        return response
 
 
 class ResolveDocumentViewSet(BaseDocumentViewSet):
