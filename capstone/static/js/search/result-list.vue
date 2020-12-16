@@ -1,13 +1,16 @@
 <template>
-  <div v-if="showLoading" class="results-loading-container col-centered">
+  <div v-if="showLoading" class="results-loading-container">
     <img alt="" aria-hidden="true" :src='`${urls.static}img/loading.gif`' class="loading-gif"/>
     <div class="loading-text">Loading results ...</div>
   </div>
-  <div v-else-if="resultsShown" class="results-list-container col-centered">
+  <div v-else-if="resultsShown" class="results-list-container">
     <!-- show selected fields --->
     <div class="field-choices">
-      <div class="field" v-for="field in $parent.fields" v-bind:key="field.name">
-        {{ field.name }} {{ field.value }}
+      <div class="field" v-for="field in chosen_fields" v-bind:key="field.name">
+        <span class="chosen-field" v-if="field.value">
+          {{ field.name }} {{ field.value }}
+          <span class="reset-field" @click="reset_field(field.name)">x</span>
+        </span>
       </div>
     </div>
     <!-- show download options -->
@@ -20,12 +23,12 @@
       <div class="col-6 download-options">
         <label for="max-downloads">Max</label>
         <input type="number"
-               v-model="localPageSize"
+               v-model="local_page_size"
                @input="updatePageSize"
-               id="max-downloads" :placeholder="localPageSize">
+               id="max-downloads" :placeholder="local_page_size">
 
         <label for="full-case">Full case</label>
-        <input v-model="fullCase"
+        <input v-model="full_case"
                type="checkbox"
                id="full-case">
       </div>
@@ -41,9 +44,9 @@
               JSON
             </a>&nbsp;
             <a class="btn-secondary download-formats-btn download-csv"
-               :href="downloadResults('csv')"
+               :href="downloadResults('tsv')"
                title="Download tab separated CSV">
-              tab separated CSV
+              TSV
             </a>
           </div>
         </div>
@@ -117,15 +120,17 @@ export default {
     'resultsType',
     'endpoint',
     'hitcount',
+    'chosen_fields',
     'page',
     'first_page',
     'last_page',
-    'urls'
+    'urls',
   ],
   data: function () {
     return {
-      localPageSize: this.$parent.page_size,
-      fullCase: false,
+      local_page_size: this.$parent.page_size,
+      full_case: false,
+      selected_fields: [],
     }
   },
   components: {
@@ -136,20 +141,22 @@ export default {
   },
   methods: {
     metadata_view_url: function (endpoint, id) {
-      let url = this.urls.view_court
+      return this.urls.view_court
           .replace('987654321', id)
           .replace('/court/', "/" + endpoint + "/")
-      return url
     },
     updatePageSize: function () {
-      this.$parent.page_size = this.localPageSize;
+      this.$parent.page_size = this.local_page_size;
+    },
+    reset_field: function (fieldname) {
+      this.$parent.reset_field(fieldname);
     },
     downloadResults: function (format) {
-      let fullCaseString = ""
-      if (this.fullCase) {
-        fullCaseString = "&full_case=true"
+      let full_case_string = ""
+      if (this.full_case) {
+        full_case_string = "&full_case=true"
       }
-      return this.$parent.assembleUrl() + "&format=" + format + fullCaseString;
+      return this.$parent.assembleUrl() + "&format=" + format + full_case_string;
     }
   }
 }

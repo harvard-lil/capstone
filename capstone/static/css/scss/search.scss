@@ -9,6 +9,9 @@
 @import "search_results";
 
 $color-search-gray-light: #ced4da;
+.top-section {
+  padding-bottom: 0 !important;
+}
 
 .row.alert-danger {
   padding: 10px 0;
@@ -31,20 +34,16 @@ label {
   @extend .no-select;
 }
 
-/* sidebar form */
-form.col-md-4 {
-  padding-left: 15px !important;
-  padding-right: 15px !important;
-  @include media-breakpoint-up(md) {
-    border-right: 1px solid $color-search-gray-light;
+@mixin sidebar-small {
+  @include media-breakpoint-down(md) {
+    @include make-col(12);
+    border-bottom: 1px solid $color-search-gray-light;
+    padding-bottom: 0;
   }
-
+  display: block;
+  font-size: 0.9em;
   input {
     height: 30px;
-  }
-
-  label {
-    font-size: 0.8em;
   }
 
   .input-group {
@@ -54,7 +53,6 @@ form.col-md-4 {
 
   .dropdown-title, .dropdown-item {
     margin-top: 0;
-    font-size: 0.8em !important;
     padding-top: 0.2em;
     padding-bottom: 0;
   }
@@ -79,6 +77,29 @@ form.col-md-4 {
     line-height: 1.2em;
     font-size: 0.7em;
     margin-bottom: 1em;
+  }
+}
+
+@mixin sidebar-fullscreen {
+  /* show full screen search unless results are shown*/
+  @include make-col(9);
+  border-right: 0;
+  &.results-shown {
+    @include make-col(3);
+    @include sidebar-small;
+    border-right: 1px solid $color-search-gray-light;
+  }
+}
+
+/* sidebar form */
+#sidebar-menu {
+  padding-top: 2em;
+  @include media-breakpoint-up(md) {
+    @include sidebar-fullscreen;
+  }
+
+  @include media-breakpoint-down(md) {
+    @include sidebar-small;
   }
 }
 
@@ -118,6 +139,12 @@ form.col-md-4 {
 #search-routes-dropdown {
   border: 1px solid $color-search-gray-light;
   margin-bottom: 4px;
+}
+
+.reset-field {
+  font-family: $font-family-sans-serif;
+  text-align: right;
+  padding-right: 0;
 }
 
 .dropdown-search-routes,
@@ -168,10 +195,6 @@ form.col-md-4 {
       font-weight: inherit;
       background-color: $color-white;
 
-      &.reset-field {
-        color: $color-medium-gray;
-      }
-
       &:hover, &:active, &:focus, &.active {
         background-color: $color-yellow;
       }
@@ -218,6 +241,13 @@ form.col-md-4 {
 // RESULTS CONTAINER
 .results-list-container {
   color: $color-black;
+
+  &.results-shown {
+    @include make-col(8);
+    @include media-breakpoint-down(md) {
+      @include make-col(12);
+    }
+  }
 
   #results_count_focus {
     padding-left: 0;

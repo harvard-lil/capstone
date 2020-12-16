@@ -3,18 +3,19 @@
     <div class="row">
       <search-form ref="searchform"
                    v-on:new-search="newSearch"
-                   :class="searchFormClass"
+                   :class="display_class"
                    :field_errors="field_errors"
                    :search_error="search_error"
                    :showLoading="showLoading"
                    :endpoint.sync="endpoint"
+                   :fields="fields"
                    :urls="urls"
                    :choices="choices">
       </search-form>
       <result-list v-on:see-cases="seeCases"
                    v-on:next-page="nextPage"
                    v-on:prev-page="prevPage"
-                   :class="searchResultsClass"
+                   :class="display_class"
                    :last_page="last_page"
                    :first_page="first_page"
                    :page="page"
@@ -26,6 +27,7 @@
                    :showLoading="showLoading"
                    :endpoint="endpoint"
                    :hitcount="hitcount"
+                   :chosen_fields="chosen_fields"
                    :urls="urls">
       </result-list>
     </div>
@@ -61,9 +63,8 @@ export default {
       }
     },
     resultsShown() {
-      let fullWidth = "col-md-12";
-      this.searchFormClass = this.results.length ? "col-md-4" : fullWidth;
-      this.searchResultsClass = this.results.length ? "col-md-8" : fullWidth;
+      let full_width = "col-md-12";
+      this.display_class = this.results.length ? "results-shown" : full_width;
     },
     endpoint() {
       this.fields = this.endpoints[this.endpoint];
@@ -75,7 +76,9 @@ export default {
       title: "Search",
       hitcount: null,
       page: 0,
+      new_search_called: false,
       fields: [],
+      chosen_fields: [], // deep copy of fields to show in results
       results: [],
       resultsType: '',
       resultsShown: false,
@@ -91,8 +94,7 @@ export default {
       first_page: true,
       field_errors: {},
       search_error: null,
-      searchFormClass: '',
-      searchResultsClass: '',
+      display_class: '',
       endpoints: {
         cases: [
           {
@@ -103,12 +105,6 @@ export default {
             placeholder: "Enter keyword or phrase",
             info: "Terms stemmed and combined using AND. Words in quotes searched as phrases.",
             default: true,
-          },
-          {
-            name: "ordering",
-            value: "relevance",
-            label: "Result sorting",
-            choices: 'sort',
           },
           {
             name: "decision_date_min",
@@ -258,6 +254,17 @@ export default {
     }
   },
   methods: {
+    reset_field(fieldname) {
+      this.fields.map((f)=>{
+        if (f.name === fieldname) {
+          f.value = "";
+        }
+      });
+      this.create_chosen_fields();
+    },
+    create_chosen_fields() {
+      this.chosen_fields = JSON.parse(JSON.stringify(this.fields))
+    },
     routeComparisonString(route) {
       /* Construct a stable comparison string for the given route, ignoring pagination parameters */
       if (!route) {
@@ -318,8 +325,11 @@ export default {
           });
         }
       }
+      this.create_chosen_fields();
     },
     newSearch() {
+      // deep copy fields for displaying in results
+      this.create_chosen_fields();
       this.goToPage(0)
     },
     nextPage() {

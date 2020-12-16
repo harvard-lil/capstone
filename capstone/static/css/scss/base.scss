@@ -211,8 +211,8 @@ p {
 
 /* grid / layout */
 .col-centered {
-  margin: 0 auto;
-  float: none;
+  @extend .mx-auto
+
 }
 
 .container-full {
@@ -260,11 +260,6 @@ p {
   @include media-breakpoint-down(sm) {
     display: none;
   }
-}
-
-.col-centered {
-  float: none;
-  margin: 0 auto;
 }
 
 .row {

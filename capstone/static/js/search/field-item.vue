@@ -54,7 +54,9 @@
            @input="$parent.valueUpdated"
            @focus="highlightExplainer"
            @blur="unhighlightExplainer">
-    <label :for="field.name">{{ field.label }}</label>
+    <label :for="field.name">
+      {{ field.label }}
+    </label>
 
   </div>
 </template>
