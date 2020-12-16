@@ -158,7 +158,6 @@ export default {
   methods: {
     valueUpdated() {
       this.query_url = this.$parent.assembleUrl();
-      this.$parent.new_search_called = false;
     },
     getFieldByName(field_name) {
       return this.$parent.endpoints[this.endpoint].find(field => field.name === field_name);

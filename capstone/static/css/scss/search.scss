@@ -93,7 +93,6 @@ label {
 
 /* sidebar form */
 #sidebar-menu {
-  padding-top: 2em;
   @include media-breakpoint-up(md) {
     @include sidebar-fullscreen;
   }
@@ -232,8 +231,9 @@ label {
 
 }
 
-.search-form-container,
+.search-form,
 .results-list-container {
+  padding-top: 2rem;
   padding-bottom: 2rem;
 }
 
@@ -300,6 +300,19 @@ label {
     }
   }
 
+  .chosen-field {
+    background-color: $color-search-gray-light;
+    color: $color-violet-gray-dark;
+    border-radius: 1em;
+    padding: 0.1em 0.4em;
+    font-size: 0.7em;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    &:hover, &:active, &:focus {
+      color: $color-search-gray-light;
+      background-color: $color-violet-gray-dark;
+    }
+  }
 }
 
 // search disclaimer

@@ -76,7 +76,6 @@ export default {
       title: "Search",
       hitcount: null,
       page: 0,
-      new_search_called: false,
       fields: [],
       chosen_fields: [], // deep copy of fields to show in results
       results: [],
@@ -260,7 +259,8 @@ export default {
           f.value = "";
         }
       });
-      this.create_chosen_fields();
+      this.assembleUrl();
+      this.newSearch();
     },
     create_chosen_fields() {
       this.chosen_fields = JSON.parse(JSON.stringify(this.fields))

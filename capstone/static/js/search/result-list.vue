@@ -5,14 +5,16 @@
   </div>
   <div v-else-if="resultsShown" class="results-list-container">
     <!-- show selected fields --->
-    <div class="field-choices">
-      <div class="field" v-for="field in chosen_fields" v-bind:key="field.name">
+    <ul class="list-inline field-choices">
+      <li class="list-inline-item field" v-for="field in chosen_fields" v-bind:key="field.name">
         <span class="chosen-field" v-if="field.value">
-          {{ field.name }} {{ field.value }}
-          <span class="reset-field" @click="reset_field(field.name)">x</span>
+          {{ field.label }}: {{ field.value }}
+          <span class="reset-field" @click="reset_field(field.name)">
+            <img :src="`${urls.static}img/icons/close-24px.svg`">
+          </span>
         </span>
-      </div>
-    </div>
+      </li>
+    </ul>
     <!-- show download options -->
     <div class="row download-button-set"
          v-if="resultsType==='cases' && results[page] && results[page].length">
