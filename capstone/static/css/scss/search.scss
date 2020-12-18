@@ -30,6 +30,11 @@ input, textarea,
   border-radius: 0;
 }
 
+textarea.form-control.queryfield {
+  padding-left: 0.7em;
+  padding-right: 0.7em;
+}
+
 label {
   @extend .no-select;
 }
@@ -93,6 +98,7 @@ label {
 
 /* sidebar form */
 #sidebar-menu {
+  padding-bottom: 0 !important;
   @include media-breakpoint-up(md) {
     @include sidebar-fullscreen;
   }
@@ -256,7 +262,6 @@ label {
   }
 
   .download-button-set {
-    border-bottom: 1px solid $color-search-gray-light;
     margin-bottom: 1em;
     padding-bottom: 1em;
 
@@ -279,7 +284,11 @@ label {
     padding-left: 1em;
     padding-right: 1em;
   }
-
+  .download-options-container {
+    @extend .bg-tan;
+    border-top: 1px solid $color-search-gray-light;
+    border-bottom: 1px solid $color-search-gray-light;
+  }
   .download-options {
     #max-downloads {
       border: 0;
@@ -319,9 +328,6 @@ label {
 .search-disclaimer {
   font-size: 0.8em;
   line-height: 1.5em;
-  //@include media-breakpoint-up(lg) {
-  //  padding-left: 20px !important;
-  //}
   margin-top: 15px;
 
   p {
