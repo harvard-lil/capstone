@@ -82,18 +82,19 @@
         </a>
         <!--Fields-->
         <div class="search-fields row" v-show="advanced_fields_shown">
-          <div v-for="(field, index) in fields"
-               :key="field.name" class="col-12">
-            <field-item v-if="!field.default" :field="field" :index="index"></field-item>
-            <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
-              {{ field_errors[field.name] }}
+          <template v-for="(field, index) in fields">
+            <div class="search-field" :key="field.name" v-if="!field.default">
+              <field-item :field="field" :index="index"></field-item>
+              <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
+                {{ field_errors[field.name] }}
+              </div>
+              <small v-if="!field.default && field.info"
+                     :id="`help-text-${field.name}`"
+                     class="form-text text-muted">
+                {{ field.info }}
+              </small>
             </div>
-            <small v-if="!field.default && field.info"
-                   :id="`help-text-${field.name}`"
-                   class="form-text text-muted">
-              {{ field.info }}
-            </small>
-          </div>
+          </template>
         </div>
 
         <!--Buttons row-->

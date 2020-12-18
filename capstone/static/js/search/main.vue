@@ -132,16 +132,22 @@ export default {
             placeholder: "e.g. Civ. No. 74-289",
           },
           {
-            name: "cite",
-            value: "",
-            label: "Citation e.g. 1 Ill. 17",
-            placeholder: "e.g. 1 Ill. 17",
-          },
-          {
             name: "reporter",
             value: "",
             label: "Reporter",
             choices: 'reporter',
+          },
+          {
+            name: "jurisdiction",
+            value: "",
+            label: "Jurisdiction",
+            choices: 'jurisdiction',
+          },
+          {
+            name: "cite",
+            value: "",
+            label: "Citation e.g. 1 Ill. 17",
+            placeholder: "e.g. 1 Ill. 17",
           },
           {
             name: "court",
@@ -150,12 +156,6 @@ export default {
             placeholder: "e.g. ill-app-ct",
             hidden: true,
           },
-          {
-            name: "jurisdiction",
-            value: "",
-            label: "Jurisdiction",
-            choices: 'jurisdiction',
-          }
         ],
         courts: [
           {

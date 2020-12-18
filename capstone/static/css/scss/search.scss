@@ -30,6 +30,12 @@ input, textarea,
   border-radius: 0;
 }
 
+.form-label-group {
+  input {
+    margin-bottom: 0;
+  }
+}
+
 textarea.form-control.queryfield {
   padding-left: 0.7em;
   padding-right: 0.7em;
@@ -59,6 +65,7 @@ label {
   .dropdown-title, .dropdown-item {
     margin-top: 0;
     padding-top: 0.2em;
+    padding-right: 0.3em;
     padding-bottom: 0;
   }
 
@@ -89,10 +96,28 @@ label {
   /* show full screen search unless results are shown*/
   @include make-col(9);
   border-right: 0;
+  .search-field {
+    @include make-col(6);
+    margin-bottom: 0.5em;
+
+    &:nth-child(odd) {
+      padding-right: 0.2em;
+    }
+
+    &:nth-child(even) {
+      padding-left: 0.2em;
+    }
+  }
   &.results-shown {
     @include make-col(3);
     @include sidebar-small;
     border-right: 1px solid $color-search-gray-light;
+
+    .search-field {
+      @include make-col(12);
+      padding-left: 0;
+      padding-right: 0;
+    }
   }
 }
 
@@ -142,7 +167,6 @@ label {
 }
 
 #search-routes-dropdown {
-  border: 1px solid $color-search-gray-light;
   margin-bottom: 4px;
 }
 
@@ -165,7 +189,7 @@ label {
     display: inline-block;
     font-family: $font-sans-title;
     font-weight: 400;
-    background-color: rgba(220, 220, 220, 0.35);
+    background-color: $color-tan;
     text-align: left;
     padding-left: 10px;
     padding-bottom: 10px;
@@ -249,7 +273,7 @@ label {
   color: $color-black;
 
   &.results-shown {
-    @include make-col(8);
+    @include make-col(9);
     @include media-breakpoint-down(md) {
       @include make-col(12);
     }
@@ -262,18 +286,8 @@ label {
   }
 
   .download-button-set {
-    margin-bottom: 1em;
-    padding-bottom: 1em;
-
-    > .title {
-      font-weight: $font-weight-bold;
-      color: $color-medium-gray;
-      text-transform: uppercase;
-      font-size: 0.8em;
-    }
-
-    .btn-group {
-      margin-bottom: 0;
+    button {
+      padding: 0;
     }
   }
 
@@ -284,11 +298,15 @@ label {
     padding-left: 1em;
     padding-right: 1em;
   }
+
   .download-options-container {
     @extend .bg-tan;
-    border-top: 1px solid $color-search-gray-light;
-    border-bottom: 1px solid $color-search-gray-light;
+    border-radius: 1em;
+    padding: 1em;
+    margin-bottom: 1em;
+    border: 0;
   }
+
   .download-options {
     #max-downloads {
       border: 0;
@@ -317,6 +335,7 @@ label {
     font-size: 0.7em;
     font-weight: $font-weight-semibold;
     cursor: pointer;
+
     &:hover, &:active, &:focus {
       color: $color-search-gray-light;
       background-color: $color-violet-gray-dark;
@@ -364,9 +383,16 @@ label {
   outline: 0;
   float: right;
   margin-top: -5px;
+  font-family: $font-sans-title;
 
   &:focus, &:active {
     border: 1px solid $color-blue;
+  }
+}
+
+.form-label-group {
+  .queryfield, label {
+    font-family: $font-sans-title;
   }
 }
 
@@ -403,7 +429,7 @@ label {
 .queryfield {
   width: 100%;
   border: 1px solid $color-search-gray-light;
-  padding: 5px;
+  padding: 9px;
   margin-bottom: 5px;
   margin-top: 1px;
   background-color: $color-white;
@@ -467,7 +493,10 @@ label {
   }
 }
 
-.queryfield input.form-control[type="text"], input[type="text"], input[type="email"], textarea {
+.queryfield input.form-control[type="text"],
+input[type="text"],
+input[type="email"],
+textarea {
   display: inline-block;
   width: 100%;
 }

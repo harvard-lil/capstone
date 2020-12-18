@@ -12,7 +12,7 @@
       <div class="col-11 col-centered">
         <!-- show selected fields --->
         <div class="row">
-          <ul class="col-10 list-inline field-choices">
+          <ul class="col-9 list-inline field-choices">
             <template v-for="field in chosen_fields">
               <li class="list-inline-item field chosen-field" v-if="field.value" v-bind:key="field.name">
                 {{ field.label }}: {{ field.value }}
@@ -23,7 +23,7 @@
             </template>
           </ul>
           <!-- show download options -->
-          <div class="col-2 download-button-set"
+          <div class="col-3 download-button-set text-right"
                v-if="resultsType==='cases' && results[page] && results[page].length">
             <button class="btn btn-tertiary"
                     @click="toggle_download_options = !toggle_download_options">
