@@ -59,21 +59,20 @@
         </div>
 
         <!--Fields default-->
-        <div class="search-fields row">
-          <div v-for="(field, index) in fields"
-               :key="field.name" class="col-12">
-            <field-item v-if="field.default"
-                        :field="field"
-                        :index="index"></field-item>
-            <div v-if="field.default && field_errors[field.name]" class="invalid-feedback">
-              {{ field_errors[field.name] }}
-            </div>
-            <small v-if="field.default && field.info"
-                   :id="`help-text-${field.name}`"
-                   class="form-text text-muted">
-              {{ field.info }}
-            </small>
+        <div class="search-fields row"
+             v-for="(field, index) in fields"
+             :key="field.name">
+          <field-item v-if="field.default"
+                      :field="field"
+                      :index="index"></field-item>
+          <div v-if="field.default && field_errors[field.name]" class="invalid-feedback">
+            {{ field_errors[field.name] }}
           </div>
+          <small v-if="field.default && field.info"
+                 :id="`help-text-${field.name}`"
+                 class="form-text text-muted">
+            {{ field.info }}
+          </small>
         </div>
         <a href="#" class="btn btn-tertiary show-advanced-options"
            @click="advanced_fields_shown = !advanced_fields_shown">

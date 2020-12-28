@@ -95,6 +95,7 @@ label {
 @mixin sidebar-fullscreen {
   /* show full screen search unless results are shown*/
   @include make-col(9);
+  @extend .col-centered;
   border-right: 0;
   .search-field {
     @include make-col(6);
