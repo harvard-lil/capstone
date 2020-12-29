@@ -23,11 +23,13 @@
             </template>
           </ul>
           <!-- show download options -->
-          <div class="col-3 download-button-set text-right"
+          <div class="col-3 download-options-trigger text-right"
                v-if="resultsType==='cases' && results[page] && results[page].length">
             <button class="btn btn-tertiary"
                     @click="toggle_download_options = !toggle_download_options">
-              Download options
+                <img v-if="!toggle_download_options" :src="`${urls.static}img/icons/download.svg`">
+                <img v-else :src="`${urls.static}img/icons/close-24px.svg`">
+
             </button>
           </div>
           <div class="col-12 download-options-container" :class="toggle_download_options ? 'd-inline' : 'd-none'">

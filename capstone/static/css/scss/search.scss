@@ -292,12 +292,6 @@ label {
     margin-bottom: 20px;
   }
 
-  .download-button-set {
-    button {
-      padding: 0;
-    }
-  }
-
   .download-options-container {
     @extend .bg-tan;
     border-radius: 0.5em;
@@ -334,7 +328,7 @@ label {
   .chosen-field {
     background-color: $color-search-gray-light;
     color: $color-violet-gray-dark;
-    border-radius: 0.1em;
+    border-radius: 2em;
     padding: 0.1em 0.4em;
     font-size: 0.7em;
     font-weight: $font-weight-semibold;
