@@ -62,6 +62,9 @@
 </template>
 
 <script>
+import { EventBus } from "./event-bus";
+
+
 export default {
   name: "field-item",
   props: [
@@ -95,6 +98,13 @@ export default {
         explainer_argument.classList.remove('highlight-parameter');
       }
     },
+  },
+  mounted() {
+    EventBus.$on('resetField', (name) => {
+      if (name === this.field.name) {
+        this.dropdownReset()
+      }
+    })
   }
 }
 </script>

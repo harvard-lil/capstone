@@ -180,18 +180,9 @@ export default {
     downloadResults: function (format) {
       return this.$parent.assembleUrl() + "&format=" + format;
     },
-    // filterFields: function () {
-    //   console.log("filterFields called")
-    //   for (let field in this.fields) {
-    //     console.log("iterating through fields:", field)
-    //     field.default ? this.defaultFields.push(field) : this.otherFields.push(field)
-    //   }
-    // }
-
   },
   mounted() {
     this.valueUpdated();
-    // this.filterFields();
   }
 }
 </script>

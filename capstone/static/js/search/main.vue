@@ -38,7 +38,8 @@
 <script>
 import SearchForm from './search-form.vue'
 import ResultList from './result-list.vue'
-import {encodeQueryData} from '../utils'
+import { EventBus } from './event-bus.js';
+import { encodeQueryData } from '../utils'
 
 export default {
   beforeMount: function () {
@@ -256,6 +257,7 @@ export default {
     reset_field(fieldname) {
       this.fields.map((f)=>{
         if (f.name === fieldname) {
+          EventBus.$emit('resetField', f.name)
           f.value = "";
         }
       });
