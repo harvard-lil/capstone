@@ -1,6 +1,6 @@
 <template>
   <div v-if="field['choices']">
-    <div class="dropdown dropdown-field">
+    <div class="dropdown dropdown-field form-label-group">
       <button class="btn dropdown-toggle dropdown-title"
               type="button"
               :id="field.name"

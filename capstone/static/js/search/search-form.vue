@@ -58,43 +58,49 @@
           </ul>
         </div>
 
-        <!--Fields default-->
-        <div class="search-fields row"
-             v-for="(field, index) in fields"
-             :key="field.name">
-          <field-item v-if="field.default"
-                      :field="field"
-                      :index="index"></field-item>
-          <div v-if="field.default && field_errors[field.name]" class="invalid-feedback">
-            {{ field_errors[field.name] }}
+        <div class="search-fields row">
+          <div v-for="(field, index) in fields"
+               class="search-field"
+               v-bind:class="{'default-field': field.default}"
+               :key="field.name">
+            <!--Fields default-->
+            <template v-if="field.default">
+              <field-item :field="field"
+                          :index="index">
+              </field-item>
+              <div v-if="field.default && field_errors[field.name]" class="invalid-feedback">
+                {{ field_errors[field.name] }}
+              </div>
+              <small v-if="field.default && field.info"
+                     :id="`help-text-${field.name}`"
+                     class="form-text text-muted">
+                {{ field.info }}
+              </small>
+            </template>
+            <!--Other fields-->
+            <template v-else>
+              <template v-if="advanced_fields_shown">
+                <field-item :field="field"
+                            :index="index"
+                            v-if="!field.default"
+                            :key="field.name"></field-item>
+                <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
+                  {{ field_errors[field.name] }}
+                </div>
+                <small v-if="!field.default && field.info"
+                       :id="`help-text-${field.name}`"
+                       class="form-text text-muted">
+                  {{ field.info }}
+                </small>
+              </template>
+            </template>
           </div>
-          <small v-if="field.default && field.info"
-                 :id="`help-text-${field.name}`"
-                 class="form-text text-muted">
-            {{ field.info }}
-          </small>
         </div>
         <a href="#" class="btn btn-tertiary show-advanced-options"
            @click="advanced_fields_shown = !advanced_fields_shown">
           <span v-if="advanced_fields_shown">Hide advanced options</span>
           <span v-else>Show advanced options</span>
         </a>
-        <!--Fields-->
-        <div class="search-fields row" v-show="advanced_fields_shown">
-          <template v-for="(field, index) in fields">
-            <div class="search-field" :key="field.name" v-if="!field.default">
-              <field-item :field="field" :index="index"></field-item>
-              <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
-                {{ field_errors[field.name] }}
-              </div>
-              <small v-if="!field.default && field.info"
-                     :id="`help-text-${field.name}`"
-                     class="form-text text-muted">
-                {{ field.info }}
-              </small>
-            </div>
-          </template>
-        </div>
 
         <!--Buttons row-->
         <div class="submit-button-group">
@@ -144,6 +150,8 @@ export default {
       query_url: '',
       show_explainer: false,
       advanced_fields_shown: false,
+      defaultFields: [],
+      otherFields: []
     }
   },
   props: [
@@ -171,10 +179,19 @@ export default {
     },
     downloadResults: function (format) {
       return this.$parent.assembleUrl() + "&format=" + format;
-    }
+    },
+    // filterFields: function () {
+    //   console.log("filterFields called")
+    //   for (let field in this.fields) {
+    //     console.log("iterating through fields:", field)
+    //     field.default ? this.defaultFields.push(field) : this.otherFields.push(field)
+    //   }
+    // }
+
   },
   mounted() {
     this.valueUpdated();
+    // this.filterFields();
   }
 }
 </script>

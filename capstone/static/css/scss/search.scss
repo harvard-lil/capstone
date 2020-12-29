@@ -31,8 +31,10 @@ input, textarea,
 }
 
 .form-label-group {
-  input {
+  font-family: $font-sans-title;
+  input, .dropdown-toggle {
     margin-bottom: 0;
+    height: 40px;
   }
 }
 
@@ -52,10 +54,7 @@ label {
     padding-bottom: 0;
   }
   display: block;
-  font-size: 0.9em;
-  input {
-    height: 30px;
-  }
+  font-size: 0.8em;
 
   .input-group {
     padding: 0;
@@ -91,16 +90,23 @@ label {
     margin-bottom: 1em;
   }
 }
+.search-field {
+  padding-left: 0.25em;
+  padding-right: 0.25em;
+  margin-bottom: 0.25em;
 
+  @include make-col(6);
+
+  &.default-field {
+    @include make-col(12);
+  }
+}
 @mixin sidebar-fullscreen {
   /* show full screen search unless results are shown*/
   @include make-col(9);
   @extend .col-centered;
   border-right: 0;
   .search-field {
-    @include make-col(6);
-    margin-bottom: 0.5em;
-
     &:nth-child(odd) {
       padding-right: 0.2em;
     }
@@ -176,7 +182,9 @@ label {
   text-align: right;
   padding-right: 0;
 }
-
+.dropdown {
+  position: inherit;
+}
 .dropdown-search-routes,
 .dropdown-field {
   width: 100%;
@@ -365,16 +373,6 @@ label {
   margin-top: 36px;
 }
 
-.field-row {
-  small {
-    line-height: 1.3;
-    display: block;
-    margin-bottom: 10px;
-    font-size: 60%;
-    letter-spacing: 0.01em;
-  }
-}
-
 .field_label_container {
   padding-right: 10px !important;
 }
@@ -388,12 +386,6 @@ label {
 
   &:focus, &:active {
     border: 1px solid $color-blue;
-  }
-}
-
-.form-label-group {
-  .queryfield, label {
-    font-family: $font-sans-title;
   }
 }
 
@@ -439,13 +431,6 @@ label {
 .disabled {
   background-color: $color-gray;
   color: $color-light-gray;
-}
-
-.field_value_container {
-}
-
-.field_value_container > input {
-  width: 100%;
 }
 
 .search-button-row {
