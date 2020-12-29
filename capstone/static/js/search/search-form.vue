@@ -61,7 +61,7 @@
         <div class="search-fields row">
           <div v-for="(field, index) in fields"
                class="search-field"
-               v-bind:class="{'default-field': field.default}"
+               v-bind:class="{'default-field': field.default, 'shown': advanced_fields_shown}"
                :key="field.name">
             <!--Fields default-->
             <template v-if="field.default">

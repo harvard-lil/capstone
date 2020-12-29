@@ -501,11 +501,16 @@ export default {
       });
     },
 
-    assembleUrl: function () {
+    assembleUrl: function (page_size) {
       /* assembles and returns URL */
-      const params = {
-        page_size: this.page_size,
-      };
+      const params = {}
+      if (page_size) {
+        params.page_size = page_size
+      } else {
+        params.page_size = this.page_size
+      }
+
+
       if (this.cursors[this.page]) {
         params.cursor = this.cursors[this.page];
       }
@@ -516,8 +521,8 @@ export default {
           params[field['name']] = field['value'];
         }
       });
-
-      return `${this.urls.api_root}${this.endpoint}/?${encodeQueryData(params)}`;
+      let url = `${this.urls.api_root}${this.endpoint}/?${encodeQueryData(params)}`;
+      return url
     }
   }
 }

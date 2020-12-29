@@ -33,7 +33,7 @@ input, textarea,
 .form-label-group {
   font-family: $font-sans-title;
 
-  input, .dropdown-toggle {
+  .queryfield, .dropdown-toggle {
     margin-bottom: 0;
     height: 40px;
   }
@@ -79,12 +79,6 @@ label {
     }
   }
 
-  .dropdown-field.show {
-    .dropdown-title::after {
-      top: -0.2em;
-    }
-  }
-
   small {
     line-height: 1.2em;
     font-size: 0.7em;
@@ -95,9 +89,11 @@ label {
 .search-field {
   padding-left: 0.25em;
   padding-right: 0.25em;
-  margin-bottom: 0.25em;
-
   @include make-col(6);
+
+  &.default-field, &.shown {
+    margin-bottom: 0.25em;
+  }
 
   &.default-field {
     @include make-col(12);
@@ -141,10 +137,6 @@ label {
   @include media-breakpoint-down(md) {
     @include sidebar-small;
   }
-}
-
-.form-control {
-  padding: 0 0.2em;
 }
 
 .page-title {
@@ -212,7 +204,6 @@ label {
     &:after {
       float: right;
       content: url("../../img/arrows/keyboard_arrow_down-24px.svg");
-      top: 0.2em;
       position: relative;
     }
   }
@@ -307,47 +298,43 @@ label {
     }
   }
 
-  .field-choices,
-  .results-list,
-  .page-navigation-buttons,
-  .download-button-set,
-  .results-count {
-    padding-left: 1em;
-    padding-right: 1em;
-  }
-
   .download-options-container {
     @extend .bg-tan;
-    border-radius: 1em;
+    border-radius: 0.5em;
     padding: 1em;
     margin-bottom: 1em;
     border: 0;
   }
 
   .download-options {
+    margin-bottom: 0;
     #max-downloads {
       border: 0;
       border-bottom: 1px solid $color-medium-gray;
       width: 4em;
       margin-right: 0.4em;
+      background-color: transparent;
     }
 
     label {
-      font-weight: $font-weight-bold;
-      color: $color-medium-gray;
-      font-size: $font-size-sm;
+      color: $color-black;
+      font-family: $font-sans-title;
       margin-right: 0.5em;
     }
 
     .download-json {
       margin-right: 0.4em;
     }
+
+    .download-formats-btn {
+      background-color: transparent;
+    }
   }
 
   .chosen-field {
     background-color: $color-search-gray-light;
     color: $color-violet-gray-dark;
-    border-radius: 1em;
+    border-radius: 0.1em;
     padding: 0.1em 0.4em;
     font-size: 0.7em;
     font-weight: $font-weight-semibold;
@@ -386,18 +373,6 @@ label {
   padding-right: 10px !important;
 }
 
-.queryfield {
-  border: 1px solid $color-violet-gray;
-  outline: 0;
-  float: right;
-  margin-top: -5px;
-  font-family: $font-sans-title;
-
-  &:focus, &:active {
-    border: 1px solid $color-blue;
-  }
-}
-
 .results-loading-container {
   padding-top: 3rem;
 }
@@ -432,7 +407,6 @@ label {
   width: 100%;
   border: 1px solid $color-search-gray-light;
   padding: 9px;
-  margin-bottom: 5px;
   margin-top: 1px;
   background-color: $color-white;
 }
@@ -486,18 +460,6 @@ label {
   .url-block {
     background-color: $color-white;
   }
-}
-
-.queryfield input.form-control[type="text"],
-input[type="text"],
-input[type="email"],
-textarea {
-  display: inline-block;
-  width: 100%;
-}
-
-.queryfield input.form-control[type="date"] {
-  width: 50%;
 }
 
 .queryfield_highlighted {

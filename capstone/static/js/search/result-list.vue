@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col-11 col-centered">
         <img alt="" aria-hidden="true" :src='`${urls.static}img/loading.gif`' class="loading-gif"/>
-        <div class="loading-text">Loading results ...</div>
+        <div class="loading-text">Loading results...</div>
       </div>
     </div>
   </div>
@@ -31,34 +31,35 @@
             </button>
           </div>
           <div class="col-12 download-options-container" :class="toggle_download_options ? 'd-inline' : 'd-none'">
-            <div class="col-6 download-options">
-              <label for="max-downloads">Max</label>
-              <input type="number"
-                     v-model="local_page_size"
-                     @input="updatePageSize"
-                     id="max-downloads" :placeholder="local_page_size">
+            <div class="row">
+              <div class="col-6 download-options">
+                <label for="max-downloads">Max amount</label>
+                <input type="number"
+                       v-model="local_page_size"
+                       id="max-downloads" :placeholder="local_page_size">
 
-              <label for="full-case">Full case</label>
-              <input v-model="full_case"
-                     type="checkbox"
-                     id="full-case">
-            </div>
+                <label for="full-case">Full case</label>
+                <input v-model="full_case"
+                       type="checkbox"
+                       id="full-case">
+              </div>
 
-            <div class="col-6 text-right">
-              <div class="btn-group download-options row">
+              <div class="col-6 text-right">
+                <div class="btn-group download-options row">
 
-                <div class="btn-group col-12">
-                  <a class="btn-secondary download-formats-btn download-json"
-                     target="_blank"
-                     :href="downloadResults('json')"
-                     title="Download JSON">
-                    JSON
-                  </a>&nbsp;
-                  <a class="btn-secondary download-formats-btn download-csv"
-                     :href="downloadResults('tsv')"
-                     title="Download tab separated CSV">
-                    TSV
-                  </a>
+                  <div class="btn-group col-12">
+                    <a class="btn-secondary download-formats-btn download-json"
+                       target="_blank"
+                       :href="downloadResults('json')"
+                       title="Download JSON">
+                      JSON
+                    </a>&nbsp;
+                    <a class="btn-secondary download-formats-btn download-csv"
+                       :href="downloadResults('tsv')"
+                       title="Download tab separated CSV">
+                      TSV
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -141,7 +142,7 @@ export default {
   ],
   data: function () {
     return {
-      local_page_size: this.$parent.page_size,
+      local_page_size: 9999, // todo: 10000 errors with "invalid"
       full_case: false,
       selected_fields: [],
       toggle_download_options: false,
@@ -159,9 +160,6 @@ export default {
           .replace('987654321', id)
           .replace('/court/', "/" + endpoint + "/")
     },
-    updatePageSize: function () {
-      this.$parent.page_size = this.local_page_size;
-    },
     reset_field: function (fieldname) {
       this.$parent.reset_field(fieldname);
     },
@@ -170,7 +168,7 @@ export default {
       if (this.full_case) {
         full_case_string = "&full_case=true"
       }
-      return this.$parent.assembleUrl() + "&format=" + format + full_case_string;
+      return this.$parent.assembleUrl(this.local_page_size) + "&format=" + format + full_case_string;
     }
   }
 }
