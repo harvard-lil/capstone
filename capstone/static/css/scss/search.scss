@@ -32,6 +32,7 @@ input, textarea,
 
 .form-label-group {
   font-family: $font-sans-title;
+
   input, .dropdown-toggle {
     margin-bottom: 0;
     height: 40px;
@@ -90,6 +91,7 @@ label {
     margin-bottom: 1em;
   }
 }
+
 .search-field {
   padding-left: 0.25em;
   padding-right: 0.25em;
@@ -101,6 +103,7 @@ label {
     @include make-col(12);
   }
 }
+
 @mixin sidebar-fullscreen {
   /* show full screen search unless results are shown*/
   @include make-col(9);
@@ -182,9 +185,11 @@ label {
   text-align: right;
   padding-right: 0;
 }
+
 .dropdown {
   position: inherit;
 }
+
 .dropdown-search-routes,
 .dropdown-field {
   width: 100%;
@@ -271,6 +276,7 @@ label {
 }
 
 .search-form,
+.results-loading-container,
 .results-list-container {
   padding-top: 2rem;
   padding-bottom: 2rem;
@@ -278,6 +284,7 @@ label {
 
 
 // RESULTS CONTAINER
+.results-loading-container,
 .results-list-container {
   color: $color-black;
 
@@ -300,6 +307,7 @@ label {
     }
   }
 
+  .field-choices,
   .results-list,
   .page-navigation-buttons,
   .download-button-set,
@@ -344,6 +352,7 @@ label {
     font-size: 0.7em;
     font-weight: $font-weight-semibold;
     cursor: pointer;
+    margin-bottom: 0.5em;
 
     &:hover, &:active, &:focus {
       color: $color-search-gray-light;
