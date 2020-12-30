@@ -39,11 +39,6 @@ input, textarea,
   }
 }
 
-textarea.form-control.queryfield {
-  padding-left: 0.7em;
-  padding-right: 0.7em;
-}
-
 label {
   @extend .no-select;
 }
@@ -83,7 +78,7 @@ label {
     display: inline-block;
     overflow-x: hidden;
     max-height: 100%;
-    width: 92%;
+    width: 85%;
   }
 
   small {
@@ -94,8 +89,6 @@ label {
 }
 
 .search-field {
-  padding-left: 0.25em;
-  padding-right: 0.25em;
   @include make-col(6);
 
   &.default-field, &.shown {
@@ -112,14 +105,21 @@ label {
   @include make-col(9);
   @extend .col-centered;
   border-right: 0;
-  .search-field {
-    &:nth-child(odd) {
-      padding-right: 0.2em;
+  .search-field.shown {
+      &:nth-child(odd) {
+      padding-left: 0.2em;
+      }
     }
+   .search-field.shown {
 
     &:nth-child(even) {
-      padding-left: 0.2em;
+        padding-right: 0.2em;
     }
+   }
+
+  .search-field.default-field {
+    padding-left: 0;
+    padding-right: 0;
   }
   &.results-shown {
     @include make-col(3);
@@ -131,6 +131,13 @@ label {
       padding-left: 0;
       padding-right: 0;
     }
+  }
+  .dropdown-title-text {
+    position: relative;
+    display: inline-block;
+    overflow-x: hidden;
+    max-height: 100%;
+    width: 92%;
   }
 }
 
@@ -197,8 +204,10 @@ label {
 
   > .dropdown-title {
     @extend h6;
-    padding-top: 10px;
     font-size: 1em;
+    @include media-breakpoint-up(lg) {
+      font-size: 0.8em;
+    }
     letter-spacing: 0.04em;
     min-width: 100%;
     display: inline-block;
@@ -207,7 +216,6 @@ label {
     background-color: $color-tan;
     text-align: left;
     padding-left: 10px;
-    padding-bottom: 10px;
     margin-bottom: 0;
 
     &:after {

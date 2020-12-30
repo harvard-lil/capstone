@@ -34,6 +34,9 @@
           </div>
           <div class="col-12 download-options-container" :class="toggle_download_options ? 'd-inline' : 'd-none'">
             <div class="row">
+              <strong>Download options</strong>
+            </div>
+            <div class="row">
               <div class="col-6 download-options">
                 <label for="max-downloads">Max amount</label>
                 <input type="number"

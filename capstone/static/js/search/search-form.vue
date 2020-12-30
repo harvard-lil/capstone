@@ -61,7 +61,7 @@
         <div class="search-fields row">
           <div v-for="(field, index) in fields"
                class="search-field"
-               v-bind:class="{'default-field': field.default, 'shown': advanced_fields_shown}"
+               v-bind:class="{'default-field': field.default, 'shown': advanced_fields_shown && !field.default}"
                :key="field.name">
             <!--Fields default-->
             <template v-if="field.default">
@@ -96,12 +96,12 @@
             </template>
           </div>
         </div>
-        <button class="btn btn-tertiary show-advanced-options"
+        <a href="#" class="btn btn-tertiary show-advanced-options"
                 aria-label="Show or hide advanced filters"
                 @click="advanced_fields_shown = !advanced_fields_shown">
           <span v-if="advanced_fields_shown">Hide advanced filters</span>
           <span v-else>Show advanced filters</span>
-        </button>
+        </a>
 
         <!--Buttons row-->
         <div class="submit-button-group">

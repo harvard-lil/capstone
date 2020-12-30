@@ -17,7 +17,7 @@
         <!-- Choice fields -->
         <button v-for="choice in $parent.choices[field['choices']]"
                 v-bind:key="choice[0]"
-           @click="updateDropdownVal(index, choice)"
+           @click.prevent="updateDropdownVal(index, choice)"
            :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
           {{ choice[1] }}
         </button>
@@ -72,7 +72,8 @@ export default {
   ],
   data() {
     return {
-      display_value: this.field.label
+      // if field value is set in parameter, display that along with field label
+      display_value: this.field.value ? this.field.label + ": " + this.field.value : this.field.label
     }
   },
   methods: {

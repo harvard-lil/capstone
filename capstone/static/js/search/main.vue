@@ -38,8 +38,8 @@
 <script>
 import SearchForm from './search-form.vue'
 import ResultList from './result-list.vue'
-import { EventBus } from './event-bus.js';
-import { encodeQueryData } from '../utils'
+import {EventBus} from './event-bus.js';
+import {encodeQueryData} from '../utils'
 
 export default {
   beforeMount: function () {
@@ -160,16 +160,17 @@ export default {
         ],
         courts: [
           {
-            name: "slug",
-            value: "",
-            label: "Slug e.g. ill-app-ct",
-            placeholder: "e.g. ill-app-ct",
-          },
-          {
             name: "name",
             value: "",
             label: "Name e.g. 'Illinois Supreme Court'",
             placeholder: "e.g. 'Illinois Supreme Court'",
+            default: true,
+          },
+          {
+            name: "jurisdiction",
+            value: "",
+            label: "Jurisdiction",
+            choices: 'jurisdiction',
             default: true,
           },
           {
@@ -179,26 +180,23 @@ export default {
             label: "Name abbreviation e.g. 'Ill.'",
           },
           {
-            name: "jurisdiction",
+            name: "slug",
             value: "",
-            label: "Jurisdiction",
-            choices: 'jurisdiction',
-            default: true,
-          }
+            label: "Slug e.g. ill-app-ct",
+            placeholder: "e.g. ill-app-ct",
+          },
         ],
         jurisdictions: [
           {
-            name: "name",
-            value: "",
-            label: "Name",
-            placeholder: "e.g. 'Ill.'",
-          },
-          {
             name: "name_long",
             value: "",
-            label: "Long Name",
-            placeholder: "e.g. 'Illinois'",
+            label: "Long Name e.g. 'Illinois'",
             default: true,
+          },
+          {
+            name: "name",
+            value: "",
+            label: "Name e.g. 'Ill.'",
           },
           {
             name: "whitelisted",
@@ -213,8 +211,14 @@ export default {
             name: "full_name",
             value: "",
             label: "Full Name",
-            placeholder: "e.g. 'Illinois Appellate Court Reports'",
             default: true,
+          },
+          {
+            name: "jurisdiction",
+            value: "",
+            label: "Jurisdiction",
+            choices: 'jurisdiction',
+
           },
           {
             name: "short_name",
@@ -222,6 +226,7 @@ export default {
             label: "Short Name",
             placeholder: "e.g. 'Ill. App.'",
           },
+
           {
             name: "start_year",
             value: "",
@@ -242,20 +247,14 @@ export default {
             placeholder: "e.g. '1894'",
             info: "Year in which the reporter stopped publishing."
           },
-          {
-            name: "jurisdiction",
-            value: "",
-            label: "Jurisdiction",
-            choices: 'jurisdiction',
-            default: true,
-          }
+
         ]
       },
     }
   },
   methods: {
     reset_field(fieldname) {
-      this.fields.map((f)=>{
+      this.fields.map((f) => {
         if (f.name === fieldname) {
           EventBus.$emit('resetField', f.name)
           f.value = "";
@@ -521,8 +520,8 @@ export default {
           params[field['name']] = field['value'];
         }
       });
-      let url = `${this.urls.api_root}${this.endpoint}/?${encodeQueryData(params)}`;
-      return url
+
+      return `${this.urls.api_root}${this.endpoint}/?${encodeQueryData(params)}`;
     }
   }
 }
