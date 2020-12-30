@@ -10,24 +10,23 @@
               :aria-describedby="field.label"
               @focus="highlightExplainer"
               @blur="unhighlightExplainer">
-        {{ display_value }}
+        <span class="dropdown-title-text">{{ display_value }}</span>
       </button>
-
 
       <div class="dropdown-menu" :aria-labelledby="field.name">
         <!-- Choice fields -->
-        <a v-for="choice in $parent.choices[field['choices']]" v-bind:key="choice[0]"
+        <button v-for="choice in $parent.choices[field['choices']]"
+                v-bind:key="choice[0]"
            @click="updateDropdownVal(index, choice)"
            :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
           {{ choice[1] }}
-        </a>
+        </button>
       </div>
     </div>
-    <a class="dropdown-item reset-field"
+    <button class="dropdown-item reset-field"
        v-if="display_value !== field.label"
-       href="#"
-       @click.prevent="dropdownReset()">
-      <small>Reset {{ field.label }} field</small></a>
+       @click="dropdownReset()">
+      <small>Reset {{ field.label }} field</small></button>
 
   </div>
   <textarea v-else-if="field.type === 'textarea'"
@@ -62,7 +61,7 @@
 </template>
 
 <script>
-import { EventBus } from "./event-bus";
+import {EventBus} from "./event-bus";
 
 
 export default {

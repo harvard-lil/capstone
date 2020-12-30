@@ -96,11 +96,12 @@
             </template>
           </div>
         </div>
-        <a href="#" class="btn btn-tertiary show-advanced-options"
-           @click="advanced_fields_shown = !advanced_fields_shown">
-          <span v-if="advanced_fields_shown">Hide advanced options</span>
-          <span v-else>Show advanced options</span>
-        </a>
+        <button class="btn btn-tertiary show-advanced-options"
+                aria-label="Show or hide advanced filters"
+                @click="advanced_fields_shown = !advanced_fields_shown">
+          <span v-if="advanced_fields_shown">Hide advanced filters</span>
+          <span v-else>Show advanced filters</span>
+        </button>
 
         <!--Buttons row-->
         <div class="submit-button-group">
