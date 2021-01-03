@@ -128,8 +128,8 @@ label {
 
     .search-field {
       @include make-col(12);
-      padding-left: 0;
-      padding-right: 0;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
     }
   }
   .dropdown-title-text {
