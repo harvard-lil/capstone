@@ -220,6 +220,13 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
                 return HttpResponseBadRequest("pdf is not available for this case")
             return Response(case.get_pdf())
 
+        # handle ?format=tsv
+        if request.accepted_renderer.format == 'tsv':
+            response = super().retrieve(request, *args, **kwargs)
+            data = capapi_renderers.TSVRenderer().render(response.data)
+            response = StreamingHttpResponse(data, content_type='text/tab-separated-values')
+            response['Content-Disposition'] = 'attachment; filename="CAP_{}.tsv"'.format(str(datetime.now()))
+
         return super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):

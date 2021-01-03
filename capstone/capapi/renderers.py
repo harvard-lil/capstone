@@ -92,6 +92,7 @@ class PdfRenderer(renderers.BaseRenderer):
 class TSVRenderer(renderers.JSONRenderer):
     media_type = 'text/tab-separated-values'
     format = 'tsv'
+    charset = 'UTF-8'
 
     def render(self, data, accepted_media_type='text/tab-separated-values', renderer_context=None):
         if 'results' in data:
