@@ -188,9 +188,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
 
     def get_renderers(self):
         if self.action == 'retrieve':
-            return [renderers.JSONRenderer(), capapi_renderers.PdfRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.TSVRenderer()]
+            return [renderers.JSONRenderer(), capapi_renderers.PdfRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.CSVRenderer()]
         else:
-            return [renderers.JSONRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.TSVRenderer()]
+            return [renderers.JSONRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.CSVRenderer()]
 
     def retrieve(self, request, *args, **kwargs):
         # for user's convenience, if user gets /cases/casecitation or /cases/Case Citation (or any non-numeric value)
@@ -220,25 +220,28 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
                 return HttpResponseBadRequest("pdf is not available for this case")
             return Response(case.get_pdf())
 
-        # handle ?format=tsv
-        if request.accepted_renderer.format == 'tsv':
-            response = super().retrieve(request, *args, **kwargs)
-            data = capapi_renderers.TSVRenderer().render(response.data)
-            response = StreamingHttpResponse(data, content_type='text/tab-separated-values')
-            response['Content-Disposition'] = 'attachment; filename="CAP_{}.tsv"'.format(str(datetime.now()))
+        response = super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
 
-        return super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
-
-    def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-
-        if request.accepted_renderer.format == 'tsv':
-            data = capapi_renderers.TSVRenderer().render(response.data)
-            response = StreamingHttpResponse(data, content_type='text/tab-separated-values')
-            response['Content-Disposition'] = 'attachment; filename="CAP_{}.tsv"'.format(str(datetime.now()))
+        # handle ?format=csv
+        if request.accepted_renderer.format == 'csv':
+            response = self.bundle_csv_response(response)
 
         return response
 
+    def list(self, request, *args, **kwargs):
+        response = super(CaseDocumentViewSet, self).list(request, *args, **kwargs)
+
+        if request.accepted_renderer.format == 'csv':
+            response = self.bundle_csv_response(response)
+
+        return response
+
+    @staticmethod
+    def bundle_csv_response(response):
+        data = capapi_renderers.CSVRenderer().render(response.data)
+        response = StreamingHttpResponse(data, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="CAP_{}.csv"'.format(str(datetime.now()))
+        return response
 
 class ResolveDocumentViewSet(BaseDocumentViewSet):
     """The ResolveDocument view."""

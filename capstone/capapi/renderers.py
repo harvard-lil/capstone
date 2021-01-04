@@ -89,18 +89,14 @@ class PdfRenderer(renderers.BaseRenderer):
         return HttpResponse(data, content_type=accepted_media_type)
 
 
-class TSVRenderer(renderers.JSONRenderer):
-    media_type = 'text/tab-separated-values'
-    format = 'tsv'
-    charset = 'UTF-8'
+class CSVRenderer(renderers.JSONRenderer):
+    media_type = 'text/csv'
+    format = 'csv'
 
-    def render(self, data, accepted_media_type='text/tab-separated-values', renderer_context=None):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
         if 'results' in data:
-            json_normalize = pandas.json_normalize(
-                map(lambda x: flatten(x, '.', root_keys_to_ignore={'cites_to'}), data['results']))
+            flattened_data = map(lambda case: flatten(case, '.', root_keys_to_ignore={'cites_to'}), data['results'])
+            json_normalize = pandas.json_normalize(list(flattened_data))
         else:
             json_normalize = pandas.json_normalize(flatten(data, '.', root_keys_to_ignore={'cites_to'}))
-        json_normalize.replace(to_replace=[r"\\n", "\n"], value=["¶", "¶"], regex=True, inplace=True)
-
-        return json_normalize.to_csv(sep="\t", quoting=csv.QUOTE_NONE, doublequote=False,
-                              index=False, escapechar="\\")
+        return json_normalize.to_csv(index=False)

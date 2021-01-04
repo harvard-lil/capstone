@@ -161,30 +161,30 @@ def test_case_detail_pdf(transactional_db, client, auth_client, restricted_case,
     check_response(response, status_code=404)
 
 
-def test_tsv(transactional_db, client, auth_client, restricted_case, unrestricted_case, elasticsearch):
-    """ Test ?format=tsv on case detail and list API. """
-    content_type = 'text/tab-separated-values'
+def test_csv(transactional_db, client, auth_client, restricted_case, unrestricted_case, elasticsearch):
+    """ Test ?format=csv on case detail and list API. """
+    content_type = 'text/csv'
     case_text = "majority"
 
     # unauthorized request can't fetch restricted TSV
     response = client.get(api_reverse("cases-detail", args=[restricted_case.id]),
-                          {"full_case": "true", "format": "tsv"})
+                          {"full_case": "true", "format": "csv"})
     check_response(response, content_excludes=case_text, content_type=content_type)
 
     # authorized request can fetch restricted TSV
-    response = auth_client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"full_case": "true", "format": "tsv"})
+    response = auth_client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"full_case": "true", "format": "csv"})
     check_response(response, content_includes=case_text, content_type=content_type)
 
     # both can fetch unrestricted TSV
     response = client.get(api_reverse("cases-detail", args=[unrestricted_case.id]),
-                          {"full_case": "true", "format": "tsv"})
+                          {"full_case": "true", "format": "csv"})
     check_response(response, content_includes=case_text, content_type=content_type)
     response = auth_client.get(api_reverse("cases-detail", args=[unrestricted_case.id]),
-                               {"full_case": "true", "format": "tsv"})
+                               {"full_case": "true", "format": "csv"})
     check_response(response, content_includes=case_text, content_type=content_type)
 
-    # ?format=tsv works on list page
-    response = auth_client.get(api_reverse("cases-list"), {"full_case": "true", "format": "tsv", "page_size": "100"})
+    # ?format=csv works on list page
+    response = auth_client.get(api_reverse("cases-list"), {"full_case": "true", "format": "csv", "page_size": "100"})
     # each row separated by '\n'
     decoded_response = ""
     for res in response.streaming_content:

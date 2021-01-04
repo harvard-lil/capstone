@@ -69,9 +69,9 @@
                       JSON
                     </a>&nbsp;
                     <a class="btn-secondary download-formats-btn download-csv"
-                       :href="downloadResults('tsv')"
-                       title="Download tab separated CSV">
-                      TSV
+                       :href="downloadResults('csv')"
+                       title="Download CSV">
+                      CSV
                     </a>
                   </div>
                 </div>
@@ -156,7 +156,7 @@ export default {
   ],
   data: function () {
     return {
-      local_page_size: 9999, // todo: 10000 errors with "invalid"
+      local_page_size: 10000,
       full_case: false,
       selected_fields: [],
       toggle_download_options: false,
