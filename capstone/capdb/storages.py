@@ -221,7 +221,7 @@ class DownloadOverlayStorage(Storage):
             setattr(self, method_name, types.MethodType(method, self))
 
         # functions that go directly to underlay storage
-        for method_name in ('url', 'mkdir', 'symlink', 'rmtree'):
+        for method_name in ('url', 'mkdir', 'symlink', 'rmtree', 'save'):
             setattr(self, method_name, getattr(underlay_storage, method_name))
 
 
