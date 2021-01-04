@@ -4,7 +4,6 @@ import json
 import pandas
 from flatten_json import flatten
 
-import csv
 from django.conf import settings
 from django.http.response import HttpResponseBase, HttpResponse
 from rest_framework import renderers
