@@ -62,7 +62,7 @@
         const slug = stateLink.id;
         if (!witchcraft_results[slug])
           continue;
-        const name = stateLink.ariaLabel;
+        const name = stateLink.getAttribute('aria-label')
         this.jurisdictionsBySlug[slug] = name;
         this.jurisdictions.push([slug, name]);
         stateLink.style.fillOpacity = this.appearanceCount(slug) / 45;
