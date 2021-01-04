@@ -29,7 +29,7 @@ except Exception as e:
 
 from django.core import management
 from django.db import connections, transaction
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Min, Max
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.conf import settings
@@ -1211,22 +1211,28 @@ def download_pdfs(jurisdiction=None):
             raise
 
 
-def unredact_volumes(volumes, dry_run='true'):
+def unredact_volumes(volumes, dry_run='true', warn_after_year=None):
     key = getpass("Enter decryption key: ").strip() if dry_run == 'false' else None
     volumes = (volumes
         .filter(out_of_scope=False, redacted=True)
         .select_related('reporter')
         .order_by('publication_year', 'volume_number'))
-    for volume in volumes:
-        print("Unredacting %s %s (%s)" % (volume.volume_number, volume.reporter.short_name, volume.publication_year))
+    for v in volumes:
+        years = v.case_metadatas.aggregate(min_date=Min('decision_date'), max_date=Max('decision_date'))
+        print(f"Unredacting {v.barcode}: {v.volume_number} {v.reporter.short_name} ({v.publication_year}, cases {years['min_date'].year}-{years['max_date'].year})")
+        if warn_after_year is not None and years['max_date'].year > warn_after_year:
+            print("- WARNING: year exceeds threshold")
+            for c in v.case_metadatas.filter(decision_date__year__gt=warn_after_year):
+                print(" -", c.full_cite())
         if dry_run == 'false':
-            volume.unredact(key)
+            v.unredact(key)
 
 
 @task
 def unredact_out_of_copyright_volumes(dry_run='true'):
     from django.utils import timezone
-    unredact_volumes(VolumeMetadata.objects.filter(publication_year__lt=timezone.now().year-95), dry_run)
+    release_year = timezone.now().year-96
+    unredact_volumes(VolumeMetadata.objects.filter(publication_year__lte=release_year), dry_run, warn_after_year=release_year)
 
 
 @task
