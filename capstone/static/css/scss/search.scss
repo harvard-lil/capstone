@@ -44,19 +44,14 @@ label {
 }
 
 @mixin sidebar-small {
+  display: block;
+  font-size: 0.8em;
+
   @include media-breakpoint-down(md) {
     @include make-col(12);
     border-bottom: 1px solid $color-search-gray-light;
     padding-bottom: 0;
   }
-  display: block;
-  font-size: 0.8em;
-
-  .input-group {
-    padding: 0;
-    width: 100%;
-  }
-
   .dropdown-title, .dropdown-item {
     margin-top: 0;
     padding-top: 0.2em;
@@ -100,22 +95,21 @@ label {
   }
 }
 
-@mixin sidebar-fullscreen {
+@mixin sidebar-big {
   /* show full screen search unless results are shown*/
   @include make-col(9);
   @extend .col-centered;
   border-right: 0;
   .search-field.shown {
-      &:nth-child(odd) {
+    &:nth-child(odd) {
       padding-left: 0.2em;
-      }
     }
-   .search-field.shown {
-
+  }
+  .search-field.shown {
     &:nth-child(even) {
-        padding-right: 0.2em;
+      padding-right: 0.2em;
     }
-   }
+  }
 
   .search-field.default-field {
     padding-left: 0;
@@ -145,7 +139,7 @@ label {
 #sidebar-menu {
   padding-bottom: 0 !important;
   @include media-breakpoint-up(md) {
-    @include sidebar-fullscreen;
+    @include sidebar-big;
   }
 
   @include media-breakpoint-down(md) {
@@ -318,9 +312,19 @@ label {
   .download-options-container {
     @extend .bg-tan;
     border-radius: 0.5em;
-    padding: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
     margin-bottom: 1em;
     border: 0;
+
+    .download-title {
+      padding-top: 0.8em;
+    }
+
+    .btn {
+      padding-right: 0;
+      padding-top: 0;
+    }
   }
 
   .download-options {
@@ -391,9 +395,6 @@ label {
   padding-right: 10px !important;
 }
 
-.results-loading-container {
-  padding-top: 3rem;
-}
 
 .loading-gif {
   position: relative;

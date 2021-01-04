@@ -17,24 +17,33 @@
               <li class="list-inline-item field chosen-field" v-if="field.value" v-bind:key="field.name">
                 {{ field.label }}: {{ field.value }}
                 <span class="reset-field" @click="reset_field(field.name)">
-            <img :src="`${urls.static}img/icons/close-24px.svg`">
-          </span>
+                  <img :src="`${urls.static}img/icons/close-24px.svg`">
+                </span>
               </li>
             </template>
           </ul>
           <!-- show download options -->
           <div class="col-3 download-options-trigger text-right"
-               v-if="resultsType==='cases' && results[page] && results[page].length">
+               v-if="resultsType==='cases' && !toggle_download_options && results[page] && results[page].length">
             <button class="btn btn-tertiary"
                     @click="toggle_download_options = !toggle_download_options">
-                <img v-if="!toggle_download_options" :src="`${urls.static}img/icons/download.svg`">
-                <img v-else :src="`${urls.static}img/icons/close-24px.svg`">
+              <img :src="`${urls.static}img/icons/download.svg`">
 
             </button>
           </div>
           <div class="col-12 download-options-container" :class="toggle_download_options ? 'd-inline' : 'd-none'">
             <div class="row">
-              <strong>Download options</strong>
+              <div class="col-10 download-title">
+                <strong>Download options</strong>
+              </div>
+              <div class="col-2 text-right">
+                <button class="btn btn-tertiary"
+                        v-if="toggle_download_options"
+                        @click="toggle_download_options = !toggle_download_options">
+                  <img :src="`${urls.static}img/icons/close-24px.svg`">
+
+                </button>
+              </div>
             </div>
             <div class="row">
               <div class="col-6 download-options">

@@ -171,7 +171,6 @@ export default {
             value: "",
             label: "Jurisdiction",
             choices: 'jurisdiction',
-            default: true,
           },
           {
             name: "name_abbreviation",
