@@ -189,7 +189,9 @@ def test_csv(transactional_db, client, auth_client, restricted_case, unrestricte
     decoded_response = ""
     for res in response.streaming_content:
         decoded_response += res.decode()
-    response_count = len(decoded_response.split('\n')) - 1
+
+    # -1 for headers, -1 for last newline '\n'
+    response_count = len(decoded_response.split('\n')) - 2
     assert response_count == CaseMetadata.objects.count()
     assert case_text in decoded_response
     check_response(response, content_type=content_type)
