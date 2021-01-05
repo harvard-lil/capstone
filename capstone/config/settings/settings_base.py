@@ -579,7 +579,8 @@ SIMPLE_HISTORY_FILEFIELD_TO_CHARFIELD = True
 
 # cache headers
 SET_CACHE_CONTROL_HEADER = False  # whether to set a cache-control header on all cacheable views
-CACHE_CONTROL_DEFAULT_MAX_AGE = 60*60*24  # length of time to cache pages by default, in seconds
+CDN_CACHE_LENGTH = 60*60*24  # for cacheable responses, how long to cache on CDN (Cloudflare)
+BROWSER_CACHE_LENGTH = 60*60  # for cacheable responses, how long to cache in browser
 
 # settings for scripts/compress_volumes.py
 COMPRESS_VOLUMES_THREAD_COUNT = 20   # if < 2, no thread pool will be used

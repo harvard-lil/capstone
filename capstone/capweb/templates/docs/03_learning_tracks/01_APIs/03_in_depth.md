@@ -7,8 +7,7 @@ explainer: The Caselaw Access Project API, also known as CAPAPI, serves all offi
 {# ==============> GETTING STARTED <============== #}
 # Getting Started
 
-If you're an RESTful API pro, you may just need our API reference
-[API Reference]({% docs_url 'api' %}).
+If you're a RESTful API pro, you may just need our [API Reference]({% docs_url 'api' %}).
 
 If you're an absolute beginner and haven't used APIs before, but want to get up to speed, check out our 
 [Beginner's Introduction to APIs]({% docs_url 'intro_to_apis' %}).
@@ -18,8 +17,8 @@ If you need a more detailed, step-by-step walkthrough of our API, check out our
 
 ## Making Basic Queries
 
-This is a restful API, and its primary return format is in JSON. For details on the data returned by the API, head over
-to our [API Reference]({% docs_url 'api' %})
+This is a RESTful API, and its primary return format is in JSON. For details on the data returned by the API, head over
+to our [API Reference]({% docs_url 'api' %}).
 
 CAPAPI includes an in-browser API viewer, but is primarily intended for software developers to access caselaw 
 programmatically, whether to run your own analysis or build tools for other users. API results are in JSON format with 
@@ -46,7 +45,7 @@ Now let's search for all cases in the jurisdiction of Rhode Island that contain 
 {# ====> Searching and Filtering <==== #}
 ## Searching and Filtering Cases {: data-toc-label='Search' }
 
-Our [cases endpoint](#endpoint-cases) is indexed by Elasticsearch, and supports a range of searching, filtering, and
+Our [cases endpoint]({% api_url "cases-list" %}) is indexed by Elasticsearch, and supports a range of searching, filtering, and
 sorting options.
 
 Options in this section work only with the cases endpoint.
@@ -60,7 +59,7 @@ like to search for all cases that contain the word 'baronetcy', use the followin
     {% api_url "cases-list" %}?search=baronetcy
 
 The `search` field supports Elasticsearch [Simple Query String Syntax](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl-simple-query-string-query.html#_simple_query_string_syntax)
-For example, you can use `"quotes"` to search by phrase and `-negation` to exclude cases with matching terms.
+For example, you can use `"quotation marks around your search string"` to search by phrase and prefix words with a minus sign to exclude cases with matching terms.
 
 The `search` parameter searches the case, jurisdiction, and court names, docket number, and case text.
 You can also use the `name`, `name_abbreviation`, or `docket_number` parameters to perform full-text search
@@ -68,7 +67,7 @@ just on those fields.
 
 ### Filtering by Groups or Ranges {: #case-filtering }
 
-Many of the parameters on the cases endpoint can be filtered by appending a suffix to the query parameter key.
+Many of the parameters on the `/cases` endpoint can be filtered by appending a suffix to the query parameter key.
 
 To match to a list, append `__in` to the query parameter. For example, to fetch cases matching ID `12`, `34`, or `56`:
 
@@ -85,52 +84,54 @@ To filter by prefix, append `__prefix`. For example, to find cases from February
 
 ## Sorting
   
-You can sort your search in the cases endpoint using the `ordering` argument. To order your results in ascending order, 
-supply the ordering argument with the field on which you'd like to sort your results. For example, if you'd like to 
-search for the term 'baronetcy' with the oldest cases appearing first, supply the following query: 
+You can sort your search in the `/cases` endpoint using the `ordering` parameter. To sort your results in ascending order,
+supply the `ordering` parameter with the field on which you'd like to sort your results. For example, if you'd like to
+search for the term 'baronetcy' with the oldest cases appearing first, supply the following query:
 
     {% api_url "cases-list" %}?search=baronetcy&ordering=decision_date
 
 You can also sort in descending order by adding a minus sign before the field on which you'd like to sort. To perform 
-the same search sorted in descending order, that is, seeing the newest cases first, then use this query:
+the same search sorted in descending order, that is, with the newest cases first, use this query:
 
     {% api_url "cases-list" %}?search=baronetcy&ordering=-decision_date
     
 ## Types of Data You Can Query
 
-We make data available through several API endpoints, the most popular being our cases endpoint. It's the only endpoint
+We make data available through several API endpoints, the most popular being our `/cases` endpoint. It's the only endpoint
 through which we distribute full case text, and the only endpoint for which you may need authentication. We also serve 
 up citations, ngrams, court metadata, reporter series metadata, volume metadata, and jurisdiction metadata. They all
-work about the same way, and are all based off of the same data set. That means that an ID in the reporters endpoint 
+work about the same way, and are all based on the same data set. That means that an ID in the `/reporters` endpoint
 will correspond to a reporter object's ID listed in a case. 
 
 Check out our [API Reference]({% docs_url 'api' %}) for a complete list of specs and arguments.
 
 # Getting Full Case Text
 
-You can request the get full case text for cases anywhere in the cases endpoint, whether you're viewing an individual
-case, or a query with many cases. to do so, you must include the `full_case=true` argument in your query url, like so:
+You can request full case text for cases anywhere in the `/cases` endpoint, whether you're viewing an individual
+case or a list of cases. to do so, you must include the `full_case=true` parameter in your query url, like so:
 
-[{% api_url "cases-list" %}jurisdiction=ill&page_size=1&full_case=true]({% api_url "cases-list" %}jurisdiction=ill&page_size=1&full_case=true)
+[{% api_url "cases-list" %}?jurisdiction=ill&page_size=1&full_case=true]({% api_url "cases-list" %}?jurisdiction=ill&page_size=1&full_case=true)
 
 Without that option, you'll just get the case metadata:
 
-[{% api_url "cases-list" %}jurisdiction=wash&page_size=1]({% api_url "cases-list" %}jurisdiction=wash&page_size=1)
+[{% api_url "cases-list" %}?jurisdiction=wash&page_size=1]({% api_url "cases-list" %}?jurisdiction=wash&page_size=1)
 
-For most cases, you'll need to be authenticate using an API key to get the case test. There are several jurisdictions
-for which we do not require authenticating, which we call 
+For most cases, you'll need to authenticate using an API key to get the case text. There are several jurisdictions
+for which we do not require authentication, which we call
 [open]({% docs_url 'glossary' %}#def-open) jurisdictions. To see 
 a complete list of open jurisdictions, check out our 
 [access limits documentation]({% docs_url 'access_limits' %}).
 
 For restricted jurisdictions, if you try to get case text without authenticating, you'll run into this:
 
-[{% api_url "cases-list" %}jurisdiction=wash&page_size=1&full_case=true]({% api_url "cases-list" %}jurisdiction=wash&page_size=1&full_case=true)
+[{% api_url "cases-list" %}?jurisdiction=wash&page_size=1&full_case=true]({% api_url "cases-list" %}?jurisdiction=wash&page_size=1&full_case=true)
 
+          ...
           "casebody": {
             "data": null,
             "status": "error_auth_required"
           }
+		  ...
 
 {# ==============> AUTHENTICATION <============== #}
 # Authentication
@@ -142,13 +143,12 @@ authenticate your requests.
 ## Find your API Key
 
 First, log in to your account using the [LOG IN]({% url "login" %}) link at the top of the screen. After you've signed 
-in, the [LOG IN]({% url "login" %}) link at the top of the screen now reads [ACCOUNT]({% url "user-details" %}). Click 
-that link. In the API key field, you should see a 40 
-[character]({% docs_url 'glossary' %}#def-character) long 
-[string]({% docs_url 'glossary' %}#def-string). That is your API key.
+in, the link at the top of the screen now reads [ACCOUNT]({% url "user-details" %}). Click that link. In the API key field,
+you should see a 40-[character]({% docs_url 'glossary' %}#def-character) long [string]({% docs_url 'glossary' %}#def-string).
+That is your API key.
 
 ## Modify Your Headers
-You must submit the API key in the request headers. The headers are a group of metadata fields automatically included in the background of each request. Your browser (or equivalent like `curl`, or a requests library) uses headers to describe each request to the server, and the server to describe its response. For example, your web browser will include a header field called `User-Agent`, which tells the web server what version of what browser you're using, on what operating system. Among the various headers in its response, the server will include a `Content-Type` field, which says if it's HTML text, an image, etc.
+You must submit the API key in the request headers. The headers are a group of metadata fields automatically included in the background of each request. Your browser (or equivalent, like `curl`, or Python's `requests` library) uses headers to describe each request to the server, and the server uses headers to describe its response. For example, your web browser will include a header field called `User-Agent`, which tells the web server what version of what browser you're using, on what operating system. Among the various headers in its response, the server will include a `Content-Type` field, which says if it's HTML text, an image, etc.
 Our service requires you to include the header labeled `Authorization`, containing the string `Token [your API key]`. So, if your API key were `1234thisisntarealapikeysodontusethisone1`, your header would look like this: `Authorization: Token 1234thisisntarealapikeysodontusethisone1`. 
 
 In practice, that looks like this:
@@ -157,8 +157,10 @@ In practice, that looks like this:
 
 ### python requests library
 	response = requests.get(
-    'https://api.case.law/v1/cases/435800/?full_case=true',
-    headers={'Authorization': 'Token 1234thisisntarealapikeysodontusethisone1'})
+        'https://api.case.law/v1/cases/435800/?full_case=true',
+        headers={
+		    'Authorization': 'Token 1234thisisntarealapikeysodontusethisone1'
+		})
 
 ### Other Environments
 
@@ -201,8 +203,8 @@ All non-browser API responses are in JSON format.
         "results": [list of objects]
     }
 
-Each endpoint has its own object format. For a complete breakdown, check out 
-[data specs]({% docs_url 'data_formats' %})
+Each endpoint has its own object format. For a complete breakdown, check out our
+[data specs]({% docs_url 'data_formats' %}).
 
 This is what a case object looks like:
 
@@ -282,7 +284,7 @@ Example response data:
 
 In this example, `"head_matter"` is a string representing all text printed in the volume before the text prepared by 
 judges. `"opinions"` is an array containing a dictionary for each opinion in the case. `"judges"`, and 
-`"attorneys"` are particular substrings from `"head_matter"` that we believe to refer to entities involved with the 
+`"attorneys"` are particular substrings from `"head_matter"` that we believe refer to entities involved with the
 case.
 
 

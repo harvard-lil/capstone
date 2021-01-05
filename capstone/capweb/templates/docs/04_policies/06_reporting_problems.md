@@ -7,7 +7,7 @@ Here's the best way to report common types of errors. You can also always reach 
   
 * [Our data errata](https://github.com/harvard-lil/capstone#errata)
 * [Our issue tracker](https://github.com/harvard-lil/capstone/issues)
-* [Our Github repository](https://github.com/harvard-lil/capstone)
+* [Our GitHub repository](https://github.com/harvard-lil/capstone)
 
 
 # Jumbled or Misspelled Words in Case Text {: data-toc-label='Misspelled Words' } 
@@ -21,7 +21,7 @@ the best way to tackle this.
 
 First, please check our existing [issues](https://github.com/harvard-lil/capstone/issues) to see if someone has already
 reported the problem. If so, please feel free to comment on the issue to add information. We'll update the issue when 
-there's more information about the issue, so if you'd like notifications, click on the "Subscribe" button on the 
+there's more information about it, so if you'd like notifications, click on the "Subscribe" button on the
 right-hand side of the screen. If no issue exists, create a new issue, and we'll get back to you as soon as we can.
 
 
@@ -30,6 +30,6 @@ right-hand side of the screen. If no issue exists, create a new issue, and we'll
 First, check our [errata](https://github.com/harvard-lil/capstone#errata) to see if this is a known issue. Then, check 
 our existing [issues](https://github.com/harvard-lil/capstone/issues) to see if someone has already reported the 
 problem. If so, please feel free to comment on the issue to add context or additional instances that the issue owner 
-didn't report. We'll update the issue when there's more information about the issue, so if you'd like notifications, 
+didn't report. We'll update the issue when there's more information about it, so if you'd like notifications,
 click on the "Subscribe" button on the right-hand side of the screen. If no issue exists, create a new issue and we'll 
 get back to you as soon as we can.

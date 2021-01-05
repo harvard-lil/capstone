@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('random/', views.random, name='random'),
     path('robots.txt', views.robots, name='robots'),
     path('set-cookie/', views.set_cookie, name='set_cookie'),
     path('cited-by/<int:case_id>/', views.case_cited_by, name='case_cited_by'),

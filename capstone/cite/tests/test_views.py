@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from django.utils import timezone
 
 from capapi.tests.helpers import check_response, is_cached
-from capdb.tasks import update_elasticsearch_from_queue
+from capdb.tasks import update_elasticsearch_from_queue, CaseAnalysis
 from capweb.helpers import reverse
 
 
@@ -394,3 +394,27 @@ def test_case_cited_by(client, case_factory, tmpdir, settings, elasticsearch):
         content_includes=[c.name_abbreviation for c in source_cases],
         content_excludes=[non_citing_case.name_abbreviation]
     )
+
+
+@pytest.mark.django_db
+def test_random_case(client, case_factory, elasticsearch):
+    """ Test random endpoint returns both cases eventually. """
+    # set up two cases
+    cases = set()
+    found = set()
+    for i in range(2):
+        case = case_factory()
+        CaseAnalysis(case=case, key='word_count', value=2000).save()
+        cases.add(case.frontend_url)
+    update_elasticsearch_from_queue()
+
+    # try 20 times to get both
+    for i in range(20):
+        response = client.get(reverse('random', host='cite'))
+        check_response(response, status_code=302)
+        assert response.url in cases
+        found.add(response.url)
+        if found == cases:
+            break
+    else:
+        raise Exception(f'Failed to redirect to {cases-found} after 20 tries.')
