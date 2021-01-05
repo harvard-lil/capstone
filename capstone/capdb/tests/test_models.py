@@ -45,6 +45,31 @@ def test_fetch_relations(case, court, django_assert_num_queries):
         assert case.court.jurisdiction
 
 
+### Reporter ###
+
+@pytest.mark.django_db
+def test_set_reporter_short_name(case):
+    # set middle of official citation to reflect the generated reporter's short name
+    reporter = case.reporter
+    cite = case.citations.get(type="official")
+    cite.cite = cite.cite.replace("U.S.", reporter.short_name)
+    cite.save()
+
+    # update reporter short_name
+    new_name = "New Name"
+    reporter.set_short_name(new_name)
+
+    # everything gets updated
+    new_slug = slugify(reporter.short_name)
+    cite.refresh_from_db()
+    reporter.refresh_from_db()
+    case.refresh_from_db()
+    assert reporter.short_name_slug == new_slug
+    assert reporter.short_name == new_name
+    assert new_name in cite.cite
+    assert case.frontend_url.split('/')[1] == new_slug
+
+
 ### VolumeMetadata ###
 
 @pytest.mark.django_db

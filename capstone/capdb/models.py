@@ -548,6 +548,23 @@ class Reporter(models.Model):
     def get_frontend_url(self):
         return reverse('series', args=[self.short_name_slug], host="cite")
 
+    @transaction.atomic(using='capdb')
+    def set_short_name(self, new_short_name, update_citations=True):
+        """
+            Update this reporter's short_name.
+            Update case citations to match.
+        """
+        #TODO: PDF renaming functionality
+        old_short_name = self.short_name
+        self.short_name = new_short_name
+        self.short_name_slug = None  # regenerate
+        self.save()
+        if update_citations:
+            Citation.replace_reporter(
+                Citation.objects.filter(case__reporter=self, type="official"),
+                old_short_name,
+                new_short_name)
+
 
 class VolumeMetadata(models.Model):
     barcode = models.CharField(unique=True, max_length=64, primary_key=True)
@@ -662,56 +679,56 @@ class VolumeMetadata(models.Model):
     def get_frontend_url(self):
         return reverse('volume', args=[self.reporter.short_name_slug, self.volume_number_slug], host="cite")
 
+    @transaction.atomic(using='capdb')
     def set_duplicate(self, duplicate_of):
         """
             Update this volume to reflect that it is a duplicate of another volume.
             Update volume.case_metadatas.duplicate and .in_scope to match.
         """
         #TODO: PDF renaming/deleting functionality
-        with transaction.atomic(using='capdb'):
-            self.out_of_scope = True
-            self.duplicate = True
-            self.duplicate_of = duplicate_of
-            self.save()
-            self.case_metadatas.update(duplicate=True)
-            self.case_metadatas.update_in_scope()
-            CaseMetadata.update_frontend_urls(Citation.objects.filter(type='official', case__volume=self).values_list('cite', flat=True))
+        self.out_of_scope = True
+        self.duplicate = True
+        self.duplicate_of = duplicate_of
+        self.save()
+        self.case_metadatas.update(duplicate=True)
+        self.case_metadatas.update_in_scope()
+        CaseMetadata.update_frontend_urls(Citation.objects.filter(type='official', case__volume=self).values_list('cite', flat=True))
 
+    @transaction.atomic(using='capdb')
     def set_volume_number(self, volume_number, update_citations=True):
         """
             Update this volume's number.
             Update the citations to match.
         """
         #TODO: PDF renaming functionality
-        with transaction.atomic(using='capdb'):
-            old_volume_number = self.volume_number
-            self.volume_number = volume_number
-            self.save(update_volume_number_slug=True)
-            if update_citations:
-                for citation in Citation.objects.filter(type="official", case__volume=self):
-                    old_citation = citation.cite
-                    if not citation.cite.startswith(old_volume_number):
-                        raise Exception("Unexpected original volume number at beginning of citation")
-                    citation.cite = citation.cite.replace(old_volume_number, self.volume_number, 1)
-                    citation.save()
-                    CaseMetadata.update_frontend_urls([old_citation, citation.cite])
+        old_volume_number = self.volume_number
+        self.volume_number = volume_number
+        self.save(update_volume_number_slug=True)
+        if update_citations:
+            for citation in Citation.objects.filter(type="official", case__volume=self):
+                old_citation = citation.cite
+                if not citation.cite.startswith(old_volume_number):
+                    raise Exception("Unexpected original volume number at beginning of citation")
+                citation.cite = citation.cite.replace(old_volume_number, self.volume_number, 1)
+                citation.save()
+                CaseMetadata.update_frontend_urls([old_citation, citation.cite])
 
+    @transaction.atomic(using='capdb')
     def set_reporter(self, reporter, update_citations=True):
         """
             Update this volume's reporter.
             Update volume.case_metadatas.reporter to match.
         """
         #TODO: PDF renaming functionality
-        with transaction.atomic(using='capdb'):
-            old_reporter = self.reporter
-            self.reporter = reporter
-            self.save()
-            self.case_metadatas.update(reporter=reporter)
-            if update_citations:
-                Citation.replace_reporter(
-                    Citation.objects.filter(case__volume=self, type="official"),
-                    old_reporter.short_name,
-                    self.reporter.short_name)
+        old_reporter = self.reporter
+        self.reporter = reporter
+        self.save()
+        self.case_metadatas.update(reporter=reporter)
+        if update_citations:
+            Citation.replace_reporter(
+                Citation.objects.filter(case__volume=self, type="official"),
+                old_reporter.short_name,
+                self.reporter.short_name)
 
     def update_volume_number_slug(self):
         self.volume_number_slug = slugify(self.volume_number)
