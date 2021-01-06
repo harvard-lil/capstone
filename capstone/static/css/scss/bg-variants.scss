@@ -73,13 +73,13 @@
   @extend .bg-white;
   background-color: $color-tan;
   a {
-    color: $color-violet; // contrast ratio > 4.5
+    color: $color-medium-blue; // contrast ratio > 4.5
     &:hover, &:focus, &:active {
-      color: $color-dark-blue;
+      color: $color-medium-dark-blue;
     }
   }
   .btn-primary, .btn-secondary, .btn-tertiary {
-    @include button ($color-violet-large-text, $color-white, $color-violet-large-text-darkened)
+    @include button ($color-medium-blue, $color-white, $color-medium-dark-blue)
   }
   .btn-secondary {
     background-color: $color-white !important;
@@ -90,7 +90,7 @@
   // contrast ratio > 4.5
 
   h2.subtitle {
-    color: $color-dark-blue;
+    color: $color-medium-dark-blue;
   }
   .decorative-arrow {
     content: url('../../img/violet-arrow-right.svg')

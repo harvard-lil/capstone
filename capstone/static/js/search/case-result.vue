@@ -8,7 +8,8 @@
           {{result.name_abbreviation}}
         </a>
       </div>
-      <div class="col-md-3 decision-date">
+      <div v-if="result.decision_date"
+           class="col-md-3 decision-date">
         {{ formatDate(result.decision_date) }}
       </div>
     </div>

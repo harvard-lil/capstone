@@ -1,9 +1,9 @@
 import hashlib
 import json
+
 import pandas
 from flatten_json import flatten
 
-import csv
 from django.conf import settings
 from django.http.response import HttpResponseBase, HttpResponse
 from rest_framework import renderers
@@ -92,12 +92,10 @@ class CSVRenderer(renderers.JSONRenderer):
     media_type = 'text/csv'
     format = 'csv'
 
-    def render(self, data, accepted_media_type='text/csv', renderer_context=None):
-        # import pdb; pdb.set_trace()
+    def render(self, data, accepted_media_type=None, renderer_context=None):
         if 'results' in data:
-            json_normalize = pandas.json_normalize(map(lambda x: flatten(x, '.', root_keys_to_ignore={'cites_to'}), data['results']))
+            flattened_data = map(lambda case: flatten(case, '.', root_keys_to_ignore={'cites_to'}), data['results'])
+            json_normalize = pandas.json_normalize(list(flattened_data))
         else:
             json_normalize = pandas.json_normalize(flatten(data, '.', root_keys_to_ignore={'cites_to'}))
-        json_normalize.replace(to_replace=[r"\\n", "\n"], value=["¶", "¶"], regex=True, inplace=True)
-        csv_string = json_normalize.to_csv(sep="\t", quoting=csv.QUOTE_NONE, doublequote=False, index=False, escapechar="\\")
-        return HttpResponse(csv_string, content_type=accepted_media_type)
+        return json_normalize.to_csv(index=False)

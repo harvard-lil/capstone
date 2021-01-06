@@ -166,16 +166,16 @@ def test_csv(transactional_db, client, auth_client, restricted_case, unrestricte
     content_type = 'text/csv'
     case_text = "majority"
 
-    # unauthorized request can't fetch restricted CSV
+    # unauthorized request can't fetch restricted TSV
     response = client.get(api_reverse("cases-detail", args=[restricted_case.id]),
                           {"full_case": "true", "format": "csv"})
     check_response(response, content_excludes=case_text, content_type=content_type)
 
-    # authorized request can fetch restricted CSV
+    # authorized request can fetch restricted TSV
     response = auth_client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"full_case": "true", "format": "csv"})
     check_response(response, content_includes=case_text, content_type=content_type)
 
-    # both can fetch unrestricted CSV
+    # both can fetch unrestricted TSV
     response = client.get(api_reverse("cases-detail", args=[unrestricted_case.id]),
                           {"full_case": "true", "format": "csv"})
     check_response(response, content_includes=case_text, content_type=content_type)
@@ -186,9 +186,15 @@ def test_csv(transactional_db, client, auth_client, restricted_case, unrestricte
     # ?format=csv works on list page
     response = auth_client.get(api_reverse("cases-list"), {"full_case": "true", "format": "csv", "page_size": "100"})
     # each row separated by '\n'
-    response_count = len(response.content.decode().split('\n')) - 1
+    decoded_response = ""
+    for res in response.streaming_content:
+        decoded_response += res.decode()
+
+    # -1 for headers, -1 for last newline '\n'
+    response_count = len(decoded_response.split('\n')) - 2
     assert response_count == CaseMetadata.objects.count()
-    check_response(response, content_includes=case_text, content_type=content_type)
+    assert case_text in decoded_response
+    check_response(response, content_type=content_type)
 
 
 @pytest.mark.django_db

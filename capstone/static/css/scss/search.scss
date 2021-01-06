@@ -1,9 +1,17 @@
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
+@import "bootstrap/forms";
+@import "no-select";
 @import "base.scss";
+@import "floating-labels";
 @import 'footer/yellow';
 @import "search_results";
+
+$color-search-gray-light: #ced4da;
+.top-section {
+  padding-bottom: 0 !important;
+}
 
 .row.alert-danger {
   padding: 10px 0;
@@ -17,21 +25,150 @@
   padding: 0 !important;
 }
 
-.search-page > * {
-  padding: 2.5em;
+input, textarea,
+.form-control {
+  border-radius: 0;
 }
 
-//*** head matter
+.form-label-group {
+  font-family: $font-sans-title;
+
+  .queryfield, .dropdown-toggle {
+    margin-bottom: 0;
+    height: 40px;
+  }
+}
+
+label {
+  @extend .no-select;
+}
+
+@mixin sidebar-small {
+  display: block;
+  font-size: 0.8em;
+
+  @include media-breakpoint-down(md) {
+    @include make-col(12);
+    border-bottom: 1px solid $color-search-gray-light;
+    padding-bottom: 0;
+  }
+  .dropdown-title, .dropdown-item {
+    margin-top: 0;
+    padding-top: 0.2em;
+    padding-right: 0.3em;
+    padding-bottom: 0;
+  }
+
+  .dropdown-item {
+    overflow-x: hidden;
+  }
+
+  .dropdown-title {
+    &::after {
+      top: 0;
+    }
+  }
+  .dropdown-title-text {
+    position: relative;
+    display: inline-block;
+    overflow-x: hidden;
+    max-height: 100%;
+    width: 85%;
+  }
+
+  small {
+    line-height: 1.2em;
+    font-size: 0.7em;
+    margin-bottom: 1em;
+  }
+}
+
+.search-field {
+  @include make-col(6);
+
+  &.default-field, &.shown {
+    margin-bottom: 0.25em;
+  }
+
+  &.default-field {
+    @include make-col(12);
+  }
+}
+
+@mixin sidebar-big {
+  /* show full screen search unless results are shown*/
+  @include make-col(9);
+  @extend .col-centered;
+  border-right: 0;
+  .search-field.shown {
+    &:nth-child(odd) {
+      padding-left: 0.2em;
+    }
+  }
+  .search-field.shown {
+    &:nth-child(even) {
+      padding-right: 0.2em;
+    }
+  }
+
+  .search-field.default-field {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  &.results-shown {
+    @include make-col(3);
+    @include sidebar-small;
+    border-right: 1px solid $color-search-gray-light;
+
+    .search-field {
+      @include make-col(12);
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+  }
+  .dropdown-title-text {
+    position: relative;
+    display: inline-block;
+    overflow-x: hidden;
+    max-height: 100%;
+    width: 92%;
+  }
+}
+
+/* sidebar form */
+#sidebar-menu {
+  padding-bottom: 0 !important;
+  @include media-breakpoint-up(md) {
+    @include sidebar-big;
+  }
+
+  @include media-breakpoint-down(md) {
+    @include sidebar-small;
+  }
+}
 
 .page-title {
-  @extend h2;
-  @include media-breakpoint-up(md) {
-    text-align: right;
-    margin-right: .2em;
+  @extend h3;
+  font-weight: $font-weight-bold;
+  margin-left: 0;
+  top: -8px;
+  position: relative;
+  @include media-breakpoint-up(lg) {
+    margin-left: -0.4em;
+  }
+}
 
-    // janky stuff to vertically align "Find" label with dropdown
-    position: relative;
-    top: -8px;
+.show-advanced-options {
+  padding: 0;
+}
+
+.show-advanced-options > span {
+  color: $color-blue;
+  text-transform: none;
+  //font-weight: $font-weight-regular;
+  &:hover, &:focus, &:active {
+    color: $color-dark-blue;
+    border-bottom: 1px solid $color-dark-blue;
   }
 }
 
@@ -39,64 +176,104 @@
   float: right;
 }
 
-.dropdown-search-routes {
+#search-routes-dropdown {
+  margin-bottom: 4px;
+}
+
+.reset-field {
+  font-family: $font-family-sans-serif;
+  text-align: right;
+  padding-right: 0;
+  color: $color-medium-blue;
+  background-color: transparent;
+}
+
+.dropdown {
+  position: inherit;
+}
+
+.dropdown-search-routes,
+.dropdown-field {
+  width: 100%;
+
   > .dropdown-title {
     @extend h6;
+    font-size: 1em;
+    @include media-breakpoint-up(lg) {
+      font-size: 0.8em;
+    }
+    letter-spacing: 0.04em;
     min-width: 100%;
     display: inline-block;
-    color: $color-violet;
     font-family: $font-sans-title;
     font-weight: 400;
-    background-color: rgba(220, 220, 220, 0.35);
+    background-color: $color-tan;
     text-align: left;
-    text-transform: capitalize;
     padding-left: 10px;
-    padding-bottom: 10px;
     margin-bottom: 0;
-    @include media-breakpoint-up(lg) {
-      margin-top: 15px;
-    }
+
     &:after {
       float: right;
-      content: url("../../img/arrows/expand-arrow-blocked.svg");
-      display: inline-block;
+      content: url("../../img/arrows/keyboard_arrow_down-24px.svg");
+      position: relative;
     }
   }
 
   > .dropdown-menu {
     padding: 0;
     border-radius: 0;
-    border: 1px solid $color-violet-gray;
+    background-color: $color-white;
+    border-left: 1px solid $color-search-gray-light;
+    border-bottom: 1px solid $color-search-gray-light;
+    border-right: 1px solid $color-search-gray-light;
     width: 100%;
+    max-height: 300px;
+    overflow-y: scroll;
+    position: absolute !important;
+    box-shadow: 0 7px 10px $color-gray;
+    z-index: 9999;
+
     .dropdown-item {
       color: $color-black;
       border-bottom: 1px solid $color-gray;
       text-transform: capitalize;
       font-size: inherit;
       font-weight: inherit;
+      background-color: $color-white;
+
       &:hover, &:active, &:focus, &.active {
         background-color: $color-yellow;
       }
     }
   }
+
   &.show {
+
     .dropdown-title::after {
       transform: rotate(180deg);
-      margin-top: 5px;
+      top: 0;
+      position: relative;
+      display: inline-block;
+      overflow-x: hidden;
+      max-height: 100%;
     }
   }
 }
 
-.dropdown-search-routes.dropdown,
-.addfield.dropdown {
-  .dropdown-menu {
-    max-height: 300px;
-    overflow-y: scroll;
-    z-index: 1000;
-  }
-  .dropdown-item {
-    background-color: $color-white;
-  }
+.dropdown-search-routes > .dropdown-menu {
+  margin-top: -4px;
+}
+
+.dropdown-search-routes > .dropdown-toggle {
+  text-transform: uppercase;
+  color: $color-medium-blue;
+}
+
+.dropdown-field > .dropdown-toggle {
+  background-color: $color-white;
+  border: 1px solid $color-search-gray-light;
+  color: $color-black;
+  text-transform: none;
 }
 
 .main-content {
@@ -106,22 +283,103 @@
 
 }
 
-.search-form-container,
+.search-form,
+.results-loading-container,
 .results-list-container {
+  padding-top: 2rem;
   padding-bottom: 2rem;
+}
+
+
+// RESULTS CONTAINER
+.results-loading-container,
+.results-list-container {
+  color: $color-black;
+
+  &.results-shown {
+    @include make-col(9);
+    @include media-breakpoint-down(md) {
+      @include make-col(12);
+    }
+  }
+
+  #results_count_focus {
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 20px;
+  }
+
+  .download-options-container {
+    @extend .bg-tan;
+    border-radius: 0.5em;
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 1em;
+    border: 0;
+
+    .download-title {
+      padding-top: 0.8em;
+    }
+
+    .btn {
+      padding-right: 0;
+      padding-top: 0;
+    }
+  }
+
+  .download-options {
+    margin-bottom: 0;
+
+    #max-downloads {
+      border: 0;
+      border-bottom: 1px solid $color-medium-gray;
+      width: 4em;
+      margin-right: 0.4em;
+      background-color: transparent;
+    }
+
+    label {
+      color: $color-black;
+      font-family: $font-sans-title;
+      margin-right: 0.5em;
+    }
+
+    .download-json {
+      margin-right: 0.4em;
+    }
+
+    .download-formats-btn {
+      background-color: transparent;
+    }
+  }
+
+  .chosen-field {
+    background-color: $color-search-gray-light;
+    color: $color-violet-gray-dark;
+    border-radius: 2em;
+    padding: 0.1em 0.4em;
+    font-size: 0.7em;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    margin-bottom: 0.5em;
+
+    &:hover, &:active, &:focus {
+      color: $color-search-gray-light;
+      background-color: $color-violet-gray-dark;
+    }
+  }
 }
 
 // search disclaimer
 .search-disclaimer {
   font-size: 0.8em;
   line-height: 1.5em;
-  @include media-breakpoint-up(lg) {
-    padding-left: 20px !important;
-  }
   margin-top: 15px;
+
   p {
     margin-bottom: 0.2em;
   }
+
   .bold {
     font-weight: 600;
   }
@@ -133,33 +391,10 @@
   margin-top: 36px;
 }
 
-.field-row {
-  small {
-    line-height: 1.3;
-    display: block;
-    margin-bottom: 10px;
-    font-size: 60%;
-    letter-spacing: 0.01em;
-  }
-}
-
 .field_label_container {
   padding-right: 10px !important;
 }
 
-.queryfield {
-  border: 1px solid $color-violet-gray;
-  outline: 0;
-  float: right;
-  margin-top: -5px;
-  &:focus, &:active {
-    border: 1px solid $color-blue;
-  }
-}
-
-.results-loading-container {
-  padding-top: 3rem;
-}
 
 .loading-gif {
   position: relative;
@@ -175,93 +410,28 @@
 .top-section {
   padding-bottom: 2rem;
   border-bottom: none !important;
+  padding-top: 0;
 }
 
 .citation-list .basic-page p, .basic-page ul {
-  margin-bottom: 0px;
+  margin-bottom: 0;
+}
+
+.basic-page p {
+  margin-top: 0;
 }
 
 .citation-entry {
-  padding-top: 0px;
-  padding-bottom: 0px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
-select {
+.queryfield {
   width: 100%;
-  border: 1px solid $color-violet-gray;
-  padding: 5px;
-  margin-bottom: 10px;
-}
-
-.btn-submit {
-  float: right;
-}
-
-.submit-button-group {
-  float: right;
-  margin-left: 10px;
-}
-
-.addfield {
-  float: right;
-  > button {
-    border: 1px solid $color-violet;
-    margin-bottom: 10px;
-    margin-top: 10px;
-    &:after {
-      content: url("../../img/plus_sign_violet.svg");
-      display: inline-block;
-    }
-    &:active, &:hover, &:focus {
-      background-color: $color-violet;
-      color: $color-white;
-      &:after {
-        content: url("../../img/plus_sign_violet.svg");
-        display: inline-block;
-      }
-    }
-  }
-  .dropdown-menu {
-    right: 0;
-    border-radius: 0;
-    border: 1px solid $color-violet-gray;
-    position: absolute !important;
-    .dropdown-item {
-      border-bottom: 1px solid $color-gray;
-      color: $color-black;
-      font-size: inherit;
-      text-transform: capitalize;
-      font-weight: inherit;
-      &:hover, &:active, &:focus {
-        background-color: $color-yellow;
-      }
-    }
-  }
-}
-
-.field-button {
-  border: 0;
-  background: transparent url("../../img/search/remove-circle-sprite.svg") no-repeat;
-  background-size: auto 26px;
-  width: 26px;
-  height: 26px;
-  margin-left: 10px;
-  margin-bottom: 10px;
-  &.active {
-    &:hover, &:active, &:focus {
-      background-position-x: -26px !important;
-    }
-  }
-  &.disabled {
-    background-color: transparent;
-    background-size: auto 26px;
-    background-position-x: -52px;
-    cursor: default;
-    border: 0;
-  }
-}
-
-.add-field-button {
+  border: 1px solid $color-search-gray-light;
+  padding: 9px;
+  margin-top: 1px;
+  background-color: $color-white;
 }
 
 .disabled {
@@ -269,28 +439,17 @@ select {
   color: $color-light-gray;
 }
 
-.hitcount {
-  color: $color-medium-gray;
-  margin-bottom: 20px;
-  columns: $color-violet;
-}
-
-.field_label_container {
-}
-
-.field_label_container > select {
-  max-width: 100%;
-}
-
-.field_value_container {
-}
-
-.field_value_container > input {
-  width: 100%;
-}
-
 .search-button-row {
   margin-top: 1rem;
+}
+
+.btn-submit {
+  float: right;
+}
+
+.submit-btn-container {
+  display: inline-block;
+  margin-top: 1em;
 }
 
 .query-explainer {
@@ -300,12 +459,15 @@ select {
     font-size: $font-size-sm;
     color: $color-violet-gray-dark;
   }
+
   .api_url_segment:hover {
     @extend .highlight-parameter;
   }
+
   .api_url_active {
     font-weight: bold;
   }
+
   small {
     line-height: 1.3;
     display: block;
@@ -314,15 +476,13 @@ select {
     letter-spacing: 0.01em;
   }
 
-}
+  code {
+    margin-left: 0;
+  }
 
-.url-block {
-  background-color: $color-white;
-}
-
-.queryfield input.form-control[type="text"], input[type="text"], input[type="email"], textarea {
-  display: inline-block;
-  width: 100%;
+  .url-block {
+    background-color: $color-white;
+  }
 }
 
 .queryfield_highlighted {
@@ -335,8 +495,8 @@ select {
 }
 
 .highlight-parameter {
-  color: $color-white;
-  background-color: $color-violet-gray-dark;
+  color: $color-white !important;
+  background-color: $color-violet-gray-dark !important;
 }
 
 #query-explainer-button {
@@ -344,8 +504,11 @@ select {
   border: 0;
   background-color: transparent;
   padding-right: 0;
+  padding-left: 0;
+  margin-left: 10px;
   margin-right: 0;
   margin-top: 0;
+
   &.active {
     &:hover, &:active, &:focus {
       background-position-x: -26px !important;
