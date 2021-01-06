@@ -1069,7 +1069,8 @@ class CaseMetadata(models.Model):
                 .filter(
                     cite__in=cite_strs[i:i + batch_size],
                     type='official',
-                    case__in_scope=True
+                    case__in_scope=True,
+                    case__volume__out_of_scope=False,
                 ).order_by('cite')
                 .select_related('case__volume', 'case__reporter'))
             cite_groups = itertools.groupby(cites, key=lambda c: c.cite)
