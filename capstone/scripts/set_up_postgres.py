@@ -94,7 +94,7 @@ def update_postgres_env(db='capdb'):
             {
                 'model': Reporter,
                 'case_field': 'reporter_id',
-                'fields': ['full_name'],
+                'fields': ['full_name', 'short_name', 'short_name_slug'],
             },
             {
                 'model': Court,
@@ -104,7 +104,7 @@ def update_postgres_env(db='capdb'):
             {
                 'model': VolumeMetadata,
                 'case_field': 'volume_id',
-                'fields': ['volume_number'],
+                'fields': ['volume_number', 'volume_number_slug'],
             },
             {
                 'model': Jurisdiction,

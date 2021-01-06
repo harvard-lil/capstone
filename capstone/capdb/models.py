@@ -695,13 +695,14 @@ class VolumeMetadata(models.Model):
         CaseMetadata.update_frontend_urls(Citation.objects.filter(type='official', case__volume=self).values_list('cite', flat=True))
 
     @transaction.atomic(using='capdb')
-    def set_volume_number(self, volume_number, update_citations=True):
+    def set_volume_number(self, volume_number, old_volume_number=None, update_citations=True):
         """
             Update this volume's number.
             Update the citations to match.
         """
         #TODO: PDF renaming functionality
-        old_volume_number = self.volume_number
+        if old_volume_number is None:
+            old_volume_number = self.volume_number
         self.volume_number = volume_number
         self.save(update_volume_number_slug=True)
         if update_citations:
@@ -1069,7 +1070,8 @@ class CaseMetadata(models.Model):
                 .filter(
                     cite__in=cite_strs[i:i + batch_size],
                     type='official',
-                    case__in_scope=True
+                    case__in_scope=True,
+                    case__volume__out_of_scope=False,
                 ).order_by('cite')
                 .select_related('case__volume', 'case__reporter'))
             cite_groups = itertools.groupby(cites, key=lambda c: c.cite)

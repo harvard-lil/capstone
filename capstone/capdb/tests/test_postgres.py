@@ -94,7 +94,7 @@ def test_last_updated(case, extracted_citation_factory, elasticsearch):
 
     # updating outbound references
     for obj, change_field, no_change_field in (
-        (case.reporter, 'full_name', 'short_name'),
+        (case.reporter, 'full_name', 'notes'),
         (case.court, 'name', 'none'),
         (case.volume, 'volume_number', 'publisher'),
         (case.jurisdiction, 'name', 'none'),
