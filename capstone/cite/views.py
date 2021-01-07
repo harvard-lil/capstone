@@ -30,6 +30,7 @@ from elasticsearch_dsl.query import FunctionScore
 from rest_framework.request import Request
 from elasticsearch.exceptions import NotFoundError
 from natsort import natsorted
+from bs4 import BeautifulSoup, NavigableString
 
 from capapi import serializers
 from capapi.documents import CaseDocument, ResolveDocument
@@ -42,6 +43,7 @@ from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
 from scripts.helpers import group_by
+
 
 
 def safe_redirect(request):
@@ -412,6 +414,39 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         case_html = serialized_data['casebody']['data']
         # link all captured cites
         case_html = link_to_cites(case_html, serialized_data['cites_to'])
+
+        # Group neighboring head_matter elements of the same type, such as headnotes, into container divs.
+
+        # check if any of these things exist in the head matter before parsing
+        head_matter_classes = ['headnotes', 'summary', 'history', 'disposition', 'syllabus']
+        head_matter_flag = False
+        for hmc in head_matter_classes:
+            if hmc in case_html:
+                head_matter_flag = True
+
+        if head_matter_flag:
+            parsed_html = BeautifulSoup(case_html, 'html.parser')
+            head_matter = parsed_html.find("section", class_="head-matter")
+
+            # Since we're editing the tree as we loop through it, and we must maintain the oder of the elements, we need
+            # to make sure we're keeping track of the numerical index
+            container_count = 1
+            container = None
+            for child in head_matter.children:
+                if isinstance(child, NavigableString):  # this should only match whitespace
+                    continue
+                if child.attrs['class'][0] not in head_matter_classes: # leave tags like "parties" out of this
+                    container_count += 1
+                    continue
+                new_container_class = "{}_container".format(child.attrs['class'][0])
+                if not container or new_container_class != container.attrs['class'][0]:
+                    # create new container if there's a new mead_matter paragraph type.
+                    container = parsed_html.new_tag('div')
+                    container['class'] = [new_container_class]
+                    head_matter.insert(container_count, container)
+                    container_count += 1
+                container.append(child)
+            case_html = str(parsed_html)
 
     if settings.GEOLOCATION_FEATURE and request.META.get('HTTP_X_FORWARDED_FOR'):
         # Trust x-forwarded-for in this case because we don't mind being lied to, and would rather show accurate

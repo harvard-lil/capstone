@@ -172,23 +172,74 @@ p.small-text {
 
 section.head-matter {
   padding-bottom: 0;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
   p, aside {
-    // on large screens, head matter goes into a narrower column
-    margin-top: 1em;
-    margin-bottom: 1em;
+    margin-bottom: 0;
     &.summary, &.history, &.headnotes, &.disposition, &.syllabus {
       margin-top: 0;
-      margin-bottom: 0;
-
-      margin-left: 5em;
-      // on small screens, don't make head matter narrow
-      @media (max-width: 767.98px) {
-        margin-left: 6em;
-      }
+      padding-top: .5em;
     }
     &.attorneys {
       margin-top: 0;
     }
+  }
+  @mixin head-matter-label {
+    padding-left: 0;
+    font-family: $font-sans-title;
+    font-weight: bold;
+    color: $color-medium-gray;
+    word-break: break-all;
+    text-align: left;
+    font-size: 1rem;
+  }
+  .headnotes_container, .summary_container, .history_container, .disposition_container, .syllabus_container   {
+    background-color: $color-light-gray;
+    margin-bottom: 1rem;
+    padding: 1rem 2rem 1rem 2rem;
+  }
+
+  .headnotes_container:before {
+    @include head-matter-label;
+    content: "HEADNOTES";
+  }
+
+  .summary_container:before {
+    @include head-matter-label;
+    content: "SUMMARY";
+  }
+
+  .history_container:before {
+    @include head-matter-label;
+    content: "HISTORY";
+  }
+
+  .disposition_container:before {
+    @include head-matter-label;
+    content: "DISPOSITION";
+  }
+
+  .syllabus_container:before {
+    @include head-matter-label;
+    content: "Syllabus";
+  }
+
+  .page-label:before {
+    display: none;
+    /*
+    display: inline-block;
+    content: attr(data-label);
+    position: absolute;
+    transform: translateX(30%);
+    padding-right: 0;
+    font-size: 1.2rem;
+    padding-left: 0;
+    padding-top: 2rem;
+    */
+  }
+
+  .footnote > p, footnote > blockquote {
+    padding-bottom: .5em;
   }
 }
 
@@ -198,32 +249,14 @@ section.head-matter {
   margin-bottom: 0.5em;
 }
 
-@mixin head-matter-label {
-  font-family: $font-serif-fancy;
-  font-weight: bold;
-  color: $color-violet-gray;
-  word-break: break-all;
-  position: absolute;
-  font-size: 1rem;
-  // on large screens, label is right-aligned to left of paragraph
-  margin-left: -10em;
-  width: 9em;
-  text-align: right;
 
-  // on small screens, label is left-aligned to left of paragraph
-  @media (max-width: 767.98px) {
-    margin-left: -6em;
-    width: 5em;
-    text-align: left;
-  }
-}
 
 .parties, .docketnumber, .decisiondate {
   display: none;
 }
 
 .attorneys, .judges {
-  text-align: center;
+  text-align: left;
   font-size: 1.25rem;
 }
 
@@ -237,30 +270,7 @@ mark {
   color: $color-magenta;
 }
 
-.headnotes:before {
-  @include head-matter-label;
-  content: "Headnote: ";
-}
 
-.summary:before {
-  @include head-matter-label;
-  content: "Summary: ";
-}
-
-.history:before {
-  @include head-matter-label;
-  content: "History: ";
-}
-
-.disposition:before {
-  @include head-matter-label;
-  content: "Disposition: ";
-}
-
-.syllabus:before {
-  @include head-matter-label;
-  content: "Syllabus: ";
-}
 
 //*** opinion
 
@@ -292,21 +302,23 @@ mark {
 }
 
 .footnote {
-  font-size: 0.9em;
-  margin-left: 2em;
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+  padding: 0rem 2rem 1rem 2rem;
   line-height: $line-height-sm;
   position: relative;
 
+
   > p, > blockquote {
     margin-bottom: .5em;
+    margin-top: 0;
   }
 
   // footnote number
   > a {
     position: absolute;
     left: 0;
-    transform: translateX(-100%);
-    padding-right: 1em;
+    transform: translateX(30%);
     border-bottom: 0;
     font-weight: $font-weight-semibold;
     color: $color-magenta;
@@ -320,6 +332,7 @@ mark {
   // hide floating page label within footnotes
   .page-label:before {
     display: none;
+    text-align: left;
   }
 }
 

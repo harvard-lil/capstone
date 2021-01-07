@@ -120,7 +120,16 @@ def test_single_case(client, auth_client, token_auth_client, case_factory, elast
 
     # set up for viewing html or pdf
     case_text = "Case HTML"
-    unrestricted_case = case_factory(jurisdiction__whitelisted=True, body_cache__html=case_text, first_page_order=2, last_page_order=2)
+    unrestricted_case_html = '<section class="head-matter"> <h4 class="parties" id="b190-4">Case HTML,' \
+                             ' Appellant, <em>v. </em>Jonathan Hobson, Appellee.</h4> <p class="headnotes" ' \
+                             'id="b190-6">APPEAL FROM GALLATIN.</p> <p class="headnotes" id="b190-7">As a general' \
+                             ' rule, a court of equity will not interfere to relieve a defendant who has neglected' \
+                             ' to make his defense at law. But if he did not know of his defense until after the' \
+                             ' judgment, a court of equity will relieve.</p> <p class="headnotes" id="b190-8">It' \
+                             ' is erroneous to enter up a decree against the security in the injunction bond for the' \
+                             ' amount of the judgment at law and the costs in that suit, and interest on the' \
+                             ' judgment, and six per cent, damages, and the costs of the suit in equity.</p> </section>'
+    unrestricted_case = case_factory(jurisdiction__whitelisted=True, body_cache__html=unrestricted_case_html, first_page_order=2, last_page_order=2)
     restricted_case = case_factory(jurisdiction__whitelisted=False, body_cache__html=case_text, first_page_order=2, last_page_order=2)
     if response_type == 'pdf':
         case_text = "REMEMBERED"
@@ -135,6 +144,16 @@ def test_single_case(client, auth_client, token_auth_client, case_factory, elast
     ### can load whitelisted case
     with django_assert_num_queries(select=2):
         check_response(client.get(unrestricted_url), content_includes=case_text, content_type=content_type)
+
+    ### header grouping works
+    if response_type != 'pdf':
+        unrestricted_response = client.get(unrestricted_url)
+        parsed_case = BeautifulSoup(unrestricted_response.content, 'html.parser')
+        head_matter = parsed_case.find(class_="headnotes_container")
+        assert head_matter
+        assert len(head_matter) == 3
+        assert 'headnotes_container' not in unrestricted_case_html
+
 
     ### can load blacklisted case while logged out, via redirect
 
