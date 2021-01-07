@@ -327,7 +327,6 @@ class VolumeSerializer(serializers.ModelSerializer):
     reporter = serializers.ReadOnlyField(source='xml_reporter_full_name')
     start_year = serializers.ReadOnlyField(source='spine_start_year')
     end_year = serializers.ReadOnlyField(source='spine_end_year')
-    volume_number = serializers.ReadOnlyField(source='xml_volume_number')
     publisher = serializers.ReadOnlyField(source='xml_publisher')
     pdf_url = serializers.FileField(source='pdf_file')
     frontend_url = serializers.ReadOnlyField(source='get_frontend_url')
