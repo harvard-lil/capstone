@@ -651,7 +651,7 @@ class VolumeMetadata(models.Model):
     xml_end_year = models.IntegerField(blank=True, null=True)
     xml_publisher = models.CharField(max_length=255, blank=True, null=True)
     xml_publication_city = models.CharField(max_length=1024, blank=True, null=True)
-    xml_volume_number = models.CharField(max_length=64, blank=True, null=True)
+    xml_volume_number = models.CharField(max_length=64, blank=True, null=True)  # this has been copied to volume_number where valid; no longer used
     # just extract this and keep it here for now -- we can use it to check the reporter= field later:
     xml_reporter_short_name = models.CharField(max_length=255, blank=True, null=True)
     xml_reporter_full_name = models.CharField(max_length=255, blank=True, null=True)
