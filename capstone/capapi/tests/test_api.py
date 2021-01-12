@@ -164,7 +164,7 @@ def test_case_detail_pdf(transactional_db, client, auth_client, restricted_case,
 def test_csv(transactional_db, client, auth_client, restricted_case, unrestricted_case, elasticsearch):
     """ Test ?format=csv on case detail and list API. """
     content_type = 'text/csv'
-    case_text = "majority"
+    case_text = "Opinion text"
 
     # unauthorized request can't fetch restricted TSV
     response = client.get(api_reverse("cases-detail", args=[restricted_case.id]),
