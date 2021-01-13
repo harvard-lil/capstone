@@ -4,11 +4,11 @@ services:
         build:
           context: ../services/docker
           dockerfile: extended-postgres.dockerfile
-        image: capstone-postgres:0.1
+        image: capstone-postgres:0.2
         environment:
             POSTGRES_PASSWORD: password
         volumes:
-          - db_data:/var/lib/postgresql/data:delegated
+          - db_data_11:/var/lib/postgresql/data:delegated
     redis:
         image: registry.lil.tools/library/redis:6.0.9
     elasticsearch:
@@ -23,7 +23,7 @@ services:
             soft: -1
             hard: -1
         volumes:
-          - esdata01:/usr/share/elasticsearch/data
+          - esdata02:/usr/share/elasticsearch/data
         ports:
           - 127.0.0.1:9200:9200
     web:
@@ -55,7 +55,7 @@ services:
             - SYS_PTRACE
 
 volumes:
-    db_data:
+    db_data_11:
     node_modules:
-    esdata01:
+    esdata02:
       driver: local
