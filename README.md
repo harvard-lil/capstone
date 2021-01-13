@@ -141,7 +141,7 @@ Capstone should now be running at 127.0.0.1:8000.
 
 ### Docker Setup <a id="docker-setup"></a>
 
-We have initial support for local development via `docker compose`. Docker setup looks like this:
+We support local development via `docker compose`. Docker setup looks like this:
 
     $ docker-compose up -d
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capdb;"
@@ -149,6 +149,7 @@ We have initial support for local development via `docker compose`. Docker setup
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE cap_user_data;"
     $ docker-compose exec web fab init_dev_db
     $ docker-compose exec web fab ingest_fixtures
+    $ docker-compose exec web fab import_web_volumes
     $ docker-compose exec web fab run
     
 Capstone should now be running at 127.0.0.1:8000.
