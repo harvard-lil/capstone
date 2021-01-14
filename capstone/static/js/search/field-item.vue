@@ -15,9 +15,9 @@
 
       <div class="dropdown-menu" :aria-labelledby="field.name">
         <!-- Choice fields -->
-        <button v-for="choice in $parent.choices[field['choices']]"
+        <button v-for="choice in $parent.$parent.choices[field['choices']]"
                 v-bind:key="choice[0]"
-           @click.prevent="updateDropdownVal(index, choice)"
+           @click.prevent="updateDropdownVal(choice)"
            :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
           {{ choice[1] }}
         </button>
@@ -68,7 +68,6 @@ export default {
   name: "field-item",
   props: [
     'field',
-    'index'
   ],
   data() {
     return {
@@ -81,7 +80,7 @@ export default {
       this.display_value = this.field.label;
       this.field.value = "";
     },
-    updateDropdownVal(index, choice) {
+    updateDropdownVal(choice) {
       this.field.value = choice[0];
       this.display_value = choice[1];
       this.$parent.valueUpdated()

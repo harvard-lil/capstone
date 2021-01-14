@@ -8,8 +8,7 @@
                    :search_error="search_error"
                    :endpoint.sync="endpoint"
                    :fields="fields"
-                   :urls="urls"
-                   :choices="choices">
+                   :urls="urls">
       </search-form>
       <result-list v-on:see-cases="seeCases"
                    v-on:next-page="nextPage"
@@ -518,7 +517,8 @@ export default {
       });
 
       return `${this.urls.api_root}${this.endpoint}/?${encodeQueryData(params)}`;
-    }
+    },
+
   }
 }
 </script>
