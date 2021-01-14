@@ -1,7 +1,7 @@
 <template>
   <div class="submit-btn-container">
     <button @click="changeState()"
-            class="btn-primary d-flex align-items-center">
+            class="btn btn-primary d-flex align-items-center">
       Search
       <span v-if="showLoading"
             class="spinner-border spinner-border-sm"

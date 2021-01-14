@@ -144,7 +144,11 @@ import QueryExplainer from './query-explainer';
 import FieldItem from './field-item';
 
 export default {
-  components: {FieldItem, SearchButton, QueryExplainer},
+  components: {
+    FieldItem,
+    SearchButton,
+    QueryExplainer,
+  },
   data: function () {
     return {
       query: [],

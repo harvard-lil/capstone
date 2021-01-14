@@ -6,7 +6,6 @@
                    :class="display_class"
                    :field_errors="field_errors"
                    :search_error="search_error"
-                   :showLoading="showLoading"
                    :endpoint.sync="endpoint"
                    :fields="fields"
                    :urls="urls"
@@ -24,7 +23,6 @@
                    :resultsShown="resultsShown"
                    :first_result_number="first_result_number"
                    :last_result_number="last_result_number"
-                   :showLoading="showLoading"
                    :endpoint="endpoint"
                    :hitcount="hitcount"
                    :chosen_fields="chosen_fields"
@@ -384,7 +382,6 @@ export default {
       // submitted by the user.
       const currentFetchID = Math.random();
       this.currentFetchID = currentFetchID;
-      this.showLoading = true;
       return fetch(query_url)
           .then((response) => {
             if (currentFetchID !== this.currentFetchID) {

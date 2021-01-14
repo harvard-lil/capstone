@@ -17,7 +17,7 @@
               <li class="list-inline-item field chosen-field" v-if="field.value" v-bind:key="field.name">
                 {{ field.label }}: {{ field.value }}
                 <span class="reset-field" @click="reset_field(field.name)">
-                  <img :src="`${urls.static}img/icons/close-24px.svg`">
+                  <close-icon class="close-icon"></close-icon>
                 </span>
               </li>
             </template>
@@ -27,7 +27,9 @@
                v-if="resultsType==='cases' && !toggle_download_options && results[page] && results[page].length">
             <button class="btn btn-tertiary"
                     @click="toggle_download_options = !toggle_download_options">
-              <img :src="`${urls.static}img/icons/download.svg`">
+              <download-icon class="download-icon"></download-icon>
+              <br/>
+              <span class="small">download</span>
 
             </button>
           </div>
@@ -40,8 +42,7 @@
                 <button class="btn btn-tertiary"
                         v-if="toggle_download_options"
                         @click="toggle_download_options = !toggle_download_options">
-                  <img :src="`${urls.static}img/icons/close-24px.svg`">
-
+                  <close-icon class="close-icon"></close-icon>
                 </button>
               </div>
             </div>
@@ -137,6 +138,8 @@ import ReporterResult from './reporter-result.vue'
 import CaseResult from './case-result.vue'
 import CourtResult from './court-result.vue'
 import JurisdictionResult from './jurisdiction-result.vue'
+import CloseIcon from '../../../static/img/icons/close.svg';
+import DownloadIcon from '../../../static/img/icons/download.svg';
 
 export default {
   props: [
@@ -163,10 +166,12 @@ export default {
     }
   },
   components: {
-    'reporter-result': ReporterResult,
-    'case-result': CaseResult,
-    'court-result': CourtResult,
-    'jurisdiction-result': JurisdictionResult,
+    ReporterResult,
+    CaseResult,
+    CourtResult,
+    JurisdictionResult,
+    CloseIcon,
+    DownloadIcon,
   },
   methods: {
     metadata_view_url: function (endpoint, id) {

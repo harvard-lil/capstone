@@ -131,7 +131,7 @@ label {
     display: inline-block;
     overflow-x: hidden;
     max-height: 100%;
-    width: 92%;
+    width: 91%;
   }
 }
 
@@ -283,6 +283,13 @@ label {
 
 }
 
+.close-icon {
+  fill: $color-medium-blue;
+  &:hover, &:active, &:focus {
+    fill: $color-dark-blue;
+  }
+}
+
 .search-form,
 .results-loading-container,
 .results-list-container {
@@ -363,9 +370,14 @@ label {
     cursor: pointer;
     margin-bottom: 0.5em;
 
+
     &:hover, &:active, &:focus {
       color: $color-search-gray-light;
       background-color: $color-violet-gray-dark;
+
+      .close-icon {
+        fill: $color-white;
+      }
     }
   }
 }
