@@ -172,49 +172,73 @@ p.small-text {
 
 section.head-matter {
   padding-bottom: 0;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
   p, aside {
-    // on large screens, head matter goes into a narrower column
-    margin-top: 1em;
-    margin-bottom: 1em;
-    &.summary, &.history, &.headnotes, &.disposition, &.syllabus {
-      margin-top: 0;
-      margin-bottom: 0;
-
-      margin-left: 5em;
-      // on small screens, don't make head matter narrow
-      @media (max-width: 767.98px) {
-        margin-left: 6em;
+      &.summary, &.history, &.headnotes, &.disposition, &.syllabus, &.attorneys {
+        margin-bottom: 0;
+        margin-top: 0;
+        background-color: $color-light-gray;
+        padding: 0rem 2rem 1rem 2rem;
       }
-    }
-    &.attorneys {
-      margin-top: 0;
-    }
   }
-}
 
-.attorneys {
-  font-family: $font-serif;
-  letter-spacing: 0;
-  margin-bottom: 0.5em;
-}
+  @mixin head-matter-label {
+      padding-left: 0;
+      font-family: $font-sans-title;
+      font-weight: bold;
+      color: $color-medium-gray;
+      word-break: break-all;
+      text-align: left;
+      font-size: 1rem;
+      text-transform: uppercase;
+      position: absolute;
+      top: 1rem;
+  }
 
-@mixin head-matter-label {
-  font-family: $font-serif-fancy;
-  font-weight: bold;
-  color: $color-violet-gray;
-  word-break: break-all;
-  position: absolute;
-  font-size: 1rem;
-  // on large screens, label is right-aligned to left of paragraph
-  margin-left: -10em;
-  width: 9em;
-  text-align: right;
+  :not(.headnotes) + .headnotes:before, :not(.summary) + .summary:before, :not(.history) + .history:before,
+  :not(.syllabus) + .syllabus:before, :not(.disposition) + .disposition:before, :not(.attorneys) + .attorneys:before {
+    @include head-matter-label;
+    content: attr(class);
+  }
 
-  // on small screens, label is left-aligned to left of paragraph
-  @media (max-width: 767.98px) {
-    margin-left: -6em;
-    width: 5em;
-    text-align: left;
+  :not(.footnote) + .footnote:before {
+    @include head-matter-label;
+    content: "Head Matter Footnotes";
+  }
+
+  :not(.headnotes) + .headnotes, :not(.summary) + .summary, :not(.history) + .history,
+  :not(.syllabus) + .syllabus, :not(.disposition) + .disposition, :not(.attorneys) + .attorneys,
+  :not(.footnote) + .footnote {
+      margin-top: 1rem;
+      padding-bottom: 1rem;
+      padding-top: 3rem;
+  }
+
+  .page-label:before {
+    display: none;
+    /*
+    display: inline-block;
+    content: attr(data-label);
+    position: absolute;
+    transform: translateX(30%);
+    padding-right: 0;
+    font-size: 1.2rem;
+    padding-left: 0;
+    padding-top: 2rem;
+    */
+  }
+
+  .footnote {
+        margin-bottom: 0;
+        margin-top: 0;
+        background-color: $color-light-gray;
+        padding: 0rem 2rem 1rem 2rem;
+  }
+
+  .footnote > p, footnote > blockquote {
+    padding-bottom: .5em;
+    margin-bottom: 0;
   }
 }
 
@@ -223,7 +247,7 @@ section.head-matter {
 }
 
 .attorneys, .judges {
-  text-align: center;
+  text-align: left;
   font-size: 1.25rem;
 }
 
@@ -237,30 +261,7 @@ mark {
   color: $color-magenta;
 }
 
-.headnotes:before {
-  @include head-matter-label;
-  content: "Headnote: ";
-}
 
-.summary:before {
-  @include head-matter-label;
-  content: "Summary: ";
-}
-
-.history:before {
-  @include head-matter-label;
-  content: "History: ";
-}
-
-.disposition:before {
-  @include head-matter-label;
-  content: "Disposition: ";
-}
-
-.syllabus:before {
-  @include head-matter-label;
-  content: "Syllabus: ";
-}
 
 //*** opinion
 
@@ -292,24 +293,28 @@ mark {
 }
 
 .footnote {
-  font-size: 0.9em;
-  margin-left: 2em;
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+  padding: 0rem 2rem 1rem 2rem;
   line-height: $line-height-sm;
   position: relative;
 
+
   > p, > blockquote {
     margin-bottom: .5em;
+    margin-top: 0;
   }
 
   // footnote number
   > a {
     position: absolute;
     left: 0;
-    transform: translateX(-100%);
-    padding-right: 1em;
+    transform: translateX(30%);
     border-bottom: 0;
-    font-weight: $font-weight-semibold;
+    font-weight: $font-weight-bold;
     color: $color-magenta;
+    font-family: $font-serif;
+    font-size: .75rem;
   }
 
   // highlight selected footnote
@@ -320,6 +325,7 @@ mark {
   // hide floating page label within footnotes
   .page-label:before {
     display: none;
+    text-align: left;
   }
 }
 
