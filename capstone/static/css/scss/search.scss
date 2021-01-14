@@ -43,6 +43,15 @@ label {
   @extend .no-select;
 }
 
+.decorative-arrow {
+  display: none;
+}
+
+.title-container {
+  padding-left: 0;
+}
+
+
 @mixin sidebar-small {
   display: block;
   font-size: 0.8em;
