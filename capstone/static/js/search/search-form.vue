@@ -59,15 +59,13 @@
         </div>
 
         <div class="search-fields row">
-          <div v-for="(field, index) in fields"
+          <div v-for="field in fields"
                class="search-field"
                v-bind:class="{'default-field': field.default, 'shown': advanced_fields_shown && !field.default}"
                :key="field.name">
             <!--Fields default-->
             <template v-if="field.default">
-              <field-item :field="field"
-                          :index="index">
-              </field-item>
+              <field-item :field="field"></field-item>
               <div v-if="field.default && field_errors[field.name]" class="invalid-feedback">
                 {{ field_errors[field.name] }}
               </div>
@@ -81,7 +79,6 @@
             <template v-else>
               <template v-if="advanced_fields_shown">
                 <field-item :field="field"
-                            :index="index"
                             v-if="!field.default"
                             :key="field.name"></field-item>
                 <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
@@ -144,7 +141,11 @@ import QueryExplainer from './query-explainer';
 import FieldItem from './field-item';
 
 export default {
-  components: {FieldItem, SearchButton, QueryExplainer},
+  components: {
+    FieldItem,
+    SearchButton,
+    QueryExplainer,
+  },
   data: function () {
     return {
       query: [],
@@ -156,7 +157,6 @@ export default {
     }
   },
   props: [
-    'choices',
     'search_error',
     'field_errors',
     'urls',

@@ -19,6 +19,7 @@
   color: #4C4C4C;
   cursor: text;
   transition: all .1s ease-in-out;
+  pointer-events: none;
   @include media-breakpoint-up(lg) {
     font-size: 0.8em;
   }
@@ -63,18 +64,21 @@
   top: -41px;
   font-size: 12px;
   color: #777;
+  pointer-events: none;
 }
 
 .form-label-group input:not(:-ms-input-placeholder) ~ label {
   top: -41px;
   font-size: 12px;
   color: #777;
+  pointer-events: none;
 }
 
 .form-label-group input:not(:placeholder-shown) ~ label {
   top: -41px;
   font-size: 12px;
   color: #777;
+  pointer-events: none;
 }
 
 /* Fallback for Edge

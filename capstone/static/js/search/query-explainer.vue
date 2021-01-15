@@ -1,16 +1,14 @@
 <template>
-  <code>
-    <a id="query-explainer" :href="query_url">
-      <span>{{ base_url }}</span>
-      <span v-for="(argument, index) in url_arguments"
-            :key="index" class="api_url_segment"
-            v-on:mouseenter="highlightQuery"
-            v-on:mouseleave="unhighlightQuery"
-            @focus.native="alert('asd')"
-            :id="argumentID(argument)">
-          <template v-if="index === 0">?</template><template v-else>&</template>{{argument}}</span>
-    </a>
-  </code>
+  <a id="query-explainer" class="text-break" :href="query_url">
+    <span>{{ base_url }}</span>
+    <span v-for="(argument, index) in url_arguments"
+          :key="index" class="api_url_segment"
+          v-on:mouseenter="highlightQuery"
+          v-on:mouseleave="unhighlightQuery"
+          @focus.native="alert('asd')"
+          :id="argumentID(argument)">
+          <template v-if="index === 0">?</template><template v-else>&</template>{{ argument }}</span>
+  </a>
 </template>
 
 <script>
