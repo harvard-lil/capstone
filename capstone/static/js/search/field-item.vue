@@ -83,7 +83,9 @@ export default {
     updateDropdownVal(choice) {
       this.field.value = choice[0];
       this.display_value = choice[1];
-      this.$parent.valueUpdated()
+      if (this.field.name === 'ordering') {
+          this.$parent.updateOrdering();
+      }
     },
     highlightExplainer(event) {
       let explainer_argument = document.getElementById("p_" + event.target.id);

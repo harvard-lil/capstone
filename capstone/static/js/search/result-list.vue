@@ -145,6 +145,7 @@ import CourtResult from './court-result.vue'
 import JurisdictionResult from './jurisdiction-result.vue'
 import CloseIcon from '../../../static/img/icons/close.svg';
 import DownloadIcon from '../../../static/img/icons/download.svg';
+import FieldItem from './field-item';
 import {EventBus} from "./event-bus";
 
 export default {
@@ -162,6 +163,7 @@ export default {
     'first_page',
     'last_page',
     'urls',
+    'sort_field',
   ],
   data: function () {
     return {
@@ -178,6 +180,7 @@ export default {
     JurisdictionResult,
     CloseIcon,
     DownloadIcon,
+    FieldItem,
   },
   methods: {
     metadata_view_url: function (endpoint, id) {
@@ -194,6 +197,11 @@ export default {
         full_case_string = "&full_case=true"
       }
       return this.$parent.assembleUrl(this.local_page_size) + "&format=" + format + full_case_string;
+    },
+    updateOrdering: function () {
+      // when ordering is updated, new results are fetched
+      this.$parent.assembleUrl();
+      this.$parent.goToPage(0)
     }
   }
 }

@@ -94,8 +94,8 @@
           </div>
         </div>
         <a href="#" class="btn btn-tertiary show-advanced-options"
-                aria-label="Show or hide advanced filters"
-                @click="advanced_fields_shown = !advanced_fields_shown">
+           aria-label="Show or hide advanced filters"
+           @click="advanced_fields_shown = !advanced_fields_shown">
           <span v-if="advanced_fields_shown">Hide advanced filters</span>
           <span v-else>Show advanced filters</span>
         </a>
@@ -149,7 +149,6 @@ export default {
   data: function () {
     return {
       query: [],
-      query_url: '',
       show_explainer: false,
       advanced_fields_shown: false,
       defaultFields: [],
@@ -162,11 +161,12 @@ export default {
     'urls',
     'showLoading',
     'endpoint',
-    'fields'
+    'fields',
+    'query_url',
   ],
   methods: {
     valueUpdated() {
-      this.query_url = this.$parent.assembleUrl();
+      this.$parent.updateQueryURL();
     },
     getFieldByName(field_name) {
       return this.$parent.endpoints[this.endpoint].find(field => field.name === field_name);
