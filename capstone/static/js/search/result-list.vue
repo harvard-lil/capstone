@@ -140,6 +140,7 @@ import CourtResult from './court-result.vue'
 import JurisdictionResult from './jurisdiction-result.vue'
 import CloseIcon from '../../../static/img/icons/close.svg';
 import DownloadIcon from '../../../static/img/icons/download.svg';
+import {EventBus} from "./event-bus";
 
 export default {
   props: [
@@ -180,7 +181,7 @@ export default {
           .replace('/court/', "/" + endpoint + "/")
     },
     reset_field: function (fieldname) {
-      this.$parent.reset_field(fieldname);
+      EventBus.$emit('resetField', fieldname)
     },
     downloadResults: function (format) {
       let full_case_string = ""

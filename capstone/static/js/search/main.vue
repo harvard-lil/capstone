@@ -49,6 +49,9 @@ export default {
   mounted: function () {
     /* Read url state when first loaded. */
     this.$route ? this.handleRouteUpdate(this.$route) : this.updateSearchFormFields();
+    EventBus.$on('resetField', (fieldname) => {
+      this.reset_field(fieldname)
+    })
   },
   watch: {
     /* Read url state on change. */
@@ -252,7 +255,6 @@ export default {
     reset_field(fieldname) {
       this.fields.map((f) => {
         if (f.name === fieldname) {
-          EventBus.$emit('resetField', f.name)
           f.value = "";
         }
       });
