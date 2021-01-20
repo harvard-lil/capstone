@@ -12,7 +12,7 @@ services:
     redis:
         image: registry.lil.tools/library/redis:6.0.9
     elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
         environment:
           - node.name=es01
           - bootstrap.memory_lock=true
