@@ -24,10 +24,9 @@
       </div>
     </div>
     <button class="dropdown-item reset-field"
-       v-if="display_value !== field.label"
+       v-if="display_value !== field.label && !(this.hide_reset)"
        @click="dropdownReset()">
       <small>Reset {{ field.label }} field</small></button>
-
   </div>
   <textarea v-else-if="field.type === 'textarea'"
             :aria-label="field.name"
@@ -68,6 +67,7 @@ export default {
   name: "field-item",
   props: [
     'field',
+    'hide_reset',
   ],
   data() {
     return {

@@ -80,14 +80,19 @@
             </div>
           </div>
         </div>
-        <div class="hitcount" id="results_count_focus" tabindex="-1">
-          <span class="results-count" v-if="!results[page] || !results[page].length">No results</span>
-          <span class="results-count" v-else>
-        {{
-              first_result_number !== last_result_number ? `Results ${first_result_number} to ${last_result_number}` : `Result ${first_result_number}`
-            }}
-        of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
-      </span>
+        <div class="row">
+          <div class="hitcount col-6" id="results_count_focus" tabindex="-1">
+            <span class="results-count" v-if="!results[page] || !results[page].length">No results</span>
+            <span class="results-count" v-else>
+                {{
+                first_result_number !== last_result_number ? `Results ${first_result_number} to ${last_result_number}` : `Result ${first_result_number}`
+              }}
+                of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
+            </span>
+          </div>
+          <div class="col-6 text-right" v-if="results[page] && results[page].length">
+            <field-item :field="sort_field" :hide_reset="true"></field-item>
+          </div>
         </div>
         <ul v-if="resultsType==='cases'" class="results-list">
           <case-result v-for="result in results[page]"
