@@ -58,8 +58,12 @@ label {
 
   @include media-breakpoint-down(md) {
     @include make-col(12);
-    border-bottom: 1px solid $color-search-gray-light;
     padding-bottom: 0;
+    background-color: $color-tan;
+    #search-routes-dropdown {
+      border: 1px solid $color-search-gray-light;
+      background-color: $color-white;
+    }
   }
   .dropdown-title, .dropdown-item {
     margin-top: 0;
@@ -162,9 +166,6 @@ label {
   margin-left: 0;
   top: -8px;
   position: relative;
-  @include media-breakpoint-up(lg) {
-    margin-left: -0.4em;
-  }
 }
 
 .show-advanced-options {
