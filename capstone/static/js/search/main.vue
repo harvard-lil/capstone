@@ -104,8 +104,8 @@ export default {
           {
             name: "search",
             value: "",
-            label: "Full-Text Search",
-            type: "textarea",
+            label: "Full-text search: enter keyword or phrase",
+            type: "text",
             placeholder: "Enter keyword or phrase",
             info: "Terms stemmed and combined using AND. Words in quotes searched as phrases.",
             default: true,
