@@ -91,7 +91,9 @@
             </span>
           </div>
           <div class="col-6 text-right" v-if="results[page] && results[page].length">
-            <field-item :field="sort_field" :hide_reset="true"></field-item>
+            <field-item :field="sort_field"
+                        :choices="choices[sort_field.choices]"
+                        :hide_reset="true"></field-item>
           </div>
         </div>
         <ul v-if="resultsType==='cases'" class="results-list">
@@ -164,6 +166,7 @@ export default {
     'last_page',
     'urls',
     'sort_field',
+    'choices',
   ],
   data: function () {
     return {

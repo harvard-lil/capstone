@@ -13,19 +13,19 @@
         <span class="dropdown-title-text">{{ display_value }}</span>
       </button>
 
+      <!-- Choice fields -->
       <div class="dropdown-menu" :aria-labelledby="field.name">
-        <!-- Choice fields -->
-        <button v-for="choice in $parent.$parent.choices[field['choices']]"
+        <button v-for="choice in choices"
                 v-bind:key="choice[0]"
-           @click.prevent="updateDropdownVal(choice)"
-           :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
+                @click.prevent="updateDropdownVal(choice)"
+                :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
           {{ choice[1] }}
         </button>
       </div>
     </div>
     <button class="dropdown-item reset-field"
-       v-if="display_value !== field.label && !(this.hide_reset)"
-       @click="dropdownReset()">
+            v-if="display_value !== field.label && !(this.hide_reset)"
+            @click="dropdownReset()">
       <small>Reset {{ field.label }} field</small></button>
   </div>
   <textarea v-else-if="field.type === 'textarea'"
@@ -68,11 +68,11 @@ export default {
   props: [
     'field',
     'hide_reset',
+    'choices',
   ],
   data() {
     return {
-      // if field value is set in parameter, display that along with field label
-      display_value: this.field.value ? this.field.label + ": " + this.field.value : this.field.label
+      display_value: this.getFormattedDisplayValue()
     }
   },
   methods: {
@@ -80,11 +80,27 @@ export default {
       this.display_value = this.field.label;
       this.field.value = "";
     },
+    getFormattedDisplayValue() {
+      // do nothing for regular text fields
+      if (!this.choices) {
+        return ''
+      }
+      // for dropdown fields, if field value is set in parameter, display that along with field label
+      let matched_pair = this.choices.filter((choice_pair) => {
+        return this.field.value === choice_pair[0]
+      })
+      if (matched_pair[0]) {
+        return this.field.label + ': ' + matched_pair[0][1]
+      } else {
+        return this.field.label
+      }
+    },
     updateDropdownVal(choice) {
       this.field.value = choice[0];
-      this.display_value = choice[1];
-      if (this.field.name === 'ordering') {
-          this.$parent.updateOrdering();
+      if (this.field.name !== 'ordering') {
+        this.display_value = this.getFormattedDisplayValue();
+      } else {
+        this.$parent.updateOrdering();
       }
     },
     highlightExplainer(event) {
@@ -109,7 +125,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

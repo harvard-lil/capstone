@@ -9,6 +9,7 @@
                    :endpoint.sync="endpoint"
                    :fields="fields"
                    :query_url="query_url"
+                   :choices="choices"
                    :urls="urls">
       </search-form>
       <result-list v-on:see-cases="seeCases"
@@ -27,6 +28,7 @@
                    :hitcount="hitcount"
                    :chosen_fields="chosen_fields"
                    :sort_field="sort_field"
+                   :choices="choices"
                    :urls="urls">
       </result-list>
     </div>

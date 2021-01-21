@@ -65,7 +65,7 @@
                :key="field.name">
             <!--Fields default-->
             <template v-if="field.default">
-              <field-item :field="field"></field-item>
+              <field-item :field="field" :choices="choices[field.choices]"></field-item>
               <div v-if="field.default && field_errors[field.name]" class="invalid-feedback">
                 {{ field_errors[field.name] }}
               </div>
@@ -78,8 +78,9 @@
             <!--Other fields-->
             <template v-else>
               <template v-if="advanced_fields_shown">
-                <field-item :field="field"
-                            v-if="!field.default"
+                <field-item v-if="!field.default"
+                            :field="field"
+                            :choices="choices[field.choices]"
                             :key="field.name"></field-item>
                 <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
                   {{ field_errors[field.name] }}
@@ -163,6 +164,7 @@ export default {
     'endpoint',
     'fields',
     'query_url',
+    'choices',
   ],
   methods: {
     valueUpdated() {
