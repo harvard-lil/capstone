@@ -25,21 +25,22 @@ footer {
   }
   .social {
     margin-top: 2rem;
-    width: 200px;
     span {
       margin-left: 0.2rem;
     }
   }
   @include media-breakpoint-down(xs) {
+    padding: 0.2rem 0;
+    line-height: 1em;
+    font-size: 0.7em;
     .col-sm p, .col-sm nav {
       text-align: center;
     }
-    .lil-logo {
-      margin: 0 auto 1.5rem;
-    }
     .social {
-      margin: 2rem auto;
-      width: 90px;
+      text-align: right;
+    }
+    .social span {
+      float: right;
     }
   }
   a {

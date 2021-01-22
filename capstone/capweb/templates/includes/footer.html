@@ -2,43 +2,49 @@
 <footer class="footer">
   <div class="row footer-content">
     <div class="col-sm">
-      <a href="https://lil.law.harvard.edu"
-         class="lil-logo"
-         aria-label="Library Innovation Lab"
-         target="_blank">
-      </a>
-      <div class="social">
+      <div class="row">
+        <div class="col-md-12 col-6">
+          <a href="https://lil.law.harvard.edu"
+             class="lil-logo"
+             aria-label="Library Innovation Lab"
+             target="_blank">
+          </a>
+        </div>
+        <div class="col-md-12 col-6">
+          <div class="social">
         <span class="github">
           <a href="https://github.com/harvard-lil/capstone" target="_blank"
              title="Caselaw Access Project Github"
              aria-label="Caselaw Access Project Github"></a>
         </span>
 
-        <span class="twitter">
-          <a href="https://twitter.com/caselawaccess" target="_blank"
-             title="Caselaw Access Project Twitter"
-             aria-label="Caselaw Access Project Twitter"></a>
-        </span>
+            <span class="twitter">
+            <a href="https://twitter.com/caselawaccess" target="_blank"
+               title="Caselaw Access Project Twitter"
+               aria-label="Caselaw Access Project Twitter"></a>
+            </span>
+          </div>
+        </div>
       </div>
 
     </div>
     <div class="col-sm footer-copyright small">
-        <p>
-          {# spans stop text from breaking within sentences if avoidable #}
-          <span>&#169;{% now 'Y' %} The President and Fellows of Harvard University.</span>
-          <span>Site text is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</span>
-          <span><a href="https://github.com/harvard-lil/capstone">Source code</a> is MIT licensed.</span>
-          <span>Harvard asserts no copyright in caselaw retrieved from this site.</span>
-        </p>
+      <p>
+        {# spans stop text from breaking within sentences if avoidable #}
+        <span>&#169;{% now 'Y' %} The President and Fellows of Harvard University.</span>
+        <span>Site text is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</span>
+        <span><a href="https://github.com/harvard-lil/capstone">Source code</a> is MIT licensed.</span>
+        <span>Harvard asserts no copyright in caselaw retrieved from this site.</span>
+      </p>
     </div>
     <div class="col-sm">
       <nav aria-label="footer">
         <ul class="list-inline links">
           <li class="list-inline-item">
-            <a href="{% url "terms" %}">TERMS</a>
+            <a href="{% url 'terms' %}">TERMS</a>
           </li>
           <li class="list-inline-item">
-            <a href="{% url "privacy" %}">PRIVACY</a>
+            <a href="{% url 'privacy' %}">PRIVACY</a>
           </li>
           <li class="list-inline-item">
             <a href="https://accessibility.huit.harvard.edu/digital-accessibility-policy">ACCESSIBILITY</a>
