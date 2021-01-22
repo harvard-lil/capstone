@@ -107,8 +107,11 @@ section.casebody {
 
 blockquote {
   font-family: $font-serif;
-  padding: 0 1em;
-  background-color: $color-light-gray;
+  padding: .5rem 1rem .5rem 1rem;
+  border-left: .5rem solid $color-gray;
+  color: $color-medium-dark-blue;
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
 }
 
 p.small-text {
@@ -308,8 +311,7 @@ mark {
   // footnote number
   > a {
     position: absolute;
-    left: 0;
-    transform: translateX(30%);
+    left: .5rem;
     border-bottom: 0;
     font-weight: $font-weight-bold;
     color: $color-magenta;
