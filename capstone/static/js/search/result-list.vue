@@ -90,7 +90,7 @@
                 of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
             </span>
           </div>
-          <div class="col-6 text-right" v-if="results[page] && results[page].length">
+          <div class="col-6 text-right" v-if="resultsType==='cases' && results[page] && results[page].length">
             <field-item :field="sort_field"
                         :choices="choices[sort_field.choices]"
                         :hide_reset="true"></field-item>
