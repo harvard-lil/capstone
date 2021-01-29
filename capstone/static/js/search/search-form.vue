@@ -65,7 +65,7 @@
                :key="field.name">
             <!--Fields default-->
             <template v-if="field.default">
-              <field-item :field="field"></field-item>
+              <field-item :field="field" :choices="choices[field.choices]"></field-item>
               <div v-if="field.default && field_errors[field.name]" class="invalid-feedback">
                 {{ field_errors[field.name] }}
               </div>
@@ -78,8 +78,9 @@
             <!--Other fields-->
             <template v-else>
               <template v-if="advanced_fields_shown">
-                <field-item :field="field"
-                            v-if="!field.default"
+                <field-item v-if="!field.default"
+                            :field="field"
+                            :choices="choices[field.choices]"
                             :key="field.name"></field-item>
                 <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
                   {{ field_errors[field.name] }}
@@ -94,8 +95,8 @@
           </div>
         </div>
         <a href="#" class="btn btn-tertiary show-advanced-options"
-                aria-label="Show or hide advanced filters"
-                @click="advanced_fields_shown = !advanced_fields_shown">
+           aria-label="Show or hide advanced filters"
+           @click="advanced_fields_shown = !advanced_fields_shown">
           <span v-if="advanced_fields_shown">Hide advanced filters</span>
           <span v-else>Show advanced filters</span>
         </a>
@@ -149,7 +150,6 @@ export default {
   data: function () {
     return {
       query: [],
-      query_url: '',
       show_explainer: false,
       advanced_fields_shown: false,
       defaultFields: [],
@@ -162,11 +162,13 @@ export default {
     'urls',
     'showLoading',
     'endpoint',
-    'fields'
+    'fields',
+    'query_url',
+    'choices',
   ],
   methods: {
     valueUpdated() {
-      this.query_url = this.$parent.assembleUrl();
+      this.$parent.updateQueryURL();
     },
     getFieldByName(field_name) {
       return this.$parent.endpoints[this.endpoint].find(field => field.name === field_name);

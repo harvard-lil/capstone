@@ -8,6 +8,8 @@
                    :search_error="search_error"
                    :endpoint.sync="endpoint"
                    :fields="fields"
+                   :query_url="query_url"
+                   :choices="choices"
                    :urls="urls">
       </search-form>
       <result-list v-on:see-cases="seeCases"
@@ -25,6 +27,8 @@
                    :endpoint="endpoint"
                    :hitcount="hitcount"
                    :chosen_fields="chosen_fields"
+                   :sort_field="sort_field"
+                   :choices="choices"
                    :urls="urls">
       </result-list>
     </div>
@@ -49,6 +53,9 @@ export default {
   mounted: function () {
     /* Read url state when first loaded. */
     this.$route ? this.handleRouteUpdate(this.$route) : this.updateSearchFormFields();
+    EventBus.$on('resetField', (fieldname) => {
+      this.reset_field(fieldname)
+    })
   },
   watch: {
     /* Read url state on change. */
@@ -97,8 +104,8 @@ export default {
           {
             name: "search",
             value: "",
-            label: "Full-Text Search",
-            type: "textarea",
+            label: "Full-text search",
+            type: "text",
             placeholder: "Enter keyword or phrase",
             info: "Terms stemmed and combined using AND. Words in quotes searched as phrases.",
             default: true,
@@ -246,13 +253,19 @@ export default {
 
         ]
       },
+      sort_field: {
+        name: "ordering",
+        value: "relevance",
+        label: "Result Sorting",
+        choices: 'sort',
+      },
+      query_url: '',
     }
   },
   methods: {
     reset_field(fieldname) {
       this.fields.map((f) => {
         if (f.name === fieldname) {
-          EventBus.$emit('resetField', f.name)
           f.value = "";
         }
       });
@@ -349,6 +362,10 @@ export default {
         if (field.value)
           query[field.name] = field.value;
 
+      if (this.sort_field['value']) {
+        query[this.sort_field['name']] = this.sort_field['value'];
+      }
+
       // push new route
       this.$router.push({
         name: 'endpoint',
@@ -373,15 +390,14 @@ export default {
       if (this.results[this.page]) {
         return Promise.resolve();
       }
-
-      const query_url = this.assembleUrl();
+      this.updateQueryURL();
       this.search_error = "";
       this.field_errors = {};
       // Track current fetch operation, so we can throw away results if a fetch comes back after a new one has been
       // submitted by the user.
       const currentFetchID = Math.random();
       this.currentFetchID = currentFetchID;
-      return fetch(query_url)
+      return fetch(this.query_url)
           .then((response) => {
             if (currentFetchID !== this.currentFetchID) {
               throw "canceled"
@@ -427,10 +443,10 @@ export default {
             if (response.status) {
               // handle non-field API errors
               this.search_error = "Search error: API returned " +
-                  response.status + " for the query " + query_url;
+                  response.status + " for the query " + this.query_url;
             } else {
               // handle connection errors
-              this.search_error = "Search error: failed to load results from " + query_url;
+              this.search_error = "Search error: failed to load results from " + this.query_url;
             }
 
             console.log("Search error:", response);  // eslint-disable-line
@@ -515,10 +531,15 @@ export default {
           params[field['name']] = field['value'];
         }
       });
+      if (this.sort_field['value']) {
+        params[this.sort_field['name']] = this.sort_field['value'];
+      }
 
       return `${this.urls.api_root}${this.endpoint}/?${encodeQueryData(params)}`;
     },
-
-  }
+    updateQueryURL: function () {
+      this.query_url = this.assembleUrl();
+    },
+  },
 }
 </script>

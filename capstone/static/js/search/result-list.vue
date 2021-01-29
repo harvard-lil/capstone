@@ -80,14 +80,21 @@
             </div>
           </div>
         </div>
-        <div class="hitcount" id="results_count_focus" tabindex="-1">
-          <span class="results-count" v-if="!results[page] || !results[page].length">No results</span>
-          <span class="results-count" v-else>
-        {{
-              first_result_number !== last_result_number ? `Results ${first_result_number} to ${last_result_number}` : `Result ${first_result_number}`
-            }}
-        of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
-      </span>
+        <div class="row">
+          <div class="hitcount col-6" id="results_count_focus" tabindex="-1">
+            <span class="results-count" v-if="!results[page] || !results[page].length">No results</span>
+            <span class="results-count" v-else>
+                {{
+                first_result_number !== last_result_number ? `Results ${first_result_number} to ${last_result_number}` : `Result ${first_result_number}`
+              }}
+                of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
+            </span>
+          </div>
+          <div class="col-6 text-right" v-if="results[page] && results[page].length">
+            <field-item :field="sort_field"
+                        :choices="choices[sort_field.choices]"
+                        :hide_reset="true"></field-item>
+          </div>
         </div>
         <ul v-if="resultsType==='cases'" class="results-list">
           <case-result v-for="result in results[page]"
@@ -140,6 +147,8 @@ import CourtResult from './court-result.vue'
 import JurisdictionResult from './jurisdiction-result.vue'
 import CloseIcon from '../../../static/img/icons/close.svg';
 import DownloadIcon from '../../../static/img/icons/download.svg';
+import FieldItem from './field-item';
+import {EventBus} from "./event-bus";
 
 export default {
   props: [
@@ -156,6 +165,8 @@ export default {
     'first_page',
     'last_page',
     'urls',
+    'sort_field',
+    'choices',
   ],
   data: function () {
     return {
@@ -172,6 +183,7 @@ export default {
     JurisdictionResult,
     CloseIcon,
     DownloadIcon,
+    FieldItem,
   },
   methods: {
     metadata_view_url: function (endpoint, id) {
@@ -180,7 +192,7 @@ export default {
           .replace('/court/', "/" + endpoint + "/")
     },
     reset_field: function (fieldname) {
-      this.$parent.reset_field(fieldname);
+      EventBus.$emit('resetField', fieldname)
     },
     downloadResults: function (format) {
       let full_case_string = ""
@@ -188,6 +200,11 @@ export default {
         full_case_string = "&full_case=true"
       }
       return this.$parent.assembleUrl(this.local_page_size) + "&format=" + format + full_case_string;
+    },
+    updateOrdering: function () {
+      // when ordering is updated, new results are fetched
+      this.$parent.assembleUrl();
+      this.$parent.goToPage(0)
     }
   }
 }

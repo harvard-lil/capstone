@@ -58,11 +58,15 @@ label {
 
   @include media-breakpoint-down(md) {
     @include make-col(12);
-    border-bottom: 1px solid $color-search-gray-light;
     padding-bottom: 0;
+    background-color: $color-tan;
+    #search-routes-dropdown {
+      border: 1px solid $color-search-gray-light;
+      background-color: $color-white;
+    }
   }
   .dropdown-title, .dropdown-item {
-    margin-top: 0;
+    margin-top: 0.1em;
     padding-top: 0.2em;
     padding-right: 0.3em;
     padding-bottom: 0;
@@ -82,7 +86,7 @@ label {
     display: inline-block;
     overflow-x: hidden;
     max-height: 100%;
-    width: 85%;
+    width: 75%;
   }
 
   small {
@@ -162,9 +166,6 @@ label {
   margin-left: 0;
   top: -8px;
   position: relative;
-  @include media-breakpoint-up(lg) {
-    margin-left: -0.4em;
-  }
 }
 
 .show-advanced-options {
