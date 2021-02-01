@@ -217,6 +217,8 @@ def screenshot(request):
         command_args += ['--wait', selector]
     for selector in payload.get('targets', []):
         command_args += ['--target', selector]
+    for selector in payload.get('disable', []):
+        command_args += ['--disable', selector]
     timeout = payload.get('timeout', settings.SCREENSHOT_DEFAULT_TIMEOUT)
 
     # disable puppeteer sandbox just for dockerized dev/test env
@@ -396,7 +398,12 @@ def trends(request):
     else:
         title_suffix = ''
     if settings.SCREENSHOT_FEATURE:
-        page_image = page_image_url(request.build_absolute_uri(), targets=['.graph-container'], waits=['#screenshot-ready'])
+        page_image = page_image_url(
+            request.build_absolute_uri(),
+            targets=['.graph-container'],
+            waits=['#screenshot-ready'],
+            disable=['#main-nav'],
+        )
     else:
         page_image = None
     return render(request, "trends.html", {
