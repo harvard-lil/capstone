@@ -416,14 +416,15 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     if settings.GEOLOCATION_FEATURE and request.META.get('HTTP_X_FORWARDED_FOR'):
         # Trust x-forwarded-for in this case because we don't mind being lied to, and would rather show accurate
         # results for users using honest proxies.
+        ip = request.META['HTTP_X_FORWARDED_FOR'].split(',')[-1]
         try:
-            location = geolocate(request.META['HTTP_X_FORWARDED_FOR'].split(',')[-1])
+            location = geolocate(ip)
             location_str = location.country.name
             if location.subdivisions:
                 location_str = "%s, %s" % (location.subdivisions.most_specific.name, location_str)
-            logger.info("Someone from %s read a case from %s." % (location_str, case.court.name))
+            logger.info(f"Someone from {location_str} read a case from {case.court.name}.")
         except Exception as e:
-            logger.warning("Unable to geolocate %s: %s" % (request.user.ip_address, e))
+            logger.warning(f"Unable to geolocate {ip}: {e}")
 
     # set CSRF token for staff so they can make ajax requests
     if request.user.is_staff:
