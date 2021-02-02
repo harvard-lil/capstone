@@ -14,12 +14,13 @@ const commander = require('commander');
 */
 
 // parse command line args
-collect = (value, previous) => previous.concat([value]);  // put multiple instances of a command line option in a list
+const collect = (value, previous) => previous.concat([value]);  // put multiple instances of a command line option in a list
 const program = new commander.Command();
 program
   .option('-t, --target <selector>', 'target query selector to include in screenshot (can repeat)', collect, [])
   .option('-w, --wait <selector>', 'wait for query selector to appear (can repeat)', collect, [])
   .option('-m, --timeout <milliseconds>', 'milliseconds to wait before exiting with error code 1', 10000)
+  .option('-d, --disable <selector>', 'query selector to set to display: none', collect, [])
   .option('--no-sandbox', 'run puppeteer with --no-sandbox flag (for debugging only!)')
   .option('-v, --verbose', 'verbose logging');
 program.parse(process.argv);
@@ -54,6 +55,16 @@ async function capture() {
       await Promise.all(waitSelectors.map(page.waitForSelector, page));
     }
 
+    // disable elements
+    if (program.disable) {
+      debug("disabling", program.disable);
+      await page.evaluate((selectors) => {
+        for (const selector of selectors) {
+          document.querySelector(selector).style.display = 'none';
+        }
+      }, program.disable);
+    }
+
     // get screenshot dimensions based on --target selectors
     let screenshotArgs = {};
     if (program.target.length) {
@@ -65,17 +76,36 @@ async function capture() {
           (target) => document.querySelector(target),
           target
         );
-        debug("got handle:", handle);
-        return await handle.boundingBox();
+        return [handle, await handle.boundingBox()];
       }));
       debug("got dimensions:", boxes);
 
       // aggregate dimensions
-      const x = Math.min(...boxes.map((box)=>box.x));
-      const y = Math.min(...boxes.map((box)=>box.y));
-      const width = Math.max(...boxes.map((box)=>box.x+box.width)) - x;
-      const height = Math.max(...boxes.map((box)=>box.y+box.height)) - y;
-      screenshotArgs.clip = {x, y, width, height};
+      let left = Infinity, top = Infinity, right = 0, bottom = 0, scrollHandle;
+      for (const [handle, box] of boxes) {
+        left = Math.min(left, box.x);
+        top = Math.min(top, box.y);
+        right = Math.max(right, box.x + box.width);
+        bottom = Math.max(bottom, box.y + box.height);
+        if (box.y + box.height === bottom)
+          scrollHandle = handle;
+      }
+
+      // scroll bottom element into view
+      const [scrollRight, scrollBottom] = await scrollHandle.evaluate(node => {
+        node.scrollIntoView();
+        const rect = node.getBoundingClientRect();
+        return [rect.right, rect.bottom];
+      });
+
+      // adjust clipping region based on new scroll position
+      left -= right - scrollRight;
+      top -= bottom - scrollBottom;
+      right = scrollRight;
+      bottom = scrollBottom;
+
+      // screenshot
+      screenshotArgs.clip = {x: left, y: top, width: right - left, height: bottom - top};
       debug("capturing dimensions:", screenshotArgs.clip);
 
     } else {

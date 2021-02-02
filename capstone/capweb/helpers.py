@@ -2,7 +2,7 @@ import json
 import re
 import socket
 import requests
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 from contextlib import contextmanager
 import django_hosts
 from elasticsearch.exceptions import NotFoundError
@@ -239,19 +239,11 @@ def is_google_bot(request):
     return host_ip == ip
 
 
-def page_image_url(url, targets=[], waits=[], fallback=None, timeout=None):
+def page_image_url(url, **kwargs):
     """
         Generate a link to the /screenshot/ view for the given url and target.
     """
-    payload = OrderedDict({'url': url})
-    if targets:
-        payload['targets'] = targets
-    if waits:
-        payload['waits'] = waits
-    if fallback:
-        payload['fallback'] = fallback
-    if timeout is not None:
-        payload['timeout'] = timeout
+    payload = {'url': url, **kwargs}
     signed_payload = Signer().sign(json.dumps(payload))
     return "%s?%s" % (reverse('screenshot'), urlencode({
         'payload': signed_payload,
