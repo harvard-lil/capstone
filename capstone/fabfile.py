@@ -1585,6 +1585,27 @@ def ingest_courtlistener(download_dir='/tmp', start_from=None):
     ingest_courtlistener(download_dir, start_from)
 
 
+@task
+def print_harvard_ip_ranges():
+    """ Fetch IP ranges for known Harvard ASNs. Manually copy results to settings.HARVARD_IP_RANGES."""
+    import requests
+    from time import sleep
+
+    def get_json(url):
+        response = requests.get(url)
+        response.raise_for_status()
+        sleep(.5)  # api rate limit
+        return response.json()
+
+    for asn in ["1742", "13315", "40127"]:
+        label = get_json(f'https://api.bgpview.io/asn/{asn}')['data']['description_short']
+        print(f'# AS{asn} {label}')
+        addrs = get_json(f'https://api.bgpview.io/asn/{asn}/prefixes')
+        for k in ['ipv4_prefixes', 'ipv6_prefixes']:
+            for addr in addrs['data'][k]:
+                print(f"'{addr['prefix']}',")
+
+
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
     # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
