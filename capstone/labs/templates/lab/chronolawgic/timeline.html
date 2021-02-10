@@ -1,13 +1,13 @@
-{% extends "layouts/wide.html" %}
+{% extends "layouts/extended.html" %}
 {% load static %}
 {% load pipeline %}
 {% load render_bundle from webpack_loader %}
 {% load api_url %}
 
 {% block title %}Chronolawgic{% endblock %}
-{% block content_title %}Chronolawgic{% endblock %}
+{% block content_title %}{% endblock %}
 {% block base_css %}{% stylesheet "chronolawgic" %}{% endblock %}
-{% block meta_description %}Chronolawgic— an interactive caselaw timeline tool{% endblock %}
+{% block meta_description %}Chronolawgic— a caselaw timeline tool{% endblock %}
 
 
 {% block main_content %}

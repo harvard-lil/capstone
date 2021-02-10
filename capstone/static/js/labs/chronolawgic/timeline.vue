@@ -1,8 +1,17 @@
 <template>
   <main id="timeline-demo">
+    <div class="row top-menu">
+      <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-event-modal">
+        <add-icon></add-icon>
+      </button>
+      <button type="button" class="btn btn-tertiary">
+        <key-icon @click="toggleKey"></key-icon>
+      </button>
+    </div>
+    <add-event-modal v-show="addModalShown"/>
+    <key v-show="keyShown"></key>
+
     <section id="timeline">
-
-
       <!-- YEAR -->
       <div class="year">
         <div class="incidental">
@@ -446,15 +455,45 @@
 </template>
 
 <script>
+import KeyIcon from '../../../../static/img/icons/key.svg';
+import AddIcon from '../../../../static/img/icons/add.svg';
+import Key from './key.vue';
+import AddEventModal from './add-event-modal.vue';
+
 export default {
   name: 'Timeline',
+  components: {
+    KeyIcon,
+    AddIcon,
+    Key,
+    AddEventModal,
+  },
+
   data() {
-    return {checked: false, title: 'Check me'}
+    return {
+      checked: false,
+      title: 'Check me',
+      addModalShown: false,
+      keyShown: false,
+
+    }
   },
   methods: {
     check() {
       this.checked = !this.checked;
-    }
+    },
+    showAddModal() {
+      this.addModalShown = true;
+    },
+    toggleKey() {
+      this.keyShown = !this.keyShown;
+    },
+    // closeModal(e) {
+    //   console.log("clicked", e)
+    //   if (e.target !== $('div.modal-body')) {
+    //     console.log("not modal-body")
+    //   }
+    // }
   }
 };
 </script>

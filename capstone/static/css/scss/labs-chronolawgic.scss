@@ -4,6 +4,9 @@
 @import 'bootstrap/mixins';
 @import 'bootstrap/tooltip';
 
+.top-section, .main-content {
+  padding: 0 !important;
+}
 
 .main-content.simple {
   padding-top: 0;
@@ -11,9 +14,31 @@
   min-width: 100%;
 }
 
+.key-container {
+  position: fixed;
+}
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, .8);
+}
+.modal-dialog {
+  font-family: $font-monospace;
+  border: 2px solid $color-black;
+  /* Rectangle 40 */
+  box-sizing: border-box;
+  box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
+  .modal-title {
+    font-family: $font-monospace;
+  }
+}
+
+.modal-header, .modal-footer {
+  border-radius: 0;
+}
+
 main#timeline-demo {
+  font-family: $font-monospace;
+
   section#timeline {
-    border-top: thin solid black;
     grid-area: timeline;
   }
 
@@ -66,9 +91,9 @@ main#timeline-demo {
 
   div.year_scale {
     grid-area: years;
-    background-color: lightyellow;
     text-align: center;
     padding: 2rem;
+    font-family: $font-family-monospace;
   }
 
   div.spans {
