@@ -1,0 +1,177 @@
+@import "base.scss";
+@import 'bootstrap/functions';
+@import 'bootstrap/variables';
+@import 'bootstrap/mixins';
+@import 'bootstrap/tooltip';
+
+
+.main-content.simple {
+    padding-top: 0;
+    margin: 0;
+    min-width: 100%;
+}
+
+main#timeline-demo {
+    section#timeline {
+        border-top: thin solid black;
+        grid-area: timeline;
+    }
+
+    div.year {
+        max-width: 6fr;
+        width: 100%;
+        display: grid;
+        grid-template-areas:
+        ". incidental years spans .";
+        grid-template-columns:  1fr 6fr 1fr 1fr 1fr;
+    }
+
+    div.incidental {
+        grid-area: incidental;
+        justify-content: end;
+        display: flex;
+        border-bottom: thin solid black;
+    }
+
+    article.case {
+        display: grid;
+        line-height: $line-height-sm;
+        font-size: $font-size-sm;
+        border-radius: .15rem;
+        background-color: lightcyan;
+        width: 20rem;
+        padding: 1rem;
+        margin: 1rem;
+        align-self: end;
+        height: 5rem;
+        grid-gap: .25rem;
+        grid-template-areas:
+        "casename links";
+        grid-template-columns:  2fr 1fr;
+
+        header {
+            font-weight: $font-weight-bold;
+            grid-area: casename;
+        }
+        nav {
+            grid-area: links;
+        }
+    }
+
+    .event_col {
+        min-width: 1rem;
+    }
+
+    div.year_scale {
+        grid-area: years;
+        background-color: lightyellow;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    div.spans {
+        padding-left: 2rem;
+        grid-area: spans;
+        display: grid;
+        grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    }
+
+    .ec_1 { grid-area: ec_1; }
+    .ec_2 { grid-area: ec_2; }
+    .ec_3 { grid-area: ec_3; }
+    .ec_4 { grid-area: ec_4; }
+    .ec_5 { grid-area: ec_5; }
+    .ec_6 { grid-area: ec_6; }
+    .ec_7 { grid-area: ec_7; }
+    .ec_8 { grid-area: ec_8; }
+    .ec_9 { grid-area: ec_9; }
+    .ec_10 { grid-area: ec_10; }
+    .ec_11 { grid-area: ec_11; }
+    .ec_12 { grid-area: ec_12; }
+
+    div.ec_1.e1993 {
+        border-top: 1rem solid black;
+        background-color: lime;
+    }
+    div.ec_1.e1994 {
+        background-color: lime;
+    }
+    div.ec_1.e1995 {
+        background-color: lime;
+    }
+    div.ec_1.e1996 {
+        background-color: lime;
+    }
+    div.ec_1.e1997 {
+        background-color: lime;
+        border-bottom: 1rem solid lightgrey;
+    }
+
+
+    div.ec_2.e1996 {
+        border-top: 1rem solid black;
+        background-color: rebeccapurple;
+    }
+    div.ec_2.e1997 {
+        background-color: rebeccapurple;
+    }
+    div.ec_2.e1998 {
+        background-color: rebeccapurple;
+    }
+    div.ec_2.e1999 {
+        background-color: rebeccapurple;
+    }
+    div.ec_2.e2000 {
+        background-color: rebeccapurple;
+    }
+    div.ec_2.e2001 {
+        background-color: rebeccapurple;
+    }
+    div.ec_2.e2002 {
+        background-color: rebeccapurple;
+    }
+    div.ec_2.e2003 {
+        background-color: rebeccapurple;
+    }
+    div.ec_2.e2004 {
+        background-color: rebeccapurple;
+    }
+    div.ec_2.e2005 {
+        background-color: rebeccapurple;
+        border-bottom: 1rem solid lightgrey;
+    }
+
+
+    div.ec_3.e1997 {
+        border-top: 1rem solid black;
+        background-color: orange;
+    }
+    div.ec_3.e1998 {
+        background-color: orange;
+    }
+    div.ec_3.e1999 {
+        background-color: orange;
+    }
+    div.ec_3.e2000 {
+        background-color: orange;
+    }
+    div.ec_3.e2001 {
+        background-color: orange;
+    }
+    div.ec_3.e2002 {
+        background-color: orange;
+        border-bottom: 1rem solid lightgrey;
+    }
+
+    div.ec_1.e1999 {
+        border-top: 1rem solid black;
+        background-color: red;
+    }
+    div.ec_1.e2000 {
+        background-color: red;
+    }
+    div.ec_1.e2001 {
+        background-color: red;
+    }
+}

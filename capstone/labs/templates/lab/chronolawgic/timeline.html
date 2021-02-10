@@ -1,0 +1,27 @@
+{% extends "layouts/wide.html" %}
+{% load pipeline %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% load api_url %}
+{% load capweb_static %}
+
+{% block title %}Chronolawgic{% endblock %}
+{% block content_title %}Chronolawgic— an interactive caselaw timeline tool{% endblock %}
+{% block base_css %}{% stylesheet "chronolawgic" %}{% endblock %}
+{% block meta_description %}Chronolawgic— an interactive caselaw timeline tool{% endblock %}
+
+
+{% block main_content %}
+  <div id="app" class="content"></div>
+
+  <script>
+    // This is essentially each endpoint with its API interface
+    // eslint-disable-next-line
+  </script>
+  <noscript>
+    This search interface requires javascript, even for basic functionality. If you can not or will not use
+    javascript, your best bet is to directly use <a href="{% api_url "api-root" %}">the API this search interface
+    queries.</a> There is no data available in this search interface that is not available through the API.
+  </noscript>
+  {% render_bundle 'labs-chronolawgic' %}
+{% endblock %}

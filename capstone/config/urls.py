@@ -20,6 +20,7 @@ from django.contrib import admin
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('capweb.urls')),
+    path('labs/', include('labs.urls')),
 ]
 
 # use django-debug-toolbar if installed

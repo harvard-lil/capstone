@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'capweb',
     'cite',
     'user_data',
+    'labs',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
@@ -363,6 +364,12 @@ PIPELINE = {
             },
             'output_filename': 'fetch.css'
         },
+        'chronolawgic': {
+            'source_filenames': {
+                'css/scss/labs-chronolawgic.scss',
+            },
+            'output_filename': 'labs-chronolawgic.css'
+        },
     },
 
     # avoid compressing assets for now
@@ -539,7 +546,7 @@ LOGGING['loggers'] = {
     # show info for our first-party apps
     **{
         app_name: {'level': 'INFO'}
-        for app_name in ('capapi', 'capdb', 'capweb', 'cite', 'config', 'user_data')
+        for app_name in ('capapi', 'capdb', 'capweb', 'cite', 'config', 'user_data', 'labs')
     },
 }
 LOGGING['formatters'] = {
@@ -681,3 +688,6 @@ RESOLVE_API_PREFIX = 'http://api.case.test:8000/v1/cases/'
 RESOLVE_FRONTEND_PREFIX = 'http://cite.case.test:8000'
 
 PYTHON_BINARY = sys.executable
+
+# show labs features
+LABS = False
