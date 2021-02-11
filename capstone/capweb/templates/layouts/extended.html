@@ -1,4 +1,11 @@
-{% extends "layouts/base.html" %}
-{% block title_section %}{% endblock %}
-{% block row_style %}{% endblock %}
+{% extends "main_base.html" %}
+{% load static %}
 
+{% block content %}
+<div class="extended-content row {% block row_style %}{% endblock %}{% if row_style %} {{ row_style }}{% endif %}">
+  <div
+      class="main-content {% block main_content_style %}{% if main_content_style %}{{ main_content_style }}{% endif %}{% endblock %}">
+    {% block main_content %}{% if main_content %}{{ main_content }}{% endif %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
