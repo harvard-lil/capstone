@@ -28,7 +28,7 @@ def register(cls):
         This is basically the same as the @register decorator provided by the pytest_factoryboy package,
         but because it's simpler it seems to work better with RelatedFactory and SubFactory.
     """
-    camel_case_name = re.sub('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))', r'_\1', cls.__name__).lower()
+    snake_case_name = re.sub('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))', r'_\1', cls.__name__).lower()
 
     @pytest.fixture
     def factory_fixture(db):
@@ -38,8 +38,8 @@ def register(cls):
     def instance_fixture(db):
         return cls()
 
-    globals()[camel_case_name] = factory_fixture
-    globals()[camel_case_name.rsplit('_factory', 1)[0]] = instance_fixture
+    globals()[snake_case_name] = factory_fixture
+    globals()[snake_case_name.rsplit('_factory', 1)[0]] = instance_fixture
 
     return cls
 
