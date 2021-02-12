@@ -17,7 +17,10 @@
     // This is essentially each endpoint with its API interface
     // eslint-disable-next-line
     const urls = {
-        api_root: "{% api_url 'api-root' %}v1/",
+        chronolawgic_api_create: "{% url 'labs:chronolawgic-api-create' %}v1/",
+        chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}v1/",
+        chronolawgic_api_update: "{% url 'labs:chronolawgic-api-update' %}v1/",
+        chronolawgic_api_delete: "{% url 'labs:chronolawgic-api-delete' %}v1/",
         static: "{% static '' %}"
     };
 </script>
