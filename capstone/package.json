@@ -11,6 +11,7 @@
   "dependencies": {
     "acorn": "^6.4.1",
     "awesome-charts": "^1.0.0",
+    "axios": "^0.21.1",
     "chart.js": "^2.8.0",
     "commander": "^2.20.0",
     "core-js": "^3.6.5",
