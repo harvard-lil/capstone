@@ -12,7 +12,6 @@
 @import "labs-chronolawgic/base.scss";
 @import "labs-chronolawgic/modal.scss";
 
-$color-search-gray-light: #ced4da;
 
 .key-container {
   position: fixed;
@@ -27,6 +26,7 @@ $color-search-gray-light: #ced4da;
 
 .header-section {
   border-right: 2px solid $color-black;
+  font-weight: $font-weight-semibold;
 }
 
 

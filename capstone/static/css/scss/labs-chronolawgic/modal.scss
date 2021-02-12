@@ -1,5 +1,6 @@
+
 input.form-control {
-  background-color: $color-search-gray-light;
+  background-color: $color-light-gray;
   border: 0;
   outline: none;
   border-radius: 0;
@@ -37,4 +38,8 @@ input.form-control {
   background-color: #efefef;
   padding: 0.5rem 1rem;
   border-bottom: 2px solid $color-black;
+}
+
+.modal-footer {
+  border-top: 0;
 }
