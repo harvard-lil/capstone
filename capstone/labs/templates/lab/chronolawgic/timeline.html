@@ -17,14 +17,15 @@
     // This is essentially each endpoint with its API interface
     // eslint-disable-next-line
     const urls = {
-        api_root: "{% api_url 'api-root' %}v1/",
+        chronolawgic_api_create: "{% url 'labs:chronolawgic-api-create' %}v1/",
+        chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}v1/",
+        chronolawgic_api_update: "{% url 'labs:chronolawgic-api-update' %}v1/",
+        chronolawgic_api_delete: "{% url 'labs:chronolawgic-api-delete' %}v1/",
         static: "{% static '' %}"
     };
 </script>
 <noscript>
-  This search interface requires javascript, even for basic functionality. If you can not or will not use
-  javascript, your best bet is to directly use <a href="{% api_url 'api-root' %}">the API this search interface
-  queries.</a> There is no data available in this search interface that is not available through the API.
+  This experimental interface requires javascript, even for basic functionality.
 </noscript>
 {% render_bundle 'labs-chronolawgic' %}
 {% endblock %}

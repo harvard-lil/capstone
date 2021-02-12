@@ -18,7 +18,6 @@ if settings.LABS:
              name='chronolawgic'),
         path('chronolawgic/timeline/', views.chronolawgic, name='chronolawgic-dashboard'),
         # your timeline list, create, delete
-        path('chronolawgic/timeline/:timeline_id', views.chronolawgic, name='chronolawgic-view'),  # view one timeline
         path('chronolawgic/api/create', views.chronolawgic_api_create, name='chronolawgic-api-create'),
         path('chronolawgic/api/retrieve/:timeline_id', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
         path('chronolawgic/api/update/:timeline_id', views.chronolawgic_api_update, name='chronolawgic-api-update'),
