@@ -1,0 +1,40 @@
+input.form-control {
+  background-color: $color-search-gray-light;
+  border: 0;
+  outline: none;
+  border-radius: 0;
+}
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, .8);
+}
+
+.modal-header .close {
+  background-color: $color-white;
+  padding: 0.68rem 1rem;
+  margin: -0.5rem -1rem -1rem auto;
+  border-left: 2px solid $color-black;
+}
+
+.modal-header .modal-title {
+  font-family: $font-monospace;
+  font-size: 1.2rem;
+}
+
+.modal-dialog {
+  font-family: $font-monospace;
+  border: 2px solid $color-black;
+  box-sizing: border-box;
+  box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
+}
+
+.modal-header, .modal-footer {
+  border-radius: 0;
+}
+
+.modal-header {
+  font-weight: $font-weight-semibold;
+  font-size: 20px;
+  background-color: #efefef;
+  padding: 0.5rem 1rem;
+  border-bottom: 2px solid $color-black;
+}
