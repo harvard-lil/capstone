@@ -1,14 +1,26 @@
 <template>
   <main id="timeline-demo">
     <div class="row top-menu">
-      <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-event-modal">
-        <add-icon></add-icon>
-      </button>
-      <button type="button" class="btn btn-tertiary">
-        <key-icon @click="toggleKey"></key-icon>
-      </button>
+      <div class="header-section case-law-section">
+        <span>CASE LAW</span>
+        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal">
+          <add-icon></add-icon>
+        </button>
+      </div>
+      <div class="header-section other-events-section">
+        <span>OTHER EVENTS</span>
+        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-event-modal">
+          <add-icon></add-icon>
+        </button>
+      </div>
+      <div class="key-column">
+        <button type="button" class="btn btn-tertiary">
+          <key-icon @click="toggleKey"></key-icon>
+        </button>
+      </div>
     </div>
-    <add-event-modal v-show="addModalShown"/>
+    <add-case-modal />
+    <add-event-modal />
     <key v-show="keyShown"></key>
 
     <section id="timeline">
@@ -458,6 +470,7 @@
 import KeyIcon from '../../../../static/img/icons/key.svg';
 import AddIcon from '../../../../static/img/icons/add.svg';
 import Key from './key.vue';
+import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 
 export default {
@@ -466,6 +479,7 @@ export default {
     KeyIcon,
     AddIcon,
     Key,
+    AddCaseModal,
     AddEventModal,
   },
 
@@ -473,7 +487,8 @@ export default {
     return {
       checked: false,
       title: 'Check me',
-      addModalShown: false,
+      addCaseModalShown: false,
+      addEventModalShown: false,
       keyShown: false,
 
     }
@@ -482,8 +497,8 @@ export default {
     check() {
       this.checked = !this.checked;
     },
-    showAddModal() {
-      this.addModalShown = true;
+    showAddEventModal() {
+      this.addEventModalShown = true;
     },
     toggleKey() {
       this.keyShown = !this.keyShown;
