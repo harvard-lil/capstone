@@ -5,10 +5,13 @@ import axios from "axios";
 
 // eslint-disable-next-line
 const import_urls = urls; // defined in timeline.html
+// eslint-disable-next-line
+const import_choices = choices; // defined in timeline.html
 
 Vue.use(Vuex)
 const store = new Vuex.Store({
     state: {
+        choices: import_choices,
         urls: { // Doing this the long way to make it a little easier to see what's going on.
             chronolawgic_api_create: import_urls.chronolawgic_api_create,
             chronolawgic_api_retrieve: import_urls.chronolawgic_api_retrieve,

@@ -20,6 +20,7 @@ input.form-control, textarea.form-control {
 .modal-header .modal-title {
   font-family: $font-monospace;
   font-size: 1.2rem;
+  font-weight: $font-weight-semibold;
 }
 
 .modal-dialog {
@@ -28,6 +29,9 @@ input.form-control, textarea.form-control {
   box-sizing: border-box;
   box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
   max-width: 700px;
+  .dropdown-menu {
+    position: absolute !important;
+  }
 }
 
 .modal-header, .modal-footer {
@@ -46,12 +50,18 @@ input.form-control, textarea.form-control {
   border-top: 0;
 }
 
+label, textarea::placeholder{
+  font-size: 16px;
+  color: $color-black !important;
+}
+
 #add-case-modal {
   .modal-body {
     display: grid;
     grid-template-areas:
           "search   search  search"
           "link        .    short"
+          "name        .    long"
           "date        .    long"
           "jur         .    long"
           "reporter    .    long";
@@ -69,6 +79,10 @@ input.form-control, textarea.form-control {
     grid-area: link;
   }
 
+  #field-group-name {
+    grid-area: name;
+  }
+
   #field-group-short {
     grid-area: short;
   }
@@ -77,7 +91,7 @@ input.form-control, textarea.form-control {
     grid-area: long;
 
     textarea {
-      min-height: 9em;
+      min-height: 12em;
     }
   }
 
