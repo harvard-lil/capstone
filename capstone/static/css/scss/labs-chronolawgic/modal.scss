@@ -1,10 +1,11 @@
 
-input.form-control {
+input.form-control, textarea.form-control {
   background-color: $color-light-gray;
   border: 0;
   outline: none;
   border-radius: 0;
 }
+
 .modal-backdrop {
   background-color: rgba(0, 0, 0, .8);
 }
@@ -26,6 +27,7 @@ input.form-control {
   border: 2px solid $color-black;
   box-sizing: border-box;
   box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
+  max-width: 700px;
 }
 
 .modal-header, .modal-footer {
@@ -42,4 +44,52 @@ input.form-control {
 
 .modal-footer {
   border-top: 0;
+}
+
+#add-case-modal {
+  .modal-body {
+    display: grid;
+    grid-template-areas:
+          "search   search  search"
+          "link        .    short"
+          "date        .    long"
+          "jur         .    long"
+          "reporter    .    long";
+  }
+
+  .form-label-group {
+    margin-bottom: 0.5em;
+  }
+
+  #field-group-search {
+    grid-area: search;
+  }
+
+  #field-group-url {
+    grid-area: link;
+  }
+
+  #field-group-short {
+    grid-area: short;
+  }
+
+  #field-group-long {
+    grid-area: long;
+
+    textarea {
+      min-height: 9em;
+    }
+  }
+
+  #field-group-date {
+    grid-area: date;
+  }
+
+  #field-group-jurisdiction {
+    grid-area: jur;
+  }
+
+  #field-group-reporter {
+    grid-area: reporter;
+  }
 }
