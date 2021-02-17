@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">ADD CASE LAW</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" @click="clearContent" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -66,7 +66,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-tertiary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-primary" @click="addCase">ADD</button>
         </div>
       </div>
@@ -146,6 +146,25 @@ export default {
             .then(searchResponse => {
               this.searchResults = searchResponse.results;
             })
+      }
+    },
+    clearContent() {
+      this.newCase = {
+        url: "",
+        name: "",
+        short: "",
+        long: "",
+        date: "",
+        jurisdiction: {
+          name: 'jurisdiction',
+          label: 'jurisdiction',
+          value: '',
+        },
+        reporter: {
+          name: 'reporter',
+          label: 'reporter',
+          value: '',
+        }
       }
     }
   },
