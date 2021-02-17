@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from labs.models import TimeLine
+from labs.models import Timeline
 
 from capweb.views import MarkdownView
 
@@ -24,7 +24,7 @@ def chronolawgic_api_retrieve(request, timeline_id):
     if request.method != 'GET':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
-    timeline = TimeLine.objects.get(timeline_id)
+    timeline = Timeline.objects.get(timeline_id)
 
     if not timeline:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
@@ -44,7 +44,7 @@ def chronolawgic_api_create(request):
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        timeline = TimeLine()
+        timeline = Timeline()
         timeline.created_by = request.user
         timeline.timeline = {}
         timeline.save()
@@ -65,7 +65,7 @@ def chronolawgic_api_update(request, timeline_id):
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
-    timeline = TimeLine.objects.get(timeline_id)
+    timeline = Timeline.objects.get(timeline_id)
     try:
         timeline.timeline = request.POST.get("timeline")
         timeline.save()
@@ -84,7 +84,7 @@ def chronolawgic_api_delete(request, timeline_id):
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
-    timeline = TimeLine.objects.get(timeline_id)
+    timeline = Timeline.objects.get(timeline_id)
     try:
         timeline.delete()
     except Exception as e:
