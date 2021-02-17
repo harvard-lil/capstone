@@ -1,0 +1,35 @@
+$highlight: #F3FFA7;
+
+.top-section, .main-content {
+  padding: 0 !important;
+}
+
+h3 {
+  font-family: $font-monospace;
+}
+
+.btn-primary {
+  border: 2px solid $color-black;
+  background-color: $color-white;
+  font-family: $font-monospace;
+  color: $color-black;
+
+  &:focus, &:hover, &:active {
+    background-color: $highlight;
+    color: $color-black;
+    border: 2px solid black;
+  }
+}
+
+.btn-tertiary {
+  font-weight: $font-weight-regular;
+  text-decoration: underline;
+  font-family: $font-monospace;
+
+  &:focus, &:hover, &:active {
+    color: $color-blue;
+    text-decoration: underline;
+  }
+
+}
+

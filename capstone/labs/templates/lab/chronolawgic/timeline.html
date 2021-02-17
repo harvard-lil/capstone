@@ -3,6 +3,7 @@
 {% load pipeline %}
 {% load render_bundle from webpack_loader %}
 {% load api_url %}
+{% load snippet %}
 
 {% block title %}Chronolawgic{% endblock %}
 {% block content_title %}{% endblock %}
@@ -17,12 +18,19 @@
     // This is essentially each endpoint with its API interface
     // eslint-disable-next-line
     const urls = {
-        chronolawgic_api_create: "{% url 'labs:chronolawgic-api-create' %}v1/",
-        chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}v1/",
-        chronolawgic_api_update: "{% url 'labs:chronolawgic-api-update' %}v1/",
-        chronolawgic_api_delete: "{% url 'labs:chronolawgic-api-delete' %}v1/",
+        chronolawgic_api_create: "{% url 'labs:chronolawgic-api-create' %}",
+        chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}",
+        chronolawgic_api_update: "{% url 'labs:chronolawgic-api-update' %}",
+        chronolawgic_api_delete: "{% url 'labs:chronolawgic-api-delete' %}",
         static: "{% static '' %}"
     };
+
+    // eslint-disable-next-line
+    const choices = {
+      jurisdictions: {% snippet 'search_jurisdiction_list' '[]' %},
+      reporters: {% snippet 'search_reporter_list' '[]' %}
+    }
+
 </script>
 <noscript>
   This experimental interface requires javascript, even for basic functionality.

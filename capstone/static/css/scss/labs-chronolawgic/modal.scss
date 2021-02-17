@@ -1,0 +1,109 @@
+
+input.form-control, textarea.form-control {
+  background-color: $color-light-gray;
+  border: 0;
+  outline: none;
+  border-radius: 0;
+}
+
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, .8);
+}
+
+.modal-header .close {
+  background-color: $color-white;
+  padding: 0.68rem 1rem;
+  margin: -0.5rem -1rem -1rem auto;
+  border-left: 2px solid $color-black;
+}
+
+.modal-header .modal-title {
+  font-family: $font-monospace;
+  font-size: 1.2rem;
+  font-weight: $font-weight-semibold;
+}
+
+.modal-dialog {
+  font-family: $font-monospace;
+  border: 2px solid $color-black;
+  box-sizing: border-box;
+  box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
+  max-width: 700px;
+  .dropdown-menu {
+    position: absolute !important;
+  }
+}
+
+.modal-header, .modal-footer {
+  border-radius: 0;
+}
+
+.modal-header {
+  font-weight: $font-weight-semibold;
+  font-size: 20px;
+  background-color: #efefef;
+  padding: 0.5rem 1rem;
+  border-bottom: 2px solid $color-black;
+}
+
+.modal-footer {
+  border-top: 0;
+}
+
+label, textarea::placeholder{
+  font-size: 16px;
+  color: $color-black !important;
+}
+
+#add-case-modal {
+  .modal-body {
+    display: grid;
+    grid-template-areas:
+          "search   search  search"
+          "link        .    short"
+          "name        .    long"
+          "date        .    long"
+          "jur         .    long"
+          "reporter    .    long";
+  }
+
+  .form-label-group {
+    margin-bottom: 0.5em;
+  }
+
+  #field-group-search {
+    grid-area: search;
+  }
+
+  #field-group-url {
+    grid-area: link;
+  }
+
+  #field-group-name {
+    grid-area: name;
+  }
+
+  #field-group-short {
+    grid-area: short;
+  }
+
+  #field-group-long {
+    grid-area: long;
+
+    textarea {
+      min-height: 12em;
+    }
+  }
+
+  #field-group-date {
+    grid-area: date;
+  }
+
+  #field-group-jurisdiction {
+    grid-area: jur;
+  }
+
+  #field-group-reporter {
+    grid-area: reporter;
+  }
+}

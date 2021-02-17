@@ -1,39 +1,34 @@
-@import "base.scss";
 @import 'bootstrap/functions';
 @import 'bootstrap/variables';
 @import 'bootstrap/mixins';
-@import 'bootstrap/tooltip';
+@import 'bootstrap/forms';
+@import "no-select";
 
-.top-section, .main-content {
-  padding: 0 !important;
-}
+@import "base.scss";
+@import "floating-labels";
+@import "footer/black";
 
-.main-content.simple {
-  padding-top: 0;
-  margin: 0;
-  min-width: 100%;
-}
+// overrides
+@import "labs-chronolawgic/base.scss";
+@import "labs-chronolawgic/modal.scss";
+
 
 .key-container {
   position: fixed;
 }
-.modal-backdrop {
-  background-color: rgba(0, 0, 0, .8);
-}
-.modal-dialog {
-  font-family: $font-monospace;
-  border: 2px solid $color-black;
-  /* Rectangle 40 */
-  box-sizing: border-box;
-  box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
-  .modal-title {
-    font-family: $font-monospace;
-  }
+
+.top-menu {
+  display: grid;
+  grid-template-areas: "case-law other-events key";
+  grid-template-columns:  700px 3fr 1fr;
+  border-bottom: 2px solid $color-black;
 }
 
-.modal-header, .modal-footer {
-  border-radius: 0;
+.header-section {
+  border-right: 2px solid $color-black;
+  font-weight: $font-weight-semibold;
 }
+
 
 main#timeline-demo {
   font-family: $font-monospace;
@@ -46,9 +41,8 @@ main#timeline-demo {
     max-width: 6fr;
     width: 100%;
     display: grid;
-    grid-template-areas:
-        ". incidental years spans .";
-    grid-template-columns:  1fr 600px 1fr 1fr 1fr;
+    grid-template-areas: "incidental years spans";
+    grid-template-columns:  600px 1fr 1fr;
   }
 
   div.incidental {
