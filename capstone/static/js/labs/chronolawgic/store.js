@@ -17,6 +17,7 @@ const store = new Vuex.Store({
             chronolawgic_api_retrieve: import_urls.chronolawgic_api_retrieve,
             chronolawgic_api_update: import_urls.chronolawgic_api_update,
             chronolawgic_api_delete: import_urls.chronolawgic_api_delete,
+            api_root: import_urls.api_root,
             static: import_urls.static
         },
         available_timelines: [

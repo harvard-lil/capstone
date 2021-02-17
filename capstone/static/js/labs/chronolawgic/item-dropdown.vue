@@ -15,7 +15,7 @@
       <button v-for="choice in choices"
               v-bind:key="choice[0]"
               @click="updateDropdownVal(choice, 'keyup')"
-              :class="['dropdown-item', 'search-tab', field.name===choice[0] ? 'active' : '']">
+              :class="['dropdown-item', field.name===choice[0] ? 'active' : '']">
         {{ choice[1] }}
       </button>
     </div>
@@ -35,10 +35,10 @@ export default {
   props: [
     'field',
     'choices',
+    'display_value'
   ],
   data() {
     return {
-      display_value: this.field.label,
       hide_reset: true
     }
   },
@@ -50,7 +50,6 @@ export default {
     getFormattedDisplayValue() {
       // do nothing for regular text fields
       if (!this.choices) {
-        console.log("no this choices")
         return ''
       }
       // for dropdown fields, if field value is set in parameter, display that along with field label
@@ -60,12 +59,10 @@ export default {
       if (matched_pair[0]) {
         return matched_pair[0][1]
       } else {
-        console.log("should be here")
         return this.field.label
       }
     },
-    updateDropdownVal(choice, method) {
-      console.log("updateDropdownVal called", choice, this, method, arguments)
+    updateDropdownVal(choice) {
       this.field.value = choice[0];
       this.display_value = this.getFormattedDisplayValue();
     },
