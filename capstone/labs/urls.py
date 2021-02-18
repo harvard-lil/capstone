@@ -1,6 +1,5 @@
 from . import views
 from django.urls import path
-from django.http import HttpResponseNotFound
 
 from .views import LabMarkdownView
 from django.conf import settings
