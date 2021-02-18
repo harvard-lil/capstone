@@ -55,8 +55,7 @@ def chronolawgic_api_create(request):
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        timeline = Timeline()
-        timeline.created_by = request.user
+        timeline = Timeline.objects.create(created_by=request.user)
         timeline.timeline = {
             "title": "Untitled Timeline",
             "subhead": "Created {}".format(date.today())
@@ -69,7 +68,7 @@ def chronolawgic_api_create(request):
         'status': 'ok',
         'timeline': timeline.timeline,
         'id': timeline.pk,
-        'is_owner': True if request.user == timeline.created_by else False
+        'is_owner': request.user == timeline.created_by
     })
 
 
