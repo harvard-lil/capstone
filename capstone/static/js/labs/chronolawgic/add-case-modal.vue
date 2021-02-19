@@ -15,22 +15,26 @@
               <input v-model="searchText" id="field-search-cap" placeholder="ENTER FULL TEXT OR CITATION"
                      class="form-control">
               <label for="field-search-cap">ENTER FULL TEXT OR CITATION</label>
-              <span><button role="button" class="btn btn-tertiary" @click="searchCAP">SEARCH</button></span>
+              <span class="button-container"><button role="button" class="btn btn-tertiary"
+                                                     @click="searchCAP">SEARCH</button></span>
             </div>
             <ul v-if="searchResults.length" class="results-list">
-              <span v-for="result in searchResults" @click="chooseCase(result)"
-                    class="result-container"
-                    :class="chosenCase.id === result.id ? 'chosen' : ''"
-                    :key="result.id">
+              <div v-for="result in searchResults" @click="chooseCase(result)"
+                   class="result-container"
+                   :class="chosenCase.id === result.id ? 'chosen' : ''"
+                   :key="result.id">
                 <case-result :result="result">
-              </case-result>
-                </span>
+                </case-result>
+              </div>
             </ul>
-            <div class="row" v-if="chosenCase">
-              <button type="button" class="btn btn-tertiary" @click="autofillCase">AUTOFILL WITH CASE</button>
+            <div class="row mb-4 mt-2" v-if="chosenCase && chosenCase.name_abbreviation">
+              <button type="button" class="btn btn-tertiary pl-0 " @click="autofillCase">AUTOFILL WITH
+                "{{ chosenCase.name_abbreviation.slice(0, 20) }}..."
+              </button>
             </div>
           </form>
           <form @submit.prevent id="form-add-case">
+
             <!-- search results -->
             <div class="form-label-group" id="field-group-url">
               <input v-model="newCase.url" id="field-url" placeholder="URL" class="form-control">
@@ -41,12 +45,13 @@
               <label for="field-url">CASE NAME</label>
             </div>
             <div class="form-label-group" id="field-group-short">
-              <input v-model="newCase.short" id="field-short-description" placeholder="SHORT DESCRIPTION"
+              <input v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"
                      class="form-control">
               <label for="field-short-description">SHORT DESCRIPTION</label>
             </div>
             <div class="form-label-group" id="field-group-date">
-              <input v-model="newCase.date" id="field-decision-date" placeholder="DECISION DATE" type="date" required
+              <input v-model="newCase.start_date" id="field-decision-date" placeholder="DECISION DATE" type="date"
+                     required
                      class="form-control">
               <label for="field-decision-date">DECISION DATE</label>
             </div>
@@ -54,12 +59,12 @@
             <textarea v-model="newCase.long" id="field-long-description" placeholder="LONGER DESCRIPTION"
                       class="form-control"></textarea>
             </div>
-            <item-dropdown class="form-label-group" id="field-group-jurisdiction" :field="newCase.jurisdiction"
-                           :display_value="newCase.jurisdiction.value ? newCase.jurisdiction.value : newCase.jurisdiction.label"
+            <item-dropdown class="form-label-group" id="field-group-jurisdiction" :field="extraFields.jurisdiction"
+                           :original_display_val="extraFields.jurisdiction.value ? extraFields.jurisdiction.value : extraFields.jurisdiction.label"
                            :choices="choices.jurisdictions">
             </item-dropdown>
-            <item-dropdown class="form-label-group" id="field-group-reporter" :field="newCase.reporter"
-                           :display_value="newCase.reporter.value ? newCase.reporter.value : newCase.reporter.label"
+            <item-dropdown class="form-label-group" id="field-group-reporter" :field="extraFields.reporter"
+                           :original_display_val="extraFields.reporter.value ? extraFields.reporter.value : extraFields.reporter.label"
                            :choices="choices.reporters">
             </item-dropdown>
 
@@ -92,13 +97,9 @@ export default {
       choices: {},
       searchResults: [],
       searchText: '',
-      chosenCase: '',
-      newCase: {
-        url: "",
-        name: "",
-        short: "",
-        long: "",
-        date: "",
+      chosenCase: {},
+      newCase: {},
+      extraFields: { // need more info to interact with dropdown fields
         jurisdiction: {
           name: 'jurisdiction',
           label: 'jurisdiction',
@@ -117,28 +118,29 @@ export default {
       console.log('submit form')
     },
     addCase() {
-      console.log("adding case", this.newCase)
+      store.commit('addEvent', this.newCase)
     },
     chooseCase(result) {
-      console.log("getting case", result)
+      // choosing case from CAP search
       this.chosenCase = result;
+    },
+    formatDate(date) {
+      // autofill missing month and day. Not ideal, but this is a timeline, after all.
+      let date_parts = date.split("-");
+      let year = date_parts[0];
+      let day = date_parts.length === 3 ? date_parts[2] : "01";
+      let month = date_parts.length >= 2 ? date_parts[1] : "01";
+      return year + "-" + month + "-" + day;
     },
     autofillCase() {
       this.newCase.name = this.chosenCase.name_abbreviation;
       this.newCase.url = this.chosenCase.url;
-      let date_parts = this.chosenCase.decision_date.split("-");
+      this.newCase.start_date = this.formatDate(this.chosenCase.decision_date);
 
-      // if day and/or month are absent, set to "01"
-      let year = date_parts[0];
-      let day = date_parts.length === 3 ? date_parts[2] : "01";
-      let month = date_parts.length >= 2 ? date_parts[1] : "01";
-      this.newCase.date = year + "-" + month + "-" + day;
-      // this.newCase.jurisdiction.name = this.chosenCase.jurisdiction.slug
-      this.newCase.jurisdiction.value = this.chosenCase.jurisdiction.name_long;
-      this.newCase.reporter.value = this.chosenCase.reporter.full_name;
+      this.extraFields.jurisdiction.value = this.chosenCase.jurisdiction.name_long;
+      this.extraFields.reporter.value = this.chosenCase.reporter.full_name;
     },
     searchCAP() {
-      //  this.chosen_fields = JSON.parse(JSON.stringify(this.fields))
       if (this.searchText) {
         let url = store.state.urls.api_root + "cases?search=" + this.searchText;
         axios.get(url)
@@ -149,34 +151,12 @@ export default {
       }
     },
     clearContent() {
-      this.newCase = {
-        url: "",
-        name: "",
-        short: "",
-        long: "",
-        date: "",
-        jurisdiction: {
-          name: 'jurisdiction',
-          label: 'jurisdiction',
-          value: '',
-        },
-        reporter: {
-          name: 'reporter',
-          label: 'reporter',
-          value: '',
-        }
-      }
+      this.newCase = store.getters.templateEvent;
     }
   },
   mounted() {
-    let url = store.state.urls.chronolawgic_api_retrieve.replace(":timeline_id", 1)
-    axios
-        .get(url)
-        .then(response => response.data)
-        .then(timeline => {
-          console.log(timeline);
-        })
-    this.choices = store.state.choices
+    this.choices = store.state.choices;
+    this.newCase = store.getters.templateEvent;
   },
 }
 </script>

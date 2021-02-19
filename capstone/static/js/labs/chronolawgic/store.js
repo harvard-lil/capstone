@@ -65,7 +65,18 @@ const store = new Vuex.Store({
                 month: 12,
                 day: 30,
             },
-        ]
+        ],
+        templateEvent: {
+            url: "",
+            name: "",
+            short_description: "",
+            long_description: "",
+            jurisdiction: "",
+            reporter: "",
+            start_date: "",
+            end_date: "",
+            categories: [],
+        }
     },
     mutations: {
         writeTimeline(state) {
@@ -151,6 +162,7 @@ const store = new Vuex.Store({
         id: state => state.id,
         requestStatus: state => state.requestStatus,
         cases: state => state.cases,
+        templateEvent: state => state.templateEvent,
     },
     actions: {
         serialize: ({state}) => {

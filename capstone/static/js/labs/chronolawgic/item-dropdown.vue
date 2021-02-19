@@ -7,7 +7,7 @@
             aria-haspopup="true"
             aria-expanded="false"
             :aria-describedby="field.label">
-      <span class="dropdown-title-text">{{ display_value }}</span>
+      <span class="dropdown-title-text">{{ display }}</span>
     </button>
 
     <!-- Choice fields -->
@@ -20,7 +20,7 @@
       </button>
     </div>
     <button class="dropdown-item reset-field"
-            v-if="display_value !== field.label && !(this.hide_reset)"
+            v-if="original_display_val !== field.label && !(this.hide_reset)"
             @click.stop="dropdownReset()">
       <small>Reset {{ field.label }} field</small>
     </button>
@@ -35,16 +35,28 @@ export default {
   props: [
     'field',
     'choices',
-    'display_value'
+    'original_display_val',
   ],
   data() {
     return {
-      hide_reset: true
+      hide_reset: true,
+      display: this.original_display_val,
+    }
+  },
+  watch: {
+    field: {
+      handler: function (newval) {
+        // this function is called if autofill with case (from search results) is triggered
+        console.log("getting new val?", newval.value)
+        this.field.value = newval.value;
+        this.display = newval.value;
+      },
+      deep: true
     }
   },
   methods: {
     dropdownReset() {
-      this.display_value = this.field.label;
+      this.original_display_val = this.field.label;
       this.field.value = "";
     },
     getFormattedDisplayValue() {
@@ -52,7 +64,6 @@ export default {
       if (!this.choices) {
         return ''
       }
-      // for dropdown fields, if field value is set in parameter, display that along with field label
       let matched_pair = this.choices.filter((choice_pair) => {
         return this.field.value === choice_pair[0]
       })
@@ -64,9 +75,10 @@ export default {
     },
     updateDropdownVal(choice) {
       this.field.value = choice[0];
-      this.display_value = this.getFormattedDisplayValue();
+      this.display = this.getFormattedDisplayValue();
     },
-  }
+  },
+
 }
 </script>
 
