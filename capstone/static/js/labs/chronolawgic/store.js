@@ -15,8 +15,8 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
         choices: importChoices,
-        requestStatus: 'complete',
-        errorMessage: [],
+        requestStatus: 'nominal', // can be nominal, success, error, or pending. Prone to race conditions, so use only for user feedback until its improved
+        notificationMessage: null,
         urls: { // Doing this the long way to make it a little easier to see what's going on.
             chronolawgic_api_create: importUrls.chronolawgic_api_create,
             chronolawgic_api_retrieve: importUrls.chronolawgic_api_retrieve,
@@ -67,14 +67,11 @@ const store = new Vuex.Store({
     },
     mutations: {
         writeTimeline(state) {
-            //TODO: Do any data transformations necessary
-            //TODO: Check credentials
-            //TODO: Send updated timeline to server
+            //TODO
             state.placeholder = 9;
         },
-        deleteTimeline(timeline_id) {
+        deleteTimeline() {
             //todo
-            console.log("deleteTimeLine" + timeline_id)
         },
         setAvailableTimelines(state, json) {
             state.availableTimelines = json
@@ -91,14 +88,20 @@ const store = new Vuex.Store({
             state.id = timeline_id
         },
         setRequestStatus(state, status) {
-            state.requestStatus = status
+            state.requestStatus = status;
         },
-        setStatusMessage(state, call, status, timelineId=null) {
-            state.statusMessage.push({
-                "call": call,
-                "timelineId": timelineId,
-                "status": status
-            })
+        setRequestStatusTerminal(state, status) {
+            state.requestStatus = status;
+            setTimeout(function() {
+                 state.requestStatus = "nominal";
+            }, 5000);
+        },
+        setNotificationMessage(state, message) {
+            //TODO Someday— make this a queue and let the notifications stack
+            state.notificationMessage = message;
+            setTimeout(function() {
+                 state.notificationMessage = null;
+            }, 5000);
         },
         /*
         addEvent(state, name, url, description, start_year, end_year, start_day, end_day, categories, end_month) {
@@ -148,6 +151,7 @@ const store = new Vuex.Store({
         availableTimelines: state => state.availableTimelines,
         id: state => state.id,
         requestStatus: state => state.requestStatus,
+        notificationMessage: state => state.notificationMessage,
         cases: state => state.cases,
     },
     actions: {
@@ -172,10 +176,13 @@ const store = new Vuex.Store({
                         router.push({ name: 'timeline', params: { timeline: new_tl.id } })
                     }
                 }).then(
-                    () => { commit('setRequestStatus', 'complete') }
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', 'Timeline Created')
+                    }
                 ).catch(error => {
-                    commit('setRequestStatus', 'error')
-                    commit('setStatusMessage', 'requestCreateTimeline', error, null)
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', error)
                 })
         },
         requestDeleteTimeline: function ({commit}, timelineId) {
@@ -188,10 +195,13 @@ const store = new Vuex.Store({
                         this.dispatch('requestTimelineList');
                     }
                 }).then(
-                    () => { commit('setRequestStatus', 'complete') }
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', "Timeline Deleted")
+                    }
                 ).catch(error => {
-                    commit('setRequestStatus', 'error')
-                    commit('setStatusMessage', 'requestDeleteTimeline', error, timelineId)
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', error)
                 })
         },
         requestUpdateTimeline: function ({commit}, timelineId) {
@@ -205,10 +215,13 @@ const store = new Vuex.Store({
                         commit('setDeletedStatus', timeline['timeline'])
                     }
                 }).then(
-                    () => { commit('setRequestStatus', 'complete') }
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', "Timeline Saved")
+                    }
                 ).catch(error => {
-                    commit('setRequestStatus', 'error')
-                    commit('setStatusMessage', 'requestUpdateTimeline', error, timelineId)
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', error)
                 })
         },
         requestTimeline: function ({commit}, timelineId) {
@@ -221,10 +234,12 @@ const store = new Vuex.Store({
                         commit('setTimeline', timeline['timeline'])
                     }
                 }).then(
-                    () => { commit('setRequestStatus', 'complete') }
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                    }
                 ).catch(error => {
-                    commit('setRequestStatus', 'error')
-                    commit('setStatusMessage', 'requestDeleteTimeline', error, timelineId)
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', error)
                 })
         },
         requestTimelineList: function ({commit}) {
@@ -237,10 +252,12 @@ const store = new Vuex.Store({
                         commit('setAvailableTimelines', availableTimelines['timelines'])
                     }
                 }).then(
-                    () => { commit('setRequestStatus', 'complete') }
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                    }
                 ).catch(error => {
-                    commit('setRequestStatus', 'error')
-                    commit('setStatusMessage', 'requestDeleteTimeline', error, null)
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', error)
                 })
         }
     }
