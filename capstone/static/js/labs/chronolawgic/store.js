@@ -113,21 +113,10 @@ const store = new Vuex.Store({
                 "status": status
             })
         },
-        /*
-        addEvent(state, name, url, description, start_year, end_year, start_day, end_day, categories, end_month) {
-            state.events.push({
-                name: name,
-                url: url,
-                description: description,
-                start_year: start_year,
-                start_month: end_year,
-                start_day: start_day,
-                end_year: end_day,
-                categories: [],
-                end_month: end_month,
-                end_day: end_day,
-            })
+        addEvent(state, event) {
+            state.events.push(event)
         },
+        /*
         updateEvent(state, index, name, url, description, start_year, end_year, start_day, end_day, categories, end_month) {
             state.events[index] = {
                 name: name,
