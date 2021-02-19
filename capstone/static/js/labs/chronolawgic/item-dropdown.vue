@@ -47,7 +47,6 @@ export default {
     field: {
       handler: function (newval) {
         // this function is called if autofill with case (from search results) is triggered
-        console.log("getting new val?", newval.value)
         this.field.value = newval.value;
         this.display = newval.value;
       },
