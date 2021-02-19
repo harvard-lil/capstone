@@ -22,7 +22,8 @@
         chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}",
         chronolawgic_api_update: "{% url 'labs:chronolawgic-api-update' 2147483627%}".replace('2147483627', ""),
         chronolawgic_api_delete: "{% url 'labs:chronolawgic-api-delete' 2147483627%}".replace('2147483627', ""),
-        static: "{% static '' %}"
+        static: "{% static '' %}",
+        api_root: "{% api_url 'api-root' %}v1/",
     };
 
     // eslint-disable-next-line

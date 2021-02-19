@@ -17,12 +17,14 @@ const store = new Vuex.Store({
         choices: importChoices,
         requestStatus: 'complete',
         errorMessage: [],
+        statusMessage: [],
         urls: { // Doing this the long way to make it a little easier to see what's going on.
             chronolawgic_api_create: importUrls.chronolawgic_api_create,
             chronolawgic_api_retrieve: importUrls.chronolawgic_api_retrieve,
             chronolawgic_api_update: importUrls.chronolawgic_api_update,
             chronolawgic_api_delete: importUrls.chronolawgic_api_delete,
-            static: importUrls.static
+            static: importUrls.static,
+            api_root: importUrls.api_root,
         },
         availableTimelines: [],
         id: 1,
@@ -63,7 +65,18 @@ const store = new Vuex.Store({
                 month: 12,
                 day: 30,
             },
-        ]
+        ],
+        templateEvent: {
+            url: "",
+            name: "",
+            short_description: "",
+            long_description: "",
+            jurisdiction: "",
+            reporter: "",
+            start_date: "",
+            end_date: "",
+            categories: [],
+        }
     },
     mutations: {
         writeTimeline(state) {
@@ -100,21 +113,10 @@ const store = new Vuex.Store({
                 "status": status
             })
         },
-        /*
-        addEvent(state, name, url, description, start_year, end_year, start_day, end_day, categories, end_month) {
-            state.events.push({
-                name: name,
-                url: url,
-                description: description,
-                start_year: start_year,
-                start_month: end_year,
-                start_day: start_day,
-                end_year: end_day,
-                categories: [],
-                end_month: end_month,
-                end_day: end_day,
-            })
+        addEvent(state, event) {
+            state.events.push(event)
         },
+        /*
         updateEvent(state, index, name, url, description, start_year, end_year, start_day, end_day, categories, end_month) {
             state.events[index] = {
                 name: name,
@@ -149,6 +151,7 @@ const store = new Vuex.Store({
         id: state => state.id,
         requestStatus: state => state.requestStatus,
         cases: state => state.cases,
+        templateEvent: state => state.templateEvent,
     },
     actions: {
         serialize: ({state}) => {
