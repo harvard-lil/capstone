@@ -1,9 +1,18 @@
 <template>
-  <main :class = "($store.getters.requestStatus === 'pending')?'loading':''">
-    <router-view>
+    <main>
+      <div v-if="$store.getters.requestStatus === 'pending'" id="loading"></div>
+      <div v-if="$store.getters.notificationMessage">
+          <div class="flash" v-if="$store.getters.requestStatus !== 'error'" id="success_msg">
+              {{$store.getters.notificationMessage}}
+          </div>
+          <div class="flash" v-if="$store.getters.requestStatus === 'error'" id="error_msg">
+              {{$store.getters.notificationMessage}}
+          </div>
+      </div>
+        <router-view>
 
-    </router-view>
-  </main>
+      </router-view>
+    </main>
 
 </template>
 
@@ -28,7 +37,5 @@ export default {
 </script>
 
 <style>
-  main.loading {
-    background-color: lightgray;
-  }
+
 </style>
