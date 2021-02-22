@@ -27,7 +27,9 @@ def chronolawgic_api_retrieve(request, timeline_id=None):
         timelines = Timeline.objects.filter(created_by=request.user.pk)
         return JsonResponse({
             'status': 'ok',
-            'timelines': [{"id": tl.id, "title": tl.timeline['title'], "subhead": tl.timeline['subhead']}
+            'timelines': [{"id": tl.id,
+                           "title": tl.timeline['title'] if 'title' in tl.timeline else "",
+                           "subhead": tl.timeline['subhead'] if 'subhead' in tl.timeline else ""}
                            for tl in timelines],
         })
 
