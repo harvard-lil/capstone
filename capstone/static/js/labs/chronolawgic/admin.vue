@@ -5,7 +5,7 @@
       <div v-if="this.$store.getters.availableTimelines">
         <div class="timeline" v-for="timeline in this.$store.getters.availableTimelines" v-bind:key="timeline.id">
           <div class="id" v-text="timeline.id"></div>
-          <div class="title" v-text="timeline.title"></div>
+          <router-link :to="timeline.id.toString()"><div class="title" v-text="timeline.title"></div></router-link>
           <div class="subhead" v-text="timeline.subhead"></div>
           <div class="button btn-edit">
             <button class="btn btn-primary">edit</button>
@@ -17,7 +17,7 @@
       </div>
       <div v-else>
         Looks like you don't have any timelines... YET. Why don't you create one?
-      </div>
+      </div>`
       <div class="timeline">
         <div class="button btn-hidden"></div>
         <div class="button btn-create">
