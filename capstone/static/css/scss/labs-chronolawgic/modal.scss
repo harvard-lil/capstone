@@ -29,9 +29,45 @@ input.form-control, textarea.form-control {
   box-sizing: border-box;
   box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
   max-width: 700px;
+
+  form {
+    margin-bottom: 0;
+  }
+
+  .dropdown-title, .dropdown-item {
+    font-weight: 400;
+    font-size: 16px;
+    background-color: $color-light-gray;
+    width: 100%;
+    text-align: left;
+    padding-left: 0.6em;
+  }
+
   .dropdown-menu {
     position: absolute !important;
+    max-height: 300px;
+    overflow-y: scroll;
   }
+
+  .dropdown-item {
+    padding: 8px;
+
+    &:hover, &:focus, &:active {
+      background-color: $highlight;
+      cursor: pointer;
+    }
+  }
+
+}
+
+.form-label-group input:not(:placeholder-shown) {
+  padding-top: 1rem;
+}
+
+.form-label-group input:not(:placeholder-shown) ~ label {
+  top: -35px;
+  color: $color-medium-gray !important;
+  font-size: 10px;
 }
 
 .modal-header, .modal-footer {
@@ -50,16 +86,16 @@ input.form-control, textarea.form-control {
   border-top: 0;
 }
 
-label, textarea::placeholder{
+label, textarea::placeholder {
   font-size: 16px;
   color: $color-black !important;
 }
 
 #add-case-modal {
-  .modal-body {
+
+  #form-add-case {
     display: grid;
     grid-template-areas:
-          "search   search  search"
           "link        .    short"
           "name        .    long"
           "date        .    long"
@@ -73,6 +109,18 @@ label, textarea::placeholder{
 
   #field-group-search {
     grid-area: search;
+    display: grid;
+    grid-template-areas:
+            "input input input input input input search";
+
+    #field-search-cap {
+      grid-area: input;
+    }
+
+    .button-container {
+      grid-area: search;
+      text-align: center;
+    }
   }
 
   #field-group-url {
@@ -105,5 +153,62 @@ label, textarea::placeholder{
 
   #field-group-reporter {
     grid-area: reporter;
+  }
+
+  .results-list {
+    max-height: 200px;
+    overflow-y: scroll;
+    border: 1px solid $color-black;
+    margin-bottom: 0;
+
+    .result-container {
+      cursor: pointer;
+
+      &:nth-child(even) {
+        background-color: $color-light-gray;
+      }
+    }
+
+    .result-container.chosen {
+      .result {
+        background-color: $highlight;
+      }
+    }
+
+    .result {
+      font-family: $font-serif-fancy;
+      padding: 0.3em 1em;
+
+      &:hover, &:active, &:focus {
+        background-color: $highlight;
+        cursor: pointer;
+      }
+
+      br {
+        display: none;
+      }
+    }
+
+    .result-title, .result-citation, .court, .jurisdiction {
+      font-size: 15px;
+    }
+
+    .decision-date {
+      text-align: right;
+      font-family: $font-monospace;
+    }
+
+    .previews {
+      font-size: 12px;
+
+      .preview, .preview_set_elipsis {
+        display: none;
+
+        &:nth-child(2) {
+          display: block;
+          line-height: 1.5em;
+        }
+      }
+    }
   }
 }

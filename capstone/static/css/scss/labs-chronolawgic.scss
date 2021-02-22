@@ -18,6 +18,8 @@
 }
 
 .top-menu {
+  height: 70px;
+  padding: 0 2em;
   display: grid;
   grid-template-areas: "case-law other-events key";
   grid-template-columns:  700px 3fr 1fr;
@@ -56,14 +58,12 @@ main#timeline-demo {
     font-family: $font-serif-fancy;
     line-height: $line-height-sm;
     font-size: $font-size-sm;
-    border-radius: .15rem;
     background-color: $color-white;
     border: 2px solid $color-black;
     width: 20rem;
-    padding: 1rem;
-    margin: 1rem;
+    padding: 0.75rem;
+    margin: 0.5rem;
     align-self: end;
-    height: 5rem;
     grid-gap: .25rem;
     grid-template-areas:
         "casename links";
