@@ -37,32 +37,34 @@ const store = new Vuex.Store({
             Police: {id: "5", color: "#8899FF"},
             Fascism: {id: "6", color: "#1199FF"},
         },
-        events: [ {
-                name: "Event 1",
-                url: "https://cite.case.law/ill/1/176/",
-                description: "Between some time and some other time, this thing happened.",
-                start_year: 1880,
-                start_month: 1,
-                start_day: 15,
-                end_year: 1889,
-                categories: [2, 4],
-                end_month: 1,
-                end_day: 15,
+        events: [{
+            name: "Event 1",
+            url: "https://cite.case.law/ill/1/176/",
+            description: "Between some time and some other time, this thing happened.",
+            start_year: 1880,
+            start_month: 1,
+            start_day: 15,
+            end_year: 1889,
+            categories: [2, 4],
+            end_month: 1,
+            end_day: 15,
         }],
         cases: [
             {
-                name: "Case 1",
-                subhead: "Case 1",
+                name: "Joe v. Volcano",
+                subhead: "This is our first case in the timeline",
                 description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
-                decision_date: "",
+                start_date: "1992-01-02",
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
                 jurisdiction: "Ill.",
-                reporter:  "Ill.",
-                isCap: true,
-                year: 1885,
-                month: 12,
-                day: 30,
+                reporter: "Ill.",
+                short_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem.",
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
             },
         ],
         templateEvent: {
@@ -70,9 +72,17 @@ const store = new Vuex.Store({
             name: "",
             short_description: "",
             long_description: "",
+            start_date: "",
+            end_date: "",
+            categories: [],
+        },
+        templateCase: {
+            url: "",
+            name: "",
+            short_description: "",
+            long_description: "",
             jurisdiction: "",
             reporter: "",
-            start_date: "",
             end_date: "",
             categories: [],
         }
@@ -104,19 +114,23 @@ const store = new Vuex.Store({
         },
         setRequestStatusTerminal(state, status) {
             state.requestStatus = status;
-            setTimeout(function() {
-                 state.requestStatus = "nominal";
+            setTimeout(function () {
+                state.requestStatus = "nominal";
             }, 5000);
         },
         setNotificationMessage(state, message) {
             //TODO Someday— make this a queue and let the notifications stack
             state.notificationMessage = message;
-            setTimeout(function() {
-                 state.notificationMessage = null;
+            setTimeout(function () {
+                state.notificationMessage = null;
             }, 5000);
         },
         addEvent(state, event) {
             state.events.push(event)
+            console.log("events update", state.events)
+        },
+        addCase(state, caselaw) {
+            state.cases.push(caselaw)
         },
         /*
         updateEvent(state, index, name, url, description, start_year, end_year, start_day, end_day, categories, end_month) {
@@ -136,11 +150,8 @@ const store = new Vuex.Store({
         deleteEvent(state, index) {
             state.events.remove(index);
         },
-        addCase(state, name, subhead, url, description, decision_date, jurisdiction, reporter, isCap, categories, year, month, day) {
-            //todo
-        },
-        updateCase(state, index, name, subhead, url, description, decision_date, jurisdiction, reporter, isCap, categories, year, month, day) {
-            //todo
+
+        updateCase(state, caselaw) {
         },
         deleteCase(state, index) {
             //todo
@@ -149,12 +160,14 @@ const store = new Vuex.Store({
     },
     getters: {
         events: state => state.events,
+        cases: state => state.cases,
+        choices: state => state.choices,
         availableTimelines: state => state.availableTimelines,
         id: state => state.id,
         requestStatus: state => state.requestStatus,
         notificationMessage: state => state.notificationMessage,
-        cases: state => state.cases,
         templateEvent: state => state.templateEvent,
+        templateCase: state => state.templateCase,
     },
     actions: {
         serialize: ({state}) => {
@@ -175,17 +188,17 @@ const store = new Vuex.Store({
                 .then(new_tl => {
                     if (new_tl.status === "ok") {
                         this.dispatch('requestTimelineList');
-                        router.push({ name: 'timeline', params: { timeline: new_tl.id } })
+                        router.push({name: 'timeline', params: {timeline: new_tl.id}})
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                        commit('setNotificationMessage', 'Timeline Created')
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                    commit('setNotificationMessage', 'Timeline Created')
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         },
         requestDeleteTimeline: function ({commit}, timelineId) {
             commit('setRequestStatus', 'pending');
@@ -197,14 +210,14 @@ const store = new Vuex.Store({
                         this.dispatch('requestTimelineList');
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                        commit('setNotificationMessage', "Timeline Deleted")
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                    commit('setNotificationMessage', "Timeline Deleted")
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         },
         requestUpdateTimeline: function ({commit}, timelineId) {
             commit('setRequestStatus', 'pending');
@@ -217,14 +230,14 @@ const store = new Vuex.Store({
                         commit('setDeletedStatus', timeline['timeline'])
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                        commit('setNotificationMessage', "Timeline Saved")
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                    commit('setNotificationMessage', "Timeline Saved")
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         },
         requestTimeline: function ({commit}, timelineId) {
             commit('setRequestStatus', 'pending');
@@ -236,13 +249,13 @@ const store = new Vuex.Store({
                         commit('setTimeline', timeline['timeline'])
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         },
         requestTimelineList: function ({commit}) {
             commit('setRequestStatus', 'pending');
@@ -254,13 +267,13 @@ const store = new Vuex.Store({
                         commit('setAvailableTimelines', availableTimelines['timelines'])
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         }
     }
 });

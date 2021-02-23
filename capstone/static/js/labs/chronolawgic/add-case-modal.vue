@@ -33,7 +33,7 @@
               </button>
             </div>
           </form>
-          <form @submit.prevent id="form-add-case">
+          <form @submit.stop id="form-add-case">
 
             <!-- search results -->
             <div class="form-label-group" id="field-group-url">
@@ -42,7 +42,7 @@
             </div>
             <div class="form-label-group" id="field-group-name">
               <input v-model="newCase.name" id="field-name" placeholder="CASE NAME" required class="form-control">
-              <label for="field-url">CASE NAME</label>
+              <label for="field-name">CASE NAME</label>
             </div>
             <div class="form-label-group" id="field-group-short">
               <input v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"
@@ -151,12 +151,12 @@ export default {
       }
     },
     clearContent() {
-      this.newCase = store.getters.templateEvent;
+      this.newCase = store.getters.templateCase;
     }
   },
   mounted() {
-    this.choices = store.state.choices;
-    this.newCase = store.getters.templateEvent;
+    this.choices = store.getters.choices;
+    this.newCase = store.getters.templateCase;
   },
 }
 </script>

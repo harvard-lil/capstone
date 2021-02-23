@@ -8,7 +8,7 @@
         </button>
       </div>
       <div class="header-section other-events-section">
-        <span>OTHER EVENTS</span>
+        <span>EVENTS</span>
         <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-event-modal">
           <add-icon></add-icon>
         </button>
@@ -19,22 +19,22 @@
         </button>
       </div>
     </div>
-    <add-case-modal />
-    <add-event-modal />
+    <add-case-modal/>
+    <add-event-modal/>
+    <event-modal v-if="showEventDetails" data-toggle="modal" data-target="event-modal"
+                 :modal.sync="showEventDetails" :event="event" :shown="showEventDetails"></event-modal>
     <key v-show="keyShown"></key>
 
     <section id="timeline">
       <!-- YEAR -->
       <div class="year">
-        <div class="incidental">
+
+        <div class="incidental" @click="showEventModal(cases[0])">
           <!-- CASE -->
           <article class="case">
             <header>
               Joe v. Volcano
             </header>
-            <div class="links">
-              <a href="details">details</a><br>
-              <a href="#">read case</a></div>
           </article>
           <!-- /CASE -->
         </div>
@@ -472,6 +472,7 @@ import AddIcon from '../../../../static/img/icons/add.svg';
 import Key from './key.vue';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
+import EventModal from './event-modal.vue';
 
 export default {
   name: 'Timeline',
@@ -481,6 +482,7 @@ export default {
     Key,
     AddCaseModal,
     AddEventModal,
+    EventModal,
   },
 
   data() {
@@ -490,7 +492,10 @@ export default {
       addCaseModalShown: false,
       addEventModalShown: false,
       keyShown: false,
-
+      showEventDetails: false,
+      event: null,
+      events: [],
+      cases: [],
     }
   },
   methods: {
@@ -503,12 +508,15 @@ export default {
     toggleKey() {
       this.keyShown = !this.keyShown;
     },
-    // closeModal(e) {
-    //   console.log("clicked", e)
-    //   if (e.target !== $('div.modal-body')) {
-    //     console.log("not modal-body")
-    //   }
-    // }
+    showEventModal(item) {
+      console.log("showeventmodal", item.name)
+      this.showEventDetails = true
+      this.event = item
+    }
+  },
+  mounted() {
+    this.events = this.$store.getters.events;
+    this.cases = this.$store.getters.cases;
   }
 };
 </script>
