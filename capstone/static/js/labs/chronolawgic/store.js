@@ -29,40 +29,105 @@ const store = new Vuex.Store({
         id: 1,
         title: "Timeline Title",
         createdBy: "Editable Text", // (user accts are for auth/logging purposes)
-        categories: {
-            Case: {id: "1", color: "#FF9911"},
-            Legislation: {id: "2", color: "#99FF11"},
-            ExecutiveOrder: {id: "3", color: "#FF9988"},
-            Anarchism: {id: "4", color: "#11FF99"},
-            Police: {id: "5", color: "#8899FF"},
-            Fascism: {id: "6", color: "#1199FF"},
-        },
+        categories: { }, // Removed from MVP
         events: [ {
                 name: "Event 1",
                 url: "https://cite.case.law/ill/1/176/",
                 description: "Between some time and some other time, this thing happened.",
                 start_year: 1880,
-                start_month: 1,
-                start_day: 15,
                 end_year: 1889,
-                categories: [2, 4],
-                end_month: 1,
-                end_day: 15,
-        }],
+        },
+        {
+                name: "Event 2",
+                url: "https://cite.case.law/ill/1/176/",
+                description: "Between some time and some other time, this thing happened.",
+                start_year: 1890,
+                end_year: 1912,
+        },
+        {
+                name: "Event 3",
+                url: "https://cite.case.law/ill/1/176/",
+                description: "Between some time and some other time, this thing happened.",
+                start_year: 1905,
+                end_year: 1930,
+        },
+        {
+                name: "Event 4",
+                url: "https://cite.case.law/ill/1/176/",
+                description: "Between some time and some other time, this thing happened.",
+                start_year: 1922,
+                end_year: 1923,
+        },
+        {
+                name: "Event 5",
+                url: "https://cite.case.law/ill/1/176/",
+                description: "Between some time and some other time, this thing happened.",
+                start_year: 1918,
+                end_year: 1924,
+        },
+        {
+                name: "Event 6",
+                url: "https://cite.case.law/ill/1/176/",
+                description: "Between some time and some other time, this thing happened.",
+                start_year: 1805,
+                end_year: 1808,
+        },
+        ],
         cases: [
             {
                 name: "Case 1",
-                subhead: "Case 1",
+                subhead: "The first case.",
                 description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
-                decision_date: "",
+                decision_date: new Date(1893, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
                 jurisdiction: "Ill.",
                 reporter:  "Ill.",
                 isCap: true,
-                year: 1885,
-                month: 12,
-                day: 30,
+            },
+            {
+                name: "Case 2",
+                subhead: "The second case.",
+                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                decision_date: new Date(1898, 11, 17),
+                categories: [1, 3],
+                url: "https://cite.case.law/ill/1/176/",
+                jurisdiction: "Ill.",
+                reporter:  "Ill.",
+                isCap: true,
+            },
+            {
+                name: "Case 3",
+                subhead: "The third case.",
+                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                decision_date: new Date(1921, 11, 17),
+                categories: [1, 3],
+                url: "https://cite.case.law/ill/1/176/",
+                jurisdiction: "Ill.",
+                reporter:  "Ill.",
+                isCap: true,
+            },
+            {
+                name: "Case 4",
+                subhead: "The fourt case.",
+                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                decision_date: new Date(1921, 11, 18),
+                categories: [1, 3],
+                url: "https://cite.case.law/ill/1/176/",
+                jurisdiction: "Ill.",
+                reporter:  "Ill.",
+                isCap: true,
+            },
+            {
+                name: "Case 5",
+                subhead: "The fifth case.",
+                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                decision_date: new Date(1924, 11, 17),
+                categories: [1, 3],
+                url: "https://cite.case.law/ill/1/176/",
+                jurisdiction: "Ill.",
+                reporter:  "Ill.",
+                isCap: true,
             },
         ],
         templateEvent: {
@@ -118,43 +183,63 @@ const store = new Vuex.Store({
         addEvent(state, event) {
             state.events.push(event)
         },
-        /*
-        updateEvent(state, index, name, url, description, start_year, end_year, start_day, end_day, categories, end_month) {
-            state.events[index] = {
-                name: name,
-                url: url,
-                description: description,
-                start_year: start_year,
-                start_month: end_year,
-                start_day: start_day,
-                end_year: end_day,
-                categories: [],
-                end_month: end_month,
-                end_day: end_day,
-            }
+        addCase(state, event) {
+            state.events.push(event)
+        },
+        updateEvent(state, index, event) {
+            state.events[index] = event
+        },
+        updateCase(state, index, event) {
+            state.events[index] = event
         },
         deleteEvent(state, index) {
             state.events.remove(index);
         },
-        addCase(state, name, subhead, url, description, decision_date, jurisdiction, reporter, isCap, categories, year, month, day) {
-            //todo
-        },
-        updateCase(state, index, name, subhead, url, description, decision_date, jurisdiction, reporter, isCap, categories, year, month, day) {
-            //todo
-        },
         deleteCase(state, index) {
-            //todo
+            state.events.remove(index);
         },
-        */
+
     },
     getters: {
-        events: state => state.events,
         availableTimelines: state => state.availableTimelines,
         id: state => state.id,
         requestStatus: state => state.requestStatus,
         notificationMessage: state => state.notificationMessage,
         cases: state => state.cases,
         templateEvent: state => state.templateEvent,
+        firstYear: (state)=> {
+            const first_event_year = state.events.reduce((min, e) => e.start_year < min ? e.start_year : min, state.events[0].start_year);
+            const first_case_year = state.cases.reduce((min, e) => e.decision_date.getFullYear() < min ? e.decision_date.getFullYear() : min, state.cases[0].decision_date.getFullYear());
+            return first_case_year < first_event_year ? first_case_year : first_event_year;
+        },
+        lastYear: (state)=> {
+            const last_event_year = state.events.reduce((max, e) => e.end_year > max ? e.end_year : max, state.events[0].end_year);
+            const last_case_year = state.cases.reduce((max, e) => e.decision_date.getFullYear() > max ? e.decision_date.getFullYear() : max, state.cases[0].decision_date.getFullYear());
+            return last_case_year > last_event_year ? last_case_year : last_event_year;
+        },
+        events: (state)=> {
+            return state.events.sort((a, b) => (a.start_year > b.start_year) ? 1 : -1)
+        },
+        eventsByYear: (state) => (year) => {
+            return state.events.filter(evt => {
+                return year >= evt.start_year && year >= evt.end_year;
+            })
+        },
+        eventByStartYear: (state) => (year) => {
+            return state.events.filter(evt => {
+                return evt.start_year === year;
+            })
+        },
+        eventByName: (state) => (name) => {
+            return state.events.filter(evt => {
+                return evt.name === name;
+            })[0]
+        },
+        casesByYear: (state) => (year) => {
+            return state.cases.filter(cas => {
+                return year === cas.decision_date.getFullYear();
+            })
+        },
     },
     actions: {
         serialize: ({state}) => {
