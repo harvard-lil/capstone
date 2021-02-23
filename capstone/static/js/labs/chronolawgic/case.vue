@@ -1,5 +1,5 @@
 <template>
-    <article class="case">
+    <article class="case" @click="showEventModal(case_data)">
         <header>
            {{ case_data.title }}
         </header>
@@ -10,9 +10,18 @@
 </template>
 
 <script>
+    import EventModal from './event-modal.vue';
     export default {
         name: "Case",
-        props: ['case_data', 'year_value']
+        components: [EventModal],
+        props: ['case_data', 'year_value'],
+        methods: {
+            showEventModal(item) {
+                console.log("showeventmodal", item.name)
+                this.showEventDetails = true
+                this.event = item
+            }
+        }
     }
 </script>
 

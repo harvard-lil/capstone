@@ -31,103 +31,128 @@ const store = new Vuex.Store({
         createdBy: "Editable Text", // (user accts are for auth/logging purposes)
         categories: { }, // Removed from MVP
         events: [ {
-                name: "Event 1",
-                url: "https://cite.case.law/ill/1/176/",
-                description: "Between some time and some other time, this thing happened.",
-                start_year: 1880,
-                end_year: 1889,
-        },
-        {
-                name: "Event 2",
-                url: "https://cite.case.law/ill/1/176/",
-                description: "Between some time and some other time, this thing happened.",
-                start_year: 1890,
-                end_year: 1912,
-        },
-        {
-                name: "Event 3",
-                url: "https://cite.case.law/ill/1/176/",
-                description: "Between some time and some other time, this thing happened.",
-                start_year: 1905,
-                end_year: 1930,
-        },
-        {
-                name: "Event 4",
-                url: "https://cite.case.law/ill/1/176/",
-                description: "Between some time and some other time, this thing happened.",
-                start_year: 1922,
-                end_year: 1923,
-        },
-        {
-                name: "Event 5",
-                url: "https://cite.case.law/ill/1/176/",
-                description: "Between some time and some other time, this thing happened.",
-                start_year: 1918,
-                end_year: 1924,
-        },
-        {
-                name: "Event 6",
-                url: "https://cite.case.law/ill/1/176/",
-                description: "Between some time and some other time, this thing happened.",
-                start_year: 1805,
-                end_year: 1808,
-        },
+                    name: "Event 1",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, this thing happened.",
+                    start_year: 1880,
+                    end_year: 1889,
+            },
+            {
+                    name: "Event 2",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, this thing happened.",
+                    start_year: 1890,
+                    end_year: 1912,
+            },
+            {
+                    name: "Event 3",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, this thing happened.",
+                    start_year: 1905,
+                    end_year: 1930,
+            },
+            {
+                    name: "Event 4",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, this thing happened.",
+                    start_year: 1922,
+                    end_year: 1923,
+            },
+            {
+                    name: "Event 5",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, this thing happened.",
+                    start_year: 1918,
+                    end_year: 1924,
+            },
+            {
+                    name: "Event 6",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, this thing happened.",
+                    start_year: 1875,
+                    end_year: 1878,
+            },
         ],
         cases: [
             {
                 name: "Case 1",
-                subhead: "The first case.",
-                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                subhead: "The first case in the timeline.",
                 decision_date: new Date(1893, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
                 jurisdiction: "Ill.",
                 reporter:  "Ill.",
                 isCap: true,
+                short_description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
             },
             {
                 name: "Case 2",
-                subhead: "The second case.",
-                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                subhead: "The second case in the timeline.",
+                short_description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
                 decision_date: new Date(1898, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
                 jurisdiction: "Ill.",
                 reporter:  "Ill.",
                 isCap: true,
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
             },
             {
                 name: "Case 3",
-                subhead: "The third case.",
-                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                subhead: "The third case in the timeline.",
+                short_description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
                 decision_date: new Date(1921, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
                 jurisdiction: "Ill.",
                 reporter:  "Ill.",
                 isCap: true,
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
             },
             {
                 name: "Case 4",
-                subhead: "The fourt case.",
-                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                subhead: "The fourt case in the timeline.",
+                short_description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
                 decision_date: new Date(1921, 11, 18),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
                 jurisdiction: "Ill.",
                 reporter:  "Ill.",
                 isCap: true,
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
             },
             {
                 name: "Case 5",
-                subhead: "The fifth case.",
-                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
+                subhead: "The fifth case in the timeline.",
+                short_description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
                 decision_date: new Date(1924, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
                 jurisdiction: "Ill.",
                 reporter:  "Ill.",
                 isCap: true,
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
             },
         ],
         templateEvent: {
@@ -135,9 +160,17 @@ const store = new Vuex.Store({
             name: "",
             short_description: "",
             long_description: "",
+            start_date: "",
+            end_date: "",
+            categories: [],
+        },
+        templateCase: {
+            url: "",
+            name: "",
+            short_description: "",
+            long_description: "",
             jurisdiction: "",
             reporter: "",
-            start_date: "",
             end_date: "",
             categories: [],
         }
@@ -169,22 +202,23 @@ const store = new Vuex.Store({
         },
         setRequestStatusTerminal(state, status) {
             state.requestStatus = status;
-            setTimeout(function() {
-                 state.requestStatus = "nominal";
+            setTimeout(function () {
+                state.requestStatus = "nominal";
             }, 5000);
         },
         setNotificationMessage(state, message) {
             //TODO Someday— make this a queue and let the notifications stack
             state.notificationMessage = message;
-            setTimeout(function() {
-                 state.notificationMessage = null;
+            setTimeout(function () {
+                state.notificationMessage = null;
             }, 5000);
         },
         addEvent(state, event) {
             state.events.push(event)
+            console.log("events update", state.events)
         },
-        addCase(state, event) {
-            state.events.push(event)
+        addCase(state, caselaw) {
+            state.cases.push(caselaw)
         },
         updateEvent(state, index, event) {
             state.events[index] = event
@@ -196,16 +230,16 @@ const store = new Vuex.Store({
             state.events.remove(index);
         },
         deleteCase(state, index) {
-            state.events.remove(index);
-        },
-
+            state.cases.remove(index);
+        }
     },
     getters: {
+        cases: state => state.cases,
+        choices: state => state.choices,
         availableTimelines: state => state.availableTimelines,
         id: state => state.id,
         requestStatus: state => state.requestStatus,
         notificationMessage: state => state.notificationMessage,
-        cases: state => state.cases,
         templateEvent: state => state.templateEvent,
         firstYear: (state)=> {
             const first_event_year = state.events.reduce((min, e) => e.start_year < min ? e.start_year : min, state.events[0].start_year);
@@ -220,26 +254,27 @@ const store = new Vuex.Store({
         events: (state)=> {
             return state.events.sort((a, b) => (a.start_year > b.start_year) ? 1 : -1)
         },
-        eventsByYear: (state) => (year) => {
-            return state.events.filter(evt => {
-                return year >= evt.start_year && year >= evt.end_year;
-            })
-        },
+        // eventsByYear: (state) => (year) => {
+        //     return state.events.filter(evt => {
+        //         return year >= evt.start_year && year >= evt.end_year;
+        //     })
+        // },
         eventByStartYear: (state) => (year) => {
             return state.events.filter(evt => {
                 return evt.start_year === year;
             })
         },
-        eventByName: (state) => (name) => {
-            return state.events.filter(evt => {
-                return evt.name === name;
-            })[0]
-        },
+        // eventByName: (state) => (name) => {
+        //     return state.events.filter(evt => {
+        //         return evt.name === name;
+        //     })[0]
+        // },
         casesByYear: (state) => (year) => {
             return state.cases.filter(cas => {
                 return year === cas.decision_date.getFullYear();
             })
         },
+        templateCase: state => state.templateCase,
     },
     actions: {
         serialize: ({state}) => {
@@ -260,17 +295,17 @@ const store = new Vuex.Store({
                 .then(new_tl => {
                     if (new_tl.status === "ok") {
                         this.dispatch('requestTimelineList');
-                        router.push({ name: 'timeline', params: { timeline: new_tl.id } })
+                        router.push({name: 'timeline', params: {timeline: new_tl.id}})
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                        commit('setNotificationMessage', 'Timeline Created')
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                    commit('setNotificationMessage', 'Timeline Created')
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         },
         requestDeleteTimeline: function ({commit}, timelineId) {
             commit('setRequestStatus', 'pending');
@@ -282,14 +317,14 @@ const store = new Vuex.Store({
                         this.dispatch('requestTimelineList');
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                        commit('setNotificationMessage', "Timeline Deleted")
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                    commit('setNotificationMessage', "Timeline Deleted")
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         },
         requestUpdateTimeline: function ({commit}, timelineId) {
             commit('setRequestStatus', 'pending');
@@ -302,14 +337,14 @@ const store = new Vuex.Store({
                         commit('setDeletedStatus', timeline['timeline'])
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                        commit('setNotificationMessage', "Timeline Saved")
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                    commit('setNotificationMessage', "Timeline Saved")
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         },
         requestTimeline: function ({commit}, timelineId) {
             commit('setRequestStatus', 'pending');
@@ -321,13 +356,13 @@ const store = new Vuex.Store({
                         commit('setTimeline', timeline['timeline'])
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         },
         requestTimelineList: function ({commit}) {
             commit('setRequestStatus', 'pending');
@@ -339,13 +374,13 @@ const store = new Vuex.Store({
                         commit('setAvailableTimelines', availableTimelines['timelines'])
                     }
                 }).then(
-                    () => {
-                        commit('setRequestStatusTerminal', 'success');
-                    }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
-                })
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
         }
     }
 });

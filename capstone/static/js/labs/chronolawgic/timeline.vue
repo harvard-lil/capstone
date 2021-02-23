@@ -8,7 +8,7 @@
         </button>
       </div>
       <div class="header-section other-events-section">
-        <span>OTHER EVENTS</span>
+        <span>EVENTS</span>
         <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-event-modal">
           <add-icon></add-icon>
         </button>
@@ -19,8 +19,10 @@
         </button>
       </div>
     </div>
-    <add-case-modal />
-    <add-event-modal />
+    <add-case-modal/>
+    <add-event-modal/>
+    <event-modal v-if="showEventDetails" data-toggle="modal" data-target="event-modal"
+                 :modal.sync="showEventDetails" :event="event" :shown="showEventDetails"></event-modal>
     <key v-show="keyShown"></key>
     <section id="timeline">
       <div v-for="(year_data, idx) in years" v-bind:key="idx">
@@ -37,6 +39,7 @@ import Key from './key.vue';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 import Year from './year';
+
 
 export default {
   name: 'Timeline',
@@ -71,6 +74,10 @@ export default {
         "#DB8F00",
         "#00DB67"
       ],
+      showEventDetails: false,
+      event: null,
+      events: [],
+      cases: [],
     }
   },
   methods: {
@@ -115,7 +122,8 @@ export default {
           });
         }
       }
-    }
+    },
+
     // closeModal(e) {
     //   console.log("clicked", e)
     //   if (e.target !== $('div.modal-body')) {
@@ -125,6 +133,8 @@ export default {
   },
   mounted: function () {
     this.repopulateTimeline();
+    this.events = this.$store.getters.events;
+    this.cases = this.$store.getters.cases;
   }
 };
 </script>

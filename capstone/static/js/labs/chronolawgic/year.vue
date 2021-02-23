@@ -1,6 +1,6 @@
 <template>
     <div class="year" v-bind:class="{ collapsible: collapsible }">
-        <div class="incidental">
+        <div class="incidental" >
             <case v-for="case_data in year_data.case_list" year_value="year_value" :case_data="case_data" v-bind:key="case_data.id"></case>
         </div>
         <div class="year_scale">
