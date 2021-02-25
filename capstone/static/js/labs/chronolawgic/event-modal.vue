@@ -29,7 +29,7 @@ export default {
   ],
   methods: {
     closeModal() {
-      this.$emit('update:modal')
+      this.$emit('toggleEventModal');
     }
   }
 }

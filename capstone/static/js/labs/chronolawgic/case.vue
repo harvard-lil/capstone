@@ -1,11 +1,23 @@
 <template>
-    <article class="case" @click="showEventModal(case_data)">
+    <article class="case" @click="toggleEventModal(case_data)" tabindex="0">
+        <event-modal
+                v-if="showEventDetails"
+                data-toggle="modal"
+                data-target="event-modal"
+                :modal.sync="showEventDetails"
+                :event="event"
+                :shown="showEventDetails">
+        </event-modal>
+
         <header>
-           {{ case_data.title }}
+           {{ case_data.name }}
         </header>
-        <div class="links">
-            <a href="details">details</a><br>
-            <a href="#">read case</a></div>
+        <section class="subhead">
+            {{ case_data.subhead }}
+        </section>
+        <section class="desc">
+            {{ case_data.short_description }}
+        </section>
     </article>
 </template>
 
@@ -13,18 +25,20 @@
     import EventModal from './event-modal.vue';
     export default {
         name: "Case",
-        components: [EventModal],
+        components: { EventModal },
         props: ['case_data', 'year_value'],
+        data() {
+          return {
+              showEventDetails: false
+          }
+        },
         methods: {
-            showEventModal(item) {
-                console.log("showeventmodal", item.name)
-                this.showEventDetails = true
+            toggleEventModal(item) {
+                this.showEventDetails =  !this.showEventDetails;
                 this.event = item
-            }
+            },
         }
+
     }
 </script>
 
-<style scoped>
-
-</style>

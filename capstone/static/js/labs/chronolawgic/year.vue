@@ -1,10 +1,18 @@
 <template>
     <div class="year" v-bind:class="{ collapsible: collapsible }">
         <div class="incidental" >
-            <case v-for="case_data in year_data.case_list" year_value="year_value" :case_data="case_data" v-bind:key="case_data.id"></case>
+            <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data" v-bind:key="case_data.id"></case>
         </div>
         <div class="year_scale">
-            {{year_value}}
+            <div class="left-line">
+                <hr class="left-rule">
+            </div>
+            <div class="year">
+                {{year_value}}
+            </div>
+            <div class="right-line">
+                <hr>
+            </div>
         </div>
         <TimeLineSlice :events="year_data.event_list" :year_value="year_value"></TimeLineSlice>
     </div>

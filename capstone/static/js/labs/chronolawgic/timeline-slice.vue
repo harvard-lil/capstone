@@ -1,38 +1,50 @@
 <template>
     <div class="spans row">
-        <div v-for="(col, index) in events" v-bind:key="year_value + index"
+
+        <div v-for="(event_data, index) in events" v-bind:key="year_value + index"
+             :tabindex="parseInt(year_value) === parseInt(event_data.start_year) ? '0' : '-1'"
              :class="[
                  'event_col',
                  'ec_' + (index + 1),
                  'col-1',
                  'e' + year_value,
-                  event_start(col.start_year) ? 'event_start' : '',
-                  event_end(col.end_year) ? 'event_end' : '',
-                  active ? 'event_end' : ''
+                  parseInt(year_value) === parseInt(event_data.start_year) ? 'event_start' : '',
+                  parseInt(year_value) === parseInt(event_data.end_year) ? 'event_end' : '',
              ]"
              :style="{
-                'background-color': active ? col.color : '',
-                'border-top': event_start(col.start_year) ? '1rem solid black' : '',
-                'border-bottom': event_end(col.end_year) ? '1rem solid black' : '',
+                'background-color': event_data.color,
+                'border-top': parseInt(year_value) === parseInt(event_data.start_year) ? '1rem solid black' : '',
+                'border-bottom': parseInt(year_value) === parseInt(event_data.end_year) ? '1rem solid gray' : '',
             }"
-        ></div>
+            @click="toggleEventModal(event_data)">
+                <event-modal
+                    v-if="showEventDetails"
+                    data-toggle="modal"
+                    data-target="event-modal"
+                    :modal.sync="showEventDetails"
+                    :event="event"
+                    :shown="showEventDetails">
+                </event-modal>
+        </div>
     </div>
 </template>
 
 <script>
+    import EventModal from "./event-modal";
+
     export default {
         name: "TimelineSlice",
+        components: { EventModal },
         props: ['year_value', 'events'],
         methods: {
-            event_start: function (comparison_year) {
-                console.log(this.year_value, comparison_year)
-                return (this.year_value === comparison_year)
+            toggleEventModal(item) {
+                this.showEventDetails =  !this.showEventDetails;
+                this.event = item
             },
-            event_end: function (comparison_year) {
-                return (this.year_value === comparison_year)
-            },
-            active: function (comparison_year) {
-                return (this.year_value === comparison_year)
+        },
+        data() {
+            return {
+                showEventDetails: false,
             }
         }
     }

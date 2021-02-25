@@ -219,6 +219,7 @@ const store = new Vuex.Store({
         },
         addCase(state, caselaw) {
             state.cases.push(caselaw)
+            console.log("case update", caselaw)
         },
         updateEvent(state, index, event) {
             state.events[index] = event
@@ -242,13 +243,14 @@ const store = new Vuex.Store({
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
         firstYear: (state)=> {
+            console.log(state.cases)
             const first_event_year = state.events.reduce((min, e) => e.start_year < min ? e.start_year : min, state.events[0].start_year);
-            const first_case_year = state.cases.reduce((min, e) => e.decision_date.getFullYear() < min ? e.decision_date.getFullYear() : min, state.cases[0].decision_date.getFullYear());
+            const first_case_year = state.cases.reduce((min, c) => c.decision_date.getUTCFullYear() < min ? c.decision_date.getUTCFullYear() : min, state.cases[0].decision_date.getUTCFullYear());
             return first_case_year < first_event_year ? first_case_year : first_event_year;
         },
         lastYear: (state)=> {
             const last_event_year = state.events.reduce((max, e) => e.end_year > max ? e.end_year : max, state.events[0].end_year);
-            const last_case_year = state.cases.reduce((max, e) => e.decision_date.getFullYear() > max ? e.decision_date.getFullYear() : max, state.cases[0].decision_date.getFullYear());
+            const last_case_year = state.cases.reduce((max, e) => e.decision_date.getUTCFullYear() > max ? e.decision_date.getUTCFullYear() : max, state.cases[0].decision_date.getUTCFullYear());
             return last_case_year > last_event_year ? last_case_year : last_event_year;
         },
         events: (state)=> {
@@ -271,7 +273,7 @@ const store = new Vuex.Store({
         // },
         casesByYear: (state) => (year) => {
             return state.cases.filter(cas => {
-                return year === cas.decision_date.getFullYear();
+                return year === cas.decision_date.getUTCFullYear();
             })
         },
         templateCase: state => state.templateCase,

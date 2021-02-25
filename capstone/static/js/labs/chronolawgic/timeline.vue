@@ -1,5 +1,5 @@
 <template>
-  <main id="timeline-demo">
+  <main id="main-app">
     <div class="row top-menu">
       <div class="header-section case-law-section">
         <span>CASE LAW</span>
@@ -21,12 +21,10 @@
     </div>
     <add-case-modal/>
     <add-event-modal/>
-    <event-modal v-if="showEventDetails" data-toggle="modal" data-target="event-modal"
-                 :modal.sync="showEventDetails" :event="event" :shown="showEventDetails"></event-modal>
     <key v-show="keyShown"></key>
     <section id="timeline">
-      <div v-for="(year_data, idx) in years" v-bind:key="idx">
-        <year :year_data="year_data" :year_value="idx" v-if="idx > $store.getters.firstYear"></year>
+      <div v-for="(year_data, idx) in years" v-bind:key="'year_' + idx">
+        <year :year_data="year_data" :year_value="idx" v-if="idx >= $store.getters.firstYear"></year>
       </div>
     </section>
   </main>
@@ -74,7 +72,6 @@ export default {
         "#DB8F00",
         "#00DB67"
       ],
-      showEventDetails: false,
       event: null,
       events: [],
       cases: [],
@@ -133,8 +130,6 @@ export default {
   },
   mounted: function () {
     this.repopulateTimeline();
-    this.events = this.$store.getters.events;
-    this.cases = this.$store.getters.cases;
   }
 };
 </script>

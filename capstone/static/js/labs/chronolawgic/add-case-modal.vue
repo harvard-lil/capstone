@@ -8,7 +8,6 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-
         <div class="modal-body">
           <form @submit.prevent="searchCAP" id="form-search-cap">
             <div class="form-label-group" id="field-group-search">
@@ -50,7 +49,7 @@
               <label for="field-short-description">SHORT DESCRIPTION</label>
             </div>
             <div class="form-label-group" id="field-group-date">
-              <input v-model="newCase.start_date" id="field-decision-date" placeholder="DECISION DATE" type="date"
+              <input v-model="newCase.decision_date" id="field-decision-date" placeholder="DECISION DATE" type="date"
                      required
                      class="form-control">
               <label for="field-decision-date">DECISION DATE</label>
@@ -118,7 +117,11 @@ export default {
       console.log('submit form')
     },
     addCase() {
-      store.commit('addEvent', this.newCase)
+      if (typeof(this.newCase.decision_date) === 'string') {
+        this.newCase.decision_date = new Date(this.newCase.decision_date)
+      }
+      store.commit('addCase', this.newCase);
+      this.$parent.repopulateTimeline();
     },
     chooseCase(result) {
       // choosing case from CAP search
@@ -134,11 +137,12 @@ export default {
     },
     autofillCase() {
       this.newCase.name = this.chosenCase.name_abbreviation;
+      this.newCase.subhead = this.chosenCase.citations[0].cite;
       this.newCase.url = this.chosenCase.url;
-      this.newCase.start_date = this.formatDate(this.chosenCase.decision_date);
+      this.newCase.decision_date = this.formatDate(this.chosenCase.decision_date);
 
-      this.extraFields.jurisdiction.value = this.chosenCase.jurisdiction.name_long;
-      this.extraFields.reporter.value = this.chosenCase.reporter.full_name;
+      this.extraFields.jurisdiction.value = this.chosenCase.jurisdiction.name;
+      this.extraFields.reporter.value = this.chosenCase.reporter.short_name;
     },
     searchCAP() {
       if (this.searchText) {
