@@ -101,7 +101,7 @@ export default {
           event_list: [ {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {} ],
         })
       }
-
+      /* eslint-disable */
       for (let year = this.$store.getters.firstYear; year <= this.$store.getters.lastYear; year++) { // total range of timeline
         const newEvents = this.$store.getters.eventByStartYear(year); // events that start on this year
         if (newEvents.length > 0) {
@@ -109,7 +109,7 @@ export default {
             evt.color = this.eventsColorPool.pop()
             for (let track_index = 0; track_index < 12; track_index++){
               if (Object.keys(this.years[year].event_list[track_index]).length === 0) { // since the events are start-year sorted, if the track is empty on the first year, it'll be good for the rest
-                let length = evt.end_year - evt.start_year;
+                let length = evt.end_date.getUTCFullYear() - evt.start_date.getUTCFullYear();
                 for (let event_year = 0; event_year <= length; event_year++) { // fill in the years on that track with the event
                    this.$set(this.years[year + event_year].event_list, track_index, evt)
                 }

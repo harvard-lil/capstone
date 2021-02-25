@@ -14,7 +14,7 @@
                 <hr>
             </div>
         </div>
-        <TimeLineSlice :events="year_data.event_list" :year_value="year_value"></TimeLineSlice>
+        <TimeLineSlice :event_list="year_data.event_list" :year_value="year_value"></TimeLineSlice>
     </div>
 </template>
 

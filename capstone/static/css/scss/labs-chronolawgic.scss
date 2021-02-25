@@ -131,7 +131,13 @@ main#main-app {
     grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
   }
-
+  .fill {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    border:0;
+    padding: 0;
+  }
   .ec_1 {
     grid-area: ec_1;
   }

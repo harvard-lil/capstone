@@ -9,7 +9,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <h6>{{ event.subhead }}</h6>
+          <h6>{{ event.short_description }}</h6>
           <hr/>
           {{ event.long_description }}
         </div>

@@ -137,7 +137,7 @@ export default {
     },
     autofillCase() {
       this.newCase.name = this.chosenCase.name_abbreviation;
-      this.newCase.subhead = this.chosenCase.citations[0].cite;
+      this.newCase.short_description = this.chosenCase.citations[0].cite;
       this.newCase.url = this.chosenCase.url;
       this.newCase.decision_date = this.formatDate(this.chosenCase.decision_date);
 
