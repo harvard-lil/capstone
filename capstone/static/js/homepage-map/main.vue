@@ -164,7 +164,7 @@
        this.hoveredSlug = null;
       },
       jurNameForSlug(slug) {
-        return document.getElementById(slug).ariaLabel;
+        return document.getElementById(slug).getAttribute('aria-label');
       },
       caseCount() {
         return (this.hoveredSlug ? this.jurData[this.hoveredSlug].case_count : this.total_cases).toLocaleString()
