@@ -39,7 +39,11 @@
               <input v-model="newCase.url" id="field-url" placeholder="URL" class="form-control">
               <label for="field-url">URL</label>
             </div>
-            <div class="form-label-group" id="field-group-name">
+              <div class="form-label-group" id="field-group-citation">
+                <input v-model="newCase.citation" id="field-citation" placeholder="CITATION" class="form-control">
+                <label for="field-citation">CITATION</label>
+              </div>
+              <div class="form-label-group" id="field-group-name">
               <input v-model="newCase.name" id="field-name" placeholder="CASE NAME" required class="form-control">
               <label for="field-name">CASE NAME</label>
             </div>
@@ -137,12 +141,12 @@ export default {
     },
     autofillCase() {
       this.newCase.name = this.chosenCase.name_abbreviation;
-      this.newCase.short_description = this.chosenCase.citations[0].cite;
+      this.newCase.citation = this.chosenCase.citations[0].cite;
       this.newCase.url = this.chosenCase.url;
       this.newCase.decision_date = this.formatDate(this.chosenCase.decision_date);
 
       this.extraFields.jurisdiction.value = this.chosenCase.jurisdiction.name;
-      this.extraFields.reporter.value = this.chosenCase.reporter.short_name;
+      this.extraFields.reporter.value = this.chosenCase.reporter.full_name;
     },
     searchCAP() {
       if (this.searchText) {

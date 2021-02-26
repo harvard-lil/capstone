@@ -102,6 +102,7 @@ label, textarea::placeholder {
     grid-template-areas:
           "link        .    short"
           "name        .    long"
+          "citation    .    long"
           "date        .    long"
           "jur         .    long"
           "reporter    .    long";
@@ -135,6 +136,10 @@ label, textarea::placeholder {
     grid-area: name;
   }
 
+  #field-group-citation {
+    grid-area: citation;
+  }
+
   #field-group-short {
     grid-area: short;
   }
@@ -143,7 +148,7 @@ label, textarea::placeholder {
     grid-area: long;
 
     textarea {
-      min-height: 12em;
+      min-height: 14em;
     }
   }
 

@@ -83,6 +83,7 @@ const store = new Vuex.Store({
             {
                 name: "Case 1",
                 short_description: "The first case in the timeline.",
+                citation: "1 Mass. 1",
                 decision_date: new Date(1893, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
@@ -97,6 +98,7 @@ const store = new Vuex.Store({
             {
                 name: "Case 2",
                 short_description: "The second case in the timeline.",
+                citation: "1 Mass. 1",
                 decision_date: new Date(1898, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
@@ -111,6 +113,7 @@ const store = new Vuex.Store({
             {
                 name: "Case 3",
                 short_description: "The third case in the timeline.",
+                citation: "1 Ill. 1",
                 decision_date: new Date(1921, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
@@ -125,6 +128,7 @@ const store = new Vuex.Store({
             {
                 name: "Case 4",
                 short_description: "The fourt case in the timeline.",
+                citation: "1 Wis. 1",
                 decision_date: new Date(1921, 11, 18),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
@@ -139,6 +143,7 @@ const store = new Vuex.Store({
             {
                 name: "Case 5",
                 short_description: "The fifth case in the timeline.",
+                citation: "1 Mass. 1",
                 decision_date: new Date(1924, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
@@ -163,6 +168,7 @@ const store = new Vuex.Store({
         templateCase: {
             url: "",
             name: "",
+            citation: "",
             short_description: "",
             long_description: "",
             jurisdiction: "",
