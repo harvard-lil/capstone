@@ -89,4 +89,4 @@ ADMINS = [('John', 'john@example.com'), ('Mary', 'mary@example.com')]
 DOCS_SHOW_DRAFTS = True
 
 # show labs features
-LABS = False
+LABS = True
