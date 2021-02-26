@@ -121,10 +121,11 @@ export default {
       console.log('submit form')
     },
     addCase() {
-      if (typeof(this.newCase.decision_date) === 'string') {
-        this.newCase.decision_date = new Date(this.newCase.decision_date)
+      let caselaw = JSON.parse(JSON.stringify(this.newCase))
+      if (typeof (this.newCase.decision_date) === 'string') {
+        caselaw.decision_date = new Date(this.newCase.decision_date)
       }
-      store.commit('addCase', this.newCase);
+      store.commit('addCase', caselaw);
       this.$parent.repopulateTimeline();
     },
     chooseCase(result) {
