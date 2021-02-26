@@ -29,37 +29,121 @@ const store = new Vuex.Store({
         id: 1,
         title: "Timeline Title",
         createdBy: "Editable Text", // (user accts are for auth/logging purposes)
-        categories: {
-            Case: {id: "1", color: "#FF9911"},
-            Legislation: {id: "2", color: "#99FF11"},
-            ExecutiveOrder: {id: "3", color: "#FF9988"},
-            Anarchism: {id: "4", color: "#11FF99"},
-            Police: {id: "5", color: "#8899FF"},
-            Fascism: {id: "6", color: "#1199FF"},
-        },
-        events: [{
-            name: "Event 1",
-            url: "https://cite.case.law/ill/1/176/",
-            description: "Between some time and some other time, this thing happened.",
-            start_year: 1880,
-            start_month: 1,
-            start_day: 15,
-            end_year: 1889,
-            categories: [2, 4],
-            end_month: 1,
-            end_day: 15,
-        }],
+        categories: { }, // Removed from MVP
+        events: [ {
+                    name: "Event 1",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
+                    short_description: "Between some time and some other time, this thing happened.",
+                    start_date: new Date('1880'),
+                    end_date: new Date('1889'),
+            },
+            {
+                    name: "Event 2",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
+                    short_description: "Between some time and some other time, this thing happened.",
+                    start_date: new Date('1890'),
+                    end_date: new Date('1912'),
+            },
+            {
+                    name: "Event 3",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
+                    short_description: "Between some time and some other time, this thing happened.",
+                    start_date: new Date('1905'),
+                    end_date: new Date('1930'),
+            },
+            {
+                    name: "Event 4",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
+                    short_description: "Between some time and some other time, this thing happened.",
+                    start_date: new Date('1922'),
+                    end_date: new Date('1923'),
+            },
+            {
+                    name: "Event 5",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
+                    short_description: "Between some time and some other time, this thing happened.",
+                    start_date: new Date('1918'),
+                    end_date: new Date('1924'),
+            },
+            {
+                    name: "Event 6",
+                    url: "https://cite.case.law/ill/1/176/",
+                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
+                    short_description: "Between some time and some other time, this thing happened.",
+                    start_date: new Date('1875'),
+                    end_date: new Date('1878'),
+            },
+        ],
         cases: [
             {
-                name: "Joe v. Volcano",
-                subhead: "This is our first case in the timeline",
-                description: "Though the Court upheld a conviction for membership in a group that advocated the overthrow of the state, Justice Brandeis explained, in a separate opinion, that under the \"clear and present danger test\" the strong presumption must be in favor of \"more speech, not enforced silence.\" That view, which ultimately prevailed, laid the groundwork for modern First Amendment law.",
-                start_date: "1992-01-02",
+                name: "Case 1",
+                short_description: "The first case in the timeline.",
+                decision_date: new Date(1893, 11, 17),
                 categories: [1, 3],
                 url: "https://cite.case.law/ill/1/176/",
                 jurisdiction: "Ill.",
-                reporter: "Ill.",
-                short_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem.",
+                reporter:  "Ill.",
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
+            },
+            {
+                name: "Case 2",
+                short_description: "The second case in the timeline.",
+                decision_date: new Date(1898, 11, 17),
+                categories: [1, 3],
+                url: "https://cite.case.law/ill/1/176/",
+                jurisdiction: "Ill.",
+                reporter:  "Ill.",
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
+            },
+            {
+                name: "Case 3",
+                short_description: "The third case in the timeline.",
+                decision_date: new Date(1921, 11, 17),
+                categories: [1, 3],
+                url: "https://cite.case.law/ill/1/176/",
+                jurisdiction: "Ill.",
+                reporter:  "Ill.",
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
+            },
+            {
+                name: "Case 4",
+                short_description: "The fourt case in the timeline.",
+                decision_date: new Date(1921, 11, 18),
+                categories: [1, 3],
+                url: "https://cite.case.law/ill/1/176/",
+                jurisdiction: "Ill.",
+                reporter:  "Ill.",
+                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
+                    "\n" +
+                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
+                    "\n" +
+                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
+            },
+            {
+                name: "Case 5",
+                short_description: "The fifth case in the timeline.",
+                decision_date: new Date(1924, 11, 17),
+                categories: [1, 3],
+                url: "https://cite.case.law/ill/1/176/",
+                jurisdiction: "Ill.",
+                reporter:  "Ill.",
                 long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
                     "\n" +
                     "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
@@ -83,7 +167,7 @@ const store = new Vuex.Store({
             long_description: "",
             jurisdiction: "",
             reporter: "",
-            end_date: "",
+            decision_date: "",
             categories: [],
         }
     },
@@ -127,39 +211,24 @@ const store = new Vuex.Store({
         },
         addEvent(state, event) {
             state.events.push(event)
-            console.log("events update", state.events)
         },
         addCase(state, caselaw) {
             state.cases.push(caselaw)
         },
-        /*
-        updateEvent(state, index, name, url, description, start_year, end_year, start_day, end_day, categories, end_month) {
-            state.events[index] = {
-                name: name,
-                url: url,
-                description: description,
-                start_year: start_year,
-                start_month: end_year,
-                start_day: start_day,
-                end_year: end_day,
-                categories: [],
-                end_month: end_month,
-                end_day: end_day,
-            }
+        updateEvent(state, index, event) {
+            state.events[index] = event
+        },
+        updateCase(state, index, event) {
+            state.events[index] = event
         },
         deleteEvent(state, index) {
             state.events.remove(index);
         },
-
-        updateCase(state, caselaw) {
-        },
         deleteCase(state, index) {
-            //todo
-        },
-        */
+            state.cases.remove(index);
+        }
     },
     getters: {
-        events: state => state.events,
         cases: state => state.cases,
         choices: state => state.choices,
         availableTimelines: state => state.availableTimelines,
@@ -167,6 +236,39 @@ const store = new Vuex.Store({
         requestStatus: state => state.requestStatus,
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
+        firstYear: (state)=> {
+            const first_event_year = state.events.reduce((min, e) => e.start_date.getUTCFullYear() < min ? e.start_date.getUTCFullYear() : min, state.events[0].start_date.getUTCFullYear());
+            const first_case_year = state.cases.reduce((min, c) => c.decision_date.getUTCFullYear() < min ? c.decision_date.getUTCFullYear() : min, state.cases[0].decision_date.getUTCFullYear());
+            return first_case_year < first_event_year ? first_case_year : first_event_year;
+        },
+        lastYear: (state)=> {
+            const last_event_year = state.events.reduce((max, e) => e.end_date.getUTCFullYear() > max ? e.end_date.getUTCFullYear() : max, state.events[0].end_date.getUTCFullYear());
+            const last_case_year = state.cases.reduce((max, e) => e.decision_date.getUTCFullYear() > max ? e.decision_date.getUTCFullYear() : max, state.cases[0].decision_date.getUTCFullYear());
+            return last_case_year > last_event_year ? last_case_year : last_event_year;
+        },
+        events: (state)=> {
+            return state.events.sort((a, b) => (a.start_date > b.start_date) ? 1 : -1)
+        },
+        // eventsByYear: (state) => (year) => {
+        //     return state.events.filter(evt => {
+        //         return year >= evt.start_date && year >= evt.end_date;
+        //     })
+        // },
+        eventByStartYear: (state) => (year) => {
+            return state.events.filter(evt => {
+                return evt.start_date.getUTCFullYear() === year;
+            })
+        },
+        // eventByName: (state) => (name) => {
+        //     return state.events.filter(evt => {
+        //         return evt.name === name;
+        //     })[0]
+        // },
+        casesByYear: (state) => (year) => {
+            return state.cases.filter(cas => {
+                return year === cas.decision_date.getUTCFullYear();
+            })
+        },
         templateCase: state => state.templateCase,
     },
     actions: {

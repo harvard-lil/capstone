@@ -66,9 +66,14 @@ export default {
       this.newEvent = store.getters.templateEvent;
     },
     addEvent() {
-      console.log("add", this.newEvent)
+      if (typeof(this.newEvent.start_date) === 'string') {
+        this.newEvent.start_date = new Date(this.newEvent.start_date)
+      }
+      if (typeof(this.newEvent.end_date) === 'string') {
+        this.newEvent.end_date = new Date(this.newEvent.end_date)
+      }
       store.commit('addEvent', this.newEvent)
-
+      this.$parent.repopulateTimeline();
     }
   },
   mounted() {
