@@ -39,12 +39,12 @@
 
 
           </form>
-          <p v-if="errors.length">
+          <div v-if="errors.length" class="form-errors p-2 mt-2 small">
             <b>Please correct the following error(s):</b>
-          <ul>
-            <li v-for="error in errors" v-bind:key="error">{{ error }}</li>
+          <ul class="m-0 list-inline">
+            <li class="list-inline-item" v-for="error in errors" v-bind:key="error">{{ error }}</li>
           </ul>
-          </p>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>

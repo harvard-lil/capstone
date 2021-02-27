@@ -39,11 +39,11 @@
               <input v-model="newCase.url" id="field-url" placeholder="URL" class="form-control">
               <label for="field-url">URL</label>
             </div>
-              <div class="form-label-group" id="field-group-citation">
-                <input v-model="newCase.citation" id="field-citation" placeholder="CITATION" class="form-control">
-                <label for="field-citation">CITATION</label>
-              </div>
-              <div class="form-label-group" id="field-group-name">
+            <div class="form-label-group" id="field-group-citation">
+              <input v-model="newCase.citation" id="field-citation" placeholder="CITATION" class="form-control">
+              <label for="field-citation">CITATION</label>
+            </div>
+            <div class="form-label-group" id="field-group-name">
               <input v-model="newCase.name" id="field-name" placeholder="CASE NAME" required class="form-control">
               <label for="field-name">CASE NAME</label>
             </div>
@@ -72,6 +72,12 @@
             </item-dropdown>
 
           </form>
+          <div v-if="errors.length" class="form-errors p-2 mt-2 small">
+            <b>Please correct the following error(s):</b>
+            <ul class="m-0 list-inline">
+              <li class="list-inline-item" v-for="error in errors" v-bind:key="error">{{ error }}</li>
+            </ul>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
@@ -102,6 +108,7 @@ export default {
       searchText: '',
       chosenCase: {},
       newCase: {},
+      errors: [],
       extraFields: { // need more info to interact with dropdown fields
         jurisdiction: {
           name: 'jurisdiction',
@@ -120,7 +127,19 @@ export default {
     submitForm() {
       console.log('submit form')
     },
+    checkForm() {
+      this.errors = [];
+      if (!this.newCase.name) {
+        this.errors.push('Event name is required.');
+      }
+      if (!this.newCase.decision_date) {
+        this.errors.push('Decision date is required.');
+      }
+    },
+
     addCase() {
+      this.checkForm();
+      if (this.errors.length) return;
       let caselaw = JSON.parse(JSON.stringify(this.newCase))
       if (typeof (this.newCase.decision_date) === 'string') {
         caselaw.decision_date = new Date(this.newCase.decision_date)

@@ -1,3 +1,6 @@
+.form-errors {
+  color: red;
+}
 
 input.form-control, textarea.form-control {
   background-color: $color-light-gray;
@@ -229,6 +232,7 @@ label, textarea::placeholder {
     grid-auto-rows: 2em;
     grid-gap: .5em;
   }
+
   #field-event-long-description {
     min-height: 5em;
   }
