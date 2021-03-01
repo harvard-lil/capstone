@@ -10,7 +10,7 @@ services:
         volumes:
           - db_data_11:/var/lib/postgresql/data:delegated
     redis:
-        image: registry.lil.tools/library/redis:6.0.9
+        image: registry.lil.tools/library/redis:6.0.10
     elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
         environment:
