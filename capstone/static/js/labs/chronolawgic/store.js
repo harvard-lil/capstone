@@ -288,16 +288,6 @@ const store = new Vuex.Store({
         templateCase: state => state.templateCase,
     },
     actions: {
-        serialize: ({state}) => {
-            return {
-                id: state.id,
-                title: state.title,
-                createdBy: state.createdBy,
-                categories: state.categories,
-                events: state.events,
-                cases: state.cases,
-            }
-        },
         requestCreateTimeline: function ({commit}) {
             commit('setRequestStatus', 'pending');
             axios

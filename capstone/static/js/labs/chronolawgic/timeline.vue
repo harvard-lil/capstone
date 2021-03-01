@@ -123,13 +123,6 @@ export default {
         }
       }
     },
-
-    // closeModal(e) {
-    //   console.log("clicked", e)
-    //   if (e.target !== $('div.modal-body')) {
-    //     console.log("not modal-body")
-    //   }
-    // }
   },
   mounted: function () {
     this.repopulateTimeline();
