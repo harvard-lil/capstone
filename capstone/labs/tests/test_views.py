@@ -1,7 +1,7 @@
 import pytest
 import json
 from capweb.helpers import reverse
-from capapi.tests.helpers import check_response, is_cached
+from capapi.tests.helpers import check_response
 from labs.models import Timeline
 
 timeline = {"title": "My first timeline", "subhead": "And my very best one"}
