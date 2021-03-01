@@ -81,7 +81,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" @click="addCase">ADD</button>
+          <button type="button" class="btn btn-primary" @click="addCase" :data-dismiss="$parent.addCaseModalShown ? 'none' : 'modal'">ADD</button>
         </div>
       </div>
     </div>
@@ -145,6 +145,7 @@ export default {
         caselaw.decision_date = new Date(this.newCase.decision_date)
       }
       store.commit('addCase', caselaw);
+      this.$parent.showAddCaseModal(false);
       this.$parent.repopulateTimeline();
     },
     chooseCase(result) {

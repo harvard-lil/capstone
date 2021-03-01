@@ -3,7 +3,7 @@
     <div class="row top-menu">
       <div class="header-section case-law-section">
         <span>CASE LAW</span>
-        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal">
+        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal" @click="showAddCaseModal(true)">
           <add-icon></add-icon>
         </button>
       </div>
@@ -83,6 +83,9 @@ export default {
     },
     showAddEventModal() {
       this.addEventModalShown = true;
+    },
+    showAddCaseModal(val) {
+      this.addCaseModalShown = val;
     },
     toggleKey() {
       this.keyShown = !this.keyShown;
