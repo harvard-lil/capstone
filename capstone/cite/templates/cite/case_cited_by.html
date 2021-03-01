@@ -23,7 +23,7 @@
       {% if previous %}
         <div class="entries col-6">
           <a href="?{{ previous }}" class="btn btn-sm p-0">
-            &laquo; Newer entries
+            &laquo; Older entries
           </a>
         </div>
       {% endif %}
@@ -31,7 +31,7 @@
       {% if next %}
         <div {% if previous %}class="entries col-6 text-right"{% else %}class="entries col-12 text-right"{% endif %}>
           <a href="?{{ next }}" class="btn btn-sm p-0 ">
-            Older entries &raquo;
+            Newer entries &raquo;
           </a>
         </div>
       {% endif %}
@@ -69,14 +69,14 @@
       {% if previous %}
         <div class="entries col-6">
           <a href="?{{ previous }}" class="btn btn-sm">
-            &laquo; Newer entries
+            &laquo; Older entries
           </a>
         </div>
       {% endif %}
       {% if next %}
         <div {% if previous %}class="entries col-6 text-right"{% else %}class="entries col-12 text-right"{% endif %}>
           <a href="?{{ next }}" class="btn btn-sm">
-            Older entries &raquo;
+            Newer entries &raquo;
           </a>
         </div>
       {% endif %}
