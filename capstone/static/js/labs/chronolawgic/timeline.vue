@@ -19,7 +19,7 @@
         </button>
       </div>
     </div>
-    <add-case-modal/>
+    <add-case-modal />
     <add-event-modal/>
     <key v-show="keyShown"></key>
     <section id="timeline">
@@ -81,8 +81,8 @@ export default {
     check() {
       this.checked = !this.checked;
     },
-    showAddEventModal() {
-      this.addEventModalShown = true;
+    showAddEventModal(val) {
+      this.addEventModalShown = val;
     },
     showAddCaseModal(val) {
       this.addCaseModalShown = val;

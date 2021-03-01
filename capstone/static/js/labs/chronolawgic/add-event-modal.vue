@@ -48,7 +48,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" @click="addEvent">ADD</button>
+          <button type="button" class="btn btn-primary" @click="addEvent" :data-dismiss="$parent.addEventModalShown ? 'none' : 'modal'">ADD</button>
         </div>
       </div>
     </div>
@@ -93,6 +93,7 @@ export default {
         this.newEvent.end_date = new Date(this.newEvent.end_date)
       }
       store.commit('addEvent', this.newEvent)
+      this.$parent.showAddCaseModal(false);
       this.$parent.repopulateTimeline();
     }
   },
