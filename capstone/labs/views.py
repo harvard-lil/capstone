@@ -45,6 +45,7 @@ def chronolawgic_api_retrieve(request, timeline_id=None):
         'status': 'ok',
         'timeline': timeline.timeline,
         'id': timeline.pk,
+        'created_by': timeline.created_by.id,
         'is_owner': True if request.user == timeline.created_by else False
     })
 

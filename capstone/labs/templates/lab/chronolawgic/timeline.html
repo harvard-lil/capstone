@@ -32,6 +32,11 @@
       reporters: {% snippet 'search_reporter_list' '[]' %}
     }
 
+    const user = {
+        id: "{{ user.id }}",
+        is_authenticated: "{{ request.user.is_authenticated }}"
+    }
+
 </script>
 <noscript>
   This experimental interface requires javascript, even for basic functionality.

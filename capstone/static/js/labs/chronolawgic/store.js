@@ -10,10 +10,13 @@ axios.defaults.xsrfCookieName = "csrftoken";
 const importUrls = urls; // defined in timeline.html
 // eslint-disable-next-line
 const importChoices = choices; // defined in timeline.html
+// eslint-disable-next-line
+const importUser = user; // defined in timeline.html
 
 Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
+        user: importUser,
         choices: importChoices,
         requestStatus: 'nominal', // can be nominal, success, error, or pending. Prone to race conditions, so use only for user feedback until its improved
         notificationMessage: null,
@@ -28,7 +31,8 @@ const store = new Vuex.Store({
         availableTimelines: [],
         id: 1,
         title: "Timeline Title",
-        createdBy: "Editable Text", // (user accts are for auth/logging purposes)
+        createdBy: -1, // (user accts are for auth/logging purposes)
+        isAuthor: false,
         categories: { }, // Removed from MVP
         events: [ {
                     name: "Event 1",
@@ -191,13 +195,19 @@ const store = new Vuex.Store({
         setTimeline(state, json) {
 
             state.title = json.title;
-            state.CreatedBy = json.CreatedBy;
+            state.createdBy = json.CreatedBy;
             state.categories = json.categories;
             state.events = json.events;
             state.cases = json.cases
         },
         setTimelineId(state, timeline_id) {
             state.id = timeline_id
+        },
+        setCreatedBy(state, createdBy) {
+          state.createdBy = createdBy;
+        },
+        setAuthor(state, isAuthor) {
+          state.isAuthor = isAuthor;
         },
         setRequestStatus(state, status) {
             state.requestStatus = status;
@@ -242,17 +252,17 @@ const store = new Vuex.Store({
         requestStatus: state => state.requestStatus,
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
-        firstYear: (state)=> {
+        firstYear: (state) => {
             const first_event_year = state.events.reduce((min, e) => e.start_date.getUTCFullYear() < min ? e.start_date.getUTCFullYear() : min, state.events[0].start_date.getUTCFullYear());
             const first_case_year = state.cases.reduce((min, c) => c.decision_date.getUTCFullYear() < min ? c.decision_date.getUTCFullYear() : min, state.cases[0].decision_date.getUTCFullYear());
             return first_case_year < first_event_year ? first_case_year : first_event_year;
         },
-        lastYear: (state)=> {
+        lastYear: (state) => {
             const last_event_year = state.events.reduce((max, e) => e.end_date.getUTCFullYear() > max ? e.end_date.getUTCFullYear() : max, state.events[0].end_date.getUTCFullYear());
             const last_case_year = state.cases.reduce((max, e) => e.decision_date.getUTCFullYear() > max ? e.decision_date.getUTCFullYear() : max, state.cases[0].decision_date.getUTCFullYear());
             return last_case_year > last_event_year ? last_case_year : last_event_year;
         },
-        events: (state)=> {
+        events: (state) => {
             return state.events.sort((a, b) => (a.start_date > b.start_date) ? 1 : -1)
         },
         // eventsByYear: (state) => (year) => {
@@ -282,7 +292,7 @@ const store = new Vuex.Store({
             return {
                 id: state.id,
                 title: state.title,
-                CreatedBy: state.CreatedBy,
+                createdBy: state.createdBy,
                 categories: state.categories,
                 events: state.events,
                 cases: state.cases,
@@ -351,10 +361,14 @@ const store = new Vuex.Store({
             commit('setRequestStatus', 'pending');
             axios
                 .get(this.state.urls.chronolawgic_api_retrieve + timelineId)
-                .then(response => response.data)
+                .then(response => {
+                    return response.data
+                })
                 .then(timeline => {
                     if (timeline.status === "ok") {
                         commit('setTimeline', timeline['timeline'])
+                        commit('setCreatedBy', timeline['created_by'])
+                        commit('setAuthor', timeline['is_owner'])
                     }
                 }).then(
                 () => {
