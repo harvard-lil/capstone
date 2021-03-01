@@ -4,7 +4,7 @@ services:
         build:
           context: ../services/docker
           dockerfile: extended-postgres.dockerfile
-        image: capstone-postgres:0.2
+        image: capstone-postgres:0.3
         environment:
             POSTGRES_PASSWORD: password
         volumes:

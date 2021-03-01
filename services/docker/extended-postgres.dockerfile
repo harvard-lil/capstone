@@ -1,4 +1,4 @@
-FROM registry.lil.tools/library/postgres:11.10
+FROM registry.lil.tools/library/postgres:11.11
 
 RUN apt-get update && \
     apt-get install -y libpq-dev
