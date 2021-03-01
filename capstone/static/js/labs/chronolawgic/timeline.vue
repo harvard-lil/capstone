@@ -3,7 +3,7 @@
     <div class="row top-menu">
       <div class="header-section case-law-section">
         <span>CASE LAW</span>
-        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal">
+        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal" @click="showAddCaseModal(true)">
           <add-icon></add-icon>
         </button>
       </div>
@@ -19,7 +19,7 @@
         </button>
       </div>
     </div>
-    <add-case-modal/>
+    <add-case-modal />
     <add-event-modal/>
     <key v-show="keyShown"></key>
     <section id="timeline">
@@ -81,8 +81,11 @@ export default {
     check() {
       this.checked = !this.checked;
     },
-    showAddEventModal() {
-      this.addEventModalShown = true;
+    showAddEventModal(val) {
+      this.addEventModalShown = val;
+    },
+    showAddCaseModal(val) {
+      this.addCaseModalShown = val;
     },
     toggleKey() {
       this.keyShown = !this.keyShown;

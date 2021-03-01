@@ -39,6 +39,10 @@
               <input v-model="newCase.url" id="field-url" placeholder="URL" class="form-control">
               <label for="field-url">URL</label>
             </div>
+            <div class="form-label-group" id="field-group-citation">
+              <input v-model="newCase.citation" id="field-citation" placeholder="CITATION" class="form-control">
+              <label for="field-citation">CITATION</label>
+            </div>
             <div class="form-label-group" id="field-group-name">
               <input v-model="newCase.name" id="field-name" placeholder="CASE NAME" required class="form-control">
               <label for="field-name">CASE NAME</label>
@@ -68,10 +72,16 @@
             </item-dropdown>
 
           </form>
+          <div v-if="errors.length" class="form-errors p-2 mt-2 small">
+            <b>Please correct the following error(s):</b>
+            <ul class="m-0 list-inline">
+              <li class="list-inline-item" v-for="error in errors" v-bind:key="error">{{ error }}</li>
+            </ul>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" @click="addCase">ADD</button>
+          <button type="button" class="btn btn-primary" @click="addCase" :data-dismiss="$parent.addCaseModalShown ? 'none' : 'modal'">ADD</button>
         </div>
       </div>
     </div>
@@ -98,6 +108,7 @@ export default {
       searchText: '',
       chosenCase: {},
       newCase: {},
+      errors: [],
       extraFields: { // need more info to interact with dropdown fields
         jurisdiction: {
           name: 'jurisdiction',
@@ -116,11 +127,25 @@ export default {
     submitForm() {
       console.log('submit form')
     },
-    addCase() {
-      if (typeof(this.newCase.decision_date) === 'string') {
-        this.newCase.decision_date = new Date(this.newCase.decision_date)
+    checkForm() {
+      this.errors = [];
+      if (!this.newCase.name) {
+        this.errors.push('Event name is required.');
       }
-      store.commit('addCase', this.newCase);
+      if (!this.newCase.decision_date) {
+        this.errors.push('Decision date is required.');
+      }
+    },
+
+    addCase() {
+      this.checkForm();
+      if (this.errors.length) return;
+      let caselaw = JSON.parse(JSON.stringify(this.newCase))
+      if (typeof (this.newCase.decision_date) === 'string') {
+        caselaw.decision_date = new Date(this.newCase.decision_date)
+      }
+      store.commit('addCase', caselaw);
+      this.$parent.showAddCaseModal(false);
       this.$parent.repopulateTimeline();
     },
     chooseCase(result) {
@@ -137,12 +162,12 @@ export default {
     },
     autofillCase() {
       this.newCase.name = this.chosenCase.name_abbreviation;
-      this.newCase.short_description = this.chosenCase.citations[0].cite;
+      this.newCase.citation = this.chosenCase.citations[0].cite;
       this.newCase.url = this.chosenCase.url;
       this.newCase.decision_date = this.formatDate(this.chosenCase.decision_date);
 
       this.extraFields.jurisdiction.value = this.chosenCase.jurisdiction.name;
-      this.extraFields.reporter.value = this.chosenCase.reporter.short_name;
+      this.extraFields.reporter.value = this.chosenCase.reporter.full_name;
     },
     searchCAP() {
       if (this.searchText) {

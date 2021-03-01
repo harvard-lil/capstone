@@ -39,11 +39,16 @@
 
 
           </form>
-
+          <div v-if="errors.length" class="form-errors p-2 mt-2 small">
+            <b>Please correct the following error(s):</b>
+          <ul class="m-0 list-inline">
+            <li class="list-inline-item" v-for="error in errors" v-bind:key="error">{{ error }}</li>
+          </ul>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" @click="addEvent">ADD</button>
+          <button type="button" class="btn btn-primary" @click="addEvent" :data-dismiss="$parent.addEventModalShown ? 'none' : 'modal'">ADD</button>
         </div>
       </div>
     </div>
@@ -57,22 +62,38 @@ export default {
   name: "add-event-modal",
   data() {
     return {
-      newEvent: {}
+      newEvent: {},
+      errors: [],
     }
   },
   methods: {
     clearContent() {
-      console.log("clear")
       this.newEvent = store.getters.templateEvent;
     },
+    checkForm() {
+      this.errors = [];
+      if (!this.newEvent.name) {
+        this.errors.push('Event name is required.');
+      }
+      if (!this.newEvent.start_date) {
+        this.errors.push('Start date is required.');
+      }
+      if (!this.newEvent.end_date) {
+        this.errors.push('End date is required.')
+      }
+    },
     addEvent() {
-      if (typeof(this.newEvent.start_date) === 'string') {
+      this.checkForm();
+      if (this.errors.length) return;
+
+      if (typeof (this.newEvent.start_date) === 'string') {
         this.newEvent.start_date = new Date(this.newEvent.start_date)
       }
-      if (typeof(this.newEvent.end_date) === 'string') {
+      if (typeof (this.newEvent.end_date) === 'string') {
         this.newEvent.end_date = new Date(this.newEvent.end_date)
       }
       store.commit('addEvent', this.newEvent)
+      this.$parent.showAddCaseModal(false);
       this.$parent.repopulateTimeline();
     }
   },
