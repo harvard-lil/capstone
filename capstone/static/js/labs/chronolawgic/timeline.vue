@@ -3,14 +3,14 @@
     <div class="row top-menu">
       <div class="header-section case-law-section">
         <span>CASE LAW</span>
-        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal"
+        <button v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal"
                 @click="showAddCaseModal(true)">
           <add-icon></add-icon>
         </button>
       </div>
       <div class="header-section other-events-section">
         <span>EVENTS</span>
-        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-event-modal">
+        <button v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-event-modal">
           <add-icon></add-icon>
         </button>
       </div>
@@ -53,6 +53,9 @@ export default {
   computed: {
     title() {
       return this.$store.state.title
+    },
+    isAuthor() {
+      return this.$store.state.isAuthor
     }
   },
   watch: {
