@@ -1605,6 +1605,17 @@ def print_harvard_ip_ranges():
             for addr in addrs['data'][k]:
                 print(f"'{addr['prefix']}',")
 
+@task
+def ingest_labs_fixtures():
+    if not settings.LABS:
+        return
+    fixtures = [
+        ('default', 'labs', ('timeline', )),
+    ]
+
+    for db, app, models in fixtures:
+        management.call_command('loaddata', *models, database=db)
+
 
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
