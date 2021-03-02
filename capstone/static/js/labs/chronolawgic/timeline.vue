@@ -3,7 +3,8 @@
     <div class="row top-menu">
       <div class="header-section case-law-section">
         <span>CASE LAW</span>
-        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal" @click="showAddCaseModal(true)">
+        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal"
+                @click="showAddCaseModal(true)">
           <add-icon></add-icon>
         </button>
       </div>
@@ -49,11 +50,19 @@ export default {
     AddEventModal,
     Year,
   },
-
+  computed: {
+    title() {
+      return this.$store.state.title
+    }
+  },
+  watch: {
+    title() {
+      this.repopulateTimeline();
+    }
+  },
   data() {
     return {
       checked: false,
-      title: 'Check me',
       addCaseModalShown: false,
       addEventModalShown: false,
       keyShown: false,
@@ -110,11 +119,11 @@ export default {
         if (newEvents.length > 0) {
           newEvents.forEach((evt) => {
             evt.color = this.eventsColorPool[Math.floor(Math.random() * this.eventsColorPool.length)]
-            for (let track_index = 0; track_index < 12; track_index++){
+            for (let track_index = 0; track_index < 12; track_index++) {
               if (Object.keys(this.years[year].event_list[track_index]).length === 0) { // since the events are start-year sorted, if the track is empty on the first year, it'll be good for the rest
-                let length = evt.end_date.getUTCFullYear() - evt.start_date.getUTCFullYear();
+                let length = new Date(evt.end_date).getUTCFullYear() - new Date(evt.start_date).getUTCFullYear();
                 for (let event_year = 0; event_year <= length; event_year++) { // fill in the years on that track with the event
-                   this.$set(this.years[year + event_year].event_list, track_index, evt)
+                  this.$set(this.years[year + event_year].event_list, track_index, evt)
                 }
                 return false // break
               }
@@ -124,8 +133,5 @@ export default {
       }
     },
   },
-  mounted: function () {
-    this.repopulateTimeline();
-  }
 };
 </script>

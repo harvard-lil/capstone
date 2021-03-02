@@ -30,136 +30,12 @@ const store = new Vuex.Store({
         },
         availableTimelines: [],
         id: 1,
-        title: "Timeline Title",
+        title: "",
         createdBy: -1, // (user accts are for auth/logging purposes)
         isAuthor: false,
         categories: { }, // Removed from MVP
-        events: [ {
-                    name: "Event 1",
-                    url: "https://cite.case.law/ill/1/176/",
-                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
-                    short_description: "Between some time and some other time, this thing happened.",
-                    start_date: new Date('1880'),
-                    end_date: new Date('1889'),
-            },
-            {
-                    name: "Event 2",
-                    url: "https://cite.case.law/ill/1/176/",
-                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
-                    short_description: "Between some time and some other time, this thing happened.",
-                    start_date: new Date('1890'),
-                    end_date: new Date('1912'),
-            },
-            {
-                    name: "Event 3",
-                    url: "https://cite.case.law/ill/1/176/",
-                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
-                    short_description: "Between some time and some other time, this thing happened.",
-                    start_date: new Date('1905'),
-                    end_date: new Date('1930'),
-            },
-            {
-                    name: "Event 4",
-                    url: "https://cite.case.law/ill/1/176/",
-                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
-                    short_description: "Between some time and some other time, this thing happened.",
-                    start_date: new Date('1922'),
-                    end_date: new Date('1923'),
-            },
-            {
-                    name: "Event 5",
-                    url: "https://cite.case.law/ill/1/176/",
-                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
-                    short_description: "Between some time and some other time, this thing happened.",
-                    start_date: new Date('1918'),
-                    end_date: new Date('1924'),
-            },
-            {
-                    name: "Event 6",
-                    url: "https://cite.case.law/ill/1/176/",
-                    long_description: "Between some time and some other time, a long long time ago, this thing happened.",
-                    short_description: "Between some time and some other time, this thing happened.",
-                    start_date: new Date('1875'),
-                    end_date: new Date('1878'),
-            },
-        ],
-        cases: [
-            {
-                name: "Case 1",
-                short_description: "The first case in the timeline.",
-                citation: "1 Mass. 1",
-                decision_date: new Date(1893, 11, 17),
-                categories: [1, 3],
-                url: "https://cite.case.law/ill/1/176/",
-                jurisdiction: "Ill.",
-                reporter:  "Ill.",
-                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
-                    "\n" +
-                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
-                    "\n" +
-                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
-            },
-            {
-                name: "Case 2",
-                short_description: "The second case in the timeline.",
-                citation: "1 Mass. 1",
-                decision_date: new Date(1898, 11, 17),
-                categories: [1, 3],
-                url: "https://cite.case.law/ill/1/176/",
-                jurisdiction: "Ill.",
-                reporter:  "Ill.",
-                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
-                    "\n" +
-                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
-                    "\n" +
-                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
-            },
-            {
-                name: "Case 3",
-                short_description: "The third case in the timeline.",
-                citation: "1 Ill. 1",
-                decision_date: new Date(1921, 11, 17),
-                categories: [1, 3],
-                url: "https://cite.case.law/ill/1/176/",
-                jurisdiction: "Ill.",
-                reporter:  "Ill.",
-                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
-                    "\n" +
-                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
-                    "\n" +
-                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
-            },
-            {
-                name: "Case 4",
-                short_description: "The fourt case in the timeline.",
-                citation: "1 Wis. 1",
-                decision_date: new Date(1921, 11, 18),
-                categories: [1, 3],
-                url: "https://cite.case.law/ill/1/176/",
-                jurisdiction: "Ill.",
-                reporter:  "Ill.",
-                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
-                    "\n" +
-                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
-                    "\n" +
-                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
-            },
-            {
-                name: "Case 5",
-                short_description: "The fifth case in the timeline.",
-                citation: "1 Mass. 1",
-                decision_date: new Date(1924, 11, 17),
-                categories: [1, 3],
-                url: "https://cite.case.law/ill/1/176/",
-                jurisdiction: "Ill.",
-                reporter:  "Ill.",
-                long_description: "Consequuntur eum occaecati aliquam reprehenderit molestias ipsam laudantium. Et quisquam quod eum quia nobis quidem. Veritatis qui nulla rem. Est voluptate expedita sapiente. Qui libero veritatis possimus dolorem sint repudiandae sunt doloremque.\n" +
-                    "\n" +
-                    "Velit et quas officiis sed vero. Recusandae consequatur vel excepturi totam et excepturi. Est voluptates ipsam velit ut non itaque consequatur veritatis.\n" +
-                    "\n" +
-                    "Autem exercitationem omnis ducimus molestias. Qui explicabo saepe laborum dolorum ea et. Quidem facilis non ea nemo consectetur velit eos."
-            },
-        ],
+        events: [],
+        cases: [],
         templateEvent: {
             url: "",
             name: "",
@@ -193,9 +69,7 @@ const store = new Vuex.Store({
             state.availableTimelines = json
         },
         setTimeline(state, json) {
-
             state.title = json.title;
-            state.createdBy = json.CreatedBy;
             state.categories = json.categories;
             state.events = json.events;
             state.cases = json.cases
@@ -253,13 +127,16 @@ const store = new Vuex.Store({
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
         firstYear: (state) => {
-            const first_event_year = state.events.reduce((min, e) => e.start_date.getUTCFullYear() < min ? e.start_date.getUTCFullYear() : min, state.events[0].start_date.getUTCFullYear());
-            const first_case_year = state.cases.reduce((min, c) => c.decision_date.getUTCFullYear() < min ? c.decision_date.getUTCFullYear() : min, state.cases[0].decision_date.getUTCFullYear());
+            const first_event_year = state.events.reduce((min, e) =>
+                new Date(e.start_date).getUTCFullYear() < min ? new Date(e.start_date).getUTCFullYear() : min, new Date(state.events[0].start_date).getUTCFullYear());
+            const first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getUTCFullYear() < min ? new Date(c.decision_date).getUTCFullYear() : min, new Date(state.cases[0].decision_date).getUTCFullYear());
             return first_case_year < first_event_year ? first_case_year : first_event_year;
         },
         lastYear: (state) => {
-            const last_event_year = state.events.reduce((max, e) => e.end_date.getUTCFullYear() > max ? e.end_date.getUTCFullYear() : max, state.events[0].end_date.getUTCFullYear());
-            const last_case_year = state.cases.reduce((max, e) => e.decision_date.getUTCFullYear() > max ? e.decision_date.getUTCFullYear() : max, state.cases[0].decision_date.getUTCFullYear());
+            const last_event_year = state.events.reduce((max, e) =>
+                new Date(e.end_date).getUTCFullYear() > max ? new Date(e.end_date).getUTCFullYear() : max, new Date(state.events[0].end_date).getUTCFullYear());
+            const last_case_year = state.cases.reduce((max, e) =>
+                new Date(e.decision_date).getUTCFullYear() > max ? new Date(e.decision_date).getUTCFullYear() : max, new Date(state.cases[0].decision_date).getUTCFullYear());
             return last_case_year > last_event_year ? last_case_year : last_event_year;
         },
         events: (state) => {
@@ -272,7 +149,7 @@ const store = new Vuex.Store({
         // },
         eventByStartYear: (state) => (year) => {
             return state.events.filter(evt => {
-                return evt.start_date.getUTCFullYear() === year;
+                return new Date(evt.start_date).getUTCFullYear() === year;
             })
         },
         // eventByName: (state) => (name) => {
@@ -282,7 +159,7 @@ const store = new Vuex.Store({
         // },
         casesByYear: (state) => (year) => {
             return state.cases.filter(cas => {
-                return year === cas.decision_date.getUTCFullYear();
+                return year === new Date(cas.decision_date).getUTCFullYear();
             })
         },
         templateCase: state => state.templateCase,
