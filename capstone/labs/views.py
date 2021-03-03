@@ -114,6 +114,7 @@ def chronolawgic_api_admin_update(request, timeline_id):
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
+        title = request.POST.get("timeline")
         parsed = json.loads(request.POST.get("timeline"))  # The JSON model field does not validate json
         timeline.timeline = parsed
         timeline.save()
