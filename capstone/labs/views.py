@@ -78,13 +78,40 @@ def chronolawgic_api_update(request, timeline_id):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
-    if not request.user.is_authenticated:
+    try:
+        timeline = Timeline.objects.get(pk=timeline_id)
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
+
+    if not request.user.is_authenticated or timeline.created_by != request.user.id:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    try:
+        parsed = json.loads(request.POST.get("timeline"))  # The JSON model field does not validate json
+        timeline.timeline = parsed
+        timeline.save()
+    except json.decoder.JSONDecodeError as e:
+        return JsonResponse({'status': 'err', 'reason': e}, status=500)
+
+    return JsonResponse({
+        'status': 'ok',
+        'timeline': timeline.timeline,
+        'id': timeline.pk,
+        'is_owner': True if request.user == timeline.created_by else False
+    })
+
+
+def chronolawgic_api_admin_update(request, timeline_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
     try:
         timeline = Timeline.objects.get(pk=timeline_id)
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
+
+    if not request.user.is_authenticated or timeline.created_by != request.user.id:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
         parsed = json.loads(request.POST.get("timeline"))  # The JSON model field does not validate json
@@ -105,13 +132,13 @@ def chronolawgic_api_delete(request, timeline_id):
     if request.method != 'DELETE':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
-    if not request.user.is_authenticated:
-        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
-
     try:
         timeline = Timeline.objects.get(pk=timeline_id)
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
+
+    if not request.user.is_authenticated or timeline.created_by != request.user.id:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
         timeline.delete()
