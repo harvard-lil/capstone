@@ -1,12 +1,12 @@
 <template>
-  <article class="case" @click="toggleEventModal(case_data)" tabindex="0">
-    <event-author-modal v-if="showEventDetails && $store.state.isAuthor"
+  <article class="case" @click="openModal(case_data)" tabindex="0">
+    <add-case-modal v-if="showEventDetails && $store.state.isAuthor"
                         data-toggle="modal"
-                        data-target="event-author-modal"
+                        data-target="add-case-modal"
                         :modal.sync="showEventDetails"
-                        :event="event"
+                        :case="event"
                         :shown="showEventDetails">
-    </event-author-modal>
+    </add-case-modal>
     <event-modal
         v-else-if="showEventDetails && !($store.state.isAuthor)"
         data-toggle="modal"
@@ -30,10 +30,11 @@
 
 <script>
 import EventModal from './event-modal.vue';
-import EventAuthorModal from './event-author-modal.vue';
+// import EventAuthorModal from './event-author-modal.vue';
+import AddCaseModal from "./add-case-modal";
 export default {
   name: "Case",
-  components: {EventModal, EventAuthorModal},
+  components: {AddCaseModal, EventModal},
   props: ['case_data', 'year_value'],
   data() {
     return {
@@ -42,10 +43,17 @@ export default {
     }
   },
   methods: {
-    toggleEventModal(item) {
-      this.showEventDetails = !this.showEventDetails;
-      this.event = item
+    openModal(item) {
+      this.event = item;
+      // this.event.decision_date = new Date(item.decision_date)
+      this.showEventDetails = true;
     },
+    closeModal() {
+      this.showEventDetails = false
+    },
+    repopulateTimeline() {
+      this.$parent.repopulateTimeline();
+    }
   }
 
 }

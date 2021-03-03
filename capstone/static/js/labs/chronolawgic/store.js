@@ -103,13 +103,26 @@ const store = new Vuex.Store({
             state.events.push(event)
         },
         addCase(state, caselaw) {
+            // assign id to caselaw
+            let index = -1
+            state.cases.forEach((c)=>{
+                if (c.id > index) { index = c.id + 1 }
+            });
+            caselaw.id = index;
             state.cases.push(caselaw)
+            this.dispatch('requestUpdateTimeline')
         },
         updateEvent(state, index, event) {
             state.events[index] = event
         },
-        updateCase(state, index, event) {
-            state.events[index] = event
+        updateCase(state, caselaw) {
+            for (let i = 0; i < state.cases.length; i++) {
+                if (state.cases[i].id === caselaw.id) {
+                    state.cases[i] = caselaw;
+                    this.dispatch('requestUpdateTimeline')
+                    break;
+                }
+            }
         },
         deleteEvent(state, index) {
             state.events.remove(index);
@@ -163,6 +176,14 @@ const store = new Vuex.Store({
             })
         },
         templateCase: state => state.templateCase,
+        timeline: (state) => {
+            return {
+                title: state.title,
+                events: state.events,
+                cases: state.cases,
+                categories: state.categories
+            }
+        }
     },
     actions: {
         requestCreateTimeline: function ({commit}) {

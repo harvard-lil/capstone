@@ -20,7 +20,12 @@
         </button>
       </div>
     </div>
-    <add-case-modal />
+    <add-case-modal v-if="showEventDetails && $store.state.isAuthor" data-toggle="modal"
+                    data-target="add-case-modal"
+                    :modal.sync="showEventDetails"
+                    :case="event"
+                    :shown="showEventDetails"
+    ></add-case-modal>
     <add-event-modal/>
     <key v-show="keyShown"></key>
     <section id="timeline">
@@ -68,6 +73,7 @@ export default {
       checked: false,
       addCaseModalShown: false,
       addEventModalShown: false,
+      showEventDetails: false,
       keyShown: false,
       years: {},
       eventsColorPool: [
@@ -96,9 +102,10 @@ export default {
     showAddEventModal(val) {
       this.addEventModalShown = val;
     },
-    showAddCaseModal(val) {
-      this.addCaseModalShown = val;
+    closeModal() {
+      this.showEventDetails = false
     },
+
     toggleKey() {
       this.keyShown = !this.keyShown;
     },

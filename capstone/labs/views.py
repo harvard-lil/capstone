@@ -88,7 +88,7 @@ def chronolawgic_api_update(request, timeline_id):
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
 
     try:
-        parsed = json.loads(request.POST.get("timeline"))  # The JSON model field does not validate json
+        parsed = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
         timeline.timeline = parsed
         timeline.save()
     except json.decoder.JSONDecodeError as e:
