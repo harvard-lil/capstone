@@ -1219,8 +1219,14 @@ def unredact_volumes(volumes, dry_run='true', warn_after_year=None):
         .order_by('publication_year', 'volume_number'))
     for v in volumes:
         years = v.case_metadatas.aggregate(min_date=Min('decision_date'), max_date=Max('decision_date'))
-        print(f"Unredacting {v.barcode}: {v.volume_number} {v.reporter.short_name} ({v.publication_year}, cases {years['min_date'].year}-{years['max_date'].year})")
-        if warn_after_year is not None and years['max_date'].year > warn_after_year:
+        if years['min_date']:
+            min_date = years['min_date'].year
+            max_date = years['max_date'].year
+        else:
+            min_date = None
+            max_date = None
+        print(f"Unredacting {v.barcode}: {v.volume_number} {v.reporter.short_name} ({v.publication_year}, cases {min_date}-{max_date})")
+        if warn_after_year is not None and max_date > warn_after_year:
             print("- WARNING: year exceeds threshold")
             for c in v.case_metadatas.filter(decision_date__year__gt=warn_after_year):
                 print(" -", c.full_cite())
@@ -1238,6 +1244,11 @@ def unredact_out_of_copyright_volumes(dry_run='true'):
 @task
 def unredact_jurisdiction_volumes(jurisdiction_slug, dry_run='true'):
     unredact_volumes(VolumeMetadata.objects.filter(reporter__jurisdictions__slug=jurisdiction_slug), dry_run)
+
+
+@task
+def unredact_reporter_volumes(reporter_id, dry_run='true'):
+    unredact_volumes(VolumeMetadata.objects.filter(reporter_id=reporter_id), dry_run)
 
 
 @task
