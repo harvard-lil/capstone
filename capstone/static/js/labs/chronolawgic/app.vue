@@ -28,9 +28,10 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('requestTimelineList');
-    if (Number.isInteger(this.$route.params.timeline)) {
+    if (Number(this.$route.params.timeline)) {
       this.$store.dispatch('requestTimeline', this.$route.params.timeline);
+    } else {
+      this.$store.dispatch('requestTimelineList');
     }
   }
 };
