@@ -1,90 +1,59 @@
 <template>
-  <main>
-    <div class="timelines">
-      <h3>Your Timelines</h3>
+  <main class="admin">
+        <div class="row top-menu">
+      <div class="header-section case-law-section">
+        <span>TIMELINES</span>
+        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal" @click="$store.dispatch('requestCreateTimeline')">
+          <add-icon></add-icon>
+        </button>
+      </div>
+      <div class="header-section other-events-section">
+          <span>WHERE AM I?</span>
+          <a href=".." class="icon-link" alt="What is this interface?"><question-icon></question-icon></a>
+      </div>
+      <div class="key-column">
+      </div>
+    </div>
+    <section id="timeline">
       <div v-if="this.$store.getters.availableTimelines">
-        <div class="timeline" v-for="timeline in this.$store.getters.availableTimelines" v-bind:key="timeline.id">
-          <div class="id" v-text="timeline.id"></div>
-          <router-link :to="timeline.id.toString()"><div class="title" v-text="timeline.title"></div></router-link>
-          <div class="subhead" v-text="timeline.subhead"></div>
-          <div class="button btn-edit">
-            <button class="btn btn-primary">edit</button>
-          </div>
-          <div class="button btn-delete">
-            <button class="btn btn-danger" @click="$store.dispatch('requestDeleteTimeline', timeline.id)">delete</button>
+        <div class="timelines">
+          <div class="timeline" v-for="timeline in this.$store.getters.availableTimelines" v-bind:key="timeline.id">
+            <!--<div class="id" v-text="timeline.id"></div>-->
+            <div class="title">
+              <router-link :to="timeline.id.toString()"><div v-text="timeline.title"></div></router-link>
+            </div>
+            <div class="description" v-text="timeline.long_description"></div>
+            <div class="numbers">Soon</div>
+            <div class="buttons">
+              <div class="button btn-edit">
+                <button class="btn btn-primary">edit</button>
+              </div>
+              <div class="button btn-delete">
+                <button class="btn btn-danger" @click="$store.dispatch('requestDeleteTimeline', timeline.id)">delete</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       <div v-else>
-        Looks like you don't have any timelines... YET. Why don't you create one?
-      </div>`
-      <div class="timeline">
-        <div class="button btn-hidden"></div>
-        <div class="button btn-create">
-          <button class="btn-default" @click="$store.dispatch('requestCreateTimeline')">create</button>
-        </div>
+          Looks like you don't have any timelines... YET. Why don't you create one?
       </div>
-    </div>
-    <br/>
+
+    </section>
+
+
+
   </main>
 
 </template>
 
 <script>
+import AddIcon from '../../../../static/img/icons/add.svg';
+import QuestionIcon from '../../../../static/img/icons/question.svg';
 
 export default {
   name: 'Admin',
+  components: {AddIcon, QuestionIcon}
 };
 </script>
 
-<style>
-h3 {
-  font-weight: bold;
-  margin-bottom: 2rem;
-}
-
-.timelines {
-  max-width: 50rem;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 5rem;
-}
-
-.timeline {
-  display: grid;
-  grid-template-areas: "id title subhead button-one button-two";
-  grid-template-columns: 1fr 3fr 4fr 2fr;
-  margin-top: 1rem;
-}
-
-.id {
-  grid-area: id;
-}
-
-.title {
-  grid-area: title;
-  font-family: source-serif;
-  font-weight: bold;
-  font-size: 2rem;
-}
-
-.subhead {
-  grid-area: subhead;
-}
-
-.btn-edit {
-  grid-area: button-one;
-}
-
-.btn-delete {
-  grid-area: button-two;
-}
-
-.btn-hidden {
-  grid-area: button-one;
-}
-
-.btn-create {
-  grid-area: button-two;
-}
-</style>

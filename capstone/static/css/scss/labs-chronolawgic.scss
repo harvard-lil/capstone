@@ -191,4 +191,60 @@ main#main-app {
   }
 
 
+main.admin {
 
+  .other-events-section {
+    padding-top: 0.35em;
+    padding-left: 0.35em;
+    .icon-link {
+      padding: 0.8em;
+    }
+  }
+  h3 {
+    font-weight: bold;
+    margin-bottom: 2rem;
+  }
+
+  .timeline {
+    max-width: 6fr;
+    width: 100%;
+    display: grid;
+    grid-template-areas: ". title description numbers buttons .";
+    grid-template-columns: 20% 25% 20% 5% 5% 25%;
+    min-height: 4rem;
+  }
+
+  .numbers {
+    grid-area: numbers;
+  }
+  .buttons {
+    grid-area: buttons;
+  }
+
+  .title {
+    grid-area: title;
+    font-family: source-serif;
+    font-weight: bold;
+    font-size: 2rem;
+  }
+
+  .description {
+    grid-area: description;
+  }
+
+  .btn-edit {
+    grid-area: button-one;
+  }
+
+  .btn-delete {
+    grid-area: button-two;
+  }
+
+  .btn-hidden {
+    grid-area: button-one;
+  }
+
+  .btn-create {
+    grid-area: button-two;
+  }
+}
