@@ -80,7 +80,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
+          <button v-if="this.case" type="button" class="btn btn-primary" @click="deleteCase" data-dismiss="modal">Delete</button>
+          <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">Cancel</button>
           <button v-if="this.case" type="button" class="btn btn-primary" @click.stop="updateCase"
                   data-dismiss='modal'>
             UPDATE
@@ -170,6 +171,10 @@ export default {
       this.closeModal();
       this.$parent.repopulateTimeline();
     },
+    deleteCase() {
+      store.commit('deleteCase', this.case.id);
+      this.closeModal();
+      this.$parent.repopulateTimeline();
     },
     chooseCase(result) {
       // choosing case from CAP search
