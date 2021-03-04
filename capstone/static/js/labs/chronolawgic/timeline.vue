@@ -2,7 +2,7 @@
   <main id="main-app">
     <div class="row top-menu">
       <div class="header-section case-law-section">
-        <span>CASE LAW</span>
+        <span>CASELAW</span>
         <button @click="showAddCaseModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal"
                 data-target="#add-case-modal">
           <add-icon></add-icon>
