@@ -1,5 +1,4 @@
 import pytest
-import json
 from capweb.helpers import reverse
 from capapi.tests.helpers import check_response
 from labs.models import Timeline
@@ -59,9 +58,8 @@ def test_timeline_update(client, auth_client):
 
     new_title = "My second timeline attempt"
     timeline["title"] = new_title
-
     update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.id)])
-    response = auth_client.post(update_url, {"timeline": json.dumps(timeline)})
+    response = auth_client.post(update_url, {"timeline": timeline}, format='json')
     check_response(response, content_type="application/json")
     assert response.json()["timeline"]["title"] == new_title
 
@@ -71,7 +69,7 @@ def test_timeline_update(client, auth_client):
     update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.id)])
 
     # don't allow unauthenticated users
-    response = client.post(update_url, {"timeline": json.dumps(timeline)})
+    response = client.post(update_url, {"timeline": timeline}, format='json')
     check_response(response, status_code=403, content_type="application/json")
 
     response = auth_client.get(retrieve_url + str(tl.id))

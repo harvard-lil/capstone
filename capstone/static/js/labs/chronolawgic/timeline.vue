@@ -3,13 +3,15 @@
     <div class="row top-menu">
       <div class="header-section case-law-section">
         <span>CASE LAW</span>
-        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal" @click="showAddCaseModal(true)">
+        <button @click="showAddCaseModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal"
+                data-target="#add-case-modal">
           <add-icon></add-icon>
         </button>
       </div>
       <div class="header-section other-events-section">
         <span>EVENTS</span>
-        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-event-modal">
+        <button @click="showAddEventModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal"
+                data-target="#add-event-modal">
           <add-icon></add-icon>
         </button>
       </div>
@@ -19,8 +21,20 @@
         </button>
       </div>
     </div>
-    <add-case-modal />
-    <add-event-modal/>
+    <add-case-modal v-if="addCaseModalShown && $store.state.isAuthor"
+                    data-toggle="modal"
+                    data-target="add-case-modal"
+                    :modal.sync="addCaseModalShown"
+                    :case="event"
+                    :shown="addCaseModalShown">
+    </add-case-modal>
+    <add-event-modal v-if="addEventModalShown && $store.state.isAuthor"
+                    data-toggle="modal"
+                    data-target="add-event-modal"
+                    :modal.sync="addEventModalShown"
+                    :event="event"
+                    :shown="addEventModalShown">
+    </add-event-modal>
     <key v-show="keyShown"></key>
     <section id="timeline">
       <div v-for="(year_data, idx) in years" v-bind:key="'year_' + idx">
@@ -49,13 +63,25 @@ export default {
     AddEventModal,
     Year,
   },
-
+  computed: {
+    title() {
+      return this.$store.state.title
+    },
+    isAuthor() {
+      return this.$store.state.isAuthor
+    }
+  },
+  watch: {
+    title() {
+      this.repopulateTimeline();
+    }
+  },
   data() {
     return {
       checked: false,
-      title: 'Check me',
       addCaseModalShown: false,
       addEventModalShown: false,
+      showEventDetails: false,
       keyShown: false,
       years: {},
       eventsColorPool: [
@@ -63,14 +89,14 @@ export default {
         "#DBC600",
         "#00B7DB",
         "#DB4500",
-        "#3FDB00",
-        "#0009DB",
-        "#DB0C00",
+        "#85ff53",
+        "#7e84ff",
+        "#ff564c",
         "#0073DB",
         "#CBDB00",
         "#8B00DB",
         "#DB8F00",
-        "#00DB67"
+        "#00db67"
       ],
       event: null,
       events: [],
@@ -83,10 +109,17 @@ export default {
     },
     showAddEventModal(val) {
       this.addEventModalShown = val;
+      this.showEventDetails = this.addEventModalShown
     },
     showAddCaseModal(val) {
       this.addCaseModalShown = val;
+      this.showEventDetails = this.addCaseModalShown
     },
+    closeModal() {
+      this.showAddCaseModal(false)
+      this.showAddEventModal(false)
+    },
+
     toggleKey() {
       this.keyShown = !this.keyShown;
     },
@@ -97,7 +130,6 @@ export default {
       /*
       there are certainly better ways to do this— this is just the way it came out for the MVP
        */
-
       for (let y = this.$store.getters.firstYear; y <= this.$store.getters.lastYear; y++) {
         this.$set(this.years, y, {
           case_list: this.$store.getters.casesByYear(y),
@@ -110,11 +142,11 @@ export default {
         if (newEvents.length > 0) {
           newEvents.forEach((evt) => {
             evt.color = this.eventsColorPool[Math.floor(Math.random() * this.eventsColorPool.length)]
-            for (let track_index = 0; track_index < 12; track_index++){
+            for (let track_index = 0; track_index < 12; track_index++) {
               if (Object.keys(this.years[year].event_list[track_index]).length === 0) { // since the events are start-year sorted, if the track is empty on the first year, it'll be good for the rest
-                let length = evt.end_date.getUTCFullYear() - evt.start_date.getUTCFullYear();
+                let length = new Date(evt.end_date).getUTCFullYear() - new Date(evt.start_date).getUTCFullYear();
                 for (let event_year = 0; event_year <= length; event_year++) { // fill in the years on that track with the event
-                   this.$set(this.years[year + event_year].event_list, track_index, evt)
+                  this.$set(this.years[year + event_year].event_list, track_index, evt)
                 }
                 return false // break
               }
@@ -124,8 +156,5 @@ export default {
       }
     },
   },
-  mounted: function () {
-    this.repopulateTimeline();
-  }
 };
 </script>

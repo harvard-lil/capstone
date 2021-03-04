@@ -4,14 +4,19 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">{{ event.name }} | {{ event.start_date}}</h5>
-          <button type="button" class="close" @click="closeModal">
+          <button type="button" class="close" @click.stop="closeModal" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
           <h6>{{ event.short_description }}</h6>
           <hr/>
-          {{ event.long_description }}
+          <div class="long-description">
+            <p v-for="(par, index) in event.long_description.split('\n')"
+            :key="index">
+              {{ par }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -22,16 +27,15 @@
 export default {
   name: "event-modal",
   props: [
-      'showEventDetails',
       'shown',
       'modal',
       'event',
   ],
   methods: {
     closeModal() {
-      this.$emit('toggleEventModal');
+      this.$parent.closeModal();
     }
-  }
+  },
 }
 </script>
 
