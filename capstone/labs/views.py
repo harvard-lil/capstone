@@ -74,21 +74,20 @@ def chronolawgic_api_create(request):
         'is_owner': request.user == timeline.created_by
     })
 
-
 def chronolawgic_api_update(request, timeline_id):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
         timeline = Timeline.objects.get(pk=timeline_id)
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
 
-    if not request.user.is_authenticated or timeline.created_by != request.user.id:
-        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
-
     try:
-        parsed = json.loads(request.POST.get("timeline"))  # The JSON model field does not validate json
+        parsed = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
         timeline.timeline = parsed
         timeline.save()
     except json.decoder.JSONDecodeError as e:
@@ -100,6 +99,7 @@ def chronolawgic_api_update(request, timeline_id):
         'id': timeline.pk,
         'is_owner': True if request.user == timeline.created_by else False
     })
+
 
 
 def chronolawgic_api_admin_update(request, timeline_id):
@@ -115,8 +115,8 @@ def chronolawgic_api_admin_update(request, timeline_id):
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        title = request.POST.get("timeline")
-        parsed = json.loads(request.POST.get("timeline"))  # The JSON model field does not validate json
+        # title = request.POST.get("timeline")
+        parsed = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
         timeline.timeline = parsed
         timeline.save()
     except json.decoder.JSONDecodeError as e:

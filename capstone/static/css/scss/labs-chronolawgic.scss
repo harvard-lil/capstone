@@ -47,41 +47,44 @@ main#main-app {
     grid-template-columns: 65% 10% 10% 15%;
     min-height: 4rem;
 
-  div.incidental {
-    grid-area: incidental;
-    justify-content: end;
-    display: flex;
-  }
+    div.incidental {
+      grid-area: incidental;
+      justify-content: end;
+      display: flex;
+    }
 
-  article.case {
-    display: grid;
-    font-family: $font-serif-fancy;
-    line-height: $line-height-sm;
-    font-size: $font-size-sm;
-    background-color: $color-white;
-    border: 2px solid $color-black;
-    width: 20rem;
-    padding: 0.75rem;
-    margin: 0.5rem;
-    align-self: end;
-    grid-gap: .25rem;
-    grid-template-areas: "casename"
+    article.case {
+      cursor: pointer;
+      display: grid;
+      font-family: $font-serif-fancy;
+      line-height: $line-height-sm;
+      font-size: $font-size-sm;
+      background-color: $color-white;
+      border: 2px solid $color-black;
+      width: 20rem;
+      padding: 0.75rem;
+      margin: 0.5rem;
+      align-self: end;
+      grid-gap: .25rem;
+      grid-template-areas: "casename"
                          "subhead"
                          "desc";
-    grid-template-columns: 1fr;
-  }
+      grid-template-columns: 1fr;
+    }
 
     header {
       grid-area: casename;
       font-size: 1rem;
       padding: 0;
     }
+
     section.subhead {
       padding: 0;
       grid-area: subhead;
       font-weight: $font-weight-black;
       font-size: .75rem;
     }
+
     section.desc {
       padding: 0;
       grid-area: desc;
@@ -90,105 +93,111 @@ main#main-app {
       text-overflow: ellipsis;
       font-size: .5rem;
     }
-   div.year_scale {
-    //padding-left: 3rem;
-    //padding-right: 3rem;
-    grid-area: years;
-    font-family: $font-family-monospace;
-    display: grid;
-    grid-template-areas: "left-line year right-line";
-    grid-template-columns: 1fr 1fr 1fr;
-    margin-top: auto;
-    margin-bottom: auto;
-     div {
-  display: flex;
-  justify-content: center;
-  align-content: center;
-  flex-direction: column;
-     }
-     .year {
-       text-align: center;
-    }
-    .left-line, .right-line {
-      hr {
-        width: 2rem;
+
+    div.year_scale {
+      grid-area: years;
+      font-family: $font-family-monospace;
+      display: grid;
+      grid-template-areas: "left-line year right-line";
+      grid-template-columns: 1fr 1fr 1fr;
+      margin-top: auto;
+      margin-bottom: auto;
+
+      div {
+        display: flex;
+        justify-content: center;
+        align-content: center;
+        flex-direction: column;
+      }
+
+      .year {
+        text-align: center;
+      }
+
+      .left-line, .right-line {
+        hr {
+          width: 2rem;
+        }
+      }
+
+      .left-line {
+        grid-area: left-line;
+      }
+
+      .right-line {
+        grid-area: right-line;
       }
     }
-    .left-line {
-      grid-area: left-line;
+
+    .event_col {
+      min-width: 1rem;
     }
-    .right-line {
-      grid-area: right-line;
+
+    div.spans {
+      padding-left: 2rem;
+      grid-area: spans;
+      display: grid;
+      grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    }
+
+    .fill {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      border: 0;
+      padding: 0;
+    }
+
+    .ec_1 {
+      grid-area: ec_1;
+    }
+
+    .ec_2 {
+      grid-area: ec_2;
+    }
+
+    .ec_3 {
+      grid-area: ec_3;
+    }
+
+    .ec_4 {
+      grid-area: ec_4;
+    }
+
+    .ec_5 {
+      grid-area: ec_5;
+    }
+
+    .ec_6 {
+      grid-area: ec_6;
+    }
+
+    .ec_7 {
+      grid-area: ec_7;
+    }
+
+    .ec_8 {
+      grid-area: ec_8;
+    }
+
+    .ec_9 {
+      grid-area: ec_9;
+    }
+
+    .ec_10 {
+      grid-area: ec_10;
+    }
+
+    .ec_11 {
+      grid-area: ec_11;
+    }
+
+    .ec_12 {
+      grid-area: ec_12;
     }
   }
-  .event_col {
-    min-width: 1rem;
-  }
-  div.spans {
-    padding-left: 2rem;
-    grid-area: spans;
-    display: grid;
-    grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  }
-  .fill {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    border:0;
-    padding: 0;
-  }
-  .ec_1 {
-    grid-area: ec_1;
-  }
-
-  .ec_2 {
-    grid-area: ec_2;
-  }
-
-  .ec_3 {
-    grid-area: ec_3;
-  }
-
-  .ec_4 {
-    grid-area: ec_4;
-  }
-
-  .ec_5 {
-    grid-area: ec_5;
-  }
-
-  .ec_6 {
-    grid-area: ec_6;
-  }
-
-  .ec_7 {
-    grid-area: ec_7;
-  }
-
-  .ec_8 {
-    grid-area: ec_8;
-  }
-
-  .ec_9 {
-    grid-area: ec_9;
-  }
-
-  .ec_10 {
-    grid-area: ec_10;
-  }
-
-  .ec_11 {
-    grid-area: ec_11;
-  }
-
-  .ec_12 {
-    grid-area: ec_12;
-  }
-
-  }
-
-  }
+}
 
 
 main.admin {

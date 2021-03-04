@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">ADD CASE LAW</h5>
-          <button type="button" @click="clearContent" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" @click.stop="closeModal" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -59,7 +59,7 @@
               <label for="field-decision-date">DECISION DATE</label>
             </div>
             <div class="form-label-group" id="field-group-long">
-            <textarea v-model="newCase.long" id="field-long-description" placeholder="LONGER DESCRIPTION"
+            <textarea v-model="newCase.long_description" id="field-long-description" placeholder="LONGER DESCRIPTION"
                       class="form-control"></textarea>
             </div>
             <item-dropdown class="form-label-group" id="field-group-jurisdiction" :field="extraFields.jurisdiction"
@@ -80,8 +80,16 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" @click="addCase" :data-dismiss="$parent.addCaseModalShown ? 'none' : 'modal'">ADD</button>
+          <button v-if="this.case" type="button" class="btn btn-primary" @click="deleteCase" data-dismiss="modal">Delete</button>
+          <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">Cancel</button>
+          <button v-if="this.case" type="button" class="btn btn-primary" @click.stop="updateCase"
+                  data-dismiss='modal'>
+            UPDATE
+          </button>
+          <button v-else type="button" class="btn btn-primary" @click="addCase"
+                  data-dismiss="modal">
+            ADD
+          </button>
         </div>
       </div>
     </div>
@@ -101,6 +109,11 @@ export default {
     ItemDropdown,
     CaseResult
   },
+  props: [
+    'shown',
+    'modal',
+    'case'
+  ],
   data() {
     return {
       choices: {},
@@ -124,9 +137,6 @@ export default {
     }
   },
   methods: {
-    submitForm() {
-      console.log('submit form')
-    },
     checkForm() {
       this.errors = [];
       if (!this.newCase.name) {
@@ -136,16 +146,29 @@ export default {
         this.errors.push('Decision date is required.');
       }
     },
+    closeModal() {
+      this.$parent.closeModal();
+    },
+    updateCase() {
+      this.checkForm();
+      if (this.errors.length) return;
+      let caselaw = JSON.parse(JSON.stringify(this.newCase))
+      store.commit('updateCase', caselaw)
+      this.closeModal()
+      this.$parent.repopulateTimeline();
+    },
 
     addCase() {
       this.checkForm();
       if (this.errors.length) return;
       let caselaw = JSON.parse(JSON.stringify(this.newCase))
-      if (typeof (this.newCase.decision_date) === 'string') {
-        caselaw.decision_date = new Date(this.newCase.decision_date)
-      }
       store.commit('addCase', caselaw);
-      this.$parent.showAddCaseModal(false);
+      this.closeModal();
+      this.$parent.repopulateTimeline();
+    },
+    deleteCase() {
+      store.commit('deleteCase', this.case.id);
+      this.closeModal();
       this.$parent.repopulateTimeline();
     },
     chooseCase(result) {
@@ -180,16 +203,22 @@ export default {
       }
     },
     clearContent() {
+      this.closeModal();
       this.newCase = store.getters.templateCase;
     }
   },
   mounted() {
     this.choices = store.getters.choices;
-    this.newCase = store.getters.templateCase;
+    if (this.case) {
+      this.newCase = JSON.parse(JSON.stringify(this.case)) // deep copy to unbind
+    } else {
+      this.newCase = store.getters.templateCase;
+    }
   },
 }
 </script>
-
 <style scoped>
-
+#add-case-modal {
+  display: block;
+}
 </style>
