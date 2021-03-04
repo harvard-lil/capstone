@@ -157,10 +157,9 @@ export default {
       this.checkForm();
       if (this.errors.length) return;
       let caselaw = JSON.parse(JSON.stringify(this.newCase))
-      this.case = this.newCase
-      console.log("getting date:", caselaw.decision_date)
       store.commit('updateCase', caselaw)
       this.closeModal()
+      this.$parent.repopulateTimeline();
     },
 
     addCase() {
@@ -215,8 +214,7 @@ export default {
   mounted() {
     this.choices = store.getters.choices;
     if (this.case) {
-      // this.newCase = JSON.parse(JSON.stringify(this.case)) // deep copy to unbind
-      this.newCase = this.case
+      this.newCase = JSON.parse(JSON.stringify(this.case)) // deep copy to unbind
     } else {
       this.newCase = store.getters.templateCase;
     }
