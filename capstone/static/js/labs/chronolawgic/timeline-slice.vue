@@ -47,6 +47,9 @@ export default {
     closeModal() {
       this.showEventDetails = false
     },
+    repopulateTimeline() {
+      this.$parent.repopulateTimeline()
+    }
 
   },
   data() {
