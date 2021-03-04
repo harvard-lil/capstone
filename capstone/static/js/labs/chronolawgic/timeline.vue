@@ -3,15 +3,15 @@
     <div class="row top-menu">
       <div class="header-section case-law-section">
         <span>CASE LAW</span>
-        <button @click="toggleEventModal()" v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal"
-                data-target="#add-case-modal"
-        >
+        <button @click="showAddCaseModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal"
+                data-target="#add-case-modal">
           <add-icon></add-icon>
         </button>
       </div>
       <div class="header-section other-events-section">
         <span>EVENTS</span>
-        <button v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-event-modal">
+        <button @click="showAddEventModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal"
+                data-target="#add-event-modal">
           <add-icon></add-icon>
         </button>
       </div>
@@ -21,14 +21,20 @@
         </button>
       </div>
     </div>
-    <add-case-modal v-if="showEventDetails && $store.state.isAuthor"
+    <add-case-modal v-if="addCaseModalShown && $store.state.isAuthor"
                     data-toggle="modal"
                     data-target="add-case-modal"
-                    :modal.sync="showEventDetails"
+                    :modal.sync="addCaseModalShown"
                     :case="event"
-                    :shown="showEventDetails">
+                    :shown="addCaseModalShown">
     </add-case-modal>
-    <add-event-modal/>
+    <add-event-modal v-if="addEventModalShown && $store.state.isAuthor"
+                    data-toggle="modal"
+                    data-target="add-event-modal"
+                    :modal.sync="addEventModalShown"
+                    :event="event"
+                    :shown="addEventModalShown">
+    </add-event-modal>
     <key v-show="keyShown"></key>
     <section id="timeline">
       <div v-for="(year_data, idx) in years" v-bind:key="'year_' + idx">
@@ -83,14 +89,14 @@ export default {
         "#DBC600",
         "#00B7DB",
         "#DB4500",
-        "#3FDB00",
-        "#0009DB",
-        "#DB0C00",
+        "#85ff53",
+        "#7e84ff",
+        "#ff564c",
         "#0073DB",
         "#CBDB00",
         "#8B00DB",
         "#DB8F00",
-        "#00DB67"
+        "#00db67"
       ],
       event: null,
       events: [],
@@ -103,9 +109,15 @@ export default {
     },
     showAddEventModal(val) {
       this.addEventModalShown = val;
+      this.showEventDetails = this.addEventModalShown
+    },
+    showAddCaseModal(val) {
+      this.addCaseModalShown = val;
+      this.showEventDetails = this.addCaseModalShown
     },
     closeModal() {
-      this.showEventDetails = false
+      this.showAddCaseModal(false)
+      this.showAddEventModal(false)
     },
 
     toggleKey() {
@@ -118,7 +130,6 @@ export default {
       /*
       there are certainly better ways to do this— this is just the way it came out for the MVP
        */
-
       for (let y = this.$store.getters.firstYear; y <= this.$store.getters.lastYear; y++) {
         this.$set(this.years, y, {
           case_list: this.$store.getters.casesByYear(y),

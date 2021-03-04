@@ -30,7 +30,6 @@
 
 <script>
 import EventModal from './event-modal.vue';
-// import EventAuthorModal from './event-author-modal.vue';
 import AddCaseModal from "./add-case-modal";
 export default {
   name: "Case",
@@ -45,7 +44,6 @@ export default {
   methods: {
     openModal(item) {
       this.event = item;
-      // this.event.decision_date = new Date(item.decision_date)
       this.showEventDetails = true;
     },
     closeModal() {

@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">ADD EVENT</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click.stop="closeModal">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -41,14 +41,16 @@
           </form>
           <div v-if="errors.length" class="form-errors p-2 mt-2 small">
             <b>Please correct the following error(s):</b>
-          <ul class="m-0 list-inline">
-            <li class="list-inline-item" v-for="error in errors" v-bind:key="error">{{ error }}</li>
-          </ul>
+            <ul class="m-0 list-inline">
+              <li class="list-inline-item" v-for="error in errors" v-bind:key="error">{{ error }}</li>
+            </ul>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" @click="addEvent" :data-dismiss="$parent.addEventModalShown ? 'none' : 'modal'">ADD</button>
+          <button type="button" class="btn btn-primary" @click="addEvent"
+                  :data-dismiss="$parent.addEventModalShown ? 'none' : 'modal'">ADD
+          </button>
         </div>
       </div>
     </div>
@@ -60,6 +62,11 @@ import store from "./store";
 
 export default {
   name: "add-event-modal",
+  props: [
+      'showEventDetails',
+      'modal',
+      'event'
+  ],
   data() {
     return {
       newEvent: {},
@@ -82,27 +89,31 @@ export default {
         this.errors.push('End date is required.')
       }
     },
+    closeModal() {
+      this.$parent.closeModal();
+    },
+
     addEvent() {
       this.checkForm();
       if (this.errors.length) return;
 
-      if (typeof (this.newEvent.start_date) === 'string') {
-        this.newEvent.start_date = new Date(this.newEvent.start_date)
-      }
-      if (typeof (this.newEvent.end_date) === 'string') {
-        this.newEvent.end_date = new Date(this.newEvent.end_date)
-      }
       store.commit('addEvent', this.newEvent)
-      this.$parent.showAddCaseModal(false);
+      this.closeModal();
       this.$parent.repopulateTimeline();
     }
   },
   mounted() {
-    this.newEvent = store.getters.templateEvent;
+    if (this.event) {
+      this.newEvent = JSON.parse(JSON.stringify(this.event)) // deep copy to unbind
+    } else {
+      this.newEvent = store.getters.templateEvent;
+    }
   }
 }
 </script>
 
 <style scoped>
-
+#add-event-modal {
+  display: block;
+}
 </style>

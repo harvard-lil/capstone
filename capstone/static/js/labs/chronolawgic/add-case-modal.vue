@@ -137,9 +137,6 @@ export default {
     }
   },
   methods: {
-    submitForm() {
-      console.log('submit form')
-    },
     checkForm() {
       this.errors = [];
       if (!this.newCase.name) {
@@ -150,7 +147,6 @@ export default {
       }
     },
     closeModal() {
-      console.log("calling parent closeModal")
       this.$parent.closeModal();
     },
     updateCase() {
