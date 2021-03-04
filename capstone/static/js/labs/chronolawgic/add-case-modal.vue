@@ -203,6 +203,7 @@ export default {
       }
     },
     clearContent() {
+      this.closeModal();
       this.newCase = store.getters.templateCase;
     }
   },

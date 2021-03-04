@@ -3,8 +3,9 @@
     <div class="row top-menu">
       <div class="header-section case-law-section">
         <span>CASE LAW</span>
-        <button v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal"
-                @click="showAddCaseModal(true)">
+        <button @click="toggleEventModal()" v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal"
+                data-target="#add-case-modal"
+        >
           <add-icon></add-icon>
         </button>
       </div>
@@ -20,12 +21,13 @@
         </button>
       </div>
     </div>
-    <add-case-modal v-if="showEventDetails && $store.state.isAuthor" data-toggle="modal"
+    <add-case-modal v-if="showEventDetails && $store.state.isAuthor"
+                    data-toggle="modal"
                     data-target="add-case-modal"
                     :modal.sync="showEventDetails"
                     :case="event"
-                    :shown="showEventDetails"
-    ></add-case-modal>
+                    :shown="showEventDetails">
+    </add-case-modal>
     <add-event-modal/>
     <key v-show="keyShown"></key>
     <section id="timeline">
