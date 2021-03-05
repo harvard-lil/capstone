@@ -3,21 +3,6 @@
            data-toggle="modal"
            :data-target="$store.state.isAuthor ? '#add-case-modal' : '#readonly-modal'"
            tabindex="0">
-    <add-case-modal v-if="showEventDetails && $store.state.isAuthor"
-                        data-toggle="modal"
-                        data-target="#add-case-modal"
-                        :modal.sync="showEventDetails"
-                        :case="event"
-                        :shown="showEventDetails">
-    </add-case-modal>
-    <readonly-modal
-        v-else-if="showEventDetails && !($store.state.isAuthor)"
-        data-toggle="modal"
-        data-target="#readonly-modal"
-        :modal.sync="showEventDetails"
-        :event="event"
-        :shown="showEventDetails">
-    </readonly-modal>
 
     <header>
       {{ case_data.name }}
@@ -32,26 +17,17 @@
 </template>
 
 <script>
-import EventModal from './event-modal.vue';
-import ReadonlyModal from './readonly-modal.vue';
-import AddCaseModal from "./add-case-modal";
+import {EventBus} from "./event-bus.js";
+
 export default {
   name: "Case",
-  components: {AddCaseModal, ReadonlyModal},
   props: ['case_data', 'year_value'],
-  data() {
-    return {
-      showEventDetails: false,
-      event: {}
-    }
-  },
   methods: {
     openModal(item) {
-      this.event = item;
-      this.showEventDetails = true;
+      EventBus.$emit('openModal', item, 'case')
     },
     closeModal() {
-      this.showEventDetails = false
+      EventBus.$emit('closeModal')
     },
     repopulateTimeline() {
       this.$parent.repopulateTimeline();

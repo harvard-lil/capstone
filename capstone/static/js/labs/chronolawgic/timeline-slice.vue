@@ -10,57 +10,27 @@
                     'border-bottom': parseInt(year_value) === new Date(event_data.end_date).getUTCFullYear() ? '1rem solid gray' : '',
                     'min-height': '1rem'
                 }"
-           @click.stop="openModal(event_data)">
-        <add-event-modal v-if="showEventDetails && $store.state.isAuthor"
-                            data-toggle="modal"
-                            data-target="#add-event-modal"
-                            :modal.sync="showEventDetails"
-                            :event="event"
-                            :shown="showEventDetails">
-        </add-event-modal>
-        <readonly-modal
-            v-if="showEventDetails && !($store.state.isAuthor)"
-            data-toggle="modal"
-            data-target="#readonly-modal"
-            :modal.sync="showEventDetails"
-            :event="event"
-            :shown="showEventDetails">
-        </readonly-modal>
+           data-toggle="modal"
+           :data-target="$store.state.isAuthor ? '#add-event-modal' : '#readonly-modal'"
+           @click="openModal(event_data)">
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ReadonlyModal from "./readonly-modal";
-import AddEventModal from "./add-event-modal";
+import {EventBus} from "./event-bus.js"
 
 export default {
   name: "TimelineSlice",
-  components: {AddEventModal, ReadonlyModal},
   props: ['year_value', 'event_list'],
   methods: {
     openModal(item) {
-      this.showEventDetails = true;
-      this.event = item
+      EventBus.$emit('openModal', item, 'event')
     },
     closeModal() {
-      this.showEventDetails = false
+      this.$emit('closeModal')
     },
-    repopulateTimeline() {
-      this.$parent.repopulateTimeline()
-    }
-
-  },
-  data() {
-    return {
-      showEventDetails: false,
-      event: {}
-    }
   },
 }
 </script>
-
-<style scoped>
-
-</style>

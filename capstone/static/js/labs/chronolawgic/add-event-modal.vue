@@ -1,5 +1,5 @@
 <template>
-  <div class="modal" id="add-event-modal" tabindex="-1" role="dialog">
+  <div class="modal" id="add-event-modal" tabindex="-1" role="dialog" @click.stop>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -75,7 +75,6 @@ import store from "./store";
 export default {
   name: "add-event-modal",
   props: [
-    'showEventDetails',
     'modal',
     'event'
   ],
@@ -136,7 +135,6 @@ export default {
   }
 }
 </script>
-
 <style scoped>
 #add-event-modal {
   display: block;

@@ -3,14 +3,16 @@
     <div class="row top-menu">
       <div class="header-section case-law-section">
         <span>CASELAW</span>
-        <button @click="showAddCaseModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal"
+        <button @click="showAddCaseModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary"
+                data-toggle="modal"
                 data-target="#add-case-modal">
           <add-icon></add-icon>
         </button>
       </div>
       <div class="header-section other-events-section">
         <span>EVENTS</span>
-        <button @click="showAddEventModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary" data-toggle="modal"
+        <button @click="showAddEventModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary"
+                data-toggle="modal"
                 data-target="#add-event-modal">
           <add-icon></add-icon>
         </button>
@@ -21,26 +23,41 @@
         </button>
       </div>
     </div>
-    <add-case-modal v-if="addCaseModalShown && $store.state.isAuthor"
-                    data-toggle="modal"
-                    data-target="add-case-modal"
-                    :modal.sync="addCaseModalShown"
-                    :case="event"
-                    :shown="addCaseModalShown">
-    </add-case-modal>
-    <add-event-modal v-if="addEventModalShown && $store.state.isAuthor"
-                    data-toggle="modal"
-                    data-target="add-event-modal"
-                    :modal.sync="addEventModalShown"
-                    :event="event"
-                    :shown="addEventModalShown">
-    </add-event-modal>
     <key v-show="keyShown"></key>
     <section id="timeline">
       <div v-for="(year_data, idx) in years" v-bind:key="'year_' + idx">
         <year :year_data="year_data" :year_value="idx" v-if="idx >= $store.getters.firstYear"></year>
       </div>
     </section>
+
+    <!-- ALL MODALS -->
+    <template v-if="$store.state.isAuthor">
+      <add-case-modal v-if="showCase"
+                      data-toggle="modal"
+                      data-target="#add-case-modal"
+                      :modal.sync="showCase"
+                      :case="event"
+                      :shown="showCase">
+      </add-case-modal>
+      <add-event-modal v-if="showEvent"
+                       data-toggle="modal"
+                       data-target="#add-event-modal"
+                       :modal.sync="showEvent"
+                       :event="event"
+                       :shown="showEvent">
+      </add-event-modal>
+    </template>
+    <!-- if user is not author of timeline, show readonly modal -->
+    <template v-else>
+      <readonly-modal
+          v-if="showCase || showEvent"
+          data-toggle="modal"
+          data-target="#readonly-modal"
+          :modal.sync="showEventDetails"
+          :event="event"
+          :shown="showEventDetails">
+      </readonly-modal>
+    </template>
   </main>
 
 </template>
@@ -50,7 +67,9 @@ import AddIcon from '../../../../static/img/icons/add.svg';
 import Key from './key.vue';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
+import ReadonlyModal from './readonly-modal.vue';
 import Year from './year';
+import {EventBus} from "./event-bus.js";
 
 
 export default {
@@ -61,6 +80,7 @@ export default {
     Key,
     AddCaseModal,
     AddEventModal,
+    ReadonlyModal,
     Year,
   },
   computed: {
@@ -79,8 +99,8 @@ export default {
   data() {
     return {
       checked: false,
-      addCaseModalShown: false,
-      addEventModalShown: false,
+      showCase: false,
+      showEvent: false,
       showEventDetails: false,
       keyShown: false,
       years: {},
@@ -108,16 +128,18 @@ export default {
       this.checked = !this.checked;
     },
     showAddEventModal(val) {
-      this.addEventModalShown = val;
-      this.showEventDetails = this.addEventModalShown
+      this.showEvent = val;
+      this.showEventDetails = this.showEvent
     },
     showAddCaseModal(val) {
-      this.addCaseModalShown = val;
-      this.showEventDetails = this.addCaseModalShown
+      this.showCase = val;
+      this.showEventDetails = this.showCase
     },
     closeModal() {
       this.showAddCaseModal(false)
       this.showAddEventModal(false)
+      this.showEventDetails = false;
+      EventBus.$emit('closeModal')
     },
 
     toggleKey() {
@@ -156,5 +178,12 @@ export default {
       }
     },
   },
+  created() {
+    EventBus.$on('openModal', (item, typeOfItem) => {
+      this.showEvent = typeOfItem === 'event';
+      this.showCase = typeOfItem === 'case';
+      this.event = item;
+    })
+  }
 };
 </script>
