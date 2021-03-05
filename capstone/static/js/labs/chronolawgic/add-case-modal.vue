@@ -3,7 +3,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">ADD CASE LAW</h5>
+          <h5 class="modal-title">ADD CASELAW</h5>
           <button type="button" @click.stop="closeModal" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -193,7 +193,7 @@ export default {
     autofillCase() {
       this.newCase.name = this.chosenCase.name_abbreviation;
       this.newCase.citation = this.chosenCase.citations[0].cite;
-      this.newCase.url = this.chosenCase.url;
+      this.newCase.url = this.chosenCase.frontend_url;
       this.newCase.decision_date = this.formatDate(this.chosenCase.decision_date);
 
       this.extraFields.jurisdiction.value = this.chosenCase.jurisdiction.name;

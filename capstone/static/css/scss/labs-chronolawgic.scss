@@ -13,27 +13,35 @@
 @import "labs-chronolawgic/modal.scss";
 
 
-.key-container {
-  position: fixed;
-}
-
-.top-menu {
-  height: 70px;
-  padding: 0 2em;
-  display: grid;
-  grid-template-areas: "case-law other-events key";
-  grid-template-columns:  700px 3fr 1fr;
-  border-bottom: 2px solid $color-black;
-}
-
 .header-section {
-  border-right: 2px solid $color-black;
-  font-weight: $font-weight-semibold;
+  h5 {
+    font-weight: $font-weight-semibold;
+    font-family: $font-monospace;
+    position: relative;
+    top: 1em;
+  }
+
+  &:first-child {
+    border-right: 2px solid $color-black;
+  }
+
+  .btn-add-event {
+    float: right;
+  }
 }
 
 
 main#main-app {
   font-family: $font-monospace;
+
+  .top-menu {
+    height: 70px;
+    padding: 0 2em;
+    display: grid;
+    grid-template-areas: "case-law other-events";
+    grid-template-columns:  75% 25%;
+    border-bottom: 2px solid $color-black;
+  }
 
   section#timeline {
     grid-area: timeline;
@@ -74,7 +82,8 @@ main#main-app {
 
     header {
       grid-area: casename;
-      font-size: 1rem;
+      font-weight: $font-weight-black;
+      font-size: 1.25em;
       padding: 0;
     }
 
@@ -82,7 +91,7 @@ main#main-app {
       padding: 0;
       grid-area: subhead;
       font-weight: $font-weight-black;
-      font-size: .75rem;
+      font-size: 0.75rem;
     }
 
     section.desc {
@@ -91,7 +100,9 @@ main#main-app {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      font-size: .5rem;
+      font-size: 1em;
+      line-height: 19px;
+      text-transform: none;
     }
 
     div.year_scale {

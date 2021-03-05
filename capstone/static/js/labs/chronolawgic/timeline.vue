@@ -1,17 +1,19 @@
 <template>
   <main id="main-app">
     <div class="row top-menu">
-      <div class="header-section case-law-section">
-        <span>CASELAW</span>
-        <button @click="showAddCaseModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary"
+      <header class="header-section case-law-section">
+        <h5>CASELAW</h5>
+        <button @click="showAddCaseModal(true)" v-if="isAuthor" type="button"
+                class="btn btn-tertiary btn-add-event"
                 data-toggle="modal"
                 data-target="#add-case-modal">
           <add-icon></add-icon>
         </button>
-      </div>
-      <div class="header-section other-events-section">
-        <span>EVENTS</span>
-        <button @click="showAddEventModal(true)" v-if="isAuthor" type="button" class="btn btn-tertiary"
+      </header>
+      <header class="header-section other-events-section">
+        <h5>EVENTS</h5>
+        <button @click="showAddEventModal(true)" v-if="isAuthor" type="button"
+                class="btn btn-tertiary btn-add-event"
                 data-toggle="modal"
                 data-target="#add-event-modal">
           <add-icon></add-icon>
