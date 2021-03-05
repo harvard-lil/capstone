@@ -13,31 +13,31 @@
            @click.stop="openModal(event_data)">
         <add-event-modal v-if="showEventDetails && $store.state.isAuthor"
                             data-toggle="modal"
-                            data-target="event-modal"
+                            data-target="#add-event-modal"
                             :modal.sync="showEventDetails"
                             :event="event"
                             :shown="showEventDetails">
         </add-event-modal>
-        <event-modal
+        <readonly-modal
             v-if="showEventDetails && !($store.state.isAuthor)"
             data-toggle="modal"
-            data-target="event-modal"
+            data-target="#readonly-modal"
             :modal.sync="showEventDetails"
             :event="event"
             :shown="showEventDetails">
-        </event-modal>
+        </readonly-modal>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import EventModal from "./event-modal";
+import ReadonlyModal from "./readonly-modal";
 import AddEventModal from "./add-event-modal";
 
 export default {
   name: "TimelineSlice",
-  components: {AddEventModal, EventModal},
+  components: {AddEventModal, ReadonlyModal},
   props: ['year_value', 'event_list'],
   methods: {
     openModal(item) {

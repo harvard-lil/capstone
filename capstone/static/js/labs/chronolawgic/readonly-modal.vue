@@ -1,5 +1,5 @@
 <template>
-  <div class="modal" id="event-modal" tabindex="-1" role="dialog">
+  <div class="modal" id="readonly-modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -25,7 +25,7 @@
 
 <script>
 export default {
-  name: "event-modal",
+  name: "readonly-modal",
   props: [
       'shown',
       'modal',
@@ -40,7 +40,7 @@ export default {
 </script>
 
 <style scoped>
-#event-modal {
+#readonly-modal {
   display: block;
 }
 </style>
