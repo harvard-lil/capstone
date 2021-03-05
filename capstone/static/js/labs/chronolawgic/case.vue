@@ -5,7 +5,7 @@
            tabindex="0">
     <add-case-modal v-if="showEventDetails && $store.state.isAuthor"
                         data-toggle="modal"
-                        data-target="add-case-modal"
+                        data-target="#add-case-modal"
                         :modal.sync="showEventDetails"
                         :case="event"
                         :shown="showEventDetails">
