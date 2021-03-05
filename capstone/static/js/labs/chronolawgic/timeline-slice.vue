@@ -10,7 +10,7 @@
                     'border-bottom': parseInt(year_value) === new Date(event_data.end_date).getUTCFullYear() ? '1rem solid gray' : '',
                     'min-height': '1rem'
                 }"
-           @click="toggleEventModal(event_data)">
+           @click.stop="openModal(event_data)">
         <add-event-modal v-if="showEventDetails && $store.state.isAuthor"
                             data-toggle="modal"
                             data-target="event-modal"
@@ -40,8 +40,8 @@ export default {
   components: {AddEventModal, EventModal},
   props: ['year_value', 'event_list'],
   methods: {
-    toggleEventModal(item) {
-      this.showEventDetails = !this.showEventDetails;
+    openModal(item) {
+      this.showEventDetails = true;
       this.event = item
     },
     closeModal() {
