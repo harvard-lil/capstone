@@ -14,15 +14,21 @@
 
 
 .header-section {
+  display: grid;
+  grid-template-areas: "header addbutton";
+  grid-template-columns:  85% 15%;
+
   h5 {
     font-weight: $font-weight-semibold;
     font-family: $font-monospace;
     position: relative;
     top: 1em;
+    margin-left: 1em;
   }
 
   &:first-child {
     border-right: 2px solid $color-black;
+    margin-left: 0;
   }
 
   .btn-add-event {
@@ -36,7 +42,7 @@ main#main-app {
 
   .top-menu {
     height: 70px;
-    padding: 0 2em;
+    padding: 0 2em 0 0;
     display: grid;
     grid-template-areas: "case-law other-events";
     grid-template-columns:  75% 25%;
