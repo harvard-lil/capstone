@@ -16,14 +16,8 @@
                 data-target="#add-event-modal">
           <add-icon></add-icon>
         </button>
-      </div>
-      <div class="key-column">
-        <button type="button" class="btn btn-tertiary">
-          <key-icon @click="toggleKey"></key-icon>
-        </button>
-      </div>
+      </header>
     </div>
-    <key v-show="keyShown"></key>
     <section id="timeline">
       <div v-for="(year_data, idx) in years" v-bind:key="'year_' + idx">
         <year :year_data="year_data" :year_value="idx" v-if="idx >= $store.getters.firstYear"></year>
@@ -62,9 +56,7 @@
 
 </template>
 <script>
-import KeyIcon from '../../../../static/img/icons/key.svg';
 import AddIcon from '../../../../static/img/icons/add.svg';
-import Key from './key.vue';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 import ReadonlyModal from './readonly-modal.vue';
@@ -75,9 +67,7 @@ import {EventBus} from "./event-bus.js";
 export default {
   name: 'Timeline',
   components: {
-    KeyIcon,
     AddIcon,
-    Key,
     AddCaseModal,
     AddEventModal,
     ReadonlyModal,
