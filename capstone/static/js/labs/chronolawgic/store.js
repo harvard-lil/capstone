@@ -109,22 +109,26 @@ const store = new Vuex.Store({
                 }
             });
             event.id = index;
+            if (index === -1) {
+                event.id = 0;
+            }
+
             state.events.push(event)
             this.dispatch('requestUpdateTimeline')
         },
         addCase(state, caselaw) {
             // assign id to caselaw
-            if (state.cases.length() > 0) {
-                let index = -1
-                state.cases.forEach((c) => {
-                    if (c.id >= index) {
-                        index = c.id + 1
-                    }
-                });
-                caselaw.id = index;
-            } else {
-                caselaw.id = 1;
+            let index = -1
+            state.cases.forEach((c) => {
+                if (c.id >= index) {
+                    index = c.id + 1
+                }
+            });
+            caselaw.id = index;
+            if (index === -1) {
+                caselaw.id = 0;
             }
+
             state.cases.push(caselaw)
             this.dispatch('requestUpdateTimeline')
         },
@@ -182,19 +186,31 @@ const store = new Vuex.Store({
             if (state.cases.length === 0 && state.events.length === 0) {
                 return 0
             }
-            const first_event_year = state.events.reduce((min, e) =>
-                new Date(e.start_date).getFullYear() < min ? new Date(e.start_date).getFullYear() : min, new Date(state.events[0].start_date).getFullYear());
-            const first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getFullYear() < min ? new Date(c.decision_date).getFullYear() : min, new Date(state.cases[0].decision_date).getFullYear());
+            let first_case_year = 9999999
+            let first_event_year = 9999999
+            if (state.events.length) {
+                first_event_year = state.events.reduce((min, e) =>
+                    new Date(e.start_date).getFullYear() < min ? new Date(e.start_date).getFullYear() : min, new Date(state.events[0].start_date).getFullYear());
+            }
+            if (state.cases.length) {
+                first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getFullYear() < min ? new Date(c.decision_date).getFullYear() : min, new Date(state.cases[0].decision_date).getFullYear());
+            }
             return first_case_year < first_event_year ? first_case_year : first_event_year;
         },
         lastYear: (state) => {
-            if (state.cases.length && state.events.length === 0) {
+            if (state.cases.length === 0 && state.events.length === 0) {
                 return 0
             }
-            const last_event_year = state.events.reduce((max, e) =>
-                new Date(e.end_date).getFullYear() > max ? new Date(e.end_date).getFullYear() : max, new Date(state.events[0].end_date).getFullYear());
-            const last_case_year = state.cases.reduce((max, e) =>
-                new Date(e.decision_date).getFullYear() > max ? new Date(e.decision_date).getFullYear() : max, new Date(state.cases[0].decision_date).getFullYear());
+            let last_event_year = 0
+            let last_case_year = 0
+            if (state.events.length) {
+                last_event_year = state.events.reduce((max, e) =>
+                    new Date(e.end_date).getFullYear() > max ? new Date(e.end_date).getFullYear() : max, new Date(state.events[0].end_date).getFullYear());
+            }
+            if (state.cases.length) {
+                last_case_year = state.cases.reduce((max, e) =>
+                    new Date(e.decision_date).getFullYear() > max ? new Date(e.decision_date).getFullYear() : max, new Date(state.cases[0].decision_date).getFullYear());
+            }
             return last_case_year > last_event_year ? last_case_year : last_event_year;
         },
         events: (state) => {
