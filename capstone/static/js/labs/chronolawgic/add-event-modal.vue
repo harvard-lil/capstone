@@ -1,5 +1,5 @@
 <template>
-  <div class="modal" id="add-event-modal" tabindex="-1" role="dialog">
+  <div class="modal" id="add-event-modal" tabindex="-1" role="dialog" @click.stop>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -47,10 +47,22 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-tertiary" @click="clearContent" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" @click="addEvent"
-                  :data-dismiss="$parent.addEventModalShown ? 'none' : 'modal'">ADD
+          <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
+            Cancel
           </button>
+          <template v-if="this.event">
+            <button type="button" class="btn btn-primary" @click="deleteEvent" data-dismiss="modal">
+              Delete
+            </button>
+            <button type="button" class="btn btn-primary" @click.stop="updateEvent" data-dismiss="modal">
+              Update
+            </button>
+          </template>
+          <template v-if="!this.event">
+            <button type="button" class="btn btn-primary" @click="addEvent"
+                    :data-dismiss="$parent.addEventModalShown ? 'none' : 'modal'">ADD
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -63,9 +75,8 @@ import store from "./store";
 export default {
   name: "add-event-modal",
   props: [
-      'showEventDetails',
-      'modal',
-      'event'
+    'modal',
+    'event'
   ],
   data() {
     return {
@@ -100,7 +111,20 @@ export default {
       store.commit('addEvent', this.newEvent)
       this.closeModal();
       this.$parent.repopulateTimeline();
-    }
+    },
+    deleteEvent() {
+      store.commit('deleteEvent', this.event.id);
+      this.closeModal();
+      this.$parent.repopulateTimeline();
+    },
+    updateEvent() {
+      this.checkForm();
+      if (this.errors.length) return;
+      let event = JSON.parse(JSON.stringify(this.newEvent))
+      store.commit('updateEvent', event)
+      this.closeModal()
+      this.$parent.repopulateTimeline();
+    },
   },
   mounted() {
     if (this.event) {
@@ -111,7 +135,6 @@ export default {
   }
 }
 </script>
-
 <style scoped>
 #add-event-modal {
   display: block;

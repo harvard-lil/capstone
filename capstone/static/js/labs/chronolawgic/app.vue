@@ -17,6 +17,8 @@
 </template>
 
 <script>
+import $ from 'jquery';
+import {EventBus} from "./event-bus.js";
 
 export default {
   name: 'Admin',
@@ -33,13 +35,12 @@ export default {
     } else {
       this.$store.dispatch('requestTimelineList');
     }
+    // hacky hack: we have to stop propagation to stop modal from reopening
+    // and the backdrop therefore remains open
+    EventBus.$on('closeModal', () => {
+      $('.modal-backdrop').remove();
+      $('body').removeClass('modal-open');
+    })
   }
 };
 </script>
-
-<style>
-.modal-backdrop {
-  display: none;
-}
-
-</style>

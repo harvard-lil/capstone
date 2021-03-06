@@ -1,9 +1,9 @@
 <template>
-  <div class="modal" id="add-case-modal" tabindex="-1" role="dialog">
+  <div class="modal" id="add-case-modal" tabindex="-1" role="dialog" @click.stop>
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">ADD CASE LAW</h5>
+          <h5 class="modal-title">ADD CASELAW</h5>
           <button type="button" @click.stop="closeModal" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -80,16 +80,24 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button v-if="this.case" type="button" class="btn btn-primary" @click="deleteCase" data-dismiss="modal">Delete</button>
-          <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">Cancel</button>
-          <button v-if="this.case" type="button" class="btn btn-primary" @click.stop="updateCase"
-                  data-dismiss='modal'>
-            UPDATE
+          <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
+            Cancel
           </button>
-          <button v-else type="button" class="btn btn-primary" @click="addCase"
-                  data-dismiss="modal">
-            ADD
-          </button>
+          <template v-if="this.case">
+            <button type="button" class="btn btn-primary" @click="deleteCase" data-dismiss="modal">
+              Delete
+            </button>
+            <button type="button" class="btn btn-primary" @click.stop="updateCase"
+                    data-dismiss='modal'>
+              Update
+            </button>
+          </template>
+          <template v-if="!this.case">
+            <button type="button" class="btn btn-primary" @click="addCase"
+                    data-dismiss="modal">
+              ADD
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -157,7 +165,6 @@ export default {
       this.closeModal()
       this.$parent.repopulateTimeline();
     },
-
     addCase() {
       this.checkForm();
       if (this.errors.length) return;
@@ -186,7 +193,7 @@ export default {
     autofillCase() {
       this.newCase.name = this.chosenCase.name_abbreviation;
       this.newCase.citation = this.chosenCase.citations[0].cite;
-      this.newCase.url = this.chosenCase.url;
+      this.newCase.url = this.chosenCase.frontend_url;
       this.newCase.decision_date = this.formatDate(this.chosenCase.decision_date);
 
       this.extraFields.jurisdiction.value = this.chosenCase.jurisdiction.name;

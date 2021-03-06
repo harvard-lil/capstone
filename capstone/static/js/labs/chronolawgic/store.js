@@ -100,20 +100,36 @@ const store = new Vuex.Store({
             }, 5000);
         },
         addEvent(state, event) {
+            let index = -1
+            state.events.forEach((e) => {
+                if (e.id >= index) {
+                    index = e.id + 1
+                }
+            });
+            event.id = index;
             state.events.push(event)
+            this.dispatch('requestUpdateTimeline')
         },
         addCase(state, caselaw) {
             // assign id to caselaw
             let index = -1
-            state.cases.forEach((c)=>{
-                if (c.id >= index) { index = c.id + 1 }
+            state.cases.forEach((c) => {
+                if (c.id >= index) {
+                    index = c.id + 1
+                }
             });
             caselaw.id = index;
             state.cases.push(caselaw)
             this.dispatch('requestUpdateTimeline')
         },
-        updateEvent(state, index, event) {
-            state.events[index] = event
+        updateEvent(state, event) {
+            for (let i = 0; i < state.events.length; i++) {
+                if (state.events[i].id === event.id) {
+                    state.events[i] = event;
+                    this.dispatch('requestUpdateTimeline')
+                    break;
+                }
+            }
         },
         updateCase(state, caselaw) {
             for (let i = 0; i < state.cases.length; i++) {
@@ -124,12 +140,21 @@ const store = new Vuex.Store({
                 }
             }
         },
-        deleteEvent(state, index) {
-            state.events.remove(index);
+        deleteEvent(state, id) {
+            let event_index = -1;
+            for (let i = 0; i < state.events.length; i++) {
+                if (state.events[i].id === id) {
+                    event_index = i;
+                    break;
+                }
+            }
+            console.log("foudn event, deleting", event_index)
+            state.events.splice(event_index, 1);
+            this.dispatch('requestUpdateTimeline');
         },
         deleteCase(state, id) {
             let caselaw_index = -1;
-            for (let i=0; i<state.cases.length; i++) {
+            for (let i = 0; i < state.cases.length; i++) {
                 if (state.cases[i].id === id) {
                     caselaw_index = i;
                     break;
@@ -245,11 +270,11 @@ const store = new Vuex.Store({
                 })
                 .then(response => response.data)
                 .then(
-                () => {
-                    commit('setRequestStatusTerminal', 'success');
-                    commit('setNotificationMessage', "Timeline Saved")
-                }
-            ).catch(error => {
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', "Timeline Saved")
+                    }
+                ).catch(error => {
                 commit('setRequestStatusTerminal', 'error');
                 commit('setNotificationMessage', error)
             })
