@@ -29,7 +29,11 @@ def chronolawgic_api_retrieve(request, timeline_id=None):
             'status': 'ok',
             'timelines': [{"id": tl.id,
                            "title": tl.timeline['title'] if 'title' in tl.timeline else "",
-                           "subhead": tl.timeline['subhead'] if 'subhead' in tl.timeline else ""}
+                           "subhead": tl.timeline['subhead'] if 'subhead' in tl.timeline else "",
+                           "description": tl.timeline['description'] if 'description' in tl.timeline else "",
+                           "case_count": len(tl.timeline['cases']) if 'cases' in tl.timeline else 0,
+                           "event_count": len(tl.timeline['event']) if 'event' in tl.timeline else 0,
+                           }
                            for tl in timelines],
         })
 
@@ -49,6 +53,32 @@ def chronolawgic_api_retrieve(request, timeline_id=None):
         'is_owner': True if request.user == timeline.created_by else False
     })
 
+
+def chronolawgic_api_update_admin(request, timeline_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+
+    try:
+        timeline = Timeline.objects.get(pk=timeline_id)
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
+    if not request.user.is_authenticated or timeline.created_by.pk != request.user.pk:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    try:
+        timeline.timeline['title'] = json.loads(request.body.decode())['title']
+        timeline.timeline['subhead'] = json.loads(request.body.decode())['subhead']
+        timeline.timeline['description'] = json.loads(request.body.decode())['description']
+        timeline.save()
+    except json.decoder.JSONDecodeError as e:
+        return JsonResponse({'status': 'err', 'reason': e}, status=500)
+
+    return JsonResponse({
+        'status': 'ok',
+        'timeline': timeline.timeline,
+        'id': timeline.pk,
+        'is_owner': True if request.user == timeline.created_by else False
+    })
 
 def chronolawgic_api_create(request):
     if request.method != 'POST':
@@ -101,35 +131,6 @@ def chronolawgic_api_update(request, timeline_id):
     })
 
 
-
-def chronolawgic_api_admin_update(request, timeline_id):
-    if request.method != 'POST':
-        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
-
-    try:
-        timeline = Timeline.objects.get(pk=timeline_id)
-    except Timeline.DoesNotExist:
-        return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
-
-    if not request.user.is_authenticated or timeline.created_by != request.user.id:
-        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
-
-    try:
-        # title = request.POST.get("timeline")
-        parsed = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
-        timeline.timeline = parsed
-        timeline.save()
-    except json.decoder.JSONDecodeError as e:
-        return JsonResponse({'status': 'err', 'reason': e}, status=500)
-
-    return JsonResponse({
-        'status': 'ok',
-        'timeline': timeline.timeline,
-        'id': timeline.pk,
-        'is_owner': True if request.user == timeline.created_by else False
-    })
-
-
 def chronolawgic_api_delete(request, timeline_id):
     if request.method != 'DELETE':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
@@ -139,7 +140,7 @@ def chronolawgic_api_delete(request, timeline_id):
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
 
-    if not request.user.is_authenticated or timeline.created_by != request.user.id:
+    if not request.user.is_authenticated or timeline.created_by.pk != request.user.pk:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:

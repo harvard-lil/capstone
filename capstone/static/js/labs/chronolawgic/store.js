@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from "axios";
-import {router} from "./main.js"
 
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 axios.defaults.xsrfCookieName = "csrftoken";
@@ -25,12 +24,15 @@ const store = new Vuex.Store({
             chronolawgic_api_retrieve: importUrls.chronolawgic_api_retrieve,
             chronolawgic_api_update: importUrls.chronolawgic_api_update,
             chronolawgic_api_delete: importUrls.chronolawgic_api_delete,
+            chronolawgic_api_update_admin: importUrls.chronolawgic_api_update_admin,
             static: importUrls.static,
             api_root: importUrls.api_root,
         },
         availableTimelines: [],
         id: 1,
         title: "",
+        subhead: "",
+        description: "",
         createdBy: -1, // (user accts are for auth/logging purposes)
         isAuthor: false,
         categories: {}, // Removed from MVP
@@ -202,7 +204,6 @@ const store = new Vuex.Store({
                 .then(new_tl => {
                     if (new_tl.status === "ok") {
                         this.dispatch('requestTimelineList');
-                        router.push({name: 'timeline', params: {timeline: new_tl.id}})
                     }
                 }).then(
                 () => {
@@ -289,6 +290,32 @@ const store = new Vuex.Store({
                 }).then(
                 () => {
                     commit('setRequestStatusTerminal', 'success');
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
+        },
+        requestUpdateAdmin: function ({commit}, data) {
+            commit('setRequestStatus', 'pending');
+            let json = JSON.stringify({
+                    title: data.title,
+                    subhead: data.subhead,
+                    description: data.description,
+                });
+
+            return axios
+                .post(this.state.urls.chronolawgic_api_update_admin + data.id, json, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                    commit('setNotificationMessage', "Change Saved")
                 }
             ).catch(error => {
                 commit('setRequestStatusTerminal', 'error');
