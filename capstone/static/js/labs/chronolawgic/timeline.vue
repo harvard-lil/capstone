@@ -131,6 +131,7 @@ export default {
       this.showAddCaseModal(false)
       this.showAddEventModal(false)
       this.showEventDetails = false;
+      this.event = null;
       EventBus.$emit('closeModal')
     },
 
