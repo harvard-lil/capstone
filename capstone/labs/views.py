@@ -42,6 +42,12 @@ def chronolawgic_api_retrieve(request, timeline_id=None):
 
     try:
         timeline = Timeline.objects.get(pk=timeline_id)
+        if 'cases' not in timeline.timeline:
+            timeline.timeline['cases'] = []
+        if 'events' not in timeline.timeline:
+            timeline.timeline['events'] = []
+        timeline.save()
+
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
 
@@ -66,9 +72,10 @@ def chronolawgic_api_update_admin(request, timeline_id):
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        timeline.timeline['title'] = json.loads(request.body.decode())['title']
-        timeline.timeline['subhead'] = json.loads(request.body.decode())['subhead']
-        timeline.timeline['description'] = json.loads(request.body.decode())['description']
+        timeline_content = json.loads(request.body.decode())
+        timeline.timeline['title'] = timeline_content['title']
+        timeline.timeline['subhead'] = timeline_content['subhead']
+        timeline.timeline['description'] = timeline_content['description']
         timeline.save()
     except json.decoder.JSONDecodeError as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
