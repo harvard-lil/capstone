@@ -91,7 +91,9 @@ def chronolawgic_api_create(request):
         timeline = Timeline.objects.create(created_by=request.user)
         timeline.timeline = {
             "title": "Untitled Timeline",
-            "subhead": "Created {}".format(date.today())
+            "subhead": "Created {}".format(date.today()),
+            "cases": [],
+            "events": []
         }
         timeline.save()
     except Exception as e:

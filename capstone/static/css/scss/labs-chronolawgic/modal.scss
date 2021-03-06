@@ -7,6 +7,11 @@ input.form-control, textarea.form-control {
   border: 0;
   outline: none;
   border-radius: 0;
+  font-family: $font-serif-fancy;
+}
+
+textarea::placeholder {
+  font-family: $font-family-monospace;
 }
 
 .modal-backdrop {
@@ -93,11 +98,6 @@ input.form-control, textarea.form-control {
   border-top: 0;
 }
 
-label, textarea::placeholder {
-  font-size: 16px;
-  color: $color-black !important;
-}
-
 #add-case-modal {
 
   #form-add-case {
@@ -133,6 +133,10 @@ label, textarea::placeholder {
 
   #field-group-url {
     grid-area: link;
+
+    #field-url {
+      color: $color-dark-blue;
+    }
   }
 
   #field-group-name {
@@ -238,6 +242,6 @@ label, textarea::placeholder {
   }
 }
 
-#event-modal {
+#readonly-modal {
   word-wrap: break-word
 }

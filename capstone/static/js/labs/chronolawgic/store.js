@@ -102,20 +102,40 @@ const store = new Vuex.Store({
             }, 5000);
         },
         addEvent(state, event) {
+            let index = -1
+            state.events.forEach((e) => {
+                if (e.id >= index) {
+                    index = e.id + 1
+                }
+            });
+            event.id = index;
             state.events.push(event)
+            this.dispatch('requestUpdateTimeline')
         },
         addCase(state, caselaw) {
             // assign id to caselaw
-            let index = -1
-            state.cases.forEach((c)=>{
-                if (c.id >= index) { index = c.id + 1 }
-            });
-            caselaw.id = index;
+            if (state.cases.length() > 0) {
+                let index = -1
+                state.cases.forEach((c) => {
+                    if (c.id >= index) {
+                        index = c.id + 1
+                    }
+                });
+                caselaw.id = index;
+            } else {
+                caselaw.id = 1;
+            }
             state.cases.push(caselaw)
             this.dispatch('requestUpdateTimeline')
         },
-        updateEvent(state, index, event) {
-            state.events[index] = event
+        updateEvent(state, event) {
+            for (let i = 0; i < state.events.length; i++) {
+                if (state.events[i].id === event.id) {
+                    state.events[i] = event;
+                    this.dispatch('requestUpdateTimeline')
+                    break;
+                }
+            }
         },
         updateCase(state, caselaw) {
             for (let i = 0; i < state.cases.length; i++) {
@@ -126,12 +146,21 @@ const store = new Vuex.Store({
                 }
             }
         },
-        deleteEvent(state, index) {
-            state.events.remove(index);
+        deleteEvent(state, id) {
+            let event_index = -1;
+            for (let i = 0; i < state.events.length; i++) {
+                if (state.events[i].id === id) {
+                    event_index = i;
+                    break;
+                }
+            }
+            console.log("foudn event, deleting", event_index)
+            state.events.splice(event_index, 1);
+            this.dispatch('requestUpdateTimeline');
         },
         deleteCase(state, id) {
             let caselaw_index = -1;
-            for (let i=0; i<state.cases.length; i++) {
+            for (let i = 0; i < state.cases.length; i++) {
                 if (state.cases[i].id === id) {
                     caselaw_index = i;
                     break;
@@ -150,12 +179,18 @@ const store = new Vuex.Store({
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
         firstYear: (state) => {
+            if (state.cases.length === 0 && state.events.length === 0) {
+                return 0
+            }
             const first_event_year = state.events.reduce((min, e) =>
                 new Date(e.start_date).getFullYear() < min ? new Date(e.start_date).getFullYear() : min, new Date(state.events[0].start_date).getFullYear());
             const first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getFullYear() < min ? new Date(c.decision_date).getFullYear() : min, new Date(state.cases[0].decision_date).getFullYear());
             return first_case_year < first_event_year ? first_case_year : first_event_year;
         },
         lastYear: (state) => {
+            if (state.cases.length && state.events.length === 0) {
+                return 0
+            }
             const last_event_year = state.events.reduce((max, e) =>
                 new Date(e.end_date).getFullYear() > max ? new Date(e.end_date).getFullYear() : max, new Date(state.events[0].end_date).getFullYear());
             const last_case_year = state.cases.reduce((max, e) =>
@@ -246,11 +281,11 @@ const store = new Vuex.Store({
                 })
                 .then(response => response.data)
                 .then(
-                () => {
-                    commit('setRequestStatusTerminal', 'success');
-                    commit('setNotificationMessage', "Timeline Saved")
-                }
-            ).catch(error => {
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', "Timeline Saved")
+                    }
+                ).catch(error => {
                 commit('setRequestStatusTerminal', 'error');
                 commit('setNotificationMessage', error)
             })
