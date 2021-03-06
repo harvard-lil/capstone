@@ -218,4 +218,100 @@ main#main-app {
 }
 
 
+main.admin {
 
+  .other-events-section {
+    padding-top: 0.35em;
+    padding-left: 0.35em;
+    .icon-link {
+      padding: 0.8em;
+    }
+  }
+  h3 {
+    font-weight: bold;
+    margin-bottom: 2rem;
+  }
+
+  .timeline {
+    max-width: 6fr;
+    width: 100%;
+    display: grid;
+    grid-template-areas: ". title subhead edit save"
+                         ". description numbers delete ."
+                         ". description . . .";
+    grid-template-columns: 20% 25% 20% 5% 25%;
+    min-height: 4rem;
+    margin-top: 2rem;
+    grid-gap: 1rem;
+  }
+
+  .numbers {
+    grid-area: numbers;
+    display: grid;
+    grid-template-areas: "id_label case_count_label event_count_label"
+                         "id case_count event_count";
+    grid-template-columns: 1fr 1fr 1fr;
+    .id_label { grid-area: id_label; }
+    .case_count { grid-area: case_count; }
+    .event_count { grid-area: event_count; }
+    font-family: $font-sans-serif;
+    font-size: $font-size-sm;
+  }
+  .label {
+      font-weight: $font-weight-black;
+      text-transform: uppercase;
+      color: $color-violet-gray-dark;
+  }
+  .edit {
+    grid-area: edit;
+  }
+  .delete {
+    grid-area: delete;
+  }
+  .save {
+    grid-area: save;
+  }
+  .title {
+    grid-area: title;
+    font-weight: $font-weight-semibold;
+    text-transform: uppercase;
+  }
+
+  .description {
+    grid-area: description;
+    font-family: $font-sans-serif;
+    font-size: $font-size-sm;
+    display: grid;
+    grid-template-areas: "description_label"
+                         "description_text";
+    .description_text { grid-area: description_text; }
+    .description_label { grid-area: description_label; }
+  }
+
+  .subhead {
+    grid-area: subhead;
+    font-family: $font-sans-serif;
+    font-size: $font-size-sm;
+    display: grid;
+    grid-template-areas: "subhead_label"
+                         "subhead_text";
+    .subhead_text { grid-area: subhead_text; }
+    .subhead_label { grid-area: subhead_label; }
+  }
+
+  .btn-edit {
+    grid-area: button-one;
+  }
+
+  .btn-delete {
+    grid-area: button-two;
+  }
+
+  .btn-hidden {
+    grid-area: button-one;
+  }
+
+  .btn-create {
+    grid-area: button-two;
+  }
+}

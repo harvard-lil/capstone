@@ -1,5 +1,10 @@
 <template>
-  <div class="year" v-bind:class="{ collapsible: collapsible }">
+  <div class="year" v-bind:class="{
+    no_content_year: noContent,
+    cases_only_year: casesWithoutEvents,
+    events_only_year: eventsWithoutCases,
+    cases_and_events_year: casesAndEvents
+  }">
     <div class="incidental">
 
       <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data"
@@ -30,11 +35,24 @@ export default {
     TimeLineSlice,
     Case,
   },
+  data() {
+    return {
+      event_count : this.year_data.event_list.reduce((acc, element) => acc + Object.keys(element).length, 0)
+    }
+  },
   props: ['year_data', 'year_value'],
   computed: {
-    collapsible: function () {
-      const event_count = this.year_data.event_list.reduce((acc, element) => acc + Object.keys(element).length, 0);
-      return (event_count + this.year_data.case_list.length === 0)
+    noContent: function () {
+      return (this.event_count + this.year_data.case_list.length === 0)
+    },
+    casesWithoutEvents: function () {
+      return (this.event_count === 0 && this.year_data.case_list.length > 0)
+    },
+    eventsWithoutCases: function () {
+      return (this.event_count > 0 && this.year_data.case_list.length === 0)
+    },
+    casesAndEvents: function () {
+      return (this.event_count > 0 && this.year_data.case_list.length > 0)
     }
   },
   methods: {

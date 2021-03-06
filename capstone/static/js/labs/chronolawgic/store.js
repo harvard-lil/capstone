@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from "axios";
-import {router} from "./main.js"
 
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 axios.defaults.xsrfCookieName = "csrftoken";
@@ -25,12 +24,15 @@ const store = new Vuex.Store({
             chronolawgic_api_retrieve: importUrls.chronolawgic_api_retrieve,
             chronolawgic_api_update: importUrls.chronolawgic_api_update,
             chronolawgic_api_delete: importUrls.chronolawgic_api_delete,
+            chronolawgic_api_update_admin: importUrls.chronolawgic_api_update_admin,
             static: importUrls.static,
             api_root: importUrls.api_root,
         },
         availableTimelines: [],
         id: 1,
         title: "",
+        subhead: "",
+        description: "",
         createdBy: -1, // (user accts are for auth/logging purposes)
         isAuthor: false,
         categories: {}, // Removed from MVP
@@ -112,13 +114,17 @@ const store = new Vuex.Store({
         },
         addCase(state, caselaw) {
             // assign id to caselaw
-            let index = -1
-            state.cases.forEach((c) => {
-                if (c.id >= index) {
-                    index = c.id + 1
-                }
-            });
-            caselaw.id = index;
+            if (state.cases.length() > 0) {
+                let index = -1
+                state.cases.forEach((c) => {
+                    if (c.id >= index) {
+                        index = c.id + 1
+                    }
+                });
+                caselaw.id = index;
+            } else {
+                caselaw.id = 1;
+            }
             state.cases.push(caselaw)
             this.dispatch('requestUpdateTimeline')
         },
@@ -173,12 +179,18 @@ const store = new Vuex.Store({
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
         firstYear: (state) => {
+            if (state.cases.length === 0 && state.events.length === 0) {
+                return 0
+            }
             const first_event_year = state.events.reduce((min, e) =>
                 new Date(e.start_date).getFullYear() < min ? new Date(e.start_date).getFullYear() : min, new Date(state.events[0].start_date).getFullYear());
             const first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getFullYear() < min ? new Date(c.decision_date).getFullYear() : min, new Date(state.cases[0].decision_date).getFullYear());
             return first_case_year < first_event_year ? first_case_year : first_event_year;
         },
         lastYear: (state) => {
+            if (state.cases.length && state.events.length === 0) {
+                return 0
+            }
             const last_event_year = state.events.reduce((max, e) =>
                 new Date(e.end_date).getFullYear() > max ? new Date(e.end_date).getFullYear() : max, new Date(state.events[0].end_date).getFullYear());
             const last_case_year = state.cases.reduce((max, e) =>
@@ -227,7 +239,6 @@ const store = new Vuex.Store({
                 .then(new_tl => {
                     if (new_tl.status === "ok") {
                         this.dispatch('requestTimelineList');
-                        router.push({name: 'timeline', params: {timeline: new_tl.id}})
                     }
                 }).then(
                 () => {
@@ -314,6 +325,32 @@ const store = new Vuex.Store({
                 }).then(
                 () => {
                     commit('setRequestStatusTerminal', 'success');
+                }
+            ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', error)
+            })
+        },
+        requestUpdateAdmin: function ({commit}, data) {
+            commit('setRequestStatus', 'pending');
+            let json = JSON.stringify({
+                    title: data.title,
+                    subhead: data.subhead,
+                    description: data.description,
+                });
+
+            return axios
+                .post(this.state.urls.chronolawgic_api_update_admin + data.id, json, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(
+                () => {
+                    commit('setRequestStatusTerminal', 'success');
+                    commit('setNotificationMessage', "Change Saved")
                 }
             ).catch(error => {
                 commit('setRequestStatusTerminal', 'error');
