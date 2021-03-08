@@ -10,12 +10,21 @@ Vue.config.productionTip = false;
 
 Vue.use(VueRouter);
 export const router = new VueRouter({
-  routes: [
-    { path: '/', component: Admin, name: 'admin'},
-    { path: '/:timeline', component: Timeline, name: 'timeline' },
-    { path: '*', redirect: '/' },
-  ]
+    routes: [
+        {path: '/', component: Admin, name: 'admin'},
+        {path: '/:timeline', component: Timeline, name: 'timeline'},
+        {path: '*', redirect: '/'},
+    ]
 });
+router.afterEach((to) => {
+    console.log("beforeEach router", to)
+    if (to.name === 'timeline' && to.params.timeline) {
+        store.dispatch('requestTimeline', to.params.timeline);
+    }
+    if (to.name === 'admin') {
+        store.dispatch('requestTimelineList');
+    }
+})
 
 new Vue({
     el: '#app',

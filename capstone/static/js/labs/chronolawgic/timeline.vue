@@ -172,8 +172,6 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch('requestTimeline', this.$route.params.timeline);
-
     EventBus.$on('openModal', (item, typeOfItem) => {
       this.showEvent = typeOfItem === 'event';
       this.showCase = typeOfItem === 'case';
