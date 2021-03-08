@@ -24,17 +24,7 @@ export default {
   name: 'Admin',
   components: {
   },
-
-  data() {
-    return {
-    }
-  },
   created() {
-    if (Number(this.$route.params.timeline)) {
-      this.$store.dispatch('requestTimeline', this.$route.params.timeline);
-    } else {
-      this.$store.dispatch('requestTimelineList');
-    }
     // hacky hack: we have to stop propagation to stop modal from reopening
     // and the backdrop therefore remains open
     EventBus.$on('closeModal', () => {
