@@ -76,7 +76,7 @@ main#main-app {
       background-color: $color-white;
       border: 2px solid $color-black;
       width: 20rem;
-      padding: 0.75rem;
+      padding: 0.5rem 0.75rem;
       margin: 0.5rem;
       align-self: end;
       grid-gap: .25rem;
@@ -88,9 +88,23 @@ main#main-app {
 
     header {
       grid-area: casename;
+      display: grid;
+      grid-template-areas: "name link";
+      grid-template-columns: 90% 10%;
       font-weight: $font-weight-black;
       font-size: 1.25em;
       padding: 0;
+    }
+
+    .case-link {
+      svg {
+        fill: $color-violet;
+      }
+      &:hover, &:focus, &:active {
+        svg {
+          fill: $color-black;
+        }
+      }
     }
 
     section.subhead {

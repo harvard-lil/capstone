@@ -5,7 +5,11 @@
            tabindex="0">
 
     <header>
-      {{ case_data.name }}
+      <span class="case-name">{{ case_data.name }}</span>
+      <a class="case-link" v-if="case_data.url"
+         :href="case_data.url" target="_blank" @click.stop>
+        <link-case/>
+      </a>
     </header>
     <section class="subhead">
       {{ case_data.subhead }}
@@ -17,11 +21,13 @@
 </template>
 
 <script>
+import LinkCase from '../../../../static/img/icons/open_in_new-24px.svg';
 import {EventBus} from "./event-bus.js";
 
 export default {
   name: "Case",
   props: ['case_data', 'year_value'],
+  components: {LinkCase},
   methods: {
     openModal(item) {
       EventBus.$emit('openModal', item, 'case')
