@@ -2,14 +2,14 @@
   <main class="admin">
         <div class="row top-menu">
       <div class="header-section case-law-section">
-        <span>TIMELINES</span>
+        <h5>TIMELINES</h5>
         <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal" @click="$store.dispatch('requestCreateTimeline')">
           <add-icon></add-icon>
         </button>
       </div>
       <div class="header-section other-events-section">
-          <span>WHERE AM I?</span>
-          <a href=".." class="icon-link" alt="What is this interface?"><question-icon></question-icon></a>
+          <h5>WHERE AM I?</h5>
+          <a href=".." class="icon-link" ><question-icon alt="What is this interface?"></question-icon></a>
       </div>
       <div class="key-column">
       </div>
