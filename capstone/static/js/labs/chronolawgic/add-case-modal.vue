@@ -3,7 +3,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" v-if="this.case.name">{{ this.case.name }}</h5>
+          <h5 class="modal-title" v-if="this.case">{{ this.case.name }}</h5>
           <h5 class="modal-title" v-else>ADD CASELAW</h5>
           <button type="button" @click.stop="closeModal" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
