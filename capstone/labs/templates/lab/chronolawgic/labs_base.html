@@ -60,7 +60,7 @@
     <meta name="theme-color" content="#ffffff">
 
     {# if a stylesheet has to import base.scss, it should override this block instead of going in extra_head to avoid double import #}
-    {% block base_css %}{% stylesheet "base" %}{% endblock %}
+    {% block base_css %}{% stylesheet "labs" %}{% endblock %}
     {% render_bundle 'chunk-common' %}
     {% render_bundle 'base' %}
     {% if extra_head %}{{ extra_head }}{% endif %}
@@ -68,7 +68,57 @@
   </head>
   <body class="hamburger-menu-closed" tabindex="-1">
 
-    {% include "includes/nav.html" %}
+    <a class="skip" href="#main">Skip to main content</a>
+
+    <nav id="labs-nav" aria-label="main" {% if nav_class %}class="{{nav_class}}"{% endif %}>
+      <div class="labs-logo">
+            <a class="nav-branding" href="{% url "labs:labs" %}" aria-label="CAP Labs Home"></a>
+      </div>
+      <div class="hamburger">
+          <button id="burger-icon">
+            <div class="burger-item"></div>
+            <div class="burger-item"></div>
+            <div class="burger-item"></div>
+          </button>
+      </div>
+
+      <div class="project-title">
+          <span class="labs-label">
+            CAP LABS
+          </span>
+              <span class="project-name">
+                 |{% block project_name %} {% endblock %}
+          </span>
+      </div>
+
+      <div class="lab-nav-content">
+          <div class="nav-item" id="nav-account">
+            {% if request.user.is_authenticated %}
+              <a class="nav-link" href="{% url "user-details" %}">
+                ACCOUNT
+              </a>
+            {% else %}
+              <a class="nav-link "
+                 href="{% url "login" %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}">
+                LOG IN
+              </a>
+            {% endif %}
+          </div>
+          <div class="nav-item" id="nav-about">
+              <a class="nav-link" href="{% url "labs:labs" %}">
+                LABS
+              </a>
+          </div>
+          <div class="nav-item" id="nav-linkback">
+              <div class="mini-branding">
+                    <a class="nav-branding" href="{% url "home" %}" aria-label="CAP Labs Home"></a>
+              </div>
+          </div>
+      </div>
+
+    </nav>
+
+
     <div id="content-and-footer" tabindex="-1">
       <main class="all-content flex-xl-nowrap {% block all_content_style %}{% endblock %}" id="main">
         <div class="extended-content row {% block row_style %}{% endblock %}{% if row_style %} {{ row_style }}{% endif %}">
