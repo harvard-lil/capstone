@@ -3,7 +3,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{{ event.name }} | {{ event.start_date}}</h5>
+          <h5 class="modal-title">{{ event.name }} | {{ event.start_date }}</h5>
           <button type="button" class="close" @click.stop="closeModal" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -13,10 +13,15 @@
           <hr/>
           <div class="long-description">
             <p v-for="(par, index) in event.long_description.split('\n')"
-            :key="index">
+               :key="index">
               {{ par }}
             </p>
           </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
+            Cancel
+          </button>
         </div>
       </div>
     </div>
@@ -27,9 +32,9 @@
 export default {
   name: "readonly-modal",
   props: [
-      'shown',
-      'modal',
-      'event',
+    'shown',
+    'modal',
+    'event',
   ],
   methods: {
     closeModal() {
