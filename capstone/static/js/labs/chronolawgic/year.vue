@@ -22,22 +22,30 @@
       </div>
     </div>
     <TimeLineSlice :event_list="year_data.event_list" :year_value="year_value"></TimeLineSlice>
+    <template v-if="!$store.state.isAuthor">
+      <event-preview :event="event"></event-preview>
+    </template>
   </div>
 </template>
 
 <script>
 import TimeLineSlice from './timeline-slice';
 import Case from './case';
+import EventPreview from "./EventPreview";
+import {EventBus} from "./event-bus";
 
 export default {
   name: "Year",
   components: {
     TimeLineSlice,
     Case,
+    EventPreview
+
   },
   data() {
     return {
-      event_count : this.year_data.event_list.reduce((acc, element) => acc + Object.keys(element).length, 0)
+      event_count: this.year_data.event_list.reduce((acc, element) => acc + Object.keys(element).length, 0),
+      event: null
     }
   },
   props: ['year_data', 'year_value'],
@@ -58,7 +66,27 @@ export default {
   methods: {
     repopulateTimeline() {
       this.$parent.repopulateTimeline();
-    }
+    },
+    previewEvent(event_data) {
+      this.event = event_data
+      EventBus.$emit('closePreview', this.year_value);
+    },
+    clearPreviewEvent() {
+      this.event = null;
+    },
+    openModal(item) {
+
+      this.clearPreviewEvent()
+      EventBus.$emit('openModal', item, 'event')
+    },
+
+  },
+  mounted() {
+    EventBus.$on('closePreview', (year_value) => {
+      if (this.year_value !== year_value) {
+        this.event = null;
+      }
+    })
   }
 }
 </script>

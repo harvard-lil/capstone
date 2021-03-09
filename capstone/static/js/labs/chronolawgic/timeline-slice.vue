@@ -12,7 +12,7 @@
                 }"
            data-toggle="modal"
            :data-target="$store.state.isAuthor ? '#add-event-modal' : '#readonly-modal'"
-           @click="openModal(event_data)">
+      @click="handleClick(event_data)">
       </div>
     </div>
   </div>
@@ -31,6 +31,16 @@ export default {
     closeModal() {
       this.$emit('closeModal')
     },
+    handleClick(event_data) {
+      if (this.$store.state.isAuthor) {
+        this.openModal(event_data)
+      } else {
+        this.toggleEventPreview(event_data)
+      }
+    },
+    toggleEventPreview(event_data) {
+      this.$parent.previewEvent(event_data);
+    }
   },
 }
 </script>
