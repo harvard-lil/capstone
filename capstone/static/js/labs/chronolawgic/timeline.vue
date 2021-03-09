@@ -96,23 +96,9 @@ export default {
       showEventDetails: false,
       keyShown: false,
       years: {},
-      eventsColorPool: [
-        "#DB005B",
-        "#DBC600",
-        "#00B7DB",
-        "#DB4500",
-        "#85ff53",
-        "#7e84ff",
-        "#ff564c",
-        "#0073DB",
-        "#CBDB00",
-        "#8B00DB",
-        "#DB8F00",
-        "#00db67"
-      ],
       event: null,
       events: [],
-      cases: [],
+      cases: []
     }
   },
   methods: {
@@ -156,7 +142,6 @@ export default {
         const newEvents = this.$store.getters.eventByStartYear(year); // events that start on this year
         if (newEvents.length > 0) {
           newEvents.forEach((evt) => {
-            evt.color = this.eventsColorPool[Math.floor(Math.random() * this.eventsColorPool.length)]
             for (let track_index = 0; track_index < 12; track_index++) {
               if (Object.keys(this.years[year].event_list[track_index]).length === 0) { // since the events are start-year sorted, if the track is empty on the first year, it'll be good for the rest
                 let length = new Date(evt.end_date).getUTCFullYear() - new Date(evt.start_date).getUTCFullYear();

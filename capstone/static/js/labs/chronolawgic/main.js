@@ -17,7 +17,6 @@ export const router = new VueRouter({
     ]
 });
 router.afterEach((to) => {
-    console.log("beforeEach router", to)
     if (to.name === 'timeline' && to.params.timeline) {
         store.dispatch('requestTimeline', to.params.timeline);
     }

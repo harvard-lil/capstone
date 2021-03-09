@@ -12,6 +12,21 @@ const importChoices = choices; // defined in timeline.html
 // eslint-disable-next-line
 const importUser = user; // defined in timeline.html
 
+importChoices.colors = [
+    ["#FFB37A", "#FFB37A"],
+    ["#DBC600", "#DBC600"],
+    ["#00B7DB", "#00B7DB"],
+    ["#FF8E7A", "#FF8E7A"],
+    ["#986D81", "#986D81"],
+    ["#7e84ff", "#7e84ff"],
+    ["#ff736c", "#ff736c"],
+    ["#3E667A", "#3E667A"],
+    ["#CBDB00", "#CBDB00"],
+    ["#EB697F", "#EB697F"],
+    ["#DB8F00", "#DB8F00"],
+    ["#00db67", "#00db67"]
+]
+
 Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
@@ -57,7 +72,8 @@ const store = new Vuex.Store({
             reporter: "",
             decision_date: "",
             categories: [],
-        }
+        },
+
     },
     mutations: {
         writeTimeline(state) {
@@ -102,6 +118,7 @@ const store = new Vuex.Store({
             }, 5000);
         },
         addEvent(state, event) {
+            // assign id to event
             let index = -1
             state.events.forEach((e) => {
                 if (e.id >= index) {
@@ -158,7 +175,6 @@ const store = new Vuex.Store({
                     break;
                 }
             }
-            console.log("foudn event, deleting", event_index)
             state.events.splice(event_index, 1);
             this.dispatch('requestUpdateTimeline');
         },
@@ -350,10 +366,10 @@ const store = new Vuex.Store({
         requestUpdateAdmin: function ({commit}, data) {
             commit('setRequestStatus', 'pending');
             let json = JSON.stringify({
-                    title: data.title,
-                    subhead: data.subhead,
-                    description: data.description,
-                });
+                title: data.title,
+                subhead: data.subhead,
+                description: data.description,
+            });
 
             return axios
                 .post(this.state.urls.chronolawgic_api_update_admin + data.id, json, {
@@ -364,14 +380,14 @@ const store = new Vuex.Store({
                 })
                 .then(response => response.data)
                 .then(
-                () => {
-                    commit('setRequestStatusTerminal', 'success');
-                    commit('setNotificationMessage', "Change Saved")
-                }
-            ).catch(error => {
-                commit('setRequestStatusTerminal', 'error');
-                commit('setNotificationMessage', error)
-            })
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', "Change Saved")
+                    }
+                ).catch(error => {
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', error)
+                })
         }
     }
 });

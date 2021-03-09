@@ -10,34 +10,38 @@
         </div>
         <div class="modal-body">
           <form @submit.prevent="addEvent">
-            <div class="form-label-group">
+            <div class="form-label-group" id="field-group-name">
               <input v-model="newEvent.name" id="field-event-name" placeholder="NAME" required
                      class="form-control">
               <label for="field-event-name">EVENT NAME</label>
             </div>
-            <div class="form-label-group">
+            <div class="form-label-group" id="field-group-short-description">
               <input v-model="newEvent.short_description" id="field-event-short-description"
                      placeholder="SHORT DESCRIPTION"
                      class="form-control">
               <label for="field-event-short-description">SHORT DESCRIPTION</label>
             </div>
-            <div class="form-label-group">
+            <div class="form-label-group" id="field-group-start-date">
               <input v-model="newEvent.start_date" id="field-event-start-date" placeholder="DECISION DATE" type="date"
                      required
                      class="form-control">
               <label for="field-event-start-date">START DATE</label>
             </div>
-            <div class="form-label-group">
-            <textarea v-model="newEvent.long" id="field-event-long-description" placeholder="LONGER DESCRIPTION"
+            <div class="form-label-group" id="field-group-long-description">
+            <textarea v-model="newEvent.long_description" id="field-event-long-description" placeholder="LONGER DESCRIPTION"
                       class="form-control"></textarea>
             </div>
-            <div class="form-label-group">
+            <div class="form-label-group" id="field-group-end-date">
               <input v-model="newEvent.end_date" id="field-event-end-date" placeholder="DECISION DATE" type="date"
                      class="form-control">
               <label for="field-event-start-date">END DATE</label>
             </div>
 
-
+            <item-dropdown class="form-label-group" id="field-group-color" :field="extraFields.colors"
+                           :original_display_val="extraFields.colors.value ? extraFields.colors.value : extraFields.colors.label"
+                           choices_type="colors"
+                           :choices="choices.colors">
+            </item-dropdown>
           </form>
           <div v-if="errors.length" class="form-errors p-2 mt-2 small">
             <b>Please correct the following error(s):</b>
@@ -59,7 +63,7 @@
             </button>
           </template>
           <template v-if="!this.event">
-            <button type="button" class="btn btn-primary" @click="addEvent"
+            <button type="button" class="btn btn-primary" @click.stop="addEvent"
                     :data-dismiss="$parent.addEventModalShown ? 'none' : 'modal'">ADD
             </button>
           </template>
@@ -71,6 +75,8 @@
 
 <script>
 import store from "./store";
+import ItemDropdown from "./item-dropdown"
+
 
 export default {
   name: "add-event-modal",
@@ -78,10 +84,21 @@ export default {
     'modal',
     'event'
   ],
+  components: {
+    ItemDropdown
+  },
   data() {
     return {
+      choices: {},
       newEvent: {},
       errors: [],
+      extraFields: {
+        colors: {
+          name: 'color',
+          label: 'color',
+          value: ''
+        }
+      }
     }
   },
   methods: {
@@ -121,13 +138,16 @@ export default {
       this.checkForm();
       if (this.errors.length) return;
       let event = JSON.parse(JSON.stringify(this.newEvent))
+      event.color = this.extraFields.colors.value
       store.commit('updateEvent', event)
       this.closeModal()
       this.$parent.repopulateTimeline();
     },
   },
   mounted() {
+    this.choices = store.getters.choices;
     if (this.event) {
+      this.extraFields.colors.value = this.event.color
       this.newEvent = JSON.parse(JSON.stringify(this.event)) // deep copy to unbind
     } else {
       this.newEvent = store.getters.templateEvent;

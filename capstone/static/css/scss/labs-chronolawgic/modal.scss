@@ -55,6 +55,8 @@ textarea::placeholder {
     position: absolute !important;
     max-height: 300px;
     overflow-y: scroll;
+    overflow-x: hidden;
+    width: 300px;
   }
 
   .dropdown-item {
@@ -66,6 +68,13 @@ textarea::placeholder {
     }
   }
 
+  .color-square {
+    width: 20px;
+    height: 20px;
+    //border: 1px solid #2F2F2F;
+    float: left;
+    margin-right: 5px;
+  }
 }
 
 .form-label-group input:not(:placeholder-shown) {
@@ -98,6 +107,11 @@ textarea::placeholder {
   border-top: 0;
 }
 
+.form-label-group {
+  margin-bottom: 0.5em;
+}
+
+
 #add-case-modal {
 
   #form-add-case {
@@ -109,10 +123,6 @@ textarea::placeholder {
           "date        .    long"
           "jur         .    long"
           "reporter    .    long";
-  }
-
-  .form-label-group {
-    margin-bottom: 0.5em;
   }
 
   #field-group-search {
@@ -232,13 +242,40 @@ textarea::placeholder {
 #add-event-modal {
   form {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-auto-rows: 2em;
-    grid-gap: .5em;
+    grid-template-areas:
+          "name        .    short"
+          "start_date  .    long"
+          "end_date    .    long"
+          "color       .    long";
+    grid-gap: .2em;
   }
 
-  #field-event-long-description {
-    min-height: 5em;
+  #field-group-name {
+    grid-area: name;
+  }
+
+  #field-group-start-date {
+    grid-area: start_date;
+  }
+
+  #field-group-end-date {
+    grid-area: end_date;
+  }
+
+  #field-group-short-description {
+    grid-area: short;
+  }
+
+  #field-group-long-description {
+    grid-area: long;
+
+    textarea {
+      min-height: 8em;
+    }
+  }
+
+  #field-group-color {
+    grid-area: color;
   }
 }
 
