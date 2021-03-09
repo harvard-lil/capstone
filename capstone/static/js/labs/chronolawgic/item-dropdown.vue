@@ -9,9 +9,11 @@
             aria-expanded="false"
             @click="toggleDropdown()"
             :aria-describedby="field.label">
+      <!-- Little color square for colors dropdown -->
       <span class="dropdown-title-text color-square" v-if="choices_type==='colors'"
-             v-bind:style="{ background: display}"> {{ display }}
-      </span>
+            v-bind:style="{ background: display }">
+
+      </span><span v-if="choices_type==='colors'">{{ display }}</span>
       <span v-else class="dropdown-title-text">{{ display }}</span>
     </button>
 
@@ -21,10 +23,12 @@
          :aria-labelledby="field.name">
       <button v-for="choice in choices"
               v-bind:key="choice[0]"
-              @click.stop="updateDropdownVal(choice, 'keyup')"
+              @click.stop.prevent="updateDropdownVal(choice)"
               :class="['dropdown-item', field.name===choice[0] ? 'active' : '']">
-        <span @click.stop v-if="choices_type === 'color'" class="color-square"
-              :style="'background-color:' + color[1] "></span>{{ choice[1] }}
+        <!-- Little color square for colors dropdown -->
+        <span @click.stop v-if="choices_type === 'colors'" class="color-square"
+              v-bind:style="{ background: choice[1]}"></span>
+        {{ choice[1] }}
       </button>
     </div>
     <button class="dropdown-item reset-field"
