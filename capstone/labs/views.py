@@ -24,7 +24,7 @@ def chronolawgic_api_retrieve(request, timeline_id=None):
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
     if not timeline_id and request.user.is_authenticated:
-        timelines = Timeline.objects.filter(created_by=request.user.pk)
+        timelines = Timeline.objects.filter(created_by=request.user.pk).order_by('id')
         return JsonResponse({
             'status': 'ok',
             'timelines': [{"id": tl.id,

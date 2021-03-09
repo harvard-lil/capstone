@@ -3,14 +3,15 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">ADD CASELAW</h5>
+          <h5 class="modal-title" v-if="this.case">{{ this.case.name }}</h5>
+          <h5 class="modal-title" v-else>ADD CASELAW</h5>
           <button type="button" @click.stop="closeModal" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="searchCAP" id="form-search-cap">
-            <div class="form-label-group" id="field-group-search">
+            <div v-if="!this.case" class="form-label-group" id="field-group-search">
               <input v-model="searchText" id="field-search-cap" placeholder="ENTER FULL TEXT OR CITATION"
                      class="form-control">
               <label for="field-search-cap">ENTER FULL TEXT OR CITATION</label>
@@ -161,6 +162,8 @@ export default {
       this.checkForm();
       if (this.errors.length) return;
       let caselaw = JSON.parse(JSON.stringify(this.newCase))
+      caselaw.jurisdiction = this.extraFields.jurisdiction.value
+      caselaw.reporter = this.extraFields.reporter.value
       store.commit('updateCase', caselaw)
       this.closeModal()
       this.$parent.repopulateTimeline();
@@ -218,6 +221,9 @@ export default {
     this.choices = store.getters.choices;
     if (this.case) {
       this.newCase = JSON.parse(JSON.stringify(this.case)) // deep copy to unbind
+      this.extraFields.jurisdiction.value = this.newCase.jurisdiction;
+      this.extraFields.reporter.value = this.newCase.reporter;
+
     } else {
       this.newCase = store.getters.templateCase;
     }

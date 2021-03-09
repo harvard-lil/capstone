@@ -3,20 +3,28 @@
     <button class="btn dropdown-toggle dropdown-title"
             type="button"
             :id="field.name"
+            :ref="field.name"
             data-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
+            @click="toggleDropdown()"
             :aria-describedby="field.label">
-      <span class="dropdown-title-text">{{ display }}</span>
+      <span class="dropdown-title-text color-square" v-if="choices_type==='colors'"
+             v-bind:style="{ background: display}"> {{ display }}
+      </span>
+      <span v-else class="dropdown-title-text">{{ display }}</span>
     </button>
 
     <!-- Choice fields -->
-    <div class="dropdown-menu" :aria-labelledby="field.name">
+    <div class="dropdown-menu" ref="menu" v-bind:style="{
+      'display': expanded ? 'block' : 'none'}"
+         :aria-labelledby="field.name">
       <button v-for="choice in choices"
               v-bind:key="choice[0]"
-              @click="updateDropdownVal(choice, 'keyup')"
+              @click.stop="updateDropdownVal(choice, 'keyup')"
               :class="['dropdown-item', field.name===choice[0] ? 'active' : '']">
-        {{ choice[1] }}
+        <span @click.stop v-if="choices_type === 'color'" class="color-square"
+              :style="'background-color:' + color[1] "></span>{{ choice[1] }}
       </button>
     </div>
     <button class="dropdown-item reset-field"
@@ -35,12 +43,14 @@ export default {
   props: [
     'field',
     'choices',
-    'original_display_val',
+    'choices_type',
+    'original_display_val'
   ],
   data() {
     return {
       hide_reset: true,
       display: this.original_display_val,
+      expanded: false
     }
   },
   watch: {
@@ -73,9 +83,13 @@ export default {
       }
     },
     updateDropdownVal(choice) {
-      this.field.value = choice[0];
+      this.field.value = choice[1];
       this.display = this.getFormattedDisplayValue();
+      this.toggleDropdown()
     },
+    toggleDropdown() {
+      this.expanded = !this.expanded
+    }
   },
 
 }
