@@ -11,7 +11,7 @@
             :aria-describedby="field.label">
       <!-- Little color square for colors dropdown -->
       <span class="dropdown-title-text color-square" v-if="choices_type==='colors'"
-             v-bind:style="{ background: display}">
+            v-bind:style="{ background: display }">
 
       </span><span v-if="choices_type==='colors'">{{ display }}</span>
       <span v-else class="dropdown-title-text">{{ display }}</span>

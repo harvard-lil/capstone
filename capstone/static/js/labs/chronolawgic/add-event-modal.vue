@@ -150,6 +150,7 @@ export default {
       this.extraFields.colors.value = this.event.color
       this.newEvent = JSON.parse(JSON.stringify(this.event)) // deep copy to unbind
     } else {
+      this.extraFields.colors.value = this.choices.colors[Math.floor(Math.random() * this.choices.colors.length)][0]
       this.newEvent = JSON.parse(JSON.stringify(store.getters.templateEvent)); // deep copy to unbind
     }
   }
