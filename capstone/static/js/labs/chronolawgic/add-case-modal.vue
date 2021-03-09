@@ -225,7 +225,7 @@ export default {
       this.extraFields.reporter.value = this.newCase.reporter;
 
     } else {
-      this.newCase = store.getters.templateCase;
+      this.newCase = JSON.parse(JSON.stringify(store.getters.templateCase));
     }
   },
 }
