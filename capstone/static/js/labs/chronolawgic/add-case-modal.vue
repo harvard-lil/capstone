@@ -162,6 +162,8 @@ export default {
       this.checkForm();
       if (this.errors.length) return;
       let caselaw = JSON.parse(JSON.stringify(this.newCase))
+      caselaw.jurisdiction = this.extraFields.jurisdiction.value
+      caselaw.reporter = this.extraFields.reporter.value
       store.commit('updateCase', caselaw)
       this.closeModal()
       this.$parent.repopulateTimeline();
@@ -219,6 +221,9 @@ export default {
     this.choices = store.getters.choices;
     if (this.case) {
       this.newCase = JSON.parse(JSON.stringify(this.case)) // deep copy to unbind
+      this.extraFields.jurisdiction.value = this.newCase.jurisdiction;
+      this.extraFields.reporter.value = this.newCase.reporter;
+
     } else {
       this.newCase = store.getters.templateCase;
     }
