@@ -13,18 +13,18 @@ const importChoices = choices; // defined in timeline.html
 const importUser = user; // defined in timeline.html
 
 importChoices.colors = [
-    ["#FFB37A", "#FFB37A"],
-    ["#DBC600", "#DBC600"],
-    ["#00B7DB", "#00B7DB"],
+    ["#00db67", "#00db67"],
+    ["#ccff6d", "#ccff6d"],
+    ["#dbc600", "#DBC600"],
+    ["#DB8F00", "#DB8F00"],
     ["#FF8E7A", "#FF8E7A"],
+    ["#ff736c", "#ff736c"],
+    ["#e5435c", "#e5435c"],
     ["#986D81", "#986D81"],
     ["#7e84ff", "#7e84ff"],
-    ["#ff736c", "#ff736c"],
+    ["#3656f6", "#3656f6"],
+    ["#00B7DB", "#00B7DB"],
     ["#3E667A", "#3E667A"],
-    ["#CBDB00", "#CBDB00"],
-    ["#EB697F", "#EB697F"],
-    ["#DB8F00", "#DB8F00"],
-    ["#00db67", "#00db67"]
 ]
 
 Vue.use(Vuex);
