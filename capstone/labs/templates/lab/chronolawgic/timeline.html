@@ -1,4 +1,4 @@
-{% extends "layouts/extended.html" %}
+{% extends "./labs_base.html" %}
 {% load static %}
 {% load pipeline %}
 {% load render_bundle from webpack_loader %}
@@ -7,9 +7,9 @@
 
 {% block title %}Chronolawgic{% endblock %}
 {% block content_title %}{% endblock %}
-{% block base_css %}{% stylesheet "chronolawgic" %}{% endblock %}
+{% block extra_head %}{% stylesheet "chronolawgic" %}{% endblock %}
 {% block meta_description %}Chronolawgic— a caselaw timeline tool{% endblock %}
-
+{% block project_name %}Chronolawgic{% endblock %}
 
 {% block main_content %}
 <div id="app" class="content"></div>
