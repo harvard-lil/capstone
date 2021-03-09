@@ -12,6 +12,7 @@
                 }"
            data-toggle="modal"
            :data-target="$store.state.isAuthor ? '#add-event-modal' : '#readonly-modal'"
+           @focus="handleFocus(event_data)"
       @click="handleClick(event_data)">
       </div>
     </div>
@@ -35,6 +36,11 @@ export default {
       if (this.$store.state.isAuthor) {
         this.openModal(event_data)
       } else {
+        this.toggleEventPreview(event_data)
+      }
+    },
+    handleFocus(event_data) {
+      if (!this.$store.state.isAuthor) {
         this.toggleEventPreview(event_data)
       }
     },
