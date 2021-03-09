@@ -364,6 +364,12 @@ PIPELINE = {
             },
             'output_filename': 'fetch.css'
         },
+        'labs': {
+            'source_filenames': {
+                'css/scss/labs.scss',
+            },
+            'output_filename': 'labs.css'
+        },
         'chronolawgic': {
             'source_filenames': {
                 'css/scss/labs-chronolawgic.scss',
