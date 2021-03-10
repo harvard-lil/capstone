@@ -106,10 +106,12 @@ export default {
       this.checked = !this.checked;
     },
     showAddEventModal(val) {
+      this.event = null;
       this.showEvent = val;
       this.showEventDetails = this.showEvent
     },
     showAddCaseModal(val) {
+      this.event = null;
       this.showCase = val;
       this.showEventDetails = this.showCase
     },
@@ -123,9 +125,6 @@ export default {
 
     toggleKey() {
       this.keyShown = !this.keyShown;
-    },
-    getDateRange() {
-      this.$store.getters.events
     },
     repopulateTimeline() {
       /*
@@ -161,7 +160,7 @@ export default {
       this.showEvent = typeOfItem === 'event';
       this.showCase = typeOfItem === 'case';
       this.event = item;
-    })
+    });
   }
 };
 </script>

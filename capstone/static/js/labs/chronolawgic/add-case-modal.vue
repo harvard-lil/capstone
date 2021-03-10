@@ -94,7 +94,7 @@
             </button>
           </template>
           <template v-if="!this.case">
-            <button type="button" class="btn btn-primary" @click="addCase"
+            <button type="button" class="btn btn-primary" @click.stop="addCase"
                     data-dismiss="modal">
               ADD
             </button>
@@ -135,14 +135,14 @@ export default {
         jurisdiction: {
           name: 'jurisdiction',
           label: 'jurisdiction',
-          value: '',
+          value: 'jurisdiction',
         },
         reporter: {
           name: 'reporter',
           label: 'reporter',
-          value: '',
+          value: 'reporter',
         }
-      }
+      },
     }
   },
   methods: {
@@ -157,29 +157,30 @@ export default {
     },
     closeModal() {
       this.$parent.closeModal();
+      this.$parent.repopulateTimeline();
+      this.setupDefaults();
     },
     updateCase() {
       this.checkForm();
       if (this.errors.length) return;
-      let caselaw = JSON.parse(JSON.stringify(this.newCase))
+      let caselaw = this.unbind(this.newCase)
       caselaw.jurisdiction = this.extraFields.jurisdiction.value
       caselaw.reporter = this.extraFields.reporter.value
       store.commit('updateCase', caselaw)
       this.closeModal()
-      this.$parent.repopulateTimeline();
     },
     addCase() {
       this.checkForm();
       if (this.errors.length) return;
-      let caselaw = JSON.parse(JSON.stringify(this.newCase))
+      let caselaw = this.unbind(this.newCase)
+      caselaw.jurisdiction = this.extraFields.jurisdiction.value
+      caselaw.reporter = this.extraFields.reporter.value
       store.commit('addCase', caselaw);
       this.closeModal();
-      this.$parent.repopulateTimeline();
     },
     deleteCase() {
       store.commit('deleteCase', this.case.id);
       this.closeModal();
-      this.$parent.repopulateTimeline();
     },
     chooseCase(result) {
       // choosing case from CAP search
@@ -215,17 +216,36 @@ export default {
     clearContent() {
       this.closeModal();
       this.newCase = store.getters.templateCase;
+    },
+    unbind(obj) {
+      return JSON.parse(JSON.stringify(obj))
+    },
+    setupDefaults() {
+      this.extraFields.jurisdiction.value = "jurisdiction"
+      this.extraFields.reporter.value = "reporter"
+      this.newCase = this.unbind(store.getters.templateEvent);
+    },
+    setupExisting() {
+      this.newCase = this.unbind(this.case)
+      this.extraFields.jurisdiction.value = this.newCase.jurisdiction
+      this.extraFields.reporter.value = this.newCase.reporter
+    }
+  },
+  watch: {
+    case(existingCase) {
+      if (existingCase && existingCase.id) {
+        this.setupExisting();
+      } else {
+        this.setupDefaults();
+      }
     }
   },
   mounted() {
     this.choices = store.getters.choices;
     if (this.case) {
-      this.newCase = JSON.parse(JSON.stringify(this.case)) // deep copy to unbind
-      this.extraFields.jurisdiction.value = this.newCase.jurisdiction;
-      this.extraFields.reporter.value = this.newCase.reporter;
-
+      this.setupExisting()
     } else {
-      this.newCase = JSON.parse(JSON.stringify(store.getters.templateCase));
+      this.setupDefaults();
     }
   },
 }

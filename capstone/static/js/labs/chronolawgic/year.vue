@@ -15,7 +15,11 @@
         <hr class="left-rule">
       </div>
       <div class="year">
-        {{ year_value }}
+        <div class="left-top"></div>
+        <div class="right-top"></div>
+        <div class="middle"><span>{{ year_value }}</span></div>
+        <div class="left-bottom"></div>
+        <div class="right-bottom"></div>
       </div>
       <div class="right-line">
         <hr>

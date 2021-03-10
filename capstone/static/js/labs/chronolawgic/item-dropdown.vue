@@ -13,8 +13,8 @@
       <span class="dropdown-title-text color-square" v-if="choices_type==='colors'"
             v-bind:style="{ background: display }">
 
-      </span><span v-if="choices_type==='colors'">{{ display }}</span>
-      <span v-else class="dropdown-title-text">{{ display }}</span>
+      </span><span class="dropdown-title-text" v-if="choices_type==='colors'">{{ display ? display : original_display_val }}</span>
+      <span v-else class="dropdown-title-text">{{ display ? display : original_display_val }}</span>
     </button>
 
     <!-- Choice fields -->
@@ -65,11 +65,15 @@ export default {
         this.display = newval.value;
       },
       deep: true
+    },
+    original_display_val(newval) {
+      this.display = newval;
     }
   },
   methods: {
     dropdownReset() {
       this.original_display_val = this.field.label;
+      this.display = this.field.label;
       this.field.value = "";
     },
     getFormattedDisplayValue() {
@@ -95,10 +99,9 @@ export default {
       this.expanded = !this.expanded
     }
   },
+  mounted() {
+    this.display = this.original_display_val;
+  }
 
 }
 </script>
-
-<style scoped>
-
-</style>

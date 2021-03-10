@@ -28,7 +28,8 @@
               <label for="field-event-start-date">START DATE</label>
             </div>
             <div class="form-label-group" id="field-group-long-description">
-            <textarea v-model="newEvent.long_description" id="field-event-long-description" placeholder="LONGER DESCRIPTION"
+            <textarea v-model="newEvent.long_description" id="field-event-long-description"
+                      placeholder="LONGER DESCRIPTION"
                       class="form-control"></textarea>
             </div>
             <div class="form-label-group" id="field-group-end-date">
@@ -64,7 +65,7 @@
           </template>
           <template v-if="!this.event">
             <button type="button" class="btn btn-primary" @click.stop="addEvent"
-                    :data-dismiss="$parent.addEventModalShown ? 'none' : 'modal'">ADD
+                    :data-dismiss="$parent.showEvent ? 'none' : 'modal'">ADD
             </button>
           </template>
         </div>
@@ -119,39 +120,57 @@ export default {
     },
     closeModal() {
       this.$parent.closeModal();
+      this.$parent.repopulateTimeline();
+      this.setupDefaults();
     },
-
     addEvent() {
       this.checkForm();
       if (this.errors.length) return;
-
+      this.newEvent.color = this.extraFields.colors.value
       store.commit('addEvent', this.newEvent)
       this.closeModal();
-      this.$parent.repopulateTimeline();
     },
     deleteEvent() {
       store.commit('deleteEvent', this.event.id);
       this.closeModal();
-      this.$parent.repopulateTimeline();
     },
     updateEvent() {
       this.checkForm();
       if (this.errors.length) return;
-      let event = JSON.parse(JSON.stringify(this.newEvent))
+      let event = this.unbind(this.newEvent)
       event.color = this.extraFields.colors.value
       store.commit('updateEvent', event)
       this.closeModal()
-      this.$parent.repopulateTimeline();
+    },
+    unbind(obj) {
+      return JSON.parse(JSON.stringify(obj))
+    },
+    setupDefaults() {
+      // choose random color as default
+      this.extraFields.colors.value = this.choices.colors[Math.floor(Math.random() * this.choices.colors.length)][0]
+      // set template
+      this.newEvent = this.unbind(store.getters.templateEvent);
+    },
+    setupExisting() {
+      this.extraFields.colors.value = this.event.color
+      this.newEvent = this.unbind(this.event)
+    }
+  },
+  watch: {
+    event(existingEvent) {
+      if (existingEvent && existingEvent.id) {
+        this.setupExisting()
+      } else {
+        this.setupDefaults()
+      }
     },
   },
   mounted() {
     this.choices = store.getters.choices;
     if (this.event) {
-      this.extraFields.colors.value = this.event.color
-      this.newEvent = JSON.parse(JSON.stringify(this.event)) // deep copy to unbind
+      this.setupExisting()
     } else {
-      this.extraFields.colors.value = this.choices.colors[Math.floor(Math.random() * this.choices.colors.length)][0]
-      this.newEvent = JSON.parse(JSON.stringify(store.getters.templateEvent)); // deep copy to unbind
+      this.setupDefaults()
     }
   }
 }
