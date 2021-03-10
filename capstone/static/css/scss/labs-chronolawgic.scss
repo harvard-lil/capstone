@@ -100,6 +100,7 @@ main#main-app {
       svg {
         fill: $color-violet;
       }
+
       &:hover, &:focus, &:active {
         svg {
           fill: $color-black;
@@ -356,5 +357,33 @@ main.admin {
 
   .btn-create {
     grid-area: button-two;
+  }
+}
+
+.event-preview {
+  margin-left: -10em;
+  z-index: 9999;
+  font-family: $font-serif-fancy;
+  height: 8em;
+  width: 12em;
+  overflow-y: scroll;
+  word-break: break-word;
+  background-color: white;
+  position: relative;
+  @include media-breakpoint-up(lg) {
+    margin-left: -5em;
+  }
+  h5 {
+    font-family: $font-serif-fancy;
+    font-size: 19px;
+    padding: 0.2em 0.5em;
+  }
+  p {
+    padding: 0.2em 0.5em;
+    font-size: 15px;
+    line-height: 19px;
+  }
+  .close {
+    padding-right: 0.2em;
   }
 }
