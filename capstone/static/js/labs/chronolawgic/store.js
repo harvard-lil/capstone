@@ -76,13 +76,6 @@ const store = new Vuex.Store({
 
     },
     mutations: {
-        writeTimeline(state) {
-            //TODO
-            state.placeholder = 9;
-        },
-        deleteTimeline() {
-            //todo
-        },
         setAvailableTimelines(state, json) {
             state.availableTimelines = json
         },
@@ -232,21 +225,11 @@ const store = new Vuex.Store({
         events: (state) => {
             return state.events.sort((a, b) => (a.start_date > b.start_date) ? 1 : -1)
         },
-        // eventsByYear: (state) => (year) => {
-        //     return state.events.filter(evt => {
-        //         return year >= evt.start_date && year >= evt.end_date;
-        //     })
-        // },
         eventByStartYear: (state) => (year) => {
             return state.events.filter(evt => {
                 return new Date(evt.start_date).getUTCFullYear() === year;
             })
         },
-        // eventByName: (state) => (name) => {
-        //     return state.events.filter(evt => {
-        //         return evt.name === name;
-        //     })[0]
-        // },
         casesByYear: (state) => (year) => {
             return state.cases.filter(cas => {
                 return year === new Date(cas.decision_date).getUTCFullYear();
