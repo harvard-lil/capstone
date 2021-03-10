@@ -16,7 +16,7 @@
 .header-section {
   display: grid;
   grid-template-areas: "header addbutton";
-  grid-template-columns:  85% 15%;
+  grid-template-columns:  80% 20%;
 
   h5 {
     font-weight: $font-weight-semibold;
@@ -38,19 +38,31 @@
 
 .top-menu {
   height: 70px;
-  padding: 0 2em 0 0;
   display: grid;
-  grid-template-areas: "case-law other-events";
-  grid-template-columns:  75% 25%;
+  grid-template-areas: "caselaw other-events";
+  grid-template-columns:  70% 30%;
   border-bottom: 2px solid $color-black;
+
+  .other-events-section {
+    background-color: $color-gray;
+  }
 }
 
+#timeline {
+  background-color: $color-gray;
+  padding: 0;
+}
+
+.incidental {
+  background-color: white;
+}
 
 main#main-app {
   font-family: $font-monospace;
 
   section#timeline {
     grid-area: timeline;
+    padding-top: 0;
   }
 
   div.year {
@@ -60,6 +72,7 @@ main#main-app {
     grid-template-areas: "incidental years spans .";
     grid-template-columns: 65% 10% 10% 15%;
     min-height: 4rem;
+    font-size: 18px;
 
     div.incidental {
       grid-area: incidental;
@@ -132,8 +145,6 @@ main#main-app {
       display: grid;
       grid-template-areas: "left-line year right-line";
       grid-template-columns: 1fr 1fr 1fr;
-      margin-top: auto;
-      margin-bottom: auto;
 
       div {
         display: flex;
@@ -144,16 +155,35 @@ main#main-app {
 
       .year {
         text-align: center;
+
+        .left-top, .left-bottom {
+          border-right: 2px solid $color-black;
+          height: 100%;
+          width: 50%;
+          background: white;
+        }
+
+        span {
+          background-color: $color-white;
+          padding-left: 0.2em;
+          padding-right: 0.2em;
+        }
       }
 
-      .left-line, .right-line {
+
+      .left-line {
         hr {
-          width: 2rem;
+          width: 0.8rem;
         }
       }
 
       .left-line {
         grid-area: left-line;
+        background-color: white;
+
+        hr {
+          border-top: 2px solid $color-black;
+        }
       }
 
       .right-line {
@@ -163,6 +193,7 @@ main#main-app {
 
     .event_col {
       min-width: 1rem;
+      background-color: $color-gray;
     }
 
     div.spans {
@@ -171,6 +202,7 @@ main#main-app {
       display: grid;
       grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
       grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+      background-color: $color-gray;
     }
 
     .fill {
@@ -373,16 +405,19 @@ main.admin {
   @include media-breakpoint-up(lg) {
     margin-left: -5em;
   }
+
   h5 {
     font-family: $font-serif-fancy;
     font-size: 19px;
     padding: 0.2em 0.5em;
   }
+
   p {
     padding: 0.2em 0.5em;
     font-size: 15px;
     line-height: 19px;
   }
+
   .close {
     padding-right: 0.2em;
   }
