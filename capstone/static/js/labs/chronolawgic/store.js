@@ -202,14 +202,14 @@ const store = new Vuex.Store({
             if (state.cases.length === 0 && state.events.length === 0) {
                 return 0
             }
-            let first_case_year = 9999999
-            let first_event_year = 9999999
+            let first_case_year = 9999999;
+            let first_event_year = 9999999;
             if (state.events.length) {
                 first_event_year = state.events.reduce((min, e) =>
-                    new Date(e.start_date).getFullYear() < min ? new Date(e.start_date).getFullYear() : min, new Date(state.events[0].start_date).getFullYear());
+                    new Date(e.start_date).getUTCFullYear() < min ? new Date(e.start_date).getUTCFullYear() : min, new Date(state.events[0].start_date).getUTCFullYear());
             }
             if (state.cases.length) {
-                first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getFullYear() < min ? new Date(c.decision_date).getFullYear() : min, new Date(state.cases[0].decision_date).getFullYear());
+                first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getUTCFullYear() < min ? new Date(c.decision_date).getUTCFullYear() : min, new Date(state.cases[0].decision_date).getUTCFullYear());
             }
             return first_case_year < first_event_year ? first_case_year : first_event_year;
         },
@@ -221,11 +221,11 @@ const store = new Vuex.Store({
             let last_case_year = 0
             if (state.events.length) {
                 last_event_year = state.events.reduce((max, e) =>
-                    new Date(e.end_date).getFullYear() > max ? new Date(e.end_date).getFullYear() : max, new Date(state.events[0].end_date).getFullYear());
+                    new Date(e.end_date).getUTCFullYear() > max ? new Date(e.end_date).getUTCFullYear() : max, new Date(state.events[0].end_date).getUTCFullYear());
             }
             if (state.cases.length) {
                 last_case_year = state.cases.reduce((max, e) =>
-                    new Date(e.decision_date).getFullYear() > max ? new Date(e.decision_date).getFullYear() : max, new Date(state.cases[0].decision_date).getFullYear());
+                    new Date(e.decision_date).getUTCFullYear() > max ? new Date(e.decision_date).getUTCFullYear() : max, new Date(state.cases[0].decision_date).getUTCFullYear());
             }
             return last_case_year > last_event_year ? last_case_year : last_event_year;
         },
@@ -239,7 +239,7 @@ const store = new Vuex.Store({
         // },
         eventByStartYear: (state) => (year) => {
             return state.events.filter(evt => {
-                return new Date(evt.start_date).getFullYear() === year;
+                return new Date(evt.start_date).getUTCFullYear() === year;
             })
         },
         // eventByName: (state) => (name) => {
@@ -249,7 +249,7 @@ const store = new Vuex.Store({
         // },
         casesByYear: (state) => (year) => {
             return state.cases.filter(cas => {
-                return year === new Date(cas.decision_date).getFullYear();
+                return year === new Date(cas.decision_date).getUTCFullYear();
             })
         },
         templateCase: state => state.templateCase,
