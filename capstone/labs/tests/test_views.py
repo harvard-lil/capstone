@@ -75,6 +75,57 @@ def test_timeline_update(client, auth_client):
     response = auth_client.get(retrieve_url + str(tl.id))
     assert response.json()["timeline"]["title"] != timeline["title"]
 
+@pytest.mark.django_db
+def test_timeline_update_validation(client, auth_client):
+    tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
+    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.id)])
+    response = auth_client.post(update_url, {"timeline": {
+        "subhead": "And my very best one"
+    }}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Timeline Missing")
+
+    # missing timeline value
+    response = auth_client.post(update_url, {"timeline": {
+        "title": []
+    }}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Wrong Data Type for title")
+
+    # wrong timeline value data type
+    response = auth_client.post(update_url, {"timeline": {
+        "title": []
+    }}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Wrong Data Type for title")
+
+    # missing required case value
+    response = auth_client.post(update_url, {"timeline": {
+        "title": "Rad",
+        "cases": [{'What even is': 'this?'}]
+    }}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Case Missing: name")
+
+    # wrong case data type
+    response = auth_client.post(update_url, {"timeline": {
+        "title": "Rad",
+        "cases": [{'name': ['what', 'crazy', 'data', 'you', 'have']}]
+    }}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Case Has Wrong Data Type for name")
+
+    # missing require event value
+    response = auth_client.post(update_url, {
+        "timeline": {
+            "title": "Rad",
+            "events": [{'name': 'wow', 'start_date': '1975-12-16'}]
+        }
+    }, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Event Missing: end_date")
+
+    # wrong event data type
+    response = auth_client.post(update_url, {"timeline": {
+        "title": "Rad",
+        "events": [{'name': 'wow', 'start_date': '1975-12-16', 'end_date': '1975-12-16', 'short_description': {'guess': 'who'}}]
+    }}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Event Has Wrong Data Type for short_description")
+
 
 @pytest.mark.django_db
 def test_timeline_delete(client, auth_client):

@@ -149,7 +149,7 @@ export default {
     checkForm() {
       this.errors = [];
       if (!this.newCase.name) {
-        this.errors.push('Event name is required.');
+        this.errors.push('Case name is required.');
       }
       if (!this.newCase.decision_date) {
         this.errors.push('Decision date is required.');
