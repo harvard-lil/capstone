@@ -44,6 +44,7 @@ const store = new Vuex.Store({
             api_root: importUrls.api_root,
         },
         availableTimelines: [],
+        minimized: true,
         id: 1,
         title: "",
         subhead: "",

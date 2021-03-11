@@ -5,29 +5,35 @@
     events_only_year: eventsWithoutCases,
     cases_and_events_year: casesAndEvents
   }">
-    <div class="incidental">
+    <template v-if="year_data.firstYearNoNewItems && $store.getters.minimized">
+      <h1>nope</h1>
+    </template>
+    <template v-else>
+      <div class="incidental">
+        {{ year_data.firstYearNoNewItems && year_data.involvesAnyItem }}
 
-      <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data"
-            v-bind:key="case_data.id"></case>
-    </div>
-    <div class="year_scale">
-      <div class="left-line">
-        <hr class="left-rule">
+        <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data"
+              v-bind:key="case_data.id"></case>
       </div>
-      <div class="year">
-        <div class="left-top"></div>
-        <div class="right-top"></div>
-        <div class="middle"><span>{{ year_value }}</span></div>
-        <div class="left-bottom"></div>
-        <div class="right-bottom"></div>
+      <div class="year_scale">
+        <div class="left-line">
+          <hr class="left-rule">
+        </div>
+        <div class="year">
+          <div class="left-top"></div>
+          <div class="right-top"></div>
+          <div class="middle"><span>{{ year_value }}</span></div>
+          <div class="left-bottom"></div>
+          <div class="right-bottom"></div>
+        </div>
+        <div class="right-line">
+          <hr>
+        </div>
       </div>
-      <div class="right-line">
-        <hr>
-      </div>
-    </div>
-    <TimeLineSlice :event_list="year_data.event_list" :year_value="year_value"></TimeLineSlice>
-    <template v-if="!$store.state.isAuthor">
-      <event-preview :event="event"></event-preview>
+      <TimeLineSlice :event_list="year_data.event_list" :year_value="year_value"></TimeLineSlice>
+      <template v-if="!$store.state.isAuthor">
+        <event-preview :event="event"></event-preview>
+      </template>
     </template>
   </div>
 </template>
