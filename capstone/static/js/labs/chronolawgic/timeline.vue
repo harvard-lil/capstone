@@ -17,6 +17,16 @@
       </div>
     </div>
     <section id="timeline">
+      <div class="row timeline-section-titles">
+        <div class="caselaw-section">
+          <h6>CASELAW</h6>
+        </div>
+        <div class="other-events">
+          <div class="other-events-section">
+            <h6>EVENTS</h6>
+          </div>
+        </div>
+      </div>
       <div v-for="(year_data, idx) in years" v-bind:key="'year_' + idx">
         <year :year_data="year_data" :year_value="idx" v-if="idx >= $store.getters.firstYear"></year>
       </div>
