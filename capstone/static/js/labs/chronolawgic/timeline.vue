@@ -149,17 +149,13 @@ export default {
         this.$set(this.years[year], 'case_list', newCases);
 
         // if there were cases and events last year but none this year, we want to mark it so we can add a placeholder
-        if (newCases.length + newEvents.length === 0 && year > firstYear) {
-            const lastYearECount = this.$store.getters.eventByStartYear(year - 1).length;
-            const lastYearCCount = this.$store.getters.casesByYear(year - 1).length;
-
-            console.log("wow", year, year - 1, firstYear, finalYear)
-            console.log(this.$store.getters.casesByYear(year - 1))
-            console.log(this.$store.getters.casesByYear(year))
-            console.log(this.$store.getters.eventByStartYear(year))
-            console.log(this.$store.getters.eventByStartYear(year - 1))
-            console.log("then")
-            this.$set(this.years[year], 'firstYearNoNewItems', lastYearECount + lastYearCCount > 0 )
+        if (newCases.length + newEvents.length > 0) {
+          this.$set(this.years[year], 'involvesAnyItem', true )
+        }
+        else if (year > firstYear) {
+          const lastYearECount = this.$store.getters.eventByStartYear(year - 1).length;
+          const lastYearCCount = this.$store.getters.casesByYear(year - 1).length;
+          this.$set(this.years[year], 'firstYearNoNewItems', lastYearECount + lastYearCCount > 0 )
         }
 
         if (newEvents.length > 0) {
@@ -170,7 +166,6 @@ export default {
                 for (let event_year = 0; event_year <= length; event_year++) { // fill in the years on that track with the event
                   this.$set(this.years[year + event_year].event_list, track_index, evt);
                   this.$set(this.years[year + event_year], 'involvesAnyItem', true )
-                  this.$set(this.years[year], 'firstYearNoNewItems', false )
                 }
                 return false // break
               }

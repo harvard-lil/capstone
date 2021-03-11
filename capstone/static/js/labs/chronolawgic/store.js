@@ -77,6 +77,7 @@ const store = new Vuex.Store({
 
     },
     mutations: {
+        toggleMinimized(state) { state.minimized =!state.minimized },
         setAvailableTimelines(state, json) {
             state.availableTimelines = json
         },
@@ -185,6 +186,7 @@ const store = new Vuex.Store({
         }
     },
     getters: {
+        minimized: state => state.minimized,
         cases: state => state.cases,
         choices: state => state.choices,
         availableTimelines: state => state.availableTimelines,

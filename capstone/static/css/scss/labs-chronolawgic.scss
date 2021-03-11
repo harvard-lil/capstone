@@ -262,6 +262,21 @@ main#main-app {
       grid-area: ec_12;
     }
   }
+  div.year.placeholder {
+    div.year_scale {
+      .year {
+        cursor: pointer;
+        span {
+          padding-bottom: .3rem;
+        }
+      }
+      .left-line {
+        hr {
+          display: none;
+        }
+      }
+    }
+  }
 }
 
 
