@@ -1,24 +1,20 @@
 <template>
   <main id="main-app">
     <div class="row top-menu">
-      <header class="header-section case-law-section">
-        <h5>CASELAW</h5>
-        <button @click="showAddCaseModal(true)" v-if="isAuthor" type="button"
-                class="btn btn-tertiary btn-add-event"
-                data-toggle="modal"
-                data-target="#add-case-modal">
-          <add-icon></add-icon>
-        </button>
+      <header class="header-section">
+        <h4 id="timeline-title">{{ $store.state.title }}</h4>
       </header>
-      <header class="header-section other-events-section">
-        <h5>EVENTS</h5>
-        <button @click="showAddEventModal(true)" v-if="isAuthor" type="button"
-                class="btn btn-tertiary btn-add-event"
-                data-toggle="modal"
-                data-target="#add-event-modal">
-          <add-icon></add-icon>
-        </button>
-      </header>
+      <div class="header-section zoom-section">
+        <div class="empty-space"></div>
+        <ul class="inline-list zoom-toggles">
+          <li class="list-inline-item zoom-toggle zoom-in">
+            <maximize-icon></maximize-icon>
+          </li>
+          <li class="list-inline-item zoom-toggle zoom-out">
+            <minimize-icon></minimize-icon>
+          </li>
+        </ul>
+      </div>
     </div>
     <section id="timeline">
       <div v-for="(year_data, idx) in years" v-bind:key="'year_' + idx">
@@ -58,7 +54,8 @@
 
 </template>
 <script>
-import AddIcon from '../../../../static/img/icons/add.svg';
+import MinimizeIcon from '../../../../static/img/icons/minimize-2.svg';
+import MaximizeIcon from '../../../../static/img/icons/maximize-2.svg';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 import ReadonlyModal from './readonly-modal.vue';
@@ -69,11 +66,12 @@ import {EventBus} from "./event-bus.js";
 export default {
   name: 'Timeline',
   components: {
-    AddIcon,
     AddCaseModal,
     AddEventModal,
     ReadonlyModal,
     Year,
+    MinimizeIcon,
+    MaximizeIcon
   },
   computed: {
     title() {
