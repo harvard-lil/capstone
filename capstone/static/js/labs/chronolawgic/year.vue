@@ -12,7 +12,7 @@
     </div>
     <div class="year_scale" @mouseover="hoveringHandle(year_value, true)" @mouseleave="hoveringHandle(year_value, false)">
       <div class="left-line">
-        <hr class="left-rule" v-if="!$store.state.isAuthor || !showAddCaseButton">
+        <hr class="left-rule" v-if="!$store.state.isAuthor || !showAddButton">
         <template v-else-if="$store.state.isAuthor">
           <button @click="$parent.showAddCaseModal(true)" v-if="$store.state.isAuthor" type="button"
                   class="btn btn-tertiary btn-add-event"
@@ -31,15 +31,14 @@
         <div class="right-bottom"></div>
       </div>
       <div class="right-line">
-        <hr v-if="!$store.state.isAuthor || !showAddCaseButton">
+        <hr v-if="!$store.state.isAuthor || !showAddButton">
         <template v-else-if="$store.state.isAuthor">
           <button @click="$parent.showAddEventModal(true)" v-if="$store.state.isAuthor" type="button"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
-                  data-target="#add-case-modal">
+                  data-target="#add-event-modal">
             <add-icon></add-icon>
           </button>
-
         </template>
       </div>
     </div>
@@ -68,7 +67,7 @@ export default {
     return {
       event_count: this.year_data.event_list.reduce((acc, element) => acc + Object.keys(element).length, 0),
       event: null,
-      showAddCaseButton: false,
+      showAddButton: false,
     }
   },
   props: ['year_data', 'year_value'],
@@ -103,7 +102,7 @@ export default {
       EventBus.$emit('openModal', item, 'event')
     },
     hoveringHandle(year_data, status) {
-      this.showAddCaseButton = status;
+      this.showAddButton = status;
     }
   },
   mounted() {
