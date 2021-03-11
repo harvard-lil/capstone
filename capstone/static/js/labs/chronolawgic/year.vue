@@ -1,34 +1,52 @@
 <template>
-  <div class="year" v-bind:class="{
+    <div class="year" v-bind:class="{
     no_content_year: noContent,
     cases_only_year: casesWithoutEvents,
     events_only_year: eventsWithoutCases,
-    cases_and_events_year: casesAndEvents
-  }">
-    <div class="incidental">
-
-      <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data"
-            v-bind:key="case_data.id"></case>
-    </div>
-    <div class="year_scale">
-      <div class="left-line">
-        <hr class="left-rule">
+    cases_and_events_year: casesAndEvents}"
+    v-if="year_data.involvesAnyItem || !$store.getters.minimized">
+      <div class="incidental">
+        <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data"
+              v-bind:key="case_data.id"></case>
       </div>
-      <div class="year">
-        <div class="left-top"></div>
-        <div class="right-top"></div>
-        <div class="middle"><span>{{ year_value }}</span></div>
-        <div class="left-bottom"></div>
-        <div class="right-bottom"></div>
+      <div class="year_scale">
+        <div class="left-line">
+          <hr class="left-rule">
+        </div>
+        <div class="year">
+          <div class="left-top"></div>
+          <div class="right-top"></div>
+          <div class="middle"><span>{{ year_value }}</span></div>
+          <div class="left-bottom"></div>
+          <div class="right-bottom"></div>
+        </div>
+        <div class="right-line">
+          <hr>
+        </div>
       </div>
-      <div class="right-line">
-        <hr>
+      <TimeLineSlice :event_list="year_data.event_list" :year_value="year_value"></TimeLineSlice>
+      <template v-if="!$store.state.isAuthor">
+        <event-preview :event="event"></event-preview>
+      </template>
+  </div>
+  <div class="year placeholder" v-else-if="year_data.firstYearNoNewItems && !year_data.involvesAnyItem && $store.getters.minimized">
+       <div class="incidental">
       </div>
-    </div>
-    <TimeLineSlice :event_list="year_data.event_list" :year_value="year_value"></TimeLineSlice>
-    <template v-if="!$store.state.isAuthor">
-      <event-preview :event="event"></event-preview>
-    </template>
+      <div class="year_scale">
+        <div class="left-line">
+          <hr class="left-rule">
+        </div>
+        <div class="year">
+          <div class="left-top"></div>
+          <div class="right-top"></div>
+          <div class="middle"><span @click="$store.commit('toggleMinimized')"><MoreVertical></MoreVertical></span></div>
+          <div class="left-bottom"></div>
+          <div class="right-bottom"></div>
+        </div>
+        <div class="right-line">
+          <hr>
+        </div>
+      </div>
   </div>
 </template>
 
@@ -37,14 +55,15 @@ import TimeLineSlice from './timeline-slice';
 import Case from './case';
 import EventPreview from "./EventPreview";
 import {EventBus} from "./event-bus";
+import MoreVertical from '../../../../static/img/icons/more-vertical.svg';
 
 export default {
   name: "Year",
   components: {
     TimeLineSlice,
     Case,
-    EventPreview
-
+    EventPreview,
+    MoreVertical
   },
   data() {
     return {
