@@ -9,9 +9,19 @@
         <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data"
               v-bind:key="case_data.id"></case>
       </div>
-      <div class="year_scale">
+      <div class="year_scale" @mouseover="hoveringHandle(year_value, true)" @mouseleave="hoveringHandle(year_value, false)">
         <div class="left-line">
-          <hr class="left-rule">
+          <!-- if not author, show rule -->
+          <hr class="left-rule" v-if="!$store.state.isAuthor || !showAddCaseButton">
+          <!-- if author, show + add case button on hover -->
+          <template v-else-if="$store.state.isAuthor">
+          <button @click="$parent.showAddCaseModal(true)" v-if="$store.state.isAuthor" type="button"
+                  class="btn btn-tertiary btn-add-event"
+                  data-toggle="modal"
+                  data-target="#add-case-modal">
+            <add-icon></add-icon>
+          </button>
+        </template>
         </div>
         <div class="year">
           <div class="left-top"></div>
@@ -44,31 +54,41 @@
           <div class="right-bottom"></div>
         </div>
         <div class="right-line">
-          <hr>
+          <hr v-if="!$store.state.isAuthor || !showAddCaseButton">
+          <template v-else-if="$store.state.isAuthor">
+          <button @click="$parent.showAddEventModal(true)" v-if="$store.state.isAuthor" type="button"
+                  class="btn btn-tertiary btn-add-event"
+                  data-toggle="modal"
+                  data-target="#add-case-modal">
+            <add-icon></add-icon>
+          </button>
+        </template>
         </div>
       </div>
   </div>
 </template>
 
 <script>
+import AddIcon from '../../../../static/img/icons/plus-circle.svg';
 import TimeLineSlice from './timeline-slice';
 import Case from './case';
 import EventPreview from "./EventPreview";
 import {EventBus} from "./event-bus";
 import MoreVertical from '../../../../static/img/icons/more-vertical.svg';
-
 export default {
   name: "Year",
   components: {
     TimeLineSlice,
     Case,
     EventPreview,
-    MoreVertical
+    MoreVertical,
+    AddIcon
   },
   data() {
     return {
       event_count: this.year_data.event_list.reduce((acc, element) => acc + Object.keys(element).length, 0),
-      event: null
+      event: null,
+      showAddCaseButton: false,
     }
   },
   props: ['year_data', 'year_value'],
@@ -102,7 +122,9 @@ export default {
       this.clearPreviewEvent()
       EventBus.$emit('openModal', item, 'event')
     },
-
+    hoveringHandle(year_data, status) {
+      this.showAddCaseButton = status;
+    }
   },
   mounted() {
     EventBus.$on('closePreview', (year_value) => {
