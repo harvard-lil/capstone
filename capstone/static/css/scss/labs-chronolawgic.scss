@@ -12,39 +12,55 @@
 @import "labs-chronolawgic/base.scss";
 @import "labs-chronolawgic/modal.scss";
 
-
-.header-section {
-  display: grid;
-  grid-template-areas: "header addbutton";
-  grid-template-columns:  80% 20%;
-
-  h5 {
-    font-weight: $font-weight-semibold;
-    font-family: $font-monospace;
-    position: relative;
-    top: 1em;
-    margin-left: 1em;
-  }
-
-  &:first-child {
-    border-right: 2px solid $color-black;
-    margin-left: 0;
-  }
-
-  .btn-add-event {
-    float: right;
-  }
-}
-
 .top-menu {
-  height: 70px;
   display: grid;
   grid-template-areas: "caselaw other-events";
   grid-template-columns:  70% 30%;
-  border-bottom: 2px solid $color-black;
 
-  .other-events-section {
+  .zoom-section {
+    grid-area: other-events;
     background-color: $color-gray;
+    text-align: right;
+  }
+
+  .zoom-toggles {
+    position: fixed;
+    right: 0.5em;
+  }
+}
+
+.header-section {
+  height: 100px;
+  padding: 0.5em;
+
+  h4 {
+    font-family: $font-serif;
+    font-weight: $font-weight-semibold;
+    font-size: 24px;
+  }
+
+  #timeline-title {
+    width: 370px;
+  }
+
+  .zoom-toggle {
+    width: 55px;
+    height: 55px;
+    background-color: $color-white;
+    margin-right: 0;
+    cursor: pointer;
+
+    &:hover, &:focus {
+      background-color: $highlight;
+    }
+
+    svg {
+      display: block;
+      margin: auto;
+      top: 25%;
+      position: relative;
+      fill: $color-violet;
+    }
   }
 }
 
@@ -82,30 +98,29 @@ main#main-app {
 
     article.case {
       cursor: pointer;
-      display: grid;
-      font-family: $font-serif-fancy;
+      font-family: $font-serif;
       line-height: $line-height-sm;
       font-size: $font-size-sm;
       background-color: $color-white;
-      border: 2px solid $color-black;
+      border: 1px solid $color-black;
       width: 20rem;
+      height: 130px;
       padding: 0.5rem 0.75rem;
       margin: 0.5rem;
       align-self: end;
-      grid-gap: .25rem;
-      grid-template-areas: "casename"
-                         "subhead"
-                         "desc";
-      grid-template-columns: 1fr;
+
+      &:hover, &:focus, &:active {
+        background-color: $highlight;
+      }
     }
 
     header {
       grid-area: casename;
       display: grid;
-      grid-template-areas: "name link";
       grid-template-columns: 90% 10%;
-      font-weight: $font-weight-black;
-      font-size: 1.25em;
+      grid-template-areas: "name link";
+      font-size: 1.3em;
+      line-height: 1.2em;
       padding: 0;
     }
 
@@ -131,12 +146,12 @@ main#main-app {
     section.desc {
       padding: 0;
       grid-area: desc;
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      font-size: 1em;
-      line-height: 19px;
+      font-size: 0.8em;
+      line-height: 1.3em;
       text-transform: none;
+      max-height: 8em;
     }
 
     div.year_scale {
@@ -157,7 +172,6 @@ main#main-app {
         text-align: center;
 
         .left-top, .left-bottom {
-          border-right: 2px solid $color-black;
           height: 100%;
           width: 50%;
           background: white;
@@ -175,6 +189,10 @@ main#main-app {
         hr {
           width: 0.8rem;
         }
+
+        .btn-add-event {
+          padding: 3px;
+        }
       }
 
       .left-line {
@@ -182,7 +200,7 @@ main#main-app {
         background-color: white;
 
         hr {
-          border-top: 2px solid $color-black;
+          border-top: 1px solid $color-black;
         }
       }
 
@@ -262,14 +280,17 @@ main#main-app {
       grid-area: ec_12;
     }
   }
+
   div.year.placeholder {
     div.year_scale {
       .year {
         cursor: pointer;
+
         span {
           padding-bottom: .3rem;
         }
       }
+
       .left-line {
         hr {
           display: none;
@@ -281,10 +302,14 @@ main#main-app {
 
 
 main.admin {
+  #timeline {
+    background-color: $color-white;
+  }
 
   .other-events-section {
     padding-top: 0.35em;
     padding-left: 0.35em;
+    background-color: transparent;
 
     .icon-link {
       padding: 0.8em;
@@ -410,7 +435,7 @@ main.admin {
 .event-preview {
   margin-left: -10em;
   z-index: 9999;
-  font-family: $font-serif-fancy;
+  font-family: $font-serif;
   height: 8em;
   width: 12em;
   overflow-y: scroll;
@@ -422,7 +447,7 @@ main.admin {
   }
 
   h5 {
-    font-family: $font-serif-fancy;
+    font-family: $font-serif;
     font-size: 19px;
     padding: 0.2em 0.5em;
   }

@@ -7,7 +7,7 @@ input.form-control, textarea.form-control {
   border: 0;
   outline: none;
   border-radius: 0;
-  font-family: $font-serif-fancy;
+  font-family: $font-serif;
 }
 
 textarea::placeholder {
@@ -202,7 +202,7 @@ textarea::placeholder {
     }
 
     .result {
-      font-family: $font-serif-fancy;
+      font-family: $font-serif;
       padding: 0.3em 1em;
 
       &:hover, &:active, &:focus {
