@@ -166,20 +166,9 @@ export default {
         if (newCases.length + newEvents.length > 0) {
           this.$set(this.years[year], 'involvesAnyItem', true)
         } else if (year > firstYear) {
-          //eslint-disable-next-line
           const lastYearECount = this.$store.getters.eventByStartYear(year - 1).length;
-          if (year === 1950) {
-            console.log("lastYearECount", lastYearECount)
-          }
           const lastYearCCount = this.$store.getters.casesByYear(year - 1).length;
-          if (year === 1950) {
-            console.log("lastYearCCount", lastYearCCount)
-          }
-
           this.$set(this.years[year], 'firstYearNoNewItems', lastYearECount + lastYearCCount > 0)
-          if (year === 1950) {
-            this.$set(this.years[year], 'firstYearNoNewItems', true)
-          }
         }
 
         if (newEvents.length > 0) {
