@@ -7,10 +7,10 @@
       <div class="header-section zoom-section">
         <div class="empty-space"></div>
         <ul class="inline-list zoom-toggles">
-          <li class="list-inline-item zoom-toggle zoom-in">
+          <li class="list-inline-item zoom-toggle zoom-in" @click="$store.commit('toggleMinimized')">
             <maximize-icon></maximize-icon>
           </li>
-          <li class="list-inline-item zoom-toggle zoom-out">
+          <li class="list-inline-item zoom-toggle zoom-out" @click="$store.commit('toggleMinimized')">
             <minimize-icon></minimize-icon>
           </li>
         </ul>
@@ -27,9 +27,9 @@
           </div>
         </div>
       </div>
-      <div v-for="(year_data, idx) in years" v-bind:key="'year_' + idx">
-        <year :year_data="year_data" :year_value="idx" v-if="idx >= $store.getters.firstYear"></year>
-      </div>
+      <year v-for="(year_data, idx) in years" v-bind:key="'year_' + idx"
+            :year_data="year_data"
+            :year_value="idx"></year>
     </section>
 
     <!-- ALL MODALS -->
@@ -89,7 +89,7 @@ export default {
     },
     isAuthor() {
       return this.$store.state.isAuthor
-    }
+    },
   },
   watch: {
     title() {
@@ -138,22 +138,54 @@ export default {
       /*
       there are certainly better ways to do this— this is just the way it came out for the MVP
        */
-      for (let y = this.$store.getters.firstYear; y <= this.$store.getters.lastYear; y++) {
+
+      const firstYear = this.$store.getters.firstYear;
+      const finalYear = this.$store.getters.lastYear;
+
+      // all the years need to be in place before the next loop because it does some logic based on future years
+      for (let y = firstYear; y <= finalYear; y++) {
         this.$set(this.years, y, {
-          case_list: this.$store.getters.casesByYear(y),
+          case_list: [],
           event_list: Array(12).fill({}),
+          firstYearNoNewItems: false,
+          involvesAnyItem: false,
         })
       }
-      /* eslint-disable */
-      for (let year = this.$store.getters.firstYear; year <= this.$store.getters.lastYear; year++) { // total range of timeline
+
+      for (let year = firstYear; year <= finalYear; year++) { // total range of timeline
         const newEvents = this.$store.getters.eventByStartYear(year); // events that start on this year
+        const newCases = this.$store.getters.casesByYear(year); // cases that start on this year
+
+        this.$set(this.years[year], 'case_list', newCases);
+
+        // if there were cases and events last year but none this year, we want to mark it so we can add a placeholder
+        if (newCases.length + newEvents.length > 0) {
+          this.$set(this.years[year], 'involvesAnyItem', true)
+        } else if (year > firstYear) {
+          //eslint-disable-next-line
+          const lastYearECount = this.$store.getters.eventByStartYear(year - 1).length;
+          if (year === 1950) {
+            console.log("lastYearECount", lastYearECount)
+          }
+          const lastYearCCount = this.$store.getters.casesByYear(year - 1).length;
+          if (year === 1950) {
+            console.log("lastYearCCount", lastYearCCount)
+          }
+
+          this.$set(this.years[year], 'firstYearNoNewItems', lastYearECount + lastYearCCount > 0)
+          if (year === 1950) {
+            this.$set(this.years[year], 'firstYearNoNewItems', true)
+          }
+        }
+
         if (newEvents.length > 0) {
           newEvents.forEach((evt) => {
             for (let track_index = 0; track_index < 12; track_index++) {
               if (Object.keys(this.years[year].event_list[track_index]).length === 0) { // since the events are start-year sorted, if the track is empty on the first year, it'll be good for the rest
                 let length = new Date(evt.end_date).getUTCFullYear() - new Date(evt.start_date).getUTCFullYear();
                 for (let event_year = 0; event_year <= length; event_year++) { // fill in the years on that track with the event
-                  this.$set(this.years[year + event_year].event_list, track_index, evt)
+                  this.$set(this.years[year + event_year].event_list, track_index, evt);
+                  this.$set(this.years[year + event_year], 'involvesAnyItem', true)
                 }
                 return false // break
               }

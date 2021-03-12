@@ -22,7 +22,25 @@
     background-color: $color-gray;
     text-align: right;
   }
+
+  .zoom-toggles {
+    position: fixed;
+    right: 0.5em;
+  }
 }
+
+.header-section {
+  height: 100px;
+  padding: 0.5em;
+
+  h4 {
+    font-family: $font-serif;
+    font-weight: $font-weight-semibold;
+    font-size: 24px;
+
+  }
+}
+
 
 .header-section {
   height: 100px;
@@ -49,6 +67,7 @@
     &:hover, &:focus {
       background-color: $highlight;
     }
+
     svg {
       display: block;
       margin: auto;
@@ -302,6 +321,25 @@ main#main-app {
 
     .ec_12 {
       grid-area: ec_12;
+    }
+  }
+
+  div.year.placeholder {
+    div.year_scale {
+      .year {
+        cursor: pointer;
+
+        span {
+          padding-bottom: .3rem;
+          //background-color: transparent;
+        }
+      }
+
+      .left-line {
+        hr {
+          display: none;
+        }
+      }
     }
   }
 }

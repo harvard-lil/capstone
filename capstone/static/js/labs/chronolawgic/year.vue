@@ -1,26 +1,30 @@
 <template>
-  <div class="year" v-bind:class="{
+  <div class="year"
+       v-bind:class="{
     no_content_year: noContent,
     cases_only_year: casesWithoutEvents,
     events_only_year: eventsWithoutCases,
     cases_and_events_year: casesAndEvents
-  }">
+  }" v-if="year_data.involvesAnyItem || !$store.getters.minimized">
     <div class="incidental">
 
       <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data"
             v-bind:key="case_data.id"></case>
     </div>
-    <div class="year_scale" @mouseover="hoveringHandle(year_value, true)" @mouseleave="hoveringHandle(year_value, false)">
+    <div class="year_scale" @mouseover="hoveringHandle(year_value, true)"
+         @mouseleave="hoveringHandle(year_value, false)">
       <div class="left-line">
+        <!-- if not author, show rule -->
         <hr class="left-rule" v-if="!$store.state.isAuthor || !showAddButton">
+        <!-- if author, show + add case button on hover -->
         <template v-else-if="$store.state.isAuthor">
+
           <button @click="$parent.showAddCaseModal(true)" v-if="$store.state.isAuthor" type="button"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-case-modal">
             <add-icon></add-icon>
           </button>
-
         </template>
       </div>
       <div class="year">
@@ -47,6 +51,44 @@
       <event-preview :event="event"></event-preview>
     </template>
   </div>
+  <div class="year placeholder"
+       v-else-if="year_data.firstYearNoNewItems && !year_data.involvesAnyItem && $store.getters.minimized">
+    <div class="incidental">
+    </div>
+    <div class="year_scale">
+      <div class="left-line">
+        <hr class="left-rule" v-if="!$store.state.isAuthor || !showAddButton">
+        <template v-else-if="$store.state.isAuthor">
+          <button @click="$parent.showAddCaseModal(true)" v-if="$store.state.isAuthor" type="button"
+                  class="btn btn-tertiary btn-add-event"
+                  data-toggle="modal"
+                  data-target="#add-event-modal">
+            <add-icon></add-icon>
+          </button>
+        </template>
+
+      </div>
+      <div class="year">
+        <div class="left-top"></div>
+        <div class="right-top"></div>
+        <div class="middle">
+          <span @click="$store.commit('toggleMinimized')"><MoreVertical></MoreVertical></span></div>
+        <div class="left-bottom"></div>
+        <div class="right-bottom"></div>
+      </div>
+      <div class="right-line">
+        <hr v-if="!$store.state.isAuthor || !showAddButton">
+        <template v-else-if="$store.state.isAuthor">
+          <button @click="$parent.showAddEventModal(true)" v-if="$store.state.isAuthor" type="button"
+                  class="btn btn-tertiary btn-add-event"
+                  data-toggle="modal"
+                  data-target="#add-event-modal">
+            <add-icon></add-icon>
+          </button>
+        </template>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -55,13 +97,16 @@ import TimeLineSlice from './timeline-slice';
 import Case from './case';
 import EventPreview from "./EventPreview";
 import {EventBus} from "./event-bus";
+import MoreVertical from '../../../../static/img/icons/more-vertical.svg';
+
 export default {
   name: "Year",
   components: {
     TimeLineSlice,
     Case,
     EventPreview,
-    AddIcon,
+    MoreVertical,
+    AddIcon
   },
   data() {
     return {
@@ -114,7 +159,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-
-</style>
