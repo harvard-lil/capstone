@@ -46,15 +46,15 @@
     white-space: nowrap;
     transition: .2s;
     .nav-branding {
-      background: url("../../img/logos/cap-logo-harvard-white.svg") no-repeat;
+      background: url("../../img/logo-small-white.svg") no-repeat;
       background-size: contain;
-      width: 93px;
+      width: 28px;
       height: 36px;
       transition: .2s;
       display: block;
       background-position-x: 0;
       &:hover, &:focus, &:active {
-        background: url("../../img/logos/cap-logo-harvard-hover.svg") no-repeat;
+        background: url("../../img/logos/img-only-blue.svg") no-repeat;
         background-size: contain;
       }
     }

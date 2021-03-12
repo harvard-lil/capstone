@@ -1,27 +1,39 @@
 <template>
   <main id="main-app">
     <div class="row top-menu">
-      <header class="header-section case-law-section">
-        <h5>CASELAW</h5>
-        <button @click="showAddCaseModal(true)" v-if="isAuthor" type="button"
-                class="btn btn-tertiary btn-add-event"
-                data-toggle="modal"
-                data-target="#add-case-modal">
-          <add-icon></add-icon>
-        </button>
+      <header class="header-section">
+        <h4 id="timeline-title">{{ $store.state.title }}</h4>
       </header>
-      <header class="header-section other-events-section">
-        <h5>EVENTS</h5>
-        <button @click="showAddEventModal(true)" v-if="isAuthor" type="button"
-                class="btn btn-tertiary btn-add-event"
-                data-toggle="modal"
-                data-target="#add-event-modal">
-          <add-icon></add-icon>
-        </button>
-      </header>
+      <div class="header-section zoom-section">
+        <div class="empty-space"></div>
+        <ul class="inline-list zoom-toggles">
+          <li class="list-inline-item zoom-toggle zoom-in"
+              :class="{selectable: !$store.state.minimized}"
+              @click="$store.commit('toggleMinimized')">
+            <minimize-icon></minimize-icon>
+          </li>
+          <li class="list-inline-item zoom-toggle zoom-out"
+              :class="{selectable: $store.state.minimized}"
+              @click="$store.commit('toggleMinimized')">
+            <maximize-icon></maximize-icon>
+          </li>
+        </ul>
+      </div>
     </div>
     <section id="timeline">
-        <year v-for="(year_data, idx) in years" v-bind:key="'year_' + idx" :year_data="year_data" :year_value="idx"></year>
+      <div class="row timeline-section-titles">
+        <div class="caselaw-section">
+          <h6>CASELAW</h6>
+        </div>
+        <div class="other-events">
+          <div class="other-events-section">
+            <h6>EVENTS</h6>
+          </div>
+        </div>
+      </div>
+      <year v-for="(year_data, idx) in years" v-bind:key="'year_' + idx"
+            :year_data="year_data"
+            :year_value="idx"></year>
     </section>
 
     <!-- ALL MODALS -->
@@ -56,7 +68,8 @@
 
 </template>
 <script>
-import AddIcon from '../../../../static/img/icons/add.svg';
+import MinimizeIcon from '../../../../static/img/icons/minimize-2.svg';
+import MaximizeIcon from '../../../../static/img/icons/maximize-2.svg';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 import ReadonlyModal from './readonly-modal.vue';
@@ -67,11 +80,12 @@ import {EventBus} from "./event-bus.js";
 export default {
   name: 'Timeline',
   components: {
-    AddIcon,
     AddCaseModal,
     AddEventModal,
     ReadonlyModal,
     Year,
+    MinimizeIcon,
+    MaximizeIcon
   },
   computed: {
     title() {
@@ -150,12 +164,11 @@ export default {
 
         // if there were cases and events last year but none this year, we want to mark it so we can add a placeholder
         if (newCases.length + newEvents.length > 0) {
-          this.$set(this.years[year], 'involvesAnyItem', true )
-        }
-        else if (year > firstYear) {
+          this.$set(this.years[year], 'involvesAnyItem', true)
+        } else if (year > firstYear) {
           const lastYearECount = this.$store.getters.eventByStartYear(year - 1).length;
           const lastYearCCount = this.$store.getters.casesByYear(year - 1).length;
-          this.$set(this.years[year], 'firstYearNoNewItems', lastYearECount + lastYearCCount > 0 )
+          this.$set(this.years[year], 'firstYearNoNewItems', lastYearECount + lastYearCCount > 0)
         }
 
         if (newEvents.length > 0) {
@@ -165,15 +178,13 @@ export default {
                 let length = new Date(evt.end_date).getUTCFullYear() - new Date(evt.start_date).getUTCFullYear();
                 for (let event_year = 0; event_year <= length; event_year++) { // fill in the years on that track with the event
                   this.$set(this.years[year + event_year].event_list, track_index, evt);
-                  this.$set(this.years[year + event_year], 'involvesAnyItem', true )
+                  this.$set(this.years[year + event_year], 'involvesAnyItem', true)
                 }
                 return false // break
               }
             }
           });
         }
-        
-        
       }
     },
   },

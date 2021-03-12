@@ -11,9 +11,6 @@
         <link-case/>
       </a>
     </header>
-    <section class="subhead">
-      {{ case_data.subhead }}
-    </section>
     <section class="desc">
       {{ case_data.short_description }}
     </section>
