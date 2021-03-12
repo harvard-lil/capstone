@@ -26,6 +26,35 @@
   .zoom-toggles {
     position: fixed;
     right: 0.5em;
+    z-index: 999;
+  }
+
+  .zoom-toggle {
+    width: 55px;
+    height: 55px;
+    background-color: #ccc;
+    margin-right: 0;
+    svg {
+      color: $color-medium-gray;
+      display: block;
+      margin: auto;
+      top: 25%;
+      position: relative;
+    }
+
+    &.selectable {
+      background-color: $color-white;
+      cursor: pointer;
+
+      svg {
+        color: $color-violet;
+      }
+
+      &:hover, &:focus {
+        background-color: $highlight;
+      }
+    }
+
   }
 }
 
@@ -37,7 +66,6 @@
     font-family: $font-serif;
     font-weight: $font-weight-semibold;
     font-size: 24px;
-
   }
 }
 
@@ -45,9 +73,11 @@
 .header-section {
   height: 100px;
   padding: 0.5em;
+
   &:first-child {
     border-right: 1px solid $color-black;
   }
+
   h4 {
     font-family: $font-serif;
     font-weight: $font-weight-semibold;
@@ -57,34 +87,17 @@
   #timeline-title {
     width: 370px;
   }
-
-  .zoom-toggle {
-    width: 55px;
-    height: 55px;
-    background-color: $color-white;
-    margin-right: 0;
-    cursor: pointer;
-    &:hover, &:focus {
-      background-color: $highlight;
-    }
-
-    svg {
-      display: block;
-      margin: auto;
-      top: 25%;
-      position: relative;
-      fill: $color-violet;
-    }
-  }
 }
 
 #timeline {
   background-color: $color-gray;
   padding: 0;
+
   .timeline-section-titles {
     display: grid;
     grid-template-areas: "caselaw other-events";
     grid-template-columns:  70% 30%;
+
     h6 {
       font-family: $font-monospace;
       font-weight: $font-weight-semibold;
@@ -93,15 +106,18 @@
       border-bottom: 1px solid $color-black;
       margin-bottom: 0;
     }
+
     .caselaw-section {
       text-align: right;
       background-color: $color-white;
+
       h6 {
         width: 90px;
         float: right;
         border-left: 1px solid $color-black;
       }
     }
+
     .other-events-section {
       h6 {
         width: 80px;
@@ -203,7 +219,7 @@ main#main-app {
       display: grid;
       grid-template-areas: "left-line year right-line";
       grid-template-columns: 1fr 1fr 1fr;
-
+      z-index: 999;
       div {
         display: flex;
         justify-content: center;
@@ -233,6 +249,7 @@ main#main-app {
         hr {
           width: 0.8rem;
         }
+
         .btn-add-event {
           padding: 3px;
         }
@@ -331,7 +348,6 @@ main#main-app {
 
         span {
           padding-bottom: .3rem;
-          //background-color: transparent;
         }
       }
 

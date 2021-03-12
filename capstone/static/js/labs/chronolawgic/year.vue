@@ -63,8 +63,8 @@
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-event-modal">
-            <add-icon></add-icon>
-          </button>
+            <add-icon class="add-icon"></add-icon>
+            </button>
         </template>
 
       </div>
@@ -72,7 +72,7 @@
         <div class="left-top"></div>
         <div class="right-top"></div>
         <div class="middle">
-          <span @click="$store.commit('toggleMinimized')"><MoreVertical></MoreVertical></span></div>
+          <span @click="$store.commit('toggleMinimized')"><more-vertical></more-vertical></span></div>
         <div class="left-bottom"></div>
         <div class="right-bottom"></div>
       </div>
@@ -83,7 +83,7 @@
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-event-modal">
-            <add-icon></add-icon>
+            <add-icon class="add-icon"></add-icon>
           </button>
         </template>
       </div>

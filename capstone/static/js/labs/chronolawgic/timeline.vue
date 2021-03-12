@@ -7,11 +7,15 @@
       <div class="header-section zoom-section">
         <div class="empty-space"></div>
         <ul class="inline-list zoom-toggles">
-          <li class="list-inline-item zoom-toggle zoom-in" @click="$store.commit('toggleMinimized')">
-            <maximize-icon></maximize-icon>
-          </li>
-          <li class="list-inline-item zoom-toggle zoom-out" @click="$store.commit('toggleMinimized')">
+          <li class="list-inline-item zoom-toggle zoom-in"
+              :class="{selectable: !$store.state.minimized}"
+              @click="$store.commit('toggleMinimized')">
             <minimize-icon></minimize-icon>
+          </li>
+          <li class="list-inline-item zoom-toggle zoom-out"
+              :class="{selectable: $store.state.minimized}"
+              @click="$store.commit('toggleMinimized')">
+            <maximize-icon></maximize-icon>
           </li>
         </ul>
       </div>
