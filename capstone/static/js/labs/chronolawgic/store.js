@@ -83,6 +83,7 @@ const store = new Vuex.Store({
         },
         setTimeline(state, json) {
             state.title = json.title;
+            state.description = json.description;
             state.categories = json.categories;
             state.events = json.events;
             state.cases = json.cases
