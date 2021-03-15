@@ -4,6 +4,8 @@
       <header :class="{ 'header-section': true, 'expanded': headerExpanded}">
         <h4 id="timeline-title">{{ $store.state.title }}</h4>
         <div id="timeline-description" v-text="$store.state.description" @click="toggleHeader()"></div>
+        <div class="my-timelines-link" v-if="$store.state.isAuthor"><router-link to="/"><ViewList></ViewList>my timelines</router-link></div>
+
       </header>
       <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
         <div class="empty-space"></div>
@@ -74,6 +76,7 @@ import MaximizeIcon from '../../../../static/img/icons/maximize-2.svg';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 import ReadonlyModal from './readonly-modal.vue';
+import ViewList from '../../../../static/img/icons/view_list.svg';
 import Year from './year';
 import {EventBus} from "./event-bus.js";
 
@@ -86,7 +89,8 @@ export default {
     ReadonlyModal,
     Year,
     MinimizeIcon,
-    MaximizeIcon
+    MaximizeIcon,
+    ViewList
   },
   computed: {
     title() {
