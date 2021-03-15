@@ -31,7 +31,6 @@ def chronolawgic_api_retrieve(request, timeline_id=None):
             'status': 'ok',
             'timelines': [{"id": tl.id,
                            "title": tl.timeline['title'] if 'title' in tl.timeline else "",
-                           "subhead": tl.timeline['subhead'] if 'subhead' in tl.timeline else "",
                            "description": tl.timeline['description'] if 'description' in tl.timeline else "",
                            "case_count": len(tl.timeline['cases']) if 'cases' in tl.timeline else 0,
                            "event_count": len(tl.timeline['event']) if 'event' in tl.timeline else 0,
@@ -76,7 +75,6 @@ def chronolawgic_api_update_admin(request, timeline_id):
     try:
         timeline_content = json.loads(request.body.decode())
         timeline.timeline['title'] = timeline_content['title']
-        timeline.timeline['subhead'] = timeline_content['subhead']
         timeline.timeline['description'] = timeline_content['description']
         timeline.save()
     except json.decoder.JSONDecodeError as e:
@@ -100,7 +98,6 @@ def chronolawgic_api_create(request):
         timeline = Timeline.objects.create(created_by=request.user)
         timeline.timeline = {
             "title": "Untitled Timeline",
-            "subhead": "Created {}".format(date.today()),
             "cases": [],
             "events": []
         }

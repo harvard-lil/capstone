@@ -33,6 +33,7 @@
     height: 55px;
     background-color: #ccc;
     margin-right: 0;
+
     svg {
       color: $color-medium-gray;
       display: block;
@@ -241,6 +242,7 @@ main#main-app {
       grid-template-areas: "left-line year right-line";
       grid-template-columns: 1fr 1fr 1fr;
       z-index: 999;
+
       div {
         display: flex;
         justify-content: center;
@@ -430,20 +432,32 @@ main.admin {
     max-width: 6fr;
     width: 100%;
     display: grid;
-    grid-template-areas: ". title subhead edit save"
-                         ". description numbers delete ."
-                         ". description . . .";
-    grid-template-columns: 20% 25% 20% 5% 25%;
+    grid-template-areas: ". title buttons"
+                         ". description numbers"
+                         ". description ."
+                         ". hr hr";
+    grid-template-columns: 20% 25% 20% 5% 12% 12%;
     min-height: 4rem;
     margin-top: 2rem;
     grid-gap: 1rem;
   }
 
+  hr {
+    grid-area: hr;
+    width: 100%;
+  }
+
+  .btn-group {
+    grid-area: buttons;
+    display: grid;
+    grid-template-areas: "delete save edit";
+  }
+
   .numbers {
     grid-area: numbers;
     display: grid;
-    grid-template-areas: "id_label case_count_label event_count_label"
-                         "id case_count event_count";
+    grid-template-areas: "case_count_label event_count_label id_label"
+                         "case_count event_count id";
     grid-template-columns: 1fr 1fr 1fr;
 
     .id_label {
@@ -468,22 +482,46 @@ main.admin {
     color: $color-violet-gray-dark;
   }
 
+  .edit, .delete, .save {
+    cursor: pointer;
+  }
+
   .edit {
     grid-area: edit;
+
+    &:hover, &:active, &:focus {
+      svg {
+        color: $color-blue;
+      }
+    }
+
   }
 
   .delete {
     grid-area: delete;
+
+    &:hover, &:active, &:focus {
+      svg {
+        color: $color-red;
+      }
+    }
   }
 
   .save {
     grid-area: save;
+
+    &:hover, &:active, &:focus {
+      svg {
+        color: $color-violet;
+      }
+    }
+
   }
 
   .title {
     grid-area: title;
     font-weight: $font-weight-semibold;
-    text-transform: uppercase;
+    height: 2em;
   }
 
   .description {
@@ -496,27 +534,15 @@ main.admin {
 
     .description_text {
       grid-area: description_text;
+      width: 100%;
     }
 
     .description_label {
       grid-area: description_label;
     }
-  }
 
-  .subhead {
-    grid-area: subhead;
-    font-family: $font-sans-serif;
-    font-size: $font-size-sm;
-    display: grid;
-    grid-template-areas: "subhead_label"
-                         "subhead_text";
-
-    .subhead_text {
-      grid-area: subhead_text;
-    }
-
-    .subhead_label {
-      grid-area: subhead_label;
+    .description_edit {
+      width: 100%;
     }
   }
 
@@ -526,6 +552,10 @@ main.admin {
 
   .btn-delete {
     grid-area: button-two;
+
+    .disabled {
+      color: $color-medium-gray;
+    }
   }
 
   .btn-hidden {

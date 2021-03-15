@@ -47,7 +47,6 @@ const store = new Vuex.Store({
         minimized: true,
         id: 1,
         title: "",
-        subhead: "",
         description: "",
         createdBy: -1, // (user accts are for auth/logging purposes)
         isAuthor: false,
