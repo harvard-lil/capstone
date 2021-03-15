@@ -1,10 +1,11 @@
 <template>
   <main id="main-app">
     <div class="row top-menu">
-      <header class="header-section">
+      <header :class="{ 'header-section': true, 'expanded': headerExpanded}">
         <h4 id="timeline-title">{{ $store.state.title }}</h4>
+        <div id="timeline-description" v-text="$store.state.description" @click="toggleHeader()"></div>
       </header>
-      <div class="header-section zoom-section">
+      <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
         <div class="empty-space"></div>
         <ul class="inline-list zoom-toggles">
           <li class="list-inline-item zoom-toggle zoom-in"
@@ -102,6 +103,7 @@ export default {
   },
   data() {
     return {
+      headerExpanded: false,
       checked: false,
       showCase: false,
       showEvent: false,
@@ -134,7 +136,9 @@ export default {
       this.event = null;
       EventBus.$emit('closeModal')
     },
-
+    toggleHeader() {
+      this.headerExpanded = !this.headerExpanded;
+    },
     toggleKey() {
       this.keyShown = !this.keyShown;
     },
