@@ -3,7 +3,7 @@ from capweb.helpers import reverse
 from capapi.tests.helpers import check_response
 from labs.models import Timeline
 
-timeline = {"title": "My first timeline", "subhead": "And my very best one"}
+timeline = {"title": "My first timeline", "description": "And my very best one"}
 create_url = reverse('labs:chronolawgic-api-create')
 retrieve_url = reverse('labs:chronolawgic-api-retrieve')
 
@@ -80,7 +80,7 @@ def test_timeline_update_validation(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
     update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.id)])
     response = auth_client.post(update_url, {"timeline": {
-        "subhead": "And my very best one"
+        "description": "And my very best one"
     }}, format='json')
     check_response(response, status_code=400, content_type="application/json", content_includes="Timeline Missing")
 
@@ -126,6 +126,27 @@ def test_timeline_update_validation(client, auth_client):
     }}, format='json')
     check_response(response, status_code=400, content_type="application/json", content_includes="Event Has Wrong Data Type for short_description")
 
+    # extraneous timeline field
+    response = auth_client.post(update_url, {"timeline": {
+        "title": "Rad",
+        "events": [],
+        "helloooooo": "badata"
+    }}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Unexpected timeline field(s)")
+
+    # extraneous event field
+    response = auth_client.post(update_url, {"timeline": {
+        "title": "Rad",
+        "events": [{'name': 'wow', 'start_date': '1975-12-16', 'end_date': '1975-12-16', 'DOESNOTBELONG': 'here'}],
+    }}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Unexpected event field(s)")
+
+    # extraneous case field
+    response = auth_client.post(update_url, {"timeline": {
+        "title": "Rad",
+        "cases": [{'name': 'joe v volcano', "herring_color": 'purple'}],
+    }}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Unexpected case field(s)")
 
 @pytest.mark.django_db
 def test_timeline_delete(client, auth_client):
