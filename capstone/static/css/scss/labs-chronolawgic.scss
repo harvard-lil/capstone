@@ -270,7 +270,7 @@ main#main-app {
     }
 
     .event_col {
-      min-width: 1rem;
+      min-width: 2rem;
       background-color: $color-gray;
     }
 
@@ -281,6 +281,19 @@ main#main-app {
       grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
       grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
       background-color: $color-gray;
+    }
+
+    .event_label {
+      transform: rotate(90deg);
+      transform-origin: 0 100% 0;
+      overflow: visible;
+      z-index: 1;
+      position: relative;
+      top: 0;
+      left: 0;
+      padding: 0;
+      margin:0;
+      font-weight: $font-weight-semibold;
     }
 
     .fill {

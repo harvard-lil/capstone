@@ -14,6 +14,7 @@
            :data-target="$store.state.isAuthor ? '#add-event-modal' : '#readonly-modal'"
            @focus="handleFocus(event_data)"
       @click="handleClick(event_data)">
+        <div class="event_label" :style="{'width': event_data.name.length + 'rem' }" v-if="parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear()" v-text="event_data.name"> </div>
       </div>
     </div>
   </div>
