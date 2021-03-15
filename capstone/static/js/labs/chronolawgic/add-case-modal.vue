@@ -3,20 +3,23 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" v-if="this.case">{{ this.case.name }}</h5>
+          <h5 class="modal-title" v-if="this.case.name">{{ this.case.name }}</h5>
           <h5 class="modal-title" v-else>ADD CASELAW</h5>
           <button type="button" @click.stop="closeModal" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <form @submit.prevent="searchCAP" id="form-search-cap">
-            <div v-if="!this.case" class="form-label-group" id="field-group-search">
+          <form @submit.prevent="searchCAP" id="form-search-cap" v-if="!this.case.id">
+            <h6>Search CAP</h6>
+            <div class="form-label-group" id="field-group-search">
               <input v-model="searchText" id="field-search-cap" placeholder="ENTER FULL TEXT OR CITATION"
                      class="form-control">
-              <label for="field-search-cap">ENTER FULL TEXT OR CITATION</label>
-              <span class="button-container"><button role="button" class="btn btn-tertiary"
-                                                     @click="searchCAP">SEARCH</button></span>
+              <label for="field-search-cap">ENTER CITATION</label>
+
+              <span class="button-container">
+                <search-button :showLoading="showLoading" :endpoint="endpoint" @click="searchCAP"></search-button>
+              </span>
             </div>
             <ul v-if="searchResults.length" class="results-list">
               <div v-for="result in searchResults" @click="chooseCase(result)"
@@ -33,6 +36,7 @@
               </button>
             </div>
           </form>
+          <hr>
           <form @submit.stop id="form-add-case">
 
             <!-- search results -->
@@ -49,9 +53,10 @@
               <label for="field-name">CASE NAME</label>
             </div>
             <div class="form-label-group" id="field-group-short">
-              <input v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"
-                     class="form-control">
-              <label for="field-short-description">SHORT DESCRIPTION</label>
+              <textarea v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"
+                      class="form-control"></textarea>
+<!--              <input v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"-->
+<!--                     class="form-control">-->
             </div>
             <div class="form-label-group" id="field-group-date">
               <input v-model="newCase.decision_date" id="field-decision-date" placeholder="DECISION DATE" type="date"
@@ -94,7 +99,7 @@
             </button>
           </template>
           <template v-if="!this.case">
-            <button type="button" class="btn btn-primary" @click.stop="addCase"
+            <button type="button" class="btn btn-primary btn-highlight" @click.stop="addCase"
                     data-dismiss="modal">
               ADD
             </button>
@@ -111,12 +116,14 @@ import axios from "axios";
 import store from "./store";
 import ItemDropdown from "./item-dropdown"
 import CaseResult from '../../search/case-result.vue'
+import SearchButton from '../../vue-shared/search-button';
 
 export default {
   name: "add-case-modal",
   components: {
     ItemDropdown,
-    CaseResult
+    CaseResult,
+    SearchButton
   },
   props: [
     'shown',
@@ -205,7 +212,7 @@ export default {
     },
     searchCAP() {
       if (this.searchText) {
-        let url = store.state.urls.api_root + "cases?search=" + this.searchText;
+        let url = store.state.urls.api_root + "cases?cite=" + this.searchText;
         axios.get(url)
             .then(response => response.data)
             .then(searchResponse => {

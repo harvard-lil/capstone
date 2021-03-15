@@ -2,6 +2,14 @@
   color: red;
 }
 
+.btn-highlight {
+  background-color: $highlight;
+  &:hover, &:focus {
+    color: $color-violet;
+    border-color: $color-violet;
+  }
+}
+
 input.form-control, textarea.form-control {
   background-color: $color-light-gray;
   border: 0;
@@ -20,7 +28,6 @@ textarea::placeholder {
 
 .modal-header .close {
   background-color: $color-white;
-  padding: 0.68rem 1rem;
   margin: -0.5rem -1rem -1rem auto;
   border-left: 2px solid $color-black;
 }
@@ -117,19 +124,22 @@ textarea::placeholder {
   #form-add-case {
     display: grid;
     grid-template-areas:
-          "link        .    short"
-          "name        .    long"
-          "citation    .    long"
-          "date        .    long"
-          "jur         .    long"
-          "reporter    .    long";
+          "link       short"
+          "name       short"
+          "citation   long"
+          "date       long"
+          "jur        long"
+          "reporter   long";
+    grid-column-gap: .8em;
+    grid-row-gap: 0.2em;
   }
 
   #field-group-search {
     grid-area: search;
     display: grid;
     grid-template-areas:
-            "input input input input input input search";
+            "input search";
+    grid-template-columns: 90% 10%;
 
     #field-search-cap {
       grid-area: input;
@@ -159,6 +169,9 @@ textarea::placeholder {
 
   #field-group-short {
     grid-area: short;
+    #field-short-description {
+      height: 5.7em;
+    }
   }
 
   #field-group-long {
@@ -243,11 +256,11 @@ textarea::placeholder {
   form {
     display: grid;
     grid-template-areas:
-          "name        .    short"
-          "start_date  .    long"
-          "end_date    .    long"
-          "color       .    long";
-    grid-gap: .2em;
+          "name          short"
+          "start_date    long"
+          "end_date      long"
+          "color         long";
+    grid-column-gap: .8em;
   }
 
   #field-group-name {

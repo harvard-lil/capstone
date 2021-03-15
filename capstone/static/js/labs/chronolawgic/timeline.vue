@@ -119,13 +119,17 @@ export default {
     check() {
       this.checked = !this.checked;
     },
-    showAddEventModal(val) {
+    showAddEventModal(val, prefilled) {
       this.event = null;
+      if (prefilled)
+        this.event = prefilled;
       this.showEvent = val;
       this.showEventDetails = this.showEvent
     },
-    showAddCaseModal(val) {
+    showAddCaseModal(val, prefilled) {
       this.event = null;
+      if (prefilled)
+        this.event = prefilled;
       this.showCase = val;
       this.showEventDetails = this.showCase
     },
