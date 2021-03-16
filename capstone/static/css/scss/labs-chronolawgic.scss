@@ -134,9 +134,9 @@
       background-color: $color-white;
       display: flex;
       float: right;
-      text-align: right;
       justify-content: flex-end;
-
+      padding-bottom: 3em;
+      border-right: 1px solid $color-black;
       h6 {
         height: 2em;
         width: 90px;
