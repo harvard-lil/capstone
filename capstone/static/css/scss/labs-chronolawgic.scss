@@ -132,22 +132,38 @@
     .caselaw-section {
       text-align: right;
       background-color: $color-white;
+      display: flex;
+      float: right;
+      text-align: right;
+      justify-content: flex-end;
 
       h6 {
+        height: 2em;
         width: 90px;
         float: right;
         border-left: 1px solid $color-black;
       }
+      button {
+        padding-top: 0;
+      }
     }
 
     .other-events-section {
+      display: flex;
       h6 {
+        height: 2em;
         width: 80px;
         background-color: $color-white;
         border-right: 1px solid $color-black;
       }
+
+      button {
+        float: left;
+        padding-top: 0;
+      }
     }
   }
+
 }
 
 .incidental {
@@ -409,23 +425,28 @@ main#main-app {
 
 
 main.admin {
-  #timeline {
-    background-color: $color-white;
+  .top-menu {
+    padding: 2em;
+    display: grid;
+    grid-template-areas: ". title add info .";
+    grid-template-columns: 10% 30% 5% 5% 50%;
   }
 
-  .other-events-section {
-    padding-top: 0.35em;
-    padding-left: 0.35em;
-    background-color: transparent;
+  .add-timeline {
+    grid-area: add;
+  }
 
-    .icon-link {
-      padding: 0.8em;
-    }
+  .info {
+    grid-area: info;
   }
 
   h3 {
-    font-weight: bold;
-    margin-bottom: 2rem;
+    grid-area: title;
+    font-family: $font-serif;
+  }
+
+  #timeline {
+    background-color: $color-white;
   }
 
   .timeline {
@@ -434,23 +455,20 @@ main.admin {
     display: grid;
     grid-template-areas: ". title buttons"
                          ". description numbers"
-                         ". description ."
-                         ". hr hr";
-    grid-template-columns: 20% 25% 20% 5% 12% 12%;
+                         ". description .";
+    grid-template-columns: 20% 20% 60%;
     min-height: 4rem;
     margin-top: 2rem;
     grid-gap: 1rem;
-  }
-
-  hr {
-    grid-area: hr;
-    width: 100%;
+    border-bottom: 1px solid $color-gray;
+    padding-bottom: 2em;
   }
 
   .btn-group {
     grid-area: buttons;
     display: grid;
-    grid-template-areas: "delete save edit";
+    grid-template-areas: "delete save edit .";
+    grid-template-columns: 5% 5% 5% 85%;
   }
 
   .numbers {
@@ -535,6 +553,7 @@ main.admin {
     .description_text {
       grid-area: description_text;
       width: 100%;
+      line-height: 1.7em;
     }
 
     .description_label {

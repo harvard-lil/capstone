@@ -3,7 +3,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" v-if="this.event.name">{{ this.event.name }}</h5>
+          <h5 class="modal-title" v-if="this.event && this.event.name">{{ this.event.name }}</h5>
           <h5 class="modal-title" v-else>ADD EVENT</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click.stop="closeModal">
             <span aria-hidden="true">&times;</span>

@@ -3,14 +3,14 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" v-if="this.case.name">{{ this.case.name }}</h5>
+          <h5 class="modal-title" v-if="this.case && this.case.name">{{ this.case.name }}</h5>
           <h5 class="modal-title" v-else>ADD CASELAW</h5>
           <button type="button" @click.stop="closeModal" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <form @submit.prevent="searchCAP" id="form-search-cap" v-if="!this.case.id">
+          <form @submit.stop id="form-search-cap" v-if="!this.case">
             <h6>Search CAP</h6>
             <div class="form-label-group" id="field-group-search">
               <input v-model="searchText" id="field-search-cap" placeholder="ENTER FULL TEXT OR CITATION"
@@ -18,7 +18,7 @@
               <label for="field-search-cap">ENTER CITATION</label>
 
               <span class="button-container">
-                <search-button :showLoading="showLoading" :endpoint="endpoint" @click="searchCAP"></search-button>
+                <search-button :showLoading="showLoading"></search-button>
               </span>
             </div>
             <ul v-if="searchResults.length" class="results-list">
@@ -30,13 +30,16 @@
                 </case-result>
               </div>
             </ul>
+            <ul v-if="showNoSearchResults" class="results-list">
+              <li class="result-container p-2">No results found</li>
+            </ul>
             <div class="row mb-4 mt-2" v-if="chosenCase && chosenCase.name_abbreviation">
               <button type="button" class="btn btn-tertiary pl-0 " @click="autofillCase">AUTOFILL WITH
                 "{{ chosenCase.name_abbreviation.slice(0, 20) }}..."
               </button>
             </div>
-          </form>
           <hr>
+          </form>
           <form @submit.stop id="form-add-case">
 
             <!-- search results -->
@@ -134,6 +137,7 @@ export default {
     return {
       choices: {},
       searchResults: [],
+      showNoSearchResults: false,
       searchText: '',
       chosenCase: {},
       newCase: {},
@@ -150,6 +154,7 @@ export default {
           value: 'reporter',
         }
       },
+      showLoading: false,
     }
   },
   methods: {
@@ -211,14 +216,23 @@ export default {
       this.extraFields.reporter.value = this.chosenCase.reporter.full_name;
     },
     searchCAP() {
+      this.showNoSearchResults = false
       if (this.searchText) {
+        this.showLoading = true;
         let url = store.state.urls.api_root + "cases?cite=" + this.searchText;
         axios.get(url)
             .then(response => response.data)
             .then(searchResponse => {
               this.searchResults = searchResponse.results;
+              if (this.searchResults.length === 0) {
+                this.showNoSearchResults = true
+              }
+              this.showLoading = false;
             })
       }
+    },
+    valueUpdated() {
+      this.searchCAP()
     },
     clearContent() {
       this.closeModal();

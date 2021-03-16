@@ -24,11 +24,25 @@
     <section id="timeline">
       <div class="row timeline-section-titles">
         <div class="caselaw-section">
+          <button @click="showAddCaseModal(true)" v-if="$store.state.isAuthor" type="button"
+                  class="btn btn-tertiary btn-add-event"
+                  data-toggle="modal"
+                  data-target="#add-case-modal">
+            <add-icon></add-icon>
+          </button>
           <h6>CASELAW</h6>
         </div>
         <div class="other-events">
           <div class="other-events-section">
             <h6>EVENTS</h6>
+            <button @click="showAddEventModal(true)" v-if="this.$store.state.isAuthor"
+                    type="button"
+                    class="btn btn-tertiary btn-add-event"
+                    data-toggle="modal"
+                    data-target="#add-event-modal">
+              <add-icon class="add-icon"></add-icon>
+            </button>
+
           </div>
         </div>
       </div>
@@ -71,6 +85,7 @@
 <script>
 import MinimizeIcon from '../../../../static/img/icons/minimize-2.svg';
 import MaximizeIcon from '../../../../static/img/icons/maximize-2.svg';
+import AddIcon from '../../../../static/img/icons/plus-circle.svg';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 import ReadonlyModal from './readonly-modal.vue';
@@ -83,6 +98,7 @@ export default {
   components: {
     AddCaseModal,
     AddEventModal,
+    AddIcon,
     ReadonlyModal,
     Year,
     MinimizeIcon,
@@ -128,8 +144,9 @@ export default {
     },
     showAddCaseModal(val, prefilled) {
       this.event = null;
-      if (prefilled)
+      if (prefilled) {
         this.event = prefilled;
+      }
       this.showCase = val;
       this.showEventDetails = this.showCase
     },

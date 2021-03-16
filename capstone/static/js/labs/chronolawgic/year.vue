@@ -59,10 +59,10 @@
       <div class="left-line">
         <hr class="left-rule" v-if="!$store.state.isAuthor || !showAddButton">
         <template v-else-if="$store.state.isAuthor">
-          <button @click="$parent.showAddCaseModal(true)" v-if="$store.state.isAuthor" type="button"
+          <button @click="$parent.showAddCaseModal(true, {decision_date: year_value + '-01-01'})" v-if="$store.state.isAuthor" type="button"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
-                  data-target="#add-event-modal">
+                  data-target="#add-case-modal">
             <add-icon class="add-icon"></add-icon>
             </button>
         </template>
@@ -79,7 +79,7 @@
       <div class="right-line">
         <hr v-if="!$store.state.isAuthor || !showAddButton">
         <template v-else-if="$store.state.isAuthor">
-          <button @click="$parent.showAddEventModal(true)" v-if="$store.state.isAuthor" type="button"
+          <button @click="$parent.showAddEventModal(true, {start_date: year_value + '-01-01'})" v-if="$store.state.isAuthor" type="button"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-event-modal">

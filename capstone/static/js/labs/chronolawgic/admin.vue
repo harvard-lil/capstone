@@ -1,21 +1,14 @@
 <template>
   <main class="admin">
     <div class="row top-menu">
-      <div class="header-section case-law-section">
-        <h5>TIMELINES</h5>
-        <button type="button" class="btn btn-tertiary" data-toggle="modal" data-target="#add-case-modal"
+        <h3>Timelines</h3>
+        <button type="button" class="btn btn-tertiary add-timeline" data-toggle="modal" data-target="#add-case-modal"
                 @click="$store.dispatch('requestCreateTimeline')">
           <add-icon></add-icon>
         </button>
-      </div>
-      <div class="header-section other-events-section">
-        <h5>WHERE AM I?</h5>
-        <a href=".." class="icon-link">
+        <a href=".." class="info icon-link">
           <info-icon alt="What is this interface?"></info-icon>
         </a>
-      </div>
-      <div class="key-column">
-      </div>
     </div>
     <section id="timeline">
 
@@ -51,7 +44,7 @@
             </div>
             <div class="btn-group">
 
-              <div class="edit">
+              <div class="edit" title="edit">
                 <button v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)" class="btn btn-edit"
                         @click="toggleEdit(timeline)">
                   <cancel-icon></cancel-icon>
@@ -60,17 +53,16 @@
                   <edit-icon></edit-icon>
                 </button>
               </div>
-              <div class="delete">
+              <div class="delete" title="delete timeline">
                 <delete-icon v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
                              @click="$store.dispatch('requestDeleteTimeline', timeline.id)"></delete-icon>
               </div>
-              <div class="save">
+              <div class="save" title="save changes">
                 <button class="btn btn-edit" @click="saveEdit(timeline.id)">
                   <save-icon v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"></save-icon>
                 </button>
               </div>
             </div>
-            <hr>
           </div>
         </div>
       </div>
@@ -118,7 +110,6 @@ export default {
       }
     },
     saveEdit(id) {
-      console.log("saveEdit called, id", id)
       if (Object.prototype.hasOwnProperty.call(this.editMode, id)) {
         this.$store.dispatch('requestUpdateAdmin', this.editMode[id]).then(() => {
               this.$delete(this.editMode, id);
