@@ -27,6 +27,16 @@ def validate_timeline(timeline):
     ]
 
     bad = []
+
+    # make sure there are no extraneous fields
+    known_field_names = [field['name'] for field in timeline_fields]
+    extraneous = set(timeline.keys()) - set(known_field_names)
+    if extraneous:
+        bad.append("Unexpected timeline field(s): {}. Expecting {}".format(
+            extraneous,
+            known_field_names
+        ))
+
     for field in timeline_fields:
         if field['name'] not in timeline:
             if field['required']:
@@ -37,8 +47,15 @@ def validate_timeline(timeline):
                      field['name'], field['type'], timeline[field['name']]))
 
     if 'events' in timeline:
+        known_event_field_names = [field['name'] for field in event_fields]
         for field in event_fields:
             for event in timeline['events']:
+                event_extraneous = set(event.keys()) - set(known_event_field_names)
+                if event_extraneous:
+                    bad.append("Unexpected event field(s): {}. Expecting {}".format(
+                        event_extraneous,
+                        known_event_field_names
+                    ))
                 if field['name'] not in event:
                     if field['required']:
                         bad.append("Event Missing: {}".format(field['name']))
@@ -48,8 +65,15 @@ def validate_timeline(timeline):
                              field['name'], field['type'], event[field['name']]))
 
     if 'cases' in timeline:
+        known_case_field_names = [field['name'] for field in case_fields]
         for field in case_fields:
             for case in timeline['cases']:
+                case_extraneous = set(case.keys()) - set(known_case_field_names)
+                if case_extraneous:
+                    bad.append("Unexpected case field(s): {}. Expecting {}".format(
+                        case_extraneous,
+                        known_case_field_names
+                    ))
                 if field['name'] not in case:
                     if field['required']:
                         bad.append("Case Missing: {}".format(field['name']))

@@ -16,7 +16,6 @@
   display: grid;
   grid-template-areas: "caselaw other-events";
   grid-template-columns:  70% 30%;
-
   .zoom-section {
     grid-area: other-events;
     background-color: $color-gray;
@@ -73,6 +72,7 @@
 .header-section {
   height: 100px;
   padding: 0.5em;
+  overflow: hidden;
 
   &:first-child {
     border-right: 1px solid $color-black;
@@ -86,6 +86,27 @@
 
   #timeline-title {
     width: 370px;
+  }
+  #timeline-description{
+    font-size: $font-size-sm;
+    line-height: $line-height-sm;
+    width: 90%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+}
+
+.header-section.expanded {
+  height: 200px;
+  #timeline-description{
+    height: 100px;
+    font-size: $font-size-sm;
+    line-height: $line-height-sm;
+    width: 90%;
+    overflow: scroll;
+    white-space: pre-wrap;
   }
 }
 
@@ -270,7 +291,7 @@ main#main-app {
     }
 
     .event_col {
-      min-width: 1rem;
+      min-width: 1.25rem;
       background-color: $color-gray;
     }
 
@@ -283,6 +304,23 @@ main#main-app {
       background-color: $color-gray;
     }
 
+    .event_label {
+      transform: rotate(90deg);
+      transform-origin: 0 100% 0;
+      overflow: visible;
+      z-index: 1;
+      position: relative;
+      top: -1.25rem;
+      left: 0;
+      margin:0;
+      font-weight: $font-weight-semibold;
+      font-size: $font-size-sm;
+      color: $color-white;
+      height: 1.25rem;
+      line-height: 1.25rem;
+      padding-left: 1rem;
+    }
+
     .fill {
       height: 100%;
       width: 100%;
@@ -290,6 +328,13 @@ main#main-app {
       border: 0;
       padding: 0;
       cursor: pointer;
+    }
+    .first-event-year {
+      border-top: 1rem solid $color-black;
+    }
+
+    .last-event-year {
+      border-bottom: 1rem solid $color-violet-gray;
     }
 
     .ec_1 {

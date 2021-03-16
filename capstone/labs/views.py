@@ -130,7 +130,6 @@ def chronolawgic_api_update(request, timeline_id):
     try:
         parsed = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
         bad_values = validate_timeline(parsed)
-        print(bad_values)
         if bad_values:
             return JsonResponse(
                 {'status': 'err',
