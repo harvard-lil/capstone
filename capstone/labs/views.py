@@ -33,7 +33,7 @@ def chronolawgic_api_retrieve(request, timeline_id=None):
                            "title": tl.timeline['title'] if 'title' in tl.timeline else "",
                            "description": tl.timeline['description'] if 'description' in tl.timeline else "",
                            "case_count": len(tl.timeline['cases']) if 'cases' in tl.timeline else 0,
-                           "event_count": len(tl.timeline['event']) if 'event' in tl.timeline else 0,
+                           "event_count": len(tl.timeline['events']) if 'events' in tl.timeline else 0,
                            }
                            for tl in timelines],
         })
