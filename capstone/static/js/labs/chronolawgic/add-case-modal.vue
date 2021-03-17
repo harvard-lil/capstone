@@ -13,9 +13,14 @@
           <form @submit.stop id="form-search-cap" v-if="!this.case">
             <h6>Search CAP</h6>
             <div class="form-label-group" id="field-group-search">
-              <input v-model="searchText" id="field-search-cap" placeholder="ENTER FULL TEXT OR CITATION"
+              <input v-model="searchText" id="field-search-cap" placeholder="ENTER CITATION"
                      class="form-control">
-              <label for="field-search-cap">ENTER CITATION</label>
+              <label for="field-search-cap">SEARCH BY {{ extraFields.cap.value }}</label>
+              <span>Search using:</span>
+              <item-dropdown class="form-label-group" id="field-search-dropdown" :field="extraFields.cap"
+                             :original_display_val="extraFields.cap.value ? extraFields.cap.value : extraFields.cap.label"
+                             :choices="[['short name', 'short name'], ['citation', 'citation']]">
+              </item-dropdown>
 
               <span class="button-container">
                 <search-button :showLoading="showLoading"></search-button>
@@ -38,7 +43,7 @@
                 "{{ chosenCase.name_abbreviation.slice(0, 20) }}..."
               </button>
             </div>
-          <hr>
+            <hr>
           </form>
           <form @submit.stop id="form-add-case">
 
@@ -57,9 +62,9 @@
             </div>
             <div class="form-label-group" id="field-group-short">
               <textarea v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"
-                      class="form-control"></textarea>
-<!--              <input v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"-->
-<!--                     class="form-control">-->
+                        class="form-control"></textarea>
+              <!--              <input v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"-->
+              <!--                     class="form-control">-->
             </div>
             <div class="form-label-group" id="field-group-date">
               <input v-model="newCase.decision_date" id="field-decision-date" placeholder="DECISION DATE" type="date"
@@ -152,6 +157,11 @@ export default {
           name: 'reporter',
           label: 'reporter',
           value: 'reporter',
+        },
+        cap: {
+          name: 'search by',
+          label: 'short name',
+          value: 'short name'
         }
       },
       showLoading: false,
@@ -219,7 +229,9 @@ export default {
       this.showNoSearchResults = false
       if (this.searchText) {
         this.showLoading = true;
-        let url = store.state.urls.api_root + "cases?cite=" + this.searchText;
+
+        let query = this.extraFields.cap.value === 'citation' ? 'cite' : 'short_name'
+        let url = store.state.urls.api_root + "cases?" + query + "=" + this.searchText;
         axios.get(url)
             .then(response => response.data)
             .then(searchResponse => {

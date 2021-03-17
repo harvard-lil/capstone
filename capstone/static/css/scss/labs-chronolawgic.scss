@@ -16,6 +16,7 @@
   display: grid;
   grid-template-areas: "caselaw other-events";
   grid-template-columns:  70% 30%;
+
   .zoom-section {
     grid-area: other-events;
     background-color: $color-gray;
@@ -88,10 +89,11 @@
   #timeline-title {
     width: 370px;
   }
-  #timeline-description{
+
+  #timeline-description {
     font-size: $font-size-sm;
     line-height: $line-height-sm;
-    width: 90%;
+    width: 80%;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -101,11 +103,12 @@
 
 .header-section.expanded {
   height: 200px;
-  #timeline-description{
+
+  #timeline-description {
     height: 100px;
     font-size: $font-size-sm;
     line-height: $line-height-sm;
-    width: 90%;
+    width: 80%;
     overflow: scroll;
     white-space: pre-wrap;
   }
@@ -136,13 +139,16 @@
       float: right;
       justify-content: flex-end;
       padding-bottom: 3em;
+      padding-top: 2em;
       border-right: 1px solid $color-black;
+
       h6 {
         height: 2em;
         width: 90px;
         float: right;
         border-left: 1px solid $color-black;
       }
+
       button {
         padding-top: 0;
       }
@@ -150,6 +156,7 @@
 
     .other-events-section {
       display: flex;
+      padding-top: 2em;
       h6 {
         height: 2em;
         width: 80px;
@@ -184,7 +191,7 @@ main#main-app {
     display: grid;
     grid-template-areas: "incidental years spans .";
     grid-template-columns: 65% 10% 10% 15%;
-    min-height: 4rem;
+    min-height: 8rem;
     font-size: 18px;
 
     div.incidental {
@@ -291,6 +298,7 @@ main#main-app {
 
         .btn-add-event {
           padding: 3px;
+          display: contents;
         }
       }
 
@@ -330,7 +338,7 @@ main#main-app {
       position: relative;
       top: -1.25rem;
       left: 0;
-      margin:0;
+      margin: 0;
       font-weight: $font-weight-semibold;
       font-size: $font-size-sm;
       color: $color-white;
@@ -347,6 +355,7 @@ main#main-app {
       padding: 0;
       cursor: pointer;
     }
+
     .first-event-year {
       border-top: 1rem solid $color-black;
     }
@@ -428,16 +437,42 @@ main.admin {
   .top-menu {
     padding: 2em;
     display: grid;
-    grid-template-areas: ". title add info .";
-    grid-template-columns: 10% 30% 5% 5% 50%;
+    grid-template-areas: ". title ."
+                         ". add .";
+    grid-template-columns: 20% 30% 40%;
+    @include media-breakpoint-down(md) {
+      grid-template-areas: ". title"
+                             ". add";
+      grid-template-columns: 20% 1fr;
+    }
   }
 
   .add-timeline {
     grid-area: add;
+    text-transform: none;
+
+    button {
+      text-decoration: none;
+      padding-left: 0;
+      text-transform: none;
+    }
+
+    svg {
+      margin-top: -0.3em;
+    }
   }
+
 
   .info {
     grid-area: info;
+    display: inline-block;
+    margin-top: -1.5em;
+    margin-left: -0.5em;
+    font-size: 15px;
+    font-weight: $font-weight-semibold;
+    color: $color-blue;
+    text-decoration: none;
+    padding: 0;
   }
 
   h3 {
@@ -456,7 +491,7 @@ main.admin {
     grid-template-areas: ". title buttons"
                          ". description numbers"
                          ". description .";
-    grid-template-columns: 20% 20% 60%;
+    grid-template-columns: 20% 20% 50%;
     min-height: 4rem;
     margin-top: 2rem;
     grid-gap: 1rem;
@@ -613,6 +648,7 @@ main.admin {
   }
 
   .close {
-    padding-right: 0.2em;
+    padding-right: 0.5em;
+    padding-top: 0.1em;
   }
 }

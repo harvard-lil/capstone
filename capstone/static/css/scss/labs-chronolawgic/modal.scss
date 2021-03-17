@@ -141,16 +141,43 @@ textarea::placeholder {
     grid-area: search;
     display: grid;
     grid-template-areas:
-            "input search";
-    grid-template-columns: 90% 10%;
+            "input label dropdown search";
+    grid-template-columns: 40% 10% 35% 10%;
+    grid-column-gap: .8em;
 
     #field-search-cap {
       grid-area: input;
     }
 
+    span {
+      grid-area: label;
+      font-size: 14px;
+      line-height: 17px;
+      text-align: right;
+      margin-top: 1px;
+    }
+
+    #field-search-dropdown {
+      grid-area: dropdown;
+
+      .dropdown-menu {
+        filter: drop-shadow(0 7px 4px #ccc);
+        width: 245px;
+        text-transform: none;
+      }
+
+      .dropdown-item {
+        text-transform: none;
+      }
+
+      .dropdown-title-text {
+        text-transform: none;
+      }
+    }
+
     .button-container {
       grid-area: search;
-      text-align: center;
+      margin-top: 0.3em;
     }
   }
 

@@ -60,7 +60,6 @@ const store = new Vuex.Store({
             long_description: "",
             start_date: "",
             end_date: "",
-            categories: [],
         },
         templateCase: {
             url: "",
@@ -71,7 +70,6 @@ const store = new Vuex.Store({
             jurisdiction: "",
             reporter: "",
             decision_date: "",
-            categories: [],
         },
 
     },
