@@ -192,6 +192,7 @@ const store = new Vuex.Store({
         requestStatus: state => state.requestStatus,
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
+        templateCase: state => state.templateCase,
         firstYear: (state) => {
             if (state.cases.length === 0 && state.events.length === 0) {
                 return 0
@@ -236,7 +237,6 @@ const store = new Vuex.Store({
                 return year === new Date(cas.decision_date).getUTCFullYear();
             })
         },
-        templateCase: state => state.templateCase,
         timeline: (state) => {
             return {
                 title: state.title,

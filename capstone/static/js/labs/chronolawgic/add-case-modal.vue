@@ -10,7 +10,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <form @submit.stop id="form-search-cap" v-if="!this.case">
+          <form @submit.stop id="form-search-cap" v-if="!(this.case && this.case.id)">
             <h6>Search CAP</h6>
             <div class="form-label-group" id="field-group-search">
               <input v-model="searchText" id="field-search-cap" placeholder="ENTER CITATION"
@@ -248,15 +248,18 @@ export default {
     },
     clearContent() {
       this.closeModal();
-      this.newCase = store.getters.templateCase;
+      this.setNewCase();
     },
     unbind(obj) {
       return JSON.parse(JSON.stringify(obj))
     },
+    setNewCase() {
+      this.newCase = this.unbind(store.getters.templateCase);
+    },
     setupDefaults() {
       this.extraFields.jurisdiction.value = "jurisdiction"
       this.extraFields.reporter.value = "reporter"
-      this.newCase = this.unbind(store.getters.templateEvent);
+      this.setNewCase();
     },
     setupExisting() {
       this.newCase = this.unbind(this.case)
