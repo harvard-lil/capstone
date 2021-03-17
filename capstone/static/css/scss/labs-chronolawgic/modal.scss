@@ -47,6 +47,8 @@ textarea::placeholder {
   box-sizing: border-box;
   box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
   max-width: 700px;
+  max-height: 80%;
+  overflow-y: scroll;
 
   form {
     margin-bottom: 0;
@@ -144,6 +146,12 @@ textarea::placeholder {
             "input label dropdown search";
     grid-template-columns: 40% 10% 35% 10%;
     grid-column-gap: .8em;
+    @include media-breakpoint-down(md) {
+      grid-template-columns: 40% 10% 32% 10%;
+      .button-container {
+        margin-top: 0 !important;
+      }
+    }
 
     #field-search-cap {
       grid-area: input;
