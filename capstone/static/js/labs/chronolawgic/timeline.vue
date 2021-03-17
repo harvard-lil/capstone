@@ -42,7 +42,6 @@
                     data-target="#add-event-modal">
               <add-icon class="add-icon"></add-icon>
             </button>
-
           </div>
         </div>
       </div>

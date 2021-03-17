@@ -157,6 +157,7 @@
     .other-events-section {
       display: flex;
       padding-top: 2em;
+
       h6 {
         height: 2em;
         width: 80px;
@@ -622,6 +623,7 @@ main.admin {
 }
 
 .event-preview {
+  display: block;
   margin-left: -10em;
   z-index: 9999;
   font-family: $font-serif;
@@ -631,6 +633,18 @@ main.admin {
   word-break: break-word;
   background-color: white;
   position: relative;
+
+  .modal-body {
+    padding: 0.6rem;
+  }
+
+  .see-more {
+    padding: 0.6rem;
+    font-size: medium;
+    text-transform: none;
+    float: right;
+  }
+
   @include media-breakpoint-up(lg) {
     margin-left: -5em;
   }
@@ -642,13 +656,13 @@ main.admin {
   }
 
   p {
-    padding: 0.2em 0.5em;
     font-size: 15px;
     line-height: 19px;
+    margin: 0;
   }
 
   .close {
-    padding-right: 0.5em;
+    padding-right: 0.65em;
     padding-top: 0.1em;
   }
 }

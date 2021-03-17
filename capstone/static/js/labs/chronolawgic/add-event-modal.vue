@@ -162,7 +162,6 @@ export default {
         this.extraFields.colors.value = this.getRandomColor();
       }
       this.newEvent = this.unbind(this.event)
-      console.log("setupExisting", this.newEvent)
     }
   },
   watch: {
