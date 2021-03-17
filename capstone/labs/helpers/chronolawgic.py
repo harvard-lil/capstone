@@ -8,6 +8,7 @@ def validate_timeline(timeline):
     ]
 
     event_fields = [
+        {'name': 'id', 'type': int, 'required': True},
         {'name': 'name', 'type': str, 'required': True},
         {'name': 'short_description', 'type': str, 'required': False},
         {'name': 'long_description', 'type': str, 'required': False},
@@ -16,6 +17,7 @@ def validate_timeline(timeline):
     ]
 
     case_fields = [
+        {'name': 'id', 'type': int, 'required': True},
         {'name': 'name', 'type': str, 'required': True},
         {'name': 'short_description', 'type': str, 'required': False},
         {'name': 'long_description', 'type': str, 'required': False},
