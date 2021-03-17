@@ -6,6 +6,27 @@ from labs.models import Timeline
 timeline = {"title": "My first timeline", "description": "And my very best one"}
 create_url = reverse('labs:chronolawgic-api-create')
 retrieve_url = reverse('labs:chronolawgic-api-retrieve')
+cases = [
+    {'id': 1, 'url': 'https://cite.case.law/ill/1/176/', 'name': 'Case 2', 'citation': '1 Mass. 1',
+     'reporter': "Abb. Pr.- Abbott's Practice Reports", 'jurisdiction': 'California',
+     'decision_date': '1898-12-31',
+     'long_description': 'abcdefghijklmnopqrstuvwxyz',
+     'short_description': 'abc'},
+    {'id': 5, 'url': 'http://cite.case.test:8000/ill-app-2d/59/188/', 'name': 'Gurshey v. Chicago Transit Authority',
+     'citation': '59 Ill. App. 2d 188', 'reporter': '', 'categories': [], 'jurisdiction': '',
+     'decision_date': '1965-05-10', 'long_description': '', 'short_description': ''},
+    {'id': 6, 'url': 'http://cite.case.test:8000/ill/146/64/', 'name': 'City of Chicago v. Brownell',
+     'citation': '146 Ill. 64', 'reporter': '', 'categories': [], 'jurisdiction': '', 'decision_date': '1893-06-19',
+     'long_description': '', 'short_description': ''}
+]
+events = [
+    {'id': 18, 'name': 'Event 6', 'color': '#00db67', 'end_date': '1878-12-31', 'start_date': '1875-12-31',
+     'long_description': 'abcdefghijklmnopqrstuvwxyz',
+     'short_description': 'abc'},
+    {'id': 25, 'name': 'Event 6', 'color': '#00B7DB', 'end_date': '1878-12-31', 'start_date': '1875-12-31',
+     'long_description': 'abcdefghijklmnopqrstuvwxyz',
+     'short_description': 'abc'}
+]
 
 
 @pytest.mark.django_db
@@ -51,8 +72,6 @@ def test_timeline_retrieve(client, auth_client):
     check_response(response, status_code=403, content_type="application/json")
 
     # if authorized show all timelines when no id is given
-    cases = ['case 1', 'case 2', 'case 3']
-    events = ['event 1', 'event 2']
     timeline['cases'] = cases
     timeline['events'] = events
     tl.timeline = timeline
