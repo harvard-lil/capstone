@@ -56,7 +56,7 @@
           <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
             Cancel
           </button>
-          <template v-if="this.event">
+          <template v-if="this.event && this.event.id">
             <button type="button" class="btn btn-primary" @click="deleteEvent" data-dismiss="modal">
               Delete
             </button>
@@ -64,7 +64,7 @@
               Update
             </button>
           </template>
-          <template v-if="!this.event">
+          <template v-if="!(this.event && this.event.id)">
             <button type="button" class="btn btn-primary" @click.stop="addEvent"
                     :data-dismiss="$parent.showEvent ? 'none' : 'modal'">ADD
             </button>
@@ -162,11 +162,12 @@ export default {
         this.extraFields.colors.value = this.getRandomColor();
       }
       this.newEvent = this.unbind(this.event)
+      console.log("setupExisting", this.newEvent)
     }
   },
   watch: {
     event(existingEvent) {
-      if (existingEvent && existingEvent.id) {
+      if (existingEvent) {
         this.setupExisting()
       } else {
         this.setupDefaults()
