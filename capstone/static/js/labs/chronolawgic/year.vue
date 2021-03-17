@@ -95,7 +95,7 @@
 import AddIcon from '../../../../static/img/icons/plus-circle.svg';
 import TimeLineSlice from './timeline-slice';
 import Case from './case';
-import EventPreview from "./EventPreview";
+import EventPreview from "./event-preview";
 import {EventBus} from "./event-bus";
 import MoreVertical from '../../../../static/img/icons/more-vertical.svg';
 
