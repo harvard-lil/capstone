@@ -3,7 +3,8 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">ADD EVENT</h5>
+          <h5 class="modal-title" v-if="this.event && this.event.name">{{ this.event.name }}</h5>
+          <h5 class="modal-title" v-else>ADD EVENT</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click.stop="closeModal">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -55,7 +56,7 @@
           <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
             Cancel
           </button>
-          <template v-if="this.event">
+          <template v-if="this.event && this.event.id">
             <button type="button" class="btn btn-primary" @click="deleteEvent" data-dismiss="modal">
               Delete
             </button>
@@ -63,7 +64,7 @@
               Update
             </button>
           </template>
-          <template v-if="!this.event">
+          <template v-if="!(this.event && this.event.id)">
             <button type="button" class="btn btn-primary" @click.stop="addEvent"
                     :data-dismiss="$parent.showEvent ? 'none' : 'modal'">ADD
             </button>
@@ -103,6 +104,9 @@ export default {
     }
   },
   methods: {
+    getRandomColor() {
+      return this.choices.colors[Math.floor(Math.random() * this.choices.colors.length)][0]
+    },
     clearContent() {
       this.newEvent = store.getters.templateEvent;
     },
@@ -147,18 +151,23 @@ export default {
     },
     setupDefaults() {
       // choose random color as default
-      this.extraFields.colors.value = this.choices.colors[Math.floor(Math.random() * this.choices.colors.length)][0]
+      this.extraFields.colors.value = this.getRandomColor();
       // set template
       this.newEvent = this.unbind(store.getters.templateEvent);
     },
     setupExisting() {
-      this.extraFields.colors.value = this.event.color
+      if (this.event.color) {
+        this.extraFields.colors.value = this.event.color
+      } else {
+        this.extraFields.colors.value = this.getRandomColor();
+      }
       this.newEvent = this.unbind(this.event)
+      console.log("setupExisting", this.newEvent)
     }
   },
   watch: {
     event(existingEvent) {
-      if (existingEvent && existingEvent.id) {
+      if (existingEvent) {
         this.setupExisting()
       } else {
         this.setupDefaults()

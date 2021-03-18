@@ -47,7 +47,6 @@ const store = new Vuex.Store({
         minimized: true,
         id: 1,
         title: "",
-        subhead: "",
         description: "",
         createdBy: -1, // (user accts are for auth/logging purposes)
         isAuthor: false,
@@ -61,7 +60,6 @@ const store = new Vuex.Store({
             long_description: "",
             start_date: "",
             end_date: "",
-            categories: [],
         },
         templateCase: {
             url: "",
@@ -72,7 +70,6 @@ const store = new Vuex.Store({
             jurisdiction: "",
             reporter: "",
             decision_date: "",
-            categories: [],
         },
 
     },
@@ -195,6 +192,7 @@ const store = new Vuex.Store({
         requestStatus: state => state.requestStatus,
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
+        templateCase: state => state.templateCase,
         firstYear: (state) => {
             if (state.cases.length === 0 && state.events.length === 0) {
                 return 0
@@ -239,7 +237,6 @@ const store = new Vuex.Store({
                 return year === new Date(cas.decision_date).getUTCFullYear();
             })
         },
-        templateCase: state => state.templateCase,
         timeline: (state) => {
             return {
                 title: state.title,

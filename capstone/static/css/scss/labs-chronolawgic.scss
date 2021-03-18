@@ -16,6 +16,7 @@
   display: grid;
   grid-template-areas: "caselaw other-events";
   grid-template-columns:  70% 30%;
+
   .zoom-section {
     grid-area: other-events;
     background-color: $color-gray;
@@ -33,6 +34,7 @@
     height: 55px;
     background-color: #ccc;
     margin-right: 0;
+
     svg {
       color: $color-medium-gray;
       display: block;
@@ -87,10 +89,11 @@
   #timeline-title {
     width: 370px;
   }
-  #timeline-description{
+
+  #timeline-description {
     font-size: $font-size-sm;
     line-height: $line-height-sm;
-    width: 90%;
+    width: 80%;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -100,11 +103,12 @@
 
 .header-section.expanded {
   height: 200px;
-  #timeline-description{
+
+  #timeline-description {
     height: 100px;
     font-size: $font-size-sm;
     line-height: $line-height-sm;
-    width: 90%;
+    width: 80%;
     overflow: scroll;
     white-space: pre-wrap;
   }
@@ -131,22 +135,42 @@
     .caselaw-section {
       text-align: right;
       background-color: $color-white;
+      display: flex;
+      float: right;
+      justify-content: flex-end;
+      padding-bottom: 3em;
+      padding-top: 2em;
+      border-right: 1px solid $color-black;
 
       h6 {
+        height: 2em;
         width: 90px;
         float: right;
         border-left: 1px solid $color-black;
       }
+
+      button {
+        padding-top: 0;
+      }
     }
 
     .other-events-section {
+      display: flex;
+      padding-top: 2em;
       h6 {
+        height: 2em;
         width: 80px;
         background-color: $color-white;
         border-right: 1px solid $color-black;
       }
+
+      button {
+        float: left;
+        padding-top: 0;
+      }
     }
   }
+
 }
 
 .incidental {
@@ -167,12 +191,12 @@ main#main-app {
     display: grid;
     grid-template-areas: "incidental years spans .";
     grid-template-columns: 65% 10% 10% 15%;
-    min-height: 4rem;
+    min-height: 8rem;
     font-size: 18px;
 
     div.incidental {
       grid-area: incidental;
-      justify-content: end;
+      justify-content: flex-end;
       display: flex;
     }
 
@@ -241,6 +265,7 @@ main#main-app {
       grid-template-areas: "left-line year right-line";
       grid-template-columns: 1fr 1fr 1fr;
       z-index: 999;
+
       div {
         display: flex;
         justify-content: center;
@@ -273,6 +298,7 @@ main#main-app {
 
         .btn-add-event {
           padding: 3px;
+          display: contents;
         }
       }
 
@@ -312,7 +338,7 @@ main#main-app {
       position: relative;
       top: -1.25rem;
       left: 0;
-      margin:0;
+      margin: 0;
       font-weight: $font-weight-semibold;
       font-size: $font-size-sm;
       color: $color-white;
@@ -329,6 +355,7 @@ main#main-app {
       padding: 0;
       cursor: pointer;
     }
+
     .first-event-year {
       border-top: 1rem solid $color-black;
     }
@@ -407,43 +434,83 @@ main#main-app {
 
 
 main.admin {
-  #timeline {
-    background-color: $color-white;
-  }
-
-  .other-events-section {
-    padding-top: 0.35em;
-    padding-left: 0.35em;
-    background-color: transparent;
-
-    .icon-link {
-      padding: 0.8em;
+  .top-menu {
+    padding: 2em;
+    display: grid;
+    grid-template-areas: ". title ."
+                         ". add .";
+    grid-template-columns: 20% 30% 40%;
+    @include media-breakpoint-down(md) {
+      grid-template-areas: ". title"
+                             ". add";
+      grid-template-columns: 20% 1fr;
     }
   }
 
+  .add-timeline {
+    grid-area: add;
+    text-transform: none;
+
+    button {
+      text-decoration: none;
+      padding-left: 0;
+      text-transform: none;
+    }
+
+    svg {
+      margin-top: -0.3em;
+    }
+  }
+
+
+  .info {
+    grid-area: info;
+    display: inline-block;
+    margin-top: -1.5em;
+    margin-left: -0.5em;
+    font-size: 15px;
+    font-weight: $font-weight-semibold;
+    color: $color-blue;
+    text-decoration: none;
+    padding: 0;
+  }
+
   h3 {
-    font-weight: bold;
-    margin-bottom: 2rem;
+    grid-area: title;
+    font-family: $font-serif;
+  }
+
+  #timeline {
+    background-color: $color-white;
   }
 
   .timeline {
     max-width: 6fr;
     width: 100%;
     display: grid;
-    grid-template-areas: ". title subhead edit save"
-                         ". description numbers delete ."
-                         ". description . . .";
-    grid-template-columns: 20% 25% 20% 5% 25%;
+    grid-template-areas: ". title buttons"
+                         ". description numbers"
+                         ". description .";
+    grid-template-columns: 20% 20% 50%;
     min-height: 4rem;
     margin-top: 2rem;
     grid-gap: 1rem;
+    border-bottom: 1px solid $color-gray;
+    padding-bottom: 2em;
+  }
+
+  .btn-group {
+    grid-area: buttons;
+    display: grid;
+    grid-template-areas: "delete save edit .";
+    grid-template-columns: 5% 5% 5% 85%;
   }
 
   .numbers {
     grid-area: numbers;
     display: grid;
-    grid-template-areas: "id_label case_count_label event_count_label"
-                         "id case_count event_count";
+    grid-template-areas: "case_count_label event_count_label id_label"
+                         "case_count event_count id";
     grid-template-columns: 1fr 1fr 1fr;
 
     .id_label {
@@ -468,22 +535,46 @@ main.admin {
     color: $color-violet-gray-dark;
   }
 
+  .edit, .delete, .save {
+    cursor: pointer;
+  }
+
   .edit {
     grid-area: edit;
+
+    &:hover, &:active, &:focus {
+      svg {
+        color: $color-blue;
+      }
+    }
+
   }
 
   .delete {
     grid-area: delete;
+
+    &:hover, &:active, &:focus {
+      svg {
+        color: $color-red;
+      }
+    }
   }
 
   .save {
     grid-area: save;
+
+    &:hover, &:active, &:focus {
+      svg {
+        color: $color-violet;
+      }
+    }
+
   }
 
   .title {
     grid-area: title;
     font-weight: $font-weight-semibold;
-    text-transform: uppercase;
+    height: 2em;
   }
 
   .description {
@@ -496,27 +587,16 @@ main.admin {
 
     .description_text {
       grid-area: description_text;
+      width: 100%;
+      line-height: 1.7em;
     }
 
     .description_label {
       grid-area: description_label;
     }
-  }
 
-  .subhead {
-    grid-area: subhead;
-    font-family: $font-sans-serif;
-    font-size: $font-size-sm;
-    display: grid;
-    grid-template-areas: "subhead_label"
-                         "subhead_text";
-
-    .subhead_text {
-      grid-area: subhead_text;
-    }
-
-    .subhead_label {
-      grid-area: subhead_label;
+    .description_edit {
+      width: 100%;
     }
   }
 
@@ -526,6 +606,10 @@ main.admin {
 
   .btn-delete {
     grid-area: button-two;
+
+    .disabled {
+      color: $color-medium-gray;
+    }
   }
 
   .btn-hidden {
@@ -564,6 +648,7 @@ main.admin {
   }
 
   .close {
-    padding-right: 0.2em;
+    padding-right: 0.5em;
+    padding-top: 0.1em;
   }
 }

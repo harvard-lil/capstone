@@ -8,14 +8,18 @@ def validate_timeline(timeline):
     ]
 
     event_fields = [
+        {'name': 'id', 'type': int, 'required': True},
         {'name': 'name', 'type': str, 'required': True},
         {'name': 'short_description', 'type': str, 'required': False},
         {'name': 'long_description', 'type': str, 'required': False},
         {'name': 'start_date', 'type': str, 'required': True},
         {'name': 'end_date', 'type': str, 'required': True},
+        {'name': 'color', 'type': str, 'required': False},
+        {'name': 'categories', 'type': list, 'required': False},
     ]
 
     case_fields = [
+        {'name': 'id', 'type': int, 'required': True},
         {'name': 'name', 'type': str, 'required': True},
         {'name': 'short_description', 'type': str, 'required': False},
         {'name': 'long_description', 'type': str, 'required': False},
@@ -24,6 +28,7 @@ def validate_timeline(timeline):
         {'name': 'reporter', 'type': str, 'required': False},
         {'name': 'url', 'type': str, 'required': False},
         {'name': 'citation', 'type': str, 'required': False},
+        {'name': 'categories', 'type': list, 'required': False},
     ]
 
     bad = []
