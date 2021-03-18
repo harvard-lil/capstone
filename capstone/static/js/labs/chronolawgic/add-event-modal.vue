@@ -83,6 +83,7 @@ import ItemDropdown from "./item-dropdown"
 export default {
   name: "add-event-modal",
   props: [
+    'shown',
     'modal',
     'event'
   ],
@@ -184,7 +185,7 @@ export default {
 }
 </script>
 <style scoped>
-#add-event-modal {
-  display: block;
-}
+/*#add-event-modal {*/
+/*  display: block;*/
+/*}*/
 </style>

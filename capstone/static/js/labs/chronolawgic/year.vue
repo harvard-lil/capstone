@@ -1,17 +1,19 @@
 <template>
   <div class="year"
        v-bind:class="{
-    no_content_year: noContent,
-    cases_only_year: casesWithoutEvents,
-    events_only_year: eventsWithoutCases,
-    cases_and_events_year: casesAndEvents
-  }" v-if="year_data.involvesAnyItem || !$store.getters.minimized">
+          no_content_year: noContent,
+          cases_only_year: casesWithoutEvents,
+          events_only_year: eventsWithoutCases,
+          cases_and_events_year: casesAndEvents}"
+       v-if="year_data.involvesAnyItem || !$store.getters.minimized"
+       @keydown.esc="clearPreviewEvent">
     <div class="incidental">
 
       <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data"
             v-bind:key="case_data.id"></case>
     </div>
-    <div class="year_scale" @mouseover="hoveringHandle(year_value, true)"
+    <div class="year_scale"
+         @mouseover="hoveringHandle(year_value, true)"
          @mouseleave="hoveringHandle(year_value, false)">
       <div class="left-line">
         <!-- if not author, show rule -->
@@ -49,9 +51,7 @@
       </div>
     </div>
     <TimeLineSlice :event_list="year_data.event_list" :year_value="year_value"></TimeLineSlice>
-    <template v-if="!$store.state.isAuthor">
-      <event-preview :event="event"></event-preview>
-    </template>
+    <event-preview :event="event"></event-preview>
   </div>
   <div class="year placeholder"
        v-else-if="year_data.firstYearNoNewItems && !year_data.involvesAnyItem && $store.getters.minimized">
@@ -138,21 +138,16 @@ export default {
     repopulateTimeline() {
       this.$parent.repopulateTimeline();
     },
+    clearPreviewEvent() {
+      this.event = null;
+    },
     previewEvent(event_data) {
       this.event = event_data
       EventBus.$emit('closePreview', this.year_value);
     },
-    clearPreviewEvent() {
-      this.event = null;
-    },
-    openModal(item) {
-
-      this.clearPreviewEvent()
-      EventBus.$emit('openModal', item, 'event')
-    },
     hoveringHandle(year_data, status) {
       this.showAddButton = status;
-    }
+    },
   },
   mounted() {
     EventBus.$on('closePreview', (year_value) => {

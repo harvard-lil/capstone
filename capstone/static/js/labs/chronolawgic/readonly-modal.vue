@@ -9,8 +9,10 @@
           </button>
         </div>
         <div class="modal-body">
-          <h6 v-if="event.short_description">{{ event.short_description }}</h6>
-          <hr v-if="event.short_description"/>
+          <p v-if="event.short_description" class="short-description">
+            {{ event.short_description }}
+          </p>
+          <hr v-if="event.short_description && event.long_description"/>
           <div class="long-description" v-if="event.long_description">
             <p v-for="(par, index) in event.long_description.split('\n')"
                :key="index">
@@ -20,7 +22,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
-            Cancel
+            Close
           </button>
         </div>
       </div>
@@ -32,9 +34,9 @@
 export default {
   name: "readonly-modal",
   props: [
-    'shown',
     'modal',
     'event',
+    'shown'
   ],
   methods: {
     closeModal() {
@@ -45,7 +47,7 @@ export default {
 </script>
 
 <style scoped>
-#readonly-modal {
-  display: block;
-}
+/*#readonly-modal {*/
+/*  display: block;*/
+/*}*/
 </style>

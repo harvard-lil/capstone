@@ -69,7 +69,6 @@
     </template>
     <!-- if user is not author of timeline, show readonly modal -->
     <template v-else>
-      v-else
       <readonly-modal
           v-if="showReadOnly"
           data-toggle="modal"
@@ -136,6 +135,8 @@ export default {
       this.checked = !this.checked;
     },
     openModal(item, typeOfItem) {
+      item = JSON.parse(JSON.stringify(item))
+      this.event = null;
       if (this.$store.state.isAuthor) {
         this.showEvent = typeOfItem === 'event';
         this.showCase = typeOfItem === 'case';

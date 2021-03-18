@@ -13,60 +13,55 @@
                     'border-bottom': parseInt(year_value) === new Date(event_data.end_date).getUTCFullYear() ? '1rem solid gray' : '',
                     'min-height': '1rem'
                 }"
-           data-toggle="modal"
-           :data-target="$store.state.isAuthor ? '#add-event-modal' : '#readonly-modal'"
+           @click="openModal(event_data)"
            @focus="handleFocus(event_data)"
-      @click="handleClick(event_data)"
-      :data-event-fill="event_data.id"
-      :ref="fillRefGenerator(event_data, year_value)">
+           :data-toggle="$store.state.isAuthor ? 'modal' : ''"
+           :data-target="$store.state.isAuthor ? '#add-event-modal': ''"
+           :data-event-fill="event_data.id"
+           :ref="fillRefGenerator(event_data, year_value)">
         <div class="event_label"
              :style="{'width': event_data.name.length + 'rem' }"
              v-if="parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear()"
              v-text="event_data.name"
              :ref="'event-label' + event_data.id"
         ></div>
+
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import {EventBus} from "./event-bus.js"
 
 export default {
   name: "TimelineSlice",
   props: ['year_value', 'event_list'],
   methods: {
-    openModal(item) {
-      EventBus.$emit('openModal', item, 'event')
-    },
     closeModal() {
       this.$emit('closeModal')
     },
-    handleClick(event_data) {
+    openModal(event_data) {
       if (this.$store.state.isAuthor) {
-        this.openModal(event_data)
+        this.$parent.$parent.openModal(event_data, 'event')
       } else {
         this.toggleEventPreview(event_data)
       }
     },
     handleFocus(event_data) {
-      if (!this.$store.state.isAuthor) {
-        this.toggleEventPreview(event_data)
-      }
+      if (this.$store.state.isAuthor) return;
+      this.toggleEventPreview(event_data)
     },
     toggleEventPreview(event_data) {
       this.$parent.previewEvent(event_data);
     },
     fillRefGenerator(event_data, year_value) {
-        const firstEventYear= parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear();
-        const lastEventYear= parseInt(year_value) === new Date(event_data.end_date).getUTCFullYear();
-        if (firstEventYear === year_value) {
-          return "first_year_fill_" + event_data.id
-        }
-        else if (lastEventYear === year_value) {
-          return "last_year_fill_" + event_data.id
-        }
+      const firstEventYear = parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear();
+      const lastEventYear = parseInt(year_value) === new Date(event_data.end_date).getUTCFullYear();
+      if (firstEventYear === year_value) {
+        return "first_year_fill_" + event_data.id
+      } else if (lastEventYear === year_value) {
+        return "last_year_fill_" + event_data.id
+      }
     },
   },
 }

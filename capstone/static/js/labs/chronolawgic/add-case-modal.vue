@@ -287,7 +287,7 @@ export default {
 }
 </script>
 <style scoped>
-#add-case-modal {
-  display: block;
-}
+/*#add-case-modal {*/
+/*  display: block;*/
+/*}*/
 </style>

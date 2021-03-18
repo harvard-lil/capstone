@@ -27,7 +27,7 @@ export default {
   components: {LinkCase},
   methods: {
     openModal(item) {
-      EventBus.$emit('openModal', item, 'case')
+      this.$parent.$parent.openModal(item, 'case')
     },
     closeModal() {
       EventBus.$emit('closeModal')

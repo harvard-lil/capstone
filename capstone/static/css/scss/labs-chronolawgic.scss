@@ -159,6 +159,8 @@
       padding-top: 2em;
 
       h6 {
+        border-left: 1px solid white;
+        margin-left: -2px;
         height: 2em;
         width: 80px;
         background-color: $color-white;
@@ -625,7 +627,7 @@ main.admin {
 .event-preview {
   display: block;
   margin-left: -10em;
-  z-index: 9999;
+  z-index: 999;
   font-family: $font-serif;
   height: 8em;
   width: 12em;
@@ -633,13 +635,15 @@ main.admin {
   word-break: break-word;
   background-color: white;
   position: relative;
-
-  .modal-body {
-    padding: 0.6rem;
+  h5 {
+    margin-bottom: 0;
+  }
+  .event-preview-body {
+    padding: 0.6rem 0.6rem 0 0.6rem;
   }
 
   .see-more {
-    padding: 0.6rem;
+    padding: 0 0.6rem 0.6rem 0.6rem;
     font-size: medium;
     text-transform: none;
     float: right;
