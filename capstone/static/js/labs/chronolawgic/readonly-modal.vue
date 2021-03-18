@@ -9,9 +9,9 @@
           </button>
         </div>
         <div class="modal-body">
-          <h6>{{ event.short_description }}</h6>
-          <hr/>
-          <div class="long-description">
+          <h6 v-if="event.short_description">{{ event.short_description }}</h6>
+          <hr v-if="event.short_description"/>
+          <div class="long-description" v-if="event.long_description">
             <p v-for="(par, index) in event.long_description.split('\n')"
                :key="index">
               {{ par }}

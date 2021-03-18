@@ -2,6 +2,15 @@
   color: red;
 }
 
+.btn-highlight {
+  background-color: $highlight;
+
+  &:hover, &:focus {
+    color: $color-violet;
+    border-color: $color-violet;
+  }
+}
+
 input.form-control, textarea.form-control {
   background-color: $color-light-gray;
   border: 0;
@@ -20,9 +29,10 @@ textarea::placeholder {
 
 .modal-header .close {
   background-color: $color-white;
-  padding: 0.68rem 1rem;
   margin: -0.5rem -1rem -1rem auto;
   border-left: 2px solid $color-black;
+  padding: 0.65rem 1rem;
+  opacity: 1;
 }
 
 .modal-header .modal-title {
@@ -37,6 +47,8 @@ textarea::placeholder {
   box-sizing: border-box;
   box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
   max-width: 700px;
+  max-height: 80%;
+  overflow-y: scroll;
 
   form {
     margin-bottom: 0;
@@ -117,27 +129,63 @@ textarea::placeholder {
   #form-add-case {
     display: grid;
     grid-template-areas:
-          "link        .    short"
-          "name        .    long"
-          "citation    .    long"
-          "date        .    long"
-          "jur         .    long"
-          "reporter    .    long";
+          "link       short"
+          "name       short"
+          "citation   long"
+          "date       long"
+          "jur        long"
+          "reporter   long";
+    grid-column-gap: .8em;
+    grid-row-gap: 0.2em;
   }
 
   #field-group-search {
     grid-area: search;
     display: grid;
     grid-template-areas:
-            "input input input input input input search";
+            "input label dropdown search";
+    grid-template-columns: 40% 10% 35% 10%;
+    grid-column-gap: .8em;
+    @include media-breakpoint-down(md) {
+      grid-template-columns: 40% 10% 32% 10%;
+      .button-container {
+        margin-top: 0 !important;
+      }
+    }
 
     #field-search-cap {
       grid-area: input;
     }
 
+    span {
+      grid-area: label;
+      font-size: 14px;
+      line-height: 17px;
+      text-align: right;
+      margin-top: 1px;
+    }
+
+    #field-search-dropdown {
+      grid-area: dropdown;
+
+      .dropdown-menu {
+        filter: drop-shadow(0 7px 4px #ccc);
+        width: 245px;
+        text-transform: none;
+      }
+
+      .dropdown-item {
+        text-transform: none;
+      }
+
+      .dropdown-title-text {
+        text-transform: none;
+      }
+    }
+
     .button-container {
       grid-area: search;
-      text-align: center;
+      margin-top: 0.3em;
     }
   }
 
@@ -159,6 +207,10 @@ textarea::placeholder {
 
   #field-group-short {
     grid-area: short;
+
+    #field-short-description {
+      height: 5.7em;
+    }
   }
 
   #field-group-long {
@@ -243,11 +295,11 @@ textarea::placeholder {
   form {
     display: grid;
     grid-template-areas:
-          "name        .    short"
-          "start_date  .    long"
-          "end_date    .    long"
-          "color       .    long";
-    grid-gap: .2em;
+          "name          short"
+          "start_date    long"
+          "end_date      long"
+          "color         long";
+    grid-column-gap: .8em;
   }
 
   #field-group-name {
