@@ -24,7 +24,7 @@
     <section id="timeline">
       <div class="row timeline-section-titles">
         <div class="caselaw-section">
-          <button @click="showAddCaseModal(true)" v-if="$store.state.isAuthor" type="button"
+          <button @click="openModal({}, 'case')" v-if="$store.state.isAuthor" type="button"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-case-modal">
@@ -35,7 +35,7 @@
         <div class="other-events">
           <div class="other-events-section">
             <h6>EVENTS</h6>
-            <button @click="showAddEventModal(true)" v-if="this.$store.state.isAuthor"
+            <button @click="openModal({}, 'event')" v-if="this.$store.state.isAuthor"
                     type="button"
                     class="btn btn-tertiary btn-add-event"
                     data-toggle="modal"
@@ -59,7 +59,7 @@
                       :case="event"
                       :shown="showCase">
       </add-case-modal>
-      <add-event-modal v-if="showEvent"
+      <add-event-modal v-else-if="showEvent"
                        data-toggle="modal"
                        data-target="#add-event-modal"
                        :modal.sync="showEvent"
@@ -69,13 +69,14 @@
     </template>
     <!-- if user is not author of timeline, show readonly modal -->
     <template v-else>
+      v-else
       <readonly-modal
-          v-if="showCase || showEvent"
+          v-if="showReadOnly"
           data-toggle="modal"
           data-target="#readonly-modal"
-          :modal.sync="showEventDetails"
+          :modal.sync="showReadOnly"
           :event="event"
-          :shown="showEventDetails">
+          :shown="showReadOnly">
       </readonly-modal>
     </template>
   </main>
@@ -122,7 +123,7 @@ export default {
       checked: false,
       showCase: false,
       showEvent: false,
-      showEventDetails: false,
+      showReadOnly: false,
       keyShown: false,
       years: {},
       event: null,
@@ -134,25 +135,19 @@ export default {
     check() {
       this.checked = !this.checked;
     },
-    showAddEventModal(val, prefilled) {
-      this.event = null;
-      if (prefilled)
-        this.event = prefilled;
-      this.showEvent = val;
-      this.showEventDetails = this.showEvent
-    },
-    showAddCaseModal(val, prefilled) {
-      this.event = null;
-      if (prefilled) {
-        this.event = prefilled;
+    openModal(item, typeOfItem) {
+      if (this.$store.state.isAuthor) {
+        this.showEvent = typeOfItem === 'event';
+        this.showCase = typeOfItem === 'case';
+      } else {
+        this.showReadOnly = true;
       }
-      this.showCase = val;
-      this.showEventDetails = this.showCase
+      this.event = item;
     },
     closeModal() {
-      this.showAddCaseModal(false)
-      this.showAddEventModal(false)
-      this.showEventDetails = false;
+      this.showEvent = false;
+      this.showCase = false;
+      this.showReadOnly = false;
       this.event = null;
       EventBus.$emit('closeModal')
     },
@@ -214,9 +209,7 @@ export default {
   },
   created() {
     EventBus.$on('openModal', (item, typeOfItem) => {
-      this.showEvent = typeOfItem === 'event';
-      this.showCase = typeOfItem === 'case';
-      this.event = item;
+      this.openModal(item, typeOfItem);
     });
   }
 };
