@@ -32,6 +32,7 @@ export default {
   methods: {
     openModal() {
       this.$parent.$parent.openModal(this.event, 'event')
+      this.$parent.clearPreviewEvent();
     },
   }
 }

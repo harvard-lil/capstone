@@ -1,5 +1,5 @@
 <template>
-  <main id="main-app">
+  <main id="main-app" @keyup.esc="handleEscape">
     <div class="row top-menu">
       <header :class="{ 'header-section': true, 'expanded': headerExpanded}">
         <h4 id="timeline-title">{{ $store.state.title }}</h4>
@@ -24,7 +24,9 @@
     <section id="timeline">
       <div class="row timeline-section-titles">
         <div class="caselaw-section">
-          <button @click="openModal({}, 'case')" v-if="$store.state.isAuthor" type="button"
+          <button v-if="$store.state.isAuthor" type="button"
+                  @click="openModal({}, 'case')"
+                  @keyup.enter="openModal({}, 'case')"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-case-modal">
@@ -35,7 +37,9 @@
         <div class="other-events">
           <div class="other-events-section">
             <h6>EVENTS</h6>
-            <button @click="openModal({}, 'event')" v-if="this.$store.state.isAuthor"
+            <button v-if="this.$store.state.isAuthor"
+                    @click="openModal({}, 'event')"
+                    @keyup.enter="openModal({}, 'event')"
                     type="button"
                     class="btn btn-tertiary btn-add-event"
                     data-toggle="modal"
@@ -157,6 +161,9 @@ export default {
     },
     toggleKey() {
       this.keyShown = !this.keyShown;
+    },
+    handleEscape() {
+      EventBus.$emit('closePreview')
     },
     repopulateTimeline() {
       /*
