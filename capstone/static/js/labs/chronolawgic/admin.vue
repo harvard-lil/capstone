@@ -18,8 +18,8 @@
         <div v-if="this.$store.getters.availableTimelines.length">
           <div class="timeline" v-for="timeline in this.$store.getters.availableTimelines" v-bind:key="timeline.id">
             <div v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)" class="title">
-              <router-link :to="timeline.id.toString()">
-                <div v-text="timeline.title"></div>
+              <router-link :to="timeline.id.toString()"
+                           v-text="timeline.title">
               </router-link>
             </div>
             <input v-else type="text" class="title_edit title" v-model="editMode[timeline.id].title">
@@ -75,7 +75,6 @@
 
 <script>
 import AddIcon from '../../../../static/img/icons/plus-circle.svg';
-// import InfoIcon from '../../../../static/img/icons/info.svg';
 import EditIcon from '../../../../static/img/icons/edit.svg';
 import SaveIcon from '../../../../static/img/icons/save.svg';
 import CancelIcon from '../../../../static/img/icons/cancel.svg';
