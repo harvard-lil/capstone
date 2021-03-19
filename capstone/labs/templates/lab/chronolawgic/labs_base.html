@@ -83,12 +83,11 @@
       </div>
 
       <div class="project-title">
-          <span class="labs-label">
-            CAP LABS
-          </span>
-              <span class="project-name">
-                 |{% block project_name %} {% endblock %}
-          </span>
+        <span class="project-name">
+           <a class="nav-link" href="{% url 'labs:chronolawgic-dashboard' %}">
+             {% block project_name %} {% endblock %}
+           </a>
+        </span>
       </div>
 
       <div class="lab-nav-content">

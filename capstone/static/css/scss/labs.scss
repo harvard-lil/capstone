@@ -67,14 +67,15 @@
   color: $color-white;
   grid-area: project-title;
   font-size: $font-size-lg;
-  padding-left: 1rem;
   display: flex;
   align-items: center; /* Vertical center alignment */
   .labs-label {
     font-weight: $font-weight-black;
   }
   .project-name {
-    font-weight: $font-weight-extra-light;
+    letter-spacing: 0.05em;
+    padding: 3px 5px;
+    text-transform: uppercase;
   }
 }
 
