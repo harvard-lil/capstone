@@ -1,5 +1,5 @@
 <template>
-  <main id="main-app">
+  <main id="main-app" @keyup.esc="handleEscape">
     <div class="row top-menu">
       <header :class="{ 'header-section': true, 'expanded': headerExpanded}">
         <h4 id="timeline-title">{{ $store.state.title }}</h4>
@@ -24,7 +24,9 @@
     <section id="timeline">
       <div class="row timeline-section-titles">
         <div class="caselaw-section">
-          <button @click="showAddCaseModal(true)" v-if="$store.state.isAuthor" type="button"
+          <button v-if="$store.state.isAuthor" type="button"
+                  @click="openModal({}, 'case')"
+                  @keyup.enter="openModal({}, 'case')"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-case-modal">
@@ -35,14 +37,15 @@
         <div class="other-events">
           <div class="other-events-section">
             <h6>EVENTS</h6>
-            <button @click="showAddEventModal(true)" v-if="this.$store.state.isAuthor"
+            <button v-if="this.$store.state.isAuthor"
+                    @click="openModal({}, 'event')"
+                    @keyup.enter="openModal({}, 'event')"
                     type="button"
                     class="btn btn-tertiary btn-add-event"
                     data-toggle="modal"
                     data-target="#add-event-modal">
               <add-icon class="add-icon"></add-icon>
             </button>
-
           </div>
         </div>
       </div>
@@ -60,7 +63,7 @@
                       :case="event"
                       :shown="showCase">
       </add-case-modal>
-      <add-event-modal v-if="showEvent"
+      <add-event-modal v-else-if="showEvent"
                        data-toggle="modal"
                        data-target="#add-event-modal"
                        :modal.sync="showEvent"
@@ -71,12 +74,12 @@
     <!-- if user is not author of timeline, show readonly modal -->
     <template v-else>
       <readonly-modal
-          v-if="showCase || showEvent"
+          v-if="showReadOnly"
           data-toggle="modal"
           data-target="#readonly-modal"
-          :modal.sync="showEventDetails"
+          :modal.sync="showReadOnly"
           :event="event"
-          :shown="showEventDetails">
+          :shown="showReadOnly">
       </readonly-modal>
     </template>
   </main>
@@ -123,7 +126,7 @@ export default {
       checked: false,
       showCase: false,
       showEvent: false,
-      showEventDetails: false,
+      showReadOnly: false,
       keyShown: false,
       years: {},
       event: null,
@@ -135,25 +138,21 @@ export default {
     check() {
       this.checked = !this.checked;
     },
-    showAddEventModal(val, prefilled) {
+    openModal(item, typeOfItem) {
+      item = JSON.parse(JSON.stringify(item))
       this.event = null;
-      if (prefilled)
-        this.event = prefilled;
-      this.showEvent = val;
-      this.showEventDetails = this.showEvent
-    },
-    showAddCaseModal(val, prefilled) {
-      this.event = null;
-      if (prefilled) {
-        this.event = prefilled;
+      if (this.$store.state.isAuthor) {
+        this.showEvent = typeOfItem === 'event';
+        this.showCase = typeOfItem === 'case';
+      } else {
+        this.showReadOnly = true;
       }
-      this.showCase = val;
-      this.showEventDetails = this.showCase
+      this.event = item;
     },
     closeModal() {
-      this.showAddCaseModal(false)
-      this.showAddEventModal(false)
-      this.showEventDetails = false;
+      this.showEvent = false;
+      this.showCase = false;
+      this.showReadOnly = false;
       this.event = null;
       EventBus.$emit('closeModal')
     },
@@ -162,6 +161,9 @@ export default {
     },
     toggleKey() {
       this.keyShown = !this.keyShown;
+    },
+    handleEscape() {
+      EventBus.$emit('closePreview')
     },
     repopulateTimeline() {
       /*
@@ -215,9 +217,7 @@ export default {
   },
   created() {
     EventBus.$on('openModal', (item, typeOfItem) => {
-      this.showEvent = typeOfItem === 'event';
-      this.showCase = typeOfItem === 'case';
-      this.event = item;
+      this.openModal(item, typeOfItem);
     });
   }
 };
