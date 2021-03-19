@@ -21,8 +21,8 @@
         <!-- if author, show + add case button on hover -->
         <template v-else-if="$store.state.isAuthor">
 
-          <button @click="$parent.openModal({decision_date: year_value + '-01-01'}, 'case')"
-                  v-if="$store.state.isAuthor" type="button"
+          <button type="button"
+                  @click="$parent.openModal({decision_date: year_value + '-01-01'}, 'case')"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-case-modal">
@@ -40,8 +40,8 @@
       <div class="right-line">
         <hr v-if="!$store.state.isAuthor || !showAddButton">
         <template v-else-if="$store.state.isAuthor">
-          <button @click="$parent.openModal({start_date: year_value + '-01-01'}, 'event')" v-if="$store.state.isAuthor"
-                  type="button"
+          <button type="button"
+                  @click="$parent.openModal({start_date: year_value + '-01-01'}, 'event')" v-if="$store.state.isAuthor"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-event-modal">
