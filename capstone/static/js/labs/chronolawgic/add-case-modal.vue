@@ -10,7 +10,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <form @submit.stop id="form-search-cap" v-if="!(this.case && this.case.id)">
+          <form @submit.stop id="form-search-cap" v-if="!(this.case && typeof(this.case.id) === 'number')">
             <h6>Search CAP</h6>
             <div class="form-label-group" id="field-group-search">
               <input v-model="searchText" id="field-search-cap" placeholder="ENTER CITATION"
