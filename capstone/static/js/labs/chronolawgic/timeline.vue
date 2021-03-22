@@ -25,8 +25,7 @@
       <div class="row timeline-section-titles">
         <div class="caselaw-section">
           <button v-if="$store.state.isAuthor" type="button"
-                  @click="openModal({}, 'case')"
-                  @keyup.enter="openModal({}, 'case')"
+                  @click="openModal(null, 'case')"
                   class="btn btn-tertiary btn-add-event"
                   data-toggle="modal"
                   data-target="#add-case-modal">
@@ -38,8 +37,7 @@
           <div class="other-events-section">
             <h6>EVENTS</h6>
             <button v-if="this.$store.state.isAuthor"
-                    @click="openModal({}, 'event')"
-                    @keyup.enter="openModal({}, 'event')"
+                    @click="openModal(null, 'event')"
                     type="button"
                     class="btn btn-tertiary btn-add-event"
                     data-toggle="modal"
@@ -139,15 +137,23 @@ export default {
       this.checked = !this.checked;
     },
     openModal(item, typeOfItem) {
-      item = JSON.parse(JSON.stringify(item))
-      this.event = null;
+      if (item && typeof item.id === 'number')
+        this.event = JSON.parse(JSON.stringify(item))
+      else {
+        this.event = null;
+      }
+
+      this.showEvent = false;
+      this.showCase = false;
+      this.showReadOnly = false;
+
       if (this.$store.state.isAuthor) {
         this.showEvent = typeOfItem === 'event';
         this.showCase = typeOfItem === 'case';
       } else {
         this.showReadOnly = true;
       }
-      this.event = item;
+
     },
     closeModal() {
       this.showEvent = false;
@@ -164,6 +170,7 @@ export default {
     },
     handleEscape() {
       EventBus.$emit('closePreview')
+      this.closeModal();
     },
     repopulateTimeline() {
       /*

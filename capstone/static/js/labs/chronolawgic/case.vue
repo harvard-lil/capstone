@@ -1,20 +1,24 @@
 <template>
-  <article class="case" @click="openModal(case_data)"
-           data-toggle="modal"
-           :data-target="$store.state.isAuthor ? '#add-case-modal' : '#readonly-modal'"
-           tabindex="0">
+  <button class="case-button"
+      type="button"
+      @click="openModal(case_data)"
+      data-toggle="modal"
+      :data-target="$store.state.isAuthor ? '#add-case-modal' : '#readonly-modal'"
+      tabindex="0">
+    <article class="case">
+      <header>
+        <span class="case-name">{{ case_data.name }}</span>
+        <a class="case-link" v-if="case_data.url"
+           :href="case_data.url" target="_blank" @click.stop>
+          <link-case/>
+        </a>
+      </header>
+      <section class="desc">
+        {{ case_data.short_description }}
+      </section>
+    </article>
 
-    <header>
-      <span class="case-name">{{ case_data.name }}</span>
-      <a class="case-link" v-if="case_data.url"
-         :href="case_data.url" target="_blank" @click.stop>
-        <link-case/>
-      </a>
-    </header>
-    <section class="desc">
-      {{ case_data.short_description }}
-    </section>
-  </article>
+  </button>
 </template>
 
 <script>
@@ -27,6 +31,7 @@ export default {
   components: {LinkCase},
   methods: {
     openModal(item) {
+      console.log('openModal')
       this.$parent.$parent.openModal(item, 'case')
     },
     closeModal() {
