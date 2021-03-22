@@ -203,17 +203,25 @@ main#main-app {
       display: flex;
     }
 
+    .case-button {
+      padding: 0;
+      margin: 0.5rem;
+      background-color: white;
+      border: 0;
+    }
+
     article.case {
       cursor: pointer;
       font-family: $font-serif;
       line-height: $line-height-sm;
+      font-weight: normal;
+      text-align: left;
       font-size: $font-size-sm;
       background-color: $color-white;
       border: 1px solid $color-black;
       width: 20rem;
       height: 130px;
       padding: 0.5rem 0.75rem;
-      margin: 0.5rem;
       align-self: end;
 
       &:hover, &:focus, &:active {
@@ -316,6 +324,7 @@ main#main-app {
 
       .right-line {
         grid-area: right-line;
+        background-color: $color-gray;
       }
     }
 
@@ -577,9 +586,11 @@ main.admin {
   .title {
     grid-area: title;
     font-weight: $font-weight-semibold;
+    min-height: 2em;
+  }
+  .title_edit {
     height: 2em;
   }
-
   .description {
     grid-area: description;
     font-family: $font-sans-serif;
