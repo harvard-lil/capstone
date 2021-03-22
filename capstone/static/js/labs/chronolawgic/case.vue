@@ -1,10 +1,11 @@
 <template>
   <button class="case-button"
-      type="button"
-      @click="openModal(case_data)"
-      data-toggle="modal"
-      :data-target="$store.state.isAuthor ? '#add-case-modal' : '#readonly-modal'"
-      tabindex="0">
+          type="button"
+          @focus="handleFocus"
+          @click="openModal(case_data)"
+          data-toggle="modal"
+          :data-target="$store.state.isAuthor ? '#add-case-modal' : '#readonly-modal'"
+          tabindex="0">
     <article class="case">
       <header>
         <span class="case-name">{{ case_data.name }}</span>
@@ -31,11 +32,13 @@ export default {
   components: {LinkCase},
   methods: {
     openModal(item) {
-      console.log('openModal')
       this.$parent.$parent.openModal(item, 'case')
     },
     closeModal() {
       EventBus.$emit('closeModal')
+    },
+    handleFocus() {
+      EventBus.$emit('closePreview')
     },
     repopulateTimeline() {
       this.$parent.repopulateTimeline();
