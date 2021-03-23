@@ -25,10 +25,10 @@ export default Vue.component('YearLabel', {
   },
   methods: {
     addCase(year) {
-      this.$parent.$parent.showAddCaseModal(true, {decision_date: year + '-01-01'})
+      this.$parent.$parent.openModal({decision_date: year + '-01-01'}, 'case');
     },
     addEvent(year) {
-      this.$parent.$parent.showAddEventModal(true, {start_date: year + '-01-01'});
+      this.$parent.$parent.openModal({start_date: year + '-01-01'}, 'event');
     },
     yearHoverToggle(newHoverState) {
       this.yearHover=this.$store.state.isAuthor ? newHoverState : false;

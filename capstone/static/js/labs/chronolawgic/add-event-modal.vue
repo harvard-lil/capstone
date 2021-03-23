@@ -56,7 +56,7 @@
           <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
             Cancel
           </button>
-          <template v-if="this.event && this.event.id">
+          <template v-if="this.event && typeof(this.event.id) === 'number'">
             <button type="button" class="btn btn-primary" @click="deleteEvent" data-dismiss="modal">
               Delete
             </button>
@@ -64,7 +64,7 @@
               Update
             </button>
           </template>
-          <template v-if="!(this.event && this.event.id)">
+          <template v-if="!(this.event && typeof(this.event.id) === 'number')">
             <button type="button" class="btn btn-primary" @click.stop="addEvent"
                     :data-dismiss="$parent.showEvent ? 'none' : 'modal'">ADD
             </button>
@@ -83,6 +83,7 @@ import ItemDropdown from "./item-dropdown"
 export default {
   name: "add-event-modal",
   props: [
+    'shown',
     'modal',
     'event'
   ],
@@ -162,7 +163,6 @@ export default {
         this.extraFields.colors.value = this.getRandomColor();
       }
       this.newEvent = this.unbind(this.event)
-      console.log("setupExisting", this.newEvent)
     }
   },
   watch: {
@@ -185,7 +185,7 @@ export default {
 }
 </script>
 <style scoped>
-#add-event-modal {
-  display: block;
-}
+/*#add-event-modal {*/
+/*  display: block;*/
+/*}*/
 </style>

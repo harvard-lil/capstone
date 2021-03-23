@@ -1,58 +1,23 @@
 <template>
   <div class="year"
        v-bind:class="{
-    no_content_year: noContent,
-    cases_only_year: casesWithoutEvents,
-    events_only_year: eventsWithoutCases,
-    cases_and_events_year: casesAndEvents
-  }" v-if="year_data.involvesAnyItem || !$store.getters.minimized"
-   :aria-label="year_value">
+
+          no_content_year: noContent,
+          cases_only_year: casesWithoutEvents,
+          events_only_year: eventsWithoutCases,
+          cases_and_events_year: casesAndEvents}"
+       v-if="year_data.involvesAnyItem || !$store.getters.minimized"
+       @keydown.esc="clearPreviewEvent" :aria-label="year_value">
     <div class="incidental">
 
       <case v-for="case_data in year_data.case_list" :year_value="year_value" :case_data="case_data"
             v-bind:key="case_data.id"></case>
     </div>
-    <div class="year_scale" @mouseover="hoveringHandle(year_value, true)"
-         @mouseleave="hoveringHandle(year_value, false)">
+    <div class="year_scale">
       <year-label :year="year_value"></year-label>
-
-<!--      <div class="left-line">-->
-<!--        &lt;!&ndash; if not author, show rule &ndash;&gt;-->
-<!--        <hr class="left-rule" v-if="!$store.state.isAuthor || !showAddButton">-->
-<!--        &lt;!&ndash; if author, show + add case button on hover &ndash;&gt;-->
-<!--        <template v-else-if="$store.state.isAuthor">-->
-
-<!--          <button @click="$parent.showAddCaseModal(true, {decision_date: year_value + '-01-01'})" v-if="$store.state.isAuthor" type="button"-->
-<!--                  class="btn btn-tertiary btn-add-event"-->
-<!--                  data-toggle="modal"-->
-<!--                  data-target="#add-case-modal">-->
-<!--            <add-icon></add-icon>-->
-<!--          </button>-->
-<!--        </template>-->
-<!--      </div>-->
-<!--      <div class="year">-->
-<!--        <div class="left-top"></div>-->
-<!--        <div class="right-top"></div>-->
-<!--        <div class="middle"><span>{{ year_value }}</span></div>-->
-<!--        <div class="left-bottom"></div>-->
-<!--        <div class="right-bottom"></div>-->
-<!--      </div>-->
-<!--      <div class="right-line">-->
-<!--        <hr v-if="!$store.state.isAuthor || !showAddButton">-->
-<!--        <template v-else-if="$store.state.isAuthor">-->
-<!--          <button @click="$parent.showAddEventModal(true, {start_date: year_value + '-01-01'})" v-if="$store.state.isAuthor" type="button"-->
-<!--                  class="btn btn-tertiary btn-add-event"-->
-<!--                  data-toggle="modal"-->
-<!--                  data-target="#add-event-modal">-->
-<!--            <add-icon></add-icon>-->
-<!--          </button>-->
-<!--        </template>-->
-<!--      </div>-->
     </div>
     <TimeLineSlice :event_list="year_data.event_list" :year_value="year_value"></TimeLineSlice>
-    <template v-if="!$store.state.isAuthor">
-      <event-preview :event="event"></event-preview>
-    </template>
+    <event-preview :event="event"></event-preview>
   </div>
   <div class="year placeholder"
        v-else-if="year_data.firstYearNoNewItems && !year_data.involvesAnyItem && $store.getters.minimized">
@@ -109,20 +74,16 @@ export default {
     repopulateTimeline() {
       this.$parent.repopulateTimeline();
     },
-    previewEvent(event_data) {
-      this.event = event_data
-      EventBus.$emit('closePreview', this.year_value);
-    },
     clearPreviewEvent() {
       this.event = null;
     },
-    openModal(item) {
-      this.clearPreviewEvent()
-      EventBus.$emit('openModal', item, 'event')
+    previewEvent(event_data) {
+      this.event = event_data;
+      EventBus.$emit('closePreview', this.year_value);
     },
     hoveringHandle(year_data, status) {
       this.showAddButton = status;
-    }
+    },
   },
   mounted() {
     EventBus.$on('closePreview', (year_value) => {

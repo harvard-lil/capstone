@@ -160,7 +160,10 @@
     .other-events-section {
       display: flex;
       padding-top: 2em;
+
       h6 {
+        border-left: 1px solid white;
+        margin-left: -2px;
         height: 2em;
         width: 80px;
         background-color: $color-white;
@@ -203,17 +206,25 @@ main#main-app {
       display: flex;
     }
 
+    .case-button {
+      padding: 0;
+      margin: 0.5rem;
+      background-color: white;
+      border: 0;
+    }
+
     article.case {
       cursor: pointer;
       font-family: $font-serif;
       line-height: $line-height-sm;
+      font-weight: normal;
+      text-align: left;
       font-size: $font-size-sm;
       background-color: $color-white;
       border: 1px solid $color-black;
       width: 20rem;
       height: 130px;
       padding: 0.5rem 0.75rem;
-      margin: 0.5rem;
       align-self: end;
 
       &:hover, &:focus, &:active {
@@ -273,8 +284,6 @@ main#main-app {
         text-align: center;
       }
     }
-
-
 
     .event_col {
       min-width: 1.25rem;
@@ -528,9 +537,11 @@ main.admin {
   .title {
     grid-area: title;
     font-weight: $font-weight-semibold;
+    min-height: 2em;
+  }
+  .title_edit {
     height: 2em;
   }
-
   .description {
     grid-area: description;
     font-family: $font-sans-serif;
@@ -576,8 +587,9 @@ main.admin {
 }
 
 .event-preview {
+  display: block;
   margin-left: -10em;
-  z-index: 9999;
+  z-index: 999;
   font-family: $font-serif;
   height: 8em;
   width: 12em;
@@ -585,6 +597,20 @@ main.admin {
   word-break: break-word;
   background-color: white;
   position: relative;
+  h5 {
+    margin-bottom: 0;
+  }
+  .event-preview-body {
+    padding: 0.6rem 0.6rem 0 0.6rem;
+  }
+
+  .see-more {
+    padding: 0 0.6rem 0.6rem 0.6rem;
+    font-size: medium;
+    text-transform: none;
+    float: right;
+  }
+
   @include media-breakpoint-up(lg) {
     margin-left: -5em;
   }
@@ -596,13 +622,13 @@ main.admin {
   }
 
   p {
-    padding: 0.2em 0.5em;
     font-size: 15px;
     line-height: 19px;
+    margin: 0;
   }
 
   .close {
-    padding-right: 0.5em;
+    padding-right: 0.65em;
     padding-top: 0.1em;
   }
 }

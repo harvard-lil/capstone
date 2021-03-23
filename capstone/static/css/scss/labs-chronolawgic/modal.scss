@@ -48,7 +48,6 @@ textarea::placeholder {
   box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
   max-width: 700px;
   max-height: 80%;
-  overflow-y: scroll;
 
   form {
     margin-bottom: 0;
@@ -83,10 +82,13 @@ textarea::placeholder {
   .color-square {
     width: 20px;
     height: 20px;
-    //border: 1px solid #2F2F2F;
     float: left;
     margin-right: 5px;
   }
+}
+
+.modal-content {
+  border-radius: 0;
 }
 
 .form-label-group input:not(:placeholder-shown) {
@@ -332,5 +334,12 @@ textarea::placeholder {
 }
 
 #readonly-modal {
-  word-wrap: break-word
+  word-wrap: break-word;
+  .short-description {
+    font-style: italic;
+    color: $color-violet-gray-dark;
+  }
+  p {
+    font-family: $font-serif;
+  }
 }
