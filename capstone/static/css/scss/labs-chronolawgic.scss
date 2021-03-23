@@ -13,622 +13,683 @@
 @import "labs-chronolawgic/modal.scss";
 
 
-.top-menu {
-  display: grid;
-  grid-template-areas: "caselaw other-events";
-  grid-template-columns:  70% 30%;
-
-  .zoom-section {
-    grid-area: other-events;
-    background-color: $color-gray;
-    text-align: right;
-  }
-
-  .zoom-toggles {
-    position: fixed;
-    right: 0.5em;
-    z-index: 999;
-  }
-
-  .zoom-toggle {
-    width: 55px;
-    height: 55px;
-    background-color: #ccc;
-    margin-right: 0;
-
-    svg {
-      color: $color-medium-gray;
-      display: block;
-      margin: auto;
-      top: 25%;
-      position: relative;
-    }
-
-    &.selectable {
-      background-color: $color-white;
-      cursor: pointer;
-
-      svg {
-        color: $color-violet;
-      }
-
-      &:hover, &:focus {
-        background-color: $highlight;
-      }
-    }
-  }
-}
-
-.header-section {
-  height: 100px;
-  padding: 0.5em;
-
-  h4 {
-    font-family: $font-serif;
-    font-weight: $font-weight-semibold;
-    font-size: 24px;
-  }
-}
-
-
-.header-section {
-  height: 100px;
-  padding: 0.5em;
-  overflow: hidden;
-
-  &:first-child {
-    border-right: 1px solid $color-black;
-  }
-
-  h4 {
-    font-family: $font-serif;
-    font-weight: $font-weight-semibold;
-    font-size: 24px;
-  }
-
-  #timeline-title {
-    width: 370px;
-  }
-
-  #timeline-description {
-    font-size: $font-size-sm;
-    line-height: $line-height-sm;
-    width: 80%;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-  .my-timelines-link {
-    font-size: $font-size-sm;
-  }
-}
-
-.header-section.expanded {
-  height: 200px;
-
-  #timeline-description {
-    height: 100px;
-    font-size: $font-size-sm;
-    line-height: $line-height-sm;
-    width: 80%;
-    overflow: scroll;
-    white-space: pre-wrap;
-  }
-}
-
-#timeline {
-  background-color: $color-gray;
-  padding: 0;
-
-  .timeline-section-titles {
+main#main-app {
+  .top-menu {
     display: grid;
     grid-template-areas: "caselaw other-events";
     grid-template-columns:  70% 30%;
 
-    h6 {
-      font-family: $font-monospace;
-      font-weight: $font-weight-semibold;
-      padding: 0.3em 0.4em;
-      border-top: 1px solid $color-black;
-      border-bottom: 1px solid $color-black;
-      margin-bottom: 0;
-    }
-
-    .caselaw-section {
+    .zoom-section {
+      grid-area: other-events;
+      background-color: $color-gray;
       text-align: right;
-      background-color: $color-white;
-      display: flex;
-      float: right;
-      justify-content: flex-end;
-      padding-bottom: 3em;
-      padding-top: 2em;
-      border-right: 1px solid $color-black;
-
-      h6 {
-        height: 2em;
-        width: 90px;
-        float: right;
-        border-left: 1px solid $color-black;
-      }
-
-      button {
-        padding-top: 0;
-      }
     }
 
-    .other-events-section {
-      display: flex;
-      padding-top: 2em;
-
-      h6 {
-        border-left: 1px solid white;
-        margin-left: -2px;
-        height: 2em;
-        width: 80px;
-        background-color: $color-white;
-        border-right: 1px solid $color-black;
-      }
-
-      button {
-        float: left;
-        padding-top: 0;
-      }
-    }
-  }
-
-}
-
-.incidental {
-  background-color: white;
-}
-
-main#main-app {
-  font-family: $font-monospace;
-
-  section#timeline {
-    grid-area: timeline;
-    padding-top: 0;
-  }
-
-  div.year {
-    max-width: 6fr;
-    width: 100%;
-    display: grid;
-    grid-template-areas: "incidental years spans .";
-    grid-template-columns: 65% 10% 10% 15%;
-    min-height: 8rem;
-    font-size: 18px;
-
-    div.incidental {
-      grid-area: incidental;
-      justify-content: flex-end;
-      display: flex;
+    .zoom-toggles {
+      position: fixed;
+      right: 0.5em;
+      z-index: 999;
     }
 
-    .case-button {
-      padding: 0;
-      margin: 0.5rem;
-      background-color: white;
-      border: 0;
-    }
+    .zoom-toggle {
+      width: 55px;
+      height: 55px;
+      background-color: #ccc;
+      margin-right: 0;
 
-    article.case {
-      cursor: pointer;
-      font-family: $font-serif;
-      line-height: $line-height-sm;
-      font-weight: normal;
-      text-align: left;
-      font-size: $font-size-sm;
-      background-color: $color-white;
-      border: 1px solid $color-black;
-      width: 20rem;
-      height: 130px;
-      padding: 0.5rem 0.75rem;
-      align-self: end;
-
-      &:hover, &:focus, &:active {
-        background-color: $highlight;
-      }
-    }
-
-    header {
-      grid-area: casename;
-      display: grid;
-      grid-template-columns: 90% 10%;
-      grid-template-areas: "name link";
-      font-size: 1.3em;
-      line-height: 1.2em;
-      padding: 0;
-    }
-
-    .case-link {
       svg {
-        fill: $color-violet;
+        color: $color-medium-gray;
+        display: block;
+        margin: auto;
+        top: 25%;
+        position: relative;
       }
 
-      &:hover, &:focus, &:active {
+      &.selectable {
+        background-color: $color-white;
+        cursor: pointer;
+
         svg {
-          fill: $color-black;
+          color: $color-violet;
+        }
+
+        &:hover, &:focus {
+          background-color: $highlight;
+        }
+      }
+    }
+  }
+
+
+  .header-section {
+    height: 100px;
+    padding: 0.5em;
+    overflow: hidden;
+
+    &:first-child {
+      border-right: 1px solid $color-black;
+    }
+
+    h4 {
+      font-family: $font-serif;
+      font-weight: $font-weight-semibold;
+      font-size: 24px;
+    }
+
+    #timeline-title {
+      width: 370px;
+    }
+
+    #timeline-description {
+      font-size: $font-size-sm;
+      line-height: $line-height-sm;
+      width: 80%;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .my-timelines-link {
+      font-size: $font-size-sm;
+    }
+  }
+
+  .header-section.expanded {
+    height: 200px;
+
+    #timeline-description {
+      height: 100px;
+      font-size: $font-size-sm;
+      line-height: $line-height-sm;
+      width: 80%;
+      overflow: scroll;
+      white-space: pre-wrap;
+    }
+  }
+
+  #timeline {
+    background-color: $color-gray;
+    padding: 0;
+
+    .timeline-section-titles {
+      display: grid;
+      grid-template-areas: "caselaw other-events";
+      grid-template-columns:  70% 30%;
+
+      h6 {
+        font-family: $font-monospace;
+        font-weight: $font-weight-semibold;
+        padding: 0.3em 0.4em;
+        border-top: 1px solid $color-black;
+        border-bottom: 1px solid $color-black;
+        margin-bottom: 0;
+      }
+
+      .caselaw-section {
+        text-align: right;
+        background-color: $color-white;
+        display: flex;
+        float: right;
+        justify-content: flex-end;
+        padding-bottom: 3em;
+        padding-top: 2em;
+        border-right: 1px solid $color-black;
+
+        h6 {
+          height: 2em;
+          width: 90px;
+          float: right;
+          border-left: 1px solid $color-black;
+        }
+
+        button {
+          padding-top: 0;
+        }
+      }
+
+      .other-events-section {
+        display: flex;
+        padding-top: 2em;
+
+        h6 {
+          border-left: 1px solid white;
+          margin-left: -2px;
+          height: 2em;
+          width: 80px;
+          background-color: $color-white;
+          border-right: 1px solid $color-black;
+        }
+
+        button {
+          float: left;
+          padding-top: 0;
         }
       }
     }
 
-    section.subhead {
-      padding: 0;
-      grid-area: subhead;
-      font-weight: $font-weight-black;
-      font-size: 0.75rem;
+  }
+
+  .incidental {
+    background-color: white;
+  }
+
+    font-family: $font-monospace;
+
+    section#timeline {
+      grid-area: timeline;
+      padding-top: 0;
     }
 
-    section.desc {
-      padding: 0;
-      grid-area: desc;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-size: 0.8em;
-      line-height: 1.3em;
-      text-transform: none;
-      max-height: 8em;
-    }
-
-    div.year_scale {
-      grid-area: years;
-      font-family: $font-family-monospace;
-      z-index: 999;
-      background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, #EEE 50%);
-      background-position: center;
-      background-size: 250px;
-
-      .year {
-        text-align: center;
-      }
-    }
-
-    .event_col {
-      min-width: 1.25rem;
-      background-color: $color-gray;
-    }
-
-    div.spans {
-      padding-left: 2rem;
-      grid-area: spans;
+    div.year {
+      max-width: 6fr;
+      width: 100%;
       display: grid;
-      grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
-      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-      background-color: $color-gray;
-    }
+      grid-template-areas: "incidental years spans .";
+      grid-template-columns: 65% 10% 10% 15%;
+      min-height: 8rem;
+      font-size: 18px;
 
-    .event_label {
-      transform: rotate(90deg);
-      transform-origin: 0 100% 0;
-      overflow: visible;
-      z-index: 1;
-      position: relative;
-      top: -1.25rem;
-      left: 0;
-      margin: 0;
-      font-weight: $font-weight-semibold;
-      font-size: $font-size-sm;
-      color: $color-white;
-      height: 1.25rem;
-      line-height: 1.25rem;
-      padding-left: 1rem;
-    }
+      div.incidental {
+        grid-area: incidental;
+        justify-content: flex-end;
+        display: flex;
+      }
 
-    .fill {
-      height: 100%;
-      width: 100%;
-      margin: 0;
-      border: 0;
-      padding: 0;
-      cursor: pointer;
-    }
-
-    .first-event-year {
-      border-top: 1rem solid $color-black;
-    }
-
-    .last-event-year {
-      border-bottom: 1rem solid $color-violet-gray;
-    }
-
-    .ec_1 {
-      grid-area: ec_1;
-    }
-
-    .ec_2 {
-      grid-area: ec_2;
-    }
-
-    .ec_3 {
-      grid-area: ec_3;
-    }
-
-    .ec_4 {
-      grid-area: ec_4;
-    }
-
-    .ec_5 {
-      grid-area: ec_5;
-    }
-
-    .ec_6 {
-      grid-area: ec_6;
-    }
-
-    .ec_7 {
-      grid-area: ec_7;
-    }
-
-    .ec_8 {
-      grid-area: ec_8;
-    }
-
-    .ec_9 {
-      grid-area: ec_9;
-    }
-
-    .ec_10 {
-      grid-area: ec_10;
-    }
-
-    .ec_11 {
-      grid-area: ec_11;
-    }
-
-    .ec_12 {
-      grid-area: ec_12;
-    }
-  }
-
-  div.year.placeholder {
-    div.year_scale {
-      cursor: pointer;
-      display: flex;
-      svg{
-        margin-left: auto;
+      .case-button {
+        padding: 0;
+        margin: 0.5rem;
         background-color: white;
-        margin-right: auto;
+        border: 0;
+      }
+
+      article.case {
+        cursor: pointer;
+        font-family: $font-serif;
+        line-height: $line-height-sm;
+        font-weight: normal;
+        text-align: left;
+        font-size: $font-size-sm;
+        background-color: $color-white;
+        border: 1px solid $color-black;
+        width: 20rem;
+        height: 130px;
+        padding: 0.5rem 0.75rem;
+        align-self: end;
+
+        &:hover, &:focus, &:active {
+          background-color: $highlight;
+        }
+      }
+
+      header {
+        grid-area: casename;
+        display: grid;
+        grid-template-columns: 90% 10%;
+        grid-template-areas: "name link";
+        font-size: 1.3em;
+        line-height: 1.2em;
+        padding: 0;
+      }
+
+      .case-link {
+        svg {
+          fill: $color-violet;
+        }
+
+        &:hover, &:focus, &:active {
+          svg {
+            fill: $color-black;
+          }
+        }
+      }
+
+      section.subhead {
+        padding: 0;
+        grid-area: subhead;
+        font-weight: $font-weight-black;
+        font-size: 0.75rem;
+      }
+
+      section.desc {
+        padding: 0;
+        grid-area: desc;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.8em;
+        line-height: 1.3em;
+        text-transform: none;
+        max-height: 8em;
+      }
+
+      div.year_scale {
+        grid-area: years;
+        font-family: $font-family-monospace;
+        z-index: 999;
+        background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, #EEE 50%);
+        background-position: center;
+        background-size: 250px;
+
+        .year {
+          text-align: center;
+        }
+      }
+
+      .event_col {
+        min-width: 1.25rem;
+        background-color: $color-gray;
+      }
+
+      div.spans {
+        padding-left: 2rem;
+        grid-area: spans;
+        display: grid;
+        grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+        background-color: $color-gray;
+      }
+
+      .event_label {
+        transform: rotate(90deg);
+        transform-origin: 0 100% 0;
+        overflow: visible;
+        z-index: 1;
+        position: relative;
+        top: -1.25rem;
+        left: 0;
+        margin: 0;
+        font-weight: $font-weight-semibold;
+        font-size: $font-size-sm;
+        color: $color-white;
+        height: 1.25rem;
+        line-height: 1.25rem;
+        padding-left: 1rem;
+      }
+
+      .fill {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .first-event-year {
+        border-top: 1rem solid $color-black;
+      }
+
+      .last-event-year {
+        border-bottom: 1rem solid $color-violet-gray;
+      }
+
+      .ec_1 {
+        grid-area: ec_1;
+      }
+
+      .ec_2 {
+        grid-area: ec_2;
+      }
+
+      .ec_3 {
+        grid-area: ec_3;
+      }
+
+      .ec_4 {
+        grid-area: ec_4;
+      }
+
+      .ec_5 {
+        grid-area: ec_5;
+      }
+
+      .ec_6 {
+        grid-area: ec_6;
+      }
+
+      .ec_7 {
+        grid-area: ec_7;
+      }
+
+      .ec_8 {
+        grid-area: ec_8;
+      }
+
+      .ec_9 {
+        grid-area: ec_9;
+      }
+
+      .ec_10 {
+        grid-area: ec_10;
+      }
+
+      .ec_11 {
+        grid-area: ec_11;
+      }
+
+      .ec_12 {
+        grid-area: ec_12;
       }
     }
-  }
-}
 
-
-main.admin {
-  .top-menu {
-    padding: 2em;
-    display: grid;
-    grid-template-areas: ". title ."
-                         ". add .";
-    grid-template-columns: 20% 30% 40%;
-    @include media-breakpoint-down(md) {
-      grid-template-areas: ". title"
-                             ". add";
-      grid-template-columns: 20% 1fr;
+    div.year.placeholder {
+      div.year_scale {
+        cursor: pointer;
+        display: flex;
+        svg{
+          margin-left: auto;
+          background-color: white;
+          margin-right: auto;
+        }
+      }
     }
-  }
 
-  .add-timeline {
-    grid-area: add;
-    text-transform: none;
 
-    button {
-      text-decoration: none;
-      padding-left: 0;
+  main.admin {
+    .top-menu {
+      padding: 2em;
+      display: grid;
+      grid-template-areas: ". title ."
+                           ". add .";
+      grid-template-columns: 20% 30% 40%;
+      @include media-breakpoint-down(md) {
+        grid-template-areas: ". title"
+                               ". add";
+        grid-template-columns: 20% 1fr;
+      }
+    }
+
+    .add-timeline {
+      grid-area: add;
       text-transform: none;
-    }
 
-    svg {
-      margin-top: -0.3em;
-    }
-  }
+      button {
+        text-decoration: none;
+        padding-left: 0;
+        text-transform: none;
+      }
 
-
-  .info {
-    grid-area: info;
-    display: inline-block;
-    margin-top: -1.5em;
-    margin-left: -0.5em;
-    font-size: 15px;
-    font-weight: $font-weight-semibold;
-    color: $color-blue;
-    text-decoration: none;
-    padding: 0;
-  }
-
-  h3 {
-    grid-area: title;
-    font-family: $font-serif;
-  }
-
-  #timeline {
-    background-color: $color-white;
-  }
-
-  .timeline {
-    max-width: 6fr;
-    width: 100%;
-    display: grid;
-    grid-template-areas: ". title buttons"
-                         ". description numbers"
-                         ". description .";
-    grid-template-columns: 20% 20% 50%;
-    min-height: 4rem;
-    margin-top: 2rem;
-    grid-gap: 1rem;
-    border-bottom: 1px solid $color-gray;
-    padding-bottom: 2em;
-  }
-
-  .btn-group {
-    grid-area: buttons;
-    display: grid;
-    grid-template-areas: "delete save edit .";
-    grid-template-columns: 5% 5% 5% 85%;
-  }
-
-  .numbers {
-    grid-area: numbers;
-    display: grid;
-    grid-template-areas: "case_count_label event_count_label id_label"
-                         "case_count event_count id";
-    grid-template-columns: 1fr 1fr 1fr;
-
-    .id_label {
-      grid-area: id_label;
-    }
-
-    .case_count {
-      grid-area: case_count;
-    }
-
-    .event_count {
-      grid-area: event_count;
-    }
-
-    font-family: $font-sans-serif;
-    font-size: $font-size-sm;
-  }
-
-  .label {
-    font-weight: $font-weight-black;
-    text-transform: uppercase;
-    color: $color-violet-gray-dark;
-  }
-
-  .edit, .delete, .save {
-    cursor: pointer;
-  }
-
-  .edit {
-    grid-area: edit;
-
-    &:hover, &:active, &:focus {
       svg {
-        color: $color-blue;
+        margin-top: -0.3em;
       }
     }
 
-  }
 
-  .delete {
-    grid-area: delete;
-
-    &:hover, &:active, &:focus {
-      svg {
-        color: $color-red;
-      }
-    }
-  }
-
-  .save {
-    grid-area: save;
-
-    &:hover, &:active, &:focus {
-      svg {
-        color: $color-violet;
-      }
+    .info {
+      grid-area: info;
+      display: inline-block;
+      margin-top: -1.5em;
+      margin-left: -0.5em;
+      font-size: 15px;
+      font-weight: $font-weight-semibold;
+      color: $color-blue;
+      text-decoration: none;
+      padding: 0;
     }
 
-  }
+    h3 {
+      grid-area: title;
+      font-family: $font-serif;
+    }
 
-  .title {
-    grid-area: title;
-    font-weight: $font-weight-semibold;
-    min-height: 2em;
-  }
-  .title_edit {
-    height: 2em;
-  }
-  .description {
-    grid-area: description;
-    font-family: $font-sans-serif;
-    font-size: $font-size-sm;
-    display: grid;
-    grid-template-areas: "description_label"
-                         "description_text";
+    #timeline {
+      background-color: $color-white;
+    }
 
-    .description_text {
-      grid-area: description_text;
+    .timeline {
+      max-width: 6fr;
       width: 100%;
-      line-height: 1.7em;
+      display: grid;
+      grid-template-areas: ". title buttons"
+                           ". description numbers"
+                           ". description .";
+      grid-template-columns: 20% 20% 50%;
+      min-height: 4rem;
+      margin-top: 2rem;
+      grid-gap: 1rem;
+      border-bottom: 1px solid $color-gray;
+      padding-bottom: 2em;
     }
 
-    .description_label {
-      grid-area: description_label;
+    .btn-group {
+      grid-area: buttons;
+      display: grid;
+      grid-template-areas: "delete save edit .";
+      grid-template-columns: 5% 5% 5% 85%;
     }
 
-    .description_edit {
-      width: 100%;
+    .numbers {
+      grid-area: numbers;
+      display: grid;
+      grid-template-areas: "case_count_label event_count_label id_label"
+                           "case_count event_count id";
+      grid-template-columns: 1fr 1fr 1fr;
+
+      .id_label {
+        grid-area: id_label;
+      }
+
+      .case_count {
+        grid-area: case_count;
+      }
+
+      .event_count {
+        grid-area: event_count;
+      }
+
+      font-family: $font-sans-serif;
+      font-size: $font-size-sm;
+    }
+
+    .label {
+      font-weight: $font-weight-black;
+      text-transform: uppercase;
+      color: $color-violet-gray-dark;
+    }
+
+    .edit, .delete, .save {
+      cursor: pointer;
+    }
+
+    .edit {
+      grid-area: edit;
+
+      &:hover, &:active, &:focus {
+        svg {
+          color: $color-blue;
+        }
+      }
+
+    }
+
+    .delete {
+      grid-area: delete;
+
+      &:hover, &:active, &:focus {
+        svg {
+          color: $color-red;
+        }
+      }
+    }
+
+    .save {
+      grid-area: save;
+
+      &:hover, &:active, &:focus {
+        svg {
+          color: $color-violet;
+        }
+      }
+
+    }
+
+    .title {
+      grid-area: title;
+      font-weight: $font-weight-semibold;
+      min-height: 2em;
+    }
+    .title_edit {
+      height: 2em;
+    }
+    .description {
+      grid-area: description;
+      font-family: $font-sans-serif;
+      font-size: $font-size-sm;
+      display: grid;
+      grid-template-areas: "description_label"
+                           "description_text";
+
+      .description_text {
+        grid-area: description_text;
+        width: 100%;
+        line-height: 1.7em;
+      }
+
+      .description_label {
+        grid-area: description_label;
+      }
+
+      .description_edit {
+        width: 100%;
+      }
+    }
+
+    .btn-edit {
+      grid-area: button-one;
+    }
+
+    .btn-delete {
+      grid-area: button-two;
+
+      .disabled {
+        color: $color-medium-gray;
+      }
+    }
+
+    .btn-hidden {
+      grid-area: button-one;
+    }
+
+    .btn-create {
+      grid-area: button-two;
     }
   }
 
-  .btn-edit {
-    grid-area: button-one;
-  }
-
-  .btn-delete {
-    grid-area: button-two;
-
-    .disabled {
-      color: $color-medium-gray;
-    }
-  }
-
-  .btn-hidden {
-    grid-area: button-one;
-  }
-
-  .btn-create {
-    grid-area: button-two;
-  }
-}
-
-.event-preview {
-  display: block;
-  margin-left: -10em;
-  z-index: 999;
-  font-family: $font-serif;
-  height: 8em;
-  width: 12em;
-  overflow-y: scroll;
-  word-break: break-word;
-  background-color: white;
-  position: relative;
-  h5 {
-    margin-bottom: 0;
-  }
-  .event-preview-body {
-    padding: 0.6rem 0.6rem 0 0.6rem;
-  }
-
-  .see-more {
-    padding: 0 0.6rem 0.6rem 0.6rem;
-    font-size: medium;
-    text-transform: none;
-    float: right;
-  }
-
-  @include media-breakpoint-up(lg) {
-    margin-left: -5em;
-  }
-
-  h5 {
+  .event-preview {
+    display: block;
+    margin-left: -10em;
+    z-index: 999;
     font-family: $font-serif;
-    font-size: 19px;
-    padding: 0.2em 0.5em;
+    height: 8em;
+    width: 12em;
+    overflow-y: scroll;
+    word-break: break-word;
+    background-color: white;
+    position: relative;
+    h5 {
+      margin-bottom: 0;
+    }
+    .event-preview-body {
+      padding: 0.6rem 0.6rem 0 0.6rem;
+    }
+
+    .see-more {
+      padding: 0 0.6rem 0.6rem 0.6rem;
+      font-size: medium;
+      text-transform: none;
+      float: right;
+    }
+
+    @include media-breakpoint-up(lg) {
+      margin-left: -5em;
+    }
+
+    h5 {
+      font-family: $font-serif;
+      font-size: 19px;
+      padding: 0.2em 0.5em;
+    }
+
+    p {
+      font-size: 15px;
+      line-height: 19px;
+      margin: 0;
+    }
+
+    .close {
+      padding-right: 0.65em;
+      padding-top: 0.1em;
+    }
   }
 
-  p {
-    font-size: 15px;
-    line-height: 19px;
-    margin: 0;
-  }
-
-  .close {
-    padding-right: 0.65em;
-    padding-top: 0.1em;
-  }
 }
+//
+//@include media-breakpoint-down(sm) {
+//
+//  main#main-app {
+//    .top-menu {
+//      display: flex;
+//      .zoom-section {
+//        display: none;
+//      }
+//    }
+//    .header-section {
+//      height: 50px;
+//      padding: 0.25em;
+//      overflow: hidden;
+//
+//      &:first-child {
+//        border-right: 1px solid $color-black;
+//      }
+//
+//      h4 {
+//        font-size: 18px;
+//        margin-bottom: 0;
+//      }
+//
+//      #timeline-title {
+//        width: 90%;
+//      }
+//
+//      #timeline-description {
+//        font-size: $font-size-sm;
+//        line-height: $line-height-sm;
+//        width: 90%;
+//        text-overflow: ellipsis;
+//        overflow: hidden;
+//        white-space: nowrap;
+//        cursor: pointer;
+//      }
+//      .my-timelines-link {
+//        font-size: $font-size-sm;
+//      }
+//    }
+//     div.year {
+//      width: 100%;
+//      display: grid;
+//      grid-template-areas: "incidental years spans";
+//      grid-template-columns: 80% 10% 10%;
+//      min-height: 8rem;
+//      font-size: 18px;
+//      div.year_scale {
+//        svg{
+//          transform: scale(0.5);
+//          transform-origin: top left;
+//        }
+//      }
+//     }
+//
+//  }
+//
+//  main#main-app.event-expand {
+//     div.year {
+//      width: 100%;
+//      display: grid;
+//      grid-template-areas: "incidental years spans";
+//      grid-template-columns: 20% 10% 70%;
+//      min-height: 8rem;
+//      font-size: 18px;
+//     }
+//  }
+//
+//}
+//
