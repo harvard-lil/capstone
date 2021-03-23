@@ -1,4 +1,9 @@
-{% load static %}{% load pipeline %}{% load capweb_static %}{% load render_bundle from webpack_loader %}{% load capture_tags %}<!DOCTYPE html>
+{% load static %}
+{% load pipeline %}
+{% load capweb_static %}
+{% load render_bundle from webpack_loader %}
+{% load capture_tags %}
+<!DOCTYPE html>
 <html lang="en">
   <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
     <meta charset="utf-8">
@@ -66,6 +71,7 @@
     {% if extra_head %}{{ extra_head }}{% endif %}
     {% block extra_head %}{% endblock %}
   </head>
+
   <body class="hamburger-menu-closed" tabindex="-1">
 
     <a class="skip" href="#main">Skip to main content</a>
@@ -90,8 +96,9 @@
         </span>
       </div>
 
-      <div class="lab-nav-content">
-          <div class="nav-item" id="nav-account">
+      <div class="nav-content lab-nav-content">
+        <ul class="nav">
+          <li class="nav-item" id="nav-account">
             {% if request.user.is_authenticated %}
               <a class="nav-link" href="{% url "user-details" %}">
                 ACCOUNT
@@ -102,17 +109,18 @@
                 LOG IN
               </a>
             {% endif %}
-          </div>
-          <div class="nav-item" id="nav-about">
+          </li>
+          <li class="nav-item" id="nav-about">
               <a class="nav-link" href="{% url "labs:labs" %}">
                 LABS
               </a>
-          </div>
-          <div class="nav-item" id="nav-linkback">
+          </li>
+          <li class="nav-item" id="nav-linkback">
               <div class="mini-branding">
                     <a class="nav-branding" href="{% url "home" %}" aria-label="CAP Labs Home"></a>
               </div>
-          </div>
+          </li>
+        </ul>
       </div>
 
     </nav>
