@@ -1,19 +1,19 @@
 @import "variables";
 
 
-
 #labs-nav {
   padding-left: .5rem;
   padding-top: .5rem;
   display: grid;
-  grid-template-areas: "logo . project-title . links";
-  grid-template-columns: 187px 1fr 5fr 1fr 20rem;
+  grid-template-areas: "logo . project-title links";
+  grid-template-columns: 200px 1fr 5fr 3fr;
   background-color: #2f2f2f;
   @include media-breakpoint-down(sm) {
     padding-top: 10px;
     grid-template-areas: "project-title . hamburger";
     grid-template-columns: 4fr 1fr;
   }
+
   .hamburger {
     grid-area: hamburger;
     @include media-breakpoint-up(md) {
@@ -22,29 +22,45 @@
   }
 }
 
-.lab-nav-content {
+.lab-nav-content.nav-content {
   grid-area: links;
   display: grid;
   grid-template-areas: "about account linkback";
+  margin-left: 0;
+
   .nav-item {
     display: flex;
     align-items: center; /* Vertical center alignment */
     justify-content: center; /* Horizontal center alignment */
   }
+
+  @include media-breakpoint-down(sm) {
+    .nav-link {
+      margin-left: 0 !important;
+    }
+    .nav-item {
+      height: auto;
+    }
+  }
+
   #nav-account {
     grid-area: account;
   }
+
   #nav-about {
     grid-area: about;
   }
+
   #nav-linkback {
     grid-area: linkback;
   }
+
   .mini-branding {
     display: inline-block;
     line-height: inherit;
     white-space: nowrap;
     transition: .2s;
+
     .nav-branding {
       background: url("../../img/logo-small-white.svg") no-repeat;
       background-size: contain;
@@ -53,16 +69,15 @@
       transition: .2s;
       display: block;
       background-position-x: 0;
+
       &:hover, &:focus, &:active {
         background: url("../../img/logos/img-only-blue.svg") no-repeat;
         background-size: contain;
       }
     }
   }
-  @include media-breakpoint-down(sm) {
-    display: none;
-  }
 }
+
 .project-title {
   color: $color-white;
   grid-area: project-title;
@@ -72,6 +87,7 @@
   .labs-label {
     font-weight: $font-weight-black;
   }
+
   .project-name {
     letter-spacing: 0.05em;
     padding: 3px 5px;
@@ -87,6 +103,7 @@
   display: inline-block;
   line-height: inherit;
   white-space: nowrap;
+
   .nav-branding {
     background: url(../../img/labs/labs-logo-animate-once.gif) no-repeat;
     background-size: contain;
@@ -94,6 +111,7 @@
     height: 72px;
     display: block;
     background-position-x: 0;
+
     &:hover, &:focus, &:active {
       background: url(../../img/labs/labs-logo-animated.gif) no-repeat;
       background-size: contain;

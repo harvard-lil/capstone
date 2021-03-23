@@ -67,9 +67,9 @@ def test_timeline_retrieve(client, auth_client):
     assert timeline_response["title"] == timeline["title"]
 
     # when no id is given
-    # if non-authorized, show 403
+    # if non-authorized, show no timelines, 200
     response = client.get(retrieve_url)
-    check_response(response, status_code=403, content_type="application/json")
+    check_response(response, content_type="application/json")
 
     # if authorized show all timelines when no id is given
     timeline['cases'] = cases

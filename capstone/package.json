@@ -75,6 +75,8 @@
     "not ie <= 8"
   ],
   "resolutions": {
-    "vue-svg-loader/svg-to-vue": "0.6.0"
+    "vue-svg-loader/svg-to-vue": "0.6.0",
+    "**/is-svg": "^4.2.2",
+    "**/ssri": "^8.0.1"
   }
 }
